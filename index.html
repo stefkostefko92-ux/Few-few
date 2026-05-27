@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Realms of Tanoth — A Browser RPG</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== Character Creation ===== -->
+  <section id="screen-create" class="screen">
+    <div class="panel">
+      <h1>Realms of Tanoth</h1>
+      <p class="flavor">The kingdom is in peril. Forge a hero and step into legend.</p>
+
+      <label>Hero name
+        <input id="hero-name" maxlength="16" placeholder="Aelric the Bold" />
+      </label>
+
+      <h3>Choose a class</h3>
+      <div class="class-list">
+        <div class="class-card" data-class="warrior">
+          <h4>Warrior</h4>
+          <p>Master of steel. High strength and constitution. Bonus damage with melee weapons.</p>
+          <div class="stat-line">STR +3 · CON +2 · DEX +1 · INT +0</div>
+        </div>
+        <div class="class-card" data-class="ranger">
+          <h4>Ranger</h4>
+          <p>Swift and cunning. Higher dodge, balanced offense. Bonus crit chance.</p>
+          <div class="stat-line">STR +1 · CON +1 · DEX +3 · INT +1</div>
+        </div>
+        <div class="class-card" data-class="mage">
+          <h4>Mage</h4>
+          <p>Wielder of arcane fire. Low HP but devastating spells. Bonus magic damage.</p>
+          <div class="stat-line">STR +0 · CON +1 · DEX +1 · INT +4</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btn-create">Enter the Realm</button>
+        <button id="btn-load" class="ghost">Continue Saved Hero</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Main Game ===== -->
+  <section id="screen-game" class="screen hidden">
+
+    <header id="topbar">
+      <div class="hero-info">
+        <span class="hero-name" id="ui-name">—</span>
+        <span class="hero-class" id="ui-class">—</span>
+        <span class="hero-level">Lvl <span id="ui-level">1</span></span>
+      </div>
+      <div class="resources">
+        <div class="bar hp"><span id="ui-hp">0/0</span><div class="fill" id="bar-hp"></div></div>
+        <div class="bar mp"><span id="ui-mp">0/0</span><div class="fill" id="bar-mp"></div></div>
+        <div class="bar xp"><span id="ui-xp">0/0 XP</span><div class="fill" id="bar-xp"></div></div>
+        <div class="gold"><span class="coin">G</span><span id="ui-gold">0</span></div>
+      </div>
+      <div class="topbar-actions">
+        <button id="btn-save" class="ghost small">Save</button>
+        <button id="btn-reset" class="ghost small danger">New Hero</button>
+      </div>
+    </header>
+
+    <nav id="locations">
+      <button class="loc" data-loc="town">Town Square</button>
+      <button class="loc" data-loc="tavern">Tavern</button>
+      <button class="loc" data-loc="adventures">Adventures</button>
+      <button class="loc" data-loc="arena">Arena</button>
+      <button class="loc" data-loc="blacksmith">Blacksmith</button>
+      <button class="loc" data-loc="healer">Healer</button>
+      <button class="loc" data-loc="training">Training Hall</button>
+      <button class="loc" data-loc="character">Character</button>
+    </nav>
+
+    <main id="content"></main>
+
+    <footer id="log-panel">
+      <h4>Chronicle</h4>
+      <div id="log"></div>
+    </footer>
+
+  </section>
+</div>
+
+<!-- ===== Combat Modal ===== -->
+<div id="combat-overlay" class="overlay hidden">
+  <div class="combat">
+    <div class="combatant hero">
+      <h3 id="cb-hero-name">Hero</h3>
+      <div class="bar hp"><span id="cb-hero-hp">0/0</span><div class="fill" id="cb-hero-bar"></div></div>
+    </div>
+    <div class="vs">vs</div>
+    <div class="combatant foe">
+      <h3 id="cb-foe-name">Foe</h3>
+      <div class="bar hp"><span id="cb-foe-hp">0/0</span><div class="fill" id="cb-foe-bar"></div></div>
+    </div>
+    <div class="combat-log" id="cb-log"></div>
+    <div class="combat-actions">
+      <button id="cb-attack">Attack</button>
+      <button id="cb-skill">Special</button>
+      <button id="cb-flee" class="ghost">Flee</button>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
