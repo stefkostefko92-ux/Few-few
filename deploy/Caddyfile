@@ -1,0 +1,23 @@
+# Replace tanoth.example.com with your real domain.
+# Caddy will obtain & renew a Let's Encrypt certificate automatically.
+{$DOMAIN:tanoth.example.com} {
+  encode zstd gzip
+
+  # Security headers
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    -Server
+  }
+
+  # Reverse proxy everything to the app
+  reverse_proxy tanoth:4000 {
+    transport http {
+      keepalive 30s
+    }
+  }
+
+  # Optional: hard rate limiting on auth endpoints handled inside the app.
+}

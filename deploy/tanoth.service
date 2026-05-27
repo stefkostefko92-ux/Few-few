@@ -1,0 +1,20 @@
+[Unit]
+Description=Tanoth-Reborn game server
+After=network.target
+
+[Service]
+Type=simple
+User=tanoth
+Group=tanoth
+WorkingDirectory=/opt/tanoth-reborn
+EnvironmentFile=/opt/tanoth-reborn/.env
+ExecStart=/usr/bin/node server/dist/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

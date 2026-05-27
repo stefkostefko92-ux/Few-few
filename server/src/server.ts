@@ -1,0 +1,72 @@
+import 'dotenv/config';
+import path from 'path';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+
+import authRoutes from './routes/auth';
+import characterRoutes from './routes/character';
+import inventoryRoutes from './routes/inventory';
+import shopRoutes from './routes/shop';
+import questRoutes from './routes/quest';
+import arenaRoutes from './routes/arena';
+import mailRoutes from './routes/mail';
+import { getDb } from './db';
+
+const app = express();
+const PORT = Number(process.env.PORT) || 4000;
+
+app.set('trust proxy', 1);
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  cors({
+    origin: (process.env.CORS_ORIGIN || '*').split(','),
+    credentials: false,
+  }),
+);
+app.use(express.json({ limit: '256kb' }));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('tiny'));
+}
+
+const apiLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 240,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', apiLimiter);
+
+const authLimiter = rateLimit({ windowMs: 60_000, max: 20 });
+app.use('/api/auth', authLimiter);
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, name: 'Tanoth-Reborn', version: '0.1.0' });
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/character', characterRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/shop', shopRoutes);
+app.use('/api/quest', questRoutes);
+app.use('/api/arena', arenaRoutes);
+app.use('/api/mail', mailRoutes);
+
+// Serve client build if present (production)
+const clientDist = path.resolve(__dirname, '../../client/dist');
+app.use(express.static(clientDist));
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(clientDist, 'index.html'), (err) => {
+    if (err) next();
+  });
+});
+
+// Ensure DB is initialized before listening
+getDb();
+
+app.listen(PORT, () => {
+  console.log(`[Tanoth-Reborn] Server listening on port ${PORT}`);
+});

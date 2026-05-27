@@ -1,0 +1,43 @@
+services:
+  tanoth:
+    build: .
+    image: tanoth-reborn:latest
+    container_name: tanoth-reborn
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DB_PATH: /app/data/tanoth.db
+      JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in .env}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
+      CORS_ORIGIN: "${CORS_ORIGIN:-*}"
+    ports:
+      - "4000:4000"
+    volumes:
+      - tanoth_data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional: reverse proxy with TLS. Comment out if you already run one.
+  caddy:
+    image: caddy:2-alpine
+    container_name: tanoth-caddy
+    restart: unless-stopped
+    depends_on:
+      - tanoth
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  tanoth_data:
+  caddy_data:
+  caddy_config:

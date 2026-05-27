@@ -1,0 +1,91 @@
+import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
+
+export interface DerivedStats {
+  atk_min: number;
+  atk_max: number;
+  defense: number;
+  hp_max: number;
+  mp_max: number;
+  crit_chance: number;
+  dodge_chance: number;
+  speed: number;
+}
+
+export function classWeaponSkill(cls: CharacterClass, sub: string, ch: Character): number {
+  if (cls === 'mage' && (sub === 'staff' || sub === '')) return Math.max(ch.skill_staff, ch.skill_magic);
+  if (cls === 'ranger' && (sub === 'bow' || sub === '')) return ch.skill_bow;
+  if (cls === 'warrior' && (sub === 'axe' || sub === 'sword' || sub === '')) return Math.max(ch.skill_axe, ch.skill_sword);
+  if (cls === 'rogue' && (sub === 'sword' || sub === '' || sub === 'dagger')) return Math.max(ch.skill_sword, ch.skill_stealth);
+  // fallbacks
+  if (sub === 'sword') return ch.skill_sword;
+  if (sub === 'axe') return ch.skill_axe;
+  if (sub === 'bow') return ch.skill_bow;
+  if (sub === 'staff') return ch.skill_staff;
+  return 0;
+}
+
+export function deriveStats(ch: Character, equipped: { item: Item; entry: InventoryEntry }[]): DerivedStats {
+  let str = ch.strength;
+  let dex = ch.dexterity;
+  let con = ch.constitution;
+  let int_ = ch.intelligence;
+  let wis = ch.wisdom;
+  let cha = ch.charisma;
+  let hp_bonus = 0;
+  let mp_bonus = 0;
+  let atkMin = 1;
+  let atkMax = 2;
+  let def = 0;
+  let weaponSub = '';
+
+  for (const { item } of equipped) {
+    str += item.str_bonus;
+    dex += item.dex_bonus;
+    con += item.con_bonus;
+    int_ += item.int_bonus;
+    wis += item.wis_bonus;
+    cha += item.cha_bonus;
+    hp_bonus += item.hp_bonus;
+    mp_bonus += item.mp_bonus;
+    def += item.defense;
+    if (item.category === 'weapon') {
+      atkMin = item.atk_min;
+      atkMax = item.atk_max;
+      weaponSub = item.sub_type;
+    }
+  }
+
+  // Stat-based modifiers
+  const classDmg = ch.class === 'mage' ? int_ * 0.7 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
+  const skill = classWeaponSkill(ch.class, weaponSub, ch);
+
+  const atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4);
+  const atk_max = Math.round(atkMax + classDmg + skill * 0.8);
+
+  const hp_max = 40 + con * 6 + ch.level * 6 + hp_bonus;
+  const mp_max = 10 + int_ * 3 + wis * 2 + mp_bonus;
+
+  const dodge_chance = Math.min(0.35, dex * 0.005 + ch.skill_stealth * 0.004);
+  const crit_chance = Math.min(0.45, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03);
+  const speed = 5 + Math.round(dex * 0.4);
+
+  return { atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed };
+}
+
+export function buildHeroActor(ch: Character, derived: DerivedStats, currentHp: number): CombatActor {
+  return {
+    name: ch.name,
+    side: 'hero',
+    level: ch.level,
+    hp: currentHp,
+    hp_max: derived.hp_max,
+    atk_min: derived.atk_min,
+    atk_max: derived.atk_max,
+    defense: derived.defense,
+    speed: derived.speed,
+    crit_chance: derived.crit_chance,
+    dodge_chance: derived.dodge_chance,
+    sprite: ch.class,
+    class: ch.class,
+  };
+}
