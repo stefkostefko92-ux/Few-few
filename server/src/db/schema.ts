@@ -17,7 +17,8 @@ export function applySchema(db: Database.Database): void {
 
     CREATE TABLE IF NOT EXISTS characters (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id       INTEGER NOT NULL UNIQUE,
+      user_id       INTEGER UNIQUE,
+      is_npc        INTEGER NOT NULL DEFAULT 0,
       name          TEXT NOT NULL UNIQUE,
       class         TEXT NOT NULL,           -- warrior | ranger | mage | rogue
       gender        TEXT NOT NULL DEFAULT 'male',

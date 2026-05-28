@@ -6,6 +6,7 @@ interface Region {
   slug: string;
   name: string;
   level: string;
+  minLevel: number;
   lore: string;
   flavor: string;
   x: number; y: number;
@@ -13,11 +14,11 @@ interface Region {
 }
 
 const REGIONS: Region[] = [
-  { slug: 'whispering_woods', name: 'Whispering Woods', level: '1-5', lore: 'A green wood near Oaken Hollow.', flavor: '🌲', x: 18, y: 70, color: '#3f6a2c' },
-  { slug: 'mistmoor_hills', name: 'Mistmoor Hills', level: '6-10', lore: 'Fog-laced highlands stalked by orcs.', flavor: '⛰', x: 36, y: 50, color: '#6e7a5c' },
-  { slug: 'crystal_caverns', name: 'Crystal Caverns', level: '10-15', lore: 'Glittering tunnels far beneath the mountains.', flavor: '💎', x: 56, y: 60, color: '#6aa7ff' },
-  { slug: 'ashen_wastes', name: 'Ashen Wastes', level: '15-22', lore: 'Burned plains roamed by drakes and revenants.', flavor: '🔥', x: 74, y: 40, color: '#c7641a' },
-  { slug: 'shadowfell', name: 'The Shadowfell', level: '24+', lore: 'The Shadow Lord\'s domain. Bring everything.', flavor: '☠', x: 88, y: 22, color: '#6f3fb6' },
+  { slug: 'whispering_woods', name: 'Whispering Woods', level: '1-5', minLevel: 1, lore: 'A green wood near Oaken Hollow.', flavor: '🌲', x: 18, y: 70, color: '#3f6a2c' },
+  { slug: 'mistmoor_hills', name: 'Mistmoor Hills', level: '6-10', minLevel: 6, lore: 'Fog-laced highlands stalked by orcs.', flavor: '⛰', x: 36, y: 50, color: '#6e7a5c' },
+  { slug: 'crystal_caverns', name: 'Crystal Caverns', level: '10-15', minLevel: 10, lore: 'Glittering tunnels far beneath the mountains.', flavor: '💎', x: 56, y: 60, color: '#6aa7ff' },
+  { slug: 'ashen_wastes', name: 'Ashen Wastes', level: '15-22', minLevel: 15, lore: 'Burned plains roamed by drakes and revenants.', flavor: '🔥', x: 74, y: 40, color: '#c7641a' },
+  { slug: 'shadowfell', name: 'The Shadowfell', level: '24+', minLevel: 24, lore: 'The Shadow Lord\'s domain. Bring everything.', flavor: '☠', x: 88, y: 22, color: '#6f3fb6' },
 ];
 
 export default function World(): React.ReactElement {
@@ -62,7 +63,7 @@ export default function World(): React.ReactElement {
 
         {/* Markers */}
         {REGIONS.map((r) => {
-          const locked = char ? char.level < (parseInt(r.level) - 1) : false;
+          const locked = char ? char.level < r.minLevel - 1 : false;
           return (
             <div
               key={r.slug}

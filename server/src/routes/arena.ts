@@ -19,7 +19,7 @@ router.get('/opponents', (req, res) => {
   }
   const list = db
     .prepare(
-      `SELECT id, name, class, level, arena_rating, wins, losses
+      `SELECT id, name, class, level, arena_rating, wins, losses, is_npc
        FROM characters
        WHERE id != ? AND level BETWEEN ? AND ?
        ORDER BY ABS(arena_rating - ?) ASC LIMIT 8`,
@@ -116,10 +116,14 @@ router.post('/challenge', (req, res) => {
     result.winner === 'hero' ? 0 : 1,
     char.id,
   );
-  db.prepare(
-    `UPDATE characters SET arena_rating = ?, wins = wins + ?, losses = losses + ? WHERE id = ?`,
-  ).run(newOppRating, result.winner === 'hero' ? 0 : 1, result.winner === 'hero' ? 1 : 0, opp.id);
+  if (!opp.is_npc) {
+    db.prepare(
+      `UPDATE characters SET arena_rating = ?, wins = wins + ?, losses = losses + ? WHERE id = ?`,
+    ).run(newOppRating, result.winner === 'hero' ? 0 : 1, result.winner === 'hero' ? 1 : 0, opp.id);
+  }
 
+  const replayHero = { ...result.hero, hp: hero.hp };
+  const replayFoe = { ...result.foe, hp: foe.hp };
   db.prepare(
     'INSERT INTO combat_log (character_id, opponent, kind, result, rounds_json, xp_gained, gold_gained, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
   ).run(
@@ -127,7 +131,7 @@ router.post('/challenge', (req, res) => {
     opp.name,
     'pvp',
     result.winner === 'hero' ? 'win' : 'loss',
-    JSON.stringify(result.rounds),
+    JSON.stringify({ hero: replayHero, foe: replayFoe, rounds: result.rounds, victory: result.winner === 'hero' }),
     xpGain,
     result.winner === 'hero' ? 10 + opp.level * 2 : 0,
     Date.now(),
@@ -149,7 +153,7 @@ router.get('/leaderboard', (req, res) => {
   const db = getDb();
   const rows = db
     .prepare(
-      `SELECT id, name, class, level, arena_rating, wins, losses FROM characters
+      `SELECT id, name, class, level, arena_rating, wins, losses, is_npc FROM characters
        ORDER BY arena_rating DESC LIMIT 50`,
     )
     .all();

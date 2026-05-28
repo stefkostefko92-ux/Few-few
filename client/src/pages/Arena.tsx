@@ -65,7 +65,10 @@ export default function Arena(): React.ReactElement {
                 <strong style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)' }}>{o.name}</strong>
                 <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>{o.class} · Lv {o.level}</div>
               </div>
-              <div className="tag">{o.arena_rating} ELO</div>
+              <div className="flex gap-sm">
+                {(o as any).is_npc ? <span className="tag">Trainer</span> : null}
+                <div className="tag">{o.arena_rating} ELO</div>
+              </div>
             </div>
             <div className="muted text-sm" style={{ marginTop: 8 }}>
               {o.wins}W / {o.losses}L

@@ -399,6 +399,16 @@
 }
 .combat-result.victory .title { color: var(--gold-1); }
 .combat-result.defeat .title { color: var(--crimson-1); }
+
+@media (max-width: 800px) {
+  .combat-header { grid-template-columns: 1fr 1fr; padding: 12px; }
+  .combat-vs { display: none; }
+  .combat-field { padding: 0 12px 30px; height: 280px; }
+  .combat-fighter { width: 140px; height: 200px; }
+  .fighter-svg { width: 140px; height: 180px; }
+  .combat-result .title { font-size: 32px; }
+  .intro-screen .title { font-size: 28px; }
+}
 .combat-result .title {
   font-family: var(--font-display);
   font-size: 48px;

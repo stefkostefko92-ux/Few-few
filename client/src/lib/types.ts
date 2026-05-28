@@ -3,7 +3,8 @@ export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export interface Character {
   id: number;
-  user_id: number;
+  user_id: number | null;
+  is_npc?: number;
   name: string;
   class: CharacterClass;
   gender: string;
@@ -174,4 +175,28 @@ export interface MailEntry {
   body: string;
   read_at: number | null;
   created_at: number;
+}
+
+export interface CombatHistoryEntry {
+  id: number;
+  opponent: string;
+  kind: 'pve' | 'pvp' | 'quest';
+  result: 'win' | 'loss' | 'flee';
+  xp_gained: number;
+  gold_gained: number;
+  created_at: number;
+}
+
+export interface CombatReplay {
+  id: number;
+  opponent: string;
+  kind: string;
+  result: string;
+  victory: boolean;
+  xp_gained: number;
+  gold_gained: number;
+  created_at: number;
+  hero: CombatActor;
+  foe: CombatActor;
+  rounds: CombatRound[];
 }

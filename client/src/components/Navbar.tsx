@@ -107,6 +107,12 @@ export default function Navbar(): React.ReactElement {
               <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/mail'); }}>
                 <IconMail /> <span>Mail</span>
               </div>
+              <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/settings'); }}>
+                <IconUser /> <span>Settings</span>
+              </div>
+              <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/help'); }}>
+                <IconUser /> <span>How to Play</span>
+              </div>
               <div className="nav-menu-divider" />
               <div className="nav-menu-item danger" onClick={() => { setOpen(false); logout(); navigate('/login'); }}>
                 <IconLogout /> <span>Sign Out</span>

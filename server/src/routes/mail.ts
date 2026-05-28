@@ -16,7 +16,8 @@ router.get('/', (req, res) => {
   const rows = db
     .prepare('SELECT * FROM mail WHERE character_id = ? ORDER BY created_at DESC')
     .all(char.id);
-  res.json({ mails: rows });
+  const unread = (rows as any[]).filter((m) => !m.read_at).length;
+  res.json({ mails: rows, unread });
 });
 
 router.post('/:id/read', (req, res) => {

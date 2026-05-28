@@ -13,6 +13,7 @@ interface State {
   token: string | null;
   character: Character | null;
   derived: Derived | null;
+  unreadMail: number;
   loading: boolean;
   toasts: Toast[];
 
@@ -22,6 +23,7 @@ interface State {
   logout: () => void;
 
   refreshCharacter: () => Promise<void>;
+  refreshMail: () => Promise<void>;
   setCharacter: (c: Character, d?: Derived | null) => void;
 
   toast: (msg: string, type?: 'info' | 'success' | 'error') => void;
@@ -41,6 +43,7 @@ export const useStore = create<State>((set, get) => ({
   token: getToken(),
   character: null,
   derived: null,
+  unreadMail: 0,
   loading: false,
   toasts: [],
 
@@ -49,6 +52,14 @@ export const useStore = create<State>((set, get) => ({
     try {
       const r = await api.get('/character/me');
       set({ character: r.character, derived: r.derived });
+      try {
+        const m = await api.get('/mail');
+        set({ unreadMail: m.unread ?? 0 });
+      } catch { /* ignore */ }
+      try {
+        const u = await api.get('/account/me');
+        set({ user: u.user });
+      } catch { /* ignore */ }
     } catch {
       setToken(null);
       set({ token: null, character: null });
@@ -64,6 +75,10 @@ export const useStore = create<State>((set, get) => ({
       try {
         const c = await api.get('/character/me');
         set({ character: c.character, derived: c.derived });
+        try {
+          const m = await api.get('/mail');
+          set({ unreadMail: m.unread ?? 0 });
+        } catch { /* ignore */ }
       } catch {
         set({ character: null });
       }
@@ -85,13 +100,22 @@ export const useStore = create<State>((set, get) => ({
 
   logout() {
     setToken(null);
-    set({ token: null, user: null, character: null, derived: null });
+    set({ token: null, user: null, character: null, derived: null, unreadMail: 0 });
   },
 
   async refreshCharacter() {
     try {
       const r = await api.get('/character/me');
       set({ character: r.character, derived: r.derived });
+    } catch {
+      /* ignore */
+    }
+  },
+
+  async refreshMail() {
+    try {
+      const m = await api.get('/mail');
+      set({ unreadMail: m.unread ?? 0 });
     } catch {
       /* ignore */
     }

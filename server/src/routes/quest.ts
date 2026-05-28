@@ -175,6 +175,11 @@ router.post('/start', (req, res) => {
     char.energy,
     char.id,
   );
+  // Reset the foe/hero actors to the start-of-fight HP so the replay shows the full duel.
+  const replayHero = { ...result.hero, hp: result.hero.hp_max };
+  const replayFoe = { ...result.foe, hp: result.foe.hp_max };
+  // Hero was at currentHp at start; preserve that.
+  replayHero.hp = hero.hp;
   db.prepare(
     'INSERT INTO combat_log (character_id, opponent, kind, result, rounds_json, xp_gained, gold_gained, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
   ).run(
@@ -182,7 +187,7 @@ router.post('/start', (req, res) => {
     monster.name,
     'quest',
     result.winner === 'hero' ? 'win' : 'loss',
-    JSON.stringify(result.rounds),
+    JSON.stringify({ hero: replayHero, foe: replayFoe, rounds: result.rounds, victory: result.winner === 'hero' }),
     xpGain,
     goldGain,
     Date.now(),

@@ -33,7 +33,10 @@ export default function Leaderboard(): React.ReactElement {
                   {i + 1}
                 </span>
               </Td>
-              <Td><strong style={{ color: 'var(--text-1)' }}>{r.name}</strong></Td>
+              <Td>
+                <strong style={{ color: 'var(--text-1)' }}>{r.name}</strong>
+                {r.is_npc ? <span className="tag" style={{ marginLeft: 8 }}>NPC</span> : null}
+              </Td>
               <Td style={{ textTransform: 'capitalize' }}>{r.class}</Td>
               <Td>{r.level}</Td>
               <Td><span className="gold">{r.arena_rating}</span></Td>

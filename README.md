@@ -61,6 +61,11 @@ Every fight is rendered as a fully **animated cinematic turn-based duel**:
   `npm run build`, `npm start`.
 - Multi-stage Docker build → single small Alpine runtime image.
 - `docker compose up -d` deploys app + Caddy (auto-HTTPS).
+- **Server unit tests** (node's built-in test runner via `tsx`) cover the
+  combat engine and progression math (`npm test --workspace server`).
+- **15 NPC training dummies** seeded into the arena so PvP matchmaking
+  works from day one. NPC ratings are frozen to keep encounters consistent.
+- Database **backup script** (`deploy/backup.sh`) for SQLite hot snapshots.
 
 ---
 
@@ -80,7 +85,7 @@ Few-few/
 │   └── dist/                # compiled JS (built)
 ├── client/                  # React + Vite SPA
 │   ├── src/
-│   │   ├── pages/           # Login, Register, Character, Dashboard, Quests, QuestRun, Arena, Shop, Inventory, World, Leaderboard, Mail
+│   │   ├── pages/           # Login, Register, Character, Dashboard, Quests, QuestRun, Arena, Shop, Inventory, World, Leaderboard, Mail, History, Settings, Help, NotFound
 │   │   ├── components/      # Navbar, Sidebar, Toasts
 │   │   ├── combat/          # CombatScene + SVG sprites
 │   │   ├── lib/             # api client, zustand store, types, icons
@@ -229,6 +234,11 @@ All authenticated endpoints require `Authorization: Bearer <token>`.
 | `GET`  | `/api/mail` | Inbox |
 | `POST` | `/api/mail/:id/read` | Mark read |
 | `DELETE` | `/api/mail/:id` | Delete |
+| `GET`  | `/api/combat/history` | Recent battles (last 50) |
+| `GET`  | `/api/combat/history/:id` | Full battle replay (hero + foe + rounds) |
+| `GET`  | `/api/account/me` | Account info |
+| `POST` | `/api/account/password` | Change password |
+| `POST` | `/api/account/delete-character` | Delete character (requires `confirm:"DELETE"`) |
 
 Combat resolution is **server-authoritative**. `POST /api/quest/start` and
 `POST /api/arena/challenge` simulate the entire fight on the server and
@@ -263,6 +273,7 @@ client.
 | `CORS_ORIGIN` | `*` | Comma-separated allowed origins |
 | `NODE_ENV` | `development` | `production` quiets request logs |
 | `DOMAIN` | `tanoth.example.com` | Used by the bundled Caddyfile |
+| `RESEED_ON_BOOT` | `1` | Run the seed (idempotent) on each container start |
 
 ---
 

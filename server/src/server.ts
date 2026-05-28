@@ -13,6 +13,8 @@ import shopRoutes from './routes/shop';
 import questRoutes from './routes/quest';
 import arenaRoutes from './routes/arena';
 import mailRoutes from './routes/mail';
+import combatRoutes from './routes/combat';
+import accountRoutes from './routes/account';
 import { getDb } from './db';
 
 const app = express();
@@ -53,6 +55,8 @@ app.use('/api/shop', shopRoutes);
 app.use('/api/quest', questRoutes);
 app.use('/api/arena', arenaRoutes);
 app.use('/api/mail', mailRoutes);
+app.use('/api/combat', combatRoutes);
+app.use('/api/account', accountRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

@@ -38,7 +38,8 @@ interface FxBurst {
 }
 
 export default function CombatScene(props: Props): React.ReactElement {
-  const { hero, foe, rounds, victory, reward, onReplay, onClose, introTitle, speedMs = 1100 } = props;
+  const { hero, foe, rounds, victory, reward, onReplay, onClose, introTitle, speedMs: propSpeed = 1100 } = props;
+  const [speedMs, setSpeedMs] = useState(propSpeed);
   const [roundIdx, setRoundIdx] = useState(-1); // -1 means intro
   const [heroHp, setHeroHp] = useState(hero.hp);
   const [foeHp, setFoeHp] = useState(foe.hp);
@@ -190,9 +191,17 @@ export default function CombatScene(props: Props): React.ReactElement {
 
       {/* Progress */}
       {!done && (
-        <div style={{ position: 'absolute', top: 8, left: 28, right: 28, height: 2, background: 'rgba(255,255,255,.05)', zIndex: 6 }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, var(--gold-2), var(--gold-1))', transition: 'width .4s ease' }} />
-        </div>
+        <>
+          <div style={{ position: 'absolute', top: 8, left: 28, right: 28, height: 2, background: 'rgba(255,255,255,.05)', zIndex: 6 }}>
+            <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, var(--gold-2), var(--gold-1))', transition: 'width .4s ease' }} />
+          </div>
+          <div style={{ position: 'absolute', top: 14, right: 28, zIndex: 7, display: 'flex', gap: 6 }}>
+            <button className="btn btn-sm" onClick={() => setSpeedMs(1500)} title="Slow">.5×</button>
+            <button className="btn btn-sm" onClick={() => setSpeedMs(1100)} title="Normal">1×</button>
+            <button className="btn btn-sm" onClick={() => setSpeedMs(600)} title="Fast">2×</button>
+            <button className="btn btn-sm" onClick={() => setSpeedMs(250)} title="Skip ahead">≫</button>
+          </div>
+        </>
       )}
 
       {done && (

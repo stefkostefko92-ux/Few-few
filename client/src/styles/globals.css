@@ -151,6 +151,24 @@ input:focus, textarea:focus, select:focus {
 
 @media (max-width: 900px) {
   .app-shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .app-main { padding: 20px 16px; }
+}
+
+@media (max-width: 1100px) {
+  .nav-links { display: none; }
+}
+@media (max-width: 700px) {
+  .nav-meta .nav-stat { display: none; }
+  .nav-brand span { display: none; }
+  .nav-profile-info .sub { display: none; }
+  .navbar { padding: 0 12px; }
+  .character-card { grid-template-columns: 1fr; }
+  .character-card .portrait { width: 100%; }
+}
+@media (max-width: 560px) {
+  .panel { padding: 16px; }
+  .grid-cards { grid-template-columns: 1fr; }
 }
 
 /* =====================================================================

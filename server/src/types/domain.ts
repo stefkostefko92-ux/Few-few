@@ -24,7 +24,8 @@ export type EquipSlot =
 
 export interface Character {
   id: number;
-  user_id: number;
+  user_id: number | null;
+  is_npc: number;
   name: string;
   class: CharacterClass;
   gender: string;

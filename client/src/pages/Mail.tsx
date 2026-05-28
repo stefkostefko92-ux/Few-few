@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { useStore } from '../lib/store';
 import type { MailEntry } from '../lib/types';
 
 export default function Mail(): React.ReactElement {
+  const refreshMail = useStore((s) => s.refreshMail);
   const [mails, setMails] = useState<MailEntry[]>([]);
   const [selected, setSelected] = useState<MailEntry | null>(null);
 
   async function load() {
     const r = await api.get('/mail');
     setMails(r.mails);
+    await refreshMail();
   }
   useEffect(() => { load(); }, []);
 

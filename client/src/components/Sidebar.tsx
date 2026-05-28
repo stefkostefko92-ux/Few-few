@@ -10,7 +10,6 @@ import {
   IconCrown,
   IconUser,
   IconMail,
-  IconShield,
 } from '../lib/icons';
 import { useStore } from '../lib/store';
 
@@ -29,37 +28,45 @@ const sections = [
       { to: '/app/quests', label: 'Quests', icon: IconScroll },
       { to: '/app/world', label: 'World Map', icon: IconMap },
       { to: '/app/arena', label: 'Arena', icon: IconSword },
+      { to: '/app/history', label: 'Battle History', icon: IconSword },
     ],
   },
   {
     heading: 'Town',
     items: [
       { to: '/app/shop', label: 'Merchant', icon: IconCoin },
-      { to: '/app/mail', label: 'Mail', icon: IconMail },
+      { to: '/app/mail', label: 'Mail', icon: IconMail, badgeKey: 'mail' as const },
       { to: '/app/leaderboard', label: 'Hall of Fame', icon: IconCrown },
+    ],
+  },
+  {
+    heading: 'Account',
+    items: [
+      { to: '/app/help', label: 'How to Play', icon: IconScroll },
+      { to: '/app/settings', label: 'Settings', icon: IconUser },
     ],
   },
 ];
 
 export default function Sidebar(): React.ReactElement {
   const char = useStore((s) => s.character);
-  const mailBadge = 0; // we could fetch unread count; left as a hook for later
+  const unreadMail = useStore((s) => s.unreadMail);
 
   return (
     <aside className="sidebar">
       {sections.map((sec) => (
         <div key={sec.heading} className="sidebar-section">
           <div className="sidebar-heading">{sec.heading}</div>
-          {sec.items.map((it) => (
+          {sec.items.map((it: any) => (
             <NavLink
               key={it.to}
               to={it.to}
-              end={(it as any).end}
+              end={it.end}
               className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
             >
               <it.icon />
               <span>{it.label}</span>
-              {it.label === 'Mail' && mailBadge > 0 && <span className="badge">{mailBadge}</span>}
+              {it.badgeKey === 'mail' && unreadMail > 0 && <span className="badge">{unreadMail}</span>}
             </NavLink>
           ))}
         </div>

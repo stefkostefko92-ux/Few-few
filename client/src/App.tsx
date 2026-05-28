@@ -18,6 +18,10 @@ import Arena from './pages/Arena';
 import World from './pages/World';
 import Leaderboard from './pages/Leaderboard';
 import Mail from './pages/Mail';
+import History from './pages/History';
+import Settings from './pages/Settings';
+import Help from './pages/Help';
+import NotFound from './pages/NotFound';
 
 function AppLayout(): React.ReactElement {
   return (
@@ -96,6 +100,10 @@ export default function App(): React.ReactElement {
             <Route path="world" element={<World />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="mail" element={<Mail />} />
+            <Route path="history" element={<History />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="help" element={<Help />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/app" replace />} />
         </Routes>
