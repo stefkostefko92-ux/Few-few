@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from './lib/store';
-import { api, getToken } from './lib/api';
+import { getToken } from './lib/api';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toasts from './components/Toasts';
@@ -22,6 +22,14 @@ import History from './pages/History';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
 import NotFound from './pages/NotFound';
+import Landing from './pages/Landing';
+import Daily from './pages/Daily';
+import Wheel from './pages/Wheel';
+import Hunting from './pages/Hunting';
+import Dungeons from './pages/Dungeons';
+import Achievements from './pages/Achievements';
+import Bestiary from './pages/Bestiary';
+import Stats from './pages/Stats';
 
 function AppLayout(): React.ReactElement {
   return (
@@ -67,14 +75,18 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
     );
   }
 
-  // Gate to /login if no token, but allow /login and /register
   const authed = !!token;
   const path = location.pathname;
-  const isAuthRoute = path === '/login' || path === '/register';
+  const isPublic = path === '/' || path === '/login' || path === '/register';
   const isCreateRoute = path === '/create';
 
-  if (!authed && !isAuthRoute) return <Navigate to="/login" replace />;
-  if (authed && isAuthRoute) return <Navigate to={character ? '/app' : '/create'} replace />;
+  // Not signed in: allow public + landing
+  if (!authed && !isPublic) return <Navigate to="/" replace />;
+  // Signed in but on a marketing/auth route: redirect into the app
+  if (authed && (path === '/login' || path === '/register' || path === '/')) {
+    return <Navigate to={character ? '/app' : '/create'} replace />;
+  }
+  // Signed in, has token, no character yet
   if (authed && !character && !isCreateRoute) return <Navigate to="/create" replace />;
   if (authed && character && isCreateRoute) return <Navigate to="/app" replace />;
 
@@ -86,7 +98,7 @@ export default function App(): React.ReactElement {
     <BrowserRouter>
       <Bootstrapper>
         <Routes>
-          <Route path="/" element={<Navigate to="/app" replace />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/create" element={<CharacterCreate />} />
@@ -103,9 +115,16 @@ export default function App(): React.ReactElement {
             <Route path="history" element={<History />} />
             <Route path="settings" element={<Settings />} />
             <Route path="help" element={<Help />} />
+            <Route path="daily" element={<Daily />} />
+            <Route path="wheel" element={<Wheel />} />
+            <Route path="hunting" element={<Hunting />} />
+            <Route path="dungeons" element={<Dungeons />} />
+            <Route path="achievements" element={<Achievements />} />
+            <Route path="bestiary" element={<Bestiary />} />
+            <Route path="stats" element={<Stats />} />
             <Route path="*" element={<NotFound />} />
           </Route>
-          <Route path="*" element={<Navigate to="/app" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Bootstrapper>
     </BrowserRouter>

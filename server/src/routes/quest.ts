@@ -5,6 +5,7 @@ import { authRequired } from '../middleware/auth';
 import { applyXp, regenerateEnergy } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { applyCombatEvent } from '../game/events';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
 
 const router = Router();
@@ -199,6 +200,16 @@ router.post('/start', (req, res) => {
     Date.now(),
   );
 
+  const unlocked = applyCombatEvent(db, {
+    characterId: char.id,
+    victory: result.winner === 'hero',
+    kind: 'quest',
+    xpGained: xpGain,
+    goldGained: goldGain,
+    monsterSlug: monster.slug,
+    newItemSlug: itemRewardSlug || undefined,
+  });
+
   res.json({
     kind: 'combat',
     intro: quest.intro,
@@ -212,6 +223,7 @@ router.post('/start', (req, res) => {
     gold: goldGain,
     itemReward: itemRewardSlug || null,
     levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
+    unlocked,
   });
 });
 

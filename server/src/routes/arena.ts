@@ -5,6 +5,7 @@ import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { applyCombatEvent } from '../game/events';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 
 const router = Router();
@@ -137,6 +138,14 @@ router.post('/challenge', (req, res) => {
     Date.now(),
   );
 
+  const unlocked = applyCombatEvent(db, {
+    characterId: char.id,
+    victory: result.winner === 'hero',
+    kind: 'pvp',
+    xpGained: xpGain,
+    goldGained: result.winner === 'hero' ? 10 + opp.level * 2 : 0,
+  });
+
   res.json({
     success: result.winner === 'hero',
     hero: result.hero,
@@ -146,6 +155,7 @@ router.post('/challenge', (req, res) => {
     newRating: newCharRating,
     xp: xpGain,
     levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
+    unlocked,
   });
 });
 

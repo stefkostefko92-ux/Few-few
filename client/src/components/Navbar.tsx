@@ -20,12 +20,10 @@ import {
 const links = [
   { to: '/app', label: 'Home', icon: IconHome, end: true },
   { to: '/app/quests', label: 'Quests', icon: IconScroll },
+  { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
   { to: '/app/arena', label: 'Arena', icon: IconSword },
-  { to: '/app/inventory', label: 'Inventory', icon: IconBag },
-  { to: '/app/shop', label: 'Shop', icon: IconCoin },
-  { to: '/app/world', label: 'World', icon: IconMap },
-  { to: '/app/leaderboard', label: 'Leaderboard', icon: IconCrown },
-  { to: '/app/mail', label: 'Mail', icon: IconMail },
+  { to: '/app/daily', label: 'Daily', icon: IconBolt },
+  { to: '/app/inventory', label: 'Bag', icon: IconBag },
 ];
 
 export default function Navbar(): React.ReactElement {
@@ -93,7 +91,10 @@ export default function Navbar(): React.ReactElement {
         <div className="nav-profile" ref={menuRef} onClick={() => setOpen((o) => !o)}>
           <div className="nav-avatar">{initials}</div>
           <div className="nav-profile-info">
-            <div className="name">{char?.name || user?.username || 'Guest'}</div>
+            <div className="name">
+              {char?.name || user?.username || 'Guest'}
+              {char?.current_title && <span style={{ color: 'var(--amethyst-1)', marginLeft: 4 }}>, {char.current_title}</span>}
+            </div>
             <div className="sub">
               {char ? `${char.class[0].toUpperCase() + char.class.slice(1)} · Lv ${char.level}` : 'Unbound'}
             </div>

@@ -28,6 +28,7 @@ interface State {
 
   toast: (msg: string, type?: 'info' | 'success' | 'error') => void;
   dismissToast: (id: number) => void;
+  showUnlocks: (unlocks: any[] | undefined | null) => void;
 }
 
 export interface Toast {
@@ -135,5 +136,17 @@ export const useStore = create<State>((set, get) => ({
 
   dismissToast(id) {
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+  },
+
+  showUnlocks(unlocks) {
+    if (!unlocks || unlocks.length === 0) return;
+    for (const u of unlocks) {
+      const msg = `${u.icon || '🏆'}  ${u.name} — ${u.description}`;
+      const id = ++toastId;
+      set((s) => ({ toasts: [...s.toasts, { id, message: msg, type: 'success' as const }] }));
+      setTimeout(() => {
+        set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+      }, 6000);
+    }
   },
 }));

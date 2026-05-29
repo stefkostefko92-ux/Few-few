@@ -7,6 +7,7 @@ import CombatScene from '../combat/CombatScene';
 export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () => void }): React.ReactElement {
   const refresh = useStore((s) => s.refreshCharacter);
   const toast = useStore((s) => s.toast);
+  const showUnlocks = useStore((s) => s.showUnlocks);
   const [stage, setStage] = useState<'intro' | 'fetching' | 'combat' | 'story' | 'error'>('intro');
   const [result, setResult] = useState<QuestResult | null>(null);
   const [err, setErr] = useState('');
@@ -19,6 +20,7 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
       if (r.levelUp?.leveled) {
         toast(`Level Up! ${r.levelUp.fromLevel} → ${r.levelUp.toLevel}`, 'success');
       }
+      showUnlocks((r as any).unlocked);
       await refresh();
       setStage(r.kind === 'combat' ? 'combat' : 'story');
     } catch (e: any) {

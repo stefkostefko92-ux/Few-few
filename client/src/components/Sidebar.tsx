@@ -10,6 +10,8 @@ import {
   IconCrown,
   IconUser,
   IconMail,
+  IconBolt,
+  IconStar,
 } from '../lib/icons';
 import { useStore } from '../lib/store';
 
@@ -20,15 +22,25 @@ const sections = [
       { to: '/app', label: 'Overview', icon: IconHome, end: true },
       { to: '/app/character', label: 'Character', icon: IconUser },
       { to: '/app/inventory', label: 'Inventory', icon: IconBag },
+      { to: '/app/stats', label: 'Statistics', icon: IconCrown },
     ],
   },
   {
     heading: 'Adventure',
     items: [
       { to: '/app/quests', label: 'Quests', icon: IconScroll },
+      { to: '/app/hunting', label: 'Hunting Grounds', icon: IconBolt },
+      { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
       { to: '/app/world', label: 'World Map', icon: IconMap },
       { to: '/app/arena', label: 'Arena', icon: IconSword },
       { to: '/app/history', label: 'Battle History', icon: IconSword },
+    ],
+  },
+  {
+    heading: 'Daily',
+    items: [
+      { to: '/app/daily', label: 'Daily Tribute', icon: IconStar },
+      { to: '/app/wheel', label: 'Wheel of Fortune', icon: IconCoin },
     ],
   },
   {
@@ -37,6 +49,13 @@ const sections = [
       { to: '/app/shop', label: 'Merchant', icon: IconCoin },
       { to: '/app/mail', label: 'Mail', icon: IconMail, badgeKey: 'mail' as const },
       { to: '/app/leaderboard', label: 'Hall of Fame', icon: IconCrown },
+    ],
+  },
+  {
+    heading: 'Lore',
+    items: [
+      { to: '/app/achievements', label: 'Achievements', icon: IconStar },
+      { to: '/app/bestiary', label: 'Bestiary', icon: IconScroll },
     ],
   },
   {

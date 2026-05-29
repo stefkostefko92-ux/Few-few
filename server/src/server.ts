@@ -15,6 +15,13 @@ import arenaRoutes from './routes/arena';
 import mailRoutes from './routes/mail';
 import combatRoutes from './routes/combat';
 import accountRoutes from './routes/account';
+import huntingRoutes from './routes/hunting';
+import dungeonRoutes from './routes/dungeon';
+import dailyRoutes from './routes/daily';
+import wheelRoutes from './routes/wheel';
+import achievementRoutes from './routes/achievements';
+import bestiaryRoutes from './routes/bestiary';
+import statsRoutes from './routes/stats';
 import { getDb } from './db';
 
 const app = express();
@@ -57,6 +64,13 @@ app.use('/api/arena', arenaRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/combat', combatRoutes);
 app.use('/api/account', accountRoutes);
+app.use('/api/hunting', huntingRoutes);
+app.use('/api/dungeon', dungeonRoutes);
+app.use('/api/daily', dailyRoutes);
+app.use('/api/wheel', wheelRoutes);
+app.use('/api/achievements', achievementRoutes);
+app.use('/api/bestiary', bestiaryRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

@@ -35,6 +35,13 @@ export interface Character {
   arena_rating: number;
   wins: number;
   losses: number;
+  battles_won?: number;
+  battles_lost?: number;
+  monsters_slain?: number;
+  total_xp_earned?: number;
+  total_gold_earned?: number;
+  dungeons_cleared?: number;
+  current_title?: string;
 }
 
 export interface Derived {
@@ -199,4 +206,49 @@ export interface CombatReplay {
   hero: CombatActor;
   foe: CombatActor;
   rounds: CombatRound[];
+}
+
+export interface Achievement {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  title: string | null;
+  goldReward: number;
+  xpReward: number;
+  unlocked: boolean;
+  unlocked_at: number | null;
+}
+
+export interface BestiaryEntry {
+  slug: string;
+  name: string;
+  level: number;
+  family: string;
+  region: string;
+  sprite: string;
+  discovered: boolean;
+  kills: number;
+  hp?: number;
+  atk_min?: number;
+  atk_max?: number;
+  defense?: number;
+  xp_reward?: number;
+}
+
+export interface DailyReward {
+  day: number;
+  gold: number;
+  xp: number;
+  item?: string;
+}
+
+export interface UnlockNotice {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  title?: string | null;
+  goldReward?: number;
+  xpReward?: number;
 }

@@ -9,3 +9,4 @@ server/data/
 .idea/
 .vscode/
 client/tsconfig.tsbuildinfo
+screenshots/

@@ -8,6 +8,7 @@ export default function Arena(): React.ReactElement {
   const char = useStore((s) => s.character);
   const refresh = useStore((s) => s.refreshCharacter);
   const toast = useStore((s) => s.toast);
+  const showUnlocks = useStore((s) => s.showUnlocks);
   const [opps, setOpps] = useState<ArenaOpponent[]>([]);
   const [fight, setFight] = useState<ArenaResult | null>(null);
 
@@ -26,6 +27,7 @@ export default function Arena(): React.ReactElement {
       const r = (await api.post('/arena/challenge', { opponentId: id })) as ArenaResult;
       setFight(r);
       if (r.levelUp?.leveled) toast(`Level Up! → ${r.levelUp.toLevel}`, 'success');
+      showUnlocks((r as any).unlocked);
       await refresh();
     } catch (e: any) {
       toast(e.message, 'error');

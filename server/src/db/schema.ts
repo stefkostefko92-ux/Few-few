@@ -169,5 +169,73 @@ export function applySchema(db: Database.Database): void {
       created_at   INTEGER NOT NULL,
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS achievements (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      character_id  INTEGER NOT NULL,
+      slug          TEXT NOT NULL,
+      unlocked_at   INTEGER NOT NULL,
+      UNIQUE(character_id, slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_ach_char ON achievements(character_id);
+
+    CREATE TABLE IF NOT EXISTS bestiary (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      character_id    INTEGER NOT NULL,
+      monster_slug    TEXT NOT NULL,
+      kills           INTEGER NOT NULL DEFAULT 0,
+      first_killed_at INTEGER NOT NULL,
+      last_killed_at  INTEGER NOT NULL,
+      UNIQUE(character_id, monster_slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_bestiary_char ON bestiary(character_id);
+
+    CREATE TABLE IF NOT EXISTS daily_state (
+      character_id    INTEGER PRIMARY KEY,
+      streak          INTEGER NOT NULL DEFAULT 0,
+      longest_streak  INTEGER NOT NULL DEFAULT 0,
+      last_claim_day  INTEGER NOT NULL DEFAULT 0,
+      last_spin_day   INTEGER NOT NULL DEFAULT 0,
+      quests_json     TEXT NOT NULL DEFAULT '[]',
+      completed_json  TEXT NOT NULL DEFAULT '[]',
+      quests_day      INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS dungeon_run (
+      character_id    INTEGER PRIMARY KEY,
+      slug            TEXT NOT NULL,
+      stage           INTEGER NOT NULL DEFAULT 0,
+      hp              INTEGER NOT NULL DEFAULT 0,
+      hp_max          INTEGER NOT NULL DEFAULT 0,
+      gold_pile       INTEGER NOT NULL DEFAULT 0,
+      xp_pile         INTEGER NOT NULL DEFAULT 0,
+      items_json      TEXT NOT NULL DEFAULT '[]',
+      started_at      INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS title_state (
+      character_id    INTEGER PRIMARY KEY,
+      current_title   TEXT NOT NULL DEFAULT '',
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
   `);
+
+  // Idempotent lifetime-stat column additions.
+  const cols = db.prepare(`PRAGMA table_info(characters)`).all() as { name: string }[];
+  const have = new Set(cols.map((c) => c.name));
+  const addColumn = (def: string) => {
+    const name = def.split(/\s+/)[0];
+    if (!have.has(name)) db.exec(`ALTER TABLE characters ADD COLUMN ${def}`);
+  };
+  addColumn('battles_won INTEGER NOT NULL DEFAULT 0');
+  addColumn('battles_lost INTEGER NOT NULL DEFAULT 0');
+  addColumn('monsters_slain INTEGER NOT NULL DEFAULT 0');
+  addColumn('total_xp_earned INTEGER NOT NULL DEFAULT 0');
+  addColumn('total_gold_earned INTEGER NOT NULL DEFAULT 0');
+  addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
+  addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
 }

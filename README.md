@@ -12,6 +12,32 @@ Built for VPS deployment, designed to feel enterprise-grade end to end.
 
 ## Features
 
+### Public landing page
+- A cinematic, gold-and-ember-drifting marketing page at `/` with hero
+  fighters, feature grid, class showcase, world tour, daily-engagement
+  pitch, and conversion CTAs. Unauthenticated visitors land here; signed-in
+  players are deep-linked straight to `/app`.
+
+### Daily engagement
+- **Daily Tribute** — 7-day login streak with stacking gold/XP rewards
+  and milestone potions at days 7, 14, and 30.
+- **Daily Quests** — 3 rotating quests every 24 hours; complete them as
+  part of normal play for 2× XP and 2× gold bonuses.
+- **Wheel of Fortune** — one animated spin per day, weighted draws for
+  gold, XP, potions, rings, energy, or the 500-gold royal jackpot.
+- **Hunting Grounds** — repeatable random encounters per region, 2 energy
+  each, perfect for endless XP/gold farming and bestiary completion.
+- **Multi-stage Dungeons** — 4 dungeons (Forgotten Crypt, Orc Warcamp,
+  Caverns Descent, Pilgrimage of Ash). Survive every stage to claim a sack
+  of loot and a guaranteed item.
+- **27 Achievements + Titles** — level milestones, monster-slayer tiers,
+  arena ratings, gold milestones, streak goals, bestiary completion.
+  Earned titles can be set as your active display name suffix.
+- **Bestiary** — 17 monsters to discover, each tracked with kill counts,
+  first/last killed dates, family, and lore.
+- **Lifetime Statistics** — Battles, win rates, monsters slain, dungeons
+  cleared, quests completed, gold/XP earned, journey length, streaks.
+
 ### Gameplay
 - **Four classes** with distinct stats, sprites, and damage profiles:
   Warrior, Ranger, Mage, Rogue.
@@ -239,6 +265,23 @@ All authenticated endpoints require `Authorization: Bearer <token>`.
 | `GET`  | `/api/account/me` | Account info |
 | `POST` | `/api/account/password` | Change password |
 | `POST` | `/api/account/delete-character` | Delete character (requires `confirm:"DELETE"`) |
+| `GET`  | `/api/daily` | Streak + next reward (canClaim flag) |
+| `POST` | `/api/daily/claim` | Claim today's tribute (gold + XP + milestone items) |
+| `GET`  | `/api/daily/quests` | Today's 3 rotating quests with 2× bonuses |
+| `POST` | `/api/daily/quests/claim` | Claim 2× bonus after completing a daily quest |
+| `GET`  | `/api/wheel` | Wheel state (canSpin, segments) |
+| `POST` | `/api/wheel/spin` | Spin once per day; returns weighted reward |
+| `GET`  | `/api/hunting/regions` | Region list with monster counts + level gates |
+| `POST` | `/api/hunting/hunt` | Cheap (2 EN) random fight in a region |
+| `GET`  | `/api/dungeon` | List dungeons + active run state |
+| `POST` | `/api/dungeon/enter` | Pay energy and start a multi-stage run |
+| `POST` | `/api/dungeon/advance` | Resolve next stage of the active run |
+| `POST` | `/api/dungeon/claim` | Claim rewards after clearing the final stage |
+| `POST` | `/api/dungeon/abandon` | Discard the active run |
+| `GET`  | `/api/achievements` | All achievements + unlocked flags + earned titles |
+| `POST` | `/api/achievements/title` | Set your active title (must have earned it) |
+| `GET`  | `/api/bestiary` | 17 monsters with discovery + kill counts |
+| `GET`  | `/api/stats` | Lifetime statistics dashboard |
 
 Combat resolution is **server-authoritative**. `POST /api/quest/start` and
 `POST /api/arena/challenge` simulate the entire fight on the server and
