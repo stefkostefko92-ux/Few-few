@@ -1,0 +1,196 @@
+// АСО — PostgreSQL schema (concept section 10).
+// Migrations: `prisma migrate deploy` at boot (idempotent). Never `db push` on
+// prod, never DELETE/UPDATE without WHERE. Index on every FK + hot lookup field.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String // argon2id
+  displayName  String
+  role         Role      @default(PLAYER) // 7-level hierarchy
+  locale       String    @default("bg") // bg|it|en
+  chips        BigInt    @default(1000) // virtual, NOT cashable
+  gems         Int       @default(0) // premium currency (Stripe)
+  xp           Int       @default(0)
+  level        Int       @default(1)
+  vipTier      VipTier   @default(NONE)
+  vipUntil     DateTime?
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime  @default(now())
+
+  ratings   RatingPerGame[]
+  inventory InventoryItem[]
+  matches   MatchPlayer[]
+  purchases Purchase[]
+  quests    Quest[]
+
+  @@index([level])
+  @@index([vipTier])
+}
+
+model RatingPerGame {
+  id     String  @id @default(cuid())
+  userId String
+  game   GameKey
+  mmr    Int     @default(1200)
+  games  Int     @default(0)
+  wins   Int     @default(0)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, game])
+  @@index([game, mmr])
+}
+
+model Match {
+  id        String    @id @default(cuid())
+  game      GameKey
+  mode      String
+  seed      String // commit-reveal server seed (S13.2)
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  players   MatchPlayer[]
+
+  @@index([game, startedAt])
+}
+
+model MatchPlayer {
+  id         String  @id @default(cuid())
+  matchId    String
+  userId     String
+  seat       Int
+  result     String? // win|loss|draw
+  mmrDelta   Int     @default(0)
+  chipsDelta BigInt  @default(0)
+  match      Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([matchId])
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  kind       ProductKind
+  sku        String      @unique
+  priceCents Int
+  gems       Int?
+  cosmeticId String?
+  active     Boolean     @default(true)
+  purchases  Purchase[]
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  stripeId  String   @unique
+  status    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([productId])
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  stripeSubId      String   @unique
+  tier             VipTier
+  status           String
+  currentPeriodEnd DateTime
+}
+
+model InventoryItem {
+  id         String  @id @default(cuid())
+  userId     String
+  cosmeticId String
+  equipped   Boolean @default(false)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cosmeticId])
+  @@index([userId])
+}
+
+model Quest {
+  id          String    @id @default(cuid())
+  userId      String
+  key         String
+  progress    Int       @default(0)
+  target      Int
+  period      String
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, period])
+}
+
+model Season {
+  id       String   @id @default(cuid())
+  index    Int      @unique
+  startsAt DateTime
+  endsAt   DateTime
+  active   Boolean
+}
+
+// Stripe webhook idempotency (S11.3): dedupe by event.id.
+model ProcessedEvent {
+  id          String   @id // Stripe event.id
+  type        String
+  processedAt DateTime @default(now())
+}
+
+enum Role {
+  GUEST
+  PLAYER
+  VIP_PLAYER
+  MODERATOR
+  SUPPORT
+  ADMIN
+  OWNER
+}
+
+enum VipTier {
+  NONE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum ProductKind {
+  GEMS
+  COSMETIC
+  VIP_SUB
+  CHIP_PACK
+}
+
+enum GameKey {
+  BELOTE
+  SANTASE
+  SVARA
+  WAR
+  GOFISH
+  KENT
+  CHESS
+  BACKGAMMON
+  DRAUGHTS
+  LUDO
+  RUMMY
+  HOLDEM
+  DOMINO
+  BRIDGE
+  BATTLESHIP
+  DICE
+  BINGO
+  WORDS
+}

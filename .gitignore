@@ -1,0 +1,28 @@
+node_modules/
+dist/
+.next/
+out/
+build/
+coverage/
+.turbo/
+
+# env / secrets — never commit real secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# prisma generated client (regenerated on install)
+packages/db/generated/
