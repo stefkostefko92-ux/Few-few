@@ -4,6 +4,7 @@ import { Badge, Button, cn } from "../ui";
 import { useAuthStore } from "../lib/store";
 import { api } from "../lib/api";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { SettingsToggle } from "./SettingsToggle";
 
 export function Header() {
   const { t } = useTranslation();
@@ -64,6 +65,7 @@ export function Header() {
             </Button>
           </>
         ) : null}
+        <SettingsToggle />
         <LanguageSwitcher />
       </div>
     </header>

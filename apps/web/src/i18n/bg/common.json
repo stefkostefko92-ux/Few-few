@@ -90,5 +90,10 @@
   },
   "common": {
     "loading": "Зареждане…"
+  },
+  "a11y": {
+    "skipToContent": "Към съдържанието",
+    "toggleSound": "Звук вкл./изкл.",
+    "toggleMotion": "Намалено движение"
   }
 }

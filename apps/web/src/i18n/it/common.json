@@ -90,5 +90,10 @@
   },
   "common": {
     "loading": "Caricamento…"
+  },
+  "a11y": {
+    "skipToContent": "Vai al contenuto",
+    "toggleSound": "Attiva/disattiva audio",
+    "toggleMotion": "Movimento ridotto"
   }
 }

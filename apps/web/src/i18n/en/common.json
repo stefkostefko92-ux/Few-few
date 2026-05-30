@@ -90,5 +90,10 @@
   },
   "common": {
     "loading": "Loading…"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "toggleSound": "Toggle sound",
+    "toggleMotion": "Reduced motion"
   }
 }

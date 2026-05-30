@@ -5,6 +5,7 @@ import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { rolloverSeasons } from "./jobs/seasons.js";
 import { cleanupQuests } from "./jobs/quests.js";
+import { detectCollusion } from "./jobs/collusion.js";
 
 const QUEUE_NAME = "aso-maintenance";
 
@@ -14,6 +15,9 @@ const connection: ConnectionOptions = { url: env.REDIS_URL, maxRetriesPerRequest
 const handlers: Record<string, () => Promise<void>> = {
   "season-rollover": rolloverSeasons,
   "quest-cleanup": cleanupQuests,
+  "collusion-scan": async () => {
+    await detectCollusion();
+  },
 };
 
 async function main(): Promise<void> {
@@ -22,6 +26,8 @@ async function main(): Promise<void> {
   // Repeatable schedules (idempotent upserts keyed by jobId).
   await queue.add("season-rollover", {}, { repeat: { every: 60 * 60 * 1000 }, jobId: "season-rollover" });
   await queue.add("quest-cleanup", {}, { repeat: { pattern: "5 0 * * *" }, jobId: "quest-cleanup" });
+  // Collusion scan every 6h — writes moderator flags only (§13.5).
+  await queue.add("collusion-scan", {}, { repeat: { every: 6 * 60 * 60 * 1000 }, jobId: "collusion-scan" });
 
   // Run a rollover immediately at boot so there is always an active season.
   await rolloverSeasons().catch((err) => logger.error({ err }, "initial rollover failed"));

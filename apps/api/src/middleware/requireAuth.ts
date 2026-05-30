@@ -1,7 +1,7 @@
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ACCESS_COOKIE, type AccessTokenClaims } from "@aso/shared";
 import { verifyAccessToken } from "../auth/tokens.js";
-import { unauthorized } from "../http.js";
+import { forbidden, unauthorized } from "../http.js";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -25,4 +25,16 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
   } catch {
     next(unauthorized("Invalid or expired token"));
   }
+}
+
+/** Gate a route to one of the given roles (authz, §14). Use after requireAuth. */
+export function requireRole(...roles: string[]): RequestHandler {
+  return (req, _res, next) => {
+    const role = req.user?.role;
+    if (!role || !roles.includes(role)) {
+      next(forbidden("Insufficient role"));
+      return;
+    }
+    next();
+  };
 }

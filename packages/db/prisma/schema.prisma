@@ -150,6 +150,33 @@ model ProcessedEvent {
   processedAt DateTime @default(now())
 }
 
+// Anti-cheat collusion signals (§13.5). The worker writes flags for human
+// review — never automatic bans. A flag pairs two accounts with the evidence
+// (e.g. unusually skewed head-to-head outcomes) for a moderator to triage.
+model CollusionFlag {
+  id        String   @id @default(cuid())
+  game      GameKey
+  userAId   String
+  userBId   String
+  reason    String // heuristic key, e.g. "skewed_h2h"
+  score     Float // severity 0..1
+  details   String // JSON blob of supporting stats
+  status    FlagStatus @default(OPEN)
+  createdAt DateTime @default(now())
+  reviewedAt DateTime?
+
+  @@index([status, game])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+enum FlagStatus {
+  OPEN
+  REVIEWING
+  DISMISSED
+  CONFIRMED
+}
+
 enum Role {
   GUEST
   PLAYER

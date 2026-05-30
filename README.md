@@ -87,7 +87,13 @@ infra/        Dockerfiles, docker-compose, nginx
       HowTo/FAQPage per game), canonical + hreflang (bg/it/en/x-default),
       OpenGraph + Twitter, generated sitemap.xml + robots.txt + llms.txt.
       Betting-game pages carry the §11.4 social-gaming notice.
-- [ ] S9 — polish, anti-cheat signals, observability
+- [x] **S9 — polish, anti-cheat signals, observability**: CollusionFlag model +
+      worker scan (skewed head-to-head heuristic → moderator flags, never
+      auto-bans, §13.5); staff-only moderation API (list/triage flags) +
+      metrics endpoint (role-gated); web accessibility pass (skip-link,
+      mute + reduced-motion settings persisted, WebAudio sound cues honouring
+      mute) + a11y i18n. E2E: metrics 403/200 by role, collusion flag raised &
+      triaged, player blocked from admin.
 
 ## Develop
 
