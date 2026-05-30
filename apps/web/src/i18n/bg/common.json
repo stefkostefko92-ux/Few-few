@@ -28,6 +28,19 @@
     "comingSoon": "Очаквай скоро",
     "play": "Играй"
   },
+  "game": {
+    "searching": "Търсим съперник…",
+    "yourTurn": "Твой ход",
+    "opponentTurn": "Ход на съперника",
+    "opponent": "Съперник",
+    "you": "Ти",
+    "gameOver": "Край",
+    "youWin": "Победа!",
+    "youLose": "Загуба",
+    "draw": "Равенство",
+    "leave": "Напусни",
+    "backToLobby": "Към лобито"
+  },
   "wallet": {
     "chips": "Чипове",
     "gems": "Скъпоценни камъни",

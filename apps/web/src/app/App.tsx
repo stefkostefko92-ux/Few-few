@@ -39,6 +39,7 @@ export function App() {
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
           <Route index element={<Lobby />} />
+          <Route path="play/:game" element={<GameView />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

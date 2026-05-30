@@ -18,7 +18,7 @@ Socket.IO (realtime). pnpm + Turborepo monorepo.
 ```
 apps/
   api/        Express 5 REST (auth, profile, shop, stripe, leaderboard)
-  realtime/   Socket.IO game server          (S3)
+  realtime/   Socket.IO game server (matchmaking + room authority + bots)
   worker/     BullMQ jobs                     (S6)
   web/        React + Vite shell              (S1)
 packages/
@@ -46,7 +46,14 @@ infra/        Dockerfiles, docker-compose, nginx
       (full rules: bar/hits/bearing-off/gammon) engines, random-bot playout
       driver. Vitest: Fool's-mate → checkmate, full backgammon game to a winner,
       deterministic replay (13 tests).
-- [ ] S3 — realtime server + first end-to-end game (chess)
+- [x] **S3 — realtime server + chess end-to-end**: `apps/realtime` Socket.IO
+      server with JWT-cookie handshake auth, Redis adapter (multi-instance),
+      `/health`; MMR matchmaking on Redis ZSETs with widening window + bot
+      fallback; authoritative `GameRoom` (validates every action vs
+      `legalActions`, `redact` per seat, drives bot turns); per-game Elo +
+      chips/xp persisted in a transaction; React chess board (interactive,
+      legal-move highlights, orientation) wired over the socket. E2E: two
+      players + player-vs-bot play full games via matchmaking, ratings update.
 - [ ] S4–S9 — see concept doc
 
 ## Develop

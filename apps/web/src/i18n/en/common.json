@@ -28,6 +28,19 @@
     "comingSoon": "Coming soon",
     "play": "Play"
   },
+  "game": {
+    "searching": "Finding an opponent…",
+    "yourTurn": "Your turn",
+    "opponentTurn": "Opponent's turn",
+    "opponent": "Opponent",
+    "you": "You",
+    "gameOver": "Game over",
+    "youWin": "You win!",
+    "youLose": "You lose",
+    "draw": "Draw",
+    "leave": "Leave",
+    "backToLobby": "Back to lobby"
+  },
   "wallet": {
     "chips": "Chips",
     "gems": "Gems",

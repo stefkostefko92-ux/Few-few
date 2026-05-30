@@ -12,7 +12,7 @@ export interface GameCard {
 
 /** The full 18-game roster (§2), in lobby display order. */
 export const GAME_CATALOG: GameCard[] = [
-  { key: "CHESS", title: "Шах", players: "2", ready: false, glyph: "♞" },
+  { key: "CHESS", title: "Шах", players: "2", ready: true, glyph: "♞" },
   { key: "BACKGAMMON", title: "Табла", players: "2", ready: false, glyph: "⚀" },
   { key: "BELOTE", title: "Белот", players: "4", ready: false, glyph: "♠" },
   { key: "SANTASE", title: "Сантасе (66)", players: "2", ready: false, glyph: "♥" },

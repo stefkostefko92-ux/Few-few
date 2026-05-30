@@ -28,6 +28,19 @@
     "comingSoon": "Prossimamente",
     "play": "Gioca"
   },
+  "game": {
+    "searching": "Ricerca di un avversario…",
+    "yourTurn": "Il tuo turno",
+    "opponentTurn": "Turno dell'avversario",
+    "opponent": "Avversario",
+    "you": "Tu",
+    "gameOver": "Partita finita",
+    "youWin": "Hai vinto!",
+    "youLose": "Hai perso",
+    "draw": "Pareggio",
+    "leave": "Esci",
+    "backToLobby": "Torna alla lobby"
+  },
   "wallet": {
     "chips": "Fiche",
     "gems": "Gemme",
