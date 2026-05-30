@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character, Item, InventoryEntry } from '../types/domain';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
@@ -75,6 +76,15 @@ router.post('/equip', (req, res) => {
   // Unequip anything currently in that slot
   db.prepare("UPDATE inventory SET equipped = 0, slot = '' WHERE character_id = ? AND slot = ?").run(char.id, slot);
   db.prepare('UPDATE inventory SET equipped = 1, slot = ? WHERE id = ?').run(slot, row.inv_id);
+  logFromRequest(req, {
+    category: 'inventory',
+    action: 'equipped',
+    character_id: char.id,
+    target_id: row.id,
+    target_type: 'item',
+    message: `${char.name} equipped ${row.name}`,
+    meta: { slot, item_name: row.name, rarity: row.rarity, tier: row.tier },
+  });
   res.json({ ok: true });
 });
 

@@ -70,30 +70,20 @@ export default function Navbar(): React.ReactElement {
       <div className="nav-meta">
         {char && (
           <>
-            <div className="nav-stat hp-stat" title="Health">
+            <div className="nav-stat hp-stat" title={`Health · ${char.hp_max}`}>
               <span className="nav-stat-dot dot-hp" />
               <span className="label">HP</span>
-              <span className="value hp">
-                <AnimatedNumber value={char.hp} />
-                <span style={{ color: 'var(--text-4)', margin: '0 2px' }}>/</span>
-                <AnimatedNumber value={char.hp_max} />
-              </span>
+              <span className="value hp"><AnimatedNumber value={char.hp_max} /></span>
             </div>
-            <div className="nav-stat en-stat" title="Energy">
+            <div className="nav-stat en-stat" title={`Energy · ${char.energy} / ${char.energy_max}`}>
               <span className="nav-stat-dot dot-energy" />
               <span className="label">EN</span>
-              <span className="value energy">
-                <AnimatedNumber value={char.energy} />
-                <span style={{ color: 'var(--text-4)', margin: '0 2px' }}>/</span>
-                <AnimatedNumber value={char.energy_max} />
-              </span>
+              <span className="value energy"><AnimatedNumber value={char.energy} /></span>
             </div>
-            <div className="nav-stat gp-stat" title="Gold">
+            <div className="nav-stat gp-stat" title={`Gold · ${char.gold.toLocaleString()}`}>
               <span className="nav-stat-dot dot-gold" />
               <span className="label">GP</span>
-              <span className="value gold">
-                <AnimatedNumber value={char.gold} />
-              </span>
+              <span className="value gold"><AnimatedNumber value={char.gold} /></span>
             </div>
             <div className="nav-stat gem-stat" title="Gems · premium currency" onClick={() => navigate('/app/premium')} style={{ cursor: 'pointer' }}>
               <span className="nav-stat-dot dot-gem" />

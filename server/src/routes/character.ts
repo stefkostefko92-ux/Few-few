@@ -6,6 +6,7 @@ import { classBaseStats, regenerateEnergy } from '../game/progression';
 import { deriveStats } from '../game/stats';
 import { STAT_KEYS, parseCounts, nextUpgradeCost, batchCost, type StatKey } from '../game/upgrade';
 import type { Character, CharacterClass, InventoryEntry, Item } from '../types/domain';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
@@ -114,6 +115,13 @@ router.post('/create', (req, res) => {
   );
 
   const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(charId) as Character;
+  logFromRequest(req, {
+    category: 'character',
+    action: 'created',
+    character_id: charId,
+    message: `New ${cls} ${name} stepped into the realm`,
+    meta: { name, class: cls, gender, portrait },
+  });
   res.status(201).json({ character: char });
 });
 
@@ -216,6 +224,13 @@ router.post('/upgrade-stat', (req, res) => {
   db.prepare(
     `UPDATE characters SET ${stat} = ${stat} + ?, gold = gold - ?, stat_upgrades = ? WHERE id = ?`,
   ).run(want, totalCost, JSON.stringify(counts), char.id);
+  logFromRequest(req, {
+    category: 'character',
+    action: 'upgrade_stat',
+    character_id: char.id,
+    message: `${char.name} +${want} ${stat} for ${totalCost}g`,
+    meta: { stat, count: want, gold_spent: totalCost, new_value: (char as any)[stat] + want, new_upgrades: currentCount + want },
+  });
   res.json({
     ok: true,
     stat,

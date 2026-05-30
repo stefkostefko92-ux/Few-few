@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { PRODUCTS, findProduct } from '../seed/products';
 import type { Character } from '../types/domain';
+import { logFromRequest, logEvent } from '../lib/logger';
 
 const router = Router();
 
@@ -96,6 +97,16 @@ router.post('/checkout', async (req, res) => {
   }
   const purchaseId = info.lastInsertRowid as number;
 
+  logFromRequest(req, {
+    category: 'payment',
+    action: 'checkout_started',
+    character_id: char.id,
+    target_id: purchaseId,
+    target_type: 'purchase',
+    message: `Started checkout for ${product.name}`,
+    meta: { kind: product.kind, price_cents: product.price_cents, currency: product.currency, mode: isDevMode() ? 'dev' : 'stripe' },
+  });
+
   if (isDevMode()) {
     // Return a redirect URL that completes the purchase on visit.
     const origin = req.headers.origin || `http://${req.headers.host}`;
@@ -172,6 +183,17 @@ function applyPurchase(purchaseId: number): { ok: true; granted: any } | { ok: f
     db.prepare(`UPDATE characters SET ${updates.join(', ')} WHERE id = ?`).run(...params);
   }
   db.prepare(`UPDATE purchases SET status = 'completed', completed_at = ? WHERE id = ?`).run(Date.now(), purchaseId);
+
+  logEvent({
+    category: 'payment',
+    action: 'completed',
+    level: 'info',
+    character_id: char.id,
+    target_id: purchaseId,
+    target_type: 'purchase',
+    message: `Granted ${row.kind} to ${char.name}`,
+    meta: { kind: row.kind, amount_cents: row.amount_cents, currency: row.currency, granted: effects },
+  });
 
   // Mail receipt
   db.prepare(

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character, Item } from '../types/domain';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
@@ -93,6 +94,15 @@ router.post('/sell', (req, res) => {
      VALUES (?, ?, ?, ?, 'active', ?)`,
   ).run(row.inv_id, row.id, char.id, parse.data.priceGold, now);
   db.prepare('UPDATE inventory SET listed = 1 WHERE id = ?').run(row.inv_id);
+  logFromRequest(req, {
+    category: 'market',
+    action: 'listing_created',
+    character_id: char.id,
+    target_id: row.id,
+    target_type: 'item',
+    message: `${char.name} listed ${row.name} for ${parse.data.priceGold}g`,
+    meta: { inventory_id: row.inv_id, item_id: row.id, price_gold: parse.data.priceGold, item_name: row.name, category: row.category, rarity: row.rarity },
+  });
   res.json({ ok: true });
 });
 
@@ -145,6 +155,18 @@ router.post('/buy', (req, res) => {
       );
   });
   tx();
+  logFromRequest(req, {
+    category: 'market',
+    action: 'purchased',
+    character_id: char.id,
+    target_id: listing.seller_id,
+    target_type: 'character',
+    message: `${char.name} bought ${item.name} for ${listing.price_gold}g`,
+    meta: {
+      listing_id: listing.id, item_id: item.id, item_name: item.name, rarity: item.rarity,
+      price_gold: listing.price_gold, seller_id: listing.seller_id, seller_cut: sellerCut, market_fee_pct: MARKET_FEE_PCT,
+    },
+  });
   res.json({ ok: true, item_name: item.name, paid: listing.price_gold });
 });
 
@@ -167,6 +189,15 @@ router.post('/cancel', (req, res) => {
     db.prepare('UPDATE inventory SET listed = 0 WHERE id = ?').run(listing.inventory_id);
   });
   tx();
+  logFromRequest(req, {
+    category: 'market',
+    action: 'listing_cancelled',
+    character_id: char.id,
+    target_id: listing.id,
+    target_type: 'listing',
+    message: `${char.name} cancelled listing #${listing.id}`,
+    meta: { listing_id: listing.id, inventory_id: listing.inventory_id, price_gold: listing.price_gold },
+  });
   res.json({ ok: true });
 });
 

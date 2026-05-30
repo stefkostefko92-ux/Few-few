@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
 import { DUNGEONS, findDungeon } from '../seed/dungeons';
 import type { Character, Item, InventoryEntry, Monster } from '../types/domain';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
@@ -171,6 +172,15 @@ router.post('/advance', (req, res) => {
     xpGained: 0,
     goldGained: 0,
     monsterSlug: monster.slug,
+  });
+
+  logFromRequest(req, {
+    category: 'combat',
+    action: result.winner === 'hero' ? 'dungeon_stage_clear' : 'dungeon_wipe',
+    character_id: char.id,
+    target_type: 'dungeon',
+    message: `${char.name} ${result.winner === 'hero' ? 'cleared' : 'fell on'} ${dungeon.name} stage ${run.stage + 1}`,
+    meta: { dungeon: dungeon.slug, stage: run.stage + 1, total_stages: dungeon.stages.length, monster: monster.slug, rounds: result.rounds.length },
   });
 
   const updatedRun = db.prepare('SELECT * FROM dungeon_run WHERE character_id = ?').get(char.id) as any;

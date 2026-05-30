@@ -15,7 +15,9 @@ import {
   IconChart,
   IconSkull,
   IconChevron,
+  IconFlame,
 } from '../lib/icons';
+import Avatar from './Avatar';
 import { useStore } from '../lib/store';
 
 interface SectionDef {
@@ -39,6 +41,7 @@ const SECTIONS: SectionDef[] = [
     items: [
       { to: '/app/quests', label: 'Quests', icon: IconScroll },
       { to: '/app/hunting', label: 'Hunting Grounds', icon: IconBolt },
+      { to: '/app/camp', label: 'Camp · Idle Tasks', icon: IconFlame },
       { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
       { to: '/app/world', label: 'World Map', icon: IconMap },
       { to: '/app/arena', label: 'Arena', icon: IconSword },
@@ -95,6 +98,19 @@ export default function Sidebar(): React.ReactElement {
 
   return (
     <aside className="sidebar">
+      {char && (
+        <div className="sidebar-hero">
+          <div className="sidebar-hero-frame">
+            <Avatar avatar={(char as any).avatar || `${char.class}_01`} frame={(char as any).frame_slug || 'plain'} size={56} />
+            <div className="sidebar-hero-lvl">{char.level}</div>
+          </div>
+          <div className="sidebar-hero-meta">
+            <div className="sidebar-hero-name">{char.name}</div>
+            {(char as any).current_title && <div className="sidebar-hero-title">{(char as any).current_title}</div>}
+            <div className="sidebar-hero-class">{char.class.toUpperCase()} · LV {char.level}</div>
+          </div>
+        </div>
+      )}
       {SECTIONS.map((sec) => (
         <div key={sec.heading} className={`sidebar-section ${collapsed[sec.heading] ? 'collapsed' : ''}`}>
           <div className="sidebar-heading" onClick={() => toggle(sec.heading)}>

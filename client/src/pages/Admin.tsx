@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
-import { IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog } from '../lib/icons';
+import { IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog, IconBolt, IconTrash } from '../lib/icons';
 import '../styles/admin.css';
 
 /* ===== Layout ===== */
@@ -32,6 +32,12 @@ export function AdminLayout(): React.ReactElement {
         <NavLink to="/admin/settings" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconCog size={16} /> <span>Game Settings</span>
         </NavLink>
+        <NavLink to="/admin/logs" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconChart size={16} /> <span>Event Logs</span>
+        </NavLink>
+        <NavLink to="/admin/webhooks" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconBolt size={16} /> <span>Webhooks</span>
+        </NavLink>
         <NavLink to="/admin/broadcast" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconMail size={16} /> <span>Broadcast</span>
         </NavLink>
@@ -57,6 +63,8 @@ export default function Admin(): React.ReactElement {
         <Route path="users" element={<Users />} />
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="settings" element={<GameSettings />} />
+        <Route path="logs" element={<EventLogs />} />
+        <Route path="webhooks" element={<Webhooks />} />
         <Route path="broadcast" element={<Broadcast />} />
         <Route path="server" element={<Server />} />
       </Route>
@@ -686,6 +694,149 @@ function Marketplace() {
                   <button className="btn btn-sm btn-danger" onClick={() => destroy(m.id)}>Cancel</button>
                 )}
               </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+/* ===== Event Logs ===== */
+function EventLogs() {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  const [category, setCategory] = useState('');
+  const [level, setLevel] = useState('');
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  async function load() {
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (level) params.set('level', level);
+    try {
+      const r = await api.get(`/admin/logs?${params.toString()}`);
+      setRows(r.logs);
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, [category, level]);
+
+  return (
+    <>
+      <div className="admin-toolbar">
+        <h1>Event Logs <span className="muted" style={{ fontSize: 14 }}>({rows.length})</span></h1>
+        <div className="flex gap-sm">
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">All categories</option>
+            {['auth','character','combat','inventory','market','guild','payment','admin','daily','wheel','achievement','camp','system','security'].map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select value={level} onChange={(e) => setLevel(e.target.value)}>
+            <option value="">All levels</option>
+            <option value="info">info</option>
+            <option value="warn">warn</option>
+            <option value="error">error</option>
+            <option value="debug">debug</option>
+          </select>
+          <button className="btn btn-sm" onClick={load}>Refresh</button>
+        </div>
+      </div>
+      <table className="admin-table">
+        <thead>
+          <tr><th>Time</th><th>Level</th><th>Category · Action</th><th>User</th><th>IP / Country</th><th>Message</th><th>WH</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <React.Fragment key={r.id}>
+              <tr onClick={() => setExpanded(expanded === r.id ? null : r.id)} style={{ cursor: 'pointer' }}>
+                <td className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>{new Date(r.ts).toLocaleTimeString()}</td>
+                <td>
+                  <span className={`tag ${r.level === 'error' ? 'crimson' : r.level === 'warn' ? 'gold' : r.level === 'debug' ? '' : 'emerald'}`}>
+                    {r.level}
+                  </span>
+                </td>
+                <td><strong>{r.category}.{r.action}</strong></td>
+                <td className="muted">{r.user_id ?? '—'}</td>
+                <td className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
+                  {r.ip || '—'}{r.country ? <span className="tag" style={{ marginLeft: 4 }}>{r.country}</span> : null}
+                </td>
+                <td className="muted">{r.message}</td>
+                <td>{r.webhook_sent ? <span className="tag emerald">✓</span> : <span className="muted text-sm">—</span>}</td>
+              </tr>
+              {expanded === r.id && r.meta_json && r.meta_json !== '{}' && (
+                <tr><td colSpan={7} style={{ background: 'var(--bg-1)' }}>
+                  <pre style={{ margin: 0, padding: 14, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>
+                    {JSON.stringify(JSON.parse(r.meta_json), null, 2)}
+                  </pre>
+                </td></tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+/* ===== Webhook endpoints ===== */
+function Webhooks() {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  const [draft, setDraft] = useState({ url: '', secret: '', category_filter: '*', enabled: true });
+
+  async function load() {
+    try { setRows((await api.get('/admin/webhooks')).webhooks); }
+    catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function add() {
+    try {
+      await api.post('/admin/webhooks', draft);
+      toast('Webhook added.', 'success');
+      setDraft({ url: '', secret: '', category_filter: '*', enabled: true });
+      load();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+  async function del(id: number) {
+    if (!confirm('Delete this webhook endpoint?')) return;
+    try { await api.delete(`/admin/webhooks/${id}`); load(); }
+    catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  return (
+    <>
+      <div className="admin-toolbar"><h1>Webhook Endpoints <span className="muted" style={{ fontSize: 14 }}>({rows.length})</span></h1></div>
+      <p className="muted" style={{ marginBottom: 14 }}>
+        Every event posts <code>POST {'<url>'}</code> with the full log JSON. Filter by category (e.g. <code>payment,admin</code>) or use <code>*</code> for all. If a secret is set, requests carry <code>X-Signature: sha256={'<hmac>'}</code>.
+      </p>
+      <div className="card" style={{ marginBottom: 18 }}>
+        <div className="field-grid">
+          <div className="field"><label>URL</label><input value={draft.url} onChange={(e) => setDraft({ ...draft, url: e.target.value })} placeholder="https://example.com/hooks/nexus" style={{ width: '100%' }} /></div>
+          <div className="field"><label>Secret (optional)</label><input value={draft.secret} onChange={(e) => setDraft({ ...draft, secret: e.target.value })} placeholder="HMAC signing secret" style={{ width: '100%' }} /></div>
+        </div>
+        <div className="field-grid">
+          <div className="field"><label>Category filter</label><input value={draft.category_filter} onChange={(e) => setDraft({ ...draft, category_filter: e.target.value })} placeholder="* or auth,payment,combat" style={{ width: '100%' }} /></div>
+          <div className="field"><label>Enabled</label>
+            <select value={draft.enabled ? 'true' : 'false'} onChange={(e) => setDraft({ ...draft, enabled: e.target.value === 'true' })} style={{ width: '100%' }}>
+              <option value="true">Yes</option><option value="false">No</option>
+            </select>
+          </div>
+        </div>
+        <button className="btn btn-primary" disabled={!draft.url.startsWith('http')} onClick={add}>Add Endpoint</button>
+      </div>
+      <table className="admin-table">
+        <thead><tr><th>URL</th><th>Filter</th><th>Status</th><th>Last call</th><th>Failures</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((w) => (
+            <tr key={w.id}>
+              <td><code style={{ fontSize: 11 }}>{w.url}</code></td>
+              <td><span className="tag">{w.category_filter}</span></td>
+              <td>{w.enabled ? <span className="tag emerald">on</span> : <span className="tag">off</span>} {w.last_status ? <span className="muted text-sm" style={{ marginLeft: 6 }}>{w.last_status}</span> : null}</td>
+              <td className="muted text-sm">{w.last_called_at ? new Date(w.last_called_at).toLocaleString() : '—'}</td>
+              <td className="muted text-sm">{w.failures}</td>
+              <td><button className="btn btn-sm btn-danger" onClick={() => del(w.id)}><IconTrash size={12} /></button></td>
             </tr>
           ))}
         </tbody>

@@ -4,9 +4,30 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired, adminRequired);
+
+// Audit every mutating admin call — POST/PUT/PATCH/DELETE.
+// Logs the route, body keys, and target id (when /:id appears in the path).
+router.use((req, _res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  // /webhooks endpoints have their own webhook category — skip to avoid an infinite loop.
+  if (req.path.startsWith('/webhooks')) return next();
+  const bodyKeys = req.body && typeof req.body === 'object' ? Object.keys(req.body).filter((k) => k !== 'password') : [];
+  const idMatch = req.path.match(/\/(\d+)(?:\b|$)/);
+  logFromRequest(req, {
+    category: 'admin',
+    action: `${req.method.toLowerCase()}_${req.path.replace(/^\//, '').split('/')[0] || 'root'}`,
+    level: req.method === 'DELETE' ? 'warn' : 'info',
+    target_id: idMatch ? Number(idMatch[1]) : null,
+    target_type: req.path.replace(/^\//, '').split('/')[0] || '',
+    message: `Admin ${req.method} ${req.path}`,
+    meta: { body_keys: bodyKeys },
+  });
+  next();
+});
 
 /* =========================================================
    Dashboard / overview
@@ -378,6 +399,50 @@ router.delete('/marketplace/:id', (req, res) => {
   if (!row) { res.status(404).json({ error: 'Listing not found' }); return; }
   db.prepare(`UPDATE marketplace_listings SET status = 'cancelled' WHERE id = ?`).run(id);
   if (row.inventory_id) db.prepare('UPDATE inventory SET listed = 0 WHERE id = ?').run(row.inventory_id);
+  res.json({ ok: true });
+});
+
+/* ===== Event logs ===== */
+router.get('/logs', (req, res) => {
+  const limit = Math.min(500, Number(req.query.limit) || 100);
+  const before = Number(req.query.before) || Date.now() + 1;
+  const category = (req.query.category as string) || '';
+  const level = (req.query.level as string) || '';
+  const params: any[] = [before];
+  let where = 'WHERE ts < ?';
+  if (category) { where += ' AND category = ?'; params.push(category); }
+  if (level)    { where += ' AND level = ?';    params.push(level); }
+  const rows = getDb()
+    .prepare(`SELECT id, ts, category, action, level, user_id, character_id, ip, country, route, message, meta_json, webhook_sent
+              FROM event_log ${where} ORDER BY ts DESC LIMIT ?`)
+    .all(...params, limit);
+  res.json({ logs: rows });
+});
+
+/* ===== Webhook endpoints ===== */
+router.get('/webhooks', (_req, res) => {
+  const rows = getDb().prepare('SELECT * FROM webhook_endpoints ORDER BY created_at DESC').all();
+  res.json({ webhooks: rows });
+});
+
+const webhookSchema = z.object({
+  url: z.string().url(),
+  secret: z.string().max(120).default(''),
+  category_filter: z.string().max(120).default('*'),
+  enabled: z.boolean().default(true),
+});
+
+router.post('/webhooks', (req, res) => {
+  const parse = webhookSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  getDb()
+    .prepare('INSERT INTO webhook_endpoints (url, secret, category_filter, enabled, created_at) VALUES (?, ?, ?, ?, ?)')
+    .run(parse.data.url, parse.data.secret, parse.data.category_filter, parse.data.enabled ? 1 : 0, Date.now());
+  res.json({ ok: true });
+});
+
+router.delete('/webhooks/:id', (req, res) => {
+  getDb().prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(Number(req.params.id));
   res.json({ ok: true });
 });
 

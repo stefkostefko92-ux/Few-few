@@ -28,6 +28,7 @@ import profileRoutes from './routes/profile';
 import guildRoutes from './routes/guild';
 import paymentsRoutes from './routes/payments';
 import marketRoutes from './routes/market';
+import campRoutes from './routes/camp';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
 
@@ -86,6 +87,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/guild', guildRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api/camp', campRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { signToken } from '../middleware/auth';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 
@@ -32,6 +33,7 @@ router.post('/register', async (req, res) => {
     .run(username, email, hash, now, now);
   const uid = info.lastInsertRowid as number;
   const token = signToken({ uid, username });
+  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email } });
   res.status(201).json({ token, user: { id: uid, username, email, is_admin: 0 } });
 });
 
@@ -52,16 +54,19 @@ router.post('/login', async (req, res) => {
     .prepare('SELECT id, username, email, password_hash, is_admin FROM users WHERE username = ? OR email = ?')
     .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number } | undefined;
   if (!user) {
+    logFromRequest(req, { category: 'auth', action: 'login_failed', level: 'warn', message: `Unknown identifier ${username}` });
     res.status(401).json({ error: 'Invalid credentials' });
     return;
   }
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) {
+    logFromRequest(req, { category: 'auth', action: 'login_failed', level: 'warn', user_id: user.id, message: `Bad password for ${user.username}` });
     res.status(401).json({ error: 'Invalid credentials' });
     return;
   }
   db.prepare('UPDATE users SET last_seen_at = ? WHERE id = ?').run(Date.now(), user.id);
   const token = signToken({ uid: user.id, username: user.username });
+  logFromRequest(req, { category: 'auth', action: 'login', user_id: user.id, message: `Login ${user.username}` });
   res.json({ token, user: { id: user.id, username: user.username, email: user.email, is_admin: user.is_admin } });
 });
 

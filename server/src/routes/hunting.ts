@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
@@ -142,6 +143,15 @@ router.post('/hunt', (req, res) => {
     xpGained: xpGain,
     goldGained: goldGain,
     monsterSlug: monster.slug,
+  });
+
+  logFromRequest(req, {
+    category: 'combat',
+    action: result.winner === 'hero' ? 'hunt_kill' : 'hunt_loss',
+    character_id: char.id,
+    target_type: 'monster',
+    message: `${char.name} ${result.winner === 'hero' ? 'slew' : 'fell to'} ${monster.name}`,
+    meta: { kind: 'hunt', monster: monster.slug, monster_name: monster.name, monster_level: monster.level, rounds: result.rounds.length, xp: xpGain, gold: goldGain },
   });
 
   res.json({

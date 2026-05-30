@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
+import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
@@ -144,6 +145,19 @@ router.post('/challenge', (req, res) => {
     kind: 'pvp',
     xpGained: xpGain,
     goldGained: result.winner === 'hero' ? 10 + opp.level * 2 : 0,
+  });
+
+  logFromRequest(req, {
+    category: 'combat',
+    action: result.winner === 'hero' ? 'arena_win' : 'arena_loss',
+    character_id: char.id,
+    target_id: opp.id,
+    target_type: 'character',
+    message: `${char.name} ${result.winner === 'hero' ? 'defeated' : 'lost to'} ${opp.name}`,
+    meta: {
+      kind: 'pvp', opponent: opp.name, opponent_level: opp.level, rounds: result.rounds.length,
+      xp: xpGain, gold: result.winner === 'hero' ? 10 + opp.level * 2 : 0, rating_delta: delta, new_rating: newCharRating,
+    },
   });
 
   res.json({

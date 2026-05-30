@@ -380,6 +380,49 @@ export function applySchema(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_purchases_char ON purchases(character_id);
     CREATE INDEX IF NOT EXISTS idx_purchases_session ON purchases(stripe_session_id);
 
+    CREATE TABLE IF NOT EXISTS event_log (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      ts            INTEGER NOT NULL,
+      category      TEXT NOT NULL,
+      action        TEXT NOT NULL,
+      level         TEXT NOT NULL DEFAULT 'info',
+      user_id       INTEGER,
+      character_id  INTEGER,
+      target_id     INTEGER,
+      target_type   TEXT,
+      ip            TEXT NOT NULL DEFAULT '',
+      country       TEXT NOT NULL DEFAULT '',
+      route         TEXT NOT NULL DEFAULT '',
+      message       TEXT NOT NULL DEFAULT '',
+      meta_json     TEXT NOT NULL DEFAULT '{}',
+      webhook_sent  INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_log_ts        ON event_log(ts DESC);
+    CREATE INDEX IF NOT EXISTS idx_log_category  ON event_log(category, ts DESC);
+    CREATE INDEX IF NOT EXISTS idx_log_user      ON event_log(user_id, ts DESC);
+    CREATE INDEX IF NOT EXISTS idx_log_character ON event_log(character_id, ts DESC);
+
+    CREATE TABLE IF NOT EXISTS webhook_endpoints (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      url           TEXT NOT NULL,
+      secret        TEXT NOT NULL DEFAULT '',
+      category_filter TEXT NOT NULL DEFAULT '*',
+      enabled       INTEGER NOT NULL DEFAULT 1,
+      created_at    INTEGER NOT NULL,
+      last_called_at INTEGER,
+      last_status   INTEGER,
+      failures      INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS character_task (
+      character_id  INTEGER PRIMARY KEY,
+      slug          TEXT NOT NULL,
+      started_at    INTEGER NOT NULL,
+      ends_at       INTEGER NOT NULL,
+      duration_hr   INTEGER NOT NULL,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS marketplace_listings (
       id              INTEGER PRIMARY KEY AUTOINCREMENT,
       inventory_id    INTEGER NOT NULL,
