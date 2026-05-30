@@ -450,4 +450,19 @@ export function applySchema(db: Database.Database): void {
   const charCols = db.prepare(`PRAGMA table_info(characters)`).all() as { name: string }[];
   const charHave = new Set(charCols.map((c) => c.name));
   if (!charHave.has('active_buffs')) db.exec(`ALTER TABLE characters ADD COLUMN active_buffs TEXT NOT NULL DEFAULT '[]'`);
+  if (!charHave.has('tower_best_floor')) db.exec(`ALTER TABLE characters ADD COLUMN tower_best_floor INTEGER NOT NULL DEFAULT 0`);
+  if (!charHave.has('tower_current_floor')) db.exec(`ALTER TABLE characters ADD COLUMN tower_current_floor INTEGER NOT NULL DEFAULT 0`);
+  if (!charHave.has('tower_run_seed')) db.exec(`ALTER TABLE characters ADD COLUMN tower_run_seed INTEGER NOT NULL DEFAULT 0`);
+
+  // Forge enchant ledger — per inventory item, the count of successful enchants
+  // and the JSON stat bonuses they granted (so we can show them in tooltips and
+  // include them in derived stats).
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inventory_enchants (
+      inventory_id  INTEGER PRIMARY KEY,
+      enchant_count INTEGER NOT NULL DEFAULT 0,
+      bonuses_json  TEXT NOT NULL DEFAULT '{}',
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE
+    );
+  `);
 }

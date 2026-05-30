@@ -221,9 +221,20 @@ router.post('/upgrade-stat', (req, res) => {
     return;
   }
   counts[stat] = currentCount + want;
-  db.prepare(
-    `UPDATE characters SET ${stat} = ${stat} + ?, gold = gold - ?, stat_upgrades = ? WHERE id = ?`,
-  ).run(want, totalCost, JSON.stringify(counts), char.id);
+  // Atomic — same race protection as the shop. The `stat` column name is from a
+  // Zod enum (allowlist), so template-interpolating it is safe by construction,
+  // but we still gate the spend on `gold >= ?` so two concurrent requests can't
+  // both win.
+  const updated = db
+    .prepare(
+      `UPDATE characters SET ${stat} = ${stat} + ?, gold = gold - ?, stat_upgrades = ?
+       WHERE id = ? AND gold >= ?`,
+    )
+    .run(want, totalCost, JSON.stringify(counts), char.id, totalCost);
+  if (updated.changes !== 1) {
+    res.status(400).json({ error: 'Gold balance changed — please retry.' });
+    return;
+  }
   logFromRequest(req, {
     category: 'character',
     action: 'upgrade_stat',

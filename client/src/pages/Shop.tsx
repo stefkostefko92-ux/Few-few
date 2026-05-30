@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { Item } from '../lib/types';
 import { itemSummary } from './Inventory';
+import Sprite, { spriteForItem } from '../components/Sprite';
 
 export default function Shop(): React.ReactElement {
   const refresh = useStore((s) => s.refreshCharacter);
@@ -53,11 +54,14 @@ export default function Shop(): React.ReactElement {
         <div className="grid-cards">
           {filtered.map((it) => (
             <div key={it.id} className={`card rarity-border-${it.rarity}`}>
-              <div className="flex between">
-                <div>
-                  <div className={`rarity-${it.rarity}`} style={{ fontWeight: 700 }}>{it.name}</div>
-                  <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>
-                    {it.category} {it.sub_type ? `· ${it.sub_type}` : ''} · Lv {it.level_req}
+              <div className="flex between" style={{ gap: 12 }}>
+                <div className="flex" style={{ gap: 10, alignItems: 'flex-start' }}>
+                  <Sprite {...spriteForItem(it.icon, it.category)} size={42} />
+                  <div>
+                    <div className={`rarity-${it.rarity}`} style={{ fontWeight: 700 }}>{it.name}</div>
+                    <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                      {it.category} {it.sub_type ? `· ${it.sub_type}` : ''} · Lv {it.level_req}
+                    </div>
                   </div>
                 </div>
                 <span className={`tag rarity-${it.rarity}`}>{it.rarity}</span>

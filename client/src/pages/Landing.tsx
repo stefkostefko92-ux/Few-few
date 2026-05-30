@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { WarriorSprite, RangerSprite, MageSprite, RogueSprite } from '../combat/sprites';
 import Logo from '../components/Logo';
 import LandingEffects from '../components/LandingEffects';
+import CinematicIntro from '../components/CinematicIntro';
 import '../styles/landing.css';
 
 function SplitText({ text }: { text: string }) {
@@ -28,8 +29,13 @@ function SplitText({ text }: { text: string }) {
 }
 
 export default function Landing(): React.ReactElement {
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try { return sessionStorage.getItem('nd_intro_seen') !== '1'; } catch { return true; }
+  });
   return (
     <div className="landing">
+      {showIntro && <CinematicIntro onDone={() => setShowIntro(false)} />}
       <LandingEffects />
 
       {/* Top nav */}
@@ -60,13 +66,13 @@ export default function Landing(): React.ReactElement {
           <em><SplitText text="Where Legends Are Forged." /></em>
         </h1>
         <p className="hero-subtitle" data-reveal>
-          A fully animated turn-based fantasy MMORPG. Forge a hero across four classes, hunt
-          through five regions, run multi-stage dungeons, climb the ELO arena, complete eight
-          themed item sets, found a guild, declare war, raid bosses together — and shape your
-          saga across daily rituals and lifetime achievements.
+          Build a hero. Climb the Tower of Trials. Strike the Forge until your blade screams.
+          Found a guild, declare war, raid a god. Five regions, four classes, eight item sets,
+          a marketplace where heroes barter steel for gold — and an endless arena waiting for
+          a new king. Free. Browser. No download. The realm has been holding its breath.
         </p>
         <div className="hero-cta" data-reveal>
-          <Link to="/register" className="btn btn-primary btn-hero">Begin Your Saga</Link>
+          <Link to="/register" className="btn btn-primary btn-hero">Take Up The Sword</Link>
           <a href="#features" className="btn btn-hero">See How It Plays</a>
         </div>
 

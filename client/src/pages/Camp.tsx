@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
+import Sprite from '../components/Sprite';
+
+const SPRITE_BY_SLUG: Record<string, string> = {
+  fishing: 'camp-fish',
+  foraging: 'camp-forest',
+  mining: 'camp-mine',
+  hunting: 'camp-hunt',
+  scouting: 'camp-scout',
+};
 
 interface TaskDef {
   slug: string;
@@ -82,7 +91,9 @@ export default function Camp(): React.ReactElement {
           <div className="card" style={{ padding: 18, position: 'relative', overflow: 'hidden' }}>
             <div className="ambient-stars" />
             <div className="flex" style={{ gap: 18, position: 'relative', alignItems: 'center' }}>
-              <div style={{ fontSize: 56, lineHeight: 1 }}>{current.def?.icon || '⏳'}</div>
+              <div style={{ width: 64, height: 64, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle, var(--surface-2), transparent)', borderRadius: 12 }}>
+                <Sprite name={SPRITE_BY_SLUG[current.slug] || 'camp-fire'} tone="camp" size={56} />
+              </div>
               <div style={{ flex: 1 }}>
                 <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)', fontSize: 22 }}>
                   {current.def?.name || current.slug}
@@ -113,7 +124,7 @@ export default function Camp(): React.ReactElement {
           {tasks.map((t) => (
             <div key={t.slug} className="card" data-tilt style={{ position: 'relative' }}>
               <div className="flex" style={{ gap: 14, alignItems: 'flex-start' }}>
-                <div style={{ fontSize: 40, lineHeight: 1 }}>{t.icon}</div>
+                <Sprite name={SPRITE_BY_SLUG[t.slug] || 'camp-fire'} tone="camp" size={44} />
                 <div style={{ flex: 1 }}>
                   <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{t.name}</strong>
                   <div className="muted text-sm" style={{ marginTop: 4 }}>{t.description}</div>

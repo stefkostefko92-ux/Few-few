@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { InventoryItem } from '../lib/types';
+import Sprite, { spriteForItem } from '../components/Sprite';
 import '../styles/inventory.css';
 
 const SLOT_ORDER = ['weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
@@ -145,7 +146,7 @@ export default function Inventory(): React.ReactElement {
                   onMouseMove={(e) => it && tip(it, e)}
                   onClick={(e) => it && setActions({ item: it, x: e.clientX, y: e.clientY })}
                 >
-                  <div className="glyph">{it ? (ICON_BY_CATEGORY[it.category] || '◆') : '·'}</div>
+                  <div className="glyph">{it ? <Sprite {...spriteForItem(it.icon, it.category)} size={44} /> : '·'}</div>
                 </div>
               );
             })}
@@ -184,7 +185,7 @@ export default function Inventory(): React.ReactElement {
                   onMouseMove={(e) => tip(it, e)}
                   onClick={(e) => setActions({ item: it, x: e.clientX, y: e.clientY })}
                 >
-                  <span>{ICON_BY_CATEGORY[it.category] || '◆'}</span>
+                  <span><Sprite {...spriteForItem(it.icon, it.category)} size={36} /></span>
                   {it.quantity > 1 && <span className="qty">×{it.quantity}</span>}
                   {it.soul_bound ? <span className="badge-bound">BOUND</span> : null}
                 </div>

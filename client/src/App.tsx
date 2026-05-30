@@ -36,6 +36,8 @@ import Guild from './pages/Guild';
 import Premium from './pages/Premium';
 import Market from './pages/Market';
 import Camp from './pages/Camp';
+import Forge from './pages/Forge';
+import Tower from './pages/Tower';
 import LevelUpOverlay from './components/LevelUpOverlay';
 
 function AppLayout(): React.ReactElement {
@@ -156,6 +158,8 @@ export default function App(): React.ReactElement {
             <Route path="premium" element={<Premium />} />
             <Route path="market" element={<Market />} />
             <Route path="camp" element={<Camp />} />
+            <Route path="forge" element={<Forge />} />
+            <Route path="tower" element={<Tower />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
