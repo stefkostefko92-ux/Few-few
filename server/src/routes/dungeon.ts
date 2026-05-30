@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
 import { DUNGEONS, findDungeon } from '../seed/dungeons';
+import { loadEquipped } from '../game/equipment';
 import type { Character, Item, InventoryEntry, Monster } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -114,17 +115,7 @@ router.post('/advance', (req, res) => {
   }
 
   // Derive hero
-  const equipped = db
-    .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-    )
-    .all(char.id) as any[];
-  const eqList = equipped.map((row) => ({
-    item: row as Item,
-    entry: { id: row.inv_id, character_id: char.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
-  }));
-  const derived = deriveStats(char, eqList);
+  const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, run.hp);
 
   const foe = {

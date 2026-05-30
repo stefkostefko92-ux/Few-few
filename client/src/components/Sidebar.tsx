@@ -40,9 +40,11 @@ const SECTIONS: SectionDef[] = [
     heading: 'Adventure',
     items: [
       { to: '/app/quests', label: 'Quests', icon: IconScroll },
+      { to: '/app/bounties', label: 'Bounty Board', icon: IconSkull },
       { to: '/app/hunting', label: 'Hunting Grounds', icon: IconBolt },
       { to: '/app/camp', label: 'Camp · Idle Tasks', icon: IconFlame },
       { to: '/app/tower', label: 'Tower of Trials', icon: IconCrown },
+      { to: '/app/trial-cache', label: 'Trial Cache', icon: IconStar },
       { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
       { to: '/app/forge', label: 'The Forge', icon: IconBolt },
       { to: '/app/world', label: 'World Map', icon: IconMap },

@@ -118,7 +118,18 @@ router.post('/enchant', (req, res) => {
   }
 
   const weights = RARITY_WEIGHTS[row.rarity] || RARITY_WEIGHTS.common;
-  const bucket = rollBucket(weights);
+  let bucket = rollBucket(weights);
+
+  // Anvil Ward (from the Trial Cache) consumes one stack and converts a
+  // would-be shatter into a guaranteed small enchant. This closes the
+  // Tower → Trial Cache → Forge loop.
+  let guaranteeUsed = false;
+  const guarantees = (char as any).forge_guarantees || 0;
+  if (guarantees > 0) {
+    if (bucket === 'shatter') bucket = 'small';
+    db.prepare('UPDATE characters SET forge_guarantees = forge_guarantees - 1 WHERE id = ? AND forge_guarantees > 0').run(char.id);
+    guaranteeUsed = true;
+  }
 
   if (bucket === 'shatter') {
     db.prepare('DELETE FROM inventory WHERE id = ?').run(row.inv_id);
@@ -146,8 +157,8 @@ router.post('/enchant', (req, res) => {
   logFromRequest(req, {
     category: 'inventory', action: 'forge_enchant',
     character_id: char.id, target_id: row.item_id, target_type: 'item',
-    message: `${char.name} enchanted ${row.name}: +${amount} ${stat}`,
-    meta: { cost, bucket, stat, amount, enchants: row.enchant_count + 1, rarity: row.rarity },
+    message: `${char.name} enchanted ${row.name}: +${amount} ${stat}${guaranteeUsed ? ' (Ward used)' : ''}`,
+    meta: { cost, bucket, stat, amount, enchants: row.enchant_count + 1, rarity: row.rarity, guarantee_used: guaranteeUsed },
   });
 
   res.json({
@@ -159,6 +170,8 @@ router.post('/enchant', (req, res) => {
     cost,
     new_enchants: row.enchant_count + 1,
     new_bonuses: bonuses,
+    guarantee_used: guaranteeUsed,
+    guarantees_remaining: Math.max(0, ((char as any).forge_guarantees || 0) - (guaranteeUsed ? 1 : 0)),
   });
 });
 

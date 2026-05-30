@@ -4,6 +4,7 @@ import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
+import { loadEquipped } from '../game/equipment';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -119,17 +120,7 @@ router.post('/climb', (req, res) => {
   const targetFloor = (char as any).tower_current_floor + 1;
   const foe = buildFoe(targetFloor, seed);
 
-  const equipped = db
-    .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-    )
-    .all(char.id) as any[];
-  const eqList = equipped.map((row) => ({
-    item: row as Item,
-    entry: { id: row.inv_id, character_id: char.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
-  }));
-  const derived = deriveStats(char, eqList);
+  const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, char.hp);
   const result = simulateCombat(hero, foe);
 
@@ -140,11 +131,13 @@ router.post('/climb', (req, res) => {
   let newBest = (char as any).tower_best_floor;
   let runSeed = seed;
   let runEnded = false;
+  let tokensGained = 0;
 
   if (result.winner === 'hero') {
     const vault = targetFloor % 5 === 0;
     goldGain = towerGold(targetFloor) * (vault ? 2 : 1);
     xpGain   = towerXp(targetFloor)   * (vault ? 2 : 1);
+    tokensGained = vault ? 2 : 1;  // bridges Tower → Trial Cache → Forge guarantees
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
     newFloor = targetFloor;
@@ -160,12 +153,13 @@ router.post('/climb', (req, res) => {
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?,
        hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ?,
-       tower_current_floor = ?, tower_best_floor = ?, tower_run_seed = ?
+       tower_current_floor = ?, tower_best_floor = ?, tower_run_seed = ?,
+       trial_tokens = trial_tokens + ?
      WHERE id = ?`,
   ).run(
     char.xp, char.level, char.stat_points, char.skill_points,
     char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy,
-    newFloor, newBest, runSeed, char.id,
+    newFloor, newBest, runSeed, tokensGained, char.id,
   );
 
   logFromRequest(req, {
@@ -174,7 +168,7 @@ router.post('/climb', (req, res) => {
     character_id: char.id,
     target_type: 'tower',
     message: `${char.name} ${result.winner === 'hero' ? 'cleared' : 'fell on'} Tower floor ${targetFloor}`,
-    meta: { floor: targetFloor, gold: goldGain, xp: xpGain, rounds: result.rounds.length, new_best: newBest, run_ended: runEnded },
+    meta: { floor: targetFloor, gold: goldGain, xp: xpGain, tokens: tokensGained, rounds: result.rounds.length, new_best: newBest, run_ended: runEnded },
   });
 
   res.json({
@@ -185,6 +179,7 @@ router.post('/climb', (req, res) => {
     rounds: result.rounds,
     gold: goldGain,
     xp: xpGain,
+    trial_tokens: tokensGained,
     levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
     current_floor: newFloor,
     best_floor: newBest,

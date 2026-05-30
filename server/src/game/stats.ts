@@ -88,20 +88,26 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   let dodgeBonus = 0;
   let atkBonus = 0;
 
-  for (const { item } of equipped) {
-    str += item.str_bonus;
-    dex += item.dex_bonus;
-    con += item.con_bonus;
-    int_ += item.int_bonus;
-    wis += item.wis_bonus;
-    cha += item.cha_bonus;
-    hp_bonus += item.hp_bonus;
-    mp_bonus += item.mp_bonus;
-    def += item.defense;
+  for (const slot of equipped) {
+    const { item } = slot;
+    const e = (slot as any).enchant_bonuses || {};
+    str += item.str_bonus + (e.str_bonus || 0);
+    dex += item.dex_bonus + (e.dex_bonus || 0);
+    con += item.con_bonus + (e.con_bonus || 0);
+    int_ += item.int_bonus + (e.int_bonus || 0);
+    wis += item.wis_bonus + (e.wis_bonus || 0);
+    cha += item.cha_bonus + (e.cha_bonus || 0);
+    hp_bonus += item.hp_bonus + (e.hp_bonus || 0);
+    mp_bonus += item.mp_bonus + (e.mp_bonus || 0);
+    def += item.defense + (e.defense || 0);
     if (item.category === 'weapon') {
-      atkMin = item.atk_min;
-      atkMax = item.atk_max;
+      atkMin = item.atk_min + (e.atk_min || 0);
+      atkMax = item.atk_max + (e.atk_max || 0);
       weaponSub = item.sub_type;
+    } else {
+      // Forge enchants can roll an attack bonus onto non-weapons too;
+      // those add into the global atkBonus pool.
+      atkBonus += (e.atk_max || 0);
     }
   }
 

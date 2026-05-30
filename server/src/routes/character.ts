@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { classBaseStats, regenerateEnergy } from '../game/progression';
 import { deriveStats } from '../game/stats';
+import { loadEquipped } from '../game/equipment';
 import { STAT_KEYS, parseCounts, nextUpgradeCost, batchCost, type StatKey } from '../game/upgrade';
 import type { Character, CharacterClass, InventoryEntry, Item } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -145,17 +146,7 @@ router.get('/me', (req, res) => {
     char.id,
   );
   // Pull equipment & derived stats
-  const equipped = db
-    .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-    )
-    .all(char.id) as (Item & InventoryEntry)[];
-  const eqList = equipped.map((row) => ({
-    item: row as unknown as Item,
-    entry: { id: (row as any).inv_id, character_id: char.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
-  }));
-  const derived = deriveStats(char, eqList);
+  const derived = deriveStats(char, loadEquipped(char.id));
   // Out of combat: hp / mp are ALWAYS at the derived max.
   char.hp_max = derived.hp_max;
   char.mp_max = derived.mp_max;

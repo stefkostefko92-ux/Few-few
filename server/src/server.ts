@@ -31,6 +31,8 @@ import marketRoutes from './routes/market';
 import campRoutes from './routes/camp';
 import forgeRoutes from './routes/forge';
 import towerRoutes from './routes/tower';
+import bountyRoutes from './routes/bounties';
+import trialCacheRoutes from './routes/trialCache';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
 
@@ -92,6 +94,8 @@ app.use('/api/market', marketRoutes);
 app.use('/api/camp', campRoutes);
 app.use('/api/forge', forgeRoutes);
 app.use('/api/tower', towerRoutes);
+app.use('/api/bounties', bountyRoutes);
+app.use('/api/trial-cache', trialCacheRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

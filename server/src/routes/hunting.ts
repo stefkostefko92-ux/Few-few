@@ -6,6 +6,8 @@ import { regenerateEnergy, applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
+import { loadEquipped } from '../game/equipment';
+import { applyBountyKill } from './bounties';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -81,17 +83,7 @@ router.post('/hunt', (req, res) => {
   const monster = pool[Math.floor(Math.random() * pool.length)];
 
   // Derive hero
-  const equipped = db
-    .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-    )
-    .all(char.id) as any[];
-  const eqList = equipped.map((row) => ({
-    item: row as Item,
-    entry: { id: row.inv_id, character_id: char.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
-  }));
-  const derived = deriveStats(char, eqList);
+  const derived = deriveStats(char, loadEquipped(char.id));
   const hero = buildHeroActor(char, derived, char.hp);
   const foe = {
     name: monster.name,
@@ -154,6 +146,12 @@ router.post('/hunt', (req, res) => {
     meta: { kind: 'hunt', monster: monster.slug, monster_name: monster.name, monster_level: monster.level, rounds: result.rounds.length, xp: xpGain, gold: goldGain },
   });
 
+  // Forward the kill to the daily bounty board. Completed bounties surface
+  // in the response so the client can pop a "Bounty ready to claim" toast.
+  const completedBounties = result.winner === 'hero'
+    ? applyBountyKill(char, monster.slug)
+    : [];
+
   res.json({
     success: result.winner === 'hero',
     hero: result.hero,
@@ -164,6 +162,7 @@ router.post('/hunt', (req, res) => {
     levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
     unlocked,
     monsterSlug: monster.slug,
+    completedBounties,
   });
 });
 

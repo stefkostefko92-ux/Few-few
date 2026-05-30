@@ -38,6 +38,8 @@ import Market from './pages/Market';
 import Camp from './pages/Camp';
 import Forge from './pages/Forge';
 import Tower from './pages/Tower';
+import Bounties from './pages/Bounties';
+import TrialCache from './pages/TrialCache';
 import LevelUpOverlay from './components/LevelUpOverlay';
 
 function AppLayout(): React.ReactElement {
@@ -160,6 +162,8 @@ export default function App(): React.ReactElement {
             <Route path="camp" element={<Camp />} />
             <Route path="forge" element={<Forge />} />
             <Route path="tower" element={<Tower />} />
+            <Route path="bounties" element={<Bounties />} />
+            <Route path="trial-cache" element={<TrialCache />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

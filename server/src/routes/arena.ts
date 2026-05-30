@@ -6,6 +6,7 @@ import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
+import { loadEquipped } from '../game/equipment';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -30,25 +31,8 @@ router.get('/opponents', (req, res) => {
   res.json({ opponents: list });
 });
 
-function loadActor(char: Character, db = getDb()): CombatActor {
-  const equipped = db
-    .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? AND inv.equipped = 1`,
-    )
-    .all(char.id) as any[];
-  const eqList = equipped.map((row) => ({
-    item: row as Item,
-    entry: {
-      id: row.inv_id,
-      character_id: char.id,
-      item_id: row.id,
-      quantity: row.quantity,
-      equipped: row.equipped,
-      slot: row.slot,
-    } as InventoryEntry,
-  }));
-  const derived = deriveStats(char, eqList);
+function loadActor(char: Character): CombatActor {
+  const derived = deriveStats(char, loadEquipped(char.id));
   return buildHeroActor(char, derived, derived.hp_max);
 }
 

@@ -465,4 +465,31 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE
     );
   `);
+
+  // Bounty board — one row per character per UTC day, with the 3 daily
+  // bounties + per-bounty kill counts persisted as JSON.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS character_bounties (
+      character_id INTEGER NOT NULL,
+      day_index    INTEGER NOT NULL,
+      bounties_json TEXT NOT NULL,
+      PRIMARY KEY (character_id, day_index),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Trial cache: each Tower clear hands a token, redeemed at a special
+  // vendor for unique gear and forge guarantees. Trial purchases log what
+  // a character has bought (some offerings are one-per-character).
+  if (!charHave.has('trial_tokens')) db.exec(`ALTER TABLE characters ADD COLUMN trial_tokens INTEGER NOT NULL DEFAULT 0`);
+  if (!charHave.has('forge_guarantees')) db.exec(`ALTER TABLE characters ADD COLUMN forge_guarantees INTEGER NOT NULL DEFAULT 0`);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS trial_purchases (
+      character_id INTEGER NOT NULL,
+      slug         TEXT NOT NULL,
+      bought_at    INTEGER NOT NULL,
+      PRIMARY KEY (character_id, slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
 }
