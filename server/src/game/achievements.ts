@@ -29,7 +29,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { slug: 'level_5',  name: 'Of Age',           description: 'Reach level 5.',  icon: '⭐', title: 'the Determined', xpReward: 50,  unlockedAt: (s) => s.level >= 5 },
   { slug: 'level_10', name: 'Veteran',          description: 'Reach level 10.', icon: '🌟', title: 'the Veteran',    xpReward: 150, goldReward: 100, unlockedAt: (s) => s.level >= 10 },
   { slug: 'level_15', name: 'Champion',         description: 'Reach level 15.', icon: '💫', title: 'the Champion',   xpReward: 400, goldReward: 250, unlockedAt: (s) => s.level >= 15 },
-  { slug: 'level_20', name: 'Hero of Tanoth',   description: 'Reach level 20.', icon: '🏆', title: 'Hero of Tanoth', xpReward: 800, goldReward: 500, unlockedAt: (s) => s.level >= 20 },
+  { slug: 'level_20', name: 'Hero of the Realm',   description: 'Reach level 20.', icon: '🏆', title: 'Hero of the Realm', xpReward: 800, goldReward: 500, unlockedAt: (s) => s.level >= 20 },
   { slug: 'level_25', name: 'Legend',           description: 'Reach level 25.', icon: '👑', title: 'the Legend',     xpReward: 1500, goldReward: 1000, unlockedAt: (s) => s.level >= 25 },
 
   // Combat
@@ -55,7 +55,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // Bestiary / collection
   { slug: 'bestiary_5',  name: 'Tracker',      description: 'Defeat 5 different kinds of monster.',  icon: '📖', goldReward: 40,  unlockedAt: (s) => s.unique_bestiary >= 5 },
   { slug: 'bestiary_10', name: 'Naturalist',   description: 'Defeat 10 different kinds of monster.', icon: '📜', goldReward: 150, unlockedAt: (s) => s.unique_bestiary >= 10 },
-  { slug: 'bestiary_all', name: 'Loremaster',  description: 'Catalog every monster in Tanoth.',      icon: '📚', title: 'Loremaster', goldReward: 1500, unlockedAt: (s) => s.unique_bestiary >= 17 },
+  { slug: 'bestiary_all', name: 'Loremaster',  description: 'Catalog every monster in Nexus Dominion.',      icon: '📚', title: 'Loremaster', goldReward: 1500, unlockedAt: (s) => s.unique_bestiary >= 17 },
 
   // Dungeons
   { slug: 'dungeon_1',   name: 'Delver',       description: 'Clear your first dungeon.',  icon: '🗝', goldReward: 80, unlockedAt: (s) => s.dungeons_cleared >= 1 },

@@ -30,6 +30,7 @@ import Dungeons from './pages/Dungeons';
 import Achievements from './pages/Achievements';
 import Bestiary from './pages/Bestiary';
 import Stats from './pages/Stats';
+import Admin from './pages/Admin';
 
 function AppLayout(): React.ReactElement {
   return (
@@ -44,6 +45,13 @@ function AppLayout(): React.ReactElement {
       <Toasts />
     </div>
   );
+}
+
+function AdminGate({ children }: { children: React.ReactNode }): React.ReactElement {
+  const user = useStore((s) => s.user);
+  if (!user) return <Navigate to="/login" replace />;
+  if (!user.is_admin) return <Navigate to="/app" replace />;
+  return <>{children}</>;
 }
 
 function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactElement {
@@ -69,7 +77,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
           <div className="auth-brand-mark">
             <svg viewBox="0 0 32 32"><path d="M16 4 L20 12 L28 13 L22 19 L24 28 L16 23 L8 28 L10 19 L4 13 L12 12 Z" fill="#d6a13d" /></svg>
           </div>
-          <h1 style={{ marginTop: 12, color: 'var(--gold-1)' }}>Awakening Tanoth…</h1>
+          <h1 style={{ marginTop: 12, color: 'var(--gold-1)' }}>Awakening Nexus Dominion…</h1>
         </div>
       </div>
     );
@@ -79,6 +87,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
   const path = location.pathname;
   const isPublic = path === '/' || path === '/login' || path === '/register';
   const isCreateRoute = path === '/create';
+  const isAdminRoute = path.startsWith('/admin');
 
   // Not signed in: allow public + landing
   if (!authed && !isPublic) return <Navigate to="/" replace />;
@@ -86,8 +95,8 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
   if (authed && (path === '/login' || path === '/register' || path === '/')) {
     return <Navigate to={character ? '/app' : '/create'} replace />;
   }
-  // Signed in, has token, no character yet
-  if (authed && !character && !isCreateRoute) return <Navigate to="/create" replace />;
+  // Admin route doesn't require a character
+  if (authed && !character && !isCreateRoute && !isAdminRoute) return <Navigate to="/create" replace />;
   if (authed && character && isCreateRoute) return <Navigate to="/app" replace />;
 
   return <>{children}</>;
@@ -102,6 +111,7 @@ export default function App(): React.ReactElement {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/create" element={<CharacterCreate />} />
+          <Route path="/admin/*" element={<AdminGate><Navbar /><Admin /><Toasts /></AdminGate>} />
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="character" element={<CharacterPage />} />

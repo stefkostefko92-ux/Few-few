@@ -133,9 +133,21 @@ export function evaluateAchievements(db: Database.Database, characterId: number)
     const totalGold = unlocked.reduce((s, u) => s + (u.goldReward || 0), 0);
     const totalXp = unlocked.reduce((s, u) => s + (u.xpReward || 0), 0);
     if (totalGold || totalXp) {
-      db.prepare('UPDATE characters SET gold = gold + ?, xp = xp + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?').run(
-        totalGold, totalXp, totalGold, characterId,
-      );
+      // Apply gold directly, and use applyXp so awarded XP properly levels up the character.
+      const fresh = db.prepare('SELECT * FROM characters WHERE id = ?').get(characterId) as any;
+      if (fresh) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { applyXp } = require('./progression') as typeof import('./progression');
+        applyXp(fresh, totalXp);
+        fresh.gold += totalGold;
+        db.prepare(
+          'UPDATE characters SET gold = ?, xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?'
+        ).run(
+          fresh.gold, fresh.xp, fresh.level, fresh.stat_points, fresh.skill_points,
+          fresh.hp_max, fresh.mp_max, fresh.hp, fresh.mp,
+          totalGold, totalXp, characterId,
+        );
+      }
     }
     // Mail-style achievement summary
     for (const u of unlocked) {
@@ -143,7 +155,7 @@ export function evaluateAchievements(db: Database.Database, characterId: number)
         'INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)',
       ).run(
         characterId,
-        'Heralds of Tanoth',
+        'Heralds of the Crown',
         `Achievement Unlocked — ${u.name}`,
         `${u.icon}  ${u.description}\n${u.title ? `\nTitle earned: "${u.title}"` : ''}${u.goldReward ? `\n+${u.goldReward} gold` : ''}${u.xpReward ? `\n+${u.xpReward} XP` : ''}`,
         Date.now(),

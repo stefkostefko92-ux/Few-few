@@ -101,8 +101,8 @@ router.post('/create', (req, res) => {
   ).run(
     charId,
     'King Aldovar',
-    'Welcome to Tanoth',
-    `Brave ${name}, your deeds are awaited across the realm. Begin in the Whispering Woods — slay beasts, complete quests, and grow strong. The kingdom of Tanoth depends on heroes like you.`,
+    'Welcome to Nexus Dominion',
+    `Brave ${name}, your deeds are awaited across the realm. Begin in the Whispering Woods — slay beasts, complete quests, and grow strong. The realm of Nexus depends on heroes like you.`,
     now,
   );
 

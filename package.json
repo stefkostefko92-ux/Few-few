@@ -1,8 +1,8 @@
 {
-  "name": "tanoth-reborn",
+  "name": "nexus-dominion",
   "private": true,
   "version": "0.1.0",
-  "description": "Tanoth-Reborn — a high-quality browser MMORPG inspired by the classic Tanoth.",
+  "description": "Nexus Dominion — a high-quality browser MMORPG inspired by the classic Nexus Dominion.",
   "workspaces": [
     "server",
     "client"

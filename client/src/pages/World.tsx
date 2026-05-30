@@ -28,7 +28,7 @@ export default function World(): React.ReactElement {
     <div className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Map of Tanoth</h2>
+          <h2 className="panel-title">Map of Nexus</h2>
           <div className="panel-subtitle">From Oaken Hollow to the Shadowfell — the long road of a hero.</div>
         </div>
       </div>

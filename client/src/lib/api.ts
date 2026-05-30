@@ -2,7 +2,7 @@ const BASE = '/api';
 
 let token: string | null = null;
 try {
-  token = localStorage.getItem('tanoth.token');
+  token = localStorage.getItem('nexus-dominion.token');
 } catch {
   /* no-op */
 }
@@ -10,8 +10,8 @@ try {
 export function setToken(t: string | null): void {
   token = t;
   try {
-    if (t) localStorage.setItem('tanoth.token', t);
-    else localStorage.removeItem('tanoth.token');
+    if (t) localStorage.setItem('nexus-dominion.token', t);
+    else localStorage.removeItem('nexus-dominion.token');
   } catch {
     /* no-op */
   }

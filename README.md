@@ -1,6 +1,6 @@
-# Tanoth-Reborn
+# Nexus Dominion
 
-A modern, full-stack browser MMORPG inspired by the classic **Tanoth** —
+A modern, full-stack browser MMORPG inspired by the classic **Nexus Dominion** —
 turn-based fantasy combat with quests, classes, skills, equipment, and a PvP arena.
 Built for VPS deployment, designed to feel enterprise-grade end to end.
 
@@ -122,7 +122,7 @@ Few-few/
 ├── deploy/
 │   ├── Caddyfile            # HTTPS auto-cert reverse proxy
 │   ├── nginx.conf           # alternative nginx config
-│   ├── tanoth.service       # systemd unit
+│   ├── nexus-dominion.service       # systemd unit
 │   └── entrypoint.sh        # seeds DB on first boot
 ├── Dockerfile               # multi-stage build
 ├── docker-compose.yml       # app + caddy
@@ -140,8 +140,8 @@ at `/`. There is only one process to run.
 ### Local development
 
 ```bash
-git clone <this-repo> tanoth-reborn
-cd tanoth-reborn
+git clone <this-repo> nexus-dominion
+cd nexus-dominion
 npm install
 cp server/.env.example server/.env       # change JWT_SECRET!
 npm run seed --workspace server          # populate items / monsters / quests
@@ -158,7 +158,7 @@ npm install
 npm run build       # builds client and server
 npm run seed --workspace server
 PORT=4000 NODE_ENV=production JWT_SECRET="$(openssl rand -base64 48)" \
-  DB_PATH=./server/data/tanoth.db node server/dist/server.js
+  DB_PATH=./server/data/nexus-dominion.db node server/dist/server.js
 ```
 
 Then open <http://localhost:4000>.
@@ -173,12 +173,12 @@ This brings up the game **plus an auto-HTTPS reverse proxy**.
 
 ```bash
 # On your VPS
-git clone <this-repo> /opt/tanoth-reborn
-cd /opt/tanoth-reborn
+git clone <this-repo> /opt/nexus-dominion
+cd /opt/nexus-dominion
 cp .env.example .env
 # Edit .env — set:
 #   JWT_SECRET   to a long random string
-#   DOMAIN       to e.g. tanoth.yourdomain.com (must point at the VPS IP)
+#   DOMAIN       to e.g. nexus-dominion.yourdomain.com (must point at the VPS IP)
 nano .env
 
 docker compose up -d --build
@@ -200,11 +200,11 @@ sudo apt-get update
 sudo apt-get install -y nodejs npm nginx certbot python3-certbot-nginx
 
 # Set up app
-sudo adduser --disabled-password --gecos "" tanoth
-sudo mkdir -p /opt/tanoth-reborn
-sudo chown tanoth:tanoth /opt/tanoth-reborn
-sudo -u tanoth bash -c '
-  cd /opt/tanoth-reborn
+sudo adduser --disabled-password --gecos "" nexus-dominion
+sudo mkdir -p /opt/nexus-dominion
+sudo chown nexus-dominion:nexus-dominion /opt/nexus-dominion
+sudo -u nexus-dominion bash -c '
+  cd /opt/nexus-dominion
   git clone <this-repo> .
   npm ci
   npm run build
@@ -214,19 +214,19 @@ sudo -u tanoth bash -c '
 '
 
 # systemd service
-sudo cp /opt/tanoth-reborn/deploy/tanoth.service /etc/systemd/system/
+sudo cp /opt/nexus-dominion/deploy/nexus-dominion.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now tanoth
+sudo systemctl enable --now nexus-dominion
 
 # nginx
-sudo cp /opt/tanoth-reborn/deploy/nginx.conf /etc/nginx/sites-available/tanoth
-sudo ln -sf /etc/nginx/sites-available/tanoth /etc/nginx/sites-enabled/
+sudo cp /opt/nexus-dominion/deploy/nginx.conf /etc/nginx/sites-available/nexus-dominion
+sudo ln -sf /etc/nginx/sites-available/nexus-dominion /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d tanoth.yourdomain.com
+sudo certbot --nginx -d nexus-dominion.yourdomain.com
 ```
 
-The service runs as user `tanoth`, restarts on failure, and stores its
-SQLite database in `/opt/tanoth-reborn/server/data/`.
+The service runs as user `nexus-dominion`, restarts on failure, and stores its
+SQLite database in `/opt/nexus-dominion/server/data/`.
 
 ---
 
@@ -312,10 +312,10 @@ client.
 | `PORT` | `4000` | HTTP listen port |
 | `JWT_SECRET` | — | **Required.** Long random string. |
 | `JWT_EXPIRES_IN` | `7d` | JWT lifetime |
-| `DB_PATH` | `./data/tanoth.db` | SQLite file path |
+| `DB_PATH` | `./data/nexus-dominion.db` | SQLite file path |
 | `CORS_ORIGIN` | `*` | Comma-separated allowed origins |
 | `NODE_ENV` | `development` | `production` quiets request logs |
-| `DOMAIN` | `tanoth.example.com` | Used by the bundled Caddyfile |
+| `DOMAIN` | `nexus-dominion.example.com` | Used by the bundled Caddyfile |
 | `RESEED_ON_BOOT` | `1` | Run the seed (idempotent) on each container start |
 
 ---

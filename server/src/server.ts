@@ -22,6 +22,7 @@ import wheelRoutes from './routes/wheel';
 import achievementRoutes from './routes/achievements';
 import bestiaryRoutes from './routes/bestiary';
 import statsRoutes from './routes/stats';
+import adminRoutes from './routes/admin';
 import { getDb } from './db';
 
 const app = express();
@@ -52,7 +53,7 @@ const authLimiter = rateLimit({ windowMs: 60_000, max: 20 });
 app.use('/api/auth', authLimiter);
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, name: 'Tanoth-Reborn', version: '0.1.0' });
+  res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });
 });
 
 app.use('/api/auth', authRoutes);
@@ -71,6 +72,7 @@ app.use('/api/wheel', wheelRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/bestiary', bestiaryRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');
@@ -86,5 +88,5 @@ app.get('*', (req, res, next) => {
 getDb();
 
 app.listen(PORT, () => {
-  console.log(`[Tanoth-Reborn] Server listening on port ${PORT}`);
+  console.log(`[Nexus Dominion] Server listening on port ${PORT}`);
 });

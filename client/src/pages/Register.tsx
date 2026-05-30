@@ -32,7 +32,7 @@ export default function Register(): React.ReactElement {
             <svg viewBox="0 0 32 32"><path d="M16 4 L20 12 L28 13 L22 19 L24 28 L16 23 L8 28 L10 19 L4 13 L12 12 Z" fill="#d6a13d" stroke="#3a2812" strokeWidth=".5"/></svg>
           </div>
           <div>
-            <h1>Tanoth-Reborn</h1>
+            <h1>Nexus Dominion</h1>
             <p>Begin your saga.</p>
           </div>
         </div>

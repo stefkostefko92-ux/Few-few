@@ -35,7 +35,7 @@ export default function Dashboard(): React.ReactElement {
             <div>
               <h1 style={{ color: 'var(--gold-1)' }}>{char.name}</h1>
               <div className="muted" style={{ textTransform: 'uppercase', letterSpacing: '.12em', fontSize: 12 }}>
-                {char.class} · Hero of Tanoth
+                {char.class} · Hero of the Realm
               </div>
             </div>
             <div className="flex gap-md">

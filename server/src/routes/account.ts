@@ -10,8 +10,8 @@ router.use(authRequired);
 router.get('/me', (req, res) => {
   const db = getDb();
   const user = db
-    .prepare('SELECT id, username, email, created_at FROM users WHERE id = ?')
-    .get(req.auth!.uid) as { id: number; username: string; email: string; created_at: number } | undefined;
+    .prepare('SELECT id, username, email, created_at, is_admin FROM users WHERE id = ?')
+    .get(req.auth!.uid) as { id: number; username: string; email: string; created_at: number; is_admin: number } | undefined;
   if (!user) {
     res.status(404).json({ error: 'User not found' });
     return;

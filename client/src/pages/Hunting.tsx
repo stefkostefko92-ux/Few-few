@@ -57,6 +57,7 @@ export default function Hunting(): React.ReactElement {
           onClose={() => { setFight(null); }}
           onReplay={() => hunt(region!)}
           introTitle={`Wild Encounter — ${fight.foe.name}`}
+          region={region || undefined}
         />
         <div className="panel" style={{ padding: 16 }}>
           <div className="flex between">

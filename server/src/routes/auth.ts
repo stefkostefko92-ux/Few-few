@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
     .run(username, email, hash, now, now);
   const uid = info.lastInsertRowid as number;
   const token = signToken({ uid, username });
-  res.status(201).json({ token, user: { id: uid, username, email } });
+  res.status(201).json({ token, user: { id: uid, username, email, is_admin: 0 } });
 });
 
 const loginSchema = z.object({
@@ -49,8 +49,8 @@ router.post('/login', async (req, res) => {
   const { username, password } = parse.data;
   const db = getDb();
   const user = db
-    .prepare('SELECT id, username, email, password_hash FROM users WHERE username = ? OR email = ?')
-    .get(username, username) as { id: number; username: string; email: string; password_hash: string } | undefined;
+    .prepare('SELECT id, username, email, password_hash, is_admin FROM users WHERE username = ? OR email = ?')
+    .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number } | undefined;
   if (!user) {
     res.status(401).json({ error: 'Invalid credentials' });
     return;
@@ -62,7 +62,7 @@ router.post('/login', async (req, res) => {
   }
   db.prepare('UPDATE users SET last_seen_at = ? WHERE id = ?').run(Date.now(), user.id);
   const token = signToken({ uid: user.id, username: user.username });
-  res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+  res.json({ token, user: { id: user.id, username: user.username, email: user.email, is_admin: user.is_admin } });
 });
 
 export default router;

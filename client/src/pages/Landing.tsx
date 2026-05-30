@@ -10,7 +10,7 @@ export default function Landing(): React.ReactElement {
       <header className="landing-nav">
         <div className="landing-nav-brand">
           <div className="mark" />
-          <span>Tanoth-Reborn</span>
+          <span>Nexus Dominion</span>
         </div>
         <nav className="landing-nav-links">
           <a href="#features">Features</a>
@@ -27,7 +27,7 @@ export default function Landing(): React.ReactElement {
       {/* HERO */}
       <section className="hero">
         <div className="hero-eyebrow">A Browser MMORPG · Free to Play · No Download</div>
-        <h1 className="hero-title">The Realm of Tanoth Awakens.</h1>
+        <h1 className="hero-title">The Realm of Nexus Dominion Awakens.</h1>
         <p className="hero-subtitle">
           Forge a hero. Hunt monsters across five regions. Conquer dungeons, climb the arena, and
           unravel the kingdom's last great threat — the Shadow Lord himself. Cinematic turn-based
@@ -60,7 +60,7 @@ export default function Landing(): React.ReactElement {
         <div className="section-eyebrow">What Awaits</div>
         <h2 className="section-title">A World Made for the Long Haul.</h2>
         <p className="section-lead">
-          Every hour you spend in Tanoth makes your hero stronger and your story richer.
+          Every hour you spend in Nexus Dominion makes your hero stronger and your story richer.
           From your first cellar rat to the final stand against the Shadow Lord —
           there's always one more thing to do.
         </p>
@@ -70,7 +70,7 @@ export default function Landing(): React.ReactElement {
             damage, critical screen shakes, dodge fades. Pause, slow down, speed up, replay any battle later.
           </FeatureCard>
           <FeatureCard icon="🗡" title="Quests & Story">
-            16 hand-written quests across 5 regions tell the story of Tanoth's slow decay and your
+            16 hand-written quests across 5 regions tell the story of Nexus Dominion's slow decay and your
             hero's rising legend. Choose your path on the world map.
           </FeatureCard>
           <FeatureCard icon="🏰" title="Multi-Stage Dungeons">
@@ -98,7 +98,7 @@ export default function Landing(): React.ReactElement {
             for the patient.
           </FeatureCard>
           <FeatureCard icon="⭐" title="25+ Achievements">
-            Earn titles like "the Worldslayer", "Hero of Tanoth", and "Loremaster". Wear them in your
+            Earn titles like "the Worldslayer", "Hero of the Realm", and "Loremaster". Wear them in your
             profile. Stack the rewards.
           </FeatureCard>
           <FeatureCard icon="💍" title="Loot & Rarity">
@@ -134,7 +134,7 @@ export default function Landing(): React.ReactElement {
 
       {/* World */}
       <section id="world" className="section">
-        <div className="section-eyebrow">The Lands of Tanoth</div>
+        <div className="section-eyebrow">The Lands of Nexus</div>
         <h2 className="section-title">From Oaken Hollow to the Shadowfell.</h2>
         <p className="section-lead">
           Five regions, each with its own monsters, dungeon, and legend. Travel the kingdom's
@@ -164,7 +164,7 @@ export default function Landing(): React.ReactElement {
         <div className="section-eyebrow">Every Day, Something New</div>
         <h2 className="section-title">A Realm That Rewards You for Coming Back.</h2>
         <p className="section-lead">
-          Tanoth-Reborn isn't a grind — it's a rhythm. Log in, claim your tribute, finish the day's quests,
+          Nexus Dominion isn't a grind — it's a rhythm. Log in, claim your tribute, finish the day's quests,
           spin the wheel, take a single dungeon run. Bigger triumphs every week, every month.
         </p>
         <div className="feature-grid">
@@ -194,7 +194,7 @@ export default function Landing(): React.ReactElement {
       </div>
 
       <footer className="landing-footer">
-        Tanoth-Reborn · A modern tribute to the classic browser MMORPG ·
+        Nexus Dominion · A modern tribute to the classic browser MMORPG ·
         <a href="https://github.com" style={{ marginLeft: 8 }}>Open Source</a>
       </footer>
     </div>

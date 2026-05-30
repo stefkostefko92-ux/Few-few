@@ -1,5 +1,5 @@
 # ============================================================
-# Tanoth-Reborn — multi-stage production Dockerfile
+# Nexus Dominion — multi-stage production Dockerfile
 # ============================================================
 
 # ---- Stage 1: build everything (client SPA + server bundle) ----
@@ -39,7 +39,7 @@ USER app
 
 EXPOSE 4000
 ENV PORT=4000 \
-    DB_PATH=/app/data/tanoth.db \
+    DB_PATH=/app/data/nexus-dominion.db \
     CORS_ORIGIN=*
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]

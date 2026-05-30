@@ -54,7 +54,7 @@ export default function Arena(): React.ReactElement {
     <div className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Arena of Tanoth</h2>
+          <h2 className="panel-title">Arena of Nexus Dominion</h2>
           <div className="panel-subtitle">Test your steel against other heroes. Rating: <span className="gold">{char?.arena_rating}</span></div>
         </div>
         <button className="btn" onClick={load}>Refresh</button>

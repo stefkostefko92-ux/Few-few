@@ -1,6 +1,6 @@
-# Replace tanoth.example.com with your real domain.
+# Replace nexus-dominion.example.com with your real domain.
 # Caddy will obtain & renew a Let's Encrypt certificate automatically.
-{$DOMAIN:tanoth.example.com} {
+{$DOMAIN:nexus-dominion.example.com} {
   encode zstd gzip
 
   # Security headers
@@ -13,7 +13,7 @@
   }
 
   # Reverse proxy everything to the app
-  reverse_proxy tanoth:4000 {
+  reverse_proxy nexus-dominion:4000 {
     transport http {
       keepalive 30s
     }

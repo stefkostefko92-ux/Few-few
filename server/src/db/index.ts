@@ -7,7 +7,7 @@ let dbInstance: Database.Database | null = null;
 
 export function getDb(): Database.Database {
   if (dbInstance) return dbInstance;
-  const dbPath = process.env.DB_PATH || './data/tanoth.db';
+  const dbPath = process.env.DB_PATH || './data/nexus-dominion.db';
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   dbInstance = new Database(dbPath);

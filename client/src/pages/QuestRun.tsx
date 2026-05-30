@@ -93,7 +93,8 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
           victory={result.success}
           reward={{ xp: result.xp, gold: result.gold, itemReward: result.itemReward }}
           onClose={onDone}
-          introTitle={`${result.hero.name}  VS  ${result.foe.name}`}
+          introTitle={`${result.hero.name}  vs  ${result.foe.name}`}
+          region={quest.region}
         />
         <div className="panel" style={{ padding: 18 }}>
           <p>{result.resultText}</p>

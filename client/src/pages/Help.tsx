@@ -6,7 +6,7 @@ export default function Help(): React.ReactElement {
     <div className="col" style={{ gap: 24 }}>
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">How to Play Tanoth-Reborn</h2>
+          <h2 className="panel-title">How to Play Nexus Dominion</h2>
           <div className="panel-subtitle">A short guide to your first hours in the realm.</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>

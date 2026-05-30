@@ -48,7 +48,7 @@ export default function Navbar(): React.ReactElement {
     <header className="navbar">
       <div className="nav-brand">
         <div className="nav-brand-mark" aria-hidden="true" />
-        <span>Tanoth-Reborn</span>
+        <span>Nexus Dominion</span>
       </div>
 
       <nav className="nav-links" aria-label="Primary">
@@ -114,6 +114,14 @@ export default function Navbar(): React.ReactElement {
               <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/help'); }}>
                 <IconUser /> <span>How to Play</span>
               </div>
+              {user?.is_admin ? (
+                <>
+                  <div className="nav-menu-divider" />
+                  <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/admin'); }}>
+                    <IconUser /> <span style={{ color: 'var(--gold-1)' }}>Admin Control</span>
+                  </div>
+                </>
+              ) : null}
               <div className="nav-menu-divider" />
               <div className="nav-menu-item danger" onClick={() => { setOpen(false); logout(); navigate('/login'); }}>
                 <IconLogout /> <span>Sign Out</span>

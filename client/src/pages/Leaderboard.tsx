@@ -11,7 +11,7 @@ export default function Leaderboard(): React.ReactElement {
     <div className="panel">
       <div className="panel-header">
         <h2 className="panel-title">Hall of Fame</h2>
-        <div className="panel-subtitle">The greatest of Tanoth, ranked by arena valor.</div>
+        <div className="panel-subtitle">The greatest of Nexus Dominion, ranked by arena valor.</div>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
