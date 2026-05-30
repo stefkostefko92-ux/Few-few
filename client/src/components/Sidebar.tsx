@@ -55,6 +55,7 @@ const SECTIONS: SectionDef[] = [
   {
     heading: 'Daily',
     items: [
+      { to: '/app/battlepass', label: 'Battle Pass', icon: IconStar },
       { to: '/app/daily', label: 'Daily Tribute', icon: IconStar },
       { to: '/app/wheel', label: 'Wheel of Fortune', icon: IconCoin },
     ],

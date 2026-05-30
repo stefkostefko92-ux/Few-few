@@ -40,6 +40,7 @@ import Forge from './pages/Forge';
 import Tower from './pages/Tower';
 import Bounties from './pages/Bounties';
 import TrialCache from './pages/TrialCache';
+import BattlePass from './pages/BattlePass';
 import LevelUpOverlay from './components/LevelUpOverlay';
 
 function AppLayout(): React.ReactElement {
@@ -164,6 +165,7 @@ export default function App(): React.ReactElement {
             <Route path="tower" element={<Tower />} />
             <Route path="bounties" element={<Bounties />} />
             <Route path="trial-cache" element={<TrialCache />} />
+            <Route path="battlepass" element={<BattlePass />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

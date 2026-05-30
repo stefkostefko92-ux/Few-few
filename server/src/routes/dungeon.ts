@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
 import { DUNGEONS, findDungeon } from '../seed/dungeons';
 import { loadEquipped } from '../game/equipment';
+import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, Monster } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -173,6 +174,7 @@ router.post('/advance', (req, res) => {
     message: `${char.name} ${result.winner === 'hero' ? 'cleared' : 'fell on'} ${dungeon.name} stage ${run.stage + 1}`,
     meta: { dungeon: dungeon.slug, stage: run.stage + 1, total_stages: dungeon.stages.length, monster: monster.slug, rounds: result.rounds.length },
   });
+  if (result.winner === 'hero') trackBattlePass(char.id, 'dungeon_clear', 1);
 
   const updatedRun = db.prepare('SELECT * FROM dungeon_run WHERE character_id = ?').get(char.id) as any;
   res.json({

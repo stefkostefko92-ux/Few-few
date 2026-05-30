@@ -492,4 +492,21 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
   `);
+
+  // Battle Pass — 50 tasks per UTC calendar month, free + premium rewards.
+  // The month_key column is "YYYY-MM" so a new month implicitly resets
+  // every character's progress without us touching this table.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS battle_pass (
+      character_id   INTEGER NOT NULL,
+      month_key      TEXT NOT NULL,
+      tasks_json     TEXT NOT NULL,           -- 50 task definitions for this month
+      progress_json  TEXT NOT NULL DEFAULT '{}', -- { taskId: count }
+      claimed_json   TEXT NOT NULL DEFAULT '{}', -- { taskId: { free: bool, premium: bool } }
+      premium_unlocked INTEGER NOT NULL DEFAULT 0,
+      generated_at   INTEGER NOT NULL,
+      PRIMARY KEY (character_id, month_key),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
 }

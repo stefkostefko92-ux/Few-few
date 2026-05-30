@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { GUILD_BONUSES, GUILD_LEVEL_XP, GUILD_LEVEL_GEMS, GUILD_PREMIUM_THRESHOLD, GUILD_CREATE_COST, GUILD_CREATE_LEVEL_REQ, getGuildBonus } from '../game/guild';
+import { trackBattlePass } from './battlepass';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -305,21 +306,41 @@ router.post('/kick', (req, res) => {
 
 /* ===== Bank / upgrade ===== */
 
-const donateSchema = z.object({ amount: z.number().int().min(1) });
+// Donations now take either gold or gems. Gem donations are weighted
+// because gems are scarcer and (often) bought with real money — 1 gem
+// counts as 10g toward the guild XP/treasury, mirroring how the upgrade
+// gates treat them.
+const GEM_TO_GOLD_RATIO = 10;
+const donateSchema = z.object({
+  amount: z.number().int().min(1),
+  currency: z.enum(['gold', 'gems']).default('gold'),
+});
 
 router.post('/donate', (req, res) => {
   const parse = donateSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const char = getCharacter(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  if (char.gold < parse.data.amount) { res.status(400).json({ error: 'Not enough gold' }); return; }
   const db = getDb();
   const g = getCharGuild(char.id);
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
-  db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ?').run(parse.data.amount, char.id);
-  db.prepare('UPDATE guilds SET gold = gold + ?, xp = xp + ? WHERE id = ?').run(parse.data.amount, parse.data.amount, g.guild.id);
-  db.prepare('UPDATE guild_members SET contribution = contribution + ? WHERE character_id = ?').run(parse.data.amount, char.id);
-  res.json({ ok: true });
+
+  const { amount, currency } = parse.data;
+  // Atomic debit so concurrent requests can't double-spend.
+  const debit = currency === 'gold'
+    ? db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?').run(amount, char.id, amount)
+    : db.prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?').run(amount, amount, char.id, amount);
+  if (debit.changes !== 1) {
+    res.status(400).json({ error: currency === 'gold' ? 'Not enough gold' : 'Not enough gems' });
+    return;
+  }
+
+  const goldEquivalent = currency === 'gems' ? amount * GEM_TO_GOLD_RATIO : amount;
+  db.prepare('UPDATE guilds SET gold = gold + ?, xp = xp + ? WHERE id = ?').run(goldEquivalent, goldEquivalent, g.guild.id);
+  db.prepare('UPDATE guild_members SET contribution = contribution + ? WHERE character_id = ?').run(goldEquivalent, char.id);
+  trackBattlePass(char.id, 'guild_donate', goldEquivalent);
+
+  res.json({ ok: true, gold_equivalent: goldEquivalent, currency, amount });
 });
 
 router.post('/upgrade', (req, res) => {

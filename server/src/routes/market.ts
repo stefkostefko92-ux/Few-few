@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character, Item } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
+import { trackBattlePass } from './battlepass';
 
 const router = Router();
 router.use(authRequired);
@@ -155,6 +156,8 @@ router.post('/buy', (req, res) => {
       );
   });
   tx();
+  // The SELLER's pass progresses on the sale (they earned the gold).
+  trackBattlePass(listing.seller_id, 'market_sale', 1);
   logFromRequest(req, {
     category: 'market',
     action: 'purchased',

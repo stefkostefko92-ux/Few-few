@@ -5,6 +5,7 @@ import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { loadEquipped } from '../game/equipment';
+import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -170,6 +171,12 @@ router.post('/climb', (req, res) => {
     message: `${char.name} ${result.winner === 'hero' ? 'cleared' : 'fell on'} Tower floor ${targetFloor}`,
     meta: { floor: targetFloor, gold: goldGain, xp: xpGain, tokens: tokensGained, rounds: result.rounds.length, new_best: newBest, run_ended: runEnded },
   });
+
+  if (result.winner === 'hero') {
+    trackBattlePass(char.id, 'tower_clear', targetFloor);
+    if (targetFloor % 5 === 0) trackBattlePass(char.id, 'tower_vault', 1);
+    if (tokensGained > 0) trackBattlePass(char.id, 'trial_token_earned', tokensGained);
+  }
 
   res.json({
     success: result.winner === 'hero',

@@ -645,11 +645,13 @@ function UpgradeTab({ data, onChanged, onRefreshChar }: { data: GuildData; onCha
   const isLeader = data.my_role === 'leader';
   const char = useStore((s) => s.character);
   const [donate, setDonate] = useState(100);
+  const [currency, setCurrency] = useState<'gold' | 'gems'>('gold');
 
   async function doDonate() {
     try {
-      await api.post('/guild/donate', { amount: donate });
-      toast(`Donated ${donate}g.`, 'success');
+      const r = await api.post('/guild/donate', { amount: donate, currency });
+      const tag = currency === 'gems' ? '💎' : 'g';
+      toast(`Donated ${donate}${tag} (${r.gold_equivalent} XP earned).`, 'success');
       await Promise.all([onChanged(), onRefreshChar()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
@@ -662,13 +664,37 @@ function UpgradeTab({ data, onChanged, onRefreshChar }: { data: GuildData; onCha
     } catch (e: any) { toast(e.message, 'error'); }
   }
 
+  const maxForCurrency = currency === 'gems' ? ((char as any)?.gems || 0) : (char?.gold || 0);
+  const canAfford = (char as any) && maxForCurrency >= donate;
+
   return (
     <div>
-      <h3 style={{ marginBottom: 10 }}>Donate Gold</h3>
-      <p className="muted">Every gold donated equals one Guild XP. Earn contribution points for your hero.</p>
-      <div className="flex gap-sm" style={{ marginTop: 10 }}>
-        <input type="number" min={1} max={char?.gold || 99999} value={donate} onChange={(e) => setDonate(Number(e.target.value))} style={{ width: 140 }} />
-        <button className="btn btn-primary" disabled={!char || char.gold < donate} onClick={doDonate}>Donate {donate}g</button>
+      <h3 style={{ marginBottom: 10 }}>Donate to the Guild</h3>
+      <p className="muted">
+        Gold contributes 1 Guild XP per coin. Gems contribute 10× — they're the express lane to the next tier.
+      </p>
+      <div className="flex gap-sm" style={{ marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="flex" style={{ gap: 4, padding: 2, background: 'var(--surface-1)', borderRadius: 6, border: '1px solid var(--border-1)' }}>
+          <button
+            className={`btn btn-sm ${currency === 'gold' ? 'btn-primary' : ''}`}
+            onClick={() => setCurrency('gold')}
+          >Gold · {char?.gold ?? 0}g</button>
+          <button
+            className={`btn btn-sm ${currency === 'gems' ? 'btn-primary' : ''}`}
+            onClick={() => setCurrency('gems')}
+          >Gems · {(char as any)?.gems ?? 0} 💎</button>
+        </div>
+        <input
+          type="number"
+          min={1}
+          max={maxForCurrency || 99999}
+          value={donate}
+          onChange={(e) => setDonate(Number(e.target.value))}
+          style={{ width: 140 }}
+        />
+        <button className="btn btn-primary" disabled={!canAfford} onClick={doDonate}>
+          Donate {donate}{currency === 'gems' ? ' 💎' : 'g'}
+        </button>
       </div>
 
       <h3 style={{ marginTop: 24, marginBottom: 10 }}>Next Level</h3>

@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import type { Character } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
+import { trackBattlePass } from './battlepass';
 
 const router = Router();
 router.use(authRequired);
@@ -153,6 +154,9 @@ router.post('/enchant', (req, res) => {
      VALUES (?, ?, ?)
      ON CONFLICT(inventory_id) DO UPDATE SET enchant_count = excluded.enchant_count, bonuses_json = excluded.bonuses_json`,
   ).run(row.inv_id, row.enchant_count + 1, JSON.stringify(bonuses));
+
+  trackBattlePass(char.id, 'forge_enchant', 1);
+  trackBattlePass(char.id, 'forge_high_enchant', row.enchant_count + 1);
 
   logFromRequest(req, {
     category: 'inventory', action: 'forge_enchant',

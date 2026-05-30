@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyBountyKill } from './bounties';
+import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -151,6 +152,7 @@ router.post('/hunt', (req, res) => {
   const completedBounties = result.winner === 'hero'
     ? applyBountyKill(char, monster.slug)
     : [];
+  if (result.winner === 'hero') trackBattlePass(char.id, 'hunt_kill', 1);
 
   res.json({
     success: result.winner === 'hero',

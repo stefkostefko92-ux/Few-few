@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { logFromRequest } from '../lib/logger';
+import { trackBattlePass } from './battlepass';
 import type { Character } from '../types/domain';
 
 const router = Router();
@@ -165,6 +166,8 @@ router.post('/claim', (req, res) => {
     `UPDATE characters SET gold = gold + ?, xp = ?, level = ?, hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?`,
   ).run(goldGain, char.xp, char.level, char.hp_max, char.mp_max, goldGain, xpGain, char.id);
   db.prepare('DELETE FROM character_task WHERE character_id = ?').run(char.id);
+
+  trackBattlePass(char.id, 'camp_claim', 1);
 
   logFromRequest(req, {
     category: 'camp', action: 'claim',

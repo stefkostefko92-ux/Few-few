@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
+import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
 
 const router = Router();
@@ -94,6 +95,7 @@ router.post('/start', (req, res) => {
       success ? 'success' : 'partial',
       Date.now(),
     );
+    if (success) trackBattlePass(char.id, 'quest_complete', 1);
     res.json({
       kind: 'story',
       success,
@@ -190,6 +192,7 @@ router.post('/start', (req, res) => {
     result.winner === 'hero' ? 'success' : 'failure',
     Date.now(),
   );
+  if (result.winner === 'hero') trackBattlePass(char.id, 'quest_complete', 1);
 
   const unlocked = applyCombatEvent(db, {
     characterId: char.id,

@@ -3,6 +3,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { evaluateAchievements } from '../game/events';
+import { trackBattlePass } from './battlepass';
 import type { Character } from '../types/domain';
 
 const router = Router();
@@ -100,6 +101,7 @@ router.post('/spin', (req, res) => {
     'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?',
   ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy, goldDelta, xpDelta, char.id);
   db.prepare("INSERT INTO daily_state (character_id, last_spin_day) VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET last_spin_day = excluded.last_spin_day").run(char.id, today);
+  trackBattlePass(char.id, 'wheel_spin', 1);
   const unlocked = evaluateAchievements(db, char.id);
   res.json({
     label,

@@ -3,6 +3,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { logFromRequest } from '../lib/logger';
+import { trackBattlePass } from './battlepass';
 import type { Character, Monster } from '../types/domain';
 
 const router = Router();
@@ -202,6 +203,8 @@ router.post('/claim', (req, res) => {
       `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')`,
     ).run(char.id, trophyId);
   }
+
+  trackBattlePass(char.id, 'bounty_claim', 1);
 
   logFromRequest(req, {
     category: 'character', action: 'bounty_claim',

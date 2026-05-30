@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
+import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -130,6 +131,8 @@ router.post('/challenge', (req, res) => {
     xpGained: xpGain,
     goldGained: result.winner === 'hero' ? 10 + opp.level * 2 : 0,
   });
+
+  if (result.winner === 'hero') trackBattlePass(char.id, 'arena_win', 1);
 
   logFromRequest(req, {
     category: 'combat',

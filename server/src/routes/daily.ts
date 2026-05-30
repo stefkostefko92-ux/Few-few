@@ -3,6 +3,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { evaluateAchievements } from '../game/events';
+import { trackBattlePass } from './battlepass';
 import type { Character, Quest } from '../types/domain';
 
 const router = Router();
@@ -107,6 +108,8 @@ router.post('/claim', (req, res) => {
   ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, reward.gold, reward.xp, char.gold, gemsGranted, gemsGranted, char.id);
   const longest = Math.max(state.longest_streak, newStreak);
   db.prepare('UPDATE daily_state SET streak = ?, longest_streak = ?, last_claim_day = ? WHERE character_id = ?').run(newStreak, longest, today, char.id);
+
+  trackBattlePass(char.id, 'daily_claim', 1);
 
   const unlocked = evaluateAchievements(db, char.id);
   res.json({ ok: true, streak: newStreak, reward: { ...reward, gems: gemsGranted }, item: givenItem, levelUp: lvlRes.leveled ? lvlRes : null, unlocked });
