@@ -56,7 +56,7 @@ export default function Shop(): React.ReactElement {
             <div key={it.id} className={`card rarity-border-${it.rarity}`}>
               <div className="flex between" style={{ gap: 12 }}>
                 <div className="flex" style={{ gap: 10, alignItems: 'flex-start' }}>
-                  <Sprite {...spriteForItem(it.icon, it.category)} size={42} />
+                  <Sprite {...spriteForItem(it)} size={42} />
                   <div>
                     <div className={`rarity-${it.rarity}`} style={{ fontWeight: 700 }}>{it.name}</div>
                     <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>

@@ -17,8 +17,15 @@ router.get('/', (req, res) => {
   }
   const rows = db
     .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, inv.soul_bound, inv.listed, items.* FROM inventory inv
-       JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? ORDER BY inv.equipped DESC, items.category`,
+      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, inv.soul_bound, inv.listed,
+              COALESCE(e.enchant_count, 0) AS enchant_count,
+              COALESCE(e.bonuses_json, '{}') AS enchant_bonuses_json,
+              items.*
+       FROM inventory inv
+       JOIN items ON inv.item_id = items.id
+       LEFT JOIN inventory_enchants e ON e.inventory_id = inv.id
+       WHERE inv.character_id = ?
+       ORDER BY inv.equipped DESC, items.category`,
     )
     .all(char.id) as any[];
   res.json({ items: rows });

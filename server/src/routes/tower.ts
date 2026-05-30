@@ -62,17 +62,33 @@ function ordinal(n: number): string {
   return s[(v - 20) % 10] || s[v] || s[0];
 }
 
+/* ───── Reward curves ─────
+ * Designed so the Tower is a satisfying climb but never out-paces the rest
+ * of the game's economy. Camp (idle) caps at ~28g/h, hunting kills give
+ * 8-40g, daily tribute hands out ~50g. We want the Tower to feel rewarding
+ * to push but not be a money printer:
+ *   gold = 6 + floor × 2 (linear, gentle)
+ *   xp   = 10 + floor × 3 (linear, gentle)
+ * Vault every 5th floor doubles both. */
+function towerGold(floor: number): number { return 6 + floor * 2; }
+function towerXp(floor: number): number   { return 10 + floor * 3; }
+
 router.get('/status', (req, res) => {
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const next = (char as any).tower_current_floor + 1;
+  const vault = next % 5 === 0;
   res.json({
     current_floor: (char as any).tower_current_floor,
     next_floor: next,
     best_floor: (char as any).tower_best_floor,
     energy: char.energy,
     energy_cost: ENERGY_COST,
-    next_reward: { gold: 8 + next * 4, xp: 14 + next * 6, vault: next % 5 === 0 },
+    next_reward: {
+      gold: towerGold(next) * (vault ? 2 : 1),
+      xp:   towerXp(next)   * (vault ? 2 : 1),
+      vault,
+    },
   });
 });
 
@@ -126,11 +142,9 @@ router.post('/climb', (req, res) => {
   let runEnded = false;
 
   if (result.winner === 'hero') {
-    const baseGold = 8 + targetFloor * 4;
-    const baseXp = 14 + targetFloor * 6;
     const vault = targetFloor % 5 === 0;
-    goldGain = vault ? baseGold * 2 : baseGold;
-    xpGain = vault ? baseXp * 2 : baseXp;
+    goldGain = towerGold(targetFloor) * (vault ? 2 : 1);
+    xpGain   = towerXp(targetFloor)   * (vault ? 2 : 1);
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
     newFloor = targetFloor;

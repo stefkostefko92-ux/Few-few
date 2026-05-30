@@ -979,6 +979,85 @@ input:focus, textarea:focus, select:focus {
   50%      { opacity: 0.55; }
 }
 
+/* ─── Sprite enchant halos ───────────────────────────────────────────── */
+.sprite-wrap { vertical-align: middle; }
+.sprite-shape { will-change: filter; }
+
+.sprite-enchant .sprite-halo {
+  animation: sprite-halo-spin 6s linear infinite, sprite-halo-pulse 2.2s ease-in-out infinite;
+}
+@keyframes sprite-halo-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes sprite-halo-pulse {
+  0%, 100% { opacity: .65; }
+  50%      { opacity: 1; }
+}
+
+/* Tier-1 silver: gentle */
+.sprite-enchant-1 .sprite-halo { animation-duration: 8s, 3s; }
+
+/* Tier-2 emerald: dashed orbit */
+.sprite-enchant-2 .sprite-halo { border-style: dashed; }
+
+/* Tier-3 azure: double ring */
+.sprite-enchant-3 .sprite-halo::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(106,167,255,.5);
+  border-radius: 50%;
+  animation: sprite-halo-spin 4s linear infinite reverse;
+}
+
+/* Tier-4 arcane: triple ring + sharper pulse */
+.sprite-enchant-4 .sprite-halo {
+  animation-duration: 5s, 1.6s;
+}
+.sprite-enchant-4 .sprite-halo::before,
+.sprite-enchant-4 .sprite-halo::after {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(194,148,255,.6);
+  border-radius: 50%;
+  animation: sprite-halo-spin 3.5s linear infinite reverse;
+}
+.sprite-enchant-4 .sprite-halo::after { inset: 10px; animation-duration: 2.5s; }
+
+/* Tier-5 mythic: cosmic conic + 4 rotating arcs */
+.sprite-enchant-5 .sprite-halo {
+  border: none !important;
+  background:
+    conic-gradient(from 0deg,
+      rgba(255,232,138,0)   0deg,
+      rgba(255,232,138,.9)  20deg,
+      rgba(255,232,138,0)   60deg,
+      rgba(255,177,89,.8)   100deg,
+      rgba(255,232,138,0)   140deg,
+      rgba(232,90,79,.7)    180deg,
+      rgba(255,232,138,0)   220deg,
+      rgba(194,148,255,.8)  260deg,
+      rgba(255,232,138,0)   300deg,
+      rgba(106,167,255,.8)  340deg,
+      rgba(255,232,138,0)   360deg);
+  filter: blur(2px);
+  animation: sprite-halo-spin 4s linear infinite;
+}
+.sprite-enchant-5 .sprite-halo::after {
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(255,232,138,.8), 0 0 36px rgba(255,177,89,.5);
+  animation: sprite-halo-pulse 1.4s ease-in-out infinite;
+}
+.sprite-enchant-5 .sprite-shape {
+  animation: sprite-mythic-pulse 1.8s ease-in-out infinite;
+}
+@keyframes sprite-mythic-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255,232,138,.7)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(255,232,138,1)) drop-shadow(0 0 30px rgba(255,177,89,.6)); }
+}
+
 /* =====================================================================
    Utility
    ===================================================================== */

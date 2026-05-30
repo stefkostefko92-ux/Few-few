@@ -146,7 +146,7 @@ export default function Inventory(): React.ReactElement {
                   onMouseMove={(e) => it && tip(it, e)}
                   onClick={(e) => it && setActions({ item: it, x: e.clientX, y: e.clientY })}
                 >
-                  <div className="glyph">{it ? <Sprite {...spriteForItem(it.icon, it.category)} size={44} /> : '·'}</div>
+                  <div className="glyph">{it ? <Sprite {...spriteForItem(it)} size={44} enchant={it.enchant_count} /> : '·'}</div>
                 </div>
               );
             })}
@@ -185,7 +185,7 @@ export default function Inventory(): React.ReactElement {
                   onMouseMove={(e) => tip(it, e)}
                   onClick={(e) => setActions({ item: it, x: e.clientX, y: e.clientY })}
                 >
-                  <span><Sprite {...spriteForItem(it.icon, it.category)} size={36} /></span>
+                  <span><Sprite {...spriteForItem(it)} size={36} enchant={it.enchant_count} /></span>
                   {it.quantity > 1 && <span className="qty">×{it.quantity}</span>}
                   {it.soul_bound ? <span className="badge-bound">BOUND</span> : null}
                 </div>
@@ -216,6 +216,21 @@ export default function Inventory(): React.ReactElement {
             {hover.item.heal_hp > 0 && <Stat k="Restores" v={`${hover.item.heal_hp} HP`} />}
             {hover.item.heal_mp > 0 && <Stat k="Restores" v={`${hover.item.heal_mp} MP`} />}
           </div>
+          {hover.item.enchant_count && hover.item.enchant_count > 0 ? (() => {
+            const bonuses: Record<string, number> = JSON.parse(hover.item.enchant_bonuses_json || '{}');
+            const ENCHANT_LABEL = ['', 'Silver', 'Emerald', 'Azure', 'Arcane', 'Mythic'];
+            return (
+              <>
+                <div className="divider" />
+                <div className="enchant-line">
+                  <span className={`enchant-badge e${hover.item.enchant_count}`}>{ENCHANT_LABEL[hover.item.enchant_count]} +{hover.item.enchant_count}</span>
+                  {Object.entries(bonuses).map(([k, v]) => (
+                    <span key={k} className="enchant-bonus">+{v} {k.replace('_bonus', '').replace('atk_max', 'attack')}</span>
+                  ))}
+                </div>
+              </>
+            );
+          })() : null}
           {hover.item.soul_bound ? (
             <>
               <div className="divider" />

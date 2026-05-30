@@ -94,6 +94,8 @@ export interface InventoryItem extends Item {
   slot: string;
   soul_bound?: number;
   listed?: number;
+  enchant_count?: number;
+  enchant_bonuses_json?: string;
 }
 
 export interface Quest {

@@ -94,7 +94,7 @@ export default function Forge(): React.ReactElement {
                   }}
                   title={it.name}
                 >
-                  <Sprite {...spriteForItem(it.icon, it.category)} size={36} />
+                  <Sprite {...spriteForItem(it)} size={36} enchant={it.enchant_count} />
                 </div>
               ))}
             </div>

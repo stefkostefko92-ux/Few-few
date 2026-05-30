@@ -209,6 +209,39 @@
 .item-tip .divider { height: 1px; background: var(--border-1); margin: 10px 0; }
 .item-tip .actions-hint { color: var(--text-4); font-size: 11px; }
 
+.item-tip .enchant-line { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.enchant-badge {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.enchant-badge.e1 { color: #c7c8d6; background: rgba(199,200,214,.10); }
+.enchant-badge.e2 { color: #6ad8a4; background: rgba(106,216,164,.10); }
+.enchant-badge.e3 { color: #6aa7ff; background: rgba(106,167,255,.12); }
+.enchant-badge.e4 { color: #c294ff; background: rgba(194,148,255,.14); }
+.enchant-badge.e5 {
+  color: #ffe88a;
+  background: linear-gradient(135deg, rgba(255,232,138,.12), rgba(255,177,89,.20));
+  box-shadow: 0 0 8px rgba(255,232,138,.4);
+  animation: enchant-mythic 2s ease-in-out infinite;
+}
+@keyframes enchant-mythic {
+  0%, 100% { box-shadow: 0 0 6px rgba(255,232,138,.4); }
+  50%      { box-shadow: 0 0 16px rgba(255,232,138,.8), 0 0 28px rgba(255,177,89,.3); }
+}
+.enchant-bonus {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold-1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(214,161,61,.12);
+}
+
 /* ===== Action sheet ===== */
 .item-actions {
   position: fixed;
