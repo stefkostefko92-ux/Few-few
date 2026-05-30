@@ -26,3 +26,4 @@ Thumbs.db
 
 # prisma generated client (regenerated on install)
 packages/db/generated/
+*.tsbuildinfo

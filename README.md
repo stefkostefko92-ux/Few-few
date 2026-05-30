@@ -19,8 +19,9 @@ Socket.IO (realtime). pnpm + Turborepo monorepo.
 apps/
   api/        Express 5 REST (auth, profile, shop, stripe, leaderboard)
   realtime/   Socket.IO game server (matchmaking + room authority + bots)
-  worker/     BullMQ jobs                     (S6)
-  web/        React + Vite shell              (S1)
+  worker/     BullMQ jobs (season rollover, quest cleanup)
+  web/        React + Vite play app (auth, lobby, games, shop, leaderboard)
+  marketing/  Next.js 15 SSG — public SEO/AEO/GEO layer + game rules
 packages/
   game-core/  6 engine cores, all 18 games (trick/betting/dice-race/
               move-validation/draw-discard/grid-guess)
@@ -80,7 +81,12 @@ infra/        Dockerfiles, docker-compose, nginx
       without a bespoke scene (those are S9 polish). 99 game-core tests incl. a
       per-engine harness (random playout → terminal, every-legal-action
       reduces, deterministic replay, redact serializable).
-- [ ] S8 — public SEO/AEO/GEO layer (Next.js 15)
+- [x] **S8 — public SEO/AEO/GEO layer (Next.js 15)**: `apps/marketing` static
+      export (SSG) — home, games index, per-game rules pages (HowTo + FAQ),
+      about; full JSON-LD (Organization/WebSite/BreadcrumbList + VideoGame/
+      HowTo/FAQPage per game), canonical + hreflang (bg/it/en/x-default),
+      OpenGraph + Twitter, generated sitemap.xml + robots.txt + llms.txt.
+      Betting-game pages carry the §11.4 social-gaming notice.
 - [ ] S9 — polish, anti-cheat signals, observability
 
 ## Develop
