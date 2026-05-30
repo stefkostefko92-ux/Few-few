@@ -238,9 +238,107 @@ export function applySchema(db: Database.Database): void {
   addColumn('total_gold_earned INTEGER NOT NULL DEFAULT 0');
   addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
   addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
+  addColumn("avatar TEXT NOT NULL DEFAULT 'warrior_01'");
+  addColumn("frame_slug TEXT NOT NULL DEFAULT 'plain'");
+  addColumn("bio TEXT NOT NULL DEFAULT ''");
+  addColumn("last_rename_at INTEGER NOT NULL DEFAULT 0");
+  addColumn("cosmetic_unlocks TEXT NOT NULL DEFAULT '[]'");
 
   // Item set affiliation column (for set-bonus computation)
   const itemCols = db.prepare(`PRAGMA table_info(items)`).all() as { name: string }[];
   const itemHave = new Set(itemCols.map((c) => c.name));
   if (!itemHave.has('set_slug')) db.exec(`ALTER TABLE items ADD COLUMN set_slug TEXT NOT NULL DEFAULT ''`);
+
+  // ===== Guild system =====
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS guilds (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      name          TEXT NOT NULL UNIQUE,
+      tag           TEXT NOT NULL UNIQUE,
+      motto         TEXT NOT NULL DEFAULT '',
+      description   TEXT NOT NULL DEFAULT '',
+      level         INTEGER NOT NULL DEFAULT 1,
+      xp            INTEGER NOT NULL DEFAULT 0,
+      member_slots  INTEGER NOT NULL DEFAULT 10,
+      gold          INTEGER NOT NULL DEFAULT 0,
+      crest_color   TEXT NOT NULL DEFAULT '#d6a13d',
+      leader_id     INTEGER NOT NULL,
+      created_at    INTEGER NOT NULL,
+      FOREIGN KEY (leader_id) REFERENCES characters(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS guild_members (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id      INTEGER NOT NULL,
+      character_id  INTEGER NOT NULL UNIQUE,
+      role          TEXT NOT NULL DEFAULT 'member',
+      contribution  INTEGER NOT NULL DEFAULT 0,
+      joined_at     INTEGER NOT NULL,
+      FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_guild_members_guild ON guild_members(guild_id);
+
+    CREATE TABLE IF NOT EXISTS guild_invitations (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id      INTEGER NOT NULL,
+      character_id  INTEGER NOT NULL,
+      invited_by    INTEGER NOT NULL,
+      created_at    INTEGER NOT NULL,
+      UNIQUE(guild_id, character_id),
+      FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS guild_chat (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id      INTEGER NOT NULL,
+      character_id  INTEGER NOT NULL,
+      message       TEXT NOT NULL,
+      created_at    INTEGER NOT NULL,
+      FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_guild_chat_guild ON guild_chat(guild_id);
+
+    CREATE TABLE IF NOT EXISTS guild_wars (
+      id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+      attacker_guild_id   INTEGER NOT NULL,
+      defender_guild_id   INTEGER NOT NULL,
+      status              TEXT NOT NULL DEFAULT 'active',
+      attacker_score      INTEGER NOT NULL DEFAULT 0,
+      defender_score      INTEGER NOT NULL DEFAULT 0,
+      started_at          INTEGER NOT NULL,
+      ends_at             INTEGER NOT NULL,
+      winner_guild_id     INTEGER,
+      FOREIGN KEY (attacker_guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+      FOREIGN KEY (defender_guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS guild_war_battles (
+      id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+      war_id              INTEGER NOT NULL,
+      attacker_char_id    INTEGER NOT NULL,
+      defender_char_id    INTEGER NOT NULL,
+      winner_side         TEXT NOT NULL,
+      rounds_json         TEXT NOT NULL,
+      created_at          INTEGER NOT NULL,
+      FOREIGN KEY (war_id) REFERENCES guild_wars(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS guild_dungeon_run (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id        INTEGER NOT NULL UNIQUE,
+      slug            TEXT NOT NULL,
+      boss_hp         INTEGER NOT NULL,
+      boss_hp_max     INTEGER NOT NULL,
+      contributions_json TEXT NOT NULL DEFAULT '[]',
+      started_at      INTEGER NOT NULL,
+      ends_at         INTEGER NOT NULL,
+      cleared_at      INTEGER,
+      FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_war_attacker ON guild_wars(attacker_guild_id);
+    CREATE INDEX IF NOT EXISTS idx_war_defender ON guild_wars(defender_guild_id);
+  `);
 }

@@ -42,6 +42,9 @@ export interface Character {
   total_gold_earned?: number;
   dungeons_cleared?: number;
   current_title?: string;
+  avatar?: string;
+  frame_slug?: string;
+  bio?: string;
 }
 
 export interface Derived {

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useStore } from '../lib/store';
 import Logo from './Logo';
+import Avatar from './Avatar';
 import {
   IconHome,
   IconScroll,
@@ -87,7 +88,15 @@ export default function Navbar(): React.ReactElement {
         )}
 
         <div className="nav-profile" ref={menuRef} onClick={() => setOpen((o) => !o)}>
-          <div className="nav-avatar">{initials}</div>
+          {char ? (
+            <Avatar
+              avatar={(char as any).avatar || `${char.class}_01`}
+              frame={(char as any).frame_slug || 'plain'}
+              size={36}
+            />
+          ) : (
+            <div className="nav-avatar">{initials}</div>
+          )}
           <div className="nav-profile-info">
             <div className="name">
               {char?.name || user?.username || 'Guest'}
@@ -100,8 +109,14 @@ export default function Navbar(): React.ReactElement {
           <IconChevron size={14} />
           {open && (
             <div className="nav-menu" onClick={(e) => e.stopPropagation()}>
+              <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/profile'); }}>
+                <IconUser /> <span>Profile & Cosmetics</span>
+              </div>
               <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/character'); }}>
                 <IconUser /> <span>My Character</span>
+              </div>
+              <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/guild'); }}>
+                <IconCrown /> <span>Guild</span>
               </div>
               <div className="nav-menu-item" onClick={() => { setOpen(false); navigate('/app/mail'); }}>
                 <IconMail /> <span>Mail</span>

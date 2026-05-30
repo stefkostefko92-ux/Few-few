@@ -24,6 +24,8 @@ import bestiaryRoutes from './routes/bestiary';
 import statsRoutes from './routes/stats';
 import adminRoutes from './routes/admin';
 import setsRoutes from './routes/sets';
+import profileRoutes from './routes/profile';
+import guildRoutes from './routes/guild';
 import { getDb } from './db';
 
 const app = express();
@@ -75,6 +77,8 @@ app.use('/api/bestiary', bestiaryRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sets', setsRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/guild', guildRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

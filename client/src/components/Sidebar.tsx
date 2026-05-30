@@ -20,6 +20,7 @@ const sections = [
     heading: 'Main',
     items: [
       { to: '/app', label: 'Overview', icon: IconHome, end: true },
+      { to: '/app/profile', label: 'Profile', icon: IconUser },
       { to: '/app/character', label: 'Character', icon: IconUser },
       { to: '/app/inventory', label: 'Inventory', icon: IconBag },
       { to: '/app/stats', label: 'Statistics', icon: IconCrown },
@@ -44,11 +45,17 @@ const sections = [
     ],
   },
   {
+    heading: 'Society',
+    items: [
+      { to: '/app/guild', label: 'Guild', icon: IconCrown },
+      { to: '/app/mail', label: 'Mail', icon: IconMail, badgeKey: 'mail' as const },
+      { to: '/app/leaderboard', label: 'Hall of Fame', icon: IconCrown },
+    ],
+  },
+  {
     heading: 'Town',
     items: [
       { to: '/app/shop', label: 'Merchant', icon: IconCoin },
-      { to: '/app/mail', label: 'Mail', icon: IconMail, badgeKey: 'mail' as const },
-      { to: '/app/leaderboard', label: 'Hall of Fame', icon: IconCrown },
     ],
   },
   {

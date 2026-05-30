@@ -31,6 +31,8 @@ import Achievements from './pages/Achievements';
 import Bestiary from './pages/Bestiary';
 import Stats from './pages/Stats';
 import Admin from './pages/Admin';
+import Profile from './pages/Profile';
+import Guild from './pages/Guild';
 
 function AppLayout(): React.ReactElement {
   return (
@@ -132,6 +134,8 @@ export default function App(): React.ReactElement {
             <Route path="achievements" element={<Achievements />} />
             <Route path="bestiary" element={<Bestiary />} />
             <Route path="stats" element={<Stats />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="guild" element={<Guild />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
