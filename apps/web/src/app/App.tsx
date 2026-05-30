@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { useAuthStore } from "../lib/store";
 import { AuthScreen } from "../features/auth/AuthScreen";
 import { Lobby } from "../features/lobby/Lobby";
+import { GameView } from "../features/game/GameView";
 import { Layout } from "./Layout";
 import { RequireAuth } from "./RequireAuth";
 
