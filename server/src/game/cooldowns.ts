@@ -7,29 +7,26 @@
  * moment — pacing the realm naturally rather than gating it on a
  * regenerating energy bar.
  *
- * Mounts (item.sub_type='mount') own up to two skill stats:
- *   - cooldown_reduction_pct (subtractive, capped at 80%)
- *   - bonus_gold_pct         (additive % to gold rewards)
- * The pct skills are stored in the items table as if they were stat
- * bonuses (col `wis_bonus` repurposed for cooldown_reduction_pct,
- * `cha_bonus` repurposed for bonus_gold_pct — saves a migration). Mount
- * slot is the `mount_inventory_id` column on characters.
+ * Mounts (item.sub_type='mount') own a dedicated mechanical property
+ * `cooldown_reduction_pct` (it is NOT a stat bonus — it lives on its own
+ * column on the items table). Mounts ALSO carry real combat-stat
+ * bonuses (phys_dmg / mag_dmg / phys_def / mag_def) which flow through
+ * deriveStats like any other equipped gear.
  */
 
 import { getDb } from '../db';
-import type { Character } from '../types/domain';
 
 export type ActionKind = 'hunt' | 'camp' | 'tower' | 'dungeon' | 'quest' | 'arena';
 
 const MIN_COOLDOWN_MS = 60_000;       // 1 minute
 const MAX_COOLDOWN_MS = 20 * 60_000;  // 20 minutes
-const MAX_REDUCTION_PCT = 80;         // never reduce below 20% of the base time
+const MAX_REDUCTION_PCT = 90;         // never reduce below 10% of the base time
 
-/** Read the mount's cooldown-reduction skill, if any. */
+/** Read the equipped mount's cooldown-reduction property, if any. */
 function mountReductionPct(characterId: number): number {
   const row = getDb()
     .prepare(
-      `SELECT items.wis_bonus AS reduction_pct
+      `SELECT items.cooldown_reduction_pct AS reduction_pct
        FROM characters c
        JOIN inventory inv ON inv.id = c.mount_inventory_id
        JOIN items ON items.id = inv.item_id
@@ -37,20 +34,6 @@ function mountReductionPct(characterId: number): number {
     )
     .get(characterId) as { reduction_pct: number } | undefined;
   return Math.min(MAX_REDUCTION_PCT, Math.max(0, row?.reduction_pct || 0));
-}
-
-/** Read the mount's bonus-gold skill, if any. */
-export function mountGoldBonusPct(characterId: number): number {
-  const row = getDb()
-    .prepare(
-      `SELECT items.cha_bonus AS bonus_gold_pct
-       FROM characters c
-       JOIN inventory inv ON inv.id = c.mount_inventory_id
-       JOIN items ON items.id = inv.item_id
-       WHERE c.id = ? AND items.sub_type = 'mount'`,
-    )
-    .get(characterId) as { bonus_gold_pct: number } | undefined;
-  return Math.max(0, row?.bonus_gold_pct || 0);
 }
 
 /**

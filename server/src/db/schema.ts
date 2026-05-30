@@ -268,6 +268,16 @@ export function applySchema(db: Database.Database): void {
   const itemCols = db.prepare(`PRAGMA table_info(items)`).all() as { name: string }[];
   const itemHave = new Set(itemCols.map((c) => c.name));
   if (!itemHave.has('set_slug')) db.exec(`ALTER TABLE items ADD COLUMN set_slug TEXT NOT NULL DEFAULT ''`);
+  // Damage-type axes — mounts and relic gear add Physical / Magical
+  // Damage and Defense directly. Defaults to 0 so existing rows are
+  // untouched.
+  if (!itemHave.has('phys_dmg_bonus')) db.exec(`ALTER TABLE items ADD COLUMN phys_dmg_bonus INTEGER NOT NULL DEFAULT 0`);
+  if (!itemHave.has('phys_def_bonus')) db.exec(`ALTER TABLE items ADD COLUMN phys_def_bonus INTEGER NOT NULL DEFAULT 0`);
+  if (!itemHave.has('mag_dmg_bonus'))  db.exec(`ALTER TABLE items ADD COLUMN mag_dmg_bonus INTEGER NOT NULL DEFAULT 0`);
+  if (!itemHave.has('mag_def_bonus'))  db.exec(`ALTER TABLE items ADD COLUMN mag_def_bonus INTEGER NOT NULL DEFAULT 0`);
+  // Pure mechanical mount property — explicitly not a "bonus" so it
+  // lives on a dedicated column instead of repurposing a stat slot.
+  if (!itemHave.has('cooldown_reduction_pct')) db.exec(`ALTER TABLE items ADD COLUMN cooldown_reduction_pct INTEGER NOT NULL DEFAULT 0`);
 
   // ===== Guild system =====
   db.exec(`

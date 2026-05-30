@@ -20,6 +20,9 @@ export interface EquippedSlot {
 }
 
 export function loadEquipped(characterId: number): EquippedSlot[] {
+  // Equipped gear (inv.equipped = 1) PLUS the active mount, which is
+  // tracked via characters.mount_inventory_id rather than the equipped
+  // flag (mounts have no body slot). Both feed deriveStats.
   const rows = getDb()
     .prepare(
       `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot,
@@ -28,9 +31,11 @@ export function loadEquipped(characterId: number): EquippedSlot[] {
        FROM inventory inv
        JOIN items ON inv.item_id = items.id
        LEFT JOIN inventory_enchants e ON e.inventory_id = inv.id
-       WHERE inv.character_id = ? AND inv.equipped = 1`,
+       WHERE inv.character_id = ?
+         AND (inv.equipped = 1
+              OR inv.id = (SELECT mount_inventory_id FROM characters WHERE id = ?))`,
     )
-    .all(characterId) as any[];
+    .all(characterId, characterId) as any[];
   return rows.map((row) => {
     let bonuses: EnchantBonuses = {};
     try { bonuses = JSON.parse(row.enchant_bonuses_json || '{}'); } catch { /* ignore */ }

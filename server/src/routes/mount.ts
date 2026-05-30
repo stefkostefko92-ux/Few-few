@@ -11,15 +11,15 @@ router.use(authRequired);
 /* =========================================================================
  * Mount shop — premium-currency only.
  *
- * Each mount is an inventory item (category='misc', sub_type='mount').
- * It has two skills repurposed onto existing columns to skip a migration:
- *   wis_bonus → cooldown_reduction_pct (1..80)
- *   cha_bonus → bonus_gold_pct         (0..40)
- * The mount slot lives on characters.mount_inventory_id (0 = none).
+ * Mounts are inventory items (category='misc', sub_type='mount'). They carry:
+ *   - cooldown_reduction_pct  (mechanical property on items table — NOT a
+ *                              "bonus", lives on a dedicated column)
+ *   - two combat-stat bonuses chosen from:
+ *       phys_dmg_bonus / phys_def_bonus / mag_dmg_bonus / mag_def_bonus
  *
- * The mount is consulted by game/cooldowns.ts when rolling new cooldowns
- * (any time a route calls setCooldown) and by mountGoldBonusPct() for
- * extra gold on rewards. Players can swap mounts freely.
+ * The combat stats flow through deriveStats like any other equipped gear.
+ * The cooldown reduction is read by game/cooldowns.ts whenever a new
+ * cooldown is rolled.
  * ======================================================================= */
 
 interface MountDef {
@@ -27,57 +27,114 @@ interface MountDef {
   name: string;
   description: string;
   gem_cost: number;
+  rarity: 'uncommon' | 'rare' | 'epic' | 'legendary';
+  tier: number;
   cooldown_reduction_pct: number;
-  bonus_gold_pct: number;
+  phys_dmg_bonus: number;
+  phys_def_bonus: number;
+  mag_dmg_bonus: number;
+  mag_def_bonus: number;
 }
 
 const MOUNTS: MountDef[] = [
   {
     slug: 'mount_riding_horse',
     name: 'Riding Horse',
-    description: 'A sturdy plains-bred mare. Fast enough for road-work, modest gold haul.',
+    description: 'A sturdy plains-bred mare. Common kit for a roving sellsword.',
     gem_cost: 200,
+    rarity: 'uncommon', tier: 1,
     cooldown_reduction_pct: 15,
-    bonus_gold_pct: 5,
+    phys_dmg_bonus: 4, phys_def_bonus: 4, mag_dmg_bonus: 0, mag_def_bonus: 0,
   },
   {
     slug: 'mount_warhound',
     name: 'War Hound',
-    description: 'Trained in the arenas of Mistmoor. Cuts down recovery and sniffs out coin.',
+    description: 'Trained in Mistmoor arenas. Bred to draw blood beside its rider.',
     gem_cost: 500,
-    cooldown_reduction_pct: 30,
-    bonus_gold_pct: 12,
+    rarity: 'rare', tier: 2,
+    cooldown_reduction_pct: 25,
+    phys_dmg_bonus: 10, phys_def_bonus: 8, mag_dmg_bonus: 0, mag_def_bonus: 0,
   },
   {
     slug: 'mount_arcwing_drake',
     name: 'Arcwing Drake',
-    description: 'A lesser drake bred in the Conclave roosts. The Adept\'s favoured mount.',
+    description: 'A lesser drake bred in the Conclave roosts. Conducts ambient ley-line surge.',
     gem_cost: 1200,
-    cooldown_reduction_pct: 50,
-    bonus_gold_pct: 22,
+    rarity: 'rare', tier: 3,
+    cooldown_reduction_pct: 35,
+    phys_dmg_bonus: 0, phys_def_bonus: 0, mag_dmg_bonus: 14, mag_def_bonus: 12,
   },
   {
     slug: 'mount_solar_courser',
     name: 'Solar Courser',
-    description: 'Hooves like polished brass; mane of midday light. The realm\'s fastest mount.',
+    description: 'Hooves like polished brass; mane of midday light. Standard of the realm guard.',
     gem_cost: 2800,
-    cooldown_reduction_pct: 70,
-    bonus_gold_pct: 35,
+    rarity: 'epic', tier: 4,
+    cooldown_reduction_pct: 50,
+    phys_dmg_bonus: 22, phys_def_bonus: 18, mag_dmg_bonus: 8, mag_def_bonus: 6,
+  },
+  // ───── Higher tiers ─────────────────────────────────────────────────
+  {
+    slug: 'mount_voidstrider',
+    name: 'Voidstrider',
+    description: 'A spectral beast pulled from the Shadowfell\'s edge. Its hoofprints darken the sky.',
+    gem_cost: 6000,
+    rarity: 'epic', tier: 5,
+    cooldown_reduction_pct: 65,
+    phys_dmg_bonus: 18, phys_def_bonus: 14, mag_dmg_bonus: 26, mag_def_bonus: 22,
+  },
+  {
+    slug: 'mount_crowned_griffin',
+    name: 'Crowned Griffin',
+    description: 'Once the mount of the lost regents. Wings of beaten gold; eyes of pure judgement.',
+    gem_cost: 12000,
+    rarity: 'legendary', tier: 6,
+    cooldown_reduction_pct: 75,
+    phys_dmg_bonus: 38, phys_def_bonus: 28, mag_dmg_bonus: 22, mag_def_bonus: 22,
+  },
+  {
+    slug: 'mount_world_serpent',
+    name: 'World Serpent',
+    description: 'A bound fragment of the snake that once swallowed the sky. The realm bends to its rider.',
+    gem_cost: 25000,
+    rarity: 'legendary', tier: 7,
+    cooldown_reduction_pct: 90,
+    phys_dmg_bonus: 45, phys_def_bonus: 35, mag_dmg_bonus: 45, mag_def_bonus: 35,
   },
 ];
 
 function ensureMountItems(): void {
   const db = getDb();
   for (const m of MOUNTS) {
-    const exists = db.prepare('SELECT id FROM items WHERE slug = ?').get(m.slug) as any;
-    if (exists) continue;
+    const exists = db.prepare('SELECT id, cooldown_reduction_pct, phys_dmg_bonus FROM items WHERE slug = ?').get(m.slug) as any;
+    if (exists) {
+      // Keep the catalog as the source of truth — refresh on boot so
+      // tuning changes propagate without a reseed.
+      db.prepare(
+        `UPDATE items SET
+           cooldown_reduction_pct = ?, phys_dmg_bonus = ?, phys_def_bonus = ?,
+           mag_dmg_bonus = ?, mag_def_bonus = ?, rarity = ?, tier = ?,
+           description = ?, name = ?
+         WHERE id = ?`,
+      ).run(
+        m.cooldown_reduction_pct, m.phys_dmg_bonus, m.phys_def_bonus,
+        m.mag_dmg_bonus, m.mag_def_bonus, m.rarity, m.tier,
+        m.description, m.name, exists.id,
+      );
+      continue;
+    }
     db.prepare(
       `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
          atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-       VALUES (?, ?, 'misc', 'mount', 1, 'epic', 1, '',
-               0, 0, 0, 0, 0, 0, 0, 0, 0, ?, ?, 0, 0, 0, 0, 'icon-portal', ?, '')`,
-    ).run(m.slug, m.name, m.bonus_gold_pct, m.cooldown_reduction_pct, m.description);
+         int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug,
+         phys_dmg_bonus, phys_def_bonus, mag_dmg_bonus, mag_def_bonus, cooldown_reduction_pct)
+       VALUES (?, ?, 'misc', 'mount', ?, ?, 1, '',
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'icon-portal', ?, '',
+               ?, ?, ?, ?, ?)`,
+    ).run(
+      m.slug, m.name, m.tier, m.rarity, m.description,
+      m.phys_dmg_bonus, m.phys_def_bonus, m.mag_dmg_bonus, m.mag_def_bonus, m.cooldown_reduction_pct,
+    );
   }
 }
 
@@ -112,13 +169,11 @@ router.post('/buy', (req, res) => {
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  // Already owned?
   const already = db
     .prepare(`SELECT inv.id FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.character_id = ? AND items.slug = ?`)
     .get(char.id, mount.slug) as any;
   if (already) { res.status(400).json({ error: `You already own ${mount.name}.` }); return; }
 
-  // Atomic gem debit.
   const debit = db
     .prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?')
     .run(mount.gem_cost, mount.gem_cost, char.id, mount.gem_cost);
@@ -134,14 +189,14 @@ router.post('/buy', (req, res) => {
     character_id: char.id,
     target_type: 'item',
     message: `${char.name} bought ${mount.name} for ${mount.gem_cost} gems`,
-    meta: { slug: mount.slug, gem_cost: mount.gem_cost },
+    meta: { slug: mount.slug, gem_cost: mount.gem_cost, tier: mount.tier, rarity: mount.rarity },
   });
   res.json({ ok: true, mount_inv_id: ins.lastInsertRowid });
 });
 
 router.post('/equip', (req, res) => {
   const invId = Number(req.body?.inventoryId);
-  if (!invId && invId !== 0) { res.status(400).json({ error: 'inventoryId required (0 to unequip)' }); return; }
+  if (invId === undefined || invId === null) { res.status(400).json({ error: 'inventoryId required (0 to unequip)' }); return; }
   const db = getDb();
   const char = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
@@ -150,7 +205,6 @@ router.post('/equip', (req, res) => {
     res.json({ ok: true });
     return;
   }
-  // Validate the inventory belongs to this hero and is a mount.
   const row = db
     .prepare(
       `SELECT inv.id FROM inventory inv JOIN items ON items.id = inv.item_id

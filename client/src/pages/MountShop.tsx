@@ -8,8 +8,13 @@ interface MountDef {
   name: string;
   description: string;
   gem_cost: number;
+  rarity: 'uncommon' | 'rare' | 'epic' | 'legendary';
+  tier: number;
   cooldown_reduction_pct: number;
-  bonus_gold_pct: number;
+  phys_dmg_bonus: number;
+  phys_def_bonus: number;
+  mag_dmg_bonus: number;
+  mag_def_bonus: number;
   owned: boolean;
 }
 
@@ -25,7 +30,26 @@ const MOUNT_SPRITE: Record<string, string> = {
   mount_warhound: 'monster-wolf',
   mount_arcwing_drake: 'monster-dragon',
   mount_solar_courser: 'icon-flame',
+  mount_voidstrider: 'monster-ghost',
+  mount_crowned_griffin: 'monster-hydra',
+  mount_world_serpent: 'monster-hydra',
 };
+
+function StatPill({ label, value, kind }: { label: string; value: number; kind: 'physd' | 'physf' | 'magd' | 'magf' | 'cd' }) {
+  const palette: Record<string, { bg: string; fg: string }> = {
+    physd: { bg: 'rgba(232,90,79,.15)',  fg: 'var(--crimson-1)' },
+    physf: { bg: 'rgba(214,161,61,.15)', fg: 'var(--gold-1)' },
+    magd:  { bg: 'rgba(194,148,255,.15)', fg: '#c294ff' },
+    magf:  { bg: 'rgba(106,167,255,.15)', fg: 'var(--azure-1)' },
+    cd:    { bg: 'rgba(106,216,164,.15)', fg: 'var(--emerald-1)' },
+  };
+  const p = palette[kind];
+  return (
+    <span className="tag" style={{ background: p.bg, color: p.fg, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+      {label} {value > 0 ? '+' : ''}{value}{kind === 'cd' ? '%' : ''}
+    </span>
+  );
+}
 
 export default function MountShop(): React.ReactElement {
   const toast = useStore((s) => s.toast);
@@ -56,8 +80,8 @@ export default function MountShop(): React.ReactElement {
           <div>
             <h2 className="panel-title">Stables</h2>
             <div className="panel-subtitle">
-              Mounts shorten every action cooldown and stack a bonus % on every gold reward. Premium
-              currency only. The active mount is consulted every time a cooldown is rolled.
+              Mounts shorten action cooldowns (mechanical property — not a stat bonus) and stack real
+              combat stats on top: Physical / Magical Damage and Defence. Premium currency only.
             </div>
           </div>
           <div className="flex gap-sm">
@@ -74,24 +98,30 @@ export default function MountShop(): React.ReactElement {
           const ownedRow = data.owned.find((o) => o.slug === m.slug);
           const active = ownedRow && ownedRow.inv_id === data.active_mount_inventory_id;
           return (
-            <div key={m.slug} className={`card ${active ? 'rarity-border-legendary' : ''}`} style={{ padding: 16 }}>
+            <div key={m.slug} className={`card rarity-border-${m.rarity} ${active ? 'rarity-border-legendary' : ''}`} style={{ padding: 16 }}>
               <div className="flex" style={{ gap: 14, alignItems: 'flex-start' }}>
                 <div style={{ width: 72, height: 72, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle, rgba(255,232,138,.16), transparent 65%)', borderRadius: 12 }}>
                   <Sprite name={MOUNT_SPRITE[m.slug] || 'icon-portal'} tone="weapon" size={58} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{m.name}</strong>
+                  <div className="flex between" style={{ alignItems: 'baseline' }}>
+                    <strong className={`rarity-${m.rarity}`} style={{ fontFamily: 'var(--font-display)' }}>{m.name}</strong>
+                    <span className="muted text-sm">T{m.tier} · {m.rarity}</span>
+                  </div>
                   <div className="muted text-sm" style={{ marginTop: 4 }}>{m.description}</div>
                 </div>
               </div>
 
               <div className="flex gap-sm" style={{ marginTop: 12, flexWrap: 'wrap' }}>
-                <span className="tag" style={{ background: 'rgba(106,216,164,.15)', color: 'var(--emerald-1)' }}>⏱ −{m.cooldown_reduction_pct}% cooldown</span>
-                <span className="tag gold">+{m.bonus_gold_pct}% gold</span>
+                <StatPill label="⏱" value={m.cooldown_reduction_pct} kind="cd" />
+                {m.phys_dmg_bonus > 0 && <StatPill label="P-DMG" value={m.phys_dmg_bonus} kind="physd" />}
+                {m.phys_def_bonus > 0 && <StatPill label="P-DEF" value={m.phys_def_bonus} kind="physf" />}
+                {m.mag_dmg_bonus  > 0 && <StatPill label="M-DMG" value={m.mag_dmg_bonus}  kind="magd" />}
+                {m.mag_def_bonus  > 0 && <StatPill label="M-DEF" value={m.mag_def_bonus}  kind="magf" />}
               </div>
 
               <div className="flex between" style={{ marginTop: 12 }}>
-                <span className="tag" style={{ background: 'rgba(106,167,255,.15)', color: 'var(--azure-1)', fontFamily: 'var(--font-mono)' }}>💎 {m.gem_cost}</span>
+                <span className="tag" style={{ background: 'rgba(106,167,255,.15)', color: 'var(--azure-1)', fontFamily: 'var(--font-mono)' }}>💎 {m.gem_cost.toLocaleString()}</span>
                 {active ? (
                   <span className="tag" style={{ background: 'rgba(255,232,138,.15)', color: 'var(--gold-1)' }}>★ Active</span>
                 ) : m.owned && ownedRow ? (

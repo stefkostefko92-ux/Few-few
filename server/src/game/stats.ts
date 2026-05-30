@@ -19,6 +19,14 @@ export interface DerivedStats {
   crit_chance: number;
   dodge_chance: number;
   speed: number;
+  // Damage-type breakdown. atk_min/atk_max remain the combined "go" number
+  // used by the existing combat sim, but these axes are shown to the player
+  // (Character page, mount tooltip) and let future systems separate magical
+  // and physical mitigation.
+  phys_dmg: number;
+  phys_def: number;
+  mag_dmg: number;
+  mag_def: number;
   active_sets: SetBonusSummary[];
 }
 
@@ -88,6 +96,11 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   let critBonus = 0;
   let dodgeBonus = 0;
   let atkBonus = 0;
+  // Damage-type axes
+  let phys_dmg = 0;
+  let phys_def = 0;
+  let mag_dmg = 0;
+  let mag_def = 0;
 
   for (const slot of equipped) {
     const { item } = slot;
@@ -101,6 +114,10 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     hp_bonus += item.hp_bonus + (e.hp_bonus || 0);
     mp_bonus += item.mp_bonus + (e.mp_bonus || 0);
     def += item.defense + (e.defense || 0);
+    phys_dmg += (item as any).phys_dmg_bonus || 0;
+    phys_def += (item as any).phys_def_bonus || 0;
+    mag_dmg  += (item as any).mag_dmg_bonus  || 0;
+    mag_def  += (item as any).mag_def_bonus  || 0;
     if (item.category === 'weapon') {
       atkMin = item.atk_min + (e.atk_min || 0);
       atkMax = item.atk_max + (e.atk_max || 0);
@@ -165,8 +182,14 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   const classDmg = ch.class === 'mage' ? int_ * 0.7 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
   const skill = classWeaponSkill(ch.class, weaponSub, ch);
 
-  let atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus);
-  let atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus);
+  // Mages use mag_dmg, every other class uses phys_dmg. Defense in the
+  // current combat sim is a single number, so phys_def + mag_def stack
+  // into it; the axes stay visible to the player so future damage-type
+  // splits don't need re-derivation.
+  const typedDmgBonus = ch.class === 'mage' ? mag_dmg : phys_dmg;
+  let atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus + typedDmgBonus);
+  let atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus + typedDmgBonus);
+  def += phys_def + mag_def;
   const hp_max = 40 + con * 6 + ch.level * 6 + hp_bonus;
   const mp_max = 10 + int_ * 3 + wis * 2 + mp_bonus;
 
@@ -180,7 +203,11 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     def     = Math.round(def     * guildBuffs.defence_multiplier);
   }
 
-  return { atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed, active_sets };
+  return {
+    atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed,
+    phys_dmg, phys_def, mag_dmg, mag_def,
+    active_sets,
+  };
 }
 
 export function buildHeroActor(ch: Character, derived: DerivedStats, currentHp: number): CombatActor {

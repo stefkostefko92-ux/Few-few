@@ -6,10 +6,14 @@
  * reward before applying it. Keeping this central means the same %
  * applies whether the reward came from hunting, the tower, daily
  * tribute, camp idle tasks, or a bounty claim — no per-route divergence.
+ *
+ * Mounts deliberately do NOT contribute to gold or XP multipliers — the
+ * cooldown-reduction property is the mount's only utility effect; the
+ * rest of a mount's contribution is real combat stats (phys / mag dmg
+ * and defense) flowing through deriveStats.
  */
 
 import { loadGuildBuffsForCharacter } from './guild';
-import { mountGoldBonusPct } from './cooldowns';
 
 export interface AppliedReward {
   gold: number;
@@ -19,9 +23,7 @@ export interface AppliedReward {
 
 export function applyGuildMultipliers(characterId: number, baseGold: number, baseXp: number): AppliedReward {
   const buffs = loadGuildBuffsForCharacter(characterId);
-  // Mount bonus stacks multiplicatively on top of the guild's Merchant Charter.
-  const mountBonus = 1 + mountGoldBonusPct(characterId) / 100;
-  const goldMul = (buffs?.gold_multiplier ?? 1) * mountBonus;
+  const goldMul = buffs?.gold_multiplier ?? 1;
   const xpMul   = buffs?.exp_multiplier ?? 1;
   return {
     gold: Math.round(baseGold * goldMul),

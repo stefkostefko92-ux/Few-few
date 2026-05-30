@@ -56,6 +56,10 @@ export interface Derived {
   crit_chance: number;
   dodge_chance: number;
   speed: number;
+  phys_dmg?: number;
+  phys_def?: number;
+  mag_dmg?: number;
+  mag_def?: number;
 }
 
 export interface Item {
