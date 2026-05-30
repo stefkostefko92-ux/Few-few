@@ -74,6 +74,8 @@ const SECTIONS: SectionDef[] = [
     items: [
       { to: '/app/shop', label: 'NPC Merchant', icon: IconCoin },
       { to: '/app/market', label: 'Player Market', icon: IconBag },
+      { to: '/app/auction', label: 'Auction House', icon: IconCrown },
+      { to: '/app/stables', label: 'Stables', icon: IconBolt },
       { to: '/app/premium', label: 'Premium Mint', icon: IconStar },
     ],
   },
@@ -146,7 +148,6 @@ export default function Sidebar(): React.ReactElement {
           <div className="sidebar-vitals">
             <Bar label="HP" value={char.hp} max={char.hp_max} kind="hp" />
             <Bar label="MP" value={char.mp} max={char.mp_max} kind="mp" />
-            <Bar label="EN" value={char.energy} max={char.energy_max} kind="energy" />
             <div style={{ height: 1, background: 'var(--border-1)', margin: '10px 0' }} />
             <Bar label="XP" value={xpInLevel(char.level, char.xp)} max={xpToNext(char.level)} kind="xp" />
           </div>

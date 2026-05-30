@@ -9,6 +9,7 @@
  */
 
 import { loadGuildBuffsForCharacter } from './guild';
+import { mountGoldBonusPct } from './cooldowns';
 
 export interface AppliedReward {
   gold: number;
@@ -18,7 +19,9 @@ export interface AppliedReward {
 
 export function applyGuildMultipliers(characterId: number, baseGold: number, baseXp: number): AppliedReward {
   const buffs = loadGuildBuffsForCharacter(characterId);
-  const goldMul = buffs?.gold_multiplier ?? 1;
+  // Mount bonus stacks multiplicatively on top of the guild's Merchant Charter.
+  const mountBonus = 1 + mountGoldBonusPct(characterId) / 100;
+  const goldMul = (buffs?.gold_multiplier ?? 1) * mountBonus;
   const xpMul   = buffs?.exp_multiplier ?? 1;
   return {
     gold: Math.round(baseGold * goldMul),

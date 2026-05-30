@@ -445,6 +445,7 @@ export function applySchema(db: Database.Database): void {
   const invHave = new Set(invCols.map((c) => c.name));
   if (!invHave.has('soul_bound')) db.exec(`ALTER TABLE inventory ADD COLUMN soul_bound INTEGER NOT NULL DEFAULT 0`);
   if (!invHave.has('listed')) db.exec(`ALTER TABLE inventory ADD COLUMN listed INTEGER NOT NULL DEFAULT 0`);
+  if (!invHave.has('vaulted_guild_id')) db.exec(`ALTER TABLE inventory ADD COLUMN vaulted_guild_id INTEGER NOT NULL DEFAULT 0`);
 
   // Active alchemy buffs (JSON array of { stat, percent, expires_at })
   const charCols = db.prepare(`PRAGMA table_info(characters)`).all() as { name: string }[];
@@ -519,4 +520,57 @@ export function applySchema(db: Database.Database): void {
   if (!guildHave.has('exp_bonus_level'))    db.exec(`ALTER TABLE guilds ADD COLUMN exp_bonus_level INTEGER NOT NULL DEFAULT 0`);
   if (!guildHave.has('gold_bonus_level'))   db.exec(`ALTER TABLE guilds ADD COLUMN gold_bonus_level INTEGER NOT NULL DEFAULT 0`);
   if (!guildHave.has('gold_level'))         db.exec(`ALTER TABLE guilds ADD COLUMN gold_level INTEGER NOT NULL DEFAULT 0`);
+
+  // Guild Vault — shared item storage. The lowest guild rank ("recruit")
+  // can only deposit. Members, officers, and the leader can take.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS guild_vault (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      guild_id      INTEGER NOT NULL,
+      inventory_id  INTEGER NOT NULL,
+      deposited_by  INTEGER NOT NULL,
+      deposited_at  INTEGER NOT NULL,
+      FOREIGN KEY (guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+      FOREIGN KEY (inventory_id) REFERENCES inventory(id) ON DELETE CASCADE,
+      FOREIGN KEY (deposited_by) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_guild_vault ON guild_vault(guild_id, deposited_at DESC);
+  `);
+
+  // Auction House — one item up at a time, rotates hourly. Resets at 20:00
+  // UTC daily (the auction_cycles row is keyed by hour bucket).
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS auction_listings (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      hour_bucket   INTEGER NOT NULL UNIQUE,   -- floor(now_ms / 3_600_000)
+      item_slug     TEXT NOT NULL,
+      item_id       INTEGER NOT NULL,
+      starts_at     INTEGER NOT NULL,
+      ends_at       INTEGER NOT NULL,
+      starting_bid  INTEGER NOT NULL,
+      current_bid   INTEGER NOT NULL,
+      bidder_id     INTEGER,                   -- null until first bid
+      bidder_name   TEXT,
+      settled       INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (item_id) REFERENCES items(id),
+      FOREIGN KEY (bidder_id) REFERENCES characters(id) ON DELETE SET NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_auction_hour ON auction_listings(hour_bucket);
+  `);
+
+  // Action cooldowns — replaces the energy economy. Each action kind
+  // (hunt / camp_start / tower / dungeon / quest / arena) has its own
+  // per-character cooldown timestamp.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS character_cooldowns (
+      character_id      INTEGER NOT NULL,
+      action_kind       TEXT NOT NULL,
+      next_available_at INTEGER NOT NULL,
+      PRIMARY KEY (character_id, action_kind),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Equipped mount per character — the mount reduces action cooldowns.
+  if (!charHave.has('mount_inventory_id')) db.exec(`ALTER TABLE characters ADD COLUMN mount_inventory_id INTEGER NOT NULL DEFAULT 0`);
 }

@@ -65,8 +65,8 @@ export default function Hunting(): React.ReactElement {
             <div>{fight.success ? 'Foe down. The hunt continues.' : 'You stagger back, bruised.'}</div>
             <div className="flex gap-sm">
               <button className="btn" onClick={() => setFight(null)}>Stop Hunting</button>
-              <button className="btn btn-primary" disabled={!char || char.energy < 2} onClick={() => hunt(region!)}>
-                Hunt Again (2 EN)
+              <button className="btn btn-primary" disabled={!char} onClick={() => hunt(region!)}>
+                Hunt Again
               </button>
             </div>
           </div>
@@ -81,7 +81,7 @@ export default function Hunting(): React.ReactElement {
         <div className="panel-header">
           <div>
             <h2 className="panel-title">Hunting Grounds</h2>
-            <div className="panel-subtitle">Cheap repeatable encounters — 2 energy, random foe. Stack XP fast.</div>
+            <div className="panel-subtitle">Repeatable encounters — random foe. Each hunt sets a random 1-20 min cooldown (reduced by mounts).</div>
           </div>
         </div>
         <div className="grid-cards">
@@ -89,7 +89,7 @@ export default function Hunting(): React.ReactElement {
             <div key={r.region} className="card" style={{ opacity: r.unlocked ? 1 : 0.5 }}>
               <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{prettyRegion(r.region)}</strong>
               <div className="muted text-sm">Lv {r.min_level}–{r.max_level} · {r.monster_count} foes</div>
-              <button className="btn btn-primary" style={{ marginTop: 12, width: '100%' }} disabled={!r.unlocked || !char || char.energy < 2 || busy} onClick={() => hunt(r.region)}>
+              <button className="btn btn-primary" style={{ marginTop: 12, width: '100%' }} disabled={!r.unlocked || !char || busy} onClick={() => hunt(r.region)}>
                 {!r.unlocked ? `Requires Lv ${r.gate}` : 'Hunt Here'}
               </button>
             </div>

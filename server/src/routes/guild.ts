@@ -249,7 +249,9 @@ router.post('/invite/accept', (req, res) => {
   if (!g) { res.status(404).json({ error: 'Guild no longer exists' }); return; }
   const members = (db.prepare('SELECT COUNT(*) AS c FROM guild_members WHERE guild_id = ?').get(g.id) as { c: number }).c;
   if (members >= g.member_slots) { res.status(400).json({ error: 'Guild is full' }); return; }
-  db.prepare(`INSERT INTO guild_members (guild_id, character_id, role, joined_at) VALUES (?, ?, 'member', ?)`).run(g.id, char.id, Date.now());
+  // New joiners start as recruits — they can deposit to the vault but
+  // can't take. Officers (or the leader) promote them to full member.
+  db.prepare(`INSERT INTO guild_members (guild_id, character_id, role, joined_at) VALUES (?, ?, 'recruit', ?)`).run(g.id, char.id, Date.now());
   db.prepare('DELETE FROM guild_invitations WHERE character_id = ?').run(char.id);
   res.json({ ok: true });
 });
@@ -278,7 +280,8 @@ router.post('/promote', (req, res) => {
   const t = db.prepare('SELECT * FROM guild_members WHERE character_id = ? AND guild_id = ?').get(parse.data.targetId, g.guild.id) as any;
   if (!t) { res.status(404).json({ error: 'Not in your guild.' }); return; }
   if (t.role === 'leader') { res.status(400).json({ error: 'Already the leader.' }); return; }
-  const newRole = t.role === 'member' ? 'officer' : 'leader';
+  // recruit → member → officer → leader
+  const newRole = t.role === 'recruit' ? 'member' : t.role === 'member' ? 'officer' : 'leader';
   db.prepare('UPDATE guild_members SET role = ? WHERE id = ?').run(newRole, t.id);
   if (newRole === 'leader') {
     db.prepare(`UPDATE guild_members SET role = 'officer' WHERE character_id = ?`).run(char.id);
@@ -757,6 +760,108 @@ router.post('/dungeon/end', (req, res) => {
   if (!g || !isOfficerOrLeader(g.role)) { res.status(403).json({ error: 'Officers may end a raid.' }); return; }
   db.prepare('DELETE FROM guild_dungeon_run WHERE guild_id = ?').run(g.guild.id);
   res.json({ ok: true });
+});
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Guild Vault — shared item bank.
+ *
+ *   Deposit: anyone in the guild may donate one of their bag items.
+ *   Take:    everyone EXCEPT recruits (the lowest rank). The cooldown of
+ *            new joiners as recruits means item donations can't be drained
+ *            by alts the second they're invited.
+ *   Vaulted items keep their enchants — the vault row references the same
+ *   inventory_id; we just flip character_id back when someone takes it.
+ * ───────────────────────────────────────────────────────────────────── */
+router.get('/vault', (req, res) => {
+  const char = getCharacter(req.auth!.uid);
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const g = getCharGuild(char.id);
+  if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  const rows = getDb()
+    .prepare(
+      `SELECT v.id AS vault_id, v.deposited_at, v.deposited_by,
+              items.*, c.name AS depositor_name,
+              COALESCE(e.enchant_count, 0) AS enchant_count,
+              COALESCE(e.bonuses_json, '{}') AS enchant_bonuses_json
+       FROM guild_vault v
+       JOIN inventory inv ON inv.id = v.inventory_id
+       JOIN items ON items.id = inv.item_id
+       JOIN characters c ON c.id = v.deposited_by
+       LEFT JOIN inventory_enchants e ON e.inventory_id = v.inventory_id
+       WHERE v.guild_id = ?
+       ORDER BY v.deposited_at DESC`,
+    )
+    .all(g.guild.id);
+  res.json({ vault: rows, can_take: g.role !== 'recruit', my_role: g.role });
+});
+
+router.post('/vault/deposit', (req, res) => {
+  const invId = Number(req.body?.inventoryId);
+  if (!invId) { res.status(400).json({ error: 'inventoryId required' }); return; }
+  const char = getCharacter(req.auth!.uid);
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const db = getDb();
+  const g = getCharGuild(char.id);
+  if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  const inv = db
+    .prepare(
+      `SELECT inv.id, inv.character_id, inv.equipped, inv.soul_bound, inv.listed,
+              items.category, items.name
+       FROM inventory inv JOIN items ON items.id = inv.item_id
+       WHERE inv.id = ? AND inv.character_id = ?`,
+    )
+    .get(invId, char.id) as any;
+  if (!inv) { res.status(404).json({ error: 'Item not in your bag' }); return; }
+  if (inv.equipped) { res.status(400).json({ error: 'Unequip it first' }); return; }
+  if (inv.listed) { res.status(400).json({ error: 'It is listed on the market' }); return; }
+  if (inv.soul_bound) { res.status(400).json({ error: 'Soul-bound items cannot be donated' }); return; }
+  if (inv.category === 'potion') { res.status(400).json({ error: 'Consumables cannot be donated' }); return; }
+
+  const tx = db.transaction(() => {
+    // Mark the row as vaulted — character_id stays so the FK is satisfied,
+    // but the inventory query filters out vaulted_guild_id > 0 so the
+    // depositor no longer sees it in their bag.
+    db.prepare(`UPDATE inventory SET vaulted_guild_id = ? WHERE id = ?`).run(g.guild.id, inv.id);
+    db.prepare(
+      `INSERT INTO guild_vault (guild_id, inventory_id, deposited_by, deposited_at) VALUES (?, ?, ?, ?)`,
+    ).run(g.guild.id, inv.id, char.id, Date.now());
+  });
+  tx();
+  res.json({ ok: true, item_name: inv.name });
+});
+
+router.post('/vault/take', (req, res) => {
+  const vaultId = Number(req.body?.vaultId);
+  if (!vaultId) { res.status(400).json({ error: 'vaultId required' }); return; }
+  const char = getCharacter(req.auth!.uid);
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const db = getDb();
+  const g = getCharGuild(char.id);
+  if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  if (g.role === 'recruit') {
+    res.status(403).json({ error: 'Recruits can only deposit. Ask an officer for a promotion to take from the vault.' });
+    return;
+  }
+  const row = db
+    .prepare(
+      `SELECT v.id, v.inventory_id, v.guild_id, items.name AS item_name
+       FROM guild_vault v
+       JOIN inventory inv ON inv.id = v.inventory_id
+       JOIN items ON items.id = inv.item_id
+       WHERE v.id = ?`,
+    )
+    .get(vaultId) as any;
+  if (!row) { res.status(404).json({ error: 'Vault entry not found' }); return; }
+  if (row.guild_id !== g.guild.id) { res.status(403).json({ error: 'Not your guild\'s vault.' }); return; }
+
+  const tx = db.transaction(() => {
+    // Transfer ownership to the taker and clear the vault flag.
+    db.prepare('UPDATE inventory SET character_id = ?, vaulted_guild_id = 0, equipped = 0, slot = \'\' WHERE id = ?')
+      .run(char.id, row.inventory_id);
+    db.prepare('DELETE FROM guild_vault WHERE id = ?').run(row.id);
+  });
+  tx();
+  res.json({ ok: true, item_name: row.item_name });
 });
 
 export default router;

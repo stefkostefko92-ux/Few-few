@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -52,10 +53,8 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  if (char.energy < 5) {
-    res.status(400).json({ error: 'Need 5 energy to enter the arena' });
-    return;
-  }
+  try { assertReady(char.id, 'arena'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'arena' }); return; }
   const opp = db.prepare('SELECT * FROM characters WHERE id = ?').get(parse.data.opponentId) as Character | undefined;
   if (!opp || opp.id === char.id) {
     res.status(404).json({ error: 'Opponent not found' });
@@ -88,9 +87,9 @@ router.post('/challenge', (req, res) => {
     char.gold += goldGain;
   }
   char.hp = Math.max(1, result.hero.hp);
-  char.energy -= 5;
+  const cooldownMs = setCooldown(char.id, 'arena');
   db.prepare(
-    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ?, arena_rating = ?, wins = wins + ?, losses = losses + ? WHERE id = ?`,
+    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, arena_rating = ?, wins = wins + ?, losses = losses + ? WHERE id = ?`,
   ).run(
     char.xp,
     char.level,
@@ -101,7 +100,6 @@ router.post('/challenge', (req, res) => {
     char.hp,
     char.mp,
     char.gold,
-    char.energy,
     newCharRating,
     result.winner === 'hero' ? 1 : 0,
     result.winner === 'hero' ? 0 : 1,

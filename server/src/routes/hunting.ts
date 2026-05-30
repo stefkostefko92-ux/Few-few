@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { assertReady, setCooldown } from '../game/cooldowns';
 import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
@@ -57,11 +58,8 @@ router.post('/hunt', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  regenerateEnergy(char);
-  if (char.energy < 2) {
-    res.status(400).json({ error: 'Hunting costs 2 energy' });
-    return;
-  }
+  try { assertReady(char.id, 'hunt'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'hunt' }); return; }
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
     res.status(400).json({ error: 'Too wounded to hunt. Rest first.' });
     return;
@@ -116,11 +114,11 @@ router.post('/hunt', (req, res) => {
     lvlRes = applyXp(char, xpGain);
   }
   char.hp = Math.max(1, result.hero.hp > 0 ? result.hero.hp : 1);
-  char.energy -= 2;
+  const cooldownMs = setCooldown(char.id, 'hunt');
   db.prepare(
-    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ? WHERE id = ?`,
+    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,
   ).run(
-    char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy, char.id,
+    char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.id,
   );
 
   const replayHero = { ...result.hero, hp: hero.hp };
@@ -169,6 +167,7 @@ router.post('/hunt', (req, res) => {
     unlocked,
     monsterSlug: monster.slug,
     completedBounties,
+    cooldown_ms: cooldownMs,
   });
 });
 

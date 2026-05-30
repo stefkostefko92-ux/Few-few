@@ -24,7 +24,7 @@ router.get('/', (req, res) => {
        FROM inventory inv
        JOIN items ON inv.item_id = items.id
        LEFT JOIN inventory_enchants e ON e.inventory_id = inv.id
-       WHERE inv.character_id = ?
+       WHERE inv.character_id = ? AND inv.vaulted_guild_id = 0
        ORDER BY inv.equipped DESC, items.category`,
     )
     .all(char.id) as any[];

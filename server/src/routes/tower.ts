@@ -6,6 +6,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { assertReady, setCooldown, loadCooldowns } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -31,7 +32,6 @@ router.use(authRequired);
  * Leaderboard is just the characters table sorted by tower_best_floor.
  * ======================================================================= */
 
-const ENERGY_COST = 5;
 const ARCHETYPES = ['Wraith', 'Golem', 'Drake', 'Phantom', 'Devourer', 'Sentinel', 'Reaver', 'Hydraform'];
 
 function getChar(uid: number): Character | undefined {
@@ -85,8 +85,7 @@ router.get('/status', (req, res) => {
     current_floor: (char as any).tower_current_floor,
     next_floor: next,
     best_floor: (char as any).tower_best_floor,
-    energy: char.energy,
-    energy_cost: ENERGY_COST,
+    cooldowns: loadCooldowns(char.id),
     next_reward: {
       gold: towerGold(next) * (vault ? 2 : 1),
       xp:   towerXp(next)   * (vault ? 2 : 1),
@@ -110,10 +109,8 @@ router.post('/climb', (req, res) => {
   const db = getDb();
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  if (char.energy < ENERGY_COST) {
-    res.status(400).json({ error: `Need ${ENERGY_COST} energy to attempt the next floor.` });
-    return;
-  }
+  try { assertReady(char.id, 'tower'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'tower' }); return; }
 
   // Lazy-init the run seed so each run is a different gauntlet.
   let seed = (char as any).tower_run_seed;
@@ -154,16 +151,16 @@ router.post('/climb', (req, res) => {
   }
 
   char.hp = Math.max(1, result.hero.hp > 0 ? result.hero.hp : 1);
-  char.energy -= ENERGY_COST;
+  const cooldownMs = setCooldown(char.id, 'tower');
   db.prepare(
     `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?,
-       hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ?,
+       hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?,
        tower_current_floor = ?, tower_best_floor = ?, tower_run_seed = ?,
        trial_tokens = trial_tokens + ?
      WHERE id = ?`,
   ).run(
     char.xp, char.level, char.stat_points, char.skill_points,
-    char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy,
+    char.hp_max, char.mp_max, char.hp, char.mp, char.gold,
     newFloor, newBest, runSeed, tokensGained, char.id,
   );
 
@@ -195,6 +192,7 @@ router.post('/climb', (req, res) => {
     current_floor: newFloor,
     best_floor: newBest,
     run_ended: runEnded,
+    cooldown_ms: cooldownMs,
     vault: targetFloor % 5 === 0 && result.winner === 'hero',
   });
 });

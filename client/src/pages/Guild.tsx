@@ -3,9 +3,11 @@ import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Avatar from '../components/Avatar';
 import CombatScene from '../combat/CombatScene';
+import Sprite, { spriteForItem } from '../components/Sprite';
+import type { InventoryItem } from '../lib/types';
 import '../styles/guild.css';
 
-type Tab = 'overview' | 'members' | 'chat' | 'wars' | 'raid' | 'upgrade';
+type Tab = 'overview' | 'members' | 'vault' | 'chat' | 'wars' | 'raid' | 'upgrade';
 
 interface GuildData {
   guild: any | null;
@@ -51,6 +53,7 @@ export default function Guild(): React.ReactElement {
   const tabs: { key: Tab; label: string; badge?: number }[] = [
     { key: 'overview', label: 'Overview' },
     { key: 'members', label: `Members (${data.members.length}/${g.member_slots})` },
+    { key: 'vault', label: 'Vault' },
     { key: 'chat', label: 'Chat' },
     { key: 'wars', label: 'Wars' },
     { key: 'raid', label: 'Raid' },
@@ -105,6 +108,7 @@ export default function Guild(): React.ReactElement {
 
         {tab === 'overview' && <OverviewTab data={data} />}
         {tab === 'members' && <MembersTab data={data} onChanged={load} />}
+        {tab === 'vault' && <VaultTab onRefreshChar={refreshChar} />}
         {tab === 'chat' && <ChatTab guildId={g.id} myCharId={char?.id} />}
         {tab === 'wars' && (
           <WarsTab
@@ -783,6 +787,117 @@ function BonusRow({ icon, label, value }: { icon: string; label: string; value: 
         <div className="label">{label}</div>
         <div className="value">{value}</div>
       </div>
+    </div>
+  );
+}
+
+/* ───── Vault ───── */
+function VaultTab({ onRefreshChar }: { onRefreshChar: () => Promise<any> }): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [vault, setVault] = useState<any[]>([]);
+  const [canTake, setCanTake] = useState(true);
+  const [myRole, setMyRole] = useState<string>('');
+  const [bag, setBag] = useState<InventoryItem[]>([]);
+  const [showDeposit, setShowDeposit] = useState(false);
+
+  async function load() {
+    try {
+      const r = await api.get('/guild/vault');
+      setVault(r.vault || []);
+      setCanTake(!!r.can_take);
+      setMyRole(r.my_role || '');
+      const inv = await api.get('/inventory');
+      setBag((inv.items || []).filter((i: InventoryItem) =>
+        !i.equipped && !i.soul_bound && !i.listed && i.category !== 'potion',
+      ));
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function deposit(invId: number) {
+    try { await api.post('/guild/vault/deposit', { inventoryId: invId }); toast('Deposited to vault.', 'success'); setShowDeposit(false); await Promise.all([load(), onRefreshChar()]); }
+    catch (e: any) { toast(e.message, 'error'); }
+  }
+  async function take(vaultId: number) {
+    try { await api.post('/guild/vault/take', { vaultId }); toast('Item taken.', 'success'); await Promise.all([load(), onRefreshChar()]); }
+    catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  return (
+    <div>
+      <div className="flex between" style={{ marginBottom: 14, alignItems: 'center' }}>
+        <div>
+          <h3 style={{ margin: 0 }}>Guild Vault</h3>
+          <div className="muted text-sm" style={{ marginTop: 4 }}>
+            Shared storage. Recruits can deposit but cannot take — get a promotion to draw from the vault.
+            {myRole && <span className="tag" style={{ marginLeft: 8 }}>You: {myRole}</span>}
+          </div>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowDeposit(true)}>Deposit item</button>
+      </div>
+
+      {vault.length === 0 ? (
+        <div className="muted">Vault is empty. Be the first to donate.</div>
+      ) : (
+        <div className="grid-cards">
+          {vault.map((v: any) => {
+            const enchants = v.enchant_count || 0;
+            return (
+              <div key={v.vault_id} className={`card rarity-border-${v.rarity}`} style={{ padding: 14 }}>
+                <div className="flex" style={{ gap: 12, alignItems: 'flex-start' }}>
+                  <Sprite {...spriteForItem(v)} size={42} enchant={enchants} />
+                  <div style={{ flex: 1 }}>
+                    <div className={`rarity-${v.rarity}`} style={{ fontWeight: 700 }}>{v.name}</div>
+                    <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                      {v.category} · Lv {v.level_req} · {v.rarity}
+                    </div>
+                    <div className="muted text-sm" style={{ marginTop: 4 }}>
+                      Donated by {v.depositor_name} · {new Date(v.deposited_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  className="btn btn-primary"
+                  disabled={!canTake}
+                  onClick={() => take(v.vault_id)}
+                  style={{ width: '100%', marginTop: 10 }}
+                >
+                  {canTake ? 'Take' : 'Recruits cannot take'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {showDeposit && (
+        <div className="modal-backdrop" onClick={() => setShowDeposit(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Deposit Item</h3>
+            <div className="muted text-sm" style={{ marginBottom: 10 }}>Pick an unequipped, non-bound item. Consumables cannot be deposited.</div>
+            {bag.length === 0 ? (
+              <div className="muted">No depositable items in your bag.</div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))', gap: 6 }}>
+                {bag.map((b) => (
+                  <div
+                    key={b.inv_id}
+                    onClick={() => deposit(b.inv_id)}
+                    title={b.name}
+                    style={{
+                      aspectRatio: '1 / 1', display: 'grid', placeItems: 'center', borderRadius: 8, cursor: 'pointer',
+                      background: 'var(--surface-1)', border: '1px solid var(--border-1)',
+                    }}
+                  >
+                    <Sprite {...spriteForItem(b)} size={28} enchant={b.enchant_count} />
+                  </div>
+                ))}
+              </div>
+            )}
+            <button className="btn" style={{ marginTop: 12 }} onClick={() => setShowDeposit(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

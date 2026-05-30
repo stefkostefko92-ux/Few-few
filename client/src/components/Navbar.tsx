@@ -75,11 +75,6 @@ export default function Navbar(): React.ReactElement {
               <span className="label">HP</span>
               <span className="value hp"><AnimatedNumber value={char.hp_max} /></span>
             </div>
-            <div className="nav-stat en-stat" title={`Energy · ${char.energy} / ${char.energy_max}`}>
-              <span className="nav-stat-dot dot-energy" />
-              <span className="label">EN</span>
-              <span className="value energy"><AnimatedNumber value={char.energy} /></span>
-            </div>
             <div className="nav-stat gp-stat" title={`Gold · ${char.gold.toLocaleString()}`}>
               <span className="nav-stat-dot dot-gold" />
               <span className="label">GP</span>

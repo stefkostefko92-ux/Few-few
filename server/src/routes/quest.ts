@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
 
@@ -49,10 +50,8 @@ router.post('/start', (req, res) => {
     res.status(400).json({ error: `Requires level ${quest.level_req}` });
     return;
   }
-  if (char.energy < quest.energy_cost) {
-    res.status(400).json({ error: 'Not enough energy' });
-    return;
-  }
+  try { assertReady(char.id, 'quest'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'quest' }); return; }
   if (char.hp <= Math.floor(char.hp_max * 0.1)) {
     res.status(400).json({ error: 'Too wounded to set out. Rest first.' });
     return;
@@ -77,9 +76,9 @@ router.post('/start', (req, res) => {
     const goldGain = r.gold;
     char.gold += goldGain;
     const lvlRes = applyXp(char, xpGain);
-    char.energy -= quest.energy_cost;
+    setCooldown(char.id, 'quest');
     db.prepare(
-      `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ? WHERE id = ?`,
+      `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,
     ).run(
       char.xp,
       char.level,
@@ -90,7 +89,6 @@ router.post('/start', (req, res) => {
       char.hp,
       char.mp,
       char.gold,
-      char.energy,
       char.id,
     );
     db.prepare('INSERT INTO quest_log (character_id, quest_id, result, completed_at) VALUES (?, ?, ?, ?)').run(
@@ -160,9 +158,9 @@ router.post('/start', (req, res) => {
     const penalty = Math.min(char.gold, Math.floor(char.gold * 0.1));
     char.gold -= penalty;
   }
-  char.energy -= quest.energy_cost;
+  setCooldown(char.id, 'quest');
   db.prepare(
-    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ? WHERE id = ?`,
+    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ? WHERE id = ?`,
   ).run(
     char.xp,
     char.level,
@@ -173,7 +171,6 @@ router.post('/start', (req, res) => {
     char.hp,
     char.mp,
     char.gold,
-    char.energy,
     char.id,
   );
   // Reset the foe/hero actors to the start-of-fight HP so the replay shows the full duel.

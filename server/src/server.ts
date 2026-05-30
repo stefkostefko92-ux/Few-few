@@ -35,6 +35,8 @@ import bountyRoutes from './routes/bounties';
 import trialCacheRoutes from './routes/trialCache';
 import battlePassRoutes from './routes/battlepass';
 import recipeRoutes from './routes/recipes';
+import auctionRoutes from './routes/auction';
+import mountRoutes from './routes/mount';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
 
@@ -100,6 +102,8 @@ app.use('/api/bounties', bountyRoutes);
 app.use('/api/trial-cache', trialCacheRoutes);
 app.use('/api/battlepass', battlePassRoutes);
 app.use('/api/recipes', recipeRoutes);
+app.use('/api/auction', auctionRoutes);
+app.use('/api/mount', mountRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

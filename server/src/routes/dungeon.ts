@@ -9,6 +9,7 @@ import { applyCombatEvent, evaluateAchievements } from '../game/events';
 import { DUNGEONS, findDungeon } from '../seed/dungeons';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, Monster } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -58,7 +59,6 @@ router.post('/enter', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  regenerateEnergy(char);
   const dungeon = findDungeon(parse.data.slug);
   if (!dungeon) {
     res.status(404).json({ error: 'Dungeon not found' });
@@ -68,10 +68,8 @@ router.post('/enter', (req, res) => {
     res.status(400).json({ error: `Requires level ${dungeon.level_req}` });
     return;
   }
-  if (char.energy < dungeon.energy_cost) {
-    res.status(400).json({ error: 'Not enough energy to enter' });
-    return;
-  }
+  try { assertReady(char.id, 'dungeon'); }
+  catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'dungeon' }); return; }
   if (char.hp < Math.floor(char.hp_max * 0.5)) {
     res.status(400).json({ error: 'Enter the dungeon at half health or more.' });
     return;
@@ -82,9 +80,8 @@ router.post('/enter', (req, res) => {
     `INSERT INTO dungeon_run (character_id, slug, stage, hp, hp_max, gold_pile, xp_pile, items_json, started_at)
      VALUES (?, ?, 0, ?, ?, 0, 0, '[]', ?)`,
   ).run(char.id, dungeon.slug, char.hp, char.hp_max, Date.now());
-  char.energy -= dungeon.energy_cost;
-  db.prepare('UPDATE characters SET energy = ? WHERE id = ?').run(char.energy, char.id);
-  res.json({ ok: true, dungeon: dungeon.slug, totalStages: dungeon.stages.length, intro: dungeon.intro });
+  const cooldownMs = setCooldown(char.id, 'dungeon');
+  res.json({ ok: true, dungeon: dungeon.slug, totalStages: dungeon.stages.length, intro: dungeon.intro, cooldown_ms: cooldownMs });
 });
 
 router.post('/advance', (req, res) => {
