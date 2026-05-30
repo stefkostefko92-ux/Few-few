@@ -1,7 +1,6 @@
 import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
 import { ITEM_SETS, type SetBonus, type SetDef } from '../seed/sets';
-import { getDb } from '../db';
-import { getGuildBonus } from './guild';
+import { loadGuildBuffsForCharacter } from './guild';
 
 export interface SetBonusSummary {
   set_slug: string;
@@ -148,37 +147,37 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     }
   }
 
+  // ─── Guild track buffs ───────────────────────────────────────────
+  // Six independent guild tracks (attr / power / defence / exp / gold /
+  // protected_gold) feed into every member's combat math. We apply the
+  // attr multiplier BEFORE deriving HP/MP so the bonus propagates through
+  // the existing curves correctly.
+  const guildBuffs = ch.is_npc ? null : loadGuildBuffsForCharacter(ch.id);
+  if (guildBuffs) {
+    str  = Math.round(str  * guildBuffs.attr_multiplier);
+    dex  = Math.round(dex  * guildBuffs.attr_multiplier);
+    con  = Math.round(con  * guildBuffs.attr_multiplier);
+    int_ = Math.round(int_ * guildBuffs.attr_multiplier);
+    wis  = Math.round(wis  * guildBuffs.attr_multiplier);
+    cha  = Math.round(cha  * guildBuffs.attr_multiplier);
+  }
+
   const classDmg = ch.class === 'mage' ? int_ * 0.7 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
   const skill = classWeaponSkill(ch.class, weaponSub, ch);
 
-  const atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus);
-  const atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus);
-
-  let hp_max = 40 + con * 6 + ch.level * 6 + hp_bonus;
+  let atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus);
+  let atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus);
+  const hp_max = 40 + con * 6 + ch.level * 6 + hp_bonus;
   const mp_max = 10 + int_ * 3 + wis * 2 + mp_bonus;
 
-  let dodge_chance = Math.min(0.45, dex * 0.005 + ch.skill_stealth * 0.004 + dodgeBonus);
-  let crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);
+  const dodge_chance = Math.min(0.45, dex * 0.005 + ch.skill_stealth * 0.004 + dodgeBonus);
+  const crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);
   const speed = 5 + Math.round(dex * 0.4);
 
-  // ─── Guild banner buffs ───────────────────────────────────────────
-  // The guild's level-based bonuses (defined in game/guild.ts) flow into
-  // EVERY combat call here, so being in a higher-tier guild actually
-  // makes your hero stronger. This is the missing link that turns guild
-  // donations into a tangible combat advantage.
-  if (!ch.is_npc) {
-    const row = getDb()
-      .prepare(
-        `SELECT g.level FROM guild_members gm JOIN guilds g ON g.id = gm.guild_id
-         WHERE gm.character_id = ?`,
-      )
-      .get(ch.id) as { level: number } | undefined;
-    if (row) {
-      const gb = getGuildBonus(row.level);
-      hp_max = Math.round(hp_max * gb.hp_multiplier);
-      crit_chance = Math.min(0.65, crit_chance + gb.crit_bonus);
-      dodge_chance = Math.min(0.55, dodge_chance + gb.dodge_bonus);
-    }
+  if (guildBuffs) {
+    atk_min = Math.round(atk_min * guildBuffs.power_multiplier);
+    atk_max = Math.round(atk_max * guildBuffs.power_multiplier);
+    def     = Math.round(def     * guildBuffs.defence_multiplier);
   }
 
   return { atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed, active_sets };

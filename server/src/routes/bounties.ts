@@ -4,6 +4,7 @@ import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
 import { logFromRequest } from '../lib/logger';
 import { trackBattlePass } from './battlepass';
+import { applyGuildMultipliers } from '../game/rewards';
 import type { Character, Monster } from '../types/domain';
 
 const router = Router();
@@ -170,9 +171,10 @@ router.post('/claim', (req, res) => {
     return;
   }
 
-  // Apply rewards
-  char.gold += b.reward.gold;
-  const lvlRes = applyXp(char, b.reward.xp);
+  // Apply rewards — guild Scholarship / Merchant Charter multipliers apply.
+  const reward = applyGuildMultipliers(char.id, b.reward.gold, b.reward.xp);
+  char.gold += reward.gold;
+  const lvlRes = applyXp(char, reward.xp);
 
   // Persist character + bounty
   db.prepare(
@@ -210,13 +212,13 @@ router.post('/claim', (req, res) => {
     category: 'character', action: 'bounty_claim',
     character_id: char.id,
     message: `${char.name} claimed bounty: ${b.monster_name} ×${b.count_required}`,
-    meta: { id: b.id, tier: b.tier, monster: b.monster_slug, gold: b.reward.gold, xp: b.reward.xp, trophies: b.reward.trophy },
+    meta: { id: b.id, tier: b.tier, monster: b.monster_slug, gold: reward.gold, xp: reward.xp, trophies: b.reward.trophy },
   });
 
   res.json({
     ok: true,
-    gold: b.reward.gold,
-    xp: b.reward.xp,
+    gold: reward.gold,
+    xp: reward.xp,
     trophy: b.reward.trophy,
     levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
   });

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
+import { applyGuildMultipliers } from '../game/rewards';
 import { evaluateAchievements } from '../game/events';
 import { trackBattlePass } from './battlepass';
 import type { Character } from '../types/domain';
@@ -81,6 +82,11 @@ router.post('/spin', (req, res) => {
   } else if (seg.kind === 'potion' || seg.kind === 'item') {
     itemSlug = (seg as any).item;
   }
+
+  // Apply guild scholarship / charter to wheel rewards too.
+  const mul = applyGuildMultipliers(char.id, goldDelta, xpDelta);
+  goldDelta = mul.gold;
+  xpDelta   = mul.xp;
 
   char.gold += goldDelta;
   char.energy = Math.min(char.energy_max, char.energy + energyDelta);

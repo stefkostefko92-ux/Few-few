@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
 import { DUNGEONS, findDungeon } from '../seed/dungeons';
 import { loadEquipped } from '../game/equipment';
+import { applyGuildMultipliers } from '../game/rewards';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, Monster } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -219,8 +220,11 @@ router.post('/claim', (req, res) => {
   if (dungeon.loot_pool.length) {
     items.push(dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)]);
   }
-  const xp = run.xp_pile + dungeon.xp_bonus;
-  const gold = run.gold_pile + dungeon.gold_bonus;
+  const baseXp = run.xp_pile + dungeon.xp_bonus;
+  const baseGold = run.gold_pile + dungeon.gold_bonus;
+  const reward = applyGuildMultipliers(char.id, baseGold, baseXp);
+  const xp = reward.xp;
+  const gold = reward.gold;
   char.gold += gold;
   const lvlRes = applyXp(char, xp);
   char.hp = run.hp; // exit with current HP

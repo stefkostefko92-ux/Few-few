@@ -2,7 +2,17 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { GUILD_BONUSES, GUILD_LEVEL_XP, GUILD_LEVEL_GEMS, GUILD_PREMIUM_THRESHOLD, GUILD_CREATE_COST, GUILD_CREATE_LEVEL_REQ, getGuildBonus } from '../game/guild';
+import {
+  GUILD_CREATE_COST,
+  GUILD_CREATE_LEVEL_REQ,
+  GUILD_TRACKS,
+  MEMBER_SLOTS_BY_LEVEL,
+  MEMBER_SLOT_TIER_XP,
+  MEMBER_SLOT_TIER_GEMS,
+  computeBuffs,
+  loadGuildLevels,
+  trackUpgradeCost,
+} from '../game/guild';
 import { trackBattlePass } from './battlepass';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
@@ -91,14 +101,17 @@ router.get('/me', (req, res) => {
     )
     .all(g.guild.id, g.guild.id);
   const dungeon = db.prepare('SELECT * FROM guild_dungeon_run WHERE guild_id = ?').get(g.guild.id) as any;
+  const levels = loadGuildLevels(g.guild.id);
+  const buffs = computeBuffs(levels);
   res.json({
     guild: {
       ...g.guild,
       member_count: members.length,
-      bonus: getGuildBonus(g.guild.level),
-      next_level_xp: GUILD_LEVEL_XP[g.guild.level + 1] || null,
-      next_level_gems: GUILD_LEVEL_GEMS[g.guild.level + 1] || 0,
-      premium_threshold: GUILD_PREMIUM_THRESHOLD,
+      bonus: buffs,
+      track_levels: levels,
+      next_level_xp: MEMBER_SLOT_TIER_XP[g.guild.level + 1] || null,
+      next_level_gems: MEMBER_SLOT_TIER_GEMS[g.guild.level + 1] || 0,
+      premium_threshold: 4,
     },
     members,
     my_role: g.role,
@@ -147,7 +160,7 @@ router.post('/create', (req, res) => {
         `INSERT INTO guilds (name, tag, motto, description, level, xp, member_slots, gold, crest_color, leader_id, created_at)
          VALUES (?, ?, ?, '', 1, 0, ?, 0, ?, ?, ?)`,
       )
-      .run(parse.data.name, parse.data.tag, parse.data.motto, GUILD_BONUSES[1].member_slots, parse.data.crest_color, char.id, now);
+      .run(parse.data.name, parse.data.tag, parse.data.motto, MEMBER_SLOTS_BY_LEVEL[1], parse.data.crest_color, char.id, now);
     const guildId = info.lastInsertRowid as number;
     db.prepare(`INSERT INTO guild_members (guild_id, character_id, role, joined_at) VALUES (?, ?, 'leader', ?)`).run(
       guildId, char.id, now,
@@ -343,26 +356,105 @@ router.post('/donate', (req, res) => {
   res.json({ ok: true, gold_equivalent: goldEquivalent, currency, amount });
 });
 
-router.post('/upgrade', (req, res) => {
+/* ──────────────────────────────────────────────────────────────────────
+ * Multi-track upgrades — Bloodlines / Power / Defence / Scholarship /
+ * Merchant Charter / Strongroom. Each track 0..100, independent levels.
+ *
+ *   GET  /upgrade/status — current levels + next-level cost per track
+ *   POST /upgrade/track  — { track } advance that track by 1 (costs XP)
+ *
+ * Member slots stay on the legacy 5-tier system because uncapped roster
+ * sizes break raids and chat. The slots upgrade lives at /upgrade/slots.
+ * ────────────────────────────────────────────────────────────────────── */
+
+router.get('/upgrade/status', (req, res) => {
+  const char = getCharacter(req.auth!.uid);
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const g = getCharGuild(char.id);
+  if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  const levels = loadGuildLevels(g.guild.id);
+  const buffs = computeBuffs(levels);
+  res.json({
+    guild_xp: g.guild.xp,
+    member_slots_level: levels.member_slots_level,
+    member_slots_max: buffs.member_slots,
+    member_slots_next_xp: MEMBER_SLOT_TIER_XP[levels.member_slots_level + 1] || null,
+    member_slots_next_gems: MEMBER_SLOT_TIER_GEMS[levels.member_slots_level + 1] || 0,
+    tracks: GUILD_TRACKS.map((t) => {
+      const cur = levels[t.key as keyof typeof levels] as number;
+      return {
+        key: t.key,
+        label: t.label,
+        description: t.description,
+        level: cur,
+        max: t.max,
+        next_cost: cur >= t.max ? null : trackUpgradeCost(cur),
+      };
+    }),
+    buffs,
+  });
+});
+
+router.post('/upgrade/track', (req, res) => {
+  const trackKey = String(req.body?.track || '');
+  const def = GUILD_TRACKS.find((t) => t.key === trackKey);
+  if (!def) { res.status(400).json({ error: 'Unknown track' }); return; }
   const char = getCharacter(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const db = getDb();
   const g = getCharGuild(char.id);
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
-  if (g.role !== 'leader') { res.status(403).json({ error: 'Only the leader may upgrade.' }); return; }
+  if (g.role !== 'leader' && g.role !== 'officer') {
+    res.status(403).json({ error: 'Only the leader or officers may invest in upgrades.' });
+    return;
+  }
+  const levels = loadGuildLevels(g.guild.id);
+  const current = levels[def.key as keyof typeof levels] as number;
+  if (current >= def.max) { res.status(400).json({ error: `${def.label} is already maxed.` }); return; }
+  const cost = trackUpgradeCost(current);
+  if (g.guild.xp < cost) {
+    res.status(400).json({ error: `Need ${cost.toLocaleString()} guild XP for the next ${def.label} level.` });
+    return;
+  }
+  // Atomic — only succeed if XP is still present (concurrent upgrades guarded).
+  const updated = db
+    .prepare(`UPDATE guilds SET ${def.column} = ${def.column} + 1, xp = xp - ? WHERE id = ? AND xp >= ?`)
+    .run(cost, g.guild.id, cost);
+  if (updated.changes !== 1) {
+    res.status(400).json({ error: 'Guild XP shifted — retry.' });
+    return;
+  }
+  res.json({
+    ok: true,
+    track: def.key,
+    new_level: current + 1,
+    cost_paid: cost,
+    next_cost: current + 1 >= def.max ? null : trackUpgradeCost(current + 1),
+  });
+});
+
+router.post('/upgrade/slots', (req, res) => {
+  // Legacy 1..5 member-slots upgrade — kept on its own track since
+  // uncapped guild membership breaks balance.
+  const char = getCharacter(req.auth!.uid);
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const db = getDb();
+  const g = getCharGuild(char.id);
+  if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
+  if (g.role !== 'leader') { res.status(403).json({ error: 'Only the leader may expand the roster.' }); return; }
   const next = g.guild.level + 1;
-  const needXp = GUILD_LEVEL_XP[next];
-  const needGems = GUILD_LEVEL_GEMS[next] || 0;
-  if (!needXp) { res.status(400).json({ error: 'Maximum guild level reached.' }); return; }
+  const needXp = MEMBER_SLOT_TIER_XP[next];
+  const needGems = MEMBER_SLOT_TIER_GEMS[next] || 0;
+  if (!needXp) { res.status(400).json({ error: 'Maximum roster size reached.' }); return; }
   if (g.guild.xp < needXp) {
-    res.status(400).json({ error: `Need ${needXp.toLocaleString()} guild XP to advance.` });
+    res.status(400).json({ error: `Need ${needXp.toLocaleString()} guild XP for the next tier.` });
     return;
   }
   if (needGems > 0) {
     const currentGems = ((char as any).gems || 0);
     if (currentGems < needGems) {
       res.status(402).json({
-        error: `Tier ${next} requires ${needGems} gems. You have ${currentGems}.`,
+        error: `Roster tier ${next} requires ${needGems} gems. You have ${currentGems}.`,
         needGems,
         haveGems: currentGems,
         purchase_required: true,
@@ -370,19 +462,16 @@ router.post('/upgrade', (req, res) => {
       return;
     }
   }
-  const slots = GUILD_BONUSES[next].member_slots;
+  const slots = MEMBER_SLOTS_BY_LEVEL[next];
   db.prepare(`UPDATE guilds SET level = ?, xp = xp - ?, member_slots = ? WHERE id = ?`).run(next, needXp, slots, g.guild.id);
   if (needGems > 0) {
     db.prepare(`UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ?`).run(needGems, needGems, char.id);
   }
-  res.json({
-    ok: true,
-    level: next,
-    member_slots: slots,
-    bonus: GUILD_BONUSES[next],
-    gems_spent: needGems,
-  });
+  res.json({ ok: true, level: next, member_slots: slots, gems_spent: needGems });
 });
+
+/* Back-compat: old single /upgrade endpoint becomes an alias for /upgrade/slots. */
+router.post('/upgrade', (req, res, next) => { (req.url as any) = '/upgrade/slots'; next(); });
 
 /* ===== Chat ===== */
 

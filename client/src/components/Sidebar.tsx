@@ -47,6 +47,7 @@ const SECTIONS: SectionDef[] = [
       { to: '/app/trial-cache', label: 'Trial Cache', icon: IconStar },
       { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
       { to: '/app/forge', label: 'The Forge', icon: IconBolt },
+      { to: '/app/recipes', label: 'Recipe Board', icon: IconStar },
       { to: '/app/world', label: 'World Map', icon: IconMap },
       { to: '/app/arena', label: 'Arena', icon: IconSword },
       { to: '/app/history', label: 'Battle History', icon: IconSword },

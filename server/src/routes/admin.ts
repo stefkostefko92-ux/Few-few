@@ -43,14 +43,150 @@ router.get('/overview', (_req, res) => {
     monsters: (db.prepare('SELECT COUNT(*) AS c FROM monsters').get() as { c: number }).c,
     quests: (db.prepare('SELECT COUNT(*) AS c FROM quests').get() as { c: number }).c,
     battles: (db.prepare('SELECT COUNT(*) AS c FROM combat_log').get() as { c: number }).c,
+    guilds: (db.prepare('SELECT COUNT(*) AS c FROM guilds').get() as { c: number }).c,
+    tower_climbs: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action IN ('tower_clear','tower_wipe')").get() as { c: number }).c,
+    bounty_claims: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action = 'bounty_claim'").get() as { c: number }).c,
+    forge_enchants: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action = 'forge_enchant'").get() as { c: number }).c,
+    forge_shatters: (db.prepare("SELECT COUNT(*) AS c FROM event_log WHERE action = 'forge_shatter'").get() as { c: number }).c,
+    market_sales: (db.prepare("SELECT COUNT(*) AS c FROM marketplace_listings WHERE status = 'sold'").get() as { c: number }).c,
+    market_listings_active: (db.prepare("SELECT COUNT(*) AS c FROM marketplace_listings WHERE status = 'active'").get() as { c: number }).c,
+    trial_tokens_spent: (db.prepare("SELECT COUNT(*) AS c FROM trial_purchases").get() as { c: number }).c,
+    battle_pass_passes: (db.prepare("SELECT COUNT(*) AS c FROM battle_pass").get() as { c: number }).c,
+    battle_pass_premium: (db.prepare("SELECT COUNT(*) AS c FROM battle_pass WHERE premium_unlocked = 1").get() as { c: number }).c,
   };
   const recentUsers = db
     .prepare('SELECT id, username, email, created_at, last_seen_at, is_admin FROM users ORDER BY created_at DESC LIMIT 12')
     .all();
   const topChars = db
-    .prepare("SELECT name, class, level, arena_rating, gold, is_npc FROM characters ORDER BY level DESC, arena_rating DESC LIMIT 10")
+    .prepare("SELECT name, class, level, arena_rating, gold, tower_best_floor, trial_tokens, is_npc FROM characters ORDER BY level DESC, arena_rating DESC LIMIT 10")
     .all();
   res.json({ counts, recentUsers, topChars });
+});
+
+/* =========================================================
+   Tower of Trials — leaderboard, force-reset run, edit best
+   ========================================================= */
+router.get('/tower', (_req, res) => {
+  const db = getDb();
+  const climbers = db
+    .prepare(
+      `SELECT id, name, class, level, tower_best_floor, tower_current_floor, trial_tokens, forge_guarantees
+       FROM characters WHERE is_npc = 0 AND tower_best_floor > 0
+       ORDER BY tower_best_floor DESC LIMIT 50`,
+    )
+    .all();
+  res.json({ climbers });
+});
+
+router.post('/tower/reset/:id', (req, res) => {
+  const id = Number(req.params.id);
+  getDb().prepare('UPDATE characters SET tower_current_floor = 0, tower_run_seed = 0 WHERE id = ?').run(id);
+  res.json({ ok: true });
+});
+
+/* =========================================================
+   Bounties — view / force-refresh
+   ========================================================= */
+router.get('/bounties', (_req, res) => {
+  const rows = getDb()
+    .prepare(
+      `SELECT cb.character_id, c.name AS character_name, cb.day_index, cb.bounties_json
+       FROM character_bounties cb JOIN characters c ON c.id = cb.character_id
+       ORDER BY cb.day_index DESC LIMIT 100`,
+    )
+    .all();
+  res.json({ rows });
+});
+
+router.post('/bounties/clear/:id', (req, res) => {
+  const id = Number(req.params.id);
+  getDb().prepare('DELETE FROM character_bounties WHERE character_id = ?').run(id);
+  res.json({ ok: true });
+});
+
+/* =========================================================
+   Battle Pass — view subscriptions, force-unlock premium
+   ========================================================= */
+router.get('/battlepass', (req, res) => {
+  const month = (req.query.month as string) || '';
+  const where = month ? 'WHERE bp.month_key = ?' : '';
+  const params = month ? [month] : [];
+  const rows = getDb()
+    .prepare(
+      `SELECT bp.character_id, c.name AS character_name, bp.month_key,
+              bp.premium_unlocked, bp.generated_at,
+              json(bp.progress_json) AS progress_json,
+              json(bp.claimed_json) AS claimed_json
+       FROM battle_pass bp JOIN characters c ON c.id = bp.character_id
+       ${where}
+       ORDER BY bp.month_key DESC, c.id LIMIT 200`,
+    )
+    .all(...params);
+  res.json({ rows });
+});
+
+router.post('/battlepass/unlock-premium/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const month = String((req.body && req.body.month) || '');
+  if (!month) { res.status(400).json({ error: 'month_key required' }); return; }
+  getDb().prepare('UPDATE battle_pass SET premium_unlocked = 1 WHERE character_id = ? AND month_key = ?').run(id, month);
+  res.json({ ok: true });
+});
+
+/* =========================================================
+   Trial Cache purchases (audit)
+   ========================================================= */
+router.get('/trial-purchases', (_req, res) => {
+  const rows = getDb()
+    .prepare(
+      `SELECT tp.character_id, c.name AS character_name, tp.slug, tp.bought_at
+       FROM trial_purchases tp JOIN characters c ON c.id = tp.character_id
+       ORDER BY tp.bought_at DESC LIMIT 200`,
+    )
+    .all();
+  res.json({ rows });
+});
+
+/* =========================================================
+   Guilds — admin overview + per-track level editing
+   ========================================================= */
+router.get('/guilds', (_req, res) => {
+  const guilds = getDb()
+    .prepare(
+      `SELECT g.id, g.name, g.tag, g.level AS slots_tier, g.xp, g.gold,
+              g.attr_level, g.power_level, g.defence_level,
+              g.exp_bonus_level, g.gold_bonus_level, g.gold_level,
+              (SELECT COUNT(*) FROM guild_members gm WHERE gm.guild_id = g.id) AS member_count
+       FROM guilds g
+       ORDER BY g.xp DESC`,
+    )
+    .all();
+  res.json({ guilds });
+});
+
+const guildTrackPatchSchema = z.object({
+  attr_level: z.number().int().min(0).max(100).optional(),
+  power_level: z.number().int().min(0).max(100).optional(),
+  defence_level: z.number().int().min(0).max(100).optional(),
+  exp_bonus_level: z.number().int().min(0).max(100).optional(),
+  gold_bonus_level: z.number().int().min(0).max(100).optional(),
+  gold_level: z.number().int().min(0).max(100).optional(),
+  xp: z.number().int().min(0).optional(),
+  gold: z.number().int().min(0).optional(),
+});
+router.put('/guilds/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const parse = guildTrackPatchSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const sets: string[] = [];
+  const params: any[] = [];
+  for (const [k, v] of Object.entries(parse.data)) {
+    if (typeof v === 'number') { sets.push(`${k} = ?`); params.push(v); }
+  }
+  if (!sets.length) { res.status(400).json({ error: 'No fields to update' }); return; }
+  params.push(id);
+  getDb().prepare(`UPDATE guilds SET ${sets.join(', ')} WHERE id = ?`).run(...params);
+  res.json({ ok: true });
 });
 
 /* =========================================================

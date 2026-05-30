@@ -5,6 +5,7 @@ import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { loadEquipped } from '../game/equipment';
+import { applyGuildMultipliers } from '../game/rewards';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -136,8 +137,11 @@ router.post('/climb', (req, res) => {
 
   if (result.winner === 'hero') {
     const vault = targetFloor % 5 === 0;
-    goldGain = towerGold(targetFloor) * (vault ? 2 : 1);
-    xpGain   = towerXp(targetFloor)   * (vault ? 2 : 1);
+    const baseGold = towerGold(targetFloor) * (vault ? 2 : 1);
+    const baseXp   = towerXp(targetFloor)   * (vault ? 2 : 1);
+    const r = applyGuildMultipliers(char.id, baseGold, baseXp);
+    goldGain = r.gold;
+    xpGain   = r.xp;
     tokensGained = vault ? 2 : 1;  // bridges Tower → Trial Cache → Forge guarantees
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);

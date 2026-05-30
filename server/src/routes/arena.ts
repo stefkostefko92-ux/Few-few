@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
+import { applyGuildMultipliers } from '../game/rewards';
 import { trackBattlePass } from './battlepass';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -77,11 +78,14 @@ router.post('/challenge', (req, res) => {
 
   // XP for hero
   let xpGain = 0;
+  let goldGain = 0;
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   if (result.winner === 'hero') {
-    xpGain = 25 + opp.level * 5;
+    const r = applyGuildMultipliers(char.id, 10 + opp.level * 2, 25 + opp.level * 5);
+    xpGain = r.xp;
+    goldGain = r.gold;
     lvlRes = applyXp(char, xpGain);
-    char.gold += 10 + opp.level * 2;
+    char.gold += goldGain;
   }
   char.hp = Math.max(1, result.hero.hp);
   char.energy -= 5;
@@ -120,7 +124,7 @@ router.post('/challenge', (req, res) => {
     result.winner === 'hero' ? 'win' : 'loss',
     JSON.stringify({ hero: replayHero, foe: replayFoe, rounds: result.rounds, victory: result.winner === 'hero' }),
     xpGain,
-    result.winner === 'hero' ? 10 + opp.level * 2 : 0,
+    goldGain,
     Date.now(),
   );
 
@@ -129,7 +133,7 @@ router.post('/challenge', (req, res) => {
     victory: result.winner === 'hero',
     kind: 'pvp',
     xpGained: xpGain,
-    goldGained: result.winner === 'hero' ? 10 + opp.level * 2 : 0,
+    goldGained: goldGain,
   });
 
   if (result.winner === 'hero') trackBattlePass(char.id, 'arena_win', 1);
@@ -143,7 +147,7 @@ router.post('/challenge', (req, res) => {
     message: `${char.name} ${result.winner === 'hero' ? 'defeated' : 'lost to'} ${opp.name}`,
     meta: {
       kind: 'pvp', opponent: opp.name, opponent_level: opp.level, rounds: result.rounds.length,
-      xp: xpGain, gold: result.winner === 'hero' ? 10 + opp.level * 2 : 0, rating_delta: delta, new_rating: newCharRating,
+      xp: xpGain, gold: goldGain, rating_delta: delta, new_rating: newCharRating,
     },
   });
 

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
+import { applyGuildMultipliers } from '../game/rewards';
 import { logFromRequest } from '../lib/logger';
 import { trackBattlePass } from './battlepass';
 import type { Character } from '../types/domain';
@@ -142,8 +143,11 @@ router.post('/claim', (req, res) => {
   const hours = task.duration_hr as number;
   // Skill scaling: charisma adds a small payout bump (max +20% at CHA 20)
   const chaBonus = Math.min(0.2, (char.charisma || 5) * 0.01);
-  const goldGain = Math.round(def.gold_per_hour * hours * (1 + chaBonus));
-  const xpGain = Math.round(def.xp_per_hour * hours);
+  const baseGold = Math.round(def.gold_per_hour * hours * (1 + chaBonus));
+  const baseXp   = Math.round(def.xp_per_hour * hours);
+  const reward = applyGuildMultipliers(char.id, baseGold, baseXp);
+  const goldGain = reward.gold;
+  const xpGain = reward.xp;
 
   const loot: string[] = [];
   for (const l of def.loot_pool) {

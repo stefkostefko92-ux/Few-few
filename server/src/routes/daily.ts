@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { applyXp } from '../game/progression';
+import { applyGuildMultipliers } from '../game/rewards';
 import { evaluateAchievements } from '../game/events';
 import { trackBattlePass } from './battlepass';
 import type { Character, Quest } from '../types/domain';
@@ -81,7 +82,9 @@ router.post('/claim', (req, res) => {
     return;
   }
   const newStreak = today - state.last_claim_day === 1 ? state.streak + 1 : 1;
-  const reward = rewardForDay(newStreak);
+  const baseReward = rewardForDay(newStreak);
+  const r = applyGuildMultipliers(char.id, baseReward.gold, baseReward.xp);
+  const reward = { ...baseReward, gold: r.gold, xp: r.xp };
   // Grant gold + xp
   char.gold += reward.gold;
   const lvlRes = applyXp(char, reward.xp);

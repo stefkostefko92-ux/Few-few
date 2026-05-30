@@ -2,8 +2,10 @@ import type { CharacterClass } from '../types/domain';
 
 /**
  * NPC training dummies that populate the arena from day one.
- * They are real character rows with no user_id, so PvP matchmaking works
- * even before other players have signed up. Their HP scales with level.
+ * Names use a `TRAINER_<role>_<hex>` / `NPC_<role>_<hex>` pattern so it's
+ * unambiguous to players that they're fighting an automated opponent and
+ * not another human. is_npc = 1 is set by the seed runner, so derived
+ * stats correctly skip the guild-bonus lookup for these rows.
  */
 
 export interface DummySeed {
@@ -24,7 +26,7 @@ export interface DummySeed {
 export const DUMMY_SEED: DummySeed[] = [
   // Lv 1-3 — Oaken Hollow training partners
   {
-    name: 'Squire Bryn',
+    name: 'TRAINER_Warrior_06c5',
     class: 'warrior',
     level: 2,
     strength: 11, dexterity: 6, constitution: 9, intelligence: 3, wisdom: 4, charisma: 4,
@@ -33,7 +35,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['iron_sword', 'leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots', 'wooden_shield'],
   },
   {
-    name: 'Apprentice Liora',
+    name: 'TRAINER_Conjurer_0d8a',
     class: 'mage',
     level: 2,
     strength: 3, dexterity: 5, constitution: 6, intelligence: 11, wisdom: 9, charisma: 6,
@@ -42,7 +44,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['novice_staff', 'cloth_hood', 'cloth_robe', 'cloth_gloves', 'cloth_shoes'],
   },
   {
-    name: 'Scout Vael',
+    name: 'TRAINER_Tracker_144f',
     class: 'ranger',
     level: 3,
     strength: 6, dexterity: 11, constitution: 7, intelligence: 4, wisdom: 6, charisma: 5,
@@ -51,7 +53,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['short_bow', 'leather_helm', 'leather_armor', 'leather_gloves', 'leather_boots'],
   },
   {
-    name: 'Cutpurse Nyx',
+    name: 'TRAINER_Stalker_1b14',
     class: 'rogue',
     level: 3,
     strength: 6, dexterity: 10, constitution: 7, intelligence: 5, wisdom: 4, charisma: 7,
@@ -62,7 +64,7 @@ export const DUMMY_SEED: DummySeed[] = [
 
   // Lv 5-7 — Mistmoor riders
   {
-    name: 'Knight Halberd',
+    name: 'NPC_Champion_21d9',
     class: 'warrior',
     level: 6,
     strength: 16, dexterity: 8, constitution: 14, intelligence: 4, wisdom: 5, charisma: 6,
@@ -71,7 +73,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['steel_longsword', 'chain_helm', 'chain_armor', 'chain_gloves', 'chain_boots', 'kite_shield'],
   },
   {
-    name: 'Stormcaller Iven',
+    name: 'NPC_Arcanist_289e',
     class: 'mage',
     level: 7,
     strength: 4, dexterity: 7, constitution: 8, intelligence: 17, wisdom: 14, charisma: 7,
@@ -80,7 +82,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['sapphire_staff', 'cloth_hood', 'cloth_robe', 'cloth_gloves', 'cloth_shoes'],
   },
   {
-    name: 'Hawkeye Sera',
+    name: 'NPC_Ranger_2f63',
     class: 'ranger',
     level: 7,
     strength: 8, dexterity: 17, constitution: 10, intelligence: 6, wisdom: 8, charisma: 6,
@@ -91,7 +93,7 @@ export const DUMMY_SEED: DummySeed[] = [
 
   // Lv 10-13 — Caverns delvers
   {
-    name: 'Captain Vorth',
+    name: 'NPC_Sentinel_3628',
     class: 'warrior',
     level: 11,
     strength: 22, dexterity: 10, constitution: 20, intelligence: 5, wisdom: 6, charisma: 8,
@@ -100,7 +102,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['flameblade', 'plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'silver_ring'],
   },
   {
-    name: 'Archmage Thalor',
+    name: 'NPC_Lorekeeper_3ced',
     class: 'mage',
     level: 12,
     strength: 5, dexterity: 9, constitution: 11, intelligence: 24, wisdom: 20, charisma: 9,
@@ -109,7 +111,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['archmage_staff', 'cloth_hood', 'mage_robe', 'cloth_gloves', 'cloth_shoes', 'amulet_of_warding'],
   },
   {
-    name: 'Shadow Lyra',
+    name: 'NPC_Stalker_43b2',
     class: 'rogue',
     level: 12,
     strength: 10, dexterity: 22, constitution: 12, intelligence: 8, wisdom: 7, charisma: 10,
@@ -120,7 +122,7 @@ export const DUMMY_SEED: DummySeed[] = [
 
   // Lv 15-18 — Wasteland veterans
   {
-    name: 'Lord Marshal Aldric',
+    name: 'NPC_Champion_4a77',
     class: 'warrior',
     level: 16,
     strength: 30, dexterity: 12, constitution: 28, intelligence: 6, wisdom: 8, charisma: 12,
@@ -129,7 +131,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['flameblade', 'plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'silver_ring', 'amulet_of_warding'],
   },
   {
-    name: 'Witch-Queen Morrigan',
+    name: 'NPC_Arcanist_513c',
     class: 'mage',
     level: 18,
     strength: 6, dexterity: 11, constitution: 14, intelligence: 32, wisdom: 27, charisma: 11,
@@ -138,7 +140,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['archmage_staff', 'cloth_hood', 'mage_robe', 'cloth_gloves', 'cloth_shoes', 'amulet_of_warding'],
   },
   {
-    name: 'Stalker Kael',
+    name: 'NPC_Ranger_5801',
     class: 'ranger',
     level: 17,
     strength: 11, dexterity: 30, constitution: 14, intelligence: 8, wisdom: 12, charisma: 8,
@@ -149,7 +151,7 @@ export const DUMMY_SEED: DummySeed[] = [
 
   // Lv 22+ — Endgame champions
   {
-    name: 'Champion Auriel',
+    name: 'NPC_Sentinel_5ec6',
     class: 'warrior',
     level: 22,
     strength: 38, dexterity: 14, constitution: 36, intelligence: 7, wisdom: 9, charisma: 14,
@@ -158,7 +160,7 @@ export const DUMMY_SEED: DummySeed[] = [
     equipment: ['dragonbane', 'plate_helm', 'plate_armor', 'chain_gloves', 'chain_boots', 'kite_shield', 'ring_of_power', 'amulet_of_warding'],
   },
   {
-    name: 'Voidcaller Zerin',
+    name: 'NPC_Lorekeeper_658b',
     class: 'mage',
     level: 24,
     strength: 7, dexterity: 13, constitution: 16, intelligence: 40, wisdom: 34, charisma: 12,

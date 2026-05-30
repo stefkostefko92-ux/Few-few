@@ -509,4 +509,14 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
   `);
+
+  // Guild multi-track upgrades — six tracks, each 0..100, gated by guild XP.
+  const guildCols = db.prepare(`PRAGMA table_info(guilds)`).all() as { name: string }[];
+  const guildHave = new Set(guildCols.map((c) => c.name));
+  if (!guildHave.has('attr_level'))         db.exec(`ALTER TABLE guilds ADD COLUMN attr_level INTEGER NOT NULL DEFAULT 0`);
+  if (!guildHave.has('power_level'))        db.exec(`ALTER TABLE guilds ADD COLUMN power_level INTEGER NOT NULL DEFAULT 0`);
+  if (!guildHave.has('defence_level'))      db.exec(`ALTER TABLE guilds ADD COLUMN defence_level INTEGER NOT NULL DEFAULT 0`);
+  if (!guildHave.has('exp_bonus_level'))    db.exec(`ALTER TABLE guilds ADD COLUMN exp_bonus_level INTEGER NOT NULL DEFAULT 0`);
+  if (!guildHave.has('gold_bonus_level'))   db.exec(`ALTER TABLE guilds ADD COLUMN gold_bonus_level INTEGER NOT NULL DEFAULT 0`);
+  if (!guildHave.has('gold_level'))         db.exec(`ALTER TABLE guilds ADD COLUMN gold_level INTEGER NOT NULL DEFAULT 0`);
 }

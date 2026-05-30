@@ -697,25 +697,77 @@ function UpgradeTab({ data, onChanged, onRefreshChar }: { data: GuildData; onCha
         </button>
       </div>
 
-      <h3 style={{ marginTop: 24, marginBottom: 10 }}>Next Level</h3>
-      {!needXp && <div className="muted">Maximum guild level reached.</div>}
+      <h3 style={{ marginTop: 28, marginBottom: 10 }}>Member Slots — Roster Tier {g.level}</h3>
+      {!needXp && <div className="muted">Maximum roster size reached ({g.member_slots} members).</div>}
       {needXp && (
         <div className="card">
           <div className="flex between">
-            <strong>Lv {g.level} → Lv {next}</strong>
+            <strong>Tier {g.level} → Tier {next}</strong>
             <span className="muted">{g.xp.toLocaleString()} / {needXp.toLocaleString()} XP</span>
           </div>
           <div className="bar" style={{ marginTop: 10 }}>
             <div className="bar-fill xp" style={{ width: `${Math.min(100, (g.xp / needXp) * 100)}%` }} />
           </div>
-          <div className="muted text-sm" style={{ marginTop: 12 }}>
-            New bonuses at Lv {next}: more member slots, higher XP/gold multipliers, additional combat bonuses.
-          </div>
           {isLeader && (
-            <button className="btn btn-primary" style={{ marginTop: 12 }} disabled={g.xp < needXp} onClick={doUpgrade}>Upgrade Guild</button>
+            <button className="btn btn-primary" style={{ marginTop: 12 }} disabled={g.xp < needXp} onClick={doUpgrade}>Expand roster</button>
           )}
         </div>
       )}
+
+      <h3 style={{ marginTop: 28, marginBottom: 10 }}>Guild Tracks — 6 × 100 Levels</h3>
+      <p className="muted">Spend guild XP to advance each independent track. All members share the bonuses.</p>
+      <TrackUpgradePanel role={data.my_role} guildXp={g.xp} onChanged={onChanged} />
+    </div>
+  );
+}
+
+function TrackUpgradePanel({ role, guildXp, onChanged }: { role: string; guildXp: number; onChanged: () => Promise<any> }) {
+  const toast = useStore((s) => s.toast);
+  const [status, setStatus] = useState<any>(null);
+  async function load() {
+    try { setStatus(await api.get('/guild/upgrade/status')); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  React.useEffect(() => { load(); }, [guildXp]);
+
+  async function upgrade(track: string) {
+    try {
+      const r = await api.post('/guild/upgrade/track', { track });
+      toast(`Advanced to lv ${r.new_level}.`, 'success');
+      await Promise.all([load(), onChanged()]);
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  if (!status) return <div className="muted">Loading…</div>;
+  const canUpgrade = role === 'leader' || role === 'officer';
+  return (
+    <div className="grid-cards">
+      {status.tracks.map((t: any) => {
+        const maxed = t.level >= t.max;
+        const affordable = !maxed && status.guild_xp >= t.next_cost;
+        const pct = (t.level / t.max) * 100;
+        return (
+          <div key={t.key} className="card" style={{ padding: 14 }}>
+            <div className="flex between">
+              <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{t.label}</strong>
+              <span className="tag" style={{ fontFamily: 'var(--font-mono)' }}>Lv {t.level} / {t.max}</span>
+            </div>
+            <div className="muted text-sm" style={{ marginTop: 4 }}>{t.description}</div>
+            <div className="bar" style={{ marginTop: 10 }}>
+              <div className="bar-fill xp" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="flex between" style={{ marginTop: 10 }}>
+              <span className="muted text-sm">
+                {maxed ? 'MAX' : `Next: ${t.next_cost.toLocaleString()} XP`}
+              </span>
+              {canUpgrade && (
+                <button className="btn btn-sm btn-primary" disabled={maxed || !affordable} onClick={() => upgrade(t.key)}>
+                  {maxed ? '✓ Max' : '+1 Level'}
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

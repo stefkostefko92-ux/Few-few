@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
-import { IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog, IconBolt, IconTrash } from '../lib/icons';
+import { IconChart, IconBag, IconSkull, IconScroll, IconUser, IconMail, IconCog, IconBolt, IconTrash, IconCrown, IconStar } from '../lib/icons';
 import '../styles/admin.css';
 
 /* ===== Layout ===== */
@@ -28,6 +28,21 @@ export function AdminLayout(): React.ReactElement {
         </NavLink>
         <NavLink to="/admin/marketplace" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconBag size={16} /> <span>Marketplace</span>
+        </NavLink>
+        <NavLink to="/admin/guilds" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconCrown size={16} /> <span>Guilds</span>
+        </NavLink>
+        <NavLink to="/admin/tower" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconCrown size={16} /> <span>Tower</span>
+        </NavLink>
+        <NavLink to="/admin/bounties" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconSkull size={16} /> <span>Bounties</span>
+        </NavLink>
+        <NavLink to="/admin/battlepass" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconStar size={16} /> <span>Battle Pass</span>
+        </NavLink>
+        <NavLink to="/admin/trial-purchases" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconStar size={16} /> <span>Trial Cache</span>
         </NavLink>
         <NavLink to="/admin/settings" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconCog size={16} /> <span>Game Settings</span>
@@ -62,6 +77,11 @@ export default function Admin(): React.ReactElement {
         <Route path="quests" element={<Quests />} />
         <Route path="users" element={<Users />} />
         <Route path="marketplace" element={<Marketplace />} />
+        <Route path="guilds" element={<GuildsAdmin />} />
+        <Route path="tower" element={<TowerAdmin />} />
+        <Route path="bounties" element={<BountiesAdmin />} />
+        <Route path="battlepass" element={<BattlePassAdmin />} />
+        <Route path="trial-purchases" element={<TrialCacheAdmin />} />
         <Route path="settings" element={<GameSettings />} />
         <Route path="logs" element={<EventLogs />} />
         <Route path="webhooks" element={<Webhooks />} />
@@ -859,6 +879,240 @@ function Server() {
         <div className="admin-stat"><div className="label">Environment</div><div className="num">{data.env}</div></div>
         <Stat label="PID" num={data.pid} />
       </div>
+    </>
+  );
+}
+
+/* =====================================================================
+   Guilds admin — edit per-track levels
+   ===================================================================== */
+function GuildsAdmin(): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  const [edit, setEdit] = useState<any>(null);
+
+  async function load() {
+    try { setRows((await api.get('/admin/guilds')).guilds); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function save() {
+    if (!edit) return;
+    try {
+      await api.put(`/admin/guilds/${edit.id}`, {
+        attr_level: edit.attr_level,
+        power_level: edit.power_level,
+        defence_level: edit.defence_level,
+        exp_bonus_level: edit.exp_bonus_level,
+        gold_bonus_level: edit.gold_bonus_level,
+        gold_level: edit.gold_level,
+        xp: edit.xp,
+        gold: edit.gold,
+      });
+      toast('Updated', 'success');
+      setEdit(null);
+      await load();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  return (
+    <>
+      <h2>Guilds <span className="muted">({rows.length})</span></h2>
+      <table className="data-table">
+        <thead><tr><th>Name</th><th>Tag</th><th>Members</th><th>XP</th><th>Treasury</th><th>Tracks</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((g) => (
+            <tr key={g.id}>
+              <td>{g.name}</td>
+              <td className="muted">[{g.tag}]</td>
+              <td>{g.member_count} / {g.slots_tier === 1 ? 10 : g.slots_tier === 2 ? 15 : g.slots_tier === 3 ? 20 : g.slots_tier === 4 ? 25 : 30}</td>
+              <td>{g.xp.toLocaleString()}</td>
+              <td>{g.gold.toLocaleString()}g</td>
+              <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                B{g.attr_level} P{g.power_level} D{g.defence_level} S{g.exp_bonus_level} M{g.gold_bonus_level} V{g.gold_level}
+              </td>
+              <td><button className="btn btn-sm" onClick={() => setEdit({ ...g })}>Edit</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {edit && (
+        <div className="modal-backdrop" onClick={() => setEdit(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Edit {edit.name}</h3>
+            {([
+              ['attr_level', 'Bloodlines (attr) 0..100'],
+              ['power_level', 'Guild Power 0..100'],
+              ['defence_level', 'Guild Defence 0..100'],
+              ['exp_bonus_level', 'Scholarship (XP) 0..100'],
+              ['gold_bonus_level', 'Merchant Charter (gold) 0..100'],
+              ['gold_level', 'Strongroom (protected gold) 0..100'],
+              ['xp', 'Guild XP pool'],
+              ['gold', 'Treasury gold'],
+            ] as [string, string][]).map(([key, label]) => (
+              <label key={key} style={{ display: 'block', marginBottom: 8 }}>
+                <div className="muted text-sm">{label}</div>
+                <input type="number" value={edit[key]} onChange={(e) => setEdit({ ...edit, [key]: Number(e.target.value) })} />
+              </label>
+            ))}
+            <div className="flex gap-sm" style={{ marginTop: 12 }}>
+              <button className="btn btn-primary" onClick={save}>Save</button>
+              <button className="btn" onClick={() => setEdit(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* =====================================================================
+   Tower admin — leaderboard + reset run
+   ===================================================================== */
+function TowerAdmin(): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  async function load() {
+    try { setRows((await api.get('/admin/tower')).climbers); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+  async function resetRun(id: number) {
+    if (!confirm('Reset this hero\'s current Tower run?')) return;
+    try { await api.post(`/admin/tower/reset/${id}`); toast('Reset', 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  return (
+    <>
+      <h2>Tower of Trials <span className="muted">({rows.length} climbers)</span></h2>
+      <table className="data-table">
+        <thead><tr><th>Hero</th><th>Class</th><th>Lv</th><th>Best floor</th><th>Current run</th><th>Tokens</th><th>Wards</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((c) => (
+            <tr key={c.id}>
+              <td>{c.name}</td>
+              <td className="muted">{c.class}</td>
+              <td>{c.level}</td>
+              <td style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>F{c.tower_best_floor}</td>
+              <td>F{c.tower_current_floor}</td>
+              <td>{c.trial_tokens}</td>
+              <td>{c.forge_guarantees}</td>
+              <td><button className="btn btn-sm" onClick={() => resetRun(c.id)}>Reset run</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+/* =====================================================================
+   Bounties admin — recent boards + force-clear (regenerates next call)
+   ===================================================================== */
+function BountiesAdmin(): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  async function load() {
+    try { setRows((await api.get('/admin/bounties')).rows); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+  async function clearFor(id: number) {
+    if (!confirm('Clear all stored bounties for this hero? Next /bounties call will regenerate.')) return;
+    try { await api.post(`/admin/bounties/clear/${id}`); toast('Cleared', 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  return (
+    <>
+      <h2>Bounty Board <span className="muted">({rows.length} records)</span></h2>
+      <table className="data-table">
+        <thead><tr><th>Hero</th><th>Day</th><th>Bounties</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((r, i) => {
+            const bs = JSON.parse(r.bounties_json || '[]');
+            return (
+              <tr key={i}>
+                <td>{r.character_name}</td>
+                <td className="muted">{new Date(r.day_index * 86_400_000).toISOString().slice(0, 10)}</td>
+                <td className="muted" style={{ fontSize: 12, fontFamily: 'var(--font-mono)' }}>
+                  {bs.map((b: any) => `${b.tier}:${b.monster_slug}(${b.count_done}/${b.count_required})${b.claimed ? '✓' : ''}`).join(' · ')}
+                </td>
+                <td><button className="btn btn-sm" onClick={() => clearFor(r.character_id)}>Clear</button></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+/* =====================================================================
+   Battle Pass admin — passes per month, force-unlock premium
+   ===================================================================== */
+function BattlePassAdmin(): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  const [monthFilter, setMonthFilter] = useState<string>('');
+  async function load() {
+    try {
+      const r = await api.get(`/admin/battlepass${monthFilter ? `?month=${monthFilter}` : ''}`);
+      setRows(r.rows);
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, [monthFilter]);
+  async function unlock(charId: number, month: string) {
+    try { await api.post(`/admin/battlepass/unlock-premium/${charId}`, { month }); toast('Unlocked', 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  return (
+    <>
+      <h2>Battle Pass <span className="muted">({rows.length} passes)</span></h2>
+      <div className="flex gap-sm" style={{ marginBottom: 12 }}>
+        <input placeholder="2026-05" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} />
+        <button className="btn btn-sm" onClick={load}>Filter</button>
+      </div>
+      <table className="data-table">
+        <thead><tr><th>Hero</th><th>Month</th><th>Premium</th><th>Completed</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((r, i) => {
+            const progress = JSON.parse(r.progress_json || '{}');
+            const completed = Object.keys(progress).length;
+            return (
+              <tr key={i}>
+                <td>{r.character_name}</td>
+                <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>{r.month_key}</td>
+                <td>{r.premium_unlocked ? <span className="tag gold">★ premium</span> : <span className="tag">free</span>}</td>
+                <td>{completed} / 50</td>
+                <td>{!r.premium_unlocked && <button className="btn btn-sm" onClick={() => unlock(r.character_id, r.month_key)}>Force premium</button>}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+/* =====================================================================
+   Trial Cache — recent purchases
+   ===================================================================== */
+function TrialCacheAdmin(): React.ReactElement {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  useEffect(() => { (async () => {
+    try { setRows((await api.get('/admin/trial-purchases')).rows); } catch (e: any) { toast(e.message, 'error'); }
+  })(); }, []);
+  return (
+    <>
+      <h2>Trial Cache Purchases <span className="muted">({rows.length})</span></h2>
+      <table className="data-table">
+        <thead><tr><th>Hero</th><th>Slug</th><th>Bought at</th></tr></thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i}>
+              <td>{r.character_name}</td>
+              <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>{r.slug}</td>
+              <td className="muted">{new Date(r.bought_at).toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
 }

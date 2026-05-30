@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
+import { applyGuildMultipliers } from '../game/rewards';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
 
@@ -69,8 +70,11 @@ router.post('/start', (req, res) => {
   // If no monster, this is a story/skill quest
   if (!monster) {
     const success = Math.random() < 0.8;
-    const xpGain = success ? quest.xp_reward : Math.floor(quest.xp_reward * 0.3);
-    const goldGain = success ? quest.gold_reward : 0;
+    const baseXp = success ? quest.xp_reward : Math.floor(quest.xp_reward * 0.3);
+    const baseGold = success ? quest.gold_reward : 0;
+    const r = applyGuildMultipliers(char.id, baseGold, baseXp);
+    const xpGain = r.xp;
+    const goldGain = r.gold;
     char.gold += goldGain;
     const lvlRes = applyXp(char, xpGain);
     char.energy -= quest.energy_cost;
@@ -131,8 +135,11 @@ router.post('/start', (req, res) => {
   let itemRewardSlug = '';
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   if (result.winner === 'hero') {
-    xpGain = quest.xp_reward + monster.xp_reward;
-    goldGain = quest.gold_reward + Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
+    const baseXp = quest.xp_reward + monster.xp_reward;
+    const baseGold = quest.gold_reward + Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
+    const r = applyGuildMultipliers(char.id, baseGold, baseXp);
+    xpGain = r.xp;
+    goldGain = r.gold;
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
     // Item drop?

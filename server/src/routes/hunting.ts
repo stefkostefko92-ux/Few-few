@@ -7,6 +7,7 @@ import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
+import { applyGuildMultipliers } from '../game/rewards';
 import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
@@ -106,8 +107,11 @@ router.post('/hunt', (req, res) => {
   let goldGain = 0;
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   if (result.winner === 'hero') {
-    xpGain = monster.xp_reward;
-    goldGain = Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
+    const baseXp = monster.xp_reward;
+    const baseGold = Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
+    const r = applyGuildMultipliers(char.id, baseGold, baseXp);
+    xpGain = r.xp;
+    goldGain = r.gold;
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
   }
