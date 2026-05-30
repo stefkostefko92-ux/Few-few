@@ -10,3 +10,4 @@ server/data/
 .vscode/
 client/tsconfig.tsbuildinfo
 screenshots/
+screenshots-v2/
