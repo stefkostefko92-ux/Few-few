@@ -5,6 +5,8 @@ import { useAuthStore } from "../lib/store";
 import { AuthScreen } from "../features/auth/AuthScreen";
 import { Lobby } from "../features/lobby/Lobby";
 import { GameView } from "../features/game/GameView";
+import { Shop } from "../features/shop/Shop";
+import { Leaderboard } from "../features/leaderboard/Leaderboard";
 import { Layout } from "./Layout";
 import { RequireAuth } from "./RequireAuth";
 
@@ -41,6 +43,8 @@ export function App() {
         <Route element={<Layout />}>
           <Route index element={<Lobby />} />
           <Route path="play/:game" element={<GameView />} />
+          <Route path="shop" element={<Shop />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

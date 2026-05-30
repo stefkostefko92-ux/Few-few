@@ -8,6 +8,8 @@ import {
 } from "@aso/shared";
 import { RandomBot } from "./bot.js";
 import { finalizeMatch, type SeatInfo } from "./rating.js";
+import { notifyMatchResult } from "./progression.js";
+import { STARTING_MMR } from "@aso/shared";
 import { logger } from "./logger.js";
 
 export interface RoomSeat {
@@ -168,16 +170,21 @@ export class GameRoom {
     }));
 
     let ratingDeltas: Record<number, number> = {};
+    let newRatings: Record<number, number> = {};
     try {
-      ratingDeltas = await finalizeMatch({
+      const result = await finalizeMatch({
         matchId: this.matchId,
         game: this.game,
         seats: seatInfos,
         score,
       });
+      ratingDeltas = result.deltas;
+      newRatings = result.newRatings;
     } catch (err) {
       logger.error({ err, matchId: this.matchId }, "failed to finalize match");
     }
+
+    const resultBySeat = new Map(score.map((s) => [s.seat, s.result]));
 
     for (const s of this.seats) {
       if (!s.userId) continue;
@@ -185,6 +192,14 @@ export class GameRoom {
         matchId: this.matchId,
         score,
         ratingDeltas,
+      });
+      // Advance quests + leaderboards (S6). Fire-and-forget.
+      void notifyMatchResult({
+        userId: s.userId,
+        game: this.game,
+        won: resultBySeat.get(s.seat) === "win",
+        rating: newRatings[s.seat] ?? STARTING_MMR,
+        displayName: s.displayName,
       });
     }
   }

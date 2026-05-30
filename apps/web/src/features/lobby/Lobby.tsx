@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Badge, Panel, cn } from "../../ui";
 import { useAuthStore } from "../../lib/store";
+import { DailyReward } from "../progression/DailyReward";
 import { GAME_CATALOG, type GameCard } from "./games";
 
 function GameTile({ game }: { game: GameCard }) {
@@ -45,6 +46,8 @@ export function Lobby() {
           <p className="mt-1 text-ink-300">{t("lobby.welcome", { name: user.displayName })}</p>
         ) : null}
       </div>
+
+      {user ? <DailyReward /> : null}
 
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {GAME_CATALOG.map((game) => (

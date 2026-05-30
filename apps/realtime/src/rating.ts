@@ -34,12 +34,19 @@ async function ratingFor(userId: string, game: GameKey): Promise<{ mmr: number; 
  * contributes a fixed reference rating so humans still gain/lose MMR.
  * Returns mmr deltas keyed by seat (bot seats = 0).
  */
+export interface FinalizeResult {
+  /** seat -> mmr delta this match */
+  deltas: Record<number, number>;
+  /** seat -> new mmr after this match (for human seats) */
+  newRatings: Record<number, number>;
+}
+
 export async function finalizeMatch(opts: {
   matchId: string;
   game: GameKey;
   seats: SeatInfo[];
   score: SeatScore[];
-}): Promise<Record<number, number>> {
+}): Promise<FinalizeResult> {
   const { matchId, game, seats, score } = opts;
   const resultBySeat = new Map<number, SeatScore["result"]>(
     score.map((s) => [s.seat, s.result]),
@@ -53,6 +60,7 @@ export async function finalizeMatch(opts: {
   }
 
   const deltas: Record<number, number> = {};
+  const newRatings: Record<number, number> = {};
   for (const s of seats) deltas[s.seat] = 0;
 
   await prisma.$transaction(async (tx) => {
@@ -72,6 +80,7 @@ export async function finalizeMatch(opts: {
       const k = kFactor(current.games);
       const delta = Math.round(k * (numericResult(result) - expectedScore(myMmr, oppAvg)));
       deltas[seat.seat] = delta;
+      newRatings[seat.seat] = current.mmr + delta;
 
       await tx.ratingPerGame.upsert({
         where: { userId_game: { userId, game } },
@@ -109,5 +118,5 @@ export async function finalizeMatch(opts: {
     await tx.match.update({ where: { id: matchId }, data: { endedAt: new Date() } });
   });
 
-  return deltas;
+  return { deltas, newRatings };
 }

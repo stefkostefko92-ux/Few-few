@@ -54,7 +54,26 @@ infra/        Dockerfiles, docker-compose, nginx
       chips/xp persisted in a transaction; React chess board (interactive,
       legal-move highlights, orientation) wired over the socket. E2E: two
       players + player-vs-bot play full games via matchmaking, ratings update.
-- [ ] S4–S9 — see concept doc
+- [x] **S4 — trick-taking engine + Белот & Сантасе**: shared `trick` core,
+      Сантасе/66 (trump, marriages, exchange, stock closing) and Белот (2v2
+      bidding, suit contract, last-trick bonus, team scoring); N-seat
+      matchmaking with bot-fill; web card layer (CardFace, useMatch, per-game
+      views). Both playable online vs bots.
+- [x] **S5 — economy + Stripe**: product catalog + DB mirror, Stripe Checkout
+      (gems/chips) + VIP Subscriptions + Billing Portal; webhook with signature
+      verification + idempotency (ProcessedEvent) — credit applied ONLY from
+      the signed webhook, transactionally. No pay-to-win; chips never cashed
+      out. Web shop view. E2E: signed event credits once, replay deduped, bad
+      signature rejected.
+- [x] **S6 — progression & retention**: daily-login streak rewards, quests
+      (daily/weekly, advanced via an internal realtime→api hook), per-game
+      leaderboards (Redis ZSET), level/XP curve; `apps/worker` (BullMQ) for
+      season rollover + quest cleanup. Web shop + leaderboard + daily-reward UI.
+      E2E: daily claim idempotent per day, quests complete, leaderboard + level
+      update.
+- [ ] S7 — remaining engines + games (betting, draw-discard, grid-guess, …)
+- [ ] S8 — public SEO/AEO/GEO layer (Next.js 15)
+- [ ] S9 — polish, anti-cheat signals, observability
 
 ## Develop
 

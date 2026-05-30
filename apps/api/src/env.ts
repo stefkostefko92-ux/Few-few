@@ -19,6 +19,16 @@ const envSchema = z.object({
 
   // Comma-separated CORS whitelist — never "*" on prod.
   CORS_ORIGINS: z.string().default("http://localhost:4502,http://localhost:5173"),
+
+  // Stripe (S5). Optional so the API boots without billing in dev; shop
+  // endpoints return 503 until configured. Secrets never leave env (§14).
+  STRIPE_SECRET_KEY: z.string().optional().default(""),
+  STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
+  // Where Stripe redirects after Checkout / Billing Portal.
+  PUBLIC_WEB_URL: z.string().url().default("http://localhost:4502"),
+
+  // Shared secret for internal service-to-service calls (realtime -> api).
+  INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
 });
 
 function load() {

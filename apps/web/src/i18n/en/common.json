@@ -58,6 +58,32 @@
     "gems": "Gems",
     "level": "Level {{level}}"
   },
+  "shop": {
+    "disclaimer": "Money buys only cosmetics, comfort, and entry chips. Chips are never cashed back out.",
+    "purchaseSuccess": "Thank you! Purchase complete.",
+    "purchaseCancel": "Purchase cancelled.",
+    "unavailable": "Payments are not enabled right now.",
+    "error": "Something went wrong. Try again.",
+    "grantGems": "+{{n}} gems",
+    "grantChips": "+{{n}} chips",
+    "perMonth": "per month",
+    "kind": {
+      "VIP_SUB": "VIP subscription",
+      "GEMS": "Gems",
+      "CHIP_PACK": "Chip packs",
+      "COSMETIC": "Cosmetics"
+    }
+  },
+  "daily": {
+    "title": "Daily bonus",
+    "prompt": "Log in today for free chips!",
+    "already": "Today's bonus claimed.",
+    "claimed": "+{{chips}} chips, +{{gems}} gems!",
+    "claim": "Claim"
+  },
+  "leaderboard": {
+    "empty": "No ranked players yet."
+  },
   "footer": {
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Social gaming — not real-money gambling."

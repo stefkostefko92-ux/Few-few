@@ -3,9 +3,16 @@ import { createApp } from "./app.js";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { redis } from "./redis.js";
+import { seedProducts } from "./economy/seed.js";
 
 async function main(): Promise<void> {
   const app = createApp();
+
+  // Establish the Redis connection up front (progression uses it directly).
+  await redis.connect().catch((err) => logger.warn({ err: err.message }, "redis connect at boot failed"));
+
+  // Mirror the product catalog into the DB so Purchase rows can FK to it.
+  await seedProducts().catch((err) => logger.error({ err }, "product seed failed"));
 
   const server = app.listen(env.API_PORT, () => {
     logger.info(`🂡 АСО api listening on :${env.API_PORT} (${env.NODE_ENV})`);

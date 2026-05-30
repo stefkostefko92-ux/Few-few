@@ -52,8 +52,51 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
     ports:
       - "4500:4500"
+
+  realtime:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.realtime
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      REALTIME_PORT: 4501
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
+      BOT_FALLBACK_SECONDS: ${BOT_FALLBACK_SECONDS:-8}
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4500}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
+    ports:
+      - "4501:4501"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      SEASON_DAYS: ${SEASON_DAYS:-35}
 
 volumes:
   aso_pgdata:

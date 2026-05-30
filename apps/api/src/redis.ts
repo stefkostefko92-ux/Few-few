@@ -4,13 +4,14 @@ import { logger } from "./logger.js";
 
 /**
  * Shared Redis client. Lazy connect so the API can boot and serve /health even
- * if Redis is briefly unavailable. Used for presence / rate-limit / matchmaking
- * (the Redis-backed sliding-window limiter lands with realtime in S3).
+ * if Redis is briefly unavailable. The offline queue is enabled so commands
+ * issued before the connection is ready (e.g. the first daily-claim / quest
+ * read) buffer instead of throwing. Used for progression, presence, rate limit.
  */
 export const redis = new Redis(env.REDIS_URL, {
   lazyConnect: true,
-  maxRetriesPerRequest: 2,
-  enableOfflineQueue: false,
+  maxRetriesPerRequest: 3,
+  enableOfflineQueue: true,
 });
 
 redis.on("error", (err) => {

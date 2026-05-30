@@ -9,6 +9,9 @@ import { globalLimiter } from "./middleware/rateLimit.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
+import { shopRouter } from "./routes/shop.js";
+import { progressionRouter } from "./routes/progression.js";
+import { stripeWebhookRouter } from "./webhooks/stripe.js";
 
 export function createApp(): Express {
   const app = express();
@@ -24,6 +27,11 @@ export function createApp(): Express {
     }),
   );
   app.use(pinoHttp({ logger }));
+
+  // Stripe webhook MUST receive the raw body for signature verification, so it
+  // is mounted before cookieParser/json (§11.3). It is also not rate limited.
+  app.use("/", stripeWebhookRouter);
+
   app.use(cookieParser());
   app.use(express.json({ limit: "100kb" }));
 
@@ -32,6 +40,8 @@ export function createApp(): Express {
 
   app.use(globalLimiter);
   app.use("/api/auth", authRouter);
+  app.use("/api/shop", shopRouter);
+  app.use("/api/progression", progressionRouter);
 
   app.use(notFound);
   app.use(errorHandler);

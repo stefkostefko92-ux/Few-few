@@ -53,6 +53,32 @@
     "pass": "Passo",
     "emptyTrick": "In attesa della prima carta"
   },
+  "shop": {
+    "disclaimer": "Il denaro acquista solo cosmetici, comfort e fiche d'ingresso. Le fiche non vengono mai riconvertite in denaro.",
+    "purchaseSuccess": "Grazie! Acquisto completato.",
+    "purchaseCancel": "Acquisto annullato.",
+    "unavailable": "I pagamenti non sono attivi al momento.",
+    "error": "Qualcosa è andato storto. Riprova.",
+    "grantGems": "+{{n}} gemme",
+    "grantChips": "+{{n}} fiche",
+    "perMonth": "al mese",
+    "kind": {
+      "VIP_SUB": "Abbonamento VIP",
+      "GEMS": "Gemme",
+      "CHIP_PACK": "Pacchetti di fiche",
+      "COSMETIC": "Cosmetici"
+    }
+  },
+  "daily": {
+    "title": "Bonus giornaliero",
+    "prompt": "Accedi oggi per fiche gratuite!",
+    "already": "Bonus di oggi riscattato.",
+    "claimed": "+{{chips}} fiche, +{{gems}} gemme!",
+    "claim": "Riscatta"
+  },
+  "leaderboard": {
+    "empty": "Ancora nessun giocatore in classifica."
+  },
   "wallet": {
     "chips": "Fiche",
     "gems": "Gemme",
