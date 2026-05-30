@@ -15,9 +15,17 @@ interface Product {
   tagline: string;
   description: string;
   price_cents: number;
+  currency?: string;
   popular?: boolean;
   best_value?: boolean;
   effects: ProductEffect;
+}
+
+const CURRENCY_SYMBOL: Record<string, string> = { eur: '€', usd: '$', gbp: '£' };
+function fmtPrice(cents: number, currency: string = 'eur') {
+  const sym = CURRENCY_SYMBOL[currency.toLowerCase()] || '€';
+  const value = (cents / 100).toFixed(2).replace('.', ',');
+  return `${sym}${value}`;
 }
 
 interface HistoryRow {
@@ -176,9 +184,9 @@ export default function Premium(): React.ReactElement {
             <div className="flex between" style={{ alignItems: 'center' }}>
               <div>
                 <div style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)', fontSize: 22 }}>
-                  ${(p.price_cents / 100).toFixed(2)}
+                  {fmtPrice(p.price_cents, p.currency)}
                 </div>
-                <div className="muted text-sm">USD · one-time</div>
+                <div className="muted text-sm">{(p.currency || 'eur').toUpperCase()} · one-time</div>
               </div>
               <button
                 className="btn btn-primary"
@@ -210,7 +218,7 @@ export default function Premium(): React.ReactElement {
                   <td><strong>{h.kind.replace(/_/g, ' ')}</strong></td>
                   <td><span className={`tag ${h.status === 'completed' ? 'emerald' : h.status === 'failed' ? 'crimson' : 'gold'}`}>{h.status}</span></td>
                   <td className="muted text-sm">{h.mode}</td>
-                  <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>${(h.amount_cents / 100).toFixed(2)}</td>
+                  <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>{fmtPrice(h.amount_cents, h.currency)}</td>
                   <td className="amethyst" style={{ fontFamily: 'var(--font-mono)' }}>{h.gems_granted > 0 ? `+${h.gems_granted}` : '—'}</td>
                 </tr>
               ))}

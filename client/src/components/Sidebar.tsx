@@ -63,7 +63,8 @@ const SECTIONS: SectionDef[] = [
   {
     heading: 'Town',
     items: [
-      { to: '/app/shop', label: 'Merchant', icon: IconCoin },
+      { to: '/app/shop', label: 'NPC Merchant', icon: IconCoin },
+      { to: '/app/market', label: 'Player Market', icon: IconBag },
       { to: '/app/premium', label: 'Premium Mint', icon: IconStar },
     ],
   },

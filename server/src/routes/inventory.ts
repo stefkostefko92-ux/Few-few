@@ -16,7 +16,7 @@ router.get('/', (req, res) => {
   }
   const rows = db
     .prepare(
-      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, items.* FROM inventory inv
+      `SELECT inv.id as inv_id, inv.quantity, inv.equipped, inv.slot, inv.soul_bound, inv.listed, items.* FROM inventory inv
        JOIN items ON inv.item_id = items.id WHERE inv.character_id = ? ORDER BY inv.equipped DESC, items.category`,
     )
     .all(char.id) as any[];
@@ -119,15 +119,48 @@ router.post('/use', (req, res) => {
     res.status(400).json({ error: 'Not a usable item' });
     return;
   }
+  // Parse buff potions: sub_type "buff:<stat>:<percent>:<minutes>"
+  let buffApplied: any = null;
+  if (typeof row.sub_type === 'string' && row.sub_type.startsWith('buff:')) {
+    const [, stat, pctStr, minStr] = row.sub_type.split(':');
+    const percent = Number(pctStr);
+    const minutes = Number(minStr);
+    if (stat && Number.isFinite(percent) && Number.isFinite(minutes)) {
+      let buffs: Array<{ stat: string; percent: number; expires_at: number }> = [];
+      try { buffs = JSON.parse((char as any).active_buffs || '[]'); } catch { buffs = []; }
+      const now = Date.now();
+      buffs = buffs.filter((b) => b.expires_at > now && b.stat !== stat);
+      const expires_at = now + minutes * 60_000;
+      buffs.push({ stat, percent, expires_at });
+      buffApplied = { stat, percent, expires_at, minutes };
+      db.prepare('UPDATE characters SET active_buffs = ? WHERE id = ?').run(JSON.stringify(buffs), char.id);
+    }
+  }
   const newHp = Math.min(char.hp_max, char.hp + row.heal_hp);
   const newMp = Math.min(char.mp_max, char.mp + row.heal_mp);
-  db.prepare('UPDATE characters SET hp = ?, mp = ? WHERE id = ?').run(newHp, newMp, char.id);
+  if (row.heal_hp || row.heal_mp) {
+    db.prepare('UPDATE characters SET hp = ?, mp = ? WHERE id = ?').run(newHp, newMp, char.id);
+  }
   if (row.quantity > 1) {
     db.prepare('UPDATE inventory SET quantity = quantity - 1 WHERE id = ?').run(row.inv_id);
   } else {
     db.prepare('DELETE FROM inventory WHERE id = ?').run(row.inv_id);
   }
-  res.json({ ok: true, hp: newHp, mp: newMp });
+  res.json({ ok: true, hp: newHp, mp: newMp, buff: buffApplied });
+});
+
+router.get('/buffs', (req, res) => {
+  const db = getDb();
+  const char = db.prepare('SELECT id, active_buffs FROM characters WHERE user_id = ?').get(req.auth!.uid) as any;
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  let buffs: any[] = [];
+  try { buffs = JSON.parse(char.active_buffs || '[]'); } catch { buffs = []; }
+  const now = Date.now();
+  const active = buffs.filter((b) => b.expires_at > now);
+  if (active.length !== buffs.length) {
+    db.prepare('UPDATE characters SET active_buffs = ? WHERE id = ?').run(JSON.stringify(active), char.id);
+  }
+  res.json({ buffs: active });
 });
 
 router.post('/sell', (req, res) => {

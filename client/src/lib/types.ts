@@ -92,6 +92,8 @@ export interface InventoryItem extends Item {
   quantity: number;
   equipped: number;
   slot: string;
+  soul_bound?: number;
+  listed?: number;
 }
 
 export interface Quest {

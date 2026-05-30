@@ -54,13 +54,30 @@ function bonusAt(set: SetDef, count: number): SetBonus[] {
   return out;
 }
 
+function readActiveBuffs(ch: Character): Record<string, number> {
+  const now = Date.now();
+  let raw: any[] = [];
+  try { raw = JSON.parse((ch as any).active_buffs || '[]'); } catch { raw = []; }
+  const out: Record<string, number> = {};
+  for (const b of raw) {
+    if (!b || typeof b !== 'object') continue;
+    if (b.expires_at && b.expires_at <= now) continue;
+    if (typeof b.stat === 'string' && typeof b.percent === 'number') {
+      out[b.stat] = (out[b.stat] || 0) + b.percent;
+    }
+  }
+  return out;
+}
+
 export function deriveStats(ch: Character, equipped: { item: Item; entry: InventoryEntry }[]): DerivedStats {
-  let str = ch.strength;
-  let dex = ch.dexterity;
-  let con = ch.constitution;
-  let int_ = ch.intelligence;
-  let wis = ch.wisdom;
-  let cha = ch.charisma;
+  const buffs = readActiveBuffs(ch);
+  const buff = (key: string, base: number) => Math.round(base * (1 + (buffs[key] || 0) / 100));
+  let str = buff('strength', ch.strength);
+  let dex = buff('dexterity', ch.dexterity);
+  let con = buff('constitution', ch.constitution);
+  let int_ = buff('intelligence', ch.intelligence);
+  let wis = buff('wisdom', ch.wisdom);
+  let cha = buff('charisma', ch.charisma);
   let hp_bonus = 0;
   let mp_bonus = 0;
   let atkMin = 1;

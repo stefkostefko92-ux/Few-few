@@ -90,6 +90,10 @@ router.post('/checkout', async (req, res) => {
     char.id, product.kind, product.price_cents, product.effects.gems || 0,
     JSON.stringify(product.effects), isDevMode() ? 'dev' : 'stripe', now,
   );
+  // currency override
+  if (product.currency && product.currency !== 'usd') {
+    getDb().prepare('UPDATE purchases SET currency = ? WHERE id = ?').run(product.currency, info.lastInsertRowid);
+  }
   const purchaseId = info.lastInsertRowid as number;
 
   if (isDevMode()) {
@@ -111,7 +115,7 @@ router.post('/checkout', async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: product.currency || 'eur',
             unit_amount: product.price_cents,
             product_data: {
               name: product.name,

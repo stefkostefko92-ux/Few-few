@@ -363,5 +363,32 @@ export function applySchema(db: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_purchases_char ON purchases(character_id);
     CREATE INDEX IF NOT EXISTS idx_purchases_session ON purchases(stripe_session_id);
+
+    CREATE TABLE IF NOT EXISTS marketplace_listings (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      inventory_id    INTEGER NOT NULL,
+      item_id         INTEGER NOT NULL,
+      seller_id       INTEGER NOT NULL,
+      buyer_id        INTEGER,
+      price_gold      INTEGER NOT NULL,
+      status          TEXT NOT NULL DEFAULT 'active',
+      listed_at       INTEGER NOT NULL,
+      sold_at         INTEGER,
+      FOREIGN KEY (seller_id) REFERENCES characters(id) ON DELETE CASCADE,
+      FOREIGN KEY (item_id) REFERENCES items(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_market_active ON marketplace_listings(status, listed_at);
+    CREATE INDEX IF NOT EXISTS idx_market_seller ON marketplace_listings(seller_id);
   `);
+
+  // Inventory soul-bound + listed flags
+  const invCols = db.prepare(`PRAGMA table_info(inventory)`).all() as { name: string }[];
+  const invHave = new Set(invCols.map((c) => c.name));
+  if (!invHave.has('soul_bound')) db.exec(`ALTER TABLE inventory ADD COLUMN soul_bound INTEGER NOT NULL DEFAULT 0`);
+  if (!invHave.has('listed')) db.exec(`ALTER TABLE inventory ADD COLUMN listed INTEGER NOT NULL DEFAULT 0`);
+
+  // Active alchemy buffs (JSON array of { stat, percent, expires_at })
+  const charCols = db.prepare(`PRAGMA table_info(characters)`).all() as { name: string }[];
+  const charHave = new Set(charCols.map((c) => c.name));
+  if (!charHave.has('active_buffs')) db.exec(`ALTER TABLE characters ADD COLUMN active_buffs TEXT NOT NULL DEFAULT '[]'`);
 }

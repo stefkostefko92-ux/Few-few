@@ -119,7 +119,13 @@ router.get('/me', (req, res) => {
     return;
   }
   regenerateEnergy(char);
-  db.prepare('UPDATE characters SET energy = ?, energy_updated_at = ? WHERE id = ?').run(
+  // HP rework: out of combat, the hero is always at full health. HP only
+  // matters during combat (the combat scene drives its own in-fight HP via
+  // rounds_json). Persisting full HP here means players never need potions
+  // or rests just to survive.
+  char.hp = char.hp_max;
+  char.mp = char.mp_max;
+  db.prepare('UPDATE characters SET energy = ?, energy_updated_at = ?, hp = hp_max, mp = mp_max WHERE id = ?').run(
     char.energy,
     char.energy_updated_at,
     char.id,
@@ -136,17 +142,13 @@ router.get('/me', (req, res) => {
     entry: { id: (row as any).inv_id, character_id: char.id, item_id: row.id, quantity: row.quantity, equipped: row.equipped, slot: row.slot } as InventoryEntry,
   }));
   const derived = deriveStats(char, eqList);
-  // Sync hp_max
-  if (char.hp_max !== derived.hp_max) {
-    char.hp_max = derived.hp_max;
-    if (char.hp > char.hp_max) char.hp = char.hp_max;
-    db.prepare('UPDATE characters SET hp_max = ?, hp = ? WHERE id = ?').run(char.hp_max, char.hp, char.id);
-  }
-  if (char.mp_max !== derived.mp_max) {
-    char.mp_max = derived.mp_max;
-    if (char.mp > char.mp_max) char.mp = char.mp_max;
-    db.prepare('UPDATE characters SET mp_max = ?, mp = ? WHERE id = ?').run(char.mp_max, char.mp, char.id);
-  }
+  // Out of combat: hp / mp are ALWAYS at the derived max.
+  char.hp_max = derived.hp_max;
+  char.mp_max = derived.mp_max;
+  char.hp = char.hp_max;
+  char.mp = char.mp_max;
+  db.prepare('UPDATE characters SET hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max WHERE id = ?')
+    .run(char.hp_max, char.mp_max, char.id);
   res.json({ character: char, derived });
 });
 

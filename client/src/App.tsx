@@ -34,6 +34,7 @@ import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import Guild from './pages/Guild';
 import Premium from './pages/Premium';
+import Market from './pages/Market';
 import LevelUpOverlay from './components/LevelUpOverlay';
 
 function AppLayout(): React.ReactElement {
@@ -152,6 +153,7 @@ export default function App(): React.ReactElement {
             <Route path="profile" element={<Profile />} />
             <Route path="guild" element={<Guild />} />
             <Route path="premium" element={<Premium />} />
+            <Route path="market" element={<Market />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
