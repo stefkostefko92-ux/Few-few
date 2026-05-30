@@ -22,7 +22,7 @@ apps/
   worker/     BullMQ jobs                     (S6)
   web/        React + Vite shell              (S1)
 packages/
-  game-core/  6 engine cores, not 18          (S2)
+  game-core/  6 engine cores, not 18 (chess + backgammon so far)
   db/         Prisma schema + client
   shared/     zod schemas, types, constants
   config/     eslint / tsconfig presets
@@ -40,7 +40,12 @@ infra/        Dockerfiles, docker-compose, nginx
       (Button/Panel/Badge/Modal/Field), React 18 + Vite shell with auth screens
       (login/register), session restore via cookie, lobby with the 18-game
       catalog, i18n (bg/it/en), Carbon Stealth footer.
-- [ ] S2 — game-core kernel + first 2 engines
+- [x] **S2 — game-core kernel + first 2 engines**: deterministic FSM contract
+      (`init/legalActions/reduce/isTerminal/score/redact`), seeded PRNG +
+      commit-reveal fairness (SHA-256), chess (via chess.js) and backgammon
+      (full rules: bar/hits/bearing-off/gammon) engines, random-bot playout
+      driver. Vitest: Fool's-mate → checkmate, full backgammon game to a winner,
+      deterministic replay (13 tests).
 - [ ] S3 — realtime server + first end-to-end game (chess)
 - [ ] S4–S9 — see concept doc
 
