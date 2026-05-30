@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { GUILD_BONUSES, GUILD_LEVEL_XP, GUILD_CREATE_COST, GUILD_CREATE_LEVEL_REQ, getGuildBonus } from '../game/guild';
+import { GUILD_BONUSES, GUILD_LEVEL_XP, GUILD_LEVEL_GEMS, GUILD_PREMIUM_THRESHOLD, GUILD_CREATE_COST, GUILD_CREATE_LEVEL_REQ, getGuildBonus } from '../game/guild';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -96,6 +96,8 @@ router.get('/me', (req, res) => {
       member_count: members.length,
       bonus: getGuildBonus(g.guild.level),
       next_level_xp: GUILD_LEVEL_XP[g.guild.level + 1] || null,
+      next_level_gems: GUILD_LEVEL_GEMS[g.guild.level + 1] || 0,
+      premium_threshold: GUILD_PREMIUM_THRESHOLD,
     },
     members,
     my_role: g.role,
@@ -329,11 +331,36 @@ router.post('/upgrade', (req, res) => {
   if (g.role !== 'leader') { res.status(403).json({ error: 'Only the leader may upgrade.' }); return; }
   const next = g.guild.level + 1;
   const needXp = GUILD_LEVEL_XP[next];
+  const needGems = GUILD_LEVEL_GEMS[next] || 0;
   if (!needXp) { res.status(400).json({ error: 'Maximum guild level reached.' }); return; }
-  if (g.guild.xp < needXp) { res.status(400).json({ error: `Need ${needXp.toLocaleString()} guild XP to advance.` }); return; }
+  if (g.guild.xp < needXp) {
+    res.status(400).json({ error: `Need ${needXp.toLocaleString()} guild XP to advance.` });
+    return;
+  }
+  if (needGems > 0) {
+    const currentGems = ((char as any).gems || 0);
+    if (currentGems < needGems) {
+      res.status(402).json({
+        error: `Tier ${next} requires ${needGems} gems. You have ${currentGems}.`,
+        needGems,
+        haveGems: currentGems,
+        purchase_required: true,
+      });
+      return;
+    }
+  }
   const slots = GUILD_BONUSES[next].member_slots;
   db.prepare(`UPDATE guilds SET level = ?, xp = xp - ?, member_slots = ? WHERE id = ?`).run(next, needXp, slots, g.guild.id);
-  res.json({ ok: true, level: next, member_slots: slots, bonus: GUILD_BONUSES[next] });
+  if (needGems > 0) {
+    db.prepare(`UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ?`).run(needGems, needGems, char.id);
+  }
+  res.json({
+    ok: true,
+    level: next,
+    member_slots: slots,
+    bonus: GUILD_BONUSES[next],
+    gems_spent: needGems,
+  });
 });
 
 /* ===== Chat ===== */

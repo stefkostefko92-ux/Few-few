@@ -238,6 +238,10 @@ export function applySchema(db: Database.Database): void {
   addColumn('total_gold_earned INTEGER NOT NULL DEFAULT 0');
   addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
   addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
+  addColumn('gems INTEGER NOT NULL DEFAULT 0');
+  addColumn('total_gems_earned INTEGER NOT NULL DEFAULT 0');
+  addColumn('total_gems_spent INTEGER NOT NULL DEFAULT 0');
+  addColumn("stat_upgrades TEXT NOT NULL DEFAULT '{}'");
   addColumn("avatar TEXT NOT NULL DEFAULT 'warrior_01'");
   addColumn("frame_slug TEXT NOT NULL DEFAULT 'plain'");
   addColumn("bio TEXT NOT NULL DEFAULT ''");
@@ -340,5 +344,24 @@ export function applySchema(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_war_attacker ON guild_wars(attacker_guild_id);
     CREATE INDEX IF NOT EXISTS idx_war_defender ON guild_wars(defender_guild_id);
+
+    CREATE TABLE IF NOT EXISTS purchases (
+      id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+      character_id          INTEGER NOT NULL,
+      kind                  TEXT NOT NULL,
+      amount_cents          INTEGER NOT NULL,
+      currency              TEXT NOT NULL DEFAULT 'usd',
+      gems_granted          INTEGER NOT NULL DEFAULT 0,
+      effect_payload        TEXT NOT NULL DEFAULT '{}',
+      status                TEXT NOT NULL DEFAULT 'pending',
+      stripe_session_id     TEXT,
+      stripe_payment_intent TEXT,
+      mode                  TEXT NOT NULL DEFAULT 'stripe',
+      created_at            INTEGER NOT NULL,
+      completed_at          INTEGER,
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_purchases_char ON purchases(character_id);
+    CREATE INDEX IF NOT EXISTS idx_purchases_session ON purchases(stripe_session_id);
   `);
 }

@@ -4,6 +4,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { classBaseStats, regenerateEnergy } from '../game/progression';
 import { deriveStats } from '../game/stats';
+import { STAT_KEYS, parseCounts, nextUpgradeCost, batchCost, type StatKey } from '../game/upgrade';
 import type { Character, CharacterClass, InventoryEntry, Item } from '../types/domain';
 
 const router = Router();
@@ -158,108 +159,65 @@ const spendStatSchema = z.object({
   wisdom: z.number().int().min(0).default(0),
 });
 
-router.post('/stats/spend', (req, res) => {
-  const parse = spendStatSchema.safeParse(req.body);
-  if (!parse.success) {
-    res.status(400).json({ error: parse.error.flatten() });
-    return;
-  }
+/* =========================================================
+   Gold-driven stat & skill upgrades.
+   Each stat scales independently with a 5-10-15-20-25... curve.
+   ========================================================= */
+
+router.get('/upgrade-costs', (req, res) => {
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
-    res.status(404).json({ error: 'No character' });
-    return;
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const counts = parseCounts((char as any).stat_upgrades);
+  const costs: Record<string, { current_value: number; upgrades: number; next_cost: number }> = {};
+  for (const key of STAT_KEYS) {
+    const upgrades = counts[key] || 0;
+    costs[key] = {
+      current_value: (char as any)[key],
+      upgrades,
+      next_cost: nextUpgradeCost(upgrades),
+    };
   }
-  const total =
-    parse.data.strength +
-    parse.data.dexterity +
-    parse.data.constitution +
-    parse.data.intelligence +
-    parse.data.charisma +
-    parse.data.wisdom;
-  if (total <= 0) {
-    res.status(400).json({ error: 'No points spent' });
-    return;
-  }
-  if (total > char.stat_points) {
-    res.status(400).json({ error: 'Not enough stat points' });
-    return;
-  }
-  db.prepare(
-    `UPDATE characters SET
-      strength = strength + ?,
-      dexterity = dexterity + ?,
-      constitution = constitution + ?,
-      intelligence = intelligence + ?,
-      charisma = charisma + ?,
-      wisdom = wisdom + ?,
-      stat_points = stat_points - ?
-     WHERE id = ?`,
-  ).run(
-    parse.data.strength,
-    parse.data.dexterity,
-    parse.data.constitution,
-    parse.data.intelligence,
-    parse.data.charisma,
-    parse.data.wisdom,
-    total,
-    char.id,
-  );
-  res.json({ ok: true });
+  res.json({ costs, gold: char.gold });
 });
 
-const spendSkillSchema = z.object({
-  sword: z.number().int().min(0).default(0),
-  axe: z.number().int().min(0).default(0),
-  bow: z.number().int().min(0).default(0),
-  staff: z.number().int().min(0).default(0),
-  magic: z.number().int().min(0).default(0),
-  stealth: z.number().int().min(0).default(0),
+const upgradeStatSchema = z.object({
+  stat: z.enum([
+    'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma',
+    'skill_sword', 'skill_axe', 'skill_bow', 'skill_staff', 'skill_magic', 'skill_stealth',
+  ]),
+  count: z.number().int().min(1).max(50).default(1),
 });
 
-router.post('/skills/spend', (req, res) => {
-  const parse = spendSkillSchema.safeParse(req.body);
-  if (!parse.success) {
-    res.status(400).json({ error: parse.error.flatten() });
-    return;
-  }
+router.post('/upgrade-stat', (req, res) => {
+  const parse = upgradeStatSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
-    res.status(404).json({ error: 'No character' });
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  const counts = parseCounts((char as any).stat_upgrades);
+  const stat = parse.data.stat as StatKey;
+  const want = parse.data.count;
+  const currentCount = counts[stat] || 0;
+  const totalCost = batchCost(currentCount, want);
+  if (char.gold < totalCost) {
+    res.status(400).json({ error: `Not enough gold. Need ${totalCost}g.` });
     return;
   }
-  const total =
-    parse.data.sword + parse.data.axe + parse.data.bow + parse.data.staff + parse.data.magic + parse.data.stealth;
-  if (total <= 0) {
-    res.status(400).json({ error: 'No points spent' });
-    return;
-  }
-  if (total > char.skill_points) {
-    res.status(400).json({ error: 'Not enough skill points' });
-    return;
-  }
+  counts[stat] = currentCount + want;
   db.prepare(
-    `UPDATE characters SET
-      skill_sword = skill_sword + ?,
-      skill_axe = skill_axe + ?,
-      skill_bow = skill_bow + ?,
-      skill_staff = skill_staff + ?,
-      skill_magic = skill_magic + ?,
-      skill_stealth = skill_stealth + ?,
-      skill_points = skill_points - ?
-     WHERE id = ?`,
-  ).run(
-    parse.data.sword,
-    parse.data.axe,
-    parse.data.bow,
-    parse.data.staff,
-    parse.data.magic,
-    parse.data.stealth,
-    total,
-    char.id,
-  );
-  res.json({ ok: true });
+    `UPDATE characters SET ${stat} = ${stat} + ?, gold = gold - ?, stat_upgrades = ? WHERE id = ?`,
+  ).run(want, totalCost, JSON.stringify(counts), char.id);
+  res.json({
+    ok: true,
+    stat,
+    gained: want,
+    gold_spent: totalCost,
+    new_value: (char as any)[stat] + want,
+    new_upgrades: currentCount + want,
+    next_cost: nextUpgradeCost(currentCount + want),
+    gold_remaining: char.gold - totalCost,
+  });
 });
 
 router.post('/rest', (req, res) => {

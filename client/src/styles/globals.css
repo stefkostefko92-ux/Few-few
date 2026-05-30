@@ -327,6 +327,10 @@ input:focus, textarea:focus, select:focus {
 .dot-gold { background: var(--gold-2); box-shadow: 0 0 6px var(--gold-2); }
 .dot-hp { background: var(--crimson-1); box-shadow: 0 0 6px var(--crimson-1); }
 .dot-energy { background: var(--emerald-1); box-shadow: 0 0 6px var(--emerald-1); }
+.dot-gem { background: var(--amethyst-1); box-shadow: 0 0 8px var(--amethyst-1); }
+.nav-stat .value.gem { color: var(--amethyst-1); font-family: var(--font-mono); }
+.gem-stat { border-color: rgba(194,148,255,.4) !important; }
+.gem-stat:hover { border-color: var(--amethyst-1) !important; box-shadow: 0 0 16px rgba(194,148,255,.3); }
 
 .nav-profile {
   position: relative;

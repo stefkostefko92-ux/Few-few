@@ -26,6 +26,7 @@ import adminRoutes from './routes/admin';
 import setsRoutes from './routes/sets';
 import profileRoutes from './routes/profile';
 import guildRoutes from './routes/guild';
+import paymentsRoutes from './routes/payments';
 import { getDb } from './db';
 
 const app = express();
@@ -79,6 +80,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/sets', setsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/guild', guildRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

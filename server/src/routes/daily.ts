@@ -100,14 +100,16 @@ router.post('/claim', (req, res) => {
       givenItem = slug;
     }
   }
+  // Daily gem grant: 3 every day, 25 on the 7-day milestone (and 14 / 30).
+  const gemsGranted = (newStreak === 14 || newStreak === 30) ? 50 : (newStreak % 7 === 0 ? 25 : 3);
   db.prepare(
-    'UPDATE characters SET gold = gold + 0, xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ?, gold = ? WHERE id = ?',
-  ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, reward.gold, reward.xp, char.gold, char.id);
+    'UPDATE characters SET gold = gold + 0, xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ?, gold = ?, gems = gems + ?, total_gems_earned = total_gems_earned + ? WHERE id = ?',
+  ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, reward.gold, reward.xp, char.gold, gemsGranted, gemsGranted, char.id);
   const longest = Math.max(state.longest_streak, newStreak);
   db.prepare('UPDATE daily_state SET streak = ?, longest_streak = ?, last_claim_day = ? WHERE character_id = ?').run(newStreak, longest, today, char.id);
 
   const unlocked = evaluateAchievements(db, char.id);
-  res.json({ ok: true, streak: newStreak, reward, item: givenItem, levelUp: lvlRes.leveled ? lvlRes : null, unlocked });
+  res.json({ ok: true, streak: newStreak, reward: { ...reward, gems: gemsGranted }, item: givenItem, levelUp: lvlRes.leveled ? lvlRes : null, unlocked });
 });
 
 router.get('/quests', (req, res) => {

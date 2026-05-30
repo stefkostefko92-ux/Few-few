@@ -24,6 +24,19 @@ export const GUILD_LEVEL_XP: Record<number, number> = {
   5: 350_000,
 };
 
+/**
+ * Premium-currency requirement to upgrade past tier 3.
+ * Gems are also earnable in-game (daily claims, dungeon clears) so the
+ * gate isn't pay-only — it's pay-faster.
+ */
+export const GUILD_LEVEL_GEMS: Record<number, number> = {
+  2: 0,
+  3: 0,
+  4: 200,
+  5: 600,
+};
+export const GUILD_PREMIUM_THRESHOLD = 4;
+
 export function getGuildBonus(level: number): GuildBonus {
   return GUILD_BONUSES[Math.min(5, Math.max(1, level))];
 }

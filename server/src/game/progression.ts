@@ -27,6 +27,7 @@ export interface LevelUpResult {
   skillPointsGained: number;
   hpGained: number;
   mpGained: number;
+  gemsGained: number;
 }
 
 export function applyXp(char: Character, xpGain: number): LevelUpResult {
@@ -34,16 +35,15 @@ export function applyXp(char: Character, xpGain: number): LevelUpResult {
   char.xp += xpGain;
   const newLevel = levelFromXp(char.xp);
   if (newLevel <= fromLevel) {
-    return { leveled: false, fromLevel, toLevel: fromLevel, statPointsGained: 0, skillPointsGained: 0, hpGained: 0, mpGained: 0 };
+    return { leveled: false, fromLevel, toLevel: fromLevel, statPointsGained: 0, skillPointsGained: 0, hpGained: 0, mpGained: 0, gemsGained: 0 };
   }
   const levelsGained = newLevel - fromLevel;
-  const statPointsGained = levelsGained * 3;
-  const skillPointsGained = levelsGained * 2;
+  // Stats and skills are now gold-driven (see /api/character/upgrade-stat).
+  // Levels grant HP/MP scaling. Gems trickle through daily claims & dungeon
+  // clears (handled in those routes) so this function stays side-effect free.
   const hpGained = levelsGained * 10;
   const mpGained = levelsGained * 4;
   char.level = newLevel;
-  char.stat_points += statPointsGained;
-  char.skill_points += skillPointsGained;
   char.hp_max += hpGained;
   char.mp_max += mpGained;
   char.hp = Math.min(char.hp + hpGained, char.hp_max);
@@ -52,10 +52,11 @@ export function applyXp(char: Character, xpGain: number): LevelUpResult {
     leveled: true,
     fromLevel,
     toLevel: newLevel,
-    statPointsGained,
-    skillPointsGained,
+    statPointsGained: 0,
+    skillPointsGained: 0,
     hpGained,
     mpGained,
+    gemsGained: 0,
   };
 }
 

@@ -95,6 +95,13 @@ export default function Navbar(): React.ReactElement {
                 <AnimatedNumber value={char.gold} />
               </span>
             </div>
+            <div className="nav-stat gem-stat" title="Gems · premium currency" onClick={() => navigate('/app/premium')} style={{ cursor: 'pointer' }}>
+              <span className="nav-stat-dot dot-gem" />
+              <span className="label">GM</span>
+              <span className="value gem">
+                <AnimatedNumber value={(char as any).gems || 0} />
+              </span>
+            </div>
           </>
         )}
 
