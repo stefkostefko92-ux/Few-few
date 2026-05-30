@@ -41,6 +41,18 @@
     "leave": "Esci",
     "backToLobby": "Torna alla lobby"
   },
+  "santase": {
+    "trump": "Briscola",
+    "stock": "Mazzo: {{count}}",
+    "close": "Chiudi",
+    "exchange": "Cambia briscola"
+  },
+  "belote": {
+    "yourTeam": "La tua squadra",
+    "theirTeam": "Avversari",
+    "pass": "Passo",
+    "emptyTrick": "In attesa della prima carta"
+  },
   "wallet": {
     "chips": "Fiche",
     "gems": "Gemme",

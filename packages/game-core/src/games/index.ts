@@ -2,6 +2,8 @@ import type { GameKey } from "@aso/shared";
 import type { GameEngine, GameEvent } from "../kernel/contract.js";
 import { chessEngine } from "../engines/move-validation/chess.js";
 import { backgammonEngine } from "../engines/dice-race/backgammon.js";
+import { santaseEngine } from "../engines/trick/santase.js";
+import { beloteEngine } from "../engines/trick/belote.js";
 
 /**
  * Type-erased engine handle for the realtime host's registry. The host knows
@@ -9,10 +11,12 @@ import { backgammonEngine } from "../engines/dice-race/backgammon.js";
  */
 export type AnyEngine = GameEngine<unknown, unknown, GameEvent>;
 
-/** Engines implemented so far. Grows as sprints land (S4, S7…). */
+/** Engines implemented so far. Grows as sprints land (S7…). */
 export const GAME_ENGINES: Partial<Record<GameKey, AnyEngine>> = {
   CHESS: chessEngine as unknown as AnyEngine,
   BACKGAMMON: backgammonEngine as unknown as AnyEngine,
+  SANTASE: santaseEngine as unknown as AnyEngine,
+  BELOTE: beloteEngine as unknown as AnyEngine,
 };
 
 export function getEngine(key: GameKey): AnyEngine {

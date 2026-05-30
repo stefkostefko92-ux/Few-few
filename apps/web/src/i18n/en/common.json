@@ -41,6 +41,18 @@
     "leave": "Leave",
     "backToLobby": "Back to lobby"
   },
+  "santase": {
+    "trump": "Trump",
+    "stock": "Stock: {{count}}",
+    "close": "Close",
+    "exchange": "Swap trump"
+  },
+  "belote": {
+    "yourTeam": "Your team",
+    "theirTeam": "Opponents",
+    "pass": "Pass",
+    "emptyTrick": "Waiting for the first card"
+  },
   "wallet": {
     "chips": "Chips",
     "gems": "Gems",

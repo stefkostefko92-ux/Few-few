@@ -1,7 +1,7 @@
 import type { Server } from "socket.io";
 import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
-import { STARTING_MMR } from "@aso/shared";
+import { STARTING_MMR, seatsFor } from "@aso/shared";
 import { GameRoom, type RoomSeat } from "./room.js";
 import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
@@ -86,6 +86,7 @@ export class Matchmaker {
   }
 
   private async matchQueue(q: QueueDesc): Promise<void> {
+    const required = seatsFor(q.game);
     const raw = await redis.zrange(queueKey(q), 0, -1, "WITHSCORES");
     if (raw.length === 0) return;
 
@@ -96,32 +97,32 @@ export class Matchmaker {
       if (!userId) continue;
       const mmr = Number(raw[i + 1] ?? STARTING_MMR);
       const joinedRaw = await redis.hget(JOINED_HASH, joinedField(q, userId));
-      const joined = Number(joinedRaw) || now;
-      players.push({ userId, mmr, waitedMs: now - joined });
+      players.push({ userId, mmr, waitedMs: now - Number(joinedRaw || now) });
     }
 
-    // Pair adjacent (sorted by mmr) when inside the combined window.
-    let i = 0;
-    while (i + 1 < players.length) {
-      const a = players[i];
-      const b = players[i + 1];
-      if (!a || !b) break;
-      const window = mmrWindow(Math.max(a.waitedMs, b.waitedMs));
-      if (Math.abs(a.mmr - b.mmr) <= window) {
-        await this.dequeue(q, [a.userId, b.userId]);
-        await this.createMatch(q, [a.userId, b.userId]);
-        players.splice(i, 2);
+    // Form full human matches: a contiguous (mmr-sorted) window of `required`
+    // players whose spread fits the (wait-widened) tolerance.
+    while (players.length >= required) {
+      const group = players.slice(0, required);
+      const spread = group[group.length - 1]!.mmr - group[0]!.mmr;
+      const window = mmrWindow(Math.max(...group.map((p) => p.waitedMs)));
+      if (spread <= window) {
+        const ids = group.map((p) => p.userId);
+        await this.dequeue(q, ids);
+        await this.createMatch(q, ids, 0);
+        players.splice(0, required);
       } else {
-        i += 1;
+        break;
       }
     }
 
-    // Bot fallback for anyone who has waited too long.
-    for (const p of players) {
-      if (p.waitedMs >= env.BOT_FALLBACK_SECONDS * 1000) {
-        await this.dequeue(q, [p.userId]);
-        await this.createBotMatch(q, p.userId);
-      }
+    // Bot fallback: once the longest-waiting player passes the threshold, seat
+    // whoever is still queued and fill the remaining seats with bots.
+    const longestWait = players.reduce((m, p) => Math.max(m, p.waitedMs), 0);
+    if (players.length > 0 && longestWait >= env.BOT_FALLBACK_SECONDS * 1000) {
+      const humans = players.slice(0, required).map((p) => p.userId);
+      await this.dequeue(q, humans);
+      await this.createMatch(q, humans, required - humans.length);
     }
   }
 
@@ -136,7 +137,8 @@ export class Matchmaker {
     return this.displayNames.get(userId) ?? "Играч";
   }
 
-  private async createMatch(q: QueueDesc, userIds: string[]): Promise<void> {
+  /** Create a match: human seats first, then `botFill` bot seats. */
+  private async createMatch(q: QueueDesc, userIds: string[], botFill: number): Promise<void> {
     const seed = generateSeed();
     const match = await prisma.match.create({ data: { game: q.game, mode: q.mode, seed } });
     const seats: RoomSeat[] = userIds.map((userId, seat) => ({
@@ -145,28 +147,22 @@ export class Matchmaker {
       isBot: false,
       displayName: this.nameFor(userId),
     }));
-    const room = new GameRoom(this.io, match.id, q.game, seats, seed);
-    this.rooms.set(match.id, room);
-    room.start();
-    logger.info({ matchId: match.id, game: q.game, players: userIds.length }, "match created");
-  }
-
-  private async createBotMatch(q: QueueDesc, userId: string): Promise<void> {
-    const seed = generateSeed();
-    const match = await prisma.match.create({ data: { game: q.game, mode: q.mode, seed } });
-    const seats: RoomSeat[] = [
-      { seat: 0, userId, isBot: false, displayName: this.nameFor(userId) },
-      {
-        seat: 1,
+    for (let b = 0; b < botFill; b++) {
+      const seat = userIds.length + b;
+      seats.push({
+        seat,
         userId: null,
         isBot: true,
         displayName: "АСО Бот",
-        bot: new RandomBot(`${seed}:bot`),
-      },
-    ];
+        bot: new RandomBot(`${seed}:bot:${seat}`),
+      });
+    }
     const room = new GameRoom(this.io, match.id, q.game, seats, seed);
     this.rooms.set(match.id, room);
     room.start();
-    logger.info({ matchId: match.id, game: q.game }, "bot match created");
+    logger.info(
+      { matchId: match.id, game: q.game, humans: userIds.length, bots: botFill },
+      "match created",
+    );
   }
 }

@@ -41,6 +41,18 @@
     "leave": "Напусни",
     "backToLobby": "Към лобито"
   },
+  "santase": {
+    "trump": "Коз",
+    "stock": "Тесте: {{count}}",
+    "close": "Затвори",
+    "exchange": "Смени коза"
+  },
+  "belote": {
+    "yourTeam": "Твой отбор",
+    "theirTeam": "Съперници",
+    "pass": "Пас",
+    "emptyTrick": "Чакаме първа карта"
+  },
   "wallet": {
     "chips": "Чипове",
     "gems": "Скъпоценни камъни",

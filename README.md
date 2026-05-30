@@ -22,7 +22,7 @@ apps/
   worker/     BullMQ jobs                     (S6)
   web/        React + Vite shell              (S1)
 packages/
-  game-core/  6 engine cores, not 18 (chess + backgammon so far)
+  game-core/  6 engine cores, not 18 (chess, backgammon, santase, belote)
   db/         Prisma schema + client
   shared/     zod schemas, types, constants
   config/     eslint / tsconfig presets
