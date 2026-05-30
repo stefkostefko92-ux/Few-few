@@ -1,0 +1,75 @@
+/**
+ * In-memory snapshot of the player's current game state.
+ *
+ * Populated by the API layer as responses are observed, and read by modules to
+ * make decisions (e.g. "do I have a free adventure?", "is my HP high enough?").
+ * The shape mirrors the data Tanoth surfaces; fields default to null/0 until
+ * the bot has seen a corresponding response.
+ */
+(function () {
+  'use strict';
+  const TB = window.TanothBot;
+
+  const state = {
+    loggedIn: false,
+    name: null,
+    guild: null,
+    level: 0,
+    xp: 0,
+    xpForNextLevel: 0,
+    gold: 0,
+    bloodstones: 0,
+    health: 0,
+    maxHealth: 0,
+
+    // adventures
+    freeAdventures: 0,          // remaining free adventures today
+    adventureReturnAt: 0,       // epoch ms when current adventure resolves
+    adventureList: [],          // [{id, name, difficulty, duration, xp, gold, winChance}]
+
+    // arena / combat
+    duelTargets: [],            // [{id, name, level, gold, guild}]
+
+    // training
+    attributes: {},             // {strength, dexterity, constitution, intelligence, agility}
+    attributeCosts: {},
+
+    // jobs
+    workReturnAt: 0,
+    jobs: [],
+
+    // dungeon / cave
+    dungeonAvailable: false,
+    caveFloor: 0,
+    caveAttemptsLeft: 1,
+
+    // inventory
+    inventory: [],              // [{id, name, rarity, type, value}]
+    runes: [],
+
+    lastUpdated: 0
+  };
+
+  const listeners = new Set();
+
+  TB.State = {
+    get: () => state,
+    patch(partial) {
+      Object.assign(state, partial);
+      state.lastUpdated = Date.now();
+      listeners.forEach((fn) => { try { fn(state); } catch (_) {} });
+    },
+    onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+
+    healthPercent() {
+      if (!state.maxHealth) return 100;
+      return Math.round((state.health / state.maxHealth) * 100);
+    },
+    adventureBusy() {
+      return state.adventureReturnAt > Date.now();
+    },
+    workBusy() {
+      return state.workReturnAt > Date.now();
+    }
+  };
+})();

@@ -1,0 +1,114 @@
+/**
+ * Content-script orchestrator (runs last in the manifest js array).
+ *
+ * Boots the subsystems in order: load settings -> inject the page hook ->
+ * mount the panel -> wire popup/service-worker messaging -> optionally
+ * auto-start. Everything above this file has only *defined* its piece on the
+ * TanothBot namespace; this is where it all comes alive.
+ */
+(function () {
+  'use strict';
+  const TB = window.TanothBot;
+  const { Storage, Bridge, Api, Scheduler, Logger, State, Stats, I18n, Panel } = TB;
+
+  async function boot() {
+    await Storage.load();
+    const settings = Storage.get();
+
+    // Inject the page-world network hook and bring up the bridge.
+    Bridge.init();
+
+    // Helper for level-up notifications used by the API layer.
+    TB.notifyLevelUp = (level) => {
+      const g = Storage.section('general') || {};
+      Logger.success(I18n.t('logLevelUp', [String(level)]));
+      if (g.notifications && g.notifyOnLevelUp) {
+        chrome.runtime.sendMessage({
+          type: 'NOTIFY', title: I18n.t('extName'),
+          message: I18n.t('notifyLevelUp', [String(level)])
+        }).catch(() => {});
+      }
+    };
+
+    // Mount the in-game panel once the DOM is ready.
+    if (document.body) Panel.mount();
+    else document.addEventListener('DOMContentLoaded', () => Panel.mount());
+
+    // Seed initial game state from the first observed gateway response, then
+    // proactively ask for user info once the protocol is learned.
+    let primed = false;
+    Bridge.onProtocol((p) => {
+      if (!primed && p && p.url && p.actionKey) {
+        primed = true;
+        Logger.success(I18n.t('logProtocolReady'));
+        Api.refreshUserInfo().catch(() => {});
+        if ((Storage.section('general') || {}).startOnLoad) {
+          Logger.info(I18n.t('logAutoStart'));
+          Scheduler.start();
+        }
+      }
+    });
+
+    TB.ready = true;
+    Logger.info(I18n.t('logBooted', [TB.VERSION]));
+  }
+
+  /* ---------------------- popup / service-worker bridge ------------------- */
+
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    switch (msg?.type) {
+      case 'HEARTBEAT':
+        Scheduler.heartbeat();
+        sendResponse({ ok: true });
+        return false;
+
+      case 'SETTINGS_UPDATED':
+        Storage._set(msg.settings);
+        Panel.refreshModules();
+        sendResponse({ ok: true });
+        return false;
+
+      case 'GET_STATUS':
+        sendResponse({
+          ok: true,
+          status: Scheduler.status(),
+          state: {
+            loggedIn: State.get().loggedIn,
+            name: State.get().name,
+            level: State.get().level,
+            gold: State.get().gold,
+            bloodstones: State.get().bloodstones
+          },
+          session: Stats.session(),
+          protocolReady: Bridge.protocolReady()
+        });
+        return false;
+
+      case 'CONTROL':
+        handleControl(msg.action);
+        sendResponse({ ok: true, status: Scheduler.status() });
+        return false;
+
+      default:
+        return false;
+    }
+  });
+
+  function handleControl(action) {
+    switch (action) {
+      case 'start': Scheduler.start(); break;
+      case 'stop': Scheduler.stop(I18n.t('reasonManual')); break;
+      case 'pause': Scheduler.pause(); break;
+      case 'resume': Scheduler.resume(); break;
+      case 'showPanel': {
+        const fab = document.getElementById('tanoth-bot-fab');
+        const panel = document.getElementById('tanoth-bot-panel');
+        if (panel) panel.style.display = '';
+        if (fab) fab.remove();
+        break;
+      }
+    }
+  }
+
+  boot().catch((e) => Logger.error('boot failed', e.message));
+})();

@@ -1,0 +1,101 @@
+/* Tanoth Master Bot — in-game overlay panel. Scoped under #tanoth-bot-panel
+   with an all-properties reset on the host so the game's CSS can't bleed in. */
+
+#tanoth-bot-panel {
+  all: initial;
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  width: 320px;
+  z-index: 2147483600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #e6e6e6;
+  background: #1b1f2a;
+  border: 1px solid #2c3242;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  user-select: none;
+}
+#tanoth-bot-panel.tb-light {
+  color: #1b1f2a; background: #f4f6fb; border-color: #d4d9e4;
+}
+#tanoth-bot-panel.tb-left { right: auto; left: 16px; }
+#tanoth-bot-panel.tb-collapsed .tb-body { display: none; }
+
+#tanoth-bot-panel * { box-sizing: border-box; }
+
+#tanoth-bot-panel .tb-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; cursor: move;
+  background: linear-gradient(135deg, #6c3fd4, #3f7ad4);
+  color: #fff; font-weight: 600;
+}
+#tanoth-bot-panel .tb-header .tb-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: #e74c3c; flex: 0 0 auto;
+}
+#tanoth-bot-panel.tb-running .tb-header .tb-dot { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
+#tanoth-bot-panel.tb-paused .tb-header .tb-dot { background: #f1c40f; }
+#tanoth-bot-panel .tb-title { flex: 1 1 auto; }
+#tanoth-bot-panel .tb-icon-btn {
+  cursor: pointer; background: rgba(255,255,255,.15); border: none; color: #fff;
+  width: 22px; height: 22px; border-radius: 5px; line-height: 1; font-size: 14px;
+}
+#tanoth-bot-panel .tb-icon-btn:hover { background: rgba(255,255,255,.3); }
+
+#tanoth-bot-panel .tb-body { padding: 12px; }
+
+#tanoth-bot-panel .tb-controls { display: flex; gap: 8px; margin-bottom: 10px; }
+#tanoth-bot-panel .tb-btn {
+  flex: 1; cursor: pointer; border: none; border-radius: 7px; padding: 8px;
+  font-weight: 600; font-size: 13px; color: #fff; background: #2c3242;
+}
+#tanoth-bot-panel .tb-btn.tb-start { background: #27ae60; }
+#tanoth-bot-panel .tb-btn.tb-stop { background: #c0392b; }
+#tanoth-bot-panel .tb-btn.tb-pause { background: #d68910; }
+#tanoth-bot-panel .tb-btn:disabled { opacity: .45; cursor: default; }
+
+#tanoth-bot-panel .tb-status {
+  font-size: 12px; opacity: .85; margin-bottom: 10px; min-height: 16px;
+}
+
+#tanoth-bot-panel .tb-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: 10px;
+}
+#tanoth-bot-panel .tb-stat { display: flex; justify-content: space-between; font-size: 12px; }
+#tanoth-bot-panel .tb-stat b { font-weight: 600; }
+
+#tanoth-bot-panel .tb-modules { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+#tanoth-bot-panel .tb-chip {
+  cursor: pointer; font-size: 11px; padding: 4px 8px; border-radius: 12px;
+  background: #2c3242; border: 1px solid #3a4257; opacity: .55;
+}
+#tanoth-bot-panel .tb-chip.tb-on { opacity: 1; background: #3f7ad4; }
+#tanoth-bot-panel.tb-light .tb-chip { background: #e2e6ef; }
+#tanoth-bot-panel.tb-light .tb-chip.tb-on { background: #3f7ad4; color: #fff; }
+
+#tanoth-bot-panel .tb-log {
+  height: 130px; overflow-y: auto; background: #11141d; border-radius: 7px;
+  padding: 6px 8px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+}
+#tanoth-bot-panel.tb-light .tb-log { background: #e9ecf3; }
+#tanoth-bot-panel .tb-log .tb-line { margin: 0 0 2px; white-space: pre-wrap; word-break: break-word; }
+#tanoth-bot-panel .tb-log .tb-err { color: #e74c3c; }
+#tanoth-bot-panel .tb-log .tb-warn { color: #e67e22; }
+#tanoth-bot-panel .tb-log .tb-ok { color: #2ecc71; }
+#tanoth-bot-panel .tb-log .tb-time { opacity: .5; }
+
+#tanoth-bot-panel .tb-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; font-size: 11px; opacity: .7;
+}
+#tanoth-bot-panel .tb-footer a { color: inherit; cursor: pointer; text-decoration: underline; }
+
+/* Re-open tab shown when the panel is hidden entirely. */
+#tanoth-bot-fab {
+  all: initial; position: fixed; top: 80px; right: 0; z-index: 2147483600;
+  cursor: pointer; background: linear-gradient(135deg, #6c3fd4, #3f7ad4); color: #fff;
+  font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600;
+  padding: 8px 10px; border-radius: 8px 0 0 8px; box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}

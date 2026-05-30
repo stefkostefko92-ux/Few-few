@@ -1,0 +1,54 @@
+/**
+ * Settings access for the content side.
+ *
+ * Reads the merged settings the service worker seeded into chrome.storage,
+ * caches them, keeps the cache fresh on storage changes, and exposes helpers
+ * for modules to read their own slice. Persisting goes through the service
+ * worker so the merge/migration logic stays in one place.
+ */
+(function () {
+  'use strict';
+  const TB = window.TanothBot;
+  const KEY = 'tanothBotSettings';
+
+  let cache = null;
+  const listeners = new Set();
+
+  const Storage = {
+    async load() {
+      const res = await chrome.storage.local.get(KEY);
+      cache = res[KEY] || null;
+      if (!cache) {
+        // Service worker not yet initialised; ask it directly.
+        cache = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
+      }
+      return cache;
+    },
+
+    get() { return cache; },
+
+    section(name) { return cache ? cache[name] : undefined; },
+
+    async save(settings) {
+      cache = settings;
+      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+      return cache;
+    },
+
+    onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+
+    _set(settings) {
+      cache = settings;
+      listeners.forEach((fn) => { try { fn(cache); } catch (_) {} });
+    }
+  };
+
+  // Keep the cache in sync when the options page or popup writes settings.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes[KEY]) {
+      Storage._set(changes[KEY].newValue);
+    }
+  });
+
+  TB.Storage = Storage;
+})();
