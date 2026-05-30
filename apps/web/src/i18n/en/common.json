@@ -1,0 +1,43 @@
+{
+  "brand": "АСО",
+  "tagline": "Premium card & tabletop games",
+  "nav": {
+    "lobby": "Lobby",
+    "shop": "Shop",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "registerTitle": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Player name",
+    "loginCta": "Sign in",
+    "registerCta": "Create account",
+    "toRegister": "No account? Sign up",
+    "toLogin": "Already have an account? Sign in",
+    "errorGeneric": "Something went wrong. Try again.",
+    "errorCredentials": "Wrong email or password",
+    "errorEmailTaken": "That email is already registered"
+  },
+  "lobby": {
+    "title": "Choose a game",
+    "welcome": "Welcome, {{name}}",
+    "comingSoon": "Coming soon",
+    "play": "Play"
+  },
+  "wallet": {
+    "chips": "Chips",
+    "gems": "Gems",
+    "level": "Level {{level}}"
+  },
+  "footer": {
+    "attribution": "Created and Designed by Carbon Stealth VCC",
+    "notGambling": "Social gaming — not real-money gambling."
+  },
+  "common": {
+    "loading": "Loading…"
+  }
+}

@@ -1,0 +1,17 @@
+import type { HTMLAttributes } from "react";
+import { cn } from "./cn";
+
+/** Felt panel with a brass hairline border — the core surface (§3.1). */
+export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "rounded-panel border border-brass-400/15 bg-felt-800/80 p-6 shadow-lift backdrop-blur-sm",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}

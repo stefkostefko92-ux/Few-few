@@ -35,7 +35,11 @@ infra/        Dockerfiles, docker-compose, nginx
       Express 5 API with `/health`, pino, zod env validation, argon2id auth
       (register/login/refresh/logout/me) with httpOnly JWT cookies, rate
       limiting, CORS whitelist, Docker compose (postgres + redis + api), nginx.
-- [ ] S1 — Design system + React/Vite shell
+- [x] **S1 — Design system + shell**: `tokens.css` (§3.2) + Tailwind preset,
+      self-hosted Playfair Display + Manrope (BG Cyrillic validated), UI kit
+      (Button/Panel/Badge/Modal/Field), React 18 + Vite shell with auth screens
+      (login/register), session restore via cookie, lobby with the 18-game
+      catalog, i18n (bg/it/en), Carbon Stealth footer.
 - [ ] S2 — game-core kernel + first 2 engines
 - [ ] S3 — realtime server + first end-to-end game (chess)
 - [ ] S4–S9 — see concept doc
@@ -51,9 +55,11 @@ docker compose -f infra/docker-compose.yml up -d postgres redis
 
 pnpm --filter @aso/db generate
 pnpm --filter @aso/db migrate:deploy   # or migrate:dev in development
-pnpm --filter @aso/api dev
+pnpm --filter @aso/api dev      # API on :4500
+pnpm --filter @aso/web dev      # web shell on :4502 (proxies /api -> :4500)
 
 curl http://localhost:4500/health        # -> {"status":"ok",...}
+# open http://localhost:4502 for the login flow
 ```
 
 ### Commands

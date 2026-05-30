@@ -1,0 +1,43 @@
+{
+  "brand": "АСО",
+  "tagline": "Премиум игри на карти и маса",
+  "nav": {
+    "lobby": "Лоби",
+    "shop": "Магазин",
+    "leaderboard": "Класация",
+    "profile": "Профил",
+    "logout": "Изход"
+  },
+  "auth": {
+    "loginTitle": "Вход",
+    "registerTitle": "Регистрация",
+    "email": "Имейл",
+    "password": "Парола",
+    "displayName": "Име на играч",
+    "loginCta": "Влез",
+    "registerCta": "Създай акаунт",
+    "toRegister": "Нямаш акаунт? Регистрирай се",
+    "toLogin": "Вече имаш акаунт? Влез",
+    "errorGeneric": "Нещо се обърка. Опитай пак.",
+    "errorCredentials": "Грешен имейл или парола",
+    "errorEmailTaken": "Имейлът вече е регистриран"
+  },
+  "lobby": {
+    "title": "Изберѝ игра",
+    "welcome": "Добре дошъл, {{name}}",
+    "comingSoon": "Очаквай скоро",
+    "play": "Играй"
+  },
+  "wallet": {
+    "chips": "Чипове",
+    "gems": "Скъпоценни камъни",
+    "level": "Ниво {{level}}"
+  },
+  "footer": {
+    "attribution": "Created and Designed by Carbon Stealth VCC",
+    "notGambling": "Социална игра — не е хазарт за реални пари."
+  },
+  "common": {
+    "loading": "Зареждане…"
+  }
+}
