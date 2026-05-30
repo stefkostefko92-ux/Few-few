@@ -8,6 +8,7 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
   const refresh = useStore((s) => s.refreshCharacter);
   const toast = useStore((s) => s.toast);
   const showUnlocks = useStore((s) => s.showUnlocks);
+  const showLevelUp = useStore((s) => s.showLevelUp);
   const [stage, setStage] = useState<'intro' | 'fetching' | 'combat' | 'story' | 'error'>('intro');
   const [result, setResult] = useState<QuestResult | null>(null);
   const [err, setErr] = useState('');
@@ -18,7 +19,7 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
       const r = (await api.post('/quest/start', { questSlug: quest.slug })) as QuestResult;
       setResult(r);
       if (r.levelUp?.leveled) {
-        toast(`Level Up! ${r.levelUp.fromLevel} → ${r.levelUp.toLevel}`, 'success');
+        showLevelUp(r.levelUp);
       }
       showUnlocks((r as any).unlocked);
       await refresh();

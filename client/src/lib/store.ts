@@ -30,6 +30,10 @@ interface State {
   toast: (msg: string, type?: 'info' | 'success' | 'error') => void;
   dismissToast: (id: number) => void;
   showUnlocks: (unlocks: any[] | undefined | null) => void;
+  showLevelUp: (info: { fromLevel: number; toLevel: number; statPointsGained: number; skillPointsGained: number } | null | undefined) => void;
+  dismissLevelUp: () => void;
+
+  levelUp: { fromLevel: number; toLevel: number; statPointsGained: number; skillPointsGained: number } | null;
 }
 
 export interface Toast {
@@ -48,6 +52,7 @@ export const useStore = create<State>((set, get) => ({
   unreadMail: 0,
   loading: false,
   toasts: [],
+  levelUp: null,
 
   async init() {
     if (!getToken()) return;
@@ -149,5 +154,14 @@ export const useStore = create<State>((set, get) => ({
         set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
       }, 6000);
     }
+  },
+
+  showLevelUp(info) {
+    if (!info) return;
+    set({ levelUp: info });
+  },
+
+  dismissLevelUp() {
+    set({ levelUp: null });
   },
 }));

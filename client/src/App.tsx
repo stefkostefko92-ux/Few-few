@@ -33,18 +33,32 @@ import Stats from './pages/Stats';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import Guild from './pages/Guild';
+import LevelUpOverlay from './components/LevelUpOverlay';
 
 function AppLayout(): React.ReactElement {
+  const location = useLocation();
+  const levelUp = useStore((s) => s.levelUp);
+  const dismissLevelUp = useStore((s) => s.dismissLevelUp);
   return (
     <div className="app">
       <Navbar />
       <div className="app-shell">
         <Sidebar />
         <main className="app-main">
-          <Outlet />
+          <div className="page-transition" key={location.pathname}>
+            <Outlet />
+          </div>
         </main>
       </div>
       <Toasts />
+      {levelUp && (
+        <LevelUpOverlay
+          level={levelUp.toLevel}
+          statPoints={levelUp.statPointsGained}
+          skillPoints={levelUp.skillPointsGained}
+          onDone={dismissLevelUp}
+        />
+      )}
     </div>
   );
 }

@@ -2,7 +2,11 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles/globals.css';
+import './styles/animations.css';
 import './styles/landing.css';
+import { installGlobalRipple } from './lib/ripple';
+
+installGlobalRipple();
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

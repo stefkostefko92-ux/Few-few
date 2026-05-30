@@ -16,6 +16,7 @@ export default function Hunting(): React.ReactElement {
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showUnlocks = useStore((s) => s.showUnlocks);
+  const showLevelUp = useStore((s) => s.showLevelUp);
   const char = useStore((s) => s.character);
   const [regions, setRegions] = useState<Region[]>([]);
   const [region, setRegion] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export default function Hunting(): React.ReactElement {
     try {
       const r = await api.post('/hunting/hunt', { region: slug });
       setFight(r);
-      if (r.levelUp) toast(`Level Up! → ${r.levelUp.toLevel}`, 'success');
+      if (r.levelUp) showLevelUp(r.levelUp);
       showUnlocks(r.unlocked);
       await refresh();
     } catch (e: any) {

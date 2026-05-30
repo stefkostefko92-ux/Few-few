@@ -101,7 +101,14 @@ export default function CombatScene(props: Props): React.ReactElement {
     if (roundIdx < 0 || roundIdx >= rounds.length) {
       if (roundIdx >= rounds.length && !done) {
         if (victory) setFoeAnim('defeated');
-        else setHeroAnim('defeated');
+        else {
+          setHeroAnim('defeated');
+          // Slow-mo + red vignette on defeat
+          if (stageRef.current) {
+            stageRef.current.classList.add('slow-mo', 'defeat-vignette');
+            setTimeout(() => stageRef.current?.classList.remove('slow-mo'), 800);
+          }
+        }
         setTimeout(() => setDone(true), 1400);
       }
       return;
@@ -151,6 +158,14 @@ export default function CombatScene(props: Props): React.ReactElement {
               color: sparkColor(r.effect as FxBurst['kind']),
             },
           ]);
+        }
+
+        // Crit camera zoom
+        if (r.action === 'crit' && stageRef.current) {
+          stageRef.current.classList.remove('crit-zoom');
+          void stageRef.current.offsetWidth;
+          stageRef.current.classList.add('crit-zoom');
+          setTimeout(() => stageRef.current?.classList.remove('crit-zoom'), 360);
         }
 
         // Target reaction
@@ -288,6 +303,8 @@ export default function CombatScene(props: Props): React.ReactElement {
           </div>
         </>
       )}
+
+      {done && victory && <CombatConfetti />}
 
       {done && (
         <div className={`combat-result ${victory ? 'victory' : 'defeat'}`}>
@@ -438,6 +455,40 @@ function CombatEnvironment({ region }: { region: string }) {
     <div className="combat-environment">
       {list.map((s, i) => (
         <div key={i} className="silhouette" style={s} />
+      ))}
+    </div>
+  );
+}
+
+function CombatConfetti(): React.ReactElement {
+  const bits = React.useMemo(() => {
+    const colors = ['#f5d28a', '#d6a13d', '#ffe88a', '#6ad8a4', '#e85a4f', '#c294ff', '#7eb6ff'];
+    return Array.from({ length: 36 }, (_, i) => {
+      const angle = (i / 36) * Math.PI * 2 + Math.random() * 0.5;
+      const dist = 160 + Math.random() * 320;
+      return {
+        tx: Math.cos(angle) * dist,
+        ty: Math.sin(angle) * dist - 80,
+        rot: (Math.random() - 0.5) * 720,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        delay: Math.random() * 0.3,
+      };
+    });
+  }, []);
+  return (
+    <div className="combat-confetti">
+      {bits.map((b, i) => (
+        <div
+          key={i}
+          className="confetti-bit"
+          style={{
+            ['--tx' as any]: `${b.tx}px`,
+            ['--ty' as any]: `${b.ty}px`,
+            ['--rot' as any]: `${b.rot}deg`,
+            ['--bit-color' as any]: b.color,
+            animationDelay: `${b.delay}s`,
+          }}
+        />
       ))}
     </div>
   );
