@@ -1,4 +1,13 @@
 import type { Character, CombatActor, Item, InventoryEntry, CharacterClass } from '../types/domain';
+import { ITEM_SETS, type SetBonus, type SetDef } from '../seed/sets';
+
+export interface SetBonusSummary {
+  set_slug: string;
+  set_name: string;
+  pieces_equipped: number;
+  pieces_total: number;
+  bonuses_active: { threshold: 2 | 4 | 6; bonus: SetBonus }[];
+}
 
 export interface DerivedStats {
   atk_min: number;
@@ -9,6 +18,7 @@ export interface DerivedStats {
   crit_chance: number;
   dodge_chance: number;
   speed: number;
+  active_sets: SetBonusSummary[];
 }
 
 export function classWeaponSkill(cls: CharacterClass, sub: string, ch: Character): number {
@@ -16,12 +26,32 @@ export function classWeaponSkill(cls: CharacterClass, sub: string, ch: Character
   if (cls === 'ranger' && (sub === 'bow' || sub === '')) return ch.skill_bow;
   if (cls === 'warrior' && (sub === 'axe' || sub === 'sword' || sub === '')) return Math.max(ch.skill_axe, ch.skill_sword);
   if (cls === 'rogue' && (sub === 'sword' || sub === '' || sub === 'dagger')) return Math.max(ch.skill_sword, ch.skill_stealth);
-  // fallbacks
   if (sub === 'sword') return ch.skill_sword;
   if (sub === 'axe') return ch.skill_axe;
   if (sub === 'bow') return ch.skill_bow;
   if (sub === 'staff') return ch.skill_staff;
   return 0;
+}
+
+/** Count equipped pieces per set, picking the set with the most matches for any shared slug. */
+function computeSetCounts(equipped: { item: Item }[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  // For each equipped item, find sets it belongs to.
+  const equippedSlugs = new Set(equipped.map((e) => e.item.slug));
+  for (const set of ITEM_SETS) {
+    let matched = 0;
+    for (const slug of set.pieces) if (equippedSlugs.has(slug)) matched++;
+    if (matched > 0) counts.set(set.slug, matched);
+  }
+  return counts;
+}
+
+function bonusAt(set: SetDef, count: number): SetBonus[] {
+  const out: SetBonus[] = [];
+  if (count >= 2 && set.bonus_2) out.push(set.bonus_2);
+  if (count >= 4 && set.bonus_4) out.push(set.bonus_4);
+  if (count >= 6 && set.bonus_6) out.push(set.bonus_6);
+  return out;
 }
 
 export function deriveStats(ch: Character, equipped: { item: Item; entry: InventoryEntry }[]): DerivedStats {
@@ -37,6 +67,9 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   let atkMax = 2;
   let def = 0;
   let weaponSub = '';
+  let critBonus = 0;
+  let dodgeBonus = 0;
+  let atkBonus = 0;
 
   for (const { item } of equipped) {
     str += item.str_bonus;
@@ -55,21 +88,55 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     }
   }
 
-  // Stat-based modifiers
+  // Apply set bonuses
+  const counts = computeSetCounts(equipped);
+  const active_sets: SetBonusSummary[] = [];
+  for (const [slug, count] of counts) {
+    const set = ITEM_SETS.find((s) => s.slug === slug)!;
+    const bonuses = bonusAt(set, count);
+    const thresholds: { threshold: 2 | 4 | 6; bonus: SetBonus }[] = [];
+    if (count >= 2 && set.bonus_2) thresholds.push({ threshold: 2, bonus: set.bonus_2 });
+    if (count >= 4 && set.bonus_4) thresholds.push({ threshold: 4, bonus: set.bonus_4 });
+    if (count >= 6 && set.bonus_6) thresholds.push({ threshold: 6, bonus: set.bonus_6 });
+    if (thresholds.length) {
+      active_sets.push({
+        set_slug: set.slug,
+        set_name: set.name,
+        pieces_equipped: count,
+        pieces_total: set.pieces.length,
+        bonuses_active: thresholds,
+      });
+    }
+    for (const b of bonuses) {
+      str += b.str_bonus ?? 0;
+      dex += b.dex_bonus ?? 0;
+      con += b.con_bonus ?? 0;
+      int_ += b.int_bonus ?? 0;
+      wis += b.wis_bonus ?? 0;
+      cha += b.cha_bonus ?? 0;
+      hp_bonus += b.hp_bonus ?? 0;
+      mp_bonus += b.mp_bonus ?? 0;
+      def += b.defense_bonus ?? 0;
+      atkBonus += b.atk_bonus ?? 0;
+      critBonus += b.crit_bonus ?? 0;
+      dodgeBonus += b.dodge_bonus ?? 0;
+    }
+  }
+
   const classDmg = ch.class === 'mage' ? int_ * 0.7 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
   const skill = classWeaponSkill(ch.class, weaponSub, ch);
 
-  const atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4);
-  const atk_max = Math.round(atkMax + classDmg + skill * 0.8);
+  const atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus);
+  const atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus);
 
   const hp_max = 40 + con * 6 + ch.level * 6 + hp_bonus;
   const mp_max = 10 + int_ * 3 + wis * 2 + mp_bonus;
 
-  const dodge_chance = Math.min(0.35, dex * 0.005 + ch.skill_stealth * 0.004);
-  const crit_chance = Math.min(0.45, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03);
+  const dodge_chance = Math.min(0.45, dex * 0.005 + ch.skill_stealth * 0.004 + dodgeBonus);
+  const crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);
   const speed = 5 + Math.round(dex * 0.4);
 
-  return { atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed };
+  return { atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed, active_sets };
 }
 
 export function buildHeroActor(ch: Character, derived: DerivedStats, currentHp: number): CombatActor {

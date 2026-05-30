@@ -238,4 +238,9 @@ export function applySchema(db: Database.Database): void {
   addColumn('total_gold_earned INTEGER NOT NULL DEFAULT 0');
   addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
   addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
+
+  // Item set affiliation column (for set-bonus computation)
+  const itemCols = db.prepare(`PRAGMA table_info(items)`).all() as { name: string }[];
+  const itemHave = new Set(itemCols.map((c) => c.name));
+  if (!itemHave.has('set_slug')) db.exec(`ALTER TABLE items ADD COLUMN set_slug TEXT NOT NULL DEFAULT ''`);
 }

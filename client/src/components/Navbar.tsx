@@ -1,15 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useStore } from '../lib/store';
+import Logo from './Logo';
 import {
   IconHome,
   IconScroll,
   IconSword,
   IconBag,
-  IconMap,
   IconCrown,
-  IconCoin,
-  IconHeart,
   IconBolt,
   IconLogout,
   IconUser,
@@ -46,8 +44,8 @@ export default function Navbar(): React.ReactElement {
 
   return (
     <header className="navbar">
-      <div className="nav-brand">
-        <div className="nav-brand-mark" aria-hidden="true" />
+      <div className="nav-brand" onClick={() => navigate('/app')} style={{ cursor: 'pointer' }}>
+        <Logo size={34} />
         <span>Nexus Dominion</span>
       </div>
 
