@@ -22,7 +22,8 @@ apps/
   worker/     BullMQ jobs                     (S6)
   web/        React + Vite shell              (S1)
 packages/
-  game-core/  6 engine cores, not 18 (chess, backgammon, santase, belote)
+  game-core/  6 engine cores, all 18 games (trick/betting/dice-race/
+              move-validation/draw-discard/grid-guess)
   db/         Prisma schema + client
   shared/     zod schemas, types, constants
   config/     eslint / tsconfig presets
@@ -71,7 +72,14 @@ infra/        Dockerfiles, docker-compose, nginx
       season rollover + quest cleanup. Web shop + leaderboard + daily-reward UI.
       E2E: daily claim idempotent per day, quests complete, leaderboard + level
       update.
-- [ ] S7 — remaining engines + games (betting, draw-discard, grid-guess, …)
+- [x] **S7 — remaining engines, all 18 games playable**: draughts (Дама),
+      ludo (Не се сърди), dice (Покер на зарове), kent (Кент Купе), bridge,
+      war (Война), go-fish (Бръкни в морето), domino, rummy (Реми), svara +
+      hold'em (virtual chips only, §11.4), battleship (Морски бой), bingo,
+      words (Думи). All 18 registered; generic action-driven web view for games
+      without a bespoke scene (those are S9 polish). 99 game-core tests incl. a
+      per-engine harness (random playout → terminal, every-legal-action
+      reduces, deterministic replay, redact serializable).
 - [ ] S8 — public SEO/AEO/GEO layer (Next.js 15)
 - [ ] S9 — polish, anti-cheat signals, observability
 
