@@ -26,6 +26,12 @@ export function AdminLayout(): React.ReactElement {
         <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconUser size={16} /> <span>Users</span>
         </NavLink>
+        <NavLink to="/admin/marketplace" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconBag size={16} /> <span>Marketplace</span>
+        </NavLink>
+        <NavLink to="/admin/settings" className={({ isActive }) => isActive ? 'active' : ''}>
+          <IconCog size={16} /> <span>Game Settings</span>
+        </NavLink>
         <NavLink to="/admin/broadcast" className={({ isActive }) => isActive ? 'active' : ''}>
           <IconMail size={16} /> <span>Broadcast</span>
         </NavLink>
@@ -49,6 +55,8 @@ export default function Admin(): React.ReactElement {
         <Route path="monsters" element={<Monsters />} />
         <Route path="quests" element={<Quests />} />
         <Route path="users" element={<Users />} />
+        <Route path="marketplace" element={<Marketplace />} />
+        <Route path="settings" element={<GameSettings />} />
         <Route path="broadcast" element={<Broadcast />} />
         <Route path="server" element={<Server />} />
       </Route>
@@ -440,16 +448,20 @@ function Users() {
       </div>
       <table className="admin-table">
         <thead>
-          <tr><th>User</th><th>Email</th><th>Character</th><th>Lv</th><th>Gold</th><th>ELO</th><th>Joined</th><th>Admin</th><th></th></tr>
+          <tr><th>User</th><th>Email</th><th>IP / Country</th><th>Character</th><th>Lv</th><th>Gold · Gems</th><th>ELO</th><th>Last seen</th><th>Admin</th><th></th></tr>
         </thead>
         <tbody>
           {users.map((u) => (
             <tr key={u.id}>
               <td><strong>{u.username}</strong></td>
               <td className="muted">{u.email}</td>
+              <td className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
+                {u.last_ip || '—'}
+                {u.last_country ? <span className="tag" style={{ marginLeft: 6 }}>{u.last_country}</span> : null}
+              </td>
               <td>{u.char_name || '—'} <span className="muted" style={{ textTransform: 'capitalize' }}>{u.char_class || ''}</span></td>
               <td>{u.char_level || '—'}</td>
-              <td className="gold">{u.gold?.toLocaleString() || '—'}</td>
+              <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>{u.gold?.toLocaleString() || '—'} · <span style={{ color: 'var(--amethyst-1)' }}>{u.gems?.toLocaleString() || 0}</span></td>
               <td>{u.arena_rating || '—'}</td>
               <td className="muted">{new Date(u.created_at).toLocaleDateString()}</td>
               <td><button className="btn btn-sm" onClick={() => toggleAdmin(u)}>{u.is_admin ? 'Yes' : 'No'}</button></td>
@@ -538,6 +550,150 @@ function Broadcast() {
 }
 
 /* ===== Server info ===== */
+/* ===== Game Settings ===== */
+function GameSettings() {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+  const [draft, setDraft] = useState<Record<string, any>>({});
+
+  async function load() {
+    try {
+      const r = await api.get('/admin/settings');
+      setRows(r.settings);
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function save(key: string) {
+    try {
+      const value = draft[key];
+      await api.put(`/admin/settings/${key}`, { value });
+      toast(`${key} updated.`, 'success');
+      setDraft((d) => { const { [key]: _, ...rest } = d; return rest; });
+      load();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  const groups = Array.from(new Set(rows.map((r) => r.def.group)));
+
+  return (
+    <>
+      <div className="admin-toolbar"><h1>Game Settings</h1></div>
+      <p className="muted" style={{ marginBottom: 18 }}>
+        Tunable runtime knobs — changes take effect immediately on the next request.
+      </p>
+      {groups.map((g) => (
+        <div key={g} style={{ marginBottom: 28 }}>
+          <h3 style={{ color: 'var(--gold-1)', textTransform: 'capitalize', marginBottom: 10 }}>{g}</h3>
+          <table className="admin-table">
+            <thead>
+              <tr><th>Setting</th><th>Value</th><th>Default</th><th></th></tr>
+            </thead>
+            <tbody>
+              {rows.filter((r) => r.def.group === g).map((r) => {
+                const editing = draft[r.def.key] !== undefined;
+                const current = editing ? draft[r.def.key] : r.value;
+                return (
+                  <tr key={r.def.key}>
+                    <td>
+                      <strong>{r.def.label}</strong>
+                      <div className="muted text-sm">{r.def.description}</div>
+                      <code style={{ fontSize: 11, color: 'var(--text-4)' }}>{r.def.key}</code>
+                    </td>
+                    <td style={{ minWidth: 180 }}>
+                      {r.def.type === 'bool' ? (
+                        <select
+                          value={String(current)}
+                          onChange={(e) => setDraft((d) => ({ ...d, [r.def.key]: e.target.value === 'true' }))}
+                          style={{ width: '100%' }}
+                        >
+                          <option value="true">true</option>
+                          <option value="false">false</option>
+                        </select>
+                      ) : (
+                        <input
+                          type={r.def.type === 'string' ? 'text' : 'number'}
+                          value={String(current)}
+                          onChange={(e) => setDraft((d) => ({ ...d, [r.def.key]: e.target.value }))}
+                          style={{ width: '100%', fontFamily: 'var(--font-mono)' }}
+                        />
+                      )}
+                    </td>
+                    <td className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {String(r.def.default)}{r.isDefault ? <span className="tag" style={{ marginLeft: 6 }}>using default</span> : null}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-primary"
+                        disabled={!editing}
+                        onClick={() => save(r.def.key)}
+                      >
+                        Save
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/* ===== Marketplace admin ===== */
+function Marketplace() {
+  const toast = useStore((s) => s.toast);
+  const [rows, setRows] = useState<any[]>([]);
+
+  async function load() {
+    try {
+      const r = await api.get('/admin/marketplace');
+      setRows(r.listings);
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function destroy(id: number) {
+    if (!confirm('Cancel this listing?')) return;
+    try {
+      await api.delete(`/admin/marketplace/${id}`);
+      toast('Listing cancelled.', 'info');
+      load();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  return (
+    <>
+      <div className="admin-toolbar"><h1>Marketplace <span className="muted" style={{ fontSize: 14 }}>({rows.length})</span></h1></div>
+      <table className="admin-table">
+        <thead>
+          <tr><th>Item</th><th>Seller</th><th>Buyer</th><th>Price</th><th>Status</th><th>Listed</th><th>Sold</th><th></th></tr>
+        </thead>
+        <tbody>
+          {rows.map((m) => (
+            <tr key={m.id}>
+              <td><strong className={`rarity-${m.rarity}`}>{m.item_name}</strong></td>
+              <td className="muted">{m.seller_name}</td>
+              <td className="muted">{m.buyer_name || '—'}</td>
+              <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>{m.price_gold.toLocaleString()}g</td>
+              <td><span className={`tag ${m.status === 'active' ? 'gold' : m.status === 'sold' ? 'emerald' : 'crimson'}`}>{m.status}</span></td>
+              <td className="muted text-sm">{new Date(m.listed_at).toLocaleDateString()}</td>
+              <td className="muted text-sm">{m.sold_at ? new Date(m.sold_at).toLocaleDateString() : '—'}</td>
+              <td>
+                {m.status === 'active' && (
+                  <button className="btn btn-sm btn-danger" onClick={() => destroy(m.id)}>Cancel</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 function Server() {
   const [data, setData] = useState<any>(null);
   useEffect(() => { api.get('/admin/server').then(setData).catch(() => {}); }, []);

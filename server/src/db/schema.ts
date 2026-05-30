@@ -239,6 +239,22 @@ export function applySchema(db: Database.Database): void {
   addColumn('dungeons_cleared INTEGER NOT NULL DEFAULT 0');
   addColumn('current_title TEXT NOT NULL DEFAULT \'\'');
   addColumn('gems INTEGER NOT NULL DEFAULT 0');
+
+  // ===== User IP tracking + tunable settings =====
+  const userCols2 = db.prepare(`PRAGMA table_info(users)`).all() as { name: string }[];
+  const userHave = new Set(userCols2.map((c) => c.name));
+  if (!userHave.has('last_ip')) db.exec(`ALTER TABLE users ADD COLUMN last_ip TEXT NOT NULL DEFAULT ''`);
+  if (!userHave.has('last_country')) db.exec(`ALTER TABLE users ADD COLUMN last_country TEXT NOT NULL DEFAULT ''`);
+  if (!userHave.has('last_user_agent')) db.exec(`ALTER TABLE users ADD COLUMN last_user_agent TEXT NOT NULL DEFAULT ''`);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key         TEXT PRIMARY KEY,
+      value       TEXT NOT NULL,
+      updated_at  INTEGER NOT NULL,
+      updated_by  INTEGER
+    );
+  `);
   addColumn('total_gems_earned INTEGER NOT NULL DEFAULT 0');
   addColumn('total_gems_spent INTEGER NOT NULL DEFAULT 0');
   addColumn("stat_upgrades TEXT NOT NULL DEFAULT '{}'");

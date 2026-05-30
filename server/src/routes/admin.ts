@@ -219,9 +219,11 @@ router.get('/users', (req, res) => {
   }
   const users = getDb().prepare(`
     SELECT u.id, u.username, u.email, u.is_admin, u.created_at, u.last_seen_at,
-           c.id AS char_id, c.name AS char_name, c.class AS char_class, c.level AS char_level, c.gold, c.arena_rating
+           u.last_ip, u.last_country, u.last_user_agent,
+           c.id AS char_id, c.name AS char_name, c.class AS char_class, c.level AS char_level,
+           c.gold, c.gems, c.arena_rating
     FROM users u LEFT JOIN characters c ON c.user_id = u.id ${where}
-    ORDER BY u.created_at DESC LIMIT 200
+    ORDER BY u.last_seen_at DESC LIMIT 200
   `).all(...params);
   res.json({ users });
 });
@@ -319,6 +321,66 @@ router.post('/broadcast', (req, res) => {
 /* =========================================================
    Server info
    ========================================================= */
+/* =========================================================
+   Game settings (runtime-tunable knobs)
+   ========================================================= */
+import { SETTINGS_CATALOG, getAllSettings, setSetting, findSetting } from '../game/settings';
+
+router.get('/settings', (_req, res) => {
+  const list = getAllSettings();
+  res.json({ settings: list });
+});
+
+const settingPutSchema = z.object({ value: z.union([z.string(), z.number(), z.boolean()]) });
+
+router.put('/settings/:key', (req, res) => {
+  const key = req.params.key;
+  const def = findSetting(key);
+  if (!def) { res.status(404).json({ error: 'Unknown setting' }); return; }
+  const parse = settingPutSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  // Coerce + validate
+  let v = parse.data.value;
+  if (def.type === 'int') {
+    const n = Number(v);
+    if (!Number.isFinite(n) || !Number.isInteger(n)) { res.status(400).json({ error: 'Integer required' }); return; }
+    v = n;
+  } else if (def.type === 'float') {
+    const n = Number(v);
+    if (!Number.isFinite(n)) { res.status(400).json({ error: 'Number required' }); return; }
+    v = n;
+  } else if (def.type === 'bool') {
+    v = v === true || v === 'true' || v === 1 || v === '1';
+  }
+  setSetting(key, v, req.auth!.uid);
+  res.json({ ok: true, key, value: v });
+});
+
+/* ===== Marketplace admin ===== */
+router.get('/marketplace', (_req, res) => {
+  const rows = getDb()
+    .prepare(
+      `SELECT m.*, items.name AS item_name, items.rarity, s.name AS seller_name, b.name AS buyer_name
+       FROM marketplace_listings m
+       JOIN items ON items.id = m.item_id
+       JOIN characters s ON s.id = m.seller_id
+       LEFT JOIN characters b ON b.id = m.buyer_id
+       ORDER BY m.listed_at DESC LIMIT 200`,
+    )
+    .all();
+  res.json({ listings: rows });
+});
+
+router.delete('/marketplace/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const db = getDb();
+  const row = db.prepare('SELECT inventory_id, status FROM marketplace_listings WHERE id = ?').get(id) as any;
+  if (!row) { res.status(404).json({ error: 'Listing not found' }); return; }
+  db.prepare(`UPDATE marketplace_listings SET status = 'cancelled' WHERE id = ?`).run(id);
+  if (row.inventory_id) db.prepare('UPDATE inventory SET listed = 0 WHERE id = ?').run(row.inventory_id);
+  res.json({ ok: true });
+});
+
 router.get('/server', (_req, res) => {
   res.json({
     node: process.version,

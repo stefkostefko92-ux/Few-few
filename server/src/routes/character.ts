@@ -25,9 +25,15 @@ router.post('/create', (req, res) => {
   }
   const { name, class: cls, gender, portrait } = parse.data;
   const db = getDb();
-  const existing = db.prepare('SELECT id FROM characters WHERE user_id = ? OR name = ?').get(req.auth!.uid, name);
-  if (existing) {
-    res.status(409).json({ error: 'A character already exists or that name is taken' });
+  // Enforce one character per account.
+  const owned = db.prepare('SELECT id, name FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number; name: string } | undefined;
+  if (owned) {
+    res.status(409).json({ error: `You already have a character (${owned.name}). Only one hero may be active per account — delete the existing one from Settings before creating a new one.` });
+    return;
+  }
+  const taken = db.prepare('SELECT id FROM characters WHERE name = ?').get(name);
+  if (taken) {
+    res.status(409).json({ error: `The name "${name}" is already taken. Try another.` });
     return;
   }
   const base = classBaseStats(cls as CharacterClass);

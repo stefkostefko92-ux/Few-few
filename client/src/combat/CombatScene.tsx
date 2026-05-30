@@ -37,6 +37,8 @@ interface PopUp {
   side: 'hero' | 'foe';
   text: string;
   kind: 'normal' | 'big' | 'crit' | 'miss' | 'dodge' | 'block';
+  /** Continuous font size in px, scales with damage / target_hp_max. */
+  scale?: number;
 }
 
 interface FxBurst {
@@ -133,17 +135,20 @@ export default function CombatScene(props: Props): React.ReactElement {
       const targetSide: 'hero' | 'foe' = attackerIsHero ? 'foe' : 'hero';
       const targetMax = attackerIsHero ? foe.hp_max : hero.hp_max;
 
-      // Pop labels
+      // Pop labels — font size scales continuously with damage / target HP.
       const tier = damageTier(r.damage, targetMax);
+      const ratio = Math.min(1, r.damage / Math.max(1, targetMax));
       let popText = `${r.damage}`;
       let popKind: PopUp['kind'] = tier === 3 ? 'big' : 'normal';
+      // Base 26px → up to 72px on a one-shot, capped.
+      let popScale = Math.round(26 + ratio * 46);
 
-      if (r.action === 'crit') { popText = `${r.damage}!`; popKind = 'crit'; }
-      else if (r.action === 'miss') { popText = 'MISS'; popKind = 'miss'; }
-      else if (r.action === 'dodge') { popText = 'DODGE!'; popKind = 'dodge'; }
-      else if (r.action === 'block') { popText = `BLOCK ${r.damage}`; popKind = 'block'; }
+      if (r.action === 'crit') { popText = `${r.damage}!`; popKind = 'crit'; popScale = Math.round(38 + ratio * 60); }
+      else if (r.action === 'miss') { popText = 'MISS'; popKind = 'miss'; popScale = 22; }
+      else if (r.action === 'dodge') { popText = 'DODGE!'; popKind = 'dodge'; popScale = 24; }
+      else if (r.action === 'block') { popText = `BLOCK ${r.damage}`; popKind = 'block'; popScale = 24; }
 
-      setPops((arr) => [...arr, { id: ++popId.current, side: targetSide, text: popText, kind: popKind }]);
+      setPops((arr) => [...arr, { id: ++popId.current, side: targetSide, text: popText, kind: popKind, scale: popScale }]);
 
       // Hit FX & target reaction
       if (r.action !== 'miss' && r.action !== 'dodge') {
@@ -391,7 +396,7 @@ function Fighter({
       ))}
       {/* Floating damage pops */}
       {pops.map((p) => (
-        <div key={p.id} className={`dmg-pop ${p.kind}`}>
+        <div key={p.id} className={`dmg-pop ${p.kind}`} style={p.scale ? { fontSize: `${p.scale}px` } : undefined}>
           {p.text}
         </div>
       ))}

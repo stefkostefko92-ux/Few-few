@@ -18,9 +18,10 @@ export default function Help(): React.ReactElement {
             Combat is server-authoritative and turn-based. Speed determines initiative; STR/INT/DEX shape your damage;
             CON expands your HP. Watch class-specific impact effects on every blow.
           </Step>
-          <Step n={3} title="Spend points">
-            Each level grants 3 stat points and 2 skill points. Visit <Link to="/app/character">Character</Link> to
-            allocate them — train weapon skills that match your class for the strongest scaling.
+          <Step n={3} title="Upgrade with gold">
+            Stats and skills are gold-driven. Each upgrade costs progressively more:
+            <strong> 5g → 10g → 15g → 20g…</strong> per stat. Visit <Link to="/app/character">Character</Link>
+            and click +1 or +5 to invest. Each attribute scales on its own counter.
           </Step>
           <Step n={4} title="Upgrade your gear">
             Loot drops from quests. Sell what you don't need and buy the rest from the
