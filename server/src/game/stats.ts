@@ -114,10 +114,10 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     hp_bonus += item.hp_bonus + (e.hp_bonus || 0);
     mp_bonus += item.mp_bonus + (e.mp_bonus || 0);
     def += item.defense + (e.defense || 0);
-    phys_dmg += (item as any).phys_dmg_bonus || 0;
-    phys_def += (item as any).phys_def_bonus || 0;
-    mag_dmg  += (item as any).mag_dmg_bonus  || 0;
-    mag_def  += (item as any).mag_def_bonus  || 0;
+    phys_dmg += ((item as any).phys_dmg_bonus || 0) + (e.phys_dmg_bonus || 0);
+    phys_def += ((item as any).phys_def_bonus || 0) + (e.phys_def_bonus || 0);
+    mag_dmg  += ((item as any).mag_dmg_bonus  || 0) + (e.mag_dmg_bonus  || 0);
+    mag_def  += ((item as any).mag_def_bonus  || 0) + (e.mag_def_bonus  || 0);
     if (item.category === 'weapon') {
       atkMin = item.atk_min + (e.atk_min || 0);
       atkMax = item.atk_max + (e.atk_max || 0);

@@ -583,4 +583,19 @@ export function applySchema(db: Database.Database): void {
 
   // Equipped mount per character — the mount reduces action cooldowns.
   if (!charHave.has('mount_inventory_id')) db.exec(`ALTER TABLE characters ADD COLUMN mount_inventory_id INTEGER NOT NULL DEFAULT 0`);
+
+  // Mount stat add-ons — the top-tier mount ships as a cheap base (cooldown
+  // only); its combat-stat lines are sold à la carte (e.g. +Phys DMG) and
+  // recorded per (character, mount_slug, addon_key). They only count toward
+  // derived stats while that mount is the active one.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS mount_addons (
+      character_id INTEGER NOT NULL,
+      mount_slug   TEXT NOT NULL,
+      addon_key    TEXT NOT NULL,
+      bought_at    INTEGER NOT NULL,
+      PRIMARY KEY (character_id, mount_slug, addon_key),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
 }

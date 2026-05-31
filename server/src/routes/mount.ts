@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { logFromRequest } from '../lib/logger';
+import { MOUNT_ADDONS } from '../game/mountAddons';
 import type { Character } from '../types/domain';
 
 const router = Router();
@@ -93,15 +94,19 @@ const MOUNTS: MountDef[] = [
     phys_dmg_bonus: 38, phys_def_bonus: 28, mag_dmg_bonus: 22, mag_def_bonus: 22,
   },
   {
+    // The best mount ships as a cheap base — its 90% cooldown reduction is
+    // the whole package at 1000 gems. Its combat-stat lines are bought
+    // separately as à-la-carte add-ons (see ADDONS), 500 gems each.
     slug: 'mount_world_serpent',
     name: 'World Serpent',
     description: 'A bound fragment of the snake that once swallowed the sky. The realm bends to its rider.',
-    gem_cost: 2500,
+    gem_cost: 1000,
     rarity: 'legendary', tier: 7,
     cooldown_reduction_pct: 90,
-    phys_dmg_bonus: 45, phys_def_bonus: 35, mag_dmg_bonus: 45, mag_def_bonus: 35,
+    phys_dmg_bonus: 0, phys_def_bonus: 0, mag_dmg_bonus: 0, mag_def_bonus: 0,
   },
 ];
+
 
 function ensureMountItems(): void {
   const db = getDb();
@@ -151,11 +156,22 @@ router.get('/', (req, res) => {
     )
     .all(char.id) as { inv_id: number; slug: string; name: string }[];
   const ownedSlugs = new Set(owned.map((o) => o.slug));
+  const purchasedAddons = db
+    .prepare('SELECT mount_slug, addon_key FROM mount_addons WHERE character_id = ?')
+    .all(char.id) as { mount_slug: string; addon_key: string }[];
+  const addonSet = new Set(purchasedAddons.map((a) => `${a.mount_slug}:${a.addon_key}`));
   res.json({
     gems: (char as any).gems || 0,
     active_mount_inventory_id: (char as any).mount_inventory_id || 0,
     owned,
-    catalog: MOUNTS.map((m) => ({ ...m, owned: ownedSlugs.has(m.slug) })),
+    catalog: MOUNTS.map((m) => ({
+      ...m,
+      owned: ownedSlugs.has(m.slug),
+      addons: (MOUNT_ADDONS[m.slug] || []).map((a) => ({
+        ...a,
+        purchased: addonSet.has(`${m.slug}:${a.key}`),
+      })),
+    })),
   });
 });
 
@@ -192,6 +208,45 @@ router.post('/buy', (req, res) => {
     meta: { slug: mount.slug, gem_cost: mount.gem_cost, tier: mount.tier, rarity: mount.rarity },
   });
   res.json({ ok: true, mount_inv_id: ins.lastInsertRowid });
+});
+
+const addonSchema = z.object({ slug: z.string(), addonKey: z.string() });
+router.post('/addon/buy', (req, res) => {
+  const parse = addonSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const addons = MOUNT_ADDONS[parse.data.slug] || [];
+  const addon = addons.find((a) => a.key === parse.data.addonKey);
+  if (!addon) { res.status(404).json({ error: 'Unknown add-on' }); return; }
+  const db = getDb();
+  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  // Must own the mount the add-on belongs to.
+  const ownsMount = db
+    .prepare(`SELECT inv.id FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.character_id = ? AND items.slug = ?`)
+    .get(char.id, parse.data.slug) as any;
+  if (!ownsMount) { res.status(400).json({ error: 'You must own the mount first.' }); return; }
+  // Already bought?
+  const have = db
+    .prepare('SELECT 1 FROM mount_addons WHERE character_id = ? AND mount_slug = ? AND addon_key = ?')
+    .get(char.id, parse.data.slug, addon.key);
+  if (have) { res.status(400).json({ error: 'You already own that add-on.' }); return; }
+
+  const debit = db
+    .prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?')
+    .run(addon.gem_cost, addon.gem_cost, char.id, addon.gem_cost);
+  if (debit.changes !== 1) { res.status(400).json({ error: `Need ${addon.gem_cost} gems.` }); return; }
+
+  db.prepare('INSERT INTO mount_addons (character_id, mount_slug, addon_key, bought_at) VALUES (?, ?, ?, ?)')
+    .run(char.id, parse.data.slug, addon.key, Date.now());
+
+  logFromRequest(req, {
+    category: 'payment', action: 'mount_addon_buy',
+    character_id: char.id,
+    target_type: 'item',
+    message: `${char.name} bought ${addon.label} add-on for ${parse.data.slug}`,
+    meta: { slug: parse.data.slug, addon: addon.key, amount: addon.amount, gem_cost: addon.gem_cost },
+  });
+  res.json({ ok: true });
 });
 
 router.post('/equip', (req, res) => {

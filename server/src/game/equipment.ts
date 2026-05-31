@@ -6,10 +6,12 @@
  */
 import { getDb } from '../db';
 import type { Item, InventoryEntry } from '../types/domain';
+import { MOUNT_ADDONS } from './mountAddons';
 
 export type EnchantBonuses = Partial<Record<
   'str_bonus' | 'dex_bonus' | 'con_bonus' | 'int_bonus' | 'cha_bonus' | 'wis_bonus' |
-  'hp_bonus' | 'mp_bonus' | 'defense' | 'atk_max' | 'atk_min',
+  'hp_bonus' | 'mp_bonus' | 'defense' | 'atk_max' | 'atk_min' |
+  'phys_dmg_bonus' | 'phys_def_bonus' | 'mag_dmg_bonus' | 'mag_def_bonus',
   number
 >>;
 
@@ -36,9 +38,24 @@ export function loadEquipped(characterId: number): EquippedSlot[] {
               OR inv.id = (SELECT mount_inventory_id FROM characters WHERE id = ?))`,
     )
     .all(characterId, characterId) as any[];
+
+  // Purchased mount add-ons for this character, merged into the matching
+  // mount slot's bonuses below.
+  const addonRows = getDb()
+    .prepare('SELECT mount_slug, addon_key FROM mount_addons WHERE character_id = ?')
+    .all(characterId) as { mount_slug: string; addon_key: string }[];
+
   return rows.map((row) => {
     let bonuses: EnchantBonuses = {};
     try { bonuses = JSON.parse(row.enchant_bonuses_json || '{}'); } catch { /* ignore */ }
+    // If this row is a mount, fold in any add-ons bought for it.
+    if (row.sub_type === 'mount') {
+      const defs = MOUNT_ADDONS[row.slug] || [];
+      for (const a of addonRows.filter((r) => r.mount_slug === row.slug)) {
+        const def = defs.find((d) => d.key === a.addon_key);
+        if (def) bonuses[def.bonus_field] = (bonuses[def.bonus_field] || 0) + def.amount;
+      }
+    }
     return {
       item: row as Item,
       entry: {

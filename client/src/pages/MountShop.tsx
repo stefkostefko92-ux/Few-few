@@ -3,6 +3,14 @@ import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
 
+interface MountAddon {
+  key: string;
+  label: string;
+  amount: number;
+  gem_cost: number;
+  purchased: boolean;
+}
+
 interface MountDef {
   slug: string;
   name: string;
@@ -16,6 +24,7 @@ interface MountDef {
   mag_dmg_bonus: number;
   mag_def_bonus: number;
   owned: boolean;
+  addons: MountAddon[];
 }
 
 interface Data {
@@ -69,6 +78,9 @@ export default function MountShop(): React.ReactElement {
   }
   async function unmount() {
     try { await api.post('/mount/equip', { inventoryId: 0 }); toast('Dismounted.', 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
+  }
+  async function buyAddon(slug: string, addonKey: string) {
+    try { await api.post('/mount/addon/buy', { slug, addonKey }); toast('Upgrade installed.', 'success'); await Promise.all([load(), refresh()]); } catch (e: any) { toast(e.message, 'error'); }
   }
 
   if (!data) return <div className="muted">Loading…</div>;
@@ -132,6 +144,34 @@ export default function MountShop(): React.ReactElement {
                   </button>
                 )}
               </div>
+
+              {/* À-la-carte combat upgrades, available once the mount is owned. */}
+              {m.addons.length > 0 && (
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-1)' }}>
+                  <div className="muted text-sm" style={{ marginBottom: 8, textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                    Optional upgrades — buy only what you want
+                  </div>
+                  <div className="col" style={{ gap: 6 }}>
+                    {m.addons.map((a) => (
+                      <div key={a.key} className="flex between" style={{ alignItems: 'center' }}>
+                        <span className="text-sm">{a.label} <span className="muted">+{a.amount}</span></span>
+                        {a.purchased ? (
+                          <span className="tag" style={{ background: 'rgba(106,216,164,.15)', color: 'var(--emerald-1)' }}>✓ Owned</span>
+                        ) : (
+                          <button
+                            className="btn btn-sm"
+                            disabled={!m.owned || data.gems < a.gem_cost}
+                            title={!m.owned ? 'Buy the mount first' : ''}
+                            onClick={() => buyAddon(m.slug, a.key)}
+                          >
+                            💎 {a.gem_cost}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
