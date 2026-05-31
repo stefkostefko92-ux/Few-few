@@ -11,13 +11,16 @@ import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
+import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired);
 
-const REGION_ORDER = ['whispering_woods', 'mistmoor_hills', 'crystal_caverns', 'ashen_wastes', 'shadowfell'];
+const BASE_REGIONS = ['whispering_woods', 'mistmoor_hills', 'crystal_caverns', 'ashen_wastes', 'shadowfell'];
+// Base regions plus the endless high-level bands (lv 26 → 350), in order.
+const REGION_ORDER = [...BASE_REGIONS, ...REGION_BANDS.map((b) => b.region)];
 
 const REGION_GATES: Record<string, number> = {
   whispering_woods: 1,
@@ -25,7 +28,11 @@ const REGION_GATES: Record<string, number> = {
   crystal_caverns: 10,
   ashen_wastes: 15,
   shadowfell: 24,
+  ...Object.fromEntries(REGION_BANDS.map((b) => [b.region, b.gate])),
 };
+
+// Pretty names for the high-level regions so the UI can label them.
+export const REGION_NAMES: Record<string, string> = Object.fromEntries(REGION_BANDS.map((b) => [b.region, b.name]));
 
 router.get('/regions', (req, res) => {
   const db = getDb();

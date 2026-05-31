@@ -228,23 +228,33 @@
   100% { transform: translateX(22px) rotate(7deg); }
 }
 
-/* Strike — explosive forward lunge with a hit-stop snap at impact */
-.fighter-body.strike-hero { animation: strike-hero 420ms cubic-bezier(.5, .02, .3, 1); }
+/* Strike — explosive dash with a motion-trail and a hard hit-stop snap */
+.fighter-body.strike-hero { animation: strike-hero 460ms cubic-bezier(.45, 0, .25, 1); transform-origin: bottom center; }
 @keyframes strike-hero {
-  0%   { transform: translateX(-26px) rotate(-9deg) scale(1); }
-  28%  { transform: translateX(104px) rotate(13deg) scale(1.12); filter: drop-shadow(0 18px 30px rgba(0,0,0,.6)) brightness(1.25); }
-  34%  { transform: translateX(98px) rotate(12deg) scale(1.12); }            /* hit-stop */
-  62%  { transform: translateX(86px) rotate(9deg) scale(1.04); }
-  100% { transform: translateX(0) rotate(0) scale(1); }
+  0%   { transform: translateX(-34px) rotate(-12deg) scale(1); }
+  22%  { transform: translateX(150px) rotate(20deg) scale(1.32);
+         filter: drop-shadow(-40px 0 16px rgba(255,232,138,.55)) drop-shadow(0 20px 30px rgba(0,0,0,.6)) brightness(1.4); }
+  30%  { transform: translateX(142px) rotate(18deg) scale(1.32); }          /* hit-stop freeze */
+  34%  { transform: translateX(150px) rotate(19deg) scale(1.34); }
+  64%  { transform: translateX(110px) rotate(10deg) scale(1.08); }
+  100% { transform: translateX(0) rotate(0) scale(1); filter: none; }
 }
-.fighter-body.strike-foe { animation: strike-foe 420ms cubic-bezier(.5, .02, .3, 1); }
+.fighter-body.strike-foe { animation: strike-foe 460ms cubic-bezier(.45, 0, .25, 1); transform-origin: bottom center; }
 @keyframes strike-foe {
-  0%   { transform: translateX(26px) rotate(9deg) scale(1); }
-  28%  { transform: translateX(-104px) rotate(-13deg) scale(1.12); filter: drop-shadow(0 18px 30px rgba(0,0,0,.6)) brightness(1.25); }
-  34%  { transform: translateX(-98px) rotate(-12deg) scale(1.12); }         /* hit-stop */
-  62%  { transform: translateX(-86px) rotate(-9deg) scale(1.04); }
-  100% { transform: translateX(0) rotate(0) scale(1); }
+  0%   { transform: translateX(34px) rotate(12deg) scale(1); }
+  22%  { transform: translateX(-150px) rotate(-20deg) scale(1.32);
+         filter: drop-shadow(40px 0 16px rgba(255,120,90,.55)) drop-shadow(0 20px 30px rgba(0,0,0,.6)) brightness(1.4); }
+  30%  { transform: translateX(-142px) rotate(-18deg) scale(1.32); }        /* hit-stop freeze */
+  34%  { transform: translateX(-150px) rotate(-19deg) scale(1.34); }
+  64%  { transform: translateX(-110px) rotate(-10deg) scale(1.08); }
+  100% { transform: translateX(0) rotate(0) scale(1); filter: none; }
 }
+
+/* Wind-up gets a deeper coil so the dash reads as a real anticipation. */
+.fighter-body.windup-hero { animation: windup-hero 240ms cubic-bezier(.3,.7,.4,1) forwards !important; }
+@keyframes windup-hero { 0% { transform: translateX(0) rotate(0) scale(1);} 100% { transform: translateX(-34px) rotate(-12deg) scale(1.06);} }
+.fighter-body.windup-foe { animation: windup-foe 240ms cubic-bezier(.3,.7,.4,1) forwards !important; }
+@keyframes windup-foe { 0% { transform: translateX(0) rotate(0) scale(1);} 100% { transform: translateX(34px) rotate(12deg) scale(1.06);} }
 
 /* Hurt — damage-scaled shake & flash */
 .fighter-body.hurt-1 { animation: hurt 360ms cubic-bezier(.36, .07, .19, .97); --hurt-int: 6px; --hurt-flash: 1.15; }
@@ -521,13 +531,13 @@
   85% { transform: translate(3px, -1px); }
 }
 @keyframes shake-3 {
-  0%, 100% { transform: translate(0, 0); }
-  8% { transform: translate(-10px, 4px) rotate(-.4deg); }
-  18% { transform: translate(10px, -6px) rotate(.4deg); }
-  28% { transform: translate(-8px, 6px) rotate(-.3deg); }
-  38% { transform: translate(8px, -4px) rotate(.3deg); }
-  50% { transform: translate(-6px, 4px); }
-  62% { transform: translate(6px, -3px); }
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  6%  { transform: translate(-18px, 8px) rotate(-.7deg) scale(1.05); }   /* zoom-punch in */
+  16% { transform: translate(18px, -11px) rotate(.7deg) scale(1.03); }
+  28% { transform: translate(-14px, 9px) rotate(-.5deg) scale(1.02); }
+  38% { transform: translate(13px, -7px) rotate(.5deg); }
+  50% { transform: translate(-9px, 5px); }
+  62% { transform: translate(7px, -4px); }
   76% { transform: translate(-3px, 2px); }
   90% { transform: translate(2px, -1px); }
 }

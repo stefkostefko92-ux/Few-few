@@ -71,7 +71,10 @@ export default function Avatar({ avatar, frame, size = 80, ring = true }: Props)
         position: 'relative',
         borderRadius: '50%',
         background: `radial-gradient(circle at 35% 25%, ${a.fg}33, ${a.bg} 60%)`,
-        boxShadow: ring ? `0 0 0 2px ${f.border}, 0 0 24px ${f.glow}, inset 0 1px 0 rgba(255,255,255,.08)` : 'none',
+        // Ring + glow are INSET only — box-shadow normally renders outside the
+        // element (it ignores overflow:hidden), which made the frame ring poke
+        // out of its square. Keeping everything inset guarantees containment.
+        boxShadow: ring ? `inset 0 0 0 2px ${f.border}, inset 0 0 16px ${f.glow}, inset 0 1px 0 rgba(255,255,255,.08)` : 'none',
         display: 'grid',
         placeItems: 'center',
         overflow: 'hidden',
@@ -111,10 +114,10 @@ export default function Avatar({ avatar, frame, size = 80, ring = true }: Props)
         <div
           style={{
             position: 'absolute',
-            inset: -4,
+            inset: 0,
             borderRadius: '50%',
             background: `conic-gradient(from 0deg, ${f.border}, transparent 25%, ${f.border} 50%, transparent 75%, ${f.border})`,
-            filter: 'blur(8px)',
+            filter: 'blur(6px)',
             opacity: 0.4,
             pointerEvents: 'none',
             animation: 'nd-cosmic-spin 8s linear infinite',

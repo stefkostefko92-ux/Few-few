@@ -8,6 +8,11 @@ import { generateExtendedDummies } from './dummies_extended';
 
 function seed(): void {
   const db = getDb();
+  // INSERT OR REPLACE on items/monsters deletes+reinserts rows; with foreign
+  // keys ON, any existing inventory row that references an item would block
+  // the whole transaction. Disable FK enforcement for the duration of the
+  // re-seed so it's safe to run on a live DB that already has players.
+  db.pragma('foreign_keys = OFF');
   console.log('Seeding items...');
   const insertItem = db.prepare(`
     INSERT OR REPLACE INTO items (
@@ -269,6 +274,7 @@ function seed(): void {
   txExt();
   console.log(`Inserted/refreshed ${extCount} extended players, ${marketCount} marketplace listings.`);
 
+  db.pragma('foreign_keys = ON');
   console.log('Seed complete.');
 }
 

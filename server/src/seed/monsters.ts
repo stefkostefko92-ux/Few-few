@@ -26,3 +26,59 @@ export const MONSTER_SEED = [
   // Endgame
   { slug: 'shadow_lord', name: 'The Shadow Lord', level: 25, hp: 1500, atk_min: 70, atk_max: 110, defense: 25, speed: 8, xp_reward: 900, gold_min: 250, gold_max: 400, sprite: 'shadowlord', family: 'demon', region: 'shadowfell' },
 ];
+
+/* =========================================================================
+ * Endless content — procedurally generated monsters for levels 26 → 350.
+ *
+ * One monster per level guarantees the Hunting Grounds and Bounty Board
+ * always find a level-appropriate target no matter how high the player
+ * climbs. Stats scale on smooth curves anchored to the hand-built set
+ * (≈ lv25 = 1500 HP). Each ~35-level band is its own themed region with a
+ * matching level gate (see REGION_BANDS, mirrored in routes/hunting.ts).
+ * ======================================================================= */
+
+export interface HighRegionBand { region: string; name: string; gate: number; max: number; creatures: string[]; sprites: string[]; family: string; }
+
+export const REGION_BANDS: HighRegionBand[] = [
+  { region: 'emberreach',        name: 'Emberreach',          gate: 26,  max: 60,  creatures: ['Cinder Marauder', 'Magma Hound', 'Ash Knight', 'Emberwing Drake'], sprites: ['drake', 'wolf', 'orc', 'titan'], family: 'dragon' },
+  { region: 'frostspire',        name: 'Frostspire',          gate: 60,  max: 95,  creatures: ['Rime Stalker', 'Glacier Golem', 'Frost Wyrm', 'Hoarfrost Witch'], sprites: ['golem', 'serpent', 'witch', 'wolf'], family: 'giant' },
+  { region: 'drowned_coast',     name: 'The Drowned Coast',   gate: 95,  max: 130, creatures: ['Tide Revenant', 'Abyssal Maw', 'Coral Leviathan', 'Drowned Captain'], sprites: ['serpent', 'wraith', 'overlord', 'spider'], family: 'undead' },
+  { region: 'stormpeaks',        name: 'The Stormpeaks',      gate: 130, max: 165, creatures: ['Thunder Roc', 'Galestorm Elemental', 'Sky Titan', 'Tempest Warden'], sprites: ['titan', 'drake', 'golem', 'overlord'], family: 'elemental' },
+  { region: 'blighted_expanse',  name: 'The Blighted Expanse',gate: 165, max: 200, creatures: ['Plague Behemoth', 'Rot Shambler', 'Famine Wraith', 'Blight Hierophant'], sprites: ['troll', 'wraith', 'witch', 'overlord'], family: 'undead' },
+  { region: 'obsidian_dominion', name: 'The Obsidian Dominion',gate: 200, max: 235, creatures: ['Obsidian Colossus', 'Shadowforged Knight', 'Void Reaver', 'Onyx Tyrant'], sprites: ['golem', 'titan', 'shadowlord', 'overlord'], family: 'construct' },
+  { region: 'astral_rift',       name: 'The Astral Rift',     gate: 235, max: 270, creatures: ['Star-Eater', 'Rift Horror', 'Celestial Devourer', 'Astral Sovereign'], sprites: ['serpent', 'drake', 'shadowlord', 'witch'], family: 'aberration' },
+  { region: 'voidmaw',           name: 'Voidmaw',             gate: 270, max: 305, creatures: ['Null Behemoth', 'Entropy Fiend', 'Maw of the Void', 'Oblivion Herald'], sprites: ['shadowlord', 'titan', 'wraith', 'overlord'], family: 'demon' },
+  { region: 'dragon_roost',      name: 'The Dragon Roost',    gate: 305, max: 340, creatures: ['Elder Wyrm', 'Catastrophe Drake', 'Worldfire Serpent', 'Dragon Ascendant'], sprites: ['drake', 'serpent', 'titan', 'shadowlord'], family: 'dragon' },
+  { region: 'eternal_throne',    name: 'The Eternal Throne',  gate: 340, max: 351, creatures: ['Throneguard Titan', 'God-King\'s Shadow', 'The Unmaker', 'Avatar of the End'], sprites: ['shadowlord', 'titan', 'overlord', 'golem'], family: 'demon' },
+];
+
+function bandFor(level: number): HighRegionBand {
+  for (const b of REGION_BANDS) if (level >= b.gate && level < b.max) return b;
+  return REGION_BANDS[REGION_BANDS.length - 1];
+}
+
+(() => {
+  for (let lvl = 26; lvl <= 350; lvl++) {
+    const band = bandFor(lvl);
+    const idx = lvl % band.creatures.length;
+    const creature = band.creatures[idx];
+    const sprite = band.sprites[idx % band.sprites.length];
+    const f = lvl / 25; // scale factor anchored at the lv25 hand-built boss
+    MONSTER_SEED.push({
+      slug: `${band.region}_${lvl}`,
+      name: `${creature} · Lv ${lvl}`,
+      level: lvl,
+      hp: Math.round(1500 * Math.pow(f, 1.9)),
+      atk_min: Math.round(60 * Math.pow(f, 1.25)),
+      atk_max: Math.round(95 * Math.pow(f, 1.25)),
+      defense: Math.round(25 * Math.pow(f, 1.1)),
+      speed: 4 + (lvl % 6),
+      xp_reward: Math.round(85 * Math.pow(lvl, 0.7)),
+      gold_min: Math.round(8 * lvl),
+      gold_max: Math.round(14 * lvl),
+      sprite,
+      family: band.family,
+      region: band.region,
+    });
+  }
+})();
