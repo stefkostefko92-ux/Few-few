@@ -111,7 +111,12 @@ function loadOrIssueBounties(char: Character): Bounty[] {
   const row = db
     .prepare('SELECT bounties_json FROM character_bounties WHERE character_id = ? AND day_index = ?')
     .get(char.id, today) as { bounties_json: string } | undefined;
-  if (row) return JSON.parse(row.bounties_json) as Bounty[];
+  if (row) {
+    const parsed = JSON.parse(row.bounties_json) as Bounty[];
+    // A non-empty cached board is good. An EMPTY one means it was generated
+    // while the monsters table had no rows (fresh server) — regenerate now.
+    if (parsed.length > 0) return parsed;
+  }
   const fresh = generateDailyBounties(char);
   db.prepare(
     `INSERT INTO character_bounties (character_id, day_index, bounties_json) VALUES (?, ?, ?)

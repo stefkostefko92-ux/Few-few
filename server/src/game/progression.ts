@@ -1,21 +1,25 @@
 import type { Character, CharacterClass } from '../types/domain';
 
+// Back-compat snapshot of the first 100 levels (tests + any old consumers).
+// The live curve is the formula below — uncapped.
 export const XP_TABLE = (() => {
   const arr = [0];
-  for (let lvl = 1; lvl <= 100; lvl++) {
-    // Smooth exponential curve, tuned for ~10–15 min per level early on
-    arr.push(Math.floor(50 * Math.pow(lvl, 1.7)));
-  }
+  for (let lvl = 1; lvl <= 100; lvl++) arr.push(Math.floor(50 * Math.pow(lvl, 1.7)));
   return arr;
 })();
 
+// The XP curve is a pure formula so the game is ENDLESS — there is no
+// level cap. xpForLevel(n) = floor(50 * n^1.7) for any n ≥ 1.
 export function xpForLevel(level: number): number {
-  return XP_TABLE[Math.min(level, XP_TABLE.length - 1)];
+  if (level <= 1) return 0;
+  return Math.floor(50 * Math.pow(level, 1.7));
 }
 
 export function levelFromXp(xp: number): number {
-  let lvl = 1;
-  while (lvl < XP_TABLE.length - 1 && xp >= XP_TABLE[lvl + 1]) lvl++;
+  // Invert the curve, then walk to correct any rounding drift. No upper bound.
+  let lvl = Math.max(1, Math.floor(Math.pow(xp / 50, 1 / 1.7)));
+  while (xp >= xpForLevel(lvl + 1)) lvl++;
+  while (lvl > 1 && xp < xpForLevel(lvl)) lvl--;
   return lvl;
 }
 

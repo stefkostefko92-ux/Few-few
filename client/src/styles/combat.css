@@ -228,20 +228,22 @@
   100% { transform: translateX(22px) rotate(7deg); }
 }
 
-/* Strike — explosive forward lunge */
-.fighter-body.strike-hero { animation: strike-hero 360ms cubic-bezier(.55, .05, .68, .53); }
+/* Strike — explosive forward lunge with a hit-stop snap at impact */
+.fighter-body.strike-hero { animation: strike-hero 420ms cubic-bezier(.5, .02, .3, 1); }
 @keyframes strike-hero {
-  0%   { transform: translateX(-22px) rotate(-7deg); }
-  35%  { transform: translateX(78px) rotate(10deg); filter: drop-shadow(0 16px 28px rgba(0,0,0,.6)) brightness(1.15); }
-  60%  { transform: translateX(70px) rotate(8deg); }
-  100% { transform: translateX(0) rotate(0); }
+  0%   { transform: translateX(-26px) rotate(-9deg) scale(1); }
+  28%  { transform: translateX(104px) rotate(13deg) scale(1.12); filter: drop-shadow(0 18px 30px rgba(0,0,0,.6)) brightness(1.25); }
+  34%  { transform: translateX(98px) rotate(12deg) scale(1.12); }            /* hit-stop */
+  62%  { transform: translateX(86px) rotate(9deg) scale(1.04); }
+  100% { transform: translateX(0) rotate(0) scale(1); }
 }
-.fighter-body.strike-foe { animation: strike-foe 360ms cubic-bezier(.55, .05, .68, .53); }
+.fighter-body.strike-foe { animation: strike-foe 420ms cubic-bezier(.5, .02, .3, 1); }
 @keyframes strike-foe {
-  0%   { transform: translateX(22px) rotate(7deg); }
-  35%  { transform: translateX(-78px) rotate(-10deg); filter: drop-shadow(0 16px 28px rgba(0,0,0,.6)) brightness(1.15); }
-  60%  { transform: translateX(-70px) rotate(-8deg); }
-  100% { transform: translateX(0) rotate(0); }
+  0%   { transform: translateX(26px) rotate(9deg) scale(1); }
+  28%  { transform: translateX(-104px) rotate(-13deg) scale(1.12); filter: drop-shadow(0 18px 30px rgba(0,0,0,.6)) brightness(1.25); }
+  34%  { transform: translateX(-98px) rotate(-12deg) scale(1.12); }         /* hit-stop */
+  62%  { transform: translateX(-86px) rotate(-9deg) scale(1.04); }
+  100% { transform: translateX(0) rotate(0) scale(1); }
 }
 
 /* Hurt — damage-scaled shake & flash */
@@ -368,6 +370,24 @@
 @keyframes spark-fly {
   0%   { transform: translate(0, 0) scale(1); opacity: 1; }
   100% { transform: translate(var(--tx), var(--ty)) scale(.2); opacity: 0; }
+}
+
+/* Impact shockwave ring — expands from the hit point on every burst. */
+.fx-burst::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  border: 3px solid var(--spark-color, #ffd34d);
+  box-shadow: 0 0 18px var(--spark-color, #ffd34d);
+  animation: shockwave 420ms cubic-bezier(.2,.7,.3,1) forwards;
+  pointer-events: none;
+}
+@keyframes shockwave {
+  0%   { transform: scale(.3); opacity: .9; border-width: 4px; }
+  100% { transform: scale(7);  opacity: 0;  border-width: .5px; }
 }
 
 /* Crit gets bigger sparks */

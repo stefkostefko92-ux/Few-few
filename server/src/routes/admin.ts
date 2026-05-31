@@ -396,8 +396,24 @@ router.post('/users/:id/admin', (req, res) => {
   res.json({ ok: true });
 });
 
+/* Grant (or remove, with a negative amount) gems to a user's character. */
+const gemsSchema = z.object({ amount: z.number().int() });
+router.post('/users/:id/gems', (req, res) => {
+  const parse = gemsSchema.safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const userId = Number(req.params.id);
+  const db = getDb();
+  const char = db.prepare('SELECT id, name, gems FROM characters WHERE user_id = ?').get(userId) as any;
+  if (!char) { res.status(404).json({ error: 'That user has no character.' }); return; }
+  const delta = parse.data.amount;
+  const newGems = Math.max(0, (char.gems || 0) + delta);
+  db.prepare('UPDATE characters SET gems = ?, total_gems_earned = total_gems_earned + ? WHERE id = ?')
+    .run(newGems, Math.max(0, delta), char.id);
+  res.json({ ok: true, name: char.name, gems: newGems });
+});
+
 const charPatchSchema = z.object({
-  level: z.number().int().min(1).max(100).optional(),
+  level: z.number().int().min(1).optional(),
   gold: z.number().int().min(0).optional(),
   hp: z.number().int().min(1).optional(),
   hp_max: z.number().int().min(1).optional(),

@@ -467,6 +467,17 @@ function Users() {
       load();
     } catch (e: any) { toast(e.message, 'error'); }
   }
+  async function giveGems(u: any) {
+    const raw = prompt(`Give gems to ${u.char_name || u.username} (use a negative number to remove):`, '100');
+    if (raw === null) return;
+    const amount = Number(raw);
+    if (!Number.isInteger(amount) || amount === 0) { toast('Enter a non-zero whole number.', 'error'); return; }
+    try {
+      const r = await api.post(`/admin/users/${u.id}/gems`, { amount });
+      toast(`${r.name} now has ${r.gems} gems.`, 'success');
+      load();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
 
   return (
     <>
@@ -495,6 +506,7 @@ function Users() {
               <td><button className="btn btn-sm" onClick={() => toggleAdmin(u)}>{u.is_admin ? 'Yes' : 'No'}</button></td>
               <td>
                 {u.char_id && <button className="btn btn-sm" onClick={() => setEditing({ id: u.char_id, level: u.char_level, gold: u.gold, arena_rating: u.arena_rating })}>Edit</button>}
+                {u.char_id && <button className="btn btn-sm" style={{ marginLeft: 4 }} title="Give gems" onClick={() => giveGems(u)}>💎</button>}
                 <button className="btn btn-sm btn-danger" style={{ marginLeft: 4 }} onClick={() => destroy(u)}>×</button>
               </td>
             </tr>

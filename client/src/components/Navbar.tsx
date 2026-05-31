@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useStore } from '../lib/store';
+import { api } from '../lib/api';
 import Logo from './Logo';
 import Avatar from './Avatar';
 import AnimatedNumber from './AnimatedNumber';
@@ -30,9 +31,19 @@ export default function Navbar(): React.ReactElement {
   const char = useStore((s) => s.character);
   const user = useStore((s) => s.user);
   const logout = useStore((s) => s.logout);
+  const toast = useStore((s) => s.toast);
+  const refreshCharacter = useStore((s) => s.refreshCharacter);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  async function skipCooldowns() {
+    try {
+      const r = await api.post('/character/skip-cooldowns', {});
+      toast(`Cleared ${r.cleared} cooldown${r.cleared === 1 ? '' : 's'} for 1 gem.`, 'success');
+      await refreshCharacter();
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -87,6 +98,14 @@ export default function Navbar(): React.ReactElement {
                 <AnimatedNumber value={(char as any).gems || 0} />
               </span>
             </div>
+            <button
+              className="nav-skip-cd"
+              title="Spend 1 gem to clear all action cooldowns"
+              onClick={skipCooldowns}
+              disabled={((char as any).gems || 0) < 1}
+            >
+              ⏱ Skip · 1💎
+            </button>
           </>
         )}
 

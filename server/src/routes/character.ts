@@ -261,4 +261,24 @@ router.post('/rest', (req, res) => {
   res.json({ ok: true });
 });
 
+/* Spend 1 gem to clear EVERY action cooldown immediately. */
+router.post('/skip-cooldowns', (req, res) => {
+  const db = getDb();
+  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
+  if (!char) { res.status(404).json({ error: 'No character' }); return; }
+  // Atomic gem debit — only proceeds if at least 1 gem is present.
+  const debit = db
+    .prepare('UPDATE characters SET gems = gems - 1, total_gems_spent = total_gems_spent + 1 WHERE id = ? AND gems >= 1')
+    .run(char.id);
+  if (debit.changes !== 1) { res.status(400).json({ error: 'Need 1 gem to skip cooldowns.' }); return; }
+  const cleared = db.prepare('DELETE FROM character_cooldowns WHERE character_id = ?').run(char.id);
+  logFromRequest(req, {
+    category: 'character', action: 'skip_cooldowns',
+    character_id: char.id,
+    message: `${char.name} spent 1 gem to clear ${cleared.changes} cooldowns`,
+    meta: { cleared: cleared.changes },
+  });
+  res.json({ ok: true, cleared: cleared.changes, gems: (char as any).gems - 1 });
+});
+
 export default router;

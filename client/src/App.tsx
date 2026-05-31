@@ -44,12 +44,18 @@ import BattlePass from './pages/BattlePass';
 import Recipes from './pages/Recipes';
 import Auction from './pages/Auction';
 import MountShop from './pages/MountShop';
+import Hero from './pages/Hero';
+import Realm from './pages/Realm';
 import LevelUpOverlay from './components/LevelUpOverlay';
 
 function AppLayout(): React.ReactElement {
   const location = useLocation();
   const levelUp = useStore((s) => s.levelUp);
   const dismissLevelUp = useStore((s) => s.dismissLevelUp);
+  // Jump to the top of the page whenever the route changes (sidebar/navbar nav).
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname]);
   return (
     <div className="app">
       <Navbar />
@@ -140,13 +146,15 @@ export default function App(): React.ReactElement {
           <Route path="/create" element={<CharacterCreate />} />
           <Route path="/admin/*" element={<AdminGate><Navbar /><Admin /><Toasts /></AdminGate>} />
           <Route path="/app" element={<AppLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="character" element={<CharacterPage />} />
-            <Route path="inventory" element={<Inventory />} />
+            <Route index element={<Hero />} />
+            <Route path="profile" element={<Hero />} />
+            <Route path="character" element={<Hero />} />
+            <Route path="inventory" element={<Hero />} />
+            <Route path="stats" element={<Hero />} />
             <Route path="shop" element={<Shop />} />
-            <Route path="quests" element={<Quests />} />
+            <Route path="quests" element={<Realm />} />
             <Route path="arena" element={<Arena />} />
-            <Route path="world" element={<World />} />
+            <Route path="world" element={<Realm />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="mail" element={<Mail />} />
             <Route path="history" element={<History />} />
@@ -158,8 +166,6 @@ export default function App(): React.ReactElement {
             <Route path="dungeons" element={<Dungeons />} />
             <Route path="achievements" element={<Achievements />} />
             <Route path="bestiary" element={<Bestiary />} />
-            <Route path="stats" element={<Stats />} />
-            <Route path="profile" element={<Profile />} />
             <Route path="guild" element={<Guild />} />
             <Route path="premium" element={<Premium />} />
             <Route path="market" element={<Market />} />

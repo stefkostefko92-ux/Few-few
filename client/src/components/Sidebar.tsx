@@ -29,17 +29,16 @@ const SECTIONS: SectionDef[] = [
   {
     heading: 'Main',
     items: [
-      { to: '/app', label: 'Overview', icon: IconHome, end: true },
-      { to: '/app/profile', label: 'Profile', icon: IconUser },
-      { to: '/app/character', label: 'Character', icon: IconUser },
-      { to: '/app/inventory', label: 'Inventory', icon: IconBag },
-      { to: '/app/stats', label: 'Statistics', icon: IconChart },
+      // Overview / Profile / Character / Inventory / Statistics are now tabs
+      // inside the one Hero page.
+      { to: '/app', label: 'Hero', icon: IconHome, end: true },
     ],
   },
   {
     heading: 'Adventure',
     items: [
-      { to: '/app/quests', label: 'Quests', icon: IconScroll },
+      // World Map + Quests are merged into the one Realm page (two tabs).
+      { to: '/app/world', label: 'Realm · Map & Quests', icon: IconMap },
       { to: '/app/bounties', label: 'Bounty Board', icon: IconSkull },
       { to: '/app/hunting', label: 'Hunting Grounds', icon: IconBolt },
       { to: '/app/camp', label: 'Camp · Idle Tasks', icon: IconFlame },
@@ -48,7 +47,6 @@ const SECTIONS: SectionDef[] = [
       { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
       { to: '/app/forge', label: 'The Forge', icon: IconBolt },
       { to: '/app/recipes', label: 'Recipe Board', icon: IconStar },
-      { to: '/app/world', label: 'World Map', icon: IconMap },
       { to: '/app/arena', label: 'Arena', icon: IconSword },
       { to: '/app/history', label: 'Battle History', icon: IconSword },
     ],
