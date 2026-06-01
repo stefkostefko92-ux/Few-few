@@ -77,11 +77,9 @@ async function refresh() {
   const s = res.session || {};
   const rows = [
     ['statAdventures', s.adventures || 0],
-    ['statDuels', `${s.duelsWon || 0}/${(s.duelsWon || 0) + (s.duelsLost || 0)}`],
+    ['statCircle', s.circleNodes || 0],
     ['statGold', fmt(s.goldEarned || 0)],
-    ['statXp', fmt(s.xpEarned || 0)],
-    ['statCave', s.caveFloors || 0],
-    ['statSold', s.itemsSold || 0]
+    ['statXp', fmt(s.xpEarned || 0)]
   ];
   els.stats.innerHTML = rows.map(([k, v]) =>
     `<div class="row"><span>${t(k)}</span><b>${v}</b></div>`).join('');

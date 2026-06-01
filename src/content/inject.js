@@ -1,19 +1,24 @@
 /**
- * Page-world injector.
+ * Page-world XML-RPC client for Tanoth.
  *
- * Runs in the page's own JavaScript context (not the isolated content-script
- * world) so it can:
- *   1. Hook window.fetch and XMLHttpRequest to *observe* the game's real API
- *      traffic. From those observations it learns the gateway URL, the request
- *      shape (JSON / form / query), the field that carries the action name and
- *      the field that carries the session token. This adaptive approach means
- *      the bot keeps working when Tanoth tweaks parameter names, instead of
- *      relying on hard-coded endpoints.
- *   2. Replay requests on demand in the page context, so they carry the exact
- *      same cookies, headers and origin as the game itself.
+ * Runs in the page's own context so it can read `window.flashvars.sessionID`
+ * (the game's session token, not reachable from the isolated content world)
+ * and POST to the game's gateway with the right cookies and origin.
  *
- * It talks to the isolated content world purely through window.postMessage
- * using a namespaced envelope, never exposing globals the game could read.
+ * Tanoth's HTML5 client talks to the server over **XML-RPC**: an HTTP POST of a
+ * `<methodCall>` document to `<gameUrl>/xmlrpc`, where the game client lives at
+ * `<gameUrl>/main/client`. Every call's first parameter is the session id as a
+ * string. (Verified against the open-source BoTanoth client.)
+ *
+ * Responsibilities:
+ *   1. Discover the gateway URL and session id (from flashvars, with a sniffing
+ *      fallback for client variants that don't expose flashvars).
+ *   2. Execute `callXmlRpc(method, params)` on request from the content world,
+ *      prepending the session id, and return the raw XML response text (parsed
+ *      in the content world, which also has DOMParser).
+ *   3. Passively sniff the game's own XML-RPC traffic to learn the full set of
+ *      method names available — so optional modules can use methods this file
+ *      doesn't hard-code.
  */
 (function () {
   'use strict';
@@ -21,127 +26,119 @@
   const SRC_PAGE = 'tanoth-bot-inject';
   const SRC_CONTENT = 'tanoth-bot-content';
 
-  // Candidate field names for the action/method and session token. The first
-  // match found in an observed request wins and is remembered.
-  const ACTION_KEYS = ['action', 'method', 'do', 'cmd', 'fn', 'call', 'request'];
-  const SESSION_KEYS = ['sid', 'session', 'sessionId', 'token', 'sessionToken', 'auth'];
-
-  const learned = {
-    url: null,            // gateway URL
-    contentType: null,    // 'json' | 'form' | 'query'
-    template: null,       // a parsed copy of the last successful request body/params
-    actionKey: null,
-    sessionKey: null,
-    sessionValue: null,
-    headers: {}
+  const ctx = {
+    url: null,            // resolved /xmlrpc gateway
+    sessionId: null,      // flashvars.sessionID (or sniffed)
+    methods: {}           // learned methodName -> last param template (xml)
   };
 
-  /* ----------------------------- observation ----------------------------- */
+  /* --------------------------- context discovery -------------------------- */
 
-  function classifyBody(body, contentType) {
-    if (body == null) return { kind: 'query', data: {} };
-    if (typeof body === 'string') {
-      const ct = (contentType || '').toLowerCase();
-      if (ct.includes('json')) {
-        try { return { kind: 'json', data: JSON.parse(body) }; } catch (_) {}
-      }
-      // try form-urlencoded
-      if (body.includes('=')) {
-        const data = {};
-        new URLSearchParams(body).forEach((v, k) => { data[k] = v; });
-        return { kind: 'form', data };
-      }
-      try { return { kind: 'json', data: JSON.parse(body) }; } catch (_) {}
-    }
-    return { kind: 'query', data: {} };
+  function deriveGatewayFromLocation() {
+    const href = location.href;
+    if (href.includes('/main/client')) return href.split('#')[0].split('?')[0].replace('/main/client', '/xmlrpc');
+    return location.origin + '/xmlrpc';
   }
 
-  function rememberRequest(url, method, headers, body) {
+  function readSession() {
     try {
-      if (!/tanoth\.gameforge\.com/.test(url)) return;
-      // Heuristic: gateway requests are POSTs or have query params with an action.
-      const u = new URL(url, location.href);
-      const ct = headers['content-type'] || headers['Content-Type'] || '';
-      let parsed;
-      if (method.toUpperCase() === 'GET' || !body) {
-        const data = {};
-        u.searchParams.forEach((v, k) => { data[k] = v; });
-        parsed = { kind: 'query', data };
-      } else {
-        parsed = classifyBody(body, ct);
+      if (window.flashvars && window.flashvars.sessionID) return String(window.flashvars.sessionID);
+    } catch (_) {}
+    return ctx.sessionId; // possibly sniffed earlier
+  }
+
+  function refreshContext() {
+    const before = JSON.stringify({ u: ctx.url, s: !!ctx.sessionId });
+    if (!ctx.url) ctx.url = deriveGatewayFromLocation();
+    const sid = readSession();
+    if (sid) ctx.sessionId = sid;
+    if (JSON.stringify({ u: ctx.url, s: !!ctx.sessionId }) !== before) postContext();
+  }
+
+  function postContext() {
+    post({
+      type: 'context',
+      payload: { url: ctx.url, hasSession: !!ctx.sessionId, methods: Object.keys(ctx.methods) }
+    });
+  }
+
+  /* ------------------------------ XML-RPC -------------------------------- */
+
+  function escapeXml(s) {
+    return String(s).replace(/[<>&'"]/g, (c) =>
+      ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
+  }
+
+  // params: array of { type: 'string'|'int'|'i4'|'double'|'boolean', value }
+  function buildMethodCall(method, params) {
+    const sid = readSession();
+    const all = [{ type: 'string', value: sid != null ? sid : '' }].concat(params || []);
+    const body = all.map((p) => {
+      const t = p.type === 'int' ? 'i4' : p.type;
+      return `<param><value><${t}>${escapeXml(p.value)}</${t}></value></param>`;
+    }).join('');
+    return `<?xml version="1.0"?><methodCall><methodName>${method}</methodName><params>${body}</params></methodCall>`;
+  }
+
+  async function callXmlRpc(method, params) {
+    refreshContext();
+    if (!ctx.url) throw new Error('NO_GATEWAY');
+    if (!ctx.sessionId) throw new Error('NO_SESSION');
+    const xml = buildMethodCall(method, params);
+    const resp = await origFetch(ctx.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml' },
+      credentials: 'include',
+      body: xml
+    });
+    const text = await resp.text();
+    if (!resp.ok) throw new Error('HTTP_' + resp.status);
+    return { status: resp.status, xml: sanitizeXml(text) };
+  }
+
+  function sanitizeXml(s) {
+    // Strip control chars that break DOMParser (matches the reference client).
+    return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F]/g, '');
+  }
+
+  /* ------------------------------ sniffing ------------------------------- */
+
+  function observe(url, body) {
+    try {
+      if (typeof body !== 'string') return;
+      const m = body.match(/<methodName>\s*([\w.:_]+)\s*<\/methodName>/);
+      if (!m) return;
+      const method = m[1];
+      ctx.methods[method] = true;
+      if (!ctx.url && /xmlrpc/i.test(url)) ctx.url = url.split('#')[0];
+      if (!ctx.sessionId) {
+        // First string param of a methodCall is the session id.
+        const sm = body.match(/<params>\s*<param>\s*<value>\s*<string>([^<]+)<\/string>/);
+        if (sm) ctx.sessionId = sm[1];
       }
-
-      const keys = Object.keys(parsed.data || {});
-      const actionKey = ACTION_KEYS.find((k) => keys.includes(k));
-      const sessionKey = SESSION_KEYS.find((k) => keys.includes(k));
-
-      // Only treat it as the gameplay gateway if it looks like an action call.
-      if (!actionKey && !/ajax|gateway|api|game|rpc/i.test(u.pathname)) return;
-
-      learned.url = u.origin + u.pathname + (parsed.kind === 'query' ? '' : u.search);
-      learned.contentType = parsed.kind;
-      learned.template = parsed.data;
-      learned.headers = headers;
-      if (actionKey) learned.actionKey = actionKey;
-      if (sessionKey) {
-        learned.sessionKey = sessionKey;
-        learned.sessionValue = parsed.data[sessionKey];
-      }
-
-      post({ type: 'protocol-learned', payload: snapshot() });
-    } catch (_) { /* never break the game */ }
+      postContext();
+    } catch (_) {}
   }
-
-  function snapshot() {
-    return {
-      url: learned.url,
-      contentType: learned.contentType,
-      actionKey: learned.actionKey,
-      sessionKey: learned.sessionKey,
-      hasSession: !!learned.sessionValue,
-      template: learned.template
-    };
-  }
-
-  function observeResponse(url, status, text) {
-    if (!/tanoth\.gameforge\.com/.test(url)) return;
-    let json = null;
-    try { json = JSON.parse(text); } catch (_) {}
-    post({ type: 'api-observed', payload: { url, status, json, text: json ? null : text?.slice(0, 2000) } });
-  }
-
-  /* ------------------------------- hooks --------------------------------- */
 
   const origFetch = window.fetch;
   window.fetch = function (input, init) {
-    const url = typeof input === 'string' ? input : (input && input.url) || '';
-    const method = (init && init.method) || (input && input.method) || 'GET';
-    const headers = headerObj((init && init.headers) || (input && input.headers));
-    const body = init && init.body;
-    rememberRequest(url, method, headers, typeof body === 'string' ? body : null);
-    return origFetch.apply(this, arguments).then((resp) => {
-      try {
-        resp.clone().text().then((t) => observeResponse(url, resp.status, t)).catch(() => {});
-      } catch (_) {}
-      return resp;
-    });
+    try {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      const body = init && init.body;
+      if (/xmlrpc/i.test(url)) observe(url, typeof body === 'string' ? body : null);
+    } catch (_) {}
+    return origFetch.apply(this, arguments);
   };
 
   const OrigXHR = window.XMLHttpRequest;
   function HookedXHR() {
     const xhr = new OrigXHR();
-    let _url = '', _method = 'GET';
-    const headers = {};
+    let _url = '';
     const open = xhr.open;
-    xhr.open = function (m, u) { _method = m; _url = u; return open.apply(xhr, arguments); };
-    const setH = xhr.setRequestHeader;
-    xhr.setRequestHeader = function (k, v) { headers[k] = v; return setH.apply(xhr, arguments); };
+    xhr.open = function (m, u) { _url = u; return open.apply(xhr, arguments); };
     const send = xhr.send;
     xhr.send = function (body) {
-      rememberRequest(_url, _method, headers, typeof body === 'string' ? body : null);
-      xhr.addEventListener('load', () => {
-        try { observeResponse(_url, xhr.status, xhr.responseText); } catch (_) {}
-      });
+      try { if (/xmlrpc/i.test(_url)) observe(_url, typeof body === 'string' ? body : null); } catch (_) {}
       return send.apply(xhr, arguments);
     };
     return xhr;
@@ -149,50 +146,7 @@
   HookedXHR.prototype = OrigXHR.prototype;
   window.XMLHttpRequest = HookedXHR;
 
-  function headerObj(h) {
-    const out = {};
-    if (!h) return out;
-    if (h instanceof Headers) { h.forEach((v, k) => { out[k] = v; }); return out; }
-    if (Array.isArray(h)) { h.forEach(([k, v]) => { out[k] = v; }); return out; }
-    return Object.assign(out, h);
-  }
-
-  /* ------------------------------ replay --------------------------------- */
-
-  async function replay(action, params) {
-    if (!learned.url || !learned.actionKey) {
-      throw new Error('PROTOCOL_NOT_LEARNED');
-    }
-    const data = Object.assign({}, learned.template, params || {});
-    data[learned.actionKey] = action;
-    if (learned.sessionKey && learned.sessionValue && !data[learned.sessionKey]) {
-      data[learned.sessionKey] = learned.sessionValue;
-    }
-
-    const opts = { method: 'POST', headers: {}, credentials: 'include' };
-    let url = learned.url;
-
-    if (learned.contentType === 'json') {
-      opts.headers['Content-Type'] = 'application/json';
-      opts.body = JSON.stringify(data);
-    } else if (learned.contentType === 'form') {
-      opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-      opts.body = new URLSearchParams(data).toString();
-    } else {
-      opts.method = 'GET';
-      const u = new URL(url);
-      Object.entries(data).forEach(([k, v]) => u.searchParams.set(k, v));
-      url = u.toString();
-    }
-
-    const resp = await origFetch(url, opts);
-    const text = await resp.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch (_) {}
-    return { status: resp.status, json, text: json ? null : text };
-  }
-
-  /* ------------------------------ bridge --------------------------------- */
+  /* ------------------------------- bridge -------------------------------- */
 
   function post(message) {
     window.postMessage(Object.assign({ source: SRC_PAGE }, message), location.origin);
@@ -203,18 +157,26 @@
     const m = ev.data;
     if (!m || m.source !== SRC_CONTENT) return;
 
-    if (m.type === 'api-request') {
+    if (m.type === 'xmlrpc') {
       try {
-        const result = await replay(m.action, m.params);
-        post({ type: 'api-response', id: m.id, ok: true, result });
+        const result = await callXmlRpc(m.method, m.params);
+        post({ type: 'xmlrpc-response', id: m.id, ok: true, result });
       } catch (e) {
-        post({ type: 'api-response', id: m.id, ok: false, error: String(e && e.message || e) });
+        post({ type: 'xmlrpc-response', id: m.id, ok: false, error: String(e && e.message || e) });
       }
-    } else if (m.type === 'get-protocol') {
-      post({ type: 'protocol-learned', payload: snapshot() });
+    } else if (m.type === 'get-context') {
+      refreshContext();
+      postContext();
     }
   });
 
-  // Announce readiness so the content script knows the hooks are installed.
+  // Keep trying to read flashvars — it may be set slightly after load.
+  refreshContext();
+  let tries = 0;
+  const iv = setInterval(() => {
+    refreshContext();
+    if ((ctx.sessionId && ctx.url) || ++tries > 40) clearInterval(iv);
+  }, 500);
+
   post({ type: 'inject-ready' });
 })();

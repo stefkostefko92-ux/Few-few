@@ -2,14 +2,15 @@
  * Content-world half of the page bridge.
  *
  * Injects inject.js into the page context, then exposes a promise-based
- * `call(action, params)` that round-trips through window.postMessage to the
- * injected replay function. It also surfaces observed responses and the learned
- * protocol so the API layer can keep State up to date.
+ * `callXmlRpc(method, params)` that round-trips through window.postMessage to
+ * the page-world XML-RPC client. It also tracks the discovered context
+ * (gateway URL, whether a session was found, and the set of method names seen
+ * in the game's own traffic).
  */
 (function () {
   'use strict';
   const TB = window.TanothBot;
-  const { Logger } = TB;
+  const { Logger, I18n } = TB;
 
   const SRC_PAGE = 'tanoth-bot-inject';
   const SRC_CONTENT = 'tanoth-bot-content';
@@ -17,10 +18,9 @@
   const pending = new Map();
   let nextId = 1;
   let injectReady = false;
-  let protocol = { url: null, actionKey: null, hasSession: false };
+  let context = { url: null, hasSession: false, methods: [] };
 
-  const observeListeners = new Set();
-  const protocolListeners = new Set();
+  const contextListeners = new Set();
 
   function injectScript() {
     const url = chrome.runtime.getURL('src/content/inject.js');
@@ -38,17 +38,14 @@
     switch (m.type) {
       case 'inject-ready':
         injectReady = true;
-        Logger.info(TB.I18n.t('logInjectReady'));
-        post({ type: 'get-protocol' });
+        Logger.info(I18n.t('logInjectReady'));
+        post({ type: 'get-context' });
         break;
-      case 'protocol-learned':
-        protocol = m.payload;
-        protocolListeners.forEach((fn) => { try { fn(protocol); } catch (_) {} });
+      case 'context':
+        context = m.payload;
+        contextListeners.forEach((fn) => { try { fn(context); } catch (_) {} });
         break;
-      case 'api-observed':
-        observeListeners.forEach((fn) => { try { fn(m.payload); } catch (_) {} });
-        break;
-      case 'api-response': {
+      case 'xmlrpc-response': {
         const p = pending.get(m.id);
         if (!p) return;
         pending.delete(m.id);
@@ -68,10 +65,12 @@
     init() { injectScript(); },
 
     isReady: () => injectReady,
-    protocol: () => protocol,
-    protocolReady: () => !!(protocol && protocol.url && protocol.actionKey),
+    context: () => context,
+    ready: () => !!(context && context.url && context.hasSession),
+    hasMethod: (name) => !!(context.methods || []).includes(name),
+    findMethod(regex) { return (context.methods || []).find((m) => regex.test(m)) || null; },
 
-    call(action, params, timeoutMs = 15000) {
+    callXmlRpc(method, params, timeoutMs = 20000) {
       return new Promise((resolve, reject) => {
         if (!injectReady) return reject(new Error('INJECT_NOT_READY'));
         const id = nextId++;
@@ -80,12 +79,11 @@
           reject(new Error('API_TIMEOUT'));
         }, timeoutMs);
         pending.set(id, { resolve, reject, timer });
-        post({ type: 'api-request', id, action, params: params || {} });
+        post({ type: 'xmlrpc', id, method, params: params || [] });
       });
     },
 
-    onObserve(fn) { observeListeners.add(fn); return () => observeListeners.delete(fn); },
-    onProtocol(fn) { protocolListeners.add(fn); return () => protocolListeners.delete(fn); }
+    onContext(fn) { contextListeners.add(fn); return () => contextListeners.delete(fn); }
   };
 
   TB.Bridge = Bridge;

@@ -40,15 +40,10 @@ function emptyStats() {
   return {
     since: Date.now(),
     adventures: 0,
-    duelsWon: 0,
-    duelsLost: 0,
-    dungeonRuns: 0,
-    caveFloors: 0,
-    workShifts: 0,
+    circleNodes: 0,
+    attributesRaised: 0,
     goldEarned: 0,
     xpEarned: 0,
-    itemsSold: 0,
-    runesUpgraded: 0,
     levelUps: 0,
     errors: 0
   };

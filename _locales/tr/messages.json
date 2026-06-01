@@ -1,101 +1,302 @@
 {
-  "extName": { "message": "Tanoth Master Bot" },
-  "extNameShort": { "message": "Tanoth Bot" },
-  "extDescription": { "message": "Tanoth için eksiksiz otomasyon: maceralar, düellolar, mağara, zindan, iş, antrenman, rünler, otomatik satış ve giriş, zamanlayıcı ve istatistikler." },
-
-  "uiStart": { "message": "Başlat" },
-  "uiStop": { "message": "Durdur" },
-  "uiPause": { "message": "Duraklat" },
-  "uiResume": { "message": "Devam" },
-  "uiIdle": { "message": "Boşta" },
-  "uiRunning": { "message": "Çalışıyor" },
-  "uiRunningAction": { "message": "Çalışıyor: $1" },
-  "uiPaused": { "message": "Duraklatıldı" },
-  "uiOnBreak": { "message": "Molada" },
-  "uiCollapse": { "message": "Daralt" },
-  "uiHide": { "message": "Gizle" },
-  "uiOptions": { "message": "Ayarlar" },
-  "uiProtoWaiting": { "message": "Protokol öğreniliyor…" },
-  "uiProtoReady": { "message": "Protokol hazır" },
-  "uiMinutes": { "message": "$1 dk" },
-  "uiLevel": { "message": "Sv" },
-
-  "statAdventures": { "message": "Maceralar" },
-  "statDuels": { "message": "Kazanılan düello" },
-  "statCave": { "message": "Mağara katı" },
-  "statDungeon": { "message": "Zindanlar" },
-  "statGold": { "message": "Altın" },
-  "statXp": { "message": "TP" },
-  "statSold": { "message": "Satılan" },
-  "statRuntime": { "message": "Süre" },
-
-  "mod_adventures": { "message": "Maceralar" },
-  "mod_cave": { "message": "Mağara" },
-  "mod_dungeon": { "message": "Zindan" },
-  "mod_combat": { "message": "Arena" },
-  "mod_work": { "message": "İş" },
-  "mod_training": { "message": "Antrenman" },
-  "mod_runes": { "message": "Rünler" },
-  "mod_autosell": { "message": "Oto-satış" },
-  "mod_autologin": { "message": "Oto-giriş" },
-
-  "popupNoGame": { "message": "Botu kontrol etmek için Tanoth'u bir sekmede açın." },
-  "popupShowPanel": { "message": "Paneli göster" },
-  "popupNoChar": { "message": "Karakter verisi bekleniyor…" },
-
-  "logEngineStarted": { "message": "Motor başlatıldı." },
-  "logEngineStopped": { "message": "Motor durduruldu." },
-  "logEnginePaused": { "message": "Motor duraklatıldı." },
-  "logEngineResumed": { "message": "Motor devam ediyor." },
-
-  "notifyStopped": { "message": "Bot durdu" },
-  "notifyLevelUp": { "message": "$1 seviyesine ulaştın!" },
-
-  "optSave": { "message": "Kaydet" },
-  "optReset": { "message": "Varsayılana dön" },
-  "optResetStats": { "message": "İstatistikleri sıfırla" },
-  "optSaved": { "message": "Ayarlar kaydedildi." },
-  "optResetDone": { "message": "Ayarlar sıfırlandı." },
-  "optStatsReset": { "message": "İstatistikler sıfırlandı." },
-  "optConfirmReset": { "message": "Tüm ayarlar varsayılana döndürülsün mü?" },
-  "optConfirmResetStats": { "message": "Tüm istatistikler sıfırlansın mı?" },
-
-  "optgrp_general": { "message": "Genel" },
-  "optgrp_adventures": { "message": "Maceralar" },
-  "optgrp_combat": { "message": "Arena / Düellolar" },
-  "optgrp_training": { "message": "Antrenman" },
-  "optgrp_dungeon": { "message": "Zindan" },
-  "optgrp_cave": { "message": "Yanılsama Mağarası" },
-  "optgrp_work": { "message": "İş" },
-  "optgrp_runes": { "message": "Rünler" },
-  "optgrp_autosell": { "message": "Oto-satış" },
-  "optgrp_autologin": { "message": "Oto-giriş" },
-  "optgrp_scheduler": { "message": "Zamanlayıcı" },
-
-  "optv_dark": { "message": "Koyu" },
-  "optv_light": { "message": "Açık" },
-  "optv_right": { "message": "Sağ" },
-  "optv_left": { "message": "Sol" },
-  "optv_shortest": { "message": "En kısa" },
-  "optv_longest": { "message": "En uzun" },
-  "optv_maxXp": { "message": "En çok TP / süre" },
-  "optv_maxGold": { "message": "En çok altın / süre" },
-  "optv_safest": { "message": "En yüksek şans" },
-  "optv_weakest": { "message": "En zayıf rakip" },
-  "optv_lowestLevel": { "message": "En düşük seviye" },
-  "optv_highestGold": { "message": "En çok altın" },
-  "optv_random": { "message": "Rastgele" },
-  "optv_strength": { "message": "Güç" },
-  "optv_dexterity": { "message": "Beceri" },
-  "optv_constitution": { "message": "Dayanıklılık" },
-  "optv_intelligence": { "message": "Zeka" },
-  "optv_agility": { "message": "Çeviklik" },
-  "optv_easy": { "message": "Kolay" },
-  "optv_normal": { "message": "Normal" },
-  "optv_hard": { "message": "Zor" },
-  "optv_common": { "message": "Sıradan" },
-  "optv_uncommon": { "message": "Az bulunur" },
-  "optv_rare": { "message": "Nadir" },
-  "optv_epic": { "message": "Destansı" },
-  "optv_legendary": { "message": "Efsanevi" }
+  "extName": {
+    "message": "Tanoth Master Bot"
+  },
+  "extNameShort": {
+    "message": "Tanoth Bot"
+  },
+  "extDescription": {
+    "message": "Tanoth otomasyon yardımcısı: maceralar, davet çemberi, nitelikler, otomatik yeniden bağlanma, zamanlayıcı ve istatistikler."
+  },
+  "uiStart": {
+    "message": "Başlat"
+  },
+  "uiStop": {
+    "message": "Durdur"
+  },
+  "uiPause": {
+    "message": "Duraklat"
+  },
+  "uiResume": {
+    "message": "Devam"
+  },
+  "uiIdle": {
+    "message": "Boşta"
+  },
+  "uiRunning": {
+    "message": "Çalışıyor"
+  },
+  "uiRunningAction": {
+    "message": "Çalışıyor: $1"
+  },
+  "uiPaused": {
+    "message": "Duraklatıldı"
+  },
+  "uiOnBreak": {
+    "message": "Molada"
+  },
+  "uiCollapse": {
+    "message": "Daralt"
+  },
+  "uiHide": {
+    "message": "Gizle"
+  },
+  "uiOptions": {
+    "message": "Ayarlar"
+  },
+  "uiProtoWaiting": {
+    "message": "Protokol öğreniliyor…"
+  },
+  "uiProtoReady": {
+    "message": "Protokol hazır"
+  },
+  "uiMinutes": {
+    "message": "$1 dk"
+  },
+  "uiLevel": {
+    "message": "Sv"
+  },
+  "statAdventures": {
+    "message": "Maceralar"
+  },
+  "statDuels": {
+    "message": "Kazanılan düello"
+  },
+  "statCave": {
+    "message": "Mağara katı"
+  },
+  "statDungeon": {
+    "message": "Zindanlar"
+  },
+  "statGold": {
+    "message": "Altın"
+  },
+  "statXp": {
+    "message": "TP"
+  },
+  "statSold": {
+    "message": "Satılan"
+  },
+  "statRuntime": {
+    "message": "Süre"
+  },
+  "mod_adventures": {
+    "message": "Maceralar"
+  },
+  "mod_cave": {
+    "message": "Mağara"
+  },
+  "mod_dungeon": {
+    "message": "Zindan"
+  },
+  "mod_combat": {
+    "message": "Arena"
+  },
+  "mod_work": {
+    "message": "İş"
+  },
+  "mod_training": {
+    "message": "Antrenman"
+  },
+  "mod_runes": {
+    "message": "Rünler"
+  },
+  "mod_autosell": {
+    "message": "Oto-satış"
+  },
+  "mod_autologin": {
+    "message": "Oto-giriş"
+  },
+  "mod_circle": {
+    "message": "Çember"
+  },
+  "statCircle": {
+    "message": "Çember düğümü"
+  },
+  "statErrors": {
+    "message": "Hatalar"
+  },
+  "optgrp_circle": {
+    "message": "Davet Çemberi"
+  },
+  "optv_gold": {
+    "message": "En çok altın"
+  },
+  "optv_experience": {
+    "message": "En çok TP"
+  },
+  "optv_mix": {
+    "message": "Karışık (en ucuz)"
+  },
+  "optv_medium": {
+    "message": "Orta"
+  },
+  "optv_difficult": {
+    "message": "Zor"
+  },
+  "optv_very_difficult": {
+    "message": "Çok zor"
+  },
+  "popupNoGame": {
+    "message": "Botu kontrol etmek için Tanoth'u bir sekmede açın."
+  },
+  "popupShowPanel": {
+    "message": "Paneli göster"
+  },
+  "popupNoChar": {
+    "message": "Karakter verisi bekleniyor…"
+  },
+  "logEngineStarted": {
+    "message": "Motor başlatıldı."
+  },
+  "logEngineStopped": {
+    "message": "Motor durduruldu."
+  },
+  "logEnginePaused": {
+    "message": "Motor duraklatıldı."
+  },
+  "logEngineResumed": {
+    "message": "Motor devam ediyor."
+  },
+  "notifyStopped": {
+    "message": "Bot durdu"
+  },
+  "notifyLevelUp": {
+    "message": "$1 seviyesine ulaştın!"
+  },
+  "optSave": {
+    "message": "Kaydet"
+  },
+  "optReset": {
+    "message": "Varsayılana dön"
+  },
+  "optResetStats": {
+    "message": "İstatistikleri sıfırla"
+  },
+  "optSaved": {
+    "message": "Ayarlar kaydedildi."
+  },
+  "optResetDone": {
+    "message": "Ayarlar sıfırlandı."
+  },
+  "optStatsReset": {
+    "message": "İstatistikler sıfırlandı."
+  },
+  "optConfirmReset": {
+    "message": "Tüm ayarlar varsayılana döndürülsün mü?"
+  },
+  "optConfirmResetStats": {
+    "message": "Tüm istatistikler sıfırlansın mı?"
+  },
+  "optgrp_general": {
+    "message": "Genel"
+  },
+  "optgrp_adventures": {
+    "message": "Maceralar"
+  },
+  "optgrp_combat": {
+    "message": "Arena / Düellolar"
+  },
+  "optgrp_training": {
+    "message": "Antrenman"
+  },
+  "optgrp_dungeon": {
+    "message": "Zindan"
+  },
+  "optgrp_cave": {
+    "message": "Yanılsama Mağarası"
+  },
+  "optgrp_work": {
+    "message": "İş"
+  },
+  "optgrp_runes": {
+    "message": "Rünler"
+  },
+  "optgrp_autosell": {
+    "message": "Oto-satış"
+  },
+  "optgrp_autologin": {
+    "message": "Oto-giriş"
+  },
+  "optgrp_scheduler": {
+    "message": "Zamanlayıcı"
+  },
+  "optv_dark": {
+    "message": "Koyu"
+  },
+  "optv_light": {
+    "message": "Açık"
+  },
+  "optv_right": {
+    "message": "Sağ"
+  },
+  "optv_left": {
+    "message": "Sol"
+  },
+  "optv_shortest": {
+    "message": "En kısa"
+  },
+  "optv_longest": {
+    "message": "En uzun"
+  },
+  "optv_maxXp": {
+    "message": "En çok TP / süre"
+  },
+  "optv_maxGold": {
+    "message": "En çok altın / süre"
+  },
+  "optv_safest": {
+    "message": "En yüksek şans"
+  },
+  "optv_weakest": {
+    "message": "En zayıf rakip"
+  },
+  "optv_lowestLevel": {
+    "message": "En düşük seviye"
+  },
+  "optv_highestGold": {
+    "message": "En çok altın"
+  },
+  "optv_random": {
+    "message": "Rastgele"
+  },
+  "optv_strength": {
+    "message": "Güç"
+  },
+  "optv_dexterity": {
+    "message": "Beceri"
+  },
+  "optv_constitution": {
+    "message": "Dayanıklılık"
+  },
+  "optv_intelligence": {
+    "message": "Zeka"
+  },
+  "optv_agility": {
+    "message": "Çeviklik"
+  },
+  "optv_easy": {
+    "message": "Kolay"
+  },
+  "optv_normal": {
+    "message": "Normal"
+  },
+  "optv_hard": {
+    "message": "Zor"
+  },
+  "optv_common": {
+    "message": "Sıradan"
+  },
+  "optv_uncommon": {
+    "message": "Az bulunur"
+  },
+  "optv_rare": {
+    "message": "Nadir"
+  },
+  "optv_epic": {
+    "message": "Destansı"
+  },
+  "optv_legendary": {
+    "message": "Efsanevi"
+  }
 }

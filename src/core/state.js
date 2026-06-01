@@ -24,15 +24,20 @@
 
     // adventures
     freeAdventures: 0,          // remaining free adventures today
-    adventureReturnAt: 0,       // epoch ms when current adventure resolves
-    adventureList: [],          // [{id, name, difficulty, duration, xp, gold, winChance}]
+    adventuresMadeToday: 0,
+    freeAdventuresPerDay: 0,
+    adventureReturnAt: 0,       // epoch ms when current task resolves
+    taskType: null,             // type of the currently running task, if any
+    adventureList: [],          // [{id, difficulty, duration, xp, gold}]
 
-    // arena / combat
+    // arena / combat (experimental)
     duelTargets: [],            // [{id, name, level, gold, guild}]
 
-    // training
-    attributes: {},             // {strength, dexterity, constitution, intelligence, agility}
+    // training (XML-RPC costs keyed STR/DEX/CON/INT)
     attributeCosts: {},
+
+    // evocation circle: node id -> [level, ...] arrays
+    circle: {},
 
     // jobs
     workReturnAt: 0,

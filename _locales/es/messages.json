@@ -1,101 +1,302 @@
 {
-  "extName": { "message": "Tanoth Master Bot" },
-  "extNameShort": { "message": "Tanoth Bot" },
-  "extDescription": { "message": "Compañero de automatización completo para Tanoth: aventuras, duelos, cueva, mazmorra, trabajo, entrenamiento, runas, venta y conexión automáticas, programación y estadísticas." },
-
-  "uiStart": { "message": "Iniciar" },
-  "uiStop": { "message": "Detener" },
-  "uiPause": { "message": "Pausar" },
-  "uiResume": { "message": "Reanudar" },
-  "uiIdle": { "message": "Inactivo" },
-  "uiRunning": { "message": "En marcha" },
-  "uiRunningAction": { "message": "Ejecutando: $1" },
-  "uiPaused": { "message": "En pausa" },
-  "uiOnBreak": { "message": "En descanso" },
-  "uiCollapse": { "message": "Contraer" },
-  "uiHide": { "message": "Ocultar" },
-  "uiOptions": { "message": "Ajustes" },
-  "uiProtoWaiting": { "message": "Aprendiendo el protocolo…" },
-  "uiProtoReady": { "message": "Protocolo listo" },
-  "uiMinutes": { "message": "$1 min" },
-  "uiLevel": { "message": "Nv" },
-
-  "statAdventures": { "message": "Aventuras" },
-  "statDuels": { "message": "Duelos ganados" },
-  "statCave": { "message": "Pisos cueva" },
-  "statDungeon": { "message": "Mazmorras" },
-  "statGold": { "message": "Oro" },
-  "statXp": { "message": "EXP" },
-  "statSold": { "message": "Objetos vendidos" },
-  "statRuntime": { "message": "Tiempo" },
-
-  "mod_adventures": { "message": "Aventuras" },
-  "mod_cave": { "message": "Cueva" },
-  "mod_dungeon": { "message": "Mazmorra" },
-  "mod_combat": { "message": "Arena" },
-  "mod_work": { "message": "Trabajo" },
-  "mod_training": { "message": "Entrenar" },
-  "mod_runes": { "message": "Runas" },
-  "mod_autosell": { "message": "Auto-venta" },
-  "mod_autologin": { "message": "Auto-login" },
-
-  "popupNoGame": { "message": "Abre Tanoth en una pestaña para controlar el bot." },
-  "popupShowPanel": { "message": "Mostrar panel" },
-  "popupNoChar": { "message": "Esperando datos del personaje…" },
-
-  "logEngineStarted": { "message": "Motor iniciado." },
-  "logEngineStopped": { "message": "Motor detenido." },
-  "logEnginePaused": { "message": "Motor en pausa." },
-  "logEngineResumed": { "message": "Motor reanudado." },
-
-  "notifyStopped": { "message": "Bot detenido" },
-  "notifyLevelUp": { "message": "¡Has alcanzado el nivel $1!" },
-
-  "optSave": { "message": "Guardar" },
-  "optReset": { "message": "Restablecer" },
-  "optResetStats": { "message": "Reiniciar estadísticas" },
-  "optSaved": { "message": "Ajustes guardados." },
-  "optResetDone": { "message": "Ajustes restablecidos." },
-  "optStatsReset": { "message": "Estadísticas reiniciadas." },
-  "optConfirmReset": { "message": "¿Restablecer todos los ajustes?" },
-  "optConfirmResetStats": { "message": "¿Reiniciar todas las estadísticas?" },
-
-  "optgrp_general": { "message": "General" },
-  "optgrp_adventures": { "message": "Aventuras" },
-  "optgrp_combat": { "message": "Arena / Duelos" },
-  "optgrp_training": { "message": "Entrenamiento" },
-  "optgrp_dungeon": { "message": "Mazmorra" },
-  "optgrp_cave": { "message": "Cueva de Ilusiones" },
-  "optgrp_work": { "message": "Trabajo" },
-  "optgrp_runes": { "message": "Runas" },
-  "optgrp_autosell": { "message": "Auto-venta" },
-  "optgrp_autologin": { "message": "Auto-login" },
-  "optgrp_scheduler": { "message": "Programador" },
-
-  "optv_dark": { "message": "Oscuro" },
-  "optv_light": { "message": "Claro" },
-  "optv_right": { "message": "Derecha" },
-  "optv_left": { "message": "Izquierda" },
-  "optv_shortest": { "message": "Más corta" },
-  "optv_longest": { "message": "Más larga" },
-  "optv_maxXp": { "message": "Más EXP / tiempo" },
-  "optv_maxGold": { "message": "Más oro / tiempo" },
-  "optv_safest": { "message": "Mayor probabilidad" },
-  "optv_weakest": { "message": "Rival más débil" },
-  "optv_lowestLevel": { "message": "Nivel más bajo" },
-  "optv_highestGold": { "message": "Más oro" },
-  "optv_random": { "message": "Aleatorio" },
-  "optv_strength": { "message": "Fuerza" },
-  "optv_dexterity": { "message": "Destreza" },
-  "optv_constitution": { "message": "Constitución" },
-  "optv_intelligence": { "message": "Inteligencia" },
-  "optv_agility": { "message": "Agilidad" },
-  "optv_easy": { "message": "Fácil" },
-  "optv_normal": { "message": "Normal" },
-  "optv_hard": { "message": "Difícil" },
-  "optv_common": { "message": "Común" },
-  "optv_uncommon": { "message": "Poco común" },
-  "optv_rare": { "message": "Raro" },
-  "optv_epic": { "message": "Épico" },
-  "optv_legendary": { "message": "Legendario" }
+  "extName": {
+    "message": "Tanoth Master Bot"
+  },
+  "extNameShort": {
+    "message": "Tanoth Bot"
+  },
+  "extDescription": {
+    "message": "Compañero de automatización para Tanoth: aventuras, círculo de evocación, atributos, reconexión automática, programación y estadísticas."
+  },
+  "uiStart": {
+    "message": "Iniciar"
+  },
+  "uiStop": {
+    "message": "Detener"
+  },
+  "uiPause": {
+    "message": "Pausar"
+  },
+  "uiResume": {
+    "message": "Reanudar"
+  },
+  "uiIdle": {
+    "message": "Inactivo"
+  },
+  "uiRunning": {
+    "message": "En marcha"
+  },
+  "uiRunningAction": {
+    "message": "Ejecutando: $1"
+  },
+  "uiPaused": {
+    "message": "En pausa"
+  },
+  "uiOnBreak": {
+    "message": "En descanso"
+  },
+  "uiCollapse": {
+    "message": "Contraer"
+  },
+  "uiHide": {
+    "message": "Ocultar"
+  },
+  "uiOptions": {
+    "message": "Ajustes"
+  },
+  "uiProtoWaiting": {
+    "message": "Aprendiendo el protocolo…"
+  },
+  "uiProtoReady": {
+    "message": "Protocolo listo"
+  },
+  "uiMinutes": {
+    "message": "$1 min"
+  },
+  "uiLevel": {
+    "message": "Nv"
+  },
+  "statAdventures": {
+    "message": "Aventuras"
+  },
+  "statDuels": {
+    "message": "Duelos ganados"
+  },
+  "statCave": {
+    "message": "Pisos cueva"
+  },
+  "statDungeon": {
+    "message": "Mazmorras"
+  },
+  "statGold": {
+    "message": "Oro"
+  },
+  "statXp": {
+    "message": "EXP"
+  },
+  "statSold": {
+    "message": "Objetos vendidos"
+  },
+  "statRuntime": {
+    "message": "Tiempo"
+  },
+  "mod_adventures": {
+    "message": "Aventuras"
+  },
+  "mod_cave": {
+    "message": "Cueva"
+  },
+  "mod_dungeon": {
+    "message": "Mazmorra"
+  },
+  "mod_combat": {
+    "message": "Arena"
+  },
+  "mod_work": {
+    "message": "Trabajo"
+  },
+  "mod_training": {
+    "message": "Entrenar"
+  },
+  "mod_runes": {
+    "message": "Runas"
+  },
+  "mod_autosell": {
+    "message": "Auto-venta"
+  },
+  "mod_autologin": {
+    "message": "Auto-login"
+  },
+  "mod_circle": {
+    "message": "Círculo"
+  },
+  "statCircle": {
+    "message": "Nodos círculo"
+  },
+  "statErrors": {
+    "message": "Errores"
+  },
+  "optgrp_circle": {
+    "message": "Círculo de Evocación"
+  },
+  "optv_gold": {
+    "message": "Más oro"
+  },
+  "optv_experience": {
+    "message": "Más experiencia"
+  },
+  "optv_mix": {
+    "message": "Mixto (más barato)"
+  },
+  "optv_medium": {
+    "message": "Media"
+  },
+  "optv_difficult": {
+    "message": "Difícil"
+  },
+  "optv_very_difficult": {
+    "message": "Muy difícil"
+  },
+  "popupNoGame": {
+    "message": "Abre Tanoth en una pestaña para controlar el bot."
+  },
+  "popupShowPanel": {
+    "message": "Mostrar panel"
+  },
+  "popupNoChar": {
+    "message": "Esperando datos del personaje…"
+  },
+  "logEngineStarted": {
+    "message": "Motor iniciado."
+  },
+  "logEngineStopped": {
+    "message": "Motor detenido."
+  },
+  "logEnginePaused": {
+    "message": "Motor en pausa."
+  },
+  "logEngineResumed": {
+    "message": "Motor reanudado."
+  },
+  "notifyStopped": {
+    "message": "Bot detenido"
+  },
+  "notifyLevelUp": {
+    "message": "¡Has alcanzado el nivel $1!"
+  },
+  "optSave": {
+    "message": "Guardar"
+  },
+  "optReset": {
+    "message": "Restablecer"
+  },
+  "optResetStats": {
+    "message": "Reiniciar estadísticas"
+  },
+  "optSaved": {
+    "message": "Ajustes guardados."
+  },
+  "optResetDone": {
+    "message": "Ajustes restablecidos."
+  },
+  "optStatsReset": {
+    "message": "Estadísticas reiniciadas."
+  },
+  "optConfirmReset": {
+    "message": "¿Restablecer todos los ajustes?"
+  },
+  "optConfirmResetStats": {
+    "message": "¿Reiniciar todas las estadísticas?"
+  },
+  "optgrp_general": {
+    "message": "General"
+  },
+  "optgrp_adventures": {
+    "message": "Aventuras"
+  },
+  "optgrp_combat": {
+    "message": "Arena / Duelos"
+  },
+  "optgrp_training": {
+    "message": "Entrenamiento"
+  },
+  "optgrp_dungeon": {
+    "message": "Mazmorra"
+  },
+  "optgrp_cave": {
+    "message": "Cueva de Ilusiones"
+  },
+  "optgrp_work": {
+    "message": "Trabajo"
+  },
+  "optgrp_runes": {
+    "message": "Runas"
+  },
+  "optgrp_autosell": {
+    "message": "Auto-venta"
+  },
+  "optgrp_autologin": {
+    "message": "Auto-login"
+  },
+  "optgrp_scheduler": {
+    "message": "Programador"
+  },
+  "optv_dark": {
+    "message": "Oscuro"
+  },
+  "optv_light": {
+    "message": "Claro"
+  },
+  "optv_right": {
+    "message": "Derecha"
+  },
+  "optv_left": {
+    "message": "Izquierda"
+  },
+  "optv_shortest": {
+    "message": "Más corta"
+  },
+  "optv_longest": {
+    "message": "Más larga"
+  },
+  "optv_maxXp": {
+    "message": "Más EXP / tiempo"
+  },
+  "optv_maxGold": {
+    "message": "Más oro / tiempo"
+  },
+  "optv_safest": {
+    "message": "Mayor probabilidad"
+  },
+  "optv_weakest": {
+    "message": "Rival más débil"
+  },
+  "optv_lowestLevel": {
+    "message": "Nivel más bajo"
+  },
+  "optv_highestGold": {
+    "message": "Más oro"
+  },
+  "optv_random": {
+    "message": "Aleatorio"
+  },
+  "optv_strength": {
+    "message": "Fuerza"
+  },
+  "optv_dexterity": {
+    "message": "Destreza"
+  },
+  "optv_constitution": {
+    "message": "Constitución"
+  },
+  "optv_intelligence": {
+    "message": "Inteligencia"
+  },
+  "optv_agility": {
+    "message": "Agilidad"
+  },
+  "optv_easy": {
+    "message": "Fácil"
+  },
+  "optv_normal": {
+    "message": "Normal"
+  },
+  "optv_hard": {
+    "message": "Difícil"
+  },
+  "optv_common": {
+    "message": "Común"
+  },
+  "optv_uncommon": {
+    "message": "Poco común"
+  },
+  "optv_rare": {
+    "message": "Raro"
+  },
+  "optv_epic": {
+    "message": "Épico"
+  },
+  "optv_legendary": {
+    "message": "Legendario"
+  }
 }

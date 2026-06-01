@@ -35,75 +35,25 @@ export const DEFAULT_SETTINGS = {
   /* ---- Adventures ---- */
   adventures: {
     enabled: true,
-    strategy: 'maxXp',              // shortest | longest | maxXp | maxGold | safest
-    maxDifficulty: 7,               // 1-10, skip harder adventures
-    minSuccessChance: 60,           // skip adventures below this % win chance
+    strategy: 'gold',               // gold | experience | shortest | longest
+    difficulty: 'medium',           // easy | medium | difficult | very_difficult
+    serverSpeed: 1,                 // server speed multiplier (divides durations)
     useBloodstones: false,          // spend bloodstones for extra adventures
-    bloodstoneReserve: 5,           // keep at least this many bloodstones
-    dailyLimit: 0                   // 0 = no limit beyond what the game allows
+    bloodstoneReserve: 0            // keep at least this many bloodstones
   },
 
-  /* ---- Combat / Arena duels ---- */
-  combat: {
-    enabled: false,
-    targetStrategy: 'weakest',      // weakest | highestGold | random | lowestLevel
-    avoidGuildMembers: true,        // never attack members of your own guild
-    minLevelDiff: -5,               // only attack within this relative level band
-    maxLevelDiff: 3,
-    recordStats: true,              // remember each opponent's outcome
-    maxDuelsPerCycle: 5
-  },
-
-  /* ---- Training / attributes ---- */
+  /* ---- Training / attributes (STR/DEX/CON/INT) ---- */
   training: {
     enabled: false,
-    priorityStat: 'strength',       // strength | dexterity | constitution | intelligence | agility
-    fallbackStat: 'constitution',   // used when priority is unaffordable
+    priorityStat: 'mix',            // mix | strength | dexterity | constitution | intelligence
     maxGoldSpend: 0,                // 0 = spend everything above the reserve
     keepGoldReserve: 1000
   },
 
-  /* ---- Dungeon ---- */
-  dungeon: {
+  /* ---- Evocation Circle (arcane upgrades) ---- */
+  circle: {
     enabled: false,
-    autoRun: true,
-    difficulty: 'normal',           // easy | normal | hard
-    minHealthPercent: 50            // skip if HP below this
-  },
-
-  /* ---- Cave of Illusions ---- */
-  cave: {
-    enabled: false,
-    useBloodstones: false,
-    bloodstoneReserve: 5,
-    targetFloor: 0                  // 0 = climb as far as possible
-  },
-
-  /* ---- Work / Jobs ---- */
-  work: {
-    enabled: false,
-    durationHours: 2,               // 1-10 hour shift
-    preferredJob: 'auto',           // 'auto' picks the best paying available job
-    stopWhenAdventureReady: true    // interrupt work when free adventures refill
-  },
-
-  /* ---- Runes ---- */
-  runes: {
-    enabled: false,
-    autoUpgrade: true,
-    autoSellDuplicates: true,
-    minRarityToKeep: 'rare'         // common | uncommon | rare | epic | legendary
-  },
-
-  /* ---- Auto-sell inventory ---- */
-  autosell: {
-    enabled: false,
-    sellCommon: true,
-    sellUnique: false,
-    sellRunes: false,
-    sellPotions: false,
-    keepRarity: 'rare',             // keep items at/above this rarity
-    keepEquippableUpgrades: true    // never sell an item better than what is worn
+    keepGoldReserve: 0              // never spend gold below this reserve
   },
 
   /* ---- Auto-login / session keep-alive ---- */
@@ -129,13 +79,8 @@ export const DEFAULT_SETTINGS = {
 export const MODULE_ORDER = [
   'autologin',
   'adventures',
-  'cave',
-  'dungeon',
-  'combat',
-  'work',
-  'training',
-  'runes',
-  'autosell'
+  'circle',
+  'training'
 ];
 
 /** Deep-merge a stored settings object onto the defaults so that new keys

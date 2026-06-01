@@ -15,33 +15,22 @@
     await Storage.load();
     const settings = Storage.get();
 
-    // Inject the page-world network hook and bring up the bridge.
+    // Inject the page-world XML-RPC client and bring up the bridge.
     Bridge.init();
-
-    // Helper for level-up notifications used by the API layer.
-    TB.notifyLevelUp = (level) => {
-      const g = Storage.section('general') || {};
-      Logger.success(I18n.t('logLevelUp', [String(level)]));
-      if (g.notifications && g.notifyOnLevelUp) {
-        chrome.runtime.sendMessage({
-          type: 'NOTIFY', title: I18n.t('extName'),
-          message: I18n.t('notifyLevelUp', [String(level)])
-        }).catch(() => {});
-      }
-    };
 
     // Mount the in-game panel once the DOM is ready.
     if (document.body) Panel.mount();
     else document.addEventListener('DOMContentLoaded', () => Panel.mount());
 
-    // Seed initial game state from the first observed gateway response, then
-    // proactively ask for user info once the protocol is learned.
+    // Once the gateway + session are discovered, mark logged in, pull the first
+    // resource snapshot and optionally auto-start the engine.
     let primed = false;
-    Bridge.onProtocol((p) => {
-      if (!primed && p && p.url && p.actionKey) {
+    Bridge.onContext((ctx) => {
+      if (!primed && ctx && ctx.url && ctx.hasSession) {
         primed = true;
+        State.patch({ loggedIn: true });
         Logger.success(I18n.t('logProtocolReady'));
-        Api.refreshUserInfo().catch(() => {});
+        Api.refresh().catch(() => {});
         if ((Storage.section('general') || {}).startOnLoad) {
           Logger.info(I18n.t('logAutoStart'));
           Scheduler.start();
@@ -80,7 +69,7 @@
             bloodstones: State.get().bloodstones
           },
           session: Stats.session(),
-          protocolReady: Bridge.protocolReady()
+          protocolReady: Bridge.ready()
         });
         return false;
 

@@ -1,101 +1,302 @@
 {
-  "extName": { "message": "Tanoth Master Bot" },
-  "extNameShort": { "message": "Tanoth Bot" },
-  "extDescription": { "message": "Kompletny bot do Tanoth: przygody, pojedynki, jaskinia, loch, praca, trening, runy, automatyczna sprzedaż i logowanie, harmonogram oraz statystyki." },
-
-  "uiStart": { "message": "Start" },
-  "uiStop": { "message": "Stop" },
-  "uiPause": { "message": "Pauza" },
-  "uiResume": { "message": "Wznów" },
-  "uiIdle": { "message": "Bezczynny" },
-  "uiRunning": { "message": "Działa" },
-  "uiRunningAction": { "message": "Wykonuje: $1" },
-  "uiPaused": { "message": "Wstrzymano" },
-  "uiOnBreak": { "message": "Przerwa" },
-  "uiCollapse": { "message": "Zwiń" },
-  "uiHide": { "message": "Ukryj" },
-  "uiOptions": { "message": "Ustawienia" },
-  "uiProtoWaiting": { "message": "Uczenie protokołu…" },
-  "uiProtoReady": { "message": "Protokół gotowy" },
-  "uiMinutes": { "message": "$1 min" },
-  "uiLevel": { "message": "Poz." },
-
-  "statAdventures": { "message": "Przygody" },
-  "statDuels": { "message": "Wygrane pojedynki" },
-  "statCave": { "message": "Piętra jaskini" },
-  "statDungeon": { "message": "Lochy" },
-  "statGold": { "message": "Złoto" },
-  "statXp": { "message": "PD" },
-  "statSold": { "message": "Sprzedane" },
-  "statRuntime": { "message": "Czas" },
-
-  "mod_adventures": { "message": "Przygody" },
-  "mod_cave": { "message": "Jaskinia" },
-  "mod_dungeon": { "message": "Loch" },
-  "mod_combat": { "message": "Arena" },
-  "mod_work": { "message": "Praca" },
-  "mod_training": { "message": "Trening" },
-  "mod_runes": { "message": "Runy" },
-  "mod_autosell": { "message": "Auto-sprzedaż" },
-  "mod_autologin": { "message": "Auto-login" },
-
-  "popupNoGame": { "message": "Otwórz Tanoth w karcie, aby sterować botem." },
-  "popupShowPanel": { "message": "Pokaż panel" },
-  "popupNoChar": { "message": "Oczekiwanie na dane postaci…" },
-
-  "logEngineStarted": { "message": "Silnik uruchomiony." },
-  "logEngineStopped": { "message": "Silnik zatrzymany." },
-  "logEnginePaused": { "message": "Silnik wstrzymany." },
-  "logEngineResumed": { "message": "Silnik wznowiony." },
-
-  "notifyStopped": { "message": "Bot zatrzymany" },
-  "notifyLevelUp": { "message": "Osiągnięto poziom $1!" },
-
-  "optSave": { "message": "Zapisz" },
-  "optReset": { "message": "Przywróć domyślne" },
-  "optResetStats": { "message": "Wyzeruj statystyki" },
-  "optSaved": { "message": "Zapisano ustawienia." },
-  "optResetDone": { "message": "Przywrócono ustawienia." },
-  "optStatsReset": { "message": "Wyzerowano statystyki." },
-  "optConfirmReset": { "message": "Przywrócić wszystkie ustawienia domyślne?" },
-  "optConfirmResetStats": { "message": "Wyzerować wszystkie statystyki?" },
-
-  "optgrp_general": { "message": "Ogólne" },
-  "optgrp_adventures": { "message": "Przygody" },
-  "optgrp_combat": { "message": "Arena / Pojedynki" },
-  "optgrp_training": { "message": "Trening" },
-  "optgrp_dungeon": { "message": "Loch" },
-  "optgrp_cave": { "message": "Jaskinia Iluzji" },
-  "optgrp_work": { "message": "Praca" },
-  "optgrp_runes": { "message": "Runy" },
-  "optgrp_autosell": { "message": "Auto-sprzedaż" },
-  "optgrp_autologin": { "message": "Auto-login" },
-  "optgrp_scheduler": { "message": "Harmonogram" },
-
-  "optv_dark": { "message": "Ciemny" },
-  "optv_light": { "message": "Jasny" },
-  "optv_right": { "message": "Prawo" },
-  "optv_left": { "message": "Lewo" },
-  "optv_shortest": { "message": "Najkrótsza" },
-  "optv_longest": { "message": "Najdłuższa" },
-  "optv_maxXp": { "message": "Najwięcej PD / czas" },
-  "optv_maxGold": { "message": "Najwięcej złota / czas" },
-  "optv_safest": { "message": "Największa szansa" },
-  "optv_weakest": { "message": "Najsłabszy" },
-  "optv_lowestLevel": { "message": "Najniższy poziom" },
-  "optv_highestGold": { "message": "Najwięcej złota" },
-  "optv_random": { "message": "Losowo" },
-  "optv_strength": { "message": "Siła" },
-  "optv_dexterity": { "message": "Zręczność" },
-  "optv_constitution": { "message": "Kondycja" },
-  "optv_intelligence": { "message": "Inteligencja" },
-  "optv_agility": { "message": "Zwinność" },
-  "optv_easy": { "message": "Łatwy" },
-  "optv_normal": { "message": "Normalny" },
-  "optv_hard": { "message": "Trudny" },
-  "optv_common": { "message": "Zwykły" },
-  "optv_uncommon": { "message": "Niezwykły" },
-  "optv_rare": { "message": "Rzadki" },
-  "optv_epic": { "message": "Epicki" },
-  "optv_legendary": { "message": "Legendarny" }
+  "extName": {
+    "message": "Tanoth Master Bot"
+  },
+  "extNameShort": {
+    "message": "Tanoth Bot"
+  },
+  "extDescription": {
+    "message": "Bot do Tanoth: przygody, krąg przywołania, atrybuty, automatyczne łączenie, harmonogram i statystyki."
+  },
+  "uiStart": {
+    "message": "Start"
+  },
+  "uiStop": {
+    "message": "Stop"
+  },
+  "uiPause": {
+    "message": "Pauza"
+  },
+  "uiResume": {
+    "message": "Wznów"
+  },
+  "uiIdle": {
+    "message": "Bezczynny"
+  },
+  "uiRunning": {
+    "message": "Działa"
+  },
+  "uiRunningAction": {
+    "message": "Wykonuje: $1"
+  },
+  "uiPaused": {
+    "message": "Wstrzymano"
+  },
+  "uiOnBreak": {
+    "message": "Przerwa"
+  },
+  "uiCollapse": {
+    "message": "Zwiń"
+  },
+  "uiHide": {
+    "message": "Ukryj"
+  },
+  "uiOptions": {
+    "message": "Ustawienia"
+  },
+  "uiProtoWaiting": {
+    "message": "Uczenie protokołu…"
+  },
+  "uiProtoReady": {
+    "message": "Protokół gotowy"
+  },
+  "uiMinutes": {
+    "message": "$1 min"
+  },
+  "uiLevel": {
+    "message": "Poz."
+  },
+  "statAdventures": {
+    "message": "Przygody"
+  },
+  "statDuels": {
+    "message": "Wygrane pojedynki"
+  },
+  "statCave": {
+    "message": "Piętra jaskini"
+  },
+  "statDungeon": {
+    "message": "Lochy"
+  },
+  "statGold": {
+    "message": "Złoto"
+  },
+  "statXp": {
+    "message": "PD"
+  },
+  "statSold": {
+    "message": "Sprzedane"
+  },
+  "statRuntime": {
+    "message": "Czas"
+  },
+  "mod_adventures": {
+    "message": "Przygody"
+  },
+  "mod_cave": {
+    "message": "Jaskinia"
+  },
+  "mod_dungeon": {
+    "message": "Loch"
+  },
+  "mod_combat": {
+    "message": "Arena"
+  },
+  "mod_work": {
+    "message": "Praca"
+  },
+  "mod_training": {
+    "message": "Trening"
+  },
+  "mod_runes": {
+    "message": "Runy"
+  },
+  "mod_autosell": {
+    "message": "Auto-sprzedaż"
+  },
+  "mod_autologin": {
+    "message": "Auto-login"
+  },
+  "mod_circle": {
+    "message": "Krąg"
+  },
+  "statCircle": {
+    "message": "Węzły kręgu"
+  },
+  "statErrors": {
+    "message": "Błędy"
+  },
+  "optgrp_circle": {
+    "message": "Krąg Przywołania"
+  },
+  "optv_gold": {
+    "message": "Najwięcej złota"
+  },
+  "optv_experience": {
+    "message": "Najwięcej PD"
+  },
+  "optv_mix": {
+    "message": "Miks (najtańsze)"
+  },
+  "optv_medium": {
+    "message": "Średni"
+  },
+  "optv_difficult": {
+    "message": "Trudny"
+  },
+  "optv_very_difficult": {
+    "message": "Bardzo trudny"
+  },
+  "popupNoGame": {
+    "message": "Otwórz Tanoth w karcie, aby sterować botem."
+  },
+  "popupShowPanel": {
+    "message": "Pokaż panel"
+  },
+  "popupNoChar": {
+    "message": "Oczekiwanie na dane postaci…"
+  },
+  "logEngineStarted": {
+    "message": "Silnik uruchomiony."
+  },
+  "logEngineStopped": {
+    "message": "Silnik zatrzymany."
+  },
+  "logEnginePaused": {
+    "message": "Silnik wstrzymany."
+  },
+  "logEngineResumed": {
+    "message": "Silnik wznowiony."
+  },
+  "notifyStopped": {
+    "message": "Bot zatrzymany"
+  },
+  "notifyLevelUp": {
+    "message": "Osiągnięto poziom $1!"
+  },
+  "optSave": {
+    "message": "Zapisz"
+  },
+  "optReset": {
+    "message": "Przywróć domyślne"
+  },
+  "optResetStats": {
+    "message": "Wyzeruj statystyki"
+  },
+  "optSaved": {
+    "message": "Zapisano ustawienia."
+  },
+  "optResetDone": {
+    "message": "Przywrócono ustawienia."
+  },
+  "optStatsReset": {
+    "message": "Wyzerowano statystyki."
+  },
+  "optConfirmReset": {
+    "message": "Przywrócić wszystkie ustawienia domyślne?"
+  },
+  "optConfirmResetStats": {
+    "message": "Wyzerować wszystkie statystyki?"
+  },
+  "optgrp_general": {
+    "message": "Ogólne"
+  },
+  "optgrp_adventures": {
+    "message": "Przygody"
+  },
+  "optgrp_combat": {
+    "message": "Arena / Pojedynki"
+  },
+  "optgrp_training": {
+    "message": "Trening"
+  },
+  "optgrp_dungeon": {
+    "message": "Loch"
+  },
+  "optgrp_cave": {
+    "message": "Jaskinia Iluzji"
+  },
+  "optgrp_work": {
+    "message": "Praca"
+  },
+  "optgrp_runes": {
+    "message": "Runy"
+  },
+  "optgrp_autosell": {
+    "message": "Auto-sprzedaż"
+  },
+  "optgrp_autologin": {
+    "message": "Auto-login"
+  },
+  "optgrp_scheduler": {
+    "message": "Harmonogram"
+  },
+  "optv_dark": {
+    "message": "Ciemny"
+  },
+  "optv_light": {
+    "message": "Jasny"
+  },
+  "optv_right": {
+    "message": "Prawo"
+  },
+  "optv_left": {
+    "message": "Lewo"
+  },
+  "optv_shortest": {
+    "message": "Najkrótsza"
+  },
+  "optv_longest": {
+    "message": "Najdłuższa"
+  },
+  "optv_maxXp": {
+    "message": "Najwięcej PD / czas"
+  },
+  "optv_maxGold": {
+    "message": "Najwięcej złota / czas"
+  },
+  "optv_safest": {
+    "message": "Największa szansa"
+  },
+  "optv_weakest": {
+    "message": "Najsłabszy"
+  },
+  "optv_lowestLevel": {
+    "message": "Najniższy poziom"
+  },
+  "optv_highestGold": {
+    "message": "Najwięcej złota"
+  },
+  "optv_random": {
+    "message": "Losowo"
+  },
+  "optv_strength": {
+    "message": "Siła"
+  },
+  "optv_dexterity": {
+    "message": "Zręczność"
+  },
+  "optv_constitution": {
+    "message": "Kondycja"
+  },
+  "optv_intelligence": {
+    "message": "Inteligencja"
+  },
+  "optv_agility": {
+    "message": "Zwinność"
+  },
+  "optv_easy": {
+    "message": "Łatwy"
+  },
+  "optv_normal": {
+    "message": "Normalny"
+  },
+  "optv_hard": {
+    "message": "Trudny"
+  },
+  "optv_common": {
+    "message": "Zwykły"
+  },
+  "optv_uncommon": {
+    "message": "Niezwykły"
+  },
+  "optv_rare": {
+    "message": "Rzadki"
+  },
+  "optv_epic": {
+    "message": "Epicki"
+  },
+  "optv_legendary": {
+    "message": "Legendarny"
+  }
 }

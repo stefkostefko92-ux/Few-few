@@ -1,200 +1,175 @@
 /**
- * Tanoth API client / protocol adapter.
+ * Tanoth XML-RPC API (semantic layer).
  *
- * The bot never hard-codes the gateway URL or request envelope — that is
- * learned at runtime by inject.js. What lives here is the *semantic* layer:
- *  - ACTIONS maps logical operations to the game's action names. Tanoth's
- *    classic webservice used these names; they are easy to adjust in one place
- *    if a server revision renames them.
- *  - A defensive response reader that copes with the many field-name variants
- *    Tanoth has used over the years (e.g. gold vs money vs cash).
- *  - Passive syncing: every observed response (whether the bot or the game
- *    itself made the call) is scanned to keep TB.State current, so decisions
- *    are based on fresh data even before the bot issues its own requests.
+ * Wraps the page-world client (Bridge.callXmlRpc) with typed, high-level
+ * operations and parses the XML-RPC responses into plain objects, updating the
+ * shared State as it goes. Method names and response field names are taken
+ * from the live Tanoth client (verified against the open-source BoTanoth bot):
+ *
+ *   MiniUpdate(sid)                      -> gold (i4), bs (i4), running task time/type
+ *   GetAdventures(sid)                   -> array<struct{difficulty,gold,exp,duration,quest_id}>
+ *                                           + adventures_made_today, free_adventures_per_day
+ *   StartAdventure(sid, quest_id:int)
+ *   GetUserAttributes(sid)               -> cost base/factor/increment + *_bought
+ *   RaiseAttribute(sid, name:string, count:int)
+ *   EvocationCircle_getCircle(sid)       -> struct of "a:b:c:..." node strings
+ *   EvocationCircle_buyNode(sid, "gold":string, node:int, count:int)
+ *
+ * Optional/secondary methods (arena, dungeon, etc.) are resolved at runtime
+ * from the method names the bot observes in the game's own traffic, so they can
+ * be used without hard-coding names that may vary by server revision.
  */
 (function () {
   'use strict';
   const TB = window.TanothBot;
   const { Bridge, State, Logger } = TB;
 
-  // Logical operation -> game action name. Adjust here if a server revision
-  // renames actions; nothing else needs to change.
-  const ACTIONS = {
-    getUserInfo: 'getUserInfo',
-    getAdventures: 'getAdventures',
-    startAdventure: 'startAdventure',
-    finishAdventure: 'finishAdventure',
-    getArenaList: 'getGladiatorEnemies',
-    duel: 'fight',
-    getAttributes: 'getAttributeUpgradeCost',
-    raiseAttribute: 'upgradeAttribute',
-    getDungeon: 'getDungeonStatus',
-    runDungeon: 'startDungeon',
-    getCave: 'getCaveStatus',
-    climbCave: 'caveAdvance',
-    getJobs: 'getWorkList',
-    startWork: 'startWork',
-    finishWork: 'collectWork',
-    getInventory: 'getInventory',
-    sellItem: 'sellItem',
-    getRunes: 'getRunes',
-    upgradeRune: 'upgradeRune',
-    sellRune: 'sellRune'
-  };
+  const parser = new DOMParser();
 
-  // Pick the first present key from a list of candidates.
-  function pick(obj, keys, dflt) {
-    if (!obj) return dflt;
-    for (const k of keys) if (obj[k] != null) return obj[k];
-    return dflt;
+  function parse(xml) {
+    return parser.parseFromString(xml, 'text/xml');
+  }
+
+  // Mirror of the reference client's findValueByName: locate a <member> by
+  // <name> and return its typed value's text.
+  function findValue(node, name, type = 'i4') {
+    const members = Array.from(node.getElementsByTagName('member'));
+    const member = members.find((m) => {
+      const n = m.getElementsByTagName('name')[0];
+      return n && n.textContent === name;
+    });
+    if (!member) return null;
+    const value = member.getElementsByTagName('value')[0];
+    if (!value) return null;
+    const target = value.getElementsByTagName(type)[0];
+    return target ? target.textContent : null;
+  }
+
+  function num(v) { const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; }
+
+  async function rpc(method, params) {
+    const res = await Bridge.callXmlRpc(method, params);
+    return parse(res.xml);
   }
 
   const Api = {
-    ACTIONS,
+    ready: () => Bridge.ready(),
 
-    async call(op, params) {
-      const action = ACTIONS[op] || op;
-      const res = await Bridge.call(action, params);
-      if (res && res.json) syncFromResponse(res.json);
-      return res;
+    /* --------------------------- resources -------------------------- */
+    async miniUpdate() {
+      const doc = await rpc('MiniUpdate', []);
+      const gold = num(findValue(doc, 'gold', 'i4'));
+      const bs = num(findValue(doc, 'bs', 'i4'));
+      const taskTime = num(findValue(doc, 'time', 'i4'));
+      const taskType = findValue(doc, 'type', 'string');
+      const patch = {};
+      if (gold != null) patch.gold = gold;
+      if (bs != null) patch.bloodstones = bs;
+      if (taskTime != null && taskTime > 0) {
+        patch.taskType = taskType;
+        patch.adventureReturnAt = Date.now() + taskTime * 1000;
+      }
+      State.patch(patch);
+      return { gold, bloodstones: bs, taskTime, taskType };
     },
 
-    ready: () => Bridge.protocolReady(),
+    /* --------------------------- adventures ------------------------- */
+    async getAdventures() {
+      const doc = await rpc('GetAdventures', []);
+      const adventures = Array.from(doc.querySelectorAll('array > data > value > struct')).map((s) => ({
+        id: num(findValue(s, 'quest_id', 'i4')),
+        difficulty: num(findValue(s, 'difficulty', 'i4')),
+        gold: num(findValue(s, 'gold', 'i4')) || 0,
+        xp: num(findValue(s, 'exp', 'i4')) || 0,
+        duration: num(findValue(s, 'duration', 'i4')) || 0
+      }));
+      const madeToday = num(findValue(doc, 'adventures_made_today', 'i4'));
+      const freePerDay = num(findValue(doc, 'free_adventures_per_day', 'i4'));
+      const taskRunning = madeToday == null; // field absent while a task runs
 
-    async refreshUserInfo() {
-      try { await Api.call('getUserInfo'); } catch (e) { Logger.debug('refreshUserInfo', e.message); }
+      const patch = { adventureList: adventures };
+      if (madeToday != null && freePerDay != null) {
+        patch.adventuresMadeToday = madeToday;
+        patch.freeAdventuresPerDay = freePerDay;
+        patch.freeAdventures = Math.max(0, freePerDay - madeToday);
+      }
+      State.patch(patch);
+      return { adventures, madeToday, freePerDay, taskRunning };
+    },
+
+    async startAdventure(questId) {
+      await rpc('StartAdventure', [{ type: 'int', value: questId }]);
+    },
+
+    /* ---------------------------- attributes ------------------------ */
+    async getUserAttributes() {
+      const doc = await rpc('GetUserAttributes', []);
+      const base = parseFloat(findValue(doc, 'attributeCostBase', 'i4'));
+      const factor = parseFloat(findValue(doc, 'attributeCostFactor', 'double'));
+      const increment = parseFloat(findValue(doc, 'attributeCostIncrement', 'i4'));
+      const calc = (bought) => Math.floor((base + bought * increment) * factor);
+      const costs = {
+        STR: calc(num(findValue(doc, 'str_bought', 'i4')) || 0),
+        DEX: calc(num(findValue(doc, 'dex_bought', 'i4')) || 0),
+        CON: calc(num(findValue(doc, 'con_bought', 'i4')) || 0),
+        INT: calc(num(findValue(doc, 'int_bought', 'i4')) || 0)
+      };
+      State.patch({ attributeCosts: costs });
+      return costs;
+    },
+
+    async raiseAttribute(name) {
+      const doc = await rpc('RaiseAttribute', [
+        { type: 'string', value: name },
+        { type: 'int', value: 1 }
+      ]);
+      // Response echoes new costs; re-read them.
+      const base = parseFloat(findValue(doc, 'attributeCostBase', 'i4'));
+      if (!Number.isNaN(base)) {
+        const factor = parseFloat(findValue(doc, 'attributeCostFactor', 'double'));
+        const increment = parseFloat(findValue(doc, 'attributeCostIncrement', 'i4'));
+        const calc = (b) => Math.floor((base + b * increment) * factor);
+        State.patch({ attributeCosts: {
+          STR: calc(num(findValue(doc, 'str_bought', 'i4')) || 0),
+          DEX: calc(num(findValue(doc, 'dex_bought', 'i4')) || 0),
+          CON: calc(num(findValue(doc, 'con_bought', 'i4')) || 0),
+          INT: calc(num(findValue(doc, 'int_bought', 'i4')) || 0)
+        } });
+      }
+    },
+
+    /* ------------------------- evocation circle --------------------- */
+    async getCircle() {
+      const doc = await rpc('EvocationCircle_getCircle', []);
+      const members = Array.from(doc.getElementsByTagName('member'));
+      const circle = {};
+      members.forEach((m) => {
+        const name = m.getElementsByTagName('name')[0]?.textContent;
+        const str = m.getElementsByTagName('string')[0]?.textContent;
+        if (name && str) circle[name] = str.split(':').map(Number);
+      });
+      State.patch({ circle });
+      return circle;
+    },
+
+    async buyCircleNode(nodeId) {
+      await rpc('EvocationCircle_buyNode', [
+        { type: 'string', value: 'gold' },
+        { type: 'int', value: nodeId },
+        { type: 'int', value: 1 }
+      ]);
+    },
+
+    /* ----------------------- generic escape hatch ------------------- */
+    // For optional modules that resolve a method name at runtime.
+    async raw(method, params) { return rpc(method, params); },
+    findValue,
+
+    async refresh() {
+      try { await Api.miniUpdate(); } catch (e) { Logger.debug('miniUpdate', e.message); }
       return State.get();
     }
   };
-
-  /* --------------------- passive state synchronisation -------------------- */
-
-  function syncFromResponse(json) {
-    if (!json || typeof json !== 'object') return;
-    // Unwrap common envelopes ({data:{...}}, {result:{...}}, {response:{...}}).
-    const body = json.data || json.result || json.response || json;
-    const patch = {};
-
-    const gold = pick(body, ['gold', 'money', 'cash', 'currency']);
-    if (typeof gold === 'number') patch.gold = gold;
-
-    const level = pick(body, ['level', 'lvl', 'characterLevel']);
-    if (typeof level === 'number') {
-      if (State.get().level && level > State.get().level) {
-        TB.Stats?.bump({ levelUps: 1 });
-        TB.notifyLevelUp?.(level);
-      }
-      patch.level = level;
-    }
-
-    const xp = pick(body, ['experience', 'exp', 'xp']);
-    if (typeof xp === 'number') patch.xp = xp;
-
-    const bs = pick(body, ['bloodstones', 'bloodStones', 'rubies', 'premium']);
-    if (typeof bs === 'number') patch.bloodstones = bs;
-
-    const hp = pick(body, ['health', 'hp', 'currentHealth']);
-    if (typeof hp === 'number') patch.health = hp;
-    const maxHp = pick(body, ['maxHealth', 'maxHp', 'healthMax']);
-    if (typeof maxHp === 'number') patch.maxHealth = maxHp;
-
-    const name = pick(body, ['name', 'username', 'characterName']);
-    if (typeof name === 'string') { patch.name = name; patch.loggedIn = true; }
-
-    const guild = pick(body, ['guild', 'guildName', 'clan', 'clanName']);
-    if (typeof guild === 'string') patch.guild = guild;
-
-    // dungeon / cave availability and remaining cave attempts
-    const dungeonAvail = pick(body, ['dungeonAvailable', 'canDungeon', 'dungeonReady']);
-    if (typeof dungeonAvail === 'boolean') patch.dungeonAvailable = dungeonAvail;
-    const caveFloor = pick(body, ['caveFloor', 'illusionFloor', 'floor']);
-    if (typeof caveFloor === 'number') patch.caveFloor = caveFloor;
-    const caveLeft = pick(body, ['caveAttemptsLeft', 'caveTries', 'illusionAttempts']);
-    if (typeof caveLeft === 'number') patch.caveAttemptsLeft = caveLeft;
-
-    // work return timer
-    const workReturn = pick(body, ['workReturnTime', 'jobReturnTime']);
-    if (typeof workReturn === 'number') patch.workReturnAt = toEpochMs(workReturn);
-    const jobs = pick(body, ['jobs', 'workList', 'work']);
-    if (Array.isArray(jobs)) patch.jobs = jobs;
-
-    const free = pick(body, ['freeAdventures', 'adventuresLeft', 'questsLeft', 'remainingAdventures']);
-    if (typeof free === 'number') patch.freeAdventures = free;
-
-    // Adventure list
-    const advList = pick(body, ['adventures', 'quests', 'adventureList']);
-    if (Array.isArray(advList)) patch.adventureList = advList.map(normalizeAdventure);
-
-    // Adventure timer
-    const advReturn = pick(body, ['adventureReturnTime', 'returnTime', 'questReturnTime']);
-    if (typeof advReturn === 'number') patch.adventureReturnAt = toEpochMs(advReturn);
-
-    // Arena targets
-    const enemies = pick(body, ['enemies', 'gladiators', 'duelTargets', 'players']);
-    if (Array.isArray(enemies)) patch.duelTargets = enemies.map(normalizeEnemy);
-
-    // Attributes
-    const attrs = pick(body, ['attributes', 'stats']);
-    if (attrs && typeof attrs === 'object') patch.attributes = attrs;
-    const attrCost = pick(body, ['attributeCosts', 'upgradeCosts', 'costs']);
-    if (attrCost && typeof attrCost === 'object') patch.attributeCosts = attrCost;
-
-    // Inventory / runes
-    const inv = pick(body, ['inventory', 'items', 'bag']);
-    if (Array.isArray(inv)) patch.inventory = inv.map(normalizeItem);
-    const runes = pick(body, ['runes']);
-    if (Array.isArray(runes)) patch.runes = runes;
-
-    if (Object.keys(patch).length) State.patch(patch);
-  }
-
-  function toEpochMs(v) {
-    // Tanoth may send seconds-until, or an absolute timestamp. Heuristic:
-    // small numbers (< 1e6) are "seconds remaining", large are epoch seconds.
-    if (v < 1e6) return Date.now() + v * 1000;
-    if (v < 1e12) return v * 1000;
-    return v;
-  }
-
-  function normalizeAdventure(a) {
-    return {
-      id: pick(a, ['id', 'adventureId', 'questId']),
-      name: pick(a, ['name', 'title'], ''),
-      difficulty: pick(a, ['difficulty', 'level', 'diff'], 0),
-      duration: pick(a, ['duration', 'time', 'durationSeconds'], 0),
-      xp: pick(a, ['xp', 'experience', 'exp'], 0),
-      gold: pick(a, ['gold', 'reward', 'money'], 0),
-      winChance: pick(a, ['winChance', 'successChance', 'chance'], 100),
-      raw: a
-    };
-  }
-
-  function normalizeEnemy(e) {
-    return {
-      id: pick(e, ['id', 'playerId', 'userId']),
-      name: pick(e, ['name', 'username'], ''),
-      level: pick(e, ['level', 'lvl'], 0),
-      gold: pick(e, ['gold', 'reward'], 0),
-      guild: pick(e, ['guild', 'guildName', 'clan'], null),
-      raw: e
-    };
-  }
-
-  function normalizeItem(i) {
-    return {
-      id: pick(i, ['id', 'itemId']),
-      name: pick(i, ['name', 'title'], ''),
-      rarity: String(pick(i, ['rarity', 'quality', 'grade'], 'common')).toLowerCase(),
-      type: pick(i, ['type', 'category'], 'misc'),
-      value: pick(i, ['value', 'sellPrice', 'price', 'gold'], 0),
-      raw: i
-    };
-  }
-
-  // Keep state fresh from traffic the *game* generates too.
-  Bridge.onObserve((payload) => {
-    if (payload && payload.json) syncFromResponse(payload.json);
-  });
 
   TB.Api = Api;
 })();

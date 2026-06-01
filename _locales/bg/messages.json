@@ -1,101 +1,302 @@
 {
-  "extName": { "message": "Tanoth Master Bot" },
-  "extNameShort": { "message": "Tanoth Bot" },
-  "extDescription": { "message": "Пълен автоматизиращ помощник за Tanoth: приключения, дуели, пещера, подземие, работа, тренировки, руни, авто-продажба и вход, планировчик и статистики." },
-
-  "uiStart": { "message": "Старт" },
-  "uiStop": { "message": "Стоп" },
-  "uiPause": { "message": "Пауза" },
-  "uiResume": { "message": "Продължи" },
-  "uiIdle": { "message": "В покой" },
-  "uiRunning": { "message": "Работи" },
-  "uiRunningAction": { "message": "Изпълнява: $1" },
-  "uiPaused": { "message": "На пауза" },
-  "uiOnBreak": { "message": "В почивка" },
-  "uiCollapse": { "message": "Свий" },
-  "uiHide": { "message": "Скрий" },
-  "uiOptions": { "message": "Настройки" },
-  "uiProtoWaiting": { "message": "Изучаване на протокола…" },
-  "uiProtoReady": { "message": "Протоколът е готов" },
-  "uiMinutes": { "message": "$1 мин" },
-  "uiLevel": { "message": "Ниво" },
-
-  "statAdventures": { "message": "Приключения" },
-  "statDuels": { "message": "Спечелени дуели" },
-  "statCave": { "message": "Етажи пещера" },
-  "statDungeon": { "message": "Подземия" },
-  "statGold": { "message": "Злато" },
-  "statXp": { "message": "ОП" },
-  "statSold": { "message": "Продадени" },
-  "statRuntime": { "message": "Време" },
-
-  "mod_adventures": { "message": "Приключения" },
-  "mod_cave": { "message": "Пещера" },
-  "mod_dungeon": { "message": "Подземие" },
-  "mod_combat": { "message": "Арена" },
-  "mod_work": { "message": "Работа" },
-  "mod_training": { "message": "Тренировка" },
-  "mod_runes": { "message": "Руни" },
-  "mod_autosell": { "message": "Авто-продажба" },
-  "mod_autologin": { "message": "Авто-вход" },
-
-  "popupNoGame": { "message": "Отворете Tanoth в раздел, за да управлявате бота." },
-  "popupShowPanel": { "message": "Покажи панела" },
-  "popupNoChar": { "message": "Изчакване на данни за героя…" },
-
-  "logEngineStarted": { "message": "Двигателят е стартиран." },
-  "logEngineStopped": { "message": "Двигателят е спрян." },
-  "logEnginePaused": { "message": "Двигателят е на пауза." },
-  "logEngineResumed": { "message": "Двигателят е възобновен." },
-
-  "notifyStopped": { "message": "Ботът спря" },
-  "notifyLevelUp": { "message": "Достигнахте ниво $1!" },
-
-  "optSave": { "message": "Запази" },
-  "optReset": { "message": "Върни по подразбиране" },
-  "optResetStats": { "message": "Нулирай статистиките" },
-  "optSaved": { "message": "Настройките са запазени." },
-  "optResetDone": { "message": "Настройките са нулирани." },
-  "optStatsReset": { "message": "Статистиките са нулирани." },
-  "optConfirmReset": { "message": "Да върна ли всички настройки по подразбиране?" },
-  "optConfirmResetStats": { "message": "Да нулирам ли всички статистики?" },
-
-  "optgrp_general": { "message": "Общи" },
-  "optgrp_adventures": { "message": "Приключения" },
-  "optgrp_combat": { "message": "Арена / Дуели" },
-  "optgrp_training": { "message": "Тренировка" },
-  "optgrp_dungeon": { "message": "Подземие" },
-  "optgrp_cave": { "message": "Пещера на илюзиите" },
-  "optgrp_work": { "message": "Работа" },
-  "optgrp_runes": { "message": "Руни" },
-  "optgrp_autosell": { "message": "Авто-продажба" },
-  "optgrp_autologin": { "message": "Авто-вход" },
-  "optgrp_scheduler": { "message": "Планировчик" },
-
-  "optv_dark": { "message": "Тъмна" },
-  "optv_light": { "message": "Светла" },
-  "optv_right": { "message": "Дясно" },
-  "optv_left": { "message": "Ляво" },
-  "optv_shortest": { "message": "Най-кратко" },
-  "optv_longest": { "message": "Най-дълго" },
-  "optv_maxXp": { "message": "Най-много ОП / време" },
-  "optv_maxGold": { "message": "Най-много злато / време" },
-  "optv_safest": { "message": "Най-голям шанс" },
-  "optv_weakest": { "message": "Най-слаб противник" },
-  "optv_lowestLevel": { "message": "Най-ниско ниво" },
-  "optv_highestGold": { "message": "Най-много злато" },
-  "optv_random": { "message": "Случаен" },
-  "optv_strength": { "message": "Сила" },
-  "optv_dexterity": { "message": "Ловкост" },
-  "optv_constitution": { "message": "Издръжливост" },
-  "optv_intelligence": { "message": "Интелект" },
-  "optv_agility": { "message": "Пъргавина" },
-  "optv_easy": { "message": "Лесно" },
-  "optv_normal": { "message": "Нормално" },
-  "optv_hard": { "message": "Трудно" },
-  "optv_common": { "message": "Обикновен" },
-  "optv_uncommon": { "message": "Необикновен" },
-  "optv_rare": { "message": "Рядък" },
-  "optv_epic": { "message": "Епичен" },
-  "optv_legendary": { "message": "Легендарен" }
+  "extName": {
+    "message": "Tanoth Master Bot"
+  },
+  "extNameShort": {
+    "message": "Tanoth Bot"
+  },
+  "extDescription": {
+    "message": "Помощник за Tanoth: приключения, кръг на призоваване, атрибути, авто-преразглеждане, планировчик и статистики."
+  },
+  "uiStart": {
+    "message": "Старт"
+  },
+  "uiStop": {
+    "message": "Стоп"
+  },
+  "uiPause": {
+    "message": "Пауза"
+  },
+  "uiResume": {
+    "message": "Продължи"
+  },
+  "uiIdle": {
+    "message": "В покой"
+  },
+  "uiRunning": {
+    "message": "Работи"
+  },
+  "uiRunningAction": {
+    "message": "Изпълнява: $1"
+  },
+  "uiPaused": {
+    "message": "На пауза"
+  },
+  "uiOnBreak": {
+    "message": "В почивка"
+  },
+  "uiCollapse": {
+    "message": "Свий"
+  },
+  "uiHide": {
+    "message": "Скрий"
+  },
+  "uiOptions": {
+    "message": "Настройки"
+  },
+  "uiProtoWaiting": {
+    "message": "Изучаване на протокола…"
+  },
+  "uiProtoReady": {
+    "message": "Протоколът е готов"
+  },
+  "uiMinutes": {
+    "message": "$1 мин"
+  },
+  "uiLevel": {
+    "message": "Ниво"
+  },
+  "statAdventures": {
+    "message": "Приключения"
+  },
+  "statDuels": {
+    "message": "Спечелени дуели"
+  },
+  "statCave": {
+    "message": "Етажи пещера"
+  },
+  "statDungeon": {
+    "message": "Подземия"
+  },
+  "statGold": {
+    "message": "Злато"
+  },
+  "statXp": {
+    "message": "ОП"
+  },
+  "statSold": {
+    "message": "Продадени"
+  },
+  "statRuntime": {
+    "message": "Време"
+  },
+  "mod_adventures": {
+    "message": "Приключения"
+  },
+  "mod_cave": {
+    "message": "Пещера"
+  },
+  "mod_dungeon": {
+    "message": "Подземие"
+  },
+  "mod_combat": {
+    "message": "Арена"
+  },
+  "mod_work": {
+    "message": "Работа"
+  },
+  "mod_training": {
+    "message": "Тренировка"
+  },
+  "mod_runes": {
+    "message": "Руни"
+  },
+  "mod_autosell": {
+    "message": "Авто-продажба"
+  },
+  "mod_autologin": {
+    "message": "Авто-вход"
+  },
+  "mod_circle": {
+    "message": "Кръг"
+  },
+  "statCircle": {
+    "message": "Възли кръг"
+  },
+  "statErrors": {
+    "message": "Грешки"
+  },
+  "optgrp_circle": {
+    "message": "Кръг на призоваване"
+  },
+  "optv_gold": {
+    "message": "Най-много злато"
+  },
+  "optv_experience": {
+    "message": "Най-много опит"
+  },
+  "optv_mix": {
+    "message": "Микс (най-евтино)"
+  },
+  "optv_medium": {
+    "message": "Среден"
+  },
+  "optv_difficult": {
+    "message": "Труден"
+  },
+  "optv_very_difficult": {
+    "message": "Много труден"
+  },
+  "popupNoGame": {
+    "message": "Отворете Tanoth в раздел, за да управлявате бота."
+  },
+  "popupShowPanel": {
+    "message": "Покажи панела"
+  },
+  "popupNoChar": {
+    "message": "Изчакване на данни за героя…"
+  },
+  "logEngineStarted": {
+    "message": "Двигателят е стартиран."
+  },
+  "logEngineStopped": {
+    "message": "Двигателят е спрян."
+  },
+  "logEnginePaused": {
+    "message": "Двигателят е на пауза."
+  },
+  "logEngineResumed": {
+    "message": "Двигателят е възобновен."
+  },
+  "notifyStopped": {
+    "message": "Ботът спря"
+  },
+  "notifyLevelUp": {
+    "message": "Достигнахте ниво $1!"
+  },
+  "optSave": {
+    "message": "Запази"
+  },
+  "optReset": {
+    "message": "Върни по подразбиране"
+  },
+  "optResetStats": {
+    "message": "Нулирай статистиките"
+  },
+  "optSaved": {
+    "message": "Настройките са запазени."
+  },
+  "optResetDone": {
+    "message": "Настройките са нулирани."
+  },
+  "optStatsReset": {
+    "message": "Статистиките са нулирани."
+  },
+  "optConfirmReset": {
+    "message": "Да върна ли всички настройки по подразбиране?"
+  },
+  "optConfirmResetStats": {
+    "message": "Да нулирам ли всички статистики?"
+  },
+  "optgrp_general": {
+    "message": "Общи"
+  },
+  "optgrp_adventures": {
+    "message": "Приключения"
+  },
+  "optgrp_combat": {
+    "message": "Арена / Дуели"
+  },
+  "optgrp_training": {
+    "message": "Тренировка"
+  },
+  "optgrp_dungeon": {
+    "message": "Подземие"
+  },
+  "optgrp_cave": {
+    "message": "Пещера на илюзиите"
+  },
+  "optgrp_work": {
+    "message": "Работа"
+  },
+  "optgrp_runes": {
+    "message": "Руни"
+  },
+  "optgrp_autosell": {
+    "message": "Авто-продажба"
+  },
+  "optgrp_autologin": {
+    "message": "Авто-вход"
+  },
+  "optgrp_scheduler": {
+    "message": "Планировчик"
+  },
+  "optv_dark": {
+    "message": "Тъмна"
+  },
+  "optv_light": {
+    "message": "Светла"
+  },
+  "optv_right": {
+    "message": "Дясно"
+  },
+  "optv_left": {
+    "message": "Ляво"
+  },
+  "optv_shortest": {
+    "message": "Най-кратко"
+  },
+  "optv_longest": {
+    "message": "Най-дълго"
+  },
+  "optv_maxXp": {
+    "message": "Най-много ОП / време"
+  },
+  "optv_maxGold": {
+    "message": "Най-много злато / време"
+  },
+  "optv_safest": {
+    "message": "Най-голям шанс"
+  },
+  "optv_weakest": {
+    "message": "Най-слаб противник"
+  },
+  "optv_lowestLevel": {
+    "message": "Най-ниско ниво"
+  },
+  "optv_highestGold": {
+    "message": "Най-много злато"
+  },
+  "optv_random": {
+    "message": "Случаен"
+  },
+  "optv_strength": {
+    "message": "Сила"
+  },
+  "optv_dexterity": {
+    "message": "Ловкост"
+  },
+  "optv_constitution": {
+    "message": "Издръжливост"
+  },
+  "optv_intelligence": {
+    "message": "Интелект"
+  },
+  "optv_agility": {
+    "message": "Пъргавина"
+  },
+  "optv_easy": {
+    "message": "Лесно"
+  },
+  "optv_normal": {
+    "message": "Нормално"
+  },
+  "optv_hard": {
+    "message": "Трудно"
+  },
+  "optv_common": {
+    "message": "Обикновен"
+  },
+  "optv_uncommon": {
+    "message": "Необикновен"
+  },
+  "optv_rare": {
+    "message": "Рядък"
+  },
+  "optv_epic": {
+    "message": "Епичен"
+  },
+  "optv_legendary": {
+    "message": "Легендарен"
+  }
 }

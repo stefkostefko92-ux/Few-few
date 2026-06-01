@@ -10,8 +10,7 @@ import { DEFAULT_SETTINGS, mergeSettings } from '../src/shared/defaults.js';
 
 function t(key, subs) { return chrome.i18n.getMessage(key, subs) || key; }
 
-const RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-const STATS = ['strength', 'dexterity', 'constitution', 'intelligence', 'agility'];
+const STATS = ['mix', 'strength', 'dexterity', 'constitution', 'intelligence'];
 
 /* Field types: bool | number | text | time | select(options) */
 const SCHEMA = [
@@ -31,61 +30,21 @@ const SCHEMA = [
   ] },
   { id: 'adventures', fields: [
     { k: 'enabled', type: 'bool' },
-    { k: 'strategy', type: 'select', options: ['shortest', 'longest', 'maxXp', 'maxGold', 'safest'] },
-    { k: 'maxDifficulty', type: 'number', min: 1, max: 10 },
-    { k: 'minSuccessChance', type: 'number', min: 0, max: 100 },
+    { k: 'strategy', type: 'select', options: ['gold', 'experience', 'shortest', 'longest'] },
+    { k: 'difficulty', type: 'select', options: ['easy', 'medium', 'difficult', 'very_difficult'] },
+    { k: 'serverSpeed', type: 'number', min: 1, max: 100 },
     { k: 'useBloodstones', type: 'bool' },
-    { k: 'bloodstoneReserve', type: 'number', min: 0 },
-    { k: 'dailyLimit', type: 'number', min: 0 }
+    { k: 'bloodstoneReserve', type: 'number', min: 0 }
   ] },
-  { id: 'combat', fields: [
+  { id: 'circle', fields: [
     { k: 'enabled', type: 'bool' },
-    { k: 'targetStrategy', type: 'select', options: ['weakest', 'lowestLevel', 'highestGold', 'random'] },
-    { k: 'avoidGuildMembers', type: 'bool' },
-    { k: 'minLevelDiff', type: 'number', min: -50, max: 0 },
-    { k: 'maxLevelDiff', type: 'number', min: 0, max: 50 },
-    { k: 'recordStats', type: 'bool' },
-    { k: 'maxDuelsPerCycle', type: 'number', min: 1, max: 50 }
+    { k: 'keepGoldReserve', type: 'number', min: 0 }
   ] },
   { id: 'training', fields: [
     { k: 'enabled', type: 'bool' },
     { k: 'priorityStat', type: 'select', options: STATS },
-    { k: 'fallbackStat', type: 'select', options: STATS },
     { k: 'maxGoldSpend', type: 'number', min: 0 },
     { k: 'keepGoldReserve', type: 'number', min: 0 }
-  ] },
-  { id: 'dungeon', fields: [
-    { k: 'enabled', type: 'bool' },
-    { k: 'autoRun', type: 'bool' },
-    { k: 'difficulty', type: 'select', options: ['easy', 'normal', 'hard'] },
-    { k: 'minHealthPercent', type: 'number', min: 0, max: 100 }
-  ] },
-  { id: 'cave', fields: [
-    { k: 'enabled', type: 'bool' },
-    { k: 'useBloodstones', type: 'bool' },
-    { k: 'bloodstoneReserve', type: 'number', min: 0 },
-    { k: 'targetFloor', type: 'number', min: 0 }
-  ] },
-  { id: 'work', fields: [
-    { k: 'enabled', type: 'bool' },
-    { k: 'durationHours', type: 'number', min: 1, max: 10 },
-    { k: 'preferredJob', type: 'text' },
-    { k: 'stopWhenAdventureReady', type: 'bool' }
-  ] },
-  { id: 'runes', fields: [
-    { k: 'enabled', type: 'bool' },
-    { k: 'autoUpgrade', type: 'bool' },
-    { k: 'autoSellDuplicates', type: 'bool' },
-    { k: 'minRarityToKeep', type: 'select', options: RARITY }
-  ] },
-  { id: 'autosell', fields: [
-    { k: 'enabled', type: 'bool' },
-    { k: 'sellCommon', type: 'bool' },
-    { k: 'sellUnique', type: 'bool' },
-    { k: 'sellRunes', type: 'bool' },
-    { k: 'sellPotions', type: 'bool' },
-    { k: 'keepRarity', type: 'select', options: RARITY },
-    { k: 'keepEquippableUpgrades', type: 'bool' }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },

@@ -12,7 +12,7 @@
   const TB = window.TanothBot;
   const { I18n, Logger, Stats, Scheduler, Storage } = TB;
 
-  const MODULES = ['adventures', 'cave', 'dungeon', 'combat', 'work', 'training', 'runes', 'autosell', 'autologin'];
+  const MODULES = ['adventures', 'circle', 'training', 'autologin'];
 
   let root = null;
   let logEl = null;
@@ -69,8 +69,8 @@
     Scheduler.onStatus(renderStatus);
     Stats.onChange(renderStats);
     Logger.subscribe(appendLog);
-    TB.Bridge.onProtocol(renderProto);
-    renderProto(TB.Bridge.protocol());
+    TB.Bridge.onContext(renderProto);
+    renderProto(TB.Bridge.context());
     renderStatus(Scheduler.status());
   }
 
@@ -122,12 +122,10 @@
     const dur = Math.max(1, Math.round((Date.now() - s.started) / 60000));
     const rows = [
       ['statAdventures', s.adventures],
-      ['statDuels', `${s.duelsWon}/${s.duelsWon + s.duelsLost}`],
-      ['statCave', s.caveFloors],
-      ['statDungeon', s.dungeonRuns],
+      ['statCircle', s.circleNodes || 0],
       ['statGold', formatNum(s.goldEarned)],
       ['statXp', formatNum(s.xpEarned)],
-      ['statSold', s.itemsSold],
+      ['statErrors', s.errors || 0],
       ['statRuntime', I18n.t('uiMinutes', [String(dur)])]
     ];
     wrap.innerHTML = rows.map(([k, v]) =>
@@ -157,7 +155,7 @@
   function renderProto(p) {
     const e = root.querySelector('[data-el="proto"]');
     if (!e) return;
-    e.textContent = (p && p.url && p.actionKey)
+    e.textContent = (p && p.url && p.hasSession)
       ? I18n.t('uiProtoReady') : I18n.t('uiProtoWaiting');
   }
 
