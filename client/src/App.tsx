@@ -47,6 +47,7 @@ import MountShop from './pages/MountShop';
 import Hero from './pages/Hero';
 import Realm from './pages/Realm';
 import LevelUpOverlay from './components/LevelUpOverlay';
+import CooldownTicker from './components/CooldownTicker';
 
 function AppLayout(): React.ReactElement {
   const location = useLocation();
@@ -62,6 +63,9 @@ function AppLayout(): React.ReactElement {
       <div className="app-shell">
         <Sidebar />
         <main className="app-main">
+          {/* Live cooldown ticker — shows every action that's still
+              counting down. Visible on every in-app page. */}
+          <CooldownTicker />
           <div className="page-transition" key={location.pathname}>
             <Outlet />
           </div>

@@ -76,12 +76,20 @@ router.post('/hunt', (req, res) => {
     res.status(400).json({ error: `Region requires level ${gate}` });
     return;
   }
-  // Pick a monster in the region within ±3 of player's level (or any monster of region if none in range)
-  let pool = db
-    .prepare(`SELECT * FROM monsters WHERE region = ? AND level BETWEEN ? AND ?`)
-    .all(parse.data.region, Math.max(1, char.level - 3), char.level + 2) as Monster[];
-  if (pool.length === 0) {
-    pool = db.prepare(`SELECT * FROM monsters WHERE region = ?`).all(parse.data.region) as Monster[];
+  // Pick a monster in the region within ±3 of player's level. If empty,
+  // widen the window step-by-step instead of returning ANY region monster —
+  // that fallback was letting a lv200 hero draw lv26 foes from the same
+  // high-band region, breaking balance.
+  let pool: Monster[] = [];
+  for (const window of [3, 8, 16, 999]) {
+    pool = db
+      .prepare(`SELECT * FROM monsters WHERE region = ? AND level BETWEEN ? AND ?`)
+      .all(
+        parse.data.region,
+        Math.max(1, char.level - window),
+        char.level + Math.min(window, 5),
+      ) as Monster[];
+    if (pool.length > 0) break;
   }
   if (pool.length === 0) {
     res.status(404).json({ error: 'No prey in this region' });

@@ -46,7 +46,10 @@ export default function Hero(): React.ReactElement {
           </NavLink>
         ))}
       </div>
-      <div key={pathname}>{body}</div>
+      {/* No `key={pathname}` — switching tabs should swap the body without
+          remounting child components (would lose scroll position, selected
+          item, in-flight forms, etc.). */}
+      <div>{body}</div>
     </div>
   );
 }

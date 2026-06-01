@@ -466,9 +466,25 @@ router.post('/upgrade/slots', (req, res) => {
     }
   }
   const slots = MEMBER_SLOTS_BY_LEVEL[next];
-  db.prepare(`UPDATE guilds SET level = ?, xp = xp - ?, member_slots = ? WHERE id = ?`).run(next, needXp, slots, g.guild.id);
+  // Atomic: only advance if the guild XP is STILL ≥ needXp at write-time.
+  // Stops two concurrent /upgrade/slots calls from each succeeding when only
+  // one should.
+  const upd = db.prepare(
+    `UPDATE guilds SET level = ?, xp = xp - ?, member_slots = ?
+     WHERE id = ? AND level = ? AND xp >= ?`,
+  ).run(next, needXp, slots, g.guild.id, g.guild.level, needXp);
+  if (upd.changes !== 1) { res.status(409).json({ error: 'Guild state changed — retry.' }); return; }
   if (needGems > 0) {
-    db.prepare(`UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ?`).run(needGems, needGems, char.id);
+    const gemDebit = db
+      .prepare(`UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?`)
+      .run(needGems, needGems, char.id, needGems);
+    if (gemDebit.changes !== 1) {
+      // Roll back the guild upgrade so we don't grant slots that weren't paid for.
+      db.prepare(`UPDATE guilds SET level = ?, xp = xp + ?, member_slots = ? WHERE id = ?`)
+        .run(g.guild.level, needXp, g.guild.member_slots, g.guild.id);
+      res.status(400).json({ error: 'Not enough gems.' });
+      return;
+    }
   }
   res.json({ ok: true, level: next, member_slots: slots, gems_spent: needGems });
 });

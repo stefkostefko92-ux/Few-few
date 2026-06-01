@@ -191,20 +191,17 @@ router.post('/claim', (req, res) => {
 
   // Mint the trophy item(s). We ensure a "monster_trophy" item exists in
   // the items table on demand so the seed file doesn't have to track it.
-  let trophyId = (db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any)?.id;
-  if (!trophyId) {
-    const inserted = db
-      .prepare(
-        `INSERT INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-           atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-           int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-         VALUES ('monster_trophy', 'Monster Trophy', 'misc', '', 1, 'uncommon', 1, '',
-                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 'icon-skull',
-                 'A grisly memento of the hunt. Buyable on the market or sold for coin.', '')`,
-      )
-      .run();
-    trophyId = inserted.lastInsertRowid as number;
-  }
+  // INSERT OR IGNORE + SELECT is race-safe — two concurrent claims either
+  // both insert (the second one no-ops) and both reach the same row.
+  db.prepare(
+    `INSERT OR IGNORE INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
+       atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
+       int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
+     VALUES ('monster_trophy', 'Monster Trophy', 'misc', '', 1, 'uncommon', 1, '',
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 'icon-skull',
+             'A grisly memento of the hunt. Buyable on the market or sold for coin.', '')`,
+  ).run();
+  const trophyId = (db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any).id;
   for (let i = 0; i < b.reward.trophy; i++) {
     db.prepare(
       `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')`,

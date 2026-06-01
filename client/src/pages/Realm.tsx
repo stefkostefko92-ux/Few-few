@@ -27,7 +27,7 @@ export default function Realm(): React.ReactElement {
           </NavLink>
         ))}
       </div>
-      <div key={pathname}>{body}</div>
+      <div>{body}</div>
     </div>
   );
 }

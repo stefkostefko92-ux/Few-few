@@ -9,11 +9,15 @@ interface User {
   is_admin?: number;
 }
 
+/** Per-action next-available timestamps in ms (epoch). 0 / missing = ready. */
+export type Cooldowns = Partial<Record<'hunt' | 'camp' | 'tower' | 'dungeon' | 'quest' | 'arena', number>>;
+
 interface State {
   user: User | null;
   token: string | null;
   character: Character | null;
   derived: Derived | null;
+  cooldowns: Cooldowns;
   unreadMail: number;
   loading: boolean;
   toasts: Toast[];
@@ -49,6 +53,7 @@ export const useStore = create<State>((set, get) => ({
   token: getToken(),
   character: null,
   derived: null,
+  cooldowns: {},
   unreadMail: 0,
   loading: false,
   toasts: [],
@@ -58,7 +63,7 @@ export const useStore = create<State>((set, get) => ({
     if (!getToken()) return;
     try {
       const r = await api.get('/character/me');
-      set({ character: r.character, derived: r.derived });
+      set({ character: r.character, derived: r.derived, cooldowns: r.cooldowns || {} });
       try {
         const m = await api.get('/mail');
         set({ unreadMail: m.unread ?? 0 });
@@ -107,13 +112,13 @@ export const useStore = create<State>((set, get) => ({
 
   logout() {
     setToken(null);
-    set({ token: null, user: null, character: null, derived: null, unreadMail: 0 });
+    set({ token: null, user: null, character: null, derived: null, cooldowns: {}, unreadMail: 0 });
   },
 
   async refreshCharacter() {
     try {
       const r = await api.get('/character/me');
-      set({ character: r.character, derived: r.derived });
+      set({ character: r.character, derived: r.derived, cooldowns: r.cooldowns || {} });
     } catch {
       /* ignore */
     }

@@ -135,16 +135,19 @@ router.post('/buy', (req, res) => {
   const sellerCut = listing.price_gold - Math.ceil(listing.price_gold * MARKET_FEE_PCT / 100);
   const now = Date.now();
   const tx = db.transaction(() => {
-    // Charge buyer, credit seller (net of fee)
-    db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ?').run(listing.price_gold, char.id);
+    // Atomic check-then-debit: only spend if the buyer still has enough gold
+    // (defends against two interleaved buys both passing the earlier JS check).
+    const debit = db.prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?')
+      .run(listing.price_gold, char.id, listing.price_gold);
+    if (debit.changes !== 1) throw new Error('Not enough gold');
+    // Also guard against double-buy of the same listing.
+    const close = db.prepare(`UPDATE marketplace_listings SET status = 'sold', buyer_id = ?, sold_at = ? WHERE id = ? AND status = 'active'`)
+      .run(char.id, now, listing.id);
+    if (close.changes !== 1) throw new Error('Listing already sold');
     db.prepare('UPDATE characters SET gold = gold + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?')
       .run(sellerCut, sellerCut, listing.seller_id);
-    // Transfer ownership of the inventory row to the buyer + soul-bind
     db.prepare(`UPDATE inventory SET character_id = ?, equipped = 0, slot = '', listed = 0, soul_bound = 1 WHERE id = ?`)
       .run(char.id, listing.inventory_id);
-    // Close the listing
-    db.prepare(`UPDATE marketplace_listings SET status = 'sold', buyer_id = ?, sold_at = ? WHERE id = ?`)
-      .run(char.id, now, listing.id);
     // Mail the seller a notification
     db.prepare('INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)')
       .run(
@@ -155,7 +158,8 @@ router.post('/buy', (req, res) => {
         Date.now(),
       );
   });
-  tx();
+  try { tx(); }
+  catch (e: any) { res.status(400).json({ error: e.message || 'Purchase failed' }); return; }
   // The SELLER's pass progresses on the sale (they earned the gold).
   trackBattlePass(listing.seller_id, 'market_sale', 1);
   logFromRequest(req, {

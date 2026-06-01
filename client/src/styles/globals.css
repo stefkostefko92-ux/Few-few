@@ -802,25 +802,6 @@ input:focus, textarea:focus, select:focus {
 
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-/* Click ripple — the JS in lib/ripple.ts appends a <span class="click-ripple">.
-   Without these rules the span had no position/animation, never fired
-   animationend, was never removed, and inflated the button on every click. */
-.click-ripple {
-  position: absolute;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  background: radial-gradient(circle, rgba(255,255,255,.45), rgba(255,255,255,0) 70%);
-  pointer-events: none;
-  z-index: 0;
-  animation: click-ripple-anim .55s ease-out forwards;
-}
-@keyframes click-ripple-anim {
-  0%   { transform: translate(-50%, -50%) scale(0);   opacity: .55; }
-  100% { transform: translate(-50%, -50%) scale(1);   opacity: 0; }
-}
-/* keep button label above the ripple */
-.btn > *, .sidebar-item > *, .nav-link > *, .guild-tab > * { position: relative; z-index: 1; }
-
 /* Navbar "skip cooldowns" pill */
 .nav-skip-cd {
   display: inline-flex; align-items: center; gap: 4px;
@@ -835,6 +816,64 @@ input:focus, textarea:focus, select:focus {
 .nav-skip-cd:hover:not(:disabled) { filter: brightness(1.2); }
 .nav-skip-cd:active:not(:disabled) { transform: translateY(1px); }
 .nav-skip-cd:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Cooldown ticker — mounted in AppLayout, visible on every in-app page. */
+.cooldown-ticker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  background: linear-gradient(180deg, rgba(232,90,79,.06), rgba(214,161,61,.04));
+  border: 1px solid var(--border-1);
+  border-left: 3px solid var(--gold-1);
+  border-radius: var(--radius-md, 12px);
+}
+.cooldown-ticker-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.cooldown-ticker-list { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+.cooldown-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid;
+  font-size: 12px;
+}
+.cooldown-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  animation: cd-pulse 1.4s ease-in-out infinite;
+}
+.cooldown-name { font-weight: 600; color: var(--text-2); }
+.cooldown-time { font-family: var(--font-mono); color: var(--text-1); }
+.cooldown-skip {
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #181307;
+  background: linear-gradient(180deg, var(--gold-1), var(--gold-2));
+  border: 1px solid var(--gold-3);
+  transition: filter .15s, transform .04s;
+}
+.cooldown-skip:hover:not(:disabled) { filter: brightness(1.1); }
+.cooldown-skip:active:not(:disabled) { transform: translateY(1px); }
+.cooldown-skip:disabled { opacity: .4; cursor: not-allowed; }
+@keyframes cd-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+  50%      { opacity: .55; }
+}
 
 /* Hero / Realm tab bar — used by the merged hub pages */
 .hero-tabs {

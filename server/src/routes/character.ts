@@ -154,7 +154,13 @@ router.get('/me', (req, res) => {
   char.mp = char.mp_max;
   db.prepare('UPDATE characters SET hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max WHERE id = ?')
     .run(char.hp_max, char.mp_max, char.id);
-  res.json({ character: char, derived });
+  // Action cooldowns are exposed here so the global timer in the app shell
+  // can render without a separate request per page mount.
+  const cooldownRows = db
+    .prepare('SELECT action_kind, next_available_at FROM character_cooldowns WHERE character_id = ?')
+    .all(char.id) as { action_kind: string; next_available_at: number }[];
+  const cooldowns = Object.fromEntries(cooldownRows.map((r) => [r.action_kind, r.next_available_at]));
+  res.json({ character: char, derived, cooldowns });
 });
 
 const spendStatSchema = z.object({
