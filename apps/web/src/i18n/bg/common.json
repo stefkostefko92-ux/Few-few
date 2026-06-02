@@ -115,5 +115,24 @@
     "yourBid": "Твоят анонс",
     "weTricks": "Наши взятки",
     "theyTricks": "Техни взятки"
+  },
+  "war": {
+    "flip": "Обърни",
+    "battle": "ВОЙНА"
+  },
+  "rummy": {
+    "stock": "Тесте",
+    "discard": "Изхвърлени",
+    "phase": "Фаза",
+    "drawPhase": "Тегли",
+    "discardPhase": "Изхвърли",
+    "knock": "Чукни",
+    "discardHint": "Избери карта за изхвърляне",
+    "drawHint": "Тегли от тестето или изхвърлените"
+  },
+  "gofish": {
+    "ocean": "Море",
+    "askFrom": "Питай",
+    "books": "Комплекти"
   }
 }

@@ -10,6 +10,9 @@ import { SvaraView } from "./svara/SvaraView";
 import { HoldemView } from "./holdem/HoldemView";
 import { KentView } from "./kent/KentView";
 import { BridgeView } from "./bridge/BridgeView";
+import { WarView } from "./war/WarView";
+import { RummyView } from "./rummy/RummyView";
+import { GoFishView } from "./gofish/GoFishView";
 import { GenericGameView } from "./generic/GenericGameView";
 
 /** Dispatches to a bespoke per-game view, falling back to the generic view. */
@@ -51,6 +54,12 @@ export function GameView() {
       return <KentView title={meta.title} />;
     case "BRIDGE":
       return <BridgeView title={meta.title} />;
+    case "WAR":
+      return <WarView title={meta.title} />;
+    case "RUMMY":
+      return <RummyView title={meta.title} />;
+    case "GOFISH":
+      return <GoFishView title={meta.title} />;
     default:
       return <GenericGameView title={meta.title} game={gameKey as GameKey} />;
   }

@@ -115,5 +115,24 @@
     "yourBid": "Your bid",
     "weTricks": "Our tricks",
     "theyTricks": "Their tricks"
+  },
+  "war": {
+    "flip": "Flip",
+    "battle": "WAR"
+  },
+  "rummy": {
+    "stock": "Stock",
+    "discard": "Discard",
+    "phase": "Phase",
+    "drawPhase": "Draw",
+    "discardPhase": "Discard",
+    "knock": "Knock",
+    "discardHint": "Pick a card to discard",
+    "drawHint": "Draw from stock or discard"
+  },
+  "gofish": {
+    "ocean": "Ocean",
+    "askFrom": "Ask",
+    "books": "Books"
   }
 }

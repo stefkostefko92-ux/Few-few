@@ -115,5 +115,24 @@
     "yourBid": "La tua dichiarazione",
     "weTricks": "Nostre prese",
     "theyTricks": "Loro prese"
+  },
+  "war": {
+    "flip": "Gira",
+    "battle": "GUERRA"
+  },
+  "rummy": {
+    "stock": "Mazzo",
+    "discard": "Scarti",
+    "phase": "Fase",
+    "drawPhase": "Pesca",
+    "discardPhase": "Scarta",
+    "knock": "Bussa",
+    "discardHint": "Scegli una carta da scartare",
+    "drawHint": "Pesca dal mazzo o dagli scarti"
+  },
+  "gofish": {
+    "ocean": "Oceano",
+    "askFrom": "Chiedi",
+    "books": "Gruppi"
   }
 }
