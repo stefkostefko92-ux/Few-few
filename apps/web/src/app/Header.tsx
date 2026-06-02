@@ -1,20 +1,26 @@
 import { useTranslation } from "react-i18next";
 import { Link, NavLink } from "react-router-dom";
 import { Badge, Button, cn } from "../ui";
-import { useAuthStore } from "../lib/store";
+import { useAuthStore, useStoreModal } from "../lib/store";
 import { api } from "../lib/api";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SettingsToggle } from "./SettingsToggle";
+
+/** Below this, the wallet nudges the player toward a top-up. */
+const LOW_CHIPS = 500;
 
 export function Header() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const openStore = useStoreModal((s) => s.openStore);
 
   async function onLogout() {
     await api.logout().catch(() => undefined);
     setUser(null);
   }
+
+  const lowChips = user ? Number(user.chips) < LOW_CHIPS : false;
 
   return (
     <header className="flex items-center justify-between gap-4 border-b border-brass-400/10 px-4 py-3 sm:px-8">
@@ -52,12 +58,31 @@ export function Header() {
       <div className="flex items-center gap-3">
         {user ? (
           <>
-            <Badge tone="brass" className="tnum">
+            <Badge tone="brass" className="tnum hidden sm:inline-flex">
               ♟ {t("wallet.level", { level: user.level })}
             </Badge>
-            <Badge tone="felt" className="tnum">
-              🪙 {user.chips}
-            </Badge>
+
+            {/* Wallet bar: chips + gems with a one-tap top-up (works mid-match,
+                since the header renders during games). */}
+            <button
+              type="button"
+              onClick={() => openStore(lowChips ? "chips" : "default")}
+              title={t("store.topUp")}
+              className={cn(
+                "group flex items-center gap-2 rounded-full border bg-felt-800/80 py-1 pl-3 pr-1 transition-colors",
+                lowChips ? "border-loss/50" : "border-brass-400/20 hover:border-brass-300",
+              )}
+            >
+              <span className="tnum text-sm text-ink-100">🪙 {user.chips}</span>
+              <span className="tnum hidden text-sm text-ink-100 sm:inline">💎 {user.gems}</span>
+              <span
+                className="grid size-6 place-items-center rounded-full bg-gradient-to-b from-brass-300 to-brass-400 text-sm font-bold text-charcoal-900"
+                aria-hidden
+              >
+                +
+              </span>
+            </button>
+
             {user.vipTier !== "NONE" ? <Badge tone="vip">VIP {user.vipTier}</Badge> : null}
             <span className="hidden text-sm text-ink-300 sm:inline">{user.displayName}</span>
             <Button variant="ghost" onClick={() => void onLogout()}>

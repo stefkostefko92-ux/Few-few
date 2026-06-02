@@ -133,6 +133,14 @@
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Gioco sociale — non è gioco d'azzardo con denaro reale."
   },
+  "store": {
+    "title": "Negozio rapido",
+    "topUp": "Ricarica saldo",
+    "fullShop": "Negozio completo",
+    "lowChips": "Pochi gettoni? Ricarica!",
+    "lowGems": "Ti servono gemme",
+    "vipTitle": "Diventa VIP"
+  },
   "chat": {
     "title": "Chat",
     "send": "Invia",

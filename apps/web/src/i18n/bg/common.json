@@ -133,6 +133,14 @@
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Социална игра — не е хазарт за реални пари."
   },
+  "store": {
+    "title": "Бърз магазин",
+    "topUp": "Зареди баланс",
+    "fullShop": "Целият магазин",
+    "lowChips": "Малко чипове? Зареди!",
+    "lowGems": "Нужни са скъпоценни камъни",
+    "vipTitle": "Стани VIP"
+  },
   "chat": {
     "title": "Чат",
     "send": "Прати",

@@ -133,6 +133,14 @@
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Social gaming — not real-money gambling."
   },
+  "store": {
+    "title": "Quick store",
+    "topUp": "Top up balance",
+    "fullShop": "Full shop",
+    "lowChips": "Low on chips? Top up!",
+    "lowGems": "You need gems",
+    "vipTitle": "Go VIP"
+  },
   "chat": {
     "title": "Chat",
     "send": "Send",

@@ -41,3 +41,23 @@ export const useMatchStore = create<MatchState>((set) => ({
   setPhase: (phase) => set({ phase }),
   clearMatch: () => set({ matchId: null, seat: 0, players: [], phase: "searching" }),
 }));
+
+/**
+ * App-wide quick-store modal. Opened from the wallet bar (incl. mid-game, since
+ * the header renders during matches) so players can top up without leaving the
+ * table. `reason` lets callers tailor the heading (e.g. low on chips).
+ */
+type StoreReason = "default" | "chips" | "gems" | "vip";
+interface StoreModalState {
+  open: boolean;
+  reason: StoreReason;
+  openStore: (reason?: StoreReason) => void;
+  closeStore: () => void;
+}
+
+export const useStoreModal = create<StoreModalState>((set) => ({
+  open: false,
+  reason: "default",
+  openStore: (reason = "default") => set({ open: true, reason }),
+  closeStore: () => set({ open: false }),
+}));

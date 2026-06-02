@@ -4,12 +4,14 @@ import { useSearchParams } from "react-router-dom";
 import type { ProductView } from "@aso/shared";
 import { Badge, Button, Panel } from "../../ui";
 import { ApiError, api } from "../../lib/api";
+import { useAuthStore } from "../../lib/store";
 
 const KIND_ORDER: ProductView["kind"][] = ["VIP_SUB", "GEMS", "CHIP_PACK", "COSMETIC"];
 const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 export function Shop() {
   const { t } = useTranslation();
+  const setUser = useAuthStore((s) => s.setUser);
   const [products, setProducts] = useState<ProductView[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -21,9 +23,14 @@ export function Shop() {
 
   useEffect(() => {
     const status = params.get("status");
-    if (status === "success") setNotice(t("shop.purchaseSuccess"));
+    if (status === "success") {
+      setNotice(t("shop.purchaseSuccess"));
+      // The webhook credits asynchronously; refresh the wallet so the new
+      // balance shows once it has landed.
+      api.me().then((r) => setUser(r.user)).catch(() => undefined);
+    }
     if (status === "cancel") setNotice(t("shop.purchaseCancel"));
-  }, [params, t]);
+  }, [params, t, setUser]);
 
   async function buy(sku: string) {
     setBusy(sku);
