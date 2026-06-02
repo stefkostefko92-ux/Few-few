@@ -14,16 +14,13 @@
   const TB = window.TanothBot;
   const { Api, Storage, Stats, Logger, I18n, Scheduler } = TB;
 
-  // Named map fields (from the Tanoth wiki), in map-slot order. Used so the
-  // settings page can offer location names; index = location slot.
-  const LOCATIONS = [
-    'Forest of the Hanged Men', 'Forest of the Hanged Men — Rat',
-    'Swamp of the Forgotten', 'Swamp of the Forgotten — Old Ruins', 'Swamp of the Forgotten — Goblin',
-    'Sea of Dunes', 'Sea of Dunes — Large Forge', 'Sea of Dunes — Ocr', 'Sea of Dunes — Giant Rat',
-    'Old Shore', 'Old Shore — Hell Wolf', 'Old Shore — Scorpion', "Old Shore — Sanctum of Shal'ah",
-    'Lowlands of Thun', 'Frozen Peaks', 'Dragon Lair', 'Forgotten Crypt'
+  // Map regions in canonical (in-game) order; index = region used for slot
+  // attribution. The player sets their own PRIORITY order in settings.
+  const REGIONS = [
+    "Dragon's Claw Mountains", 'Oblivion Gorge', 'Gloomforest',
+    'Blackwater Marshes', 'Bonelands', 'Island of Secrets'
   ];
-  TB.MapLocations = LOCATIONS;
+  TB.MapRegions = REGIONS;
 
   let encounterCooldown = 0;
   let eventNextAt = 0;
@@ -31,18 +28,21 @@
 
   function cfg() { return Storage.section('map') || {}; }
 
-  // Allowed location slots: empty list = all. Accepts numbers or names.
-  function allowedSlots(c) {
-    const raw = String(c.locations || '').split(/[\n,;]+/).map((t) => t.trim()).filter(Boolean);
-    if (!raw.length) return null; // null = allow all
-    const set = new Set();
-    raw.forEach((t) => {
-      const n = parseInt(t, 10);
-      if (Number.isInteger(n)) { set.add(n); return; }
-      const idx = LOCATIONS.findIndex((name) => name.toLowerCase().includes(t.toLowerCase()));
-      if (idx >= 0) set.add(idx);
+  // Parse the priority list -> [{name, idx}] in priority order (enabled only).
+  function priorityRegions(c) {
+    const names = String(c.regions || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
+    const out = [];
+    names.forEach((nm) => {
+      const idx = REGIONS.findIndex((r) => r.toLowerCase() === nm.toLowerCase());
+      if (idx >= 0 && !out.some((o) => o.idx === idx)) out.push({ name: REGIONS[idx], idx });
     });
-    return set;
+    return out.length ? out : REGIONS.map((name, idx) => ({ name, idx }));
+  }
+
+  // Best-effort attribution of a map slot to a region (slots grouped in order).
+  function regionOfSlot(slot, maxSlot) {
+    if (maxSlot < 0) return 0;
+    return Math.min(REGIONS.length - 1, Math.floor((slot * REGIONS.length) / (maxSlot + 1)));
   }
 
   Scheduler.register({
@@ -59,21 +59,27 @@
           let map = Api.parseMap(doc);
           if (!map.monsters.length) { doc = await Api.getLiberationDetails(); map = Api.parseMap(doc); }
 
-          const allow = allowedSlots(c);
-          const avail = map.monsters.filter((m) => m.stars >= 1 && (!allow || allow.has(m.location)));
+          const prio = priorityRegions(c);
+          const rank = new Map(prio.map((r, i) => [r.idx, i])); // region idx -> priority position
+          const maxSlot = map.monsters.reduce((mx, m) => Math.max(mx, m.location), -1);
+          const avail = map.monsters
+            .filter((m) => m.stars >= 1)
+            .map((m) => Object.assign({}, m, { region: regionOfSlot(m.location, maxSlot) }))
+            .filter((m) => rank.has(m.region))           // only enabled regions
+            .sort((a, b) => rank.get(a.region) - rank.get(b.region)); // highest priority first
 
           if ((map.energy == null || map.energy > 0) && avail.length) {
             const m = avail[0];
-            const label = LOCATIONS[m.location] || ('#' + m.location);
+            const label = REGIONS[m.region] || ('#' + m.location);
             Logger.info(I18n.t('logMapEncounter', [label, String(map.energy != null ? map.energy : '?')]));
             await Api.startLiberation(m.location);
             Stats.bump({ encounters: 1 });
-            encounterCooldown = Date.now() + 4000; // keep clearing
+            encounterCooldown = 0; // keep clearing; the scheduler paces (or spams)
             return;
           }
           if (map.energy != null && map.energy <= 0 && c.buyEnergy) {
             Logger.info(I18n.t('logMapBuyEnergy'));
-            try { await Api.buyLiberationEnergy(); encounterCooldown = Date.now() + 3000; }
+            try { await Api.buyLiberationEnergy(); encounterCooldown = 0; }
             catch (e) { encounterCooldown = Date.now() + 30 * 60000; }
             return;
           }

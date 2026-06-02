@@ -71,7 +71,8 @@ export const DEFAULT_SETTINGS = {
     enabled: false,
     encounters: true,              // auto-fight the available map encounters (срещи)
     buyEnergy: false,              // buy more encounter energy when it runs out
-    locations: '',                 // restrict to these location names/slots (blank = all)
+    // Regions in PRIORITY order (first = highest). Remove a region to skip it.
+    regions: "Dragon's Claw Mountains, Oblivion Gorge, Gloomforest, Blackwater Marshes, Bonelands, Island of Secrets",
     illusionCave: true,            // also run the Dungeon of Illusions (cave)
     dragon: true,                  // also run the Dragon event
     cooldownMinutes: 10            // wait between cave/dragon attempts

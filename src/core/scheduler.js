@@ -144,13 +144,16 @@
     return false;
   }
 
+  // Spam delay when humanize is off (small, just enough not to lock the tab).
+  const SPAM_DELAY_MS = 120;
+
   function humanDelay() {
     const g = Storage.section('general') || {};
+    if (!g.humanize) return SPAM_DELAY_MS;          // humanize off -> spam
     let min = g.minActionDelayMs ?? 1500;
     let max = g.maxActionDelayMs ?? 4500;
     if (max < min) [min, max] = [max, min];
-    if (!g.humanize) return min;
-    // Bias toward the lower half but allow occasional long pauses.
+    // Respect the user's delay: random within [min, max], occasional long pause.
     const base = min + Math.random() * (max - min);
     const longPause = Math.random() < 0.07 ? (max - min) * Math.random() : 0;
     return Math.round(base + longPause);
@@ -200,9 +203,12 @@
       }
     }
 
-    // Idle longer when there was nothing to do, to avoid hammering the server.
-    const delay = acted ? humanDelay() : Math.max(8000, humanDelay() * 2);
-    loopHandle = setTimeout(loop, delay);
+    // Between actions: the humanized delay (or spam when humanize is off).
+    // When nothing was actionable, wait a bit longer to avoid hammering — but
+    // stay snappy in spam mode so active things resume immediately.
+    const g = Storage.section('general') || {};
+    const idle = g.humanize ? Math.max(8000, humanDelay() * 2) : 2000;
+    loopHandle = setTimeout(loop, acted ? humanDelay() : idle);
   }
 
   TB.Scheduler = Scheduler;

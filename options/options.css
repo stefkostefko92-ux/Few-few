@@ -50,6 +50,16 @@ select { min-width: 170px; }
 .checklist .check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); cursor: pointer; }
 .checklist .check input { width: 16px; height: 16px; flex: 0 0 auto; }
 
+.prio-list { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-width: 460px; }
+.prio-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border); }
+.prio-item.off { opacity: .5; }
+.prio-item input[type="checkbox"] { width: 16px; height: 16px; flex: 0 0 auto; }
+.prio-rank { width: 18px; text-align: center; font-weight: 700; color: var(--accent); }
+.prio-name { flex: 1; }
+.prio-btn { padding: 2px 8px; font-size: 12px; min-width: 0; }
+.prio-btn:disabled { opacity: .3; cursor: default; }
+
 /* Subscription card */
 .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 30px; }
 .sub-card.expired { border-color: var(--danger); }

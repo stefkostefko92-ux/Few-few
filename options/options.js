@@ -25,13 +25,10 @@ const CIRCLE_NODES = [
   { n: 15, label: 'Glory Rune — drop rate' }, { n: 16, label: 'Demon Skull — major bonuses' }
 ];
 
-// Map location fields (names from the Tanoth wiki), index = map slot.
-const MAP_LOCATIONS = [
-  'Forest of the Hanged Men', 'Forest of the Hanged Men — Rat',
-  'Swamp of the Forgotten', 'Swamp of the Forgotten — Old Ruins', 'Swamp of the Forgotten — Goblin',
-  'Sea of Dunes', 'Sea of Dunes — Large Forge', 'Sea of Dunes — Ocr', 'Sea of Dunes — Giant Rat',
-  'Old Shore', 'Old Shore — Hell Wolf', 'Old Shore — Scorpion', "Old Shore — Sanctum of Shal'ah",
-  'Lowlands of Thun', 'Frozen Peaks', 'Dragon Lair', 'Forgotten Crypt'
+// Map regions (canonical order). The player orders these by priority.
+const MAP_REGIONS = [
+  "Dragon's Claw Mountains", 'Oblivion Gorge', 'Gloomforest',
+  'Blackwater Marshes', 'Bonelands', 'Island of Secrets'
 ];
 
 /* Field types: bool | number | text | time | select(options) */
@@ -80,7 +77,7 @@ const SCHEMA = [
     { k: 'enabled', type: 'bool' },
     { k: 'encounters', type: 'bool' },
     { k: 'buyEnergy', type: 'bool' },
-    { k: 'locations', type: 'mapLocations' },
+    { k: 'regions', type: 'mapRegions' },
     { k: 'illusionCave', type: 'bool' },
     { k: 'dragon', type: 'bool' },
     { k: 'cooldownMinutes', type: 'number', min: 5, max: 600 }
@@ -162,31 +159,26 @@ function renderChecklist(section, f) {
   const box = document.createElement('div');
   box.className = 'checklist';
 
-  // Circle stores node NUMBERS; map stores location NAMES.
-  const isCircle = f.type === 'circleNodes';
-  const items = isCircle
-    ? CIRCLE_NODES.map((c) => ({ value: c.n, label: c.label }))
-    : MAP_LOCATIONS.map((name, i) => ({ value: name, label: `${i}. ${name}` }));
-
+  // Circle stores node NUMBERS.
   const current = String(settings[section][f.k] || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
-  const selected = new Set(current.map((s) => isCircle ? String(parseInt(s, 10)) : s.toLowerCase()));
+  const selected = new Set(current.map((s) => String(parseInt(s, 10))));
 
   function commit() {
     const chosen = Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value);
     settings[section][f.k] = chosen.join(', ');
-    if (isCircle) settings.circle.mode = chosen.length ? 'manual' : 'auto';
+    settings.circle.mode = chosen.length ? 'manual' : 'auto';
   }
 
-  items.forEach((it) => {
+  CIRCLE_NODES.forEach((c) => {
     const lab = document.createElement('label');
     lab.className = 'check';
     const cb = document.createElement('input');
     cb.type = 'checkbox';
-    cb.value = String(it.value);
-    cb.checked = isCircle ? selected.has(String(it.value)) : selected.has(String(it.value).toLowerCase());
+    cb.value = String(c.n);
+    cb.checked = selected.has(String(c.n));
     cb.addEventListener('change', commit);
     lab.appendChild(cb);
-    lab.appendChild(document.createTextNode(' ' + it.label));
+    lab.appendChild(document.createTextNode(' ' + c.label));
     box.appendChild(lab);
   });
 
@@ -194,8 +186,68 @@ function renderChecklist(section, f) {
   return row;
 }
 
+// Ordered, enable-able priority list (for the map regions).
+function renderPriorityList(section, f) {
+  const row = document.createElement('div');
+  row.className = 'field checklist-field';
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.innerHTML = `<b>${fieldLabel(section, f.k)}</b>`;
+  row.appendChild(label);
+
+  const list = document.createElement('div');
+  list.className = 'prio-list';
+  row.appendChild(list);
+
+  function currentOrder() {
+    const enabled = String(settings[section][f.k] || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
+    const order = [];
+    enabled.forEach((nm) => {
+      const m = MAP_REGIONS.find((r) => r.toLowerCase() === nm.toLowerCase());
+      if (m && !order.includes(m)) order.push(m);
+    });
+    MAP_REGIONS.forEach((r) => { if (!order.includes(r)) order.push(r); }); // disabled go last
+    return { order, enabledSet: new Set(order.filter((r) => enabled.some((e) => e.toLowerCase() === r.toLowerCase()))) };
+  }
+
+  function commit(order, enabledSet) {
+    settings[section][f.k] = order.filter((r) => enabledSet.has(r)).join(', ');
+    draw();
+  }
+
+  function draw() {
+    const { order, enabledSet } = currentOrder();
+    list.innerHTML = '';
+    order.forEach((name, i) => {
+      const item = document.createElement('div');
+      item.className = 'prio-item' + (enabledSet.has(name) ? '' : ' off');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = enabledSet.has(name);
+      cb.addEventListener('change', () => {
+        if (cb.checked) enabledSet.add(name); else enabledSet.delete(name);
+        commit(order, enabledSet);
+      });
+      const rank = document.createElement('span');
+      rank.className = 'prio-rank';
+      rank.textContent = enabledSet.has(name) ? (order.filter((r, j) => enabledSet.has(r) && j <= i).length) : '–';
+      const nm = document.createElement('span');
+      nm.className = 'prio-name'; nm.textContent = name;
+      const up = document.createElement('button'); up.type = 'button'; up.textContent = '▲'; up.className = 'prio-btn';
+      const down = document.createElement('button'); down.type = 'button'; down.textContent = '▼'; down.className = 'prio-btn';
+      up.disabled = i === 0; down.disabled = i === order.length - 1;
+      up.addEventListener('click', () => { order.splice(i - 1, 0, order.splice(i, 1)[0]); commit(order, enabledSet); });
+      down.addEventListener('click', () => { order.splice(i + 1, 0, order.splice(i, 1)[0]); commit(order, enabledSet); });
+      item.append(cb, rank, nm, up, down);
+      list.appendChild(item);
+    });
+  }
+  draw();
+  return row;
+}
+
 function renderField(section, f) {
-  if (f.type === 'circleNodes' || f.type === 'mapLocations') return renderChecklist(section, f);
+  if (f.type === 'circleNodes') return renderChecklist(section, f);
+  if (f.type === 'mapRegions') return renderPriorityList(section, f);
   const val = settings[section][f.k];
   const row = document.createElement('div');
   row.className = 'field';

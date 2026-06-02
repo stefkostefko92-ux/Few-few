@@ -196,7 +196,7 @@
   "opt_map_enabled": { "message": "Enable map" },
   "opt_map_encounters": { "message": "Auto-fight map encounters (срещи)" },
   "opt_map_buyEnergy": { "message": "Buy more energy when encounters run out" },
-  "opt_map_locations": { "message": "Limit to these locations (none ticked = all)" },
+  "opt_map_regions": { "message": "Region priority (tick to enable, ▲▼ to order; #1 = fought first)" },
   "opt_map_illusionCave": { "message": "Dungeon of Illusions (cave)" },
   "opt_map_dragon": { "message": "Dragon event" },
   "opt_map_cooldownMinutes": { "message": "Minutes between cave/dragon attempts" },

@@ -49,7 +49,9 @@
         Logger.info(I18n.t('logPvpFight', [name]));
         const res = await Api.fight(name);
         foughtToday++;
-        cooldownUntil = Date.now() + Math.max(5, Number(c.cooldownSeconds) || 30) * 1000;
+        // Respect the arena cooldown when humanizing; spam when humanize is off.
+        const humanize = (Storage.section('general') || {}).humanize;
+        cooldownUntil = humanize ? Date.now() + Math.max(1, Number(c.cooldownSeconds) || 30) * 1000 : 0;
         if (res.won) {
           Stats.bump({ duelsWon: 1, goldEarned: res.gold || 0 });
           Logger.success(I18n.t('logPvpWon', [name, String(res.gold || 0)]));
