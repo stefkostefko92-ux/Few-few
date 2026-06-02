@@ -258,3 +258,12 @@ button.aso-card:hover {
     inset 0 0 0 1px rgba(255, 255, 255, 0.6),
     0 0 0 1.5px var(--brass-400);
 }
+
+/* No-Trump face for the trump indicator (Bridge NT contracts). */
+.aso-trump__nt {
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--charcoal-900);
+  letter-spacing: 0.02em;
+}

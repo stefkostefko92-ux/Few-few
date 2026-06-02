@@ -5,7 +5,8 @@ import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
-import { SuitGlyph, type SuitChar } from "../cards/suits";
+import { type SuitChar } from "../cards/suits";
+import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
@@ -224,19 +225,6 @@ function TeamDot({ team, myTeam }: { team: number; myTeam: number }) {
   );
 }
 
-/** Trump indicator pinned top-left: label above a card showing the trump suit. */
-function TrumpIndicator({ suit, label }: { suit: SuitChar; label: string }) {
-  const red = suit === "H" || suit === "D";
-  const color = red ? "var(--suit-red)" : "var(--suit-black)";
-  return (
-    <div className="aso-trump">
-      <span className="aso-trump__label">{label}</span>
-      <span className="aso-trump__card">
-        <SuitGlyph suit={suit} size={34} color={color} />
-      </span>
-    </div>
-  );
-}
 
 function ScorePill({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (

@@ -4,6 +4,8 @@ import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { TrumpIndicator } from "../cards/TrumpIndicator";
+import { type SuitChar } from "../cards/suits";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
@@ -144,9 +146,7 @@ export function SantaseView({ title }: { title: string }) {
                 </div>
               </Seat>
 
-              <div className="aso-announce" aria-hidden>
-                {t("santase.trump")} {SUIT_GLYPH[state.trump]}
-              </div>
+              <TrumpIndicator suit={state.trump as SuitChar} label={t("santase.trump")} />
             </FeltTable>
           </div>
 

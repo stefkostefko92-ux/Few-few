@@ -4,6 +4,8 @@ import { Button } from "../../../ui";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { FourPlayerTrick } from "../trick/FourPlayerTrick";
+import { TrumpIndicator } from "../cards/TrumpIndicator";
+import { type SuitChar } from "../cards/suits";
 
 interface Play {
   seat: number;
@@ -51,9 +53,6 @@ export function BridgeView({ title }: { title: string }) {
 
   const myTeam = seat % 2;
   const myTurn = !!state && state.turn === seat && legal.length > 0;
-  const contractLabel = state?.bidStrain
-    ? `${state.bidLevel}${STRAIN_GLYPH[state.bidStrain]}`
-    : "";
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
@@ -66,7 +65,13 @@ export function BridgeView({ title }: { title: string }) {
             names={(s) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`}
             emptyTrickLabel={state.phase === "AUCTION" ? t("bridge.auction") : t("belote.emptyTrick")}
             announce={
-              state.phase === "PLAY" && contractLabel ? `${t("bridge.contract")} ${contractLabel}` : undefined
+              state.phase === "PLAY" && state.bidStrain ? (
+                <TrumpIndicator
+                  suit={state.bidStrain === "NT" ? null : (state.bidStrain as SuitChar)}
+                  label={`${t("bridge.contract")} ${state.bidLevel}`}
+                  noTrumpText="NT"
+                />
+              ) : undefined
             }
             crest={state.trump ? STRAIN_GLYPH[state.trump as Strain] : "♢"}
             feltColor="#13322a"

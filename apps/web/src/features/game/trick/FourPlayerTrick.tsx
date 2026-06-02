@@ -124,11 +124,8 @@ export function FourPlayerTrick({
           </div>
         </Seat>
 
-        {announce ? (
-          <div className="aso-announce" aria-live="polite">
-            {announce}
-          </div>
-        ) : null}
+        {/* Caller supplies a positioned node (e.g. top-left TrumpIndicator). */}
+        {announce}
       </FeltTable>
     </div>
   );
