@@ -108,5 +108,12 @@
   "holdem": {
     "check": "Check",
     "bet": "Bet"
+  },
+  "bridge": {
+    "auction": "Auction",
+    "contract": "Contract",
+    "yourBid": "Your bid",
+    "weTricks": "Our tricks",
+    "theyTricks": "Their tricks"
   }
 }

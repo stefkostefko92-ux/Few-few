@@ -210,3 +210,17 @@ button.aso-card:hover {
 @media (prefers-reduced-motion: reduce) {
   .aso-announce { animation: none; }
 }
+
+/* Bridge auction bid buttons (compact grid). */
+.aso-bridge-bid {
+  padding: 6px 0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: linear-gradient(to bottom, #fffdf6, #ece3cf);
+  border: 1px solid rgba(217, 178, 95, 0.4);
+  cursor: pointer;
+  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
+}
+.aso-bridge-bid:hover:not(:disabled) { transform: translateY(-2px); }
+.aso-bridge-bid:disabled { opacity: 0.25; cursor: not-allowed; }

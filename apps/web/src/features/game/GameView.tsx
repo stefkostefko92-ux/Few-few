@@ -8,6 +8,8 @@ import { SantaseView } from "./santase/SantaseView";
 import { BeloteView } from "./belote/BeloteView";
 import { SvaraView } from "./svara/SvaraView";
 import { HoldemView } from "./holdem/HoldemView";
+import { KentView } from "./kent/KentView";
+import { BridgeView } from "./bridge/BridgeView";
 import { GenericGameView } from "./generic/GenericGameView";
 
 /** Dispatches to a bespoke per-game view, falling back to the generic view. */
@@ -45,6 +47,10 @@ export function GameView() {
       return <SvaraView title={meta.title} />;
     case "HOLDEM":
       return <HoldemView title={meta.title} />;
+    case "KENT":
+      return <KentView title={meta.title} />;
+    case "BRIDGE":
+      return <BridgeView title={meta.title} />;
     default:
       return <GenericGameView title={meta.title} game={gameKey as GameKey} />;
   }

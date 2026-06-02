@@ -108,5 +108,12 @@
   "holdem": {
     "check": "Чек",
     "bet": "Залог"
+  },
+  "bridge": {
+    "auction": "Анонс",
+    "contract": "Договор",
+    "yourBid": "Твоят анонс",
+    "weTricks": "Наши взятки",
+    "theyTricks": "Техни взятки"
   }
 }
