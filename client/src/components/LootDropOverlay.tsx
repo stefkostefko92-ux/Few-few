@@ -20,13 +20,19 @@ const RARITY_COLOR: Record<string, string> = {
 
 export default function LootDropOverlay({ item, onDone }: Props): React.ReactElement {
   const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in');
+  // Audit NIT #15: keep the latest onDone in a ref so changing it
+  // doesn't restart the 2.6 s timeline. The fade timers are wall-clock
+  // events; the overlay should run them once on mount regardless of
+  // whether the parent re-renders.
+  const onDoneRef = React.useRef(onDone);
+  React.useEffect(() => { onDoneRef.current = onDone; }, [onDone]);
 
   useEffect(() => {
     const t1 = window.setTimeout(() => setPhase('hold'), 280);
     const t2 = window.setTimeout(() => setPhase('out'), 1800);
-    const t3 = window.setTimeout(() => onDone?.(), 2600);
+    const t3 = window.setTimeout(() => onDoneRef.current?.(), 2600);
     return () => { window.clearTimeout(t1); window.clearTimeout(t2); window.clearTimeout(t3); };
-  }, [onDone]);
+  }, []);
 
   const rarity = item.rarity || 'common';
   const color = RARITY_COLOR[rarity] || RARITY_COLOR.common;

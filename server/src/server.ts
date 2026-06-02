@@ -37,6 +37,7 @@ import battlePassRoutes from './routes/battlepass';
 import recipeRoutes from './routes/recipes';
 import auctionRoutes from './routes/auction';
 import mountRoutes from './routes/mount';
+import weeklyRoutes from './routes/weekly';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
 
@@ -155,6 +156,7 @@ app.use('/api/battlepass', battlePassRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/auction', auctionRoutes);
 app.use('/api/mount', mountRoutes);
+app.use('/api/weekly', weeklyRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');
@@ -182,10 +184,15 @@ app.get('*', (req, res, next) => {
 // Without this Express returns an HTML stack trace, which is both ugly to
 // debug and a small information-leak vector.
 import { logEvent } from './lib/logger';
+import { captureError } from './lib/observability';
 app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const msg = err?.message || 'Server error';
   // eslint-disable-next-line no-console
   console.error('[unhandled]', req.method, req.path, msg, err?.stack || '');
+  // Audit RISK #9: route errors should reach Sentry (when configured).
+  // The global error handler is the single funnel point; reporting here
+  // covers every route without per-router instrumentation.
+  captureError(err, { method: req.method, path: req.path, uid: (req as any).auth?.uid });
   try {
     logEvent({
       category: 'system',
@@ -196,7 +203,15 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
       meta: { stack: err?.stack || '' },
     });
   } catch { /* swallow logger errors */ }
-  if (!res.headersSent) res.status(500).json({ error: msg });
+  if (!res.headersSent) {
+    // Audit #17: never echo raw error messages to clients in production
+    // — SQLite errors leak schema, "x.y is undefined" hints at internals.
+    // Only domain-clean messages thrown intentionally (with `clientSafe`
+    // marker) flow through; everything else gets a generic 500.
+    const isClientSafe = err && typeof err === 'object' && (err as any).clientSafe === true;
+    const out = process.env.NODE_ENV === 'production' && !isClientSafe ? 'Server error' : msg;
+    res.status(500).json({ error: out });
+  }
 });
 
 // Ensure DB is initialized before listening

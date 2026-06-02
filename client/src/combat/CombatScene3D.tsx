@@ -416,7 +416,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       sprite.scale.set(2.2, 2.75, 1);
       sprite.position.set(side === 'hero' ? -2.2 : 2.2, 1.4, 0);
       scene.add(sprite);
-      const light = new THREE.PointLight(new THREE.Color(tint), 0, 4);
+      // distance=8 (was 4) so the rim flash actually reaches the foe
+      // — the two fighters are ~4.4 units apart, the old setting cut
+      // the light off just short of crossing the field (audit BUG #5).
+      const light = new THREE.PointLight(new THREE.Color(tint), 0, 8);
       light.position.copy(sprite.position).add(new THREE.Vector3(0, 0.2, 0.5));
       scene.add(light);
       return { sprite, light };

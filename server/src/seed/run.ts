@@ -274,6 +274,39 @@ function seed(): void {
   txExt();
   console.log(`Inserted/refreshed ${extCount} extended players, ${marketCount} marketplace listings.`);
 
+  // Audit balance #14: seed a handful of T6-T10 listings on the auction
+  // so high-tier gear is purchasable for players who haven't farmed the
+  // drops yet. We post 2 random items per tier under a system-vendor
+  // character so the auction has something for every level band.
+  const seedHighTierAuction = () => {
+    const vendor = db.prepare("SELECT id FROM characters WHERE is_npc = 1 ORDER BY id LIMIT 1").get() as { id: number } | undefined;
+    if (!vendor) return 0;
+    const sellable = db.prepare(`
+      SELECT * FROM items
+      WHERE tier IN (6,7,8,9,10)
+        AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
+        AND sell_price > 0
+    `).all() as any[];
+    let posted = 0;
+    for (const item of sellable) {
+      const invInfo = insertExtraInv.run(vendor.id, item.id, 1);
+      const invId = invInfo.lastInsertRowid as number;
+      // Mark-up over sell price so the auction is a profit-margin sink
+      // for the vendor, but cheaper than the buy price on shop items.
+      const price = Math.floor((item.buy_price || item.sell_price * 3) * 0.85);
+      insertListing.run(invId, item.id, vendor.id, price, Date.now() - Math.floor(Math.random() * 3 * 86_400_000));
+      db.prepare('UPDATE inventory SET listed = 1 WHERE id = ?').run(invId);
+      posted++;
+    }
+    return posted;
+  };
+  try {
+    const posted = db.transaction(seedHighTierAuction)();
+    console.log(`Inserted ${posted} high-tier marketplace listings.`);
+  } catch (e: any) {
+    console.warn('high-tier auction seed skipped:', e?.message || e);
+  }
+
   db.pragma('foreign_keys = ON');
   console.log('Seed complete.');
 }

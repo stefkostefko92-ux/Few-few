@@ -11,6 +11,7 @@ import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
+import { trackWeeklyKill } from './weekly';
 import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -87,7 +88,10 @@ router.post('/hunt', (req, res) => {
       .all(
         parse.data.region,
         Math.max(1, char.level - window),
-        char.level + Math.min(window, 5),
+        // Audit RISK #8: the previous Math.min(window, 5) capped the
+        // upper bound, so a Lv 350 hero in a band clustered at 360-380
+        // produced an empty pool forever. Symmetric window now.
+        char.level + window,
       ) as Monster[];
     if (pool.length > 0) break;
   }
@@ -227,7 +231,10 @@ router.post('/hunt', (req, res) => {
   const completedBounties = result.winner === 'hero'
     ? applyBountyKill(char, monster.slug)
     : [];
-  if (result.winner === 'hero') trackBattlePass(char.id, 'hunt_kill', 1);
+  if (result.winner === 'hero') {
+    trackBattlePass(char.id, 'hunt_kill', 1);
+    trackWeeklyKill(char.id);
+  }
 
   res.json({
     success: result.winner === 'hero',
