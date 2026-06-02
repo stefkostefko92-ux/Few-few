@@ -97,5 +97,12 @@
     "skipToContent": "Skip to content",
     "toggleSound": "Toggle sound",
     "toggleMotion": "Reduced motion"
+  },
+  "svara": {
+    "pot": "Pot",
+    "call": "Call",
+    "raise": "Raise",
+    "fold": "Fold",
+    "notice": "Social game with virtual chips — not real-money gambling."
   }
 }

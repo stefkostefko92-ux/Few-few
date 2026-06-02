@@ -97,5 +97,12 @@
     "skipToContent": "Vai al contenuto",
     "toggleSound": "Attiva/disattiva audio",
     "toggleMotion": "Movimento ridotto"
+  },
+  "svara": {
+    "pot": "Piatto",
+    "call": "Vedo",
+    "raise": "Rilancio",
+    "fold": "Passo",
+    "notice": "Gioco sociale con fiche virtuali — non è gioco d'azzardo con denaro reale."
   }
 }
