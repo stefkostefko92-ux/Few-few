@@ -6,6 +6,7 @@ import { useAuthStore } from "../../lib/store";
 import { GAME_CATALOG } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
+import { MatchStatus } from "./MatchStatus";
 import { OutOfChips } from "./OutOfChips";
 import { ChessView } from "./chess/ChessView";
 import { SantaseView } from "./santase/SantaseView";
@@ -124,6 +125,7 @@ export function GameView() {
   return (
     <CinematicStage tone={TONE[key] ?? "default"}>
       {renderGame(key, meta.title)}
+      <MatchStatus />
       <ChatDock />
     </CinematicStage>
   );

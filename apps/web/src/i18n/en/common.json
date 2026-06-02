@@ -103,6 +103,10 @@
     "learn": "Learn more",
     "accept": "Got it"
   },
+  "live": {
+    "opponentDropped": "{{name}} dropped — bot is covering",
+    "yourTurnTimer": "Your turn: {{s}}s"
+  },
   "verify": {
     "title": "Email verification",
     "verifying": "Verifying your email…",

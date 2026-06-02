@@ -5,12 +5,18 @@ import {
   type GameKey,
   type MatchFoundMsg,
   type MatchPlayerInfo,
+  type PresenceMsg,
 } from "@aso/shared";
 import { RandomBot } from "./bot.js";
 import { finalizeMatch, type SeatInfo } from "./rating.js";
 import { notifyMatchResult } from "./progression.js";
 import { STARTING_MMR } from "@aso/shared";
+import { env } from "./env.js";
 import { logger } from "./logger.js";
+
+const TURN_MS = env.TURN_SECONDS * 1000;
+const DISCONNECT_GRACE_MS = env.DISCONNECT_GRACE_SECONDS * 1000;
+const DISCONNECTED_TURN_MS = 3000; // snappy bot takeover for a dropped seat
 
 export interface RoomSeat {
   seat: number;
@@ -44,6 +50,13 @@ export class GameRoom {
   private state: unknown;
   private done = false;
 
+  // Live-play resilience (§8.3): per-turn clock + disconnect tracking.
+  private readonly fallbackBot: RandomBot;
+  private turnTimer?: NodeJS.Timeout;
+  private turnEndsAt = 0;
+  private readonly disconnected = new Set<number>(); // human seats currently offline
+  private readonly graceTimers = new Map<string, NodeJS.Timeout>(); // by userId
+
   constructor(
     private readonly io: Server,
     readonly matchId: string,
@@ -54,6 +67,7 @@ export class GameRoom {
     this.engine = getEngine(game);
     this.rng = new SeededRng(seed);
     this.state = this.engine.init({ seats: seats.length }, this.rng);
+    this.fallbackBot = new RandomBot(`${seed}:fallback`);
   }
 
   private seatOf(userId: string): RoomSeat | undefined {
@@ -81,6 +95,7 @@ export class GameRoom {
       const msg: MatchFoundMsg = { matchId: this.matchId, game: this.game, seat: s.seat, players };
       this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.MATCH_FOUND, msg);
     }
+    this.armTurnTimer();
     this.broadcastState();
     void this.runBots();
   }
@@ -96,6 +111,7 @@ export class GameRoom {
       legalActions,
       turn: current ? current.seat : null,
       terminal: this.engine.isTerminal(this.state),
+      turnEndsAt: this.turnEndsAt || undefined,
     });
   }
 
@@ -122,8 +138,93 @@ export class GameRoom {
       });
       return;
     }
+    this.clearTurnTimer();
     this.applyReduce(action);
     void this.runBots();
+  }
+
+  // ── Turn clock + presence ──────────────────────────────────────────────────
+
+  private clearTurnTimer(): void {
+    if (this.turnTimer) clearTimeout(this.turnTimer);
+    this.turnTimer = undefined;
+    this.turnEndsAt = 0;
+  }
+
+  /** Arm a clock for the current human seat (shorter if they've dropped). */
+  private armTurnTimer(): void {
+    this.clearTurnTimer();
+    if (this.done) return;
+    const seat = this.currentSeat();
+    if (!seat || seat.isBot) return; // bots are driven by runBots()
+    const delay = this.disconnected.has(seat.seat) ? DISCONNECTED_TURN_MS : TURN_MS;
+    this.turnEndsAt = Date.now() + delay;
+    this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), delay);
+  }
+
+  /** Clock expired: the server plays a legal move for the seat (anti-stall). */
+  private onTurnTimeout(seat: number): void {
+    if (this.done) return;
+    const cur = this.currentSeat();
+    if (!cur || cur.seat !== seat) return; // they already moved
+    const action = this.fallbackBot.pick(this.engine, this.state, seat);
+    if (action === null) {
+      this.armTurnTimer();
+      return;
+    }
+    this.applyReduce(action);
+    void this.runBots();
+  }
+
+  private emitPresence(seat: number, connected: boolean): void {
+    const msg: PresenceMsg = { matchId: this.matchId, seat, connected };
+    for (const s of this.seats) {
+      if (s.userId) this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.PRESENCE, msg);
+    }
+  }
+
+  /** Update a human seat's connection. Reconnect resyncs; a drop in a 2-seat
+   *  match starts a forfeit grace timer, and shortens that seat's turn clock. */
+  setConnected(userId: string, connected: boolean): void {
+    const seat = this.seatOf(userId);
+    if (!seat || seat.isBot || this.done) return;
+
+    if (connected) {
+      if (!this.disconnected.has(seat.seat)) return;
+      this.disconnected.delete(seat.seat);
+      const g = this.graceTimers.get(userId);
+      if (g) {
+        clearTimeout(g);
+        this.graceTimers.delete(userId);
+      }
+      this.emitPresence(seat.seat, true);
+      this.sendStateTo(seat); // catch them up
+      return;
+    }
+
+    if (this.disconnected.has(seat.seat)) return;
+    this.disconnected.add(seat.seat);
+    this.emitPresence(seat.seat, false);
+    // Forfeit only makes sense head-to-head; larger tables keep going with the
+    // bot covering the dropped seat.
+    if (this.seats.length === 2) {
+      this.graceTimers.set(
+        userId,
+        setTimeout(() => this.onGrace(seat.seat), DISCONNECT_GRACE_MS),
+      );
+    }
+    // If it's their turn, shorten the clock so the table isn't left waiting.
+    if (this.currentSeat()?.seat === seat.seat) this.armTurnTimer();
+  }
+
+  private onGrace(seat: number): void {
+    if (this.done || !this.disconnected.has(seat)) return;
+    logger.info({ matchId: this.matchId, seat }, "seat abandoned — forfeiting");
+    const score: SeatScore[] = this.seats.map((s) => ({
+      seat: s.seat,
+      result: s.seat === seat ? "loss" : "win",
+    }));
+    void this.finish(score);
   }
 
   private applyReduce(action: unknown): void {
@@ -138,9 +239,12 @@ export class GameRoom {
       }
     }
     if (this.engine.isTerminal(this.state)) {
+      this.clearTurnTimer();
       this.broadcastState();
       void this.finish();
     } else {
+      // Arm before broadcasting so the state carries the fresh turn deadline.
+      this.armTurnTimer();
       this.broadcastState();
     }
   }
@@ -159,10 +263,13 @@ export class GameRoom {
     }
   }
 
-  private async finish(): Promise<void> {
+  private async finish(scoreOverride?: SeatScore[]): Promise<void> {
     if (this.done) return;
     this.done = true;
-    const score = this.engine.score(this.state) as SeatScore[];
+    this.clearTurnTimer();
+    for (const g of this.graceTimers.values()) clearTimeout(g);
+    this.graceTimers.clear();
+    const score = scoreOverride ?? (this.engine.score(this.state) as SeatScore[]);
     const seatInfos: SeatInfo[] = this.seats.map((s) => ({
       seat: s.seat,
       userId: s.userId,

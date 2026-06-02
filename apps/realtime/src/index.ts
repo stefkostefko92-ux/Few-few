@@ -69,6 +69,9 @@ async function main(): Promise<void> {
       })
       .catch(() => undefined);
 
+    // Resume an in-progress match if this is a reconnect (new socket).
+    matchmaker.activeRoomForUser(userId)?.setConnected(userId, true);
+
     socket.on(SOCKET_EVENTS.QUEUE_JOIN, (payload: unknown) => {
       const parsed = queueJoinSchema.safeParse(payload);
       if (!parsed.success || !isGameKey(parsed.data.game)) {
@@ -132,6 +135,15 @@ async function main(): Promise<void> {
 
     socket.on("disconnect", () => {
       void matchmaker.leaveAllQueues(userId);
+      // Only flag the seat offline if no other socket for this user remains
+      // (multi-tab). The user room membership reflects live connections.
+      void io
+        .in(userRoom(userId))
+        .fetchSockets()
+        .then((sockets) => {
+          if (sockets.length === 0) matchmaker.activeRoomForUser(userId)?.setConnected(userId, false);
+        })
+        .catch(() => matchmaker.activeRoomForUser(userId)?.setConnected(userId, false));
     });
   });
 

@@ -16,6 +16,7 @@ export const SOCKET_EVENTS = {
   GAME_EVENTS: "game:events",
   GAME_OVER: "game:over",
   CHAT_MESSAGE: "chat:message",
+  PRESENCE: "game:presence",
   ERROR: "game:error",
 } as const;
 
@@ -55,6 +56,15 @@ export interface GameStateMsg {
   legalActions: unknown[]; // legal actions for the receiving seat (empty if not their turn)
   turn: number | null;
   terminal: boolean;
+  /** Epoch ms when the current seat's turn clock expires (server auto-plays). */
+  turnEndsAt?: number;
+}
+
+/** Server -> client: a seat's live connection status changed. */
+export interface PresenceMsg {
+  matchId: string;
+  seat: number;
+  connected: boolean;
 }
 
 export interface GameEventsMsg {

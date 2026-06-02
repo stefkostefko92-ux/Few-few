@@ -5,6 +5,7 @@ import {
   type GameOverMsg,
   type GameStateMsg,
   type MatchFoundMsg,
+  type PresenceMsg,
 } from "@aso/shared";
 import { getSocket } from "../../lib/socket";
 import { useMatchStore } from "../../lib/store";
@@ -58,16 +59,22 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       setLegal((s.legalActions as A[]) ?? []);
       setTurn(s.turn);
       setTerminal(s.terminal);
+      useMatchStore.getState().setLive(s.turn, s.turnEndsAt ?? 0);
     };
     const onOver = (o: GameOverMsg) => {
       setResult(o);
       setPhase("over");
       useMatchStore.getState().setPhase("over");
     };
+    const onPresence = (p: PresenceMsg) => {
+      // Single active match per client, so apply directly.
+      useMatchStore.getState().setPresence(p.seat, p.connected);
+    };
 
     socket.on(SOCKET_EVENTS.MATCH_FOUND, onFound);
     socket.on(SOCKET_EVENTS.GAME_STATE, onState);
     socket.on(SOCKET_EVENTS.GAME_OVER, onOver);
+    socket.on(SOCKET_EVENTS.PRESENCE, onPresence);
 
     const join = () => socket.emit(SOCKET_EVENTS.QUEUE_JOIN, { game: gameKey });
     if (socket.connected) join();
@@ -78,6 +85,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       socket.off(SOCKET_EVENTS.MATCH_FOUND, onFound);
       socket.off(SOCKET_EVENTS.GAME_STATE, onState);
       socket.off(SOCKET_EVENTS.GAME_OVER, onOver);
+      socket.off(SOCKET_EVENTS.PRESENCE, onPresence);
       socket.off("connect", join);
       useMatchStore.getState().clearMatch();
     };

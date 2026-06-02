@@ -46,6 +46,14 @@ export class Matchmaker {
     return this.rooms.get(matchId);
   }
 
+  /** The active (unfinished) room a user is seated in, if any. */
+  activeRoomForUser(userId: string): GameRoom | undefined {
+    for (const room of this.rooms.values()) {
+      if (!room.isDone && room.seats.some((s) => s.userId === userId)) return room;
+    }
+    return undefined;
+  }
+
   setDisplayName(userId: string, name: string): void {
     this.displayNames.set(userId, name);
   }

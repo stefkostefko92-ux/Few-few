@@ -103,6 +103,10 @@
     "learn": "Scopri di più",
     "accept": "Ho capito"
   },
+  "live": {
+    "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
+    "yourTurnTimer": "Il tuo turno: {{s}}s"
+  },
   "verify": {
     "title": "Verifica email",
     "verifying": "Verifica dell'email in corso…",
