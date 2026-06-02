@@ -69,6 +69,15 @@ app.use('/api', apiLimiter);
 const authLimiter = rateLimit({ windowMs: 60_000, max: 20 });
 app.use('/api/auth', authLimiter);
 
+// Tighter per-IP throttling on the abuse-prone auth endpoints. /register
+// + /forgot + /reset are rare; capping them an order of magnitude lower
+// than the general auth pool blocks credential-stuffing and password-
+// reset spamming without affecting normal login traffic.
+const sensitiveAuthLimiter = rateLimit({ windowMs: 60 * 60_000, max: 8, standardHeaders: true });
+app.use('/api/auth/register', sensitiveAuthLimiter);
+app.use('/api/auth/forgot',   sensitiveAuthLimiter);
+app.use('/api/auth/reset',    sensitiveAuthLimiter);
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });
 });
@@ -150,6 +159,10 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 
 // Ensure DB is initialized before listening
 getDb();
+
+import { initObservability, installProcessGuards } from './lib/observability';
+initObservability();
+installProcessGuards();
 
 app.listen(PORT, () => {
   console.log(`[Nexus Dominion] Server listening on port ${PORT}`);

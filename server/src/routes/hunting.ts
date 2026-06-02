@@ -207,6 +207,9 @@ router.post('/hunt', (req, res) => {
     monsterSlug: monster.slug,
     completedBounties,
     itemReward: itemRewardSlug || null,
+    itemDrop: itemRewardSlug
+      ? (db.prepare('SELECT slug, name, category, sub_type, tier, rarity, level_req, icon, atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus, description FROM items WHERE slug=?').get(itemRewardSlug) as any)
+      : null,
     cooldown_ms: cooldownMs,
   });
 });

@@ -54,7 +54,7 @@ export default function Hunting(): React.ReactElement {
           foe={fight.foe}
           rounds={fight.rounds}
           victory={fight.success}
-          reward={{ xp: fight.xp, gold: fight.gold }}
+          reward={{ xp: fight.xp, gold: fight.gold, itemReward: fight.itemReward || null, itemDrop: fight.itemDrop || null }}
           onClose={() => { setFight(null); }}
           onReplay={() => hunt(region!)}
           introTitle={`Wild Encounter — ${fight.foe.name}`}

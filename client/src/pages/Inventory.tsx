@@ -202,20 +202,53 @@ export default function Inventory(): React.ReactElement {
             {hover.item.category}{hover.item.sub_type ? ` · ${hover.item.sub_type}` : ''} · Lv {hover.item.level_req} · {hover.item.rarity}
           </div>
           {hover.item.description && <div className="desc">"{hover.item.description}"</div>}
-          <div className="stats">
-            {hover.item.atk_max > 0 && <Stat k="Attack" v={`${hover.item.atk_min}-${hover.item.atk_max}`} />}
-            {hover.item.defense > 0 && <Stat k="Defense" v={`+${hover.item.defense}`} />}
-            {hover.item.hp_bonus > 0 && <Stat k="HP" v={`+${hover.item.hp_bonus}`} />}
-            {hover.item.mp_bonus > 0 && <Stat k="MP" v={`+${hover.item.mp_bonus}`} />}
-            {hover.item.str_bonus > 0 && <Stat k="Strength" v={`+${hover.item.str_bonus}`} />}
-            {hover.item.dex_bonus > 0 && <Stat k="Dexterity" v={`+${hover.item.dex_bonus}`} />}
-            {hover.item.con_bonus > 0 && <Stat k="Constitution" v={`+${hover.item.con_bonus}`} />}
-            {hover.item.int_bonus > 0 && <Stat k="Intelligence" v={`+${hover.item.int_bonus}`} />}
-            {hover.item.wis_bonus > 0 && <Stat k="Wisdom" v={`+${hover.item.wis_bonus}`} />}
-            {hover.item.cha_bonus > 0 && <Stat k="Charisma" v={`+${hover.item.cha_bonus}`} />}
-            {hover.item.heal_hp > 0 && <Stat k="Restores" v={`${hover.item.heal_hp} HP`} />}
-            {hover.item.heal_mp > 0 && <Stat k="Restores" v={`${hover.item.heal_mp} MP`} />}
-          </div>
+          {(() => {
+            // Compare-to-equipped diff. Find the equipped item that occupies
+            // the same slot so the player sees +/- numbers on hover instead
+            // of needing to mentally subtract the two stat blocks.
+            const h = hover.item!;
+            const eqSlot = (() => {
+              if (h.equipped) return null; // already equipped — no diff vs itself
+              if (h.category === 'weapon') return equipped.find((e) => e.slot === 'weapon');
+              if (h.category === 'shield') return equipped.find((e) => e.slot === 'offhand');
+              return equipped.find((e) => e.slot === h.category);
+            })();
+            const eq = (k: string) => Number((eqSlot as any)?.[k] || 0);
+            const D = ({ k, label, v, e }: { k: string; label: string; v: string; e: number; }) => {
+              const cur = Number((hover.item as any)[k] || 0);
+              const diff = eqSlot ? cur - e : 0;
+              return (
+                <Stat k={label} v={(
+                  <span>{v}{eqSlot && diff !== 0 ? (
+                    <span style={{ marginLeft: 8, color: diff > 0 ? '#6ad8a4' : '#e85a4f', fontSize: 11 }}>
+                      ({diff > 0 ? '+' : ''}{diff})
+                    </span>
+                  ) : null}</span>
+                ) as any} />
+              );
+            };
+            return (
+              <div className="stats">
+                {hover.item.atk_max > 0 && <D k="atk_max" label="Attack" v={`${hover.item.atk_min}-${hover.item.atk_max}`} e={eq('atk_max')} />}
+                {hover.item.defense > 0 && <D k="defense" label="Defense" v={`+${hover.item.defense}`} e={eq('defense')} />}
+                {hover.item.hp_bonus > 0 && <D k="hp_bonus" label="HP" v={`+${hover.item.hp_bonus}`} e={eq('hp_bonus')} />}
+                {hover.item.mp_bonus > 0 && <D k="mp_bonus" label="MP" v={`+${hover.item.mp_bonus}`} e={eq('mp_bonus')} />}
+                {hover.item.str_bonus > 0 && <D k="str_bonus" label="Strength" v={`+${hover.item.str_bonus}`} e={eq('str_bonus')} />}
+                {hover.item.dex_bonus > 0 && <D k="dex_bonus" label="Dexterity" v={`+${hover.item.dex_bonus}`} e={eq('dex_bonus')} />}
+                {hover.item.con_bonus > 0 && <D k="con_bonus" label="Constitution" v={`+${hover.item.con_bonus}`} e={eq('con_bonus')} />}
+                {hover.item.int_bonus > 0 && <D k="int_bonus" label="Intelligence" v={`+${hover.item.int_bonus}`} e={eq('int_bonus')} />}
+                {hover.item.wis_bonus > 0 && <D k="wis_bonus" label="Wisdom" v={`+${hover.item.wis_bonus}`} e={eq('wis_bonus')} />}
+                {hover.item.cha_bonus > 0 && <D k="cha_bonus" label="Charisma" v={`+${hover.item.cha_bonus}`} e={eq('cha_bonus')} />}
+                {hover.item.heal_hp > 0 && <Stat k="Restores" v={`${hover.item.heal_hp} HP`} />}
+                {hover.item.heal_mp > 0 && <Stat k="Restores" v={`${hover.item.heal_mp} MP`} />}
+                {eqSlot && (
+                  <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,.08)', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+                    vs equipped: {eqSlot.name}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           {hover.item.enchant_count && hover.item.enchant_count > 0 ? (() => {
             const bonuses: Record<string, number> = JSON.parse(hover.item.enchant_bonuses_json || '{}');
             const ENCHANT_LABEL = ['', 'Silver', 'Emerald', 'Azure', 'Arcane', 'Mythic'];

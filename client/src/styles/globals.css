@@ -1747,3 +1747,43 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   pointer-events: none;
   background: linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.55) 88%, rgba(0,0,0,.85) 100%);
 }
+
+/* =========================================================================
+   MOBILE PASS — phone-viewport audit fixes.
+   Targets: phone-width inventory grid, combat field, item tooltip, realm
+   pin popovers, and audio toggle accessibility.
+   ========================================================================= */
+@media (max-width: 700px) {
+  /* Inventory: shrink slot grid + bag cells so 5 columns fit at 360px wide */
+  .doll-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px; }
+  .bag-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 6px; }
+  .bag-cell, .slot { min-width: 0; }
+  .inv-shell { grid-template-columns: 1fr !important; gap: 14px; }
+
+  /* Item tooltip becomes a bottom sheet on mobile so it never falls off-screen */
+  .item-tooltip {
+    left: 8px !important; right: 8px !important;
+    bottom: 8px !important; top: auto !important;
+    width: auto !important; max-width: none !important;
+    max-height: 60vh; overflow-y: auto;
+  }
+
+  /* Realm map: pin cards become accordion-style hits */
+  .realm-pin-card { width: 160px !important; font-size: 11px; }
+  .realm-pin-card .realm-pin-lore { display: none; }
+
+  /* Loot drop overlay: keep card readable on narrow viewports */
+  .loot-drop-overlay > div { padding: 8px 14px !important; gap: 10px !important; }
+  .loot-drop-overlay img { width: 48px !important; height: 48px !important; }
+
+  /* Combat scene UI: shrink controls + log */
+  .combat-controls { flex-wrap: wrap; gap: 6px; }
+  .combat-log .line { font-size: 12px; padding: 6px 8px; }
+}
+
+/* Hide on tiny viewports — saves vertical space for the actual content */
+@media (max-width: 420px) {
+  .panel-subtitle { display: none; }
+  .hero-tabs { flex-wrap: wrap; }
+  .hero-tab { flex: 1 1 auto; min-width: 0; padding: 8px 10px; font-size: 12px; }
+}

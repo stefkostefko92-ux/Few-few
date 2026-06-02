@@ -4,12 +4,15 @@ import { spriteFor } from './sprites';
 import CombatCanvas, { CombatCanvasHandle } from './CombatCanvas';
 import CombatScene3D, { CombatScene3DHandle } from './CombatScene3D';
 import CinematicOverlay, { CinematicOverlayHandle } from './CinematicOverlay';
+import LootDropOverlay from '../components/LootDropOverlay';
+import { sfx } from '../lib/audio';
 import '../styles/combat.css';
 
 interface Reward {
   xp?: number;
   gold?: number;
   itemReward?: string | null;
+  itemDrop?: any | null;
   ratingDelta?: number;
 }
 
@@ -159,6 +162,8 @@ export default function CombatScene(props: Props): React.ReactElement {
     //    burst all line up with the legacy CSS layer underneath.
     if (attackerIsHero) setHeroAnim('windup-hero');
     else setFoeAnim('windup-foe');
+    // Audible swing on the windup, choose magic clip for spell attacks.
+    sfx.play(r.effect === 'magic' ? 'magic' : 'swing', { volume: 0.55 });
     stage3DRef.current?.attack({
       attacker: r.attacker,
       effect: r.effect,
@@ -213,6 +218,8 @@ export default function CombatScene(props: Props): React.ReactElement {
         // legacy CSS FX. This is what gives the impact real punch — real
         // sparks, shockwave ring, and a stage flash on crits.
         fireCanvasBurst(targetSide, r.effect, r.action === 'crit', ratio);
+        // Impact hit — louder on crits.
+        sfx.play('hit', { volume: r.action === 'crit' ? 0.9 : 0.6 });
 
         // Crit camera zoom + cinematic overlay punch (letterbox + speed
         // lines + crit stamp). The 3D scene handles its own dolly-zoom &
@@ -375,6 +382,11 @@ export default function CombatScene(props: Props): React.ReactElement {
       )}
 
       {done && victory && <CombatConfetti />}
+
+      {/* Mid-result loot card — pops in when the foe dropped an item. */}
+      {done && victory && reward?.itemDrop && (
+        <LootDropOverlay item={reward.itemDrop} />
+      )}
 
       {done && (
         <div className={`combat-result ${victory ? 'victory' : 'defeat'}`}>

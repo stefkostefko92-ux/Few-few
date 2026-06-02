@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from './lib/store';
 import { getToken } from './lib/api';
+import { sfx, preloadAllSfx } from './lib/audio';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toasts from './components/Toasts';
@@ -49,6 +50,7 @@ import Realm from './pages/Realm';
 import LevelUpOverlay from './components/LevelUpOverlay';
 import CooldownTicker from './components/CooldownTicker';
 import PageBackdrop from './components/PageBackdrop';
+import OnboardingTour from './components/OnboardingTour';
 
 function AppLayout(): React.ReactElement {
   const location = useLocation();
@@ -60,6 +62,21 @@ function AppLayout(): React.ReactElement {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     document.body.classList.remove('mobile-open');
   }, [location.pathname]);
+  // Pre-warm SFX cache + play a click on every button press so the UI has
+  // tactile audio feedback without each button needing an onClick wrapper.
+  useEffect(() => {
+    preloadAllSfx();
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      // Walk up to find the closest button/anchor with an interactive role.
+      const interactive = t.closest('button, .btn, a[href]') as HTMLElement | null;
+      if (!interactive || interactive.hasAttribute('aria-disabled') || (interactive as HTMLButtonElement).disabled) return;
+      sfx.play('click', { volume: 0.35 });
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, []);
   return (
     <div className="app">
       {/* Per-route animated ambient backdrop, fixed-position behind shell. */}
@@ -77,6 +94,7 @@ function AppLayout(): React.ReactElement {
         </main>
       </div>
       <Toasts />
+      <OnboardingTour />
       {levelUp && (
         <LevelUpOverlay
           level={levelUp.toLevel}
