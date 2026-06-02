@@ -4,6 +4,7 @@ import { prisma } from "@aso/db";
 import { ROLES, VIP_TIERS } from "@aso/shared";
 import { asyncHandler, badRequest, forbidden } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
+import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyAdminAction, notifyBroadcast, sendTest } from "../integrations/discord.js";
 
 export const adminRouter: Router = Router();
@@ -165,6 +166,10 @@ adminRouter.patch(
     if (Object.keys(data).length === 0) throw badRequest("noop", "Няма промени");
 
     const updated = await prisma.user.update({ where: { id }, data });
+    // Make a ban take effect immediately (revoke live access tokens); lift it
+    // on unban.
+    if (input.banned === true) await revokeUser(id);
+    if (input.banned === false) await unrevokeUser(id);
     await audit(req.user!, actorName, "update_user", id, {
       target: target.displayName,
       ...input,

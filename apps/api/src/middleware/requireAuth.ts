@@ -1,6 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ACCESS_COOKIE, type AccessTokenClaims } from "@aso/shared";
 import { verifyAccessToken } from "../auth/tokens.js";
+import { isRevoked } from "../auth/revocation.js";
 import { forbidden, unauthorized } from "../http.js";
 
 declare global {
@@ -12,19 +13,35 @@ declare global {
   }
 }
 
-/** Reads the httpOnly access cookie, verifies it, attaches claims to req.user. */
+/** Reads the httpOnly access cookie, verifies it, rejects revoked sessions
+ *  (banned/erased), and attaches claims to req.user. */
 export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
   const token = req.cookies?.[ACCESS_COOKIE] as string | undefined;
   if (!token) {
     next(unauthorized("Missing access token"));
     return;
   }
+  let claims: AccessTokenClaims;
   try {
-    req.user = verifyAccessToken(token);
-    next();
+    claims = verifyAccessToken(token);
   } catch {
     next(unauthorized("Invalid or expired token"));
+    return;
   }
+  isRevoked(claims.sub)
+    .then((revoked) => {
+      if (revoked) {
+        next(unauthorized("Session revoked"));
+        return;
+      }
+      req.user = claims;
+      next();
+    })
+    .catch(() => {
+      // Fail open on a revocation-store hiccup.
+      req.user = claims;
+      next();
+    });
 }
 
 /** Gate a route to one of the given roles (authz, §14). Use after requireAuth. */

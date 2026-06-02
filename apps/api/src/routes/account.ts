@@ -3,6 +3,7 @@ import { prisma } from "@aso/db";
 import { asyncHandler, unauthorized } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { clearAuthCookies } from "../auth/tokens.js";
+import { revokeUser } from "../auth/revocation.js";
 
 export const accountRouter: Router = Router();
 
@@ -71,6 +72,7 @@ accountRouter.post(
       }),
     ]);
 
+    await revokeUser(id);
     clearAuthCookies(res);
     res.json({ ok: true });
   }),

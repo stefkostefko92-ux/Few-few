@@ -4,8 +4,10 @@ import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { redis } from "./redis.js";
 import { seedProducts } from "./economy/seed.js";
+import { initSentry } from "./integrations/sentry.js";
 
 async function main(): Promise<void> {
+  initSentry();
   const app = createApp();
 
   // Establish the Redis connection up front (progression uses it directly).
