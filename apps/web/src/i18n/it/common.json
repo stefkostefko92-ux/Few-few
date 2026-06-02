@@ -107,6 +107,15 @@
     "grantGems": "+{{n}} gemme",
     "grantChips": "+{{n}} fiche",
     "perMonth": "al mese",
+    "perk": {
+      "noAds": "Niente pubblicità",
+      "xp": "+{{p}}% XP",
+      "daily": "+{{p}}% bonus giornaliero",
+      "gems": "{{n}} 💎 al mese",
+      "cosmetics": "Cosmetici esclusivi",
+      "quests": "{{n}} slot missioni",
+      "badge": "Distintivo VIP e nome colorato"
+    },
     "kind": {
       "VIP_SUB": "Abbonamento VIP",
       "GEMS": "Gemme",
@@ -132,6 +141,26 @@
   "footer": {
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Gioco sociale — non è gioco d'azzardo con denaro reale."
+  },
+  "cosmetics": {
+    "title": "Personalizza",
+    "subtitle": "Personalizza il tuo tavolo — si paga con gemme 💎.",
+    "customize": "Personalizza",
+    "equip": "Equipaggia",
+    "equipped": "Equipaggiato",
+    "vipOnly": "Solo VIP",
+    "needGems": "Gemme insufficienti",
+    "type": {
+      "FELT": "Panno del tavolo",
+      "CARDBACK": "Dorso delle carte",
+      "BOARD": "Scacchiera"
+    }
+  },
+  "outOfChips": {
+    "title": "Gettoni esauriti",
+    "body": "Servono almeno {{min}} gettoni per sederti a questo tavolo. Ne hai {{chips}}.",
+    "free": "I gettoni si guadagnano anche gratis — bonus giornaliero e vittorie.",
+    "topUp": "Compra gettoni"
   },
   "store": {
     "title": "Negozio rapido",

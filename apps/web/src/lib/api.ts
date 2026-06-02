@@ -1,4 +1,5 @@
 import type {
+  Cosmetic,
   ForgotPasswordInput,
   LeaderboardEntry,
   LoginInput,
@@ -15,6 +16,20 @@ import type {
 export interface OAuthProviders {
   google: boolean;
   facebook: boolean;
+}
+
+/** A cosmetic plus the signed-in player's ownership state for it. */
+export interface CosmeticView extends Cosmetic {
+  owned: boolean;
+  equipped: boolean;
+  locked: boolean; // VIP-exclusive and the player isn't eligible
+}
+
+export interface CosmeticsResponse {
+  game: string;
+  gems: number;
+  vipTier: VipTier;
+  items: CosmeticView[];
 }
 
 /** Stable error codes the API returns in `{ error: { code, message } }`. */
@@ -110,6 +125,20 @@ export const api = {
     request<{ xp: number; level: number; intoLevel: number; needed: number }>("/progression/me"),
   leaderboard: (game: string) =>
     request<{ game: string; entries: LeaderboardEntry[] }>(`/progression/leaderboard/${game}`),
+
+  // Cosmetics (gem-priced, per game)
+  cosmetics: (game: string) => request<CosmeticsResponse>(`/cosmetics?game=${game}`),
+  buyCosmetic: (id: string) =>
+    request<{ gems: number; ownedId: string }>("/cosmetics/buy", {
+      method: "POST",
+      body: JSON.stringify({ id }),
+    }),
+  equipCosmetic: (id: string) =>
+    request<{ equipped: string[] }>("/cosmetics/equip", {
+      method: "POST",
+      body: JSON.stringify({ id }),
+    }),
+  equippedCosmetics: () => request<{ equipped: string[] }>("/cosmetics/equipped"),
 };
 
 /** Full-page navigation target that begins a provider sign-in. */

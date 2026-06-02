@@ -44,11 +44,13 @@
   display: grid;
   place-items: center;
 }
+/* --sq-light / --sq-dark are set by BoardFrame when a BOARD cosmetic is
+   equipped; otherwise the default walnut-on-cream scheme applies. */
 .aso-cell--light {
-  background: radial-gradient(120% 120% at 30% 20%, #f0e6cf, #e3d4b0);
+  background: radial-gradient(120% 120% at 30% 20%, var(--sq-light, #f0e6cf), color-mix(in srgb, var(--sq-light, #f0e6cf) 86%, #000 14%));
 }
 .aso-cell--dark {
-  background: radial-gradient(120% 120% at 30% 20%, #2a5740, var(--felt-900));
+  background: radial-gradient(120% 120% at 30% 20%, var(--sq-dark, #2a5740), color-mix(in srgb, var(--sq-dark, #2a5740) 64%, #000 36%));
 }
 .aso-cell--target::after {
   content: "";

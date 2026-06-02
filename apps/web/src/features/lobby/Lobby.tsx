@@ -1,12 +1,16 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { gameHasCosmetics } from "@aso/shared";
 import { Badge, Panel, cn } from "../../ui";
-import { useAuthStore } from "../../lib/store";
+import { useAuthStore, useCosmeticsModal } from "../../lib/store";
 import { DailyReward } from "../progression/DailyReward";
 import { GAME_CATALOG, type GameCard } from "./games";
 
 function GameTile({ game }: { game: GameCard }) {
   const { t } = useTranslation();
+  const openCosmetics = useCosmeticsModal((s) => s.openCosmetics);
+  const customizable = game.ready && gameHasCosmetics(game.key);
+
   return (
     <Panel
       className={cn(
@@ -30,6 +34,23 @@ function GameTile({ game }: { game: GameCard }) {
           <p className="mt-1 text-xs text-ink-muted">{t("lobby.comingSoon")}</p>
         )}
       </div>
+
+      {customizable ? (
+        <button
+          type="button"
+          title={t("cosmetics.customize")}
+          aria-label={t("cosmetics.customize")}
+          onClick={(e) => {
+            // The tile is wrapped in a Link; don't navigate into the match.
+            e.preventDefault();
+            e.stopPropagation();
+            openCosmetics(game.key);
+          }}
+          className="absolute right-3 top-12 grid size-8 place-items-center rounded-full border border-brass-400/25 bg-felt-900/70 text-sm opacity-0 transition-opacity hover:border-brass-300 group-hover:opacity-100 focus-visible:opacity-100"
+        >
+          🎨
+        </button>
+      ) : null}
     </Panel>
   );
 }

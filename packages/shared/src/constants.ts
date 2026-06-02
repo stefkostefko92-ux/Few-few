@@ -11,7 +11,7 @@ export const ROLES = [
 ] as const;
 export type Role = (typeof ROLES)[number];
 
-export const VIP_TIERS = ["NONE", "SILVER", "GOLD", "PLATINUM"] as const;
+export const VIP_TIERS = ["NONE", "BRONZE", "SILVER", "GOLD", "PLATINUM"] as const;
 export type VipTier = (typeof VIP_TIERS)[number];
 
 export const LOCALES = ["bg", "it", "en"] as const;

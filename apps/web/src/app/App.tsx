@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { api } from "../lib/api";
-import { useAuthStore } from "../lib/store";
+import { useAuthStore, useCosmeticsStore } from "../lib/store";
 import { AuthScreen } from "../features/auth/AuthScreen";
 import { ForgotPassword } from "../features/auth/ForgotPassword";
 import { ResetPassword } from "../features/auth/ResetPassword";
@@ -18,6 +18,7 @@ import { RequireAuth } from "./RequireAuth";
 export function App() {
   const setUser = useAuthStore((s) => s.setUser);
   const setInitializing = useAuthStore((s) => s.setInitializing);
+  const setEquipped = useCosmeticsStore((s) => s.setEquipped);
   const user = useAuthStore((s) => s.user);
 
   // Restore session from the httpOnly cookie on first load.
@@ -26,7 +27,12 @@ export function App() {
     api
       .me()
       .then((res) => {
-        if (!cancelled) setUser(res.user);
+        if (cancelled) return;
+        setUser(res.user);
+        // Load equipped cosmetics so games render the player's chosen themes.
+        api.equippedCosmetics().then((c) => {
+          if (!cancelled) setEquipped(c.equipped);
+        }).catch(() => undefined);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -35,7 +41,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [setUser, setInitializing]);
+  }, [setUser, setInitializing, setEquipped]);
 
   return (
     <>

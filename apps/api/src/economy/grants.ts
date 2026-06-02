@@ -40,6 +40,21 @@ export async function grantProduct(
   }
 }
 
+/**
+ * Credit the monthly VIP gem stipend (SILVER+). Called once per paid invoice
+ * from the webhook, inside its dedup transaction, so renewals grant gems but
+ * retries do not double-credit.
+ */
+export async function grantVipStipend(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  userId: string,
+  gems: number,
+): Promise<void> {
+  if (gems > 0) {
+    await tx.user.update({ where: { id: userId }, data: { gems: { increment: gems } } });
+  }
+}
+
 /** Set / extend a VIP subscription (from subscription webhooks). */
 export async function applyVip(
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],

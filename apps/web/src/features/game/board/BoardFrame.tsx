@@ -1,8 +1,12 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useParams } from "react-router-dom";
+import { isGameKey } from "@aso/shared";
 import { cn } from "../../../ui";
+import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import "./board.css";
 
-/** Wooden-framed stage for board games (§4.7/§4.8). */
+/** Wooden-framed stage for board games (§4.7/§4.8). An equipped BOARD cosmetic
+ *  for the current game recolours the squares via --sq-light / --sq-dark. */
 export function BoardFrame({
   children,
   className,
@@ -12,8 +16,14 @@ export function BoardFrame({
   className?: string;
   style?: CSSProperties;
 }) {
+  const { game } = useParams<{ game: string }>();
+  const key = game?.toUpperCase();
+  const board = useEquippedCosmetic(key && isGameKey(key) ? key : null, "BOARD");
+  const vars: CSSProperties = board
+    ? ({ "--sq-light": board.colors.a, "--sq-dark": board.colors.b, ...style } as CSSProperties)
+    : (style ?? {});
   return (
-    <div className={cn("aso-board", className)} style={style}>
+    <div className={cn("aso-board", className)} style={vars}>
       <div className="aso-board__inner">{children}</div>
     </div>
   );

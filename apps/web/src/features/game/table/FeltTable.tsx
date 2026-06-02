@@ -1,5 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useParams } from "react-router-dom";
+import { isGameKey } from "@aso/shared";
 import { cn } from "../../../ui";
+import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import "./table.css";
 
 export type SeatPos = "bottom" | "top" | "left" | "right";
@@ -14,11 +17,18 @@ interface FeltTableProps {
   style?: CSSProperties;
 }
 
-/** The premium card-table stage (§3.1). Games place seats + center into it. */
+/** The premium card-table stage (§3.1). Games place seats + center into it.
+ *  An equipped FELT cosmetic for the current game overrides the per-game hue. */
 export function FeltTable({ children, feltColor, feltDark, crest = "A", className, style }: FeltTableProps) {
+  const { game } = useParams<{ game: string }>();
+  const key = game?.toUpperCase();
+  const felt = useEquippedCosmetic(key && isGameKey(key) ? key : null, "FELT");
+
+  const finalColor = felt?.colors.a ?? feltColor;
+  const finalDark = felt?.colors.b ?? feltDark;
   const vars: CSSProperties = {
-    ...(feltColor ? ({ "--table-felt": feltColor } as CSSProperties) : {}),
-    ...(feltDark ? ({ "--table-felt-dark": feltDark } as CSSProperties) : {}),
+    ...(finalColor ? ({ "--table-felt": finalColor } as CSSProperties) : {}),
+    ...(finalDark ? ({ "--table-felt-dark": finalDark } as CSSProperties) : {}),
     ...style,
   };
   return (

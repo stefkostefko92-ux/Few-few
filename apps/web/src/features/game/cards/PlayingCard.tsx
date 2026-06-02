@@ -1,5 +1,8 @@
 import { memo } from "react";
+import { useParams } from "react-router-dom";
+import { isGameKey } from "@aso/shared";
 import { cn } from "../../../ui";
+import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { SuitGlyph, isRed, type SuitChar } from "./suits";
 import { PIP_LAYOUTS, RANK_LABEL } from "./pips";
 
@@ -56,6 +59,9 @@ export const PlayingCard = memo(function PlayingCard({
   style,
 }: PlayingCardProps) {
   const { w, h } = SIZES[size];
+  const { game } = useParams<{ game: string }>();
+  const key = game?.toUpperCase();
+  const cardBack = useEquippedCosmetic(key && isGameKey(key) ? key : null, "CARDBACK");
   const faceDown = card === "?";
   const suit = (card[card.length - 1] ?? "S") as SuitChar;
   const rank = card.slice(0, card.length - 1);
@@ -80,7 +86,15 @@ export const PlayingCard = memo(function PlayingCard({
       data-dimmed={dimmed ? "true" : undefined}
     >
       {faceDown ? (
-        <span className="aso-card__back" aria-hidden />
+        <span
+          className="aso-card__back"
+          aria-hidden
+          style={
+            cardBack
+              ? ({ "--cb-a": cardBack.colors.a, "--cb-b": cardBack.colors.b } as React.CSSProperties)
+              : undefined
+          }
+        />
       ) : (
         <span className="aso-card__face" style={{ color }}>
           {/* corners */}

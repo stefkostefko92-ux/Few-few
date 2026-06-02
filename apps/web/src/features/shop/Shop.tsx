@@ -1,24 +1,47 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import type { ProductView } from "@aso/shared";
+import type { ProductView, VipPerks, VipTier } from "@aso/shared";
 import { Badge, Button, Panel } from "../../ui";
 import { ApiError, api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
 
+type VipPerksMap = Record<VipTier, VipPerks>;
+
 const KIND_ORDER: ProductView["kind"][] = ["VIP_SUB", "GEMS", "CHIP_PACK", "COSMETIC"];
 const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+
+/** Human-readable, distinguishing perks for a VIP tier. */
+function perkLines(p: VipPerks, t: (k: string, o?: Record<string, unknown>) => string): string[] {
+  const lines: string[] = [];
+  if (p.adsRemoved) lines.push(t("shop.perk.noAds"));
+  if (p.xpMultiplier > 1) lines.push(t("shop.perk.xp", { p: Math.round((p.xpMultiplier - 1) * 100) }));
+  if (p.dailyChipMultiplier > 1)
+    lines.push(t("shop.perk.daily", { p: Math.round((p.dailyChipMultiplier - 1) * 100) }));
+  if (p.monthlyGems > 0) lines.push(t("shop.perk.gems", { n: p.monthlyGems }));
+  if (p.exclusiveCosmetics) lines.push(t("shop.perk.cosmetics"));
+  lines.push(t("shop.perk.quests", { n: p.questSlots }));
+  if (p.nameBadge) lines.push(t("shop.perk.badge"));
+  return lines;
+}
 
 export function Shop() {
   const { t } = useTranslation();
   const setUser = useAuthStore((s) => s.setUser);
   const [products, setProducts] = useState<ProductView[]>([]);
+  const [vipPerks, setVipPerks] = useState<VipPerksMap | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [params] = useSearchParams();
 
   useEffect(() => {
-    api.catalog().then((c) => setProducts(c.products)).catch(() => undefined);
+    api
+      .catalog()
+      .then((c) => {
+        setProducts(c.products);
+        setVipPerks(c.vipPerks);
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -80,6 +103,16 @@ export function Shop() {
                       {p.grantChips ? t("shop.grantChips", { n: p.grantChips }) : null}
                       {p.kind === "VIP_SUB" ? t("shop.perMonth") : null}
                     </p>
+                    {p.kind === "VIP_SUB" && p.vipTier && vipPerks ? (
+                      <ul className="mt-3 space-y-1 text-xs text-ink-300">
+                        {perkLines(vipPerks[p.vipTier], t).map((line) => (
+                          <li key={line} className="flex items-start gap-1.5">
+                            <span className="text-win">✓</span>
+                            {line}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                   <Button loading={busy === p.sku} onClick={() => void buy(p.sku)} className="w-full">
                     {eur(p.priceCents)}

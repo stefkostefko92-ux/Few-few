@@ -120,9 +120,11 @@ button.aso-card:hover {
 }
 
 /* ---- Back ---- */
+/* --cb-a / --cb-b are set inline by PlayingCard when a CARDBACK cosmetic is
+   equipped; they fall back to the default felt gradient otherwise. */
 .aso-card__back {
   background:
-    linear-gradient(135deg, var(--felt-700) 0%, var(--felt-900) 100%);
+    linear-gradient(135deg, var(--cb-a, var(--felt-700)) 0%, var(--cb-b, var(--felt-900)) 100%);
   border: 1px solid rgba(217, 178, 95, 0.35);
 }
 .aso-card__back::before {

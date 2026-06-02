@@ -10,6 +10,7 @@ import { errorHandler, notFound } from "./middleware/error.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
 import { shopRouter } from "./routes/shop.js";
+import { cosmeticsRouter } from "./routes/cosmetics.js";
 import { progressionRouter } from "./routes/progression.js";
 import { adminRouter } from "./routes/admin.js";
 import { metricsRouter } from "./routes/metrics.js";
@@ -43,6 +44,7 @@ export function createApp(): Express {
   app.use(globalLimiter);
   app.use("/api/auth", authRouter);
   app.use("/api/shop", shopRouter);
+  app.use("/api/cosmetics", cosmeticsRouter);
   app.use("/api/progression", progressionRouter);
   app.use("/api/admin", adminRouter);
   app.use("/api/metrics", metricsRouter);

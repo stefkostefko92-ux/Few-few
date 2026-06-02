@@ -1,16 +1,17 @@
 import { Router, raw } from "express";
 import type Stripe from "stripe";
 import { prisma, type VipTier } from "@aso/db";
+import { VIP_PERKS } from "@aso/shared";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
 import { getStripe } from "../economy/stripe.js";
-import { applyVip, clearVip, grantProduct } from "../economy/grants.js";
+import { applyVip, clearVip, grantProduct, grantVipStipend } from "../economy/grants.js";
 import { invoiceSubscriptionId, subscriptionPeriodEnd } from "../economy/stripeShape.js";
 import { productIdBySku } from "../economy/seed.js";
 
 export const stripeWebhookRouter: Router = Router();
 
-const TIER_OK = new Set<VipTier>(["NONE", "SILVER", "GOLD", "PLATINUM"]);
+const TIER_OK = new Set<VipTier>(["NONE", "BRONZE", "SILVER", "GOLD", "PLATINUM"]);
 const asTier = (v: string | undefined): VipTier =>
   v && TIER_OK.has(v as VipTier) ? (v as VipTier) : "NONE";
 
@@ -121,6 +122,8 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       const periodEnd = new Date(subscriptionPeriodEnd(sub) * 1000);
       await prisma.$transaction(async (tx) => {
         await applyVip(tx, userId, tier, periodEnd);
+        // Each paid invoice (incl. the first) credits the tier's gem stipend.
+        await grantVipStipend(tx, userId, VIP_PERKS[tier].monthlyGems);
         await tx.subscription.upsert({
           where: { userId },
           create: {

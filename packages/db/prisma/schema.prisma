@@ -234,6 +234,7 @@ enum Role {
 
 enum VipTier {
   NONE
+  BRONZE
   SILVER
   GOLD
   PLATINUM

@@ -112,6 +112,15 @@
     "grantGems": "+{{n}} gems",
     "grantChips": "+{{n}} chips",
     "perMonth": "per month",
+    "perk": {
+      "noAds": "No ads",
+      "xp": "+{{p}}% XP",
+      "daily": "+{{p}}% daily bonus",
+      "gems": "{{n}} 💎 per month",
+      "cosmetics": "Exclusive cosmetics",
+      "quests": "{{n}} quest slots",
+      "badge": "VIP badge & coloured name"
+    },
     "kind": {
       "VIP_SUB": "VIP subscription",
       "GEMS": "Gems",
@@ -132,6 +141,26 @@
   "footer": {
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Social gaming — not real-money gambling."
+  },
+  "cosmetics": {
+    "title": "Customize",
+    "subtitle": "Personalize your table — paid with gems 💎.",
+    "customize": "Customize",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "vipOnly": "VIP only",
+    "needGems": "Not enough gems",
+    "type": {
+      "FELT": "Table felt",
+      "CARDBACK": "Card back",
+      "BOARD": "Board"
+    }
+  },
+  "outOfChips": {
+    "title": "Out of chips",
+    "body": "You need at least {{min}} chips to sit at this table. You have {{chips}}.",
+    "free": "Chips are earned for free too — daily bonus and wins.",
+    "topUp": "Buy chips"
   },
   "store": {
     "title": "Quick store",

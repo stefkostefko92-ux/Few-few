@@ -27,11 +27,13 @@ keep it legal and fair. This documents the system as built across `apps/api`
 | Asset            | Source                          | Spends on                                   | Cashable |
 | ---------------- | ------------------------------- | ------------------------------------------- | -------- |
 | 🪙 **Chips**     | Daily bonus, wins, chip packs   | Table buy-ins / bets in chip games          | **No**   |
-| 💎 **Gems**      | Gem packs (premium currency)    | Cosmetics, comfort, convenience             | **No**   |
+| 💎 **Gems**      | Gem packs, VIP stipend (SILVER+)| Per-game cosmetics                          | **No**   |
 | 👑 **VIP**       | Monthly subscription            | Perks (see `VIP_PERKS`): cosmetic + comfort | n/a      |
 
 Chips are soft currency (also earned for free); gems are premium; VIP is a
-recurring entitlement. None convert back to money.
+recurring entitlement. None convert back to money. **All real-money prices are
+in euro (EUR)** — gems/chips/VIP are the only things euro buys; cosmetics are
+bought with gems.
 
 ## 3. Catalog (SKUs)
 
@@ -45,9 +47,27 @@ Authoritative charged amount is the Stripe price; these mirror it.
 | `gems_large`    | GEMS      | €9.99  | 700 gems         |
 | `chips_small`   | CHIP_PACK | €1.99  | 5,000 chips      |
 | `chips_large`   | CHIP_PACK | €6.99  | 25,000 chips     |
+| `vip_bronze`    | VIP_SUB   | €3.99  | VIP Bronze / mo  |
 | `vip_silver`    | VIP_SUB   | €4.99  | VIP Silver / mo  |
 | `vip_gold`      | VIP_SUB   | €9.99  | VIP Gold / mo    |
 | `vip_platinum`  | VIP_SUB   | €19.99 | VIP Platinum / mo|
+
+### VIP tiers (distinct feature sets)
+
+Each tier is strictly different, not just "more". `VIP_PERKS` (shared) is the
+source of truth; the shop renders these per card.
+
+| Tier         | €/mo   | Ads | XP    | Daily chips | Gems/mo | Exclusive cosmetics | Quest slots | Badge |
+| ------------ | ------ | --- | ----- | ----------- | ------- | ------------------- | ----------- | ----- |
+| **Bronze**   | €3.99  | off | +10%  | +20%        | —       | —                   | 4           | ✓     |
+| **Silver**   | €4.99  | off | +20%  | +35%        | 60      | ✓                   | 5           | ✓     |
+| **Gold**     | €9.99  | off | +35%  | +60%        | 160     | ✓                   | 6           | ✓     |
+| **Platinum** | €19.99 | off | +50%  | +100%       | 400     | ✓                   | 8           | ✓     |
+
+Bronze is the €3.99 entry plan: ad-free + VIP badge + small comfort boosts, but
+no gem stipend or exclusive cosmetics — those begin at Silver. The monthly gem
+stipend is credited on each paid invoice (`invoice.paid`), inside the dedup
+transaction so renewals grant gems and retries don't double-credit.
 
 ## 4. Purchase flow
 
@@ -93,8 +113,30 @@ buy point — players top up without leaving the table.
    cosmetics, plus post-redirect status handling and wallet refresh.
 4. **VIP management**: Billing Portal link from the shop for active subscribers.
 
-Future hook points (not yet wired): an "out of chips" prompt at a betting
-table's buy-in, and a gem-priced cosmetic picker per game felt/card back.
+5. **Per-game cosmetics shop** (`features/shop/CosmeticsModal.tsx`): opened from
+   each lobby tile's 🎨 button. Buys table felts, card backs, and board themes
+   with **gems**, then equips instantly. VIP-exclusive items are locked unless
+   the player is SILVER+.
+6. **Out-of-chips gate** (`features/game/OutOfChips.tsx`): a player who can't
+   cover a betting table's buy-in (Svara/Hold'em) is shown a top-up prompt
+   instead of being seated — never coercive (chips are also free to earn).
+
+## 5a. Cosmetics (gems, per game)
+
+Source of truth: `packages/shared/src/cosmetics.ts`. Cosmetics are **virtual,
+gem-priced, and game-scoped** (id `GAME.TYPE.variant`) — they never touch
+Stripe and never affect gameplay.
+
+- **Types**: `FELT` (table sukno), `CARDBACK` (card back), `BOARD` (square
+  theme). Card games get felt + card back; chess/draughts get board themes.
+- **API** (`/api/cosmetics`, auth required): `GET ?game=` (catalog + owned /
+  equipped / locked flags), `POST /buy` (atomic gem debit guarded in the WHERE,
+  then inventory row), `POST /equip` (one equipped item per game+type slot),
+  `GET /equipped` (ids, loaded after sign-in to apply visuals).
+- **Application**: equipped ids live in a client store; `FeltTable`,
+  `PlayingCard`, and `BoardFrame` read the current route's game and recolour via
+  CSS variables (`--table-felt`, `--cb-a/b`, `--sq-light/dark`).
+- **VIP gating**: VIP-exclusive cosmetics require `exclusiveCosmetics` (Silver+).
 
 ## 6. Fairness & safeguards
 

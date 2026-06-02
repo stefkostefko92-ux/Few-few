@@ -49,20 +49,53 @@ export function dailyReward(streakDay: number): { chips: number; gems: number } 
   return { chips: 100 * day, gems: day === 7 ? 5 : 0 };
 }
 
-/** VIP comfort perks (§11.2) — never gameplay advantage. */
+/** VIP comfort perks (§11.2) — never gameplay advantage (cosmetic/comfort only). */
 export interface VipPerks {
   xpMultiplier: number;
   dailyChipMultiplier: number;
   matchmakingPriority: number; // lower = matched sooner
   questSlots: number;
   adsRemoved: boolean;
+  /** Gems credited on each monthly subscription renewal (comfort/value). */
+  monthlyGems: number;
+  /** May purchase/equip VIP-exclusive cosmetics. */
+  exclusiveCosmetics: boolean;
+  /** Coloured VIP nameplate + badge in chat and at the table. */
+  nameBadge: boolean;
 }
 
+/**
+ * Four paid tiers, each with a distinct feature set. BRONZE (€3.99) is the
+ * entry tier: it removes ads and adds a VIP badge + small comfort boosts, but
+ * no gem stipend or exclusive cosmetics — those begin at SILVER. Higher tiers
+ * scale the multipliers, gem stipend, and quest slots.
+ */
 export const VIP_PERKS: Record<VipTier, VipPerks> = {
-  NONE: { xpMultiplier: 1, dailyChipMultiplier: 1, matchmakingPriority: 0, questSlots: 3, adsRemoved: false },
-  SILVER: { xpMultiplier: 1.1, dailyChipMultiplier: 1.25, matchmakingPriority: 1, questSlots: 4, adsRemoved: true },
-  GOLD: { xpMultiplier: 1.25, dailyChipMultiplier: 1.5, matchmakingPriority: 2, questSlots: 5, adsRemoved: true },
-  PLATINUM: { xpMultiplier: 1.5, dailyChipMultiplier: 2, matchmakingPriority: 3, questSlots: 6, adsRemoved: true },
+  NONE: {
+    xpMultiplier: 1, dailyChipMultiplier: 1, matchmakingPriority: 0, questSlots: 3,
+    adsRemoved: false, monthlyGems: 0, exclusiveCosmetics: false, nameBadge: false,
+  },
+  BRONZE: {
+    xpMultiplier: 1.1, dailyChipMultiplier: 1.2, matchmakingPriority: 1, questSlots: 4,
+    adsRemoved: true, monthlyGems: 0, exclusiveCosmetics: false, nameBadge: true,
+  },
+  SILVER: {
+    xpMultiplier: 1.2, dailyChipMultiplier: 1.35, matchmakingPriority: 2, questSlots: 5,
+    adsRemoved: true, monthlyGems: 60, exclusiveCosmetics: true, nameBadge: true,
+  },
+  GOLD: {
+    xpMultiplier: 1.35, dailyChipMultiplier: 1.6, matchmakingPriority: 3, questSlots: 6,
+    adsRemoved: true, monthlyGems: 160, exclusiveCosmetics: true, nameBadge: true,
+  },
+  PLATINUM: {
+    xpMultiplier: 1.5, dailyChipMultiplier: 2, matchmakingPriority: 4, questSlots: 8,
+    adsRemoved: true, monthlyGems: 400, exclusiveCosmetics: true, nameBadge: true,
+  },
+};
+
+/** Tiers ordered weakest→strongest, for gating comparisons. */
+export const VIP_RANK: Record<VipTier, number> = {
+  NONE: 0, BRONZE: 1, SILVER: 2, GOLD: 3, PLATINUM: 4,
 };
 
 export const checkoutSchema = z.object({ sku: z.string().min(1).max(64) });

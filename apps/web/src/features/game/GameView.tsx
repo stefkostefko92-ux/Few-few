@@ -2,9 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
+import { useAuthStore } from "../../lib/store";
 import { GAME_CATALOG } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
+import { OutOfChips } from "./OutOfChips";
 import { ChessView } from "./chess/ChessView";
 import { SantaseView } from "./santase/SantaseView";
 import { BeloteView } from "./belote/BeloteView";
@@ -80,11 +82,18 @@ function renderGame(gameKey: GameKey, title: string) {
   }
 }
 
+/** Chip-wagering games and the chips needed to sit down (§11.4 virtual only). */
+const CHIP_BUYIN: Partial<Record<GameKey, number>> = {
+  SVARA: 200,
+  HOLDEM: 200,
+};
+
 /** Dispatches to a bespoke per-game view, wrapped in the cinematic stage. */
 export function GameView() {
   const { game } = useParams<{ game: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
 
   const gameKey = game?.toUpperCase();
   const meta = GAME_CATALOG.find((g) => g.key === gameKey);
@@ -105,6 +114,13 @@ export function GameView() {
   }
 
   const key = gameKey as GameKey;
+
+  // Gate betting tables: don't seat a player who can't cover the buy-in.
+  const buyIn = CHIP_BUYIN[key];
+  if (buyIn !== undefined && user && Number(user.chips) < buyIn) {
+    return <OutOfChips minBuyIn={buyIn} chips={Number(user.chips)} />;
+  }
+
   return (
     <CinematicStage tone={TONE[key] ?? "default"}>
       {renderGame(key, meta.title)}

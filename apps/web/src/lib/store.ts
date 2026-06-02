@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { MatchPlayerInfo, PublicUser } from "@aso/shared";
+import type { GameKey, MatchPlayerInfo, PublicUser } from "@aso/shared";
 import type { MatchPhase } from "../features/game/useMatch";
 
 interface AuthState {
@@ -60,4 +60,32 @@ export const useStoreModal = create<StoreModalState>((set) => ({
   reason: "default",
   openStore: (reason = "default") => set({ open: true, reason }),
   closeStore: () => set({ open: false }),
+}));
+
+/**
+ * The player's equipped cosmetics (ids across all games), loaded once after
+ * sign-in and refreshed on equip. Game views/cards read this to apply the
+ * right felt / card back / board theme for the current game.
+ */
+interface CosmeticsState {
+  equipped: string[];
+  setEquipped: (ids: string[]) => void;
+}
+
+export const useCosmeticsStore = create<CosmeticsState>((set) => ({
+  equipped: [],
+  setEquipped: (equipped) => set({ equipped }),
+}));
+
+/** Per-game cosmetics shop modal, opened from the lobby tile or in-match. */
+interface CosmeticsModalState {
+  game: GameKey | null;
+  openCosmetics: (game: GameKey) => void;
+  closeCosmetics: () => void;
+}
+
+export const useCosmeticsModal = create<CosmeticsModalState>((set) => ({
+  game: null,
+  openCosmetics: (game) => set({ game }),
+  closeCosmetics: () => set({ game: null }),
 }));
