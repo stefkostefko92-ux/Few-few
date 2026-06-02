@@ -152,11 +152,12 @@
       return circle;
     },
 
-    async buyCircleNode(nodeId) {
+    // EvocationCircle_buyNode(currencyType:string, stoneId:int, multiple:int)
+    async buyCircleNode(nodeId, currency = 'gold', multiple = 1) {
       await rpc('EvocationCircle_buyNode', [
-        { type: 'string', value: 'gold' },
+        { type: 'string', value: currency },
         { type: 'int', value: nodeId },
-        { type: 'int', value: 1 }
+        { type: 'int', value: multiple }
       ]);
     },
 

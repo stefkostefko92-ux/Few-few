@@ -39,6 +39,9 @@ const SCHEMA = [
   ] },
   { id: 'circle', fields: [
     { k: 'enabled', type: 'bool' },
+    { k: 'currency', type: 'select', options: ['gold', 'bs'] },
+    { k: 'multiple', type: 'select', options: [1, 10] },
+    { k: 'stopAtCenterLevel', type: 'number', min: 1, max: 10 },
     { k: 'keepGoldReserve', type: 'number', min: 0 }
   ] },
   { id: 'training', fields: [
@@ -69,7 +72,8 @@ const SCHEMA = [
   ] },
   { id: 'autosell', fields: [
     { k: 'enabled', type: 'bool' },
-    { k: 'keepRarity', type: 'select', options: RARITY }
+    { k: 'maxValue', type: 'number', min: 0 },
+    { k: 'dumpSchema', type: 'bool' }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },

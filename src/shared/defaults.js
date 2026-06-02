@@ -47,13 +47,16 @@ export const DEFAULT_SETTINGS = {
     enabled: false,
     priorityStat: 'mix',            // mix | strength | dexterity | constitution | intelligence
     maxGoldSpend: 0,                // 0 = spend everything above the reserve
-    keepGoldReserve: 1000
+    keepGoldReserve: 0              // spend down to this much gold
   },
 
   /* ---- Evocation Circle (arcane upgrades) ---- */
   circle: {
     enabled: false,
-    keepGoldReserve: 0              // never spend gold below this reserve
+    currency: 'gold',              // gold | bs (bloodstones)
+    multiple: 1,                   // buy 1 or 10 levels per purchase
+    stopAtCenterLevel: 10,         // stop once the centre node reaches this level (max 10)
+    keepGoldReserve: 0             // never spend gold below this reserve
   },
 
   /* ---- Dungeon ---- */
@@ -66,7 +69,7 @@ export const DEFAULT_SETTINGS = {
     enabled: false,
     illusionCave: true,            // attempt the Cave of Illusions
     dragon: true,                  // attempt the Dragon event
-    cooldownMinutes: 30            // wait between attempts
+    cooldownMinutes: 10            // wait between attempts
   },
 
   /* ---- Arena / PvP ---- */
@@ -87,7 +90,8 @@ export const DEFAULT_SETTINGS = {
   /* ---- Auto-sell (conservative, disabled by default) ---- */
   autosell: {
     enabled: false,
-    keepRarity: 'uncommon'         // sell items BELOW this rarity only
+    maxValue: 0,                   // sell unequipped items worth <= this gold (0 = inspect only, sell nothing)
+    dumpSchema: true               // log the inventory item fields once for verification
   },
 
   /* ---- Auto-login / session keep-alive ---- */

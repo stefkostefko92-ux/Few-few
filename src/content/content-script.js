@@ -41,6 +41,13 @@
 
     TB.ready = true;
     Logger.info(I18n.t('logBooted', [TB.VERSION]));
+
+    // Keep gold / bloodstones / running-task state fresh for every module and
+    // the panel. Without this, modules see a stale gold value (e.g. right after
+    // an adventure reward) and wrongly decide "not enough gold".
+    setInterval(() => {
+      if (Bridge.ready()) Api.refresh().catch(() => {});
+    }, 30000);
   }
 
   /* ---------------------- popup / service-worker bridge ------------------- */

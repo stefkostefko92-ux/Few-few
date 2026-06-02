@@ -1,11 +1,13 @@
 /**
- * Map events module (verified: StartIllusionCave / StartDragon).
+ * Map events module (verified: GetCaveDetails/StartIllusionCave,
+ * GetDragonDetails/StartDragon).
  *
  * Cycles the optional map activities — the Cave of Illusions and the Dragon
- * event — on a cooldown whenever the character is free. These are limited
- * activities, so the module simply attempts an enabled one each interval; if it
- * isn't currently available the attempt is a no-op and the cooldown prevents
- * hammering the server.
+ * event — on a cooldown whenever the character is free. Each attempt first
+ * queries the details endpoint (so any reward/availability is logged) and then
+ * starts the activity, logging the outcome so it's never a silent no-op. If an
+ * activity isn't currently available the start is harmless and the cooldown
+ * prevents hammering.
  */
 (function () {
   'use strict';
@@ -22,7 +24,8 @@
     priority: 68,
     async tick() {
       const c = cfg();
-      if (!c.enabled || !Api.ready() || busy()) return null;
+      if (!c.enabled || !Api.ready()) return null;
+      if (busy()) return null;
       if (Date.now() < cooldownUntil) return null;
 
       const activities = [];
@@ -34,17 +37,25 @@
       turn++;
 
       return async () => {
-        cooldownUntil = Date.now() + Math.max(5, Number(c.cooldownMinutes) || 30) * 60000;
-        if (pick === 'cave') {
-          Logger.info(I18n.t('logCaveStart'));
-          await Api.startIllusionCave();
-          Stats.bump({ caveRuns: 1 });
-        } else {
-          Logger.info(I18n.t('logDragonStart'));
-          await Api.startDragon();
-          Stats.bump({ dragonRuns: 1 });
+        cooldownUntil = Date.now() + Math.max(2, Number(c.cooldownMinutes) || 10) * 60000;
+        try {
+          if (pick === 'cave') {
+            const doc = await Api.getCaveDetails();
+            const reward = Api.findValue(doc, 'reward_gold', 'i4');
+            Logger.info(I18n.t('logCaveStart', [reward != null ? String(reward) : '?']));
+            await Api.startIllusionCave();
+            Stats.bump({ caveRuns: 1 });
+          } else {
+            const doc = await Api.getDragonDetails();
+            const reward = Api.findValue(doc, 'reward_gold', 'i4');
+            Logger.info(I18n.t('logDragonStart', [reward != null ? String(reward) : '?']));
+            await Api.startDragon();
+            Stats.bump({ dragonRuns: 1 });
+          }
+          await Api.miniUpdate();
+        } catch (e) {
+          Logger.warn(I18n.t('logMapUnavailable', [pick, e.message]));
         }
-        await Api.miniUpdate();
       };
     }
   });
