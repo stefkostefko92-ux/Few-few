@@ -104,5 +104,9 @@
     "raise": "Rilancio",
     "fold": "Passo",
     "notice": "Gioco sociale con fiche virtuali — non è gioco d'azzardo con denaro reale."
+  },
+  "holdem": {
+    "check": "Check",
+    "bet": "Punta"
   }
 }

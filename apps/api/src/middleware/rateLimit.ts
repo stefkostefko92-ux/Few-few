@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit";
+import { env } from "../env.js";
 
 /**
  * Rate limiting. For S0 this uses the in-process memory store so the API boots
@@ -12,10 +13,13 @@ export const globalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/** Stricter limiter for auth endpoints (brute-force defence). */
+/**
+ * Stricter limiter for auth endpoints (brute-force defence). Relaxed outside
+ * production so local/dev/E2E (many logins from a single IP) isn't throttled.
+ */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60_000,
-  max: 20,
+  max: env.isProd ? 20 : 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: { code: "rate_limited", message: "Too many attempts, try again later" } },

@@ -104,5 +104,9 @@
     "raise": "Raise",
     "fold": "Fold",
     "notice": "Social game with virtual chips — not real-money gambling."
+  },
+  "holdem": {
+    "check": "Check",
+    "bet": "Bet"
   }
 }
