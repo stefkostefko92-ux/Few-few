@@ -129,20 +129,38 @@ router.post('/hunt', (req, res) => {
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
 
-    // Item drop. Higher-level monsters drop higher tier items at a flat
-    // 18% chance per kill. Tier is picked from the monster's level band so
-    // a Lv 1-35 mob can only drop tier-1 gear, etc.
+    // Item drop. 22% chance per kill. Tier mapped from the monster's
+    // *item-tier* band (not just /35), so the lvl_req of items in each
+    // tier lines up with the player's actual level. Audit balance #11.
     if (Math.random() < 0.22) {
-      const tier = Math.min(10, Math.max(1, Math.ceil(monster.level / 35)));
-      // Pull a random equipment item at this tier that the player can
-      // theoretically equip (level_req ≤ char level). Falls back to any
-      // item at that tier so even an unequippable trophy can drop.
-      const candidates = db.prepare(
+      // Mapping: monster level → drop tier (matches the seeded
+      // level_req of the equipment tiers).
+      const mlvl = monster.level;
+      const tier =
+        mlvl >= 320 ? 10 :
+        mlvl >= 280 ? 9  :
+        mlvl >= 230 ? 8  :
+        mlvl >= 180 ? 7  :
+        mlvl >= 130 ? 6  :
+        mlvl >= 95  ? 5  :
+        mlvl >= 60  ? 4  :
+        mlvl >= 25  ? 3  :
+        mlvl >= 12  ? 2  : 1;
+      // Audit BUG #1: previously the SQL ignored level_req and class_req,
+      // so a Lv 1 hero hunting tier-1 mobs could roll a Lv 25 legendary
+      // dragonbane. Now we filter by player level + class, with a
+      // graceful fallback if nothing matches.
+      const cls = char.class || '';
+      const pickFor = (whereExtra: string) => db.prepare(
         `SELECT * FROM items
          WHERE tier = ?
            AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
+           AND level_req <= ?
+           AND (class_req = '' OR class_req = ?)
+           ${whereExtra}
          ORDER BY RANDOM() LIMIT 1`,
-      ).get(tier) as any;
+      ).get(tier, char.level, cls) as any;
+      const candidates = pickFor('') || pickFor("AND class_req = ''");
       if (candidates) {
         itemRewardSlug = candidates.slug;
         db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(

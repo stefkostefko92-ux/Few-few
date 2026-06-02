@@ -109,8 +109,15 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
       action = 'crit';
     }
 
-    // Defense reduction (diminishing returns)
-    const dr = defender.defense / (defender.defense + 50);
+    // Defense reduction (diminishing returns). The +50 constant was
+    // tuned for tier-1 numbers where defense lived in the 5-25 range;
+    // at endgame (def 500-1550) that gave 91-97% DR which made the
+    // 60-round cap "won" by surviving the timer regardless of damage
+    // output (audit gamebreaking #1 + #10). The constant now scales
+    // with attacker level so endgame defense still matters but no
+    // longer saturates.
+    const scaleConst = 50 + attacker.level * 8;
+    const dr = defender.defense / (defender.defense + scaleConst);
     damage = Math.max(1, Math.round(damage * (1 - dr)));
 
     // Block (10% if the defender has shield-like defense > 5)
@@ -135,7 +142,21 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
     heroTurn = !heroTurn;
   }
 
-  const winner: 'hero' | 'foe' = H.hp > 0 ? 'hero' : 'foe';
+  // Timer outcomes (audit gamebreaker #1): if we hit the round cap with
+  // both fighters alive, the player who dealt the larger HP-percentage of
+  // their opponent wins. That replaces the old behaviour where the more
+  // durable side automatically won by surviving the timer — at endgame
+  // monster HP scales faster than hero damage and a Lv 350 hero with
+  // 12k HP / 65 dmg/swing was beating a Lv 350 monster with 225k HP
+  // simply because their own HP was still positive.
+  let winner: 'hero' | 'foe';
+  if (H.hp > 0 && F.hp > 0) {
+    const heroPct = (F.hp_max - F.hp) / Math.max(1, F.hp_max);
+    const foePct = (H.hp_max - H.hp) / Math.max(1, H.hp_max);
+    winner = heroPct >= foePct ? 'hero' : 'foe';
+  } else {
+    winner = H.hp > 0 ? 'hero' : 'foe';
+  }
   return {
     winner,
     rounds,

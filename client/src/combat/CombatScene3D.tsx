@@ -251,6 +251,14 @@ const CLASS_TINT: Record<string, string> = {
 
 const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass, foeClass, region = 'whispering_woods' }, ref) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const vfxRef = useRef<{
+    burst: (x: number, y: number, z: number, color: number, count: number, speedScale?: number) => void;
+    shockwave: (x: number, z: number, color: number) => void;
+    magicCircle: (x: number, z: number, color: number) => void;
+    slashArc: (fromX: number, toX: number, color: number) => void;
+    arrowStreak: (fromX: number, toX: number, color: number) => void;
+    afterImage: (sprite: THREE.Sprite) => void;
+  } | null>(null);
   const heroRef = useRef<THREE.Sprite | null>(null);
   const foeRef = useRef<THREE.Sprite | null>(null);
   const heroRigRef = useRef<THREE.Object3D | null>(null);
@@ -599,13 +607,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       }
     }
 
-    /* ----- imperative bridge for inner closures ----- */
-    (CombatScene3D as any)._burst = burst;
-    (CombatScene3D as any)._shockwave = shockwave;
-    (CombatScene3D as any)._magicCircle = magicCircle;
-    (CombatScene3D as any)._slashArc = slashArc;
-    (CombatScene3D as any)._arrowStreak = arrowStreak;
-    (CombatScene3D as any)._afterImage = afterImage;
+    /* Audit BUG #4: the VFX functions used to be stashed on the
+     * component constructor itself, which meant a second concurrent
+     * scene (replay opened while the previous one was tearing down)
+     * would overwrite the first scene's bridge and start spawning
+     * particles in the wrong fxGroup. They now live in a per-mount
+     * ref so each instance has its own callbacks. */
+    vfxRef.current = { burst, shockwave, magicCircle, slashArc, arrowStreak, afterImage };
 
     /* ----- resize ----- */
     function resize() {
@@ -800,23 +808,23 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
       // Core burst + rim flash
       targetLight.intensity = a.crit ? 7 : 3;
-      (CombatScene3D as any)._burst(tx + (isHero ? -0.4 : 0.4), target.position.y, tz, color, a.crit ? 110 : 50, a.crit ? 1.7 : 1.15);
+      vfxRef.current?.burst(tx + (isHero ? -0.4 : 0.4), target.position.y, tz, color, a.crit ? 110 : 50, a.crit ? 1.7 : 1.15);
 
       // Signature VFX per effect.
       const effect = a.effect as string | undefined;
       const attackerSprite = isHero ? heroRef.current! : foeRef.current!;
       if (effect === 'magic') {
-        (CombatScene3D as any)._magicCircle(tx, tz, color);
+        vfxRef.current?.magicCircle(tx, tz, color);
       } else if (effect === 'arrow') {
-        (CombatScene3D as any)._arrowStreak(attackerSprite.position.x, tx, color);
+        vfxRef.current?.arrowStreak(attackerSprite.position.x, tx, color);
       } else if (effect === 'pierce') {
-        (CombatScene3D as any)._afterImage(attackerSprite);
+        vfxRef.current?.afterImage(attackerSprite);
       } else {
         // slash (default)
-        (CombatScene3D as any)._slashArc(attackerSprite.position.x, tx, color);
+        vfxRef.current?.slashArc(attackerSprite.position.x, tx, color);
       }
       // Every impact lands a ground shockwave under the target.
-      (CombatScene3D as any)._shockwave(tx, tz, color);
+      vfxRef.current?.shockwave(tx, tz, color);
 
       // Cinematic punch: shake, hit-stop, slow-mo on crits, dolly-zoom + bloom kick.
       shakeRef.current = { amount: a.crit ? 0.32 : 0.16, t: 0.40 };

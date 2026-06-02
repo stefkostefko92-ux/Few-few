@@ -40,17 +40,26 @@ function saveSettings(s: Settings) {
 }
 
 const state: Settings = typeof window !== 'undefined' ? loadSettings() : { enabled: true, volume: 0.5 };
-const cache = new Map<SfxName, HTMLAudioElement>();
+/* Audit RISK #6: previous version called cloneNode() on every play,
+ * creating a new <audio> element forever and eventually exhausting
+ * Chromium's media-decoder pool. Now each clip has a fixed ring buffer
+ * of 4 pre-allocated <audio> instances; play() rewinds and reuses them
+ * round-robin instead of allocating. */
+const RING_SIZE = 4;
+const ring = new Map<SfxName, { pool: HTMLAudioElement[]; idx: number }>();
 
-/** Pre-load a clip. Safe to call multiple times. */
-function preload(name: SfxName): HTMLAudioElement {
-  let el = cache.get(name);
-  if (!el) {
-    el = new Audio(`/assets/sfx/${name}.ogg`);
-    el.preload = 'auto';
-    cache.set(name, el);
+function getRing(name: SfxName): { pool: HTMLAudioElement[]; idx: number } {
+  let r = ring.get(name);
+  if (!r) {
+    r = { pool: [], idx: 0 };
+    for (let i = 0; i < RING_SIZE; i++) {
+      const a = new Audio(`/assets/sfx/${name}.ogg`);
+      a.preload = 'auto';
+      r.pool.push(a);
+    }
+    ring.set(name, r);
   }
-  return el;
+  return r;
 }
 
 export const sfx = {
@@ -58,9 +67,10 @@ export const sfx = {
     if (!state.enabled) return;
     if (typeof window === 'undefined') return;
     try {
-      const base = preload(name);
-      // Clone so multiple plays don't cut each other off.
-      const clip = base.cloneNode(true) as HTMLAudioElement;
+      const r = getRing(name);
+      const clip = r.pool[r.idx];
+      r.idx = (r.idx + 1) % RING_SIZE;
+      try { clip.pause(); clip.currentTime = 0; } catch { /* ignore */ }
       clip.volume = Math.max(0, Math.min(1, (opts.volume ?? 1) * state.volume));
       clip.play().catch(() => { /* swallow autoplay-policy errors */ });
     } catch { /* fail silent */ }
@@ -74,5 +84,5 @@ export const sfx = {
 /** Pre-warm the cache. Call once early after first user interaction. */
 export function preloadAllSfx(): void {
   if (typeof window === 'undefined') return;
-  (['click','hover','swing','hit','magic','coin','equip','potion'] as SfxName[]).forEach(preload);
+  (['click','hover','swing','hit','magic','coin','equip','potion'] as SfxName[]).forEach(getRing);
 }

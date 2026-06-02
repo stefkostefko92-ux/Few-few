@@ -44,16 +44,47 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
 app.set('trust proxy', 1);
-app.use(helmet({ contentSecurityPolicy: false }));
+// Audit #10: enable a default CSP so any future reflected/stored XSS
+// sink can't load arbitrary JS. unsafe-inline is allowed for styles
+// because our component library uses inline style attributes — scripts
+// are locked to 'self'.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'default-src':  ["'self'"],
+      'script-src':   ["'self'"],
+      'style-src':    ["'self'", "'unsafe-inline'"],
+      'img-src':      ["'self'", 'data:', 'https:'],
+      'connect-src':  ["'self'", 'https://*.stripe.com'],
+      'font-src':     ["'self'", 'data:'],
+      'frame-src':    ["'self'", 'https://*.stripe.com'],
+      'object-src':   ["'none'"],
+      'base-uri':     ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(geoBlock);
 app.get('/api/geo', getGeoInfo);
+// Audit #9: refuse wildcard CORS in production; require an explicit
+// origin list via env.
+if (process.env.NODE_ENV === 'production' && (!process.env.CORS_ORIGIN || process.env.CORS_ORIGIN === '*')) {
+  throw new Error('CORS_ORIGIN must be set to an explicit origin list in production (no wildcards).');
+}
 app.use(
   cors({
-    origin: (process.env.CORS_ORIGIN || '*').split(','),
+    origin: (process.env.CORS_ORIGIN || '*').split(',').map((s) => s.trim()),
     credentials: false,
   }),
 );
-app.use(express.json({ limit: '256kb' }));
+// Capture the raw request body so Stripe webhook signature verification
+// has the bytes it needs while still letting every other handler use the
+// parsed JSON body. (Audit #2 fix.)
+app.use(express.json({
+  limit: '256kb',
+  verify: (req: any, _res, buf) => { req.rawBody = buf; },
+}));
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('tiny'));
 }
@@ -77,6 +108,11 @@ const sensitiveAuthLimiter = rateLimit({ windowMs: 60 * 60_000, max: 8, standard
 app.use('/api/auth/register', sensitiveAuthLimiter);
 app.use('/api/auth/forgot',   sensitiveAuthLimiter);
 app.use('/api/auth/reset',    sensitiveAuthLimiter);
+
+// Audit #12: admin routes get their own tighter limiter. A leaked
+// admin token shouldn't translate to unlimited gold-minting.
+const adminLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true });
+app.use('/api/admin', adminLimiter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });

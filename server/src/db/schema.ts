@@ -246,6 +246,9 @@ export function applySchema(db: Database.Database): void {
   if (!userHave.has('last_ip')) db.exec(`ALTER TABLE users ADD COLUMN last_ip TEXT NOT NULL DEFAULT ''`);
   if (!userHave.has('last_country')) db.exec(`ALTER TABLE users ADD COLUMN last_country TEXT NOT NULL DEFAULT ''`);
   if (!userHave.has('last_user_agent')) db.exec(`ALTER TABLE users ADD COLUMN last_user_agent TEXT NOT NULL DEFAULT ''`);
+  // token_version drives JWT invalidation: bump on password change /
+  // reset and existing JWTs immediately fail authRequired (audit #6).
+  if (!userHave.has('token_version')) db.exec(`ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS settings (

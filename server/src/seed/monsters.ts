@@ -68,7 +68,10 @@ function bandFor(level: number): HighRegionBand {
       slug: `${band.region}_${lvl}`,
       name: `${creature} · Lv ${lvl}`,
       level: lvl,
-      hp: Math.round(1500 * Math.pow(f, 1.9)),
+      // Audit gamebreaker #2: was Math.pow(f, 1.9); monster HP scaled
+      // far past hero damage and Lv 200+ fights couldn't be won inside
+      // the 60-round combat cap. Pulled down to 1.4 so gear keeps up.
+      hp: Math.round(1500 * Math.pow(f, 1.4)),
       atk_min: Math.round(60 * Math.pow(f, 1.25)),
       atk_max: Math.round(95 * Math.pow(f, 1.25)),
       defense: Math.round(25 * Math.pow(f, 1.1)),

@@ -41,7 +41,18 @@ function tryInitStripe() {
 tryInitStripe();
 
 function isDevMode(): boolean {
+  // Audit #1 critical: dev-mode in production lets anyone mint gems
+  // by calling /checkout → /verify with no payment. Hard-block.
+  if (process.env.NODE_ENV === 'production') return false;
   return !stripeReady;
+}
+
+function refuseInProduction(res: any): boolean {
+  if (process.env.NODE_ENV === 'production' && !stripeReady) {
+    res.status(503).json({ error: 'Payments are temporarily unavailable.' });
+    return true;
+  }
+  return false;
 }
 
 function getChar(uid: number): Character | undefined {
@@ -246,7 +257,12 @@ router.post('/verify', async (req, res) => {
       res.status(500).json({ error: e.message });
     }
   } else {
-    // Dev mode — instant complete
+    // Dev mode — instant complete. Hard-block this path in production
+    // (audit #1 critical: free gems).
+    if (process.env.NODE_ENV === 'production') {
+      res.status(503).json({ error: 'Payments are temporarily unavailable.' });
+      return;
+    }
     const row = db.prepare('SELECT character_id, status FROM purchases WHERE id = ?').get(purchaseId) as any;
     if (!row) { res.status(404).json({ error: 'Purchase not found' }); return; }
     if (row.character_id !== char.id) { res.status(403).json({ error: 'Wrong hero' }); return; }
@@ -263,9 +279,19 @@ router.post('/webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'] as string | undefined;
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret || !sig) { res.status(400).json({ error: 'Missing webhook secret' }); return; }
+  // Audit #2 critical: actually verify the signature against the raw
+  // body. We capture the raw body via the verify callback on the global
+  // express.json middleware (see server.ts).
+  const raw = (req as any).rawBody as Buffer | undefined;
+  if (!raw) { res.status(400).json({ error: 'Raw body missing — webhook misconfigured' }); return; }
+  let event: any;
   try {
-    // req.body is JSON-parsed already; for real webhook integrity, mount raw body parser.
-    const event = req.body;
+    event = stripe.webhooks.constructEvent(raw, sig, secret);
+  } catch (err: any) {
+    res.status(400).json({ error: `Webhook signature verification failed: ${err.message}` });
+    return;
+  }
+  try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const purchaseId = Number(session.metadata?.purchase_id || session.client_reference_id);
