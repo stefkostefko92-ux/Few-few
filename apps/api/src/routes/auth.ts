@@ -70,6 +70,7 @@ authRouter.post(
           passwordHash,
           displayName: input.displayName,
           locale: input.locale ?? DEFAULT_LOCALE,
+          termsAcceptedAt: new Date(),
         },
       });
     } catch (e) {
@@ -103,7 +104,7 @@ authRouter.post(
       "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHR2YWx1ZQ$0000000000000000000000000000000000000000000";
     const ok = await verifyPassword(user?.passwordHash ?? dummy, input.password);
 
-    if (!user || !user.passwordHash || !ok) {
+    if (!user || !user.passwordHash || !ok || user.deletedAt) {
       throw unauthorized("Грешен имейл или парола");
     }
     if (user.banned) {
@@ -153,7 +154,7 @@ authRouter.get(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user!.sub } });
-    if (!user) throw unauthorized("User no longer exists");
+    if (!user || user.deletedAt) throw unauthorized("User no longer exists");
     // A ban applied mid-session ends it at the next /me (cookie restore).
     if (user.banned) throw forbidden("Този акаунт е блокиран");
     res.json({ user: toPublicUser(user) });

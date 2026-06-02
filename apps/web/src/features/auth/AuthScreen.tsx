@@ -18,6 +18,7 @@ export function AuthScreen({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -44,7 +45,7 @@ export function AuthScreen({ mode }: { mode: Mode }) {
       const res =
         mode === "login"
           ? await api.login({ email, password })
-          : await api.register({ email, password, displayName });
+          : await api.register({ email, password, displayName, acceptedTerms: true });
       setUser(res.user);
       navigate("/", { replace: true });
     } catch (err) {
@@ -99,13 +100,41 @@ export function AuthScreen({ mode }: { mode: Mode }) {
             required
           />
 
+          {mode === "register" ? (
+            <label className="flex items-start gap-2 text-xs text-ink-300">
+              <input
+                type="checkbox"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-0.5 size-4 shrink-0 accent-brass-300"
+                required
+              />
+              <span>
+                {t("auth.consentPre")}{" "}
+                <a href="/terms/" target="_blank" rel="noreferrer" className="text-brass-300 hover:text-brass-100">
+                  {t("auth.consentTerms")}
+                </a>{" "}
+                {t("auth.consentAnd")}{" "}
+                <a href="/privacy/" target="_blank" rel="noreferrer" className="text-brass-300 hover:text-brass-100">
+                  {t("auth.consentPrivacy")}
+                </a>
+                .
+              </span>
+            </label>
+          ) : null}
+
           {error ? (
             <p role="alert" className="text-sm text-loss">
               {error}
             </p>
           ) : null}
 
-          <Button type="submit" loading={busy} className="mt-2 w-full">
+          <Button
+            type="submit"
+            loading={busy}
+            disabled={mode === "register" && !accepted}
+            className="mt-2 w-full"
+          >
             {mode === "login" ? t("auth.loginCta") : t("auth.registerCta")}
           </Button>
         </form>

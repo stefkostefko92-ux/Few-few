@@ -78,7 +78,30 @@
     "oauthFailed": "Accesso non riuscito. Riprova.",
     "emailUnverified": "La tua email non è ancora verificata.",
     "resend": "Invia di nuovo il link",
-    "resendSent": "Abbiamo inviato un nuovo link di verifica."
+    "resendSent": "Abbiamo inviato un nuovo link di verifica.",
+    "consentPre": "Ho 18+ e accetto i",
+    "consentTerms": "Termini di servizio",
+    "consentAnd": "e la",
+    "consentPrivacy": "Privacy Policy"
+  },
+  "account": {
+    "title": "Account",
+    "verified": "Email verificata",
+    "unverified": "Non verificata",
+    "level": "Livello",
+    "privacy": "Privacy e dati",
+    "privacyHint": "Scarica una copia dei tuoi dati o elimina l'account (GDPR).",
+    "exportData": "Scarica i miei dati",
+    "deleteAccount": "Elimina account",
+    "deleteTitle": "Elimina account",
+    "deleteBody": "Questo anonimizza i tuoi dati personali e termina l'accesso. Gettoni, gemme e cosmetici virtuali andranno persi per sempre. Sei sicuro?",
+    "cancel": "Annulla",
+    "confirmDelete": "Sì, elimina"
+  },
+  "cookie": {
+    "text": "Usiamo solo cookie strettamente necessari per l'accesso.",
+    "learn": "Scopri di più",
+    "accept": "Ho capito"
   },
   "verify": {
     "title": "Verifica email",

@@ -27,6 +27,8 @@ model User {
   vipTier       VipTier   @default(NONE)
   vipUntil      DateTime?
   banned        Boolean   @default(false) // blocked at login by staff (§14)
+  termsAcceptedAt DateTime? // consent to ToS + 18+ at registration (GDPR)
+  deletedAt     DateTime? // GDPR erasure: anonymized + login disabled
   createdAt     DateTime  @default(now())
   lastSeenAt    DateTime  @default(now())
 

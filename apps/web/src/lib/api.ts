@@ -76,6 +76,9 @@ export const api = {
   logout: () => request<{ ok: true }>("/auth/logout", { method: "POST" }),
   me: () => request<AuthResponse>("/auth/me"),
 
+  // Account (GDPR)
+  deleteAccount: () => request<{ ok: true }>("/account/delete", { method: "POST" }),
+
   // Email verification & password reset
   verifyEmail: (token: string) =>
     request<{ ok: true }>("/auth/verify-email", {
@@ -234,3 +237,6 @@ export interface AdminFlag {
 export function oauthStartUrl(provider: "google" | "facebook"): string {
   return `/api/auth/oauth/${provider}/start`;
 }
+
+/** Authenticated download link for the player's GDPR data export. */
+export const ACCOUNT_EXPORT_URL = "/api/account/export";

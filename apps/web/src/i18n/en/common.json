@@ -78,7 +78,30 @@
     "oauthFailed": "Sign-in failed. Please try again.",
     "emailUnverified": "Your email isn't verified yet.",
     "resend": "Resend the link",
-    "resendSent": "We've sent a new verification link."
+    "resendSent": "We've sent a new verification link.",
+    "consentPre": "I am 18+ and accept the",
+    "consentTerms": "Terms of Service",
+    "consentAnd": "and",
+    "consentPrivacy": "Privacy Policy"
+  },
+  "account": {
+    "title": "Account",
+    "verified": "Email verified",
+    "unverified": "Unverified",
+    "level": "Level",
+    "privacy": "Privacy & data",
+    "privacyHint": "Download a copy of your data or delete your account (GDPR).",
+    "exportData": "Download my data",
+    "deleteAccount": "Delete account",
+    "deleteTitle": "Delete account",
+    "deleteBody": "This anonymizes your personal data and ends access. Virtual chips, gems, and cosmetics are lost permanently. Are you sure?",
+    "cancel": "Cancel",
+    "confirmDelete": "Yes, delete"
+  },
+  "cookie": {
+    "text": "We use only strictly necessary cookies for sign-in.",
+    "learn": "Learn more",
+    "accept": "Got it"
   },
   "verify": {
     "title": "Email verification",

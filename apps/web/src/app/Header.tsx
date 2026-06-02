@@ -87,7 +87,13 @@ export function Header() {
             </button>
 
             {user.vipTier !== "NONE" ? <Badge tone="vip">VIP {user.vipTier}</Badge> : null}
-            <span className="hidden text-sm text-ink-300 sm:inline">{user.displayName}</span>
+            <Link
+              to="/account"
+              className="hidden text-sm text-ink-300 hover:text-brass-100 sm:inline"
+              title={t("nav.profile")}
+            >
+              {user.displayName}
+            </Link>
             <Button variant="ghost" onClick={() => void onLogout()}>
               {t("nav.logout")}
             </Button>

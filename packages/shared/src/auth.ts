@@ -24,6 +24,8 @@ export const registerSchema = z.object({
   password: passwordSchema,
   displayName: displayNameSchema,
   locale: z.enum(LOCALES).optional(),
+  // 18+ and ToS/Privacy consent — must be explicitly true (GDPR).
+  acceptedTerms: z.literal(true),
 });
 
 export const loginSchema = z.object({
