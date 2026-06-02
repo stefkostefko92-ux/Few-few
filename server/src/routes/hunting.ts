@@ -118,6 +118,7 @@ router.post('/hunt', (req, res) => {
 
   let xpGain = 0;
   let goldGain = 0;
+  let itemRewardSlug = '';
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   if (result.winner === 'hero') {
     const baseXp = monster.xp_reward;
@@ -127,6 +128,29 @@ router.post('/hunt', (req, res) => {
     goldGain = r.gold;
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
+
+    // Item drop. Higher-level monsters drop higher tier items at a flat
+    // 18% chance per kill. Tier is picked from the monster's level band so
+    // a Lv 1-35 mob can only drop tier-1 gear, etc.
+    if (Math.random() < 0.22) {
+      const tier = Math.min(10, Math.max(1, Math.ceil(monster.level / 35)));
+      // Pull a random equipment item at this tier that the player can
+      // theoretically equip (level_req ≤ char level). Falls back to any
+      // item at that tier so even an unequippable trophy can drop.
+      const candidates = db.prepare(
+        `SELECT * FROM items
+         WHERE tier = ?
+           AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
+         ORDER BY RANDOM() LIMIT 1`,
+      ).get(tier) as any;
+      if (candidates) {
+        itemRewardSlug = candidates.slug;
+        db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(
+          char.id,
+          candidates.id,
+        );
+      }
+    }
   }
   char.hp = Math.max(1, result.hero.hp > 0 ? result.hero.hp : 1);
   const cooldownMs = setCooldown(char.id, 'hunt');
@@ -182,6 +206,7 @@ router.post('/hunt', (req, res) => {
     unlocked,
     monsterSlug: monster.slug,
     completedBounties,
+    itemReward: itemRewardSlug || null,
     cooldown_ms: cooldownMs,
   });
 });
