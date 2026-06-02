@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { Server } from "socket.io";
+import { Server, type DefaultEventsMap } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { z } from "zod";
 import { prisma } from "@aso/db";
@@ -16,6 +16,7 @@ import { logger } from "./logger.js";
 import { pubClient, redis, subClient } from "./redis.js";
 import { verifyHandshake } from "./auth.js";
 import { Matchmaker } from "./matchmaking.js";
+import type { GameRoom } from "./room.js";
 import { sanitizeChat, chatRateOk } from "./chat.js";
 
 const queueJoinSchema = z.object({ game: z.string(), mode: z.string().optional() });
@@ -28,6 +29,19 @@ const inviteAcceptSchema = z.object({ fromUserId: z.string().min(1).max(64), gam
 
 const userRoom = (userId: string): string => `u:${userId}`;
 const presenceKey = (userId: string): string => `presence:online:${userId}`;
+
+/**
+ * Inter-node room operations (forwarded via the Socket.IO cluster adapter's
+ * server-side messaging). A match's authoritative state lives on one node; a
+ * socket connected to a different node forwards the op, and only the owning
+ * node — the one with the room in memory — applies it.
+ */
+interface InterServerEvents {
+  "op:action": (d: { matchId: string; userId: string; action: unknown }) => void;
+  "op:resync": (d: { matchId: string; userId: string }) => void;
+  "op:presence": (d: { userId: string; connected: boolean }) => void;
+  "op:chat": (d: { matchId: string; userId: string; text: string; ts: number }) => void;
+}
 
 /** True when the two users are accepted friends (either direction). */
 async function areFriends(a: string, b: string): Promise<boolean> {
@@ -57,9 +71,10 @@ async function main(): Promise<void> {
 
   // Cast through the constructor's first-arg union to sidestep the http.Server
   // generics skew between @types/node and socket.io's bundled http types.
-  const io = new Server(httpServer as unknown as ConstructorParameters<typeof Server>[0], {
-    cors: { origin: env.corsOrigins, credentials: true },
-  });
+  const io = new Server<DefaultEventsMap, DefaultEventsMap, InterServerEvents>(
+    httpServer as unknown as ConstructorParameters<typeof Server>[0],
+    { cors: { origin: env.corsOrigins, credentials: true } },
+  );
   io.adapter(createAdapter(pubClient, subClient));
 
   // Authenticate the httpOnly access cookie at the handshake (§8.3), and reject
@@ -95,23 +110,46 @@ async function main(): Promise<void> {
   const matchmaker = new Matchmaker(io);
   matchmaker.start();
 
+  /** Broadcast a chat line to every human seat in a room (reaches clients on
+   *  any node via the adapter). */
+  const broadcastChat = (room: GameRoom, seatNo: number, displayName: string, text: string, ts: number) => {
+    const msg: ChatMessageMsg = { matchId: room.matchId, seat: seatNo, displayName, text, ts };
+    for (const s of room.seats) {
+      if (s.userId) io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.CHAT_MESSAGE, msg);
+    }
+  };
+
+  // Apply forwarded ops only if THIS node owns the room/match; otherwise no-op.
+  io.on("op:action", (d) => matchmaker.getRoom(d.matchId)?.handleAction(d.userId, d.action));
+  io.on("op:resync", (d) => matchmaker.getRoom(d.matchId)?.resync(d.userId));
+  io.on("op:presence", (d) =>
+    matchmaker.activeRoomForUser(d.userId)?.setConnected(d.userId, d.connected),
+  );
+  io.on("op:chat", (d) => {
+    const room = matchmaker.getRoom(d.matchId);
+    const seat = room?.seats.find((s) => s.userId === d.userId);
+    if (room && seat) broadcastChat(room, seat.seat, seat.displayName, d.text, d.ts);
+  });
+
+  /** Resume/forfeit a user's match presence whether the room is local or on a
+   *  peer node. */
+  const dispatchPresence = (uid: string, connected: boolean) => {
+    const room = matchmaker.activeRoomForUser(uid);
+    if (room) room.setConnected(uid, connected);
+    else io.serverSideEmit("op:presence", { userId: uid, connected });
+  };
+
   io.on("connection", (socket) => {
     const { claims } = socket.data as { claims: AccessTokenClaims };
     const userId = claims.sub;
     void socket.join(userRoom(userId));
 
-    void prisma.user
-      .findUnique({ where: { id: userId } })
-      .then((u) => {
-        if (u) matchmaker.setDisplayName(userId, u.displayName);
-      })
-      .catch(() => undefined);
-
     // Mark online for friends' presence; refresh a generous safety TTL.
     void redis.set(presenceKey(userId), "1", "EX", 86400).catch(() => undefined);
 
-    // Resume an in-progress match if this is a reconnect (new socket).
-    matchmaker.activeRoomForUser(userId)?.setConnected(userId, true);
+    // Resume an in-progress match if this is a reconnect (new socket), even if
+    // the match is owned by another node.
+    dispatchPresence(userId, true);
 
     socket.on(SOCKET_EVENTS.QUEUE_JOIN, (payload: unknown) => {
       const parsed = queueJoinSchema.safeParse(payload);
@@ -135,42 +173,38 @@ async function main(): Promise<void> {
     socket.on(SOCKET_EVENTS.GAME_ACTION, (payload: unknown) => {
       const parsed = gameActionSchema.safeParse(payload);
       if (!parsed.success) return;
-      matchmaker.getRoom(parsed.data.matchId)?.handleAction(userId, parsed.data.action);
+      const room = matchmaker.getRoom(parsed.data.matchId);
+      if (room) room.handleAction(userId, parsed.data.action);
+      else io.serverSideEmit("op:action", { matchId: parsed.data.matchId, userId, action: parsed.data.action });
     });
 
     socket.on(SOCKET_EVENTS.GAME_RESYNC, (payload: unknown) => {
       const parsed = resyncSchema.safeParse(payload);
       if (!parsed.success) return;
-      matchmaker.getRoom(parsed.data.matchId)?.resync(userId);
+      const room = matchmaker.getRoom(parsed.data.matchId);
+      if (room) room.resync(userId);
+      else io.serverSideEmit("op:resync", { matchId: parsed.data.matchId, userId });
     });
 
     socket.on(SOCKET_EVENTS.CHAT_SEND, (payload: unknown) => {
       const parsed = chatSendSchema.safeParse(payload);
       if (!parsed.success) return;
-      // Guests can't chat (S14); only participants of the named match can post.
+      // Guests can't chat (S14). Rate-limit + sanitize on this node (the one
+      // holding the socket); the owning node verifies seat membership.
       if (claims.role === "GUEST") return;
-
-      const room = matchmaker.getRoom(parsed.data.matchId);
-      const seat = room?.seats.find((s) => s.userId === userId);
-      if (!room || !seat) return;
-
       if (!chatRateOk(socket)) {
         socket.emit(SOCKET_EVENTS.ERROR, { code: "chat_rate", message: "Твърде бързо. Изчакай малко." });
         return;
       }
-
       const text = sanitizeChat(parsed.data.text);
       if (!text) return;
 
-      const msg: ChatMessageMsg = {
-        matchId: room.matchId,
-        seat: seat.seat,
-        displayName: seat.displayName,
-        text,
-        ts: Date.now(),
-      };
-      for (const s of room.seats) {
-        if (s.userId) io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.CHAT_MESSAGE, msg);
+      const room = matchmaker.getRoom(parsed.data.matchId);
+      if (room) {
+        const seat = room.seats.find((s) => s.userId === userId);
+        if (seat) broadcastChat(room, seat.seat, seat.displayName, text, Date.now());
+      } else {
+        io.serverSideEmit("op:chat", { matchId: parsed.data.matchId, userId, text, ts: Date.now() });
       }
     });
 
@@ -204,17 +238,17 @@ async function main(): Promise<void> {
 
     socket.on("disconnect", () => {
       void matchmaker.leaveAllQueues(userId);
-      // Only flag offline if no other socket for this user remains (multi-tab).
+      // Only flag offline if no other socket for this user remains anywhere in
+      // the cluster (multi-tab / multi-node). fetchSockets is adapter-wide.
       void io
         .in(userRoom(userId))
         .fetchSockets()
         .then((sockets) => {
-          if (sockets.length === 0) {
-            matchmaker.activeRoomForUser(userId)?.setConnected(userId, false);
-            void redis.del(presenceKey(userId)).catch(() => undefined);
-          }
+          if (sockets.some((s) => s.id !== socket.id)) return; // another live socket
+          dispatchPresence(userId, false);
+          void redis.del(presenceKey(userId)).catch(() => undefined);
         })
-        .catch(() => matchmaker.activeRoomForUser(userId)?.setConnected(userId, false));
+        .catch(() => dispatchPresence(userId, false));
     });
   });
 

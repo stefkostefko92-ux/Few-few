@@ -1,7 +1,8 @@
+import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
-import { STARTING_MMR, seatsFor } from "@aso/shared";
+import { STARTING_MMR, isGameKey, seatsFor } from "@aso/shared";
 import { GameRoom, type RoomSeat } from "./room.js";
 import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
@@ -16,6 +17,19 @@ interface QueueDesc {
 const queueKey = (q: QueueDesc): string => `mm:${q.game}:${q.mode}`;
 const joinedField = (q: QueueDesc, userId: string): string => `${q.game}:${q.mode}:${userId}`;
 const JOINED_HASH = "mm:joined";
+// Redis-backed so any node's joins are visible to whichever node is matching.
+const ACTIVE_SET = "mm:active"; // set of active queue keys
+const LEADER_KEY = "mm:leader"; // single-matcher lease
+const LEADER_TTL_MS = 3000;
+
+/** Parse a queue key (`mm:GAME:MODE`) back into a QueueDesc. */
+function parseQueueKey(key: string): QueueDesc | null {
+  const parts = key.split(":");
+  if (parts.length !== 3 || parts[0] !== "mm") return null;
+  const game = parts[1]!;
+  if (!isGameKey(game)) return null;
+  return { game, mode: parts[2]! };
+}
 
 interface QueuedPlayer {
   userId: string;
@@ -26,10 +40,17 @@ interface QueuedPlayer {
 /** MMR tolerance widens the longer a player waits. */
 const mmrWindow = (waitedMs: number): number => 100 + Math.floor(waitedMs / 1000) * 60;
 
+/**
+ * Matchmaker. Game state (rooms) lives in THIS node's memory; the queues,
+ * active-queue set, player names, and the matcher lease live in Redis so the
+ * server scales horizontally: every node can seat connections and own some
+ * matches, but only the node holding the Redis leader lease forms new matches
+ * (so players are never double-matched). Cross-node room operations are
+ * forwarded by the server (see index.ts) via the Socket.IO cluster adapter.
+ */
 export class Matchmaker {
   private readonly rooms = new Map<string, GameRoom>();
-  private readonly activeQueues = new Map<string, QueueDesc>();
-  private readonly displayNames = new Map<string, string>();
+  private readonly nodeId = randomUUID();
   private timer?: NodeJS.Timeout;
 
   constructor(private readonly io: Server) {}
@@ -46,16 +67,12 @@ export class Matchmaker {
     return this.rooms.get(matchId);
   }
 
-  /** The active (unfinished) room a user is seated in, if any. */
+  /** The active (unfinished) room a user is seated in ON THIS NODE, if any. */
   activeRoomForUser(userId: string): GameRoom | undefined {
     for (const room of this.rooms.values()) {
       if (!room.isDone && room.seats.some((s) => s.userId === userId)) return room;
     }
     return undefined;
-  }
-
-  setDisplayName(userId: string, name: string): void {
-    this.displayNames.set(userId, name);
   }
 
   private engineFor(game: GameKey): AnyEngine | undefined {
@@ -71,20 +88,50 @@ export class Matchmaker {
     const mmr = rating?.mmr ?? STARTING_MMR;
     await redis.zadd(queueKey(q), mmr, userId);
     await redis.hset(JOINED_HASH, joinedField(q, userId), Date.now().toString());
-    this.activeQueues.set(queueKey(q), q);
+    await redis.sadd(ACTIVE_SET, queueKey(q));
     return true;
   }
 
   async leaveAllQueues(userId: string): Promise<void> {
-    for (const q of this.activeQueues.values()) {
+    const keys = await redis.smembers(ACTIVE_SET);
+    for (const key of keys) {
+      const q = parseQueueKey(key);
+      if (!q) continue;
       await redis.zrem(queueKey(q), userId);
       await redis.hdel(JOINED_HASH, joinedField(q, userId));
     }
   }
 
+  /** Acquire/refresh the single-matcher lease. Only the holder forms matches. */
+  private async isLeader(): Promise<boolean> {
+    try {
+      const got = await redis.set(LEADER_KEY, this.nodeId, "PX", LEADER_TTL_MS, "NX");
+      if (got) return true;
+      const cur = await redis.get(LEADER_KEY);
+      if (cur === this.nodeId) {
+        await redis.set(LEADER_KEY, this.nodeId, "PX", LEADER_TTL_MS);
+        return true;
+      }
+    } catch {
+      // If Redis is unreachable, fall back to acting as leader (single-node dev).
+      return true;
+    }
+    return false;
+  }
+
   private async tick(): Promise<void> {
+    // Reap finished local rooms on every node.
     for (const [id, room] of this.rooms) if (room.isDone) this.rooms.delete(id);
-    for (const q of this.activeQueues.values()) {
+
+    // Only the leader forms matches (avoids double-matching across nodes).
+    if (!(await this.isLeader())) return;
+    const keys = await redis.smembers(ACTIVE_SET);
+    for (const key of keys) {
+      const q = parseQueueKey(key);
+      if (!q) {
+        await redis.srem(ACTIVE_SET, key);
+        continue;
+      }
       try {
         await this.matchQueue(q);
       } catch (err) {
@@ -96,7 +143,10 @@ export class Matchmaker {
   private async matchQueue(q: QueueDesc): Promise<void> {
     const required = seatsFor(q.game);
     const raw = await redis.zrange(queueKey(q), 0, -1, "WITHSCORES");
-    if (raw.length === 0) return;
+    if (raw.length === 0) {
+      await redis.srem(ACTIVE_SET, queueKey(q)); // empty — stop scanning it
+      return;
+    }
 
     const now = Date.now();
     const players: QueuedPlayer[] = [];
@@ -141,14 +191,20 @@ export class Matchmaker {
     }
   }
 
-  private nameFor(userId: string): string {
-    return this.displayNames.get(userId) ?? "Играч";
+  /** Display names from the DB (node-agnostic), keyed by id. */
+  private async namesFor(userIds: string[]): Promise<Map<string, string>> {
+    if (userIds.length === 0) return new Map();
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, displayName: true },
+    });
+    return new Map(users.map((u) => [u.id, u.displayName]));
   }
 
   /**
    * Seat invited friends into a private match immediately, filling any
    * remaining seats with bots (so any game works for a 1:1 invite). Returns the
-   * matchId. Skips users already in an active match.
+   * matchId. Skips users already in an active match on this node.
    */
   async createPrivateMatch(userIds: string[], game: GameKey): Promise<string | null> {
     if (!this.engineFor(game)) return null;
@@ -164,12 +220,15 @@ export class Matchmaker {
   /** Create a match: human seats first, then `botFill` bot seats. Returns id. */
   private async createMatch(q: QueueDesc, userIds: string[], botFill: number): Promise<string> {
     const seed = generateSeed();
-    const match = await prisma.match.create({ data: { game: q.game, mode: q.mode, seed } });
+    const [match, names] = await Promise.all([
+      prisma.match.create({ data: { game: q.game, mode: q.mode, seed } }),
+      this.namesFor(userIds),
+    ]);
     const seats: RoomSeat[] = userIds.map((userId, seat) => ({
       seat,
       userId,
       isBot: false,
-      displayName: this.nameFor(userId),
+      displayName: names.get(userId) ?? "Играч",
     }));
     for (let b = 0; b < botFill; b++) {
       const seat = userIds.length + b;
