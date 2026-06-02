@@ -5,9 +5,38 @@
     "lobby": "Lobby",
     "shop": "Shop",
     "leaderboard": "Leaderboard",
+    "friends": "Friends",
     "admin": "Admin",
     "profile": "Profile",
     "logout": "Log out"
+  },
+  "friends": {
+    "title": "Friends",
+    "search": "Search a player by name",
+    "searchBtn": "Search",
+    "add": "Add",
+    "incoming": "Requests to you",
+    "accept": "Accept",
+    "decline": "Decline",
+    "yourFriends": "Your friends",
+    "empty": "No friends yet. Search for someone above!",
+    "outgoing": "Sent requests",
+    "pending": "pending",
+    "online": "Online",
+    "offline": "Offline",
+    "invite": "Invite",
+    "remove": "Remove"
+  },
+  "notif": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "friendRequest": "New friend request",
+    "friendAccepted": "Friend request accepted",
+    "system": "System notice"
+  },
+  "invite": {
+    "received": "{{name}} invited you to {{game}}",
+    "accept": "Accept"
   },
   "admin": {
     "title": "Admin panel",

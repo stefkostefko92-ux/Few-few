@@ -143,6 +143,20 @@ export const api = {
     }),
   equippedCosmetics: () => request<{ equipped: string[] }>("/cosmetics/equipped"),
 
+  // Friends & social
+  friends: () => request<FriendsResponse>("/friends"),
+  friendSearch: (q: string) =>
+    request<{ users: FriendLite[] }>(`/friends/search?q=${encodeURIComponent(q)}`),
+  friendRequest: (userId: string) =>
+    request<{ status: string }>("/friends/request", { method: "POST", body: JSON.stringify({ userId }) }),
+  friendAccept: (id: string) => request<{ ok: true }>(`/friends/${id}/accept`, { method: "POST" }),
+  friendDecline: (id: string) => request<{ ok: true }>(`/friends/${id}/decline`, { method: "POST" }),
+  friendRemove: (userId: string) => request<{ ok: true }>(`/friends/${userId}`, { method: "DELETE" }),
+
+  // Notifications
+  notifications: () => request<NotificationsResponse>("/notifications"),
+  notificationsRead: () => request<{ ok: true }>("/notifications/read", { method: "POST" }),
+
   // Admin (staff only)
   adminStats: () => request<AdminStats>("/admin/stats"),
   adminUsers: (q: string) =>
@@ -169,6 +183,37 @@ export const api = {
       body: JSON.stringify({ message }),
     }),
 };
+
+// ── Social DTOs ──────────────────────────────────────────────────────────────
+export interface FriendLite {
+  id: string;
+  displayName: string;
+  level: number;
+  vipTier: string;
+}
+export interface FriendEntry extends FriendLite {
+  friendshipId: string;
+  online: boolean;
+}
+export interface PendingEntry extends FriendLite {
+  friendshipId: string;
+}
+export interface FriendsResponse {
+  friends: FriendEntry[];
+  incoming: PendingEntry[];
+  outgoing: PendingEntry[];
+}
+export interface NotificationItem {
+  id: string;
+  type: string;
+  data: Record<string, unknown>;
+  readAt: string | null;
+  createdAt: string;
+}
+export interface NotificationsResponse {
+  items: NotificationItem[];
+  unread: number;
+}
 
 // ── Admin DTOs ───────────────────────────────────────────────────────────────
 export interface AdminAuditRow {

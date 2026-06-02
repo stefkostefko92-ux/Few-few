@@ -5,6 +5,7 @@ import { Footer } from "./Footer";
 import { VerifyBanner } from "../features/auth/VerifyBanner";
 import { StoreModal } from "../features/shop/StoreModal";
 import { CosmeticsModal } from "../features/shop/CosmeticsModal";
+import { InviteWatcher } from "../features/social/InviteWatcher";
 
 /** Authenticated app chrome: skip-link + header + routed content + footer. */
 export function Layout() {
@@ -25,6 +26,7 @@ export function Layout() {
       <Footer />
       <StoreModal />
       <CosmeticsModal />
+      <InviteWatcher />
     </div>
   );
 }

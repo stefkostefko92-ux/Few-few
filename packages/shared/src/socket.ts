@@ -9,7 +9,10 @@ export const SOCKET_EVENTS = {
   GAME_ACTION: "game:action",
   GAME_RESYNC: "game:resync",
   CHAT_SEND: "chat:send",
+  INVITE_SEND: "invite:send",
+  INVITE_ACCEPT: "invite:accept",
   // server -> client
+  INVITE_RECEIVED: "invite:received",
   QUEUE_WAITING: "queue:waiting",
   MATCH_FOUND: "match:found",
   GAME_STATE: "game:state",
@@ -65,6 +68,25 @@ export interface PresenceMsg {
   matchId: string;
   seat: number;
   connected: boolean;
+}
+
+/** Client -> server: invite a friend to play `game`. */
+export interface InviteSendPayload {
+  toUserId: string;
+  game: GameKey;
+}
+
+/** Client -> server: accept an invite from `fromUserId`. */
+export interface InviteAcceptPayload {
+  fromUserId: string;
+  game: GameKey;
+}
+
+/** Server -> client: an incoming game invite from a friend. */
+export interface InviteReceivedMsg {
+  fromUserId: string;
+  fromName: string;
+  game: GameKey;
 }
 
 export interface GameEventsMsg {

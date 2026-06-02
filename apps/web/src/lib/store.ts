@@ -26,13 +26,14 @@ interface MatchState {
   matchId: string | null;
   seat: number;
   players: MatchPlayerInfo[];
+  game: GameKey | null;
   phase: MatchPhase;
   /** Whose turn it is, and when their server clock expires (epoch ms, 0 = none). */
   turn: number | null;
   turnEndsAt: number;
   /** Seats currently disconnected (bot covering). */
   disconnected: number[];
-  setMatch: (m: { matchId: string; seat: number; players: MatchPlayerInfo[] }) => void;
+  setMatch: (m: { matchId: string; seat: number; players: MatchPlayerInfo[]; game: GameKey }) => void;
   setPhase: (phase: MatchPhase) => void;
   setLive: (turn: number | null, turnEndsAt: number) => void;
   setPresence: (seat: number, connected: boolean) => void;
@@ -43,12 +44,13 @@ export const useMatchStore = create<MatchState>((set) => ({
   matchId: null,
   seat: 0,
   players: [],
+  game: null,
   phase: "searching",
   turn: null,
   turnEndsAt: 0,
   disconnected: [],
-  setMatch: ({ matchId, seat, players }) =>
-    set({ matchId, seat, players, phase: "playing", disconnected: [] }),
+  setMatch: ({ matchId, seat, players, game }) =>
+    set({ matchId, seat, players, game, phase: "playing", disconnected: [] }),
   setPhase: (phase) => set({ phase }),
   setLive: (turn, turnEndsAt) => set({ turn, turnEndsAt }),
   setPresence: (seat, connected) =>
@@ -60,7 +62,7 @@ export const useMatchStore = create<MatchState>((set) => ({
           : [...s.disconnected, seat],
     })),
   clearMatch: () =>
-    set({ matchId: null, seat: 0, players: [], phase: "searching", turn: null, turnEndsAt: 0, disconnected: [] }),
+    set({ matchId: null, seat: 0, players: [], game: null, phase: "searching", turn: null, turnEndsAt: 0, disconnected: [] }),
 }));
 
 /**

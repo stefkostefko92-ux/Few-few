@@ -145,6 +145,25 @@ export class Matchmaker {
     return this.displayNames.get(userId) ?? "Играч";
   }
 
+  /**
+   * Seat invited friends into a private match immediately, filling any
+   * remaining seats with bots (so any game works for a 1:1 invite). Returns the
+   * matchId. Skips users already in an active match.
+   */
+  async createPrivateMatch(userIds: string[], game: GameKey): Promise<string | null> {
+    if (!this.engineFor(game)) return null;
+    const free = userIds.filter((id) => !this.activeRoomForUser(id));
+    if (free.length === 0) return null;
+    const seats = Math.max(2, seatsFor(game));
+    const humans = free.slice(0, seats);
+    const q: QueueDesc = { game, mode: "private" };
+    await this.dequeue(q, humans); // ensure they're not also queued elsewhere
+    await this.createMatch(q, humans, seats - humans.length);
+    return this.lastMatchId;
+  }
+
+  private lastMatchId: string | null = null;
+
   /** Create a match: human seats first, then `botFill` bot seats. */
   private async createMatch(q: QueueDesc, userIds: string[], botFill: number): Promise<void> {
     const seed = generateSeed();
@@ -167,6 +186,7 @@ export class Matchmaker {
     }
     const room = new GameRoom(this.io, match.id, q.game, seats, seed);
     this.rooms.set(match.id, room);
+    this.lastMatchId = match.id;
     room.start();
     logger.info(
       { matchId: match.id, game: q.game, humans: userIds.length, bots: botFill },

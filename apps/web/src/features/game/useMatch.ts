@@ -44,15 +44,20 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
   useEffect(() => {
     if (!gameKey) return;
     const socket = getSocket();
-    const matchStore = useMatchStore.getState();
+
+    // Adopt a match created elsewhere (a friend invite already populated the
+    // store + navigated here) instead of joining the queue again.
+    const existing = useMatchStore.getState();
+    const adopting =
+      existing.matchId !== null && existing.game === gameKey && existing.phase !== "over";
 
     const onFound = (m: MatchFoundMsg) => {
       setMatchId(m.matchId);
       setSeat(m.seat);
       setPlayers(m.players);
       setPhase("playing");
-      // Publish for the chat dock mounted in GameView.
-      matchStore.setMatch({ matchId: m.matchId, seat: m.seat, players: m.players });
+      // Publish for chrome mounted outside the game view (chat, status).
+      useMatchStore.getState().setMatch({ matchId: m.matchId, seat: m.seat, players: m.players, game: m.game });
     };
     const onState = (s: GameStateMsg) => {
       setState(s.state as S);
@@ -77,11 +82,20 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     socket.on(SOCKET_EVENTS.PRESENCE, onPresence);
 
     const join = () => socket.emit(SOCKET_EVENTS.QUEUE_JOIN, { game: gameKey });
-    if (socket.connected) join();
-    socket.on("connect", join);
+    if (adopting) {
+      // Hydrate from the store and pull the current state; do NOT queue.
+      setMatchId(existing.matchId);
+      setSeat(existing.seat);
+      setPlayers(existing.players);
+      setPhase("playing");
+      socket.emit(SOCKET_EVENTS.GAME_RESYNC, { matchId: existing.matchId });
+    } else {
+      if (socket.connected) join();
+      socket.on("connect", join);
+    }
 
     return () => {
-      socket.emit(SOCKET_EVENTS.QUEUE_LEAVE);
+      if (!adopting) socket.emit(SOCKET_EVENTS.QUEUE_LEAVE);
       socket.off(SOCKET_EVENTS.MATCH_FOUND, onFound);
       socket.off(SOCKET_EVENTS.GAME_STATE, onState);
       socket.off(SOCKET_EVENTS.GAME_OVER, onOver);

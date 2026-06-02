@@ -9,6 +9,7 @@ import {
   isGameKey,
   type AccessTokenClaims,
   type ChatMessageMsg,
+  type InviteReceivedMsg,
 } from "@aso/shared";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
@@ -22,8 +23,26 @@ const gameActionSchema = z.object({ matchId: z.string(), action: z.unknown() });
 const resyncSchema = z.object({ matchId: z.string() });
 // Accept a little slack over the cap; sanitizeChat truncates to CHAT_MAX_LEN.
 const chatSendSchema = z.object({ matchId: z.string(), text: z.string().min(1).max(CHAT_MAX_LEN * 4) });
+const inviteSendSchema = z.object({ toUserId: z.string().min(1).max(64), game: z.string() });
+const inviteAcceptSchema = z.object({ fromUserId: z.string().min(1).max(64), game: z.string() });
 
 const userRoom = (userId: string): string => `u:${userId}`;
+const presenceKey = (userId: string): string => `presence:online:${userId}`;
+
+/** True when the two users are accepted friends (either direction). */
+async function areFriends(a: string, b: string): Promise<boolean> {
+  const fr = await prisma.friendship.findFirst({
+    where: {
+      status: "ACCEPTED",
+      OR: [
+        { requesterId: a, addresseeId: b },
+        { requesterId: b, addresseeId: a },
+      ],
+    },
+    select: { id: true },
+  });
+  return fr !== null;
+}
 
 async function main(): Promise<void> {
   const httpServer = createServer((req, res) => {
@@ -68,6 +87,9 @@ async function main(): Promise<void> {
         if (u) matchmaker.setDisplayName(userId, u.displayName);
       })
       .catch(() => undefined);
+
+    // Mark online for friends' presence; refresh a generous safety TTL.
+    void redis.set(presenceKey(userId), "1", "EX", 86400).catch(() => undefined);
 
     // Resume an in-progress match if this is a reconnect (new socket).
     matchmaker.activeRoomForUser(userId)?.setConnected(userId, true);
@@ -133,15 +155,45 @@ async function main(): Promise<void> {
       }
     });
 
+    // Invite a friend to play; they get an INVITE_RECEIVED if online.
+    socket.on(SOCKET_EVENTS.INVITE_SEND, (payload: unknown) => {
+      const parsed = inviteSendSchema.safeParse(payload);
+      if (!parsed.success || !isGameKey(parsed.data.game)) return;
+      const { toUserId, game } = parsed.data;
+      void areFriends(userId, toUserId).then(async (ok) => {
+        if (!ok) return;
+        const sockets = await io.in(userRoom(toUserId)).fetchSockets();
+        if (sockets.length === 0) return; // offline
+        const me = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
+        const msg: InviteReceivedMsg = { fromUserId: userId, fromName: me?.displayName ?? "Играч", game };
+        io.to(userRoom(toUserId)).emit(SOCKET_EVENTS.INVITE_RECEIVED, msg);
+      });
+    });
+
+    // Accept an invite: seat both friends into a private match now.
+    socket.on(SOCKET_EVENTS.INVITE_ACCEPT, (payload: unknown) => {
+      const parsed = inviteAcceptSchema.safeParse(payload);
+      if (!parsed.success || !isGameKey(parsed.data.game)) return;
+      const { fromUserId, game } = parsed.data;
+      void areFriends(userId, fromUserId).then((ok) => {
+        if (!ok) return;
+        void matchmaker.createPrivateMatch([fromUserId, userId], game).catch((err) =>
+          logger.error({ err }, "createPrivateMatch failed"),
+        );
+      });
+    });
+
     socket.on("disconnect", () => {
       void matchmaker.leaveAllQueues(userId);
-      // Only flag the seat offline if no other socket for this user remains
-      // (multi-tab). The user room membership reflects live connections.
+      // Only flag offline if no other socket for this user remains (multi-tab).
       void io
         .in(userRoom(userId))
         .fetchSockets()
         .then((sockets) => {
-          if (sockets.length === 0) matchmaker.activeRoomForUser(userId)?.setConnected(userId, false);
+          if (sockets.length === 0) {
+            matchmaker.activeRoomForUser(userId)?.setConnected(userId, false);
+            void redis.del(presenceKey(userId)).catch(() => undefined);
+          }
         })
         .catch(() => matchmaker.activeRoomForUser(userId)?.setConnected(userId, false));
     });

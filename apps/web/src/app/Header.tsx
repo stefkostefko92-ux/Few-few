@@ -5,6 +5,7 @@ import { useAuthStore, useStoreModal } from "../lib/store";
 import { api } from "../lib/api";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SettingsToggle } from "./SettingsToggle";
+import { NotificationsBell } from "../features/social/NotificationsBell";
 
 /** Below this, the wallet nudges the player toward a top-up. */
 const LOW_CHIPS = 500;
@@ -34,6 +35,7 @@ export function Header() {
               [
                 ["/", t("nav.lobby")],
                 ["/shop", t("nav.shop")],
+                ["/friends", t("nav.friends")],
                 ["/leaderboard", t("nav.leaderboard")],
                 ...(["MODERATOR", "ADMIN", "OWNER"].includes(user.role)
                   ? ([["/admin", t("nav.admin")]] as const)
@@ -87,6 +89,7 @@ export function Header() {
             </button>
 
             {user.vipTier !== "NONE" ? <Badge tone="vip">VIP {user.vipTier}</Badge> : null}
+            <NotificationsBell />
             <Link
               to="/account"
               className="hidden text-sm text-ink-300 hover:text-brass-100 sm:inline"

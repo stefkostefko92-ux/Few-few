@@ -39,9 +39,48 @@ model User {
   quests     Quest[]
   authTokens AuthToken[]
   oauth      OAuthAccount[]
+  friendsSent     Friendship[]   @relation("FriendRequester")
+  friendsReceived Friendship[]   @relation("FriendAddressee")
+  notifications   Notification[]
 
   @@index([level])
   @@index([vipTier])
+}
+
+// Social graph (§ retention). A row is created by the requester; on accept it
+// flips to ACCEPTED. A declined request is deleted. Direction is preserved so
+// pending requests can be shown to the right side.
+model Friendship {
+  id          String       @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  requester   User         @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User         @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+}
+
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+}
+
+// In-app notifications (friend requests/accepts, system). `data` is a JSON blob.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // friend_request | friend_accepted | system
+  data      String // JSON
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
 }
 
 // Single-use, hashed tokens for email verification and password reset

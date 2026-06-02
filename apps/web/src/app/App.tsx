@@ -18,6 +18,7 @@ import { RequireAuth } from "./RequireAuth";
 import { RequireRole } from "./RequireRole";
 import { AdminPanel } from "../features/admin/AdminPanel";
 import { AccountPage } from "../features/account/AccountPage";
+import { FriendsPage } from "../features/social/FriendsPage";
 
 export function App() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -68,6 +69,7 @@ export function App() {
             <Route path="play/:game" element={<GameView />} />
             <Route path="shop" element={<Shop />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route path="friends" element={<FriendsPage />} />
             <Route path="account" element={<AccountPage />} />
             <Route element={<RequireRole />}>
               <Route path="admin" element={<AdminPanel />} />

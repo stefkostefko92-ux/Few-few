@@ -5,9 +5,38 @@
     "lobby": "Lobby",
     "shop": "Negozio",
     "leaderboard": "Classifica",
+    "friends": "Amici",
     "admin": "Admin",
     "profile": "Profilo",
     "logout": "Esci"
+  },
+  "friends": {
+    "title": "Amici",
+    "search": "Cerca un giocatore per nome",
+    "searchBtn": "Cerca",
+    "add": "Aggiungi",
+    "incoming": "Richieste per te",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "yourFriends": "I tuoi amici",
+    "empty": "Ancora nessun amico. Cerca qualcuno qui sopra!",
+    "outgoing": "Richieste inviate",
+    "pending": "in attesa",
+    "online": "Online",
+    "offline": "Offline",
+    "invite": "Invita",
+    "remove": "Rimuovi"
+  },
+  "notif": {
+    "title": "Notifiche",
+    "empty": "Nessuna notifica.",
+    "friendRequest": "Nuova richiesta di amicizia",
+    "friendAccepted": "Richiesta di amicizia accettata",
+    "system": "Avviso di sistema"
+  },
+  "invite": {
+    "received": "{{name}} ti ha invitato a {{game}}",
+    "accept": "Accetta"
   },
   "admin": {
     "title": "Pannello admin",
