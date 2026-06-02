@@ -45,6 +45,11 @@ input[type="number"], input[type="text"], input[type="time"], select {
 input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 select { min-width: 170px; }
 
+.checklist-field { display: block; }
+.checklist { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+.checklist .check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); cursor: pointer; }
+.checklist .check input { width: 16px; height: 16px; flex: 0 0 auto; }
+
 /* Subscription card */
 .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 30px; }
 .sub-card.expired { border-color: var(--danger); }

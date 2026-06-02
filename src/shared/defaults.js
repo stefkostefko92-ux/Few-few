@@ -66,12 +66,15 @@ export const DEFAULT_SETTINGS = {
     enabled: false                 // run the daily dungeon while free tries remain
   },
 
-  /* ---- Map events (Cave of Illusions, Dragon) ---- */
+  /* ---- Map (Liberation encounters + Cave/Dragon events) ---- */
   map: {
     enabled: false,
-    illusionCave: true,            // attempt the Cave of Illusions
-    dragon: true,                  // attempt the Dragon event
-    cooldownMinutes: 10            // wait between attempts
+    encounters: true,              // auto-fight the available map encounters (срещи)
+    buyEnergy: false,              // buy more encounter energy when it runs out
+    locations: '',                 // restrict to these location names/slots (blank = all)
+    illusionCave: true,            // also run the Dungeon of Illusions (cave)
+    dragon: true,                  // also run the Dragon event
+    cooldownMinutes: 10            // wait between cave/dragon attempts
   },
 
   /* ---- Arena / PvP ---- */

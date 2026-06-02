@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   const TB = (window.TanothBot = window.TanothBot || {});
-  TB.VERSION = '1.3.1';
+  TB.VERSION = '1.4.0';
   TB.modules = TB.modules || {};   // registered automation modules, keyed by id
   TB.ready = TB.ready || false;
 })();

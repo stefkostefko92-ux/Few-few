@@ -80,6 +80,8 @@
   "logCaveStart": { "message": "Dungeon of Illusions (reward ~$1)." },
   "logDragonStart": { "message": "Dragon event (reward ~$1)." },
   "logMapUnavailable": { "message": "Map: $1 not available ($2)." },
+  "logMapEncounter": { "message": "Map encounter: $1 (energy $2)." },
+  "logMapBuyEnergy": { "message": "Map: buying more encounter energy." },
   "logSell": { "message": "Selling $1 item #$2 (value $3)." },
   "logSellSchema": { "message": "Auto-sell: $1 items in bag. Fields: $2" },
   "rarityCommon": { "message": "common" },
@@ -178,7 +180,7 @@
 
   "opt_circle_enabled": { "message": "Enable evocation circle" },
   "opt_circle_mode": { "message": "Selection mode" },
-  "opt_circle_manualNodes": { "message": "Nodes to upgrade — names or numbers, e.g. Negotiation, Glory, 16" },
+  "opt_circle_manualNodes": { "message": "Nodes to upgrade (tick the runes/stones below; needs Mode = manual)" },
   "opt_circle_currency": { "message": "Pay with" },
   "opt_circle_multiple": { "message": "Levels per purchase" },
   "opt_circle_stopAtCenterLevel": { "message": "Stop at centre level (1-10)" },
@@ -191,10 +193,13 @@
 
   "opt_dungeon_enabled": { "message": "Enable dungeon" },
 
-  "opt_map_enabled": { "message": "Enable map events" },
+  "opt_map_enabled": { "message": "Enable map" },
+  "opt_map_encounters": { "message": "Auto-fight map encounters (срещи)" },
+  "opt_map_buyEnergy": { "message": "Buy more energy when encounters run out" },
+  "opt_map_locations": { "message": "Limit to these locations (none ticked = all)" },
   "opt_map_illusionCave": { "message": "Dungeon of Illusions (cave)" },
   "opt_map_dragon": { "message": "Dragon event" },
-  "opt_map_cooldownMinutes": { "message": "Minutes between attempts" },
+  "opt_map_cooldownMinutes": { "message": "Minutes between cave/dragon attempts" },
 
   "opt_pvp_enabled": { "message": "Enable arena" },
   "opt_pvp_opponents": { "message": "Opponent name(s), comma-separated" },

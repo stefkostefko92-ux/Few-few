@@ -14,6 +14,7 @@
     dungeonRuns: 0,
     caveRuns: 0,
     dragonRuns: 0,
+    encounters: 0,
     workShifts: 0,
     duelsWon: 0,
     duelsLost: 0,

@@ -210,6 +210,27 @@
     async getDragonDetails() { return rpc('GetDragonDetails', []); },
     async startDragon() { await rpc('StartDragon', []); },
 
+    /* ------------------- map liberation (encounters) ---------------- */
+    async getMapDetails() { return rpc('GetMapDetails', []); },
+    async getLiberationDetails() { return rpc('GetLiberationDetails', []); },
+    // StartLiberation takes the monster's map slot (location).
+    async startLiberation(location) { return rpc('StartLiberation', [{ type: 'int', value: location }]); },
+    async buyLiberationEnergy() { await rpc('BuyLiberationEnergy', []); },
+
+    // Parse the liberation map: { energy, monsters:[{location,stars,picture_id,special_type}] }
+    parseMap(doc) {
+      const energy = num(findValue(doc, 'energy', 'i4'));
+      const monsters = Array.from(doc.querySelectorAll('struct'))
+        .filter((s) => findValue(s, 'location', 'i4') != null && findValue(s, 'stars', 'i4') != null)
+        .map((s) => ({
+          location: num(findValue(s, 'location', 'i4')),
+          stars: num(findValue(s, 'stars', 'i4')) || 0,
+          pictureId: num(findValue(s, 'picture_id', 'i4')) || 0,
+          special: num(findValue(s, 'special_type', 'i4')) || 0
+        }));
+      return { energy, monsters };
+    },
+
     /* --------------------------- inventory -------------------------- */
     async getEquipment() { return rpc('GetEquipment', []); },
     // SellItem(id, char_id|0, itemXpos)

@@ -13,6 +13,27 @@ function t(key, subs) { return chrome.i18n.getMessage(key, subs) || key; }
 const STATS = ['mix', 'strength', 'dexterity', 'constitution', 'intelligence'];
 const RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
+// Arcane Circle nodes (names from the Tanoth wiki) -> RPC node number.
+const CIRCLE_NODES = [
+  { n: 1, label: 'Jade — +exp' }, { n: 2, label: 'Aquamarine — potion duration' },
+  { n: 3, label: 'Sapphire — fame' }, { n: 4, label: 'Emerald — sell price' },
+  { n: 5, label: 'Ruby — potion power' }, { n: 6, label: 'Topaz — inventory slots' },
+  { n: 7, label: 'Amber — work salary' }, { n: 8, label: 'Amethyst — adventure gold' },
+  { n: 9, label: 'Diamond — shop discount' }, { n: 10, label: "Tiger's Eye — travel speed" },
+  { n: 11, label: 'Negotiation Rune — INT' }, { n: 12, label: 'Wisdom Rune — CON' },
+  { n: 13, label: 'Diligence Rune — DEX' }, { n: 14, label: 'Courage Rune — STR' },
+  { n: 15, label: 'Glory Rune — drop rate' }, { n: 16, label: 'Demon Skull — major bonuses' }
+];
+
+// Map location fields (names from the Tanoth wiki), index = map slot.
+const MAP_LOCATIONS = [
+  'Forest of the Hanged Men', 'Forest of the Hanged Men — Rat',
+  'Swamp of the Forgotten', 'Swamp of the Forgotten — Old Ruins', 'Swamp of the Forgotten — Goblin',
+  'Sea of Dunes', 'Sea of Dunes — Large Forge', 'Sea of Dunes — Ocr', 'Sea of Dunes — Giant Rat',
+  'Old Shore', 'Old Shore — Hell Wolf', 'Old Shore — Scorpion', "Old Shore — Sanctum of Shal'ah",
+  'Lowlands of Thun', 'Frozen Peaks', 'Dragon Lair', 'Forgotten Crypt'
+];
+
 /* Field types: bool | number | text | time | select(options) */
 const SCHEMA = [
   { id: 'general', fields: [
@@ -40,7 +61,7 @@ const SCHEMA = [
   { id: 'circle', fields: [
     { k: 'enabled', type: 'bool' },
     { k: 'mode', type: 'select', options: ['auto', 'manual'] },
-    { k: 'manualNodes', type: 'text' },
+    { k: 'manualNodes', type: 'circleNodes' },
     { k: 'currency', type: 'select', options: ['gold', 'bs'] },
     { k: 'multiple', type: 'select', options: [1, 10] },
     { k: 'stopAtCenterLevel', type: 'number', min: 1, max: 10 },
@@ -57,6 +78,9 @@ const SCHEMA = [
   ] },
   { id: 'map', fields: [
     { k: 'enabled', type: 'bool' },
+    { k: 'encounters', type: 'bool' },
+    { k: 'buyEnergy', type: 'bool' },
+    { k: 'locations', type: 'mapLocations' },
     { k: 'illusionCave', type: 'bool' },
     { k: 'dragon', type: 'bool' },
     { k: 'cooldownMinutes', type: 'number', min: 5, max: 600 }
@@ -127,7 +151,51 @@ function render() {
   });
 }
 
+function renderChecklist(section, f) {
+  const row = document.createElement('div');
+  row.className = 'field checklist-field';
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.innerHTML = `<b>${fieldLabel(section, f.k)}</b>`;
+  row.appendChild(label);
+
+  const box = document.createElement('div');
+  box.className = 'checklist';
+
+  // Circle stores node NUMBERS; map stores location NAMES.
+  const isCircle = f.type === 'circleNodes';
+  const items = isCircle
+    ? CIRCLE_NODES.map((c) => ({ value: c.n, label: c.label }))
+    : MAP_LOCATIONS.map((name, i) => ({ value: name, label: `${i}. ${name}` }));
+
+  const current = String(settings[section][f.k] || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
+  const selected = new Set(current.map((s) => isCircle ? String(parseInt(s, 10)) : s.toLowerCase()));
+
+  function commit() {
+    const chosen = Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value);
+    settings[section][f.k] = chosen.join(', ');
+    if (isCircle) settings.circle.mode = chosen.length ? 'manual' : 'auto';
+  }
+
+  items.forEach((it) => {
+    const lab = document.createElement('label');
+    lab.className = 'check';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = String(it.value);
+    cb.checked = isCircle ? selected.has(String(it.value)) : selected.has(String(it.value).toLowerCase());
+    cb.addEventListener('change', commit);
+    lab.appendChild(cb);
+    lab.appendChild(document.createTextNode(' ' + it.label));
+    box.appendChild(lab);
+  });
+
+  row.appendChild(box);
+  return row;
+}
+
 function renderField(section, f) {
+  if (f.type === 'circleNodes' || f.type === 'mapLocations') return renderChecklist(section, f);
   const val = settings[section][f.k];
   const row = document.createElement('div');
   row.className = 'field';
