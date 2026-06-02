@@ -1,40 +1,72 @@
-# Icon Photographs — Sources & Attribution
+# Icon Photographs / Illustrations — Sources & Attribution
 
-Every icon in this folder is sourced from a free, license-clean
-collection. Two sources are used:
+Three source families are mixed across the 48 icon slots:
 
-1. **The Metropolitan Museum of Art — Open Access programme**
-   <https://www.metmuseum.org/art/collection/search>
-   Licence: **CC0 1.0 Universal (Public Domain Dedication)**.
-   Museum-photographed artefacts (medieval swords, armour, jewellery,
-   etc.). Object IDs recorded in `manifest.json`.
+## 1. OpenGameArt — hand-painted RPG icons (equipment)
 
-2. **Wikimedia Commons — public-domain art**
-   <https://commons.wikimedia.org/>
-   Licence: **Public Domain** (pre-1928 originals, no copyright in
-   EU/US/BG/IT). Used for fictional subjects (dragons, ghosts, etc.)
-   where no museum photo exists, and for classical paintings used as
-   class portraits and atmospheric icons.
+For the 20 equipment slots (sword / axe / bow / dagger / mace / staff /
+spear / armor / helm / boots / gloves / shield / amulet / ring / gem /
+4 potions) the icons are HD hand-painted PNGs from two
+OpenGameArt.org packs:
 
-## Why photographs instead of vector silhouettes
+| Pack | Author | Licence | URL |
+|------|--------|---------|-----|
+| Fantasy Icon Pack | **Ravenmore** | CC-BY 3.0 | <https://opengameart.org/content/fantasy-icon-pack-by-ravenmore-0> |
+| Hand-painted RPG Icons (Free) | **Franco Giachetti (LudicArts)** | CC-BY 3.0 | <https://opengameart.org/content/handpainted-rpg-icons> |
 
-The earlier sprite set used hand-authored SVG silhouettes from
-game-icons.net (still kept on disk as a graceful fallback when an
-authored photo isn't available). They read clean as icons but
-homogenise visually — every sword looks like the same flat sword.
-A real Met photograph of a 16th-century etched longsword, or
-Vasnetsov's *Knight at the Crossroads* for the warrior portrait,
-carries texture and history that no vector silhouette can.
+These are 512 × 512 painted illustrations of swords, helms, shields,
+potions, etc. Each icon is centre-cropped to a square JPEG q85 and
+saved as `<slot>.jpg`.
 
-## Image processing
+Per-slot mapping:
 
-Each photo is downloaded at the canonical source resolution (most
-Met images are ≥ 2000 px) and re-encoded as **JPEG q82, 512×512,
-centre-cropped to a square** with ImageMagick. The original file
-order, museum-provided crops, and white balance are preserved.
+| Slot          | Source pack | Source file        |
+|---------------|-------------|--------------------|
+| `sword`       | LudicArts   | `17.png` (heroic golden sword) |
+| `axe`         | Ravenmore   | `axeDouble.png` |
+| `bow`         | Ravenmore   | `upg_bow.png` (gold crossbow) |
+| `dagger`      | LudicArts   | `1.png` (cleaver) |
+| `mace`        | Ravenmore   | `hammer.png` (war hammer) |
+| `staff`       | Ravenmore   | `upg_wand.png` (red-ribboned wand) |
+| `spear`       | Ravenmore   | `upg_spear.png` (gold spear) |
+| `armor`       | LudicArts   | `24.png` (gold-trim breastplate) |
+| `helm`        | Ravenmore   | `upg_helmet.png` (horned helm) |
+| `boots`       | LudicArts   | `28.png` (gold boots) |
+| `gloves`      | LudicArts   | `26.png` (gold gauntlet) |
+| `shield`      | LudicArts   | `30.png` (gold heater shield) |
+| `gem`         | Ravenmore   | `gemBlue.png` |
+| `amulet`      | Ravenmore   | `gemRed.png` (red stone — stands in for the pendant gem) |
+| `ring`        | LudicArts   | `19.png` (gold ring) |
+| `potion`      | LudicArts   | `36.png` (yellow round) |
+| `potion-blue` | Ravenmore   | `potionBlue.png` |
+| `potion-red`  | Ravenmore   | `potionRed.png` |
+| `potion-purple` | LudicArts | `34.png` (purple oval) |
 
-## Per-slot manifest
+## 2. The Met Museum — Open Access (CC0)
 
-The machine-readable list of every slot, its source object/file, the
-Met department or Wikimedia title, and the resulting file size lives
-in `manifest.json` next to this CREDITS file.
+For the `cloak` slot the icon remains Caspar David Friedrich's
+*Wanderer above the Sea of Fog* (1818), public domain via Wikimedia
+Commons.
+
+## 3. Wikimedia Commons — public-domain paintings
+
+The 27 non-equipment slots (class portraits, monsters, camp
+activities, UI flourishes) still use the public-domain paintings
+described in the previous version of this file. They live alongside
+the equipment icons in this folder. See the git history for the
+prior full mapping.
+
+## Why these sources
+
+The user feedback that drove this swap was that museum photographs of
+real artefacts — even very high-quality ones — felt visually
+inconsistent and "real" in a way that didn't match the rest of the
+fantasy UI. Hand-painted icon packs by Ravenmore and LudicArts share
+a unified painted style (clean silhouette, warm rim light, gold
+highlights), so the equipment grid now reads as one cohesive set.
+
+## Licence notes
+
+CC-BY 3.0 requires attribution. Crediting the two pack authors here
+and on the website's `/credits` page satisfies the requirement. The
+icon JPEGs themselves do not need to embed any attribution metadata.
