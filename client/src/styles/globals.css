@@ -344,11 +344,66 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   height: 2px;
   background: linear-gradient(90deg, transparent 0%, var(--gold-1) 50%, transparent 100%);
   filter: drop-shadow(0 0 6px rgba(214,161,61,.7));
-  animation: nav-underline-pop .35s var(--ease-back);
+  animation: nav-underline-pop .35s var(--ease-back), nav-underline-breathe 3.2s ease-in-out 0.5s infinite;
 }
 @keyframes nav-underline-pop {
   0% { transform: scaleX(.2); opacity: 0; }
   100% { transform: scaleX(1); opacity: 1; }
+}
+@keyframes nav-underline-breathe {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(214,161,61,.45)); }
+  50%      { filter: drop-shadow(0 0 12px rgba(214,161,61,.95)); }
+}
+
+/* Premium shimmer pass over the whole navbar every ~7s — the highlight
+   wipes left to right, then resets. */
+.navbar { isolation: isolate; }
+.navbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(115deg,
+    transparent 30%,
+    rgba(255, 232, 138, .07) 48%,
+    rgba(255, 255, 255, .12) 50%,
+    rgba(255, 232, 138, .07) 52%,
+    transparent 70%);
+  background-size: 250% 100%;
+  background-position: -120% 0;
+  animation: navbar-sweep 7s ease-in-out 1s infinite;
+  mix-blend-mode: screen;
+}
+@keyframes navbar-sweep {
+  0%, 60% { background-position: -120% 0; }
+  100%    { background-position: 220% 0; }
+}
+
+/* Nav-links staggered entry on first mount. */
+.nav-link { animation: nav-link-in 400ms var(--ease-out-expo) both; animation-delay: calc(var(--ni, 0) * 60ms); }
+@keyframes nav-link-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Brand mark: golden corona that pulses subtly. */
+.nav-brand { position: relative; }
+.nav-brand::after {
+  content: '';
+  position: absolute;
+  left: -8px; top: 50%;
+  width: 50px; height: 50px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,232,138,.35), transparent 65%);
+  filter: blur(6px);
+  pointer-events: none;
+  animation: brand-corona 5.5s ease-in-out infinite;
+}
+@keyframes brand-corona {
+  0%, 100% { opacity: .35; transform: translateY(-50%) scale(.9); }
+  50%      { opacity: .7;  transform: translateY(-50%) scale(1.08); }
 }
 .nav-link.active svg { color: var(--gold-1); }
 
@@ -707,11 +762,49 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   background: linear-gradient(180deg, var(--gold-1), var(--gold-3));
   border-radius: 3px;
   box-shadow: 0 0 14px rgba(214,161,61,.6);
-  animation: sidebar-pill-in .35s var(--ease-back);
+  animation: sidebar-pill-in .35s var(--ease-back), sidebar-pill-breathe 3.6s ease-in-out 0.45s infinite;
 }
 @keyframes sidebar-pill-in {
   0% { transform: scaleY(0); }
   100% { transform: scaleY(1); }
+}
+@keyframes sidebar-pill-breathe {
+  0%, 100% { box-shadow: 0 0 10px rgba(214,161,61,.45); }
+  50%      { box-shadow: 0 0 22px rgba(214,161,61,.85), 0 0 36px rgba(214,161,61,.3); }
+}
+
+/* Sidebar stagger-in: each nav item fades up with an index-derived delay.
+   The --i custom property is set inline from React; bonus: works even when
+   the user re-expands a collapsed section. */
+.sidebar-item { animation: sidebar-item-in 380ms var(--ease-out-expo) both; animation-delay: calc(var(--i, 0) * 28ms); }
+@keyframes sidebar-item-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.sidebar-section { animation: sidebar-section-in 420ms var(--ease-out-expo) both; animation-delay: calc(var(--si, 0) * 60ms); }
+@keyframes sidebar-section-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Sweeping shimmer pass over the active item every few seconds — premium
+   "this is selected" cue without being noisy. */
+.sidebar-item.active {
+  background: linear-gradient(110deg, transparent 0%, rgba(214,161,61,.18) 50%, transparent 100%);
+  background-size: 220% 100%;
+  background-position: 200% 0;
+  animation: sidebar-item-shimmer 4.8s ease-in-out infinite;
+}
+@keyframes sidebar-item-shimmer {
+  0%, 70% { background-position: 200% 0; }
+  100%    { background-position: -100% 0; }
+}
+
+/* Hero card "rim breathe" — the avatar frame quietly pulses gold. */
+.sidebar-hero { animation: sidebar-hero-breathe 5.2s ease-in-out infinite; }
+@keyframes sidebar-hero-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 transparent, inset 0 0 0 1px rgba(214,161,61,.18); }
+  50%      { box-shadow: 0 0 24px rgba(214,161,61,.18), inset 0 0 0 1px rgba(214,161,61,.45); }
 }
 .sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 8px rgba(214,161,61,.5)); }
 

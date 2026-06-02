@@ -123,19 +123,24 @@ export default function Sidebar(): React.ReactElement {
           </div>
         </div>
       )}
-      {SECTIONS.map((sec) => (
-        <div key={sec.heading} className={`sidebar-section ${collapsed[sec.heading] ? 'collapsed' : ''}`}>
+      {SECTIONS.map((sec, si) => (
+        <div
+          key={sec.heading}
+          className={`sidebar-section ${collapsed[sec.heading] ? 'collapsed' : ''}`}
+          style={{ ['--si' as any]: si }}
+        >
           <div className="sidebar-heading" onClick={() => toggle(sec.heading)}>
             <span>{sec.heading}</span>
             <IconChevron className="chev" size={10} />
           </div>
           <div className="items">
-            {sec.items.map((it: any) => (
+            {sec.items.map((it: any, i: number) => (
               <NavLink
                 key={it.to}
                 to={it.to}
                 end={it.end}
                 onClick={closeMobile}
+                style={{ ['--i' as any]: i }}
                 className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
               >
                 <it.icon />

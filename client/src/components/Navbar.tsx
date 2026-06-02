@@ -73,11 +73,12 @@ export default function Navbar(): React.ReactElement {
       </div>
 
       <nav className="nav-links" aria-label="Primary">
-        {links.map((l) => (
+        {links.map((l, ni) => (
           <NavLink
             key={l.to}
             to={l.to}
             end={l.end as any}
+            style={{ ['--ni' as any]: ni }}
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
             <l.icon />

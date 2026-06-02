@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { CombatActor, CombatRound } from '../lib/types';
 import { spriteFor } from './sprites';
+import CombatCanvas, { CombatCanvasHandle } from './CombatCanvas';
 import '../styles/combat.css';
 
 interface Reward {
@@ -88,6 +89,34 @@ export default function CombatScene(props: Props): React.ReactElement {
   const popId = useRef(0);
   const fxId = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
+  const canvasFxRef = useRef<CombatCanvasHandle>(null);
+  // Fires a real particle burst at the target side's centroid. The canvas
+  // is positioned absolute over .combat-field, so we approximate the hit
+  // point in stage-relative coords (left 25% for hero, right 25% for foe).
+  function fireCanvasBurst(side: 'hero' | 'foe', effect: string | undefined, crit: boolean, ratio: number) {
+    const c = canvasFxRef.current; if (!c) return;
+    const field = stageRef.current?.querySelector('.combat-field');
+    const rect = field?.getBoundingClientRect();
+    if (!rect) return;
+    const w = rect.width, h = rect.height;
+    const x = side === 'foe' ? w * 0.74 : w * 0.26;
+    const y = h * 0.52;
+    const intensity = (crit ? 2.1 : 1) * (0.9 + ratio * 1.4);
+    const colorMap: Record<string, string> = {
+      slash:  '#ffd34d',
+      pierce: '#ffe7a8',
+      arrow:  '#9ad9ff',
+      magic:  '#c294ff',
+    };
+    const color = colorMap[effect || ''] || '#ffd34d';
+    c.burst({ x, y, color, count: 28 + Math.round(40 * intensity), intensity, kind: (effect as any) || 'spark' });
+    if (effect === 'slash' || effect === 'pierce') {
+      // Direction: hero strikes →, foe strikes ←. Add an upward tilt for variety.
+      const ang = (side === 'foe' ? 0.6 : Math.PI - 0.6);
+      c.slash({ x, y, angle: ang, color, length: 140 * intensity });
+    }
+    if (crit) c.flash({ color, strength: 0.35 });
+  }
 
   // Intro card → start playback
   useEffect(() => {
@@ -164,6 +193,10 @@ export default function CombatScene(props: Props): React.ReactElement {
             },
           ]);
         }
+        // Canvas2D particle burst with additive lighting on top of the
+        // legacy CSS FX. This is what gives the impact real punch — real
+        // sparks, shockwave ring, and a stage flash on crits.
+        fireCanvasBurst(targetSide, r.effect, r.action === 'crit', ratio);
 
         // Crit camera zoom
         if (r.action === 'crit' && stageRef.current) {
@@ -266,6 +299,9 @@ export default function CombatScene(props: Props): React.ReactElement {
           fx={fx.filter((f) => f.side === 'foe')}
           pops={pops.filter((p) => p.side === 'foe')}
         />
+        {/* Particle layer sits over the field, beneath the damage numbers
+            but above the fighters. Single Canvas2D, additive blending. */}
+        <CombatCanvas ref={canvasFxRef} />
       </div>
 
       <div className="combat-ground" />
