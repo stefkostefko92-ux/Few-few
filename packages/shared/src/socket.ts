@@ -8,14 +8,19 @@ export const SOCKET_EVENTS = {
   QUEUE_LEAVE: "queue:leave",
   GAME_ACTION: "game:action",
   GAME_RESYNC: "game:resync",
+  CHAT_SEND: "chat:send",
   // server -> client
   QUEUE_WAITING: "queue:waiting",
   MATCH_FOUND: "match:found",
   GAME_STATE: "game:state",
   GAME_EVENTS: "game:events",
   GAME_OVER: "game:over",
+  CHAT_MESSAGE: "chat:message",
   ERROR: "game:error",
 } as const;
+
+/** Hard cap on a single chat message (server truncates/validates to this). */
+export const CHAT_MAX_LEN = 200;
 
 export interface QueueJoinPayload {
   game: GameKey;
@@ -72,4 +77,22 @@ export interface GameOverMsg {
 export interface SocketErrorMsg {
   code: string;
   message: string;
+}
+
+/** Client -> server: a chat line for the player's current match. */
+export interface ChatSendPayload {
+  matchId: string;
+  text: string;
+}
+
+/** Server -> client: a chat line, broadcast to every seat in the match.
+ *  `seat` is the sender's seat (-1 for a system line); `system` carries a
+ *  localization key the client renders instead of free text. */
+export interface ChatMessageMsg {
+  matchId: string;
+  seat: number;
+  displayName: string;
+  text: string;
+  ts: number;
+  system?: string;
 }

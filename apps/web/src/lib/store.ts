@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import type { PublicUser } from "@aso/shared";
+import type { MatchPlayerInfo, PublicUser } from "@aso/shared";
+import type { MatchPhase } from "../features/game/useMatch";
 
 interface AuthState {
   user: PublicUser | null;
@@ -14,4 +15,29 @@ export const useAuthStore = create<AuthState>((set) => ({
   initializing: true,
   setUser: (user) => set({ user }),
   setInitializing: (initializing) => set({ initializing }),
+}));
+
+/**
+ * The single active match, published by `useMatch` so chrome rendered outside a
+ * game view (the chat dock in `GameView`) can address the right room without
+ * threading props through 18 bespoke views. Only one match runs at a time.
+ */
+interface MatchState {
+  matchId: string | null;
+  seat: number;
+  players: MatchPlayerInfo[];
+  phase: MatchPhase;
+  setMatch: (m: { matchId: string; seat: number; players: MatchPlayerInfo[] }) => void;
+  setPhase: (phase: MatchPhase) => void;
+  clearMatch: () => void;
+}
+
+export const useMatchStore = create<MatchState>((set) => ({
+  matchId: null,
+  seat: 0,
+  players: [],
+  phase: "searching",
+  setMatch: ({ matchId, seat, players }) => set({ matchId, seat, players, phase: "playing" }),
+  setPhase: (phase) => set({ phase }),
+  clearMatch: () => set({ matchId: null, seat: 0, players: [], phase: "searching" }),
 }));

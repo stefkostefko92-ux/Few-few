@@ -133,6 +133,22 @@
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Social gaming — not real-money gambling."
   },
+  "chat": {
+    "title": "Chat",
+    "send": "Send",
+    "placeholder": "Type a message…",
+    "empty": "Say hi to the table 👋",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "quick": {
+      "hi": "Hi! 👋",
+      "gl": "Good luck!",
+      "nice": "Nice! 👏",
+      "gg": "Good game",
+      "oops": "Oops! 😅",
+      "thanks": "Thanks"
+    }
+  },
   "common": {
     "loading": "Loading…",
     "dismiss": "Dismiss"

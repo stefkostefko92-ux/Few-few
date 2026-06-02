@@ -3,16 +3,25 @@ import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { z } from "zod";
 import { prisma } from "@aso/db";
-import { SOCKET_EVENTS, isGameKey, type AccessTokenClaims } from "@aso/shared";
+import {
+  SOCKET_EVENTS,
+  CHAT_MAX_LEN,
+  isGameKey,
+  type AccessTokenClaims,
+  type ChatMessageMsg,
+} from "@aso/shared";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { pubClient, redis, subClient } from "./redis.js";
 import { verifyHandshake } from "./auth.js";
 import { Matchmaker } from "./matchmaking.js";
+import { sanitizeChat, chatRateOk } from "./chat.js";
 
 const queueJoinSchema = z.object({ game: z.string(), mode: z.string().optional() });
 const gameActionSchema = z.object({ matchId: z.string(), action: z.unknown() });
 const resyncSchema = z.object({ matchId: z.string() });
+// Accept a little slack over the cap; sanitizeChat truncates to CHAT_MAX_LEN.
+const chatSendSchema = z.object({ matchId: z.string(), text: z.string().min(1).max(CHAT_MAX_LEN * 4) });
 
 const userRoom = (userId: string): string => `u:${userId}`;
 
@@ -89,6 +98,36 @@ async function main(): Promise<void> {
       const parsed = resyncSchema.safeParse(payload);
       if (!parsed.success) return;
       matchmaker.getRoom(parsed.data.matchId)?.resync(userId);
+    });
+
+    socket.on(SOCKET_EVENTS.CHAT_SEND, (payload: unknown) => {
+      const parsed = chatSendSchema.safeParse(payload);
+      if (!parsed.success) return;
+      // Guests can't chat (S14); only participants of the named match can post.
+      if (claims.role === "GUEST") return;
+
+      const room = matchmaker.getRoom(parsed.data.matchId);
+      const seat = room?.seats.find((s) => s.userId === userId);
+      if (!room || !seat) return;
+
+      if (!chatRateOk(socket)) {
+        socket.emit(SOCKET_EVENTS.ERROR, { code: "chat_rate", message: "Твърде бързо. Изчакай малко." });
+        return;
+      }
+
+      const text = sanitizeChat(parsed.data.text);
+      if (!text) return;
+
+      const msg: ChatMessageMsg = {
+        matchId: room.matchId,
+        seat: seat.seat,
+        displayName: seat.displayName,
+        text,
+        ts: Date.now(),
+      };
+      for (const s of room.seats) {
+        if (s.userId) io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.CHAT_MESSAGE, msg);
+      }
     });
 
     socket.on("disconnect", () => {

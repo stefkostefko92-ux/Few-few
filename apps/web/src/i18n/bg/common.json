@@ -133,6 +133,22 @@
     "attribution": "Created and Designed by Carbon Stealth VCC",
     "notGambling": "Социална игра — не е хазарт за реални пари."
   },
+  "chat": {
+    "title": "Чат",
+    "send": "Прати",
+    "placeholder": "Напиши съобщение…",
+    "empty": "Кажи здравей на масата 👋",
+    "mute": "Заглуши",
+    "unmute": "Пусни звука",
+    "quick": {
+      "hi": "Здравей! 👋",
+      "gl": "Късмет!",
+      "nice": "Браво! 👏",
+      "gg": "Добра игра",
+      "oops": "Опа! 😅",
+      "thanks": "Благодаря"
+    }
+  },
   "common": {
     "loading": "Зареждане…",
     "dismiss": "Затвори"

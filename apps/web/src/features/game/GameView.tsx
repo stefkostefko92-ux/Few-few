@@ -4,6 +4,7 @@ import { isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { GAME_CATALOG } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
+import { ChatDock } from "./chat/ChatDock";
 import { ChessView } from "./chess/ChessView";
 import { SantaseView } from "./santase/SantaseView";
 import { BeloteView } from "./belote/BeloteView";
@@ -104,5 +105,10 @@ export function GameView() {
   }
 
   const key = gameKey as GameKey;
-  return <CinematicStage tone={TONE[key] ?? "default"}>{renderGame(key, meta.title)}</CinematicStage>;
+  return (
+    <CinematicStage tone={TONE[key] ?? "default"}>
+      {renderGame(key, meta.title)}
+      <ChatDock />
+    </CinematicStage>
+  );
 }

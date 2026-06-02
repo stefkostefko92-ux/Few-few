@@ -7,6 +7,7 @@ import {
   type MatchFoundMsg,
 } from "@aso/shared";
 import { getSocket } from "../../lib/socket";
+import { useMatchStore } from "../../lib/store";
 
 export type MatchPhase = "searching" | "playing" | "over";
 
@@ -42,12 +43,15 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
   useEffect(() => {
     if (!gameKey) return;
     const socket = getSocket();
+    const matchStore = useMatchStore.getState();
 
     const onFound = (m: MatchFoundMsg) => {
       setMatchId(m.matchId);
       setSeat(m.seat);
       setPlayers(m.players);
       setPhase("playing");
+      // Publish for the chat dock mounted in GameView.
+      matchStore.setMatch({ matchId: m.matchId, seat: m.seat, players: m.players });
     };
     const onState = (s: GameStateMsg) => {
       setState(s.state as S);
@@ -58,6 +62,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     const onOver = (o: GameOverMsg) => {
       setResult(o);
       setPhase("over");
+      useMatchStore.getState().setPhase("over");
     };
 
     socket.on(SOCKET_EVENTS.MATCH_FOUND, onFound);
@@ -74,6 +79,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       socket.off(SOCKET_EVENTS.GAME_STATE, onState);
       socket.off(SOCKET_EVENTS.GAME_OVER, onOver);
       socket.off("connect", join);
+      useMatchStore.getState().clearMatch();
     };
   }, [gameKey]);
 
