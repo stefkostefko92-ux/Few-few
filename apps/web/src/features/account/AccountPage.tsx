@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Modal, Panel } from "../../ui";
 import { ACCOUNT_EXPORT_URL, api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
+import { Achievements } from "../progression/Achievements";
 
 /** Player account & privacy controls (GDPR: data export + erasure). */
 export function AccountPage() {
@@ -50,6 +51,8 @@ export function AccountPage() {
           <Stat label={t("account.level")} value={String(user.level)} />
         </div>
       </Panel>
+
+      <Achievements />
 
       <Panel>
         <h2 className="text-xl text-ink-100">{t("account.privacy")}</h2>

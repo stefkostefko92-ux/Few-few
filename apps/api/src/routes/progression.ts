@@ -7,6 +7,7 @@ import { env } from "../env.js";
 import {
   claimDaily,
   ensureQuests,
+  getAchievements,
   leaderboard,
   profileProgress,
   recordMatchResult,
@@ -77,5 +78,13 @@ progressionRouter.get(
     if (!user) throw unauthorized();
     const progress = profileProgress(user.xp);
     res.json({ xp: user.xp, ...progress });
+  }),
+);
+
+/** GET /api/progression/achievements — all badges with unlock status. */
+progressionRouter.get(
+  "/achievements",
+  asyncHandler(async (req, res) => {
+    res.json({ achievements: await getAchievements(req.user!.sub) });
   }),
 );

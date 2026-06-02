@@ -32,7 +32,8 @@
     "empty": "No notifications.",
     "friendRequest": "New friend request",
     "friendAccepted": "Friend request accepted",
-    "system": "System notice"
+    "system": "System notice",
+    "achievement": "Achievement unlocked 🏆"
   },
   "invite": {
     "received": "{{name}} invited you to {{game}}",
@@ -125,7 +126,8 @@
     "deleteTitle": "Delete account",
     "deleteBody": "This anonymizes your personal data and ends access. Virtual chips, gems, and cosmetics are lost permanently. Are you sure?",
     "cancel": "Cancel",
-    "confirmDelete": "Yes, delete"
+    "confirmDelete": "Yes, delete",
+    "achievements": "Achievements"
   },
   "cookie": {
     "text": "We use only strictly necessary cookies for sign-in.",

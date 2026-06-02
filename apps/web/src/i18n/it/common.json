@@ -32,7 +32,8 @@
     "empty": "Nessuna notifica.",
     "friendRequest": "Nuova richiesta di amicizia",
     "friendAccepted": "Richiesta di amicizia accettata",
-    "system": "Avviso di sistema"
+    "system": "Avviso di sistema",
+    "achievement": "Obiettivo sbloccato 🏆"
   },
   "invite": {
     "received": "{{name}} ti ha invitato a {{game}}",
@@ -125,7 +126,8 @@
     "deleteTitle": "Elimina account",
     "deleteBody": "Questo anonimizza i tuoi dati personali e termina l'accesso. Gettoni, gemme e cosmetici virtuali andranno persi per sempre. Sei sicuro?",
     "cancel": "Annulla",
-    "confirmDelete": "Sì, elimina"
+    "confirmDelete": "Sì, elimina",
+    "achievements": "Obiettivi"
   },
   "cookie": {
     "text": "Usiamo solo cookie strettamente necessari per l'accesso.",

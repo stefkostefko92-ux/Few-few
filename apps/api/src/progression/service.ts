@@ -1,9 +1,13 @@
 import { prisma } from "@aso/db";
 import {
+  ACHIEVEMENT_DEFS,
   QUEST_DEFS,
+  achievementMet,
   dailyReward,
   leaderboardKey,
   levelFromXp,
+  type AchievementStats,
+  type AchievementView,
   type GameKey,
   type LeaderboardEntry,
   type QuestPeriod,
@@ -120,6 +124,88 @@ export async function recordMatchResult(opts: {
       });
     }
   }
+
+  await evaluateAchievements(userId, game, won);
+}
+
+/** Track the live win streak in Redis (resets on a loss, expires after a month). */
+async function updateWinStreak(userId: string, won: boolean): Promise<number> {
+  const key = `winstreak:${userId}`;
+  let streak = 0;
+  try {
+    if (won) {
+      streak = await redis.incr(key);
+    } else {
+      await redis.set(key, "0");
+    }
+    await redis.expire(key, 60 * 60 * 24 * 30);
+  } catch {
+    /* presence/streak is best-effort */
+  }
+  return streak;
+}
+
+/**
+ * Award any newly-earned achievements after a match. Cumulative stats come from
+ * RatingPerGame (already updated for this match by the realtime finalizer) plus
+ * the live win streak. Each unlock grants gems and drops an in-app notification.
+ */
+async function evaluateAchievements(userId: string, _game: GameKey, won: boolean): Promise<void> {
+  const winStreak = await updateWinStreak(userId, won);
+
+  const [ratings, user, owned] = await Promise.all([
+    prisma.ratingPerGame.findMany({ where: { userId } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { xp: true } }),
+    prisma.achievement.findMany({ where: { userId }, select: { key: true } }),
+  ]);
+
+  const gameWins: Partial<Record<GameKey, number>> = {};
+  let totalWins = 0;
+  let totalGames = 0;
+  for (const r of ratings) {
+    totalWins += r.wins;
+    totalGames += r.games;
+    gameWins[r.game] = r.wins;
+  }
+  const stats: AchievementStats = {
+    totalWins,
+    totalGames,
+    winStreak,
+    level: levelFromXp(user?.xp ?? 0).level,
+    gameWins,
+  };
+
+  const have = new Set(owned.map((a) => a.key));
+  for (const def of ACHIEVEMENT_DEFS) {
+    if (have.has(def.key) || !achievementMet(def, stats)) continue;
+    try {
+      await prisma.achievement.create({ data: { userId, key: def.key } });
+    } catch {
+      continue; // unique race — already unlocked
+    }
+    if (def.rewardGems > 0) {
+      await prisma.user.update({ where: { id: userId }, data: { gems: { increment: def.rewardGems } } });
+    }
+    await prisma.notification.create({
+      data: { userId, type: "achievement", data: JSON.stringify({ key: def.key, title: def.title }) },
+    });
+  }
+}
+
+/** All achievements with the user's unlock status (for the profile). */
+export async function getAchievements(userId: string): Promise<AchievementView[]> {
+  const rows = await prisma.achievement.findMany({ where: { userId } });
+  const at = new Map(rows.map((r) => [r.key, r.unlockedAt]));
+  return ACHIEVEMENT_DEFS.map((d) => ({
+    key: d.key,
+    title: d.title,
+    description: d.description,
+    icon: d.icon,
+    tier: d.tier,
+    rewardGems: d.rewardGems,
+    unlocked: at.has(d.key),
+    unlockedAt: at.get(d.key)?.toISOString() ?? null,
+  }));
 }
 
 /** Top-N leaderboard for a game, resolved against display names. */

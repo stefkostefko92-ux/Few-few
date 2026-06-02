@@ -39,6 +39,7 @@ model User {
   quests     Quest[]
   authTokens AuthToken[]
   oauth      OAuthAccount[]
+  achievements    Achievement[]
   friendsSent     Friendship[]   @relation("FriendRequester")
   friendsReceived Friendship[]   @relation("FriendAddressee")
   notifications   Notification[]
@@ -67,6 +68,19 @@ model Friendship {
 enum FriendStatus {
   PENDING
   ACCEPTED
+}
+
+// One-time achievement unlocks (§12). Awarded from cumulative play; the key
+// maps to ACHIEVEMENT_DEFS in shared.
+model Achievement {
+  id         String   @id @default(cuid())
+  userId     String
+  key        String
+  unlockedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
 }
 
 // In-app notifications (friend requests/accepts, system). `data` is a JSON blob.

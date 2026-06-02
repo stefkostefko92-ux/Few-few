@@ -1,4 +1,5 @@
 import type {
+  AchievementView,
   Cosmetic,
   ForgotPasswordInput,
   LeaderboardEntry,
@@ -128,6 +129,8 @@ export const api = {
     request<{ xp: number; level: number; intoLevel: number; needed: number }>("/progression/me"),
   leaderboard: (game: string) =>
     request<{ game: string; entries: LeaderboardEntry[] }>(`/progression/leaderboard/${game}`),
+  achievements: () =>
+    request<{ achievements: AchievementView[] }>("/progression/achievements"),
 
   // Cosmetics (gem-priced, per game)
   cosmetics: (game: string) => request<CosmeticsResponse>(`/cosmetics?game=${game}`),
