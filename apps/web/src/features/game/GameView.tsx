@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
 import { GAME_CATALOG } from "../lobby/games";
+import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChessView } from "./chess/ChessView";
 import { SantaseView } from "./santase/SantaseView";
 import { BeloteView } from "./belote/BeloteView";
@@ -23,7 +24,62 @@ import { WordsView } from "./words/WordsView";
 import { DominoView } from "./domino/DominoView";
 import { GenericGameView } from "./generic/GenericGameView";
 
-/** Dispatches to a bespoke per-game view, falling back to the generic view. */
+type Tone = "warm" | "midnight" | "cool" | "default";
+
+/** Cinematic ambient tone per game, matching its felt/scene mood. */
+const TONE: Partial<Record<GameKey, Tone>> = {
+  SANTASE: "warm",
+  WAR: "midnight",
+  SVARA: "midnight",
+  HOLDEM: "midnight",
+  BATTLESHIP: "cool",
+  GOFISH: "cool",
+};
+
+function renderGame(gameKey: GameKey, title: string) {
+  switch (gameKey) {
+    case "CHESS":
+      return <ChessView title={title} />;
+    case "SANTASE":
+      return <SantaseView title={title} />;
+    case "BELOTE":
+      return <BeloteView title={title} />;
+    case "SVARA":
+      return <SvaraView title={title} />;
+    case "HOLDEM":
+      return <HoldemView title={title} />;
+    case "KENT":
+      return <KentView title={title} />;
+    case "BRIDGE":
+      return <BridgeView title={title} />;
+    case "WAR":
+      return <WarView title={title} />;
+    case "RUMMY":
+      return <RummyView title={title} />;
+    case "GOFISH":
+      return <GoFishView title={title} />;
+    case "DRAUGHTS":
+      return <DraughtsView title={title} />;
+    case "BACKGAMMON":
+      return <BackgammonView title={title} />;
+    case "LUDO":
+      return <LudoView title={title} />;
+    case "BATTLESHIP":
+      return <BattleshipView title={title} />;
+    case "DICE":
+      return <DiceView title={title} />;
+    case "BINGO":
+      return <BingoView title={title} />;
+    case "WORDS":
+      return <WordsView title={title} />;
+    case "DOMINO":
+      return <DominoView title={title} />;
+    default:
+      return <GenericGameView title={title} game={gameKey} />;
+  }
+}
+
+/** Dispatches to a bespoke per-game view, wrapped in the cinematic stage. */
 export function GameView() {
   const { game } = useParams<{ game: string }>();
   const { t } = useTranslation();
@@ -47,44 +103,6 @@ export function GameView() {
     );
   }
 
-  switch (gameKey) {
-    case "CHESS":
-      return <ChessView title={meta.title} />;
-    case "SANTASE":
-      return <SantaseView title={meta.title} />;
-    case "BELOTE":
-      return <BeloteView title={meta.title} />;
-    case "SVARA":
-      return <SvaraView title={meta.title} />;
-    case "HOLDEM":
-      return <HoldemView title={meta.title} />;
-    case "KENT":
-      return <KentView title={meta.title} />;
-    case "BRIDGE":
-      return <BridgeView title={meta.title} />;
-    case "WAR":
-      return <WarView title={meta.title} />;
-    case "RUMMY":
-      return <RummyView title={meta.title} />;
-    case "GOFISH":
-      return <GoFishView title={meta.title} />;
-    case "DRAUGHTS":
-      return <DraughtsView title={meta.title} />;
-    case "BACKGAMMON":
-      return <BackgammonView title={meta.title} />;
-    case "LUDO":
-      return <LudoView title={meta.title} />;
-    case "BATTLESHIP":
-      return <BattleshipView title={meta.title} />;
-    case "DICE":
-      return <DiceView title={meta.title} />;
-    case "BINGO":
-      return <BingoView title={meta.title} />;
-    case "WORDS":
-      return <WordsView title={meta.title} />;
-    case "DOMINO":
-      return <DominoView title={meta.title} />;
-    default:
-      return <GenericGameView title={meta.title} game={gameKey as GameKey} />;
-  }
+  const key = gameKey as GameKey;
+  return <CinematicStage tone={TONE[key] ?? "default"}>{renderGame(key, meta.title)}</CinematicStage>;
 }

@@ -1,0 +1,126 @@
+/* ─── Cinematic stage (shared by all 18 games) ─────────────────────────────
+   A darkened private-club room: overhead spotlight, deep vignette, film grain,
+   and a camera entrance. Tone variants tint the ambient spill. */
+
+.cine {
+  position: relative;
+  isolation: isolate;
+  margin: -2rem -1rem 0; /* bleed past the app's main padding for full immersion */
+  padding: 2.5rem 1rem 3rem;
+  min-height: calc(100vh - 64px);
+  overflow: hidden;
+  /* The dark room itself: charcoal with a faint warm floor. */
+  background:
+    radial-gradient(140% 90% at 50% -10%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%),
+    radial-gradient(80% 60% at 50% 120%, rgba(217, 178, 95, 0.05), transparent 60%),
+    linear-gradient(180deg, #060807 0%, #0a0d0c 55%, #050706 100%);
+}
+
+/* Volumetric overhead spotlight cone pouring onto the table. */
+.cine__spot {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 48% at 50% 34%, rgba(255, 240, 205, 0.16), rgba(255, 240, 205, 0.05) 45%, transparent 72%);
+  mix-blend-mode: screen;
+}
+/* The light shaft (a soft cone descending from the top). */
+.cine__spot::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  width: 60%;
+  height: 80%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255, 244, 214, 0.12), transparent 70%);
+  clip-path: polygon(38% 0, 62% 0, 88% 100%, 12% 100%);
+  filter: blur(14px);
+  opacity: 0.8;
+}
+
+/* Deep cinematic vignette over everything but the focal area. */
+.cine__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(75% 65% at 50% 42%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* The actual game scene sits above the spot, below grain/vignette. */
+.cine__stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Game views use `mx-auto max-w-*` wrappers; ensure they fill the stage width
+   up to their own max instead of collapsing to content width in the flex column. */
+.cine__stage > * {
+  width: 100%;
+}
+
+/* Film grain — a tiled noise that shimmers very subtly. */
+.cine__grain {
+  position: absolute;
+  inset: -50%;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation: cine-grain 0.9s steps(3) infinite;
+}
+@keyframes cine-grain {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2%, 1%); }
+  66% { transform: translate(1%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Tone tints for the spotlight spill. */
+.cine--warm .cine__spot { filter: hue-rotate(-8deg) saturate(1.15); }
+.cine--midnight .cine__spot {
+  background: radial-gradient(54% 44% at 50% 32%, rgba(160, 190, 230, 0.14), rgba(120, 150, 200, 0.04) 45%, transparent 72%);
+}
+.cine--cool .cine__spot {
+  background: radial-gradient(58% 48% at 50% 34%, rgba(180, 220, 230, 0.15), rgba(150, 200, 220, 0.04) 46%, transparent 72%);
+}
+
+/* Camera entrance — the table rises and settles into focus. */
+.cine--enter {
+  animation: cine-enter 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes cine-enter {
+  0% { opacity: 0; transform: translateY(36px) scale(0.94); filter: blur(8px) brightness(0.6); }
+  60% { filter: blur(0) brightness(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Give the table/board itself more cinematic depth + a brass rim bloom. */
+.cine .aso-table,
+.cine .aso-board {
+  box-shadow:
+    0 40px 90px -24px rgba(0, 0, 0, 0.85),
+    0 12px 30px -10px rgba(0, 0, 0, 0.7),
+    0 0 40px -6px rgba(217, 178, 95, 0.18),
+    inset 0 1px 0 rgba(217, 178, 95, 0.3);
+}
+
+/* Headline + score pills read as overlaid HUD, lifted above the vignette. */
+.cine h1 {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine__grain,
+  .cine--enter {
+    animation: none;
+  }
+}
+.cine[data-reduced="true"] .cine__grain {
+  display: none;
+}
