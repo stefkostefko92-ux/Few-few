@@ -20,6 +20,7 @@ import { BattleshipView } from "./battleship/BattleshipView";
 import { DiceView } from "./dice/DiceView";
 import { BingoView } from "./bingo/BingoView";
 import { WordsView } from "./words/WordsView";
+import { DominoView } from "./domino/DominoView";
 import { GenericGameView } from "./generic/GenericGameView";
 
 /** Dispatches to a bespoke per-game view, falling back to the generic view. */
@@ -81,6 +82,8 @@ export function GameView() {
       return <BingoView title={meta.title} />;
     case "WORDS":
       return <WordsView title={meta.title} />;
+    case "DOMINO":
+      return <DominoView title={meta.title} />;
     default:
       return <GenericGameView title={meta.title} game={gameKey as GameKey} />;
   }

@@ -181,5 +181,10 @@
     "base": "base",
     "home": "home",
     "pickToken": "Pick a token"
+  },
+  "domino": {
+    "empty": "Place the first domino",
+    "side": "Side",
+    "draw": "Draw"
   }
 }

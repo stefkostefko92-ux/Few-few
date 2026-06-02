@@ -181,5 +181,10 @@
     "base": "base",
     "home": "casa",
     "pickToken": "Scegli una pedina"
+  },
+  "domino": {
+    "empty": "Posiziona il primo domino",
+    "side": "Lato",
+    "draw": "Pesca"
   }
 }
