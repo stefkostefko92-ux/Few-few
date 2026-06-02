@@ -51,7 +51,9 @@
     "yourTeam": "Твой отбор",
     "theirTeam": "Съперници",
     "pass": "Пас",
-    "emptyTrick": "Чакаме първа карта"
+    "emptyTrick": "Чакаме първа карта",
+    "auction": "Анонс — обяви коз",
+    "contract": "Коз"
   },
   "wallet": {
     "chips": "Чипове",

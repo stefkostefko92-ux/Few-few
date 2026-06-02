@@ -155,3 +155,58 @@ button.aso-card:hover {
     transition: none;
   }
 }
+
+/* Brass announce banner — the signature trump-call moment (§4.1). */
+.aso-announce {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 6px 22px;
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--charcoal-900);
+  background: linear-gradient(to bottom, var(--brass-100), var(--brass-400));
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  animation: announce-in 420ms cubic-bezier(0.2, 0.9, 0.25, 1.15);
+}
+.aso-announce::before,
+.aso-announce::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--brass-400);
+  transform: translateY(-50%) rotate(45deg);
+}
+.aso-announce::before { left: -7px; }
+.aso-announce::after { right: -7px; }
+@keyframes announce-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.9); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Suit bid button. */
+.aso-bid {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 1.6rem;
+  background: linear-gradient(to bottom, #fffdf6, #ece3cf);
+  border: 1px solid rgba(217, 178, 95, 0.5);
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
+}
+.aso-bid:hover:not(:disabled) { transform: translateY(-3px); }
+.aso-bid:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aso-announce { animation: none; }
+}

@@ -51,7 +51,9 @@
     "yourTeam": "Your team",
     "theirTeam": "Opponents",
     "pass": "Pass",
-    "emptyTrick": "Waiting for the first card"
+    "emptyTrick": "Waiting for the first card",
+    "auction": "Auction — call trump",
+    "contract": "Trump"
   },
   "wallet": {
     "chips": "Chips",
