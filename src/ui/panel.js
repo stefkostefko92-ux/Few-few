@@ -187,7 +187,14 @@
         cur.circle.manualNodes = val;
         cur.circle.mode = val ? 'manual' : 'auto';
         await Storage.save(cur);
-        Logger.info(I18n.t('logCircleNodesSet', [val || '—']));
+        // Show how each typed name/number was interpreted (+ current level).
+        const nums = (TB.Circle && val) ? TB.Circle.resolveNodes(val) : [];
+        const circleData = TB.State.get().circle || {};
+        const desc = nums.map((n) => {
+          const lvl = circleData[n] ? circleData[n][0] : '?';
+          return `${TB.Circle.nodeName(n)}→#${n} (Lv ${lvl})`;
+        }).join(', ');
+        Logger.info(I18n.t('logCircleNodesSet', [desc || val || '—']));
       });
     }
   }

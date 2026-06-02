@@ -21,12 +21,52 @@
   const nodeFailUntil = {};   // nodeId -> epoch ms to skip after a failed buy
   function cfg() { return Storage.section('circle') || {}; }
 
-  // Parse "8, 1, 16" -> [8,1,16] (node numbers 1-16).
-  function manualList(c) {
-    return String(c.manualNodes || '')
-      .split(/[\s,;]+/).map((t) => parseInt(t, 10))
-      .filter((n) => Number.isInteger(n) && n >= 1 && n <= 16);
+  // Arcane Circle node map (names/stats from the Tanoth wiki). Node ids match the
+  // RPC layout: 1-10 outer stones, 11-15 inner runes, 16 the Demon Skull.
+  const NODES = {
+    1:  { name: 'Jade',        ring: 'stone', stat: 'exp',     aliases: ['jade', 'exp', 'experience'] },
+    2:  { name: 'Aquamarine',  ring: 'stone', stat: 'potdur',  aliases: ['aquamarine', 'potion duration', 'potionduration'] },
+    3:  { name: 'Sapphire',    ring: 'stone', stat: 'fame',    aliases: ['sapphire', 'fame'] },
+    4:  { name: 'Emerald',     ring: 'stone', stat: 'sell',    aliases: ['emerald', 'sell', 'sellprice', 'selling'] },
+    5:  { name: 'Ruby',        ring: 'stone', stat: 'potpow',  aliases: ['ruby', 'potion power', 'potioneffect', 'poteff'] },
+    6:  { name: 'Topaz',       ring: 'stone', stat: 'invslot', aliases: ['topaz', 'inventory', 'slots', 'invslot'] },
+    7:  { name: 'Amber',       ring: 'stone', stat: 'salary',  aliases: ['amber', 'salary', 'work', 'wage'] },
+    8:  { name: 'Amethyst',    ring: 'stone', stat: 'advgold', aliases: ['amethyst', 'advgold', 'adventuregold'] },
+    9:  { name: 'Diamond',     ring: 'stone', stat: 'discount',aliases: ['diamond', 'discount', 'cheaper'] },
+    10: { name: "Tiger's Eye", ring: 'stone', stat: 'speed',   aliases: ["tiger's eye", 'tigers eye', 'tigerseye', 'tiger', 'speed', 'travel'] },
+    11: { name: 'Negotiation', ring: 'rune',  stat: 'int',     aliases: ['negotiation', 'int', 'intelligence', 'преговор'] },
+    12: { name: 'Wisdom',      ring: 'rune',  stat: 'con',     aliases: ['wisdom', 'con', 'constitution'] },
+    13: { name: 'Diligence',   ring: 'rune',  stat: 'dex',     aliases: ['diligence', 'dex', 'dexterity'] },
+    14: { name: 'Courage',     ring: 'rune',  stat: 'str',     aliases: ['courage', 'str', 'strength'] },
+    15: { name: 'Glory',       ring: 'rune',  stat: 'drop',    aliases: ['glory', 'drop', 'droprate', 'loot'] },
+    16: { name: 'Demon Skull', ring: 'skull', stat: 'skull',   aliases: ['demon skull', 'skull', 'demon', 'череп'] }
+  };
+
+  function nodeName(id) { return NODES[id] ? NODES[id].name : ('#' + id); }
+
+  // Resolve a free-text list ("8, negotiation, skull") to node numbers (1-16).
+  function resolveNodes(text) {
+    const out = [];
+    String(text || '').split(/[\n,;]+/).forEach((tokRaw) => {
+      const tok = tokRaw.trim().toLowerCase();
+      if (!tok) return;
+      const num = parseInt(tok, 10);
+      if (Number.isInteger(num) && num >= 1 && num <= 16) { if (!out.includes(num)) out.push(num); return; }
+      for (const id of Object.keys(NODES)) {
+        const n = NODES[id];
+        if (n.name.toLowerCase() === tok || n.aliases.some((a) => a === tok || tok.includes(a))) {
+          const idn = Number(id);
+          if (!out.includes(idn)) out.push(idn);
+          break;
+        }
+      }
+    });
+    return out;
   }
+
+  function manualList(c) { return resolveNodes(c.manualNodes); }
+
+  TB.Circle = { NODES, nodeName, resolveNodes };
 
   function getBestCircleItem(ci) {
     const g = (i) => (ci[i] ? ci[i][0] : undefined);
@@ -116,7 +156,7 @@
               cooldownUntil = Date.now() + 30000; // back off until gold recovers
               return;
             }
-            Logger.info(I18n.t('logCircleBuy', [String(best), String(level + multiple), String(cost)]));
+            Logger.info(I18n.t('logCircleBuy', [nodeName(best), String(level + multiple), String(cost)]));
             await Api.buyCircleNode(best, 'gold', multiple);
             State.patch({ gold: gold - cost });
           } else {
@@ -125,14 +165,14 @@
               cooldownUntil = Date.now() + 10 * 60000; // out of bloodstones
               return;
             }
-            Logger.info(I18n.t('logCircleBuyBs', [String(best), String(level + multiple)]));
+            Logger.info(I18n.t('logCircleBuyBs', [nodeName(best), String(level + multiple)]));
             await Api.buyCircleNode(best, 'bs', multiple);
           }
           Stats.bump({ circleNodes: multiple });
         } catch (e) {
           // Locked/maxed node (common in manual mode) — skip it for a while.
           nodeFailUntil[best] = Date.now() + 5 * 60000;
-          Logger.warn(I18n.t('logCircleBuyFail', [String(best), e.message]));
+          Logger.warn(I18n.t('logCircleBuyFail', [nodeName(best), e.message]));
         }
       };
     }

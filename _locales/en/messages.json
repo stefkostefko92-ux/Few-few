@@ -77,7 +77,7 @@
   "logPvpFight": { "message": "Challenging $1 in the arena." },
   "logPvpWon": { "message": "Won the duel vs $1 (+$2 gold)." },
   "logPvpLost": { "message": "Lost the duel vs $1." },
-  "logCaveStart": { "message": "Cave of Illusions (reward ~$1)." },
+  "logCaveStart": { "message": "Dungeon of Illusions (reward ~$1)." },
   "logDragonStart": { "message": "Dragon event (reward ~$1)." },
   "logMapUnavailable": { "message": "Map: $1 not available ($2)." },
   "logSell": { "message": "Selling item #$1 (value $2)." },
@@ -176,7 +176,7 @@
 
   "opt_circle_enabled": { "message": "Enable evocation circle" },
   "opt_circle_mode": { "message": "Selection mode" },
-  "opt_circle_manualNodes": { "message": "Manual node numbers (1-16), e.g. 8, 1, 16" },
+  "opt_circle_manualNodes": { "message": "Nodes to upgrade — names or numbers, e.g. Negotiation, Glory, 16" },
   "opt_circle_currency": { "message": "Pay with" },
   "opt_circle_multiple": { "message": "Levels per purchase" },
   "opt_circle_stopAtCenterLevel": { "message": "Stop at centre level (1-10)" },
@@ -190,7 +190,7 @@
   "opt_dungeon_enabled": { "message": "Enable dungeon" },
 
   "opt_map_enabled": { "message": "Enable map events" },
-  "opt_map_illusionCave": { "message": "Cave of Illusions" },
+  "opt_map_illusionCave": { "message": "Dungeon of Illusions (cave)" },
   "opt_map_dragon": { "message": "Dragon event" },
   "opt_map_cooldownMinutes": { "message": "Minutes between attempts" },
 
@@ -233,7 +233,7 @@
   "optv_auto": { "message": "Auto (optimal path)" },
   "optv_manual": { "message": "Manual (only my nodes)" },
   "uiPvpPlaceholder": { "message": "Arena opponent name(s)" },
-  "uiCirclePlaceholder": { "message": "Circle nodes e.g. 8, 1, 16" },
+  "uiCirclePlaceholder": { "message": "Circle: names/numbers e.g. Negotiation, Glory, 16" },
   "optv_strength": { "message": "Strength" },
   "optv_dexterity": { "message": "Dexterity" },
   "optv_constitution": { "message": "Constitution" },
