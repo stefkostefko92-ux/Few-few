@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quadro Ascensore - Parametri WiFi</title>
+<style>
+  :root { --ns:#1b7f3b; --sr:#b8860b; --sc:#8b0000; --ro:#444; }
+  * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+  body { margin:0; background:#0f1419; color:#e6e6e6; }
+  header { background:#161b22; padding:14px 18px; border-bottom:1px solid #30363d; }
+  h1 { font-size:18px; margin:0; }
+  .sub { font-size:12px; color:#9aa; margin-top:4px; }
+  main { padding:16px; max-width:780px; margin:auto; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+  input,button,select { padding:8px 10px; border-radius:6px; border:1px solid #30363d;
+    background:#0d1117; color:#e6e6e6; font-size:14px; }
+  button { background:#238636; border:none; cursor:pointer; }
+  button.secondary { background:#30363d; }
+  .key { padding:6px 10px; border-radius:6px; font-size:12px; }
+  .key.on { background:#143; color:#7fe; } .key.off { background:#411; color:#f99; }
+  .p { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:10px 12px;
+    margin-bottom:8px; display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; }
+  .p .meta { font-size:12px; color:#9aa; }
+  .tag { font-size:10px; padding:2px 6px; border-radius:10px; color:#fff; font-weight:700; }
+  .tag.NS{background:var(--ns)} .tag.SR{background:var(--sr)} .tag.SC{background:var(--sc)} .tag.RO{background:var(--ro)}
+  .val { width:90px; text-align:right; }
+  .msg { font-size:12px; min-height:16px; margin-top:6px; }
+  .err { color:#f88; } .ok { color:#7e7; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Quadro di manovra ascensore — Parametri</h1>
+  <div class="sub">Modulo WiFi locale · solo parametri non-safety da remoto · safety con chiave fisica</div>
+</header>
+<main>
+  <div class="bar">
+    <input id="user" placeholder="utente" value="operator">
+    <input id="pass" type="password" placeholder="password">
+    <button onclick="login()">Login</button>
+    <span id="role" class="meta"></span>
+    <span id="key" class="key off">CHIAVE: ?</span>
+    <button class="secondary" onclick="loadParams()">Aggiorna</button>
+  </div>
+  <div id="gmsg" class="msg"></div>
+  <div id="list"></div>
+</main>
+<script>
+let TOKEN="", ROLE="";
+const H = () => TOKEN ? {"Authorization":"Bearer "+TOKEN,"Content-Type":"application/json"}
+                     : {"Content-Type":"application/json"};
+
+async function login(){
+  const r = await fetch("/api/login",{method:"POST",headers:H(),
+    body:JSON.stringify({user:user.value,pass:pass.value})});
+  const j = await r.json();
+  if(!r.ok){ gmsg.innerHTML='<span class="err">'+j.error+'</span>'; return; }
+  TOKEN=j.token; ROLE=j.role; role.textContent="ruolo: "+ROLE;
+  gmsg.innerHTML='<span class="ok">login ok</span>'; loadParams();
+}
+
+function canWrite(cat){
+  if(cat==="SC"||cat==="RO") return false;
+  if(cat==="SR") return ROLE==="admin";
+  return ROLE==="operator"||ROLE==="admin"; // NS
+}
+
+async function loadParams(){
+  const r = await fetch("/api/params"); const j = await r.json();
+  key.className="key "+(j.key_inserted?"on":"off");
+  key.textContent="CHIAVE: "+(j.key_inserted?"INSERITA":"assente");
+  list.innerHTML="";
+  for(const p of j.parametri){
+    const wr = canWrite(p.cat);
+    const range = (p.min!==undefined)?` [${p.min}..${p.max}]`:"";
+    const div = document.createElement("div"); div.className="p";
+    div.innerHTML = `<div><b>${p.label}</b> <span class="tag ${p.cat}">${p.cat}</span>
+        <div class="meta">${p.id} · ${p.unit||""}${range}${p.comm_error?' · <span class="err">comm err</span>':''}</div></div>
+      <input class="val" id="v_${p.id}" value="${p.value??""}" ${wr?"":"disabled"}>
+      ${wr?`<button onclick="setP('${p.id}','${p.cat}')">Salva</button>`:`<span class="meta">RO</span>`}`;
+    list.appendChild(div);
+  }
+}
+
+async function setP(id,cat){
+  const v = parseFloat(document.getElementById("v_"+id).value);
+  const r = await fetch("/api/param",{method:"POST",headers:H(),
+    body:JSON.stringify({id:id,value:v})});
+  const j = await r.json();
+  gmsg.innerHTML = r.ok
+    ? `<span class="ok">${id} = ${j.value} salvato</span>`
+    : `<span class="err">${id}: ${j.error}${j.min!==undefined?` (range ${j.min}..${j.max})`:""}</span>`;
+}
+
+loadParams();
+setInterval(()=>{ fetch("/api/status").then(r=>r.json()).then(s=>{
+  key.className="key "+(s.key_inserted?"on":"off");
+  key.textContent="CHIAVE: "+(s.key_inserted?"INSERITA":"assente");
+}); }, 4000);
+</script>
+</body>
+</html>
