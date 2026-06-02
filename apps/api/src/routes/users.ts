@@ -6,6 +6,7 @@ export function toPublicUser(u: User): PublicUser {
   return {
     id: u.id,
     email: u.email,
+    emailVerified: u.emailVerified,
     displayName: u.displayName,
     role: u.role,
     locale: u.locale,

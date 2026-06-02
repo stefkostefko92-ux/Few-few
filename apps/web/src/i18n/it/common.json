@@ -20,7 +20,43 @@
     "toLogin": "Hai già un account? Accedi",
     "errorGeneric": "Qualcosa è andato storto. Riprova.",
     "errorCredentials": "Email o password errati",
-    "errorEmailTaken": "Questa email è già registrata"
+    "errorEmailTaken": "Questa email è già registrata",
+    "forgotPassword": "Password dimenticata?",
+    "or": "oppure",
+    "continueGoogle": "Continua con Google",
+    "continueFacebook": "Continua con Facebook",
+    "oauthNoEmail": "Il provider non ha condiviso un'email. Registrati con l'email.",
+    "oauthUnavailable": "Questo metodo di accesso non è disponibile al momento.",
+    "oauthFailed": "Accesso non riuscito. Riprova.",
+    "emailUnverified": "La tua email non è ancora verificata.",
+    "resend": "Invia di nuovo il link",
+    "resendSent": "Abbiamo inviato un nuovo link di verifica."
+  },
+  "verify": {
+    "title": "Verifica email",
+    "verifying": "Verifica dell'email in corso…",
+    "success": "Email verificata! 🎉",
+    "successBody": "Ora hai accesso a tutte le funzioni dell'account.",
+    "continue": "Vai all'app",
+    "failed": "Il link non è valido o è scaduto.",
+    "backToLogin": "Torna all'accesso"
+  },
+  "forgot": {
+    "title": "Password dimenticata",
+    "intro": "Inserisci la tua email e ti invieremo un link per reimpostarla.",
+    "submit": "Invia link",
+    "sent": "Se l'email esiste, abbiamo inviato un link per reimpostare la password.",
+    "backToLogin": "Torna all'accesso"
+  },
+  "reset": {
+    "title": "Nuova password",
+    "intro": "Inserisci la tua nuova password.",
+    "newPassword": "Nuova password",
+    "submit": "Salva password",
+    "success": "Password cambiata! Ora puoi accedere.",
+    "goLogin": "Vai all'accesso",
+    "invalid": "Il link non è valido o è scaduto.",
+    "requestNew": "Richiedi un nuovo link"
   },
   "lobby": {
     "title": "Scegli un gioco",
@@ -98,7 +134,8 @@
     "notGambling": "Gioco sociale — non è gioco d'azzardo con denaro reale."
   },
   "common": {
-    "loading": "Caricamento…"
+    "loading": "Caricamento…",
+    "dismiss": "Chiudi"
   },
   "a11y": {
     "skipToContent": "Vai al contenuto",

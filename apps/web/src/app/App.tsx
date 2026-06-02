@@ -3,6 +3,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuthStore } from "../lib/store";
 import { AuthScreen } from "../features/auth/AuthScreen";
+import { ForgotPassword } from "../features/auth/ForgotPassword";
+import { ResetPassword } from "../features/auth/ResetPassword";
+import { VerifyEmail } from "../features/auth/VerifyEmail";
 import { Lobby } from "../features/lobby/Lobby";
 import { GameView } from "../features/game/GameView";
 import { Shop } from "../features/shop/Shop";
@@ -44,6 +47,11 @@ export function App() {
           path="/register"
           element={user ? <Navigate to="/" replace /> : <AuthScreen mode="register" />}
         />
+        {/* Public auth-flow pages: reachable from email links whether or not
+            a session exists. */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route element={<RequireAuth />}>
           <Route element={<Layout />}>
             <Route index element={<Lobby />} />

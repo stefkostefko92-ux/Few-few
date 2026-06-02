@@ -24,8 +24,31 @@ const envSchema = z.object({
   // endpoints return 503 until configured. Secrets never leave env (§14).
   STRIPE_SECRET_KEY: z.string().optional().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().optional().default(""),
-  // Where Stripe redirects after Checkout / Billing Portal.
+  // Where Stripe redirects after Checkout / Billing Portal, and where email
+  // links / OAuth success redirects send the player.
   PUBLIC_WEB_URL: z.string().url().default("http://localhost:4502"),
+  // Public origin of this API — used to build OAuth callback URLs that must
+  // match what is registered with Google/Facebook.
+  PUBLIC_API_URL: z.string().url().default("http://localhost:4500"),
+  // Path the SPA is served under (e.g. "/app" in prod). Email/OAuth redirects
+  // route through it so deep links resolve under the single domain.
+  WEB_BASE_PATH: z.string().default(""),
+
+  // SMTP (optional). When unset, transactional emails are written to the log
+  // instead of sent, so verify/reset flows stay testable without a provider.
+  SMTP_HOST: z.string().optional().default(""),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional().default(""),
+  SMTP_PASSWORD: z.string().optional().default(""),
+  SMTP_SECURE: z.coerce.boolean().default(false),
+  EMAIL_FROM: z.string().default("АСО <no-reply@gaming.carbonstealth.eu>"),
+
+  // OAuth (optional, env-gated). A provider is enabled only when BOTH its id
+  // and secret are present. Secrets never leave env (§14).
+  GOOGLE_CLIENT_ID: z.string().optional().default(""),
+  GOOGLE_CLIENT_SECRET: z.string().optional().default(""),
+  FACEBOOK_APP_ID: z.string().optional().default(""),
+  FACEBOOK_APP_SECRET: z.string().optional().default(""),
 
   // Shared secret for internal service-to-service calls (realtime -> api).
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
@@ -50,6 +73,13 @@ export const env = {
   corsOrigins: raw.CORS_ORIGINS.split(",")
     .map((s) => s.trim())
     .filter(Boolean),
+  // SMTP is "configured" once a host is set; otherwise we log emails.
+  emailEnabled: raw.SMTP_HOST.length > 0,
+  // A provider is usable only when both halves of its credential are present.
+  oauth: {
+    google: raw.GOOGLE_CLIENT_ID.length > 0 && raw.GOOGLE_CLIENT_SECRET.length > 0,
+    facebook: raw.FACEBOOK_APP_ID.length > 0 && raw.FACEBOOK_APP_SECRET.length > 0,
+  },
 };
 
 export type Env = typeof env;

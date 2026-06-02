@@ -31,8 +31,30 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+/** Request a password-reset link. Always answered the same way (no enumeration). */
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+/** Set a new password from a reset token. */
+export const resetPasswordSchema = z.object({
+  token: z.string().min(10).max(512),
+  password: passwordSchema,
+});
+
+/** Request a fresh verification email for an unverified address. */
+export const resendVerificationSchema = z.object({
+  email: emailSchema,
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+
+/** OAuth providers the client may surface (only when server-enabled). */
+export type OAuthProviderId = "google" | "facebook";
 
 /** Shape of the JWT access-token claims. */
 export interface AccessTokenClaims {
@@ -45,6 +67,7 @@ export interface AccessTokenClaims {
 export interface PublicUser {
   id: string;
   email: string;
+  emailVerified: boolean;
   displayName: string;
   role: string;
   locale: string;

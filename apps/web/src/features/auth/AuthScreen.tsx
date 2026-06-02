@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Field, Panel } from "../../ui";
 import { ApiError, api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
 import { LanguageSwitcher } from "../../app/LanguageSwitcher";
+import { OAuthButtons } from "./OAuthButtons";
 
 type Mode = "login" | "register";
 
@@ -12,6 +13,7 @@ export function AuthScreen({ mode }: { mode: Mode }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);
+  const [params] = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,10 +21,19 @@ export function AuthScreen({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Surface a redirect-back error from the OAuth flow (e.g. ?error=oauth_state).
+  const oauthError = params.get("error");
+
   function messageFor(code: string): string {
     if (code === "unauthorized") return t("auth.errorCredentials");
     if (code === "email_taken") return t("auth.errorEmailTaken");
     return t("auth.errorGeneric");
+  }
+
+  function oauthMessageFor(code: string): string {
+    if (code === "oauth_no_email") return t("auth.oauthNoEmail");
+    if (code === "oauth_unavailable") return t("auth.oauthUnavailable");
+    return t("auth.oauthFailed");
   }
 
   async function onSubmit(e: FormEvent) {
@@ -54,6 +65,12 @@ export function AuthScreen({ mode }: { mode: Mode }) {
         <h2 className="mb-6 text-2xl text-ink-100">
           {mode === "login" ? t("auth.loginTitle") : t("auth.registerTitle")}
         </h2>
+
+        {oauthError ? (
+          <p role="alert" className="mb-4 rounded-card bg-loss/10 px-3 py-2 text-sm text-loss">
+            {oauthMessageFor(oauthError)}
+          </p>
+        ) : null}
 
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           {mode === "register" && (
@@ -92,6 +109,17 @@ export function AuthScreen({ mode }: { mode: Mode }) {
             {mode === "login" ? t("auth.loginCta") : t("auth.registerCta")}
           </Button>
         </form>
+
+        {mode === "login" ? (
+          <Link
+            to="/forgot-password"
+            className="mt-4 block text-center text-sm text-ink-muted hover:text-brass-100"
+          >
+            {t("auth.forgotPassword")}
+          </Link>
+        ) : null}
+
+        <OAuthButtons />
 
         <button
           type="button"

@@ -12,29 +12,74 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String // argon2id
-  displayName  String
-  role         Role      @default(PLAYER) // 7-level hierarchy
-  locale       String    @default("bg") // bg|it|en
-  chips        BigInt    @default(1000) // virtual, NOT cashable
-  gems         Int       @default(0) // premium currency (Stripe)
-  xp           Int       @default(0)
-  level        Int       @default(1)
-  vipTier      VipTier   @default(NONE)
-  vipUntil     DateTime?
-  createdAt    DateTime  @default(now())
-  lastSeenAt   DateTime  @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  // Nullable: OAuth-only accounts (Google/Facebook) have no local password.
+  passwordHash  String? // argon2id
+  emailVerified Boolean   @default(false) // email confirmation flow
+  displayName   String
+  role          Role      @default(PLAYER) // 7-level hierarchy
+  locale        String    @default("bg") // bg|it|en
+  chips         BigInt    @default(1000) // virtual, NOT cashable
+  gems          Int       @default(0) // premium currency (Stripe)
+  xp            Int       @default(0)
+  level         Int       @default(1)
+  vipTier       VipTier   @default(NONE)
+  vipUntil      DateTime?
+  createdAt     DateTime  @default(now())
+  lastSeenAt    DateTime  @default(now())
 
-  ratings   RatingPerGame[]
-  inventory InventoryItem[]
-  matches   MatchPlayer[]
-  purchases Purchase[]
-  quests    Quest[]
+  ratings    RatingPerGame[]
+  inventory  InventoryItem[]
+  matches    MatchPlayer[]
+  purchases  Purchase[]
+  quests     Quest[]
+  authTokens AuthToken[]
+  oauth      OAuthAccount[]
 
   @@index([level])
   @@index([vipTier])
+}
+
+// Single-use, hashed tokens for email verification and password reset
+// (§14). We store only a SHA-256 of the raw token; the raw value lives only
+// in the emailed link. Rows are consumed (usedAt) and expire.
+model AuthToken {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AuthTokenType
+  tokenHash String        @unique // sha256(rawToken)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+enum AuthTokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+// Links a federated identity (Google/Facebook) to a local user. A user can
+// have at most one account per provider; a provider account maps to one user.
+model OAuthAccount {
+  id                String        @id @default(cuid())
+  userId            String
+  provider          OAuthProvider
+  providerAccountId String // the "sub" / id from the provider
+  createdAt         DateTime      @default(now())
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+enum OAuthProvider {
+  GOOGLE
+  FACEBOOK
 }
 
 model RatingPerGame {

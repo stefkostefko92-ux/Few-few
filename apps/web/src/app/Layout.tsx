@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { VerifyBanner } from "../features/auth/VerifyBanner";
 
 /** Authenticated app chrome: skip-link + header + routed content + footer. */
 export function Layout() {
@@ -14,6 +15,7 @@ export function Layout() {
       >
         {t("a11y.skipToContent")}
       </a>
+      <VerifyBanner />
       <Header />
       <main id="main" className="flex-1 px-4 py-8 sm:px-8">
         <Outlet />

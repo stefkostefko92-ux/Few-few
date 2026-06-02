@@ -20,7 +20,43 @@
     "toLogin": "Already have an account? Sign in",
     "errorGeneric": "Something went wrong. Try again.",
     "errorCredentials": "Wrong email or password",
-    "errorEmailTaken": "That email is already registered"
+    "errorEmailTaken": "That email is already registered",
+    "forgotPassword": "Forgot password?",
+    "or": "or",
+    "continueGoogle": "Continue with Google",
+    "continueFacebook": "Continue with Facebook",
+    "oauthNoEmail": "The provider didn't share an email. Sign up with email instead.",
+    "oauthUnavailable": "That sign-in method isn't available right now.",
+    "oauthFailed": "Sign-in failed. Please try again.",
+    "emailUnverified": "Your email isn't verified yet.",
+    "resend": "Resend the link",
+    "resendSent": "We've sent a new verification link."
+  },
+  "verify": {
+    "title": "Email verification",
+    "verifying": "Verifying your email…",
+    "success": "Email verified! 🎉",
+    "successBody": "You now have access to all account features.",
+    "continue": "Go to the app",
+    "failed": "The link is invalid or has expired.",
+    "backToLogin": "Back to sign in"
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "intro": "Enter your email and we'll send you a reset link.",
+    "submit": "Send link",
+    "sent": "If that email exists, we've sent a password reset link.",
+    "backToLogin": "Back to sign in"
+  },
+  "reset": {
+    "title": "New password",
+    "intro": "Enter your new password.",
+    "newPassword": "New password",
+    "submit": "Save password",
+    "success": "Password changed! You can sign in now.",
+    "goLogin": "Go to sign in",
+    "invalid": "The link is invalid or has expired.",
+    "requestNew": "Request a new link"
   },
   "lobby": {
     "title": "Choose a game",
@@ -98,7 +134,8 @@
     "notGambling": "Social gaming — not real-money gambling."
   },
   "common": {
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "dismiss": "Dismiss"
   },
   "a11y": {
     "skipToContent": "Skip to content",
