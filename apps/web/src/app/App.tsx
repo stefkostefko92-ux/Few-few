@@ -7,6 +7,7 @@ import { Lobby } from "../features/lobby/Lobby";
 import { GameView } from "../features/game/GameView";
 import { Shop } from "../features/shop/Shop";
 import { Leaderboard } from "../features/leaderboard/Leaderboard";
+import { CardGallery } from "../features/game/cards/CardGallery";
 import { Layout } from "./Layout";
 import { RequireAuth } from "./RequireAuth";
 
@@ -34,6 +35,8 @@ export function App() {
 
   return (
     <Routes>
+      {/* Dev-only visual QA route (stripped from production by dead-code elimination). */}
+      {import.meta.env.DEV ? <Route path="/__gallery" element={<CardGallery />} /> : null}
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthScreen mode="login" />} />
       <Route
         path="/register"

@@ -1,0 +1,157 @@
+/* Premium playing-card styling (§3.4). Cards are tactile: warm ivory stock,
+   crisp vector pips, soft double shadow, brass-engraved backs. */
+
+.aso-card {
+  position: relative;
+  display: inline-block;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--r-card, 10px);
+  cursor: default;
+  /* GPU-friendly transform stack so GSAP/hover stay 60fps. */
+  transform: translateZ(0);
+  transition:
+    transform var(--dur-fast, 140ms) var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15)),
+    box-shadow var(--dur-fast, 140ms) ease;
+  box-shadow:
+    0 6px 14px -6px rgba(0, 0, 0, 0.6),
+    0 2px 3px rgba(0, 0, 0, 0.4);
+}
+button.aso-card {
+  cursor: pointer;
+}
+button.aso-card:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 18px 30px -10px rgba(0, 0, 0, 0.7),
+    0 4px 8px rgba(0, 0, 0, 0.45);
+}
+.aso-card[data-dimmed="true"] {
+  filter: brightness(0.7) saturate(0.8);
+}
+.aso-card--selected {
+  transform: translateY(-16px);
+}
+.aso-card--selected::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--r-card, 10px) + 3px);
+  box-shadow: 0 0 0 2px var(--brass-300), 0 0 18px var(--brass-glow);
+  pointer-events: none;
+}
+
+.aso-card__face,
+.aso-card__back {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* ---- Face ---- */
+.aso-card__face {
+  background:
+    radial-gradient(120% 90% at 30% 0%, #fffdf6 0%, #f6f1e4 55%, #ece3cf 100%);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.aso-card__corner {
+  position: absolute;
+  display: flex;
+  font-size: 13px;
+}
+.aso-card__corner--tl {
+  top: 5px;
+  left: 5px;
+}
+.aso-card__corner--br {
+  right: 5px;
+  bottom: 5px;
+  transform: rotate(180deg);
+}
+
+.aso-card__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.aso-card__pips {
+  position: absolute;
+  inset: 14% 18%;
+}
+.aso-card__pip {
+  position: absolute;
+}
+
+/* Court cards — brass ar-deco frame + monogram. */
+.aso-card__court {
+  position: absolute;
+  inset: 12% 14%;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  align-content: center;
+}
+.aso-card__court-frame {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--brass-400);
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(217, 178, 95, 0.12) 0,
+      rgba(217, 178, 95, 0.12) 2px,
+      transparent 2px,
+      transparent 7px
+    );
+  box-shadow: inset 0 0 0 3px rgba(255, 253, 246, 0.7), inset 0 0 0 4px var(--brass-300);
+}
+.aso-card__court-mono {
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-weight: 700;
+  line-height: 1;
+  z-index: 1;
+}
+
+/* ---- Back ---- */
+.aso-card__back {
+  background:
+    linear-gradient(135deg, var(--felt-700) 0%, var(--felt-900) 100%);
+  border: 1px solid rgba(217, 178, 95, 0.35);
+}
+.aso-card__back::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 6px;
+  border: 1px solid rgba(217, 178, 95, 0.5);
+  background-image:
+    repeating-linear-gradient(45deg, rgba(217, 178, 95, 0.16) 0 4px, transparent 4px 9px),
+    repeating-linear-gradient(-45deg, rgba(217, 178, 95, 0.1) 0 4px, transparent 4px 9px);
+}
+.aso-card__back::after {
+  content: "A";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--brass-300);
+  opacity: 0.85;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aso-card,
+  button.aso-card:hover {
+    transition: none;
+  }
+}
