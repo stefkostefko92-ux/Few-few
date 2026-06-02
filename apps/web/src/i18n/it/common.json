@@ -53,7 +53,14 @@
     "pass": "Passo",
     "emptyTrick": "In attesa della prima carta",
     "auction": "Asta — chiama la briscola",
-    "contract": "Briscola"
+    "contract": "Briscola",
+    "decl": {
+      "tierce": "Terza",
+      "fifty": "Cinquanta",
+      "hundred": "Cento",
+      "carre": "Quartetto",
+      "belote": "Belote"
+    }
   },
   "shop": {
     "disclaimer": "Il denaro acquista solo cosmetici, comfort e fiche d'ingresso. Le fiche non vengono mai riconvertite in denaro.",

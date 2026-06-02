@@ -7,6 +7,7 @@ import {
 } from "../../kernel/contract.js";
 import type { SeededRng } from "../../kernel/rng.js";
 import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./cards.js";
+import { resolveDeclarations, type Declaration } from "./declarations.js";
 
 /**
  * Белот — 4-player (2v2) trick-taking, suit contract (§4.1). 32-card deck
@@ -20,9 +21,15 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  * one; otherwise anything. The trick goes to the highest trump, else the
  * highest card of the led suit. Last trick is worth +10 ("10 de der").
  *
- * Simplifications (to harden later): single deal (no running 151 target), no
- * declarations (terца/петдесет/belote), and the strict over-trump / must-head
- * obligations are relaxed to "must trump when void".
+ * Declarations (обяви): once the contract is set, sequences (терца 20 /
+ * петдесет 50 / сто 100), carrés (каре: J 200, 9 150, others 100) and belote
+ * (K+Q of trump, 20) are detected from the dealt hands and added to team points.
+ * Only the team with the strongest sequence/carré scores its combos; belote
+ * always scores. (See declarations.ts.)
+ *
+ * Simplifications (to harden later): single deal (no running 151 target); the
+ * strict over-trump / must-head obligations are relaxed to "must trump when
+ * void"; carrés/sequences are auto-declared (no hold-back option).
  */
 
 const RANKS = ["7", "8", "9", "T", "J", "Q", "K", "A"] as const;
@@ -50,6 +57,9 @@ export interface BeloteState {
   passes: number;
   teamPoints: [number, number]; // [team A {0,2}, team B {1,3}]
   tricksTaken: [number, number];
+  /** Declaration points per team, and the scored declarations (for display). */
+  declPoints: [number, number];
+  declarations: Declaration[];
   lastTrickWinner: Seat | null;
   winningTeam: number | null;
   done: boolean;
@@ -64,6 +74,7 @@ export type BeloteEvent =
   | { type: "CALL"; seat: Seat; suit: Suit }
   | { type: "PASS"; seat: Seat }
   | { type: "CONTRACT"; trump: Suit; declarer: Seat }
+  | { type: "DECLARATIONS"; declarations: Declaration[]; teamPoints: [number, number] }
   | { type: "PLAY"; seat: Seat; card: Card }
   | { type: "TRICK"; seat: Seat; points: number }
   | { type: "RESULT"; team: number; made: boolean };
@@ -93,6 +104,16 @@ function startPlay(state: BeloteState, trump: Suit, declarer: Seat, events: Belo
   state.leader = first;
   state.turn = first;
   events.push({ type: "CONTRACT", trump, declarer });
+
+  // Detect + score declarations (обяви) from the dealt hands.
+  const { teamPoints, scored } = resolveDeclarations(state.hands, trump);
+  state.declPoints = teamPoints;
+  state.declarations = scored;
+  state.teamPoints[0] += teamPoints[0];
+  state.teamPoints[1] += teamPoints[1];
+  if (scored.length > 0) {
+    events.push({ type: "DECLARATIONS", declarations: scored, teamPoints });
+  }
 }
 
 export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = {
@@ -113,6 +134,8 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
       passes: 0,
       teamPoints: [0, 0],
       tricksTaken: [0, 0],
+      declPoints: [0, 0],
+      declarations: [],
       lastTrickWinner: null,
       winningTeam: null,
       done: false,

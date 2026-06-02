@@ -53,7 +53,14 @@
     "pass": "Пас",
     "emptyTrick": "Чакаме първа карта",
     "auction": "Анонс — обяви коз",
-    "contract": "Коз"
+    "contract": "Коз",
+    "decl": {
+      "tierce": "Терца",
+      "fifty": "Петдесет",
+      "hundred": "Сто",
+      "carre": "Каре",
+      "belote": "Белот"
+    }
   },
   "wallet": {
     "chips": "Чипове",

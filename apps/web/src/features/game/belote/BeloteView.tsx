@@ -17,6 +17,11 @@ interface Play {
   seat: number;
   card: string;
 }
+interface Decl {
+  seat: number;
+  kind: "tierce" | "fifty" | "hundred" | "carre" | "belote";
+  value: number;
+}
 interface BeloteState {
   phase: "BID" | "PLAY";
   hands: string[][];
@@ -25,6 +30,8 @@ interface BeloteState {
   turn: number;
   trick: Play[];
   teamPoints: [number, number];
+  declPoints: [number, number];
+  declarations: Decl[];
 }
 type BeloteAction =
   | { type: "PASS" }
@@ -156,6 +163,24 @@ export function BeloteView({ title }: { title: string }) {
         <ScorePill label={t("belote.yourTeam")} value={state.teamPoints[myTeam] ?? 0} highlight />
         <ScorePill label={t("belote.theirTeam")} value={state.teamPoints[myTeam === 0 ? 1 : 0] ?? 0} />
       </div>
+
+      {state.declarations.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          {state.declarations.map((d, i) => (
+            <span
+              key={i}
+              className="rounded-full border px-3 py-1 text-xs"
+              style={{
+                borderColor: d.seat % 2 === myTeam ? "var(--brass-300)" : "rgba(217,178,95,.2)",
+                background: "rgba(11,14,13,.5)",
+                color: d.seat % 2 === myTeam ? "var(--brass-100)" : "var(--ink-muted)",
+              }}
+            >
+              {t(`belote.decl.${d.kind}`)} +{d.value}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       {state.phase === "BID" && myTurn ? (
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">

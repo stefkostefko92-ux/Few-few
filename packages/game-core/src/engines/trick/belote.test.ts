@@ -64,8 +64,9 @@ describe("belote engine", () => {
       const score = beloteEngine.score(state);
       expect(score.filter((x) => x.result === "win")).toHaveLength(2);
       expect(score.filter((x) => x.result === "loss")).toHaveLength(2);
-      // Total card points across both teams must be 162 (152 + 10 last trick).
-      expect(state.teamPoints[0] + state.teamPoints[1]).toBe(162);
+      // Total points = 162 card points (152 + 10 last trick) + declaration points.
+      const decl = state.declPoints[0] + state.declPoints[1];
+      expect(state.teamPoints[0] + state.teamPoints[1]).toBe(162 + decl);
     }
   });
 
@@ -73,5 +74,20 @@ describe("belote engine", () => {
     const a = playRandom(beloteEngine, { seed: "x", botSeed: "y", seats: 4 });
     const b = playRandom(beloteEngine, { seed: "x", botSeed: "y", seats: 4 });
     expect(a.state).toEqual(b.state);
+  });
+
+  it("applies declarations to team points once the contract is set", () => {
+    // Find a seed whose deal yields at least one declaration, then verify the
+    // engine added exactly those points on top of card points.
+    for (let g = 0; g < 60; g++) {
+      const { state } = playRandom(beloteEngine, { seed: `d${g}`, botSeed: `b${g}`, seats: 4 });
+      const decl = state.declPoints[0] + state.declPoints[1];
+      if (decl > 0) {
+        expect(state.declarations.length).toBeGreaterThan(0);
+        expect(state.teamPoints[0] + state.teamPoints[1]).toBe(162 + decl);
+        return;
+      }
+    }
+    throw new Error("expected at least one deal with declarations across 60 games");
   });
 });

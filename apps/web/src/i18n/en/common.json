@@ -53,7 +53,14 @@
     "pass": "Pass",
     "emptyTrick": "Waiting for the first card",
     "auction": "Auction — call trump",
-    "contract": "Trump"
+    "contract": "Trump",
+    "decl": {
+      "tierce": "Tierce",
+      "fifty": "Fifty",
+      "hundred": "Hundred",
+      "carre": "Carré",
+      "belote": "Belote"
+    }
   },
   "wallet": {
     "chips": "Chips",
