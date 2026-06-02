@@ -12,7 +12,7 @@
   const TB = window.TanothBot;
   const { I18n, Logger, Stats, Scheduler, Storage } = TB;
 
-  const MODULES = ['adventures', 'circle', 'training', 'autologin'];
+  const MODULES = ['adventures', 'dungeon', 'map', 'pvp', 'work', 'circle', 'training', 'autosell', 'autologin'];
 
   let root = null;
   let logEl = null;

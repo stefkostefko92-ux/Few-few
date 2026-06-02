@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
   "icons": {
@@ -36,8 +36,12 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.tanoth.gameforge.com/*"],
-      "css": ["src/ui/panel.css"],
+      "matches": [
+        "*://*.tanoth.gameforge.com/*"
+      ],
+      "css": [
+        "src/ui/panel.css"
+      ],
       "js": [
         "src/core/namespace.js",
         "src/core/i18n.js",
@@ -52,6 +56,11 @@
         "src/modules/adventures.js",
         "src/modules/training.js",
         "src/modules/circle.js",
+        "src/modules/dungeon.js",
+        "src/modules/map.js",
+        "src/modules/pvp.js",
+        "src/modules/work.js",
+        "src/modules/autosell.js",
         "src/modules/autologin.js",
         "src/ui/panel.js",
         "src/content/content-script.js"
@@ -62,8 +71,12 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/content/inject.js"],
-      "matches": ["*://*.tanoth.gameforge.com/*"]
+      "resources": [
+        "src/content/inject.js"
+      ],
+      "matches": [
+        "*://*.tanoth.gameforge.com/*"
+      ]
     }
   ]
 }

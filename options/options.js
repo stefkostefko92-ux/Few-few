@@ -11,6 +11,7 @@ import { DEFAULT_SETTINGS, mergeSettings } from '../src/shared/defaults.js';
 function t(key, subs) { return chrome.i18n.getMessage(key, subs) || key; }
 
 const STATS = ['mix', 'strength', 'dexterity', 'constitution', 'intelligence'];
+const RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
 /* Field types: bool | number | text | time | select(options) */
 const SCHEMA = [
@@ -45,6 +46,30 @@ const SCHEMA = [
     { k: 'priorityStat', type: 'select', options: STATS },
     { k: 'maxGoldSpend', type: 'number', min: 0 },
     { k: 'keepGoldReserve', type: 'number', min: 0 }
+  ] },
+  { id: 'dungeon', fields: [
+    { k: 'enabled', type: 'bool' }
+  ] },
+  { id: 'map', fields: [
+    { k: 'enabled', type: 'bool' },
+    { k: 'illusionCave', type: 'bool' },
+    { k: 'dragon', type: 'bool' },
+    { k: 'cooldownMinutes', type: 'number', min: 5, max: 600 }
+  ] },
+  { id: 'pvp', fields: [
+    { k: 'enabled', type: 'bool' },
+    { k: 'opponents', type: 'text' },
+    { k: 'maxPerDay', type: 'number', min: 0, max: 100 },
+    { k: 'cooldownSeconds', type: 'number', min: 5, max: 600 }
+  ] },
+  { id: 'work', fields: [
+    { k: 'enabled', type: 'bool' },
+    { k: 'durationHours', type: 'number', min: 1, max: 24 },
+    { k: 'stopWhenAdventureReady', type: 'bool' }
+  ] },
+  { id: 'autosell', fields: [
+    { k: 'enabled', type: 'bool' },
+    { k: 'keepRarity', type: 'select', options: RARITY }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },

@@ -61,9 +61,21 @@ client does. The protocol was verified against the open-source
 | Module | Method(s) used | What it does |
 | --- | --- | --- |
 | **Adventures** | `GetAdventures`, `StartAdventure`, `MiniUpdate` | Runs adventures by strategy (most gold, most XP, shortest, longest) within a difficulty cap; resolves finished runs; optional bloodstone use with a reserve; backs off when the daily allowance is spent. |
+| **Dungeon** | `GetDungeon`, `StartDungeon` | Runs the daily dungeon while `free_tries_today` remain, then backs off until reset. |
+| **Map events** | `StartIllusionCave`, `StartDragon` | Cycles the Cave of Illusions and Dragon event on a cooldown. |
+| **Arena / PvP** | `Fight` | Farms configured opponent name(s) up to a daily cap with a cooldown. |
+| **Work** | `GetWorkData`, `StartWork` | Idle-time filler: paid work shifts (capped to the server max), yielding to adventures. |
 | **Evocation Circle** | `EvocationCircle_getCircle`, `EvocationCircle_buyNode` | Spends gold upgrading the circle along the game-correct optimal node path, keeping a gold reserve. |
 | **Training** | `GetUserAttributes`, `RaiseAttribute` | Raises STR/DEX/CON/INT — a chosen attribute or "mix" (always the cheapest) — honouring a reserve and optional spend cap. |
+| **Auto-sell** | `GetEquipment`, `SellItem` | **Conservative & opt-in.** Only sells items whose rarity it can positively read as below the threshold; never sells equipped/unclassified items. Off by default. |
 | **Auto-login** | — | Detects a dropped session and reloads to reconnect, with a capped retry count. |
+
+All method names and signatures were extracted from the game's own client
+(`/webroot/game/TanothHtml5.js`, e.g. `callMethod("StartDungeon",[],cb)`), so
+the calls match exactly. A single in-game task runs at a time (tracked via
+`MiniUpdate`'s `time`/`type`), so the task modules (adventures, dungeon, map,
+work) cooperate through one busy timer; PvP and auto-sell are instant and
+interleave during waits.
 
 ### Around the modules
 

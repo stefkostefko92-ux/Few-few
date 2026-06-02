@@ -56,6 +56,40 @@ export const DEFAULT_SETTINGS = {
     keepGoldReserve: 0              // never spend gold below this reserve
   },
 
+  /* ---- Dungeon ---- */
+  dungeon: {
+    enabled: false                 // run the daily dungeon while free tries remain
+  },
+
+  /* ---- Map events (Cave of Illusions, Dragon) ---- */
+  map: {
+    enabled: false,
+    illusionCave: true,            // attempt the Cave of Illusions
+    dragon: true,                  // attempt the Dragon event
+    cooldownMinutes: 30            // wait between attempts
+  },
+
+  /* ---- Arena / PvP ---- */
+  pvp: {
+    enabled: false,
+    opponents: '',                 // names to fight (comma/newline separated)
+    maxPerDay: 10,                 // 0 = unlimited
+    cooldownSeconds: 30
+  },
+
+  /* ---- Work / Jobs ---- */
+  work: {
+    enabled: false,
+    durationHours: 2,              // capped to the server's max working hours
+    stopWhenAdventureReady: true   // yield when free adventures are available
+  },
+
+  /* ---- Auto-sell (conservative, disabled by default) ---- */
+  autosell: {
+    enabled: false,
+    keepRarity: 'uncommon'         // sell items BELOW this rarity only
+  },
+
   /* ---- Auto-login / session keep-alive ---- */
   autologin: {
     enabled: true,
@@ -78,9 +112,14 @@ export const DEFAULT_SETTINGS = {
  *  scheduler should consider them each cycle (higher = earlier). */
 export const MODULE_ORDER = [
   'autologin',
+  'dungeon',
+  'map',
+  'pvp',
   'adventures',
+  'work',
   'circle',
-  'training'
+  'training',
+  'autosell'
 ];
 
 /** Deep-merge a stored settings object onto the defaults so that new keys

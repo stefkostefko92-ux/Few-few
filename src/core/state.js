@@ -45,6 +45,8 @@
 
     // dungeon / cave
     dungeonAvailable: false,
+    dungeon: {},                // {freeTries, madeToday, level, maxLevel}
+    work: {},                   // {maxHours, goldFee}
     caveFloor: 0,
     caveAttemptsLeft: 1,
 

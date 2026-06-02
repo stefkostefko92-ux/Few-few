@@ -165,6 +165,61 @@
     async raw(method, params) { return rpc(method, params); },
     findValue,
 
+    /* --------------------------- dungeon ---------------------------- */
+    async getDungeon() {
+      const doc = await rpc('GetDungeon', []);
+      const info = {
+        freeTries: num(findValue(doc, 'free_tries_today', 'i4')) || 0,
+        madeToday: num(findValue(doc, 'dungeon_made_today', 'i4')) || 0,
+        level: num(findValue(doc, 'dungeon_level', 'i4')) || 0,
+        maxLevel: num(findValue(doc, 'max_dungeon_level', 'i4')) || 0
+      };
+      State.patch({ dungeon: info });
+      return info;
+    },
+    async startDungeon() { await rpc('StartDungeon', []); },
+
+    /* ----------------------------- work ----------------------------- */
+    async getWorkData() {
+      const doc = await rpc('GetWorkData', []);
+      const info = {
+        maxHours: num(findValue(doc, 'max_working_hours', 'i4')) || 0,
+        goldFee: num(findValue(doc, 'gold_fee', 'i4')) || 0
+      };
+      State.patch({ work: info });
+      return info;
+    },
+    async startWork(hours) { await rpc('StartWork', [{ type: 'int', value: hours }]); },
+    async cancelWork() { await rpc('CancelWork', []); },
+
+    /* ----------------------------- pvp ------------------------------ */
+    async fight(opponentName) {
+      const doc = await rpc('Fight', [{ type: 'string', value: opponentName }]);
+      // Reward fields live under the "answer" struct; findValue reads them anywhere.
+      return {
+        won: /1|true|win/i.test(findValue(doc, 'won', 'i4') || findValue(doc, 'victory', 'boolean') || ''),
+        gold: num(findValue(doc, 'reward_gold', 'i4')) || 0,
+        exp: num(findValue(doc, 'reward_exp', 'i4')) || 0
+      };
+    },
+
+    /* --------------------------- map events ------------------------- */
+    async getCaveDetails() { return rpc('GetCaveDetails', []); },
+    async startIllusionCave() { await rpc('StartIllusionCave', []); },
+    async getDragonDetails() { return rpc('GetDragonDetails', []); },
+    async startDragon() { await rpc('StartDragon', []); },
+
+    /* --------------------------- inventory -------------------------- */
+    async getEquipment() { return rpc('GetEquipment', []); },
+    // SellItem(id, char_id|0, itemXpos)
+    async sellItem(id, xpos) {
+      await rpc('SellItem', [
+        { type: 'int', value: id },
+        { type: 'int', value: 0 },
+        { type: 'int', value: xpos }
+      ]);
+    },
+
     async refresh() {
       try { await Api.miniUpdate(); } catch (e) { Logger.debug('miniUpdate', e.message); }
       return State.get();

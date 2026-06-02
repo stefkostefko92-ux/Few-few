@@ -30,6 +30,11 @@
   "mod_adventures": { "message": "Adventures" },
   "mod_circle": { "message": "Circle" },
   "mod_training": { "message": "Training" },
+  "mod_dungeon": { "message": "Dungeon" },
+  "mod_map": { "message": "Map" },
+  "mod_pvp": { "message": "Arena" },
+  "mod_work": { "message": "Work" },
+  "mod_autosell": { "message": "Auto-sell" },
   "mod_autologin": { "message": "Auto-login" },
 
   "popupNoGame": { "message": "Open Tanoth in a tab to control the bot." },
@@ -58,6 +63,16 @@
   "logTrain": { "message": "Raising $1 for $2 gold." },
   "logCircleComplete": { "message": "Evocation circle is fully upgraded." },
   "logCircleBuy": { "message": "Buying circle node $1 for $2 gold." },
+  "logDungeonStart": { "message": "Entering the dungeon (floor $1)." },
+  "logDungeonDone": { "message": "Dungeon attempt done." },
+  "logWorkStart": { "message": "Starting a $1h work shift." },
+  "logPvpNoTarget": { "message": "Arena enabled but no opponent set — add a name in settings." },
+  "logPvpFight": { "message": "Challenging $1 in the arena." },
+  "logPvpWon": { "message": "Won the duel vs $1 (+$2 gold)." },
+  "logPvpLost": { "message": "Lost the duel vs $1." },
+  "logCaveStart": { "message": "Entering the Cave of Illusions." },
+  "logDragonStart": { "message": "Starting the Dragon event." },
+  "logSell": { "message": "Selling item #$1 ($2)." },
   "logReconnect": { "message": "Session lost — reconnecting (attempt $1)." },
 
   "notifyStopped": { "message": "Bot stopped" },
@@ -115,6 +130,16 @@
   "optgrp_circle_d": { "message": "Spend gold upgrading the circle along the optimal path." },
   "optgrp_training": { "message": "Training" },
   "optgrp_training_d": { "message": "Spend gold raising STR / DEX / CON / INT." },
+  "optgrp_dungeon": { "message": "Dungeon" },
+  "optgrp_dungeon_d": { "message": "Run the daily dungeon while free tries remain." },
+  "optgrp_map": { "message": "Map events" },
+  "optgrp_map_d": { "message": "Cave of Illusions and the Dragon event." },
+  "optgrp_pvp": { "message": "Arena / PvP" },
+  "optgrp_pvp_d": { "message": "Fight named opponents in the arena." },
+  "optgrp_work": { "message": "Work" },
+  "optgrp_work_d": { "message": "Paid work shifts as idle-time filler." },
+  "optgrp_autosell": { "message": "Auto-sell" },
+  "optgrp_autosell_d": { "message": "Conservatively sell low-rarity loot. Test carefully." },
   "optgrp_autologin": { "message": "Auto-login" },
   "optgrp_autologin_d": { "message": "Reconnect when the session drops." },
   "optgrp_scheduler": { "message": "Scheduler" },
@@ -148,6 +173,25 @@
   "opt_training_maxGoldSpend": { "message": "Max gold to spend (0 = no cap)" },
   "opt_training_keepGoldReserve": { "message": "Keep gold reserve" },
 
+  "opt_dungeon_enabled": { "message": "Enable dungeon" },
+
+  "opt_map_enabled": { "message": "Enable map events" },
+  "opt_map_illusionCave": { "message": "Cave of Illusions" },
+  "opt_map_dragon": { "message": "Dragon event" },
+  "opt_map_cooldownMinutes": { "message": "Minutes between attempts" },
+
+  "opt_pvp_enabled": { "message": "Enable arena" },
+  "opt_pvp_opponents": { "message": "Opponent name(s), comma-separated" },
+  "opt_pvp_maxPerDay": { "message": "Max fights per day (0 = unlimited)" },
+  "opt_pvp_cooldownSeconds": { "message": "Seconds between fights" },
+
+  "opt_work_enabled": { "message": "Enable work" },
+  "opt_work_durationHours": { "message": "Shift length (hours)" },
+  "opt_work_stopWhenAdventureReady": { "message": "Yield when free adventures are ready" },
+
+  "opt_autosell_enabled": { "message": "Enable auto-sell (sells loot!)" },
+  "opt_autosell_keepRarity": { "message": "Keep items at/above rarity" },
+
   "opt_autologin_enabled": { "message": "Enable auto-login" },
   "opt_autologin_reloadOnDisconnect": { "message": "Reload page on disconnect" },
   "opt_autologin_maxReloadAttempts": { "message": "Max reload attempts" },
@@ -175,5 +219,10 @@
   "optv_easy": { "message": "Easy" },
   "optv_medium": { "message": "Medium" },
   "optv_difficult": { "message": "Difficult" },
-  "optv_very_difficult": { "message": "Very difficult" }
+  "optv_very_difficult": { "message": "Very difficult" },
+  "optv_common": { "message": "Common" },
+  "optv_uncommon": { "message": "Uncommon" },
+  "optv_rare": { "message": "Rare" },
+  "optv_epic": { "message": "Epic" },
+  "optv_legendary": { "message": "Legendary" }
 }
