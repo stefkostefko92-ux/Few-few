@@ -28,6 +28,13 @@
 
   function cfg() { return Storage.section('map') || {}; }
 
+  function fmtDur(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    if (s >= 3600) return Math.floor(s / 3600) + 'h ' + Math.floor((s % 3600) / 60) + 'm';
+    if (s >= 60) return Math.floor(s / 60) + 'm ' + (s % 60) + 's';
+    return s + 's';
+  }
+
   // Parse the priority list -> [{name, idx}] in priority order (enabled only).
   function priorityRegions(c) {
     const names = String(c.regions || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
@@ -83,9 +90,12 @@
             catch (e) { encounterCooldown = Date.now() + 30 * 60000; }
             return;
           }
-          // Nothing available right now — re-check later.
-          encounterCooldown = Date.now() + 20 * 60000;
-          Logger.debug('map: no encounters available' + (map.energy != null ? ` (energy ${map.energy})` : ''));
+          // Nothing to fight right now — wait the real regen cooldown the game
+          // reports (next_attack is an epoch-second timestamp), so we don't poll.
+          const nextMs = (map.nextAttack && map.nextAttack > 0) ? map.nextAttack * 1000 - Date.now() : 0;
+          const waitMs = nextMs > 0 ? nextMs + 1000 : 20 * 60000;
+          encounterCooldown = Date.now() + waitMs;
+          Logger.info(I18n.t('logMapNext', [fmtDur(waitMs), String(map.energy != null ? map.energy : '?')]));
         };
       }
 

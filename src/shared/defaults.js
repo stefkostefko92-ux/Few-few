@@ -113,7 +113,7 @@ export const DEFAULT_SETTINGS = {
     enabled: false,
     activeFrom: '00:00',            // only run between these times (local)
     activeTo: '23:59',
-    randomBreaks: true,             // take occasional human-like breaks
+    randomBreaks: false,            // take occasional human-like breaks (off by default)
     breakEveryMinutes: 90,
     breakDurationMinutes: 10
   }

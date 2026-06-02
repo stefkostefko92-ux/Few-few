@@ -34,11 +34,14 @@
       if (want <= 0) return null;
 
       return async () => {
-        Logger.info(I18n.t('logWorkStart', [String(want)]));
         await Api.startWork(want);
-        await Api.miniUpdate();           // sets the busy timer for the shift
+        await Api.miniUpdate();           // picks up the running-task timer
+        // Ensure the module waits the whole shift (log the real cooldown).
+        const until = Math.max(State.get().adventureReturnAt || 0, Date.now() + want * 3600000);
+        State.patch({ adventureReturnAt: until, taskType: 'work' });
         Stats.bump({ workShifts: 1 });
         lastCheck = 0;
+        Logger.success(I18n.t('logWorkStart', [String(want), new Date(until).toLocaleTimeString()]));
       };
     }
   });

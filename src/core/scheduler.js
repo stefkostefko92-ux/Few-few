@@ -120,21 +120,29 @@
     return from <= to ? (cur >= from && cur <= to) : (cur >= from || cur <= to);
   }
 
+  // Breaks are controlled solely by the randomBreaks toggle (independent of the
+  // active-hours scheduler). When it's off, no break is ever taken.
+  function breaksEnabled() {
+    const s = Storage.section('scheduler') || {};
+    return !!s.randomBreaks;
+  }
+
   function scheduleNextBreak() {
-    const s = Storage.section('scheduler');
-    if (s?.enabled && s.randomBreaks) {
+    const s = Storage.section('scheduler') || {};
+    if (breaksEnabled()) {
       const jitter = 0.5 + Math.random();
-      nextBreakAt = Date.now() + s.breakEveryMinutes * 60000 * jitter;
+      nextBreakAt = Date.now() + (s.breakEveryMinutes || 90) * 60000 * jitter;
     } else {
       nextBreakAt = 0;
     }
   }
 
   function maybeTakeBreak() {
-    const s = Storage.section('scheduler');
-    if (!s?.enabled || !s.randomBreaks || !nextBreakAt) return false;
+    if (!breaksEnabled()) { nextBreakAt = 0; onBreakUntil = 0; return false; } // off => never break
+    if (!nextBreakAt) scheduleNextBreak();
     if (Date.now() >= nextBreakAt) {
-      const dur = s.breakDurationMinutes * 60000 * (0.6 + Math.random() * 0.8);
+      const s = Storage.section('scheduler') || {};
+      const dur = (s.breakDurationMinutes || 10) * 60000 * (0.6 + Math.random() * 0.8);
       onBreakUntil = Date.now() + dur;
       scheduleNextBreak();
       Logger.info(I18n.t('logTakingBreak', String(Math.round(dur / 60000))));
@@ -164,6 +172,7 @@
 
     // Respect active time window and breaks.
     if (!withinActiveWindow()) { paused = true; emitStatus(); return; }
+    if (!breaksEnabled()) onBreakUntil = 0;          // disabling breaks ends any current one
     if (Date.now() < onBreakUntil) {
       loopHandle = setTimeout(loop, 5000);
       return;

@@ -217,9 +217,11 @@
     async startLiberation(location) { return rpc('StartLiberation', [{ type: 'int', value: location }]); },
     async buyLiberationEnergy() { await rpc('BuyLiberationEnergy', []); },
 
-    // Parse the liberation map: { energy, monsters:[{location,stars,picture_id,special_type}] }
+    // Parse the liberation map: { energy, energyCost, nextAttack(epoch s), monsters:[...] }
     parseMap(doc) {
       const energy = num(findValue(doc, 'energy', 'i4'));
+      const energyCost = num(findValue(doc, 'energy_cost', 'i4'));
+      const nextAttack = num(findValue(doc, 'next_attack', 'i4'));
       const monsters = Array.from(doc.querySelectorAll('struct'))
         .filter((s) => findValue(s, 'location', 'i4') != null && findValue(s, 'stars', 'i4') != null)
         .map((s) => ({
@@ -228,7 +230,7 @@
           pictureId: num(findValue(s, 'picture_id', 'i4')) || 0,
           special: num(findValue(s, 'special_type', 'i4')) || 0
         }));
-      return { energy, monsters };
+      return { energy, energyCost, nextAttack, monsters };
     },
 
     /* --------------------------- inventory -------------------------- */

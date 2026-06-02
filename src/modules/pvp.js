@@ -51,7 +51,9 @@
         foughtToday++;
         // Respect the arena cooldown when humanizing; spam when humanize is off.
         const humanize = (Storage.section('general') || {}).humanize;
-        cooldownUntil = humanize ? Date.now() + Math.max(1, Number(c.cooldownSeconds) || 30) * 1000 : 0;
+        const cd = Math.max(1, Number(c.cooldownSeconds) || 30);
+        cooldownUntil = humanize ? Date.now() + cd * 1000 : 0;
+        if (humanize) Logger.info(I18n.t('logPvpCooldown', [String(cd)]));
         if (res.won) {
           Stats.bump({ duelsWon: 1, goldEarned: res.gold || 0 });
           Logger.success(I18n.t('logPvpWon', [name, String(res.gold || 0)]));
