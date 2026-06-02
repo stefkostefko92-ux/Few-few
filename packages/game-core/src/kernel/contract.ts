@@ -35,8 +35,17 @@ export interface ReduceResult<S, E extends GameEvent> {
  */
 export interface GameEngine<S, A, E extends GameEvent = GameEvent> {
   init(opts: InitOpts, rng: SeededRng): S;
-  /** Legal actions for `seat` — drives validation + client highlighting. */
+  /** Legal actions for `seat` — drives validation + client highlighting. For
+   *  games with a continuous action space (e.g. a cue shot's angle/power) this
+   *  returns a finite set of candidate actions for bots/auto-play, while exact
+   *  human input is checked by the optional `validate` hook below. */
   legalActions(state: S, seat: Seat): A[];
+  /**
+   * Optional free-form validation for parameterized actions that can't be
+   * enumerated (the room uses this instead of legalActions equality when
+   * present). Returns true iff `action` is legal for `seat` in `state`.
+   */
+  validate?(state: S, seat: Seat, action: A): boolean;
   reduce(state: S, action: A, rng: SeededRng): ReduceResult<S, E>;
   isTerminal(state: S): boolean;
   score(state: S): SeatScore[];

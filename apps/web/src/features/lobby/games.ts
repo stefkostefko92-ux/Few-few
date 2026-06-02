@@ -32,6 +32,9 @@ export const GAME_CATALOG: GameCard[] = [
   { key: "DICE", title: "Покер на зарове", players: "1–4", ready: true, glyph: "⚄" },
   { key: "BINGO", title: "Бинго", players: "N", ready: true, glyph: "🔵" },
   { key: "WORDS", title: "Думи", players: "2+", ready: true, glyph: "✍" },
+  { key: "EIGHTBALL", title: "Билярд (8 топки)", players: "2", ready: true, bespoke: true, glyph: "🎱" },
+  { key: "NINEBALL", title: "Билярд (9 топки)", players: "2", ready: true, bespoke: true, glyph: "🎱" },
+  { key: "SNOOKER", title: "Снукър", players: "2", ready: true, bespoke: true, glyph: "🔴" },
 ];
 
 export const engineOf = (key: GameKey) => GAME_ENGINE[key];

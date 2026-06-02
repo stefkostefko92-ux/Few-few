@@ -22,11 +22,14 @@ export const GAME_KEYS = [
   "DICE",
   "BINGO",
   "WORDS",
+  "EIGHTBALL",
+  "NINEBALL",
+  "SNOOKER",
 ] as const;
 
 export type GameKey = (typeof GAME_KEYS)[number];
 
-/** The 6 reusable engine cores (section 7.2). */
+/** The reusable engine cores (section 7.2). */
 export const ENGINE_PATTERNS = [
   "trick",
   "betting",
@@ -34,6 +37,7 @@ export const ENGINE_PATTERNS = [
   "move-validation",
   "draw-discard",
   "grid-guess",
+  "cue-sport",
 ] as const;
 
 export type EnginePattern = (typeof ENGINE_PATTERNS)[number];
@@ -58,6 +62,9 @@ export const GAME_ENGINE: Record<GameKey, EnginePattern> = {
   BATTLESHIP: "grid-guess",
   BINGO: "grid-guess",
   WORDS: "grid-guess",
+  EIGHTBALL: "cue-sport",
+  NINEBALL: "cue-sport",
+  SNOOKER: "cue-sport",
 };
 
 /** Betting games carry the regulatory "social gaming, not real-money gambling" label (S11.4). */
@@ -83,6 +90,9 @@ export const GAME_SEATS: Record<GameKey, number> = {
   DICE: 2,
   BINGO: 4,
   WORDS: 2,
+  EIGHTBALL: 2,
+  NINEBALL: 2,
+  SNOOKER: 2,
 };
 
 export const seatsFor = (game: GameKey): number => GAME_SEATS[game];

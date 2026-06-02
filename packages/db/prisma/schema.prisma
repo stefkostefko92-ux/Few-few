@@ -342,4 +342,7 @@ enum GameKey {
   DICE
   BINGO
   WORDS
+  EIGHTBALL
+  NINEBALL
+  SNOOKER
 }

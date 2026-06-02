@@ -26,6 +26,7 @@ import { DiceView } from "./dice/DiceView";
 import { BingoView } from "./bingo/BingoView";
 import { WordsView } from "./words/WordsView";
 import { DominoView } from "./domino/DominoView";
+import { CueView } from "./cue-sports/CueView";
 import { GenericGameView } from "./generic/GenericGameView";
 
 type Tone = "warm" | "midnight" | "cool" | "default";
@@ -38,6 +39,9 @@ const TONE: Partial<Record<GameKey, Tone>> = {
   HOLDEM: "midnight",
   BATTLESHIP: "cool",
   GOFISH: "cool",
+  EIGHTBALL: "midnight",
+  NINEBALL: "midnight",
+  SNOOKER: "midnight",
 };
 
 function renderGame(gameKey: GameKey, title: string) {
@@ -78,6 +82,10 @@ function renderGame(gameKey: GameKey, title: string) {
       return <WordsView title={title} />;
     case "DOMINO":
       return <DominoView title={title} />;
+    case "EIGHTBALL":
+    case "NINEBALL":
+    case "SNOOKER":
+      return <CueView title={title} game={gameKey} />;
     default:
       return <GenericGameView title={title} game={gameKey} />;
   }

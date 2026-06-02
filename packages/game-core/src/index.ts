@@ -24,6 +24,9 @@ export * from "./engines/betting/holdem.js";
 export * from "./engines/grid-guess/battleship.js";
 export * from "./engines/grid-guess/bingo.js";
 export * from "./engines/grid-guess/words.js";
+// cue-sport (8-ball / 9-ball / snooker — physics + data types live in @aso/shared)
+export * from "./engines/cue-sports/racks.js";
+export * from "./engines/cue-sports/cue.js";
 // registry + bots
 export * from "./games/index.js";
 export * from "./bots/playout.js";

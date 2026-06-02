@@ -130,9 +130,14 @@ export class GameRoom {
     if (this.done) return;
     const seat = this.seatOf(userId);
     if (!seat) return;
-    const legals = this.engine.legalActions(this.state, seat.seat);
-    const target = stable(action);
-    if (!legals.some((l) => stable(l) === target)) {
+    // Free-form engines (e.g. cue sports) validate continuous actions directly;
+    // everyone else matches against the enumerated legal set.
+    const legal = this.engine.validate
+      ? this.engine.validate(this.state, seat.seat, action)
+      : this.engine
+          .legalActions(this.state, seat.seat)
+          .some((l) => stable(l) === stable(action));
+    if (!legal) {
       this.io.to(userRoom(userId)).emit(SOCKET_EVENTS.ERROR, {
         code: "illegal_action",
         message: "Illegal or out-of-turn action",

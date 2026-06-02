@@ -391,5 +391,13 @@
     "empty": "Posiziona il primo domino",
     "side": "Lato",
     "draw": "Pesca"
+  },
+  "cue": {
+    "power": "Potenza",
+    "shoot": "Tira",
+    "yourTurn": "Mira e tira",
+    "yourTurnBih": "Palla in mano — posiziona e tira",
+    "placeCue": "Posiziona la bianca",
+    "placeHint": "Clicca per posizionare la bianca"
   }
 }

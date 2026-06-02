@@ -18,6 +18,7 @@ import { holdemEngine } from "../engines/betting/holdem.js";
 import { battleshipEngine } from "../engines/grid-guess/battleship.js";
 import { bingoEngine } from "../engines/grid-guess/bingo.js";
 import { wordsEngine } from "../engines/grid-guess/words.js";
+import { eightBallEngine, nineBallEngine, snookerEngine } from "../engines/cue-sports/cue.js";
 
 /**
  * Type-erased engine handle for the realtime host's registry. The host knows
@@ -53,6 +54,10 @@ export const GAME_ENGINES: Partial<Record<GameKey, AnyEngine>> = {
   BATTLESHIP: e(battleshipEngine),
   BINGO: e(bingoEngine),
   WORDS: e(wordsEngine),
+  // cue-sport (deterministic physics, free-form shot validation)
+  EIGHTBALL: e(eightBallEngine),
+  NINEBALL: e(nineBallEngine),
+  SNOOKER: e(snookerEngine),
 };
 
 export function getEngine(key: GameKey): AnyEngine {

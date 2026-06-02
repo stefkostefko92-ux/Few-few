@@ -10,11 +10,17 @@ const SEATS: Record<string, number> = {
   SANTASE: 2, BELOTE: 4, KENT: 4, BRIDGE: 4,
   WAR: 2, GOFISH: 4, DOMINO: 4, RUMMY: 2,
   SVARA: 4, HOLDEM: 6, BATTLESHIP: 2, BINGO: 4, WORDS: 4,
+  EIGHTBALL: 2, NINEBALL: 2, SNOOKER: 2,
 };
 
+// Games that don't reliably reach a terminal state under uniform-random play
+// within a small budget (chess: see chess.test.ts; cue sports: clearing a table
+// by luck is astronomically unlikely). They run a bounded smoke playout only.
+const LIGHT = new Set(["CHESS", "EIGHTBALL", "NINEBALL", "SNOOKER"]);
+
 describe("engine registry", () => {
-  it("registers all 18 games", () => {
-    expect(Object.keys(GAME_ENGINES)).toHaveLength(18);
+  it("registers all 21 games", () => {
+    expect(Object.keys(GAME_ENGINES)).toHaveLength(21);
   });
 });
 
@@ -26,13 +32,14 @@ describe.each(Object.entries(GAME_ENGINES))("engine %s", (key, engine) => {
   // indefinitely without triggering chess.js draw flags within a step budget;
   // its termination + scoring are covered by chess.test.ts (Fool's mate). Every
   // other engine terminates under random play.
-  const expectsRandomTerminal = key !== "CHESS";
+  const expectsRandomTerminal = !LIGHT.has(key);
 
   it("reaches a terminal state and produces a consistent score", () => {
-    // Chess only runs the consistency checks on whatever terminates quickly; its
-    // termination is asserted in chess.test.ts. Other engines must terminate.
-    const games = key === "CHESS" ? 2 : 8;
-    const maxSteps = key === "CHESS" ? 2_000 : 200_000;
+    // LIGHT games only run consistency checks on whatever terminates quickly;
+    // their termination/scoring is covered by their own tests. Others must
+    // terminate under random play.
+    const games = LIGHT.has(key) ? 2 : 8;
+    const maxSteps = LIGHT.has(key) ? (key === "CHESS" ? 2_000 : 300) : 200_000;
     let anyTerminal = false;
     for (let g = 0; g < games; g++) {
       const { state, terminal } = playRandom(e, {
@@ -58,7 +65,8 @@ describe.each(Object.entries(GAME_ENGINES))("engine %s", (key, engine) => {
   it("every advertised legal action reduces without throwing", () => {
     const rng = new SeededRng(`${key}-validate`);
     let state = e.init({ seats }, rng);
-    for (let i = 0; i < 300 && !e.isTerminal(state); i++) {
+    const budget = LIGHT.has(key) ? 40 : 300;
+    for (let i = 0; i < budget && !e.isTerminal(state); i++) {
       // find the seat to act
       let acted = false;
       for (let seat = 0; seat < seats; seat++) {
@@ -76,8 +84,9 @@ describe.each(Object.entries(GAME_ENGINES))("engine %s", (key, engine) => {
   });
 
   it("is deterministic for identical seeds", () => {
-    const a = playRandom(e, { seed: `${key}-d`, botSeed: `${key}-db`, seats });
-    const b = playRandom(e, { seed: `${key}-d`, botSeed: `${key}-db`, seats });
+    const maxSteps = LIGHT.has(key) ? 150 : undefined;
+    const a = playRandom(e, { seed: `${key}-d`, botSeed: `${key}-db`, seats, maxSteps });
+    const b = playRandom(e, { seed: `${key}-d`, botSeed: `${key}-db`, seats, maxSteps });
     expect(a.state).toEqual(b.state);
     expect(a.steps).toBe(b.steps);
   });

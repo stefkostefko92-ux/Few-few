@@ -391,5 +391,13 @@
     "empty": "Place the first domino",
     "side": "Side",
     "draw": "Draw"
+  },
+  "cue": {
+    "power": "Power",
+    "shoot": "Shoot",
+    "yourTurn": "Aim and shoot",
+    "yourTurnBih": "Ball in hand — place and shoot",
+    "placeCue": "Place cue ball",
+    "placeHint": "Click to place the cue ball"
   }
 }
