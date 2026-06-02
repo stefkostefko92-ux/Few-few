@@ -175,9 +175,55 @@ document.getElementById('reset-stats').addEventListener('click', async () => {
   setTimeout(() => { hintEl.textContent = ''; }, 2500);
 });
 
-// Localize static document title/brand.
+/* ----------------------------- subscription ---------------------------- */
+
+const subEl = {
+  card: document.getElementById('sub'),
+  price: document.getElementById('sub-price'),
+  status: document.getElementById('sub-status'),
+  pay: document.getElementById('sub-pay'),
+  key: document.getElementById('sub-key'),
+  activate: document.getElementById('sub-activate'),
+  msg: document.getElementById('sub-msg'),
+  note: document.querySelector('.sub-note')
+};
+
+subEl.pay.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'OPEN_PAYMENT' }));
+subEl.activate.addEventListener('click', async () => {
+  const key = (subEl.key.value || '').trim();
+  if (!key) return;
+  subEl.msg.className = 'sub-msg';
+  subEl.msg.textContent = t('uiActivating');
+  const res = await chrome.runtime.sendMessage({ type: 'ACTIVATE_LICENSE', key });
+  if (res && res.ok) {
+    subEl.msg.className = 'sub-msg ok';
+    subEl.msg.textContent = t('uiActivated');
+  } else {
+    subEl.msg.className = 'sub-msg err';
+    subEl.msg.textContent = t(res && res.error === 'EXPIRED_KEY' ? 'uiKeyExpired' : 'uiKeyInvalid');
+  }
+  renderSubscription();
+});
+
+async function renderSubscription() {
+  const lic = await chrome.runtime.sendMessage({ type: 'GET_LICENSE' });
+  if (!lic || !lic.status) return;
+  if (lic.payment) subEl.price.textContent = '€' + lic.payment.priceEur;
+  subEl.note.textContent = t('subNote', [String(lic.payment ? lic.payment.trialDays : 3)]);
+  subEl.card.classList.toggle('expired', lic.status === 'expired');
+  if (lic.status === 'active') subEl.status.innerHTML = t('licActive', [String(lic.daysLeft)]);
+  else if (lic.status === 'trial') subEl.status.innerHTML = t('licTrial', [String(lic.daysLeft)]);
+  else if (lic.status === 'expired') subEl.status.innerHTML = '<b>' + t('licExpired') + '</b>';
+  else subEl.status.textContent = t('licChecking');
+}
+
+// Localize static document title/brand + placeholders.
 document.querySelectorAll('[data-i18n]').forEach((el) => {
   el.textContent = t(el.getAttribute('data-i18n'));
 });
+document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
+  el.placeholder = t(el.getAttribute('data-i18n-ph'));
+});
 
 load();
+renderSubscription();

@@ -9,10 +9,11 @@
 (function () {
   'use strict';
   const TB = window.TanothBot;
-  const { Storage, Bridge, Api, Scheduler, Logger, State, Stats, I18n, Panel } = TB;
+  const { Storage, Bridge, Api, Scheduler, Logger, State, Stats, I18n, Panel, License } = TB;
 
   async function boot() {
     await Storage.load();
+    await License.load();
     const settings = Storage.get();
 
     // Inject the page-world XML-RPC client and bring up the bridge.
@@ -48,6 +49,15 @@
     switch (msg?.type) {
       case 'HEARTBEAT':
         Scheduler.heartbeat();
+        License.load().then((lic) => {
+          // Stop automating the moment entitlement lapses.
+          if (!lic.entitled && Scheduler.isRunning()) Scheduler.stop(I18n.t('reasonLicenseLapsed'));
+        });
+        sendResponse({ ok: true });
+        return false;
+
+      case 'LICENSE_UPDATED':
+        License._set(msg.license);
         sendResponse({ ok: true });
         return false;
 

@@ -41,6 +41,20 @@
         <button class="tb-icon-btn" data-act="hide" title="${I18n.t('uiHide')}">×</button>
       </div>
       <div class="tb-body">
+        <div class="tb-license" data-el="license">
+          <span data-el="license-text"></span>
+          <a class="tb-link" data-act="subscribe">${I18n.t('uiSubscribe')}</a>
+        </div>
+        <div class="tb-paywall">
+          <h3>${I18n.t('paywallTitle')}</h3>
+          <p>${I18n.t('paywallBody')}</p>
+          <div class="tb-price" data-el="price">€4 / ${I18n.t('uiMonth')}</div>
+          <button class="tb-pay" data-act="pay">${I18n.t('uiPayRevolut')}</button>
+          <input class="tb-key" data-el="key" placeholder="${I18n.t('uiKeyPlaceholder')}" />
+          <button class="tb-activate" data-act="activate">${I18n.t('uiActivate')}</button>
+          <div class="tb-pay-msg" data-el="pay-msg"></div>
+          <a class="tb-link" data-act="paywall-close" style="cursor:pointer;font-size:11px">${I18n.t('uiClose')}</a>
+        </div>
         <div class="tb-controls">
           <button class="tb-btn tb-start" data-act="start">${I18n.t('uiStart')}</button>
           <button class="tb-btn tb-pause" data-act="pause" disabled>${I18n.t('uiPause')}</button>
@@ -72,6 +86,12 @@
     TB.Bridge.onContext(renderProto);
     renderProto(TB.Bridge.context());
     renderStatus(Scheduler.status());
+
+    TB.License.onChange(renderLicense);
+    renderLicense(TB.License.get());
+
+    // Live countdown / status refresh (adventure timer ticks down here).
+    setInterval(() => renderStatus(Scheduler.status()), 1000);
   }
 
   function onClick(ev) {
@@ -84,9 +104,45 @@
       case 'collapse': root.classList.toggle('tb-collapsed'); break;
       case 'hide': hide(); break;
       case 'options': chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' }).catch(() => chrome.runtime.openOptionsPage?.()); break;
+      case 'subscribe': Panel.showPaywall(); break;
+      case 'paywall-close': root.classList.remove('tb-show-paywall'); break;
+      case 'pay': TB.License.openPayment(); break;
+      case 'activate': doActivate(); break;
       default:
         if (act.startsWith('mod:')) toggleModule(act.slice(4));
     }
+  }
+
+  async function doActivate() {
+    const input = root.querySelector('[data-el="key"]');
+    const msg = root.querySelector('[data-el="pay-msg"]');
+    const key = (input.value || '').trim();
+    if (!key) return;
+    msg.className = 'tb-pay-msg';
+    msg.textContent = I18n.t('uiActivating');
+    const res = await TB.License.activate(key);
+    if (res && res.ok) {
+      msg.className = 'tb-pay-msg tb-ok';
+      msg.textContent = I18n.t('uiActivated');
+      setTimeout(() => root.classList.remove('tb-show-paywall'), 1200);
+    } else {
+      msg.className = 'tb-pay-msg tb-err';
+      msg.textContent = I18n.t(res && res.error === 'EXPIRED_KEY' ? 'uiKeyExpired' : 'uiKeyInvalid');
+    }
+  }
+
+  function renderLicense(lic) {
+    if (!root || !lic) return;
+    const bar = root.querySelector('[data-el="license"]');
+    const text = root.querySelector('[data-el="license-text"]');
+    const entitled = !!lic.entitled;
+    root.classList.toggle('tb-locked', !entitled);
+    if (!entitled) root.classList.add('tb-show-paywall');
+    bar.classList.toggle('tb-lic-expired', lic.status === 'expired');
+    if (lic.status === 'active') text.innerHTML = I18n.t('licActive', [String(lic.daysLeft)]);
+    else if (lic.status === 'trial') text.innerHTML = I18n.t('licTrial', [String(lic.daysLeft)]);
+    else if (lic.status === 'expired') text.innerHTML = `<b>${I18n.t('licExpired')}</b>`;
+    else text.textContent = I18n.t('licChecking');
   }
 
   function hide() {
@@ -144,12 +200,20 @@
     pauseBtn.textContent = st.paused ? I18n.t('uiResume') : I18n.t('uiPause');
 
     const status = root.querySelector('[data-el="status"]');
+    const returnAt = TB.State.get().adventureReturnAt || 0;
+    const waiting = returnAt > Date.now();
     if (!st.running) status.textContent = I18n.t('uiIdle');
     else if (st.onBreak) status.textContent = I18n.t('uiOnBreak');
     else if (st.paused) status.textContent = I18n.t('uiPaused');
-    else status.textContent = st.currentAction
-      ? I18n.t('uiRunningAction', [I18n.t('mod_' + st.currentAction)])
-      : I18n.t('uiRunning');
+    else if (st.currentAction) status.innerHTML = I18n.t('uiRunningAction', [I18n.t('mod_' + st.currentAction)]);
+    else if (waiting) status.innerHTML = I18n.t('uiNextIn', [`<b>${fmtDuration(returnAt - Date.now())}</b>`]);
+    else status.textContent = I18n.t('uiRunning');
+  }
+
+  function fmtDuration(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    const m = Math.floor(s / 60);
+    return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
   }
 
   function renderProto(p) {
@@ -200,5 +264,9 @@
     return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   }
 
-  TB.Panel = { mount: build, refreshModules: () => root && renderModules() };
+  TB.Panel = {
+    mount: build,
+    refreshModules: () => root && renderModules(),
+    showPaywall: () => { if (root) { root.style.display = ''; root.classList.add('tb-show-paywall'); } }
+  };
 })();

@@ -20,6 +20,7 @@
       <span id="status-text" data-i18n="uiIdle">Idle</span>
     </div>
     <div class="char" id="char"></div>
+    <div class="license" id="license"></div>
   </section>
 
   <div class="controls">
@@ -27,6 +28,14 @@
     <button id="btn-pause" class="btn pause" data-i18n="uiPause">Pause</button>
     <button id="btn-stop" class="btn stop" data-i18n="uiStop">Stop</button>
   </div>
+
+  <section id="subscribe" class="subscribe hidden">
+    <div class="price"><span id="price">€4</span> / <span data-i18n="uiMonth">month</span></div>
+    <button id="btn-pay" class="btn pay" data-i18n="uiPayRevolut">Pay with Revolut</button>
+    <input id="key" class="key" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
+    <button id="btn-activate" class="btn activate" data-i18n="uiActivate">Activate</button>
+    <div id="pay-msg" class="pay-msg"></div>
+  </section>
 
   <section class="stats" id="stats"></section>
 

@@ -4,6 +4,8 @@
  * Tanoth attributes are STR / DEX / CON / INT. With "mix" the cheapest
  * attribute is bought (best value), otherwise the chosen attribute is bought
  * while gold remains above the reserve and below the optional spend cap.
+ * Runs while the character is busy on an adventure so the daily loop and the
+ * gold-sink loop progress together.
  */
 (function () {
   'use strict';
@@ -12,10 +14,23 @@
 
   const MAP = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT' };
   let spent = 0;
+  let lastSkipLog = 0;
 
   function cfg() { return Storage.section('training') || {}; }
+
   function cheapest(costs) {
-    return Object.entries(costs).reduce((m, [k, v]) => (v < m[1] ? [k, v] : m), ['STR', Infinity])[0];
+    let best = null, min = Infinity;
+    for (const [k, v] of Object.entries(costs)) {
+      if (Number.isFinite(v) && v < min) { min = v; best = k; }
+    }
+    return best;
+  }
+
+  function noteSkip(key, subs) {
+    if (Date.now() - lastSkipLog > 60000) { // throttle skip messages
+      lastSkipLog = Date.now();
+      Logger.debug(I18n.t(key, subs));
+    }
   }
 
   Scheduler.register({
@@ -24,31 +39,35 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
-      if (State.get().adventureReturnAt <= Date.now()) {
-        // Defer to the adventure module while the character is free to act.
-        if ((Storage.section('adventures') || {}).enabled) return null;
-      }
 
       const st = State.get();
-      if (!Object.keys(st.attributeCosts || {}).length) {
-        return async () => { await Api.getUserAttributes(); };
+      // Refresh the cost table if we don't have valid numbers yet.
+      const costs = st.attributeCosts || {};
+      const haveCosts = Object.values(costs).some((v) => Number.isFinite(v));
+      if (!haveCosts) {
+        return async () => {
+          await Api.getUserAttributes();
+          await Api.miniUpdate(); // make sure gold is current too
+        };
       }
 
       const reserve = c.keepGoldReserve || 0;
-      const available = (st.gold || 0) - reserve;
-      if (available <= 0) return null;
-      if (c.maxGoldSpend && spent >= c.maxGoldSpend) return null;
+      const gold = Number(st.gold) || 0;
+      const available = gold - reserve;
+      if (available <= 0) { noteSkip('logTrainSkipReserve', [String(reserve)]); return null; }
+      if (c.maxGoldSpend && spent >= c.maxGoldSpend) { noteSkip('logTrainSkipCap'); return null; }
 
-      const stat = c.priorityStat === 'mix' ? cheapest(st.attributeCosts) : (MAP[c.priorityStat] || 'STR');
-      const cost = st.attributeCosts[stat];
-      if (cost == null || cost > available) return null;
+      const stat = c.priorityStat === 'mix' ? cheapest(costs) : (MAP[c.priorityStat] || 'STR');
+      const cost = costs[stat];
+      if (!Number.isFinite(cost)) return null;
+      if (cost > available) { noteSkip('logTrainSkipGold', [stat, String(cost)]); return null; }
 
       return async () => {
         Logger.info(I18n.t('logTrain', [stat, String(cost)]));
         await Api.raiseAttribute(stat);
         spent += cost;
         Stats.bump({ attributesRaised: 1 });
-        State.patch({ gold: (State.get().gold || 0) - cost });
+        State.patch({ gold: gold - cost });
         await Api.miniUpdate();
       };
     }

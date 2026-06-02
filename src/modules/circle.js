@@ -56,10 +56,12 @@
         const level = node[0];
         const base = node[5], increment = node[6], factor = node[7];
         const cost = Math.floor((base + level * increment) * factor);
+        if (!Number.isFinite(cost)) { Logger.debug('circle: bad cost', JSON.stringify(node)); return; }
 
         await Api.miniUpdate();
-        const gold = State.get().gold || 0;
+        const gold = Number(State.get().gold) || 0;
         if (gold - cost < (c.keepGoldReserve || 0)) {
+          Logger.debug(I18n.t('logCircleSkipGold', [String(cost)]));
           return; // not enough gold while keeping the reserve
         }
 

@@ -42,6 +42,7 @@
         post({ type: 'get-context' });
         break;
       case 'context':
+        injectReady = true; // context can only come from a live injector
         context = m.payload;
         contextListeners.forEach((fn) => { try { fn(context); } catch (_) {} });
         break;

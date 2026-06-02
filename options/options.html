@@ -17,7 +17,23 @@
       </div>
       <p class="hint" id="saved-hint"></p>
     </aside>
-    <main id="form"></main>
+    <main>
+      <section id="sub" class="sub-card">
+        <div class="sub-head">
+          <h2 data-i18n="subTitle">Subscription</h2>
+          <span class="sub-price"><span id="sub-price">€4</span> / <span data-i18n="uiMonth">month</span></span>
+        </div>
+        <div class="sub-status" id="sub-status"></div>
+        <button class="btn-pay" id="sub-pay" data-i18n="uiPayRevolut">Pay with Revolut</button>
+        <div class="sub-row" style="margin-top:14px">
+          <input id="sub-key" type="text" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
+          <button id="sub-activate" data-i18n="uiActivate">Activate</button>
+        </div>
+        <div class="sub-msg" id="sub-msg"></div>
+        <p class="sub-note" data-i18n="subNote"></p>
+      </section>
+      <div id="form"></div>
+    </main>
   </div>
   <script type="module" src="options.js"></script>
 </body>

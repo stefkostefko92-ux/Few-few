@@ -170,6 +170,10 @@
     }
   });
 
+  // Announce readiness FIRST so the content bridge marks the channel ready
+  // before any context (which can trigger auto-start) arrives.
+  post({ type: 'inject-ready' });
+
   // Keep trying to read flashvars — it may be set slightly after load.
   refreshContext();
   let tries = 0;
@@ -177,6 +181,4 @@
     refreshContext();
     if ((ctx.sessionId && ctx.url) || ++tries > 40) clearInterval(iv);
   }, 500);
-
-  post({ type: 'inject-ready' });
 })();

@@ -56,6 +56,18 @@
 
     start() {
       if (running) return;
+      // Subscription gate: trial or active license required.
+      if (TB.License && !TB.License.entitled()) {
+        Logger.error(I18n.t('logLicenseRequired'));
+        if (TB.Panel && TB.Panel.showPaywall) TB.Panel.showPaywall();
+        const g = Storage.section('general') || {};
+        if (g?.notifications) {
+          chrome.runtime.sendMessage({
+            type: 'NOTIFY', title: I18n.t('extName'), message: I18n.t('notifyLicenseRequired')
+          }).catch(() => {});
+        }
+        return;
+      }
       running = true;
       paused = false;
       consecutiveErrors = 0;

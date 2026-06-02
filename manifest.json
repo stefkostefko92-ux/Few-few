@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
   "icons": {
@@ -45,6 +45,7 @@
         "src/core/storage.js",
         "src/core/state.js",
         "src/core/stats.js",
+        "src/core/license.js",
         "src/core/bridge.js",
         "src/core/api.js",
         "src/core/scheduler.js",

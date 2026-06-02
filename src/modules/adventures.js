@@ -44,7 +44,14 @@
 
       return async () => {
         // GetAdventures both lists options and resolves a finished task.
+        const wasOnAdventure = State.get().taskType === 'adventure';
         const data = await Api.getAdventures();
+
+        if (wasOnAdventure && !data.taskRunning) {
+          State.patch({ taskType: null });
+          await Api.miniUpdate(); // refresh gold/bloodstones after the reward
+          Logger.success(I18n.t('logAdventureDone'));
+        }
 
         if (data.taskRunning) {
           // Something is already in progress; read its remaining time.

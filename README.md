@@ -9,6 +9,38 @@ with scheduling, statistics and six languages.
 > of Service and can lead to account penalties. Provided for educational
 > purposes; you are responsible for how you use it.
 
+## Subscription
+
+The bot is paid: **€4 / month**, paid via **Revolut**.
+
+- Every new install includes a **3-day free trial** — full functionality, no key.
+- After the trial, **Start** is locked until a license key is activated.
+- Pay with the in-app **Pay with Revolut** button (popup, options page, or the
+  in-game panel's paywall), then paste the license key you receive into the
+  **Activate** field.
+- A live badge shows trial/subscription days remaining; the bot stops
+  automatically if the subscription lapses.
+
+### For the seller (issuing keys)
+
+Keys are signed offline. Set your own values in `src/shared/payment.js`
+(`REVOLUT_PAYMENT_URL`, `LICENSE_SECRET`) and mint one key per paid month:
+
+```bash
+node tools/genkey.mjs 31      # 31-day key, prints e.g. TZ1.<payload>.<sig>
+```
+
+> The signing secret ships inside the extension, so offline verification is a
+> deterrent, not unbreakable DRM. For strong enforcement, move key validation
+> to a server and have the client call it (the `ACTIVATE_LICENSE` handler in
+> `src/background/service-worker.js` is the single place to swap in a fetch).
+
+### Look & feel
+
+The UI uses a **carbon-stealth palette** — matte carbon-black surfaces,
+graphite borders and a single restrained emerald accent — across the in-game
+panel, popup and options page.
+
 ---
 
 ## What it does (and why it works)
@@ -36,9 +68,12 @@ client does. The protocol was verified against the open-source
 ### Around the modules
 
 - **Priority scheduler** — one action in flight at a time with **humanized
-  delays** and optional active-hours window + random breaks.
+  delays** and optional active-hours window + random breaks. While an adventure
+  is running, training/circle keep spending gold and the panel shows a live
+  **countdown** to the next action.
 - **In-game overlay panel** — draggable/collapsible, with start/stop/pause, a
-  live activity log, session statistics and per-module quick toggles.
+  live activity log, session statistics, per-module quick toggles and the
+  subscription badge/paywall.
 - **Toolbar popup** — compact remote control + live status.
 - **Schema-driven options page** for every setting.
 - **Statistics** persisted across reloads (adventures, circle nodes, gold/XP,
@@ -83,19 +118,24 @@ icons/                          generated PNG icons
 _locales/<lang>/messages.json   en, es, pl, tr, pt, bg
 popup/                          toolbar popup
 options/                        schema-driven settings page
+tools/genkey.mjs                license key generator (seller side)
 src/
-  shared/defaults.js            settings schema + merge/migrate (ES module)
-  background/service-worker.js  install, messaging, notifications, heartbeat
+  shared/
+    defaults.js                 settings schema + merge/migrate (ES module)
+    payment.js                  price, trial, Revolut URL, signing secret
+  background/service-worker.js  install, messaging, notifications, heartbeat,
+                                trial + license verification (HMAC-SHA256)
   content/
     inject.js                   page-world XML-RPC client (reads flashvars,
                                 builds <methodCall>, POSTs, sniffs methods)
     content-script.js           orchestrator (boots everything)
   core/
     namespace.js i18n.js logger.js storage.js state.js stats.js
+    license.js                  content-side subscription gate
     bridge.js                   page<->content messaging + callXmlRpc
     api.js                      semantic Tanoth API + XML response parsing
-    scheduler.js                cooperative priority loop
-  ui/ panel.js panel.css        in-game overlay
+    scheduler.js                cooperative priority loop (license-gated start)
+  ui/ panel.js panel.css        in-game overlay (carbon-stealth theme)
   modules/
     adventures.js circle.js training.js autologin.js
 ```
