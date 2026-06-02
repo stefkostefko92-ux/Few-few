@@ -97,8 +97,12 @@ const CATEGORY_BASES: Record<string, string> = {
   shield: 'shield', helm: 'helm', armor: 'armor', gloves: 'gloves', boots: 'boots',
   ring: 'ring', amulet: 'amulet', potion: 'potion-red',
 };
-const TIERED_BASES = new Set(['sword', 'dagger', 'bow', 'staff', 'axe', 'mace',
-  'shield', 'helm', 'armor', 'gloves', 'boots', 'ring', 'amulet', 'gem']);
+/* Premium icons (game-icons.net / Lorc + Delapouite, CC-BY 3.0) ship a single
+   high-quality silhouette per type. We tint by rarity gradient rather than by
+   tier file, so the same shape paints common-steel → legendary-gold without
+   asset multiplication. Keep this set empty unless a per-tier authored
+   variant ships. */
+const TIERED_BASES = new Set<string>();
 
 export default function Sprite({
   name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className,

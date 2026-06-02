@@ -43,19 +43,24 @@ const FRAME_PALETTES: Record<string, { border: string; glow: string; pattern: st
   crown_eternal: { border: '#ffe88a', glow: 'rgba(255,232,138,.8)',        pattern: 'cosmic' },
 };
 
-function ClassGlyph({ glyph, color }: { glyph: string; color: string }): React.ReactElement {
-  // Single-path simplified class silhouettes for avatar display.
-  if (glyph === 'warrior') {
-    return <path d="M14 28a12 12 0 0 1 24 0v10h-4v-5h-4v5H18v-5h-4z M22 8 L26 5 L30 8 L26 11 Z" fill={color} />;
-  }
-  if (glyph === 'ranger') {
-    return <path d="M12 8c0 9 1 17 11 18-3 3-8 8-9 17h3c2-7 6-12 9-15l15 17h3v-3L34 26c-3-3-8-9-8-16h-3c0 6 3 10 6 12-3 1-8 3-17-14z" fill={color} />;
-  }
-  if (glyph === 'mage') {
-    return <path d="M26 4L18 22h6L18 40l16-22h-6L34 4z M34 12 a2 2 0 1 1 0 4 a2 2 0 0 1 0-4z" fill={color} />;
-  }
-  // rogue
-  return <path d="M16 6c0-2 3-3 8-3s8 1 8 3l-1 11c0 3-3 6-7 6s-7-3-7-6zm-1 22l9 3 9-3-2 13-7 5-7-5z" fill={color} />;
+/** Premium class silhouette — painted from the matching game-icons.net
+ *  SVG (CC-BY 3.0, see /public/sprites/CREDITS.md) via CSS mask so the
+ *  glyph picks up the avatar's class-themed colour. */
+function ClassGlyph({ glyph, color, size }: { glyph: string; color: string; size: number }): React.ReactElement {
+  return (
+    <span
+      aria-hidden
+      style={{
+        display: 'block',
+        width: Math.round(size * 0.78),
+        height: Math.round(size * 0.78),
+        background: `linear-gradient(160deg, ${color} 0%, ${color} 35%, color-mix(in srgb, ${color} 55%, #1a1408) 100%)`,
+        WebkitMask: `url(/sprites/class-${glyph}.svg) center/contain no-repeat`,
+        mask: `url(/sprites/class-${glyph}.svg) center/contain no-repeat`,
+        filter: `drop-shadow(0 1px 0 rgba(0,0,0,.55)) drop-shadow(0 0 6px color-mix(in srgb, ${color} 40%, transparent))`,
+      }}
+    />
+  );
 }
 
 export default function Avatar({ avatar, frame, size = 80, ring = true }: Props): React.ReactElement {
@@ -137,9 +142,9 @@ export default function Avatar({ avatar, frame, size = 80, ring = true }: Props)
         />
       )}
 
-      <svg viewBox="0 0 48 48" width="80%" height="80%" style={{ position: 'relative', zIndex: 2 }}>
-        <ClassGlyph glyph={a.glyph} color={a.fg} />
-      </svg>
+      <div style={{ position: 'relative', zIndex: 2, display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}>
+        <ClassGlyph glyph={a.glyph} color={a.fg} size={size} />
+      </div>
     </div>
   );
 }

@@ -1496,3 +1496,225 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 @media (prefers-reduced-motion: reduce) {
   .page-backdrop img { animation: none !important; }
 }
+
+/* =========================================================================
+   REALM MAP — Carta Marina (1539) + wax-seal region pins.
+   Image sources catalogued in /public/assets/map/CREDITS.md.
+   ========================================================================= */
+.realm-map .realm-map-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #1a1208;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, .65),
+    inset 0 0 0 1px rgba(214, 161, 61, .25),
+    inset 0 0 80px rgba(0, 0, 0, .55);
+  isolation: isolate;
+}
+.realm-map-bg {
+  position: absolute;
+  inset: -2%;
+  width: 104%;
+  height: 104%;
+  object-fit: cover;
+  object-position: center;
+  filter: sepia(.25) saturate(.85) brightness(.92) contrast(1.08);
+  z-index: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: realm-map-drift 56s ease-in-out infinite alternate;
+}
+@keyframes realm-map-drift {
+  0%   { transform: scale(1.02) translate(0, 0); }
+  100% { transform: scale(1.06) translate(-1%, -.7%); }
+}
+.realm-map-tint {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255, 200, 100, .08), transparent 70%),
+    linear-gradient(180deg, rgba(20, 12, 6, .35) 0%, rgba(10, 6, 3, .65) 100%);
+}
+.realm-map-vignette {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  box-shadow: inset 0 0 140px 30px rgba(0, 0, 0, .85);
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, .55) 100%);
+}
+
+/* Ornate corner flourishes — pure CSS, no asset. */
+.realm-corner {
+  position: absolute; width: 60px; height: 60px; z-index: 4; pointer-events: none;
+  border: 2px solid rgba(214, 161, 61, .60);
+  filter: drop-shadow(0 0 8px rgba(214, 161, 61, .35));
+}
+.realm-corner.tl { top: 10px; left: 10px;  border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+.realm-corner.tr { top: 10px; right: 10px; border-left: none;  border-bottom: none; border-top-right-radius: 8px; }
+.realm-corner.bl { bottom: 10px; left: 10px;  border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+.realm-corner.br { bottom: 10px; right: 10px; border-left: none;  border-top: none; border-bottom-right-radius: 8px; }
+.realm-corner::before {
+  content: ''; position: absolute; width: 10px; height: 10px;
+  border: 2px solid rgba(214, 161, 61, .85);
+  background: radial-gradient(circle at center, #ffd34d, #b87a18);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255, 211, 77, .8);
+}
+.realm-corner.tl::before { top: -8px; left: -8px; }
+.realm-corner.tr::before { top: -8px; right: -8px; }
+.realm-corner.bl::before { bottom: -8px; left: -8px; }
+.realm-corner.br::before { bottom: -8px; right: -8px; }
+
+/* Cantino windrose, framed as an embedded compass. */
+.realm-compass {
+  position: absolute;
+  right: 26px; bottom: 26px;
+  width: clamp(80px, 12%, 130px); height: clamp(80px, 12%, 130px);
+  object-fit: contain;
+  z-index: 5;
+  pointer-events: none;
+  filter:
+    sepia(.2) brightness(1.05) contrast(1.1)
+    drop-shadow(0 0 14px rgba(214, 161, 61, .55))
+    drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: realm-compass-spin 240s linear infinite;
+}
+@keyframes realm-compass-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Region pin — wax-sealed brass medallion + popover card on hover. */
+.realm-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  cursor: default;
+}
+.realm-pin-seal {
+  position: relative;
+  width: 38px; height: 38px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, #ffefa8, #d6a13d 60%, #7a4f12 100%);
+  border: 2px solid rgba(40, 22, 8, .85);
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, .35),
+    0 0 18px var(--pin-color, #ffd34d),
+    0 6px 14px rgba(0, 0, 0, .6),
+    inset 0 -3px 6px rgba(0, 0, 0, .4),
+    inset 0 3px 6px rgba(255, 255, 255, .25);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: #2a1a08;
+  letter-spacing: .02em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .35);
+  transition: transform .25s cubic-bezier(.2, .9, .25, 1), filter .25s;
+  will-change: transform;
+}
+.realm-pin-seal::after {
+  /* Wax dribble. */
+  content: '';
+  position: absolute;
+  left: 50%; top: 70%;
+  transform: translate(-50%, 0) rotate(-6deg);
+  width: 5px; height: 14px;
+  background: radial-gradient(ellipse at 50% 0, #ffd34d, #7a3408 90%);
+  border-radius: 50% 50% 50% 50% / 30% 30% 60% 60%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, .5);
+  z-index: -1;
+}
+.realm-pin.locked .realm-pin-seal {
+  filter: grayscale(.8) brightness(.55);
+}
+.realm-pin:hover .realm-pin-seal {
+  transform: scale(1.18);
+  filter: brightness(1.1);
+}
+
+.realm-pin-card {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 14px);
+  transform: translate(-50%, 6px);
+  width: 220px;
+  padding: 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(40, 26, 12, .96), rgba(22, 14, 6, .98));
+  border: 1px solid var(--pin-color, #ffd34d);
+  border-radius: 10px;
+  color: #f4e4ba;
+  box-shadow:
+    0 0 22px color-mix(in srgb, var(--pin-color, #ffd34d) 30%, transparent),
+    0 18px 36px rgba(0, 0, 0, .75);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s, transform .22s cubic-bezier(.2, .9, .25, 1);
+  z-index: 7;
+}
+.realm-pin-card::before {
+  /* Speech-bubble notch. */
+  content: '';
+  position: absolute;
+  left: 50%; top: -7px;
+  transform: translate(-50%, 0) rotate(45deg);
+  width: 12px; height: 12px;
+  background: linear-gradient(135deg, rgba(40, 26, 12, .96), rgba(22, 14, 6, .98));
+  border-left: 1px solid var(--pin-color, #ffd34d);
+  border-top: 1px solid var(--pin-color, #ffd34d);
+}
+.realm-pin:hover .realm-pin-card {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.realm-pin-name {
+  display: block;
+  font-family: var(--font-display);
+  color: var(--gold-1);
+  font-size: 14px;
+  letter-spacing: .03em;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--pin-color, #ffd34d) 30%, transparent);
+}
+.realm-pin-meta {
+  font-size: 11px;
+  color: rgba(255, 232, 138, .65);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-top: 2px;
+}
+.realm-pin-lore {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255, 232, 200, .75);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.realm-pin-cta {
+  margin-top: 10px;
+  width: 100%;
+  text-align: center;
+  display: block;
+}
+.realm-pin-cta.locked {
+  color: rgba(214, 161, 61, .55);
+  border: 1px solid rgba(214, 161, 61, .3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  background: transparent;
+}
+
+@media (max-width: 800px) {
+  .realm-pin-seal { width: 30px; height: 30px; font-size: 11px; }
+  .realm-pin-card { width: 180px; }
+  .realm-compass { width: 70px; height: 70px; right: 12px; bottom: 12px; }
+  .realm-corner { width: 36px; height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .realm-map-bg, .realm-compass { animation: none !important; }
+}
