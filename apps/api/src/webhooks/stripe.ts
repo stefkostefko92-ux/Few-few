@@ -129,11 +129,22 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         await prisma.$transaction((tx) => markProcessed(tx, event));
         return;
       }
-      const periodEnd = new Date(subscriptionPeriodEnd(sub) * 1000);
+      const periodEndSec = subscriptionPeriodEnd(sub);
+      if (periodEndSec === null) {
+        // Fail closed: don't fabricate a period (would silently extend VIP).
+        // Throwing leaves the event unprocessed so Stripe retries / alerts.
+        throw new Error("invoice.paid: could not resolve subscription period end");
+      }
+      const periodEnd = new Date(periodEndSec * 1000);
+      // The monthly gem stipend is granted only for real new-period invoices —
+      // NOT for proration/upgrade invoices (billing_reason subscription_update),
+      // so churning tiers via the portal can't farm gems.
+      const cyclic =
+        invoice.billing_reason === "subscription_create" ||
+        invoice.billing_reason === "subscription_cycle";
       await prisma.$transaction(async (tx) => {
         await applyVip(tx, userId, tier, periodEnd);
-        // Each paid invoice (incl. the first) credits the tier's gem stipend.
-        await grantVipStipend(tx, userId, VIP_PERKS[tier].monthlyGems);
+        if (cyclic) await grantVipStipend(tx, userId, VIP_PERKS[tier].monthlyGems);
         await tx.subscription.upsert({
           where: { userId },
           create: {
@@ -162,14 +173,25 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         await prisma.$transaction((tx) => markProcessed(tx, event));
         return;
       }
-      const active = sub.status === "active" || sub.status === "trialing";
+      // Keep VIP through a payment-retry grace (past_due); only strip it on a
+      // terminal status. This avoids event-ordering races stripping a paid,
+      // still-valid period.
+      const terminal =
+        sub.status === "canceled" ||
+        sub.status === "unpaid" ||
+        sub.status === "incomplete_expired";
+      const periodEndSec = subscriptionPeriodEnd(sub);
       await prisma.$transaction(async (tx) => {
-        if (!active) {
+        if (terminal) {
           await clearVip(tx, userId);
         }
         await tx.subscription.updateMany({
           where: { userId },
-          data: { status: sub.status, currentPeriodEnd: new Date(subscriptionPeriodEnd(sub) * 1000) },
+          data: {
+            status: sub.status,
+            // Don't overwrite the stored period with a fabricated value.
+            ...(periodEndSec !== null ? { currentPeriodEnd: new Date(periodEndSec * 1000) } : {}),
+          },
         });
         await markProcessed(tx, event);
       });

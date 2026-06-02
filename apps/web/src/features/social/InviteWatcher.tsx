@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SOCKET_EVENTS, type InviteReceivedMsg, type MatchFoundMsg } from "@aso/shared";
@@ -19,18 +19,28 @@ export function InviteWatcher() {
   const location = useLocation();
   const [invites, setInvites] = useState<InviteReceivedMsg[]>([]);
 
+  // Read the current path from a ref so the socket listeners can bind ONCE for
+  // the component's lifetime — re-subscribing on every navigation would drop
+  // invites/match events during route transitions.
+  const pathRef = useRef(location.pathname);
+  pathRef.current = location.pathname;
+
   useEffect(() => {
     const socket = getSocket();
 
     const onFound = (m: MatchFoundMsg) => {
-      useMatchStore.getState().setMatch({
-        matchId: m.matchId,
-        seat: m.seat,
-        players: m.players,
-        game: m.game,
-      });
+      // Sole owner of MATCH_FOUND→store/navigation. Idempotent: only act on a
+      // new match (useMatch adopts the store on the game page).
+      if (useMatchStore.getState().matchId !== m.matchId) {
+        useMatchStore.getState().setMatch({
+          matchId: m.matchId,
+          seat: m.seat,
+          players: m.players,
+          game: m.game,
+        });
+      }
       const path = `/play/${m.game.toLowerCase()}`;
-      if (location.pathname !== path) navigate(path);
+      if (pathRef.current !== path) navigate(path);
     };
     const onInvite = (msg: InviteReceivedMsg) => {
       setInvites((prev) => (prev.some((i) => i.fromUserId === msg.fromUserId) ? prev : [...prev, msg]));
@@ -42,7 +52,7 @@ export function InviteWatcher() {
       socket.off(SOCKET_EVENTS.MATCH_FOUND, onFound);
       socket.off(SOCKET_EVENTS.INVITE_RECEIVED, onInvite);
     };
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   function accept(inv: InviteReceivedMsg) {
     getSocket().emit(SOCKET_EVENTS.INVITE_ACCEPT, { fromUserId: inv.fromUserId, game: inv.game });

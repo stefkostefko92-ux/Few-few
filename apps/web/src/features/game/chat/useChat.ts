@@ -4,8 +4,14 @@ import { getSocket } from "../../../lib/socket";
 
 const MAX_KEPT = 60; // ring buffer; older lines fall off
 
+/** A chat line with a stable client-side id (for React keys; the ring buffer
+ *  shifts indices, so index keys would mis-reconcile). */
+export interface ChatLine extends ChatMessageMsg {
+  cid: number;
+}
+
 export interface ChatHandle {
-  messages: ChatMessageMsg[];
+  messages: ChatLine[];
   send: (text: string) => void;
   muted: Set<number>;
   toggleMute: (seat: number) => void;
@@ -17,11 +23,12 @@ export interface ChatHandle {
  * capped, append-only list plus a send helper.
  */
 export function useChat(matchId: string | null): ChatHandle {
-  const [messages, setMessages] = useState<ChatMessageMsg[]>([]);
+  const [messages, setMessages] = useState<ChatLine[]>([]);
   const [muted, setMuted] = useState<Set<number>>(new Set());
   // Keep mute set current inside the socket handler without re-subscribing.
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
+  const seqRef = useRef(0);
 
   useEffect(() => {
     setMessages([]);
@@ -32,7 +39,7 @@ export function useChat(matchId: string | null): ChatHandle {
       if (msg.matchId !== matchId) return;
       if (mutedRef.current.has(msg.seat)) return;
       setMessages((prev) => {
-        const next = [...prev, msg];
+        const next = [...prev, { ...msg, cid: seqRef.current++ }];
         return next.length > MAX_KEPT ? next.slice(next.length - MAX_KEPT) : next;
       });
     };

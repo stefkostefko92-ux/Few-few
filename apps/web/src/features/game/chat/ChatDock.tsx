@@ -108,10 +108,10 @@ export function ChatDock() {
             {messages.length === 0 ? (
               <p className="m-auto text-center text-xs text-ink-muted">{t("chat.empty")}</p>
             ) : (
-              messages.map((m, i) => {
+              messages.map((m) => {
                 const mine = m.seat === mySeat;
                 return (
-                  <div key={i} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
+                  <div key={m.cid} className={`flex flex-col ${mine ? "items-end" : "items-start"}`}>
                     {!mine ? (
                       <span className="px-1 text-[10px] text-ink-muted">{m.displayName}</span>
                     ) : null}

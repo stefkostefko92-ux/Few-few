@@ -49,6 +49,7 @@ export class GameRoom {
   private readonly rng: SeededRng;
   private state: unknown;
   private done = false;
+  private botLoopRunning = false;
 
   // Live-play resilience (§8.3): per-turn clock + disconnect tracking.
   private readonly fallbackBot: RandomBot;
@@ -198,6 +199,9 @@ export class GameRoom {
         this.graceTimers.delete(userId);
       }
       this.emitPresence(seat.seat, true);
+      // If they dropped on their own turn, the clock was shortened to ~3s; give
+      // the returning player a full turn again before catching them up.
+      if (this.currentSeat()?.seat === seat.seat) this.armTurnTimer();
       this.sendStateTo(seat); // catch them up
       return;
     }
@@ -249,17 +253,28 @@ export class GameRoom {
     }
   }
 
-  /** Drive consecutive bot turns until a human must act or the game ends. */
+  /** Drive consecutive bot turns until a human must act or the game ends.
+   *  Guarded so only one loop runs at a time (re-entrancy from action/timeout
+   *  call sites would otherwise apply a move computed against stale state). */
   private async runBots(): Promise<void> {
-    while (!this.done && !this.engine.isTerminal(this.state)) {
-      const seat = this.currentSeat();
-      if (!seat || !seat.isBot || !seat.bot) break;
-      const action = seat.bot.pick(this.engine, this.state, seat.seat);
-      if (action === null) break;
-      // Small delay so the client can animate the bot's move naturally.
-      await new Promise((r) => setTimeout(r, 350));
-      if (this.done) break;
-      this.applyReduce(action);
+    if (this.botLoopRunning) return;
+    this.botLoopRunning = true;
+    try {
+      while (!this.done && !this.engine.isTerminal(this.state)) {
+        const seat = this.currentSeat();
+        if (!seat || !seat.isBot || !seat.bot) break;
+        const action = seat.bot.pick(this.engine, this.state, seat.seat);
+        if (action === null) break;
+        // Small delay so the client can animate the bot's move naturally.
+        await new Promise((r) => setTimeout(r, 350));
+        if (this.done) break;
+        // Re-validate after the await: only apply if it's still this bot's turn.
+        const now = this.currentSeat();
+        if (!now || now.seat !== seat.seat) continue;
+        this.applyReduce(action);
+      }
+    } finally {
+      this.botLoopRunning = false;
     }
   }
 
@@ -300,8 +315,10 @@ export class GameRoom {
         score,
         ratingDeltas,
       });
-      // Advance quests + leaderboards (S6). Fire-and-forget.
+      // Advance quests + leaderboards (S6). Fire-and-forget. matchId lets the
+      // API make progression idempotent per (match, user).
       void notifyMatchResult({
+        matchId: this.matchId,
         userId: s.userId,
         game: this.game,
         won: resultBySeat.get(s.seat) === "win",

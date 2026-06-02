@@ -29,15 +29,19 @@ export async function claimDaily(userId: string): Promise<{
   gems: number;
 }> {
   const today = dayKey();
-  const markerKey = `daily:${userId}`;
   const streakKey = `daily:streak:${userId}`;
-  const last = await redis.get(markerKey);
-  if (last === today) {
+  const lastKey = `daily:last:${userId}`;
+
+  // Atomic claim: only the first request for today's key wins, so concurrent
+  // POSTs can't double-credit. SET NX returns null if the key already existed.
+  const won = await redis.set(`daily:claim:${userId}:${today}`, "1", "EX", 60 * 60 * 48, "NX");
+  if (won === null) {
     const streak = Number((await redis.get(streakKey)) ?? 1);
     return { claimed: false, streak, chips: 0, gems: 0 };
   }
 
   const yesterday = dayKey(new Date(Date.now() - 86_400_000));
+  const last = await redis.get(lastKey);
   const prevStreak = Number((await redis.get(streakKey)) ?? 0);
   const streak = last === yesterday ? Math.min(prevStreak + 1, 7) : 1;
 
@@ -46,8 +50,9 @@ export async function claimDaily(userId: string): Promise<{
     where: { id: userId },
     data: { chips: { increment: BigInt(reward.chips) }, gems: { increment: reward.gems } },
   });
-  await redis.set(markerKey, today, "EX", 60 * 60 * 48);
-  await redis.set(streakKey, String(streak), "EX", 60 * 60 * 48);
+  const week = 60 * 60 * 24 * 8;
+  await redis.set(lastKey, today, "EX", week);
+  await redis.set(streakKey, String(streak), "EX", week);
   return { claimed: true, streak, ...reward };
 }
 
@@ -61,14 +66,13 @@ export async function ensureQuests(userId: string): Promise<QuestView[]> {
   const views: QuestView[] = [];
   for (const def of defs) {
     const period = periodKey(def.period);
-    const existing = await prisma.quest.findFirst({
-      where: { userId, key: def.key, period },
+    // Upsert against the unique (userId,key,period) so concurrent callers can't
+    // create duplicate quest rows.
+    const row = await prisma.quest.upsert({
+      where: { userId_key_period: { userId, key: def.key, period } },
+      create: { userId, key: def.key, period, progress: 0, target: def.target },
+      update: {},
     });
-    const row =
-      existing ??
-      (await prisma.quest.create({
-        data: { userId, key: def.key, period, progress: 0, target: def.target },
-      }));
     views.push({
       key: def.key,
       period: def.period,
@@ -89,13 +93,24 @@ export async function ensureQuests(userId: string): Promise<QuestView[]> {
  * per-game leaderboard ZSET with the new rating.
  */
 export async function recordMatchResult(opts: {
+  matchId: string;
   userId: string;
   game: GameKey;
   won: boolean;
   rating: number;
   displayName: string;
 }): Promise<void> {
-  const { userId, game, won, rating } = opts;
+  const { matchId, userId, game, won, rating } = opts;
+
+  // Idempotency: process each (match, user) exactly once. A retry or a double
+  // finish must not re-advance quests/streaks/achievements. SETNX returns null
+  // if the key already existed.
+  try {
+    const first = await redis.set(`progression:done:${matchId}:${userId}`, "1", "EX", 60 * 60 * 24 * 3, "NX");
+    if (first === null) return;
+  } catch {
+    /* if Redis is down, proceed (best-effort) rather than drop progression */
+  }
 
   // Update leaderboard ZSET (rating as score).
   await redis.zadd(leaderboardKey(game), rating, userId);
@@ -179,16 +194,21 @@ async function evaluateAchievements(userId: string, _game: GameKey, won: boolean
   for (const def of ACHIEVEMENT_DEFS) {
     if (have.has(def.key) || !achievementMet(def, stats)) continue;
     try {
-      await prisma.achievement.create({ data: { userId, key: def.key } });
+      // Unlock, gem grant, and notification are one atomic unit; the unique
+      // (userId,key) makes the whole thing idempotent (a re-run throws on
+      // create and rolls back, so gems are never double-granted).
+      await prisma.$transaction(async (tx) => {
+        await tx.achievement.create({ data: { userId, key: def.key } });
+        if (def.rewardGems > 0) {
+          await tx.user.update({ where: { id: userId }, data: { gems: { increment: def.rewardGems } } });
+        }
+        await tx.notification.create({
+          data: { userId, type: "achievement", data: JSON.stringify({ key: def.key, title: def.title }) },
+        });
+      });
     } catch {
       continue; // unique race — already unlocked
     }
-    if (def.rewardGems > 0) {
-      await prisma.user.update({ where: { id: userId }, data: { gems: { increment: def.rewardGems } } });
-    }
-    await prisma.notification.create({
-      data: { userId, type: "achievement", data: JSON.stringify({ key: def.key, title: def.title }) },
-    });
   }
 }
 

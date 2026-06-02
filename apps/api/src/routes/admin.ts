@@ -51,7 +51,7 @@ adminRouter.get(
   "/stats",
   asyncHandler(async (_req, res) => {
     const since = startOfToday();
-    const [users, banned, newToday, openFlags, matchesToday, vipGroups, completed, audits] =
+    const [users, banned, newToday, openFlags, matchesToday, vipGroups, byProduct, products, audits] =
       await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { banned: true } }),
@@ -59,11 +59,20 @@ adminRouter.get(
         prisma.collusionFlag.count({ where: { status: "OPEN" } }),
         prisma.match.count({ where: { startedAt: { gte: since } } }),
         prisma.user.groupBy({ by: ["vipTier"], _count: { _all: true } }),
-        prisma.purchase.findMany({ where: { status: "completed" }, select: { product: { select: { priceCents: true } } } }),
+        // Aggregate completed purchases by product (O(products)) instead of
+        // loading every purchase row into memory.
+        prisma.purchase.groupBy({ by: ["productId"], where: { status: "completed" }, _count: { _all: true } }),
+        prisma.product.findMany({ select: { id: true, priceCents: true } }),
         prisma.adminAudit.findMany({ orderBy: { createdAt: "desc" }, take: 12 }),
       ]);
 
-    const revenueCents = completed.reduce((s, p) => s + (p.product?.priceCents ?? 0), 0);
+    const priceById = new Map(products.map((p) => [p.id, p.priceCents]));
+    let revenueCents = 0;
+    let purchases = 0;
+    for (const g of byProduct) {
+      revenueCents += (priceById.get(g.productId) ?? 0) * g._count._all;
+      purchases += g._count._all;
+    }
     const vip: Record<string, number> = {};
     for (const g of vipGroups) vip[g.vipTier] = g._count._all;
 
@@ -73,7 +82,7 @@ adminRouter.get(
       newToday,
       openFlags,
       matchesToday,
-      purchases: completed.length,
+      purchases,
       revenueCents,
       vip,
       audits,
@@ -160,8 +169,16 @@ adminRouter.patch(
     if (input.role) data.role = input.role;
     if (input.vipTier) data.vipTier = input.vipTier;
     if (typeof input.banned === "boolean") data.banned = input.banned;
-    if (input.grantChips) data.chips = { increment: BigInt(input.grantChips) };
-    if (input.grantGems) data.gems = { increment: input.grantGems };
+    // Grants set a clamped absolute value (never below 0) computed from the
+    // current balance, so a negative grant can't drive the economy negative.
+    if (typeof input.grantChips === "number" && input.grantChips !== 0) {
+      const next = target.chips + BigInt(input.grantChips);
+      data.chips = next < 0n ? 0n : next;
+    }
+    if (typeof input.grantGems === "number" && input.grantGems !== 0) {
+      const next = target.gems + input.grantGems;
+      data.gems = next < 0 ? 0 : next;
+    }
 
     if (Object.keys(data).length === 0) throw badRequest("noop", "Няма промени");
 

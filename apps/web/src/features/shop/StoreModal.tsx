@@ -24,14 +24,18 @@ export function StoreModal() {
   const [products, setProducts] = useState<ProductView[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!open || products.length) return;
+    setLoading(true);
+    setError(null);
     api
       .catalog()
       .then((c) => setProducts(c.products))
-      .catch(() => undefined);
-  }, [open, products.length]);
+      .catch(() => setError(t("shop.error")))
+      .finally(() => setLoading(false));
+  }, [open, products.length, t]);
 
   async function buy(sku: string) {
     setBusy(sku);
@@ -70,6 +74,10 @@ export function StoreModal() {
         <p role="alert" className="mb-3 rounded-card bg-loss/10 px-3 py-2 text-sm text-loss">
           {error}
         </p>
+      ) : null}
+
+      {loading && products.length === 0 ? (
+        <p className="py-6 text-center text-sm text-ink-muted">{t("common.loading")}</p>
       ) : null}
 
       <Section label={`🪙 ${t("shop.kind.CHIP_PACK")}`} items={chips} busy={busy} onBuy={buy} t={t} />

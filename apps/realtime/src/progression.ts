@@ -7,6 +7,7 @@ import { logger } from "./logger.js";
  * here must never block the game-over broadcast.
  */
 export async function notifyMatchResult(input: {
+  matchId: string;
   userId: string;
   game: string;
   won: boolean;

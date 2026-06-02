@@ -22,10 +22,34 @@ export function NotificationsBell() {
       .catch(() => undefined);
   }, []);
 
+  // Poll only while the tab is visible (saves server load + battery on idle
+  // backgrounded tabs); refresh immediately when the tab regains focus.
   useEffect(() => {
+    let id: ReturnType<typeof setInterval> | undefined;
+    const start = () => {
+      if (id === undefined) id = setInterval(refresh, POLL_MS);
+    };
+    const stop = () => {
+      if (id !== undefined) {
+        clearInterval(id);
+        id = undefined;
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        stop();
+      } else {
+        refresh();
+        start();
+      }
+    };
     refresh();
-    const id = setInterval(refresh, POLL_MS);
-    return () => clearInterval(id);
+    if (document.visibilityState === "visible") start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [refresh]);
 
   // Close on outside click.

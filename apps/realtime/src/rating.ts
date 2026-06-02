@@ -64,6 +64,15 @@ export async function finalizeMatch(opts: {
   for (const s of seats) deltas[s.seat] = 0;
 
   await prisma.$transaction(async (tx) => {
+    // Idempotency: atomically claim the match by stamping endedAt only if it
+    // was still open. A second finalize (process restart, race, retry) finds
+    // count 0 and awards nothing — no double chips/XP/MMR.
+    const claimed = await tx.match.updateMany({
+      where: { id: matchId, endedAt: null },
+      data: { endedAt: new Date() },
+    });
+    if (claimed.count !== 1) return;
+
     for (const seat of seats) {
       if (seat.isBot || !seat.userId) continue;
       const result = resultBySeat.get(seat.seat);
@@ -80,9 +89,8 @@ export async function finalizeMatch(opts: {
       const k = kFactor(current.games);
       const delta = Math.round(k * (numericResult(result) - expectedScore(myMmr, oppAvg)));
       deltas[seat.seat] = delta;
-      newRatings[seat.seat] = current.mmr + delta;
 
-      await tx.ratingPerGame.upsert({
+      const updated = await tx.ratingPerGame.upsert({
         where: { userId_game: { userId, game } },
         create: {
           userId,
@@ -97,6 +105,9 @@ export async function finalizeMatch(opts: {
           wins: { increment: result === "win" ? 1 : 0 },
         },
       });
+      // Use the authoritative post-write mmr for the leaderboard, not a
+      // pre-read snapshot (correct under concurrent updates).
+      newRatings[seat.seat] = updated.mmr;
 
       const reward = rewards(result);
       await tx.matchPlayer.create({
@@ -114,8 +125,6 @@ export async function finalizeMatch(opts: {
         data: { chips: { increment: reward.chips }, xp: { increment: reward.xp } },
       });
     }
-
-    await tx.match.update({ where: { id: matchId }, data: { endedAt: new Date() } });
   });
 
   return { deltas, newRatings };

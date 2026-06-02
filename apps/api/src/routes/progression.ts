@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { Router } from "express";
 import { z } from "zod";
 import { isGameKey } from "@aso/shared";
@@ -32,6 +33,7 @@ progressionRouter.get(
  * a user JWT (service-to-service).
  */
 const matchSchema = z.object({
+  matchId: z.string().min(1),
   userId: z.string().min(1),
   game: z.string(),
   won: z.boolean(),
@@ -39,11 +41,18 @@ const matchSchema = z.object({
   displayName: z.string().min(1),
 });
 
+/** Constant-time secret comparison (avoids timing side-channels). */
+function secretOk(provided: unknown): boolean {
+  if (typeof provided !== "string") return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(env.INTERNAL_API_SECRET);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 progressionRouter.post(
   "/internal/match",
   asyncHandler(async (req, res) => {
-    const provided = req.headers["x-internal-secret"];
-    if (provided !== env.INTERNAL_API_SECRET) throw forbidden("Bad internal secret");
+    if (!secretOk(req.headers["x-internal-secret"])) throw forbidden("Bad internal secret");
     const input = matchSchema.parse(req.body);
     if (!isGameKey(input.game)) throw badRequest("unknown_game", "Непозната игра");
     await recordMatchResult({ ...input, game: input.game });

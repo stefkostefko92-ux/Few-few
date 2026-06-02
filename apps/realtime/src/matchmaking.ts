@@ -158,14 +158,11 @@ export class Matchmaker {
     const humans = free.slice(0, seats);
     const q: QueueDesc = { game, mode: "private" };
     await this.dequeue(q, humans); // ensure they're not also queued elsewhere
-    await this.createMatch(q, humans, seats - humans.length);
-    return this.lastMatchId;
+    return this.createMatch(q, humans, seats - humans.length);
   }
 
-  private lastMatchId: string | null = null;
-
-  /** Create a match: human seats first, then `botFill` bot seats. */
-  private async createMatch(q: QueueDesc, userIds: string[], botFill: number): Promise<void> {
+  /** Create a match: human seats first, then `botFill` bot seats. Returns id. */
+  private async createMatch(q: QueueDesc, userIds: string[], botFill: number): Promise<string> {
     const seed = generateSeed();
     const match = await prisma.match.create({ data: { game: q.game, mode: q.mode, seed } });
     const seats: RoomSeat[] = userIds.map((userId, seat) => ({
@@ -186,11 +183,11 @@ export class Matchmaker {
     }
     const room = new GameRoom(this.io, match.id, q.game, seats, seed);
     this.rooms.set(match.id, room);
-    this.lastMatchId = match.id;
     room.start();
     logger.info(
       { matchId: match.id, game: q.game, humans: userIds.length, bots: botFill },
       "match created",
     );
+    return match.id;
   }
 }

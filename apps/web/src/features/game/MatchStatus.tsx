@@ -19,9 +19,11 @@ export function MatchStatus() {
   const [now, setNow] = useState(() => Date.now());
   const myTurn = phase === "playing" && turn === mySeat && turnEndsAt > 0;
 
-  // Tick once a second only while a relevant countdown is on screen.
+  // Tick while it's your turn; reset `now` immediately so the first frame
+  // doesn't show a stale value carried over from a previous turn.
   useEffect(() => {
     if (!myTurn) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, [myTurn]);

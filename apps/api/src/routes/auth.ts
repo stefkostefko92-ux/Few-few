@@ -7,6 +7,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   resendVerificationSchema,
+  verifyEmailSchema,
   DEFAULT_LOCALE,
 } from "@aso/shared";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
@@ -18,6 +19,7 @@ import {
   verifyRefreshToken,
 } from "../auth/tokens.js";
 import { issueAuthToken, consumeAuthToken } from "../auth/authTokens.js";
+import { isRevoked } from "../auth/revocation.js";
 import {
   providerEnabled,
   buildAuthorizeUrl,
@@ -36,7 +38,9 @@ import { toPublicUser } from "./users.js";
 
 export const authRouter: Router = Router();
 
-authRouter.use(authLimiter);
+// The strict brute-force limiter is applied per-route to the credential
+// endpoints only, so the SPA's routine /refresh calls don't share (and exhaust)
+// the login budget. All routes still sit behind the app-wide globalLimiter.
 
 const EMAIL_VERIFY_TTL_SEC = 60 * 60 * 24; // 24h
 const PASSWORD_RESET_TTL_SEC = 60 * 60; // 1h
@@ -58,6 +62,7 @@ async function sendVerification(userId: string, email: string): Promise<void> {
 /** POST /api/auth/register */
 authRouter.post(
   "/register",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const input = registerSchema.parse(req.body);
     const passwordHash = await hashPassword(input.password);
@@ -94,6 +99,7 @@ authRouter.post(
 /** POST /api/auth/login */
 authRouter.post(
   "/login",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const input = loginSchema.parse(req.body);
     const user = await prisma.user.findUnique({ where: { email: input.email } });
@@ -134,7 +140,13 @@ authRouter.post(
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw unauthorized("User no longer exists");
+    if (!user || user.deletedAt) throw unauthorized("User no longer exists");
+    // Refresh must honor bans/erasure/revocation — otherwise a long-lived
+    // refresh cookie mints fresh access tokens forever, defeating the denylist.
+    if (user.banned || (await isRevoked(user.id))) {
+      clearAuthCookies(res);
+      throw forbidden("Този акаунт е блокиран");
+    }
 
     const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
     setAuthCookies(res, accessToken, signRefreshToken(user.id));
@@ -165,8 +177,8 @@ authRouter.get(
 authRouter.post(
   "/verify-email",
   asyncHandler(async (req, res) => {
-    const token = z_string(req.body?.token);
-    const userId = token ? await consumeAuthToken(token, AuthTokenType.EMAIL_VERIFY) : null;
+    const { token } = verifyEmailSchema.parse(req.body);
+    const userId = await consumeAuthToken(token, AuthTokenType.EMAIL_VERIFY);
     if (!userId) throw badRequest("invalid_token", "Линкът е невалиден или изтекъл");
 
     await prisma.user.update({ where: { id: userId }, data: { emailVerified: true } });
@@ -177,6 +189,7 @@ authRouter.post(
 /** POST /api/auth/resend-verification — re-send the link for an unverified email. */
 authRouter.post(
   "/resend-verification",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const { email } = resendVerificationSchema.parse(req.body);
     const user = await prisma.user.findUnique({ where: { email } });
@@ -192,6 +205,7 @@ authRouter.post(
 /** POST /api/auth/forgot-password — email a reset link (no account enumeration). */
 authRouter.post(
   "/forgot-password",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const { email } = forgotPasswordSchema.parse(req.body);
     const user = await prisma.user.findUnique({ where: { email } });
@@ -211,6 +225,7 @@ authRouter.post(
 /** POST /api/auth/reset-password — set a new password from a reset token. */
 authRouter.post(
   "/reset-password",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const { token, password } = resetPasswordSchema.parse(req.body);
     const userId = await consumeAuthToken(token, AuthTokenType.PASSWORD_RESET);
@@ -329,6 +344,11 @@ authRouter.get(
         res.redirect(webUrl("/login?error=oauth_no_email"));
         return;
       }
+      // Social login must not become a ban-bypass.
+      if (user.banned || user.deletedAt || (await isRevoked(user.id))) {
+        res.redirect(webUrl("/login?error=banned"));
+        return;
+      }
 
       await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });
       const accessToken = signAccessToken({ sub: user.id, role: user.role, locale: user.locale });
@@ -340,8 +360,3 @@ authRouter.get(
     }
   }),
 );
-
-/** Narrow an unknown body field to a non-empty string (used for raw tokens). */
-function z_string(v: unknown): string | null {
-  return typeof v === "string" && v.length > 0 ? v : null;
-}

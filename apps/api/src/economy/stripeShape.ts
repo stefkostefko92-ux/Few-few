@@ -31,8 +31,13 @@ export function invoiceSubscriptionId(invoice: Stripe.Invoice): string | undefin
   return undefined;
 }
 
-/** Current period end (epoch seconds) for a subscription, across API versions. */
-export function subscriptionPeriodEnd(sub: Stripe.Subscription): number {
+/**
+ * Current period end (epoch seconds) for a subscription, across API versions,
+ * or null if it cannot be determined. Callers must fail closed rather than
+ * fabricate a period — otherwise a Stripe shape drift would silently extend
+ * every VIP entitlement.
+ */
+export function subscriptionPeriodEnd(sub: Stripe.Subscription): number | null {
   const direct = get(sub, "current_period_end");
   if (typeof direct === "number") return direct;
   // 2025+: moved onto each item.
@@ -42,6 +47,5 @@ export function subscriptionPeriodEnd(sub: Stripe.Subscription): number {
     const cpe = get(data[0], "current_period_end");
     if (typeof cpe === "number") return cpe;
   }
-  // Fallback: one month out.
-  return Math.floor(Date.now() / 1000) + 31 * 24 * 60 * 60;
+  return null;
 }

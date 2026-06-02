@@ -25,6 +25,13 @@ function load() {
     console.error(parsed.error.flatten().fieldErrors);
     process.exit(1);
   }
+  if (
+    parsed.data.NODE_ENV === "production" &&
+    parsed.data.INTERNAL_API_SECRET === "dev-internal-secret-change-me"
+  ) {
+    console.error("❌ INTERNAL_API_SECRET must be set in production (still the dev default).");
+    process.exit(1);
+  }
   return parsed.data;
 }
 

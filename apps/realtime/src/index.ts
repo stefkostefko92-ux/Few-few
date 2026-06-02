@@ -62,15 +62,34 @@ async function main(): Promise<void> {
   });
   io.adapter(createAdapter(pubClient, subClient));
 
-  // Authenticate the httpOnly access cookie at the handshake (§8.3).
+  // Authenticate the httpOnly access cookie at the handshake (§8.3), and reject
+  // banned / erased / revoked users so a still-valid access token can't be used
+  // to keep playing/chatting after a ban (mirrors the API's requireAuth).
   io.use((socket, next) => {
     const claims = verifyHandshake(socket.handshake.headers.cookie);
     if (!claims) {
       next(new Error("unauthorized"));
       return;
     }
-    (socket.data as { claims: AccessTokenClaims }).claims = claims;
-    next();
+    void (async () => {
+      try {
+        const [revoked, user] = await Promise.all([
+          redis.exists(`revoked:${claims.sub}`).catch(() => 0),
+          prisma.user.findUnique({
+            where: { id: claims.sub },
+            select: { banned: true, deletedAt: true },
+          }),
+        ]);
+        if (revoked === 1 || !user || user.banned || user.deletedAt) {
+          next(new Error("forbidden"));
+          return;
+        }
+      } catch {
+        // Fail open on infra hiccup (JWT was already valid).
+      }
+      (socket.data as { claims: AccessTokenClaims }).claims = claims;
+      next();
+    })();
   });
 
   const matchmaker = new Matchmaker(io);

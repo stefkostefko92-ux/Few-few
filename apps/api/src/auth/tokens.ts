@@ -49,6 +49,9 @@ export function setAuthCookies(res: Response, accessToken: string, refreshToken:
   });
   res.cookie(REFRESH_COOKIE, refreshToken, {
     ...cookieBase(),
+    // Refresh is only ever called same-origin by the SPA; strict closes the
+    // residual CSRF surface on the long-lived credential.
+    sameSite: "strict",
     maxAge: REFRESH_TOKEN_TTL_SEC * 1000,
     path: "/api/auth", // refresh cookie only sent to auth endpoints
   });

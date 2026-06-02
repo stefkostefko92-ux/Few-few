@@ -49,6 +49,11 @@ export const resendVerificationSchema = z.object({
   email: emailSchema,
 });
 
+/** Consume an email-verification token. */
+export const verifyEmailSchema = z.object({
+  token: z.string().min(10).max(512),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;

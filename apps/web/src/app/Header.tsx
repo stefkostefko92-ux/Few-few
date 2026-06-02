@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { Badge, Button, cn } from "../ui";
 import { useAuthStore, useStoreModal } from "../lib/store";
 import { api } from "../lib/api";
+import { disconnectSocket } from "../lib/socket";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { SettingsToggle } from "./SettingsToggle";
 import { NotificationsBell } from "../features/social/NotificationsBell";
@@ -18,6 +19,7 @@ export function Header() {
 
   async function onLogout() {
     await api.logout().catch(() => undefined);
+    disconnectSocket(); // drop the authenticated socket so the next login re-handshakes
     setUser(null);
   }
 

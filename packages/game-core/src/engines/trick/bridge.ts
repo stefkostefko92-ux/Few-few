@@ -264,7 +264,13 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
   },
 
   redact(state, seat) {
-    const hands = state.hands.map((h, i) => (i === seat ? h.slice() : hiddenLike(h)));
+    // After the opening lead the dummy (declarer's partner) is public to all.
+    const dummy = state.declarer !== null ? (((state.declarer + 2) % 4) as Seat) : null;
+    const leadMade =
+      state.phase === "PLAY" && (state.trick.length > 0 || state.tricksWon[0] + state.tricksWon[1] > 0);
+    const hands = state.hands.map((h, i) =>
+      i === seat || (leadMade && dummy !== null && i === dummy) ? h.slice() : hiddenLike(h),
+    );
     return { ...state, hands };
   },
 };

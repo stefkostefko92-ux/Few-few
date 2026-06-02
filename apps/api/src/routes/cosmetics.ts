@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { prisma } from "@aso/db";
+import { Prisma, prisma } from "@aso/db";
 import {
   buyCosmeticSchema,
   equipCosmeticSchema,
@@ -88,18 +88,29 @@ cosmeticsRouter.post(
       throw badRequest("insufficient_gems", "Нямаш достатъчно камъни");
     }
 
-    // Atomic: guard the gem balance in the WHERE so concurrent buys can't
-    // overspend; create the inventory row only if the debit landed.
-    const debited = await prisma.user.updateMany({
-      where: { id: userId, gems: { gte: cosmetic.gemPrice } },
-      data: { gems: { decrement: cosmetic.gemPrice } },
-    });
-    if (debited.count !== 1) throw badRequest("insufficient_gems", "Нямаш достатъчно камъни");
+    // Debit + grant in one transaction so a failed insert (e.g. a concurrent
+    // buy winning the unique) rolls back the gem debit — the player is never
+    // charged without receiving the item. The WHERE-guard prevents overspend.
+    let gems = user.gems;
+    try {
+      await prisma.$transaction(async (tx) => {
+        const debited = await tx.user.updateMany({
+          where: { id: userId, gems: { gte: cosmetic.gemPrice } },
+          data: { gems: { decrement: cosmetic.gemPrice } },
+        });
+        if (debited.count !== 1) throw badRequest("insufficient_gems", "Нямаш достатъчно камъни");
+        await tx.inventoryItem.create({ data: { userId, cosmeticId: id } });
+        const fresh = await tx.user.findUnique({ where: { id: userId }, select: { gems: true } });
+        gems = fresh?.gems ?? gems;
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        throw conflict("already_owned", "Вече притежаваш този артикул");
+      }
+      throw e;
+    }
 
-    await prisma.inventoryItem.create({ data: { userId, cosmeticId: id } });
-
-    const fresh = await prisma.user.findUnique({ where: { id: userId }, select: { gems: true } });
-    res.status(201).json({ gems: fresh?.gems ?? 0, ownedId: id });
+    res.status(201).json({ gems, ownedId: id });
   }),
 );
 

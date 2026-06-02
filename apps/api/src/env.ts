@@ -63,12 +63,19 @@ const envSchema = z.object({
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
 });
 
+const DEV_INTERNAL_SECRET = "dev-internal-secret-change-me";
+
 function load() {
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
     // Use console here: logger isn't constructed yet and the process is aborting.
     console.error("❌ Invalid environment configuration:");
     console.error(parsed.error.flatten().fieldErrors);
+    process.exit(1);
+  }
+  // Never ship the well-known dev secret to production.
+  if (parsed.data.NODE_ENV === "production" && parsed.data.INTERNAL_API_SECRET === DEV_INTERNAL_SECRET) {
+    console.error("❌ INTERNAL_API_SECRET must be set in production (still the dev default).");
     process.exit(1);
   }
   return parsed.data;

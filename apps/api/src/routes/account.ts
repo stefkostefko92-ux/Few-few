@@ -4,6 +4,8 @@ import { asyncHandler, unauthorized } from "../http.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { clearAuthCookies } from "../auth/tokens.js";
 import { revokeUser } from "../auth/revocation.js";
+import { getStripe, stripeEnabled } from "../economy/stripe.js";
+import { logger } from "../logger.js";
 
 export const accountRouter: Router = Router();
 
@@ -26,6 +28,10 @@ accountRouter.get(
         purchases: { include: { product: { select: { sku: true, priceCents: true } } } },
         oauth: { select: { provider: true, createdAt: true } },
         matches: { select: { matchId: true, seat: true, result: true, mmrDelta: true } },
+        notifications: { select: { type: true, data: true, createdAt: true } },
+        friendsSent: { select: { addresseeId: true, status: true, createdAt: true } },
+        friendsReceived: { select: { requesterId: true, status: true, createdAt: true } },
+        achievements: { select: { key: true, unlockedAt: true } },
       },
     });
     if (!user || user.deletedAt) throw unauthorized();
@@ -54,10 +60,26 @@ accountRouter.post(
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user || user.deletedAt) throw unauthorized();
 
+    // Cancel any live Stripe subscription so an erased account isn't still
+    // billed (best-effort; never blocks erasure).
+    const sub = await prisma.subscription.findUnique({ where: { userId: id } });
+    if (sub && stripeEnabled()) {
+      try {
+        await getStripe().subscriptions.cancel(sub.stripeSubId);
+      } catch (err) {
+        logger.warn({ err, userId: id }, "stripe cancel on erasure failed");
+      }
+    }
+
     await prisma.$transaction([
-      // Drop credentials and federated links outright.
+      // Drop credentials, federated links, social graph, and personal content.
       prisma.oAuthAccount.deleteMany({ where: { userId: id } }),
       prisma.authToken.deleteMany({ where: { userId: id } }),
+      prisma.notification.deleteMany({ where: { userId: id } }),
+      prisma.friendship.deleteMany({
+        where: { OR: [{ requesterId: id }, { addresseeId: id }] },
+      }),
+      prisma.subscription.deleteMany({ where: { userId: id } }),
       // Anonymize PII and disable login. Email is rewritten to a unique,
       // non-routable address to satisfy the unique constraint.
       prisma.user.update({
