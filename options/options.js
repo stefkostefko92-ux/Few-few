@@ -39,6 +39,8 @@ const SCHEMA = [
   ] },
   { id: 'circle', fields: [
     { k: 'enabled', type: 'bool' },
+    { k: 'mode', type: 'select', options: ['auto', 'manual'] },
+    { k: 'manualNodes', type: 'text' },
     { k: 'currency', type: 'select', options: ['gold', 'bs'] },
     { k: 'multiple', type: 'select', options: [1, 10] },
     { k: 'stopAtCenterLevel', type: 'number', min: 1, max: 10 },

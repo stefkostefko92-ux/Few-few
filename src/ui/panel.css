@@ -106,6 +106,14 @@
 }
 #tanoth-bot-panel .tb-chip.tb-on { opacity: 1; color: var(--accent); border-color: var(--accent-dim); }
 
+#tanoth-bot-panel .tb-inputs { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+#tanoth-bot-panel .tb-input {
+  width: 100%; padding: 6px 8px; border-radius: 6px; font-size: 11px;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+}
+#tanoth-bot-panel .tb-input:focus { outline: none; border-color: var(--accent-dim); }
+#tanoth-bot-panel .tb-input::placeholder { color: var(--muted); }
+
 #tanoth-bot-panel .tb-log {
   height: 132px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border);
   border-radius: 8px; padding: 6px 8px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;

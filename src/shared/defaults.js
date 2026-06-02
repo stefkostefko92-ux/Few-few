@@ -53,6 +53,8 @@ export const DEFAULT_SETTINGS = {
   /* ---- Evocation Circle (arcane upgrades) ---- */
   circle: {
     enabled: false,
+    mode: 'auto',                  // auto = optimal path | manual = only the nodes you list
+    manualNodes: '',               // node numbers to upgrade in order, e.g. "8, 1, 16"
     currency: 'gold',              // gold | bs (bloodstones)
     multiple: 1,                   // buy 1 or 10 levels per purchase
     stopAtCenterLevel: 10,         // stop once the centre node reaches this level (max 10)

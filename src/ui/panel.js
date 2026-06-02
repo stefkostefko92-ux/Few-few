@@ -63,6 +63,10 @@
         <div class="tb-status" data-el="status">${I18n.t('uiIdle')}</div>
         <div class="tb-stats" data-el="stats"></div>
         <div class="tb-modules" data-el="modules"></div>
+        <div class="tb-inputs">
+          <input class="tb-input" data-el="in-pvp" placeholder="${I18n.t('uiPvpPlaceholder')}" />
+          <input class="tb-input" data-el="in-circle" placeholder="${I18n.t('uiCirclePlaceholder')}" />
+        </div>
         <div class="tb-log" data-el="log"></div>
         <div class="tb-footer">
           <span data-el="proto">${I18n.t('uiProtoWaiting')}</span>
@@ -77,6 +81,7 @@
     makeDraggable(root.querySelector('.tb-header'), root);
 
     renderModules();
+    setupInputs();
     renderStats(Stats.session());
     Logger.history().slice(-40).forEach(appendLog);
 
@@ -159,6 +164,32 @@
     await Storage.save(settings);
     renderModules();
     Logger.info(I18n.t(settings[id].enabled ? 'logModuleOn' : 'logModuleOff', [id]));
+  }
+
+  function setupInputs() {
+    const s = Storage.get() || {};
+    const pvp = root.querySelector('[data-el="in-pvp"]');
+    const circle = root.querySelector('[data-el="in-circle"]');
+    if (pvp) {
+      pvp.value = (s.pvp && s.pvp.opponents) || '';
+      pvp.addEventListener('change', async () => {
+        const cur = Storage.get();
+        cur.pvp.opponents = pvp.value.trim();
+        await Storage.save(cur);
+        Logger.info(I18n.t('logPvpTargetsSet', [pvp.value.trim() || '—']));
+      });
+    }
+    if (circle) {
+      circle.value = (s.circle && s.circle.manualNodes) || '';
+      circle.addEventListener('change', async () => {
+        const cur = Storage.get();
+        const val = circle.value.trim();
+        cur.circle.manualNodes = val;
+        cur.circle.mode = val ? 'manual' : 'auto';
+        await Storage.save(cur);
+        Logger.info(I18n.t('logCircleNodesSet', [val || '—']));
+      });
+    }
   }
 
   function renderModules() {
