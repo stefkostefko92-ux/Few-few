@@ -1,29 +1,23 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
- * Per-page animated backdrop, fixed-position behind the app shell.
+ * Per-page HD backdrop, fixed-position behind the app shell.
  *
- * A single full-viewport <canvas> picks a "scene" from the current route
- * and runs the matching ambient renderer. Every scene is GPU-friendly
- * Canvas2D:
+ * Each route picks a public-domain painting that visually matches the
+ * tab's purpose — Velázquez's Forge of Vulcan for the smithy, Bruegel's
+ * Tower of Babel for the Tower, the Hereford Mappa Mundi for the world
+ * map, etc. Source files live in /public/assets/bg/<scene>.jpg.
  *
- *   forge       — rising sparks + heat shimmer
- *   tower       — slow vortex of motes converging on the centre
- *   camp        — drifting blue-grey smoke + warm fireflies
- *   auction     — falling gold dust through soft volumetric beams
- *   bounty      — drifting red embers, slight blood-mist haze
- *   market      — gentle floating coins
- *   stables     — long horizontal wind streaks
- *   recipe      — alchemical bubbles
- *   trialcache  — purple plasma motes
- *   battlepass  — slow shooting stars
- *   guild       — heraldic banner ripple
- *   world/realm — drifting parchment-coloured clouds
- *   default     — gentle gold/amethyst dust
- *
- * The renderer steps at requestAnimationFrame, but only paints if the
- * document is visible — so backgrounded tabs don't burn CPU.
+ * Behaviours:
+ *   - Two stacked <img> layers cross-fade when the scene changes, so the
+ *     route transition gets a 700ms dissolve instead of a hard cut.
+ *   - A slow Ken Burns pan/zoom keeps every backdrop feeling alive
+ *     without a single moving pixel of code. Pure CSS animation.
+ *   - A scene-tinted radial + linear overlay sits above the image so the
+ *     UI chrome on top of it remains legible regardless of how bright the
+ *     underlying painting is.
+ *   - Image attribution / source lineage lives in assets/bg/CREDITS.md.
  */
 
 type Scene =
@@ -48,267 +42,111 @@ function sceneFor(pathname: string): Scene {
   return 'default';
 }
 
-const TINT: Record<Scene, string> = {
-  forge:       'radial-gradient(ellipse at 50% 100%, rgba(255,120,40,.20), transparent 60%), linear-gradient(180deg,#100806 0%, #0a0608 60%)',
-  tower:       'radial-gradient(circle at 50% 30%, rgba(194,148,255,.22), transparent 55%), linear-gradient(180deg,#0a0e1a 0%, #06070d 60%)',
-  camp:        'radial-gradient(ellipse at 50% 85%, rgba(255,170,90,.16), transparent 55%), linear-gradient(180deg,#0a0c14 0%, #06080d 60%)',
-  auction:     'radial-gradient(ellipse at 50% 40%, rgba(255,232,138,.18), transparent 55%), linear-gradient(180deg,#0d0b08 0%, #07060a 60%)',
-  bounty:      'radial-gradient(ellipse at 50% 100%, rgba(232,90,79,.18), transparent 60%), linear-gradient(180deg,#100808 0%, #0a0608 60%)',
-  market:      'radial-gradient(ellipse at 50% 80%, rgba(214,161,61,.13), transparent 50%), linear-gradient(180deg,#0b0d12 0%, #07080c 60%)',
-  stables:     'radial-gradient(ellipse at 50% 60%, rgba(106,167,255,.13), transparent 50%), linear-gradient(180deg,#0b0e16 0%, #07080d 60%)',
-  recipe:      'radial-gradient(ellipse at 50% 70%, rgba(106,216,164,.18), transparent 55%), linear-gradient(180deg,#08120e 0%, #050a07 60%)',
-  trialcache:  'radial-gradient(ellipse at 30% 30%, rgba(194,148,255,.22), transparent 55%), linear-gradient(180deg,#0b0716 0%, #06040c 60%)',
-  battlepass:  'radial-gradient(circle at 80% 20%, rgba(106,167,255,.20), transparent 55%), linear-gradient(180deg,#070b14 0%, #05070d 60%)',
-  guild:       'radial-gradient(ellipse at 50% 50%, rgba(214,161,61,.12), transparent 50%), linear-gradient(180deg,#0c0a06 0%, #07060a 60%)',
-  world:       'radial-gradient(ellipse at 50% 60%, rgba(255,232,138,.10), transparent 50%), linear-gradient(180deg,#0a0a0e 0%, #06070b 60%)',
-  default:     'radial-gradient(ellipse at 50% 50%, rgba(214,161,61,.08), transparent 55%), linear-gradient(180deg,#080a0f 0%, #05070b 60%)',
+const IMG_FOR: Record<Scene, string> = {
+  forge:       '/assets/bg/forge.jpg',
+  tower:       '/assets/bg/tower.jpg',
+  camp:        '/assets/bg/camp.jpg',
+  auction:     '/assets/bg/auction.jpg',
+  bounty:      '/assets/bg/bounty.jpg',
+  market:      '/assets/bg/market.jpg',
+  stables:     '/assets/bg/stables.jpg',
+  recipe:      '/assets/bg/recipe.jpg',
+  trialcache:  '/assets/bg/trialcache.jpg',
+  battlepass:  '/assets/bg/battlepass.jpg',
+  guild:       '/assets/bg/auction.jpg', /* uses Veronese banquet — same source family */
+  world:       '/assets/bg/world.jpg',
+  default:     '/assets/bg/default.jpg',
 };
 
-interface Particle {
-  x: number; y: number;
-  vx: number; vy: number;
-  size: number;
-  life: number; maxLife: number;
-  color: string;
-  rot: number; vrot: number;
-}
+/** Scene-specific tint overlay sitting on top of the HD photo so the
+ *  app chrome (gold accents, dark cards) reads cleanly regardless of how
+ *  bright the underlying painting is. */
+const TINT: Record<Scene, string> = {
+  forge:       'radial-gradient(ellipse at 50% 80%, rgba(255,120,40,.28), transparent 65%), linear-gradient(180deg, rgba(8,4,2,.55) 0%, rgba(20,8,4,.80) 100%)',
+  tower:       'radial-gradient(circle at 50% 35%, rgba(194,148,255,.22), transparent 55%), linear-gradient(180deg, rgba(8,6,16,.60) 0%, rgba(6,4,12,.82) 100%)',
+  camp:        'radial-gradient(ellipse at 50% 85%, rgba(255,170,90,.18), transparent 55%), linear-gradient(180deg, rgba(6,8,14,.58) 0%, rgba(4,6,10,.82) 100%)',
+  auction:     'radial-gradient(ellipse at 50% 40%, rgba(255,232,138,.20), transparent 55%), linear-gradient(180deg, rgba(10,8,4,.55) 0%, rgba(6,4,8,.82) 100%)',
+  bounty:      'radial-gradient(ellipse at 50% 100%, rgba(232,90,79,.20), transparent 60%), linear-gradient(180deg, rgba(12,6,4,.62) 0%, rgba(8,4,6,.84) 100%)',
+  market:      'radial-gradient(ellipse at 50% 80%, rgba(214,161,61,.14), transparent 50%), linear-gradient(180deg, rgba(10,8,10,.60) 0%, rgba(6,6,10,.82) 100%)',
+  stables:     'radial-gradient(ellipse at 50% 55%, rgba(106,167,255,.16), transparent 50%), linear-gradient(180deg, rgba(8,10,16,.58) 0%, rgba(6,6,12,.82) 100%)',
+  recipe:      'radial-gradient(ellipse at 50% 70%, rgba(106,216,164,.18), transparent 55%), linear-gradient(180deg, rgba(6,12,10,.58) 0%, rgba(4,8,6,.82) 100%)',
+  trialcache:  'radial-gradient(ellipse at 30% 30%, rgba(194,148,255,.24), transparent 55%), linear-gradient(180deg, rgba(8,4,18,.60) 0%, rgba(6,4,12,.82) 100%)',
+  battlepass:  'radial-gradient(circle at 80% 25%, rgba(106,167,255,.20), transparent 55%), linear-gradient(180deg, rgba(6,10,18,.58) 0%, rgba(4,6,10,.82) 100%)',
+  guild:       'radial-gradient(ellipse at 50% 50%, rgba(214,161,61,.16), transparent 50%), linear-gradient(180deg, rgba(10,8,4,.60) 0%, rgba(6,4,4,.82) 100%)',
+  world:       'radial-gradient(ellipse at 50% 60%, rgba(255,232,138,.12), transparent 50%), linear-gradient(180deg, rgba(8,8,10,.55) 0%, rgba(4,6,10,.78) 100%)',
+  default:     'radial-gradient(ellipse at 50% 50%, rgba(214,161,61,.12), transparent 55%), linear-gradient(180deg, rgba(6,8,12,.60) 0%, rgba(4,6,10,.82) 100%)',
+};
 
 export default function PageBackdrop(): React.ReactElement {
   const { pathname } = useLocation();
-  const sceneRef = useRef<Scene>(sceneFor(pathname));
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const lastSpawnRef = useRef<number>(0);
-
-  // Update scene without remounting the canvas, so the background fades.
-  useEffect(() => { sceneRef.current = sceneFor(pathname); }, [pathname]);
+  const scene = sceneFor(pathname);
+  // Two layers cross-fade. `currentSrc` is the live image; `prevSrc` is
+  // the outgoing one held for the duration of the fade so we don't get a
+  // flash to nothing while the new one loads.
+  const [currentSrc, setCurrentSrc] = useState<string>(IMG_FOR[scene]);
+  const [prevSrc, setPrevSrc] = useState<string | null>(null);
+  const fadeTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    const c = canvasRef.current!;
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let w = 0, h = 0;
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth; h = window.innerHeight;
-      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-      c.style.width = w + 'px'; c.style.height = h + 'px';
-      const ctx = c.getContext('2d')!;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    resize();
-    window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
+    const next = IMG_FOR[scene];
+    if (next === currentSrc) return;
+    setPrevSrc(currentSrc);
+    setCurrentSrc(next);
+    if (fadeTimer.current) window.clearTimeout(fadeTimer.current);
+    fadeTimer.current = window.setTimeout(() => setPrevSrc(null), 900);
+    // Pre-warm the next image in case the user keeps navigating quickly.
+    return () => { if (fadeTimer.current) window.clearTimeout(fadeTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene]);
 
-    let raf = 0;
-    let last = performance.now();
-    function tick(now: number) {
-      raf = requestAnimationFrame(tick);
-      if (document.hidden) { last = now; return; }
-      const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      step(dt, now);
-      draw();
-    }
+  const tint = TINT[scene] || TINT.default;
 
-    function spawn(scene: Scene, now: number) {
-      const ps = particlesRef.current;
-      // Rate per scene
-      const rates: Record<Scene, number> = {
-        forge: 50, tower: 35, camp: 18, auction: 22, bounty: 30,
-        market: 14, stables: 10, recipe: 22, trialcache: 35, battlepass: 6,
-        guild: 10, world: 8, default: 10,
-      };
-      const want = rates[scene];
-      const elapsed = (now - lastSpawnRef.current) / 1000;
-      if (elapsed < 1 / want) return;
-      lastSpawnRef.current = now;
-      const p: Particle = createForScene(scene, w, h);
-      ps.push(p);
-      if (ps.length > 220) ps.shift();
-    }
-
-    function step(dt: number, now: number) {
-      spawn(sceneRef.current, now);
-      const ps = particlesRef.current;
-      for (let i = ps.length - 1; i >= 0; i--) {
-        const p = ps[i];
-        p.life += dt;
-        if (p.life >= p.maxLife) { ps.splice(i, 1); continue; }
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.rot += p.vrot * dt;
-        // Scene-specific gentle drag / wind
-        if (sceneRef.current === 'stables') p.vx += 12 * dt;          // wind
-        if (sceneRef.current === 'tower')   { // converge on centre
-          p.vx += (w/2 - p.x) * 0.02 * dt;
-          p.vy += (h*0.4 - p.y) * 0.02 * dt;
-        }
-        if (sceneRef.current === 'camp' && p.color.includes('255,180')) p.vy -= 8 * dt; // smoke rises
-      }
-    }
-
-    function draw() {
-      const ctx = c.getContext('2d')!;
-      // Subtle global fade so particles tail across frames (mild trail)
-      ctx.fillStyle = 'rgba(0,0,0,.06)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'lighter';
-      const ps = particlesRef.current;
-      for (let i = 0; i < ps.length; i++) {
-        const p = ps[i];
-        const k = p.life / p.maxLife;
-        const alpha = (1 - k) * (1 - k);
-        ctx.globalAlpha = alpha;
-        // Render as a soft radial glow
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
-        g.addColorStop(0, p.color);
-        g.addColorStop(1, p.color.replace(/,1\)$/, ',0)').replace(/,(\d*\.?\d+)\)$/, (_, a) => `,0)`));
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      ctx.globalCompositeOperation = 'source-over';
-    }
-
-    raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('orientationchange', resize);
-    };
-  }, []);
-
-  // The CSS gradient backdrop sits beneath the canvas, cross-fading on
-  // route change. Setting `background` directly on the wrapper gives us a
-  // smooth transition for free.
-  const tint = TINT[sceneFor(pathname)] || TINT.default;
   return (
-    <div
-      className="page-backdrop"
-      aria-hidden
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: -1,
-        background: tint,
-        transition: 'background 800ms ease-in-out',
-      }}
-    >
-      <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+    <div className="page-backdrop" aria-hidden style={WRAP_STYLE}>
+      {prevSrc && (
+        <img
+          src={prevSrc}
+          alt=""
+          style={{ ...IMG_STYLE, opacity: 0, transition: 'opacity 800ms ease-out' }}
+          /* The previous image fades out over 800ms; it gets removed
+             from the tree after 900ms by the effect above. */
+        />
+      )}
+      <img
+        key={currentSrc}
+        src={currentSrc}
+        alt=""
+        style={IMG_STYLE}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: tint,
+          transition: 'background 800ms ease-in-out',
+          pointerEvents: 'none',
+        }}
+      />
     </div>
   );
 }
 
-function createForScene(scene: Scene, w: number, h: number): Particle {
-  const rand = (a: number, b: number) => a + Math.random() * (b - a);
-  switch (scene) {
-    case 'forge':
-      return {
-        x: rand(0, w), y: h + 10,
-        vx: rand(-20, 20), vy: rand(-160, -80),
-        size: rand(1, 3),
-        life: 0, maxLife: rand(2, 3.5),
-        color: Math.random() > 0.5 ? 'rgba(255,180,80,1)' : 'rgba(255,90,40,1)',
-        rot: 0, vrot: 0,
-      };
-    case 'tower':
-      return {
-        x: rand(0, w), y: rand(0, h),
-        vx: rand(-30, 30), vy: rand(-30, 30),
-        size: rand(1.5, 3.5),
-        life: 0, maxLife: rand(3, 4.5),
-        color: 'rgba(194,148,255,1)', rot: 0, vrot: 0,
-      };
-    case 'camp':
-      return {
-        x: rand(0, w), y: rand(h * 0.7, h + 20),
-        vx: rand(-10, 10), vy: rand(-30, -10),
-        size: rand(1, 2.5),
-        life: 0, maxLife: rand(3, 5),
-        color: Math.random() > 0.5 ? 'rgba(255,180,90,1)' : 'rgba(180,160,170,0.4)',
-        rot: 0, vrot: 0,
-      };
-    case 'auction':
-      return {
-        x: rand(0, w), y: -10,
-        vx: rand(-5, 5), vy: rand(40, 90),
-        size: rand(1.5, 3),
-        life: 0, maxLife: rand(3, 6),
-        color: 'rgba(255,232,138,1)', rot: 0, vrot: 0,
-      };
-    case 'bounty':
-      return {
-        x: rand(0, w), y: h + 10,
-        vx: rand(-20, 20), vy: rand(-120, -50),
-        size: rand(1.5, 3),
-        life: 0, maxLife: rand(2, 4),
-        color: 'rgba(232,90,79,1)', rot: 0, vrot: 0,
-      };
-    case 'market':
-      return {
-        x: rand(0, w), y: rand(0, h),
-        vx: rand(-10, 10), vy: rand(-20, -5),
-        size: rand(2, 4),
-        life: 0, maxLife: rand(3, 5),
-        color: 'rgba(214,161,61,1)', rot: 0, vrot: 0,
-      };
-    case 'stables':
-      return {
-        x: -20, y: rand(h * 0.2, h * 0.85),
-        vx: rand(120, 200), vy: rand(-6, 6),
-        size: rand(1, 2),
-        life: 0, maxLife: rand(3, 5),
-        color: 'rgba(180,200,220,1)', rot: 0, vrot: 0,
-      };
-    case 'recipe':
-      return {
-        x: rand(0, w), y: h + 10,
-        vx: rand(-8, 8), vy: rand(-60, -30),
-        size: rand(2, 4),
-        life: 0, maxLife: rand(2, 4),
-        color: 'rgba(106,216,164,1)', rot: 0, vrot: 0,
-      };
-    case 'trialcache':
-      return {
-        x: rand(0, w), y: rand(0, h),
-        vx: rand(-20, 20), vy: rand(-20, 20),
-        size: rand(1.5, 3),
-        life: 0, maxLife: rand(2.5, 4),
-        color: 'rgba(194,148,255,1)', rot: 0, vrot: 0,
-      };
-    case 'battlepass':
-      return {
-        x: rand(w * 0.6, w + 50), y: rand(-10, h * 0.4),
-        vx: rand(-280, -160), vy: rand(80, 160),
-        size: rand(1.5, 3),
-        life: 0, maxLife: rand(1.4, 2),
-        color: 'rgba(180,220,255,1)', rot: 0, vrot: 0,
-      };
-    case 'guild':
-      return {
-        x: rand(0, w), y: rand(0, h),
-        vx: rand(-6, 6), vy: rand(-10, -2),
-        size: rand(1.5, 3),
-        life: 0, maxLife: rand(3, 5),
-        color: 'rgba(214,161,61,1)', rot: 0, vrot: 0,
-      };
-    case 'world':
-      return {
-        x: -30, y: rand(h * 0.1, h * 0.6),
-        vx: rand(15, 35), vy: rand(-3, 3),
-        size: rand(8, 16),
-        life: 0, maxLife: rand(20, 32),
-        color: 'rgba(240,220,180,1)', rot: 0, vrot: 0,
-      };
-    default:
-      return {
-        x: rand(0, w), y: rand(0, h),
-        vx: rand(-10, 10), vy: rand(-15, -5),
-        size: rand(1.5, 3),
-        life: 0, maxLife: rand(3, 6),
-        color: Math.random() > 0.5 ? 'rgba(214,161,61,1)' : 'rgba(194,148,255,1)',
-        rot: 0, vrot: 0,
-      };
-  }
-}
+const WRAP_STYLE: React.CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: -1,
+  overflow: 'hidden',
+  background: '#04060a',
+};
+
+const IMG_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  inset: '-4%',                 // bleed for the Ken-Burns zoom
+  width: '108%',
+  height: '108%',
+  objectFit: 'cover',
+  objectPosition: 'center',
+  filter: 'saturate(0.9) contrast(1.05)',
+  animation: 'page-backdrop-kenburns 38s ease-in-out infinite alternate',
+  willChange: 'transform, opacity',
+};

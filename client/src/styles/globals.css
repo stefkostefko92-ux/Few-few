@@ -1482,3 +1482,17 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   overflow: hidden;
 }
 .bp-progress-fill { height: 100%; transition: width .5s ease; }
+
+/* =========================================================================
+   PAGE BACKDROP — HD painting per route, slow Ken-Burns drift.
+   Replaces the legacy particle backdrops. Source art catalogued in
+   /public/assets/bg/CREDITS.md (all public-domain).
+   ========================================================================= */
+@keyframes page-backdrop-kenburns {
+  0%   { transform: scale(1.00) translate(0, 0); }
+  100% { transform: scale(1.12) translate(-1.5%, -1%); }
+}
+.page-backdrop img { user-select: none; -webkit-user-drag: none; }
+@media (prefers-reduced-motion: reduce) {
+  .page-backdrop img { animation: none !important; }
+}
