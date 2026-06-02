@@ -8,6 +8,7 @@ import { GameView } from "../features/game/GameView";
 import { Shop } from "../features/shop/Shop";
 import { Leaderboard } from "../features/leaderboard/Leaderboard";
 import { CardGallery } from "../features/game/cards/CardGallery";
+import { CarbonBadge } from "./CarbonBadge";
 import { Layout } from "./Layout";
 import { RequireAuth } from "./RequireAuth";
 
@@ -34,23 +35,26 @@ export function App() {
   }, [setUser, setInitializing]);
 
   return (
-    <Routes>
-      {/* Dev-only visual QA route (stripped from production by dead-code elimination). */}
-      {import.meta.env.DEV ? <Route path="/__gallery" element={<CardGallery />} /> : null}
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthScreen mode="login" />} />
-      <Route
-        path="/register"
-        element={user ? <Navigate to="/" replace /> : <AuthScreen mode="register" />}
-      />
-      <Route element={<RequireAuth />}>
-        <Route element={<Layout />}>
-          <Route index element={<Lobby />} />
-          <Route path="play/:game" element={<GameView />} />
-          <Route path="shop" element={<Shop />} />
-          <Route path="leaderboard" element={<Leaderboard />} />
+    <>
+      <Routes>
+        {/* Dev-only visual QA route (stripped from production by dead-code elimination). */}
+        {import.meta.env.DEV ? <Route path="/__gallery" element={<CardGallery />} /> : null}
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthScreen mode="login" />} />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" replace /> : <AuthScreen mode="register" />}
+        />
+        <Route element={<RequireAuth />}>
+          <Route element={<Layout />}>
+            <Route index element={<Lobby />} />
+            <Route path="play/:game" element={<GameView />} />
+            <Route path="shop" element={<Shop />} />
+            <Route path="leaderboard" element={<Leaderboard />} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <CarbonBadge />
+    </>
   );
 }
