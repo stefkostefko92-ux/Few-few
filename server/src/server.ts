@@ -114,6 +114,12 @@ app.use('/api/auth/reset',    sensitiveAuthLimiter);
 const adminLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true });
 app.use('/api/admin', adminLimiter);
 
+// Audit #11: the public /profile lookup is the username-enumeration
+// oracle when combined with /auth/forgot (which always returns 200).
+// Cap profile probes so an attacker can't drag a wordlist through it.
+const profileLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true });
+app.use('/api/profile', profileLimiter);
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });
 });

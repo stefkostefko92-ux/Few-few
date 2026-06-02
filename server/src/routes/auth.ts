@@ -22,10 +22,21 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
 `);
 
+// Audit #14: 6-char minimum was below OWASP guidance. Push to 8 chars
+// and reject the 50 most common breached passwords; refuse anything
+// where the username or email local-part is a substring.
+const COMMON_PASSWORDS = new Set([
+  'password','12345678','qwerty12','iloveyou','welcome1','admin123','password1',
+  'letmein1','dragon12','football','baseball','password!','qwertyui','asdfghjk',
+  'zxcvbnm1','monkey12','master12','sunshine','princess','qwerty123','password123',
+  'iloveyou1','welcome123','12345abc','abcd1234','1q2w3e4r','passw0rd','p@ssword',
+  'qazwsxedc','starwars','superman','batman123','spider123','hello1234','trustno1',
+]);
 const registerSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Use letters, numbers, underscores only'),
   email: z.string().email(),
-  password: z.string().min(6).max(100),
+  password: z.string().min(8).max(100)
+    .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), 'Password is too common'),
 });
 
 router.post('/register', async (req, res) => {

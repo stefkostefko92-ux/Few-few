@@ -124,12 +124,26 @@ router.post('/enchant', (req, res) => {
   // Anvil Ward (from the Trial Cache) consumes one stack and converts a
   // would-be shatter into a guaranteed small enchant. This closes the
   // Tower → Trial Cache → Forge loop.
+  //
+  // Audit security #7: the previous version read `forge_guarantees` from
+  // the in-memory `char` row, converted the bucket optimistically, then
+  // tried to debit with a guarded UPDATE. Two concurrent enchants could
+  // both see `guarantees > 0`, both convert the shatter, but only one
+  // debit ran — letting a player double-spend a single Ward. Now we
+  // debit FIRST inside a single statement and only convert the bucket
+  // if changes===1.
   let guaranteeUsed = false;
-  const guarantees = (char as any).forge_guarantees || 0;
-  if (guarantees > 0) {
-    if (bucket === 'shatter') bucket = 'small';
-    db.prepare('UPDATE characters SET forge_guarantees = forge_guarantees - 1 WHERE id = ? AND forge_guarantees > 0').run(char.id);
-    guaranteeUsed = true;
+  if (bucket === 'shatter') {
+    const info = db
+      .prepare('UPDATE characters SET forge_guarantees = forge_guarantees - 1 WHERE id = ? AND forge_guarantees > 0')
+      .run(char.id);
+    if (info.changes === 1) {
+      bucket = 'small';
+      guaranteeUsed = true;
+      // Sync the in-memory char row so the response carries the right
+      // remaining count.
+      (char as any).forge_guarantees = ((char as any).forge_guarantees || 1) - 1;
+    }
   }
 
   if (bucket === 'shatter') {

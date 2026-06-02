@@ -69,9 +69,20 @@ function AppLayout(): React.ReactElement {
     const onClick = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
-      // Walk up to find the closest button/anchor with an interactive role.
+      // Audit RISK #7: skip the click sfx when:
+      //   1. The target lives inside a modal backdrop overlay that's
+      //      handling its own dismiss (range scrubbing, textarea, etc).
+      //   2. The element opts out via data-no-sfx.
+      //   3. The element isn't actually interactive.
+      if (t.closest('[data-no-sfx]')) return;
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return;
       const interactive = t.closest('button, .btn, a[href]') as HTMLElement | null;
       if (!interactive || interactive.hasAttribute('aria-disabled') || (interactive as HTMLButtonElement).disabled) return;
+      // Drop sfx for buttons inside react-portal overlays that mount
+      // into document.body — they fire twice (overlay click + button).
+      if (interactive.closest('.levelup-overlay, .combat-result, [data-overlay-root]')) {
+        if (!interactive.classList.contains('btn-primary')) return;
+      }
       sfx.play('click', { volume: 0.35 });
     };
     document.addEventListener('click', onClick, true);

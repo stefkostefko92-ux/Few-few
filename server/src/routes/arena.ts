@@ -164,13 +164,35 @@ router.post('/challenge', (req, res) => {
 
 router.get('/leaderboard', (req, res) => {
   const db = getDb();
-  const rows = db
+  // Audit balance #8: a global ORDER BY arena_rating let a Lv 5 NPC
+  // grinding ELO outrank a Lv 350 hero. Tier the board into 7 level
+  // bands so each band has its own top-10 — the caller can pick the
+  // band or get all.
+  const BANDS = [
+    { name: 'Apprentice', min: 1,   max: 24  },
+    { name: 'Veteran',    min: 25,  max: 70  },
+    { name: 'Champion',   min: 71,  max: 130 },
+    { name: 'Ascendant',  min: 131, max: 200 },
+    { name: 'Cosmic',     min: 201, max: 270 },
+    { name: 'Eldritch',   min: 271, max: 320 },
+    { name: 'Divine',     min: 321, max: 999 },
+  ];
+  const allRows = db
     .prepare(
       `SELECT id, name, class, level, arena_rating, wins, losses, is_npc FROM characters
-       ORDER BY arena_rating DESC LIMIT 50`,
+       WHERE arena_rating > 0
+       ORDER BY arena_rating DESC LIMIT 500`,
     )
-    .all();
-  res.json({ leaderboard: rows });
+    .all() as { id: number; name: string; class: string; level: number; arena_rating: number; wins: number; losses: number; is_npc: number }[];
+  const tiered = BANDS.map((b) => ({
+    band: b.name,
+    min_level: b.min,
+    max_level: b.max,
+    entries: allRows
+      .filter((r) => r.level >= b.min && r.level <= b.max)
+      .slice(0, 10),
+  }));
+  res.json({ leaderboard: allRows.slice(0, 50), tiered });
 });
 
 export default router;

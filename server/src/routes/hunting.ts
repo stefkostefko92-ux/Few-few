@@ -162,11 +162,27 @@ router.post('/hunt', (req, res) => {
       ).get(tier, char.level, cls) as any;
       const candidates = pickFor('') || pickFor("AND class_req = ''");
       if (candidates) {
-        itemRewardSlug = candidates.slug;
-        db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(
-          char.id,
-          candidates.id,
-        );
+        // Audit balance #7: don't flood the bag with duplicates. If the
+        // player already owns an unequipped copy (or has it equipped),
+        // auto-vendor the drop for half its sell price instead of
+        // inserting a second row. That keeps drops feeling rewarding
+        // without bloating the inventory grid.
+        const owned = db.prepare(
+          `SELECT id FROM inventory
+           WHERE character_id=? AND item_id=? AND listed=0 LIMIT 1`,
+        ).get(char.id, candidates.id) as { id: number } | undefined;
+        if (owned) {
+          const refund = Math.max(1, Math.floor((candidates.sell_price || 0) * 0.5));
+          char.gold += refund;
+          goldGain += refund;
+          itemRewardSlug = candidates.slug + '_dup';
+        } else {
+          itemRewardSlug = candidates.slug;
+          db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(
+            char.id,
+            candidates.id,
+          );
+        }
       }
     }
   }

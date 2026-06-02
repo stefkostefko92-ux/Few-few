@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Sprite from './Sprite';
-import type { ItemLike } from './ItemTooltip';
+import type { ItemLike } from '../lib/itemTypes';
 
 /**
  * Mid-combat loot reveal. Renders a glowing reward card that fades in over
