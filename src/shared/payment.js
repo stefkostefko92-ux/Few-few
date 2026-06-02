@@ -22,9 +22,9 @@ export const PRICE_EUR = 4;
 export const BILLING_PERIOD_DAYS = 31;
 export const TRIAL_DAYS = 3;
 
-// The seller's Revolut payment link. Replace with your own revolut.me handle or
-// a Revolut payment-request / checkout URL. The "amount" hint pre-fills €4.
-export const REVOLUT_PAYMENT_URL = 'https://revolut.me/tanothbot/eur4';
+// The seller's Revolut payment link. The /{amount}{currency} suffix pre-fills
+// the €4 monthly amount on the Revolut.me page.
+export const REVOLUT_PAYMENT_URL = 'https://revolut.me/vycanismajoris/4eur';
 
 // Shared secret used to sign/verify license keys. CHANGE THIS to your own
 // random value and keep the same value in tools/genkey.mjs.
