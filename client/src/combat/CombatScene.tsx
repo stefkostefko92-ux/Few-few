@@ -3,6 +3,7 @@ import type { CombatActor, CombatRound } from '../lib/types';
 import { spriteFor } from './sprites';
 import CombatCanvas, { CombatCanvasHandle } from './CombatCanvas';
 import CombatScene3D, { CombatScene3DHandle } from './CombatScene3D';
+import CinematicOverlay, { CinematicOverlayHandle } from './CinematicOverlay';
 import '../styles/combat.css';
 
 interface Reward {
@@ -92,6 +93,7 @@ export default function CombatScene(props: Props): React.ReactElement {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasFxRef = useRef<CombatCanvasHandle>(null);
   const stage3DRef = useRef<CombatScene3DHandle>(null);
+  const cinemaRef = useRef<CinematicOverlayHandle>(null);
   // Fires a real particle burst at the target side's centroid. The canvas
   // is positioned absolute over .combat-field, so we approximate the hit
   // point in stage-relative coords (left 25% for hero, right 25% for foe).
@@ -212,12 +214,19 @@ export default function CombatScene(props: Props): React.ReactElement {
         // sparks, shockwave ring, and a stage flash on crits.
         fireCanvasBurst(targetSide, r.effect, r.action === 'crit', ratio);
 
-        // Crit camera zoom
+        // Crit camera zoom + cinematic overlay punch (letterbox + speed
+        // lines + crit stamp). The 3D scene handles its own dolly-zoom &
+        // hit-stop internally; the overlay just adds the DOM-side flair.
         if (r.action === 'crit' && stageRef.current) {
           stageRef.current.classList.remove('crit-zoom');
           void stageRef.current.offsetWidth;
           stageRef.current.classList.add('crit-zoom');
           setTimeout(() => stageRef.current?.classList.remove('crit-zoom'), 360);
+          cinemaRef.current?.letterbox(720);
+          cinemaRef.current?.speedLines(attackerIsHero ? 'hero' : 'foe', 420);
+          cinemaRef.current?.critStamp('CRITICAL HIT!');
+        } else if (tier >= 2) {
+          cinemaRef.current?.speedLines(attackerIsHero ? 'hero' : 'foe', 260);
         }
 
         // Target reaction
@@ -320,6 +329,8 @@ export default function CombatScene(props: Props): React.ReactElement {
           pops={pops.filter((p) => p.side === 'foe')}
         />
         <CombatCanvas ref={canvasFxRef} />
+        {/* Cinematic DOM layer: letterbox bars, anime speed lines, crit stamp. */}
+        <CinematicOverlay ref={cinemaRef} />
       </div>
 
       <div className="combat-ground" />

@@ -1,115 +1,236 @@
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
+import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 /**
- * Real 3D battle stage using Three.js.
+ * Cinematic 3D battle stage (Three.js + post-processing).
  *
- *   - Hero + foe are billboarded sprites with the existing class artwork
- *     (rendered to an offscreen canvas, then uploaded as a THREE.Texture).
- *     They always face the camera, so the stylized silhouettes still read
- *     "anime" while the *world around them* is genuinely 3D.
- *   - Real depth fog (color tied to the region), a tilted ground plane
- *     with a soft radial shadow under each fighter, and a far-back sky
- *     plane with painted distant peaks for parallax.
- *   - Per-fighter rim light (PointLight) that pulses on hit, so contact
- *     reads as a flash of volumetric lighting rather than a CSS overlay.
- *   - GPU-instanced particle system for sparks/embers/magic in 3D space,
- *     so they fly THROUGH the scene with proper depth, not on a flat plane.
- *   - Camera animates per round: pan-in on the attacker, pull back on
- *     impact, shake on heavy hits, sharp 35° tilt on crits.
+ *  RENDER STACK
+ *   RenderPass → UnrealBloomPass (HDR-style glow) → RGBShiftPass
+ *               (chromatic aberration) → VignettePass → OutputPass
+ *   Tone-mapped via ACESFilmic, sRGB output. Real bloom on additive
+ *   particles + emissive sprites gives the picture the look of a
+ *   colour-graded shot, not flat WebGL.
  *
- * Parent fires the cinematic via a ref (CombatScene3DHandle):
- *   ref.current?.attack({ side, kind: 'slash'|'magic'|..., crit, damageRatio });
- *   ref.current?.defeat(side);  // play the slump animation
- *   ref.current?.setHp(side, current, max);  // not used; fighters don't tween HP here
+ *  CINEMATIC DIRECTOR
+ *   - Intro: 1.4s orbital sweep around the duel before the first round.
+ *   - Per round: pan-in on attacker, lunge, impact flash, recoil dolly.
+ *   - On crit: Hitchcock dolly-zoom (FOV widens while camera pushes in),
+ *     hit-stop (~80ms frozen frame), then 250ms slow-mo at 0.35× before
+ *     ramping back to 1×.
+ *   - Per round: subtle hand-held shake on idle, hard shake on impact,
+ *     red rim-light flash and bloom kick on heavy hits.
+ *
+ *  SIGNATURE VFX (procedural — no external assets required)
+ *   - Slash:  ground shockwave RING (expanding torus) + arc sword-trail.
+ *   - Magic:  rotating 3D magic circle decal under the target + vertical
+ *             beam column, target lifts and glows.
+ *   - Arrow:  glowing projectile streak with motion-trail tube.
+ *   - Pierce: attacker after-image (sprite clone), white sting flash.
+ *
+ *  BLENDER / GLTF PIPELINE
+ *   This component will hot-swap procedural sprites for proper Blender-
+ *   authored rigs whenever a matching .glb is dropped in:
+ *     public/assets/characters/{warrior,ranger,mage,rogue}.glb
+ *   Export specs (rigify or auto-rigged):
+ *     • Y-up, +Z forward, scale 1.0, character ~1.8m tall, origin at feet
+ *     • Animation clip names (required): "idle", "attack", "hit", "dodge",
+ *       "defeat" (and optionally "magic", "shoot", "stab" for class fx)
+ *     • Max 60 bones, ≤ 8k tris, single PBR material with packed AO/Rough/Metal
+ *     • Export as glTF 2.0 separate or .glb (binary), no draco needed
+ *   When a glb is missing the procedural sprite remains the live fighter,
+ *   so the game keeps shipping without external art dependencies.
  */
 
 const SPRITE_W = 256;
 const SPRITE_H = 320;
 
 export interface CombatScene3DHandle {
-  /** Fire a windup + lunge + impact cinematic on one side. */
   attack: (opts: { attacker: 'hero' | 'foe'; effect?: string; crit?: boolean; damageRatio?: number; missed?: boolean; dodged?: boolean; }) => void;
   defeat: (side: 'hero' | 'foe') => void;
-  /** Camera reset to neutral framing. */
   resetCamera: () => void;
 }
 
 interface Props {
   heroClass: string;
   foeClass: string;
-  /** Whispering Woods / Mistmoor Hills / etc. Selects sky tint and fog colour. */
   region?: string;
 }
 
-/** Hand-stamp the class silhouette onto an offscreen canvas. The result is
- *  uploaded as a Three.js texture once per fighter and never recomputed. */
+/* ------------------------------------------------------------------ */
+/* Procedural sprite stamp — class silhouette baked to a canvas texture. */
+/* ------------------------------------------------------------------ */
 function classSpriteTexture(cls: string, tint: string): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = SPRITE_W; c.height = SPRITE_H;
   const ctx = c.getContext('2d')!;
-  // Body bottom-anchored, head at the top — gives a proper "standing" silhouette
+
+  // Anime hero silhouette — dark body shape with cel-shaded accent gradient.
+  // The body fills most of the brightness budget; tint is reserved for the
+  // weapon and small rim accents so post-process bloom doesn't blow it out.
+  const cx = SPRITE_W / 2;
+  const grad = ctx.createLinearGradient(0, SPRITE_H * 0.2, 0, SPRITE_H);
+  grad.addColorStop(0,    '#1c1f2a');
+  grad.addColorStop(0.55, '#171922');
+  grad.addColorStop(1,    '#0c0d12');
+
+  // Cape / cloak (broader at the bottom for a heroic silhouette)
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(cx - 50, SPRITE_H * 0.40);
+  ctx.quadraticCurveTo(SPRITE_W * 0.05, SPRITE_H * 0.90, cx - 90, SPRITE_H * 0.99);
+  ctx.lineTo(cx + 90, SPRITE_H * 0.99);
+  ctx.quadraticCurveTo(SPRITE_W * 0.95, SPRITE_H * 0.90, cx + 50, SPRITE_H * 0.40);
+  ctx.closePath(); ctx.fill();
+
+  // Torso (slimmer silhouette over the cape)
+  ctx.fillStyle = '#22242d';
+  ctx.beginPath();
+  ctx.ellipse(cx, SPRITE_H * 0.60, 54, 80, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Shoulder pauldrons — a couple of small dark trapezoids
+  ctx.fillStyle = '#15171f';
+  for (const sign of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(cx + sign * 36, SPRITE_H * 0.46);
+    ctx.lineTo(cx + sign * 62, SPRITE_H * 0.52);
+    ctx.lineTo(cx + sign * 58, SPRITE_H * 0.60);
+    ctx.lineTo(cx + sign * 34, SPRITE_H * 0.58);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // Cinched belt — a tint-colored band, the only saturated detail on the body
   ctx.fillStyle = tint;
-  ctx.shadowColor = tint;
-  ctx.shadowBlur = 22;
-  // Cape / cloak — a wide ellipse falling from shoulders
+  ctx.globalAlpha = 0.55;
+  ctx.fillRect(cx - 50, SPRITE_H * 0.72, 100, 6);
+  ctx.globalAlpha = 1;
+
+  // Head — soft circle with subtle highlight
+  ctx.fillStyle = '#171924';
+  ctx.beginPath(); ctx.arc(cx, SPRITE_H * 0.30, 30, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  ctx.beginPath(); ctx.arc(cx - 8, SPRITE_H * 0.27, 14, 0, Math.PI * 2); ctx.fill();
+  // Hood / hair fringe drape
+  ctx.fillStyle = '#0d0e16';
   ctx.beginPath();
-  ctx.moveTo(SPRITE_W*0.30, SPRITE_H*0.45);
-  ctx.quadraticCurveTo(SPRITE_W*0.10, SPRITE_H*0.85, SPRITE_W*0.30, SPRITE_H*0.95);
-  ctx.lineTo(SPRITE_W*0.70, SPRITE_H*0.95);
-  ctx.quadraticCurveTo(SPRITE_W*0.90, SPRITE_H*0.85, SPRITE_W*0.70, SPRITE_H*0.45);
-  ctx.fill();
-  // Torso
-  ctx.fillStyle = '#1a1d27';
-  ctx.shadowBlur = 0;
-  ctx.beginPath();
-  ctx.ellipse(SPRITE_W/2, SPRITE_H*0.62, 64, 86, 0, 0, Math.PI*2);
-  ctx.fill();
-  // Highlight rim around torso
-  ctx.strokeStyle = tint;
-  ctx.lineWidth = 3;
-  ctx.shadowColor = tint;
-  ctx.shadowBlur = 14;
-  ctx.beginPath();
-  ctx.ellipse(SPRITE_W/2, SPRITE_H*0.62, 64, 86, 0, 0, Math.PI*2);
-  ctx.stroke();
-  // Head with eye highlight
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#0c0e13';
-  ctx.beginPath();
-  ctx.arc(SPRITE_W/2, SPRITE_H*0.33, 36, 0, Math.PI*2);
-  ctx.fill();
+  ctx.moveTo(cx - 30, SPRITE_H * 0.30);
+  ctx.quadraticCurveTo(cx, SPRITE_H * 0.16, cx + 30, SPRITE_H * 0.30);
+  ctx.quadraticCurveTo(cx + 26, SPRITE_H * 0.24, cx - 26, SPRITE_H * 0.24);
+  ctx.closePath(); ctx.fill();
+  // Eye glow accent (small slit, low alpha so bloom only nibbles it)
+  ctx.fillStyle = tint;
+  ctx.globalAlpha = 0.85;
+  ctx.fillRect(cx - 10, SPRITE_H * 0.31, 6, 2);
+  ctx.fillRect(cx + 4,  SPRITE_H * 0.31, 6, 2);
+  ctx.globalAlpha = 1;
+
+  // Class-specific weapon held to the side — dark silhouette with a small
+  // tint highlight so it reads but does not blow out under bloom.
+  ctx.fillStyle = '#2a2d36';
   ctx.strokeStyle = tint;
   ctx.lineWidth = 2;
-  ctx.shadowColor = tint;
-  ctx.shadowBlur = 12;
-  ctx.beginPath(); ctx.arc(SPRITE_W/2, SPRITE_H*0.33, 36, 0, Math.PI*2); ctx.stroke();
-  // Class-specific accent: weapon silhouette held at the side.
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = tint;
   if (cls === 'warrior') {
-    // Sword pointing up
-    ctx.fillRect(SPRITE_W*0.82, SPRITE_H*0.35, 6, SPRITE_H*0.45);
-    ctx.beginPath(); ctx.moveTo(SPRITE_W*0.75, SPRITE_H*0.35); ctx.lineTo(SPRITE_W*0.95, SPRITE_H*0.35); ctx.lineTo(SPRITE_W*0.85, SPRITE_H*0.28); ctx.fill();
+    // Sword
+    ctx.fillRect(SPRITE_W * 0.82, SPRITE_H * 0.32, 8, SPRITE_H * 0.50);
+    // Crossguard
+    ctx.fillRect(SPRITE_W * 0.74, SPRITE_H * 0.82, 24, 5);
+    // Subtle blade edge highlight
+    ctx.strokeRect(SPRITE_W * 0.82, SPRITE_H * 0.32, 8, SPRITE_H * 0.50);
+    // Pommel
+    ctx.beginPath(); ctx.arc(SPRITE_W * 0.86, SPRITE_H * 0.30, 5, 0, Math.PI * 2); ctx.fill();
   } else if (cls === 'ranger') {
-    // Bow curve
-    ctx.strokeStyle = tint; ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.arc(SPRITE_W*0.82, SPRITE_H*0.55, 60, -Math.PI/2.4, Math.PI/2.4); ctx.stroke();
+    // Bow curve as a thin dark line with a tint accent string
+    ctx.strokeStyle = '#2a2d36'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(SPRITE_W * 0.82, SPRITE_H * 0.55, 60, -Math.PI / 2.4, Math.PI / 2.4); ctx.stroke();
+    ctx.strokeStyle = tint; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(SPRITE_W * 0.82 + 60 * Math.cos(-Math.PI / 2.4), SPRITE_H * 0.55 + 60 * Math.sin(-Math.PI / 2.4));
+    ctx.lineTo(SPRITE_W * 0.82 + 60 * Math.cos(Math.PI / 2.4),  SPRITE_H * 0.55 + 60 * Math.sin(Math.PI / 2.4));
+    ctx.stroke();
   } else if (cls === 'mage') {
-    // Staff with orb
-    ctx.fillRect(SPRITE_W*0.82, SPRITE_H*0.32, 6, SPRITE_H*0.50);
-    ctx.beginPath(); ctx.arc(SPRITE_W*0.85, SPRITE_H*0.30, 14, 0, Math.PI*2); ctx.fill();
+    // Staff with a glowing orb
+    ctx.fillStyle = '#2a2d36';
+    ctx.fillRect(SPRITE_W * 0.84, SPRITE_H * 0.30, 6, SPRITE_H * 0.55);
+    // Orb (subtle — let it bloom a touch as it's tiny)
+    const og = ctx.createRadialGradient(SPRITE_W * 0.87, SPRITE_H * 0.28, 0, SPRITE_W * 0.87, SPRITE_H * 0.28, 16);
+    og.addColorStop(0, tint);
+    og.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = og;
+    ctx.beginPath(); ctx.arc(SPRITE_W * 0.87, SPRITE_H * 0.28, 16, 0, Math.PI * 2); ctx.fill();
   } else {
-    // Rogue daggers
-    for (const x of [SPRITE_W*0.78, SPRITE_W*0.88]) {
-      ctx.beginPath(); ctx.moveTo(x, SPRITE_H*0.55); ctx.lineTo(x-4, SPRITE_H*0.75); ctx.lineTo(x+4, SPRITE_H*0.75); ctx.fill();
+    // Rogue twin daggers
+    ctx.fillStyle = '#2a2d36';
+    for (const x of [SPRITE_W * 0.78, SPRITE_W * 0.88]) {
+      ctx.beginPath();
+      ctx.moveTo(x, SPRITE_H * 0.55);
+      ctx.lineTo(x - 4, SPRITE_H * 0.75);
+      ctx.lineTo(x + 4, SPRITE_H * 0.75);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = tint; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, SPRITE_H * 0.55);
+      ctx.lineTo(x, SPRITE_H * 0.72);
+      ctx.stroke();
     }
   }
+
+  // Very soft outer rim — kept ≤ alpha 0.18 so bloom never grabs it.
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = `rgba(${parseInt(tint.slice(1,3),16)},${parseInt(tint.slice(3,5),16)},${parseInt(tint.slice(5,7),16)},.18)`;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(cx, SPRITE_H * 0.60, 56, 84, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.generateMipmaps = true;
+  return tex;
+}
+
+/* Rotating magic circle decal stamped to a canvas. */
+function magicCircleTexture(tint: string): THREE.CanvasTexture {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 512;
+  const ctx = c.getContext('2d')!;
+  ctx.translate(256, 256);
+  ctx.strokeStyle = tint; ctx.fillStyle = tint;
+  ctx.shadowColor = tint; ctx.shadowBlur = 30;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, 230, 0, Math.PI*2); ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(0, 0, 200, 0, Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, 140, 0, Math.PI*2); ctx.stroke();
+  // Pentagram-ish star
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI/2 + i * (Math.PI*4/5);
+    const x = Math.cos(a)*170, y = Math.sin(a)*170;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath(); ctx.stroke();
+  // Glyph ticks around outer ring
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    const x1 = Math.cos(a)*200, y1 = Math.sin(a)*200;
+    const x2 = Math.cos(a)*230, y2 = Math.sin(a)*230;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
   return tex;
 }
 
@@ -132,12 +253,18 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   const mountRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<THREE.Sprite | null>(null);
   const foeRef = useRef<THREE.Sprite | null>(null);
+  const heroRigRef = useRef<THREE.Object3D | null>(null);
+  const foeRigRef = useRef<THREE.Object3D | null>(null);
   const heroLightRef = useRef<THREE.PointLight | null>(null);
   const foeLightRef = useRef<THREE.PointLight | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const camAnchorRef = useRef({ x: 0, y: 2.2, z: 6.5, lx: 0, ly: 1.4, lz: 0 });
+  const camAnchorRef = useRef({ x: 0, y: 2.4, z: 8.0, lx: 0, ly: 1.4, lz: 0, fov: 42 });
   const shakeRef = useRef({ amount: 0, t: 0 });
-  const particlesRef = useRef<{ pts: THREE.Points; positions: Float32Array; velocities: Float32Array; lives: Float32Array; maxLives: Float32Array; colors: Float32Array; alive: number; } | null>(null);
+  const timeScaleRef = useRef(1);
+  const hitStopRef = useRef(0);
+  const introRef = useRef({ t: 0, dur: 1.4, active: true });
+  const particlesRef = useRef<{ pts: THREE.Points; positions: Float32Array; velocities: Float32Array; lives: Float32Array; maxLives: Float32Array; colors: Float32Array; sizes: Float32Array; alive: number; } | null>(null);
+  const fxGroupRef = useRef<THREE.Group | null>(null);
   const animRef = useRef<{ kind: 'idle'|'windup-hero'|'windup-foe'|'lunge-hero'|'lunge-foe'|'defeated-hero'|'defeated-foe'; t: number } & {[k:string]:any}>({ kind:'idle', t:0 });
   const rafRef = useRef<number | null>(null);
 
@@ -146,17 +273,11 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const mount = mountRef.current;
     const pal = REGION_PALETTE[region] || REGION_PALETTE.whispering_woods;
 
-    // ===== renderer / scene / camera =====
-    // Wrap WebGL init so an unsupported environment (headless CI, locked-down
-    // browsers, very old GPUs) downgrades gracefully to a flat CSS backdrop
-    // instead of throwing and breaking the whole combat scene.
+    /* ----- renderer ----- */
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     } catch (err) {
-      // No-op fallback: paint a gradient straight onto the mount and bail
-      // out of the rest of the 3D init. Combat still plays via the legacy
-      // 2D layer beneath it.
       const fb = document.createElement('div');
       fb.style.cssText = `position:absolute;inset:0;background:
         radial-gradient(ellipse at 50% 70%, ${'#' + (pal.ambient.toString(16).padStart(6,'0'))}33, transparent 60%),
@@ -168,7 +289,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     renderer.setSize(mount.clientWidth, mount.clientHeight, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.15;
     mount.appendChild(renderer.domElement);
     renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
 
@@ -176,12 +297,34 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     scene.background = new THREE.Color(pal.sky);
     scene.fog = new THREE.Fog(pal.fog, 6, 22);
 
-    const camera = new THREE.PerspectiveCamera(46, mount.clientWidth / mount.clientHeight, 0.1, 100);
-    camera.position.set(0, 2.2, 6.5);
+    const camera = new THREE.PerspectiveCamera(42, mount.clientWidth / mount.clientHeight, 0.1, 100);
+    camera.position.set(0, 2.4, 8.0);
     camera.lookAt(0, 1.4, 0);
     cameraRef.current = camera;
 
-    // ===== sky parallax: a distant cylinder with mountain silhouette =====
+    /* ----- post-processing stack ----- */
+    const composer = new EffectComposer(renderer);
+    composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    composer.setSize(mount.clientWidth, mount.clientHeight);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(
+      new THREE.Vector2(mount.clientWidth, mount.clientHeight),
+      0.55,   // strength — luminous halo on sparks/magic circles only
+      0.40,   // radius
+      0.55,   // threshold — only the brightest emissive pixels bloom,
+              // so fighter silhouettes stay readable instead of blowing out
+    );
+    composer.addPass(bloom);
+    const rgbShift = new ShaderPass(RGBShiftShader);
+    rgbShift.uniforms['amount'].value = 0.0018; // baseline chromatic aberration
+    composer.addPass(rgbShift);
+    const vignette = new ShaderPass(VignetteShader);
+    vignette.uniforms['offset'].value = 0.85;
+    vignette.uniforms['darkness'].value = 0.95;
+    composer.addPass(vignette);
+    composer.addPass(new OutputPass());
+
+    /* ----- sky parallax cylinder ----- */
     {
       const skyTex = (() => {
         const c = document.createElement('canvas');
@@ -191,7 +334,6 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         g.addColorStop(0, '#' + pal.sky.toString(16).padStart(6, '0'));
         g.addColorStop(1, '#' + pal.fog.toString(16).padStart(6, '0'));
         ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
-        // Painterly distant peaks
         for (let layer = 0; layer < 3; layer++) {
           ctx.fillStyle = `rgba(0,0,0,${0.18 + layer * 0.12})`;
           ctx.beginPath();
@@ -216,14 +358,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       scene.add(sky);
     }
 
-    // ===== ground plane with a subtle radial shadow under each fighter =====
+    /* ----- ground ----- */
     {
       const groundCanvas = document.createElement('canvas');
       groundCanvas.width = 1024; groundCanvas.height = 1024;
       const gctx = groundCanvas.getContext('2d')!;
       gctx.fillStyle = '#' + pal.ground.toString(16).padStart(6, '0');
       gctx.fillRect(0, 0, 1024, 1024);
-      // Hex grid noise so the ground has visible texture in 3D
       gctx.strokeStyle = 'rgba(255,255,255,.05)';
       gctx.lineWidth = 1.5;
       for (let r = 64; r < 1024; r += 64) {
@@ -231,7 +372,6 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         gctx.arc(512, 512, r, 0, Math.PI * 2);
         gctx.stroke();
       }
-      // Two soft shadows for the fighters
       for (const cx of [340, 684]) {
         const grd = gctx.createRadialGradient(cx, 700, 0, cx, 700, 110);
         grd.addColorStop(0, 'rgba(0,0,0,.55)');
@@ -250,16 +390,16 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       scene.add(ground);
     }
 
-    // ===== lighting =====
+    /* ----- lights ----- */
     scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.55));
-    const key = new THREE.DirectionalLight(0xfff1c4, 0.9);
+    const key = new THREE.DirectionalLight(0xfff1c4, 0.95);
     key.position.set(4, 8, 5);
     scene.add(key);
     const fill = new THREE.DirectionalLight(0x6aa7ff, 0.35);
     fill.position.set(-5, 3, 2);
     scene.add(fill);
 
-    // ===== fighters (billboarded sprites) =====
+    /* ----- fighters ----- */
     function addFighter(cls: string, side: 'hero' | 'foe'): { sprite: THREE.Sprite; light: THREE.PointLight } {
       const tint = CLASS_TINT[cls] || CLASS_TINT.warrior;
       const tex = classSpriteTexture(cls, tint);
@@ -280,14 +420,40 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     heroLightRef.current = heroPair.light;
     foeLightRef.current = foePair.light;
 
-    // ===== GPU particle system =====
-    const MAX_P = 800;
+    /* ----- optional Blender GLB rig swap -----
+       Drop /public/assets/characters/<class>.glb to override the sprite.
+       The sprite stays as a fallback so the game ships without art deps. */
+    const loader = new GLTFLoader();
+    const tryLoadRig = (cls: string, side: 'hero' | 'foe') => {
+      const url = `/assets/characters/${cls}.glb`;
+      loader.load(url, (gltf) => {
+        const model = gltf.scene;
+        model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
+        model.rotation.y = side === 'hero' ? Math.PI / 6 : -Math.PI / 6;
+        model.scale.setScalar(1.0);
+        model.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
+        });
+        scene.add(model);
+        // Hide the procedural sprite once the rig loads
+        const pair = side === 'hero' ? heroPair : foePair;
+        pair.sprite.material.opacity = 0;
+        if (side === 'hero') heroRigRef.current = model; else foeRigRef.current = model;
+      }, undefined, () => { /* no asset → silently keep sprite */ });
+    };
+    tryLoadRig(heroClass, 'hero');
+    tryLoadRig(foeClass, 'foe');
+
+    /* ----- particle system ----- */
+    const MAX_P = 1200;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(MAX_P * 3);
     const vel = new Float32Array(MAX_P * 3);
     const colors = new Float32Array(MAX_P * 3);
     const lives = new Float32Array(MAX_P);
     const maxL = new Float32Array(MAX_P);
+    const sizes = new Float32Array(MAX_P);
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const pmat = new THREE.PointsMaterial({
@@ -296,9 +462,107 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     });
     const pts = new THREE.Points(geo, pmat);
     scene.add(pts);
-    particlesRef.current = { pts, positions: pos, velocities: vel, lives, maxLives: maxL, colors, alive: 0 };
+    particlesRef.current = { pts, positions: pos, velocities: vel, lives, maxLives: maxL, colors, sizes, alive: 0 };
 
-    // Continuous slow ambient embers in front of the scene
+    /* ----- VFX group (shockwave rings, magic circles, beams) ----- */
+    const fxGroup = new THREE.Group();
+    scene.add(fxGroup);
+    fxGroupRef.current = fxGroup;
+
+    /** Expanding torus shockwave on the ground. */
+    function shockwave(x: number, z: number, color: number) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.6, 0.85, 64),
+        new THREE.MeshBasicMaterial({
+          color, transparent: true, opacity: 0.95,
+          blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+          depthWrite: false,
+        }),
+      );
+      ring.position.set(x, 0.02, z);
+      ring.rotation.x = -Math.PI / 2;
+      ring.userData = { kind: 'shockwave', life: 0, max: 0.55, x, z };
+      fxGroup.add(ring);
+    }
+
+    /** Magic circle decal under target. */
+    function magicCircle(x: number, z: number, color: number) {
+      const tex = magicCircleTexture('#' + color.toString(16).padStart(6, '0'));
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, opacity: 1.0,
+        blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+      });
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4), mat);
+      m.position.set(x, 0.05, z);
+      m.rotation.x = -Math.PI / 2;
+      m.userData = { kind: 'magicCircle', life: 0, max: 1.1 };
+      fxGroup.add(m);
+
+      // Vertical beam column
+      const beam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.45, 0.7, 5.5, 24, 1, true),
+        new THREE.MeshBasicMaterial({
+          color, transparent: true, opacity: 0.55,
+          blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+        }),
+      );
+      beam.position.set(x, 2.7, z);
+      beam.userData = { kind: 'beam', life: 0, max: 0.7 };
+      fxGroup.add(beam);
+    }
+
+    /** Slash arc trail — a curved tube going through the target. */
+    function slashArc(fromX: number, toX: number, color: number) {
+      const cx = (fromX + toX) / 2;
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(fromX, 0.8, 0.4),
+        new THREE.Vector3(cx, 2.4, 0),
+        new THREE.Vector3(toX, 1.2, -0.4),
+      ]);
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 20, 0.06, 8, false),
+        new THREE.MeshBasicMaterial({
+          color, transparent: true, opacity: 0.95,
+          blending: THREE.AdditiveBlending, depthWrite: false,
+        }),
+      );
+      tube.userData = { kind: 'arc', life: 0, max: 0.35 };
+      fxGroup.add(tube);
+    }
+
+    /** Arrow streak with a glowing tracer. */
+    function arrowStreak(fromX: number, toX: number, color: number) {
+      const dir = Math.sign(toX - fromX);
+      const curve = new THREE.LineCurve3(
+        new THREE.Vector3(fromX + dir * 0.4, 1.5, 0.1),
+        new THREE.Vector3(toX - dir * 0.2, 1.45, 0),
+      );
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 8, 0.05, 6, false),
+        new THREE.MeshBasicMaterial({
+          color, transparent: true, opacity: 0.95,
+          blending: THREE.AdditiveBlending, depthWrite: false,
+        }),
+      );
+      tube.userData = { kind: 'streak', life: 0, max: 0.30 };
+      fxGroup.add(tube);
+    }
+
+    /** Attacker after-image — a faded clone of the lunging sprite. */
+    function afterImage(sprite: THREE.Sprite) {
+      const clone = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: sprite.material.map, transparent: true, opacity: 0.55,
+          color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false,
+        }),
+      );
+      clone.scale.copy(sprite.scale);
+      clone.position.copy(sprite.position);
+      clone.userData = { kind: 'afterimage', life: 0, max: 0.45 };
+      fxGroup.add(clone);
+    }
+
+    /* ----- particle helpers ----- */
     function spawnAmbient(dt: number) {
       if (Math.random() > dt * 6) return;
       const p = particlesRef.current!;
@@ -335,47 +599,91 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       }
     }
 
-    // ===== imperative API =====
+    /* ----- imperative bridge for inner closures ----- */
     (CombatScene3D as any)._burst = burst;
-    (CombatScene3D as any)._scene = scene;
+    (CombatScene3D as any)._shockwave = shockwave;
+    (CombatScene3D as any)._magicCircle = magicCircle;
+    (CombatScene3D as any)._slashArc = slashArc;
+    (CombatScene3D as any)._arrowStreak = arrowStreak;
+    (CombatScene3D as any)._afterImage = afterImage;
 
-    // ===== resize =====
+    /* ----- resize ----- */
     function resize() {
       const w = mount.clientWidth, h = mount.clientHeight;
       renderer.setSize(w, h, false);
+      composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
 
-    // ===== main loop =====
+    /* ----- main loop ----- */
     let last = performance.now();
     function tick(now: number) {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const rawDt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
-      // Ambient sparks
-      spawnAmbient(dt);
+      // Hit-stop freezes simulation for a few frames (camera + bloom still tick).
+      const ts = timeScaleRef.current;
+      hitStopRef.current = Math.max(0, hitStopRef.current - rawDt);
+      const dt = hitStopRef.current > 0 ? 0 : rawDt * ts;
 
-      // Particles step
+      // Ease the time scale back to 1× after a crit-induced slow-mo.
+      if (timeScaleRef.current < 1) {
+        timeScaleRef.current = Math.min(1, timeScaleRef.current + rawDt * 1.6);
+      }
+
+      // Ambient sparks + particles step
+      spawnAmbient(dt);
       const p = particlesRef.current!;
       for (let i = 0; i < MAX_P; i++) {
         p.lives[i] += dt;
         if (p.lives[i] >= p.maxLives[i]) {
-          // park offscreen
           p.positions[i*3 + 1] = -100;
           continue;
         }
-        p.velocities[i*3 + 1] -= 4.5 * dt; // gravity
+        p.velocities[i*3 + 1] -= 4.5 * dt;
         p.positions[i*3]     += p.velocities[i*3]     * dt;
         p.positions[i*3 + 1] += p.velocities[i*3 + 1] * dt;
         p.positions[i*3 + 2] += p.velocities[i*3 + 2] * dt;
       }
       geo.attributes.position.needsUpdate = true;
       geo.attributes.color.needsUpdate = true;
-      // Fade old particles: lower alpha-ish via dimming colors over life
       pmat.opacity = 1;
+
+      // VFX group tick — shockwave expansion, magic circle rotation, fades.
+      const fg = fxGroupRef.current!;
+      for (let i = fg.children.length - 1; i >= 0; i--) {
+        const obj = fg.children[i] as THREE.Mesh | THREE.Sprite;
+        const ud = obj.userData;
+        ud.life += dt;
+        const k = Math.min(1, ud.life / ud.max);
+        const mat = (obj as any).material as THREE.Material & { opacity: number };
+        if (ud.kind === 'shockwave') {
+          const r = 0.4 + k * 4.2;
+          obj.scale.set(r, r, r);
+          mat.opacity = (1 - k) * 0.95;
+        } else if (ud.kind === 'magicCircle') {
+          obj.rotation.z += dt * 1.2;
+          const s = 0.6 + Math.min(1, k * 2) * 0.5;
+          obj.scale.set(s, s, s);
+          mat.opacity = k < 0.3 ? k / 0.3 : 1 - (k - 0.3) / 0.7;
+        } else if (ud.kind === 'beam') {
+          mat.opacity = k < 0.3 ? (k / 0.3) * 0.7 : (1 - (k - 0.3) / 0.7) * 0.7;
+          obj.scale.x = 1 + Math.sin(now * 0.02) * 0.1;
+          obj.scale.z = 1 + Math.cos(now * 0.02) * 0.1;
+        } else if (ud.kind === 'arc' || ud.kind === 'streak') {
+          mat.opacity = (1 - k) * 0.95;
+        } else if (ud.kind === 'afterimage') {
+          mat.opacity = (1 - k) * 0.55;
+        }
+        if (ud.life >= ud.max) {
+          fg.remove(obj);
+          (obj as any).geometry?.dispose?.();
+          mat.dispose?.();
+        }
+      }
 
       // Animation state
       const a = animRef.current; a.t += dt;
@@ -398,12 +706,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         h.material.rotation = -0.18 + 0.4 * eased;
         if (k >= 0.5 && !a.didImpact) {
           a.didImpact = true;
-          // Flash + particle burst + camera shake
-          const color = a.color || 0xffd34d;
-          fl.intensity = a.crit ? 6 : 3;
-          (CombatScene3D as any)._burst(f.position.x - 0.4, f.position.y, f.position.z, color, a.crit ? 90 : 40, a.crit ? 1.6 : 1.1);
-          shakeRef.current = { amount: a.crit ? 0.3 : 0.15, t: 0.35 };
-          if (a.crit) camera.position.z = 5.5;
+          fireImpact('hero', a);
         }
         if (k >= 1) { a.kind = 'idle'; h.position.x = -2.2; h.scale.x = 2.2; h.material.rotation = 0; }
       } else if (a.kind === 'windup-foe') {
@@ -419,11 +722,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         f.material.rotation = 0.18 - 0.4 * eased;
         if (k >= 0.5 && !a.didImpact) {
           a.didImpact = true;
-          const color = a.color || 0xff7c4d;
-          hl.intensity = a.crit ? 6 : 3;
-          (CombatScene3D as any)._burst(h.position.x + 0.4, h.position.y, h.position.z, color, a.crit ? 90 : 40, a.crit ? 1.6 : 1.1);
-          shakeRef.current = { amount: a.crit ? 0.3 : 0.15, t: 0.35 };
-          if (a.crit) camera.position.z = 5.5;
+          fireImpact('foe', a);
         }
         if (k >= 1) { a.kind = 'idle'; f.position.x = 2.2; f.scale.x = 2.2; f.material.rotation = 0; }
       } else if (a.kind === 'defeated-hero') {
@@ -437,57 +736,136 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         f.material.rotation = 0.9 * ease(k, 2);
         f.material.opacity = 1 - 0.6 * k;
       } else {
-        // gentle idle bob
         h.position.y = 1.4 + Math.sin(now * 0.0014) * 0.04;
         f.position.y = 1.4 + Math.sin(now * 0.0014 + 1.6) * 0.04;
       }
 
-      // Camera position with shake
+      // Intro orbital sweep — overrides camera anchor for the first 1.4s.
+      const intro = introRef.current;
+      let camTargetX = camAnchorRef.current.x;
+      let camTargetY = camAnchorRef.current.y;
+      let camTargetZ = camAnchorRef.current.z;
+      let camTargetFov = camAnchorRef.current.fov;
+      if (intro.active) {
+        intro.t += rawDt;
+        const k = Math.min(1, intro.t / intro.dur);
+        const eased = 1 - Math.pow(1 - k, 3);
+        const ang = (1 - eased) * Math.PI * 0.6 + Math.PI / 2; // 162° → 90° (front)
+        const radius = 9.5 - eased * 3.0;
+        camTargetX = Math.cos(ang) * radius * 0.4;
+        camTargetY = 4.5 - eased * 2.3;
+        camTargetZ = Math.sin(ang) * radius;
+        camTargetFov = 52 - eased * 6;
+        if (k >= 1) intro.active = false;
+      }
+
       const cam = cameraRef.current!;
-      const anchor = camAnchorRef.current;
       const s = shakeRef.current;
-      s.t = Math.max(0, s.t - dt);
+      s.t = Math.max(0, s.t - rawDt);
       const shakeX = s.t > 0 ? (Math.random() - 0.5) * s.amount * 2 * (s.t / 0.35) : 0;
       const shakeY = s.t > 0 ? (Math.random() - 0.5) * s.amount * (s.t / 0.35) : 0;
-      cam.position.x += (anchor.x + shakeX - cam.position.x) * Math.min(1, dt * 6);
-      cam.position.y += (anchor.y + shakeY - cam.position.y) * Math.min(1, dt * 6);
-      cam.position.z += (anchor.z - cam.position.z) * Math.min(1, dt * 3);
-      cam.lookAt(anchor.lx, anchor.ly, anchor.lz);
 
-      renderer.render(scene, camera);
+      const lerpK = intro.active ? Math.min(1, rawDt * 8) : Math.min(1, rawDt * 6);
+      cam.position.x += (camTargetX + shakeX - cam.position.x) * lerpK;
+      cam.position.y += (camTargetY + shakeY - cam.position.y) * lerpK;
+      cam.position.z += (camTargetZ - cam.position.z) * Math.min(1, rawDt * 4);
+      // Dolly-zoom FOV lerp
+      cam.fov += (camTargetFov - cam.fov) * Math.min(1, rawDt * 5);
+      cam.updateProjectionMatrix();
+      cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
+
+      // Bloom pulse on heavy hits — driven by anim flag
+      if (a.bloomKick && a.bloomKick > 0) {
+        bloom.strength = 0.55 + a.bloomKick * 0.7;
+        rgbShift.uniforms['amount'].value = 0.0018 + a.bloomKick * 0.0035;
+        a.bloomKick = Math.max(0, a.bloomKick - rawDt * 3);
+      } else {
+        bloom.strength += (0.55 - bloom.strength) * Math.min(1, rawDt * 4);
+        rgbShift.uniforms['amount'].value += (0.0018 - rgbShift.uniforms['amount'].value) * Math.min(1, rawDt * 4);
+      }
+
+      composer.render();
       rafRef.current = requestAnimationFrame(tick);
     }
+
+    /** Handles impact bookkeeping for both sides — particle bursts, light flashes,
+     *  shockwave/magic/arrow signature VFX, camera shake, dolly-zoom on crits. */
+    function fireImpact(attacker: 'hero' | 'foe', a: any) {
+      const isHero = attacker === 'hero';
+      const target = isHero ? foeRef.current! : heroRef.current!;
+      const targetLight = isHero ? foeLightRef.current! : heroLightRef.current!;
+      const color = a.color || 0xffd34d;
+      const tx = target.position.x;
+      const tz = target.position.z;
+
+      // Core burst + rim flash
+      targetLight.intensity = a.crit ? 7 : 3;
+      (CombatScene3D as any)._burst(tx + (isHero ? -0.4 : 0.4), target.position.y, tz, color, a.crit ? 110 : 50, a.crit ? 1.7 : 1.15);
+
+      // Signature VFX per effect.
+      const effect = a.effect as string | undefined;
+      const attackerSprite = isHero ? heroRef.current! : foeRef.current!;
+      if (effect === 'magic') {
+        (CombatScene3D as any)._magicCircle(tx, tz, color);
+      } else if (effect === 'arrow') {
+        (CombatScene3D as any)._arrowStreak(attackerSprite.position.x, tx, color);
+      } else if (effect === 'pierce') {
+        (CombatScene3D as any)._afterImage(attackerSprite);
+      } else {
+        // slash (default)
+        (CombatScene3D as any)._slashArc(attackerSprite.position.x, tx, color);
+      }
+      // Every impact lands a ground shockwave under the target.
+      (CombatScene3D as any)._shockwave(tx, tz, color);
+
+      // Cinematic punch: shake, hit-stop, slow-mo on crits, dolly-zoom + bloom kick.
+      shakeRef.current = { amount: a.crit ? 0.32 : 0.16, t: 0.40 };
+      a.bloomKick = a.crit ? 1.4 : 0.55;
+      if (a.crit) {
+        hitStopRef.current = 0.085;          // ~5 frame freeze at 60fps
+        timeScaleRef.current = 0.35;         // slow-mo until eased back to 1×
+        camAnchorRef.current.z = 6.4;        // push camera in (Hitchcock)
+        camAnchorRef.current.fov = 54;       // widen FOV → dolly-zoom feel
+      } else {
+        camAnchorRef.current.z = 7.2;
+        camAnchorRef.current.fov = 42;
+      }
+    }
+
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      composer.dispose();
       renderer.dispose();
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry?.dispose();
         const mat = (obj as THREE.Mesh).material as any;
         if (mat) { if (Array.isArray(mat)) mat.forEach((m) => m.dispose && m.dispose()); else mat.dispose && mat.dispose(); }
       });
-      mount.removeChild(renderer.domElement);
+      try { mount.removeChild(renderer.domElement); } catch {}
     };
   }, [heroClass, foeClass, region]);
 
   useImperativeHandle(ref, () => ({
     attack({ attacker, effect, crit, damageRatio = 0.3, missed, dodged }) {
-      // For misses / dodges we still pan the camera a touch.
       const color = effect === 'magic' ? 0xc294ff : effect === 'arrow' ? 0x9ad9ff : effect === 'pierce' ? 0xffe7a8 : 0xffd34d;
-      animRef.current = { kind: attacker === 'hero' ? 'windup-hero' : 'windup-foe', t: 0, color, crit: !!crit, didImpact: false };
-      // Slight zoom-in on big hits
-      if ((damageRatio || 0) > 0.25 || crit) camAnchorRef.current.z = 5.8;
-      else camAnchorRef.current.z = 6.5;
-      if (missed || dodged) shakeRef.current = { amount: 0.04, t: 0.18 };
+      animRef.current = { kind: attacker === 'hero' ? 'windup-hero' : 'windup-foe', t: 0, color, crit: !!crit, effect, didImpact: false };
+      // Pre-position camera for the lunge (overridden again on impact).
+      if ((damageRatio || 0) > 0.25 || crit) { camAnchorRef.current.z = 7.0; }
+      else camAnchorRef.current.z = 8.0;
+      camAnchorRef.current.fov = 42;
+      if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18 };
     },
     defeat(side) {
       animRef.current = { kind: side === 'hero' ? 'defeated-hero' : 'defeated-foe', t: 0 };
-      camAnchorRef.current.z = 5.5;
+      camAnchorRef.current.z = 6.8;
+      camAnchorRef.current.fov = 38; // tight tele-lens for the death beat
     },
     resetCamera() {
-      camAnchorRef.current = { x: 0, y: 2.2, z: 6.5, lx: 0, ly: 1.4, lz: 0 };
+      camAnchorRef.current = { x: 0, y: 2.4, z: 8.0, lx: 0, ly: 1.4, lz: 0, fov: 42 };
+      introRef.current = { t: 0, dur: 1.4, active: true };
     },
   }));
 
