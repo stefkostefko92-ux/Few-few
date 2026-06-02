@@ -16,8 +16,10 @@ import { buildDeck, hiddenLike, RANK_VALUE, RANKS_52, rankOf, suitOf, type Card 
  * deadwood wins the difference; ties/illegal-knocks resolve to the knocker
  * losing. Opponent hand + stock are redacted.
  *
- * Simplification (harden in S9): no lay-off onto opponent melds; scoring is
- * win/loss by deadwood comparison, not running 100-point match.
+ * Lay-offs supported (§4.11): on a knock (not gin), the defender removes any
+ * deadwood that extends the knocker's melds before comparison; an undercut
+ * (defender deadwood <= knocker) awards the defender. Scoring is win/loss by
+ * deadwood comparison, not a running 100-point match (single deal).
  */
 
 export interface RummyState {
@@ -121,9 +123,17 @@ export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
       const myDead = bestDeadwood(next.hands[seat]!);
       if (myDead > 10) throw new IllegalActionError("Deadwood too high to knock");
       const opp: Seat = seat === 0 ? 1 : 0;
-      const oppDead = bestDeadwood(next.hands[opp]!);
+      // Defender may lay off deadwood onto the knocker's melds (unless GIN: a
+      // gin hand — 0 deadwood — does not allow lay-offs).
+      const knockerMelds = meldsOf(next.hands[seat]!);
+      const oppDead =
+        myDead === 0
+          ? bestDeadwood(next.hands[opp]!)
+          : deadwoodAfterLayoff(next.hands[opp]!, knockerMelds);
       events.push({ type: "KNOCK", seat, deadwood: myDead });
-      const winner: Seat = myDead <= oppDead ? seat : opp;
+      // Knocker wins if strictly lower; tie or undercut → defender (incl. gin
+      // bonus is implicit: gin's 0 almost always wins).
+      const winner: Seat = myDead < oppDead || (myDead === 0 && myDead <= oppDead) ? seat : opp;
       next.deadwood = seat === 0 ? [myDead, oppDead] : [oppDead, myDead];
       events.push({ type: "WIN", seat: winner });
       return { state: { ...next, winner, done: true }, events };
@@ -213,4 +223,85 @@ export function bestDeadwood(hand: Card[]): number {
   let dead = 0;
   for (const c of hand) if (!used.has(c)) dead += deadwoodValue(rankOf(c));
   return dead;
+}
+
+/** The melds in a hand: each a card array (sets of rank, runs of suit). */
+export function meldsOf(hand: Card[]): Card[][] {
+  const used = new Set<Card>();
+  const melds: Card[][] = [];
+
+  const byRank = new Map<string, Card[]>();
+  for (const c of hand) {
+    const arr = byRank.get(rankOf(c)) ?? [];
+    arr.push(c);
+    byRank.set(rankOf(c), arr);
+  }
+  for (const cards of byRank.values()) {
+    if (cards.length >= 3) {
+      melds.push(cards.slice());
+      for (const c of cards) used.add(c);
+    }
+  }
+
+  const bySuit = new Map<string, Card[]>();
+  for (const c of hand) {
+    if (used.has(c)) continue;
+    const arr = bySuit.get(suitOf(c)) ?? [];
+    arr.push(c);
+    bySuit.set(suitOf(c), arr);
+  }
+  for (const cards of bySuit.values()) {
+    const sorted = cards
+      .slice()
+      .sort((a, b) => (RANK_VALUE[rankOf(a)] ?? 0) - (RANK_VALUE[rankOf(b)] ?? 0));
+    let run: Card[] = [];
+    let prev = -99;
+    const flush = () => {
+      if (run.length >= 3) melds.push(run.slice());
+    };
+    for (const c of sorted) {
+      const v = RANK_VALUE[rankOf(c)] ?? 0;
+      if (v === prev + 1) run.push(c);
+      else {
+        flush();
+        run = [c];
+      }
+      prev = v;
+    }
+    flush();
+  }
+  return melds;
+}
+
+/** Can a single card extend one of the knocker's melds (lay-off)? */
+function extendsMeld(card: Card, melds: Card[][]): boolean {
+  for (const meld of melds) {
+    const r0 = rankOf(meld[0]!);
+    if (meld.every((mc) => rankOf(mc) === r0)) {
+      if (rankOf(card) === r0) return true; // set: same rank
+      continue;
+    }
+    const s0 = suitOf(meld[0]!);
+    if (suitOf(card) !== s0) continue;
+    const vals = meld.map((mc) => RANK_VALUE[rankOf(mc)] ?? 0).sort((a, b) => a - b);
+    const cv = RANK_VALUE[rankOf(card)] ?? 0;
+    if (cv === (vals[0] ?? 0) - 1 || cv === (vals[vals.length - 1] ?? 0) + 1) return true;
+  }
+  return false;
+}
+
+/**
+ * Defender's deadwood after laying off onto the knocker's melds (§4.11): any
+ * deadwood card that extends a knocker meld is removed. Greedy; lay-offs do not
+ * change the knocker's own count.
+ */
+export function deadwoodAfterLayoff(defenderHand: Card[], knockerMelds: Card[][]): number {
+  const meldedSet = new Set<Card>();
+  for (const meld of meldsOf(defenderHand)) for (const c of meld) meldedSet.add(c);
+  let total = 0;
+  for (const c of defenderHand) {
+    if (meldedSet.has(c)) continue;
+    if (!extendsMeld(c, knockerMelds)) total += deadwoodValue(rankOf(c));
+  }
+  return total;
 }

@@ -17,10 +17,9 @@ import type { SeededRng } from "../../kernel/rng.js";
  *   - White moves toward index 0, home = indices 0..5, bears off past 0.
  *   - Black moves toward index 23, home = indices 18..23, bears off past 23.
  *
- * Known simplification (to harden in S9): the "must use the maximum number of
- * dice / the larger die" obligation is not enforced — any legal single-die move
- * is allowed. This keeps games legal and terminating; it only relaxes
- * optimal-play obligations, not playability.
+ * Max-dice obligation enforced: a player must play the greatest number of dice
+ * possible, and when only one of two dice can be played, must play the larger
+ * (movesFor + maxDicePlayable lookahead).
  */
 
 export interface BackgammonState {
@@ -104,7 +103,8 @@ function canBearOff(s: BackgammonState, seat: 0 | 1, from: number, die: number):
   return true;
 }
 
-function movesFor(s: BackgammonState): Array<{ from: number | "BAR"; die: number }> {
+/** Raw pseudo-legal moves for the dice still in `remaining` (no max-dice rule). */
+function rawMoves(s: BackgammonState): Array<{ from: number | "BAR"; die: number }> {
   const seat = s.turn as 0 | 1;
   const dice = [...new Set(s.remaining)];
   const out: Array<{ from: number | "BAR"; die: number }> = [];
@@ -126,6 +126,60 @@ function movesFor(s: BackgammonState): Array<{ from: number | "BAR"; die: number
     }
   }
   return out;
+}
+
+/** Apply one move to a shallow board copy for max-dice lookahead (own pieces). */
+function simulate(
+  s: BackgammonState,
+  mv: { from: number | "BAR"; die: number },
+): BackgammonState {
+  const next = clone(s);
+  const seat = s.turn as 0 | 1;
+  if (mv.from === "BAR") {
+    next.bar[seat] -= 1;
+    const entry = barEntry(seat, mv.die);
+    next.points[entry] = (next.points[entry] ?? 0) + (seat === WHITE ? 1 : -1);
+  } else {
+    next.points[mv.from] = (next.points[mv.from] ?? 0) + (seat === WHITE ? -1 : 1);
+    const dest = destOf(seat, mv.from, mv.die);
+    if (dest === "OFF") next.off[seat] += 1;
+    else next.points[dest] = (next.points[dest] ?? 0) + (seat === WHITE ? 1 : -1);
+  }
+  const di = next.remaining.indexOf(mv.die);
+  if (di >= 0) next.remaining.splice(di, 1);
+  return next;
+}
+
+/** Maximum number of dice playable from this position (DFS over sequences). */
+function maxDicePlayable(s: BackgammonState): number {
+  const moves = rawMoves(s);
+  if (moves.length === 0) return 0;
+  let best = 0;
+  for (const mv of moves) {
+    const depth = 1 + maxDicePlayable(simulate(s, mv));
+    if (depth > best) best = depth;
+    if (best === s.remaining.length) break; // can't do better than all dice
+  }
+  return best;
+}
+
+/**
+ * Legal moves enforcing the max-dice obligation: a player must play the greatest
+ * number of dice possible. Only moves that preserve a path to that maximum are
+ * offered — which also enforces "play the larger die when only one is possible".
+ */
+function movesFor(s: BackgammonState): Array<{ from: number | "BAR"; die: number }> {
+  const moves = rawMoves(s);
+  if (moves.length <= 1) return moves;
+  const maxN = maxDicePlayable(s);
+  if (maxN <= 1) {
+    // Only one die can be played overall — must play the largest such die.
+    const playableDice = [...new Set(moves.map((m) => m.die))];
+    const largest = Math.max(...playableDice);
+    return moves.filter((m) => m.die === largest);
+  }
+  // Keep only moves from which the remaining maximum is still reachable.
+  return moves.filter((mv) => 1 + maxDicePlayable(simulate(s, mv)) === maxN);
 }
 
 function clone(s: BackgammonState): BackgammonState {

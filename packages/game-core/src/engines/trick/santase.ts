@@ -21,8 +21,10 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  * Phase 2 (stock closed or exhausted): must follow suit and head the trick when
  * able; if void of the led suit, must play a trump.
  *
- * Simplifications (to harden in S9): a closed-stock loss is scored as a normal
- * loss; if neither side reaches 66, the last trick's winner takes the deal.
+ * Closed-stock penalty enforced (§4.2): if the closer fails to reach 66, the
+ * opponent wins 2 game points (3 if the closer had taken no trick when closing).
+ * If neither side reaches 66 in open play, the last trick's winner takes the
+ * deal at 1 game point.
  */
 
 const RANKS = ["9", "J", "Q", "K", "T", "A"] as const;
@@ -45,6 +47,12 @@ export interface SantaseState {
   points: [number, number];
   wonTrick: [boolean, boolean];
   closed: boolean;
+  /** Seat that closed the talon (null if never closed). */
+  closedBy: Seat | null;
+  /** Whether the closer had already taken a trick when they closed. */
+  closerHadTrick: boolean;
+  /** Game points the winner earns (1/2/3), set at finish. */
+  gamePoints: number;
   lastTrickWinner: Seat | null;
   winner: Seat | null;
   done: boolean;
@@ -83,6 +91,11 @@ function hasMarriagePartner(hand: Card[], card: Card): boolean {
   return hand.includes(partner);
 }
 
+/** Standard game points for a normal win, by the loser's card points. */
+function normalGamePoints(loserPoints: number): number {
+  return loserPoints === 0 ? 3 : loserPoints < 33 ? 2 : 1;
+}
+
 function finish(
   state: SantaseState,
   winner: Seat,
@@ -90,7 +103,32 @@ function finish(
 ): { state: SantaseState; events: SantaseEvent[] } {
   state.winner = winner;
   state.done = true;
+  state.gamePoints = normalGamePoints(state.points[other(winner)] ?? 0);
   events.push({ type: "WIN", seat: winner });
+  return { state, events };
+}
+
+/**
+ * Finish after a CLOSED talon. If the closer reached 66 they win normally; if
+ * they failed, the OPPONENT wins and is awarded a penalty: 3 game points if the
+ * closer had no trick when closing, otherwise 2 (and at least what they'd score
+ * normally). This is the traditional "затваряне" penalty (§4.2).
+ */
+function finishClosed(
+  state: SantaseState,
+  events: SantaseEvent[],
+): { state: SantaseState; events: SantaseEvent[] } {
+  const closer = state.closedBy!;
+  const opp = other(closer);
+  if ((state.points[closer] ?? 0) >= 66) {
+    return finish(state, closer, events);
+  }
+  // Closer failed → opponent wins with a penalty.
+  state.winner = opp;
+  state.done = true;
+  const penalty = state.closerHadTrick ? 2 : 3;
+  state.gamePoints = Math.max(penalty, normalGamePoints(state.points[closer] ?? 0));
+  events.push({ type: "WIN", seat: opp });
   return { state, events };
 }
 
@@ -109,6 +147,9 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       points: [0, 0],
       wonTrick: [false, false],
       closed: false,
+      closedBy: null,
+      closerHadTrick: false,
+      gamePoints: 1,
       lastTrickWinner: null,
       winner: null,
       done: false,
@@ -189,6 +230,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
 
     if (action.type === "CLOSE") {
       next.closed = true;
+      next.closedBy = seat;
+      next.closerHadTrick = next.wonTrick[seat] ?? false;
       events.push({ type: "CLOSE", seat });
       return { state: next, events };
     }
@@ -222,7 +265,11 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     next.turn = winner;
     events.push({ type: "TRICK", seat: winner, points: pts });
 
-    if ((next.points[winner] ?? 0) >= 66) return finish(next, winner, events);
+    // Reaching 66: in a closed game the closer must be the one to reach it.
+    if ((next.points[winner] ?? 0) >= 66) {
+      if (next.closed) return finishClosed(next, events);
+      return finish(next, winner, events);
+    }
 
     if (!isPhase2(next)) {
       if (next.stock.length >= 2) {
@@ -236,6 +283,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     }
 
     if (next.hands[0]!.length === 0 && next.hands[1]!.length === 0) {
+      // Hands exhausted. If closed and the closer never reached 66, they failed.
+      if (next.closed) return finishClosed(next, events);
       return finish(next, next.lastTrickWinner ?? winner, events);
     }
 
@@ -247,10 +296,9 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
   score(state): SeatScore[] {
     const winner = state.winner ?? 0;
     const loser = other(winner);
-    const lp = state.points[loser] ?? 0;
-    const points = lp === 0 ? 3 : lp < 33 ? 2 : 1;
+    // gamePoints carries the normal (1/2/3) or closed-stock-penalty value.
     return [
-      { seat: winner, result: "win", points },
+      { seat: winner, result: "win", points: state.gamePoints },
       { seat: loser, result: "loss", points: 0 },
     ];
   },

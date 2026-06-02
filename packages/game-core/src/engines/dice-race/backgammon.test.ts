@@ -54,4 +54,25 @@ describe("backgammon engine", () => {
     expect(a.state).toEqual(b.state);
     expect(a.steps).toBe(b.steps);
   });
+
+  it("enforces the larger die when only one of two can be played", () => {
+    // White must come in from the bar; black holds 5 of the 6 entry points so
+    // only one die can ever be played. Construct: white on bar, dice [3,5].
+    // Block white entry for die=3 (point 21 for white = 24-3) with 2+ black,
+    // leave die=5 entry (point 19) open. Then the only legal move uses die 5.
+    const s: BackgammonState = {
+      points: new Array(24).fill(0),
+      bar: [1, 0],
+      off: [0, 0],
+      turn: 0,
+      phase: "MOVE",
+      dice: [3, 5],
+      remaining: [3, 5],
+    };
+    s.points[21] = -2; // block white's die-3 entry (24-3)
+    // point 19 (24-5) left open for die-5 entry
+    const actions = backgammonEngine.legalActions(s, 0);
+    expect(actions.length).toBeGreaterThan(0);
+    expect(actions.every((a) => a.type === "MOVE" && a.die === 5)).toBe(true);
+  });
 });

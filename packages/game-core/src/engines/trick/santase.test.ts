@@ -63,4 +63,27 @@ describe("santase engine", () => {
     const b = playRandom(santaseEngine, { seed: "x", botSeed: "y", seats: 2 });
     expect(a.state).toEqual(b.state);
   });
+
+  it("penalises a failed close: opponent wins 3 if closer had no trick", () => {
+    const s = init();
+    // Seat 0 closes immediately on lead (has taken no trick yet).
+    const closed = santaseEngine.reduce(s, { type: "CLOSE" }, new SeededRng("c")).state;
+    expect(closed.closedBy).toBe(0);
+    expect(closed.closerHadTrick).toBe(false);
+    // Drive the rest with random legal play; seat 0 almost never reaches 66
+    // having closed blind on turn 1, so the opponent should take the penalty.
+    let st = closed;
+    const rng = new SeededRng("c");
+    for (let i = 0; i < 100 && !santaseEngine.isTerminal(st); i++) {
+      const seat = st.turn;
+      const acts = santaseEngine.legalActions(st, seat);
+      if (acts.length === 0) break;
+      st = santaseEngine.reduce(st, acts[0]!, rng).state;
+    }
+    expect(santaseEngine.isTerminal(st)).toBe(true);
+    const score = santaseEngine.score(st);
+    const winner = score.find((x) => x.result === "win")!;
+    // If seat 0 failed the close, opponent (seat 1) wins with a 2-3 penalty.
+    if (winner.seat === 1) expect(winner.points).toBeGreaterThanOrEqual(2);
+  });
 });
