@@ -88,21 +88,24 @@ function resolveSlug(name?: string, category?: string, subType?: string, tier?: 
     name ||
     (category === 'weapon' ? (subType || 'sword') :
      category && CATEGORY_BASES[category] ? CATEGORY_BASES[category] : 'sword');
-  const t = Math.min(5, Math.max(1, tier || 1));
+  const t = Math.min(10, Math.max(1, tier || 1));
   if (TIERED_BASES.has(base)) return `${base}-t${t}`;
   return base;
 }
 
 const CATEGORY_BASES: Record<string, string> = {
   shield: 'shield', helm: 'helm', armor: 'armor', gloves: 'gloves', boots: 'boots',
-  ring: 'ring', amulet: 'amulet', potion: 'potion-red',
+  ring: 'ring', amulet: 'amulet', potion: 'potion-red', cloak: 'cloak', gem: 'gem',
 };
-/* Premium icons (game-icons.net / Lorc + Delapouite, CC-BY 3.0) ship a single
-   high-quality silhouette per type. We tint by rarity gradient rather than by
-   tier file, so the same shape paints common-steel → legendary-gold without
-   asset multiplication. Keep this set empty unless a per-tier authored
-   variant ships. */
-const TIERED_BASES = new Set<string>();
+/* Equipment slots that ship 10 tier variants per slot (T1 crude iron →
+   T10 divine radiance). Sprite resolves `${base}-t${tier}.jpg` when a
+   tier is supplied; missing tier files fall through to the bare
+   `${base}.jpg` thanks to the onError handler below. */
+const TIERED_BASES = new Set<string>([
+  'sword', 'axe', 'bow', 'dagger', 'mace', 'staff', 'spear',
+  'armor', 'helm', 'boots', 'gloves', 'shield', 'cloak',
+  'amulet', 'ring', 'gem',
+]);
 
 /** Rarity → frame border colour. Photos are shown un-tinted; the badge
  *  frame around them communicates rarity instead of recolouring the art. */
