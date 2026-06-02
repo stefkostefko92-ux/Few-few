@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { cn } from "../../../ui";
+import { BoardFrame } from "../board/BoardFrame";
 import { parseFen, type ChessAction, type Orientation } from "./types";
 
 const GLYPH: Record<string, string> = {
@@ -33,7 +34,6 @@ export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, o
   function onCellClick(square: string) {
     if (!myTurn) return;
     if (selected && targets.includes(square)) {
-      // Prefer auto-queen when a move has promotion variants.
       const options = legalActions.filter((a) => a.from === selected && a.to === square);
       const chosen = options.find((a) => a.promotion === "q") ?? options[0];
       if (chosen) onMove(chosen);
@@ -48,48 +48,49 @@ export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, o
   }
 
   return (
-    <div className="inline-grid grid-cols-8 overflow-hidden rounded-card border-4 border-wood-800 shadow-lift">
-      {rows.flat().map((cell) => {
-        const fileIdx = cell.square.charCodeAt(0) - 97;
-        const rankIdx = Number(cell.square[1]) - 1;
-        const dark = (fileIdx + rankIdx) % 2 === 0;
-        const isSelected = selected === cell.square;
-        const isTarget = targets.includes(cell.square);
-        const isLast = lastMove && (lastMove.from === cell.square || lastMove.to === cell.square);
-        const white = cell.piece?.startsWith("w");
-        return (
-          <button
-            key={cell.square}
-            type="button"
-            onClick={() => onCellClick(cell.square)}
-            aria-label={cell.square}
-            className={cn(
-              "relative flex size-12 items-center justify-center sm:size-16",
-              dark ? "bg-felt-900" : "bg-felt-700",
-              isLast && "ring-2 ring-inset ring-brass-400/60",
-              isSelected && "ring-4 ring-inset ring-brass-300",
-              myTurn && movableFrom.has(cell.square) && "cursor-pointer",
-            )}
-          >
-            {cell.piece ? (
-              <span
-                className={cn(
-                  "select-none text-3xl leading-none sm:text-4xl",
-                  white ? "text-ink-100" : "text-charcoal-900",
-                )}
-                style={{
-                  textShadow: white ? "0 1px 2px rgba(0,0,0,.6)" : "0 1px 1px rgba(255,255,255,.15)",
-                }}
-              >
-                {GLYPH[cell.piece]}
-              </span>
-            ) : null}
-            {isTarget ? (
-              <span className="absolute size-3 rounded-full bg-brass-300/70 sm:size-4" />
-            ) : null}
-          </button>
-        );
-      })}
-    </div>
+    <BoardFrame>
+      <div className="aso-grid8" style={{ width: "min(76vw, 520px)" }}>
+        {rows.flat().map((cell) => {
+          const fileIdx = cell.square.charCodeAt(0) - 97;
+          const rankIdx = Number(cell.square[1]) - 1;
+          const dark = (fileIdx + rankIdx) % 2 === 0;
+          const isSelected = selected === cell.square;
+          const isTarget = targets.includes(cell.square);
+          const isLast = lastMove && (lastMove.from === cell.square || lastMove.to === cell.square);
+          const white = cell.piece?.startsWith("w");
+          return (
+            <button
+              key={cell.square}
+              type="button"
+              onClick={() => onCellClick(cell.square)}
+              aria-label={cell.square}
+              className={cn(
+                "aso-cell",
+                dark ? "aso-cell--dark" : "aso-cell--light",
+                isLast && "aso-cell--last",
+                isSelected && "aso-cell--from",
+                isTarget && "aso-cell--target",
+                myTurn && movableFrom.has(cell.square) && "cursor-pointer",
+              )}
+            >
+              {cell.piece ? (
+                <span
+                  className="select-none leading-none"
+                  style={{
+                    fontSize: "clamp(1.6rem, 6vw, 2.6rem)",
+                    color: white ? "#fffdf6" : "#15171b",
+                    textShadow: white
+                      ? "0 2px 3px rgba(0,0,0,.55)"
+                      : "0 1px 2px rgba(255,255,255,.2)",
+                  }}
+                >
+                  {GLYPH[cell.piece]}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </BoardFrame>
   );
 }

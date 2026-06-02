@@ -134,5 +134,52 @@
     "ocean": "Oceano",
     "askFrom": "Chiedi",
     "books": "Gruppi"
+  },
+  "backgammon": {
+    "roll": "Lancia",
+    "pass": "Passa",
+    "bar": "Barra",
+    "off": "Fuori"
+  },
+  "battleship": {
+    "enemy": "Nemico: {{name}}",
+    "yourFleet": "La tua flotta"
+  },
+  "dice": {
+    "roll": "Lancia",
+    "reroll": "Rilancia ({{n}})",
+    "held": "Tenuto",
+    "holdHint": "Tocca un dado per tenerlo",
+    "category": "Categoria",
+    "total": "Totale",
+    "cat": {
+      "ones": "Uno",
+      "twos": "Due",
+      "threes": "Tre",
+      "fours": "Quattro",
+      "fives": "Cinque",
+      "sixes": "Sei",
+      "threeKind": "Tris",
+      "fourKind": "Poker",
+      "fullHouse": "Full",
+      "smallStraight": "Scala piccola",
+      "largeStraight": "Scala grande",
+      "chance": "Chance",
+      "yahtzee": "Yahtzee"
+    }
+  },
+  "bingo": {
+    "draw": "Estrai",
+    "drawn": "Estratti: {{n}}",
+    "yourCard": "La tua cartella"
+  },
+  "words": {
+    "nextLetter": "Prossima lettera",
+    "pass": "Passo"
+  },
+  "ludo": {
+    "base": "base",
+    "home": "casa",
+    "pickToken": "Scegli una pedina"
   }
 }

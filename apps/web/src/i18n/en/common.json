@@ -134,5 +134,52 @@
     "ocean": "Ocean",
     "askFrom": "Ask",
     "books": "Books"
+  },
+  "backgammon": {
+    "roll": "Roll",
+    "pass": "Pass",
+    "bar": "Bar",
+    "off": "Off"
+  },
+  "battleship": {
+    "enemy": "Enemy: {{name}}",
+    "yourFleet": "Your fleet"
+  },
+  "dice": {
+    "roll": "Roll",
+    "reroll": "Reroll ({{n}})",
+    "held": "Held",
+    "holdHint": "Tap a die to hold",
+    "category": "Category",
+    "total": "Total",
+    "cat": {
+      "ones": "Ones",
+      "twos": "Twos",
+      "threes": "Threes",
+      "fours": "Fours",
+      "fives": "Fives",
+      "sixes": "Sixes",
+      "threeKind": "Three of a kind",
+      "fourKind": "Four of a kind",
+      "fullHouse": "Full house",
+      "smallStraight": "Small straight",
+      "largeStraight": "Large straight",
+      "chance": "Chance",
+      "yahtzee": "Yahtzee"
+    }
+  },
+  "bingo": {
+    "draw": "Draw",
+    "drawn": "Drawn: {{n}}",
+    "yourCard": "Your card"
+  },
+  "words": {
+    "nextLetter": "Next letter",
+    "pass": "Pass"
+  },
+  "ludo": {
+    "base": "base",
+    "home": "home",
+    "pickToken": "Pick a token"
   }
 }
