@@ -26,7 +26,8 @@ import {
 } from "../auth/oauth.js";
 import { sendEmail } from "../email/mailer.js";
 import { verificationEmail, passwordResetEmail } from "../email/templates.js";
-import { asyncHandler, badRequest, conflict, unauthorized } from "../http.js";
+import { notifyRegistration } from "../integrations/discord.js";
+import { asyncHandler, badRequest, conflict, forbidden, unauthorized } from "../http.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
 import { authLimiter } from "../middleware/rateLimit.js";
@@ -79,6 +80,7 @@ authRouter.post(
     }
 
     await sendVerification(user.id, user.email);
+    notifyRegistration({ email: user.email, displayName: user.displayName });
 
     // Sign the player in immediately; verification is a soft gate surfaced in
     // the UI, not a hard block on entering the lobby.
@@ -103,6 +105,9 @@ authRouter.post(
 
     if (!user || !user.passwordHash || !ok) {
       throw unauthorized("Грешен имейл или парола");
+    }
+    if (user.banned) {
+      throw forbidden("Този акаунт е блокиран");
     }
 
     await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });
@@ -149,6 +154,8 @@ authRouter.get(
   asyncHandler(async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user!.sub } });
     if (!user) throw unauthorized("User no longer exists");
+    // A ban applied mid-session ends it at the next /me (cookie restore).
+    if (user.banned) throw forbidden("Този акаунт е блокиран");
     res.json({ user: toPublicUser(user) });
   }),
 );

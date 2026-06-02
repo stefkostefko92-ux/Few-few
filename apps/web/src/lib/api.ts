@@ -139,7 +139,96 @@ export const api = {
       body: JSON.stringify({ id }),
     }),
   equippedCosmetics: () => request<{ equipped: string[] }>("/cosmetics/equipped"),
+
+  // Admin (staff only)
+  adminStats: () => request<AdminStats>("/admin/stats"),
+  adminUsers: (q: string) =>
+    request<{ users: AdminUserRow[] }>(`/admin/users?q=${encodeURIComponent(q)}`),
+  adminUser: (id: string) => request<AdminUserDetail>(`/admin/users/${id}`),
+  adminUpdateUser: (id: string, patch: AdminUserPatch) =>
+    request<{ user: AdminUserRow }>(`/admin/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+  adminFlags: (status: string) =>
+    request<{ flags: AdminFlag[] }>(`/admin/flags?status=${status}`),
+  adminReviewFlag: (id: string, status: string) =>
+    request<{ flag: AdminFlag }>(`/admin/flags/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+  adminDiscord: () => request<{ enabled: boolean }>("/admin/discord"),
+  adminDiscordTest: () =>
+    request<{ sent: boolean; enabled: boolean }>("/admin/discord/test", { method: "POST" }),
+  adminBroadcast: (message: string) =>
+    request<{ sent: boolean }>("/admin/broadcast", {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
 };
+
+// ── Admin DTOs ───────────────────────────────────────────────────────────────
+export interface AdminAuditRow {
+  id: string;
+  actorName: string;
+  action: string;
+  targetId: string | null;
+  detail: string;
+  createdAt: string;
+}
+export interface AdminStats {
+  users: number;
+  banned: number;
+  newToday: number;
+  openFlags: number;
+  matchesToday: number;
+  purchases: number;
+  revenueCents: number;
+  vip: Record<string, number>;
+  audits: AdminAuditRow[];
+}
+export interface AdminUserRow {
+  id: string;
+  email: string;
+  displayName: string;
+  role: string;
+  vipTier: string;
+  banned: boolean;
+  chips: string;
+  gems: number;
+  level: number;
+  createdAt?: string;
+  lastSeenAt?: string;
+}
+export interface AdminUserDetail {
+  user: AdminUserRow & {
+    xp?: number;
+    emailVerified?: boolean;
+    purchases: { id: string; status: string; createdAt: string; product: { sku: string; priceCents: number } | null }[];
+    ratings: { game: string; mmr: number; games: number; wins: number }[];
+    _count: { inventory: number; matches: number };
+  };
+  audits: AdminAuditRow[];
+}
+export interface AdminUserPatch {
+  role?: string;
+  vipTier?: string;
+  banned?: boolean;
+  grantChips?: number;
+  grantGems?: number;
+}
+export interface AdminFlag {
+  id: string;
+  game: string;
+  userAId: string;
+  userBId: string;
+  reason: string;
+  score: number;
+  details: string;
+  status: string;
+  createdAt: string;
+  reviewedAt: string | null;
+}
 
 /** Full-page navigation target that begins a provider sign-in. */
 export function oauthStartUrl(provider: "google" | "facebook"): string {

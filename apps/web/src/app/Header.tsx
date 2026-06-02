@@ -35,6 +35,9 @@ export function Header() {
                 ["/", t("nav.lobby")],
                 ["/shop", t("nav.shop")],
                 ["/leaderboard", t("nav.leaderboard")],
+                ...(["MODERATOR", "ADMIN", "OWNER"].includes(user.role)
+                  ? ([["/admin", t("nav.admin")]] as const)
+                  : []),
               ] as const
             ).map(([to, label]) => (
               <NavLink

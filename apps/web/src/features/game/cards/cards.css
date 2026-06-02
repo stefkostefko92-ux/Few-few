@@ -91,7 +91,7 @@ button.aso-card:hover {
 /* Court cards — brass ar-deco frame + monogram. */
 .aso-card__court {
   position: absolute;
-  inset: 12% 14%;
+  inset: 19% 21%;
   display: grid;
   place-items: center;
   gap: 2px;

@@ -14,6 +14,8 @@ import { CardGallery } from "../features/game/cards/CardGallery";
 import { CarbonBadge } from "./CarbonBadge";
 import { Layout } from "./Layout";
 import { RequireAuth } from "./RequireAuth";
+import { RequireRole } from "./RequireRole";
+import { AdminPanel } from "../features/admin/AdminPanel";
 
 export function App() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -64,6 +66,9 @@ export function App() {
             <Route path="play/:game" element={<GameView />} />
             <Route path="shop" element={<Shop />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route element={<RequireRole />}>
+              <Route path="admin" element={<AdminPanel />} />
+            </Route>
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -8,6 +8,8 @@ import { getStripe } from "../economy/stripe.js";
 import { applyVip, clearVip, grantProduct, grantVipStipend } from "../economy/grants.js";
 import { invoiceSubscriptionId, subscriptionPeriodEnd } from "../economy/stripeShape.js";
 import { productIdBySku } from "../economy/seed.js";
+import { productBySku } from "../economy/catalog.js";
+import { notifyPurchase, notifyVip } from "../integrations/discord.js";
 
 export const stripeWebhookRouter: Router = Router();
 
@@ -102,6 +104,14 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         }
         await markProcessed(tx, event);
       });
+      // Announce one-time purchases to Discord (VIP is announced on invoice.paid).
+      if (session.mode === "payment") {
+        const product = productBySku(sku);
+        const u = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
+        if (product && u) {
+          notifyPurchase({ displayName: u.displayName, sku, priceCents: product.priceCents });
+        }
+      }
       return;
     }
 
@@ -137,6 +147,10 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         });
         await markProcessed(tx, event);
       });
+      {
+        const u = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
+        if (u) notifyVip({ displayName: u.displayName, tier });
+      }
       return;
     }
 

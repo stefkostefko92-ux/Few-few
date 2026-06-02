@@ -26,6 +26,7 @@ model User {
   level         Int       @default(1)
   vipTier       VipTier   @default(NONE)
   vipUntil      DateTime?
+  banned        Boolean   @default(false) // blocked at login by staff (§14)
   createdAt     DateTime  @default(now())
   lastSeenAt    DateTime  @default(now())
 
@@ -186,6 +187,21 @@ model Season {
   startsAt DateTime
   endsAt   DateTime
   active   Boolean
+}
+
+// Admin action audit trail (§14). Every staff mutation is recorded with the
+// actor, action key, optional target user, and a JSON detail blob.
+model AdminAudit {
+  id        String   @id @default(cuid())
+  actorId   String
+  actorName String
+  action    String // e.g. "grant_chips", "set_role", "ban"
+  targetId  String?
+  detail    String // JSON blob
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([targetId])
 }
 
 // Stripe webhook idempotency (S11.3): dedupe by event.id.

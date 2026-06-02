@@ -50,6 +50,11 @@ const envSchema = z.object({
   FACEBOOK_APP_ID: z.string().optional().default(""),
   FACEBOOK_APP_SECRET: z.string().optional().default(""),
 
+  // Discord webhook (optional, env-gated). When set, key events and admin
+  // actions are posted as rich embeds. Secrets never leave env (§14).
+  DISCORD_WEBHOOK_URL: z.string().optional().default(""),
+  DISCORD_WEBHOOK_NAME: z.string().default("АСО"),
+
   // Shared secret for internal service-to-service calls (realtime -> api).
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
 });
@@ -80,6 +85,8 @@ export const env = {
     google: raw.GOOGLE_CLIENT_ID.length > 0 && raw.GOOGLE_CLIENT_SECRET.length > 0,
     facebook: raw.FACEBOOK_APP_ID.length > 0 && raw.FACEBOOK_APP_SECRET.length > 0,
   },
+  // Discord notifications are sent only when a webhook URL is configured.
+  discordEnabled: raw.DISCORD_WEBHOOK_URL.length > 0,
 };
 
 export type Env = typeof env;
