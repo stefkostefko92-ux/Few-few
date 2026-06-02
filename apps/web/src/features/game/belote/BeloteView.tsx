@@ -5,6 +5,7 @@ import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
+import { SuitGlyph, type SuitChar } from "../cards/suits";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
@@ -146,11 +147,7 @@ export function BeloteView({ title }: { title: string }) {
             </div>
           </Seat>
 
-          {state.trump ? (
-            <div className="aso-announce" aria-live="polite">
-              {t("belote.contract")} {SUIT_GLYPH[state.trump]}
-            </div>
-          ) : null}
+          {state.trump ? <TrumpIndicator suit={state.trump as SuitChar} label={t("belote.contract")} /> : null}
         </FeltTable>
       </div>
 
@@ -224,6 +221,20 @@ function TeamDot({ team, myTeam }: { team: number; myTeam: number }) {
         display: "inline-block",
       }}
     />
+  );
+}
+
+/** Trump indicator pinned top-left: label above a card showing the trump suit. */
+function TrumpIndicator({ suit, label }: { suit: SuitChar; label: string }) {
+  const red = suit === "H" || suit === "D";
+  const color = red ? "var(--suit-red)" : "var(--suit-black)";
+  return (
+    <div className="aso-trump">
+      <span className="aso-trump__label">{label}</span>
+      <span className="aso-trump__card">
+        <SuitGlyph suit={suit} size={34} color={color} />
+      </span>
+    </div>
   );
 }
 

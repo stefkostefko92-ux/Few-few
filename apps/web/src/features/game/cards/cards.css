@@ -224,3 +224,37 @@ button.aso-card:hover {
 }
 .aso-bridge-bid:hover:not(:disabled) { transform: translateY(-2px); }
 .aso-bridge-bid:disabled { opacity: 0.25; cursor: not-allowed; }
+
+/* Trump indicator — pinned top-left of the table: a small card showing the
+   trump suit, with a label above it (Белот §4.1). */
+.aso-trump {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.aso-trump__label {
+  font-family: var(--font-display, serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--brass-300);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.aso-trump__card {
+  width: 44px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: radial-gradient(120% 90% at 30% 0%, #fffdf6, #ece3cf);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 6px 14px -6px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 0 0 1.5px var(--brass-400);
+}
