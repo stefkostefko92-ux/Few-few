@@ -74,7 +74,8 @@ const SCHEMA = [
   ] },
   { id: 'autosell', fields: [
     { k: 'enabled', type: 'bool' },
-    { k: 'maxValue', type: 'number', min: 0 },
+    { k: 'sellCommon', type: 'bool' },
+    { k: 'sellSpecial', type: 'bool' },
     { k: 'dumpSchema', type: 'bool' }
   ] },
   { id: 'autologin', fields: [

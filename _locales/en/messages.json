@@ -80,8 +80,10 @@
   "logCaveStart": { "message": "Dungeon of Illusions (reward ~$1)." },
   "logDragonStart": { "message": "Dragon event (reward ~$1)." },
   "logMapUnavailable": { "message": "Map: $1 not available ($2)." },
-  "logSell": { "message": "Selling item #$1 (value $2)." },
+  "logSell": { "message": "Selling $1 item #$2 (value $3)." },
   "logSellSchema": { "message": "Auto-sell: $1 items in bag. Fields: $2" },
+  "rarityCommon": { "message": "common" },
+  "rarityEpic": { "message": "unique/epic" },
   "logReconnect": { "message": "Session lost — reconnecting (attempt $1)." },
 
   "notifyStopped": { "message": "Bot stopped" },
@@ -203,8 +205,9 @@
   "opt_work_durationHours": { "message": "Shift length (hours)" },
   "opt_work_stopWhenAdventureReady": { "message": "Yield when free adventures are ready" },
 
-  "opt_autosell_enabled": { "message": "Enable auto-sell (sells loot!)" },
-  "opt_autosell_maxValue": { "message": "Sell unequipped items worth ≤ (gold, 0 = inspect only)" },
+  "opt_autosell_enabled": { "message": "Enable auto-sell (equipment only)" },
+  "opt_autosell_sellCommon": { "message": "Sell common items" },
+  "opt_autosell_sellSpecial": { "message": "Also sell unique / epic (T1+) items — careful!" },
   "opt_autosell_dumpSchema": { "message": "Log inventory fields once (for verification)" },
 
   "opt_autologin_enabled": { "message": "Enable auto-login" },

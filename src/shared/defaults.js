@@ -89,10 +89,11 @@ export const DEFAULT_SETTINGS = {
     stopWhenAdventureReady: true   // yield when free adventures are available
   },
 
-  /* ---- Auto-sell (conservative, disabled by default) ---- */
+  /* ---- Auto-sell (equipment only, by rarity; disabled by default) ---- */
   autosell: {
     enabled: false,
-    maxValue: 0,                   // sell unequipped items worth <= this gold (0 = inspect only, sell nothing)
+    sellCommon: true,              // sell common (normal) equipment
+    sellSpecial: false,            // ALSO sell unique / epic (T1+) equipment — opt in
     dumpSchema: true               // log the inventory item fields once for verification
   },
 
