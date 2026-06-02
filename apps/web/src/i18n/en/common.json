@@ -121,7 +121,9 @@
     "contract": "Contract",
     "yourBid": "Your bid",
     "weTricks": "Our tricks",
-    "theyTricks": "Their tricks"
+    "theyTricks": "Their tricks",
+    "double": "Double",
+    "redouble": "Redouble"
   },
   "war": {
     "flip": "Flip",

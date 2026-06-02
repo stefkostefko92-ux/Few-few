@@ -121,7 +121,9 @@
     "contract": "Договор",
     "yourBid": "Твоят анонс",
     "weTricks": "Наши взятки",
-    "theyTricks": "Техни взятки"
+    "theyTricks": "Техни взятки",
+    "double": "Контра",
+    "redouble": "Реконтра"
   },
   "war": {
     "flip": "Обърни",

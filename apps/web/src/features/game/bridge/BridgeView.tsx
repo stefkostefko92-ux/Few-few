@@ -27,6 +27,8 @@ interface BridgeState {
 type BridgeAction =
   | { type: "PASS" }
   | { type: "BID"; level: number; strain: Strain }
+  | { type: "DOUBLE" }
+  | { type: "REDOUBLE" }
   | { type: "PLAY"; card: string };
 
 const STRAIN_GLYPH: Record<Strain, string> = { C: "♣", D: "♦", H: "♥", S: "♠", NT: "NT" };
@@ -120,13 +122,23 @@ export function BridgeView({ title }: { title: string }) {
                   }),
                 )}
               </div>
-              {passAction ? (
-                <div className="mt-2 text-center">
+              <div className="mt-2 flex items-center justify-center gap-2">
+                {legal.some((a) => a.type === "DOUBLE") ? (
+                  <Button variant="felt" onClick={() => m.send({ type: "DOUBLE" })}>
+                    {t("bridge.double")}
+                  </Button>
+                ) : null}
+                {legal.some((a) => a.type === "REDOUBLE") ? (
+                  <Button variant="felt" onClick={() => m.send({ type: "REDOUBLE" })}>
+                    {t("bridge.redouble")}
+                  </Button>
+                ) : null}
+                {passAction ? (
                   <Button variant="ghost" onClick={() => m.send(passAction)}>
                     {t("belote.pass")}
                   </Button>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </div>
           ) : null}
 

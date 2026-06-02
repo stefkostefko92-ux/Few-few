@@ -121,7 +121,9 @@
     "contract": "Contratto",
     "yourBid": "La tua dichiarazione",
     "weTricks": "Nostre prese",
-    "theyTricks": "Loro prese"
+    "theyTricks": "Loro prese",
+    "double": "Contro",
+    "redouble": "Surcontro"
   },
   "war": {
     "flip": "Gira",

@@ -12,8 +12,9 @@ import { buildDeck, RANK_VALUE, RANKS_52, rankOf, suitOf, hiddenLike, type Card 
  * Тексас Холдем — 2–9p with VIRTUAL chips only (§4.12, §11.4). Blinds, hole
  * cards, four streets (preflop/flop/turn/river), CHECK/CALL/BET/RAISE/FOLD, and
  * a 5-of-7 hand evaluator at showdown. STRICTLY social gaming with virtual
- * chips — never real-money gambling, never cashed out. Single-pot (no
- * side-pots) for S7; all-in beyond stack is clamped (documented, harden in S9).
+ * chips — never real-money gambling, never cashed out. Main + side pots are
+ * distributed by contribution level (distributePots); all-in beyond stack is
+ * clamped to the player's chips.
  */
 
 const SMALL_BLIND = 5;
@@ -312,25 +313,78 @@ function showdown(
   state: HoldemState,
   events: HoldemEvent[],
 ): { state: HoldemState; events: HoldemEvent[] } {
-  let best: Seat = -1;
-  let bestRank = -1;
+  // Evaluate each active hand once; folded seats are ineligible (rank -1).
+  const ranks = new Array<number>(state.seats).fill(-1);
   for (const s of activeSeats(state)) {
     const rank = evaluate7([...state.hole[s]!, ...state.community]);
+    ranks[s] = rank;
     events.push({ type: "SHOWDOWN", seat: s, rank });
-    if (rank > bestRank) {
-      bestRank = rank;
-      best = s;
-    }
   }
-  return award(state, best, events);
+  return distributePots(state, (s) => ranks[s] ?? -1, events);
 }
 
+/** Award the whole pot to one seat (used when everyone else folded). */
 function award(
   state: HoldemState,
   winner: Seat,
   events: HoldemEvent[],
 ): { state: HoldemState; events: HoldemEvent[] } {
   state.chips[winner] = (state.chips[winner] ?? 0) + state.pot;
+  events.push({ type: "WIN", seat: winner, pot: state.pot });
+  state.street = "showdown";
+  return { state: { ...state, winner, done: true }, events };
+}
+
+/**
+ * Distribute into main + side pots by each player's total contribution (§4.12).
+ * Each pot layer is contested only by players who put in at least that layer and
+ * haven't folded; it goes to the best eligible hand (split on ties, odd chip to
+ * the earliest seat). Headline winner = largest single award.
+ */
+export function distributePots(
+  state: HoldemState,
+  rankOfSeat: (seat: Seat) => number,
+  events: HoldemEvent[],
+): { state: HoldemState; events: HoldemEvent[] } {
+  const seats = state.seats;
+  const contrib = state.totalBet.slice();
+  const folded = state.folded.slice();
+  const won = new Array<number>(seats).fill(0);
+
+  const levels = [...new Set(contrib.filter((c) => c > 0))].sort((a, b) => a - b);
+  let prev = 0;
+  for (const level of levels) {
+    const layerWidth = level - prev;
+    if (layerWidth > 0) {
+      const contributors: Seat[] = [];
+      for (let s = 0; s < seats; s++) if ((contrib[s] ?? 0) >= level) contributors.push(s as Seat);
+      const layerTotal = layerWidth * contributors.length;
+      const eligible = contributors.filter((s) => !folded[s]);
+      if (eligible.length > 0) {
+        const best = Math.max(...eligible.map((s) => rankOfSeat(s)));
+        const winners = eligible.filter((s) => rankOfSeat(s) === best);
+        const share = Math.floor(layerTotal / winners.length);
+        let remainder = layerTotal - share * winners.length;
+        for (const w of winners) {
+          won[w] = (won[w] ?? 0) + share + (remainder > 0 ? 1 : 0);
+          if (remainder > 0) remainder -= 1;
+        }
+      }
+    }
+    prev = level;
+  }
+
+  for (let s = 0; s < seats; s++) {
+    if ((won[s] ?? 0) > 0) state.chips[s] = (state.chips[s] ?? 0) + (won[s] ?? 0);
+  }
+  let winner: Seat = 0;
+  let bestWon = -1;
+  for (let s = 0; s < seats; s++) {
+    if ((won[s] ?? 0) > bestWon) {
+      bestWon = won[s] ?? 0;
+      winner = s as Seat;
+    }
+  }
   events.push({ type: "WIN", seat: winner, pot: state.pot });
   state.street = "showdown";
   return { state: { ...state, winner, done: true }, events };

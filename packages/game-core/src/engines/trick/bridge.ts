@@ -16,9 +16,11 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  * no-trump). Then 13 tricks with standard follow-suit. The declaring side must
  * take (6 + level) tricks to make the contract. Scoring is win/loss by contract.
  *
- * Simplifications (harden later): no doubling, no vulnerability, no dummy reveal,
- * trick-point scoring reduced to made/defeated. All-pass redeals via a forced
- * 1-No-Trump by dealer's team to keep play moving.
+ * Doubling supported: opponents may DOUBLE a standing contract and the bidding
+ * side may REDOUBLE; a fresh bid clears the double; the deal's worth is x2/x4.
+ * Simplifications (harden later): no vulnerability, no dummy reveal; trick-point
+ * scoring reduced to made/defeated × double multiplier. All-pass redeals via a
+ * forced 1-No-Trump by dealer's team to keep play moving.
  */
 
 const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"] as const;
@@ -49,6 +51,8 @@ export interface BridgeState {
   // contract
   trump: Suit | null; // null for NT
   contractLevel: number;
+  /** Doubling: 0 none, 1 doubled, 2 redoubled. */
+  doubled: number;
   // play
   tricksWon: [number, number];
   winningTeam: number | null;
@@ -58,12 +62,16 @@ export interface BridgeState {
 export type BridgeAction =
   | { type: "PASS" }
   | { type: "BID"; level: number; strain: Strain }
+  | { type: "DOUBLE" }
+  | { type: "REDOUBLE" }
   | { type: "PLAY"; card: Card };
 
 export type BridgeEvent =
   | { type: "BID"; seat: Seat; level: number; strain: Strain }
   | { type: "PASS"; seat: Seat }
-  | { type: "CONTRACT"; declarer: Seat; level: number; strain: Strain }
+  | { type: "DOUBLE"; seat: Seat }
+  | { type: "REDOUBLE"; seat: Seat }
+  | { type: "CONTRACT"; declarer: Seat; level: number; strain: Strain; doubled: number }
   | { type: "PLAY"; seat: Seat; card: Card }
   | { type: "TRICK"; seat: Seat }
   | { type: "RESULT"; team: number; made: boolean; tricks: number };
@@ -100,6 +108,7 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
       passes: 0,
       trump: null,
       contractLevel: 0,
+      doubled: 0,
       tricksWon: [0, 0],
       winningTeam: null,
       done: false,
@@ -115,6 +124,15 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
         for (const strain of STRAINS) {
           if (bidValue(level, strain) > floor) actions.push({ type: "BID", level, strain });
         }
+      }
+      // Double: there is a standing bid, it's not yet doubled, and the current
+      // contract belongs to the OPPONENTS of the seat to act.
+      if (state.bidLevel > 0 && state.doubled === 0 && team(state.declarer!) !== team(seat)) {
+        actions.push({ type: "DOUBLE" });
+      }
+      // Redouble: the contract is doubled and belongs to the seat's OWN side.
+      if (state.bidLevel > 0 && state.doubled === 1 && team(state.declarer!) === team(seat)) {
+        actions.push({ type: "REDOUBLE" });
       }
       return actions;
     }
@@ -163,7 +181,28 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
         next.bidStrain = action.strain;
         next.declarer = seat;
         next.passes = 0;
+        next.doubled = 0; // a fresh bid clears any double
         events.push({ type: "BID", seat, level: action.level, strain: action.strain });
+        next.turn = next4(seat);
+        return { state: next, events };
+      }
+      if (action.type === "DOUBLE") {
+        if (next.bidLevel === 0 || next.doubled !== 0 || team(next.declarer!) === team(seat)) {
+          throw new IllegalActionError("Cannot double");
+        }
+        next.doubled = 1;
+        next.passes = 0;
+        events.push({ type: "DOUBLE", seat });
+        next.turn = next4(seat);
+        return { state: next, events };
+      }
+      if (action.type === "REDOUBLE") {
+        if (next.doubled !== 1 || team(next.declarer!) !== team(seat)) {
+          throw new IllegalActionError("Cannot redouble");
+        }
+        next.doubled = 2;
+        next.passes = 0;
+        events.push({ type: "REDOUBLE", seat });
         next.turn = next4(seat);
         return { state: next, events };
       }
@@ -215,10 +254,12 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
 
   score(state): SeatScore[] {
     const winTeam = state.winningTeam ?? 0;
+    // Doubling multiplies the deal's worth: x2 doubled, x4 redoubled.
+    const mult = state.doubled === 2 ? 4 : state.doubled === 1 ? 2 : 1;
     return [0, 1, 2, 3].map((seat) => ({
       seat,
       result: team(seat as Seat) === winTeam ? "win" : "loss",
-      points: team(seat as Seat) === winTeam ? 1 : 0,
+      points: team(seat as Seat) === winTeam ? mult : 0,
     }));
   },
 
@@ -239,6 +280,6 @@ function openContract(
   const first = next4(state.declarer!);
   state.leader = first;
   state.turn = first;
-  events.push({ type: "CONTRACT", declarer: state.declarer!, level: state.bidLevel, strain });
+  events.push({ type: "CONTRACT", declarer: state.declarer!, level: state.bidLevel, strain, doubled: state.doubled });
   return { state, events };
 }
