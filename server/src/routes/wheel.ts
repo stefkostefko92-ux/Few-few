@@ -5,6 +5,7 @@ import { applyXp } from '../game/progression';
 import { applyGuildMultipliers } from '../game/rewards';
 import { evaluateAchievements } from '../game/events';
 import { trackBattlePass } from './battlepass';
+import { logFromRequest } from '../lib/logger';
 import type { Character } from '../types/domain';
 
 const router = Router();
@@ -108,6 +109,11 @@ router.post('/spin', (req, res) => {
   ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy, goldDelta, xpDelta, char.id);
   db.prepare("INSERT INTO daily_state (character_id, last_spin_day) VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET last_spin_day = excluded.last_spin_day").run(char.id, today);
   trackBattlePass(char.id, 'wheel_spin', 1);
+  logFromRequest(req, {
+    category: 'wheel', action: 'spin', character_id: char.id,
+    message: `${char.name} spun the wheel: ${label}`,
+    meta: { segment: seg.kind, label, gold: goldDelta, xp: xpDelta, energy: energyDelta, item: itemSlug },
+  });
   const unlocked = evaluateAchievements(db, char.id);
   res.json({
     label,

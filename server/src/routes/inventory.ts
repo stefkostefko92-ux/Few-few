@@ -213,6 +213,11 @@ router.post('/sell', (req, res) => {
   } else {
     db.prepare('DELETE FROM inventory WHERE id = ?').run(row.inv_id);
   }
+  logFromRequest(req, {
+    category: 'inventory', action: 'sell', character_id: char.id, target_id: row.id, target_type: 'item',
+    message: `${char.name} sold ${row.name} for ${price}g`,
+    meta: { item_id: row.id, item_name: row.name, rarity: row.rarity, gold: price },
+  });
   res.json({ ok: true, gold: char.gold + price });
 });
 

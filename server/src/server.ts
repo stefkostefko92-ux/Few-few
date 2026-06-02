@@ -108,6 +108,18 @@ app.use('/api/mount', mountRoutes);
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');
 app.use(express.static(clientDist));
+
+// SEO routes — explicit so the content-type is set correctly and the SPA
+// fallback below never swallows them.
+app.get('/robots.txt', (_req, res) => {
+  res.set('Content-Type', 'text/plain; charset=utf-8');
+  res.sendFile(path.join(clientDist, 'robots.txt'));
+});
+app.get('/sitemap.xml', (_req, res) => {
+  res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.sendFile(path.join(clientDist, 'sitemap.xml'));
+});
+
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
   res.sendFile(path.join(clientDist, 'index.html'), (err) => {

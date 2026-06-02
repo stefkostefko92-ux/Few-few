@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { AVATARS, FRAMES, findAvatar, findFrame } from '../seed/cosmetics';
+import { logFromRequest } from '../lib/logger';
 import type { Character } from '../types/domain';
 
 const router = Router();
@@ -81,6 +82,11 @@ router.post('/rename', (req, res) => {
   db.prepare('UPDATE characters SET name = ?, gold = gold - ?, last_rename_at = ? WHERE id = ?').run(
     parse.data.name, RENAME_COST, Date.now(), char.id,
   );
+  logFromRequest(req, {
+    category: 'character', action: 'rename', character_id: char.id,
+    message: `${char.name} renamed to ${parse.data.name}`,
+    meta: { old_name: char.name, new_name: parse.data.name, gold_cost: RENAME_COST },
+  });
   res.json({ ok: true, name: parse.data.name, gold: char.gold - RENAME_COST });
 });
 

@@ -14,6 +14,7 @@ import {
   trackUpgradeCost,
 } from '../game/guild';
 import { trackBattlePass } from './battlepass';
+import { logFromRequest } from '../lib/logger';
 import { simulateCombat } from '../game/combat';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import type { Character, Item, InventoryEntry } from '../types/domain';
@@ -356,6 +357,11 @@ router.post('/donate', (req, res) => {
   db.prepare('UPDATE guild_members SET contribution = contribution + ? WHERE character_id = ?').run(goldEquivalent, char.id);
   trackBattlePass(char.id, 'guild_donate', goldEquivalent);
 
+  logFromRequest(req, {
+    category: 'guild', action: 'donate', character_id: char.id, target_id: g.guild.id, target_type: 'guild',
+    message: `${char.name} donated ${amount} ${currency} to ${g.guild.name}`,
+    meta: { amount, currency, gold_equivalent: goldEquivalent, guild_id: g.guild.id },
+  });
   res.json({ ok: true, gold_equivalent: goldEquivalent, currency, amount });
 });
 
@@ -486,6 +492,11 @@ router.post('/upgrade/slots', (req, res) => {
       return;
     }
   }
+  logFromRequest(req, {
+    category: 'guild', action: 'slots_upgrade', character_id: char.id, target_id: g.guild.id, target_type: 'guild',
+    message: `${g.guild.name} expanded its roster to tier ${next} (${slots} slots)`,
+    meta: { guild_id: g.guild.id, new_level: next, slots, xp_spent: needXp, gems_spent: needGems },
+  });
   res.json({ ok: true, level: next, member_slots: slots, gems_spent: needGems });
 });
 

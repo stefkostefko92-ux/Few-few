@@ -1,10 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { WarriorSprite, RangerSprite, MageSprite, RogueSprite } from '../combat/sprites';
 import Logo from '../components/Logo';
 import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
 import '../styles/landing.css';
+
+// Per-locale page titles + descriptions. Picked up at mount based on
+// ?lang= or the user's browser language, and written into the actual
+// document <title> / <meta name="description"> so search engines and AI
+// crawlers serving Italian / Bulgarian queries see locale-targeted copy
+// rather than the English default.
+const LOCALES: Record<string, { html: string; title: string; description: string }> = {
+  en: {
+    html: 'en',
+    title: 'Nexus Dominion — Free Browser MMORPG · No Download',
+    description: 'A fully animated free browser MMORPG. Forge a hero across four classes, climb the Tower of Trials, found a guild, and trade with players. No download, plays in any browser.',
+  },
+  it: {
+    html: 'it-IT',
+    title: 'Nexus Dominion — MMORPG gratuito da browser · Senza download',
+    description: 'Un MMORPG fantasy completamente animato, gratuito, giocabile direttamente nel browser. Forgia il tuo eroe, scala la Torre delle Prove, fonda una gilda. Niente download — gioca da qualsiasi browser, anche dall\'Italia.',
+  },
+  bg: {
+    html: 'bg-BG',
+    title: 'Nexus Dominion — Безплатна браузърна ММОРПГ · Без сваляне',
+    description: 'Изцяло анимирана фентъзи ММОРПГ игра, която върви директно в браузъра. Изкови героя си, изкачи Кулата на изпитанията, основи гилдия. Без сваляне — играй откъдето и да си в България.',
+  },
+};
+
+function pickLocale(): string {
+  if (typeof window === 'undefined') return 'en';
+  const q = new URLSearchParams(window.location.search).get('lang');
+  if (q && LOCALES[q]) return q;
+  const nav = navigator.language?.slice(0, 2).toLowerCase();
+  if (nav && LOCALES[nav]) return nav;
+  return 'en';
+}
 
 function SplitText({ text }: { text: string }) {
   const words = text.split(' ');
@@ -33,6 +65,16 @@ export default function Landing(): React.ReactElement {
     if (typeof window === 'undefined') return false;
     try { return sessionStorage.getItem('nd_intro_seen') !== '1'; } catch { return true; }
   });
+  // Locale: pick from ?lang= → browser default → English, then rewrite
+  // <html lang>, <title> and <meta name="description"> so search engines and
+  // share previews pick up the right language for IT / BG visitors.
+  useEffect(() => {
+    const loc = LOCALES[pickLocale()];
+    document.documentElement.lang = loc.html;
+    document.title = loc.title;
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', loc.description);
+  }, []);
   return (
     <div className="landing">
       {showIntro && <CinematicIntro onDone={() => setShowIntro(false)} />}

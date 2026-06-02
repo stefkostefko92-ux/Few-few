@@ -5,6 +5,7 @@ import { applyXp } from '../game/progression';
 import { applyGuildMultipliers } from '../game/rewards';
 import { evaluateAchievements } from '../game/events';
 import { trackBattlePass } from './battlepass';
+import { logFromRequest } from '../lib/logger';
 import type { Character, Quest } from '../types/domain';
 
 const router = Router();
@@ -115,6 +116,11 @@ router.post('/claim', (req, res) => {
   trackBattlePass(char.id, 'daily_claim', 1);
 
   const unlocked = evaluateAchievements(db, char.id);
+  logFromRequest(req, {
+    category: 'daily', action: 'claim', character_id: char.id,
+    message: `${char.name} claimed Daily Tribute (streak ${newStreak})`,
+    meta: { streak: newStreak, gold: reward.gold, xp: reward.xp, gems: gemsGranted, item: givenItem },
+  });
   res.json({ ok: true, streak: newStreak, reward: { ...reward, gems: gemsGranted }, item: givenItem, levelUp: lvlRes.leveled ? lvlRes : null, unlocked });
 });
 

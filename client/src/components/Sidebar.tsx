@@ -102,7 +102,13 @@ export default function Sidebar(): React.ReactElement {
     setCollapsed((c) => ({ ...c, [heading]: !c[heading] }));
   }
 
+  // Close the mobile drawer whenever the user picks a link (the body class
+  // controls visibility below 900px — see Navbar.tsx + globals.css).
+  function closeMobile() { document.body.classList.remove('mobile-open'); }
+
   return (
+    <>
+      <div className="sidebar-backdrop" onClick={closeMobile} aria-hidden />
     <aside className="sidebar">
       {char && (
         <div className="sidebar-hero">
@@ -129,6 +135,7 @@ export default function Sidebar(): React.ReactElement {
                 key={it.to}
                 to={it.to}
                 end={it.end}
+                onClick={closeMobile}
                 className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
               >
                 <it.icon />
@@ -152,6 +159,7 @@ export default function Sidebar(): React.ReactElement {
         </div>
       )}
     </aside>
+    </>
   );
 }
 

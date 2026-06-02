@@ -54,8 +54,10 @@ function AppLayout(): React.ReactElement {
   const levelUp = useStore((s) => s.levelUp);
   const dismissLevelUp = useStore((s) => s.dismissLevelUp);
   // Jump to the top of the page whenever the route changes (sidebar/navbar nav).
+  // Also close the mobile drawer so the new page is visible immediately.
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.body.classList.remove('mobile-open');
   }, [location.pathname]);
   return (
     <div className="app">

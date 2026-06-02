@@ -57,6 +57,16 @@ export default function Navbar(): React.ReactElement {
 
   return (
     <header className="navbar">
+      {/* Mobile-only hamburger: toggles the .mobile-open class on body so the
+          sidebar slides in as a drawer below 900px. The button itself is
+          hidden by CSS at desktop widths. */}
+      <button
+        className="nav-hamburger"
+        aria-label="Open menu"
+        onClick={() => document.body.classList.toggle('mobile-open')}
+      >
+        <span /><span /><span />
+      </button>
       <div className="nav-brand" onClick={() => navigate('/app')} style={{ cursor: 'pointer' }}>
         <Logo size={34} />
         <span>Nexus Dominion</span>

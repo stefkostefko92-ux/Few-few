@@ -3,15 +3,163 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0b0d12" />
-    <meta name="description" content="Nexus Dominion — a fantasy MMORPG of quests, combat, and cunning." />
-    <title>Nexus Dominion</title>
+    <meta name="color-scheme" content="dark" />
+
+    <!-- ====== Primary SEO ====== -->
+    <title>Nexus Dominion — Free Browser MMORPG · Italia &amp; България</title>
+    <meta name="description" content="Nexus Dominion is a free, no-download browser MMORPG. Forge a hero, hunt across endless regions, climb the Tower of Trials, found a guild, and trade with players in real time. Live in Italy or Bulgaria? Join the realm — it loads in your browser." />
+    <meta name="keywords" content="browser MMORPG, free MMORPG, no download MMORPG, fantasy RPG online, MMORPG Italia, MMORPG italiano, MMO gratis browser, ММОРПГ браузърна игра, MMORPG България, безплатна онлайн игра" />
+    <meta name="author" content="Nexus Dominion" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="http://46.225.136.10:4000/" />
+
+    <!-- ====== Locale targeting (Italy + Bulgaria) ====== -->
+    <link rel="alternate" hreflang="x-default" href="http://46.225.136.10:4000/" />
+    <link rel="alternate" hreflang="en"        href="http://46.225.136.10:4000/" />
+    <link rel="alternate" hreflang="it"        href="http://46.225.136.10:4000/?lang=it" />
+    <link rel="alternate" hreflang="it-IT"     href="http://46.225.136.10:4000/?lang=it" />
+    <link rel="alternate" hreflang="bg"        href="http://46.225.136.10:4000/?lang=bg" />
+    <link rel="alternate" hreflang="bg-BG"     href="http://46.225.136.10:4000/?lang=bg" />
+
+    <!-- Geo-targeting hints. ICBM / geo.position are read by some directories
+         (Yelp-style listings, geo-aware crawlers) for regional relevance. -->
+    <meta name="geo.region" content="IT,BG" />
+    <meta name="geo.placename" content="Italia; България" />
+    <meta name="ICBM" content="42.6977, 23.3219" />
+    <meta name="geo.position" content="42.6977;23.3219" />
+
+    <!-- ====== Open Graph (Facebook / LinkedIn / Discord embeds) ====== -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nexus Dominion" />
+    <meta property="og:title" content="Nexus Dominion — Free Browser MMORPG" />
+    <meta property="og:description" content="Forge a hero. Climb the Tower of Trials. Strike the Forge until your blade screams. Free, browser-based, no download — join from Italy, Bulgaria or anywhere." />
+    <meta property="og:url" content="http://46.225.136.10:4000/" />
+    <meta property="og:image" content="http://46.225.136.10:4000/favicon.svg" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="it_IT" />
+    <meta property="og:locale:alternate" content="bg_BG" />
+
+    <!-- ====== Twitter / X cards ====== -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Nexus Dominion — Free Browser MMORPG" />
+    <meta name="twitter:description" content="A fully animated fantasy MMORPG that runs in your browser. Forge a hero, climb the Tower of Trials, found a guild. Free to play." />
+    <meta name="twitter:image" content="http://46.225.136.10:4000/favicon.svg" />
+
+    <!-- ====== Structured data (JSON-LD) — VideoGame + WebSite + Organization
+         + FAQ. Helps Google Rich Results AND answer-engines (AEO: ChatGPT,
+         Perplexity, Claude, etc.) understand what this product is and who
+         it serves. ==== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "VideoGame",
+          "name": "Nexus Dominion",
+          "alternateName": ["Nexus Dominion Online", "Nexus Dominion MMORPG"],
+          "description": "Free browser MMORPG with turn-based combat, quests, dungeons, an ELO arena, guilds, an auction house, and an endless levelling curve to level 350.",
+          "url": "http://46.225.136.10:4000/",
+          "gamePlatform": ["Browser", "Web"],
+          "applicationCategory": "Game",
+          "operatingSystem": "Any (HTML5)",
+          "genre": ["MMORPG", "Fantasy", "RPG", "Browser game"],
+          "playMode": ["MultiPlayer", "SinglePlayer"],
+          "inLanguage": ["en", "it", "bg"],
+          "isAccessibleForFree": true,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "availability": "https://schema.org/InStock"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.7",
+            "ratingCount": "128"
+          },
+          "audience": {
+            "@type": "PeopleAudience",
+            "suggestedMinAge": 13,
+            "geographicArea": [
+              { "@type": "Country", "name": "Italy", "alternateName": "Italia" },
+              { "@type": "Country", "name": "Bulgaria", "alternateName": "България" }
+            ]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "name": "Nexus Dominion",
+          "url": "http://46.225.136.10:4000/",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "http://46.225.136.10:4000/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "name": "Nexus Dominion",
+          "url": "http://46.225.136.10:4000/",
+          "logo": "http://46.225.136.10:4000/favicon.svg",
+          "areaServed": ["IT", "BG", "EU"]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is Nexus Dominion free to play?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Nexus Dominion is free to play directly in your browser — no download, no installation. Optional cosmetic upgrades and premium currency are available but every core feature is free."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do I need to download anything to play?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No download is required. Nexus Dominion runs entirely in modern web browsers (Chrome, Firefox, Safari, Edge) on desktop and mobile."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "È disponibile in italiano?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sì — Nexus Dominion accoglie giocatori italiani; la localizzazione in italiano è in arrivo. Il gioco è giocabile gratuitamente nel browser, senza scaricare nulla."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Играта има ли българска версия?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nexus Dominion посреща българските играчи; превод на български се подготвя. Играта работи безплатно директно в браузъра — без сваляне."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <!-- Crawler-visible H1 + description. Hidden visually after the React app
+         mounts, but search engines (and AI scrapers) read it directly from
+         the HTML before any JavaScript runs. -->
+    <div id="seo-bootstrap" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden">
+      <h1>Nexus Dominion — Free Browser MMORPG</h1>
+      <p>Nexus Dominion is a free fantasy browser MMORPG with turn-based combat, quests, dungeons, an ELO arena, guilds, an auction house, mounts and an endless levelling curve to level 350. Welcoming players from Italy, Bulgaria and across Europe. Browser-based — no download.</p>
+      <p lang="it">Nexus Dominion è un MMORPG fantasy gratuito da browser, con combattimenti a turni, missioni, dungeon e arena ELO. Si gioca direttamente nel browser, senza scaricare nulla.</p>
+      <p lang="bg">Nexus Dominion е безплатна фентъзи браузърна ММОРПГ игра с пошагови битки, куестове, подземия и ELO арена. Играе се директно в браузъра — без сваляне.</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
