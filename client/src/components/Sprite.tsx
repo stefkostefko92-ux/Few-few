@@ -104,23 +104,43 @@ const CATEGORY_BASES: Record<string, string> = {
    variant ships. */
 const TIERED_BASES = new Set<string>();
 
+/** Rarity → frame border colour. Photos are shown un-tinted; the badge
+ *  frame around them communicates rarity instead of recolouring the art. */
+const RARITY_FRAME: Record<Rarity, { border: string; glow: string }> = {
+  common:    { border: '#7c7d83', glow: 'rgba(199,200,214,.35)' },
+  uncommon:  { border: '#6ad8a4', glow: 'rgba(106,216,164,.40)' },
+  rare:      { border: '#6aa7ff', glow: 'rgba(106,167,255,.50)' },
+  epic:      { border: '#c294ff', glow: 'rgba(194,148,255,.55)' },
+  legendary: { border: '#ffd34d', glow: 'rgba(255,211,77,.65)' },
+};
+
 export default function Sprite({
   name, category, subType, tier, rarity, enchant = 0, tone, size = 32, title, className,
 }: Props): React.ReactElement {
   const slug = resolveSlug(name, category, subType, tier);
-  const gradient =
+  const e = enchant > 0 ? ENCHANT_STYLE[Math.min(5, enchant)] : null;
+  const frame = rarity ? RARITY_FRAME[rarity] : RARITY_FRAME.common;
+  // SVG tint gradient kept as a fallback for slugs where we don't yet
+  // ship a photo (custom items, future slots, error states).
+  const fallbackGradient =
     rarity ? RARITY_GRADIENT[rarity] :
     tone && TONE_GRADIENT[tone] ? TONE_GRADIENT[tone] :
     category && TONE_GRADIENT[category] ? TONE_GRADIENT[category] :
     TONE_GRADIENT.weapon;
-
-  const e = enchant > 0 ? ENCHANT_STYLE[Math.min(5, enchant)] : null;
 
   return (
     <span
       className={`sprite-wrap ${className || ''} ${e ? `sprite-enchant sprite-enchant-${enchant}` : ''}`}
       style={{
         width: size, height: size, position: 'relative', display: 'inline-block', lineHeight: 0,
+        borderRadius: Math.max(6, size * 0.18),
+        overflow: 'hidden',
+        border: `1.5px solid ${frame.border}`,
+        boxShadow:
+          `inset 0 0 0 1px rgba(0,0,0,.35), ` +
+          `0 0 ${Math.max(6, size * 0.25)}px ${frame.glow}, ` +
+          (e ? e.shadow : '0 2px 4px rgba(0,0,0,.45)'),
+        background: 'linear-gradient(180deg, rgba(20,12,4,.55), rgba(8,4,2,.85))',
       }}
       title={title}
       aria-label={title}
@@ -129,25 +149,42 @@ export default function Sprite({
         <span
           className="sprite-halo"
           style={{
-            position: 'absolute',
-            inset: -Math.round(size * 0.18),
-            borderRadius: '50%',
-            border: `1.5px solid ${e.color}`,
-            boxShadow: e.shadow,
-            pointerEvents: 'none',
+            position: 'absolute', inset: -2, borderRadius: 'inherit',
+            boxShadow: `inset 0 0 ${Math.max(8, size * 0.4)}px ${e.color}`,
+            pointerEvents: 'none', zIndex: 3,
           }}
         />
       )}
+      {/* HD photo of the actual item / class / monster. If the photo is
+          not present we fall through to the SVG silhouette so the icon
+          system degrades gracefully. */}
+      <img
+        src={`/assets/icons/${slug}.jpg`}
+        alt=""
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center',
+          filter: 'saturate(.95) contrast(1.06)',
+          zIndex: 1,
+        }}
+        onError={(ev) => {
+          const img = ev.currentTarget as HTMLImageElement;
+          img.style.display = 'none';
+          const fb = img.nextElementSibling as HTMLElement | null;
+          if (fb) fb.style.display = 'block';
+        }}
+        loading="lazy"
+      />
       <span
         className="sprite-shape"
         style={{
-          display: 'block',
-          width: '100%',
-          height: '100%',
-          background: gradient,
+          display: 'none',
+          position: 'absolute', inset: '12%', width: '76%', height: '76%',
+          background: fallbackGradient,
           WebkitMask: `url(/sprites/${slug}.svg) center/contain no-repeat`,
           mask: `url(/sprites/${slug}.svg) center/contain no-repeat`,
-          filter: e ? `drop-shadow(${e.shadow})` : 'drop-shadow(0 1px 0 rgba(0,0,0,.4))',
+          filter: 'drop-shadow(0 1px 0 rgba(0,0,0,.4))',
+          zIndex: 2,
         }}
       />
     </span>

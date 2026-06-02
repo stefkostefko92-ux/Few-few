@@ -24,10 +24,17 @@ export default function Dashboard(): React.ReactElement {
   return (
     <div className="col" style={{ gap: 24 }}>
       <div className="character-card">
-        <div className="portrait" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-          <div style={{ transform: 'scale(.78) translateY(-6%)', position: 'absolute', bottom: 0 }}>
-            {spriteFor(char.class)}
-          </div>
+        <div className="portrait portrait-photo">
+          {/* HD class portrait — public-domain painting matched to the
+              character class. Sized to "cover" the portrait box so the
+              figure stays contained instead of bleeding past the frame. */}
+          <img
+            src={`/assets/icons/class-${char.class}.jpg`}
+            alt={`${char.class} portrait`}
+            className="portrait-img"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div className="portrait-shade" aria-hidden />
           <div className="badge-level">Lv {char.level}</div>
         </div>
         <div className="col">

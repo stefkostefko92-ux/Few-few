@@ -1,0 +1,194 @@
+[
+  {
+    "slot": "amulet",
+    "file": "amulet.jpg"
+  },
+  {
+    "slot": "armor",
+    "file": "armor.jpg"
+  },
+  {
+    "slot": "axe",
+    "file": "axe.jpg"
+  },
+  {
+    "slot": "boots",
+    "file": "boots.jpg"
+  },
+  {
+    "slot": "bow",
+    "file": "bow.jpg"
+  },
+  {
+    "slot": "camp-fire",
+    "file": "camp-fire.jpg"
+  },
+  {
+    "slot": "camp-fish",
+    "file": "camp-fish.jpg"
+  },
+  {
+    "slot": "camp-forest",
+    "file": "camp-forest.jpg"
+  },
+  {
+    "slot": "camp-hunt",
+    "file": "camp-hunt.jpg"
+  },
+  {
+    "slot": "camp-mine",
+    "file": "camp-mine.jpg"
+  },
+  {
+    "slot": "camp-scout",
+    "file": "camp-scout.jpg"
+  },
+  {
+    "slot": "class-mage",
+    "file": "class-mage.jpg"
+  },
+  {
+    "slot": "class-ranger",
+    "file": "class-ranger.jpg"
+  },
+  {
+    "slot": "class-rogue",
+    "file": "class-rogue.jpg"
+  },
+  {
+    "slot": "class-warrior",
+    "file": "class-warrior.jpg"
+  },
+  {
+    "slot": "cloak",
+    "file": "cloak.jpg"
+  },
+  {
+    "slot": "dagger",
+    "file": "dagger.jpg"
+  },
+  {
+    "slot": "gem",
+    "file": "gem.jpg"
+  },
+  {
+    "slot": "gloves",
+    "file": "gloves.jpg"
+  },
+  {
+    "slot": "helm",
+    "file": "helm.jpg"
+  },
+  {
+    "slot": "icon-anvil",
+    "file": "icon-anvil.jpg"
+  },
+  {
+    "slot": "icon-coin",
+    "file": "icon-coin.jpg"
+  },
+  {
+    "slot": "icon-flame",
+    "file": "icon-flame.jpg"
+  },
+  {
+    "slot": "icon-portal",
+    "file": "icon-portal.jpg"
+  },
+  {
+    "slot": "icon-skull",
+    "file": "icon-skull.jpg"
+  },
+  {
+    "slot": "icon-vortex",
+    "file": "icon-vortex.jpg"
+  },
+  {
+    "slot": "mace",
+    "file": "mace.jpg"
+  },
+  {
+    "slot": "monster-bat",
+    "file": "monster-bat.jpg"
+  },
+  {
+    "slot": "monster-dragon",
+    "file": "monster-dragon.jpg"
+  },
+  {
+    "slot": "monster-ghost",
+    "file": "monster-ghost.jpg"
+  },
+  {
+    "slot": "monster-goblin",
+    "file": "monster-goblin.jpg"
+  },
+  {
+    "slot": "monster-hydra",
+    "file": "monster-hydra.jpg"
+  },
+  {
+    "slot": "monster-mushroom",
+    "file": "monster-mushroom.jpg"
+  },
+  {
+    "slot": "monster-orc",
+    "file": "monster-orc.jpg"
+  },
+  {
+    "slot": "monster-skeleton",
+    "file": "monster-skeleton.jpg"
+  },
+  {
+    "slot": "monster-skull",
+    "file": "monster-skull.jpg"
+  },
+  {
+    "slot": "monster-spider",
+    "file": "monster-spider.jpg"
+  },
+  {
+    "slot": "monster-tinker",
+    "file": "monster-tinker.jpg"
+  },
+  {
+    "slot": "monster-wolf",
+    "file": "monster-wolf.jpg"
+  },
+  {
+    "slot": "potion-blue",
+    "file": "potion-blue.jpg"
+  },
+  {
+    "slot": "potion-purple",
+    "file": "potion-purple.jpg"
+  },
+  {
+    "slot": "potion-red",
+    "file": "potion-red.jpg"
+  },
+  {
+    "slot": "potion",
+    "file": "potion.jpg"
+  },
+  {
+    "slot": "ring",
+    "file": "ring.jpg"
+  },
+  {
+    "slot": "shield",
+    "file": "shield.jpg"
+  },
+  {
+    "slot": "spear",
+    "file": "spear.jpg"
+  },
+  {
+    "slot": "staff",
+    "file": "staff.jpg"
+  },
+  {
+    "slot": "sword",
+    "file": "sword.jpg"
+  }
+]

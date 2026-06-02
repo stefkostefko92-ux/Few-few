@@ -1718,3 +1718,32 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 @media (prefers-reduced-motion: reduce) {
   .realm-map-bg, .realm-compass { animation: none !important; }
 }
+
+/* =========================================================================
+   Hero portrait — HD class painting fills the .portrait box.
+   ========================================================================= */
+.portrait-photo {
+  position: relative;
+  /* Override the default min sizes — image fills the box, never overflows. */
+  overflow: hidden;
+}
+.portrait-photo .portrait-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: saturate(.95) contrast(1.05) brightness(.96);
+  transition: transform 1.6s ease-out;
+}
+.portrait-photo:hover .portrait-img { transform: scale(1.04); }
+.portrait-photo .portrait-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.55) 88%, rgba(0,0,0,.85) 100%);
+}
