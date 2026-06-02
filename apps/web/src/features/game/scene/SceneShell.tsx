@@ -40,21 +40,32 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   const navigate = useNavigate();
   const mine = result.score.find((s) => s.seat === seat)?.result;
   const delta = result.ratingDeltas[seat] ?? 0;
+  const won = mine === "win";
   useEffect(() => {
-    playCue(mine === "win" ? "win" : "loss");
-  }, [mine]);
+    playCue(won ? "win" : "loss");
+  }, [won]);
   return (
-    <div className="mx-auto mt-6 w-full max-w-sm rounded-panel border border-brass-400/20 bg-felt-800/90 p-6 text-center shadow-lift">
-      <h2 className="mb-2 text-3xl text-brass-300">
-        {mine === "win" ? t("game.youWin") : mine === "loss" ? t("game.youLose") : t("game.draw")}
-      </h2>
-      <p className="tnum text-ink-300">
-        MMR {delta >= 0 ? "+" : ""}
-        {delta}
-      </p>
-      <Button className="mt-6 w-full" onClick={() => navigate("/")}>
-        {t("game.backToLobby")}
-      </Button>
+    <div className="cine-over" role="dialog" aria-modal="true">
+      <div className={`cine-over__card cine-over__card--${mine ?? "draw"}`}>
+        {won ? (
+          <div className="cine-over__sparks" aria-hidden>
+            {Array.from({ length: 14 }).map((_, i) => (
+              <span key={i} style={{ ["--i" as string]: i }} />
+            ))}
+          </div>
+        ) : null}
+        <p className="cine-over__kicker">{t("game.gameOver")}</p>
+        <h2 className="cine-over__verdict">
+          {won ? t("game.youWin") : mine === "loss" ? t("game.youLose") : t("game.draw")}
+        </h2>
+        <p className="cine-over__mmr tnum">
+          MMR {delta >= 0 ? "+" : ""}
+          {delta}
+        </p>
+        <Button className="mt-6 w-full" onClick={() => navigate("/")}>
+          {t("game.backToLobby")}
+        </Button>
+      </div>
     </div>
   );
 }

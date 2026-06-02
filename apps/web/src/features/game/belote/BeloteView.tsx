@@ -8,6 +8,7 @@ import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
+import { GameOverPanel } from "../scene/SceneShell";
 import "../cards/cards.css";
 
 interface Play {
@@ -268,32 +269,3 @@ function SearchingOrOver({
   );
 }
 
-function GameOverPanel({
-  seat,
-  result,
-}: {
-  seat: number;
-  result: NonNullable<ReturnType<typeof useMatch>["result"]>;
-}) {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const mine = result.score.find((s) => s.seat === seat)?.result;
-  const delta = result.ratingDeltas[seat] ?? 0;
-  useEffect(() => {
-    playCue(mine === "win" ? "win" : "loss");
-  }, [mine]);
-  return (
-    <div className="mx-auto mt-6 w-full max-w-sm rounded-panel border border-brass-400/20 bg-felt-800/90 p-6 text-center">
-      <h2 className="mb-2 text-3xl text-brass-300">
-        {mine === "win" ? t("game.youWin") : mine === "loss" ? t("game.youLose") : t("game.draw")}
-      </h2>
-      <p className="tnum text-ink-300">
-        MMR {delta >= 0 ? "+" : ""}
-        {delta}
-      </p>
-      <Button className="mt-6 w-full" onClick={() => navigate("/")}>
-        {t("game.backToLobby")}
-      </Button>
-    </div>
-  );
-}

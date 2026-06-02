@@ -124,3 +124,142 @@
 .cine[data-reduced="true"] .cine__grain {
   display: none;
 }
+
+/* ─── Cinematic game-over: punch-in overlay ──────────────────────────────── */
+.cine-over {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.85));
+  backdrop-filter: blur(3px);
+  animation: cine-over-fade 360ms ease both;
+}
+@keyframes cine-over-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.cine-over__card {
+  position: relative;
+  width: min(90vw, 380px);
+  padding: 32px 28px;
+  text-align: center;
+  border-radius: var(--r-panel);
+  background: linear-gradient(180deg, rgba(24, 48, 38, 0.96), rgba(11, 14, 13, 0.97));
+  border: 1px solid rgba(217, 178, 95, 0.4);
+  box-shadow:
+    0 40px 90px -20px rgba(0, 0, 0, 0.85),
+    0 0 60px -10px var(--brass-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: cine-punch 620ms cubic-bezier(0.18, 0.9, 0.2, 1.1) both;
+}
+@keyframes cine-punch {
+  0% { opacity: 0; transform: scale(0.6) translateY(20px); filter: blur(10px); }
+  55% { transform: scale(1.05); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.cine-over__card--win { border-color: var(--brass-300); }
+.cine-over__card--loss { border-color: rgba(194, 54, 47, 0.5); }
+
+.cine-over__kicker {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.cine-over__verdict {
+  margin-top: 6px;
+  font-family: var(--font-display, serif);
+  font-size: clamp(2.2rem, 9vw, 3.2rem);
+  font-weight: 700;
+  color: var(--brass-300);
+  text-shadow: 0 2px 24px var(--brass-glow);
+}
+.cine-over__card--loss .cine-over__verdict {
+  color: #e6a39e;
+  text-shadow: 0 2px 20px rgba(194, 54, 47, 0.4);
+}
+.cine-over__mmr {
+  margin-top: 4px;
+  color: var(--ink-300);
+}
+
+/* Brass spark burst on a win. */
+.cine-over__sparks {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+.cine-over__sparks span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--brass-100), var(--brass-400));
+  box-shadow: 0 0 8px var(--brass-300);
+  transform: rotate(calc(var(--i) * 25.7deg)) translateY(0);
+  animation: cine-spark 900ms ease-out forwards;
+  animation-delay: 120ms;
+}
+@keyframes cine-spark {
+  0% { opacity: 0; transform: rotate(calc(var(--i) * 25.7deg)) translateY(0) scale(0.5); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(calc(var(--i) * 25.7deg)) translateY(-120px) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-over,
+  .cine-over__card,
+  .cine-over__sparks span {
+    animation: none;
+  }
+}
+
+/* ─── Candle/lamp shimmer on warm-tone games (§4.2) ──────────────────────── */
+.cine--warm .cine__spot {
+  animation: cine-flicker 4.5s ease-in-out infinite;
+}
+@keyframes cine-flicker {
+  0%, 100% { opacity: 1; }
+  25% { opacity: 0.92; }
+  40% { opacity: 0.97; }
+  55% { opacity: 0.88; }
+  70% { opacity: 0.95; }
+}
+
+/* ─── Card sheen: a soft specular highlight drifts across faces under the
+   overhead light, giving the deck a lacquered, tactile feel. ─────────────── */
+.cine .aso-card__face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.04) 58%,
+    transparent 70%
+  );
+  background-size: 260% 100%;
+  background-position: 72% 0; /* faint band always visible near top-right */
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  transition: background-position 600ms ease;
+}
+/* Sweep the sheen across the player's own (interactive) cards on hover. */
+.cine button.aso-card:hover .aso-card__face::after {
+  background-position: 8% 0;
+  opacity: 0.85;
+}
+
+/* Subtle static sheen band on board pieces + checkers for a glazed look. */
+.cine .aso-piece,
+.cine .bg-checker,
+.cine .ludo-pawn {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%);
+}

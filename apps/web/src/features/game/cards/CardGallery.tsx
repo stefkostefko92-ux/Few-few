@@ -1,11 +1,30 @@
 import { PlayingCard } from "./PlayingCard";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
+import { CinematicStage } from "../cinematic/CinematicStage";
+import { GameOverPanel } from "../scene/SceneShell";
 import "./cards.css";
 
-/** Dev-only gallery to visually verify the card deck. Not linked in nav. */
+/** Dev-only gallery to visually verify the card deck + cinematic moments. */
 export function CardGallery() {
   const suits = ["S", "H", "D", "C"];
   const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"];
+  const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  if (params.get("over")) {
+    // Preview the cinematic game-over punch-in (?over=win|loss|draw).
+    const r = params.get("over") as "win" | "loss" | "draw";
+    return (
+      <CinematicStage tone="warm">
+        <GameOverPanel
+          seat={0}
+          result={{
+            matchId: "preview",
+            score: [{ seat: 0, result: r }, { seat: 1, result: r === "win" ? "loss" : "win" }],
+            ratingDeltas: { 0: r === "win" ? 24 : -18 },
+          }}
+        />
+      </CinematicStage>
+    );
+  }
   return (
     <div style={{ padding: 24 }}>
       <div style={{ maxWidth: 900, margin: "0 auto 28px" }}>
