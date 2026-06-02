@@ -5,6 +5,9 @@ import react from "@vitejs/plugin-react";
 // CORS whitelist already includes this origin.
 export default defineConfig({
   plugins: [react()],
+  // The play app is served under /app/ in production (marketing SSG owns the
+  // root for SEO); dev serves at root for convenience.
+  base: process.env.NODE_ENV === "production" ? "/app/" : "/",
   server: {
     port: 4502,
     proxy: {

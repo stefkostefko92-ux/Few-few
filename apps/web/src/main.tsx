@@ -13,10 +13,14 @@ const queryClient = new QueryClient({
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element");
 
+// In production the app is mounted under /app/ (see vite.config base); Vite
+// exposes that path via BASE_URL. Strip the trailing slash for the router.
+const basename = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <App />
       </BrowserRouter>
     </QueryClientProvider>
