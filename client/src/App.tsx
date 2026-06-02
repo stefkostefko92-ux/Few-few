@@ -48,6 +48,7 @@ import Hero from './pages/Hero';
 import Realm from './pages/Realm';
 import LevelUpOverlay from './components/LevelUpOverlay';
 import CooldownTicker from './components/CooldownTicker';
+import PageBackdrop from './components/PageBackdrop';
 
 function AppLayout(): React.ReactElement {
   const location = useLocation();
@@ -61,6 +62,8 @@ function AppLayout(): React.ReactElement {
   }, [location.pathname]);
   return (
     <div className="app">
+      {/* Per-route animated ambient backdrop, fixed-position behind shell. */}
+      <PageBackdrop />
       <Navbar />
       <div className="app-shell">
         <Sidebar />

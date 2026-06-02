@@ -74,9 +74,10 @@ html, body, #root {
 }
 
 body {
-  background: radial-gradient(circle at 20% 0%, #14182288 0%, transparent 50%),
-              radial-gradient(circle at 80% 100%, #1c142488 0%, transparent 50%),
-              var(--bg-1);
+  /* Solid fallback in case PageBackdrop is unmounted (auth pages). The
+     in-app PageBackdrop sits z-index:-1 over this and takes over once the
+     app shell mounts. */
+  background: var(--bg-1);
   color: var(--text-1);
   font-family: var(--font-body);
   font-size: 14px;
@@ -864,7 +865,11 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
    ===================================================================== */
 
 .panel {
-  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  /* Slight translucency so the per-page PageBackdrop reads through, while
+     the gradient stack keeps text contrast > 4.5 vs the painted backdrop. */
+  background: linear-gradient(180deg, rgba(17,20,27,.86), rgba(11,13,18,.92));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--border-1);
   border-radius: var(--radius-lg);
   padding: 24px;

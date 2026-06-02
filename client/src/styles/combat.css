@@ -184,6 +184,17 @@
   padding: 0 60px 80px;
 }
 
+/* When the 3D scene is mounted, the legacy SVG fighter art is hidden
+   (the 3D billboards are the focal characters), but the slot containers
+   stay so the damage numbers / dodge / block captions still render in
+   the right spot. The Canvas2D FX layer also keeps painting sparks on
+   top of the 3D scene. */
+.combat-field-3d .fighter-body { opacity: 0; pointer-events: none; }
+.combat-field-3d .combat-canvas { mix-blend-mode: screen; }
+.combat-field-3d > canvas:first-of-type { z-index: 1; }
+.combat-field-3d .combat-fighter { pointer-events: none; }
+@media (max-width: 700px) { .combat-field-3d { height: 320px; padding: 0 16px 60px; } }
+
 .combat-fighter {
   position: relative;
   width: 220px;

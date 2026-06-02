@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { CombatActor, CombatRound } from '../lib/types';
 import { spriteFor } from './sprites';
 import CombatCanvas, { CombatCanvasHandle } from './CombatCanvas';
+import CombatScene3D, { CombatScene3DHandle } from './CombatScene3D';
 import '../styles/combat.css';
 
 interface Reward {
@@ -90,6 +91,7 @@ export default function CombatScene(props: Props): React.ReactElement {
   const fxId = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasFxRef = useRef<CombatCanvasHandle>(null);
+  const stage3DRef = useRef<CombatScene3DHandle>(null);
   // Fires a real particle burst at the target side's centroid. The canvas
   // is positioned absolute over .combat-field, so we approximate the hit
   // point in stage-relative coords (left 25% for hero, right 25% for foe).
@@ -131,9 +133,10 @@ export default function CombatScene(props: Props): React.ReactElement {
   useEffect(() => {
     if (roundIdx < 0 || roundIdx >= rounds.length) {
       if (roundIdx >= rounds.length && !done) {
-        if (victory) setFoeAnim('defeated');
+        if (victory) { setFoeAnim('defeated'); stage3DRef.current?.defeat('foe'); }
         else {
           setHeroAnim('defeated');
+          stage3DRef.current?.defeat('hero');
           // Slow-mo + red vignette on defeat
           if (stageRef.current) {
             stageRef.current.classList.add('slow-mo', 'defeat-vignette');
@@ -148,9 +151,20 @@ export default function CombatScene(props: Props): React.ReactElement {
     const r = rounds[roundIdx];
     const attackerIsHero = r.attacker === 'hero';
 
-    // 1) Windup (small backstep)
+    // 1) Windup (small backstep). Also drives the 3D scene: it plays the
+    //    full lunge + impact cinematic on its own timeline using the same
+    //    round metadata, so the camera shake, light flash, and 3D particle
+    //    burst all line up with the legacy CSS layer underneath.
     if (attackerIsHero) setHeroAnim('windup-hero');
     else setFoeAnim('windup-foe');
+    stage3DRef.current?.attack({
+      attacker: r.attacker,
+      effect: r.effect,
+      crit: r.action === 'crit',
+      missed: r.action === 'miss',
+      dodged: r.action === 'dodge',
+      damageRatio: Math.min(1, r.damage / Math.max(1, attackerIsHero ? foe.hp_max : hero.hp_max)),
+    });
 
     const windupTime = Math.min(220, speedMs * 0.18);
     const strikeStart = setTimeout(() => {
@@ -284,7 +298,13 @@ export default function CombatScene(props: Props): React.ReactElement {
         <Combatant actor={{ ...foe, hp: foeHp }} hpPct={foeHpPct} ghostPct={foeGhost} side="foe" />
       </div>
 
-      <div className="combat-field">
+      <div className="combat-field combat-field-3d">
+        {/* True 3D stage: WebGL via Three.js. Sits behind the legacy 2D
+            sprites + damage numbers so the existing HUD still reads. */}
+        <CombatScene3D ref={stage3DRef} heroClass={hero.class || hero.sprite} foeClass={foe.class || foe.sprite} region={region} />
+        {/* Legacy 2D layer kept — only the damage numbers and dodge/block
+            captions remain visually (Fighter SVGs are now hidden via CSS
+            below so the 3D fighters are the focal point). */}
         <Fighter
           side="hero"
           anim={heroAnim}
@@ -299,8 +319,6 @@ export default function CombatScene(props: Props): React.ReactElement {
           fx={fx.filter((f) => f.side === 'foe')}
           pops={pops.filter((p) => p.side === 'foe')}
         />
-        {/* Particle layer sits over the field, beneath the damage numbers
-            but above the fighters. Single Canvas2D, additive blending. */}
         <CombatCanvas ref={canvasFxRef} />
       </div>
 
