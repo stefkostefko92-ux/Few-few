@@ -23,6 +23,7 @@
   let loopHandle = null;
   let consecutiveErrors = 0;
   let onBreakUntil = 0;
+  let wakeAt = 0;            // earliest module-requested re-evaluation time (epoch ms)
   let nextBreakAt = 0;
   let currentAction = null;
 
@@ -92,6 +93,12 @@
           message: I18n.t('notifyStopped') + (reason ? `: ${reason}` : '')
         }).catch(() => {});
       }
+    },
+
+    // A module waiting on a cooldown calls this so the loop re-evaluates it
+    // exactly when the cooldown ends (instead of only on the idle poll).
+    wakeAt(ts) {
+      if (typeof ts === 'number' && ts > Date.now()) wakeAt = wakeAt ? Math.min(wakeAt, ts) : ts;
     },
 
     pause() { paused = true; Logger.info(I18n.t('logEnginePaused')); emitStatus(); },
@@ -179,6 +186,7 @@
     }
     maybeTakeBreak();
 
+    wakeAt = 0;              // modules re-register their cooldown waits this pass
     let acted = false;
     for (const mod of registered) {
       if (!running || paused) return;
@@ -213,11 +221,21 @@
     }
 
     // Between actions: the humanized delay (or spam when humanize is off).
-    // When nothing was actionable, wait a bit longer to avoid hammering — but
-    // stay snappy in spam mode so active things resume immediately.
+    // When nothing was actionable, idle — but if a module registered a precise
+    // wake (e.g. a map/pvp cooldown end), sleep exactly until then so it resends
+    // the moment the cooldown is over rather than on the next idle poll.
     const g = Storage.section('general') || {};
-    const idle = g.humanize ? Math.max(8000, humanDelay() * 2) : 2000;
-    loopHandle = setTimeout(loop, acted ? humanDelay() : idle);
+    let delay;
+    if (acted) {
+      delay = humanDelay();
+    } else {
+      delay = g.humanize ? Math.max(8000, humanDelay() * 2) : 2000;
+      if (wakeAt) {
+        const floor = g.humanize ? 800 : 200;
+        delay = Math.min(delay, Math.max(floor, wakeAt - Date.now()));
+      }
+    }
+    loopHandle = setTimeout(loop, delay);
   }
 
   TB.Scheduler = Scheduler;

@@ -124,6 +124,13 @@
           }
         };
       }
+
+      // Waiting on cooldowns — ask the scheduler to wake us exactly when the
+      // earliest one ends, so encounters resend the moment regen completes.
+      const waits = [];
+      if (c.encounters && encounterCooldown > Date.now()) waits.push(encounterCooldown);
+      if ((c.illusionCave || c.dragon) && eventNextAt > Date.now()) waits.push(eventNextAt);
+      if (waits.length) Scheduler.wakeAt(Math.min.apply(null, waits));
       return null;
     }
   });

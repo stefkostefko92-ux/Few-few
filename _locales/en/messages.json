@@ -76,6 +76,7 @@
   "logPvpCooldown": { "message": "Arena: next duel in $1s." },
   "logPvpNoTarget": { "message": "Arena enabled but no opponent set — add a name in settings." },
   "logPvpFight": { "message": "Challenging $1 in the arena." },
+  "logPvpFightBs": { "message": "Challenging $1 (spending bloodstones to skip the cooldown)." },
   "logPvpWon": { "message": "Won the duel vs $1 (+$2 gold)." },
   "logPvpLost": { "message": "Lost the duel vs $1." },
   "logCaveStart": { "message": "Dungeon of Illusions (reward ~$1)." },
@@ -206,7 +207,9 @@
   "opt_pvp_enabled": { "message": "Enable arena" },
   "opt_pvp_opponents": { "message": "Opponent name(s), comma-separated" },
   "opt_pvp_maxPerDay": { "message": "Max fights per day (0 = unlimited)" },
-  "opt_pvp_cooldownSeconds": { "message": "Seconds between fights" },
+  "opt_pvp_cooldownSeconds": { "message": "Arena cooldown to wait between fights (seconds)" },
+  "opt_pvp_useBloodstones": { "message": "Spend bloodstones to skip the cooldown" },
+  "opt_pvp_bloodstoneReserve": { "message": "Keep at least N bloodstones" },
 
   "opt_work_enabled": { "message": "Enable work" },
   "opt_work_durationHours": { "message": "Shift length (hours)" },

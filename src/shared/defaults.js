@@ -83,7 +83,9 @@ export const DEFAULT_SETTINGS = {
     enabled: false,
     opponents: '',                 // names to fight (comma/newline separated)
     maxPerDay: 10,                 // 0 = unlimited
-    cooldownSeconds: 30
+    cooldownSeconds: 600,          // real arena cooldown to wait between free fights
+    useBloodstones: false,         // spend bloodstones to fight during the cooldown
+    bloodstoneReserve: 0           // keep at least this many bloodstones
   },
 
   /* ---- Work / Jobs ---- */

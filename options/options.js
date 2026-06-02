@@ -86,7 +86,9 @@ const SCHEMA = [
     { k: 'enabled', type: 'bool' },
     { k: 'opponents', type: 'text' },
     { k: 'maxPerDay', type: 'number', min: 0, max: 100 },
-    { k: 'cooldownSeconds', type: 'number', min: 5, max: 600 }
+    { k: 'cooldownSeconds', type: 'number', min: 5, max: 86400 },
+    { k: 'useBloodstones', type: 'bool' },
+    { k: 'bloodstoneReserve', type: 'number', min: 0 }
   ] },
   { id: 'work', fields: [
     { k: 'enabled', type: 'bool' },
