@@ -65,6 +65,10 @@ device id first claimed each key).
   an activity breakdown chart (open from the popup or options).
 - **Optional license server** — `server/license-server.mjs` enforces the
   lifetime one-computer lock across machines (see Subscription).
+- **Multi-account controller** — `controller/` runs several accounts at once on
+  one machine you control (your PC or a VPS), each in its own browser profile
+  with its own settings/proxy, plus a local dashboard. No PC needs to stay on
+  and nobody else holds your logins. See `controller/CONTROLLER.md`.
 
 All of the above ships with an automated logic test suite:
 `node tools/selftest.mjs` (presets, notification payloads, smart scoring,

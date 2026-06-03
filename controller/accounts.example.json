@@ -1,0 +1,29 @@
+{
+  "browser": {
+    "proxyDefault": ""
+  },
+  "dashboard": {
+    "port": 8899,
+    "token": "change-me"
+  },
+  "accounts": [
+    {
+      "id": "main",
+      "label": "Main account",
+      "world": "https://s2-bg.tanoth.gameforge.com/webroot/game/",
+      "profileDir": "./profiles/main",
+      "settingsFile": "./settings/main.json",
+      "proxy": "",
+      "enabled": true
+    },
+    {
+      "id": "alt1",
+      "label": "Alt 1",
+      "world": "https://s2-bg.tanoth.gameforge.com/webroot/game/",
+      "profileDir": "./profiles/alt1",
+      "settingsFile": "./settings/alt1.json",
+      "proxy": "http://user:pass@proxy.example.com:8080",
+      "enabled": false
+    }
+  ]
+}

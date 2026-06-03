@@ -7,6 +7,8 @@ import { applyPreset, PRESET_IDS } from '../src/shared/presets.js';
 import { telegramRequest, discordRequest, buildExternalNotifications } from '../src/shared/notify.js';
 import { circleMultipliers, smartScore, chooseSmart } from '../src/shared/smart.js';
 import { verifyKey, handle } from '../server/license-server.mjs';
+import { validateConfig, normalizeAccount, enabledAccounts } from '../controller/lib/config.mjs';
+import { accountView, renderDashboardHtml } from '../controller/lib/dashboard.mjs';
 
 let pass = 0;
 function test(name, fn) { try { fn(); console.log('  ok  ' + name); pass++; } catch (e) { console.error('FAIL ' + name + '\n     ' + e.message); process.exitCode = 1; } }
@@ -122,6 +124,43 @@ test('server status reflects binding', () => {
   assert.equal(ok.body.entitled, true);
   const bad = handle('GET', `/status?key=${encodeURIComponent(key)}&device=PC-B`, null, db);
   assert.equal(bad.body.entitled, false);
+});
+
+console.log('— multi-account controller —');
+test('validateConfig accepts good config, normalizes defaults', () => {
+  const r = validateConfig({ browser: { proxyDefault: '' }, accounts: [{ id: 'a', world: 'https://x/game' }] });
+  assert.equal(r.ok, true);
+  assert.equal(r.accounts[0].profileDir, './profiles/a');
+  assert.equal(r.accounts[0].enabled, true);
+});
+test('validateConfig flags missing world, dup id, bad proxy', () => {
+  const r = validateConfig({ accounts: [
+    { id: 'a', world: 'https://x' },
+    { id: 'a', world: 'https://y' },          // dup
+    { id: 'b' },                               // missing world
+    { id: 'c', world: 'https://z', proxy: 'nope' } // bad proxy
+  ] });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /duplicate/.test(e)));
+  assert.ok(r.errors.some((e) => /missing "world"/.test(e)));
+  assert.ok(r.errors.some((e) => /proxy/.test(e)));
+});
+test('enabledAccounts filters disabled and by id', () => {
+  const r = validateConfig({ accounts: [
+    { id: 'a', world: 'u', enabled: true },
+    { id: 'b', world: 'u', enabled: false }
+  ] });
+  assert.deepEqual(enabledAccounts(r).map((a) => a.id), ['a']);
+  assert.deepEqual(enabledAccounts(r, 'b').map((a) => a.id), []);
+});
+test('dashboard view + html render', () => {
+  const v = accountView({ account: { id: 'a', label: 'Main', proxy: '' }, status: 'running', startedAt: Date.now() - 120000, lastStats: { adventures: 5, goldEarned: 1500 } });
+  assert.equal(v.label, 'Main');
+  assert.equal(v.adventures, 5);
+  assert.equal(v.uptimeMin, 2);
+  const html = renderDashboardHtml([v], { token: 't' });
+  assert.ok(html.includes('Main'));
+  assert.ok(html.includes('1.5k'));
 });
 
 console.log(`\n${pass} checks passed.`);
