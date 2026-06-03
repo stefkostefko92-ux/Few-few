@@ -97,31 +97,50 @@ export default function Landing(): React.ReactElement {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-logo" data-parallax="20">
-          <Logo size={120} />
-        </div>
-        <div className="hero-eyebrow">A Browser MMORPG · Free to Play · No Download</div>
-        <h1 className="hero-title">
-          <SplitText text="Nexus Dominion" />
-          <em><SplitText text="Where Legends Are Forged." /></em>
-        </h1>
-        <p className="hero-subtitle" data-reveal>
-          Build a hero. Climb the Tower of Trials. Strike the Forge until your blade screams.
-          Found a guild, declare war, raid a god. Five regions, four classes, eight item sets,
-          a marketplace where heroes barter steel for gold — and an endless arena waiting for
-          a new king. Free. Browser. No download. The realm has been holding its breath.
-        </p>
-        <div className="hero-cta" data-reveal>
-          <Link to="/register" className="btn btn-primary btn-hero">Take Up The Sword</Link>
-          <a href="#features" className="btn btn-hero">See How It Plays</a>
-        </div>
+      {/* HERO — full-bleed video background instead of SVG sprites.
+          Drone aerial of Rhuddlan Castle (CC BY-SA 4.0, Wikimedia
+          Commons; see /assets/video/CREDITS.md). poster fallback for
+          autoplay-restricted iOS. */}
+      <section className="hero hero-video">
+        <video
+          className="hero-video-bg"
+          src="/assets/video/hero.mp4"
+          poster="/assets/video/hero-poster.jpg"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden
+        >
+          <source src="/assets/video/hero.webm" type="video/webm" />
+          <source src="/assets/video/hero.mp4"  type="video/mp4" />
+        </video>
+        <div className="hero-video-shade" aria-hidden />
+        <div className="hero-video-vignette" aria-hidden />
 
-        <div className="hero-fighters" data-parallax="40">
-          <div className="hero-fighter left"><WarriorSprite /></div>
-          <div className="hero-fighter center"><MageSprite /></div>
-          <div className="hero-fighter right" style={{ transform: 'scaleX(-1)' }}><RangerSprite /></div>
+        <div className="hero-content">
+          <div className="hero-logo" data-parallax="20">
+            <Logo size={120} />
+          </div>
+          <div className="hero-eyebrow">A Browser MMORPG · Free to Play · No Download</div>
+          <h1 className="hero-title">
+            <SplitText text="Nexus Dominion" />
+            <em><SplitText text="Where Legends Are Forged." /></em>
+          </h1>
+          <p className="hero-subtitle" data-reveal>
+            Build a hero. Climb the Tower of Trials. Strike the Forge until your blade screams.
+            Found a guild, declare war, raid a god. Fifteen regions through level 350, four classes,
+            ten tiers of gear, a marketplace where heroes barter steel for gold — and an endless
+            arena waiting for a new king. Free. Browser. No download.
+          </p>
+          <div className="hero-cta" data-reveal>
+            <Link to="/register" className="btn btn-primary btn-hero">Take Up The Sword</Link>
+            <a href="#features" className="btn btn-hero">See How It Plays</a>
+          </div>
+          <div className="hero-credit">
+            Footage by Llywelyn2000 · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>
+          </div>
         </div>
       </section>
 
