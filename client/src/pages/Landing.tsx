@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { WarriorSprite, RangerSprite, MageSprite, RogueSprite } from '../combat/sprites';
 import Logo from '../components/Logo';
 import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
@@ -222,10 +221,10 @@ export default function Landing(): React.ReactElement {
           Re-allocate every level. Switch builds when the moment calls.
         </p>
         <div className="class-grid" data-reveal-stagger>
-          <ClassCard sprite={<WarriorSprite />} name="Warrior" tagline="Steel and oath. The shield of the realm." stats={[['STR', 9], ['CON', 8], ['DEX', 5]]} />
-          <ClassCard sprite={<RangerSprite />} name="Ranger" tagline="The arrow finds what the eye sees." stats={[['DEX', 9], ['CON', 6], ['WIS', 5]]} />
-          <ClassCard sprite={<MageSprite />} name="Mage" tagline="The world bends to the disciplined mind." stats={[['INT', 9], ['WIS', 8], ['CON', 5]]} />
-          <ClassCard sprite={<RogueSprite />} name="Rogue" tagline="The unseen blade. The patient hand." stats={[['DEX', 8], ['CON', 6], ['CHA', 6]]} />
+          <ClassCard portrait="/assets/icons/class-warrior.jpg" name="Warrior" tagline="Steel and oath. The shield of the realm." stats={[['STR', 9], ['CON', 8], ['DEX', 5]]} />
+          <ClassCard portrait="/assets/icons/class-ranger.jpg"  name="Ranger"  tagline="The arrow finds what the eye sees."         stats={[['DEX', 9], ['CON', 6], ['WIS', 5]]} />
+          <ClassCard portrait="/assets/icons/class-mage.jpg"    name="Mage"    tagline="The world bends to the disciplined mind."   stats={[['INT', 9], ['WIS', 8], ['CON', 5]]} />
+          <ClassCard portrait="/assets/icons/class-rogue.jpg"   name="Rogue"   tagline="The unseen blade. The patient hand."        stats={[['DEX', 8], ['CON', 6], ['CHA', 6]]} />
         </div>
       </section>
 
@@ -238,14 +237,14 @@ export default function Landing(): React.ReactElement {
           tiers to build the hero you want. Every set is loot — never sold for premium currency.
         </p>
         <div className="set-grid" data-reveal-stagger>
-          <SetCard rarity="common" name="Wayfarer's Garb" tier="Tier 1 · Starter" icon="🥾" lore="Boiled leather and stitched hide. Every hero's first kit." bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
-          <SetCard rarity="uncommon" name="Ironguard Plate" tier="Tier 2 · Warrior" icon="🛡" lore="Issue of the Iron Watch. Standard for bridge and tollroad duty." bonuses={[['2', '+25 HP, +2 STR'], ['4', '+55 HP, +6 DEF, +3 STR'], ['6', '+100 HP, +12 DEF, +5 STR, +4 ATK']]} />
-          <SetCard rarity="uncommon" name="Sylvan Marshal" tier="Tier 2 · Ranger" icon="🏹" lore="Forest-dyed leathers worn by the marshals of the Whispering Woods." bonuses={[['2', '+3 DEX, +3% Crit'], ['4', '+5 DEX, +4% Dodge, +3 ATK']]} />
-          <SetCard rarity="uncommon" name="Arcane Conclave" tier="Tier 2 · Mage" icon="✨" lore="Spell-thread robes granted to junior members of the Conclave at Aedric." bonuses={[['2', '+25 MP, +3 INT'], ['4', '+50 MP, +5 INT, +3 WIS']]} />
-          <SetCard rarity="uncommon" name="Nightveil" tier="Tier 2 · Rogue" icon="🗡" lore="A killer's wardrobe — charcoal hood, black plates, dyed leather." bonuses={[['2', '+3 DEX, +4% Dodge'], ['4', '+5 DEX, +5% Crit, +3 ATK']]} />
-          <SetCard rarity="rare" name="Sunforged Champion" tier="Tier 3 · Warrior" icon="🔥" lore="Forged in the kilns of the Ember Spires. Lava titans cannot crush it." bonuses={[['2', '+80 HP, +4 STR'], ['4', '+180 HP, +18 DEF, +6 STR, +8 ATK']]} />
-          <SetCard rarity="epic" name="Voidshard Adept" tier="Tier 4 · Mage" icon="🌌" lore="Robes woven with crystallised dark. Whispers of dead empires cling to the cloth." bonuses={[['2', '+60 MP, +6 INT'], ['4', '+120 MP, +10 INT, +8 WIS'], ['6', '+220 MP, +16 INT, +14 WIS, +16 ATK, +8% Crit']]} />
-          <SetCard rarity="legendary" name="Solar Mythwoven" tier="Tier 5 · Legendary" icon="☀" lore="A regalia thought lost with the first Hero of the Realm." bonuses={[['2', '+150 HP, +6 STR'], ['4', '+320 HP, +24 DEF, +10 STR, +14 ATK'], ['6', '+600 HP, +50 DEF, +18 STR, +30 ATK, +10% Crit, +5% Dodge']]} />
+          <SetCard rarity="common"    name="Wayfarer's Garb"     tier="Tier 1 · Starter"    iconSrc="/assets/icons/boots-t1.jpg"  lore="Boiled leather and stitched hide. Every hero's first kit." bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
+          <SetCard rarity="uncommon"  name="Ironguard Plate"     tier="Tier 2 · Warrior"    iconSrc="/assets/icons/armor-t2.jpg"  lore="Issue of the Iron Watch. Standard for bridge and tollroad duty." bonuses={[['2', '+25 HP, +2 STR'], ['4', '+55 HP, +6 DEF, +3 STR'], ['6', '+100 HP, +12 DEF, +5 STR, +4 ATK']]} />
+          <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier="Tier 2 · Ranger"     iconSrc="/assets/icons/bow-t2.jpg"    lore="Forest-dyed leathers worn by the marshals of the Whispering Woods." bonuses={[['2', '+3 DEX, +3% Crit'], ['4', '+5 DEX, +4% Dodge, +3 ATK']]} />
+          <SetCard rarity="uncommon"  name="Arcane Conclave"     tier="Tier 2 · Mage"       iconSrc="/assets/icons/staff-t2.jpg"  lore="Spell-thread robes granted to junior members of the Conclave at Aedric." bonuses={[['2', '+25 MP, +3 INT'], ['4', '+50 MP, +5 INT, +3 WIS']]} />
+          <SetCard rarity="uncommon"  name="Nightveil"           tier="Tier 2 · Rogue"      iconSrc="/assets/icons/dagger-t2.jpg" lore="A killer's wardrobe — charcoal hood, black plates, dyed leather." bonuses={[['2', '+3 DEX, +4% Dodge'], ['4', '+5 DEX, +5% Crit, +3 ATK']]} />
+          <SetCard rarity="rare"      name="Sunforged Champion"  tier="Tier 3 · Warrior"    iconSrc="/assets/icons/sword-t6.jpg"  lore="Forged in the kilns of the Ember Spires. Lava titans cannot crush it." bonuses={[['2', '+80 HP, +4 STR'], ['4', '+180 HP, +18 DEF, +6 STR, +8 ATK']]} />
+          <SetCard rarity="epic"      name="Voidshard Adept"     tier="Tier 4 · Mage"       iconSrc="/assets/icons/staff-t8.jpg"  lore="Robes woven with crystallised dark. Whispers of dead empires cling to the cloth." bonuses={[['2', '+60 MP, +6 INT'], ['4', '+120 MP, +10 INT, +8 WIS'], ['6', '+220 MP, +16 INT, +14 WIS, +16 ATK, +8% Crit']]} />
+          <SetCard rarity="legendary" name="Solar Mythwoven"     tier="Tier 5 · Legendary"  iconSrc="/assets/icons/sword-t10.jpg" lore="A regalia thought lost with the first Hero of the Realm." bonuses={[['2', '+150 HP, +6 STR'], ['4', '+320 HP, +24 DEF, +10 STR, +14 ATK'], ['6', '+600 HP, +50 DEF, +18 STR, +30 ATK, +10% Crit, +5% Dodge']]} />
         </div>
       </section>
 
@@ -403,10 +402,18 @@ function FeatureCard({ icon, title, children }: { icon: string; title: string; c
   );
 }
 
-function ClassCard({ sprite, name, tagline, stats }: { sprite: React.ReactElement; name: string; tagline: string; stats: [string, number][] }) {
+function ClassCard({ portrait, name, tagline, stats }: { portrait: string; name: string; tagline: string; stats: [string, number][] }) {
   return (
-    <div className="class-card" data-tilt>
-      <div className="sprite">{sprite}</div>
+    <div className="class-card class-card-portrait" data-tilt>
+      <div className="class-portrait-frame">
+        {/* HD public-domain painting matched to the class (Vasnetsov
+            Knight at the Crossroads / Waterhouse Magic Circle / Pyle
+            Robin Hood plate / Frith Highwayman). Same images that
+            drive the in-game Hero card, so the marketing surface and
+            the gameplay surface share their visual identity. */}
+        <img src={portrait} alt={`${name} portrait`} loading="lazy" />
+        <div className="class-portrait-shade" aria-hidden />
+      </div>
       <h3>{name}</h3>
       <div className="tagline">{tagline}</div>
       <div className="stat-row">
@@ -421,11 +428,13 @@ function ClassCard({ sprite, name, tagline, stats }: { sprite: React.ReactElemen
   );
 }
 
-function SetCard({ rarity, name, tier, icon, lore, bonuses }: { rarity: string; name: string; tier: string; icon: string; lore: string; bonuses: [string, string][] }) {
+function SetCard({ rarity, name, tier, iconSrc, lore, bonuses }: { rarity: string; name: string; tier: string; iconSrc: string; lore: string; bonuses: [string, string][] }) {
   return (
     <div className="set-card" data-rarity={rarity} data-tilt>
       <div className="set-header">
-        <div className="set-icon">{icon}</div>
+        <div className="set-icon set-icon-img">
+          <img src={iconSrc} alt={`${name} icon`} loading="lazy" />
+        </div>
         <div>
           <div className="set-name">{name}</div>
           <div className="set-tier">{tier}</div>
