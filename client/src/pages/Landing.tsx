@@ -294,11 +294,11 @@ export default function Landing(): React.ReactElement {
           Five regions, each with its own monsters, dungeon, and legend.
         </p>
         <div className="region-row" data-reveal-stagger>
-          <RegionCard color="#3f6a2c" flavor="🌲" name="Whispering Woods" range="Levels 1 – 5">Goblins, wolves, and cellar rats.</RegionCard>
-          <RegionCard color="#6e7a5c" flavor="⛰" name="Mistmoor Hills" range="Levels 6 – 10">Fog-laced highlands of orcs and trolls.</RegionCard>
-          <RegionCard color="#6aa7ff" flavor="💎" name="Crystal Caverns" range="Levels 10 – 15">Glittering tunnels and the Overlord.</RegionCard>
-          <RegionCard color="#c7641a" flavor="🔥" name="Ashen Wastes" range="Levels 15 – 22">Burned plains and the revenant dead.</RegionCard>
-          <RegionCard color="#6f3fb6" flavor="☠" name="The Shadowfell" range="Level 24+">The Shadow Lord's domain.</RegionCard>
+          <RegionCard color="#3f6a2c" art="/assets/regions/whispering_woods.jpg" name="Whispering Woods" range="Levels 1 – 5">Goblins, wolves, and cellar rats.</RegionCard>
+          <RegionCard color="#6e7a5c" art="/assets/regions/mistmoor_hills.jpg"   name="Mistmoor Hills"   range="Levels 6 – 10">Fog-laced highlands of orcs and trolls.</RegionCard>
+          <RegionCard color="#6aa7ff" art="/assets/regions/crystal_caverns.jpg"  name="Crystal Caverns"  range="Levels 10 – 15">Glittering tunnels and the Overlord.</RegionCard>
+          <RegionCard color="#c7641a" art="/assets/regions/ashen_wastes.jpg"     name="Ashen Wastes"     range="Levels 15 – 22">Burned plains and the revenant dead.</RegionCard>
+          <RegionCard color="#6f3fb6" art="/assets/regions/shadowfell.jpg"       name="The Shadowfell"   range="Level 24+">The Shadow Lord's domain.</RegionCard>
         </div>
       </section>
 
@@ -453,15 +453,21 @@ function SetCard({ rarity, name, tier, iconSrc, lore, bonuses }: { rarity: strin
   );
 }
 
-function RegionCard({ color, flavor, name, range, children }: { color: string; flavor: string; name: string; range: string; children: React.ReactNode }) {
+function RegionCard({ color, art, name, range, children }: { color: string; art: string; name: string; range: string; children: React.ReactNode }) {
   return (
-    <div className="feature-card" data-tilt style={{ borderColor: color }}>
-      <div className="feature-icon" style={{ background: `linear-gradient(135deg, ${color}33, ${color}11)`, borderColor: `${color}55` }}>
-        <span style={{ fontSize: 28 }}>{flavor}</span>
+    <div className="region-card" data-tilt style={{ borderColor: color }}>
+      {/* Painted region plate (Corot / Friedrich / Wright of Derby /
+          John Martin), centre-cropped 1440×900 — see
+          /assets/regions/CREDITS.md for full attribution. */}
+      <div className="region-art">
+        <img src={art} alt={`${name} landscape`} loading="lazy" />
+        <div className="region-art-shade" style={{ background: `linear-gradient(180deg, transparent 35%, ${color}22 70%, rgba(11,13,18,.95) 100%)` }} aria-hidden />
       </div>
-      <h3 className="feature-title">{name}</h3>
-      <div className="tag" style={{ marginBottom: 10 }}>{range}</div>
-      <p className="feature-desc">{children}</p>
+      <div className="region-body">
+        <h3 className="feature-title">{name}</h3>
+        <div className="tag" style={{ marginBottom: 10 }}>{range}</div>
+        <p className="feature-desc">{children}</p>
+      </div>
     </div>
   );
 }
