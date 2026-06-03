@@ -3,11 +3,14 @@
  * License key generator for Tanoth Master Bot.
  *
  * Usage:   node tools/genkey.mjs [days]
- * Example: node tools/genkey.mjs 31      # a one-month key
+ * Examples:
+ *   node tools/genkey.mjs 31        # one-month key  (€4)
+ *   node tools/genkey.mjs 365000    # lifetime key   (€20)
  *
- * Issue one key per paid month (€4 via Revolut). The key encodes only an expiry
- * timestamp and is signed with LICENSE_SECRET so the extension can verify it
- * offline. KEEP LICENSE_SECRET PRIVATE and identical to src/shared/payment.js.
+ * The key encodes only an expiry timestamp and is signed with LICENSE_SECRET so
+ * the extension can verify it offline. KEEP LICENSE_SECRET PRIVATE and identical
+ * to src/shared/payment.js. A lifetime key is locked to the first computer it is
+ * activated on (device binding happens client-side on activation).
  *
  * NOTE: offline verification is a deterrent, not unbreakable DRM (the secret
  * ships in the extension). For strong enforcement, validate keys server-side.

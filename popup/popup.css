@@ -37,9 +37,11 @@ header h1 { font-size: 15px; font-weight: 700; letter-spacing: .2px; }
 .btn:disabled { opacity: .4; cursor: default; }
 
 .subscribe { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-bottom: 12px; text-align: center; }
-.subscribe .price { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
-.btn.pay { width: 100%; background: var(--accent); border: none; color: #06140d; font-weight: 700; margin-bottom: 6px; }
+.subscribe .plans { display: flex; gap: 8px; margin-bottom: 8px; }
+.btn.pay { flex: 1; background: var(--accent); border: none; color: #06140d; font-weight: 700; }
+.btn.pay.alt { background: #d9a93a; }
 .btn.pay:hover { filter: brightness(1.08); }
+.pay-note { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
 .key { width: 100%; padding: 9px 10px; border-radius: 7px; background: var(--bg); border: 1px solid var(--border);
   color: var(--text); font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; margin-bottom: 6px; }
 .btn.activate { width: 100%; }

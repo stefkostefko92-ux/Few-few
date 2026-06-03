@@ -48,8 +48,10 @@
         <div class="tb-paywall">
           <h3>${I18n.t('paywallTitle')}</h3>
           <p>${I18n.t('paywallBody')}</p>
-          <div class="tb-price" data-el="price">€4 / ${I18n.t('uiMonth')}</div>
-          <button class="tb-pay" data-act="pay">${I18n.t('uiPayRevolut')}</button>
+          <div class="tb-plans">
+            <button class="tb-pay" data-act="pay-monthly">€<span data-el="price-m">4</span> / ${I18n.t('uiMonth')}</button>
+            <button class="tb-pay tb-pay-alt" data-act="pay-lifetime">€<span data-el="price-l">20</span> ${I18n.t('uiLifetime')}</button>
+          </div>
           <input class="tb-key" data-el="key" placeholder="${I18n.t('uiKeyPlaceholder')}" />
           <button class="tb-activate" data-act="activate">${I18n.t('uiActivate')}</button>
           <div class="tb-pay-msg" data-el="pay-msg"></div>
@@ -111,7 +113,8 @@
       case 'options': chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' }).catch(() => chrome.runtime.openOptionsPage?.()); break;
       case 'subscribe': Panel.showPaywall(); break;
       case 'paywall-close': root.classList.remove('tb-show-paywall'); break;
-      case 'pay': TB.License.openPayment(); break;
+      case 'pay-monthly': TB.License.openPayment(); break;
+      case 'pay-lifetime': TB.License.openPayment(); break;
       case 'activate': doActivate(); break;
       default:
         if (act.startsWith('mod:')) toggleModule(act.slice(4));
@@ -143,8 +146,14 @@
     const entitled = !!lic.entitled;
     root.classList.toggle('tb-locked', !entitled);
     if (!entitled) root.classList.add('tb-show-paywall');
-    bar.classList.toggle('tb-lic-expired', lic.status === 'expired');
-    if (lic.status === 'active') text.innerHTML = I18n.t('licActive', [String(lic.daysLeft)]);
+    if (lic.payment) {
+      const m = root.querySelector('[data-el="price-m"]'); if (m) m.textContent = lic.payment.priceEur;
+      const l = root.querySelector('[data-el="price-l"]'); if (l) l.textContent = lic.payment.lifetimePriceEur;
+    }
+    bar.classList.toggle('tb-lic-expired', lic.status === 'expired' || lic.wrongDevice);
+    if (lic.wrongDevice) text.innerHTML = `<b>${I18n.t('licWrongDevice')}</b>`;
+    else if (lic.status === 'lifetime') text.innerHTML = I18n.t('licLifetime');
+    else if (lic.status === 'active') text.innerHTML = I18n.t('licActive', [String(lic.daysLeft)]);
     else if (lic.status === 'trial') text.innerHTML = I18n.t('licTrial', [String(lic.daysLeft)]);
     else if (lic.status === 'expired') text.innerHTML = `<b>${I18n.t('licExpired')}</b>`;
     else text.textContent = I18n.t('licChecking');

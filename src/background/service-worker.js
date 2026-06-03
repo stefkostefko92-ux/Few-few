@@ -12,14 +12,15 @@
 
 import { DEFAULT_SETTINGS, mergeSettings, SETTINGS_VERSION } from '../shared/defaults.js';
 import {
-  PRICE_EUR, BILLING_PERIOD_DAYS, TRIAL_DAYS,
+  PRICE_EUR, LIFETIME_PRICE_EUR, BILLING_PERIOD_DAYS, TRIAL_DAYS, LIFETIME_THRESHOLD_DAYS,
   REVOLUT_PAYMENT_URL, LICENSE_SECRET, LICENSE_PREFIX
 } from '../shared/payment.js';
 
 const STORAGE_KEY = 'tanothBotSettings';
 const STATS_KEY = 'tanothBotStats';
-const LICENSE_KEY = 'tanothBotLicense';   // { key, exp }
+const LICENSE_KEY = 'tanothBotLicense';   // { key, exp, device }
 const INSTALL_KEY = 'tanothBotInstall';   // { firstRun }
+const DEVICE_KEY = 'tanothBotDevice';     // stable per-install device id
 
 /* -------------------------------------------------------------------------- */
 /* Install / update                                                            */
@@ -198,10 +199,22 @@ async function forwardToActiveGameTab(message) {
 
 const PAYMENT_INFO = {
   priceEur: PRICE_EUR,
+  lifetimePriceEur: LIFETIME_PRICE_EUR,
   periodDays: BILLING_PERIOD_DAYS,
   trialDays: TRIAL_DAYS,
   paymentUrl: REVOLUT_PAYMENT_URL
 };
+
+// Stable identifier for THIS install/computer. A lifetime key is bound to it on
+// first activation so the same key won't run on a different machine.
+async function getDeviceId() {
+  let id = (await chrome.storage.local.get(DEVICE_KEY))[DEVICE_KEY];
+  if (!id) {
+    id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2));
+    await chrome.storage.local.set({ [DEVICE_KEY]: id });
+  }
+  return id;
+}
 
 function b64urlToBytes(s) {
   s = s.replace(/-/g, '+').replace(/_/g, '/');
@@ -248,26 +261,37 @@ async function getLicenseStatus() {
   const now = Date.now();
   const inst = (await chrome.storage.local.get(INSTALL_KEY))[INSTALL_KEY] || { firstRun: now };
   const lic = (await chrome.storage.local.get(LICENSE_KEY))[LICENSE_KEY] || null;
+  const device = await getDeviceId();
 
   const trialEnds = inst.firstRun + TRIAL_DAYS * 86400000;
+  const lifetimeMs = LIFETIME_THRESHOLD_DAYS * 86400000;
   let status = 'expired';
   let expISO = null;
   let entitled = false;
+  let boundDevice = false;
+  let wrongDevice = false;
 
-  if (lic && typeof lic.exp === 'number' && lic.exp * 1000 > now) {
-    status = 'active';
+  const licValid = lic && typeof lic.exp === 'number' && lic.exp * 1000 > now;
+  const licOnThisDevice = lic && (!lic.device || lic.device === device);
+
+  if (licValid && !licOnThisDevice) {
+    // Key was activated on another computer.
+    wrongDevice = true;
+  } else if (licValid) {
     entitled = true;
+    boundDevice = !!lic.device;
     expISO = new Date(lic.exp * 1000).toISOString();
+    status = (lic.exp * 1000 - now) > lifetimeMs ? 'lifetime' : 'active';
   } else if (now < trialEnds) {
     status = 'trial';
     entitled = true;
     expISO = new Date(trialEnds).toISOString();
   }
 
-  const msLeft = (status === 'active' ? lic.exp * 1000 : trialEnds) - now;
-  const daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
+  const ref = status === 'lifetime' || status === 'active' ? lic.exp * 1000 : trialEnds;
+  const daysLeft = status === 'lifetime' ? null : Math.max(0, Math.ceil((ref - now) / 86400000));
 
-  return { status, entitled, expISO, daysLeft, payment: PAYMENT_INFO };
+  return { status, entitled, expISO, daysLeft, boundDevice, wrongDevice, payment: PAYMENT_INFO };
 }
 
 async function activateLicense(key) {
@@ -278,7 +302,11 @@ async function activateLicense(key) {
   if (payload.exp * 1000 <= Date.now()) {
     return Object.assign({ ok: false, error: 'EXPIRED_KEY' }, await getLicenseStatus());
   }
-  await chrome.storage.local.set({ [LICENSE_KEY]: { key: key.trim(), exp: payload.exp } });
+  const device = await getDeviceId();
+  // Bind the licence to this computer on activation.
+  await chrome.storage.local.set({
+    [LICENSE_KEY]: { key: key.trim(), exp: payload.exp, device, boundAt: Date.now() }
+  });
   const status = await getLicenseStatus();
   broadcastToGameTabs({ type: 'LICENSE_UPDATED', license: status });
   return Object.assign({ ok: true }, status);

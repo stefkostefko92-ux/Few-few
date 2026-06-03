@@ -142,10 +142,12 @@
 #tanoth-bot-panel .tb-paywall h3 { margin: 0 0 4px; font-size: 14px; color: var(--text); }
 #tanoth-bot-panel .tb-paywall p { margin: 0 0 10px; font-size: 12px; color: var(--muted); }
 #tanoth-bot-panel .tb-paywall .tb-price { font-size: 22px; color: var(--accent); font-weight: 700; }
+#tanoth-bot-panel .tb-paywall .tb-plans { display: flex; gap: 8px; margin: 8px 0; }
 #tanoth-bot-panel .tb-paywall .tb-pay {
-  width: 100%; margin: 8px 0; cursor: pointer; border: none; border-radius: 8px; padding: 11px;
-  font-weight: 700; font-size: 13px; color: #06140d; background: var(--accent);
+  flex: 1; cursor: pointer; border: none; border-radius: 8px; padding: 11px;
+  font-weight: 700; font-size: 12px; color: #06140d; background: var(--accent);
 }
+#tanoth-bot-panel .tb-paywall .tb-pay.tb-pay-alt { background: #d9a93a; }
 #tanoth-bot-panel .tb-paywall .tb-pay:hover { filter: brightness(1.08); }
 #tanoth-bot-panel .tb-paywall .tb-key {
   width: 100%; margin-top: 6px; padding: 9px 10px; border-radius: 7px;

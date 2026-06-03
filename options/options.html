@@ -21,10 +21,12 @@
       <section id="sub" class="sub-card">
         <div class="sub-head">
           <h2 data-i18n="subTitle">Subscription</h2>
-          <span class="sub-price"><span id="sub-price">€4</span> / <span data-i18n="uiMonth">month</span></span>
         </div>
         <div class="sub-status" id="sub-status"></div>
-        <button class="btn-pay" id="sub-pay" data-i18n="uiPayRevolut">Pay with Revolut</button>
+        <div class="sub-plans">
+          <button class="btn-pay" id="sub-pay-monthly">€<span id="sub-price-m">4</span> / <span data-i18n="uiMonth">month</span></button>
+          <button class="btn-pay alt" id="sub-pay-lifetime">€<span id="sub-price-l">20</span> <span data-i18n="uiLifetime">lifetime</span></button>
+        </div>
         <div class="sub-row" style="margin-top:14px">
           <input id="sub-key" type="text" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
           <button id="sub-activate" data-i18n="uiActivate">Activate</button>

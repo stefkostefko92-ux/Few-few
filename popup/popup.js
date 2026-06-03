@@ -26,8 +26,10 @@ const els = {
   pause: document.getElementById('btn-pause'),
   stop: document.getElementById('btn-stop'),
   subscribe: document.getElementById('subscribe'),
-  price: document.getElementById('price'),
-  pay: document.getElementById('btn-pay'),
+  priceM: document.getElementById('price-m'),
+  priceL: document.getElementById('price-l'),
+  payMonthly: document.getElementById('pay-monthly'),
+  payLifetime: document.getElementById('pay-lifetime'),
   key: document.getElementById('key'),
   activate: document.getElementById('btn-activate'),
   payMsg: document.getElementById('pay-msg')
@@ -45,7 +47,8 @@ els.pause.addEventListener('click', () => {
 });
 document.getElementById('open-options').addEventListener('click', () => chrome.runtime.openOptionsPage());
 document.getElementById('show-panel').addEventListener('click', () => control('showPanel'));
-els.pay.addEventListener('click', () => send({ type: 'OPEN_PAYMENT' }));
+els.payMonthly.addEventListener('click', () => send({ type: 'OPEN_PAYMENT' }));
+els.payLifetime.addEventListener('click', () => send({ type: 'OPEN_PAYMENT' }));
 els.activate.addEventListener('click', activate);
 
 async function activate() {
@@ -74,9 +77,14 @@ async function refreshLicense() {
   const lic = await send({ type: 'GET_LICENSE' });
   if (!lic || !lic.status) return;
   entitled = !!lic.entitled;
-  if (lic.payment) els.price.textContent = '€' + lic.payment.priceEur;
-  els.license.classList.toggle('expired', lic.status === 'expired');
-  if (lic.status === 'active') els.license.innerHTML = t('licActive', [String(lic.daysLeft)]);
+  if (lic.payment) {
+    els.priceM.textContent = lic.payment.priceEur;
+    els.priceL.textContent = lic.payment.lifetimePriceEur;
+  }
+  els.license.classList.toggle('expired', lic.status === 'expired' || lic.wrongDevice);
+  if (lic.wrongDevice) els.license.innerHTML = '<b>' + t('licWrongDevice') + '</b>';
+  else if (lic.status === 'lifetime') els.license.innerHTML = t('licLifetime');
+  else if (lic.status === 'active') els.license.innerHTML = t('licActive', [String(lic.daysLeft)]);
   else if (lic.status === 'trial') els.license.innerHTML = t('licTrial', [String(lic.daysLeft)]);
   else if (lic.status === 'expired') els.license.innerHTML = '<b>' + t('licExpired') + '</b>';
   else els.license.textContent = t('licChecking');

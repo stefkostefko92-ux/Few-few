@@ -122,12 +122,16 @@
   "paywallTitle": { "message": "Unlock Tanoth Master Bot" },
   "paywallBody": { "message": "Your trial has ended. Subscribe to keep automating." },
   "subTitle": { "message": "Subscription" },
-  "subNote": { "message": "New installs include a $1-day free trial. After payment you receive a license key to activate here. Cancel any time by not renewing." },
+  "subNote": { "message": "New installs include a $1-day free trial. Pay €4/month or €20 once for lifetime via Revolut, then paste the license key here. A lifetime key locks to the first computer it is activated on." },
 
   "licActive": { "message": "Subscription active — $1 days left." },
+  "licLifetime": { "message": "Lifetime licence — active on this device." },
+  "licWrongDevice": { "message": "This key is locked to another computer." },
   "licTrial": { "message": "Free trial — $1 days left." },
   "licExpired": { "message": "Subscription expired — please subscribe." },
   "licChecking": { "message": "Checking subscription…" },
+  "uiLifetime": { "message": "lifetime" },
+  "uiRevolutNote": { "message": "Pay via Revolut, then paste your key below" },
 
   "optSave": { "message": "Save" },
   "optReset": { "message": "Reset to defaults" },

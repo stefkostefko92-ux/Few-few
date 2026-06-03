@@ -70,7 +70,9 @@ select { min-width: 170px; }
 .sub-status b { color: var(--text); }
 .sub-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .sub-row input { flex: 1; min-width: 220px; font-family: ui-monospace, Menlo, Consolas, monospace; }
-.btn-pay { background: var(--accent); border: none; color: #06140d; font-weight: 700; padding: 11px 18px; }
+.sub-plans { display: flex; gap: 10px; margin: 14px 0; }
+.btn-pay { flex: 1; background: var(--accent); border: none; color: #06140d; font-weight: 700; padding: 12px 18px; font-size: 14px; }
+.btn-pay.alt { background: #d9a93a; }
 .btn-pay:hover { filter: brightness(1.08); }
 .sub-msg { margin-top: 10px; font-size: 12px; min-height: 16px; }
 .sub-msg.ok { color: var(--accent); }

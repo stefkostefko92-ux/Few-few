@@ -30,8 +30,11 @@
   </div>
 
   <section id="subscribe" class="subscribe hidden">
-    <div class="price"><span id="price">€4</span> / <span data-i18n="uiMonth">month</span></div>
-    <button id="btn-pay" class="btn pay" data-i18n="uiPayRevolut">Pay with Revolut</button>
+    <div class="plans">
+      <button id="pay-monthly" class="btn pay">€<span id="price-m">4</span> / <span data-i18n="uiMonth">month</span></button>
+      <button id="pay-lifetime" class="btn pay alt">€<span id="price-l">20</span> <span data-i18n="uiLifetime">lifetime</span></button>
+    </div>
+    <div class="pay-note" data-i18n="uiRevolutNote">Pay via Revolut, then paste your key below</div>
     <input id="key" class="key" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
     <button id="btn-activate" class="btn activate" data-i18n="uiActivate">Activate</button>
     <div id="pay-msg" class="pay-msg"></div>

@@ -11,24 +11,38 @@ with scheduling, statistics and six languages.
 
 ## Subscription
 
-The bot is paid: **€4 / month**, paid via **Revolut**.
+The bot is paid, via **Revolut**, with two plans:
+
+- **€4 / month** — a 31-day key.
+- **€20 lifetime** — a one-off key that **locks to the first computer it is
+  activated on** (device-bound).
+
+Details:
 
 - Every new install includes a **3-day free trial** — full functionality, no key.
 - After the trial, **Start** is locked until a license key is activated.
-- Pay with the in-app **Pay with Revolut** button (popup, options page, or the
-  in-game panel's paywall), then paste the license key you receive into the
-  **Activate** field.
-- A live badge shows trial/subscription days remaining; the bot stops
-  automatically if the subscription lapses.
+- Pick a plan with the in-app pay buttons (popup, options page, or the in-game
+  panel's paywall) — both open the seller's Revolut link; enter €4 or €20 — then
+  paste the key you receive into the **Activate** field.
+- A live badge shows the state: *Lifetime*, *Active — N days left*, *Trial*, or
+  *locked to another computer*. The bot stops automatically if entitlement lapses.
 
 ### For the seller (issuing keys)
 
 Keys are signed offline. Set your own values in `src/shared/payment.js`
-(`REVOLUT_PAYMENT_URL`, `LICENSE_SECRET`) and mint one key per paid month:
+(`REVOLUT_PAYMENT_URL`, `LICENSE_SECRET`) and mint keys:
 
 ```bash
-node tools/genkey.mjs 31      # 31-day key, prints e.g. TZ1.<payload>.<sig>
+node tools/genkey.mjs 31        # monthly key (€4)
+node tools/genkey.mjs 365000    # lifetime key (€20)
 ```
+
+**Device binding:** a lifetime key is bound to the install it is first activated
+on (a per-install device id stored locally). This stops the key from being moved
+between profiles on the same machine; **truly preventing the same key being
+activated on a *different* computer requires the server-side check** (the
+`ACTIVATE_LICENSE` handler is the single place to add a call that records which
+device id first claimed each key).
 
 > The signing secret ships inside the extension, so offline verification is a
 > deterrent, not unbreakable DRM. For strong enforcement, move key validation

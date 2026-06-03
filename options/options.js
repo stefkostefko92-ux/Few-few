@@ -333,16 +333,19 @@ document.getElementById('reset-stats').addEventListener('click', async () => {
 
 const subEl = {
   card: document.getElementById('sub'),
-  price: document.getElementById('sub-price'),
+  priceM: document.getElementById('sub-price-m'),
+  priceL: document.getElementById('sub-price-l'),
   status: document.getElementById('sub-status'),
-  pay: document.getElementById('sub-pay'),
+  payMonthly: document.getElementById('sub-pay-monthly'),
+  payLifetime: document.getElementById('sub-pay-lifetime'),
   key: document.getElementById('sub-key'),
   activate: document.getElementById('sub-activate'),
   msg: document.getElementById('sub-msg'),
   note: document.querySelector('.sub-note')
 };
 
-subEl.pay.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'OPEN_PAYMENT' }));
+subEl.payMonthly.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'OPEN_PAYMENT' }));
+subEl.payLifetime.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'OPEN_PAYMENT' }));
 subEl.activate.addEventListener('click', async () => {
   const key = (subEl.key.value || '').trim();
   if (!key) return;
@@ -362,10 +365,15 @@ subEl.activate.addEventListener('click', async () => {
 async function renderSubscription() {
   const lic = await chrome.runtime.sendMessage({ type: 'GET_LICENSE' });
   if (!lic || !lic.status) return;
-  if (lic.payment) subEl.price.textContent = '€' + lic.payment.priceEur;
+  if (lic.payment) {
+    subEl.priceM.textContent = lic.payment.priceEur;
+    subEl.priceL.textContent = lic.payment.lifetimePriceEur;
+  }
   subEl.note.textContent = t('subNote', [String(lic.payment ? lic.payment.trialDays : 3)]);
-  subEl.card.classList.toggle('expired', lic.status === 'expired');
-  if (lic.status === 'active') subEl.status.innerHTML = t('licActive', [String(lic.daysLeft)]);
+  subEl.card.classList.toggle('expired', lic.status === 'expired' || lic.wrongDevice);
+  if (lic.wrongDevice) subEl.status.innerHTML = '<b>' + t('licWrongDevice') + '</b>';
+  else if (lic.status === 'lifetime') subEl.status.innerHTML = t('licLifetime');
+  else if (lic.status === 'active') subEl.status.innerHTML = t('licActive', [String(lic.daysLeft)]);
   else if (lic.status === 'trial') subEl.status.innerHTML = t('licTrial', [String(lic.daysLeft)]);
   else if (lic.status === 'expired') subEl.status.innerHTML = '<b>' + t('licExpired') + '</b>';
   else subEl.status.textContent = t('licChecking');
