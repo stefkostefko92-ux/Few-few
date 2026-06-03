@@ -78,3 +78,15 @@ select { min-width: 170px; }
 .sub-msg.ok { color: var(--accent); }
 .sub-msg.err { color: var(--danger); }
 .sub-note { margin-top: 12px; font-size: 11px; color: var(--muted); }
+
+.tools-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 30px; }
+.tools-card h2 { font-size: 18px; margin-bottom: 14px; }
+.tool-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--surface-2); }
+.tool-row:last-of-type { border-bottom: none; }
+.tool-label { width: 110px; color: var(--muted); font-size: 13px; flex: 0 0 auto; }
+.tool-row input[type="text"] { flex: 1; min-width: 160px; }
+.tool-link { color: var(--accent); cursor: pointer; text-decoration: none; margin-left: auto; }
+.tool-link:hover { text-decoration: underline; }
+.tool-msg { margin-top: 10px; font-size: 12px; min-height: 16px; }
+.tool-msg.ok { color: var(--accent); }
+.tool-msg.err { color: var(--danger); }

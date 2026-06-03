@@ -46,6 +46,7 @@ els.pause.addEventListener('click', () => {
   control(els.pause.dataset.paused === '1' ? 'resume' : 'pause');
 });
 document.getElementById('open-options').addEventListener('click', () => chrome.runtime.openOptionsPage());
+document.getElementById('open-stats').addEventListener('click', () => chrome.tabs.create({ url: chrome.runtime.getURL('stats/stats.html') }));
 document.getElementById('show-panel').addEventListener('click', () => control('showPanel'));
 els.payMonthly.addEventListener('click', () => send({ type: 'OPEN_PAYMENT' }));
 els.payLifetime.addEventListener('click', () => send({ type: 'OPEN_PAYMENT' }));

@@ -35,7 +35,8 @@ export const DEFAULT_SETTINGS = {
   /* ---- Adventures ---- */
   adventures: {
     enabled: true,
-    strategy: 'gold',               // gold | experience | shortest | longest
+    strategy: 'gold',               // gold | experience | shortest | longest | smart
+    smartXpWeight: 1,               // for 'smart': value of 1 XP relative to 1 gold
     difficulty: 'medium',           // easy | medium | difficult | very_difficult
     serverSpeed: 1,                 // server speed multiplier (divides durations)
     useBloodstones: false,          // spend bloodstones for extra adventures
@@ -108,6 +109,12 @@ export const DEFAULT_SETTINGS = {
     enabled: true,
     reloadOnDisconnect: true,
     maxReloadAttempts: 5
+  },
+
+  /* ---- External notifications (Telegram / Discord webhooks) ---- */
+  webhooks: {
+    telegramEnabled: false, telegramToken: '', telegramChat: '',
+    discordEnabled: false, discordWebhook: ''
   },
 
   /* ---- Scheduler ---- */

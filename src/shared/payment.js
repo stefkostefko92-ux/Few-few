@@ -29,6 +29,11 @@ export const LIFETIME_THRESHOLD_DAYS = 365 * 50;
 // The seller's Revolut payment link (the buyer enters the amount: €4 or €20).
 export const REVOLUT_PAYMENT_URL = 'https://revolut.me/vycanismajoris';
 
+// Optional license server for true one-computer enforcement. Empty = offline
+// device binding only (see server/license-server.mjs and README). When set,
+// also add this origin to the manifest's host_permissions.
+export const LICENSE_SERVER_URL = '';
+
 // Shared secret used to sign/verify license keys. CHANGE THIS to your own
 // random value and keep the same value in tools/genkey.mjs.
 export const LICENSE_SECRET = 'TZ-7f3a9c1e5b8d246097fe1ab3cd5e7902-stealth';

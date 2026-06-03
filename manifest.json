@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
   "icons": {
@@ -32,7 +32,9 @@
     "scripting"
   ],
   "host_permissions": [
-    "*://*.tanoth.gameforge.com/*"
+    "*://*.tanoth.gameforge.com/*",
+    "https://api.telegram.org/*",
+    "https://discord.com/api/webhooks/*"
   ],
   "content_scripts": [
     {

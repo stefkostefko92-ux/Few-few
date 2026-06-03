@@ -18,10 +18,24 @@
 
   function cfg() { return Storage.section('adventures') || {}; }
 
+  // Circle multipliers: Amethyst (node 8) boosts adventure gold, Jade (node 1)
+  // boosts XP, at +0.2% per refinement level. Used by the 'smart' strategy.
+  function circleMult() {
+    const circle = State.get().circle || {};
+    const lvl = (n) => (circle[n] && Number.isFinite(circle[n][0]) ? circle[n][0] : 0);
+    return { gold: 1 + lvl(8) * 0.002, xp: 1 + lvl(1) * 0.002 };
+  }
+
   function chooseAdventure(list, c) {
     const max = DIFFICULTY[c.difficulty] ?? 0;
     const eligible = list.filter((a) => (a.difficulty ?? 0) <= max && a.id != null);
     if (!eligible.length) return null;
+    if (c.strategy === 'smart') {
+      const m = circleMult();
+      const w = Number(c.smartXpWeight) || 1;
+      const score = (a) => (((a.gold || 0) * m.gold) + ((a.xp || 0) * m.xp * w)) / Math.max(1, a.duration || 1);
+      return [...eligible].sort((a, b) => score(b) - score(a))[0];
+    }
     const by = {
       gold: (a, b) => b.gold - a.gold,
       experience: (a, b) => b.xp - a.xp,
@@ -75,6 +89,10 @@
           return;
         }
 
+        // Smart strategy needs the circle multipliers; fetch them once.
+        if (c.strategy === 'smart' && !Object.keys(State.get().circle || {}).length) {
+          try { await Api.getCircle(); } catch (_) {}
+        }
         const choice = chooseAdventure(data.adventures, c);
         if (!choice) {
           Logger.warn(I18n.t('logNoEligibleAdventure', [c.difficulty]));

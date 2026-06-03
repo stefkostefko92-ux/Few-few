@@ -34,6 +34,36 @@
         <div class="sub-msg" id="sub-msg"></div>
         <p class="sub-note" data-i18n="subNote"></p>
       </section>
+
+      <section class="tools-card">
+        <h2 data-i18n="toolsTitle">Tools</h2>
+        <div class="tool-row">
+          <span class="tool-label" data-i18n="toolPreset">Apply preset</span>
+          <select id="preset-select"></select>
+          <button id="preset-apply" data-i18n="toolApply">Apply</button>
+        </div>
+        <div class="tool-row">
+          <span class="tool-label" data-i18n="toolBackup">Backup</span>
+          <button id="export-btn" data-i18n="toolExport">Export settings</button>
+          <button id="import-btn" data-i18n="toolImport">Import settings</button>
+          <input id="import-file" type="file" accept="application/json" style="display:none">
+        </div>
+        <div class="tool-row">
+          <span class="tool-label" data-i18n="toolProfiles">Profiles</span>
+          <input id="profile-name" type="text" data-i18n-ph="toolProfileName" placeholder="Profile name">
+          <button id="profile-save" data-i18n="toolSave">Save</button>
+          <select id="profile-select"></select>
+          <button id="profile-load" data-i18n="toolLoad">Load</button>
+          <button id="profile-delete" data-i18n="toolDelete">Delete</button>
+        </div>
+        <div class="tool-row">
+          <span class="tool-label" data-i18n="toolNotify">Notifications</span>
+          <button id="notify-test" data-i18n="toolTestNotify">Send test notification</button>
+          <a id="open-stats" class="tool-link" data-i18n="toolStats">Open statistics ↗</a>
+        </div>
+        <div class="tool-msg" id="tool-msg"></div>
+      </section>
+
       <div id="form"></div>
     </main>
   </div>

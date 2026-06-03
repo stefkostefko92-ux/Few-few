@@ -49,6 +49,27 @@ device id first claimed each key).
 > to a server and have the client call it (the `ACTIVATE_LICENSE` handler in
 > `src/background/service-worker.js` is the single place to swap in a fetch).
 
+## Extras
+
+- **Telegram / Discord alerts** — get pinged externally on key events; configure
+  a bot token + chat id or a Discord webhook URL under *Telegram / Discord
+  alerts*, and use *Send test notification* to verify.
+- **Smart adventures** — a `smart` strategy that weights each adventure's
+  reward by your Evocation Circle multipliers (Amethyst→gold, Jade→XP) with a
+  configurable XP-vs-gold weight.
+- **Scheduler presets** — one-click *Daily chores*, *Full grind*, *Overnight
+  (work)* and *Safe & slow*.
+- **Export / import & profiles** — back up your config to JSON, or save named
+  profiles (per account) and switch between them.
+- **Statistics dashboard** — `stats/stats.html` shows totals, per-hour rates and
+  an activity breakdown chart (open from the popup or options).
+- **Optional license server** — `server/license-server.mjs` enforces the
+  lifetime one-computer lock across machines (see Subscription).
+
+All of the above ships with an automated logic test suite:
+`node tools/selftest.mjs` (presets, notification payloads, smart scoring,
+settings merge/round-trip, license signing and the server's device binding).
+
 ### Look & feel
 
 The UI uses a **carbon-stealth palette** — matte carbon-black surfaces,

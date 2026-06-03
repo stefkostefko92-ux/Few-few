@@ -13,14 +13,16 @@
 import { DEFAULT_SETTINGS, mergeSettings, SETTINGS_VERSION } from '../shared/defaults.js';
 import {
   PRICE_EUR, LIFETIME_PRICE_EUR, BILLING_PERIOD_DAYS, TRIAL_DAYS, LIFETIME_THRESHOLD_DAYS,
-  REVOLUT_PAYMENT_URL, LICENSE_SECRET, LICENSE_PREFIX
+  REVOLUT_PAYMENT_URL, LICENSE_SECRET, LICENSE_PREFIX, LICENSE_SERVER_URL
 } from '../shared/payment.js';
+import { buildExternalNotifications } from '../shared/notify.js';
 
 const STORAGE_KEY = 'tanothBotSettings';
 const STATS_KEY = 'tanothBotStats';
 const LICENSE_KEY = 'tanothBotLicense';   // { key, exp, device }
 const INSTALL_KEY = 'tanothBotInstall';   // { firstRun }
 const DEVICE_KEY = 'tanothBotDevice';     // stable per-install device id
+const PROFILES_KEY = 'tanothBotProfiles'; // { name: settings }
 
 /* -------------------------------------------------------------------------- */
 /* Install / update                                                            */
@@ -128,8 +130,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case 'NOTIFY':
       raiseNotification(msg.title, msg.message);
+      sendWebhooks(msg.title, msg.message);
       sendResponse({ ok: true });
       return false;
+
+    case 'TEST_WEBHOOK':
+      sendWebhooks(msg.title || 'Tanoth Bot', msg.message || 'Test notification ✅')
+        .then((n) => sendResponse({ ok: true, sent: n }));
+      return true;
+
+    case 'LIST_PROFILES':
+      chrome.storage.local.get(PROFILES_KEY).then((r) =>
+        sendResponse(Object.keys(r[PROFILES_KEY] || {})));
+      return true;
+
+    case 'SAVE_PROFILE':
+      saveProfile(msg.name).then((r) => sendResponse(r));
+      return true;
+
+    case 'LOAD_PROFILE':
+      loadProfile(msg.name).then((r) => sendResponse(r));
+      return true;
+
+    case 'DELETE_PROFILE':
+      deleteProfile(msg.name).then((r) => sendResponse(r));
+      return true;
 
     case 'OPEN_OPTIONS':
       chrome.runtime.openOptionsPage();
@@ -303,6 +328,22 @@ async function activateLicense(key) {
     return Object.assign({ ok: false, error: 'EXPIRED_KEY' }, await getLicenseStatus());
   }
   const device = await getDeviceId();
+
+  // When a license server is configured, it enforces one-computer binding
+  // across machines (offline binding alone can't). Reject if bound elsewhere.
+  if (LICENSE_SERVER_URL) {
+    try {
+      const resp = await fetch(LICENSE_SERVER_URL.replace(/\/$/, '') + '/activate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: key.trim(), device })
+      });
+      const j = await resp.json().catch(() => ({}));
+      if (!j.ok) return Object.assign({ ok: false, error: j.error || 'SERVER_REJECTED' }, await getLicenseStatus());
+    } catch (_) {
+      return Object.assign({ ok: false, error: 'SERVER_UNREACHABLE' }, await getLicenseStatus());
+    }
+  }
+
   // Bind the licence to this computer on activation.
   await chrome.storage.local.set({
     [LICENSE_KEY]: { key: key.trim(), exp: payload.exp, device, boundAt: Date.now() }
@@ -310,6 +351,45 @@ async function activateLicense(key) {
   const status = await getLicenseStatus();
   broadcastToGameTabs({ type: 'LICENSE_UPDATED', license: status });
   return Object.assign({ ok: true }, status);
+}
+
+/* ---- External notifications (Telegram / Discord) ---- */
+async function sendWebhooks(title, message) {
+  const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+  const w = settings.webhooks || {};
+  const reqs = buildExternalNotifications({
+    telegram: { enabled: w.telegramEnabled, botToken: w.telegramToken, chatId: w.telegramChat },
+    discord: { enabled: w.discordEnabled, webhookUrl: w.discordWebhook }
+  }, title, message);
+  let sent = 0;
+  for (const r of reqs) {
+    try { const resp = await fetch(r.url, r.options); if (resp.ok) sent++; } catch (_) {}
+  }
+  return sent;
+}
+
+/* ---- Settings profiles (multi-account) ---- */
+async function saveProfile(name) {
+  if (!name) return { ok: false, error: 'NO_NAME' };
+  const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+  const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
+  profiles[name] = settings;
+  await chrome.storage.local.set({ [PROFILES_KEY]: profiles });
+  return { ok: true, profiles: Object.keys(profiles) };
+}
+async function loadProfile(name) {
+  const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
+  if (!profiles[name]) return { ok: false, error: 'NOT_FOUND' };
+  const merged = mergeSettings(profiles[name]);
+  await chrome.storage.local.set({ [STORAGE_KEY]: merged });
+  broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
+  return { ok: true, settings: merged };
+}
+async function deleteProfile(name) {
+  const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
+  delete profiles[name];
+  await chrome.storage.local.set({ [PROFILES_KEY]: profiles });
+  return { ok: true, profiles: Object.keys(profiles) };
 }
 
 function raiseNotification(title, message) {

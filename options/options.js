@@ -7,6 +7,7 @@
  * gracefully for advanced options.
  */
 import { DEFAULT_SETTINGS, mergeSettings } from '../src/shared/defaults.js';
+import { applyPreset, PRESET_IDS } from '../src/shared/presets.js';
 
 function t(key, subs) { return chrome.i18n.getMessage(key, subs) || key; }
 
@@ -49,7 +50,8 @@ const SCHEMA = [
   ] },
   { id: 'adventures', fields: [
     { k: 'enabled', type: 'bool' },
-    { k: 'strategy', type: 'select', options: ['gold', 'experience', 'shortest', 'longest'] },
+    { k: 'strategy', type: 'select', options: ['gold', 'experience', 'shortest', 'longest', 'smart'] },
+    { k: 'smartXpWeight', type: 'number', min: 0, step: 0.1 },
     { k: 'difficulty', type: 'select', options: ['easy', 'medium', 'difficult', 'very_difficult'] },
     { k: 'serverSpeed', type: 'number', min: 1, max: 100 },
     { k: 'useBloodstones', type: 'bool' },
@@ -100,6 +102,13 @@ const SCHEMA = [
     { k: 'sellCommon', type: 'bool' },
     { k: 'sellSpecial', type: 'bool' },
     { k: 'dumpSchema', type: 'bool' }
+  ] },
+  { id: 'webhooks', fields: [
+    { k: 'telegramEnabled', type: 'bool' },
+    { k: 'telegramToken', type: 'text' },
+    { k: 'telegramChat', type: 'text' },
+    { k: 'discordEnabled', type: 'bool' },
+    { k: 'discordWebhook', type: 'text' }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },
@@ -378,6 +387,88 @@ async function renderSubscription() {
   else if (lic.status === 'expired') subEl.status.innerHTML = '<b>' + t('licExpired') + '</b>';
   else subEl.status.textContent = t('licChecking');
 }
+
+/* ------------------------------- tools --------------------------------- */
+const toolMsg = document.getElementById('tool-msg');
+function flashTool(text, ok = true) {
+  toolMsg.className = 'tool-msg ' + (ok ? 'ok' : 'err');
+  toolMsg.textContent = text;
+  setTimeout(() => { toolMsg.textContent = ''; }, 3000);
+}
+
+// Presets
+const presetSel = document.getElementById('preset-select');
+PRESET_IDS.forEach((id) => {
+  const o = document.createElement('option');
+  o.value = id; o.textContent = t('preset_' + id);
+  presetSel.appendChild(o);
+});
+document.getElementById('preset-apply').addEventListener('click', async () => {
+  settings = applyPreset(settings, presetSel.value);
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  render();
+  flashTool(t('toolPresetApplied', [t('preset_' + presetSel.value)]));
+});
+
+// Export / Import
+document.getElementById('export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'tanoth-bot-settings.json';
+  a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
+document.getElementById('import-file').addEventListener('change', (ev) => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      settings = mergeSettings(JSON.parse(reader.result));
+      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+      render(); flashTool(t('toolImported'));
+    } catch (e) { flashTool(t('toolImportError'), false); }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+});
+
+// Profiles
+const profileSel = document.getElementById('profile-select');
+async function refreshProfiles() {
+  const names = await chrome.runtime.sendMessage({ type: 'LIST_PROFILES' });
+  profileSel.innerHTML = '';
+  (names || []).forEach((n) => { const o = document.createElement('option'); o.value = n; o.textContent = n; profileSel.appendChild(o); });
+}
+document.getElementById('profile-save').addEventListener('click', async () => {
+  const name = document.getElementById('profile-name').value.trim();
+  if (!name) return flashTool(t('toolProfileNeedName'), false);
+  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+  await chrome.runtime.sendMessage({ type: 'SAVE_PROFILE', name });
+  await refreshProfiles(); flashTool(t('toolProfileSaved', [name]));
+});
+document.getElementById('profile-load').addEventListener('click', async () => {
+  const name = profileSel.value; if (!name) return;
+  const r = await chrome.runtime.sendMessage({ type: 'LOAD_PROFILE', name });
+  if (r && r.ok) { settings = mergeSettings(r.settings); render(); flashTool(t('toolProfileLoaded', [name])); }
+});
+document.getElementById('profile-delete').addEventListener('click', async () => {
+  const name = profileSel.value; if (!name) return;
+  await chrome.runtime.sendMessage({ type: 'DELETE_PROFILE', name });
+  await refreshProfiles(); flashTool(t('toolProfileDeleted', [name]));
+});
+
+// Test notification + stats link
+document.getElementById('notify-test').addEventListener('click', async () => {
+  const r = await chrome.runtime.sendMessage({ type: 'TEST_WEBHOOK', title: 'Tanoth Bot', message: t('toolTestBody') });
+  flashTool(r && r.sent ? t('toolTestSent', [String(r.sent)]) : t('toolTestNone'), !!(r && r.sent));
+});
+document.getElementById('open-stats').addEventListener('click', () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('stats/stats.html') });
+});
+
+refreshProfiles();
 
 // Localize static document title/brand + placeholders.
 document.querySelectorAll('[data-i18n]').forEach((el) => {
