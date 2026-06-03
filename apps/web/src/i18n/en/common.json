@@ -84,7 +84,9 @@
     "send": "Send",
     "sendTest": "Test",
     "discordSent": "Sent to Discord.",
-    "discordDisabled": "Discord webhook not configured."
+    "discordDisabled": "Discord webhook not configured.",
+    "gamesToday": "Today's games by type",
+    "noGames": "No games today."
   },
   "auth": {
     "loginTitle": "Sign in",

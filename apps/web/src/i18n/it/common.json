@@ -84,7 +84,9 @@
     "send": "Invia",
     "sendTest": "Test",
     "discordSent": "Inviato su Discord.",
-    "discordDisabled": "Webhook Discord non configurato."
+    "discordDisabled": "Webhook Discord non configurato.",
+    "gamesToday": "Partite di oggi per tipo",
+    "noGames": "Nessuna partita oggi."
   },
   "auth": {
     "loginTitle": "Accedi",

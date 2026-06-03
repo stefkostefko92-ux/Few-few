@@ -51,7 +51,7 @@ adminRouter.get(
   "/stats",
   asyncHandler(async (_req, res) => {
     const since = startOfToday();
-    const [users, banned, newToday, openFlags, matchesToday, vipGroups, byProduct, products, audits] =
+    const [users, banned, newToday, openFlags, matchesToday, vipGroups, byProduct, products, gameGroups, audits] =
       await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { banned: true } }),
@@ -63,6 +63,7 @@ adminRouter.get(
         // loading every purchase row into memory.
         prisma.purchase.groupBy({ by: ["productId"], where: { status: "completed" }, _count: { _all: true } }),
         prisma.product.findMany({ select: { id: true, priceCents: true } }),
+        prisma.match.groupBy({ by: ["game"], where: { startedAt: { gte: since } }, _count: { _all: true } }),
         prisma.adminAudit.findMany({ orderBy: { createdAt: "desc" }, take: 12 }),
       ]);
 
@@ -75,6 +76,8 @@ adminRouter.get(
     }
     const vip: Record<string, number> = {};
     for (const g of vipGroups) vip[g.vipTier] = g._count._all;
+    const gamesToday: Record<string, number> = {};
+    for (const g of gameGroups) gamesToday[g.game] = g._count._all;
 
     res.json({
       users,
@@ -85,6 +88,7 @@ adminRouter.get(
       purchases,
       revenueCents,
       vip,
+      gamesToday,
       audits,
     });
   }),

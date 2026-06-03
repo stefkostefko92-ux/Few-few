@@ -236,6 +236,7 @@ export interface AdminStats {
   purchases: number;
   revenueCents: number;
   vip: Record<string, number>;
+  gamesToday: Record<string, number>;
   audits: AdminAuditRow[];
 }
 export interface AdminUserRow {

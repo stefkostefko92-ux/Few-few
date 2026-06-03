@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SITE } from "../../lib/site";
 import { GAME_CONTENT } from "../../content/games";
 import { JsonLd } from "../../components/JsonLd";
-import { breadcrumbLd } from "../../lib/jsonld";
+import { breadcrumbLd, gameListLd } from "../../lib/jsonld";
 
 export const metadata: Metadata = {
   title: "Всички игри",
@@ -15,10 +15,13 @@ export default function GamesIndex() {
   return (
     <>
       <JsonLd
-        data={breadcrumbLd([
-          { name: "Начало", url: `${SITE.url}/` },
-          { name: "Игри", url: `${SITE.url}/games/` },
-        ])}
+        data={[
+          breadcrumbLd([
+            { name: "Начало", url: `${SITE.url}/` },
+            { name: "Игри", url: `${SITE.url}/games/` },
+          ]),
+          gameListLd(GAME_CONTENT),
+        ]}
       />
       <section className="container" style={{ padding: "3rem 1.25rem" }}>
         <h1>Игри</h1>

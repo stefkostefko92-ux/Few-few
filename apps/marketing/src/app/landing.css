@@ -170,6 +170,11 @@
 .lp-section {
   padding: 4.5rem 1.25rem;
 }
+.lp-section--alt {
+  background: rgba(11, 14, 13, 0.35);
+  border-top: 1px solid rgba(217, 178, 95, 0.08);
+  border-bottom: 1px solid rgba(217, 178, 95, 0.08);
+}
 .lp-section h2 {
   text-align: center;
   font-size: clamp(1.8rem, 5vw, 2.6rem);
@@ -272,6 +277,58 @@
 }
 .lp-game .muted {
   font-size: 0.8rem;
+}
+.lp-games-more {
+  margin-top: 2.25rem;
+  text-align: center;
+}
+
+/* FAQ accordion (AEO) */
+.lp-faq {
+  max-width: 760px;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.75rem;
+}
+.lp-faq-item {
+  border-radius: 14px;
+  border: 1px solid rgba(217, 178, 95, 0.14);
+  background: rgba(18, 48, 38, 0.45);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.lp-faq-item[open] {
+  border-color: rgba(217, 178, 95, 0.4);
+}
+.lp-faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 1.1rem 1.35rem;
+  font-weight: 600;
+  color: var(--ink-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.lp-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.lp-faq-item summary::after {
+  content: "+";
+  color: var(--brass-300);
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.lp-faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+.lp-faq-item p {
+  padding: 0 1.35rem 1.2rem;
+  color: var(--ink-300);
+  margin: 0;
+  font-size: 0.95rem;
 }
 
 /* trust / closing CTA */

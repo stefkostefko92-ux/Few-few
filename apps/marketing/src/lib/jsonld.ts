@@ -16,6 +16,8 @@ export function organizationLd(): Json {
     name: SITE.name,
     url: SITE.url,
     description: SITE.description,
+    logo: `${SITE.url}/icon.svg`,
+    sameAs: [SITE.org.url],
     parentOrganization: {
       "@type": "Organization",
       name: SITE.org.legalName,
@@ -30,7 +32,38 @@ export function websiteLd(): Json {
     "@type": "WebSite",
     name: SITE.name,
     url: SITE.url,
+    description: SITE.description,
     inLanguage: SITE.locales,
+    publisher: { "@type": "Organization", name: SITE.org.legalName, url: SITE.org.url },
+  };
+}
+
+/** ItemList of all games for the /games index (rich-result eligible). */
+export function gameListLd(games: GameContent[]): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Игри в АСО",
+    numberOfItems: games.length,
+    itemListElement: games.map((g, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${SITE.url}/games/${g.slug}/`,
+      name: g.title,
+    })),
+  };
+}
+
+/** Site-wide FAQ (AEO / answer engines). */
+export function siteFaqLd(items: Array<{ question: string; answer: string }>): Json {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
   };
 }
 
@@ -58,6 +91,9 @@ export function videoGameLd(game: GameContent): Json {
     genre: game.betting ? "Social card game" : "Card & board game",
     numberOfPlayers: game.players,
     gamePlatform: "Web browser",
+    applicationCategory: "Game",
+    operatingSystem: "Any (web browser)",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", availability: "https://schema.org/InStock" },
     publisher: { "@type": "Organization", name: SITE.org.legalName, url: SITE.org.url },
   };
 }

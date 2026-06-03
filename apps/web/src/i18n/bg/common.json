@@ -84,7 +84,9 @@
     "send": "Изпрати",
     "sendTest": "Тест",
     "discordSent": "Изпратено в Discord.",
-    "discordDisabled": "Discord webhook не е настроен."
+    "discordDisabled": "Discord webhook не е настроен.",
+    "gamesToday": "Игри днес по тип",
+    "noGames": "Няма игри днес."
   },
   "auth": {
     "loginTitle": "Вход",

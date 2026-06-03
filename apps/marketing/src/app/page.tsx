@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { SITE } from "../lib/site";
 import { GAME_CONTENT } from "../content/games";
+import { SITE_FAQ } from "../content/faq";
 import { JsonLd } from "../components/JsonLd";
-import { breadcrumbLd } from "../lib/jsonld";
+import { breadcrumbLd, siteFaqLd } from "../lib/jsonld";
 import "./landing.css";
 
 const FAN = [
@@ -13,25 +14,46 @@ const FAN = [
   { r: "10", s: "♠", c: "black", rot: 16 },
 ];
 
+/** Per-game glyph for the showcase cards — gives each title its own identity. */
+const GAME_GLYPH: Record<string, string> = {
+  BELOTE: "♠",
+  SANTASE: "♥",
+  CHESS: "♞",
+  BACKGAMMON: "⚅",
+  SVARA: "♣",
+  HOLDEM: "♦",
+  EIGHTBALL: "🎱",
+  NINEBALL: "⑨",
+  SNOOKER: "🔴",
+};
+
 const FEATURES = [
-  { icon: "🂡", title: "18 истински игри", text: "Белот с обяви, Сантасе, Шах, Табла, Холдем и още — пълни правила, не опростени." },
+  {
+    icon: "🃏",
+    title: "21 истински игри",
+    text: "Белот с обяви, Сантасе, Шах, Табла, Холдем, билярд и снукър — пълни правила, не опростени.",
+  },
   { icon: "⚡", title: "Реално време", text: "Мигновен мултиплейър със server-authoritative логика — без лаг, без измами." },
-  { icon: "🤖", title: "Умни ботове", text: "Няма съперник? Влизаш веднага срещу бот и продължаваш да играеш." },
+  {
+    icon: "🎯",
+    title: "Реалистична физика",
+    text: "Билярдът и снукърът ползват детерминирана 2D физика с прицелване и анимация на удара.",
+  },
+  { icon: "🤖", title: "Умни ботове", text: "Няма съперник? Влизаш веднага срещу бот, който се цели и вкарва — и продължаваш да играеш." },
   { icon: "🏆", title: "Класации и сезони", text: "ELO рейтинг за всяка игра, дневни мисии, сезони и постижения." },
-  { icon: "🎨", title: "Кинематографичен дизайн", text: "Премиум маси, тактилни карти, прожектор и атмосфера на нощен клуб." },
   { icon: "🛡️", title: "Честна игра", text: "Без „плати, за да печелиш“. Игрите със залог са само с виртуални чипове." },
 ];
 
 const STEPS = [
   { n: 1, title: "Влез за секунди", text: "С имейл, Google или Facebook — без дълги формуляри." },
-  { n: 2, title: "Избери игра", text: "18 заглавия, всяко с матчмейкинг по ниво." },
+  { n: 2, title: "Избери игра", text: "21 заглавия, всяко с матчмейкинг по ниво." },
   { n: 3, title: "Играй и се изкачвай", text: "Печели чипове, нива и място в класацията." },
 ];
 
 export default function Home() {
   return (
     <>
-      <JsonLd data={breadcrumbLd([{ name: "Начало", url: `${SITE.url}/` }])} />
+      <JsonLd data={[breadcrumbLd([{ name: "Начало", url: `${SITE.url}/` }]), siteFaqLd(SITE_FAQ)]} />
 
       {/* HERO */}
       <section className="lp-hero">
@@ -44,8 +66,8 @@ export default function Home() {
         <h1 className="lp-title">{SITE.name}</h1>
         <p className="lp-sub">{SITE.tagline}</p>
         <p className="lp-lead">
-          18 класически игри на карти и маса в реално време. Белот, Сантасе, Шах, Табла и още —
-          срещу приятели и ботове, безплатно, направо в браузъра.
+          21 класически игри на карти, маса и кий спортове в реално време. Белот, Сантасе, Шах, Табла,
+          билярд и снукър — срещу приятели и ботове, безплатно, направо в браузъра.
         </p>
         <div className="lp-cta-row">
           <a className="cta cta-lg" href={SITE.playUrl}>
@@ -73,7 +95,7 @@ export default function Home() {
       {/* STATS */}
       <div className="lp-stats">
         <div className="lp-stat">
-          <div className="lp-stat-num">18</div>
+          <div className="lp-stat-num">21</div>
           <div className="lp-stat-label">игри</div>
         </div>
         <div className="lp-stat">
@@ -108,7 +130,7 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="lp-section" style={{ background: "rgba(11,14,13,.35)" }}>
+      <section className="lp-section lp-section--alt">
         <h2>Как се започва</h2>
         <p className="lp-section-sub">Три стъпки до първата ти ръка.</p>
         <div className="lp-steps">
@@ -132,7 +154,7 @@ export default function Home() {
           {GAME_CONTENT.map((g) => (
             <Link key={g.key} href={`/games/${g.slug}/`} className="lp-game">
               <div className="lp-game-glyph" aria-hidden>
-                ♠
+                {GAME_GLYPH[g.key] ?? "♠"}
               </div>
               <h3>{g.title}</h3>
               <p className="muted">
@@ -140,6 +162,30 @@ export default function Home() {
               </p>
             </Link>
           ))}
+        </div>
+        <div className="lp-games-more">
+          <Link className="cta-ghost" href="/games/">
+            Виж всички игри
+          </Link>
+        </div>
+      </section>
+
+      {/* FAQ (AEO) */}
+      <section className="lp-section lp-section--alt">
+        <h2>Често задавани въпроси</h2>
+        <p className="lp-section-sub">Бързи отговори, преди да седнеш на масата.</p>
+        <div className="lp-faq">
+          {SITE_FAQ.slice(0, 6).map((f) => (
+            <details key={f.question} className="lp-faq-item">
+              <summary>{f.question}</summary>
+              <p>{f.answer}</p>
+            </details>
+          ))}
+        </div>
+        <div className="lp-games-more">
+          <Link className="cta-ghost" href="/faq/">
+            Всички въпроси
+          </Link>
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import { Badge, Button, Panel, cn } from "../../ui";
 import { api, type AdminFlag, type AdminStats } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
 import { isAdmin } from "../../app/RequireRole";
+import { GAME_CATALOG } from "../lobby/games";
 import { AdminUsers } from "./AdminUsers";
 
 type Tab = "dashboard" | "users" | "flags" | "discord";
@@ -85,16 +86,38 @@ function Dashboard() {
         ))}
       </div>
 
-      <Panel>
-        <h3 className="mb-3 text-lg text-ink-100">{t("admin.vipBreakdown")}</h3>
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(stats.vip).map(([tier, n]) => (
-            <Badge key={tier} tone={tier === "NONE" ? "felt" : "vip"}>
-              {tier}: {n}
-            </Badge>
-          ))}
-        </div>
-      </Panel>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <Panel>
+          <h3 className="mb-3 text-lg text-ink-100">{t("admin.vipBreakdown")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(stats.vip).map(([tier, n]) => (
+              <Badge key={tier} tone={tier === "NONE" ? "felt" : "vip"}>
+                {tier}: {n}
+              </Badge>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel>
+          <h3 className="mb-3 text-lg text-ink-100">{t("admin.gamesToday")}</h3>
+          {Object.keys(stats.gamesToday).length === 0 ? (
+            <p className="text-sm text-ink-muted">{t("admin.noGames")}</p>
+          ) : (
+            <ul className="space-y-1.5 text-sm">
+              {Object.entries(stats.gamesToday)
+                .sort((a, b) => b[1] - a[1])
+                .map(([key, n]) => (
+                  <li key={key} className="flex items-center justify-between">
+                    <span className="text-ink-200">
+                      {GAME_CATALOG.find((g) => g.key === key)?.title ?? key}
+                    </span>
+                    <span className="tnum text-brass-300">{n}</span>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </Panel>
+      </div>
 
       <Panel>
         <h3 className="mb-3 text-lg text-ink-100">{t("admin.recentActions")}</h3>

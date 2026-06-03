@@ -13,6 +13,7 @@ export function Header() {
         </Link>
         <nav style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
           <Link href="/games/">Игри</Link>
+          <Link href="/faq/">Въпроси</Link>
           <Link href="/about/">За нас</Link>
           <a className="cta" href={SITE.playUrl}>
             Играй сега
@@ -30,6 +31,8 @@ export function Footer() {
         <nav
           style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1.25rem", marginBottom: "0.75rem", fontSize: "0.9rem" }}
         >
+          <Link href="/games/">Игри</Link>
+          <Link href="/faq/">Въпроси</Link>
           <Link href="/about/">За нас</Link>
           <Link href="/terms/">Общи условия</Link>
           <Link href="/privacy/">Поверителност</Link>
