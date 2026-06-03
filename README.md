@@ -1,17 +1,18 @@
 # АСО — Premium Browser Gaming Portal
 
-Premium browser portal for 18 card/table games with realtime multiplayer, a
-server-authoritative game engine, ELO/MMR matchmaking, deep progression, VIP
-subscriptions (Stripe) and a virtual **chips + gems** economy (no real-money
-gambling). Visual identity: _Premium Nocturnal Tabletop_.
+Premium browser portal for 21 card / table / cue-sport games with realtime
+multiplayer, a server-authoritative game engine, ELO/MMR matchmaking, deep
+progression, VIP subscriptions (Stripe) and a virtual **chips + gems** economy
+(no real-money gambling). Visual identity: _Premium Nocturnal Tabletop_.
 
 > Brand: **АСО** · Built by **Carbon Stealth VCC** · `https://carbonstealth.eu`
 
 ## Stack
 
 Node 22 · TypeScript (strict) · Express 5 · Prisma + PostgreSQL · Redis ·
-BullMQ · React 18 + Vite + Tailwind · PixiJS v8 + GSAP (game canvas) ·
-Socket.IO (realtime). pnpm + Turborepo monorepo.
+BullMQ · React 18 + Vite + Tailwind · CSS/SVG game scenes (deterministic 2D
+physics for cue sports, shared client/server) · Socket.IO (realtime). Next.js
+15 SSG for the public layer. pnpm + Turborepo monorepo.
 
 ## Monorepo layout
 
@@ -23,8 +24,8 @@ apps/
   web/        React + Vite play app (auth, lobby, games, shop, leaderboard)
   marketing/  Next.js 15 SSG — public SEO/AEO/GEO layer + game rules
 packages/
-  game-core/  6 engine cores, all 18 games (trick/betting/dice-race/
-              move-validation/draw-discard/grid-guess)
+  game-core/  7 engine cores, all 21 games (trick/betting/dice-race/
+              move-validation/draw-discard/grid-guess/cue-sports)
   db/         Prisma schema + client
   shared/     zod schemas, types, constants
   config/     eslint / tsconfig presets
@@ -94,6 +95,19 @@ infra/        Dockerfiles, docker-compose, nginx
       mute + reduced-motion settings persisted, WebAudio sound cues honouring
       mute) + a11y i18n. E2E: metrics 403/200 by role, collusion flag raised &
       triaged, player blocked from admin.
+- [x] **S10 — horizontal scaling**: cluster-safe matchmaking and cross-node
+      game rooms over the Redis adapter so `apps/realtime` runs as N
+      interchangeable instances (no sticky single-node state). See
+      `docs/scaling.md`.
+- [x] **S11 — cue sports**: 8-ball, 9-ball and snooker (21 games total) on a
+      shared deterministic 2D billiard physics core in `@aso/shared` — the
+      server simulates authoritatively and the client re-runs the identical
+      shot to animate. Ghost-ball aiming bots that actually pot, plus a
+      pocket-drop animation. Admin dashboard "games today" panel.
+- [x] **S12 — GEO / AEO discovery**: AI-crawler-friendly `robots.txt`,
+      enriched JSON-LD (ItemList, FAQPage, VideoGame offers), a `/faq` page +
+      homepage FAQ (answer-first), refreshed `llms.txt`, a build-time generated
+      OpenGraph / Twitter share card, and a visually refreshed landing page.
 
 ## Develop
 
