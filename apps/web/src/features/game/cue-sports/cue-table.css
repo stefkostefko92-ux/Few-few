@@ -45,6 +45,16 @@
   cursor: crosshair;
 }
 
+/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas. */
+.aso-cue__gl {
+  border-radius: 11px;
+  overflow: hidden;
+  line-height: 0;
+}
+.aso-cue__gl canvas {
+  touch-action: none;
+}
+
 .aso-cue__svg[data-locked="true"] {
   cursor: default;
 }

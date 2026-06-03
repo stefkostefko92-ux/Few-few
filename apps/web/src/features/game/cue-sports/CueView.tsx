@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { runShot, TABLE, type Ball, type CueState, type CueAction, type CueVariant } from "@aso/shared";
 import { useAuthStore } from "../../../lib/store";
@@ -7,6 +7,8 @@ import { Button } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { CueTableGL, webglSupported } from "./CueTableGL";
+import type { CueScene } from "./glTable";
 import "./cue-table.css";
 
 type RBall = { id: number; x: number; y: number };
@@ -50,6 +52,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const felt = useEquippedCosmetic(game, "CUE");
   const cloth = felt?.colors ?? { a: "#1a6e3a", b: "#0c3a1f" };
 
+  const useGL = useMemo(() => webglSupported(), []);
   const svgRef = useRef<SVGSVGElement>(null);
   const [angle, setAngle] = useState(0);
   const [power, setPower] = useState(0.55);
@@ -122,11 +125,21 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     return { x: ((e.clientX - r.left) / r.width) * TABLE.w, y: ((e.clientY - r.top) / r.height) * TABLE.h };
   }
 
-  function onMove(e: React.PointerEvent) {
+  function aimAt(p: { x: number; y: number }) {
     if (!myTurn || placing) return;
-    const p = toTable(e);
-    if (!p) return;
     setAngle(Math.atan2(p.y - cuePos.y, p.x - cuePos.x));
+  }
+  function placeAt(p: { x: number; y: number }) {
+    if (!myTurn || !placing) return;
+    if (placementOk(p.x, p.y)) {
+      setPlacedCue(p);
+      setPlacing(false);
+    }
+  }
+
+  function onMove(e: React.PointerEvent) {
+    const p = toTable(e);
+    if (p) aimAt(p);
   }
 
   function placementOk(x: number, y: number): boolean {
@@ -138,12 +151,8 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   }
 
   function onClick(e: React.PointerEvent) {
-    if (!myTurn || !placing) return;
     const p = toTable(e);
-    if (p && placementOk(p.x, p.y)) {
-      setPlacedCue(p);
-      setPlacing(false);
-    }
+    if (p) placeAt(p);
   }
 
   function shoot() {
@@ -161,6 +170,16 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const gx = cuePos.x + Math.cos(angle) * guideLen;
   const gy = cuePos.y + Math.sin(angle) * guideLen;
 
+  const glScene: CueScene | null = state
+    ? {
+        variant: game,
+        cloth,
+        balls: liveBalls,
+        aim: myTurn && !placing ? { x0: cuePos.x, y0: cuePos.y, x1: gx, y1: gy } : null,
+        ghost: ballInHand && placedCue ? placedCue : null,
+      }
+    : null;
+
   const oppName = m.players.find((p) => p.seat !== seat)?.displayName ?? t("game.opponent");
   const scoreLine = (s: number) =>
     game === "SNOOKER" && state ? String(state.scores[s as 0 | 1]) : "";
@@ -172,6 +191,16 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
           <ScorePill label={oppName} value={scoreLine(seat === 0 ? 1 : 0)} />
 
           <div className="aso-cue">
+            {useGL && glScene ? (
+              <div className="aso-cue__rim">
+                <CueTableGL
+                  scene={glScene}
+                  locked={!myTurn}
+                  onMoveWorld={aimAt}
+                  onUpWorld={placeAt}
+                />
+              </div>
+            ) : (
             <div className="aso-cue__rim">
               <svg
                 ref={svgRef}
@@ -248,6 +277,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 ) : null}
               </svg>
             </div>
+            )}
 
             <div className="aso-cue__power">
               <span className="text-sm text-ink-muted">{t("cue.power")}</span>
