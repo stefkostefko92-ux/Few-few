@@ -162,50 +162,50 @@ export default function Landing(): React.ReactElement {
           last stand against the Shadow Lord, there is always one more thing worth doing.
         </p>
         <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard icon="⚔" title="Cinematic Combat">
+          <FeatureCard iconSrc="/assets/icons/sword-t6.jpg" title="Cinematic Combat">
             Every fight plays as a fully animated duel — damage-scaled screen shake, hit-flash
             overlays, HP-drain trails, particle bursts, hit-stop on crits, and class-specific
             impact effects.
           </FeatureCard>
-          <FeatureCard icon="🛡" title="Guilds & Wars">
+          <FeatureCard iconSrc="/assets/icons/shield-t6.jpg" title="Guilds & Wars">
             Found a guild, recruit officers, donate to the treasury. Declare war on rivals
             and raid bosses cooperatively. Live chat, member promotions, 5-tier upgrades.
           </FeatureCard>
-          <FeatureCard icon="🗡" title="Quests & Story">
+          <FeatureCard iconSrc="/assets/icons/dagger-t4.jpg" title="Quests & Story">
             16 hand-written quests across five regions. Branching outcomes, named foes,
             real rewards.
           </FeatureCard>
-          <FeatureCard icon="🏰" title="Multi-Stage Dungeons">
+          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title="Multi-Stage Dungeons">
             Four chained dungeon runs from the Forgotten Crypt to the Pilgrimage of Ash.
             Mid-run drops, escalating bosses, guaranteed loot at the end.
           </FeatureCard>
-          <FeatureCard icon="🎭" title="Cosmetics & Frames">
+          <FeatureCard iconSrc="/assets/icons/cloak-t8.jpg" title="Cosmetics & Frames">
             12 avatars and 12 rarity-tinted frames, all earned through play. Mythwoven and
             Eternal Crown frames glow and rotate cosmic patterns.
           </FeatureCard>
-          <FeatureCard icon="📖" title="Profile & Title">
+          <FeatureCard iconSrc="/assets/icons/helm-t6.jpg" title="Profile & Title">
             Bio, avatar, frame, title — your hero's identity. Public profile pages
             so the realm can see your legend.
           </FeatureCard>
-          <FeatureCard icon="🎯" title="Hunting Grounds">
+          <FeatureCard iconSrc="/assets/icons/bow-t6.jpg" title="Hunting Grounds">
             Two-energy random encounters per region. Always something to do — and every kill
             advances your Bestiary.
           </FeatureCard>
-          <FeatureCard icon="🏆" title="ELO Arena">
+          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title="ELO Arena">
             Matchmade duels against 15 NPC trainers and a growing roster of player heroes.
             Climb the rating. Carry your title.
           </FeatureCard>
-          <FeatureCard icon="🔥" title="Daily Tribute & Streaks">
+          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title="Daily Tribute & Streaks">
             7-day login cycle with stacking rewards, plus 14- and 30-day milestones.
           </FeatureCard>
-          <FeatureCard icon="🎰" title="Wheel of Fortune">
+          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title="Wheel of Fortune">
             One animated spin every 24 hours. Coins, XP, potions, rings, energy, or the
             500-gold royal jackpot.
           </FeatureCard>
-          <FeatureCard icon="⭐" title="27 Achievements + Titles">
+          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title="27 Achievements + Titles">
             Earn titles like “the Worldslayer”, “Hero of the Realm”, “Loremaster”.
           </FeatureCard>
-          <FeatureCard icon="💍" title="8 Themed Item Sets">
+          <FeatureCard iconSrc="/assets/icons/ring-t8.jpg" title="8 Themed Item Sets">
             Wayfarer through Solar Mythwoven — collect set pieces to stack 2-, 4- and 6-piece
             bonuses that reshape your build.
           </FeatureCard>
@@ -248,6 +248,37 @@ export default function Landing(): React.ReactElement {
         </div>
       </section>
 
+      {/* Mid-page rhythm break — second cinematic plate.
+          Working blacksmith at Möhkö Ironworks (CC BY 3.0, Wikimedia
+          Commons; see /assets/video/CREDITS.md). 21:9 stripe so it
+          reads as a band, not a second hero. Looped, muted, no audio
+          decoded. */}
+      <section className="forge-band" aria-label="The Forge">
+        <video
+          className="forge-band-bg"
+          src="/assets/video/forge.mp4"
+          poster="/assets/video/forge-poster.jpg"
+          autoPlay loop muted playsInline preload="metadata"
+          aria-hidden
+        >
+          <source src="/assets/video/forge.webm" type="video/webm" />
+          <source src="/assets/video/forge.mp4"  type="video/mp4" />
+        </video>
+        <div className="forge-band-shade" aria-hidden />
+        <div className="forge-band-copy">
+          <div className="section-eyebrow">Strike Until It Sings</div>
+          <h2 className="section-title">The Forge Remembers Every Blade.</h2>
+          <p className="forge-band-lead">
+            Drag your gear to the anvil and burn gold to raise its stats. Every upgrade ratchets
+            the cost; every break is a story. Master smiths reroll, sockets unlock at higher
+            tiers, and pity-protection guarantees a success after enough failures.
+          </p>
+          <div className="forge-band-credit">
+            Footage by Antti Makkonen · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>
+          </div>
+        </div>
+      </section>
+
       {/* Guilds */}
       <section id="guilds" className="section">
         <div className="section-eyebrow" data-reveal>Strength in Numbers</div>
@@ -258,28 +289,28 @@ export default function Landing(): React.ReactElement {
           server-tier bosses cooperatively.
         </p>
         <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard icon="🏛" title="Five-Tier Progression">
+          <FeatureCard iconSrc="/assets/icons/shield-t8.jpg" title="Five-Tier Progression">
             Levels 1 to 5. Each level lifts member slots (10 → 30) and stacks XP, gold, crit,
             dodge, and HP multipliers for every member.
           </FeatureCard>
-          <FeatureCard icon="💬" title="Live Guild Chat">
+          <FeatureCard iconSrc="/assets/icons/amulet-t5.jpg" title="Live Guild Chat">
             Polled every 4 seconds. Avatars next to every message. Leader and officer roles
             with kick / promote / demote.
           </FeatureCard>
-          <FeatureCard icon="⚔" title="Guild Wars">
+          <FeatureCard iconSrc="/assets/icons/axe-t7.jpg" title="Guild Wars">
             Officers declare 24-hour wars for 500 guild gold. Members strike enemy heroes for
             score; the higher score at the end wins.
           </FeatureCard>
-          <FeatureCard icon="🐲" title="Raid Bosses">
+          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title="Raid Bosses">
             Three cooperative bosses — Sentinel of Dawn, Maw of Voidshade, Colossus Unbound.
             HP scales with guild size. Every member contributes strikes. Cleared raids reward
             the entire roster.
           </FeatureCard>
-          <FeatureCard icon="🏆" title="Crest & Identity">
+          <FeatureCard iconSrc="/assets/icons/shield-t10.jpg" title="Crest & Identity">
             Pick a 2-5 character tag, a custom hex color crest, a motto. Your crest renders
             beside your hero across the realm.
           </FeatureCard>
-          <FeatureCard icon="🪙" title="Treasury & Donations">
+          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title="Treasury & Donations">
             Each donated gold equals one guild XP plus contribution toward your hero's role.
             Climb to officer through tangible effort.
           </FeatureCard>
@@ -392,10 +423,12 @@ function Stat({ num, label }: { num: string; label: string }) {
   );
 }
 
-function FeatureCard({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+function FeatureCard({ iconSrc, title, children }: { iconSrc: string; title: string; children: React.ReactNode }) {
   return (
     <div className="feature-card" data-tilt>
-      <div className="feature-icon">{icon}</div>
+      <div className="feature-icon feature-icon-img">
+        <img src={iconSrc} alt={`${title} icon`} loading="lazy" />
+      </div>
       <h3 className="feature-title">{title}</h3>
       <p className="feature-desc">{children}</p>
     </div>
