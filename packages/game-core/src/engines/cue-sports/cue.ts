@@ -301,35 +301,100 @@ function rulesSnooker(state: CueState, balls: Ball[], r: ReturnType<typeof runSh
   };
 }
 
-// ── Bot candidate shots (so RandomBot / auto-play can act) ───────────────────
+// ── Bot shots: ghost-ball potting attempts (so bots actually aim) ────────────
 
-function targetBall(state: CueState): Ball | null {
+const POOL_POCKETS: [number, number][] = [
+  [0, 0],
+  [TABLE.w / 2, 0],
+  [TABLE.w, 0],
+  [0, TABLE.h],
+  [TABLE.w / 2, TABLE.h],
+  [TABLE.w, TABLE.h],
+];
+
+/** Object balls this seat is allowed to pot right now. */
+function legalTargets(state: CueState): Ball[] {
   const objs = live(state.balls).filter((b) => b.id !== 0);
-  if (objs.length === 0) return null;
+  if (objs.length === 0) return [];
   if (state.variant === "NINEBALL") {
-    return objs.reduce((lo, b) => (b.id < lo.id ? b : lo));
+    const lo = Math.min(...objs.map((b) => b.id));
+    return objs.filter((b) => b.id === lo);
   }
   if (state.variant === "SNOOKER") {
     const reds = objs.filter((b) => isRed(b.id));
-    if (state.expect === "red" && reds.length) return reds[0]!;
+    if (state.expect === "red") return reds.length ? reds : objs;
+    if (reds.length) return objs.filter((b) => isColour(b.id)); // any colour
     const colours = objs.filter((b) => isColour(b.id));
-    return colours[0] ?? reds[0] ?? objs[0]!;
+    const lo = Math.min(...colours.map((b) => b.id));
+    return colours.filter((b) => b.id === lo);
   }
-  // 8-ball: own group if assigned, else any non-8.
-  const g = state.groups[state.turn];
-  const mine =
-    g === "solids" ? objs.filter((b) => b.id >= 1 && b.id <= 7)
-    : g === "stripes" ? objs.filter((b) => b.id >= 9 && b.id <= 15)
-    : objs.filter((b) => b.id !== 8);
-  return mine[0] ?? objs.find((b) => b.id === 8) ?? objs[0]!;
+  const g = state.groups[state.turn] ?? null;
+  if (state.open || g === null) return objs.filter((b) => b.id !== 8);
+  const mine = g === "solids" ? objs.filter((b) => b.id >= 1 && b.id <= 7) : objs.filter((b) => b.id >= 9 && b.id <= 15);
+  return mine.length ? mine : objs.filter((b) => b.id === 8);
 }
 
+/** Is the straight line cue→ghost clear of other balls (coarse check)? */
+function pathClear(balls: Ball[], cx: number, cy: number, gx: number, gy: number, ignore: number[]): boolean {
+  const dx = gx - cx;
+  const dy = gy - cy;
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-6) return true;
+  const ux = dx / len;
+  const uy = dy / len;
+  for (const b of balls) {
+    if (b.potted || b.id === 0 || ignore.includes(b.id)) continue;
+    const t = (b.x - cx) * ux + (b.y - cy) * uy;
+    if (t <= 0 || t >= len) continue;
+    const perp = Math.abs((b.x - cx) * -uy + (b.y - cy) * ux);
+    if (perp < 2 * R * 0.92) return false;
+  }
+  return true;
+}
+
+/**
+ * Candidate shots for bots / auto-play: for each legal target ball and each
+ * pocket, aim the cue at the "ghost ball" (one diameter behind the object ball
+ * along the target→pocket line). Ranked by cut angle + clear path; the best few
+ * are returned so RandomBot picks a sensible (if imperfect) pot.
+ */
 function candidateShots(state: CueState): CueAction[] {
-  const cue = state.balls.find((b) => b.id === 0 && !b.potted);
-  const target = targetBall(state);
-  if (!cue || !target) return [{ type: "SHOOT", angle: 0, power: 0.6 }];
-  const base = Math.atan2(target.y - cue.y, target.x - cue.x);
-  return [0, 0.04, -0.04].map((d) => ({ type: "SHOOT", angle: base + d, power: 0.62 }));
+  const cue = live(state.balls).find((b) => b.id === 0);
+  const targets = legalTargets(state);
+  if (!cue || targets.length === 0) return [{ type: "SHOOT", angle: 0, power: 0.6 }];
+
+  const shots: { angle: number; power: number; score: number }[] = [];
+  for (const tb of targets) {
+    for (const [px, py] of POOL_POCKETS) {
+      const tpx = px - tb.x;
+      const tpy = py - tb.y;
+      const tpDist = Math.hypot(tpx, tpy);
+      if (tpDist < 1e-6) continue;
+      const ux = tpx / tpDist;
+      const uy = tpy / tpDist;
+      const gx = tb.x - ux * 2 * R;
+      const gy = tb.y - uy * 2 * R;
+      const cgx = gx - cue.x;
+      const cgy = gy - cue.y;
+      const cgDist = Math.hypot(cgx, cgy);
+      if (cgDist < 1e-6) continue;
+      const cutCos = (cgx / cgDist) * ux + (cgy / cgDist) * uy; // 1 = dead straight
+      if (cutCos <= 0.2) continue; // cut too thin to make
+      if (!pathClear(state.balls, cue.x, cue.y, gx, gy, [tb.id])) continue;
+      const power = Math.min(1, 0.42 + (cgDist + tpDist) * 0.17 + (1 - cutCos) * 0.22);
+      const score = cutCos * 2 - tpDist * 0.12 - cgDist * 0.06;
+      shots.push({ angle: Math.atan2(cgy, cgx), power, score });
+    }
+  }
+  shots.sort((a, b) => b.score - a.score);
+  if (shots.length === 0) {
+    // No clean pot — roll toward the nearest legal target (a safety/contact).
+    const t = targets.reduce((n, b) =>
+      Math.hypot(b.x - cue.x, b.y - cue.y) < Math.hypot(n.x - cue.x, n.y - cue.y) ? b : n,
+    );
+    return [{ type: "SHOOT", angle: Math.atan2(t.y - cue.y, t.x - cue.x), power: 0.5 }];
+  }
+  return shots.slice(0, 3).map((s) => ({ type: "SHOOT", angle: s.angle, power: Math.max(0.22, s.power) }));
 }
 
 // ── Engine factory ───────────────────────────────────────────────────────────

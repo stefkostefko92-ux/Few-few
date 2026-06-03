@@ -58,17 +58,25 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
 
   // Shot animation driven purely off state.shotNo (+ state.lastShot.before).
   const [frameBalls, setFrameBalls] = useState<RBall[] | null>(null);
+  const [sinks, setSinks] = useState<{ key: string; x: number; y: number; color: string }[]>([]);
   const seenShot = useRef(0);
   const animating = frameBalls !== null;
+
+  const nearestPocket = (x: number, y: number): [number, number] =>
+    POCKETS.reduce((best, p) =>
+      (p[0] - x) ** 2 + (p[1] - y) ** 2 < (best[0] - x) ** 2 + (best[1] - y) ** 2 ? p : best,
+    );
 
   useEffect(() => {
     if (!state || !state.lastShot || state.shotNo <= seenShot.current) return;
     seenShot.current = state.shotNo;
+    const variant = state.variant;
     const { before, angle: a, power: p } = state.lastShot;
     const frames = runShot(before as Ball[], { angle: a, power: p }).frames;
     setPlacedCue(null);
     playCue("flip");
     let i = 0;
+    let prev: RBall[] = frames[0]?.balls ?? [];
     const id = setInterval(() => {
       const f = frames[i];
       if (!f) {
@@ -76,6 +84,18 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
         setFrameBalls(null); // hand back to authoritative state.balls
         return;
       }
+      // A ball that vanished this frame dropped into the nearest pocket — drop it.
+      const cur = new Set(f.balls.map((b) => b.id));
+      for (const pb of prev) {
+        if (cur.has(pb.id)) continue;
+        const [px, py] = nearestPocket(pb.x, pb.y);
+        const key = `${pb.id}-${state.shotNo}-${i}`;
+        const color = ballColor(pb.id, variant);
+        setSinks((s) => [...s, { key, x: px, y: py, color }]);
+        playCue("flip");
+        window.setTimeout(() => setSinks((s) => s.filter((x) => x.key !== key)), 360);
+      }
+      prev = f.balls;
       setFrameBalls(f.balls);
       i += 1;
     }, 1000 / 60);
@@ -216,6 +236,11 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                     </g>
                   );
                 })}
+
+                {/* balls dropping into pockets */}
+                {sinks.map((s) => (
+                  <circle key={s.key} className="aso-cue__sink" cx={s.x} cy={s.y} r={TABLE.ballR} fill={s.color} />
+                ))}
 
                 {/* ball-in-hand ghost */}
                 {ballInHand && placedCue ? (

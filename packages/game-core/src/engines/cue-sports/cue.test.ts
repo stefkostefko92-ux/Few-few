@@ -50,6 +50,20 @@ describe.each([
     expect(engine.validate!(s, 0, cand[0]!)).toBe(true);
   });
 
+  it("bots aim and sink balls (make progress)", () => {
+    let s = engine.init({ seats: 2 }, rng()) as CueState;
+    const onTable = (st: CueState) => st.balls.filter((b) => !b.potted && b.id !== 0).length;
+    const start = onTable(s);
+    let minSeen = start;
+    for (let i = 0; i < 80 && !engine.isTerminal(s); i++) {
+      const a = engine.legalActions(s, s.turn)[0]!; // best-ranked ghost-ball shot
+      s = engine.reduce(s, a, rng()).state as CueState;
+      minSeen = Math.min(minSeen, onTable(s));
+    }
+    // With real aiming the best shot pots a meaningful share over 80 attempts.
+    expect(minSeen).toBeLessThan(start - 1);
+  });
+
   it("plays many bot shots without throwing and conserves the ball set", () => {
     let s = engine.init({ seats: 2 }, rng()) as CueState;
     const ballCount = (st: CueState) => st.balls.length;

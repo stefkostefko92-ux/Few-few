@@ -49,6 +49,28 @@
   cursor: default;
 }
 
+/* Ball dropping into a pocket — shrink + fade at the pocket centre. */
+.aso-cue__sink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: aso-sink 0.34s ease-in forwards;
+}
+@keyframes aso-sink {
+  from {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  to {
+    transform: scale(0.05);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-cue__sink {
+    animation-duration: 0.01s;
+  }
+}
+
 .aso-cue__hint {
   margin-top: 0.75rem;
   text-align: center;
