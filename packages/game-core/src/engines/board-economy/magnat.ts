@@ -686,6 +686,8 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
     }
   },
 
+  bot: magnatBot,
+
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
@@ -700,3 +702,40 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
   // Open information except the unseen card order.
   redact: (s) => ({ ...s, chance: [], chest: [] }),
 };
+
+/**
+ * Heuristic bot: buys aggressively while keeping a cash cushion, completes and
+ * develops colour groups, unmortgages when flush, and never voluntarily sells
+ * (auto-liquidation handles debt). It always returns one legal action and, in
+ * MANAGE, eventually returns END (each build/unmortgage spends cash, so the
+ * cushion check terminates the development loop).
+ */
+export function magnatBot(s: MagnatState, seat: Seat, rng: SeededRng): MagnatAction | null {
+  const acts = magnatEngine.legalActions(s, seat);
+  if (acts.length === 0) return null;
+  const cash = s.cash[seat]!;
+
+  if (s.phase === "ROLL") {
+    if (s.inJail[seat] && acts.some((a) => a.type === "JAIL_CARD")) return { type: "JAIL_CARD" };
+    return { type: "ROLL" };
+  }
+
+  if (s.phase === "BUY") {
+    if (!acts.some((a) => a.type === "BUY") || s.pendingBuy === null) return { type: "DECLINE" };
+    const i = s.pendingBuy;
+    const tl = tile(i);
+    const synergy =
+      tl.type === "prop"
+        ? GROUP_TILES[tl.group]!.some((g) => g !== i && s.owner[g] === seat)
+        : countOwned(s, seat, tl.type === "station" ? STATIONS : UTILITIES) > 0;
+    if (cash - tl.price >= 80 || synergy) return { type: "BUY" };
+    return { type: "DECLINE" };
+  }
+
+  // MANAGE — develop while keeping a cushion, else end.
+  const builds = acts.filter((a): a is { type: "BUILD"; tile: number } => a.type === "BUILD");
+  if (builds.length > 0 && cash >= 250) return builds[rng.int(builds.length)] ?? { type: "END" };
+  const unmort = acts.find((a) => a.type === "UNMORTGAGE");
+  if (unmort && cash >= 350) return unmort;
+  return { type: "END" };
+}

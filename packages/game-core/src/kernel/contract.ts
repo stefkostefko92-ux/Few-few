@@ -47,6 +47,12 @@ export interface GameEngine<S, A, E extends GameEvent = GameEvent> {
    */
   validate?(state: S, seat: Seat, action: A): boolean;
   reduce(state: S, action: A, rng: SeededRng): ReduceResult<S, E>;
+  /**
+   * Optional heuristic bot policy. When present, the realtime host prefers it
+   * over uniform-random action selection for richer AI play. Must return one of
+   * `legalActions(state, seat)` (or null to defer to random).
+   */
+  bot?(state: S, seat: Seat, rng: SeededRng): A | null;
   isTerminal(state: S): boolean;
   score(state: S): SeatScore[];
   /** Hide other seats' private info before broadcasting to `seat` (§7.2). */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { magnatEngine, BOARD, type MagnatState } from "./magnat.js";
+import { magnatEngine, magnatBot, BOARD, type MagnatState, type MagnatAction } from "./magnat.js";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
 
@@ -120,5 +120,33 @@ describe("МАГНАТ — termination & scoring", () => {
     const view = magnatEngine.redact(init(2), 0);
     expect(view.chance).toEqual([]);
     expect(view.chest).toEqual([]);
+  });
+});
+
+describe("МАГНАТ — heuristic bot", () => {
+  it("drives a full game to one winner and actually acquires property", () => {
+    const rng = new SeededRng("bot-drive");
+    let s = init(4);
+    let steps = 0;
+    while (!magnatEngine.isTerminal(s) && steps++ < 200_000) {
+      const action = magnatBot(s, s.turn, rng);
+      if (!action) break;
+      s = magnatEngine.reduce(s, action as MagnatAction, rng).state;
+    }
+    expect(magnatEngine.isTerminal(s)).toBe(true);
+    expect(magnatEngine.score(s).filter((x) => x.result === "win")).toHaveLength(1);
+    // bots buy aggressively, so most of the 28 ownable tiles end up owned.
+    const owned = s.owner.filter((o) => o >= 0).length;
+    expect(owned).toBeGreaterThan(14);
+  });
+
+  it("buys a property it can comfortably afford", () => {
+    const s: MagnatState = { ...init(2), phase: "BUY", pendingBuy: 1, turn: 0, cash: [1500, 1500] };
+    expect(magnatBot(s, 0, new SeededRng("b"))).toEqual({ type: "BUY" });
+  });
+
+  it("declines a purchase that would drain its cash", () => {
+    const s: MagnatState = { ...init(2), phase: "BUY", pendingBuy: 39, turn: 0, cash: [410, 1500] };
+    expect(magnatBot(s, 0, new SeededRng("b"))).toEqual({ type: "DECLINE" });
   });
 });
