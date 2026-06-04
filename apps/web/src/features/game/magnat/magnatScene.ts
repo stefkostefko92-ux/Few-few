@@ -25,6 +25,7 @@ import {
   PCFSoftShadowMap,
   PlaneGeometry,
   PMREMGenerator,
+  RepeatWrapping,
   Scene,
   SRGBColorSpace,
   Vector2,
@@ -32,6 +33,12 @@ import {
   WebGLRenderer,
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { BOARD, GROUP_COLORS, BOARD_SIZE, type MagnatState } from "@aso/shared";
 
 const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#e07a1f"];
@@ -164,6 +171,36 @@ function plaqueTexture(): CanvasTexture {
   return tex;
 }
 
+/** Procedural walnut wood for the outer rail frame. */
+function woodTexture(): CanvasTexture {
+  const W = 512;
+  const c = document.createElement("canvas");
+  c.width = c.height = W;
+  const ctx = c.getContext("2d")!;
+  const g = ctx.createLinearGradient(0, 0, 0, W);
+  g.addColorStop(0, "#5b3b1f");
+  g.addColorStop(0.5, "#462914");
+  g.addColorStop(1, "#3a2312");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, W);
+  for (let i = 0; i < 70; i++) {
+    const y = Math.random() * W;
+    ctx.strokeStyle = `rgba(${(20 + Math.random() * 40) | 0},${(12 + Math.random() * 20) | 0},8,0.22)`;
+    ctx.lineWidth = 1 + Math.random() * 2.5;
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 14) ctx.lineTo(x, y + Math.sin(x * 0.03 + i) * 5);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 24; i++) {
+    ctx.fillStyle = "rgba(255,212,150,0.05)";
+    ctx.fillRect(0, Math.random() * W, W, 1.5);
+  }
+  const tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  tex.wrapS = tex.wrapT = RepeatWrapping;
+  return tex;
+}
+
 function pipFaces(): CanvasTexture[] {
   const PIP: Record<number, [number, number][]> = {
     1: [[.5, .5]],
@@ -203,6 +240,7 @@ function pawnGeometry(): LatheGeometry {
 
 export class MagnatScene {
   private renderer: WebGLRenderer;
+  private composer!: EffectComposer;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private place = placements();
@@ -225,6 +263,9 @@ export class MagnatScene {
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
     this.maxAniso = this.renderer.capabilities.getMaxAnisotropy();
+
+    // opaque felt background (post-processing doesn't carry CSS transparency)
+    this.scene.background = new Color("#0e2c1c");
 
     // soft image-based reflections for tokens / dice
     const pmrem = new PMREMGenerator(this.renderer);
@@ -249,6 +290,22 @@ export class MagnatScene {
     this.scene.add(key);
 
     this.build();
+
+    // post-processing: ambient occlusion + bloom + anti-aliasing
+    const w = width;
+    const h = width * SCENE_RATIO;
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    const ssao = new SSAOPass(this.scene, this.camera, w, h);
+    ssao.kernelRadius = 0.6;
+    ssao.minDistance = 0.002;
+    ssao.maxDistance = 0.08;
+    this.composer.addPass(ssao);
+    const bloom = new UnrealBloomPass(new Vector2(w, h), 0.06, 0.4, 1.35);
+    this.composer.addPass(bloom);
+    this.composer.addPass(new OutputPass());
+    this.composer.addPass(new SMAAPass(w, h));
+
     this.renderOnce();
   }
 
@@ -258,14 +315,38 @@ export class MagnatScene {
   }
 
   private build(): void {
-    // base
+    const outer = H + RING_DEPTH / 2;
+    const railW = 1.7;
+    const railH = 1.15;
+
+    // base (felt) — sits under the whole board incl. rail
     const base = new Mesh(
-      new BoxGeometry(2 * H + RING_DEPTH * 1.4, 1, 2 * H + RING_DEPTH * 1.4),
-      new MeshStandardMaterial({ color: new Color("#123a24"), roughness: 0.95, metalness: 0 }),
+      new BoxGeometry(2 * (outer + railW) + 0.6, 1, 2 * (outer + railW) + 0.6),
+      new MeshStandardMaterial({ color: new Color("#0e3320"), roughness: 0.96, metalness: 0 }),
     );
     base.position.y = -0.5;
     base.receiveShadow = true;
     this.scene.add(base);
+
+    // walnut rail frame around the ring
+    const woodTex = this.aniso(woodTexture());
+    woodTex.repeat.set(7, 1);
+    const woodMat = new MeshStandardMaterial({ map: woodTex, roughness: 0.5, metalness: 0.08 });
+    const e = outer + railW / 2;
+    const len = 2 * e + railW;
+    const beams: [number, number, number, number][] = [
+      [0, e, len, railW],
+      [0, -e, len, railW],
+      [e, 0, railW, 2 * e],
+      [-e, 0, railW, 2 * e],
+    ];
+    for (const [bx, bz, bw, bd] of beams) {
+      const beam = new Mesh(new BoxGeometry(bw, railH, bd), woodMat);
+      beam.position.set(bx, railH / 2 - 0.05, bz);
+      beam.castShadow = true;
+      beam.receiveShadow = true;
+      this.scene.add(beam);
+    }
 
     // centre plaque
     const plaque = new Mesh(
@@ -327,7 +408,7 @@ export class MagnatScene {
       const color = new Color(PLAYER_COLORS[seat % PLAYER_COLORS.length]);
       const pawn = new Mesh(
         this.pawnGeo,
-        new MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.35 }),
+        new MeshStandardMaterial({ color, roughness: 0.22, metalness: 0.9 }),
       );
       pawn.castShadow = true;
       pawn.scale.setScalar(0.9);
@@ -433,12 +514,14 @@ export class MagnatScene {
   }
 
   resize(width: number): void {
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
+    const h = width * SCENE_RATIO;
+    this.renderer.setSize(width, h, false);
+    this.composer.setSize(width, h);
     this.renderOnce();
   }
 
   private renderOnce(): void {
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
   }
 
   private startAnim(): void {
