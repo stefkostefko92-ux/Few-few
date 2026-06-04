@@ -274,6 +274,7 @@ export class MagnatScene {
   private houseGroups: (Group | null)[] = new Array(BOARD_SIZE).fill(null);
   private ownerStuds: (Mesh | null)[] = new Array(BOARD_SIZE).fill(null);
   private dice: Mesh[] = [];
+  private baseMat?: MeshStandardMaterial;
   private raf = 0;
   private animating = false;
 
@@ -343,10 +344,8 @@ export class MagnatScene {
     const railH = 1.15;
 
     // base (felt) — sits under the whole board incl. rail
-    const base = new Mesh(
-      new BoxGeometry(2 * (outer + railW) + 0.6, 1, 2 * (outer + railW) + 0.6),
-      new MeshStandardMaterial({ color: new Color("#0e3320"), roughness: 0.96, metalness: 0 }),
-    );
+    this.baseMat = new MeshStandardMaterial({ color: new Color("#1a5a36"), roughness: 0.96, metalness: 0 });
+    const base = new Mesh(new BoxGeometry(2 * (outer + railW) + 0.6, 1, 2 * (outer + railW) + 0.6), this.baseMat);
     base.position.y = -0.5;
     base.receiveShadow = true;
     this.scene.add(base);
@@ -538,6 +537,13 @@ export class MagnatScene {
       }
     }
     this.dice.forEach((d) => (d.visible = true));
+  }
+
+  /** Apply an equipped board-felt cosmetic (ESTATE) — recolours base + bg. */
+  setFelt(a: string, b: string): void {
+    this.scene.background = new Color(b);
+    if (this.baseMat) this.baseMat.color = new Color(a);
+    this.renderOnce();
   }
 
   resize(width: number): void {

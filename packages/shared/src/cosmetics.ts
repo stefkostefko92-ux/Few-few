@@ -10,7 +10,7 @@ import type { GameKey } from "./games.js";
  * cosmeticId format: `${GAME}.${TYPE}.${variant}` e.g. "BELOTE.FELT.sapphire".
  */
 
-export const COSMETIC_TYPES = ["FELT", "CARDBACK", "BOARD", "CUE"] as const;
+export const COSMETIC_TYPES = ["FELT", "CARDBACK", "BOARD", "CUE", "ESTATE"] as const;
 export type CosmeticType = (typeof COSMETIC_TYPES)[number];
 
 export interface Cosmetic {
@@ -42,6 +42,9 @@ const BOARD_GAMES: GameKey[] = ["CHESS", "DRAUGHTS"];
 
 /** Cue-sport games (support CUE cloth themes). */
 const CUE_GAMES: GameKey[] = ["EIGHTBALL", "NINEBALL", "SNOOKER"];
+
+/** Property board game (supports ESTATE board-felt themes). */
+const ESTATE_GAMES: GameKey[] = ["MAGNAT"];
 
 interface Template {
   variant: string;
@@ -88,6 +91,14 @@ const CUE_THEMES: Template[] = [
   { variant: "royal-purple", name: "Кралско лилаво", a: "#4a2670", b: "#23123a", gemPrice: 350, vipExclusive: true },
 ];
 
+const ESTATE_THEMES: Template[] = [
+  { variant: "classic-green", name: "Класическо зелено", a: "#1a5a36", b: "#0c2c1c", gemPrice: 200, vipExclusive: false },
+  { variant: "royal-blue", name: "Кралско синьо", a: "#1f4f8a", b: "#0c2348", gemPrice: 200, vipExclusive: false },
+  { variant: "burgundy", name: "Бордо", a: "#6e1d2e", b: "#350c16", gemPrice: 200, vipExclusive: false },
+  { variant: "slate", name: "Шистено сиво", a: "#36404a", b: "#181d22", gemPrice: 200, vipExclusive: false },
+  { variant: "imperial-gold", name: "Имперско злато", a: "#7a5a1f", b: "#2e2008", gemPrice: 350, vipExclusive: true },
+];
+
 function build(games: GameKey[], type: CosmeticType, themes: Template[]): Cosmetic[] {
   return games.flatMap((game) =>
     themes.map((tpl) => ({
@@ -107,6 +118,7 @@ export const COSMETICS: Cosmetic[] = [
   ...build(CARD_GAMES, "CARDBACK", CARDBACK_THEMES),
   ...build(BOARD_GAMES, "BOARD", BOARD_THEMES),
   ...build(CUE_GAMES, "CUE", CUE_THEMES),
+  ...build(ESTATE_GAMES, "ESTATE", ESTATE_THEMES),
 ];
 
 const BY_ID = new Map(COSMETICS.map((c) => [c.id, c]));

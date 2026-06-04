@@ -30,7 +30,7 @@ const GAME_GLYPH: Record<string, string> = {
 const FEATURES = [
   {
     icon: "🃏",
-    title: "21 истински игри",
+    title: "22 истински игри",
     text: "Белот с обяви, Сантасе, Шах, Табла, Холдем, билярд и снукър — пълни правила, не опростени.",
   },
   { icon: "⚡", title: "Реално време", text: "Мигновен мултиплейър със server-authoritative логика — без лаг, без измами." },
@@ -46,7 +46,7 @@ const FEATURES = [
 
 const STEPS = [
   { n: 1, title: "Влез за секунди", text: "С имейл, Google или Facebook — без дълги формуляри." },
-  { n: 2, title: "Избери игра", text: "21 заглавия, всяко с матчмейкинг по ниво." },
+  { n: 2, title: "Избери игра", text: "22 заглавия, всяко с матчмейкинг по ниво." },
   { n: 3, title: "Играй и се изкачвай", text: "Печели чипове, нива и място в класацията." },
 ];
 
@@ -66,7 +66,7 @@ export default function Home() {
         <h1 className="lp-title">{SITE.name}</h1>
         <p className="lp-sub">{SITE.tagline}</p>
         <p className="lp-lead">
-          21 класически игри на карти, маса и кий спортове в реално време. Белот, Сантасе, Шах, Табла,
+          22 класически игри на карти, маса, кий спортове и настолни в реално време. Белот, Сантасе, Шах, Табла,
           билярд и снукър — срещу приятели и ботове, безплатно, направо в браузъра.
         </p>
         <div className="lp-cta-row">
@@ -95,7 +95,7 @@ export default function Home() {
       {/* STATS */}
       <div className="lp-stats">
         <div className="lp-stat">
-          <div className="lp-stat-num">21</div>
+          <div className="lp-stat-num">22</div>
           <div className="lp-stat-label">игри</div>
         </div>
         <div className="lp-stat">

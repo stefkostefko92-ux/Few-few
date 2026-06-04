@@ -3,6 +3,7 @@ import { BOARD, GROUP_COLORS, isOwnable, type MagnatAction, type MagnatState } f
 import type { MagnatScene } from "./magnatScene";
 import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
+import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
 import { Scene } from "../scene/SceneShell";
 import "./magnat.css";
@@ -12,12 +13,15 @@ const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#
 export function MagnatView({ title }: { title: string }) {
   const m = useMatch<MagnatState, MagnatAction>("MAGNAT");
   const { state, seat, phase, result, legal, players } = m;
+  const felt = useEquippedCosmetic("MAGNAT", "ESTATE");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<MagnatScene | null>(null);
   const stateRef = useRef<MagnatState | null>(state);
   stateRef.current = state;
+  const feltRef = useRef(felt);
+  feltRef.current = felt;
 
   useEffect(() => {
     let scene: MagnatScene | null = null;
@@ -32,6 +36,8 @@ export function MagnatView({ title }: { title: string }) {
       if (cancelled) return;
       scene = new MagnatScene(canvas, width());
       sceneRef.current = scene;
+      const f = feltRef.current?.colors;
+      if (f) scene.setFelt(f.a, f.b);
       if (stateRef.current) scene.setState(stateRef.current);
       ro = new ResizeObserver(() => scene?.resize(width()));
       ro.observe(wrap);
@@ -47,6 +53,11 @@ export function MagnatView({ title }: { title: string }) {
   useEffect(() => {
     if (sceneRef.current && state) sceneRef.current.setState(state);
   }, [state]);
+
+  useEffect(() => {
+    const f = felt?.colors;
+    if (sceneRef.current && f) sceneRef.current.setFelt(f.a, f.b);
+  }, [felt]);
 
   const has = (type: MagnatAction["type"]) => legal.some((a) => a.type === type);
   const tileHas = (type: "BUILD" | "MORTGAGE" | "UNMORTGAGE" | "SELL", t: number) =>
