@@ -19,6 +19,35 @@
   display: flex;
   gap: 10px;
 }
+
+/* WebGL dice tray: canvas visuals with transparent, focusable hold buttons. */
+.dice-gl {
+  position: relative;
+  width: min(360px, 72vw);
+}
+.dice-gl__hit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+.dice-gl__btn {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.dice-gl__btn:disabled {
+  cursor: default;
+}
+.dice-gl__btn:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: -2px;
+}
 .dice-slot {
   position: relative;
   background: transparent;

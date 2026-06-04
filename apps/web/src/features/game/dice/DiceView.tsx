@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { Die } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { Scene } from "../scene/SceneShell";
+import { GLDice, webglSupported } from "./GLDice";
 import "./dice.css";
 
 type Category =
@@ -31,6 +32,8 @@ export function DiceView({ title }: { title: string }) {
   const m = useMatch<DiceState, DiceAction>("DICE");
   const { state, legal, seat, phase, result, players } = m;
   const [hold, setHold] = useState<boolean[]>([false, false, false, false, false]);
+  const useGL = useMemo(() => webglSupported(), []);
+  const [rollNonce, setRollNonce] = useState(0);
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const canRoll = legal.some((a) => a.type === "ROLL");
@@ -43,10 +46,22 @@ export function DiceView({ title }: { title: string }) {
     if (state && !state.rolledThisTurn) setHold([false, false, false, false, false]);
   }, [state]);
 
+  // Trigger the dice roll animation whenever the dice change to a rolled state
+  // (covers our rolls and the opponent's, so spectators see the tumble too).
+  const prevDice = useRef("");
+  useEffect(() => {
+    if (!state) return;
+    const key = state.dice.join(",");
+    if (state.rolledThisTurn && key !== prevDice.current) setRollNonce((n) => n + 1);
+    prevDice.current = key;
+  }, [state]);
+
   function roll() {
     playCue("flip");
     m.send({ type: "ROLL", hold });
   }
+  const toggleHold = (i: number) => setHold((h) => h.map((v, j) => (j === i ? !v : v)));
+  const effHeld = myTurn ? hold : [false, false, false, false, false];
   const total = (s: Partial<Record<Category, number>>) => CATS.reduce((a, c) => a + (s[c] ?? 0), 0);
 
   return (
@@ -55,20 +70,31 @@ export function DiceView({ title }: { title: string }) {
         <div className="dice-layout">
           {/* Dice tray. */}
           <div className="dice-tray">
-            <div className="dice-row">
-              {state.dice.map((d, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={cn("dice-slot", hold[i] && "dice-slot--held")}
-                  onClick={() => myTurn && state.rolledThisTurn && setHold((h) => h.map((v, j) => (j === i ? !v : v)))}
-                  aria-pressed={hold[i]}
-                >
-                  {d > 0 ? <Die value={d} /> : <span className="dice-empty" />}
-                  {hold[i] ? <span className="dice-held-tag">{t("dice.held")}</span> : null}
-                </button>
-              ))}
-            </div>
+            {useGL ? (
+              <GLDice
+                values={state.dice}
+                held={effHeld}
+                canToggle={myTurn && state.rolledThisTurn}
+                onToggle={toggleHold}
+                rollNonce={rollNonce}
+                heldLabel={t("dice.held")}
+              />
+            ) : (
+              <div className="dice-row">
+                {state.dice.map((d, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={cn("dice-slot", hold[i] && "dice-slot--held")}
+                    onClick={() => myTurn && state.rolledThisTurn && toggleHold(i)}
+                    aria-pressed={hold[i]}
+                  >
+                    {d > 0 ? <Die value={d} /> : <span className="dice-empty" />}
+                    {hold[i] ? <span className="dice-held-tag">{t("dice.held")}</span> : null}
+                  </button>
+                ))}
+              </div>
+            )}
             {canRoll ? (
               <Button onClick={roll} disabled={!myTurn} className="mt-3">
                 {state.rolledThisTurn ? t("dice.reroll", { n: state.rerollsLeft }) : t("dice.roll")}
