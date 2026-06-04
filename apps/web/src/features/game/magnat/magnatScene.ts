@@ -14,6 +14,7 @@ import {
   BoxGeometry,
   CanvasTexture,
   Color,
+  ConeGeometry,
   DirectionalLight,
   Group,
   HemisphereLight,
@@ -80,31 +81,56 @@ function specialColor(type: string): string {
   }
 }
 
-function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let line = "";
-  for (const w of words) {
-    const test = line ? `${line} ${w}` : w;
-    if (ctx.measureText(test).width > maxW && line) {
-      lines.push(line);
-      line = w;
-    } else line = test;
+/**
+ * Choose a line-split (1–3 lines) and font size that fills the box while
+ * guaranteeing the text fits both width and height — so no name ever overflows.
+ */
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  name: string,
+  maxW: number,
+  maxH: number,
+  maxFont: number,
+): { lines: string[]; font: number } {
+  const base = 100;
+  const fontStr = (f: number) => `800 ${f}px Manrope, system-ui, sans-serif`;
+  const words = name.split(" ");
+  const candidates: string[][] = [[name]];
+  // every 2-line split at a space
+  for (let k = 1; k < words.length; k++) {
+    candidates.push([words.slice(0, k).join(" "), words.slice(k).join(" ")]);
   }
-  if (line) lines.push(line);
-  return lines;
+  // a balanced 3-line split for very long multi-word names
+  if (words.length >= 3) {
+    const a = Math.ceil(words.length / 3);
+    candidates.push([
+      words.slice(0, a).join(" "),
+      words.slice(a, 2 * a).join(" "),
+      words.slice(2 * a).join(" "),
+    ]);
+  }
+  let best = { lines: [name], font: 8 };
+  for (const lines of candidates) {
+    ctx.font = fontStr(base);
+    const widest = Math.max(...lines.map((l) => ctx.measureText(l).width));
+    const byW = (maxW / widest) * base;
+    const byH = maxH / (lines.length * 1.18);
+    const f = Math.min(maxFont, byW, byH);
+    if (f > best.font) best = { lines, font: f };
+  }
+  return best;
 }
 
 /** High-res tile label (name + price) oriented to read from outside the board. */
 function labelTexture(idx: number, side: number): CanvasTexture {
   const tl = BOARD[idx]!;
-  const W = 320;
-  const Hc = 400; // taller axis = radial (inner→outer)
+  const W = 360;
+  const Hc = 480; // taller axis = radial (inner→outer)
   const c = document.createElement("canvas");
   c.width = W;
   c.height = Hc;
   const ctx = c.getContext("2d")!;
-  ctx.fillStyle = "#f3ead4";
+  ctx.fillStyle = "#f4ecd6";
   ctx.fillRect(0, 0, W, Hc);
 
   // outward-reading: rotate the whole drawing so "up" points to board centre
@@ -113,26 +139,23 @@ function labelTexture(idx: number, side: number): CanvasTexture {
   ctx.rotate((side * Math.PI) / 2);
   ctx.translate(-W / 2, -Hc / 2);
 
-  if (tl.type === "prop") {
+  const banded = tl.type === "prop";
+  if (banded) {
     ctx.fillStyle = GROUP_COLORS[tl.group] ?? "#999";
-    ctx.fillRect(0, 0, W, Hc * 0.22);
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.fillRect(0, Hc * 0.22 - 5, W, 5);
+    ctx.fillRect(0, 0, W, Hc * 0.2);
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(0, Hc * 0.2 - 5, W, 5);
   }
   ctx.fillStyle = "#120c06";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  // auto-fit: grow the name as large as the tile allows (≤ 2 lines)
-  const maxW = W * 0.92;
-  let font = 92;
-  let lines: string[] = [];
-  for (; font >= 40; font -= 4) {
-    ctx.font = `800 ${font}px Manrope, system-ui, sans-serif`;
-    lines = wrap(ctx, tl.name, maxW);
-    if (lines.length <= 2 && lines.every((l) => ctx.measureText(l).width <= maxW)) break;
-  }
-  const lh = font * 1.05;
-  const cy = Hc * 0.52;
+
+  const top = banded ? Hc * 0.2 : 0;
+  const bottom = tl.price > 0 ? Hc * 0.78 : Hc;
+  const { lines, font } = fitText(ctx, tl.name, W * 0.9, (bottom - top) * 0.92, 96);
+  ctx.font = `800 ${font}px Manrope, system-ui, sans-serif`;
+  const lh = font * 1.18;
+  const cy = (top + bottom) / 2;
   lines.forEach((l, i) => ctx.fillText(l, W / 2, cy - ((lines.length - 1) * lh) / 2 + i * lh));
   if (tl.price > 0) {
     ctx.font = "800 54px Manrope, system-ui, sans-serif";
@@ -474,17 +497,21 @@ export class MagnatScene {
     const g = new Group();
     const hotel = count >= 5;
     const n = hotel ? 1 : count;
-    const mat = new MeshStandardMaterial({ color: new Color(hotel ? "#cc2b2b" : "#2faa55"), roughness: 0.5 });
-    const roofMat = new MeshStandardMaterial({ color: new Color(hotel ? "#7a1313" : "#176b32"), roughness: 0.6 });
+    const mat = new MeshStandardMaterial({ color: new Color(hotel ? "#d23a3a" : "#e9e3d2"), roughness: 0.55, metalness: 0.05 });
+    const roofMat = new MeshStandardMaterial({ color: new Color(hotel ? "#7a1313" : "#b6452a"), roughness: 0.6 });
     for (let k = 0; k < n; k++) {
-      const w = hotel ? 0.7 : 0.4;
-      const body = new Mesh(new BoxGeometry(w, 0.32, w), mat);
-      const roof = new Mesh(new BoxGeometry(w * 1.1, 0.14, w * 1.1), roofMat);
-      roof.position.y = 0.23;
+      const w = hotel ? 0.78 : 0.42;
+      const bh = hotel ? 0.5 : 0.34;
+      const body = new Mesh(new BoxGeometry(w, bh, w), mat);
+      body.position.y = bh / 2;
+      // peaked pyramid roof
+      const roof = new Mesh(new ConeGeometry(w * 0.78, w * 0.6, 4), roofMat);
+      roof.rotation.y = Math.PI / 4;
+      roof.position.y = bh + w * 0.3;
       const house = new Group();
       house.add(body, roof);
-      house.position.set((k - (n - 1) / 2) * 0.52, 0.66, 0);
-      house.traverse((m) => (m.castShadow = true));
+      house.position.set((k - (n - 1) / 2) * 0.54, 0.5, 0);
+      house.traverse((mm) => (mm.castShadow = true));
       g.add(house);
     }
     g.position.set(p.x, 0, p.z);
