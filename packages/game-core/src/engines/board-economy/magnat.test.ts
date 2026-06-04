@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { magnatEngine, magnatBot, BOARD, type MagnatState, type MagnatAction } from "./magnat.js";
+import { BOARD, type MagnatState, type MagnatAction } from "@aso/shared";
+import { magnatEngine, magnatBot } from "./magnat.js";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
 

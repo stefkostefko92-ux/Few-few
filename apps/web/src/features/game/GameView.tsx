@@ -27,6 +27,7 @@ import { BingoView } from "./bingo/BingoView";
 import { WordsView } from "./words/WordsView";
 import { DominoView } from "./domino/DominoView";
 import { CueView } from "./cue-sports/CueView";
+import { MagnatView } from "./magnat/MagnatView";
 import { GenericGameView } from "./generic/GenericGameView";
 
 type Tone = "warm" | "midnight" | "cool" | "default";
@@ -86,6 +87,8 @@ function renderGame(gameKey: GameKey, title: string) {
     case "NINEBALL":
     case "SNOOKER":
       return <CueView title={title} game={gameKey} />;
+    case "MAGNAT":
+      return <MagnatView title={title} />;
     default:
       return <GenericGameView title={title} game={gameKey} />;
   }

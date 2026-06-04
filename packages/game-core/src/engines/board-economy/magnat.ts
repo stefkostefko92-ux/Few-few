@@ -1,4 +1,20 @@
 import {
+  BOARD,
+  BOARD_SIZE,
+  CHANCE,
+  CHEST,
+  GROUP_TILES,
+  HOUSE_COST_BY_GROUP,
+  STATIONS,
+  UTILITIES,
+  isOwnable,
+  type Card,
+  type MagnatAction,
+  type MagnatEvent,
+  type MagnatState,
+  type Tile,
+} from "@aso/shared";
+import {
   IllegalActionError,
   type GameEngine,
   type InitOpts,
@@ -23,166 +39,14 @@ import type { SeededRng } from "../../kernel/rng.js";
  * extra roll; three doubles or the "go to jail" tile send you to jail.
  */
 
-const BOARD_SIZE = 40;
 const GO_SALARY = 200;
 const JAIL_TILE = 10;
 const JAIL_FINE = 50;
 const START_CASH = 1500;
 const MAX_TURNS = 300; // hard cap → game always terminates
 
-type TileType = "go" | "prop" | "chance" | "chest" | "tax" | "jail" | "free" | "gotojail" | "station" | "utility";
-interface Tile {
-  type: TileType;
-  name: string;
-  group: number; // 0..7 for properties, -1 otherwise
-  price: number; // ownables only
-  tax: number; // tax tiles only
-}
-
-function t(type: TileType, name: string, opts: Partial<Tile> = {}): Tile {
-  return { type, name, group: opts.group ?? -1, price: opts.price ?? 0, tax: opts.tax ?? 0 };
-}
-
-/** The 40-tile board, Bulgarian-cities themed (stations use the four big cities). */
-export const BOARD: Tile[] = [
-  t("go", "Старт"),
-  t("prop", "Видин", { group: 0, price: 60 }),
-  t("chest", "Каса"),
-  t("prop", "Враца", { group: 0, price: 60 }),
-  t("tax", "Данък общ доход", { tax: 200 }),
-  t("station", "Гара София", { price: 200 }),
-  t("prop", "Монтана", { group: 1, price: 100 }),
-  t("chance", "Късмет"),
-  t("prop", "Ловеч", { group: 1, price: 100 }),
-  t("prop", "Габрово", { group: 1, price: 120 }),
-  t("jail", "Затвор"),
-  t("prop", "Търговище", { group: 2, price: 140 }),
-  t("utility", "ВиК", { price: 150 }),
-  t("prop", "Разград", { group: 2, price: 140 }),
-  t("prop", "Силистра", { group: 2, price: 160 }),
-  t("station", "Гара Пловдив", { price: 200 }),
-  t("prop", "Кърджали", { group: 3, price: 180 }),
-  t("chest", "Каса"),
-  t("prop", "Смолян", { group: 3, price: 180 }),
-  t("prop", "Пазарджик", { group: 3, price: 200 }),
-  t("free", "Безплатен паркинг"),
-  t("prop", "Сливен", { group: 4, price: 220 }),
-  t("chance", "Късмет"),
-  t("prop", "Ямбол", { group: 4, price: 220 }),
-  t("prop", "Хасково", { group: 4, price: 240 }),
-  t("station", "Гара Варна", { price: 200 }),
-  t("prop", "Благоевград", { group: 5, price: 260 }),
-  t("prop", "Кюстендил", { group: 5, price: 260 }),
-  t("utility", "Електроразпределение", { price: 150 }),
-  t("prop", "Перник", { group: 5, price: 280 }),
-  t("gotojail", "Отиваш в затвора"),
-  t("prop", "Стара Загора", { group: 6, price: 300 }),
-  t("prop", "Плевен", { group: 6, price: 300 }),
-  t("chest", "Каса"),
-  t("prop", "Русе", { group: 6, price: 320 }),
-  t("station", "Гара Бургас", { price: 200 }),
-  t("chance", "Късмет"),
-  t("prop", "кв. Витоша", { group: 7, price: 350 }),
-  t("tax", "Луксозен данък", { tax: 100 }),
-  t("prop", "кв. Лозенец", { group: 7, price: 400 }),
-];
-
-const HOUSE_COST_BY_GROUP = [50, 50, 100, 100, 150, 150, 200, 200];
-const GROUP_TILES: number[][] = (() => {
-  const m: number[][] = Array.from({ length: 8 }, () => []);
-  BOARD.forEach((tile, i) => {
-    if (tile.type === "prop") m[tile.group]!.push(i);
-  });
-  return m;
-})();
-const STATIONS = BOARD.map((tile, i) => (tile.type === "station" ? i : -1)).filter((i) => i >= 0);
-const UTILITIES = BOARD.map((tile, i) => (tile.type === "utility" ? i : -1)).filter((i) => i >= 0);
-
-/* ── cards (safe effects only — no rent/recursion) ──────────────────────── */
-type CardEffect =
-  | { kind: "money"; amount: number }
-  | { kind: "jail" }
-  | { kind: "gojf" }
-  | { kind: "payEach"; amount: number }
-  | { kind: "collectEach"; amount: number }
-  | { kind: "go" };
-interface Card {
-  text: string;
-  effect: CardEffect;
-}
-
-export const CHANCE: Card[] = [
-  { text: "Дивиденти от акции — получаваш 150", effect: { kind: "money", amount: 150 } },
-  { text: "Глоба за превишена скорост — плащаш 50", effect: { kind: "money", amount: -50 } },
-  { text: "Отиваш директно в затвора", effect: { kind: "jail" } },
-  { text: "Карта „Излизане от затвора“", effect: { kind: "gojf" } },
-  { text: "Печалба от лотарията — получаваш 100", effect: { kind: "money", amount: 100 } },
-  { text: "Черпиш компанията — плащаш по 50 на всеки", effect: { kind: "payEach", amount: 50 } },
-  { text: "Имен ден — всеки ти дава по 50", effect: { kind: "collectEach", amount: 50 } },
-  { text: "Премести се на Старт (+200)", effect: { kind: "go" } },
-];
-export const CHEST: Card[] = [
-  { text: "Наследство — получаваш 200", effect: { kind: "money", amount: 200 } },
-  { text: "Връщане на надвзет данък — получаваш 100", effect: { kind: "money", amount: 100 } },
-  { text: "Болнична сметка — плащаш 100", effect: { kind: "money", amount: -100 } },
-  { text: "Награда за красота — получаваш 50", effect: { kind: "money", amount: 50 } },
-  { text: "Отиваш директно в затвора", effect: { kind: "jail" } },
-  { text: "Карта „Излизане от затвора“", effect: { kind: "gojf" } },
-  { text: "Рожден ден — всеки ти дава по 25", effect: { kind: "collectEach", amount: 25 } },
-  { text: "Училищна такса — плащаш 50", effect: { kind: "money", amount: -50 } },
-];
-
-export interface MagnatState {
-  seats: number;
-  turn: Seat;
-  phase: "ROLL" | "BUY" | "MANAGE";
-  cash: number[];
-  pos: number[];
-  inJail: boolean[];
-  jailTurns: number[];
-  gojf: number[];
-  bankrupt: boolean[];
-  owner: number[]; // per tile → seat, or -1
-  houses: number[]; // per tile → 0..5 (5 = hotel)
-  mortgaged: boolean[];
-  dice: [number, number] | null;
-  doubles: number; // consecutive doubles this turn
-  extraRoll: boolean; // rolled doubles → roll again at END
-  pendingBuy: number | null;
-  chance: number[];
-  chancePtr: number;
-  chest: number[];
-  chestPtr: number;
-  turns: number; // total completed turns (for the cap)
-  done: boolean;
-  log: string[];
-}
-
-export type MagnatAction =
-  | { type: "ROLL" }
-  | { type: "BUY" }
-  | { type: "DECLINE" }
-  | { type: "BUILD"; tile: number }
-  | { type: "SELL"; tile: number }
-  | { type: "MORTGAGE"; tile: number }
-  | { type: "UNMORTGAGE"; tile: number }
-  | { type: "END" }
-  | { type: "JAIL_PAY" }
-  | { type: "JAIL_CARD" };
-
-export type MagnatEvent =
-  | { type: "ROLL"; seat: Seat; dice: [number, number] }
-  | { type: "MOVE"; seat: Seat; to: number }
-  | { type: "BUY"; seat: Seat; tile: number }
-  | { type: "RENT"; seat: Seat; to: Seat; amount: number }
-  | { type: "CARD"; seat: Seat; text: string }
-  | { type: "JAIL"; seat: Seat }
-  | { type: "BANKRUPT"; seat: Seat; to: Seat | null }
-  | { type: "WIN"; seat: Seat };
-
 /* ── helpers ────────────────────────────────────────────────────────────── */
 const tile = (i: number): Tile => BOARD[i]!;
-const isOwnable = (i: number): boolean => ["prop", "station", "utility"].includes(tile(i).type);
 const houseCost = (i: number): number => HOUSE_COST_BY_GROUP[tile(i).group] ?? 0;
 const mortgageValue = (i: number): number => Math.floor(tile(i).price / 2);
 const unmortgageCost = (i: number): number => Math.ceil(mortgageValue(i) * 1.1);
