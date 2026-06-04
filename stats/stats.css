@@ -24,5 +24,5 @@ button:hover { border-color: var(--muted); }
 .bar { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 13px; }
 .bar .name { width: 130px; color: var(--muted); flex: 0 0 auto; }
 .bar .track { flex: 1; background: var(--surface-2); border-radius: 5px; height: 16px; overflow: hidden; }
-.bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), #1f9d63); border-radius: 5px; }
+.bar .fill { display: block; height: 100%; min-width: 2px; background: linear-gradient(90deg, var(--accent), #1f9d63); border-radius: 5px; }
 .bar .val { width: 70px; text-align: right; font-weight: 600; }
