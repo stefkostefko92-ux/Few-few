@@ -19,6 +19,7 @@ import { battleshipEngine } from "../engines/grid-guess/battleship.js";
 import { bingoEngine } from "../engines/grid-guess/bingo.js";
 import { wordsEngine } from "../engines/grid-guess/words.js";
 import { eightBallEngine, nineBallEngine, snookerEngine } from "../engines/cue-sports/cue.js";
+import { magnatEngine } from "../engines/board-economy/magnat.js";
 
 /**
  * Type-erased engine handle for the realtime host's registry. The host knows
@@ -58,6 +59,8 @@ export const GAME_ENGINES: Partial<Record<GameKey, AnyEngine>> = {
   EIGHTBALL: e(eightBallEngine),
   NINEBALL: e(nineBallEngine),
   SNOOKER: e(snookerEngine),
+  // board-economy (property-trading)
+  MAGNAT: e(magnatEngine),
 };
 
 export function getEngine(key: GameKey): AnyEngine {

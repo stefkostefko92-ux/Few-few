@@ -345,4 +345,5 @@ enum GameKey {
   EIGHTBALL
   NINEBALL
   SNOOKER
+  MAGNAT
 }

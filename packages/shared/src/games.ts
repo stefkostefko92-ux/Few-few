@@ -25,6 +25,7 @@ export const GAME_KEYS = [
   "EIGHTBALL",
   "NINEBALL",
   "SNOOKER",
+  "MAGNAT",
 ] as const;
 
 export type GameKey = (typeof GAME_KEYS)[number];
@@ -38,6 +39,7 @@ export const ENGINE_PATTERNS = [
   "draw-discard",
   "grid-guess",
   "cue-sport",
+  "board-economy",
 ] as const;
 
 export type EnginePattern = (typeof ENGINE_PATTERNS)[number];
@@ -65,6 +67,7 @@ export const GAME_ENGINE: Record<GameKey, EnginePattern> = {
   EIGHTBALL: "cue-sport",
   NINEBALL: "cue-sport",
   SNOOKER: "cue-sport",
+  MAGNAT: "board-economy",
 };
 
 /** Betting games carry the regulatory "social gaming, not real-money gambling" label (S11.4). */
@@ -93,6 +96,7 @@ export const GAME_SEATS: Record<GameKey, number> = {
   EIGHTBALL: 2,
   NINEBALL: 2,
   SNOOKER: 2,
+  MAGNAT: 4,
 };
 
 export const seatsFor = (game: GameKey): number => GAME_SEATS[game];
