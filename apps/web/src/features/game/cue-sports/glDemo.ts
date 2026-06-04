@@ -173,6 +173,41 @@ async function main() {
     t.render(scene);
   }
 
+  // Pocket-drop animation: continuously re-trigger sinks so any screenshot
+  // catches balls mid-shrink at the pockets.
+  {
+    const h = document.createElement("h2");
+    h.textContent = "Pocket-drop animation (balls caught mid-shrink)";
+    root.appendChild(h);
+    const rim = document.createElement("div");
+    rim.className = "rim shot";
+    const canvas = document.createElement("canvas");
+    rim.appendChild(canvas);
+    root.appendChild(rim);
+    const t = await GLTable.create(canvas, 760);
+    t.render({
+      variant: "EIGHTBALL",
+      cloth: { a: "#1a6e3a", b: "#0c3a1f" },
+      balls: [
+        { id: 0, x: 0.55, y: cy },
+        { id: 3, x: 1.1, y: 0.32 },
+        { id: 11, x: 1.55, y: 0.7 },
+      ],
+    });
+    // Staggered frozen pose: each pocket caught at a different stage of the drop.
+    const cols = ["#c0241f", "#1f4fb0", "#e8b923", "#5a2a7a", "#1f8a3a", "#e07a1f"];
+    t.poseDrop(
+      [
+        [0, 0],
+        [TABLE.w / 2, 0],
+        [TABLE.w, 0],
+        [0, TABLE.h],
+        [TABLE.w / 2, TABLE.h],
+        [TABLE.w, TABLE.h],
+      ].map(([x, y], idx) => ({ x: x!, y: y!, color: cols[idx % cols.length]!, progress: 0.12 + idx * 0.13 })),
+    );
+  }
+
   // Signal readiness to the screenshot driver.
   (window as unknown as { __cueReady?: boolean }).__cueReady = true;
 }

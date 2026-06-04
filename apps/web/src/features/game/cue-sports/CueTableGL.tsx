@@ -1,5 +1,10 @@
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { CueScene, GLTable } from "./glTable";
+
+export interface CueTableHandle {
+  /** Play the pocket-drop animation for a potted ball at world (x, y). */
+  addSink(x: number, y: number, color: string): void;
+}
 
 /** Returns false if WebGL is unavailable (lets the caller fall back to SVG). */
 export function webglSupported(): boolean {
@@ -18,17 +23,15 @@ type WorldPoint = { x: number; y: number };
  * and balls. Interaction is handed back to the parent as world-space points so
  * the existing aim/placement logic and DOM controls stay untouched.
  */
-export function CueTableGL({
-  scene,
-  locked,
-  onMoveWorld,
-  onUpWorld,
-}: {
-  scene: CueScene | null;
-  locked: boolean;
-  onMoveWorld?: (p: WorldPoint) => void;
-  onUpWorld?: (p: WorldPoint) => void;
-}) {
+export const CueTableGL = forwardRef<
+  CueTableHandle,
+  {
+    scene: CueScene | null;
+    locked: boolean;
+    onMoveWorld?: (p: WorldPoint) => void;
+    onUpWorld?: (p: WorldPoint) => void;
+  }
+>(function CueTableGL({ scene, locked, onMoveWorld, onUpWorld }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<GLTable | null>(null);
@@ -74,6 +77,14 @@ export function CueTableGL({
     if (tableRef.current && scene) tableRef.current.render(scene);
   }, [scene]);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      addSink: (x, y, color) => tableRef.current?.addSink(x, y, color),
+    }),
+    [],
+  );
+
   const toWorld = (e: React.PointerEvent): WorldPoint | null => {
     const t = tableRef.current;
     const canvas = canvasRef.current;
@@ -97,4 +108,4 @@ export function CueTableGL({
       />
     </div>
   );
-}
+});

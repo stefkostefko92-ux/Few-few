@@ -7,7 +7,7 @@ import { Button } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
-import { CueTableGL, webglSupported } from "./CueTableGL";
+import { CueTableGL, webglSupported, type CueTableHandle } from "./CueTableGL";
 import type { CueScene } from "./glTable";
 import "./cue-table.css";
 
@@ -53,6 +53,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const cloth = felt?.colors ?? { a: "#1a6e3a", b: "#0c3a1f" };
 
   const useGL = useMemo(() => webglSupported(), []);
+  const glRef = useRef<CueTableHandle>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [angle, setAngle] = useState(0);
   const [power, setPower] = useState(0.55);
@@ -92,11 +93,15 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
       for (const pb of prev) {
         if (cur.has(pb.id)) continue;
         const [px, py] = nearestPocket(pb.x, pb.y);
-        const key = `${pb.id}-${state.shotNo}-${i}`;
         const color = ballColor(pb.id, variant);
-        setSinks((s) => [...s, { key, x: px, y: py, color }]);
         playCue("flip");
-        window.setTimeout(() => setSinks((s) => s.filter((x) => x.key !== key)), 360);
+        if (useGL) {
+          glRef.current?.addSink(px, py, color);
+        } else {
+          const key = `${pb.id}-${state.shotNo}-${i}`;
+          setSinks((s) => [...s, { key, x: px, y: py, color }]);
+          window.setTimeout(() => setSinks((s) => s.filter((x) => x.key !== key)), 360);
+        }
       }
       prev = f.balls;
       setFrameBalls(f.balls);
@@ -194,6 +199,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
             {useGL && glScene ? (
               <div className="aso-cue__rim">
                 <CueTableGL
+                  ref={glRef}
                   scene={glScene}
                   locked={!myTurn}
                   onMoveWorld={aimAt}

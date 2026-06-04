@@ -193,6 +193,8 @@ export class GLTable {
   private ballLayer = new Container();
   private fxLayer = new Container();
   private nodes = new Map<number, { node: Container; kind: string }>();
+  private sinks: { node: Container; born: number; dur: number }[] = [];
+  private fxRunning = false;
 
   private constructor(app: Application) {
     this.app = app;
@@ -210,6 +212,7 @@ export class GLTable {
       backgroundAlpha: 0,
       resolution: Math.min(2, globalThis.devicePixelRatio || 1),
       autoDensity: true,
+      autoStart: false, // render on demand (render()/sink ticker) — no idle GPU
     });
     const t = new GLTable(app);
     t.fh = fh;
@@ -373,6 +376,77 @@ export class GLTable {
       if (!present.has(id)) entry.node.visible = false;
     }
   }
+
+  /**
+   * Render a frozen pocket-drop pose (no ticker) — a posed still of balls part
+   * way into the pockets. Used by the visual demo/screenshot harness.
+   */
+  poseDrop(items: { x: number; y: number; color: string; progress: number }[]): void {
+    this.fxLayer.removeChildren();
+    for (const it of items) {
+      const node = this.buildSinkBall(it.color);
+      node.position.set(this.px(it.x), this.py(it.y));
+      const e = 1 - Math.max(0, Math.min(1, it.progress));
+      node.scale.set(0.06 + e * 0.94);
+      node.alpha = e;
+      this.fxLayer.addChild(node);
+    }
+    this.app.render();
+  }
+
+  private buildSinkBall(color: string): Container {
+    const r = TABLE.ballR * this.fh;
+    const node = new Container();
+    const sphere = new Sprite(sphereTexture());
+    sphere.anchor.set(0.5);
+    sphere.width = sphere.height = r * 2;
+    sphere.tint = hex(color);
+    const spec = new Sprite(specTexture());
+    spec.anchor.set(0.5);
+    spec.width = spec.height = r * 1.05;
+    spec.position.set(-r * 0.32, -r * 0.36);
+    node.addChild(sphere, spec);
+    return node;
+  }
+
+  /**
+   * Drop a potted ball into a pocket: a short shrink-and-fade at (x, y), driven
+   * by the renderer's own ticker so it completes smoothly even after React has
+   * handed back to the resting state. Honours prefers-reduced-motion.
+   */
+  addSink(x: number, y: number, color: string): void {
+    const node = this.buildSinkBall(color);
+    node.position.set(this.px(x), this.py(y));
+    this.fxLayer.addChild(node);
+    const reduce = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    this.sinks.push({ node, born: performance.now(), dur: reduce ? 1 : 340 });
+    if (!this.fxRunning) {
+      this.app.ticker.add(this.tickFx);
+      this.app.ticker.start();
+      this.fxRunning = true;
+    }
+  }
+
+  private tickFx = (): void => {
+    const now = performance.now();
+    this.sinks = this.sinks.filter((s) => {
+      const t = (now - s.born) / s.dur;
+      if (t >= 1) {
+        s.node.destroy({ children: true });
+        return false;
+      }
+      const e = 1 - t; // 1 → 0
+      s.node.scale.set(0.06 + e * 0.94);
+      s.node.alpha = e;
+      return true;
+    });
+    this.app.render();
+    if (this.sinks.length === 0) {
+      this.app.ticker.remove(this.tickFx);
+      this.app.ticker.stop();
+      this.fxRunning = false;
+    }
+  };
 
   render(scene: CueScene): void {
     this.buildStatic(scene);

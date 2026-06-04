@@ -33,7 +33,11 @@ try {
   const browser = await chromium.launch({
     args: ["--use-gl=swiftshader", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"],
   });
-  const ctx = await browser.newContext({ deviceScaleFactor: 2, viewport: { width: 860, height: 2200 } });
+  const ctx = await browser.newContext({
+    deviceScaleFactor: 2,
+    viewport: { width: 860, height: 2200 },
+    reducedMotion: "no-preference",
+  });
   const page = await ctx.newPage();
   page.on("console", (m) => console.log("[page]", m.type(), m.text()));
   page.on("pageerror", (e) => console.log("[pageerror]", e.message));
@@ -43,7 +47,7 @@ try {
 
   await page.locator(".ab").screenshot({ path: "/tmp/cue-ab.png" });
   const shots = page.locator(".rim.shot");
-  const names = ["8ball", "9ball", "spread", "snooker"];
+  const names = ["8ball", "9ball", "spread", "snooker", "sink"];
   const n = await shots.count();
   for (let i = 0; i < n; i++) {
     await shots.nth(i).screenshot({ path: `/tmp/cue-${names[i] ?? i}.png` });
