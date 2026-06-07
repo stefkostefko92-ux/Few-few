@@ -21,7 +21,7 @@ The Best Ads Block keeps the web clean and fast — without watching what you do
 ★ Bypasses "please disable your adblocker" walls
 ★ Element picker — hide anything on a page with one click
 ★ Per-site allowlist for sites you want to support
-★ Auto-updating EasyList + EasyPrivacy filters
+★ Curated, regularly maintained filter rules built in
 ★ Live stats: ads blocked, data saved, time saved
 ★ Sleek Carbon Stealth theme (dark) with a light option
 
@@ -37,7 +37,6 @@ The extension collects no personal data. See PRIVACY.md.
 - declarativeNetRequest: block ad and tracker requests using filter rules.
 - storage: save your settings and counters locally.
 - tabs: show the current site and per-tab blocked count in the popup.
-- alarms: run the daily filter-list update.
 - host permissions (<all_urls>): apply blocking and cosmetic filtering on the
   pages you browse; all processing is local.
 

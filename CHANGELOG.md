@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.2
+
+- Fix: the global on/off toggle now fully stops all blocking. The previous
+  runtime filter import left dynamic rules active even when protection was off,
+  which could keep a site (e.g. YouTube) broken until the extension was removed.
+- Removed the runtime EasyList/EasyPrivacy network import. Blocking now relies
+  on the bundled curated rules plus per-page cosmetic filtering and YouTube
+  response sanitising — the stable approach used by MV3 blockers. Dropped the
+  `alarms` permission and any leftover imported rules are cleaned up on load.
+- UI: clearer "time saved" formatting for small values; footer shows the
+  bundled filter count.
+
 ## 3.0.1
 
 - Fix: YouTube videos could fail to start because the player waits on

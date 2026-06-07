@@ -25,17 +25,14 @@ removing the extension.
 
 ## Network requests we make
 
-When "Auto-update filters" is enabled, the extension downloads public filter
-lists (EasyList and EasyPrivacy) directly from their official servers to keep
-the blocklist current. These requests contain no personal information. You can
-disable auto-update in the settings.
+The extension makes no network requests of its own. Its blocking rules ship
+inside the extension and run entirely on your device.
 
 ## Permissions
 
 - `declarativeNetRequest` — block ad/tracker network requests via rules.
 - `storage` — save your settings locally.
 - `tabs` — show the per-tab blocked count and the current site in the popup.
-- `alarms` — schedule the daily filter update.
 - host access (`<all_urls>`) — apply blocking and cosmetic filtering on the
   pages you visit. Page content is processed locally and never sent anywhere.
 

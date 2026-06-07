@@ -21,7 +21,9 @@ function fmtData(mb) {
 function fmtTime(sec) {
   if (sec >= 3600) return (sec / 3600).toFixed(1) + " h";
   if (sec >= 60) return Math.round(sec / 60) + " min";
-  return Math.round(sec) + " s";
+  if (sec >= 10) return Math.round(sec) + " s";
+  if (sec > 0) return sec.toFixed(1) + " s";
+  return "0 s";
 }
 
 function load() {
@@ -35,9 +37,7 @@ function load() {
       savedTime.textContent = fmtTime(res.saved.seconds);
       setStatus(res.enabled);
 
-      listDot.textContent = res.listInfo?.count
-        ? res.listInfo.count.toLocaleString() + " filters"
-        : "built-in filters";
+      listDot.textContent = (res.filterCount || 0) + "+ filters";
 
       currentHost = res.host;
       if (currentHost) {

@@ -26,8 +26,8 @@ stays on your device.
   page scrolling.
 - **Element picker** — click any element to hide it permanently on that site.
 - **Per-site allowlist** — allow ads on sites you want to support.
-- **Auto-updating filters** — daily EasyList + EasyPrivacy refresh, plus a
-  manual "Update now".
+- **Curated built-in filters** — a maintained rule set bundled with the
+  extension; no remote code or network fetches.
 - **Live stats** — ads blocked, data saved and time saved.
 - **Carbon Stealth theme** — matte carbon dark theme with a light option.
 
@@ -87,8 +87,8 @@ python3 tools/generate_icons.py   # regenerate icons/
   and multiplies by realistic per-type sizes — a blocked request is never
   downloaded, so its true byte size can't be measured (uBlock/AdGuard estimate
   the same way).
-- Filter auto-update fetches EasyList/EasyPrivacy over the network; imported
-  rules are capped at 5000 (Chrome's dynamic-rule budget).
+- All blocking rules ship inside the extension as static `declarativeNetRequest`
+  rulesets — there are no remote fetches and no remotely hosted code.
 
 ## Privacy & license
 

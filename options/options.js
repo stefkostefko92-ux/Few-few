@@ -17,7 +17,9 @@ function fmtData(mb) {
 function fmtTime(sec) {
   if (sec >= 3600) return (sec / 3600).toFixed(1) + " h";
   if (sec >= 60) return Math.round(sec / 60) + " min";
-  return Math.round(sec) + " s";
+  if (sec >= 10) return Math.round(sec) + " s";
+  if (sec > 0) return sec.toFixed(1) + " s";
+  return "0 s";
 }
 
 function load() {
@@ -32,19 +34,10 @@ function load() {
     $("featCookies").checked = res.features.cookies !== false;
     $("featAab").checked = res.features.antiAdblock !== false;
     $("featMeta").checked = res.features.meta !== false;
-    $("autoUpdate").checked = res.autoUpdate !== false;
-    renderListStatus(res.listInfo || { count: 0, updated: null });
     renderAllowlist(res.allowlist || []);
   });
 
   chrome.storage.local.get("customHidden", (data) => renderCustom(data.customHidden || {}));
-}
-
-function renderListStatus(info) {
-  $("listStatus").textContent =
-    info.count && info.updated
-      ? `${info.count.toLocaleString()} filters · updated ${new Date(info.updated).toLocaleString()}`
-      : "Fetch fresh filters daily (EasyList + EasyPrivacy)";
 }
 
 function renderAllowlist(list) {
@@ -129,21 +122,6 @@ $("featCookies").addEventListener("change", saveFeatures);
 $("featAab").addEventListener("change", saveFeatures);
 $("featMeta").addEventListener("change", saveFeatures);
 
-$("autoUpdate").addEventListener("change", () =>
-  chrome.runtime.sendMessage({ type: "setAutoUpdate", autoUpdate: $("autoUpdate").checked })
-);
-
-$("updateNow").addEventListener("click", () => {
-  const btn = $("updateNow");
-  btn.disabled = true;
-  btn.textContent = "Updating…";
-  chrome.runtime.sendMessage({ type: "updateLists" }, (res) => {
-    btn.disabled = false;
-    btn.textContent = "Update now";
-    if (res?.listInfo) renderListStatus(res.listInfo);
-  });
-});
-
 $("allowAdd").addEventListener("click", () => {
   const domain = normalizeDomain($("allowInput").value);
   if (!domain) return;
@@ -165,7 +143,7 @@ $("resetStats").addEventListener("click", () => {
 });
 
 // ---- Backup ----
-const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "autoUpdate"];
+const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme"];
 
 $("exportBtn").addEventListener("click", () => {
   chrome.storage.local.get(EXPORT_KEYS, (data) => {
