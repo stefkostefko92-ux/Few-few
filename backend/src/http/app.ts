@@ -5,12 +5,21 @@ import type { Player } from "../domain/types.js";
 import type { GameService } from "../services/gameService.js";
 import type { AuthService, AuthTokens } from "../auth/authService.js";
 import type { TokenService } from "../auth/tokens.js";
+import type { IapService } from "../services/iapService.js";
+import type { Catalog } from "../monetization/catalog.js";
+import { verifyWebhookSignature } from "../monetization/receipts.js";
 
 export interface AppDeps {
   game: GameService;
   auth: AuthService;
   tokens: TokenService;
+  iap: IapService;
+  catalog: Catalog;
+  /** HMAC secret for the IAP webhook (RevenueCat-style, §8.1). */
+  webhookSecret: string;
 }
+
+type RawBodyRequest = Request & { rawBody?: Buffer };
 
 const ACCESS_COOKIE = "kg_at";
 const REFRESH_COOKIE = "kg_rt";
@@ -102,11 +111,31 @@ const registerBody = z.object({
 });
 const loginBody = z.object({ deviceId: z.string().min(8).max(128), deviceSecret: z.string().min(1) });
 const refreshBody = z.object({ refreshToken: z.string().min(1).optional() });
+const redeemBody = z.object({
+  platform: z.enum(["ios", "android", "stripe"]),
+  productId: z.string().min(1),
+  receipt: z.string().min(1),
+});
+const webhookBody = z.object({
+  app_user_id: z.string().min(1),
+  product_id: z.string().min(1),
+  transaction_id: z.string().min(1),
+  type: z.string().min(1),
+  store: z.enum(["ios", "android", "stripe", "app_store", "play_store"]).optional(),
+});
 
 export function createApp(deps: AppDeps): Express {
-  const { game, auth, tokens } = deps;
+  const { game, auth, tokens, iap, catalog, webhookSecret } = deps;
   const app = express();
-  app.use(express.json({ limit: "16kb" }));
+  // Capture the raw body so the IAP webhook can verify its HMAC signature.
+  app.use(
+    express.json({
+      limit: "16kb",
+      verify: (req, _res, buf) => {
+        (req as RawBodyRequest).rawBody = Buffer.from(buf);
+      },
+    }),
+  );
   app.use(rateLimiter(120, 60_000));
 
   app.get("/health", (_req, res) => {
@@ -234,6 +263,45 @@ export function createApp(deps: AppDeps): Express {
     }),
   );
 
+  // ---- Monetization (§8) ----------------------------------------------
+
+  // Shop catalog — what each product grants is server-defined.
+  app.get("/shop", (_req, res) => {
+    res.json({ products: catalog.list() });
+  });
+
+  // Client-driven redemption: validate the store receipt, then grant once.
+  app.post(
+    "/iap/redeem",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      const { platform, productId, receipt } = redeemBody.parse(req.body ?? {});
+      const result = await iap.redeem(playerId, platform, productId, receipt);
+      const player = await game.getPlayer(playerId);
+      res.json({ ...result, player: publicPlayer(player) });
+    }),
+  );
+
+  // Server-to-server webhook (RevenueCat-style, §8.1). HMAC-verified, idempotent.
+  app.post(
+    "/iap/webhook",
+    h(async (req, res) => {
+      const sig = req.header("x-webhook-signature");
+      const raw = (req as RawBodyRequest).rawBody;
+      if (!sig || !raw || !verifyWebhookSignature(raw, sig, webhookSecret)) {
+        throw new GameError("BAD_SIGNATURE", "invalid webhook signature", 401);
+      }
+      const body = webhookBody.parse(req.body ?? {});
+      const purchaseTypes = ["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE", "RENEWAL"];
+      if (!purchaseTypes.includes(body.type)) {
+        res.json({ ignored: true, type: body.type });
+        return;
+      }
+      const result = await iap.fulfil(body.app_user_id, storeToPlatform(body.store), body.product_id, body.transaction_id);
+      res.json({ ok: true, ...result });
+    }),
+  );
+
   // Global leaderboard (§7.2) — Redis sorted set when configured.
   app.get(
     "/leaderboard",
@@ -271,6 +339,19 @@ export function createApp(deps: AppDeps): Express {
   });
 
   return app;
+}
+
+/** Map a RevenueCat/store identifier to our Platform union. */
+function storeToPlatform(store: string | undefined): "ios" | "android" | "stripe" {
+  switch (store) {
+    case "play_store":
+    case "android":
+      return "android";
+    case "stripe":
+      return "stripe";
+    default:
+      return "ios";
+  }
 }
 
 /** Strip server-only fields (predetermined raid spots!) before sending to the client. */

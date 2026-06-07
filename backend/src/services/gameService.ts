@@ -7,7 +7,7 @@ import { pull as gachaPull } from "../domain/gacha.js";
 import { buildingCost, islandIsComplete, makeIsland, villageMultiplier } from "../domain/islands.js";
 import { cryptoRng, type Rng } from "../domain/rng.js";
 import { drawReel, resolveSpin } from "../domain/spin.js";
-import type { Companion, Player, SpinOutcome } from "../domain/types.js";
+import type { Companion, Currency, Player, SpinOutcome } from "../domain/types.js";
 import { GameError, InsufficientFunds, InvalidAction } from "../errors.js";
 import { systemClock, type Clock } from "./clock.js";
 import { noopLeaderboard, type Leaderboard } from "./leaderboard.js";
@@ -379,6 +379,28 @@ export class GameService {
 
     await this.repo.save(player);
     return { rarity: result.rarity, viaPity: result.viaPity, companion };
+  }
+
+  // ---- Entitlements (IAP, rewards) -------------------------------------
+
+  /**
+   * Credit currencies to a player through the ledger (e.g. a verified IAP).
+   * Spins may exceed the regen cap here — purchased balances are preserved.
+   */
+  async grant(playerId: string, grants: Partial<Record<Currency, number>>, reason: string): Promise<Player> {
+    const player = await this.getPlayer(playerId);
+    const now = this.clock.now();
+    const fields: Currency[] = ["spins", "coins", "spiritTokens", "gems"];
+    for (const cur of fields) {
+      const amount = grants[cur];
+      if (!amount) continue;
+      if (amount < 0) throw new InvalidAction(`grant amount for ${cur} must be non-negative`);
+      await this.ledger.mint(player.id, cur, amount, reason, now);
+      player[cur] += amount;
+    }
+    await this.repo.save(player);
+    await this.leaderboard.report(player);
+    return player;
   }
 
   // ---- Leaderboard ------------------------------------------------------

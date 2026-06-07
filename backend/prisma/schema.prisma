@@ -75,6 +75,19 @@ enum Currency {
   gems
 }
 
+// Processed IAP purchase — idempotency record keyed by the store transaction id
+// (§11.3). A repeated webhook/redeem for the same transactionId is a no-op.
+model Purchase {
+  transactionId String   @id
+  playerId      String
+  productId     String
+  platform      String
+  grants        Json
+  grantedAt     DateTime @default(now())
+
+  @@index([playerId, productId])
+}
+
 // Device-bound credential (§11.2). One per player; tokenVersion is bumped on
 // logout to revoke outstanding refresh tokens.
 model Credential {

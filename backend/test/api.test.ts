@@ -6,10 +6,15 @@ import { TokenService } from "../src/auth/tokens.js";
 import { MemoryAuthRepository } from "../src/data/authRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
+import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import { createApp } from "../src/http/app.js";
+import { Catalog } from "../src/monetization/catalog.js";
+import { StubReceiptValidator } from "../src/monetization/receipts.js";
 import { GameService } from "../src/services/gameService.js";
+import { IapService } from "../src/services/iapService.js";
 
 const TEST_SECRET = "test-secret-0123456789abcdef";
+const WEBHOOK_SECRET = "test-webhook-secret";
 
 function makeApp() {
   const game = new GameService({
@@ -23,7 +28,14 @@ function makeApp() {
     tokens,
     createPlayer: (name) => game.createPlayer(name),
   });
-  return createApp({ game, auth, tokens });
+  const catalog = new Catalog();
+  const iap = new IapService({
+    catalog,
+    validator: new StubReceiptValidator("receipt-secret"),
+    purchases: new MemoryPurchaseRepository(),
+    game,
+  });
+  return createApp({ game, auth, tokens, iap, catalog, webhookSecret: WEBHOOK_SECRET });
 }
 
 let deviceCounter = 0;

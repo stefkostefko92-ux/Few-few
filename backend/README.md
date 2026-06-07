@@ -19,6 +19,7 @@ raid → summon`, with a double-entry economy ledger and published gacha rates.
 | Single-use action grants (attack/raid) | `domain/types.ts` `PendingAttack`/`PendingRaid` |
 | Postgres persistence + Redis leaderboards (§11.2, §7.2) | `data/prisma*.ts`, `services/leaderboard.ts` |
 | JWT auth (httpOnly cookie or Bearer) + device binding (§11.2) | `auth/` |
+| Server-side IAP receipt validation, idempotent grants (§8, §11.3) | `monetization/`, `services/iapService.ts` |
 
 ## Stack
 
@@ -52,8 +53,8 @@ cp .env.example .env                    # DATABASE_URL + REDIS_URL
 npm run db:push                         # create the schema
 npm run dev
 
-npm test                 # vitest — 44 in-memory tests (no infra)
-npm run test:integration # 3 tests against a live PG (+ Redis); needs DATABASE_URL
+npm test                 # vitest — 51 in-memory tests (no infra)
+npm run test:integration # 4 tests against a live PG (+ Redis); needs DATABASE_URL
 npm run typecheck        # tsc --noEmit
 ```
 
@@ -77,6 +78,9 @@ default `npm test` never needs infra.
 | `POST /attack` | access | `{ targetId, buildingIndex }` | resolve a granted attack |
 | `POST /raid` | access | `{ picks }` | dig a granted raid |
 | `POST /gacha/pull` | access | — | summon a companion |
+| `GET /shop` | — | — | IAP catalog (server-defined grants, §8.2) |
+| `POST /iap/redeem` | access | `{ platform, productId, receipt }` | validate a store receipt and grant once |
+| `POST /iap/webhook` | HMAC sig | RevenueCat-style event | server-to-server fulfilment (idempotent) |
 | `GET /leaderboard` | — | — | global top-N (Redis) |
 | `GET /leaderboard/me` | access | — | caller's rank |
 
@@ -105,8 +109,9 @@ curl -s -XPOST localhost:3000/spin -H "authorization: Bearer $AT" \
 
 ## Not yet built (next slices)
 
-Clans + WebSocket chat, IAP receipt validation (RevenueCat/StoreKit/Play
-Billing), LiveOps admin dashboard, analytics pipeline, and the Unity client
-(§11.1). Cross-aggregate atomicity (player save + ledger in one DB transaction)
-is also a follow-up — the current Prisma backend writes them in separate
-transactions, fine for the prototype.
+Clans + WebSocket chat, LiveOps admin dashboard, analytics pipeline, and the
+Unity client (§11.1). The IAP layer ships a sandbox receipt validator and the
+RevenueCat-style webhook shape — wiring the real StoreKit/Play Billing/RevenueCat
+validators is a drop-in `ReceiptValidator`. Cross-aggregate atomicity (player
+save + ledger in one DB transaction) is also a follow-up — the current Prisma
+backend writes them in separate transactions, fine for the prototype.

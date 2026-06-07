@@ -4,13 +4,18 @@ import { TokenService } from "./auth/tokens.js";
 import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository.js";
 import { MemoryLedger, type Ledger } from "./data/ledger.js";
 import { MemoryPlayerRepository } from "./data/memoryRepository.js";
+import { MemoryPurchaseRepository, type PurchaseRepository } from "./data/purchaseRepository.js";
 import { PrismaAuthRepository } from "./data/prismaAuthRepository.js";
 import { PrismaLedger } from "./data/prismaLedger.js";
 import { PrismaPlayerRepository } from "./data/prismaRepository.js";
+import { PrismaPurchaseRepository } from "./data/prismaPurchaseRepository.js";
 import { createPrismaClient } from "./data/prismaClient.js";
 import type { PlayerRepository } from "./data/repository.js";
 import { createApp } from "./http/app.js";
+import { Catalog } from "./monetization/catalog.js";
+import { StubReceiptValidator } from "./monetization/receipts.js";
 import { GameService } from "./services/gameService.js";
+import { IapService } from "./services/iapService.js";
 import { noopLeaderboard, RedisLeaderboard, type Leaderboard } from "./services/leaderboard.js";
 
 // Native .env loading (Node 22). No-op if the file is absent.
@@ -37,17 +42,20 @@ async function main(): Promise<void> {
   let repo: PlayerRepository;
   let ledger: Ledger;
   let authRepo: AuthRepository;
+  let purchases: PurchaseRepository;
   if (process.env.DATABASE_URL) {
     const prisma = createPrismaClient(process.env.DATABASE_URL);
     repo = new PrismaPlayerRepository(prisma);
     ledger = new PrismaLedger(prisma);
     authRepo = new PrismaAuthRepository(prisma);
+    purchases = new PrismaPurchaseRepository(prisma);
     // eslint-disable-next-line no-console
     console.log("storage: Postgres (Prisma)");
   } else {
     repo = new MemoryPlayerRepository();
     ledger = new MemoryLedger();
     authRepo = new MemoryAuthRepository();
+    purchases = new MemoryPurchaseRepository();
     // eslint-disable-next-line no-console
     console.log("storage: in-memory");
   }
@@ -64,7 +72,17 @@ async function main(): Promise<void> {
   const tokens = new TokenService(jwtSecret);
   const auth = new AuthService({ authRepo, tokens, createPlayer: (name) => game.createPlayer(name) });
 
-  const app = createApp({ game, auth, tokens });
+  const catalog = new Catalog();
+  const receiptSecret = process.env.IAP_RECEIPT_SECRET ?? "dev-receipt-secret-change-me";
+  const webhookSecret = process.env.IAP_WEBHOOK_SECRET ?? "dev-webhook-secret-change-me";
+  const iap = new IapService({
+    catalog,
+    validator: new StubReceiptValidator(receiptSecret),
+    purchases,
+    game,
+  });
+
+  const app = createApp({ game, auth, tokens, iap, catalog, webhookSecret });
   app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`KAGURA backend (prototype) listening on :${port}`);

@@ -3,11 +3,14 @@ import { Redis } from "ioredis";
 import { defaultLiveOps } from "../src/config/liveops.js";
 import { PrismaLedger } from "../src/data/prismaLedger.js";
 import { PrismaPlayerRepository } from "../src/data/prismaRepository.js";
+import { PrismaPurchaseRepository } from "../src/data/prismaPurchaseRepository.js";
 import { createPrismaClient } from "../src/data/prismaClient.js";
 import { playerAccount } from "../src/data/ledger.js";
 import type { Currency } from "../src/domain/types.js";
 import type { Rng } from "../src/domain/rng.js";
+import { Catalog } from "../src/monetization/catalog.js";
 import { GameService } from "../src/services/gameService.js";
+import { IapService } from "../src/services/iapService.js";
 import { RedisLeaderboard } from "../src/services/leaderboard.js";
 import { FakeClock } from "../src/services/clock.js";
 
@@ -42,6 +45,7 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
   let q: ReturnType<typeof queueRng>;
 
   beforeEach(async () => {
+    await prisma.purchase.deleteMany();
     await prisma.ledgerLeg.deleteMany();
     await prisma.player.deleteMany();
     if (redis) await redis.del("lb:global:coins", "lb:names");
@@ -104,6 +108,26 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     // Persistence really happened: reload from DB and confirm coins match.
     const aDb = await repo.getOrThrow(a.id);
     expect(aDb.coins).toBe(await ledger.balanceOf(playerAccount(a.id), "coins"));
+  });
+
+  it("IAP idempotency is enforced by the Postgres unique constraint", async () => {
+    const p = await game.createPlayer("Buyer");
+    const before = (await repo.getOrThrow(p.id)).spins;
+    const iap = new IapService({
+      catalog: new Catalog(),
+      validator: { async validate(_pl, productId, receipt) {
+        return { valid: true, transactionId: receipt, productId };
+      } },
+      purchases: new PrismaPurchaseRepository(prisma),
+      game,
+    });
+
+    const first = await iap.redeem(p.id, "ios", "spin_m", "pg-tx-1");
+    const second = await iap.redeem(p.id, "ios", "spin_m", "pg-tx-1");
+    expect(first.granted).toBe(true);
+    expect(second.granted).toBe(false);
+    expect((await repo.getOrThrow(p.id)).spins).toBe(before + 180); // granted once
+    await assertBooks([p.id]);
   });
 
   it.skipIf(!REDIS_URL)("ranks players on the Redis leaderboard", async () => {
