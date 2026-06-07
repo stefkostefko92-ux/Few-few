@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Few-Few AdBlocker",
-  "version": "2.1.0",
-  "description": "Блокира всякакъв вид реклами навсякъде - YouTube видео реклами, банери, popup-и, тракери, cookie банери и anti-adblock съобщения.",
+  "version": "2.2.0",
+  "description": "Блокира всякакъв вид реклами навсякъде - YouTube видео реклами, банери, popup-и, тракери, cookie банери и anti-adblock. С авто-обновяване на филтрите и Carbon Stealth интерфейс.",
   "default_locale": "bg",
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
     "storage",
-    "tabs"
+    "tabs",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"

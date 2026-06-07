@@ -1,18 +1,34 @@
 // Few-Few AdBlocker - background service worker
-// Управлява: глобален toggle, allowlist (бели сайтове), брояч на блокирани
-// заявки, динамични allow-правила и комуникация с popup/options/picker.
+// Управлява: глобален toggle, allowlist, брояч на блокирани заявки + спестени
+// данни/време, динамични allow-правила, авто-обновяване на филтрите (EasyList),
+// тема и комуникация с popup/options/picker.
 
 const RULESET_IDS = ["ad_rules", "youtube_rules"];
 
-// Диапазон за динамичните allow-правила (allowlist). Стои далеч от статичните id-та.
-const ALLOW_RULE_BASE = 90000;
+// Диапазони за динамичните правила (далеч от статичните id-та).
+const ALLOW_RULE_BASE = 90000; // allowlist (allowAllRequests)
+const LIST_RULE_BASE = 100000; // импортирани филтри (EasyList и др.)
+const LIST_RULE_MAX = 5000; // таван на импортираните правила
+
+// Източници за авто-обновяване (мрежови филтри в Adblock Plus формат).
+const FILTER_SOURCES = [
+  "https://easylist.to/easylist/easylist.txt",
+  "https://easylist.to/easylist/easyprivacy.txt",
+];
+
+// Среден размер/време спестени на блокирана заявка (за статистиката).
+const AVG_AD_KB = 55;
+const AVG_AD_MS = 45;
 
 const DEFAULTS = {
   enabled: true,
   blockedTotal: 0,
   allowlist: [],
   features: { cookies: true, antiAdblock: true },
-  customHidden: {}, // { "domain.com": ["selector", ...] }
+  customHidden: {},
+  theme: "carbon",
+  autoUpdate: true,
+  listInfo: { count: 0, updated: null },
 };
 
 // ---- Инициализация ----
@@ -25,11 +41,16 @@ chrome.runtime.onInstalled.addListener(async () => {
   if (Object.keys(patch).length) await chrome.storage.local.set(patch);
   await applyState();
   await syncAllowRules();
+  scheduleUpdates();
+  // Първоначално обновяване на филтрите (ако е разрешено).
+  const { autoUpdate } = await chrome.storage.local.get("autoUpdate");
+  if (autoUpdate !== false) updateBlocklists();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   await applyState();
   await syncAllowRules();
+  scheduleUpdates();
 });
 
 // ---- Глобален toggle на статичните рулсети ----
@@ -45,18 +66,15 @@ async function applyState() {
   } catch (e) {
     console.warn("Few-Few: неуспешно обновяване на ruleset", e);
   }
-  chrome.action.setBadgeBackgroundColor({ color: on ? "#e53935" : "#9e9e9e" });
+  chrome.action.setBadgeBackgroundColor({ color: on ? "#c8102e" : "#5a5a5a" });
 }
 
 // ---- Allowlist: динамични allow-правила ----
-// За всеки бял домейн добавяме allowAllRequests правило с висок приоритет,
-// което пуска цялата йерархия от заявки на този сайт.
 async function syncAllowRules() {
   const { allowlist = [] } = await chrome.storage.local.get("allowlist");
-
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeIds = existing
-    .filter((r) => r.id >= ALLOW_RULE_BASE)
+    .filter((r) => r.id >= ALLOW_RULE_BASE && r.id < LIST_RULE_BASE)
     .map((r) => r.id);
 
   const addRules = allowlist.map((domain, i) => ({
@@ -79,11 +97,98 @@ async function syncAllowRules() {
   }
 }
 
+// ---- Авто-обновяване на филтрите (EasyList) ----
+function scheduleUpdates() {
+  chrome.alarms.create("ff-update", { periodInMinutes: 60 * 24 }); // дневно
+}
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name !== "ff-update") return;
+  const { autoUpdate } = await chrome.storage.local.get("autoUpdate");
+  if (autoUpdate !== false) updateBlocklists();
+});
+
+// Парсва Adblock Plus мрежови правила от вида ||domain^ в домейни.
+function parseFilterText(text) {
+  const domains = new Set();
+  const lines = text.split("\n");
+  for (let line of lines) {
+    line = line.trim();
+    if (!line || line[0] === "!" || line[0] === "[") continue; // коментар/хедър
+    if (line.startsWith("@@")) continue; // изключение
+    if (line.includes("##") || line.includes("#?#") || line.includes("#@#"))
+      continue; // козметично
+    // ||domain^ (по желание с $опции, които игнорираме)
+    const m = line.match(/^\|\|([a-z0-9][a-z0-9.\-_]*\.[a-z]{2,})\^/i);
+    if (m) {
+      const d = m[1].toLowerCase();
+      if (!d.includes("*") && !d.includes("/")) domains.add(d);
+    }
+  }
+  return [...domains];
+}
+
+async function updateBlocklists() {
+  const all = new Set();
+  for (const url of FILTER_SOURCES) {
+    try {
+      const res = await fetch(url, { cache: "no-cache" });
+      if (!res.ok) continue;
+      const text = await res.text();
+      parseFilterText(text).forEach((d) => all.add(d));
+    } catch (e) {
+      console.warn("Few-Few: неуспешно теглене на филтър", url, e);
+    }
+  }
+
+  let domains = [...all];
+  if (!domains.length) return; // мрежова грешка -> запази старите правила
+  if (domains.length > LIST_RULE_MAX) domains = domains.slice(0, LIST_RULE_MAX);
+
+  const addRules = domains.map((domain, i) => ({
+    id: LIST_RULE_BASE + i,
+    priority: 1,
+    action: { type: "block" },
+    condition: {
+      urlFilter: "||" + domain + "^",
+      resourceTypes: [
+        "script",
+        "image",
+        "sub_frame",
+        "xmlhttprequest",
+        "media",
+        "ping",
+        "font",
+        "stylesheet",
+        "object",
+      ],
+    },
+  }));
+
+  // Махни старите импортирани правила и сложи новите.
+  const existing = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeIds = existing
+    .filter((r) => r.id >= LIST_RULE_BASE)
+    .map((r) => r.id);
+
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: removeIds,
+      addRules,
+    });
+    await chrome.storage.local.set({
+      listInfo: { count: domains.length, updated: Date.now() },
+    });
+  } catch (e) {
+    console.warn("Few-Few: неуспешно прилагане на филтрите", e);
+  }
+}
+
 // ---- Брояч на блокирани заявки ----
 if (chrome.declarativeNetRequest.onRuleMatchedDebug) {
   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
-    // Не броим самите allow-правила.
-    if (info?.rule?.ruleId >= ALLOW_RULE_BASE) return;
+    if (info?.rule?.ruleId >= ALLOW_RULE_BASE && info?.rule?.ruleId < LIST_RULE_BASE)
+      return; // allow-правило, не броим
     incrementBlocked();
   });
 }
@@ -121,7 +226,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 });
 chrome.tabs.onActivated.addListener(({ tabId }) => refreshBadge(tabId));
 
-// ---- Помощни функции за allowlist ----
+// ---- Помощни ----
 function hostFromUrl(url) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -136,7 +241,14 @@ async function isAllowlisted(host) {
   return allowlist.some((d) => host === d || host.endsWith("." + d));
 }
 
-// ---- Съобщения от popup / options / content ----
+function savedStats(blockedTotal) {
+  return {
+    mb: (blockedTotal * AVG_AD_KB) / 1024,
+    seconds: (blockedTotal * AVG_AD_MS) / 1000,
+  };
+}
+
+// ---- Съобщения ----
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   switch (msg.type) {
     case "toggle":
@@ -148,7 +260,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "allowlist", "features"],
+        ["enabled", "blockedTotal", "allowlist", "features", "theme", "autoUpdate", "listInfo"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -156,11 +268,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             host = hostFromUrl(msg.tabUrl);
             allowed = await isAllowlisted(host);
           }
+          const blockedTotal = data.blockedTotal || 0;
           sendResponse({
             enabled: data.enabled !== false,
-            blockedTotal: data.blockedTotal || 0,
+            blockedTotal,
+            saved: savedStats(blockedTotal),
             allowlist: data.allowlist || [],
             features: data.features || DEFAULTS.features,
+            theme: data.theme || "carbon",
+            autoUpdate: data.autoUpdate !== false,
+            listInfo: data.listInfo || DEFAULTS.listInfo,
             host,
             allowed,
           });
@@ -168,8 +285,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       );
       return true;
 
-    case "setAllow": {
-      // msg.host, msg.allow (true = разреши реклами тук => добави в allowlist)
+    case "setAllow":
       chrome.storage.local.get("allowlist", async (data) => {
         let list = data.allowlist || [];
         const host = msg.host;
@@ -184,12 +300,30 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: true, allowlist: list });
       });
       return true;
-    }
 
     case "setFeatures":
       chrome.storage.local.set({ features: msg.features }, () =>
         sendResponse({ ok: true })
       );
+      return true;
+
+    case "setTheme":
+      chrome.storage.local.set({ theme: msg.theme }, () =>
+        sendResponse({ ok: true })
+      );
+      return true;
+
+    case "setAutoUpdate":
+      chrome.storage.local.set({ autoUpdate: !!msg.autoUpdate }, () =>
+        sendResponse({ ok: true })
+      );
+      return true;
+
+    case "updateLists":
+      updateBlocklists().then(async () => {
+        const { listInfo } = await chrome.storage.local.get("listInfo");
+        sendResponse({ ok: true, listInfo });
+      });
       return true;
 
     case "resetStats":
@@ -198,8 +332,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       );
       return true;
 
-    case "saveCustomSelector": {
-      // От element picker-а: запазва селектор за дадения домейн.
+    case "saveCustomSelector":
       chrome.storage.local.get("customHidden", async (data) => {
         const map = data.customHidden || {};
         const host = msg.host;
@@ -210,14 +343,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: true });
       });
       return true;
-    }
 
     case "startPicker":
-      // Препраща към активния таб да активира picker режима.
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, { type: "activatePicker" });
-        }
+        if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: "activatePicker" });
         sendResponse({ ok: true });
       });
       return true;

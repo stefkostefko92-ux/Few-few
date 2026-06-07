@@ -8,20 +8,52 @@ function normalizeDomain(input) {
   return d;
 }
 
+function fmtData(mb) {
+  if (mb >= 1024) return (mb / 1024).toFixed(1) + " GB";
+  if (mb >= 1) return Math.round(mb) + " MB";
+  return Math.round(mb * 1024) + " KB";
+}
+function fmtTime(sec) {
+  if (sec >= 3600) return (sec / 3600).toFixed(1) + " ч";
+  if (sec >= 60) return Math.round(sec / 60) + " мин";
+  return Math.round(sec) + " сек";
+}
+
+const AVG_AD_KB = 55;
+const AVG_AD_MS = 45;
+
 function load() {
   chrome.storage.local.get(
-    ["blockedTotal", "features", "allowlist", "customHidden"],
+    ["blockedTotal", "features", "allowlist", "customHidden", "theme", "autoUpdate", "listInfo"],
     (data) => {
-      $("blockedTotal").textContent = (data.blockedTotal || 0).toLocaleString("bg-BG");
+      const total = data.blockedTotal || 0;
+      $("blockedTotal").textContent = total.toLocaleString("bg-BG");
+      $("savedData").textContent = fmtData((total * AVG_AD_KB) / 1024);
+      $("savedTime").textContent = fmtTime((total * AVG_AD_MS) / 1000);
+
+      $("theme").value = data.theme || "carbon";
 
       const f = data.features || { cookies: true, antiAdblock: true };
       $("featCookies").checked = f.cookies !== false;
       $("featAab").checked = f.antiAdblock !== false;
 
+      $("autoUpdate").checked = data.autoUpdate !== false;
+      renderListStatus(data.listInfo || { count: 0, updated: null });
+
       renderAllowlist(data.allowlist || []);
       renderCustom(data.customHidden || {});
     }
   );
+}
+
+function renderListStatus(info) {
+  const el = $("listStatus");
+  if (info.count && info.updated) {
+    const d = new Date(info.updated);
+    el.textContent = `${info.count.toLocaleString("bg-BG")} филтъра · обновени ${d.toLocaleString("bg-BG")}`;
+  } else {
+    el.textContent = "Тегли актуални филтри ежедневно (EasyList + EasyPrivacy)";
+  }
 }
 
 function renderAllowlist(list) {
@@ -63,7 +95,8 @@ function renderCustom(map) {
     (map[domain] || []).forEach((sel, idx) => {
       const li = document.createElement("li");
       const wrap = document.createElement("div");
-      wrap.innerHTML = `<div class="domain">${domain}</div><div class="sel"></div>`;
+      wrap.innerHTML = `<div class="domain"></div><div class="sel"></div>`;
+      wrap.querySelector(".domain").textContent = domain;
       wrap.querySelector(".sel").textContent = sel;
       const btn = document.createElement("button");
       btn.className = "remove";
@@ -94,8 +127,30 @@ function saveFeatures() {
   chrome.runtime.sendMessage({ type: "setFeatures", features });
 }
 
+$("theme").addEventListener("change", () => {
+  chrome.runtime.sendMessage({ type: "setTheme", theme: $("theme").value });
+});
+
 $("featCookies").addEventListener("change", saveFeatures);
 $("featAab").addEventListener("change", saveFeatures);
+
+$("autoUpdate").addEventListener("change", () => {
+  chrome.runtime.sendMessage({
+    type: "setAutoUpdate",
+    autoUpdate: $("autoUpdate").checked,
+  });
+});
+
+$("updateNow").addEventListener("click", () => {
+  const btn = $("updateNow");
+  btn.disabled = true;
+  btn.textContent = "Обновяване…";
+  chrome.runtime.sendMessage({ type: "updateLists" }, (res) => {
+    btn.disabled = false;
+    btn.textContent = "Обнови сега";
+    if (res?.listInfo) renderListStatus(res.listInfo);
+  });
+});
 
 $("allowAdd").addEventListener("click", () => {
   const domain = normalizeDomain($("allowInput").value);
@@ -116,6 +171,8 @@ $("allowInput").addEventListener("keydown", (e) => {
 $("resetStats").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "resetStats" }, () => {
     $("blockedTotal").textContent = "0";
+    $("savedData").textContent = "0 KB";
+    $("savedTime").textContent = "0 сек";
   });
 });
 

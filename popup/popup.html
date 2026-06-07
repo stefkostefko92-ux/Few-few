@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="bg" data-theme="carbon">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../theme.js"></script>
   <link rel="stylesheet" href="popup.css" />
   <title>Few-Few AdBlocker</title>
 </head>
 <body>
   <header>
     <div class="logo">🛡️</div>
-    <h1>Few-Few AdBlocker</h1>
+    <div class="brand">
+      <h1>Few-Few</h1>
+      <span class="tagline">AdBlocker · Carbon Stealth</span>
+    </div>
   </header>
 
   <main>
@@ -27,7 +31,15 @@
     <div class="stats">
       <div class="stat">
         <div class="stat-number" id="blockedTotal">0</div>
-        <div class="stat-label">Блокирани общо</div>
+        <div class="stat-label">Блокирани</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="savedData">0</div>
+        <div class="stat-label">Спестени данни</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="savedTime">0</div>
+        <div class="stat-label">Спестено време</div>
       </div>
     </div>
 
@@ -46,14 +58,15 @@
     </div>
 
     <ul class="features">
-      <li>✓ YouTube видео реклами (pre/mid-roll)</li>
-      <li>✓ Банери, popup-и и native реклами</li>
-      <li>✓ Cookie банери и anti-adblock защити</li>
+      <li>YouTube видео реклами (pre/mid-roll)</li>
+      <li>Банери, popup-и и native реклами</li>
+      <li>Cookie банери и anti-adblock защити</li>
     </ul>
   </main>
 
   <footer>
-    <span>Few-Few v2.1.0</span>
+    <span>Few-Few v2.2.0</span>
+    <span class="dot" id="listDot">филтри</span>
   </footer>
 
   <script src="popup.js"></script>

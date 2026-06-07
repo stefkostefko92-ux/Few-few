@@ -1,22 +1,50 @@
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="bg" data-theme="carbon">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../theme.js"></script>
   <link rel="stylesheet" href="options.css" />
   <title>Few-Few AdBlocker — Настройки</title>
 </head>
 <body>
   <header>
     <span class="logo">🛡️</span>
-    <h1>Few-Few AdBlocker — Настройки</h1>
+    <div>
+      <h1>Few-Few AdBlocker</h1>
+      <span class="tagline">Carbon Stealth · Настройки</span>
+    </div>
   </header>
 
   <main>
+    <section class="card stat-grid">
+      <div class="stat">
+        <div class="stat-num" id="blockedTotal">0</div>
+        <div class="stat-lbl">Блокирани реклами</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="savedData">0</div>
+        <div class="stat-lbl">Спестени данни</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="savedTime">0</div>
+        <div class="stat-lbl">Спестено време</div>
+      </div>
+    </section>
+    <button id="resetStats" class="btn ghost wide">Нулирай статистиката</button>
+
     <section class="card">
-      <h2>Статистика</h2>
-      <div class="stat-big"><span id="blockedTotal">0</span> блокирани реклами</div>
-      <button id="resetStats" class="btn ghost">Нулирай брояча</button>
+      <h2>Облик</h2>
+      <label class="row">
+        <div>
+          <div class="row-title">Тема</div>
+          <div class="row-sub">Carbon Stealth (тъмна) или светла</div>
+        </div>
+        <select id="theme" class="select">
+          <option value="carbon">Carbon Stealth</option>
+          <option value="light">Светла</option>
+        </select>
+      </label>
     </section>
 
     <section class="card">
@@ -38,6 +66,18 @@
     </section>
 
     <section class="card">
+      <h2>Филтри (EasyList)</h2>
+      <label class="row">
+        <div>
+          <div class="row-title">Авто-обновяване</div>
+          <div class="row-sub" id="listStatus">Тегли актуални филтри ежедневно</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="autoUpdate" /><span class="slider"></span></label>
+      </label>
+      <button id="updateNow" class="btn">Обнови сега</button>
+    </section>
+
+    <section class="card">
       <h2>Бели сайтове (allowlist)</h2>
       <p class="row-sub">На тези домейни рекламите <b>не</b> се блокират.</p>
       <div class="add-row">
@@ -54,7 +94,7 @@
     </section>
   </main>
 
-  <footer>Few-Few AdBlocker v2.1.0</footer>
+  <footer>Few-Few AdBlocker v2.2.0</footer>
 
   <script src="options.js"></script>
 </body>
