@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
 import { defaultLiveOps } from "../src/config/liveops.js";
-import { Ledger } from "../src/data/ledger.js";
+import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
 import { createApp } from "../src/http/app.js";
 import { GameService } from "../src/services/gameService.js";
@@ -9,7 +9,7 @@ import { GameService } from "../src/services/gameService.js";
 function makeApp() {
   const game = new GameService({
     repo: new MemoryPlayerRepository(),
-    ledger: new Ledger(),
+    ledger: new MemoryLedger(),
     config: defaultLiveOps,
   });
   return createApp(game);

@@ -3,4 +3,7 @@ dist/
 *.log
 .env
 .env.*
+!.env.example
 coverage/
+# Generated Prisma client — recreated by `prisma generate` (postinstall).
+src/generated/

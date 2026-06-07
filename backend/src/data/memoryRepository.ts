@@ -5,26 +5,26 @@ import { PlayerNotFoundError, type PlayerRepository } from "./repository.js";
 export class MemoryPlayerRepository implements PlayerRepository {
   private readonly players = new Map<string, Player>();
 
-  create(player: Player): Player {
+  async create(player: Player): Promise<Player> {
     this.players.set(player.id, player);
     return player;
   }
 
-  get(id: string): Player | undefined {
+  async get(id: string): Promise<Player | undefined> {
     return this.players.get(id);
   }
 
-  getOrThrow(id: string): Player {
+  async getOrThrow(id: string): Promise<Player> {
     const p = this.players.get(id);
     if (!p) throw new PlayerNotFoundError(id);
     return p;
   }
 
-  save(player: Player): void {
+  async save(player: Player): Promise<void> {
     this.players.set(player.id, player);
   }
 
-  others(excludeId: string): Player[] {
+  async others(excludeId: string): Promise<Player[]> {
     return [...this.players.values()].filter((p) => p.id !== excludeId);
   }
 }

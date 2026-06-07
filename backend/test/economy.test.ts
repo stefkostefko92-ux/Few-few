@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { clampInc, regenSpins } from "../src/domain/economy.js";
-import { Ledger, LedgerImbalanceError, playerAccount, SYSTEM_FAUCET } from "../src/data/ledger.js";
+import { MemoryLedger, LedgerImbalanceError, playerAccount, SYSTEM_FAUCET } from "../src/data/ledger.js";
 
 describe("economy helpers", () => {
   it("clampInc never exceeds the cap or goes below zero", () => {
@@ -33,25 +33,25 @@ describe("economy helpers", () => {
 });
 
 describe("double-entry ledger", () => {
-  it("rejects an unbalanced transaction", () => {
-    const ledger = new Ledger();
-    expect(() =>
+  it("rejects an unbalanced transaction", async () => {
+    const ledger = new MemoryLedger();
+    await expect(
       ledger.post("BAD", [
         { account: playerAccount("p1"), currency: "coins", delta: 100 },
         { account: SYSTEM_FAUCET, currency: "coins", delta: -50 },
       ]),
-    ).toThrow(LedgerImbalanceError);
+    ).rejects.toThrow(LedgerImbalanceError);
   });
 
-  it("mint/burn/transfer keep the net for each currency at zero", () => {
-    const ledger = new Ledger();
-    ledger.mint("p1", "coins", 1000, "SPIN");
-    ledger.burn("p1", "coins", 240, "BUILD");
-    ledger.mint("p2", "coins", 500, "SPIN");
-    ledger.transfer("p2", "p1", "coins", 120, "RAID");
+  it("mint/burn/transfer keep the net for each currency at zero", async () => {
+    const ledger = new MemoryLedger();
+    await ledger.mint("p1", "coins", 1000, "SPIN");
+    await ledger.burn("p1", "coins", 240, "BUILD");
+    await ledger.mint("p2", "coins", 500, "SPIN");
+    await ledger.transfer("p2", "p1", "coins", 120, "RAID");
 
-    expect(ledger.netForCurrency("coins")).toBe(0);
-    expect(ledger.balanceOf(playerAccount("p1"), "coins")).toBe(1000 - 240 + 120);
-    expect(ledger.balanceOf(playerAccount("p2"), "coins")).toBe(500 - 120);
+    expect(await ledger.netForCurrency("coins")).toBe(0);
+    expect(await ledger.balanceOf(playerAccount("p1"), "coins")).toBe(1000 - 240 + 120);
+    expect(await ledger.balanceOf(playerAccount("p2"), "coins")).toBe(500 - 120);
   });
 });

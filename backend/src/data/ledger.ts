@@ -10,8 +10,10 @@ import type { Currency } from "../domain/types.js";
  * Every value movement is recorded as a balanced transaction: the legs for each
  * currency MUST sum to zero. Minted currency flows out of a system faucet
  * account; spent currency flows into a system sink. Player-to-player transfers
- * (raid/attack) balance directly between the two players. This makes the whole
- * economy auditable and lets tests assert conservation of value.
+ * (raid/attack) balance directly between the two players.
+ *
+ * The interface is async so the same `GameService` runs over the in-memory
+ * implementation (tests/prototype) or the Postgres-backed one (production).
  */
 
 export const SYSTEM_FAUCET = "system:faucet";
@@ -41,28 +43,40 @@ export class LedgerImbalanceError extends Error {
   }
 }
 
-export class Ledger {
-  private readonly entries: LedgerEntry[] = [];
-
-  /**
-   * Append a balanced transaction. Throws if any currency's legs do not net to
-   * zero — a bug that would otherwise mint or destroy value silently.
-   */
-  post(reason: string, legs: LedgerLeg[], at: number = Date.now()): LedgerEntry {
-    const byCurrency = new Map<Currency, number>();
-    for (const leg of legs) {
-      byCurrency.set(leg.currency, (byCurrency.get(leg.currency) ?? 0) + leg.delta);
-    }
-    for (const [currency, sum] of byCurrency) {
-      if (sum !== 0) throw new LedgerImbalanceError(currency, sum);
-    }
-    const entry: LedgerEntry = { txId: randomUUID(), at, reason, legs };
-    this.entries.push(entry);
-    return entry;
+/** Validate that legs net to zero per currency; throws otherwise. */
+export function assertBalanced(legs: LedgerLeg[]): void {
+  const byCurrency = new Map<Currency, number>();
+  for (const leg of legs) {
+    byCurrency.set(leg.currency, (byCurrency.get(leg.currency) ?? 0) + leg.delta);
   }
+  for (const [currency, sum] of byCurrency) {
+    if (sum !== 0) throw new LedgerImbalanceError(currency, sum);
+  }
+}
 
-  /** Convenience: mint `amount` of a currency to a player from the faucet. */
-  mint(playerId: string, currency: Currency, amount: number, reason: string, at?: number): LedgerEntry {
+export interface Ledger {
+  post(reason: string, legs: LedgerLeg[], at?: number): Promise<LedgerEntry>;
+  mint(playerId: string, currency: Currency, amount: number, reason: string, at?: number): Promise<LedgerEntry>;
+  burn(playerId: string, currency: Currency, amount: number, reason: string, at?: number): Promise<LedgerEntry>;
+  transfer(
+    fromPlayerId: string,
+    toPlayerId: string,
+    currency: Currency,
+    amount: number,
+    reason: string,
+    at?: number,
+  ): Promise<LedgerEntry>;
+  balanceOf(account: string, currency: Currency): Promise<number>;
+  netForCurrency(currency: Currency): Promise<number>;
+}
+
+/** Shared convenience helpers built on top of `post`. */
+abstract class BaseLedger implements Ledger {
+  abstract post(reason: string, legs: LedgerLeg[], at?: number): Promise<LedgerEntry>;
+  abstract balanceOf(account: string, currency: Currency): Promise<number>;
+  abstract netForCurrency(currency: Currency): Promise<number>;
+
+  mint(playerId: string, currency: Currency, amount: number, reason: string, at?: number): Promise<LedgerEntry> {
     return this.post(
       reason,
       [
@@ -73,8 +87,7 @@ export class Ledger {
     );
   }
 
-  /** Convenience: burn `amount` of a currency from a player into the sink. */
-  burn(playerId: string, currency: Currency, amount: number, reason: string, at?: number): LedgerEntry {
+  burn(playerId: string, currency: Currency, amount: number, reason: string, at?: number): Promise<LedgerEntry> {
     return this.post(
       reason,
       [
@@ -85,7 +98,6 @@ export class Ledger {
     );
   }
 
-  /** Convenience: transfer `amount` between two players (raid/attack). */
   transfer(
     fromPlayerId: string,
     toPlayerId: string,
@@ -93,7 +105,7 @@ export class Ledger {
     amount: number,
     reason: string,
     at?: number,
-  ): LedgerEntry {
+  ): Promise<LedgerEntry> {
     return this.post(
       reason,
       [
@@ -103,9 +115,19 @@ export class Ledger {
       at,
     );
   }
+}
 
-  /** Recompute an account's balance for a currency from the ledger (audit). */
-  balanceOf(account: string, currency: Currency): number {
+export class MemoryLedger extends BaseLedger {
+  private readonly entries: LedgerEntry[] = [];
+
+  async post(reason: string, legs: LedgerLeg[], at: number = Date.now()): Promise<LedgerEntry> {
+    assertBalanced(legs);
+    const entry: LedgerEntry = { txId: randomUUID(), at, reason, legs };
+    this.entries.push(entry);
+    return entry;
+  }
+
+  async balanceOf(account: string, currency: Currency): Promise<number> {
     let sum = 0;
     for (const e of this.entries) {
       for (const leg of e.legs) {
@@ -115,8 +137,7 @@ export class Ledger {
     return sum;
   }
 
-  /** Total minted minus burned should always net to zero across all accounts. */
-  netForCurrency(currency: Currency): number {
+  async netForCurrency(currency: Currency): Promise<number> {
     let sum = 0;
     for (const e of this.entries) {
       for (const leg of e.legs) {

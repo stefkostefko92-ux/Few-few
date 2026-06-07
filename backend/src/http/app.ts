@@ -1,6 +1,7 @@
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
 import { GameError } from "../errors.js";
+import type { Player } from "../domain/types.js";
 import type { GameService } from "../services/gameService.js";
 
 /** Minimal fixed-window rate limiter (per IP). Real infra uses Redis (§11.3). */
@@ -65,69 +66,85 @@ export function createApp(game: GameService): Express {
 
   app.post(
     "/players",
-    h((req, res) => {
+    h(async (req, res) => {
       const { name } = createPlayerBody.parse(req.body ?? {});
-      const player = game.createPlayer(name);
+      const player = await game.createPlayer(name);
       res.status(201).json({ player: publicPlayer(player) });
     }),
   );
 
   app.get(
     "/me",
-    h((req, res) => {
-      const player = game.getPlayer(requirePlayerId(req));
+    h(async (req, res) => {
+      const player = await game.getPlayer(requirePlayerId(req));
       res.json({ player: publicPlayer(player) });
     }),
   );
 
   app.post(
     "/spin",
-    h((req, res) => {
+    h(async (req, res) => {
       const { betMultiplier } = spinBody.parse(req.body ?? {});
-      const { outcome, player } = game.spin(requirePlayerId(req), betMultiplier);
+      const { outcome, player } = await game.spin(requirePlayerId(req), betMultiplier);
       res.json({ outcome, player: publicPlayer(player) });
     }),
   );
 
   app.post(
     "/build",
-    h((req, res) => {
+    h(async (req, res) => {
       const { buildingIndex } = buildBody.parse(req.body ?? {});
-      const result = game.build(requirePlayerId(req), buildingIndex);
+      const result = await game.build(requirePlayerId(req), buildingIndex);
       res.json({ ...result, player: publicPlayer(result.player) });
     }),
   );
 
   app.get(
     "/attack/candidates",
-    h((req, res) => {
-      res.json({ candidates: game.attackCandidates(requirePlayerId(req)) });
+    h(async (req, res) => {
+      res.json({ candidates: await game.attackCandidates(requirePlayerId(req)) });
     }),
   );
 
   app.post(
     "/attack",
-    h((req, res) => {
+    h(async (req, res) => {
       const { targetId, buildingIndex } = attackBody.parse(req.body ?? {});
-      const result = game.attack(requirePlayerId(req), targetId, buildingIndex);
+      const result = await game.attack(requirePlayerId(req), targetId, buildingIndex);
       res.json({ ...result, player: publicPlayer(result.player) });
     }),
   );
 
   app.post(
     "/raid",
-    h((req, res) => {
+    h(async (req, res) => {
       const { picks } = raidBody.parse(req.body ?? {});
-      const result = game.raidDig(requirePlayerId(req), picks);
+      const result = await game.raidDig(requirePlayerId(req), picks);
       res.json({ ...result, player: publicPlayer(result.player) });
     }),
   );
 
   app.post(
     "/gacha/pull",
-    h((req, res) => {
-      const result = game.summon(requirePlayerId(req));
+    h(async (req, res) => {
+      const result = await game.summon(requirePlayerId(req));
       res.json(result);
+    }),
+  );
+
+  // Global leaderboard (§7.2) — Redis sorted set when configured.
+  app.get(
+    "/leaderboard",
+    h(async (req, res) => {
+      const top = Math.min(100, Math.max(1, Number(req.query.top ?? 10) || 10));
+      res.json({ leaderboard: await game.leaderboardTop(top) });
+    }),
+  );
+
+  app.get(
+    "/leaderboard/me",
+    h(async (req, res) => {
+      res.json({ rank: await game.leaderboardRank(requirePlayerId(req)) });
     }),
   );
 
@@ -156,7 +173,7 @@ export function createApp(game: GameService): Express {
 }
 
 /** Strip server-only fields (predetermined raid spots!) before sending to the client. */
-function publicPlayer(p: ReturnType<GameService["getPlayer"]>) {
+function publicPlayer(p: Player) {
   return {
     id: p.id,
     name: p.name,

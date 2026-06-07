@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { LiveOpsConfig } from "../config/liveops.js";
-import { Ledger } from "../data/ledger.js";
+import type { Ledger } from "../data/ledger.js";
 import type { PlayerRepository } from "../data/repository.js";
 import { clampInc, regenSpins } from "../domain/economy.js";
 import { pull as gachaPull } from "../domain/gacha.js";
@@ -10,6 +10,7 @@ import { drawReel, resolveSpin } from "../domain/spin.js";
 import type { Companion, Player, SpinOutcome } from "../domain/types.js";
 import { GameError, InsufficientFunds, InvalidAction } from "../errors.js";
 import { systemClock, type Clock } from "./clock.js";
+import { noopLeaderboard, type Leaderboard } from "./leaderboard.js";
 
 const ACTION_GRANT_TTL_MS = 5 * 60_000; // a rolled attack/raid must be used within 5 min
 const REVENGE_TTL_MS = 24 * 3_600_000;
@@ -20,6 +21,7 @@ export interface GameServiceDeps {
   config: LiveOpsConfig;
   rng?: Rng;
   clock?: Clock;
+  leaderboard?: Leaderboard;
 }
 
 export interface BuildResult {
@@ -64,6 +66,7 @@ export class GameService {
   private readonly config: LiveOpsConfig;
   private readonly rng: Rng;
   private readonly clock: Clock;
+  private readonly leaderboard: Leaderboard;
 
   constructor(deps: GameServiceDeps) {
     this.repo = deps.repo;
@@ -71,11 +74,12 @@ export class GameService {
     this.config = deps.config;
     this.rng = deps.rng ?? cryptoRng;
     this.clock = deps.clock ?? systemClock;
+    this.leaderboard = deps.leaderboard ?? noopLeaderboard;
   }
 
   // ---- Player lifecycle -------------------------------------------------
 
-  createPlayer(name: string): Player {
+  async createPlayer(name: string): Promise<Player> {
     const now = this.clock.now();
     const id = randomUUID();
     const player: Player = {
@@ -97,17 +101,18 @@ export class GameService {
       pendingAttack: null,
       pendingRaid: null,
     };
-    this.repo.create(player);
+    await this.repo.create(player);
     // Starting bonus minted through the ledger so the books balance from t0.
-    this.ledger.mint(id, "spins", this.config.spins.startingBonus, "STARTING_BONUS", now);
+    await this.ledger.mint(id, "spins", this.config.spins.startingBonus, "STARTING_BONUS", now);
     player.spins = this.config.spins.startingBonus;
-    this.repo.save(player);
+    await this.repo.save(player);
+    await this.leaderboard.report(player);
     return player;
   }
 
   /** Reconciles spin regen lazily on read and persists the result. */
-  getPlayer(id: string): Player {
-    const player = this.repo.getOrThrow(id);
+  async getPlayer(id: string): Promise<Player> {
+    const player = await this.repo.getOrThrow(id);
     const now = this.clock.now();
     const { spins, spinsUpdatedAt } = regenSpins(
       player.spins,
@@ -118,18 +123,18 @@ export class GameService {
     );
     if (spins !== player.spins || spinsUpdatedAt !== player.spinsUpdatedAt) {
       const gained = spins - player.spins;
-      if (gained > 0) this.ledger.mint(player.id, "spins", gained, "SPIN_REGEN", now);
+      if (gained > 0) await this.ledger.mint(player.id, "spins", gained, "SPIN_REGEN", now);
       player.spins = spins;
       player.spinsUpdatedAt = spinsUpdatedAt;
-      this.repo.save(player);
+      await this.repo.save(player);
     }
     return player;
   }
 
   // ---- Core loop: spin --------------------------------------------------
 
-  spin(playerId: string, betMultiplier: number): { outcome: SpinOutcome; player: Player } {
-    const player = this.getPlayer(playerId);
+  async spin(playerId: string, betMultiplier: number): Promise<{ outcome: SpinOutcome; player: Player }> {
+    const player = await this.getPlayer(playerId);
     const now = this.clock.now();
 
     const bet = Math.trunc(betMultiplier);
@@ -148,15 +153,15 @@ export class GameService {
     const outcome = resolveSpin(reels, bet, mult, this.config);
 
     // Spend the bet, then apply rewards — all through the ledger.
-    this.ledger.burn(player.id, "spins", bet, "SPIN", now);
+    await this.ledger.burn(player.id, "spins", bet, "SPIN", now);
     player.spins -= bet;
 
     if (outcome.coins > 0) {
-      this.ledger.mint(player.id, "coins", outcome.coins, "SPIN_COINS", now);
+      await this.ledger.mint(player.id, "coins", outcome.coins, "SPIN_COINS", now);
       player.coins += outcome.coins;
     }
     if (outcome.spiritTokens > 0) {
-      this.ledger.mint(player.id, "spiritTokens", outcome.spiritTokens, "SPIN_SPIRIT", now);
+      await this.ledger.mint(player.id, "spiritTokens", outcome.spiritTokens, "SPIN_SPIRIT", now);
       player.spiritTokens += outcome.spiritTokens;
     }
     if (outcome.shields > 0) {
@@ -169,17 +174,18 @@ export class GameService {
       player.pendingAttack = { bet, grantedAt: now, expiresAt: now + ACTION_GRANT_TTL_MS };
     }
     if (outcome.action === "RAID") {
-      player.pendingRaid = this.prepareRaid(player, now);
+      player.pendingRaid = await this.prepareRaid(player, now);
     }
 
-    this.repo.save(player);
+    await this.repo.save(player);
+    await this.leaderboard.report(player);
     return { outcome, player };
   }
 
   // ---- Build loop -------------------------------------------------------
 
-  build(playerId: string, buildingIndex: number): BuildResult {
-    const player = this.getPlayer(playerId);
+  async build(playerId: string, buildingIndex: number): Promise<BuildResult> {
+    const player = await this.getPlayer(playerId);
     const now = this.clock.now();
     const island = player.islands[player.currentIsland];
     if (!island) throw new InvalidAction("current island not found");
@@ -192,7 +198,7 @@ export class GameService {
     const cost = buildingCost(this.config, island.index, buildingIndex, building.level);
     if (player.coins < cost) throw new InsufficientFunds("coins", player.coins, cost);
 
-    this.ledger.burn(player.id, "coins", cost, "BUILD", now);
+    await this.ledger.burn(player.id, "coins", cost, "BUILD", now);
     player.coins -= cost;
     building.level += 1;
 
@@ -205,7 +211,8 @@ export class GameService {
       unlockedIsland = nextIndex;
     }
 
-    this.repo.save(player);
+    await this.repo.save(player);
+    await this.leaderboard.report(player);
     return {
       player,
       buildingIndex,
@@ -219,21 +226,23 @@ export class GameService {
   // ---- Attack -----------------------------------------------------------
 
   /** Matchmaking candidate pool for the player's open attack/raid grant (§11.2). */
-  attackCandidates(playerId: string, limit = 5): { id: string; name: string; island: number }[] {
-    const player = this.getPlayer(playerId);
-    return this.matchmake(player, limit).map((p) => ({ id: p.id, name: p.name, island: p.currentIsland }));
+  async attackCandidates(playerId: string, limit = 5): Promise<{ id: string; name: string; island: number }[]> {
+    const player = await this.getPlayer(playerId);
+    const candidates = await this.matchmake(player, limit);
+    return candidates.map((p) => ({ id: p.id, name: p.name, island: p.currentIsland }));
   }
 
-  attack(playerId: string, targetId: string, buildingIndex: number): AttackResult {
-    const player = this.getPlayer(playerId);
+  async attack(playerId: string, targetId: string, buildingIndex: number): Promise<AttackResult> {
+    const player = await this.getPlayer(playerId);
     const now = this.clock.now();
     if (!player.pendingAttack || player.pendingAttack.expiresAt < now) {
       player.pendingAttack = null;
+      await this.repo.save(player);
       throw new InvalidAction("no active attack grant — roll 3× Strike first");
     }
     if (targetId === playerId) throw new InvalidAction("cannot attack yourself");
 
-    const target = this.repo.getOrThrow(targetId);
+    const target = await this.repo.getOrThrow(targetId);
     const island = target.islands[target.currentIsland];
     if (!island) throw new InvalidAction("target has no island");
     const building = island.buildings[buildingIndex];
@@ -260,7 +269,7 @@ export class GameService {
       // Steal coins from the target — capped at what they actually hold.
       reward = Math.min(reward, target.coins);
       if (reward > 0) {
-        this.ledger.transfer(target.id, player.id, "coins", reward, "ATTACK", now);
+        await this.ledger.transfer(target.id, player.id, "coins", reward, "ATTACK", now);
         target.coins -= reward;
         player.coins += reward;
       }
@@ -268,15 +277,17 @@ export class GameService {
       target.revengeTargets.push({ attackerId: player.id, expiresAt: now + REVENGE_TTL_MS });
     }
 
-    this.repo.save(target);
-    this.repo.save(player);
+    await this.repo.save(target);
+    await this.repo.save(player);
+    await this.leaderboard.report(target);
+    await this.leaderboard.report(player);
     return { player, targetId, buildingIndex, blocked, reward, targetBuildingLevel };
   }
 
   // ---- Raid -------------------------------------------------------------
 
-  private prepareRaid(player: Player, now: number): Player["pendingRaid"] {
-    const candidates = this.matchmake(player, 1);
+  private async prepareRaid(player: Player, now: number): Promise<Player["pendingRaid"]> {
+    const candidates = await this.matchmake(player, 1);
     if (candidates.length === 0) return null;
     const target = candidates[0];
 
@@ -302,12 +313,13 @@ export class GameService {
     };
   }
 
-  raidDig(playerId: string, picks: number[]): RaidResult {
-    const player = this.getPlayer(playerId);
+  async raidDig(playerId: string, picks: number[]): Promise<RaidResult> {
+    const player = await this.getPlayer(playerId);
     const now = this.clock.now();
     const grant = player.pendingRaid;
     if (!grant || grant.expiresAt < now) {
       player.pendingRaid = null;
+      await this.repo.save(player);
       throw new InvalidAction("no active raid grant — roll 3× Raid first");
     }
     const allowed = grant.picks;
@@ -321,35 +333,37 @@ export class GameService {
       }
     }
 
-    const target = this.repo.get(grant.targetId);
+    const target = await this.repo.get(grant.targetId);
     player.pendingRaid = null; // single-use grant
 
     let reward = unique.reduce((sum, i) => sum + grant.spots[i], 0);
     if (target) {
       reward = Math.min(reward, target.coins); // never over-drain a moving balance
       if (reward > 0) {
-        this.ledger.transfer(target.id, player.id, "coins", reward, "RAID", now);
+        await this.ledger.transfer(target.id, player.id, "coins", reward, "RAID", now);
         target.coins -= reward;
         player.coins += reward;
-        this.repo.save(target);
+        await this.repo.save(target);
+        await this.leaderboard.report(target);
       }
     } else {
       reward = 0; // target vanished — no mint, books stay balanced
     }
 
-    this.repo.save(player);
+    await this.repo.save(player);
+    await this.leaderboard.report(player);
     return { player, targetId: grant.targetId, picks: unique, reward };
   }
 
   // ---- Gacha ------------------------------------------------------------
 
-  summon(playerId: string): PullOutcome {
-    const player = this.getPlayer(playerId);
+  async summon(playerId: string): Promise<PullOutcome> {
+    const player = await this.getPlayer(playerId);
     const now = this.clock.now();
     const cost = this.config.gacha.costSpiritTokens;
     if (player.spiritTokens < cost) throw new InsufficientFunds("spiritTokens", player.spiritTokens, cost);
 
-    this.ledger.burn(player.id, "spiritTokens", cost, "GACHA_PULL", now);
+    await this.ledger.burn(player.id, "spiritTokens", cost, "GACHA_PULL", now);
     player.spiritTokens -= cost;
 
     const result = gachaPull(
@@ -363,16 +377,26 @@ export class GameService {
     const companion: Companion = { id: randomUUID(), rarity: result.rarity, summonedAt: now };
     player.companions.push(companion);
 
-    this.repo.save(player);
+    await this.repo.save(player);
     return { rarity: result.rarity, viaPity: result.viaPity, companion };
+  }
+
+  // ---- Leaderboard ------------------------------------------------------
+
+  async leaderboardTop(n: number) {
+    return this.leaderboard.top(n);
+  }
+
+  async leaderboardRank(playerId: string) {
+    return this.leaderboard.rankOf(playerId);
   }
 
   // ---- Matchmaking ------------------------------------------------------
 
   /** Candidates near the player's progression, with some coins worth taking. */
-  private matchmake(player: Player, limit: number): Player[] {
-    return this.repo
-      .others(player.id)
+  private async matchmake(player: Player, limit: number): Promise<Player[]> {
+    const others = await this.repo.others(player.id);
+    return others
       .map((p) => ({ p, dist: Math.abs(p.currentIsland - player.currentIsland) }))
       .sort((a, b) => a.dist - b.dist || b.p.coins - a.p.coins)
       .slice(0, limit)
@@ -380,10 +404,6 @@ export class GameService {
   }
 
   // ---- Audit ------------------------------------------------------------
-
-  getLedger(): Ledger {
-    return this.ledger;
-  }
 
   getConfig(): LiveOpsConfig {
     return this.config;

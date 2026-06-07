@@ -3,16 +3,16 @@ import type { Player } from "../domain/types.js";
 /**
  * Persistence boundary. The prototype ships an in-memory implementation so the
  * full game logic runs and is testable with zero external infra; production
- * swaps in a Prisma/Postgres adapter (see prisma/schema.prisma) behind the same
- * interface. All value-bearing mutations go through the services, never here.
+ * uses the Prisma/Postgres adapter (see src/data/prismaRepository.ts) behind the
+ * same interface. All value-bearing mutations go through the services.
  */
 export interface PlayerRepository {
-  create(player: Player): Player;
-  get(id: string): Player | undefined;
-  getOrThrow(id: string): Player;
-  save(player: Player): void;
+  create(player: Player): Promise<Player>;
+  get(id: string): Promise<Player | undefined>;
+  getOrThrow(id: string): Promise<Player>;
+  save(player: Player): Promise<void>;
   /** All other players — matchmaking candidate pool for attack/raid. */
-  others(excludeId: string): Player[];
+  others(excludeId: string): Promise<Player[]>;
 }
 
 export class PlayerNotFoundError extends Error {

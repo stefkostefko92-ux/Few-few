@@ -1,0 +1,32 @@
+# Local infra for the KAGURA backend (GDD §11.4 soft-launch shape).
+# Brings up Postgres + Redis so the Prisma/Redis adapters can run.
+#
+#   docker compose up -d
+#   DATABASE_URL=postgresql://kagura:kagura@localhost:5432/kagura \
+#   REDIS_URL=redis://localhost:6379 npm run dev
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: kagura
+      POSTGRES_PASSWORD: kagura
+      POSTGRES_DB: kagura
+    ports:
+      - "5432:5432"
+    volumes:
+      - kagura_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kagura"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+
+volumes:
+  kagura_pg:
