@@ -1,4 +1,4 @@
-// Few-Few AdBlocker - прилага запазената тема към <html data-theme="...">
+// Apply the saved theme to <html data-theme="...">.
 (function () {
   try {
     chrome.storage.local.get("theme", (d) => {

@@ -1,16 +1,14 @@
-// Few-Few AdBlocker - popup логика
+const $ = (id) => document.getElementById(id);
 
-const toggle = document.getElementById("toggle");
-const statusText = document.getElementById("statusText");
-const blockedTotal = document.getElementById("blockedTotal");
-const savedData = document.getElementById("savedData");
-const savedTime = document.getElementById("savedTime");
-const siteHost = document.getElementById("siteHost");
-const allowToggle = document.getElementById("allowToggle");
-const allowLabel = document.getElementById("allowLabel");
-const pickBtn = document.getElementById("pickBtn");
-const settingsBtn = document.getElementById("settingsBtn");
-const listDot = document.getElementById("listDot");
+const toggle = $("toggle");
+const statusText = $("statusText");
+const blockedTotal = $("blockedTotal");
+const savedData = $("savedData");
+const savedTime = $("savedTime");
+const siteHost = $("siteHost");
+const allowToggle = $("allowToggle");
+const allowLabel = $("allowLabel");
+const listDot = $("listDot");
 
 let currentHost = null;
 
@@ -21,65 +19,59 @@ function fmtData(mb) {
 }
 
 function fmtTime(sec) {
-  if (sec >= 3600) return (sec / 3600).toFixed(1) + " ч";
-  if (sec >= 60) return Math.round(sec / 60) + " мин";
-  return Math.round(sec) + " сек";
+  if (sec >= 3600) return (sec / 3600).toFixed(1) + " h";
+  if (sec >= 60) return Math.round(sec / 60) + " min";
+  return Math.round(sec) + " s";
 }
 
-function loadStats() {
+function load() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tabUrl = tabs[0]?.url || "";
     chrome.runtime.sendMessage({ type: "getStats", tabUrl }, (res) => {
       if (!res) return;
       toggle.checked = res.enabled;
-      blockedTotal.textContent = res.blockedTotal.toLocaleString("bg-BG");
+      blockedTotal.textContent = res.blockedTotal.toLocaleString();
       savedData.textContent = fmtData(res.saved.mb);
       savedTime.textContent = fmtTime(res.saved.seconds);
-      updateStatusText(res.enabled);
+      setStatus(res.enabled);
 
-      if (res.listInfo && res.listInfo.count) {
-        listDot.textContent = res.listInfo.count.toLocaleString("bg-BG") + " филтъра";
-      } else {
-        listDot.textContent = "вградени филтри";
-      }
+      listDot.textContent = res.listInfo?.count
+        ? res.listInfo.count.toLocaleString() + " filters"
+        : "built-in filters";
 
       currentHost = res.host;
       if (currentHost) {
         siteHost.textContent = currentHost;
         allowToggle.checked = !res.allowed;
-        updateAllowLabel(!res.allowed);
+        setAllowLabel(!res.allowed);
       } else {
-        siteHost.textContent = "тази страница";
+        siteHost.textContent = "this page";
         allowToggle.disabled = true;
       }
     });
   });
 }
 
-function updateStatusText(enabled) {
-  if (enabled) {
-    statusText.textContent = "Активна — рекламите се блокират";
-    statusText.classList.remove("off");
-  } else {
-    statusText.textContent = "Изключена — рекламите се показват";
-    statusText.classList.add("off");
-  }
+function setStatus(enabled) {
+  statusText.textContent = enabled
+    ? "Active — ads are being blocked"
+    : "Disabled — ads are shown";
+  statusText.classList.toggle("off", !enabled);
 }
 
-function updateAllowLabel(blocking) {
-  allowLabel.textContent = blocking ? "Блокиране" : "Разрешено";
+function setAllowLabel(blocking) {
+  allowLabel.textContent = blocking ? "Blocking" : "Allowed";
 }
 
 toggle.addEventListener("change", () => {
-  const enabled = toggle.checked;
-  updateStatusText(enabled);
-  chrome.runtime.sendMessage({ type: "toggle", enabled });
+  setStatus(toggle.checked);
+  chrome.runtime.sendMessage({ type: "toggle", enabled: toggle.checked });
 });
 
 allowToggle.addEventListener("change", () => {
   if (!currentHost) return;
   const blocking = allowToggle.checked;
-  updateAllowLabel(blocking);
+  setAllowLabel(blocking);
   chrome.runtime.sendMessage(
     { type: "setAllow", host: currentHost, allow: !blocking },
     () => {
@@ -90,12 +82,10 @@ allowToggle.addEventListener("change", () => {
   );
 });
 
-pickBtn.addEventListener("click", () => {
+$("pickBtn").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "startPicker" }, () => window.close());
 });
 
-settingsBtn.addEventListener("click", () => {
-  chrome.runtime.openOptionsPage();
-});
+$("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
-document.addEventListener("DOMContentLoaded", loadStats);
+document.addEventListener("DOMContentLoaded", load);

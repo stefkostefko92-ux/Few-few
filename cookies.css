@@ -1,37 +1,35 @@
-/* Few-Few AdBlocker - скриване на cookie / consent банери.
-   Прилага се само когато функцията е включена (тялото получава клас от cookies.js). */
+/* Hide common cookie / consent banners (toggled via the tbab-cookies class). */
 
-html.fewfew-cookies #onetrust-banner-sdk,
-html.fewfew-cookies #onetrust-consent-sdk,
-html.fewfew-cookies #CybotCookiebotDialog,
-html.fewfew-cookies #CybotCookiebotDialogBodyUnderlay,
-html.fewfew-cookies .qc-cmp2-container,
-html.fewfew-cookies .qc-cmp-cleanslate,
-html.fewfew-cookies #didomi-host,
-html.fewfew-cookies .didomi-popup-container,
-html.fewfew-cookies #usercentrics-root,
-html.fewfew-cookies .truste_overlay,
-html.fewfew-cookies .truste_box_overlay,
-html.fewfew-cookies #truste-consent-track,
-html.fewfew-cookies .cc-window,
-html.fewfew-cookies .cookie-consent,
-html.fewfew-cookies .cookie-banner,
-html.fewfew-cookies .cookie-notice,
-html.fewfew-cookies .cookie-notification,
-html.fewfew-cookies .cookies-popup,
-html.fewfew-cookies .cmp-banner,
-html.fewfew-cookies .gdpr-banner,
-html.fewfew-cookies .gdpr-consent,
-html.fewfew-cookies [class*="cookie-consent"],
-html.fewfew-cookies [class*="cookie-banner"],
-html.fewfew-cookies [id*="cookie-banner"],
-html.fewfew-cookies [aria-label*="cookie" i][role="dialog"],
-html.fewfew-cookies [aria-label*="consent" i][role="dialog"] {
+html.tbab-cookies #onetrust-banner-sdk,
+html.tbab-cookies #onetrust-consent-sdk,
+html.tbab-cookies #CybotCookiebotDialog,
+html.tbab-cookies #CybotCookiebotDialogBodyUnderlay,
+html.tbab-cookies .qc-cmp2-container,
+html.tbab-cookies .qc-cmp-cleanslate,
+html.tbab-cookies #didomi-host,
+html.tbab-cookies .didomi-popup-container,
+html.tbab-cookies #usercentrics-root,
+html.tbab-cookies .truste_overlay,
+html.tbab-cookies .truste_box_overlay,
+html.tbab-cookies #truste-consent-track,
+html.tbab-cookies .cc-window,
+html.tbab-cookies .cookie-consent,
+html.tbab-cookies .cookie-banner,
+html.tbab-cookies .cookie-notice,
+html.tbab-cookies .cookie-notification,
+html.tbab-cookies .cookies-popup,
+html.tbab-cookies .cmp-banner,
+html.tbab-cookies .gdpr-banner,
+html.tbab-cookies .gdpr-consent,
+html.tbab-cookies [class*="cookie-consent"],
+html.tbab-cookies [class*="cookie-banner"],
+html.tbab-cookies [id*="cookie-banner"],
+html.tbab-cookies [aria-label*="cookie" i][role="dialog"],
+html.tbab-cookies [aria-label*="consent" i][role="dialog"] {
   display: none !important;
 }
 
-/* Махни блокирането на скрола, което банерите често слагат */
-html.fewfew-cookies,
-html.fewfew-cookies body {
+html.tbab-cookies,
+html.tbab-cookies body {
   overflow: auto !important;
 }

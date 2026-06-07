@@ -1,20 +1,12 @@
-// Few-Few AdBlocker - content script
-// Скрива рекламни елементи, които не са блокирани на мрежово ниво (козметично филтриране).
-
+// Cosmetic filtering: hide ad containers that survive network blocking.
 (function () {
   let enabled = true;
   let customSelectors = [];
 
-  // Текущ домейн (без www.) за allowlist и персонални правила.
-  const HOST = location.hostname.replace(/^www\./, "");
+  const host = location.hostname.replace(/^www\./, "");
+  const hostMatches = (d) => host === d || host.endsWith("." + d);
 
-  function hostMatches(domain) {
-    return HOST === domain || HOST.endsWith("." + domain);
-  }
-
-  // CSS селектори за често срещани рекламни контейнери.
   const AD_SELECTORS = [
-    // ID-базирани
     "[id^='google_ads_']",
     "[id^='div-gpt-ad']",
     "[id^='gpt-']",
@@ -25,7 +17,6 @@
     "[id*='banner-ad']",
     "[id*='adsense']",
     "[id*='dfp-']",
-    // Class-базирани
     "[class*='ad-banner']",
     "[class*='ad-container']",
     "[class*='ad-wrapper']",
@@ -45,14 +36,12 @@
     "[class*='gpt-ad']",
     "[class*='outbrain']",
     "[class*='taboola']",
-    // Data атрибути
     "[data-ad-slot]",
     "[data-ad-client]",
     "[data-ad-unit]",
     "[data-ad]",
     "[data-google-query-id]",
     "[data-adunit]",
-    // iframes
     "ins.adsbygoogle",
     "iframe[src*='doubleclick']",
     "iframe[src*='googlesyndication']",
@@ -66,10 +55,8 @@
     "iframe[id*='google_ads']",
     "iframe[id*='ad_iframe']",
     "iframe[name*='google_ads']",
-    // ARIA / семантични
     "[aria-label='Advertisement']",
     "[aria-label='Ad']",
-    // Известни мрежи
     ".taboola",
     ".outbrain",
     ".trc_related_container",
@@ -82,56 +69,47 @@
     ".promoted-content",
   ];
 
-  // Текстови сигнали за "Реклама / Sponsored" над контейнери.
-  const AD_TEXT_HINTS = ["advertisement", "sponsored", "реклама", "advert"];
-
-  function hideAds(root = document) {
+  function hide(root = document) {
     if (!enabled) return;
-    let hidden = 0;
-    AD_SELECTORS.concat(customSelectors).forEach((sel) => {
+    for (const sel of AD_SELECTORS.concat(customSelectors)) {
       let nodes;
       try {
         nodes = root.querySelectorAll(sel);
-      } catch (e) {
-        return;
+      } catch {
+        continue;
       }
-      nodes.forEach((el) => {
-        if (el.dataset.fewfewHidden) return;
-        el.dataset.fewfewHidden = "1";
+      for (const el of nodes) {
+        if (el.dataset.tbabHidden) continue;
+        el.dataset.tbabHidden = "1";
         el.style.setProperty("display", "none", "important");
-        hidden++;
-      });
-    });
-    return hidden;
-  }
-
-  // Премахва празни "sticky" рекламни placeholder-и, които оставят празно място.
-  function cleanupPlaceholders() {
-    if (!enabled) return;
-    document.querySelectorAll("[data-fewfew-hidden]").forEach((el) => {
-      const parent = el.parentElement;
-      if (parent && parent.children.length === 1 && parent.offsetHeight < 5) {
-        parent.style.setProperty("display", "none", "important");
       }
-    });
-  }
-
-  // Стартиране само ако blocking-а е включен и сайтът не е в allowlist-а.
-  chrome.storage?.local.get(
-    ["enabled", "allowlist", "customHidden"],
-    (data) => {
-      enabled = data.enabled !== false;
-      const allowlisted = (data.allowlist || []).some(hostMatches);
-
-      // Зареди персоналните селектори за този домейн (от element picker-а).
-      const map = data.customHidden || {};
-      for (const [domain, sels] of Object.entries(map)) {
-        if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
-      }
-
-      if (enabled && !allowlisted) start();
     }
-  );
+  }
+
+  // Collapse wrappers left empty after their only (ad) child is hidden.
+  function collapseEmpty() {
+    if (!enabled) return;
+    document.querySelectorAll("[data-tbab-hidden]").forEach((el) => {
+      const p = el.parentElement;
+      if (p && p.children.length === 1 && p.offsetHeight < 5) {
+        p.style.setProperty("display", "none", "important");
+      }
+    });
+  }
+
+  function loadCustom(map) {
+    customSelectors = [];
+    for (const [domain, sels] of Object.entries(map || {})) {
+      if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
+    }
+  }
+
+  chrome.storage?.local.get(["enabled", "allowlist", "customHidden"], (data) => {
+    enabled = data.enabled !== false;
+    const allowed = (data.allowlist || []).some(hostMatches);
+    loadCustom(data.customHidden);
+    if (enabled && !allowed) start();
+  });
 
   chrome.storage?.onChanged.addListener((changes) => {
     if (changes.enabled) {
@@ -139,47 +117,30 @@
       if (enabled) start();
     }
     if (changes.customHidden) {
-      const map = changes.customHidden.newValue || {};
-      customSelectors = [];
-      for (const [domain, sels] of Object.entries(map)) {
-        if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
-      }
-      if (enabled) hideAds();
+      loadCustom(changes.customHidden.newValue);
+      if (enabled) hide();
     }
   });
 
   function start() {
-    hideAds();
-    cleanupPlaceholders();
+    hide();
+    collapseEmpty();
 
-    // Наблюдава динамично зареждани реклами.
-    const observer = new MutationObserver((mutations) => {
+    new MutationObserver((mutations) => {
       if (!enabled) return;
       for (const m of mutations) {
-        m.addedNodes.forEach((node) => {
-          if (node.nodeType === 1) {
-            hideAds(node.parentNode || document);
-          }
-        });
+        for (const node of m.addedNodes) {
+          if (node.nodeType === 1) hide(node.parentNode || document);
+        }
       }
-    });
+    }).observe(document.documentElement, { childList: true, subtree: true });
 
-    if (document.documentElement) {
-      observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
-
-    // Периодична проверка за бавно зареждащи се реклами.
+    // A few delayed passes catch lazily injected ads.
     let runs = 0;
-    const interval = setInterval(() => {
-      if (!enabled || runs++ > 10) {
-        clearInterval(interval);
-        return;
-      }
-      hideAds();
-      cleanupPlaceholders();
+    const t = setInterval(() => {
+      if (!enabled || runs++ > 10) return clearInterval(t);
+      hide();
+      collapseEmpty();
     }, 1000);
   }
 })();

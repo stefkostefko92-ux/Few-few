@@ -1,75 +1,99 @@
-# 🛡️ Few-Few AdBlocker
+# 🛡️ The Best Ads Block
 
-Google Chrome разширение (Manifest V3) с **Carbon Stealth** интерфейс, което блокира **всякакъв вид реклами** навсякъде — включително **YouTube видео реклами** (pre-roll / mid-roll), банери, popup-и, native реклами (Taboola/Outbrain) и тракери.
+A fast, private Chrome extension (Manifest V3) that blocks **every kind of ad**
+everywhere — **YouTube video ads** (pre-roll / mid-roll), banners, pop-ups,
+native "recommended" ads, **Facebook & Instagram sponsored posts**, trackers,
+cookie prompts and anti-adblock walls.
 
-## Възможности
+Free for everyone. No account, no telemetry, no data collection — everything
+stays on your device.
 
-- **Блокиране на мрежово ниво** чрез `declarativeNetRequest` — **237+ правила** за стотици рекламни и тракинг мрежи (Google Ads, DoubleClick, Amazon, Criteo, Taboola, Outbrain, PubMatic, PopAds, ExoClick, Adsterra и много други). Заявките се спират преди да се заредят, което прави страниците по-бързи.
-- **🎬 YouTube ad blocking** — специален MAIN-world скрипт прихваща `fetch`, `XMLHttpRequest` и `JSON.parse` и **премахва рекламните данни от player отговорите при източника**, преди плейърът да ги обработи. Това спира pre-roll и mid-roll рекламите, а не само ги скрива.
-- **🚀 Авто-skip резервен слой** — ако реклама все пак стартира, тя се превърта до края, заглушава се и Skip бутонът се натиска автоматично. Скрива и anti-adblock "видеото е на пауза" overlay-ите.
-- **Козметично филтриране** чрез content script + CSS — скрива рекламните контейнери, които остават на страницата, включително динамично заредени (чрез `MutationObserver`).
-- **🍪 Cookie / consent банер блокер** — автоматично затваря "Приеми бисквитки" прозорците (OneTrust, Cookiebot, Didomi, Quantcast, Usercentrics и др.), предпочитайки "Откажи".
-- **🚫 Anti-adblock заобикаляне** — премахва "Изключи adblocker-а" модалите, маха наложените overlay-и и възстановява скрола на страницата.
-- **🎯 Element picker** — кликаш върху елемент (като в uBlock Origin) и го скриваш завинаги за този сайт.
-- **✅ Allowlist (бели сайтове)** — с един клик разрешаваш рекламите на сайт, който искаш да подкрепиш; управление и от страницата с настройки.
-- **🔄 Авто-обновяване на филтрите** — ежедневно (чрез `chrome.alarms`) тегли и парсва **EasyList + EasyPrivacy**, конвертира мрежовите правила (`||domain^`) в динамични `declarativeNetRequest` правила. Може и ръчно ("Обнови сега").
-- **📊 Брояч за спестени данни и време** — показва приблизително колко MB/GB и колко време си спестил от блокираните реклами.
-- **🎨 Carbon Stealth интерфейс** — матов карбонов дизайн с фина текстура на нишки и кримсън акцент; превключване между **Carbon Stealth (тъмна)** и **светла** тема.
-- **⚙️ Страница с настройки** — статистика, тема, функции, авто-обновяване, управление на allowlist-а и скритите елементи.
-- **Popup за управление** — глобален и per-site toggle, брояч на блокирани + спестени данни/време, бутони за picker и настройки.
-- **Badge брояч** върху иконата показва колко реклами са блокирани на текущия таб.
+## Features
 
-## Структура
+- **Network-level blocking** (`declarativeNetRequest`) — 237+ bundled rules
+  covering hundreds of ad, tracker and pop-under networks. Requests are stopped
+  before they load, so pages are lighter and faster.
+- **YouTube video ads** — a MAIN-world script strips the ad payloads
+  (`adPlacements`, `playerAds`, `adSlots`, `adConfig`) from the player API, so
+  pre-roll and mid-roll ads never play. An auto-skip fallback handles anything
+  that slips through.
+- **Meta sponsored posts** — hides "Sponsored" posts in the Facebook and
+  Instagram feeds (toggleable).
+- **Cosmetic filtering** — hides ad containers that survive network blocking,
+  including lazily injected ones (via `MutationObserver`).
+- **Cookie / consent banners** — auto-dismisses them, preferring "Reject".
+- **Anti-adblock bypass** — removes "disable your adblocker" walls and restores
+  page scrolling.
+- **Element picker** — click any element to hide it permanently on that site.
+- **Per-site allowlist** — allow ads on sites you want to support.
+- **Auto-updating filters** — daily EasyList + EasyPrivacy refresh, plus a
+  manual "Update now".
+- **Live stats** — ads blocked, data saved and time saved.
+- **Carbon Stealth theme** — matte carbon dark theme with a light option.
+
+## Install (developer mode)
+
+1. Open `chrome://extensions/`.
+2. Enable **Developer mode** (top right).
+3. Click **Load unpacked** and select this folder.
+
+## Project layout
 
 ```
-.
-├── manifest.json          # Manifest V3 конфигурация
-├── background.js          # Service worker (брояч, toggle на двата рулсета)
-├── content.js             # Козметично скриване на реклами (всички сайтове)
-├── content.css            # CSS правила за скриване
-├── youtube_main.js        # MAIN-world: премахва реклами от YouTube player API
-├── youtube_skip.js        # Авто-skip / превъртане на видео реклами
-├── youtube.css            # Скриване на рекламите в YouTube UI
-├── cookies.js / .css      # Cookie / consent банер блокер
-├── antiadblock.js / .css  # Anti-adblock заобикаляне
-├── picker.js / .css       # Element picker (ръчно скриване)
-├── theme.js               # Прилага Carbon Stealth / светла тема
-├── rules/
-│   ├── ad_rules.json      # 237+ declarativeNetRequest правила
-│   └── youtube_rules.json # YouTube-специфични ad endpoint правила
-├── popup/                 # popup UI (глобален + per-site toggle, действия)
-├── options/               # страница с настройки (allowlist, функции, статистика)
-├── icons/                 # 16/32/48/128 px икони
-└── _locales/bg/messages.json
+manifest.json            Manifest V3 config
+background.js            Service worker — rules, allowlist, filters, stats
+theme.js                Applies the Carbon Stealth / light theme
+content.js / .css       Cosmetic ad hiding (all sites)
+meta.js                 Facebook / Instagram sponsored-post hiding
+cookies.js / .css       Cookie / consent banner dismissal
+antiadblock.js / .css   Anti-adblock bypass
+picker.js / .css        Element picker
+youtube_main.js         MAIN-world: removes ads from the YouTube player API
+youtube_skip.js         Auto-skip / fast-forward video ads
+youtube.css             Hides YouTube's in-page ad surfaces
+rules/                  declarativeNetRequest rule sets
+popup/                  Toolbar popup UI
+options/                Settings page
+icons/                  Extension icons
+_locales/               Localised name & description
+tools/                  Rule/icon generators and the packaging script
 ```
 
-## Как работи YouTube блокирането
+## How YouTube blocking works
 
-YouTube сервира рекламите от **същите сървъри** като самото видео, затова обикновеното блокиране по домейн не работи (би счупило видеото). Few-Few използва три слоя:
+YouTube serves ads from the **same servers** as the video, so domain blocking
+can't be used (it would break playback). Three layers handle it:
 
-1. **Прихващане на API отговорите** (`youtube_main.js`, MAIN world) — изчиства полетата `adPlacements`, `playerAds`, `adSlots` и `adConfig` от отговорите на `/youtubei/v1/player` и `/next`. Плейърът така никога не "вижда" реклама.
-2. **Блокиране на ad endpoint-и** (`youtube_rules.json`) — спира `/pagead/`, `/ptracking`, `/api/stats/ads` и др., **без** да докосва `/player` (видеото остава непокътнато).
-3. **Авто-skip** (`youtube_skip.js`) — резервен слой, който превърта/прескача всичко промъкнало се.
+1. **Response sanitising** (`youtube_main.js`, MAIN world) clears the ad fields
+   from `/youtubei/v1/player` and `/next`, so the player never sees an ad.
+2. **Endpoint blocking** (`rules/youtube_rules.json`) drops `/pagead/`,
+   `/ptracking`, `/api/stats/ads` etc. — without touching `/player`.
+3. **Auto-skip** (`youtube_skip.js`) fast-forwards or skips anything that still
+   starts.
 
-## Инсталиране (Developer mode)
+## Building the store package
 
-1. Отвори `chrome://extensions/` в Chrome.
-2. Включи **Developer mode** (горе вдясно).
-3. Натисни **Load unpacked** и избери папката на проекта.
-4. Готово — иконата 🛡️ ще се появи в лентата с разширения.
+```
+bash tools/package.sh     # writes dist/the-best-ads-block-<version>.zip
+python3 tools/generate_rules.py   # regenerate rules/
+python3 tools/generate_icons.py   # regenerate icons/
+```
 
-## Използване
+## Notes
 
-- Кликни иконата за да отвориш popup-а.
-- Превключвателят **Защита** включва/изключва блокирането глобално.
-- Превключвателят до името на сайта разрешава/блокира рекламите **само за този сайт** (allowlist).
-- **🎯 Скрий елемент** — стартира picker: посочваш елемент и клик го скрива завинаги (Esc = отказ).
-- **⚙️ Настройки** — отваря страницата за управление на cookie блокера, anti-adblock, белите сайтове и скритите елементи.
+- The live blocked counter uses `getMatchedRules` (works in published builds)
+  and the precise `onRuleMatchedDebug` path when running unpacked.
+- "Data saved" counts the exact number of blocked requests per resource type
+  and multiplies by realistic per-type sizes — a blocked request is never
+  downloaded, so its true byte size can't be measured (uBlock/AdGuard estimate
+  the same way).
+- Filter auto-update fetches EasyList/EasyPrivacy over the network; imported
+  rules are capped at 5000 (Chrome's dynamic-rule budget).
 
-## Бележки
+## Privacy & license
 
-- Разширението работи на всички сайтове (`<all_urls>`).
-- Списъкът с правила е лесно разширяем — добави нови домейни в списъка `AD_DOMAINS` в генератора, или директно в `rules/ad_rules.json`.
-- Броячът на блокирани заявки в реално време използва `onRuleMatchedDebug`, който е достъпен само в unpacked (development) режим.
-- Авто-обновяването на филтрите тегли EasyList/EasyPrivacy от мрежата — изисква интернет достъп. Импортираните правила са ограничени до 5000 (динамичен лимит на Chrome) и се пазят отделно от вградените.
-- Спестените данни/време са приблизителни (≈55 KB и ≈45 ms на блокирана заявка).
+No data ever leaves your device — see [PRIVACY.md](PRIVACY.md). Released under
+the [MIT License](LICENSE).
+
+Made by [Carbon Stealth](https://carbonstealth.eu). Donations (optional):
+<https://revolut.me/vycanismajoris>.

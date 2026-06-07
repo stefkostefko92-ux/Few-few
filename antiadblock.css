@@ -1,35 +1,33 @@
-/* Few-Few AdBlocker - неутрализиране на anti-adblock съобщения.
-   Прилага се само когато функцията е включена (клас на <html>). */
+/* Neutralise anti-adblock overlays (toggled via the tbab-aab class). */
 
-html.fewfew-aab [class*="adblock"],
-html.fewfew-aab [id*="adblock"],
-html.fewfew-aab [class*="ad-block"],
-html.fewfew-aab [id*="ad-block"],
-html.fewfew-aab [class*="adBlock"],
-html.fewfew-aab [class*="anti-adblock"],
-html.fewfew-aab [class*="adblocker"],
-html.fewfew-aab [id*="adblocker"],
-html.fewfew-aab .adblock-notice,
-html.fewfew-aab .adblock-overlay,
-html.fewfew-aab .adblock-modal,
-html.fewfew-aab #adblock-modal,
-html.fewfew-aab .ab-overlay,
-html.fewfew-aab .blocker-overlay {
+html.tbab-aab [class*="adblock"],
+html.tbab-aab [id*="adblock"],
+html.tbab-aab [class*="ad-block"],
+html.tbab-aab [id*="ad-block"],
+html.tbab-aab [class*="adBlock"],
+html.tbab-aab [class*="anti-adblock"],
+html.tbab-aab [class*="adblocker"],
+html.tbab-aab [id*="adblocker"],
+html.tbab-aab .adblock-notice,
+html.tbab-aab .adblock-overlay,
+html.tbab-aab .adblock-modal,
+html.tbab-aab #adblock-modal,
+html.tbab-aab .ab-overlay,
+html.tbab-aab .blocker-overlay {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-/* Възстанови скрола и махни blur ефектите, които сайтовете слагат */
-html.fewfew-aab,
-html.fewfew-aab body {
+html.tbab-aab,
+html.tbab-aab body {
   overflow: auto !important;
   filter: none !important;
   position: static !important;
   height: auto !important;
 }
 
-html.fewfew-aab body > * {
+html.tbab-aab body > * {
   filter: none !important;
 }

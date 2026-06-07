@@ -1,85 +1,66 @@
-// Few-Few AdBlocker - anti-adblock neutralizer
-// Маха модалните "изключи adblocker-а" прозорци, премахва наложените
-// overlay-и и възстановява скрола/видимостта на страницата.
-
+// Remove "disable your adblocker" walls and restore page scrolling/interaction.
 (function () {
-  "use strict";
-
   let active = false;
 
-  // Текстови сигнали в overlay-и, които искат изключване на adblocker.
   const HINTS = [
     "adblock",
     "ad blocker",
     "ad-blocker",
-    "блокер на реклами",
-    "изключете",
     "whitelist",
     "disable your ad",
+    "turn off your ad",
   ];
 
-  function looksLikeAabOverlay(el) {
+  function isWall(el) {
     const t = (el.textContent || "").toLowerCase();
-    if (t.length > 600) return false; // твърде голям -> вероятно цялата страница
+    if (t.length > 600) return false; // too big to be a modal
     return HINTS.some((h) => t.includes(h));
   }
 
   function cleanup() {
     if (!active) return;
 
-    // Премахни фиксирани overlay-и с anti-adblock текст.
-    const candidates = document.querySelectorAll(
-      "div, section, aside, dialog, [role='dialog']"
-    );
-    candidates.forEach((el) => {
-      const style = getComputedStyle(el);
-      const fixed = style.position === "fixed" || style.position === "sticky";
-      const highZ = parseInt(style.zIndex || "0", 10) > 1000;
-      if ((fixed || highZ) && looksLikeAabOverlay(el)) {
-        el.remove();
-      }
-    });
+    for (const el of document.querySelectorAll("div, section, aside, dialog, [role='dialog']")) {
+      const s = getComputedStyle(el);
+      const floating = s.position === "fixed" || s.position === "sticky";
+      const elevated = parseInt(s.zIndex || "0", 10) > 1000;
+      if ((floating || elevated) && isWall(el)) el.remove();
+    }
 
-    // Възстанови скрола/интеракцията, които overlay-ите често блокират.
-    const html = document.documentElement;
-    const body = document.body;
-    [html, body].forEach((n) => {
-      if (!n) return;
+    for (const n of [document.documentElement, document.body]) {
+      if (!n) continue;
       n.style.setProperty("overflow", "auto", "important");
       n.style.setProperty("position", "static", "important");
       n.style.removeProperty("filter");
-    });
+    }
   }
 
   function enable() {
     active = true;
-    document.documentElement.classList.add("fewfew-aab");
+    document.documentElement.classList.add("tbab-aab");
     cleanup();
-    const obs = new MutationObserver(() => cleanup());
-    if (document.documentElement) {
-      obs.observe(document.documentElement, { childList: true, subtree: true });
-    }
+    new MutationObserver(cleanup).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
     let n = 0;
-    const iv = setInterval(() => {
-      if (!active || n++ > 10) return clearInterval(iv);
+    const t = setInterval(() => {
+      if (!active || n++ > 10) return clearInterval(t);
       cleanup();
     }, 700);
   }
 
   chrome.storage?.local.get(["enabled", "features"], (data) => {
-    const on = data.enabled !== false;
-    const aab = (data.features || {}).antiAdblock !== false;
-    if (on && aab) enable();
+    if (data.enabled !== false && (data.features || {}).antiAdblock !== false) enable();
   });
 
   chrome.storage?.onChanged.addListener((changes) => {
-    if (changes.features) {
-      const aab = (changes.features.newValue || {}).antiAdblock !== false;
-      if (aab && !active) enable();
-      else if (!aab) {
-        active = false;
-        document.documentElement.classList.remove("fewfew-aab");
-      }
+    if (!changes.features) return;
+    const on = (changes.features.newValue || {}).antiAdblock !== false;
+    if (on && !active) enable();
+    else if (!on) {
+      active = false;
+      document.documentElement.classList.remove("tbab-aab");
     }
   });
 })();

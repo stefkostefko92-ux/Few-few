@@ -1,25 +1,15 @@
-// Few-Few AdBlocker - element picker
-// Спи, докато получи "activatePicker" от popup-а. Тогава подсветява елементи
-// при hover, а при клик генерира CSS селектор, скрива елемента и го запазва
-// за този домейн (прилага се автоматично при следващи посещения).
-
+// Element picker: pick an element, hide it and remember the selector per site.
 (function () {
-  "use strict";
-
-  const HOST = location.hostname.replace(/^www\./, "");
+  const host = location.hostname.replace(/^www\./, "");
   let picking = false;
-  let highlight = null;
+  let box = null;
   let tip = null;
-  let current = null;
+  let target = null;
 
-  // Генерира достатъчно специфичен CSS селектор за елемент.
-  function buildSelector(el) {
+  // Build a reasonably specific selector for an element.
+  function selectorFor(el) {
     if (!el || el.nodeType !== 1) return null;
-
-    // 1. Стабилно id.
-    if (el.id && /^[a-zA-Z][\w-]*$/.test(el.id)) {
-      return "#" + el.id;
-    }
+    if (el.id && /^[a-zA-Z][\w-]*$/.test(el.id)) return "#" + el.id;
 
     const parts = [];
     let node = el;
@@ -27,71 +17,58 @@
 
     while (node && node.nodeType === 1 && node !== document.body && depth < 5) {
       let part = node.tagName.toLowerCase();
-
-      // Добави "смислени" класове (без динамично генерираните).
       const classes = Array.from(node.classList).filter(
         (c) => /^[a-zA-Z][\w-]{1,}$/.test(c) && c.length < 30
       );
+
       if (classes.length) {
         part += "." + classes.slice(0, 2).map((c) => CSS.escape(c)).join(".");
       } else {
-        // Иначе използвай позиция спрямо съседите.
         const parent = node.parentElement;
         if (parent) {
-          const sameTag = Array.from(parent.children).filter(
-            (c) => c.tagName === node.tagName
-          );
-          if (sameTag.length > 1) {
-            part += `:nth-of-type(${sameTag.indexOf(node) + 1})`;
-          }
+          const same = Array.from(parent.children).filter((c) => c.tagName === node.tagName);
+          if (same.length > 1) part += `:nth-of-type(${same.indexOf(node) + 1})`;
         }
       }
 
       parts.unshift(part);
-
-      // Ако вече е уникален, спри.
       try {
         if (document.querySelectorAll(parts.join(" > ")).length === 1) break;
-      } catch (e) {}
-
+      } catch {}
       node = node.parentElement;
       depth++;
     }
-
     return parts.join(" > ");
   }
 
-  function moveHighlight(el) {
-    if (!highlight || !el) return;
+  function place(el) {
+    if (!box || !el) return;
     const r = el.getBoundingClientRect();
-    highlight.style.top = r.top + "px";
-    highlight.style.left = r.left + "px";
-    highlight.style.width = r.width + "px";
-    highlight.style.height = r.height + "px";
+    Object.assign(box.style, {
+      top: r.top + "px",
+      left: r.left + "px",
+      width: r.width + "px",
+      height: r.height + "px",
+    });
   }
 
   function onMove(e) {
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (!el || el === highlight || el === tip) return;
-    current = el;
-    moveHighlight(el);
+    if (!el || el === box || el === tip) return;
+    target = el;
+    place(el);
   }
 
   function onClick(e) {
     e.preventDefault();
     e.stopPropagation();
-    if (!current) return;
-
-    const selector = buildSelector(current);
+    if (!target) return;
+    const selector = selectorFor(target);
     if (selector) {
       try {
-        current.style.setProperty("display", "none", "important");
-      } catch (err) {}
-      chrome.runtime.sendMessage({
-        type: "saveCustomSelector",
-        host: HOST,
-        selector,
-      });
+        target.style.setProperty("display", "none", "important");
+      } catch {}
+      chrome.runtime.sendMessage({ type: "saveCustomSelector", host, selector });
     }
     stop();
   }
@@ -103,16 +80,14 @@
   function start() {
     if (picking) return;
     picking = true;
-    document.documentElement.classList.add("fewfew-picking");
+    document.documentElement.classList.add("tbab-picking");
 
-    highlight = document.createElement("div");
-    highlight.id = "fewfew-picker-highlight";
+    box = document.createElement("div");
+    box.id = "tbab-picker-box";
     tip = document.createElement("div");
-    tip.id = "fewfew-picker-tip";
-    tip.innerHTML =
-      "Кликни елемент за да го скриеш &nbsp;•&nbsp; <b>Esc</b> за отказ";
-    document.body.appendChild(highlight);
-    document.body.appendChild(tip);
+    tip.id = "tbab-picker-tip";
+    tip.innerHTML = "Click an element to hide it &nbsp;•&nbsp; <b>Esc</b> to cancel";
+    document.body.append(box, tip);
 
     document.addEventListener("mousemove", onMove, true);
     document.addEventListener("click", onClick, true);
@@ -121,10 +96,10 @@
 
   function stop() {
     picking = false;
-    document.documentElement.classList.remove("fewfew-picking");
-    highlight?.remove();
+    document.documentElement.classList.remove("tbab-picking");
+    box?.remove();
     tip?.remove();
-    highlight = tip = current = null;
+    box = tip = target = null;
     document.removeEventListener("mousemove", onMove, true);
     document.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", onKey, true);

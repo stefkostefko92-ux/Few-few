@@ -1,5 +1,4 @@
-/* Few-Few AdBlocker - козметично скриване на чести рекламни елементи.
-   Прилага се на document_start за да предотврати "мигане" на реклами. */
+/* Hide common ad elements at document_start to avoid ad flicker. */
 
 ins.adsbygoogle,
 [id^="google_ads_"],

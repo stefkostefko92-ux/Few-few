@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="bg" data-theme="carbon">
+<html lang="en" data-theme="carbon">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="../theme.js"></script>
   <link rel="stylesheet" href="options.css" />
-  <title>Few-Few AdBlocker — Настройки</title>
+  <title>The Best ads block — Settings</title>
 </head>
 <body>
   <header>
     <span class="logo">🛡️</span>
     <div>
-      <h1>Few-Few AdBlocker</h1>
-      <span class="tagline">Carbon Stealth · Настройки</span>
+      <h1>The Best Ads Block</h1>
+      <span class="tagline">Carbon Stealth Edition · Settings</span>
     </div>
   </header>
 
@@ -20,81 +20,111 @@
     <section class="card stat-grid">
       <div class="stat">
         <div class="stat-num" id="blockedTotal">0</div>
-        <div class="stat-lbl">Блокирани реклами</div>
+        <div class="stat-lbl">Ads blocked</div>
       </div>
       <div class="stat">
         <div class="stat-num" id="savedData">0</div>
-        <div class="stat-lbl">Спестени данни</div>
+        <div class="stat-lbl">Data saved</div>
       </div>
       <div class="stat">
         <div class="stat-num" id="savedTime">0</div>
-        <div class="stat-lbl">Спестено време</div>
+        <div class="stat-lbl">Time saved</div>
       </div>
     </section>
-    <button id="resetStats" class="btn ghost wide">Нулирай статистиката</button>
+    <button id="resetStats" class="btn ghost wide">Reset statistics</button>
 
     <section class="card">
-      <h2>Облик</h2>
+      <h2>Appearance</h2>
       <label class="row">
         <div>
-          <div class="row-title">Тема</div>
-          <div class="row-sub">Carbon Stealth (тъмна) или светла</div>
+          <div class="row-title">Theme</div>
+          <div class="row-sub">Carbon Stealth (dark) or light</div>
         </div>
         <select id="theme" class="select">
           <option value="carbon">Carbon Stealth</option>
-          <option value="light">Светла</option>
+          <option value="light">Light</option>
         </select>
       </label>
     </section>
 
     <section class="card">
-      <h2>Допълнителни функции</h2>
+      <h2>Extra protection</h2>
       <label class="row">
         <div>
-          <div class="row-title">Cookie / consent банери</div>
-          <div class="row-sub">Автоматично затваря "Приеми бисквитки" прозорците</div>
+          <div class="row-title">Cookie / consent banners</div>
+          <div class="row-sub">Automatically dismiss "Accept cookies" prompts</div>
         </div>
         <label class="switch"><input type="checkbox" id="featCookies" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
-          <div class="row-title">Anti-adblock заобикаляне</div>
-          <div class="row-sub">Скрива "Изключи adblocker" съобщенията и възстановява страницата</div>
+          <div class="row-title">Anti-adblock bypass</div>
+          <div class="row-sub">Hide "disable your adblocker" walls and restore the page</div>
         </div>
         <label class="switch"><input type="checkbox" id="featAab" /><span class="slider"></span></label>
       </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Meta sponsored posts</div>
+          <div class="row-sub">Hide "Sponsored" posts on Facebook &amp; Instagram</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featMeta" /><span class="slider"></span></label>
+      </label>
     </section>
 
     <section class="card">
-      <h2>Филтри (EasyList)</h2>
+      <h2>Filter lists</h2>
       <label class="row">
         <div>
-          <div class="row-title">Авто-обновяване</div>
-          <div class="row-sub" id="listStatus">Тегли актуални филтри ежедневно</div>
+          <div class="row-title">Auto-update</div>
+          <div class="row-sub" id="listStatus">Fetch fresh filters daily</div>
         </div>
         <label class="switch"><input type="checkbox" id="autoUpdate" /><span class="slider"></span></label>
       </label>
-      <button id="updateNow" class="btn">Обнови сега</button>
+      <button id="updateNow" class="btn">Update now</button>
     </section>
 
     <section class="card">
-      <h2>Бели сайтове (allowlist)</h2>
-      <p class="row-sub">На тези домейни рекламите <b>не</b> се блокират.</p>
+      <h2>Allowlisted sites</h2>
+      <p class="row-sub">Ads are <b>not</b> blocked on these domains.</p>
       <div class="add-row">
-        <input type="text" id="allowInput" placeholder="напр. example.com" />
-        <button id="allowAdd" class="btn">Добави</button>
+        <input type="text" id="allowInput" placeholder="e.g. example.com" />
+        <button id="allowAdd" class="btn">Add</button>
       </div>
       <ul id="allowList" class="list"></ul>
     </section>
 
     <section class="card">
-      <h2>Скрити елементи (element picker)</h2>
-      <p class="row-sub">Елементи, които си скрил ръчно, групирани по сайт.</p>
+      <h2>Hidden elements</h2>
+      <p class="row-sub">Elements you hid manually with the picker, grouped by site.</p>
       <ul id="customList" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Backup</h2>
+      <div class="add-row">
+        <button id="exportBtn" class="btn ghost">Export settings</button>
+        <button id="importBtn" class="btn ghost">Import settings</button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
+      <div class="promo-text">
+        <strong>Carbon Stealth</strong>
+        <span>Discover our gear and tools — carbonstealth.eu</span>
+      </div>
+      <span class="promo-go">→</span>
+    </a>
+
+    <section class="card donate">
+      <h2>Support development</h2>
+      <p class="row-sub">The Best Ads Block is free for everyone. If you'd like to help keep it maintained, donations are welcome — never required.</p>
+      <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 Donate via Revolut</a>
     </section>
   </main>
 
-  <footer>Few-Few AdBlocker v2.2.0</footer>
+  <footer>The Best Ads Block v3.0.0 · made by Carbon Stealth</footer>
 
   <script src="options.js"></script>
 </body>

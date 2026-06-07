@@ -1,6 +1,5 @@
-/* Few-Few AdBlocker - скриване на рекламните елементи в YouTube UI */
+/* Hide YouTube's in-page ad surfaces (home, feed, search, overlays, premium nags). */
 
-/* Masthead / банер реклама на началната страница */
 #masthead-ad,
 ytd-display-ad-renderer,
 ytd-rich-item-renderer:has(ytd-display-ad-renderer),
@@ -14,31 +13,22 @@ ytd-promoted-video-renderer,
 ytd-compact-promoted-video-renderer,
 ytd-action-companion-ad-renderer,
 ytd-player-legacy-desktop-watch-ads-renderer,
-
-/* Реклами между резултатите от търсене */
 ytd-search-pyv-renderer,
 ytd-promoted-sparkles-text-search-renderer,
-
-/* Overlay / in-player банери */
 .ytp-ad-overlay-container,
 .ytp-ad-overlay-slot,
 .ytp-ad-image-overlay,
 .ytp-ad-text-overlay,
 .video-ads.ytp-ad-module,
-
-/* Премиум / промоции */
 ytd-mealbar-promo-renderer,
 ytmusic-mealbar-promo-renderer,
 tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
 ytd-popup-container:has(ytd-enforcement-message-view-model),
-
-/* "Видеото е на пауза" anti-adblock overlay */
 .ytd-enforcement-message-view-model,
 ytd-enforcement-message-view-model {
   display: none !important;
 }
 
-/* Възстанови нормалното възпроизвеждане, ако anti-adblock е сложил pause overlay */
 .ad-showing video {
   display: block !important;
 }
