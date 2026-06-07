@@ -49,14 +49,14 @@ export class ChatHub {
       this.join(meta.clanId, ws);
 
       ws.send(JSON.stringify({ type: "history", messages: this.history.get(meta.clanId) ?? [] }));
-      ws.on("message", (data) => this.onMessage(ws, meta, data.toString()));
+      ws.on("message", (data) => void this.onMessage(ws, meta, data.toString()));
       ws.on("close", () => this.leave(meta.clanId, ws));
     } catch {
       ws.close(1008, "unauthorized");
     }
   }
 
-  private onMessage(ws: WebSocket, meta: ClientMeta, raw: string): void {
+  private async onMessage(ws: WebSocket, meta: ClientMeta, raw: string): Promise<void> {
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
@@ -68,10 +68,24 @@ export class ChatHub {
     const text = msg.text.trim().slice(0, 500);
     if (!text) return;
 
+    // Membership is captured at connect but can change mid-session — re-verify
+    // the sender still belongs to the room's clan before broadcasting, so a
+    // player who left or was removed can't keep posting (§7.2). The read is
+    // side-effect-free.
+    let stillMember = false;
+    try {
+      stillMember = (await this.getPlayer(meta.playerId)).clanId === meta.clanId;
+    } catch {
+      stillMember = false;
+    }
+    if (!stillMember) {
+      this.leave(meta.clanId, ws);
+      return void ws.close(1008, "no longer a clan member");
+    }
+
     const chat: ChatMessage = { from: meta.playerId, name: meta.name, text, at: Date.now() };
     this.record(meta.clanId, chat);
     this.broadcast(meta.clanId, { type: "chat", ...chat });
-    void ws; // sender also receives the broadcast (single source of truth)
   }
 
   private join(clanId: string, ws: WebSocket): void {

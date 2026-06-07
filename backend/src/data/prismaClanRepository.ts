@@ -52,6 +52,14 @@ export class PrismaClanRepository implements ClanRepository {
     return rows.map(fromClanRow).filter((c) => c.memberIds.length > 0);
   }
 
+  async lockForUpdate(id: string): Promise<void> {
+    // SELECT ... FOR UPDATE on the clan row; concurrent membership mutations on
+    // the same clan block here until the holding transaction commits, so the
+    // member-cap read-modify-write can't race. (Within a PrismaStore tx the
+    // client is the interactive transaction connection.)
+    await this.prisma.$queryRaw`SELECT id FROM "Clan" WHERE id = ${id} FOR UPDATE`;
+  }
+
   async createWar(war: ClanWar): Promise<ClanWar> {
     await this.prisma.clanWar.create({ data: toWarRow(war) });
     return war;
@@ -66,6 +74,14 @@ export class PrismaClanRepository implements ClanRepository {
     await this.prisma.clanWar.update({
       where: { id: war.id },
       data: { scoreA: war.scoreA, scoreB: war.scoreB },
+    });
+  }
+
+  async incrementWarScore(warId: string, side: "A" | "B", points: number): Promise<void> {
+    // Atomic DB increment — two concurrent contributions can't lose an update.
+    await this.prisma.clanWar.update({
+      where: { id: warId },
+      data: side === "A" ? { scoreA: { increment: points } } : { scoreB: { increment: points } },
     });
   }
 }

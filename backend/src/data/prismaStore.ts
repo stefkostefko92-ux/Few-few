@@ -1,6 +1,8 @@
 import type { PrismaClient } from "./prismaClient.js";
 import { PrismaLedger } from "./prismaLedger.js";
 import { PrismaPlayerRepository } from "./prismaRepository.js";
+import { PrismaPurchaseRepository } from "./prismaPurchaseRepository.js";
+import { PrismaClanRepository } from "./prismaClanRepository.js";
 import type { Store, StoreTx } from "./store.js";
 
 /**
@@ -20,6 +22,8 @@ export class PrismaStore implements Store {
       const tx: StoreTx = {
         players: new PrismaPlayerRepository(client),
         ledger: new PrismaLedger(client),
+        purchases: new PrismaPurchaseRepository(client),
+        clans: new PrismaClanRepository(client),
       };
       return fn(tx);
     });

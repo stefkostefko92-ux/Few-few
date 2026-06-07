@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { ClanRepository } from "../data/clanRepository.js";
 import type { PlayerRepository } from "../data/repository.js";
+import { MemoryStore, type Store, type StoreTx } from "../data/store.js";
 import { CLAN_MAX_MEMBERS, CLAN_WAR_DURATION_MS, type Clan, type ClanWar } from "../domain/clanTypes.js";
 import { GameError } from "../errors.js";
 import type { Clock } from "./clock.js";
@@ -9,6 +10,8 @@ import { systemClock } from "./clock.js";
 export interface ClanServiceDeps {
   clanRepo: ClanRepository;
   playerRepo: PlayerRepository;
+  /** Transactional unit of work for mutations. Defaults to a MemoryStore wrapping the repos. */
+  store?: Store;
   clock?: Clock;
 }
 
@@ -25,69 +28,82 @@ export interface WarStatus {
 /**
  * Clan membership and clan wars (GDD §7.2). Membership is capped at 50; a clan
  * leader can declare war on another warless clan, after which members' raid and
- * attack wins contribute points to the clan's war score.
+ * attack wins contribute points to the clan's war score. Every mutation that
+ * touches more than one row (clan + player, or a war score read-modify-write)
+ * runs inside a transactional unit of work so the 50-member cap and war scores
+ * hold under concurrency and can't be left half-applied by a crash (§11.3).
  */
 export class ClanService {
   private readonly clanRepo: ClanRepository;
   private readonly playerRepo: PlayerRepository;
+  private readonly store: Store;
   private readonly clock: Clock;
 
   constructor(deps: ClanServiceDeps) {
     this.clanRepo = deps.clanRepo;
     this.playerRepo = deps.playerRepo;
+    this.store = deps.store ?? new MemoryStore(deps.playerRepo, undefined, undefined, deps.clanRepo);
     this.clock = deps.clock ?? systemClock;
   }
 
   async createClan(playerId: string, name: string, tag: string): Promise<Clan> {
-    const player = await this.playerRepo.getOrThrow(playerId);
-    if (player.clanId) throw new GameError("ALREADY_IN_CLAN", "leave your current clan first", 409);
+    return this.store.transaction(async (tx) => {
+      const player = await tx.players.getOrThrow(playerId);
+      if (player.clanId) throw new GameError("ALREADY_IN_CLAN", "leave your current clan first", 409);
 
-    const clan: Clan = {
-      id: randomUUID(),
-      name,
-      tag,
-      leaderId: playerId,
-      memberIds: [playerId],
-      currentWarId: null,
-      createdAt: this.clock.now(),
-    };
-    await this.clanRepo.create(clan);
-    player.clanId = clan.id;
-    await this.playerRepo.save(player);
-    return clan;
+      const clan: Clan = {
+        id: randomUUID(),
+        name,
+        tag,
+        leaderId: playerId,
+        memberIds: [playerId],
+        currentWarId: null,
+        createdAt: this.clock.now(),
+      };
+      await tx.clans.create(clan);
+      player.clanId = clan.id;
+      await tx.players.save(player);
+      return clan;
+    });
   }
 
   async joinClan(playerId: string, clanId: string): Promise<Clan> {
-    const player = await this.playerRepo.getOrThrow(playerId);
-    if (player.clanId) throw new GameError("ALREADY_IN_CLAN", "leave your current clan first", 409);
-    const clan = await this.clanRepo.getOrThrow(clanId);
-    if (clan.memberIds.length >= CLAN_MAX_MEMBERS) {
-      throw new GameError("CLAN_FULL", `clan is full (${CLAN_MAX_MEMBERS})`, 409);
-    }
-    if (!clan.memberIds.includes(playerId)) clan.memberIds.push(playerId);
-    await this.clanRepo.save(clan);
-    player.clanId = clan.id;
-    await this.playerRepo.save(player);
-    return clan;
+    return this.store.transaction(async (tx) => {
+      const player = await tx.players.getOrThrow(playerId);
+      if (player.clanId) throw new GameError("ALREADY_IN_CLAN", "leave your current clan first", 409);
+      await tx.clans.lockForUpdate(clanId); // serialize concurrent joins before the cap check
+      const clan = await tx.clans.getOrThrow(clanId);
+      if (clan.memberIds.length >= CLAN_MAX_MEMBERS) {
+        throw new GameError("CLAN_FULL", `clan is full (${CLAN_MAX_MEMBERS})`, 409);
+      }
+      if (!clan.memberIds.includes(playerId)) clan.memberIds.push(playerId);
+      await tx.clans.save(clan);
+      player.clanId = clan.id;
+      await tx.players.save(player);
+      return clan;
+    });
   }
 
   async leaveClan(playerId: string): Promise<void> {
-    const player = await this.playerRepo.getOrThrow(playerId);
-    if (!player.clanId) throw new GameError("NOT_IN_CLAN", "you are not in a clan", 409);
-    const clan = await this.clanRepo.getOrThrow(player.clanId);
+    await this.store.transaction(async (tx) => {
+      const player = await tx.players.getOrThrow(playerId);
+      if (!player.clanId) throw new GameError("NOT_IN_CLAN", "you are not in a clan", 409);
+      await tx.clans.lockForUpdate(player.clanId);
+      const clan = await tx.clans.getOrThrow(player.clanId);
 
-    clan.memberIds = clan.memberIds.filter((id) => id !== playerId);
-    player.clanId = null;
-    await this.playerRepo.save(player);
+      clan.memberIds = clan.memberIds.filter((id) => id !== playerId);
+      player.clanId = null;
+      await tx.players.save(player);
 
-    if (clan.memberIds.length === 0) {
-      // Last member out — disband, releasing any war opponent.
-      await this.releaseWarOpponent(clan);
-      await this.clanRepo.delete(clan.id);
-      return;
-    }
-    if (clan.leaderId === playerId) clan.leaderId = clan.memberIds[0]; // promote next member
-    await this.clanRepo.save(clan);
+      if (clan.memberIds.length === 0) {
+        // Last member out — disband, releasing any war opponent.
+        await this.releaseWarOpponent(tx, clan);
+        await tx.clans.delete(clan.id);
+        return;
+      }
+      if (clan.leaderId === playerId) clan.leaderId = clan.memberIds[0]; // promote next member
+      await tx.clans.save(clan);
+    });
   }
 
   async getClan(clanId: string): Promise<Clan> {
@@ -100,48 +116,52 @@ export class ClanService {
 
   /** Leader declares war; an opponent is matchmade from warless clans. */
   async declareWar(playerId: string): Promise<WarStatus> {
-    const player = await this.playerRepo.getOrThrow(playerId);
-    if (!player.clanId) throw new GameError("NOT_IN_CLAN", "you are not in a clan", 409);
-    const clan = await this.clanRepo.getOrThrow(player.clanId);
-    if (clan.leaderId !== playerId) throw new GameError("NOT_LEADER", "only the clan leader can declare war", 403);
-    if (clan.currentWarId) throw new GameError("ALREADY_AT_WAR", "clan is already at war", 409);
+    return this.store.transaction(async (tx) => {
+      const player = await tx.players.getOrThrow(playerId);
+      if (!player.clanId) throw new GameError("NOT_IN_CLAN", "you are not in a clan", 409);
+      await tx.clans.lockForUpdate(player.clanId);
+      const clan = await tx.clans.getOrThrow(player.clanId);
+      if (clan.leaderId !== playerId) throw new GameError("NOT_LEADER", "only the clan leader can declare war", 403);
+      if (clan.currentWarId) throw new GameError("ALREADY_AT_WAR", "clan is already at war", 409);
 
-    const opponents = await this.clanRepo.warlessOthers(clan.id, 1);
-    if (opponents.length === 0) throw new GameError("NO_OPPONENT", "no available opponent clan", 409);
-    const opponent = opponents[0];
+      const opponents = await tx.clans.warlessOthers(clan.id, 1);
+      if (opponents.length === 0) throw new GameError("NO_OPPONENT", "no available opponent clan", 409);
+      const opponent = opponents[0];
 
-    const now = this.clock.now();
-    const war: ClanWar = {
-      id: randomUUID(),
-      clanAId: clan.id,
-      clanBId: opponent.id,
-      scoreA: 0,
-      scoreB: 0,
-      startedAt: now,
-      endsAt: now + CLAN_WAR_DURATION_MS,
-    };
-    await this.clanRepo.createWar(war);
-    clan.currentWarId = war.id;
-    opponent.currentWarId = war.id;
-    await this.clanRepo.save(clan);
-    await this.clanRepo.save(opponent);
-    return this.toStatus(war, clan.id);
+      const now = this.clock.now();
+      const war: ClanWar = {
+        id: randomUUID(),
+        clanAId: clan.id,
+        clanBId: opponent.id,
+        scoreA: 0,
+        scoreB: 0,
+        startedAt: now,
+        endsAt: now + CLAN_WAR_DURATION_MS,
+      };
+      await tx.clans.createWar(war);
+      clan.currentWarId = war.id;
+      opponent.currentWarId = war.id;
+      await tx.clans.save(clan);
+      await tx.clans.save(opponent);
+      return this.toStatus(war, clan.id);
+    });
   }
 
   /** Add war points for a player's clan (called on raid/attack wins). */
   async contribute(playerId: string, points: number): Promise<void> {
     if (points <= 0) return;
-    const player = await this.playerRepo.get(playerId);
-    if (!player?.clanId) return;
-    const clan = await this.clanRepo.get(player.clanId);
-    if (!clan?.currentWarId) return;
-    const war = await this.clanRepo.getWar(clan.currentWarId);
-    if (!war || this.clock.now() > war.endsAt) return;
+    await this.store.transaction(async (tx) => {
+      const player = await tx.players.get(playerId);
+      if (!player?.clanId) return;
+      const clan = await tx.clans.get(player.clanId);
+      if (!clan?.currentWarId) return;
+      const war = await tx.clans.getWar(clan.currentWarId);
+      if (!war || this.clock.now() > war.endsAt) return;
 
-    if (war.clanAId === clan.id) war.scoreA += points;
-    else if (war.clanBId === clan.id) war.scoreB += points;
-    else return;
-    await this.clanRepo.saveWar(war);
+      const side = war.clanAId === clan.id ? "A" : war.clanBId === clan.id ? "B" : null;
+      if (!side) return;
+      await tx.clans.incrementWarScore(war.id, side, points);
+    });
   }
 
   async warStatus(playerId: string): Promise<WarStatus | null> {
@@ -153,15 +173,15 @@ export class ClanService {
     return war ? this.toStatus(war, clan.id) : null;
   }
 
-  private async releaseWarOpponent(clan: Clan): Promise<void> {
+  private async releaseWarOpponent(tx: StoreTx, clan: Clan): Promise<void> {
     if (!clan.currentWarId) return;
-    const war = await this.clanRepo.getWar(clan.currentWarId);
+    const war = await tx.clans.getWar(clan.currentWarId);
     if (!war) return;
     const otherId = war.clanAId === clan.id ? war.clanBId : war.clanAId;
-    const other = await this.clanRepo.get(otherId);
+    const other = await tx.clans.get(otherId);
     if (other && other.currentWarId === war.id) {
       other.currentWarId = null;
-      await this.clanRepo.save(other);
+      await tx.clans.save(other);
     }
   }
 

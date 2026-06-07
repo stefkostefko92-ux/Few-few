@@ -3,7 +3,9 @@ import type { LiveOpsConfig } from "../config/liveops.js";
 import { MemoryLiveOpsStore, type LiveOpsStore } from "../config/liveOpsStore.js";
 import type { Ledger } from "../data/ledger.js";
 import type { PlayerRepository } from "../data/repository.js";
+import type { Purchase } from "../data/purchaseRepository.js";
 import { MemoryStore, type Store, type StoreTx } from "../data/store.js";
+import type { Grant } from "../monetization/catalog.js";
 import { clampInc, regenSpins } from "../domain/economy.js";
 import { pull as gachaPull } from "../domain/gacha.js";
 import { buildingCost, islandIsComplete, makeIsland, villageMultiplier } from "../domain/islands.js";
@@ -172,10 +174,18 @@ export class GameService {
     return player;
   }
 
-  /** Reconciles spin regen lazily on read and persists the result. */
+  /**
+   * Read a player, projecting accrued spin regen for display WITHOUT persisting
+   * it — a pure read must not write (no ledger legs, no row update on a GET, so
+   * /me can be served cheaply and from replicas). The next value-bearing action
+   * reconciles and persists the regen via loadPlayer. Returns a copy so the
+   * in-memory backend's stored object is never mutated out of band.
+   */
   async getPlayer(id: string): Promise<Player> {
     const now = this.clock.now();
-    return this.store.transaction((tx) => this.loadPlayer(tx, id, now));
+    const player = await this.store.transaction((tx) => tx.players.getOrThrow(id));
+    const { spins } = regenSpins(player.spins, player.spinsUpdatedAt, now, this.config.spins.regenPerHour, this.config.spins.cap);
+    return { ...player, spins };
   }
 
   // ---- Core loop: spin --------------------------------------------------
@@ -435,27 +445,45 @@ export class GameService {
 
   // ---- Entitlements (IAP, rewards) -------------------------------------
 
+  /** Mint granted currencies through the ledger. Spins may exceed the regen cap — purchased balances are preserved. */
+  private async creditGrants(tx: StoreTx, player: Player, grants: Partial<Record<Currency, number>>, reason: string, now: number): Promise<void> {
+    const fields: Currency[] = ["spins", "coins", "spiritTokens", "gems"];
+    for (const cur of fields) {
+      const amount = grants[cur];
+      if (!amount) continue;
+      if (amount < 0) throw new InvalidAction(`grant amount for ${cur} must be non-negative`);
+      await tx.ledger.mint(player.id, cur, amount, reason, now);
+      player[cur] += amount;
+    }
+  }
+
   /**
-   * Credit currencies to a player through the ledger (e.g. a verified IAP).
-   * Spins may exceed the regen cap here — purchased balances are preserved.
+   * Atomically claim a purchase's idempotency key and grant its currencies in a
+   * single transaction (GDD §11.3). Because the record and the grant commit
+   * together, a crash can never mark a purchase processed without delivering it
+   * (player pays, gets nothing) nor grant twice. Returns whether this call
+   * performed the grant; a duplicate transactionId is a no-op.
    */
-  async grant(playerId: string, grants: Partial<Record<Currency, number>>, reason: string): Promise<Player> {
+  async grantPurchase(purchase: Purchase, opts: { oneTime: boolean; reason: string }): Promise<{ granted: boolean; grants: Grant }> {
     const now = this.clock.now();
-    const player = await this.store.transaction(async (tx) => {
-      const player = await this.loadPlayer(tx, playerId, now);
-      const fields: Currency[] = ["spins", "coins", "spiritTokens", "gems"];
-      for (const cur of fields) {
-        const amount = grants[cur];
-        if (!amount) continue;
-        if (amount < 0) throw new InvalidAction(`grant amount for ${cur} must be non-negative`);
-        await tx.ledger.mint(player.id, cur, amount, reason, now);
-        player[cur] += amount;
+    const result = await this.store.transaction(async (tx) => {
+      const existing = await tx.purchases.get(purchase.transactionId);
+      if (existing) return { granted: false, grants: existing.grants, player: undefined as Player | undefined };
+      if (opts.oneTime && (await tx.purchases.ownsProduct(purchase.playerId, purchase.productId))) {
+        throw new GameError("ALREADY_OWNED", `one-time product already owned: ${purchase.productId}`, 409);
       }
+      const claimed = await tx.purchases.record(purchase);
+      if (!claimed) {
+        const prior = await tx.purchases.get(purchase.transactionId);
+        return { granted: false, grants: prior?.grants ?? purchase.grants, player: undefined };
+      }
+      const player = await this.loadPlayer(tx, purchase.playerId, now);
+      await this.creditGrants(tx, player, purchase.grants, opts.reason, now);
       await tx.players.save(player);
-      return player;
+      return { granted: true, grants: purchase.grants, player };
     });
-    await this.leaderboard.report(player);
-    return player;
+    if (result.player) await this.leaderboard.report(result.player);
+    return { granted: result.granted, grants: result.grants };
   }
 
   // ---- Leaderboard ------------------------------------------------------

@@ -7,7 +7,6 @@ import { MemoryAnalytics } from "../src/analytics/analytics.js";
 import { MemoryAuthRepository } from "../src/data/authRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
-import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import type { Rng } from "../src/domain/rng.js";
 import { Catalog } from "../src/monetization/catalog.js";
 import { StubReceiptValidator } from "../src/monetization/receipts.js";
@@ -43,7 +42,7 @@ describe("analytics events (§14.2)", () => {
     game = new GameService({ repo, ledger: new MemoryLedger(), liveOps: new MemoryLiveOpsStore(defaultLiveOps), rng: q.rng, clock, analytics });
     auth = new AuthService({ authRepo: new MemoryAuthRepository(), tokens: new TokenService("secret-0123456789abcd"), createPlayer: (n) => game.createPlayer(n), clock, analytics });
     validator = new StubReceiptValidator("rs");
-    iap = new IapService({ catalog: new Catalog(), validator, purchases: new MemoryPurchaseRepository(), game, clock, analytics });
+    iap = new IapService({ catalog: new Catalog(), validator, game, clock, analytics });
   });
 
   it("emits REGISTER on signup", async () => {

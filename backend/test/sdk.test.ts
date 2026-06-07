@@ -10,7 +10,6 @@ import { MemoryAuthRepository } from "../src/data/authRepository.js";
 import { MemoryClanRepository } from "../src/data/clanRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
-import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import { createApp } from "../src/http/app.js";
 import { Catalog } from "../src/monetization/catalog.js";
 import { StubReceiptValidator } from "../src/monetization/receipts.js";
@@ -39,7 +38,7 @@ describe("KaguraClient SDK (over real HTTP/WS)", () => {
     const tokens = new TokenService(SECRET);
     const auth = new AuthService({ authRepo: new MemoryAuthRepository(), tokens, createPlayer: (n) => game.createPlayer(n) });
     const catalog = new Catalog();
-    const iap = new IapService({ catalog, validator: new StubReceiptValidator("rs"), purchases: new MemoryPurchaseRepository(), game });
+    const iap = new IapService({ catalog, validator: new StubReceiptValidator("rs"), game });
     const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });
     const app = createApp({ game, auth, tokens, iap, catalog, clan, liveOps: new MemoryLiveOpsStore(defaultLiveOps), webhookSecret: "wh" });
     server = app.listen(0);

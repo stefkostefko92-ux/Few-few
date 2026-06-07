@@ -1,4 +1,3 @@
-import type { PurchaseRepository } from "../data/purchaseRepository.js";
 import { GameError } from "../errors.js";
 import type { Catalog, Grant } from "../monetization/catalog.js";
 import type { Platform, ReceiptValidator } from "../monetization/receipts.js";
@@ -18,7 +17,6 @@ export interface RedeemResult {
 export interface IapServiceDeps {
   catalog: Catalog;
   validator: ReceiptValidator;
-  purchases: PurchaseRepository;
   game: GameService;
   clock?: Clock;
   analytics?: Analytics;
@@ -34,7 +32,6 @@ export interface IapServiceDeps {
 export class IapService {
   private readonly catalog: Catalog;
   private readonly validator: ReceiptValidator;
-  private readonly purchases: PurchaseRepository;
   private readonly game: GameService;
   private readonly clock: Clock;
   private readonly analytics: Analytics;
@@ -42,7 +39,6 @@ export class IapService {
   constructor(deps: IapServiceDeps) {
     this.catalog = deps.catalog;
     this.validator = deps.validator;
-    this.purchases = deps.purchases;
     this.game = deps.game;
     this.clock = deps.clock ?? systemClock;
     this.analytics = deps.analytics ?? noopAnalytics;
@@ -68,31 +64,15 @@ export class IapService {
     const product = this.catalog.get(productId);
     if (!product) throw new GameError("UNKNOWN_PRODUCT", `no such product: ${productId}`, 404);
 
-    const existing = await this.purchases.get(transactionId);
-    if (existing) {
-      return { transactionId, productId, grants: existing.grants, granted: false };
+    // The idempotency claim and the currency grant commit in one transaction, so
+    // a crash can never record the purchase without delivering it (§11.3).
+    const { granted, grants } = await this.game.grantPurchase(
+      { transactionId, playerId, productId, platform, grants: product.grants, grantedAt: this.clock.now() },
+      { oneTime: product.oneTime, reason: `IAP:${productId}` },
+    );
+    if (granted) {
+      this.analytics.track({ type: "PURCHASE", playerId, at: this.clock.now(), productId, transactionId, granted: true });
     }
-    if (product.oneTime && (await this.purchases.ownsProduct(playerId, productId))) {
-      throw new GameError("ALREADY_OWNED", `one-time product already owned: ${productId}`, 409);
-    }
-
-    // Claim the transaction id first; if a concurrent delivery won the race the
-    // unique constraint makes record() return false and we skip the grant.
-    const claimed = await this.purchases.record({
-      transactionId,
-      playerId,
-      productId,
-      platform,
-      grants: product.grants,
-      grantedAt: this.clock.now(),
-    });
-    if (!claimed) {
-      const prior = await this.purchases.get(transactionId);
-      return { transactionId, productId, grants: prior?.grants ?? product.grants, granted: false };
-    }
-
-    await this.game.grant(playerId, product.grants, `IAP:${productId}`);
-    this.analytics.track({ type: "PURCHASE", playerId, at: this.clock.now(), productId, transactionId, granted: true });
-    return { transactionId, productId, grants: product.grants, granted: true };
+    return { transactionId, productId, grants, granted };
   }
 }

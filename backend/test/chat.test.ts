@@ -10,7 +10,6 @@ import { MemoryAuthRepository } from "../src/data/authRepository.js";
 import { MemoryClanRepository } from "../src/data/clanRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
-import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import { createApp } from "../src/http/app.js";
 import { Catalog } from "../src/monetization/catalog.js";
 import { StubReceiptValidator } from "../src/monetization/receipts.js";
@@ -32,7 +31,6 @@ function makeStack() {
   const iap = new IapService({
     catalog,
     validator: new StubReceiptValidator("rs"),
-    purchases: new MemoryPurchaseRepository(),
     game,
   });
   const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });
@@ -120,5 +118,35 @@ describe("clan chat over WebSocket", () => {
       setTimeout(() => reject(new Error("no close")), 12_000);
     });
     expect(closeCode).toBe(1008);
+  });
+
+  it("kicks a member who left the clan when they try to post", { timeout: 30_000 }, async () => {
+    const { app, auth, clan, game } = makeStack();
+    const a = await auth.register("Aoi", "device-a-11111111");
+    const b = await auth.register("Ben", "device-b-11111111");
+    const c = await clan.createClan(a.player.id, "Sky Foxes", "FOX");
+    await clan.joinClan(b.player.id, c.id);
+
+    server = app.listen(0);
+    new ChatHub(
+      new TokenService("test-secret-0123456789abcdef"),
+      (id) => game.getPlayer(id),
+    ).attach(server);
+    const port = (server.address() as AddressInfo).port;
+
+    const wsB = new WebSocket(`ws://127.0.0.1:${port}/ws?token=${b.accessToken}`);
+    sockets.push(wsB);
+    await open(wsB);
+    await once(wsB, (m) => m.type === "history");
+
+    // B leaves the clan, then tries to post — the server re-checks membership
+    // on the live socket and closes it instead of broadcasting.
+    await clan.leaveClan(b.player.id);
+    const closed = new Promise<number>((resolve, reject) => {
+      wsB.on("close", (code) => resolve(code));
+      setTimeout(() => reject(new Error("no close")), 12_000);
+    });
+    wsB.send(JSON.stringify({ type: "chat", text: "still here?" }));
+    expect(await closed).toBe(1008);
   });
 });

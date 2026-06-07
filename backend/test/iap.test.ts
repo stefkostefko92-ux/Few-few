@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { defaultLiveOps } from "../src/config/liveops.js";
 import { MemoryLedger, playerAccount } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
-import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import { Catalog } from "../src/monetization/catalog.js";
 import { StubReceiptValidator } from "../src/monetization/receipts.js";
 import { GameService } from "../src/services/gameService.js";
@@ -15,7 +14,6 @@ const RECEIPT_SECRET = "receipt-secret";
 describe("IapService", () => {
   let repo: MemoryPlayerRepository;
   let ledger: MemoryLedger;
-  let purchases: MemoryPurchaseRepository;
   let validator: StubReceiptValidator;
   let game: GameService;
   let iap: IapService;
@@ -23,10 +21,9 @@ describe("IapService", () => {
   beforeEach(() => {
     repo = new MemoryPlayerRepository();
     ledger = new MemoryLedger();
-    purchases = new MemoryPurchaseRepository();
     validator = new StubReceiptValidator(RECEIPT_SECRET);
     game = new GameService({ repo, ledger, config: defaultLiveOps, clock: new FakeClock(1_000) });
-    iap = new IapService({ catalog: new Catalog(), validator, purchases, game, clock: new FakeClock(1_000) });
+    iap = new IapService({ catalog: new Catalog(), validator, game, clock: new FakeClock(1_000) });
   });
 
   it("grants the product's currencies on a valid receipt, through the ledger", async () => {

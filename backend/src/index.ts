@@ -7,11 +7,10 @@ import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository
 import { MemoryClanRepository, type ClanRepository } from "./data/clanRepository.js";
 import { MemoryLedger } from "./data/ledger.js";
 import { MemoryPlayerRepository } from "./data/memoryRepository.js";
-import { MemoryPurchaseRepository, type PurchaseRepository } from "./data/purchaseRepository.js";
+import { MemoryPurchaseRepository } from "./data/purchaseRepository.js";
 import { PrismaAuthRepository } from "./data/prismaAuthRepository.js";
 import { PrismaClanRepository } from "./data/prismaClanRepository.js";
 import { PrismaPlayerRepository } from "./data/prismaRepository.js";
-import { PrismaPurchaseRepository } from "./data/prismaPurchaseRepository.js";
 import { PrismaStore } from "./data/prismaStore.js";
 import { createPrismaClient } from "./data/prismaClient.js";
 import { MemoryStore, type Store } from "./data/store.js";
@@ -51,26 +50,26 @@ async function main(): Promise<void> {
   let repo: PlayerRepository;
   let store: Store;
   let authRepo: AuthRepository;
-  let purchases: PurchaseRepository;
   let clanRepo: ClanRepository;
   let liveOps: LiveOpsStore;
   if (process.env.DATABASE_URL) {
     const prisma = createPrismaClient(process.env.DATABASE_URL);
-    repo = new PrismaPlayerRepository(prisma); // non-transactional reads/writes (clans)
-    store = new PrismaStore(prisma); // atomic unit of work for value-bearing actions
+    repo = new PrismaPlayerRepository(prisma); // non-transactional reads
+    store = new PrismaStore(prisma); // atomic unit of work (players, ledger, purchases, clans)
     authRepo = new PrismaAuthRepository(prisma);
-    purchases = new PrismaPurchaseRepository(prisma);
-    clanRepo = new PrismaClanRepository(prisma);
+    clanRepo = new PrismaClanRepository(prisma); // non-transactional reads (list/get)
     liveOps = new PrismaLiveOpsStore(prisma, defaultLiveOps);
     // eslint-disable-next-line no-console
     console.log("storage: Postgres (Prisma)");
   } else {
     const memRepo = new MemoryPlayerRepository();
+    const memClans = new MemoryClanRepository();
     repo = memRepo;
-    store = new MemoryStore(memRepo, new MemoryLedger());
+    clanRepo = memClans;
+    // One store backs every unit of work — shares the same repo instances the
+    // services read through, so in-tx writes are visible to subsequent reads.
+    store = new MemoryStore(memRepo, new MemoryLedger(), new MemoryPurchaseRepository(), memClans);
     authRepo = new MemoryAuthRepository();
-    purchases = new MemoryPurchaseRepository();
-    clanRepo = new MemoryClanRepository();
     liveOps = new MemoryLiveOpsStore(defaultLiveOps);
     // eslint-disable-next-line no-console
     console.log("storage: in-memory");
@@ -91,7 +90,7 @@ async function main(): Promise<void> {
     console.log("analytics: console");
   }
 
-  const clan = new ClanService({ clanRepo, playerRepo: repo });
+  const clan = new ClanService({ clanRepo, playerRepo: repo, store });
   const game = new GameService({
     store,
     liveOps,
@@ -110,7 +109,7 @@ async function main(): Promise<void> {
     console.warn("⚠  IAP_WEBHOOK_SECRET not set — using a public default. Anyone could forge IAP webhooks. Do not use in production.");
   }
   const validator = new StubReceiptValidator(receiptSecret);
-  const iap = new IapService({ catalog, validator, purchases, game, analytics });
+  const iap = new IapService({ catalog, validator, game, analytics });
 
   // DEV ONLY: let the web demo mint sandbox receipts (never enable in prod).
   let devReceipt: ((productId: string) => string) | undefined;

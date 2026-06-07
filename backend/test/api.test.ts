@@ -8,7 +8,6 @@ import { MemoryAuthRepository } from "../src/data/authRepository.js";
 import { MemoryClanRepository } from "../src/data/clanRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
-import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import { createApp } from "../src/http/app.js";
 import { Catalog } from "../src/monetization/catalog.js";
 import { StubReceiptValidator } from "../src/monetization/receipts.js";
@@ -34,7 +33,6 @@ function makeApp() {
   const iap = new IapService({
     catalog,
     validator: new StubReceiptValidator("receipt-secret"),
-    purchases: new MemoryPurchaseRepository(),
     game,
   });
   const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });

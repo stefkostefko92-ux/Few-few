@@ -3,7 +3,7 @@ import { Redis } from "ioredis";
 import { defaultLiveOps } from "../src/config/liveops.js";
 import { PrismaLedger } from "../src/data/prismaLedger.js";
 import { PrismaPlayerRepository } from "../src/data/prismaRepository.js";
-import { PrismaPurchaseRepository } from "../src/data/prismaPurchaseRepository.js";
+import { PrismaClanRepository } from "../src/data/prismaClanRepository.js";
 import { PrismaLiveOpsStore } from "../src/data/prismaLiveOpsStore.js";
 import { PrismaStore } from "../src/data/prismaStore.js";
 import { createPrismaClient } from "../src/data/prismaClient.js";
@@ -11,6 +11,7 @@ import { playerAccount } from "../src/data/ledger.js";
 import type { Currency } from "../src/domain/types.js";
 import type { Rng } from "../src/domain/rng.js";
 import { Catalog } from "../src/monetization/catalog.js";
+import { ClanService } from "../src/services/clanService.js";
 import { GameService } from "../src/services/gameService.js";
 import { IapService } from "../src/services/iapService.js";
 import { RedisLeaderboard } from "../src/services/leaderboard.js";
@@ -43,18 +44,20 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     return { rng, ints };
   }
 
+  const store = new PrismaStore(prisma); // real interactive $transaction (atomic UoW)
   let game: GameService;
   let q: ReturnType<typeof queueRng>;
 
   beforeEach(async () => {
+    await prisma.clanWar.deleteMany();
+    await prisma.clan.deleteMany();
     await prisma.purchase.deleteMany();
     await prisma.ledgerLeg.deleteMany();
     await prisma.player.deleteMany();
     if (redis) await redis.del("lb:global:coins", "lb:names");
     q = queueRng();
     game = new GameService({
-      repo,
-      ledger,
+      store,
       config: defaultLiveOps,
       rng: q.rng,
       clock: new FakeClock(1_000_000),
@@ -120,7 +123,6 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
       validator: { async validate(_pl, productId, receipt) {
         return { valid: true, transactionId: receipt, productId };
       } },
-      purchases: new PrismaPurchaseRepository(prisma),
       game,
     });
 
@@ -130,6 +132,58 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     expect(second.granted).toBe(false);
     expect((await repo.getOrThrow(p.id)).spins).toBe(before + 180); // granted once
     await assertBooks([p.id]);
+  });
+
+  it("grants an IAP exactly once under concurrent duplicate redemptions", async () => {
+    const p = await game.createPlayer("Buyer");
+    const before = (await repo.getOrThrow(p.id)).spins;
+    const iap = new IapService({
+      catalog: new Catalog(),
+      validator: { async validate(_pl, productId, receipt) {
+        return { valid: true, transactionId: receipt, productId };
+      } },
+      game,
+    });
+
+    // Five concurrent deliveries of the same transactionId (client retry storm
+    // + webhook). The record+grant transaction + unique constraint must let
+    // exactly one through.
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () => iap.redeem(p.id, "ios", "spin_m", "pg-tx-race").catch(() => ({ granted: false }))),
+    );
+    expect(results.filter((r) => r.granted)).toHaveLength(1);
+    expect((await repo.getOrThrow(p.id)).spins).toBe(before + 180); // not 5×180
+    await assertBooks([p.id]);
+  });
+
+  it("serializes concurrent clan joins so no member is lost and the cap holds", async () => {
+    const clan = new ClanService({ clanRepo: new PrismaClanRepository(prisma), playerRepo: repo, store, clock: new FakeClock(1_000_000) });
+    const leader = await game.createPlayer("Leader");
+    const created = await clan.createClan(leader.id, "Sky Foxes", "FOX");
+
+    const joiners = await Promise.all(Array.from({ length: 8 }, (_, i) => game.createPlayer(`J${i}`)));
+    await Promise.all(joiners.map((j) => clan.joinClan(j.id, created.id)));
+
+    const reloaded = await clan.getClan(created.id);
+    expect(reloaded.memberIds).toHaveLength(9); // leader + 8, none lost to a race
+    for (const j of joiners) expect(reloaded.memberIds).toContain(j.id);
+  });
+
+  it("does not lose concurrent war-score contributions", async () => {
+    const clanRepo = new PrismaClanRepository(prisma);
+    const clan = new ClanService({ clanRepo, playerRepo: repo, store, clock: new FakeClock(1_000_000) });
+    const a = await game.createPlayer("LeaderA");
+    const b = await game.createPlayer("LeaderB");
+    await clan.createClan(a.id, "Alpha", "ALP");
+    await clan.createClan(b.id, "Beta", "BET"); // an opponent must exist
+    const war = await clan.declareWar(a.id);
+
+    // 20 concurrent +1 contributions from clan A's leader.
+    await Promise.all(Array.from({ length: 20 }, () => clan.contribute(a.id, 1)));
+
+    const status = await clan.warStatus(a.id);
+    expect(status?.warId).toBe(war.warId);
+    expect(status?.myScore).toBe(20); // atomic increments — nothing lost
   });
 
   it("rolls back the player update AND ledger legs together when a txn throws (§11.3)", async () => {

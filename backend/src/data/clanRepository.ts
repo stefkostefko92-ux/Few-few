@@ -14,10 +14,18 @@ export interface ClanRepository {
   list(limit: number): Promise<Clan[]>;
   /** Clans not currently in a war — candidate opponents for war matchmaking. */
   warlessOthers(excludeClanId: string, limit: number): Promise<Clan[]>;
+  /**
+   * Take a row lock on a clan inside the current transaction so concurrent
+   * membership mutations serialize (the member-cap check is a read-modify-write
+   * that would otherwise race under READ COMMITTED). No-op in memory.
+   */
+  lockForUpdate(id: string): Promise<void>;
 
   createWar(war: ClanWar): Promise<ClanWar>;
   getWar(id: string): Promise<ClanWar | undefined>;
   saveWar(war: ClanWar): Promise<void>;
+  /** Atomically add points to one side's war score (avoids lost updates). */
+  incrementWarScore(warId: string, side: "A" | "B", points: number): Promise<void>;
 }
 
 export class ClanNotFoundError extends Error {
@@ -66,6 +74,10 @@ export class MemoryClanRepository implements ClanRepository {
       .slice(0, limit);
   }
 
+  async lockForUpdate(): Promise<void> {
+    // No-op: the in-memory store is single-threaded with no real isolation.
+  }
+
   async createWar(war: ClanWar): Promise<ClanWar> {
     this.wars.set(war.id, war);
     return war;
@@ -77,5 +89,12 @@ export class MemoryClanRepository implements ClanRepository {
 
   async saveWar(war: ClanWar): Promise<void> {
     this.wars.set(war.id, war);
+  }
+
+  async incrementWarScore(warId: string, side: "A" | "B", points: number): Promise<void> {
+    const war = this.wars.get(warId);
+    if (!war) return;
+    if (side === "A") war.scoreA += points;
+    else war.scoreB += points;
   }
 }
