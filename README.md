@@ -13,7 +13,7 @@
 | `apps/mobile` | Expo SDK 56 / React Native (Android) | в разработка |
 | `apps/api` | Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ | в разработка |
 | `apps/admin` | React 18 + Vite + Tailwind | в разработка |
-| `packages/shared` | zod схеми и типове | предстои |
+| `packages/shared` | zod схеми и типове | в разработка |
 
 ## Мобилно приложение
 
@@ -26,6 +26,15 @@ cd apps/mobile
 cp .env.example .env        # задай EXPO_PUBLIC_API_BASE_URL към твоя backend
 npm install
 npx expo start             # стартирай на Android устройство/емулатор
+```
+
+## Споделен пакет
+
+`apps/api` и `apps/admin` ползват общи zod схеми и типове от `@pomagam/shared`.
+Изгради го **преди** тях (няма авто-build при `npm ci` на консуматорите):
+
+```bash
+cd packages/shared && npm install && npm run build
 ```
 
 ## Backend (API + worker)

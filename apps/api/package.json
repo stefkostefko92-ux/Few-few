@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",
+    "@pomagam/shared": "file:../../packages/shared",
     "@prisma/client": "^6.1.0",
     "bullmq": "^5.78.0",
     "cookie-parser": "^1.4.7",

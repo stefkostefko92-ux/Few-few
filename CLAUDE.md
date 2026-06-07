@@ -8,9 +8,10 @@
 - `apps/mobile` — Expo SDK 56 / React Native (Android) — гражданско приложение **(в разработка)**
 - `apps/api` — Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ **(в разработка)**
 - `apps/admin` — React 18 + Vite + Tailwind (модерация) **(в разработка)**
-- `packages/shared` — zod схеми и типове, споделени api/admin *(предстои)*
+- `packages/shared` — zod схеми и типове, споделени api/admin **(в разработка)**
 
 ## Команди
+- Shared (build преди api/admin): `cd packages/shared && npm install && npm run build`
 - Mobile: `cd apps/mobile && npm install && npx expo start`
 - Mobile build: `cd apps/mobile && eas build -p android`
 - Mobile type-check: `cd apps/mobile && npm run typecheck`
@@ -20,6 +21,13 @@
 - API type-check: `cd apps/api && npx prisma generate && npm run typecheck`
 - Admin: `cd apps/admin && npm install && npm run dev` (Vite прокси към API на 4400)
 - Admin type-check/build: `cd apps/admin && npm run build`
+
+## Бележки по монорепото
+- `apps/api` и `apps/admin` зависят от `@pomagam/shared` през `file:` връзка.
+  Пакетът няма `prepare` (за да не се компилира при `npm ci` на консуматорите) —
+  затова `packages/shared` трябва да е build-нат (`dist/`) **преди** type-check /
+  build / деплой на api/admin. CI го прави като отделна стъпка; `dist/` не се
+  commit-ва. `apps/mobile` е независим (Expo), не ползва workspaces.
 
 ## Бележки по схемата
 - `Category` и `Settlement` ползват `slug` като първичен ключ — четим, стабилен
