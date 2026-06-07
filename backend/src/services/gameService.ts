@@ -111,10 +111,33 @@ export class GameService {
     this.analytics = deps.analytics ?? noopAnalytics;
   }
 
-  /** Clan-war points for a coin reward: 1 point per 100 coins, min 1. */
+  /**
+   * Clan-war points for a coin reward: 1 point per 100 coins, min 1. Best-effort
+   * — the action's money already committed, so a clan/war failure here must not
+   * surface as a failed request to the player (it's a secondary effect).
+   */
   private async contribute(playerId: string, reward: number): Promise<void> {
     if (!this.onContribution || reward <= 0) return;
-    await this.onContribution(playerId, Math.max(1, Math.round(reward / 100)));
+    try {
+      await this.onContribution(playerId, Math.max(1, Math.round(reward / 100)));
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("clan war contribution failed (non-fatal):", err);
+    }
+  }
+
+  /**
+   * Report to the leaderboard after a committed action. Best-effort: the
+   * leaderboard is non-essential (GDD), so a Redis outage must not turn an
+   * already-committed spin/build/attack into a user-visible error.
+   */
+  private async reportSafe(player: Player): Promise<void> {
+    try {
+      await this.leaderboard.report(player);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("leaderboard report failed (non-fatal):", err);
+    }
   }
 
   /** Load a player and reconcile spin regen — inside the caller's transaction. */
@@ -170,7 +193,7 @@ export class GameService {
       await tx.players.save(fresh);
       return fresh;
     });
-    await this.leaderboard.report(player);
+    await this.reportSafe(player);
     return player;
   }
 
@@ -235,7 +258,7 @@ export class GameService {
       return { outcome, player };
     });
 
-    await this.leaderboard.report(player);
+    await this.reportSafe(player);
     this.analytics.track({ type: "SPIN", playerId: player.id, at: now, bet, outcome: outcome.type, coins: outcome.coins });
     return { outcome, player };
   }
@@ -274,7 +297,7 @@ export class GameService {
       return { player, buildingIndex, newLevel: building.level, cost, islandCompleted: island.completed, unlockedIsland };
     });
 
-    await this.leaderboard.report(result.player);
+    await this.reportSafe(result.player);
     this.analytics.track({ type: "BUILD", playerId: result.player.id, at: now, buildingIndex, newLevel: result.newLevel, cost: result.cost, unlockedIsland: result.unlockedIsland });
     return result;
   }
@@ -337,7 +360,7 @@ export class GameService {
       return { result: { player, targetId, buildingIndex, blocked, reward, targetBuildingLevel }, target };
     });
 
-    await Promise.all([this.leaderboard.report(target), this.leaderboard.report(result.player)]);
+    await Promise.all([this.reportSafe(target), this.reportSafe(result.player)]);
     await this.contribute(result.player.id, result.reward);
     this.analytics.track({ type: "ATTACK", playerId: result.player.id, at: now, targetId, blocked: result.blocked, reward: result.reward });
     return result;
@@ -405,8 +428,8 @@ export class GameService {
     });
 
     await Promise.all([
-      target && result.reward > 0 ? this.leaderboard.report(target) : Promise.resolve(),
-      this.leaderboard.report(result.player),
+      target && result.reward > 0 ? this.reportSafe(target) : Promise.resolve(),
+      this.reportSafe(result.player),
     ]);
     await this.contribute(result.player.id, result.reward);
     this.analytics.track({ type: "RAID", playerId: result.player.id, at: now, targetId: result.targetId, reward: result.reward });
@@ -482,7 +505,7 @@ export class GameService {
       await tx.players.save(player);
       return { granted: true, grants: purchase.grants, player };
     });
-    if (result.player) await this.leaderboard.report(result.player);
+    if (result.player) await this.reportSafe(result.player);
     return { granted: result.granted, grants: result.grants };
   }
 

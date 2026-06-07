@@ -45,11 +45,22 @@ export class PrismaClanRepository implements ClanRepository {
   }
 
   async warlessOthers(excludeClanId: string, limit: number): Promise<Clan[]> {
-    const rows = await this.prisma.clan.findMany({
-      where: { id: { not: excludeClanId }, currentWarId: null },
-      take: limit,
-    });
-    return rows.map(fromClanRow).filter((c) => c.memberIds.length > 0);
+    // FOR UPDATE SKIP LOCKED: lock each candidate opponent as it's selected, and
+    // skip rows another concurrent declareWar already locked — so two leaders
+    // can't matchmake the same opponent (double-war), and there's no lock-wait
+    // deadlock between two simultaneous declarations. Over-fetch, since empty
+    // clans are filtered out in JS (memberIds is JSONB). Meaningful only inside
+    // a transaction (the StoreTx client); released at commit.
+    const rows = await this.prisma.$queryRaw<ClanRow[]>`
+      SELECT * FROM "Clan"
+      WHERE id <> ${excludeClanId} AND "currentWarId" IS NULL
+      ORDER BY "createdAt" ASC
+      LIMIT ${limit * 4}
+      FOR UPDATE SKIP LOCKED`;
+    return rows
+      .map(fromClanRow)
+      .filter((c) => c.memberIds.length > 0)
+      .slice(0, limit);
   }
 
   async lockForUpdate(id: string): Promise<void> {

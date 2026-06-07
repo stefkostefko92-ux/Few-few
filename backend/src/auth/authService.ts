@@ -71,7 +71,18 @@ export class AuthService {
       createdAt: now,
       lastSeenAt: now,
     };
-    await this.authRepo.create(cred);
+    try {
+      await this.authRepo.create(cred);
+    } catch (err) {
+      // TOCTOU: two concurrent registrations for the same deviceId both passed
+      // the getByDevice check; the loser hits the unique constraint. Map it to a
+      // clean 409 instead of a raw 500. (The minted player row is orphaned — a
+      // known prototype limitation; full atomicity needs auth inside the UoW.)
+      if (err && typeof err === "object" && "code" in err && (err as { code?: unknown }).code === "P2002") {
+        throw new GameError("DEVICE_TAKEN", "device already registered — use /auth/login", 409);
+      }
+      throw err;
+    }
     this.analytics.track({ type: "REGISTER", playerId: player.id, at: now, name });
     const tokens = await this.issue(cred);
     return { player, deviceSecret, ...tokens };

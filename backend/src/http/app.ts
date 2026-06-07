@@ -33,6 +33,10 @@ export interface AppDeps {
    * Never enable in production — it would let anyone forge purchases.
    */
   devReceipt?: (productId: string) => string;
+  /** Express `trust proxy` hop count, so req.ip is the real client behind an LB. */
+  trustProxy?: number;
+  /** Readiness probe: checks backing stores (Postgres/Redis) for /readyz. */
+  readiness?: () => Promise<{ ok: boolean; checks: Record<string, boolean> }>;
 }
 
 type RawBodyRequest = Request & { rawBody?: Buffer };
@@ -59,6 +63,20 @@ function corsMiddleware(origins: string[]) {
     }
     next();
   };
+}
+
+/**
+ * Baseline HTTP security headers (no external dependency). Covers the essentials
+ * helmet would set: no MIME sniffing, deny framing, conservative referrer, and
+ * HSTS so browsers pin TLS. Set on every response.
+ */
+function securityHeaders(_req: Request, res: Response, next: NextFunction) {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next();
 }
 
 const ACCESS_COOKIE = "kg_at";
@@ -171,6 +189,9 @@ const webhookBody = z.object({
 export function createApp(deps: AppDeps): Express {
   const { game, auth, tokens, iap, catalog, clan, liveOps, webhookSecret } = deps;
   const app = express();
+  app.disable("x-powered-by");
+  if (deps.trustProxy && deps.trustProxy > 0) app.set("trust proxy", deps.trustProxy);
+  app.use(securityHeaders);
   if (deps.corsOrigins && deps.corsOrigins.length > 0) {
     app.use(corsMiddleware(deps.corsOrigins));
   }
@@ -185,8 +206,19 @@ export function createApp(deps: AppDeps): Express {
   );
   app.use(rateLimiter(120, 60_000));
 
-  app.get("/health", (_req, res) => {
-    res.json({ status: "ok", time: new Date().toISOString() });
+  // Liveness: process is up (cheap, no dependency checks). /health kept as alias.
+  const liveness = (_req: Request, res: Response) => res.json({ status: "ok", time: new Date().toISOString() });
+  app.get("/healthz", liveness);
+  app.get("/health", liveness);
+
+  // Readiness: backing stores reachable. Returns 503 so a load balancer drains
+  // a replica that can't serve (and during shutdown once stores are closed).
+  app.get("/readyz", (_req, res) => {
+    if (!deps.readiness) return void res.json({ status: "ready", checks: {} });
+    void deps.readiness().then(
+      (r) => res.status(r.ok ? 200 : 503).json({ status: r.ok ? "ready" : "not_ready", checks: r.checks }),
+      () => res.status(503).json({ status: "not_ready" }),
+    );
   });
 
   // Published gacha drop rates — regulatory transparency requirement (§12.2).
@@ -471,19 +503,41 @@ export function createApp(deps: AppDeps): Express {
     res.status(404).json({ error: { code: "NOT_FOUND", message: "no such route" } });
   });
 
-  // Error handler — maps domain & validation errors to clean JSON.
+  // Error handler — maps domain, validation, and known Prisma errors to clean
+  // JSON. Unmapped errors are logged server-side and returned as a generic 500,
+  // never echoing internal messages (which can leak schema/query details).
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof z.ZodError) {
-      res.status(400).json({ error: { code: "VALIDATION", message: "invalid request", issues: err.issues } });
+      const issues = err.issues.map((i) => ({ path: i.path, message: i.message }));
+      res.status(400).json({ error: { code: "VALIDATION", message: "invalid request", issues } });
       return;
     }
     if (err instanceof GameError) {
       res.status(err.status).json({ error: { code: err.code, message: err.message } });
       return;
     }
-    const message = err instanceof Error ? err.message : "unknown error";
-    const status = /not found/i.test(message) ? 404 : 400;
-    res.status(status).json({ error: { code: "ERROR", message } });
+    // Domain "not found" repos throw *NotFoundError — map by name, not message.
+    if (err instanceof Error && err.name.endsWith("NotFoundError")) {
+      res.status(404).json({ error: { code: "NOT_FOUND", message: "resource not found" } });
+      return;
+    }
+    // Known Prisma error codes (duck-typed to avoid importing the client here).
+    const code = err && typeof err === "object" && "code" in err ? String((err as { code?: unknown }).code) : undefined;
+    if (code === "P2002") {
+      res.status(409).json({ error: { code: "CONFLICT", message: "resource already exists" } });
+      return;
+    }
+    if (code === "P2025") {
+      res.status(404).json({ error: { code: "NOT_FOUND", message: "resource not found" } });
+      return;
+    }
+    if (code === "P2024" || code === "P2028" || code === "P2034") {
+      res.status(503).json({ error: { code: "UNAVAILABLE", message: "service busy, please retry" } });
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.error("unhandled error:", err);
+    res.status(500).json({ error: { code: "INTERNAL", message: "internal server error" } });
   });
 
   return app;
