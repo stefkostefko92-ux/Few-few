@@ -114,7 +114,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "googleads.g.doubleclick.net/pagead",
+      "urlFilter": "youtube.com/youtubei/v1/player/ad_break",
       "resourceTypes": [
         "xmlhttprequest",
         "image",
@@ -132,7 +132,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "static.doubleclick.net",
+      "urlFilter": "s.youtube.com/api/stats/ads",
       "resourceTypes": [
         "xmlhttprequest",
         "image",
@@ -145,37 +145,58 @@
   },
   {
     "id": 1008,
-    "priority": 2,
+    "priority": 10,
     "action": {
-      "type": "block"
+      "type": "allow"
     },
     "condition": {
-      "urlFilter": "youtube.com/youtubei/v1/player/ad_break",
+      "urlFilter": "||doubleclick.net/instream/ad_status",
+      "initiatorDomains": [
+        "youtube.com",
+        "youtube-nocookie.com"
+      ],
       "resourceTypes": [
-        "xmlhttprequest",
-        "image",
-        "sub_frame",
         "script",
-        "ping",
-        "media"
+        "image",
+        "xmlhttprequest"
       ]
     }
   },
   {
     "id": 1009,
-    "priority": 2,
+    "priority": 10,
     "action": {
-      "type": "block"
+      "type": "allow"
     },
     "condition": {
-      "urlFilter": "s.youtube.com/api/stats/ads",
+      "urlFilter": "||doubleclick.net/pagead/id",
+      "initiatorDomains": [
+        "youtube.com",
+        "youtube-nocookie.com"
+      ],
       "resourceTypes": [
-        "xmlhttprequest",
-        "image",
-        "sub_frame",
         "script",
-        "ping",
-        "media"
+        "image",
+        "xmlhttprequest"
+      ]
+    }
+  },
+  {
+    "id": 1010,
+    "priority": 10,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "urlFilter": "||googleads.g.doubleclick.net/pagead/id",
+      "initiatorDomains": [
+        "youtube.com",
+        "youtube-nocookie.com"
+      ],
+      "resourceTypes": [
+        "script",
+        "image",
+        "xmlhttprequest"
       ]
     }
   }

@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.1
+
+- Fix: YouTube videos could fail to start because the player waits on
+  doubleclick's ad_status.js / pagead id before initialising. These are now
+  allowed to load (ads are still removed from the player response), instead of
+  being blocked at the network layer.
+- Stop blocking log_event / csi_204 (logging & timing, not ads).
+- Imported filter lists can never block core video/CDN domains (googlevideo,
+  ytimg, gstatic, …).
+
 ## 3.0.0
 
 - Block sponsored posts on Facebook & Instagram (toggleable).

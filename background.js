@@ -117,6 +117,18 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (autoUpdate !== false) updateBlocklists();
 });
 
+// Domains we must never block from imported lists — core video/CDN/auth
+// infrastructure whose blocking would break playback or whole sites.
+const NEVER_BLOCK = [
+  "googlevideo.com", "ytimg.com", "youtube.com", "youtu.be", "ggpht.com",
+  "gstatic.com", "googleapis.com", "google.com", "gvt1.com", "gvt2.com",
+  "fbcdn.net", "cdninstagram.com", "akamaihd.net", "cloudflare.com",
+];
+
+function isProtected(d) {
+  return NEVER_BLOCK.some((p) => d === p || d.endsWith("." + p));
+}
+
 // Pull domain-anchored network rules (||domain^) out of an ABP-format list.
 function parseFilterText(text) {
   const domains = new Set();
@@ -128,7 +140,7 @@ function parseFilterText(text) {
     const m = line.match(/^\|\|([a-z0-9][a-z0-9.\-_]*\.[a-z]{2,})\^/i);
     if (m) {
       const d = m[1].toLowerCase();
-      if (!d.includes("*") && !d.includes("/")) domains.add(d);
+      if (!d.includes("*") && !d.includes("/") && !isProtected(d)) domains.add(d);
     }
   }
   return [...domains];

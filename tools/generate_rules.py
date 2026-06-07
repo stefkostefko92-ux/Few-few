@@ -96,10 +96,17 @@ with open("rules/ad_rules.json","w") as f:
     json.dump(rules, f, indent=2)
 print("ad_rules.json: %d rules (ids 1..%d)" % (len(rules), rid-1))
 
-# ---- YouTube-specific rules (safe: ad endpoints only, NOT /player) ----
-# Note: we intentionally do NOT block /youtubei/v1/log_event or /csi_204 —
-# those are general logging/timing beacons, not ads, and blocking them only
-# spams the console with no ad-blocking benefit.
+# ---- YouTube-specific rules ----
+# We block the actual ad endpoints, but NOT /player and NOT the ad-status
+# pipeline the player initialises against. The modern YouTube player waits for
+# doubleclick's ad_status.js / pagead id ping before it will start playback; if
+# those are blocked it produces a broken video URL and the video never loads.
+# So we let them load (harmless — youtube_main.js already strips the ads from
+# the player response) via high-priority allow rules that override the generic
+# ||doubleclick.net^ block.
+#
+# We also do NOT block /youtubei/v1/log_event or /csi_204 (logging/timing, not
+# ads) — that only spammed the console.
 YT_BLOCK = [
     "youtube.com/pagead/",
     "youtube.com/ptracking",
@@ -107,11 +114,17 @@ YT_BLOCK = [
     "youtube.com/api/stats/atr",
     "youtube.com/get_midroll_",
     "youtube.com/get_video_info?*adformat",
-    "googleads.g.doubleclick.net/pagead",
-    "static.doubleclick.net",
     "youtube.com/youtubei/v1/player/ad_break",
     "s.youtube.com/api/stats/ads",
 ]
+
+# Player-init resources that must be allowed to load on YouTube.
+YT_ALLOW = [
+    "||doubleclick.net/instream/ad_status",
+    "||doubleclick.net/pagead/id",
+    "||googleads.g.doubleclick.net/pagead/id",
+]
+
 yt = []
 yrid = 1000
 for p in YT_BLOCK:
@@ -119,6 +132,18 @@ for p in YT_BLOCK:
         "id": yrid, "priority": 2,
         "action": {"type": "block"},
         "condition": {"urlFilter": p, "resourceTypes": ["xmlhttprequest","image","sub_frame","script","ping","media"]}
+    })
+    yrid += 1
+
+for p in YT_ALLOW:
+    yt.append({
+        "id": yrid, "priority": 10,
+        "action": {"type": "allow"},
+        "condition": {
+            "urlFilter": p,
+            "initiatorDomains": ["youtube.com", "youtube-nocookie.com"],
+            "resourceTypes": ["script", "image", "xmlhttprequest"],
+        },
     })
     yrid += 1
 
