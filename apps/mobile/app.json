@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Помагам Бобов дол",
+    "slug": "pomagam-bobovdol",
+    "scheme": "pomagam",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FBF7EF"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "eu.carbonstealth.pomagam",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FBF7EF"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Помагам използва камерата, за да снимате проблема, който подавате."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Помагам иска достъп до снимките, за да прикачите снимка на проблема."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Помагам използва местоположението, за да отбележи къде се намира проблемът.",
+          "locationWhenInUsePermission": "Помагам използва местоположението, за да отбележи къде се намира проблемът.",
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ]
+    ],
+    "extra": {
+      "apiBaseUrl": "https://api.pomagam.carbonstealth.eu"
+    }
+  }
+}
