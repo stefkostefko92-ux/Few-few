@@ -1,0 +1,37 @@
+# Локална инфраструктура за разработка. Портовете следват конвенцията от
+# спецификацията (PostgreSQL 5437, Redis 6383). Провери със `ss -tlnp` срещу
+# заети портове преди деплой.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pomagam
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
+      POSTGRES_DB: pomagam
+    ports:
+      - '5437:5432'
+    volumes:
+      - pomagam_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U pomagam -d pomagam']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6383:6379'
+    volumes:
+      - pomagam_redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pomagam_pg:
+  pomagam_redis:

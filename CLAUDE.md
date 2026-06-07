@@ -6,14 +6,22 @@
 
 ## Структура (monorepo)
 - `apps/mobile` — Expo SDK 56 / React Native (Android) — гражданско приложение **(в разработка)**
-- `apps/api` — Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ *(предстои)*
+- `apps/api` — Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ **(в разработка)**
 - `apps/admin` — React 18 + Vite + Tailwind (модерация) *(предстои)*
 - `packages/shared` — zod схеми и типове, споделени api/admin *(предстои)*
 
 ## Команди
 - Mobile: `cd apps/mobile && npm install && npx expo start`
 - Mobile build: `cd apps/mobile && eas build -p android`
-- Type-check: `cd apps/mobile && npm run typecheck`
+- Mobile type-check: `cd apps/mobile && npm run typecheck`
+- Инфра (локално): `docker compose up -d` (PostgreSQL 5437, Redis 6383)
+- API: `cd apps/api && npm install && npx prisma migrate deploy && npm run seed && npm run dev`
+- API type-check: `cd apps/api && npx prisma generate && npm run typecheck`
+
+## Бележки по схемата
+- `Category` и `Settlement` ползват `slug` като първичен ключ — четим, стабилен
+  ключ, който мобилното приложение изпраща директно (опростение спрямо
+  първоначалната MVP схема с cuid `id`).
 
 ## Правила
 - TypeScript strict, без `any` (`unknown` + type guard).
