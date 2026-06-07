@@ -7,7 +7,12 @@ import { env } from './env.js';
  * се записват; чувствителни полета се изрязват.
  */
 export const logger = pino({
-  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level:
+    env.NODE_ENV === 'production'
+      ? 'info'
+      : env.NODE_ENV === 'test'
+        ? 'silent'
+        : 'debug',
   redact: {
     paths: ['req.headers.authorization', 'req.headers.cookie'],
     remove: true,

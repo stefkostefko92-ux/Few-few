@@ -50,6 +50,7 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npm run typecheck
+      - run: npm test
 
   admin:
     name: Admin · typecheck & build
