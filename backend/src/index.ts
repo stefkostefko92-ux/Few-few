@@ -105,6 +105,10 @@ async function main(): Promise<void> {
   const catalog = new Catalog();
   const receiptSecret = process.env.IAP_RECEIPT_SECRET ?? "dev-receipt-secret-change-me";
   const webhookSecret = process.env.IAP_WEBHOOK_SECRET ?? "dev-webhook-secret-change-me";
+  if (!process.env.IAP_WEBHOOK_SECRET) {
+    // eslint-disable-next-line no-console
+    console.warn("⚠  IAP_WEBHOOK_SECRET not set — using a public default. Anyone could forge IAP webhooks. Do not use in production.");
+  }
   const validator = new StubReceiptValidator(receiptSecret);
   const iap = new IapService({ catalog, validator, purchases, game, analytics });
 

@@ -327,8 +327,7 @@ export class GameService {
       return { result: { player, targetId, buildingIndex, blocked, reward, targetBuildingLevel }, target };
     });
 
-    await this.leaderboard.report(target);
-    await this.leaderboard.report(result.player);
+    await Promise.all([this.leaderboard.report(target), this.leaderboard.report(result.player)]);
     await this.contribute(result.player.id, result.reward);
     this.analytics.track({ type: "ATTACK", playerId: result.player.id, at: now, targetId, blocked: result.blocked, reward: result.reward });
     return result;
@@ -395,8 +394,10 @@ export class GameService {
       return { result: { player, targetId: grant.targetId, picks: unique, reward }, target };
     });
 
-    if (target && result.reward > 0) await this.leaderboard.report(target);
-    await this.leaderboard.report(result.player);
+    await Promise.all([
+      target && result.reward > 0 ? this.leaderboard.report(target) : Promise.resolve(),
+      this.leaderboard.report(result.player),
+    ]);
     await this.contribute(result.player.id, result.reward);
     this.analytics.track({ type: "RAID", playerId: result.player.id, at: now, targetId: result.targetId, reward: result.reward });
     return result;

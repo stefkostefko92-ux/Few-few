@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace KaguraSpin
 {
@@ -7,6 +8,10 @@ namespace KaguraSpin
     // Uses Newtonsoft.Json (com.unity.nuget.newtonsoft-json) for nested
     // objects/arrays that Unity's built-in JsonUtility can't handle.
 
+    // The server emits rarity as a lowercase string ("common"/.../"mythic").
+    // StringEnumConverter makes the mapping explicit rather than relying on
+    // default name matching, so a serializer config change can't silently break it.
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Rarity { common, rare, epic, mythic }
 
     public sealed class Building

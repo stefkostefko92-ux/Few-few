@@ -62,14 +62,29 @@ export class AnalyticsConsumer {
     if (!res || res.length === 0) return 0;
     const entries = res[0][1];
     if (entries.length === 0) return 0;
+    return this.writeAndAck(entries);
+  }
 
-    const events: AnalyticsEvent[] = entries.map(([, fields]) => {
+  /**
+   * Decode → write → ack one batch. Valid events are written *before* the ack
+   * (at-least-once: a write failure leaves the batch unacked for redelivery).
+   * A single undecodable ("poison") entry is logged and skipped rather than
+   * thrown, so one malformed event can't kill the consumer or stall the stream.
+   */
+  private async writeAndAck(entries: [string, string[]][]): Promise<number> {
+    const events: AnalyticsEvent[] = [];
+    for (const [id, fields] of entries) {
       const i = fields.indexOf("data");
-      return JSON.parse(fields[i + 1]) as AnalyticsEvent;
-    });
-
-    await this.writer.write(events); // write first…
-    await this.redis.xack(this.stream, this.group, ...entries.map(([id]) => id)); // …then ack
+      try {
+        if (i < 0) throw new Error("missing 'data' field");
+        events.push(JSON.parse(fields[i + 1]) as AnalyticsEvent);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(`analytics: dropping unparseable event ${id}:`, err instanceof Error ? err.message : err);
+      }
+    }
+    if (events.length > 0) await this.writer.write(events);
+    await this.redis.xack(this.stream, this.group, ...entries.map(([id]) => id));
     return entries.length;
   }
 
@@ -93,12 +108,7 @@ export class AnalyticsConsumer {
       if (!res || res.length === 0) continue;
       const entries = res[0][1];
       if (entries.length === 0) continue;
-      const events: AnalyticsEvent[] = entries.map(([, fields]) => {
-        const i = fields.indexOf("data");
-        return JSON.parse(fields[i + 1]) as AnalyticsEvent;
-      });
-      await this.writer.write(events);
-      await this.redis.xack(this.stream, this.group, ...entries.map(([id]) => id));
+      await this.writeAndAck(entries);
     }
   }
 
