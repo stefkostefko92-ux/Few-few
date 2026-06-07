@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "The Best ads block",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Block ads everywhere — YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
   "author": "Carbon Stealth",
   "homepage_url": "https://carbonstealth.eu",
@@ -79,10 +79,9 @@
     },
     {
       "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
-      "js": ["youtube_main.js"],
+      "js": ["youtube_loader.js"],
       "run_at": "document_start",
-      "all_frames": true,
-      "world": "MAIN"
+      "all_frames": true
     },
     {
       "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
@@ -90,6 +89,12 @@
       "css": ["youtube.css"],
       "run_at": "document_start",
       "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["youtube_main.js"],
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"]
     }
   ],
   "declarative_net_request": {

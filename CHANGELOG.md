@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.1.0
+
+- New "YouTube ad blocking" toggle in settings. When off, the extension does
+  not touch YouTube at all (no network rules, no player script, no auto-skip) —
+  useful if a network/region ever has trouble playing video.
+- YouTube handling now also respects the per-site allowlist: allowlist
+  youtube.com to disable all YouTube interference for your account.
+- The YouTube player script is injected on demand by a loader, so the toggle
+  and allowlist fully control whether it runs.
+- Built-in filter rules only — no remote fetches and no remotely hosted code.
+
 ## 3.0.3
 
 - YouTube ad removal now prunes the ad fields in place from the parsed player

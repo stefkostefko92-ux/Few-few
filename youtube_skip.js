@@ -59,9 +59,14 @@
     setInterval(run, 300);
   }
 
-  chrome.storage?.local.get("enabled", (data) => {
+  const host = location.hostname.replace(/^www\./, "");
+  const hostMatches = (d) => host === d || host.endsWith("." + d);
+
+  chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {
     enabled = data.enabled !== false;
-    if (enabled) start();
+    const ytOn = (data.features || {}).youtube !== false;
+    const allowed = (data.allowlist || []).some(hostMatches);
+    if (enabled && ytOn && !allowed) start();
   });
 
   chrome.storage?.onChanged.addListener((c) => {

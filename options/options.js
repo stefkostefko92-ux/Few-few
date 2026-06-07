@@ -34,6 +34,7 @@ function load() {
     $("featCookies").checked = res.features.cookies !== false;
     $("featAab").checked = res.features.antiAdblock !== false;
     $("featMeta").checked = res.features.meta !== false;
+    $("featYoutube").checked = res.features.youtube !== false;
     renderAllowlist(res.allowlist || []);
   });
 
@@ -111,6 +112,7 @@ function saveFeatures() {
       cookies: $("featCookies").checked,
       antiAdblock: $("featAab").checked,
       meta: $("featMeta").checked,
+      youtube: $("featYoutube").checked,
     },
   });
 }
@@ -121,6 +123,7 @@ $("theme").addEventListener("change", () =>
 $("featCookies").addEventListener("change", saveFeatures);
 $("featAab").addEventListener("change", saveFeatures);
 $("featMeta").addEventListener("change", saveFeatures);
+$("featYoutube").addEventListener("change", saveFeatures);
 
 $("allowAdd").addEventListener("click", () => {
   const domain = normalizeDomain($("allowInput").value);

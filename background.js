@@ -33,7 +33,7 @@ const DEFAULTS = {
   blockedTotal: 0,
   savedBytes: 0,
   allowlist: [],
-  features: { cookies: true, antiAdblock: true, meta: true },
+  features: { cookies: true, antiAdblock: true, meta: true, youtube: true },
   customHidden: {},
   theme: "carbon",
 };
@@ -56,16 +56,23 @@ chrome.runtime.onStartup.addListener(async () => {
   await dropLegacyRules();
 });
 
-// Enable or disable the bundled static rulesets.
+// Enable or disable the bundled static rulesets. The YouTube ruleset also
+// follows the "youtube" feature toggle so it can be turned off independently.
 async function applyState() {
-  const { enabled } = await chrome.storage.local.get("enabled");
+  const { enabled, features } = await chrome.storage.local.get(["enabled", "features"]);
   const on = enabled !== false;
+  const ytOn = on && (features || DEFAULTS.features).youtube !== false;
+
+  const enable = [];
+  const disable = [];
+  (on ? enable : disable).push("ad_rules");
+  (ytOn ? enable : disable).push("youtube_rules");
+
   try {
-    await chrome.declarativeNetRequest.updateEnabledRulesets(
-      on
-        ? { enableRulesetIds: RULESET_IDS, disableRulesetIds: [] }
-        : { enableRulesetIds: [], disableRulesetIds: RULESET_IDS }
-    );
+    await chrome.declarativeNetRequest.updateEnabledRulesets({
+      enableRulesetIds: enable,
+      disableRulesetIds: disable,
+    });
   } catch (e) {
     console.warn("ruleset toggle failed", e);
   }
@@ -245,7 +252,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "setFeatures":
-      chrome.storage.local.set({ features: msg.features }, () => sendResponse({ ok: true }));
+      chrome.storage.local.set({ features: msg.features }, async () => {
+        await applyState(); // youtube ruleset follows the youtube toggle
+        sendResponse({ ok: true });
+      });
       return true;
 
     case "setTheme":
