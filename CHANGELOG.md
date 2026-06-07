@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.3
+
+- YouTube ad removal now prunes the ad fields in place from the parsed player
+  response (JSON.parse / Response.json) instead of rebuilding the network
+  response. The video stream and its signature are never touched, which avoids
+  any chance of a corrupted/forbidden playback request.
+
 ## 3.0.2
 
 - Fix: the global on/off toggle now fully stops all blocking. The previous

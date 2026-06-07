@@ -1,5 +1,7 @@
-// Strip ad payloads from YouTube player responses before the player reads them.
-// Runs in the page (MAIN) world so it can patch the page's own fetch/XHR/JSON.
+// Remove ad payloads from YouTube player responses before the player reads
+// them. Runs in the page (MAIN) world. We prune the ad fields in place from
+// whatever the player parses (JSON.parse / Response.json) — we never rebuild
+// the network response, so the video stream and its signature are untouched.
 (function () {
   "use strict";
 
@@ -11,7 +13,6 @@
     if ("adSlots" in obj) obj.adSlots = [];
     if ("adBreakHeartbeatParams" in obj) delete obj.adBreakHeartbeatParams;
     if (obj.playerConfig?.adConfig) delete obj.playerConfig.adConfig;
-    if (obj.playerConfig?.daiConfig) delete obj.playerConfig.daiConfig;
 
     if (obj.playerResponse) stripAds(obj.playerResponse);
     if (obj.player?.playerResponse) stripAds(obj.player.playerResponse);
@@ -22,9 +23,9 @@
     o &&
     typeof o === "object" &&
     ("adPlacements" in o || "playerAds" in o || "adSlots" in o ||
-      "streamingData" in o || "playerResponse" in o);
+      "playerResponse" in o);
 
-  // ytInitialPlayerResponse and friends pass through JSON.parse.
+  // Initial page data (ytInitialPlayerResponse) and any text+parse code path.
   const nativeParse = JSON.parse;
   JSON.parse = function (text, reviver) {
     const data = nativeParse.call(this, text, reviver);
@@ -34,50 +35,14 @@
     return data;
   };
 
-  // Innertube player/next requests go through fetch.
-  const nativeFetch = window.fetch;
-  window.fetch = async function (input, init) {
-    const url = (typeof input === "string" && input) || input?.url || "";
-    const res = await nativeFetch.apply(this, arguments);
-    try {
-      if (/\/youtubei\/v1\/(player|next|reel)/.test(url)) {
-        const json = nativeParse(await res.clone().text());
-        stripAds(json);
-        // Rebuild headers without length/encoding, which no longer match the
-        // re-serialised (uncompressed) body.
-        const headers = new Headers(res.headers);
-        headers.delete("content-length");
-        headers.delete("content-encoding");
-        return new Response(JSON.stringify(json), {
-          status: res.status,
-          statusText: res.statusText,
-          headers,
-        });
-      }
-    } catch {}
-    return res;
-  };
-
-  // Older code paths use XMLHttpRequest.
-  const nativeOpen = XMLHttpRequest.prototype.open;
-  const nativeSend = XMLHttpRequest.prototype.send;
-
-  XMLHttpRequest.prototype.open = function (method, url) {
-    this._ytUrl = url || "";
-    return nativeOpen.apply(this, arguments);
-  };
-
-  XMLHttpRequest.prototype.send = function () {
-    if (/\/youtubei\/v1\/(player|next)/.test(this._ytUrl || "")) {
-      this.addEventListener("readystatechange", function () {
-        if (this.readyState !== 4) return;
-        try {
-          const cleaned = JSON.stringify(stripAds(nativeParse(this.responseText)));
-          Object.defineProperty(this, "responseText", { value: cleaned });
-          Object.defineProperty(this, "response", { value: cleaned });
-        } catch {}
-      });
-    }
-    return nativeSend.apply(this, arguments);
+  // Innertube /player and /next responses read via response.json().
+  const nativeJson = Response.prototype.json;
+  Response.prototype.json = function () {
+    return nativeJson.call(this).then((data) => {
+      try {
+        if (isPlayerLike(data)) stripAds(data);
+      } catch {}
+      return data;
+    });
   };
 })();
