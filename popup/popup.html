@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="popup.css" />
+  <title>Few-Few AdBlocker</title>
+</head>
+<body>
+  <header>
+    <div class="logo">🛡️</div>
+    <h1>Few-Few AdBlocker</h1>
+  </header>
+
+  <main>
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-label">Защита</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <p class="status-text" id="statusText">Активна — рекламите се блокират</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number" id="blockedTotal">0</div>
+        <div class="stat-label">Блокирани общо</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>Few-Few v1.0.0</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

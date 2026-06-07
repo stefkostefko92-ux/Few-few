@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Few-Few AdBlocker",
+    "description": "Името на разширението."
+  },
+  "extDescription": {
+    "message": "Блокира всякакъв вид реклами - банери, видео реклами, popup-и и тракери.",
+    "description": "Описание на разширението."
+  }
+}
