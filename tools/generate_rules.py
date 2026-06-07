@@ -97,6 +97,9 @@ with open("rules/ad_rules.json","w") as f:
 print("ad_rules.json: %d rules (ids 1..%d)" % (len(rules), rid-1))
 
 # ---- YouTube-specific rules (safe: ad endpoints only, NOT /player) ----
+# Note: we intentionally do NOT block /youtubei/v1/log_event or /csi_204 —
+# those are general logging/timing beacons, not ads, and blocking them only
+# spams the console with no ad-blocking benefit.
 YT_BLOCK = [
     "youtube.com/pagead/",
     "youtube.com/ptracking",
@@ -107,9 +110,7 @@ YT_BLOCK = [
     "googleads.g.doubleclick.net/pagead",
     "static.doubleclick.net",
     "youtube.com/youtubei/v1/player/ad_break",
-    "youtube.com/youtubei/v1/log_event",
     "s.youtube.com/api/stats/ads",
-    "youtube.com/csi_204",
 ]
 yt = []
 yrid = 1000

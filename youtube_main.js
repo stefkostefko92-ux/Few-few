@@ -43,10 +43,15 @@
       if (/\/youtubei\/v1\/(player|next|reel)/.test(url)) {
         const json = nativeParse(await res.clone().text());
         stripAds(json);
+        // Rebuild headers without length/encoding, which no longer match the
+        // re-serialised (uncompressed) body.
+        const headers = new Headers(res.headers);
+        headers.delete("content-length");
+        headers.delete("content-encoding");
         return new Response(JSON.stringify(json), {
           status: res.status,
           statusText: res.statusText,
-          headers: res.headers,
+          headers,
         });
       }
     } catch {}

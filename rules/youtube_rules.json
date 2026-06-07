@@ -168,43 +168,7 @@
       "type": "block"
     },
     "condition": {
-      "urlFilter": "youtube.com/youtubei/v1/log_event",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image",
-        "sub_frame",
-        "script",
-        "ping",
-        "media"
-      ]
-    }
-  },
-  {
-    "id": 1010,
-    "priority": 2,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
       "urlFilter": "s.youtube.com/api/stats/ads",
-      "resourceTypes": [
-        "xmlhttprequest",
-        "image",
-        "sub_frame",
-        "script",
-        "ping",
-        "media"
-      ]
-    }
-  },
-  {
-    "id": 1011,
-    "priority": 2,
-    "action": {
-      "type": "block"
-    },
-    "condition": {
-      "urlFilter": "youtube.com/csi_204",
       "resourceTypes": [
         "xmlhttprequest",
         "image",
