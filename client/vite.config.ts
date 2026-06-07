@@ -14,6 +14,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // Sourcemaps stay on for dev/preview but are stripped from the
+    // production bundle so we don't ship a 4.7 MB readable copy of the
+    // app to every visitor (and don't expose internal file paths).
+    sourcemap: process.env.NODE_ENV !== 'production',
   },
 });

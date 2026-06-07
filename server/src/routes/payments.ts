@@ -273,15 +273,21 @@ router.post('/verify', async (req, res) => {
   }
 });
 
-/* ---- Optional Stripe webhook ---- */
-router.post('/webhook', async (req, res) => {
+/* ---- Optional Stripe webhook ----
+ *
+ * Audit (security/deploy round): this handler MUST NOT sit behind
+ * `authRequired` — Stripe sends no Authorization header, and Stripe is
+ * the *only* legitimate caller, so we authenticate via the signature
+ * instead. It also MUST NOT sit behind the global /api rate limiter,
+ * because Stripe retry-storms after a transient 5xx and would self-
+ * throttle. We export the handler on a dedicated router that
+ * server.ts mounts BEFORE both the apiLimiter and the auth gate. */
+export const webhookRouter = Router();
+webhookRouter.post('/', async (req, res) => {
   if (!stripeReady) { res.status(503).json({ error: 'Stripe not configured' }); return; }
   const sig = req.headers['stripe-signature'] as string | undefined;
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret || !sig) { res.status(400).json({ error: 'Missing webhook secret' }); return; }
-  // Audit #2 critical: actually verify the signature against the raw
-  // body. We capture the raw body via the verify callback on the global
-  // express.json middleware (see server.ts).
   const raw = (req as any).rawBody as Buffer | undefined;
   if (!raw) { res.status(400).json({ error: 'Raw body missing — webhook misconfigured' }); return; }
   let event: any;

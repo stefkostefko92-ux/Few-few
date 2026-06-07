@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
+import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
 
 const router = Router();
 router.use(authRequired);
@@ -22,7 +23,7 @@ router.get('/me', (req, res) => {
 
 const changePwSchema = z.object({
   current: z.string().min(1),
-  next: z.string().min(6).max(100),
+  next: passwordRule,
 });
 
 router.post('/password', async (req, res) => {
@@ -42,8 +43,13 @@ router.post('/password', async (req, res) => {
     res.status(401).json({ error: 'Current password is incorrect' });
     return;
   }
-  const hash = await bcrypt.hash(parse.data.next, 10);
-  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.auth!.uid);
+  const hash = await bcrypt.hash(parse.data.next, PASSWORD_BCRYPT_ROUNDS);
+  // Bump token_version so every JWT issued under the old password is
+  // immediately revoked — this IS the documented "I think my account
+  // was compromised" recovery path; without the bump a stolen token
+  // outlives the rotation.
+  db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?')
+    .run(hash, req.auth!.uid);
   res.json({ ok: true });
 });
 

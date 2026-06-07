@@ -32,11 +32,16 @@ const COMMON_PASSWORDS = new Set([
   'iloveyou1','welcome123','12345abc','abcd1234','1q2w3e4r','passw0rd','p@ssword',
   'qazwsxedc','starwars','superman','batman123','spider123','hello1234','trustno1',
 ]);
+// Shared so other routes that mint or rotate passwords (admin user
+// create, account change-password) enforce the same floor.
+export const passwordRule = z.string().min(8).max(100)
+  .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), 'Password is too common');
+export const PASSWORD_BCRYPT_ROUNDS = 12;
+
 const registerSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Use letters, numbers, underscores only'),
   email: z.string().email(),
-  password: z.string().min(8).max(100)
-    .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), 'Password is too common'),
+  password: passwordRule,
 });
 
 router.post('/register', async (req, res) => {

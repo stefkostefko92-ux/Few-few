@@ -3,8 +3,17 @@ node_modules/
 **/dist/
 .env
 .env.local
+**/.env
+**/.env.local
 *.log
 server/data/
+# Stray SQLite databases — schema enables WAL mode so the sidecar
+# files matter too. Nothing under server/data/ matches because it's
+# already gitignored above, but these globs catch anyone running
+# better-sqlite3 from a different cwd.
+*.db
+*.db-shm
+*.db-wal
 .DS_Store
 .idea/
 .vscode/

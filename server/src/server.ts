@@ -26,7 +26,7 @@ import adminRoutes from './routes/admin';
 import setsRoutes from './routes/sets';
 import profileRoutes from './routes/profile';
 import guildRoutes from './routes/guild';
-import paymentsRoutes from './routes/payments';
+import paymentsRoutes, { webhookRouter as paymentsWebhookRouter } from './routes/payments';
 import marketRoutes from './routes/market';
 import campRoutes from './routes/camp';
 import forgeRoutes from './routes/forge';
@@ -90,6 +90,14 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('tiny'));
 }
 
+// Stripe webhook must sit ahead of BOTH the global /api rate limiter
+// (Stripe retry-storms would self-throttle) and the auth gate on the
+// payments router (Stripe sends no Authorization header — we
+// authenticate via the signature instead). express.json above has
+// already captured the raw bytes into req.rawBody, which the handler
+// passes to stripe.webhooks.constructEvent.
+app.use('/api/payments/webhook', paymentsWebhookRouter);
+
 const apiLimiter = rateLimit({
   windowMs: 60_000,
   max: 240,
@@ -122,7 +130,15 @@ const profileLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: t
 app.use('/api/profile', profileLimiter);
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });
+  // Healthcheck must actually probe the DB — otherwise a wedged SQLite
+  // (disk full, FS read-only, WAL lock) won't flip the orchestrator's
+  // liveness signal and traffic keeps routing to a broken instance.
+  try {
+    getDb().prepare('SELECT 1').get();
+    res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });
+  } catch (e: any) {
+    res.status(503).json({ ok: false, error: 'db_unavailable' });
+  }
 });
 
 app.use('/api/auth', authRoutes);
