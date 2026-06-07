@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useStore } from './lib/store';
 import { getToken } from './lib/api';
@@ -7,50 +7,59 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toasts from './components/Toasts';
 
+// Eager: routes a first-time visitor (or someone deep-linking the
+// auth flow) hits before they ever reach the in-app shell. Keeping
+// these eager means the landing page renders without waiting for the
+// in-app chunk.
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CharacterCreate from './pages/CharacterCreate';
-import Dashboard from './pages/Dashboard';
-import CharacterPage from './pages/CharacterPage';
-import Inventory from './pages/Inventory';
-import Shop from './pages/Shop';
-import Quests from './pages/Quests';
-import Arena from './pages/Arena';
-import World from './pages/World';
-import Leaderboard from './pages/Leaderboard';
-import Mail from './pages/Mail';
-import History from './pages/History';
-import Settings from './pages/Settings';
-import Help from './pages/Help';
 import NotFound from './pages/NotFound';
-import Landing from './pages/Landing';
-import Daily from './pages/Daily';
-import Wheel from './pages/Wheel';
-import Hunting from './pages/Hunting';
-import Dungeons from './pages/Dungeons';
-import Achievements from './pages/Achievements';
-import Bestiary from './pages/Bestiary';
-import Stats from './pages/Stats';
-import Admin from './pages/Admin';
-import Profile from './pages/Profile';
-import Guild from './pages/Guild';
-import Premium from './pages/Premium';
-import Market from './pages/Market';
-import Camp from './pages/Camp';
-import Forge from './pages/Forge';
-import Tower from './pages/Tower';
-import Bounties from './pages/Bounties';
-import TrialCache from './pages/TrialCache';
-import BattlePass from './pages/BattlePass';
-import Recipes from './pages/Recipes';
-import Auction from './pages/Auction';
-import MountShop from './pages/MountShop';
-import Hero from './pages/Hero';
-import Realm from './pages/Realm';
+
+// Audit (frontend round #4): every page was statically imported, so
+// the landing chunk shipped three.js + postprocessing + the entire
+// admin tree (~600 kB after gzip). Lazy-load every in-app route so
+// visitors who never reach /app don't pay for combat code at all.
+const Admin = React.lazy(() => import('./pages/Admin'));
+const Hero = React.lazy(() => import('./pages/Hero'));
+const Realm = React.lazy(() => import('./pages/Realm'));
+const Shop = React.lazy(() => import('./pages/Shop'));
+const Arena = React.lazy(() => import('./pages/Arena'));
+const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
+const Mail = React.lazy(() => import('./pages/Mail'));
+const History = React.lazy(() => import('./pages/History'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const Help = React.lazy(() => import('./pages/Help'));
+const Daily = React.lazy(() => import('./pages/Daily'));
+const Wheel = React.lazy(() => import('./pages/Wheel'));
+const Hunting = React.lazy(() => import('./pages/Hunting'));
+const Dungeons = React.lazy(() => import('./pages/Dungeons'));
+const Achievements = React.lazy(() => import('./pages/Achievements'));
+const Bestiary = React.lazy(() => import('./pages/Bestiary'));
+const Guild = React.lazy(() => import('./pages/Guild'));
+const Premium = React.lazy(() => import('./pages/Premium'));
+const Market = React.lazy(() => import('./pages/Market'));
+const Camp = React.lazy(() => import('./pages/Camp'));
+const Forge = React.lazy(() => import('./pages/Forge'));
+const Tower = React.lazy(() => import('./pages/Tower'));
+const Bounties = React.lazy(() => import('./pages/Bounties'));
+const TrialCache = React.lazy(() => import('./pages/TrialCache'));
+const BattlePass = React.lazy(() => import('./pages/BattlePass'));
+const Recipes = React.lazy(() => import('./pages/Recipes'));
+const Auction = React.lazy(() => import('./pages/Auction'));
+const MountShop = React.lazy(() => import('./pages/MountShop'));
 import LevelUpOverlay from './components/LevelUpOverlay';
 import CooldownTicker from './components/CooldownTicker';
 import PageBackdrop from './components/PageBackdrop';
 import OnboardingTour from './components/OnboardingTour';
+
+// Quiet placeholder for React.lazy boundaries — kept deliberately
+// small so it doesn't flash during the ~50 ms it takes the chunk to
+// arrive on a warm CDN.
+function LazyFallback(): React.ReactElement {
+  return <div className="lazy-fallback" aria-hidden style={{ minHeight: 240 }} />;
+}
 
 function AppLayout(): React.ReactElement {
   const location = useLocation();
@@ -100,7 +109,9 @@ function AppLayout(): React.ReactElement {
               counting down. Visible on every in-app page. */}
           <CooldownTicker />
           <div className="page-transition" key={location.pathname}>
-            <Outlet />
+            <Suspense fallback={<LazyFallback />}>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>
@@ -182,7 +193,13 @@ export default function App(): React.ReactElement {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/create" element={<CharacterCreate />} />
-          <Route path="/admin/*" element={<AdminGate><Navbar /><Admin /><Toasts /></AdminGate>} />
+          <Route path="/admin/*" element={
+            <AdminGate>
+              <Navbar />
+              <Suspense fallback={<LazyFallback />}><Admin /></Suspense>
+              <Toasts />
+            </AdminGate>
+          } />
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Hero />} />
             <Route path="profile" element={<Hero />} />

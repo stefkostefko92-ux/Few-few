@@ -181,62 +181,55 @@ router.post('/brew', (req, res) => {
   const db = getDb();
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-
-  // 1. Elixir catalyst must be active.
-  const stat = RECIPE_ELIXIR_STAT[recipe.slug];
-  if (!hasActiveElixir(char, stat)) {
-    res.status(400).json({ error: `You need an active Mythic Elixir of ${stat} (from the Trial Cache).` });
-    return;
+  // Audit (backend round): gold debit, trophy delete, and gem mint
+  // were three separate statements. A crash between any two left a
+  // half-consumed cost without the reward (or vice versa). Wrapping
+  // in BEGIN IMMEDIATE makes the whole brew atomic — either every
+  // step lands or none do.
+  try {
+    db.transaction(() => {
+      const stat = RECIPE_ELIXIR_STAT[recipe.slug];
+      if (!hasActiveElixir(char, stat)) { const e: any = new Error(`You need an active Mythic Elixir of ${stat} (from the Trial Cache).`); e.clientSafe = true; e.status = 400; throw e; }
+      const trophyItem = db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any;
+      if (!trophyItem) { const e: any = new Error('Monster Trophies do not exist on this server yet.'); e.clientSafe = true; e.status = 400; throw e; }
+      const have = db
+        .prepare("SELECT SUM(quantity) AS qty FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0")
+        .get(char.id, trophyItem.id) as { qty: number } | undefined;
+      const needTrophies = recipe.inputs.find((i) => i.slug === 'monster_trophy')?.quantity || 0;
+      if ((have?.qty || 0) < needTrophies) { const e: any = new Error(`Need ${needTrophies} Monster Trophies (claim them from the Bounty Board).`); e.clientSafe = true; e.status = 400; throw e; }
+      const debit = db
+        .prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?')
+        .run(recipe.gold_cost, char.id, recipe.gold_cost);
+      if (debit.changes !== 1) { const e: any = new Error(`Need ${recipe.gold_cost}g for the forge bill.`); e.clientSafe = true; e.status = 400; throw e; }
+      let remaining = needTrophies;
+      const stacks = db
+        .prepare('SELECT id, quantity FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 ORDER BY id ASC')
+        .all(char.id, trophyItem.id) as { id: number; quantity: number }[];
+      for (const s of stacks) {
+        if (remaining <= 0) break;
+        if (s.quantity <= remaining) {
+          db.prepare('DELETE FROM inventory WHERE id = ?').run(s.id);
+          remaining -= s.quantity;
+        } else {
+          db.prepare('UPDATE inventory SET quantity = quantity - ? WHERE id = ?').run(remaining, s.id);
+          remaining = 0;
+        }
+      }
+      const gemItem = db.prepare('SELECT id FROM items WHERE slug = ?').get(recipe.gem_slug) as any;
+      db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, gemItem.id);
+    }).immediate();
+    logFromRequest(req, {
+      category: 'inventory', action: 'recipe_brew',
+      character_id: char.id,
+      target_type: 'item',
+      message: `${char.name} brewed ${recipe.gem_name}`,
+      meta: { recipe: recipe.slug, gold_cost: recipe.gold_cost, elixir_stat: RECIPE_ELIXIR_STAT[recipe.slug] },
+    });
+    res.json({ ok: true, gem: recipe.gem_name, cost: recipe.gold_cost });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-
-  // 2. Trophies available.
-  const trophyItem = db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any;
-  if (!trophyItem) { res.status(400).json({ error: 'Monster Trophies do not exist on this server yet.' }); return; }
-  const have = db
-    .prepare("SELECT SUM(quantity) AS qty FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0")
-    .get(char.id, trophyItem.id) as { qty: number } | undefined;
-  const needTrophies = recipe.inputs.find((i) => i.slug === 'monster_trophy')?.quantity || 0;
-  if ((have?.qty || 0) < needTrophies) {
-    res.status(400).json({ error: `Need ${needTrophies} Monster Trophies (claim them from the Bounty Board).` });
-    return;
-  }
-
-  // 3. Atomic gold debit.
-  const debit = db
-    .prepare('UPDATE characters SET gold = gold - ? WHERE id = ? AND gold >= ?')
-    .run(recipe.gold_cost, char.id, recipe.gold_cost);
-  if (debit.changes !== 1) { res.status(400).json({ error: `Need ${recipe.gold_cost}g for the forge bill.` }); return; }
-
-  // 4. Consume trophies (only delete the count we need).
-  let remaining = needTrophies;
-  const stacks = db
-    .prepare(`SELECT id, quantity FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0 ORDER BY id ASC`)
-    .all(char.id, trophyItem.id) as { id: number; quantity: number }[];
-  for (const s of stacks) {
-    if (remaining <= 0) break;
-    if (s.quantity <= remaining) {
-      db.prepare('DELETE FROM inventory WHERE id = ?').run(s.id);
-      remaining -= s.quantity;
-    } else {
-      db.prepare('UPDATE inventory SET quantity = quantity - ? WHERE id = ?').run(remaining, s.id);
-      remaining = 0;
-    }
-  }
-
-  // 5. Mint the gem.
-  const gemItem = db.prepare('SELECT id FROM items WHERE slug = ?').get(recipe.gem_slug) as any;
-  db.prepare(`INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')`)
-    .run(char.id, gemItem.id);
-
-  logFromRequest(req, {
-    category: 'inventory', action: 'recipe_brew',
-    character_id: char.id,
-    target_type: 'item',
-    message: `${char.name} brewed ${recipe.gem_name}`,
-    meta: { recipe: recipe.slug, gold_cost: recipe.gold_cost, trophies_used: needTrophies, elixir_stat: stat },
-  });
-
-  res.json({ ok: true, gem: recipe.gem_name, cost: recipe.gold_cost });
 });
 
 const socketSchema = z.object({ gemInventoryId: z.number().int(), weaponInventoryId: z.number().int() });
@@ -247,68 +240,72 @@ router.post('/socket', (req, res) => {
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
 
-  // Fetch the two items, validate.
-  const gem = db
-    .prepare(
-      `SELECT inv.id AS inv_id, inv.quantity, items.slug, items.name
-       FROM inventory inv JOIN items ON items.id = inv.item_id
-       WHERE inv.id = ? AND inv.character_id = ?`,
-    )
-    .get(parse.data.gemInventoryId, char.id) as any;
-  if (!gem) { res.status(404).json({ error: 'Gem not in your bag' }); return; }
-  const recipe = RECIPES.find((r) => r.gem_slug === gem.slug);
-  if (!recipe) { res.status(400).json({ error: 'That item is not a gem.' }); return; }
-
-  const weapon = db
-    .prepare(
-      `SELECT inv.id AS inv_id, inv.equipped, items.id AS item_id, items.name, items.category
-       FROM inventory inv JOIN items ON items.id = inv.item_id
-       WHERE inv.id = ? AND inv.character_id = ?`,
-    )
-    .get(parse.data.weaponInventoryId, char.id) as any;
-  if (!weapon) { res.status(404).json({ error: 'Weapon not in your bag' }); return; }
-  if (weapon.category !== 'weapon') { res.status(400).json({ error: 'Only weapons accept gems.' }); return; }
-
-  // Apply the socket as an enchant entry (so deriveStats already picks it up
-  // via the inventory_enchants join — no new derivation path needed).
-  const existing = db
-    .prepare('SELECT enchant_count, bonuses_json FROM inventory_enchants WHERE inventory_id = ?')
-    .get(weapon.inv_id) as { enchant_count: number; bonuses_json: string } | undefined;
-  const bonuses: Record<string, number> = existing ? JSON.parse(existing.bonuses_json || '{}') : {};
-  bonuses[recipe.socket_stat] = (bonuses[recipe.socket_stat] || 0) + recipe.socket_amount;
-  const count = (existing?.enchant_count || 0) + 1;
-  db.prepare(
-    `INSERT INTO inventory_enchants (inventory_id, enchant_count, bonuses_json) VALUES (?, ?, ?)
-     ON CONFLICT(inventory_id) DO UPDATE SET enchant_count = excluded.enchant_count, bonuses_json = excluded.bonuses_json`,
-  ).run(weapon.inv_id, count, JSON.stringify(bonuses));
-
-  // Consume the gem stack (one).
-  if (gem.quantity > 1) {
-    db.prepare('UPDATE inventory SET quantity = quantity - 1 WHERE id = ?').run(gem.inv_id);
-  } else {
-    db.prepare('DELETE FROM inventory WHERE id = ?').run(gem.inv_id);
+  // Audit (backend round + security M1): two concurrent /socket calls
+  // with the same gemInventoryId both passed the SELECT, both applied
+  // the enchant bonus, and the decrement raced — quantity could go
+  // negative AND the enchant could double-stack past the 5-cap. The
+  // gem decrement is now the first write inside a transaction, gated
+  // on quantity >= 1; the loser sees changes === 0 and bails. Also
+  // enforces the 5-enchant cap that /forge/enchant uses.
+  try {
+    const result = db.transaction(() => {
+      const gem = db
+        .prepare(
+          `SELECT inv.id AS inv_id, inv.quantity, items.slug, items.name
+           FROM inventory inv JOIN items ON items.id = inv.item_id
+           WHERE inv.id = ? AND inv.character_id = ?`,
+        )
+        .get(parse.data.gemInventoryId, char.id) as any;
+      if (!gem) { const e: any = new Error('Gem not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      const recipe = RECIPES.find((r) => r.gem_slug === gem.slug);
+      if (!recipe) { const e: any = new Error('That item is not a gem.'); e.clientSafe = true; e.status = 400; throw e; }
+      const weapon = db
+        .prepare(
+          `SELECT inv.id AS inv_id, inv.equipped, items.id AS item_id, items.name, items.category
+           FROM inventory inv JOIN items ON items.id = inv.item_id
+           WHERE inv.id = ? AND inv.character_id = ?`,
+        )
+        .get(parse.data.weaponInventoryId, char.id) as any;
+      if (!weapon) { const e: any = new Error('Weapon not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      if (weapon.category !== 'weapon') { const e: any = new Error('Only weapons accept gems.'); e.clientSafe = true; e.status = 400; throw e; }
+      const existing = db
+        .prepare('SELECT enchant_count, bonuses_json FROM inventory_enchants WHERE inventory_id = ?')
+        .get(weapon.inv_id) as { enchant_count: number; bonuses_json: string } | undefined;
+      const currentCount = existing?.enchant_count || 0;
+      if (currentCount >= 5) { const e: any = new Error('This weapon already has 5 enchants (max).'); e.clientSafe = true; e.status = 400; throw e; }
+      const dec = db.prepare('UPDATE inventory SET quantity = quantity - 1 WHERE id = ? AND character_id = ? AND quantity >= 1').run(gem.inv_id, char.id);
+      if (dec.changes !== 1) { const e: any = new Error('Gem not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      db.prepare('DELETE FROM inventory WHERE id = ? AND quantity <= 0').run(gem.inv_id);
+      const bonuses: Record<string, number> = existing ? JSON.parse(existing.bonuses_json || '{}') : {};
+      bonuses[recipe.socket_stat] = (bonuses[recipe.socket_stat] || 0) + recipe.socket_amount;
+      const count = currentCount + 1;
+      db.prepare(
+        `INSERT INTO inventory_enchants (inventory_id, enchant_count, bonuses_json) VALUES (?, ?, ?)
+         ON CONFLICT(inventory_id) DO UPDATE SET enchant_count = excluded.enchant_count, bonuses_json = excluded.bonuses_json`,
+      ).run(weapon.inv_id, count, JSON.stringify(bonuses));
+      return { recipe, weapon, bonuses, count };
+    }).immediate();
+    trackBattlePass(char.id, 'forge_enchant', 1);
+    trackBattlePass(char.id, 'forge_high_enchant', result.count);
+    logFromRequest(req, {
+      category: 'inventory', action: 'recipe_socket',
+      character_id: char.id,
+      target_id: result.weapon.item_id,
+      target_type: 'item',
+      message: `${char.name} socketed ${result.recipe.gem_name} into ${result.weapon.name}`,
+      meta: { gem: result.recipe.gem_slug, weapon: result.weapon.name, stat: result.recipe.socket_stat, amount: result.recipe.socket_amount, new_enchant_count: result.count },
+    });
+    res.json({
+      ok: true,
+      stat: result.recipe.socket_stat,
+      amount: result.recipe.socket_amount,
+      new_enchants: result.count,
+      new_bonuses: result.bonuses,
+    });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-
-  // Battle pass: socketing counts as a forge_enchant action.
-  trackBattlePass(char.id, 'forge_enchant', 1);
-  trackBattlePass(char.id, 'forge_high_enchant', count);
-
-  logFromRequest(req, {
-    category: 'inventory', action: 'recipe_socket',
-    character_id: char.id,
-    target_id: weapon.item_id,
-    target_type: 'item',
-    message: `${char.name} socketed ${recipe.gem_name} into ${weapon.name}`,
-    meta: { gem: recipe.gem_slug, weapon: weapon.name, stat: recipe.socket_stat, amount: recipe.socket_amount, new_enchant_count: count },
-  });
-
-  res.json({
-    ok: true,
-    stat: recipe.socket_stat,
-    amount: recipe.socket_amount,
-    new_enchants: count,
-    new_bonuses: bonuses,
-  });
 });
 
 export default router;

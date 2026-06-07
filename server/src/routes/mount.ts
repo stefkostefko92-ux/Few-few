@@ -185,29 +185,39 @@ router.post('/buy', (req, res) => {
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  const already = db
-    .prepare(`SELECT inv.id FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.character_id = ? AND items.slug = ?`)
-    .get(char.id, mount.slug) as any;
-  if (already) { res.status(400).json({ error: `You already own ${mount.name}.` }); return; }
-
-  const debit = db
-    .prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?')
-    .run(mount.gem_cost, mount.gem_cost, char.id, mount.gem_cost);
-  if (debit.changes !== 1) { res.status(400).json({ error: `Need ${mount.gem_cost} gems.` }); return; }
-
-  const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(mount.slug) as any;
-  const ins = db.prepare(
-    `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)`,
-  ).run(char.id, item.id);
-
-  logFromRequest(req, {
-    category: 'payment', action: 'mount_buy',
-    character_id: char.id,
-    target_type: 'item',
-    message: `${char.name} bought ${mount.name} for ${mount.gem_cost} gems`,
-    meta: { slug: mount.slug, gem_cost: mount.gem_cost, tier: mount.tier, rarity: mount.rarity },
-  });
-  res.json({ ok: true, mount_inv_id: ins.lastInsertRowid });
+  // Audit (backend round): the "already owns" check, the gem debit,
+  // and the inventory INSERT were three separate statements. Two
+  // parallel /buy calls for the same mount both passed the existence
+  // check, both debited, both INSERTed — the player paid 2x gem cost
+  // for two copies. Now wrapped in BEGIN IMMEDIATE so the second call
+  // sees the first INSERT and bails.
+  try {
+    const ins = db.transaction(() => {
+      const already = db
+        .prepare('SELECT inv.id FROM inventory inv JOIN items ON items.id = inv.item_id WHERE inv.character_id = ? AND items.slug = ?')
+        .get(char.id, mount.slug) as any;
+      if (already) { const e: any = new Error(`You already own ${mount.name}.`); e.clientSafe = true; e.status = 400; throw e; }
+      const debit = db
+        .prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?')
+        .run(mount.gem_cost, mount.gem_cost, char.id, mount.gem_cost);
+      if (debit.changes !== 1) { const e: any = new Error(`Need ${mount.gem_cost} gems.`); e.clientSafe = true; e.status = 400; throw e; }
+      const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(mount.slug) as any;
+      return db.prepare(
+        "INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)",
+      ).run(char.id, item.id);
+    }).immediate();
+    logFromRequest(req, {
+      category: 'payment', action: 'mount_buy',
+      character_id: char.id,
+      target_type: 'item',
+      message: `${char.name} bought ${mount.name} for ${mount.gem_cost} gems`,
+      meta: { slug: mount.slug, gem_cost: mount.gem_cost, tier: mount.tier, rarity: mount.rarity },
+    });
+    res.json({ ok: true, mount_inv_id: ins.lastInsertRowid });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
+  }
 });
 
 const addonSchema = z.object({ slug: z.string(), addonKey: z.string() });

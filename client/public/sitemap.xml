@@ -10,39 +10,39 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <url>
-    <loc>http://46.225.136.10:4000/</loc>
+    <loc>https://nexus.carbonstealth.eu/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="x-default" href="http://46.225.136.10:4000/" />
-    <xhtml:link rel="alternate" hreflang="en"        href="http://46.225.136.10:4000/" />
-    <xhtml:link rel="alternate" hreflang="it"        href="http://46.225.136.10:4000/?lang=it" />
-    <xhtml:link rel="alternate" hreflang="it-IT"     href="http://46.225.136.10:4000/?lang=it" />
-    <xhtml:link rel="alternate" hreflang="bg"        href="http://46.225.136.10:4000/?lang=bg" />
-    <xhtml:link rel="alternate" hreflang="bg-BG"     href="http://46.225.136.10:4000/?lang=bg" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nexus.carbonstealth.eu/" />
+    <xhtml:link rel="alternate" hreflang="en"        href="https://nexus.carbonstealth.eu/" />
+    <xhtml:link rel="alternate" hreflang="it"        href="https://nexus.carbonstealth.eu/?lang=it" />
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://nexus.carbonstealth.eu/?lang=it" />
+    <xhtml:link rel="alternate" hreflang="bg"        href="https://nexus.carbonstealth.eu/?lang=bg" />
+    <xhtml:link rel="alternate" hreflang="bg-BG"     href="https://nexus.carbonstealth.eu/?lang=bg" />
   </url>
 
   <url>
-    <loc>http://46.225.136.10:4000/?lang=it</loc>
+    <loc>https://nexus.carbonstealth.eu/?lang=it</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="it" href="http://46.225.136.10:4000/?lang=it" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://nexus.carbonstealth.eu/?lang=it" />
   </url>
 
   <url>
-    <loc>http://46.225.136.10:4000/?lang=bg</loc>
+    <loc>https://nexus.carbonstealth.eu/?lang=bg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="bg" href="http://46.225.136.10:4000/?lang=bg" />
+    <xhtml:link rel="alternate" hreflang="bg" href="https://nexus.carbonstealth.eu/?lang=bg" />
   </url>
 
   <url>
-    <loc>http://46.225.136.10:4000/login</loc>
+    <loc>https://nexus.carbonstealth.eu/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>http://46.225.136.10:4000/register</loc>
+    <loc>https://nexus.carbonstealth.eu/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

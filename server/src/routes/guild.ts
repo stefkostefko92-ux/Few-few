@@ -740,31 +740,52 @@ router.post('/dungeon/attack', (req, res) => {
   const result = simulateCombat(hero, segFoe);
   const damageDealt = segFoe.hp_max - result.foe.hp;
 
-  const newBossHp = Math.max(0, run.boss_hp - damageDealt);
+  // Audit (backend round): the previous flow read boss_hp + cleared_at,
+  // applied damage, then wrote absolute boss_hp and conditionally fired
+  // the guildwide reward loop. Two concurrent strikes that each saw
+  // boss_hp == 1 both ran the reward block — every guild member got
+  // double XP+gold and the guild treasury got 2000/500 twice.
+  // Energy was also written absolutely from a JS snapshot, so parallel
+  // strikes could clobber other paths' character writes.
+  //
+  // Now: atomic energy debit gates the work; boss_hp uses MAX(0, hp-?)
+  // so concurrent strikes compose; and the rewards block is gated on
+  // a CAS UPDATE of cleared_at IS NULL AND boss_hp <= 0 — exactly one
+  // strike wins the kill and emits rewards.
   const contributions: Record<string, number> = JSON.parse(run.contributions_json || '[]') as any;
   const map: Record<string, number> = Array.isArray(contributions) ? {} : (contributions as any);
   map[String(char.id)] = (map[String(char.id)] || 0) + damageDealt;
-  db.prepare('UPDATE guild_dungeon_run SET boss_hp = ?, contributions_json = ? WHERE guild_id = ?')
-    .run(newBossHp, JSON.stringify(map), g.guild.id);
-
-  char.hp = Math.max(1, result.hero.hp);
-  char.energy -= 8;
-  db.prepare('UPDATE characters SET hp = ?, energy = ? WHERE id = ?').run(char.hp, char.energy, char.id);
-  db.prepare('UPDATE guild_members SET contribution = contribution + ? WHERE character_id = ?').run(Math.floor(damageDealt / 10), char.id);
-
   let cleared = false;
-  if (newBossHp <= 0 && !run.cleared_at) {
-    db.prepare('UPDATE guild_dungeon_run SET cleared_at = ? WHERE guild_id = ?').run(Date.now(), g.guild.id);
-    cleared = true;
-    // Reward all members
-    const members = db.prepare('SELECT character_id FROM guild_members WHERE guild_id = ?').all(g.guild.id) as { character_id: number }[];
-    const xpReward = 200 + boss.level * 40;
-    const goldReward = 100 + boss.level * 20;
-    for (const m of members) {
-      db.prepare('UPDATE characters SET xp = xp + ?, gold = gold + ?, total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?')
-        .run(xpReward, goldReward, xpReward, goldReward, m.character_id);
-    }
-    db.prepare('UPDATE guilds SET xp = xp + ?, gold = gold + ? WHERE id = ?').run(2000, 500, g.guild.id);
+  let newBossHp = run.boss_hp;
+  try {
+    const out = db.transaction(() => {
+      const eDeb = db.prepare('UPDATE characters SET energy = energy - 8 WHERE id = ? AND energy >= 8').run(char.id);
+      if (eDeb.changes !== 1) { const e: any = new Error('8 energy required to strike the raid boss'); e.clientSafe = true; e.status = 400; throw e; }
+      db.prepare('UPDATE guild_dungeon_run SET boss_hp = MAX(0, boss_hp - ?), contributions_json = ? WHERE guild_id = ?')
+        .run(damageDealt, JSON.stringify(map), g.guild.id);
+      db.prepare('UPDATE characters SET hp = ? WHERE id = ?').run(Math.max(1, result.hero.hp), char.id);
+      db.prepare('UPDATE guild_members SET contribution = contribution + ? WHERE character_id = ?').run(Math.floor(damageDealt / 10), char.id);
+      const after = db.prepare('SELECT boss_hp, cleared_at FROM guild_dungeon_run WHERE guild_id = ?').get(g.guild.id) as { boss_hp: number; cleared_at: number | null };
+      // Atomic kill-and-reward gate. Only one parallel strike can win.
+      const killShot = db.prepare('UPDATE guild_dungeon_run SET cleared_at = ? WHERE guild_id = ? AND cleared_at IS NULL AND boss_hp <= 0').run(Date.now(), g.guild.id);
+      if (killShot.changes === 1) {
+        const members = db.prepare('SELECT character_id FROM guild_members WHERE guild_id = ?').all(g.guild.id) as { character_id: number }[];
+        const xpReward = 200 + boss.level * 40;
+        const goldReward = 100 + boss.level * 20;
+        for (const m of members) {
+          db.prepare('UPDATE characters SET xp = xp + ?, gold = gold + ?, total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?')
+            .run(xpReward, goldReward, xpReward, goldReward, m.character_id);
+        }
+        db.prepare('UPDATE guilds SET xp = xp + ?, gold = gold + ? WHERE id = ?').run(2000, 500, g.guild.id);
+        return { cleared: true, newBossHp: 0 };
+      }
+      return { cleared: false, newBossHp: after.boss_hp };
+    }).immediate();
+    cleared = out.cleared;
+    newBossHp = out.newBossHp;
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
 
   res.json({

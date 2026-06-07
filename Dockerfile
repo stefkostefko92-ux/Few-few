@@ -38,9 +38,12 @@ RUN mkdir -p /app/data && addgroup -S app && adduser -S app -G app \
 USER app
 
 EXPOSE 4000
+# Audit (deploy round): CORS_ORIGIN must be provided explicitly in
+# production (server.ts refuses to boot under NODE_ENV=production with
+# a wildcard or missing value). No default here so the failure mode
+# is loud at compose time rather than silent at request time.
 ENV PORT=4000 \
-    DB_PATH=/app/data/nexus-dominion.db \
-    CORS_ORIGIN=*
+    DB_PATH=/app/data/nexus-dominion.db
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 CMD ["node", "server/dist/server.js"]

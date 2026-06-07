@@ -10,7 +10,11 @@ services:
       DB_PATH: /app/data/nexus-dominion.db
       JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in .env}"
       JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
-      CORS_ORIGIN: "${CORS_ORIGIN:-*}"
+      # Audit (deploy round): no wildcard fallback. server.ts refuses
+      # to boot under NODE_ENV=production if CORS_ORIGIN is missing or
+      # '*' — surfacing that at compose time rather than after the
+      # process exits inside the container.
+      CORS_ORIGIN: "${CORS_ORIGIN:?Set CORS_ORIGIN in .env (comma-separated origin list)}"
     ports:
       - "4000:4000"
     volumes:

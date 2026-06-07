@@ -31,4 +31,4 @@ User-agent: Google-Extended
 Allow: /
 
 # Update this absolute URL after pointing a domain at the VPS.
-Sitemap: http://46.225.136.10:4000/sitemap.xml
+Sitemap: https://nexus.carbonstealth.eu/sitemap.xml

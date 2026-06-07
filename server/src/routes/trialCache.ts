@@ -178,61 +178,62 @@ router.post('/buy', (req, res) => {
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
 
-  const tokens = (char as any).trial_tokens || 0;
-  if (tokens < offering.cost) {
-    res.status(400).json({ error: `Need ${offering.cost} Trial Tokens (you have ${tokens}).` });
-    return;
-  }
-
-  if (offering.once) {
-    const owned = db.prepare('SELECT 1 FROM trial_purchases WHERE character_id = ? AND slug = ?').get(char.id, offering.slug);
-    if (owned) { res.status(400).json({ error: 'Already claimed once.' }); return; }
-  }
-
-  // Atomic token debit
-  const debit = db
-    .prepare('UPDATE characters SET trial_tokens = trial_tokens - ? WHERE id = ? AND trial_tokens >= ?')
-    .run(offering.cost, char.id, offering.cost);
-  if (debit.changes !== 1) { res.status(400).json({ error: 'Token balance changed — retry.' }); return; }
-
-  // Apply effect
-  if (offering.effect.item_slug) {
-    const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(offering.effect.item_slug) as any;
-    if (item) {
-      db.prepare(
-        `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)`,
-      ).run(char.id, item.id);
-    }
-  }
-  if (offering.effect.forge_guarantees) {
-    db.prepare('UPDATE characters SET forge_guarantees = forge_guarantees + ? WHERE id = ?')
-      .run(offering.effect.forge_guarantees, char.id);
-  }
-  if (offering.effect.elixir_minutes && offering.effect.elixir_stat) {
-    // Push a new buff onto active_buffs JSON.
-    const row = db.prepare('SELECT active_buffs FROM characters WHERE id = ?').get(char.id) as any;
-    const buffs = JSON.parse(row?.active_buffs || '[]');
-    buffs.push({
-      stat: offering.effect.elixir_stat,
-      percent: offering.effect.elixir_percent || 30,
-      expires_at: Date.now() + (offering.effect.elixir_minutes || 60) * 60_000,
+  // Audit (backend round): the previous flow checked `once` ownership,
+  // then debited, then INSERTed into trial_purchases. Two parallel
+  // /buy calls both saw owned=false and both debited; the second
+  // INSERT failed on PK so the player ended up minus 12-25 trial
+  // tokens with nothing to show for it. Fix: for once-only offerings,
+  // INSERT into trial_purchases FIRST (guard) then debit + grant. For
+  // repeatable offerings, BEGIN IMMEDIATE serialises and the atomic
+  // debit gates everything else.
+  try {
+    const result = db.transaction(() => {
+      const tokens = (char as any).trial_tokens || 0;
+      if (tokens < offering.cost) { const e: any = new Error(`Need ${offering.cost} Trial Tokens (you have ${tokens}).`); e.clientSafe = true; e.status = 400; throw e; }
+      if (offering.once) {
+        // INSERT OR IGNORE returns changes=0 if the row already exists;
+        // that means the second parallel caller bails BEFORE debiting.
+        const claim = db.prepare('INSERT OR IGNORE INTO trial_purchases (character_id, slug, bought_at) VALUES (?, ?, ?)')
+          .run(char.id, offering.slug, Date.now());
+        if (claim.changes !== 1) { const e: any = new Error('Already claimed once.'); e.clientSafe = true; e.status = 400; throw e; }
+      }
+      const debit = db
+        .prepare('UPDATE characters SET trial_tokens = trial_tokens - ? WHERE id = ? AND trial_tokens >= ?')
+        .run(offering.cost, char.id, offering.cost);
+      if (debit.changes !== 1) { const e: any = new Error('Token balance changed — retry.'); e.clientSafe = true; e.status = 400; throw e; }
+      if (offering.effect.item_slug) {
+        const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(offering.effect.item_slug) as any;
+        if (item) {
+          db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)").run(char.id, item.id);
+        }
+      }
+      if (offering.effect.forge_guarantees) {
+        db.prepare('UPDATE characters SET forge_guarantees = forge_guarantees + ? WHERE id = ?')
+          .run(offering.effect.forge_guarantees, char.id);
+      }
+      if (offering.effect.elixir_minutes && offering.effect.elixir_stat) {
+        const row = db.prepare('SELECT active_buffs FROM characters WHERE id = ?').get(char.id) as any;
+        const buffs = JSON.parse(row?.active_buffs || '[]');
+        buffs.push({
+          stat: offering.effect.elixir_stat,
+          percent: offering.effect.elixir_percent || 30,
+          expires_at: Date.now() + (offering.effect.elixir_minutes || 60) * 60_000,
+        });
+        db.prepare('UPDATE characters SET active_buffs = ? WHERE id = ?').run(JSON.stringify(buffs), char.id);
+      }
+      return { tokens_remaining: tokens - offering.cost };
+    }).immediate();
+    logFromRequest(req, {
+      category: 'inventory', action: 'trial_cache_buy',
+      character_id: char.id,
+      message: `${char.name} redeemed ${offering.cost}× Trial Token for ${offering.name}`,
+      meta: { slug: offering.slug, cost: offering.cost, category: offering.category },
     });
-    db.prepare('UPDATE characters SET active_buffs = ? WHERE id = ?').run(JSON.stringify(buffs), char.id);
+    res.json({ ok: true, name: offering.name, tokens_remaining: result.tokens_remaining });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-
-  if (offering.once) {
-    db.prepare('INSERT INTO trial_purchases (character_id, slug, bought_at) VALUES (?, ?, ?)')
-      .run(char.id, offering.slug, Date.now());
-  }
-
-  logFromRequest(req, {
-    category: 'inventory', action: 'trial_cache_buy',
-    character_id: char.id,
-    message: `${char.name} redeemed ${offering.cost}× Trial Token for ${offering.name}`,
-    meta: { slug: offering.slug, cost: offering.cost, category: offering.category },
-  });
-
-  res.json({ ok: true, name: offering.name, tokens_remaining: tokens - offering.cost });
 });
 
 export default router;

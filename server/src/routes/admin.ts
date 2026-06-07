@@ -5,6 +5,7 @@ import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
 import { logFromRequest, isSafeWebhookUrl } from '../lib/logger';
+import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
 
 const router = Router();
 router.use(authRequired, adminRequired);
@@ -448,10 +449,15 @@ router.delete('/users/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// Audit (security round H1): admin-minted accounts used to allow
+// 6-character passwords with no common-word block — an attacker who
+// phished an admin could create a backdoor account with `password1`
+// and walk in via the front door. Now uses the same passwordRule +
+// bcrypt 12 rounds as the public /register endpoint.
 const createUserSchema = z.object({
-  username: z.string().min(3).max(20),
+  username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Use letters, numbers, underscores only'),
   email: z.string().email(),
-  password: z.string().min(6),
+  password: passwordRule,
   is_admin: z.boolean().optional(),
 });
 
@@ -462,7 +468,7 @@ router.post('/users', async (req, res) => {
   const db = getDb();
   const ex = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
   if (ex) { res.status(409).json({ error: 'Username or email already in use' }); return; }
-  const hash = await bcrypt.hash(password, 10);
+  const hash = await bcrypt.hash(password, PASSWORD_BCRYPT_ROUNDS);
   const now = Date.now();
   db.prepare('INSERT INTO users (username, email, password_hash, created_at, last_seen_at, is_admin) VALUES (?, ?, ?, ?, ?, ?)').run(username, email, hash, now, now, is_admin ? 1 : 0);
   res.json({ ok: true });
