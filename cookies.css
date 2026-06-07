@@ -21,11 +21,36 @@ html.tbab-cookies .cookies-popup,
 html.tbab-cookies .cmp-banner,
 html.tbab-cookies .gdpr-banner,
 html.tbab-cookies .gdpr-consent,
+html.tbab-cookies .cmpbox,
+html.tbab-cookies .fc-consent-root,
+html.tbab-cookies .cookiebanner,
+html.tbab-cookies .cookie-law-info-bar,
+html.tbab-cookies #cookie-law-info-bar,
+html.tbab-cookies .cmplz-cookiebanner,
+html.tbab-cookies .iubenda-cs-container,
+html.tbab-cookies .osano-cm-window,
+html.tbab-cookies .termly-styles-root,
+html.tbab-cookies .cky-consent-container,
+html.tbab-cookies #cookie-consent-banner,
+html.tbab-cookies #gdpr-consent-tool-wrapper,
 html.tbab-cookies [class*="cookie-consent"],
 html.tbab-cookies [class*="cookie-banner"],
+html.tbab-cookies [class*="cookie-notice"],
+html.tbab-cookies [class*="consent-banner"],
+html.tbab-cookies [class*="CookieConsent"],
 html.tbab-cookies [id*="cookie-banner"],
+html.tbab-cookies [id*="cookie-consent"],
+html.tbab-cookies [id*="cookieConsent"],
 html.tbab-cookies [aria-label*="cookie" i][role="dialog"],
-html.tbab-cookies [aria-label*="consent" i][role="dialog"] {
+html.tbab-cookies [aria-label*="consent" i][role="dialog"],
+html.tbab-cookies [aria-describedby*="cookie" i] {
+  display: none !important;
+}
+
+/* Remove scroll locks / dimming overlays these banners add. */
+html.tbab-cookies .modal-backdrop,
+html.tbab-cookies .cookie-overlay,
+html.tbab-cookies .cc-overlay {
   display: none !important;
 }
 

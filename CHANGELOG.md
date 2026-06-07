@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.1.1
+
+- Cookie/consent banner dismissal now searches open shadow DOM (where many
+  modern consent managers live), covers many more frameworks (Osano, Iubenda,
+  Termly, Cookie-Script, Quantcast FC, CookieYes, …) and removes leftover
+  dimming overlays/scroll locks.
+
 ## 3.1.0
 
 - New "YouTube ad blocking" toggle in settings. When off, the extension does

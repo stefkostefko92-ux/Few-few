@@ -1,4 +1,5 @@
 // Dismiss cookie / consent banners by clicking reject (or accept as a fallback).
+// Handles open shadow DOM, where many modern consent managers live.
 (function () {
   let active = false;
 
@@ -7,18 +8,22 @@
     ".onetrust-close-btn-handler",
     "#CybotCookiebotDialogBodyButtonDecline",
     "#CybotCookiebotDialogBodyLevelButtonLevelOptinDeclineAll",
+    "#CybotCookiebotDialogBodyButtonReject",
     ".qc-cmp2-summary-buttons button[mode='secondary']",
     ".didomi-continue-without-agreeing",
     "button#didomi-notice-disagree-button",
     ".uc-deny-button",
     "#uc-btn-deny-banner",
     "button[data-testid='uc-deny-all-button']",
+    "[data-testid='reject-all-button']",
     "#truste-consent-required",
     ".truste-button2",
     ".cc-deny",
     ".cookie-decline",
+    ".cmpboxbtnno",
     "button[aria-label*='reject' i]",
     "button[aria-label*='decline' i]",
+    "button[aria-label*='necessary' i]",
   ];
 
   const ACCEPT = [
@@ -29,36 +34,68 @@
     "#didomi-notice-agree-button",
     ".uc-accept-button",
     "#uc-btn-accept-banner",
+    "[data-testid='accept-all-button']",
     ".truste-button1",
     ".cc-allow",
     ".cc-dismiss",
     ".cookie-accept",
     ".accept-cookies",
+    ".cmpboxbtnyes",
     "button[aria-label*='accept' i]",
     "button[aria-label*='agree' i]",
+    "button[aria-label*='allow' i]",
+    // Google / YouTube consent
+    "form[action*='consent'] button",
+    "button[jsname='b3VHJd']",
   ];
 
-  const REJECT_TEXT = ["reject", "decline", "disagree", "refuse", "necessary only"];
-  const ACCEPT_TEXT = ["accept", "agree", "got it", "ok", "allow all"];
+  const REJECT_TEXT = ["reject all", "reject", "decline", "disagree", "refuse", "necessary only", "only necessary"];
+  const ACCEPT_TEXT = ["accept all", "accept", "agree", "i agree", "got it", "allow all", "ok"];
 
-  function clickFirst(selectors) {
+  // Query across the document and any open shadow roots.
+  function deepQuery(selector, deep) {
+    const out = [];
+    const collect = (root) => {
+      let found;
+      try {
+        found = root.querySelectorAll(selector);
+      } catch {
+        return;
+      }
+      for (const el of found) out.push(el);
+      if (!deep) return;
+      for (const el of root.querySelectorAll("*")) {
+        if (el.shadowRoot) collect(el.shadowRoot);
+      }
+    };
+    collect(document);
+    return out;
+  }
+
+  function visible(el) {
+    return el && el.offsetParent !== null && el.getClientRects().length > 0;
+  }
+
+  function clickFirst(selectors, deep) {
     for (const sel of selectors) {
-      const el = document.querySelector(sel);
-      if (el && el.offsetParent !== null) {
-        try {
-          el.click();
-          return true;
-        } catch {}
+      for (const el of deepQuery(sel, deep)) {
+        if (visible(el)) {
+          try {
+            el.click();
+            return true;
+          } catch {}
+        }
       }
     }
     return false;
   }
 
-  function clickByText(words) {
-    for (const b of document.querySelectorAll("button, a[role='button'], [role='button']")) {
-      const t = (b.textContent || "").trim().toLowerCase();
-      if (!t || t.length > 30) continue;
-      if (words.some((w) => t === w || t.includes(w))) {
+  function clickByText(words, deep) {
+    const buttons = deepQuery("button, a[role='button'], [role='button'], input[type='button']", deep);
+    for (const b of buttons) {
+      const t = (b.textContent || b.value || "").trim().toLowerCase();
+      if (!t || t.length > 25 || !visible(b)) continue;
+      if (words.some((w) => t === w || t.startsWith(w))) {
         try {
           b.click();
           return true;
@@ -68,27 +105,31 @@
     return false;
   }
 
-  function dismiss() {
+  function dismiss(deep) {
     if (!active) return;
-    clickFirst(REJECT) ||
-      clickFirst(ACCEPT) ||
-      clickByText(REJECT_TEXT) ||
-      clickByText(ACCEPT_TEXT);
+    clickFirst(REJECT, deep) ||
+      clickFirst(ACCEPT, deep) ||
+      clickByText(REJECT_TEXT, deep) ||
+      clickByText(ACCEPT_TEXT, deep);
   }
 
   function enable() {
     active = true;
     document.documentElement.classList.add("tbab-cookies");
-    dismiss();
-    new MutationObserver(dismiss).observe(document.documentElement, {
+    dismiss(true);
+
+    // Light passes on DOM changes (no shadow walk — keeps it cheap).
+    new MutationObserver(() => dismiss(false)).observe(document.documentElement, {
       childList: true,
       subtree: true,
     });
+
+    // A few deeper passes catch shadow-DOM and late banners.
     let n = 0;
     const t = setInterval(() => {
-      if (!active || n++ > 8) return clearInterval(t);
-      dismiss();
-    }, 800);
+      if (!active || n++ > 10) return clearInterval(t);
+      dismiss(true);
+    }, 700);
   }
 
   chrome.storage?.local.get(["enabled", "features"], (data) => {
