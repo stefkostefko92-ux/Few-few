@@ -31,15 +31,29 @@
       </div>
     </div>
 
+    <div class="site-card">
+      <span class="site-host" id="siteHost">този сайт</span>
+      <label class="mini-switch">
+        <span id="allowLabel">Блокиране</span>
+        <input type="checkbox" id="allowToggle" checked />
+        <span class="slider sm"></span>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="pickBtn" class="action-btn">🎯 Скрий елемент</button>
+      <button id="settingsBtn" class="action-btn">⚙️ Настройки</button>
+    </div>
+
     <ul class="features">
       <li>✓ YouTube видео реклами (pre/mid-roll)</li>
       <li>✓ Банери, popup-и и native реклами</li>
-      <li>✓ Тракери и анализ на поведение</li>
+      <li>✓ Cookie банери и anti-adblock защити</li>
     </ul>
   </main>
 
   <footer>
-    <span>Few-Few v2.0.0</span>
+    <span>Few-Few v2.1.0</span>
   </footer>
 
   <script src="popup.js"></script>

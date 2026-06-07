@@ -1,0 +1,36 @@
+/* Few-Few AdBlocker - element picker overlay */
+
+#fewfew-picker-highlight {
+  position: fixed;
+  z-index: 2147483646;
+  background: rgba(229, 57, 53, 0.25);
+  border: 2px solid #e53935;
+  border-radius: 3px;
+  pointer-events: none;
+  transition: all 0.05s ease;
+  box-shadow: 0 0 0 100000px rgba(0, 0, 0, 0.15);
+}
+
+#fewfew-picker-tip {
+  position: fixed;
+  z-index: 2147483647;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e2e;
+  color: #fff;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 10px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+#fewfew-picker-tip b {
+  color: #e57373;
+}
+
+html.fewfew-picking,
+html.fewfew-picking * {
+  cursor: crosshair !important;
+}

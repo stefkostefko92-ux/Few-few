@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Few-Few AdBlocker",
-  "version": "2.0.0",
-  "description": "Блокира всякакъв вид реклами навсякъде - включително YouTube pre-roll, mid-roll и видео реклами, банери, popup-и и тракери.",
+  "version": "2.1.0",
+  "description": "Блокира всякакъв вид реклами навсякъде - YouTube видео реклами, банери, popup-и, тракери, cookie банери и anti-adblock съобщения.",
   "default_locale": "bg",
   "permissions": [
     "declarativeNetRequest",
@@ -32,6 +32,10 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -39,6 +43,27 @@
       "css": ["content.css"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["cookies.js"],
+      "css": ["cookies.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["antiadblock.js"],
+      "css": ["antiadblock.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["picker.js"],
+      "css": ["picker.css"],
+      "run_at": "document_idle",
+      "all_frames": false
     },
     {
       "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],

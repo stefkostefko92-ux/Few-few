@@ -3,6 +3,14 @@
 
 (function () {
   let enabled = true;
+  let customSelectors = [];
+
+  // Текущ домейн (без www.) за allowlist и персонални правила.
+  const HOST = location.hostname.replace(/^www\./, "");
+
+  function hostMatches(domain) {
+    return HOST === domain || HOST.endsWith("." + domain);
+  }
 
   // CSS селектори за често срещани рекламни контейнери.
   const AD_SELECTORS = [
@@ -80,7 +88,7 @@
   function hideAds(root = document) {
     if (!enabled) return;
     let hidden = 0;
-    AD_SELECTORS.forEach((sel) => {
+    AD_SELECTORS.concat(customSelectors).forEach((sel) => {
       let nodes;
       try {
         nodes = root.querySelectorAll(sel);
@@ -108,16 +116,35 @@
     });
   }
 
-  // Стартиране само ако blocking-а е включен.
-  chrome.storage?.local.get("enabled", (data) => {
-    enabled = data.enabled !== false;
-    if (enabled) start();
-  });
+  // Стартиране само ако blocking-а е включен и сайтът не е в allowlist-а.
+  chrome.storage?.local.get(
+    ["enabled", "allowlist", "customHidden"],
+    (data) => {
+      enabled = data.enabled !== false;
+      const allowlisted = (data.allowlist || []).some(hostMatches);
+
+      // Зареди персоналните селектори за този домейн (от element picker-а).
+      const map = data.customHidden || {};
+      for (const [domain, sels] of Object.entries(map)) {
+        if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
+      }
+
+      if (enabled && !allowlisted) start();
+    }
+  );
 
   chrome.storage?.onChanged.addListener((changes) => {
     if (changes.enabled) {
       enabled = changes.enabled.newValue !== false;
       if (enabled) start();
+    }
+    if (changes.customHidden) {
+      const map = changes.customHidden.newValue || {};
+      customSelectors = [];
+      for (const [domain, sels] of Object.entries(map)) {
+        if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
+      }
+      if (enabled) hideAds();
     }
   });
 

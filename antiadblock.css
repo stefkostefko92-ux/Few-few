@@ -1,0 +1,35 @@
+/* Few-Few AdBlocker - неутрализиране на anti-adblock съобщения.
+   Прилага се само когато функцията е включена (клас на <html>). */
+
+html.fewfew-aab [class*="adblock"],
+html.fewfew-aab [id*="adblock"],
+html.fewfew-aab [class*="ad-block"],
+html.fewfew-aab [id*="ad-block"],
+html.fewfew-aab [class*="adBlock"],
+html.fewfew-aab [class*="anti-adblock"],
+html.fewfew-aab [class*="adblocker"],
+html.fewfew-aab [id*="adblocker"],
+html.fewfew-aab .adblock-notice,
+html.fewfew-aab .adblock-overlay,
+html.fewfew-aab .adblock-modal,
+html.fewfew-aab #adblock-modal,
+html.fewfew-aab .ab-overlay,
+html.fewfew-aab .blocker-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Възстанови скрола и махни blur ефектите, които сайтовете слагат */
+html.fewfew-aab,
+html.fewfew-aab body {
+  overflow: auto !important;
+  filter: none !important;
+  position: static !important;
+  height: auto !important;
+}
+
+html.fewfew-aab body > * {
+  filter: none !important;
+}

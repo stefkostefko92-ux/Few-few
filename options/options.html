@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="options.css" />
+  <title>Few-Few AdBlocker — Настройки</title>
+</head>
+<body>
+  <header>
+    <span class="logo">🛡️</span>
+    <h1>Few-Few AdBlocker — Настройки</h1>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Статистика</h2>
+      <div class="stat-big"><span id="blockedTotal">0</span> блокирани реклами</div>
+      <button id="resetStats" class="btn ghost">Нулирай брояча</button>
+    </section>
+
+    <section class="card">
+      <h2>Допълнителни функции</h2>
+      <label class="row">
+        <div>
+          <div class="row-title">Cookie / consent банери</div>
+          <div class="row-sub">Автоматично затваря "Приеми бисквитки" прозорците</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featCookies" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Anti-adblock заобикаляне</div>
+          <div class="row-sub">Скрива "Изключи adblocker" съобщенията и възстановява страницата</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featAab" /><span class="slider"></span></label>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Бели сайтове (allowlist)</h2>
+      <p class="row-sub">На тези домейни рекламите <b>не</b> се блокират.</p>
+      <div class="add-row">
+        <input type="text" id="allowInput" placeholder="напр. example.com" />
+        <button id="allowAdd" class="btn">Добави</button>
+      </div>
+      <ul id="allowList" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Скрити елементи (element picker)</h2>
+      <p class="row-sub">Елементи, които си скрил ръчно, групирани по сайт.</p>
+      <ul id="customList" class="list"></ul>
+    </section>
+  </main>
+
+  <footer>Few-Few AdBlocker v2.1.0</footer>
+
+  <script src="options.js"></script>
+</body>
+</html>
