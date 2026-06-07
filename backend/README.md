@@ -13,6 +13,7 @@ raid → summon`, with a double-entry economy ledger and published gacha rates.
 | Server-authoritative outcomes — client only animates | `services/gameService.ts`, `domain/spin.ts` |
 | CSPRNG, never `Math.random` (§5.1, §11.3) | `domain/rng.ts` |
 | Double-entry ledger for every value movement (§6.1) | `data/ledger.ts` |
+| Atomic player save + ledger legs in one DB transaction (§11.3) | `data/store.ts`, `data/prismaStore.ts` |
 | Tunable LiveOps config, zod-validated (§6.2) | `config/liveops.ts` |
 | Predetermined raid spots — no client probing (§5.4) | `services/gameService.ts` `prepareRaid` |
 | Published gacha drop rates + dual pity (§5.6, §12.2) | `domain/gacha.ts`, `GET /gacha/rates` |
@@ -57,7 +58,7 @@ npm run db:push                         # create the schema
 npm run dev
 
 npm test                 # vitest — 74 in-memory tests (no infra, incl. WebSocket chat + SDK)
-npm run test:integration # 6 tests against a live PG (+ Redis); needs DATABASE_URL
+npm run test:integration # 8 tests against a live PG (+ Redis); needs DATABASE_URL
 npm run typecheck        # tsc --noEmit
 ```
 
@@ -127,6 +128,4 @@ drain the analytics stream, and the Unity client (§11.1). The
 IAP layer ships a sandbox receipt validator and the RevenueCat-style webhook
 shape — wiring the real StoreKit/Play Billing/RevenueCat validators is a drop-in
 `ReceiptValidator`. Clan chat history is in-memory per process for the prototype
-(production persists to Postgres/Redis and scales chat across nodes). Cross-
-aggregate atomicity (player save + ledger in one DB transaction) is also a
-follow-up — the current Prisma backend writes them in separate transactions.
+(production persists to Postgres/Redis and scales chat across nodes).

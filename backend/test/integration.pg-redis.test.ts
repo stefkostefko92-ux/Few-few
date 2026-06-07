@@ -5,6 +5,7 @@ import { PrismaLedger } from "../src/data/prismaLedger.js";
 import { PrismaPlayerRepository } from "../src/data/prismaRepository.js";
 import { PrismaPurchaseRepository } from "../src/data/prismaPurchaseRepository.js";
 import { PrismaLiveOpsStore } from "../src/data/prismaLiveOpsStore.js";
+import { PrismaStore } from "../src/data/prismaStore.js";
 import { createPrismaClient } from "../src/data/prismaClient.js";
 import { playerAccount } from "../src/data/ledger.js";
 import type { Currency } from "../src/domain/types.js";
@@ -129,6 +130,47 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     expect(second.granted).toBe(false);
     expect((await repo.getOrThrow(p.id)).spins).toBe(before + 180); // granted once
     await assertBooks([p.id]);
+  });
+
+  it("rolls back the player update AND ledger legs together when a txn throws (§11.3)", async () => {
+    const player = await game.createPlayer("Tx"); // committed via the default store
+    const store = new PrismaStore(prisma);
+
+    await expect(
+      store.transaction(async (tx) => {
+        await tx.ledger.mint(player.id, "coins", 9999, "SHOULD_ROLLBACK");
+        const p = await tx.players.getOrThrow(player.id);
+        p.coins += 9999;
+        await tx.players.save(p);
+        throw new Error("boom"); // abort after writing both
+      }),
+    ).rejects.toThrow("boom");
+
+    // Neither the ledger leg nor the player mutation survived the rollback.
+    expect(await ledger.balanceOf(playerAccount(player.id), "coins")).toBe(0);
+    expect((await repo.getOrThrow(player.id)).coins).toBe(0);
+    await assertBooks([player.id]);
+  });
+
+  it("commits a real spin atomically over PrismaStore", async () => {
+    const store = new PrismaStore(prisma);
+    const txGame = new GameService({
+      store,
+      liveOps: new (await import("../src/config/liveOpsStore.js")).MemoryLiveOpsStore(defaultLiveOps),
+      rng: q.rng,
+      clock: new FakeClock(1_000_000),
+    });
+    const p = await txGame.createPlayer("Spinner");
+    const before = (await repo.getOrThrow(p.id)).spins;
+    const { outcome } = await txGame.spin(p.id, 1); // default rng → 3× coin jackpot
+
+    const reloaded = await repo.getOrThrow(p.id);
+    expect(reloaded.spins).toBe(before - 1);
+    expect(reloaded.coins).toBe(outcome.coins);
+    // Player balances equal the SQL-aggregated ledger → committed consistently.
+    expect(await ledger.balanceOf(playerAccount(p.id), "coins")).toBe(reloaded.coins);
+    expect(await ledger.balanceOf(playerAccount(p.id), "spins")).toBe(reloaded.spins);
+    expect(await ledger.netForCurrency("coins")).toBe(0);
   });
 
   it("persists a LiveOps config update across store instances (§6.2)", async () => {

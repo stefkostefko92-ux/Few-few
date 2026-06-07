@@ -5,15 +5,16 @@ import { AuthService } from "./auth/authService.js";
 import { TokenService } from "./auth/tokens.js";
 import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository.js";
 import { MemoryClanRepository, type ClanRepository } from "./data/clanRepository.js";
-import { MemoryLedger, type Ledger } from "./data/ledger.js";
+import { MemoryLedger } from "./data/ledger.js";
 import { MemoryPlayerRepository } from "./data/memoryRepository.js";
 import { MemoryPurchaseRepository, type PurchaseRepository } from "./data/purchaseRepository.js";
 import { PrismaAuthRepository } from "./data/prismaAuthRepository.js";
 import { PrismaClanRepository } from "./data/prismaClanRepository.js";
-import { PrismaLedger } from "./data/prismaLedger.js";
 import { PrismaPlayerRepository } from "./data/prismaRepository.js";
 import { PrismaPurchaseRepository } from "./data/prismaPurchaseRepository.js";
+import { PrismaStore } from "./data/prismaStore.js";
 import { createPrismaClient } from "./data/prismaClient.js";
+import { MemoryStore, type Store } from "./data/store.js";
 import type { PlayerRepository } from "./data/repository.js";
 import { createApp } from "./http/app.js";
 import { Catalog } from "./monetization/catalog.js";
@@ -48,15 +49,15 @@ async function main(): Promise<void> {
   }
 
   let repo: PlayerRepository;
-  let ledger: Ledger;
+  let store: Store;
   let authRepo: AuthRepository;
   let purchases: PurchaseRepository;
   let clanRepo: ClanRepository;
   let liveOps: LiveOpsStore;
   if (process.env.DATABASE_URL) {
     const prisma = createPrismaClient(process.env.DATABASE_URL);
-    repo = new PrismaPlayerRepository(prisma);
-    ledger = new PrismaLedger(prisma);
+    repo = new PrismaPlayerRepository(prisma); // non-transactional reads/writes (clans)
+    store = new PrismaStore(prisma); // atomic unit of work for value-bearing actions
     authRepo = new PrismaAuthRepository(prisma);
     purchases = new PrismaPurchaseRepository(prisma);
     clanRepo = new PrismaClanRepository(prisma);
@@ -64,8 +65,9 @@ async function main(): Promise<void> {
     // eslint-disable-next-line no-console
     console.log("storage: Postgres (Prisma)");
   } else {
-    repo = new MemoryPlayerRepository();
-    ledger = new MemoryLedger();
+    const memRepo = new MemoryPlayerRepository();
+    repo = memRepo;
+    store = new MemoryStore(memRepo, new MemoryLedger());
     authRepo = new MemoryAuthRepository();
     purchases = new MemoryPurchaseRepository();
     clanRepo = new MemoryClanRepository();
@@ -91,8 +93,7 @@ async function main(): Promise<void> {
 
   const clan = new ClanService({ clanRepo, playerRepo: repo });
   const game = new GameService({
-    repo,
-    ledger,
+    store,
     liveOps,
     leaderboard,
     analytics,
