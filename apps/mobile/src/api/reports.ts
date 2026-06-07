@@ -1,5 +1,36 @@
 import { config } from '@/config';
-import type { QueuedReport, SubmitResult } from '@/types';
+import type { QueuedReport, ReportStatusResult, SubmitResult } from '@/types';
+
+/**
+ * Проверява състоянието на сигнал по публичния му номер. Връща `null`, когато
+ * няма сигнал с този номер (HTTP 404), за да го разграничим от реална грешка.
+ */
+export async function getReportStatus(
+  code: string,
+): Promise<ReportStatusResult | null> {
+  const normalized = code.trim().toUpperCase();
+  const response = await fetch(
+    `${config.apiBaseUrl}/reports/${encodeURIComponent(normalized)}/status`,
+  );
+
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`Грешка при проверката (HTTP ${response.status}).`);
+  }
+
+  const data: unknown = await response.json();
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as { statusLabel?: unknown }).statusLabel === 'string' &&
+    typeof (data as { publicCode?: unknown }).publicCode === 'string'
+  ) {
+    return data as ReportStatusResult;
+  }
+  throw new Error('Неочакван отговор от сървъра.');
+}
 
 /**
  * Подава сигнал към API-то като multipart: структурирани метаданни плюс

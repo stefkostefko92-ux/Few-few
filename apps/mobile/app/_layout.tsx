@@ -39,6 +39,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="status" options={{ title: 'Провери сигнал' }} />
           <Stack.Screen name="report/category" options={{ title: 'Нов сигнал' }} />
           <Stack.Screen name="report/capture" options={{ title: 'Нов сигнал' }} />
           <Stack.Screen name="report/location" options={{ title: 'Нов сигнал' }} />

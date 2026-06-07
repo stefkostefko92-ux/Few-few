@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { SecondaryButton } from '@/components/SecondaryButton';
 import { strings } from '@/i18n/strings';
 import { useDraftStore } from '@/store/draftStore';
 import { useQueueStore } from '@/store/queueStore';
@@ -49,6 +50,11 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.footer}>
+        <SecondaryButton
+          label={strings.status.entry}
+          icon="magnify"
+          onPress={() => router.push('/status')}
+        />
         {pending > 0 ? (
           <View style={styles.pendingCard}>
             <MaterialCommunityIcons

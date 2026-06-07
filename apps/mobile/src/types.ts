@@ -42,6 +42,18 @@ export type SubmitResult = {
   publicCode: string;
 };
 
+/** Публична справка за състоянието на сигнал по неговия номер. */
+export type ReportStatusResult = {
+  publicCode: string;
+  status: string;
+  statusLabel: string;
+  category: { slug: string; nameBg: string };
+  settlement: { slug: string; nameBg: string };
+  mediaCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export function emptyDraft(): ReportDraft {
   return {
     categorySlug: null,
