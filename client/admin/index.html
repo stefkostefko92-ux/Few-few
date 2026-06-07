@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KAGURA · LiveOps</title>
+    <style>
+      :root {
+        --sakura: #ff6fa5; --gold: #ffc94d; --sky: #4ecdc4; --night: #2a1a4a;
+        --spirit: #9b5de5; --ember: #ff7a45; --cream: #fff6e9; --charcoal: #2d2a32;
+        --success: #4ade80; --attack: #ff5470;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: "Segoe UI", system-ui, sans-serif; background: var(--night); color: var(--cream); min-height: 100vh; }
+      header { padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.1); }
+      h1 { margin: 0; font-size: 20px; background: linear-gradient(90deg, var(--spirit), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .conn { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      input, button { font: inherit; }
+      input { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: var(--cream); }
+      input[type=number] { width: 120px; }
+      button { font-weight: 700; cursor: pointer; border: none; border-radius: 10px; padding: 9px 16px; color: var(--night); background: var(--gold); }
+      button.alt { background: var(--sky); }
+      button:disabled { opacity: 0.5; cursor: default; }
+      main { max-width: 900px; margin: 0 auto; padding: 18px; }
+      fieldset { border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; margin: 0 0 16px; padding: 12px 16px; }
+      legend { color: var(--sky); font-weight: 700; text-transform: capitalize; padding: 0 6px; }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 5px 0; }
+      .row label { opacity: 0.9; }
+      .path { font-size: 11px; opacity: 0.45; }
+      .bar { height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--gold), var(--sakura)); margin-top: 4px; }
+      .muted { opacity: 0.65; font-size: 13px; }
+      .actions { position: sticky; bottom: 0; background: var(--night); padding: 14px 0; display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
+      #msg { min-height: 20px; font-weight: 700; }
+      #msg.ok { color: var(--success); } #msg.err { color: var(--attack); }
+      pre { background: rgba(0,0,0,0.35); padding: 10px; border-radius: 8px; overflow: auto; font-size: 12px; max-height: 180px; }
+      .gate { display: grid; place-items: center; min-height: 70vh; }
+      .gate .box { display: grid; gap: 10px; width: min(420px, 90vw); }
+    </style>
+  </head>
+  <body>
+    <div id="gate" class="gate">
+      <div class="box">
+        <h1>KAGURA · LiveOps console</h1>
+        <p class="muted">Tune the economy live (§6.2) — no redeploy.</p>
+        <input id="apiInput" placeholder="API base (http://localhost:3000)" />
+        <input id="keyInput" type="password" placeholder="Admin API key" />
+        <button id="connectBtn">Connect</button>
+        <p class="muted" id="gateMsg"></p>
+      </div>
+    </div>
+
+    <div id="app" style="display:none">
+      <header>
+        <h1>KAGURA · LiveOps</h1>
+        <div class="conn">
+          <span class="muted" id="apiLabel"></span>
+          <button class="alt" id="reloadBtn">Reload</button>
+          <button id="logoutBtn">Disconnect</button>
+        </div>
+      </header>
+      <main>
+        <div id="form"></div>
+        <div class="actions">
+          <button id="saveBtn">Push live ▶</button>
+          <span id="msg"></span>
+        </div>
+        <p class="muted">Raw config (validated server-side on save with the same zod schema):</p>
+        <pre id="raw"></pre>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -74,3 +74,23 @@ Open http://localhost:5173/demo/ and press **Play**.
   runs without store integration. **Never enable that flag in production.**
 - The leaderboard panel needs the backend started with `REDIS_URL` set;
   otherwise it shows "no Redis leaderboard configured".
+
+## LiveOps console
+
+An ops dashboard (`admin/`) for live-tuning the economy (§6.2) via `GET/PUT
+/admin/liveops` — no redeploy. It renders an editable form for every numeric
+config leaf (reel weights with a distribution preview, payouts, gacha rates +
+pity, spin energy, island cost curves, prices), and pushes the whole config
+back; the server re-validates it with the same zod schema and surfaces any
+issue inline.
+
+```bash
+# Backend with the admin key + CORS for the console origin:
+ADMIN_API_KEY=change-me CORS_ORIGINS=http://localhost:5173 npm run dev   # in ../backend
+
+npm run demo            # serves the console at http://localhost:5173/admin/
+```
+
+Open http://localhost:5173/admin/, enter the API base + admin key, and tune. A
+push takes effect on the **very next** spin/build/summon — the GameService reads
+the config live.

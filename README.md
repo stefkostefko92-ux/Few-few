@@ -21,7 +21,7 @@ docker compose up -d && cp .env.example .env && npm run db:push
 npm run test:integration                 # тестове срещу жив Postgres + Redis
 ```
 
-- [`client/`](client/) — **TypeScript SDK** (zero-dependency, isomorphic) + **playable web demo** (§11.1 client). `KaguraClient` покрива целия API + clan-chat WebSocket; демото е single-page игра (spin/build/summon/shop/leaderboard/clan chat) с GDD §9.2 палитра. Виж [`client/README.md`](client/README.md).
+- [`client/`](client/) — **TypeScript SDK** (zero-dependency, isomorphic) + **playable web demo** + **LiveOps console** (§11.1 / §6.2). `KaguraClient` покрива целия API + clan-chat WebSocket; демото е single-page игра (spin/build/summon/shop/leaderboard/clan chat) с GDD §9.2 палитра; конзолата (`admin/`) настройва икономиката на живо през `/admin/liveops`. Виж [`client/README.md`](client/README.md).
 
 ```bash
 cd client && npm install && npm run build      # SDK → dist/

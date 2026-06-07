@@ -26,6 +26,7 @@ const server = createServer(async (req, res) => {
   try {
     let path = decodeURIComponent((req.url ?? "/").split("?")[0]);
     if (path === "/") path = "/demo/index.html";
+    if (path.endsWith("/")) path += "index.html"; // /admin/ → /admin/index.html
     // Prevent path traversal.
     const filePath = join(root, normalize(path).replace(/^(\.\.[/\\])+/, ""));
     if (!filePath.startsWith(root)) {
