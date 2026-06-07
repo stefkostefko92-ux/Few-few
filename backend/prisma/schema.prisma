@@ -1,0 +1,116 @@
+// KAGURA SPIN — reference Postgres schema (GDD §11.2).
+//
+// The prototype runs on an in-memory repository so the full game logic is
+// testable with zero infra. This schema documents the production data model the
+// repository will be backed by: server-authoritative economy with an append-only
+// double-entry ledger. Generate the client with `prisma generate` once a
+// DATABASE_URL is configured.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id            String   @id @default(uuid())
+  name          String
+  createdAt     DateTime @default(now())
+
+  // Currencies
+  spins         Int      @default(0)
+  coins         BigInt   @default(0)
+  spiritTokens  Int      @default(0)
+  gems          Int      @default(0)
+
+  // Spin energy regen bookkeeping
+  spinsUpdatedAt DateTime @default(now())
+
+  // Defense
+  shields       Int      @default(0)
+
+  // Progression
+  currentIsland Int      @default(0)
+  islands       Island[]
+
+  // Gacha pity (§5.6)
+  pullsSinceEpic   Int        @default(0)
+  pullsSinceMythic Int        @default(0)
+  companions       Companion[]
+
+  // Open server-authoritative action grants
+  pendingAttack Json?
+  pendingRaid   Json?
+
+  ledgerLegs    LedgerLeg[]
+
+  @@index([currentIsland])
+}
+
+model Island {
+  id        String     @id @default(uuid())
+  player    Player     @relation(fields: [playerId], references: [id])
+  playerId  String
+  index     Int
+  completed Boolean    @default(false)
+  buildings Building[]
+
+  @@unique([playerId, index])
+}
+
+model Building {
+  id       String @id @default(uuid())
+  island   Island @relation(fields: [islandId], references: [id])
+  islandId String
+  index    Int
+  level    Int    @default(0)
+
+  @@unique([islandId, index])
+}
+
+model Companion {
+  id         String   @id @default(uuid())
+  player     Player   @relation(fields: [playerId], references: [id])
+  playerId   String
+  rarity     Rarity
+  summonedAt DateTime @default(now())
+
+  @@index([playerId])
+}
+
+enum Rarity {
+  common
+  rare
+  epic
+  mythic
+}
+
+// Append-only double-entry ledger (§6.1). One row per leg; legs sharing a txId
+// MUST net to zero per currency. Never UPDATE/DELETE — corrections are new txns.
+model LedgerLeg {
+  id        String   @id @default(uuid())
+  txId      String
+  at        DateTime @default(now())
+  reason    String
+  account   String   // "player:<id>" | "system:faucet" | "system:sink"
+  currency  Currency
+  delta     BigInt
+
+  // Optional FK when the account is a player (for fast per-player history).
+  player    Player?  @relation(fields: [playerId], references: [id])
+  playerId  String?
+
+  @@index([txId])
+  @@index([playerId, currency])
+  @@index([account, currency])
+}
+
+enum Currency {
+  spins
+  coins
+  spiritTokens
+  gems
+}
