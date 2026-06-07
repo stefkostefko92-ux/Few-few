@@ -28,8 +28,7 @@
   "permissions": [
     "storage",
     "alarms",
-    "notifications",
-    "scripting"
+    "notifications"
   ],
   "host_permissions": [
     "*://*.tanoth.gameforge.com/*",

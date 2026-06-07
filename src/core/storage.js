@@ -16,12 +16,15 @@
 
   const Storage = {
     async load() {
-      const res = await chrome.storage.local.get(KEY);
-      cache = res[KEY] || null;
-      if (!cache) {
-        // Service worker not yet initialised; ask it directly.
-        cache = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
-      }
+      try {
+        const res = await chrome.storage.local.get(KEY);
+        cache = res[KEY] || null;
+        if (!cache) {
+          // Service worker not yet initialised; ask it directly.
+          cache = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
+        }
+      } catch (_) { /* worker asleep / storage unavailable */ }
+      if (!cache || typeof cache !== 'object') cache = {};
       return cache;
     },
 
@@ -31,7 +34,7 @@
 
     async save(settings) {
       cache = settings;
-      await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
+      try { await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings }); } catch (_) {}
       return cache;
     },
 

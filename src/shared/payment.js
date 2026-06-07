@@ -36,6 +36,6 @@ export const LICENSE_SERVER_URL = '';
 
 // Shared secret used to sign/verify license keys. CHANGE THIS to your own
 // random value and keep the same value in tools/genkey.mjs.
-export const LICENSE_SECRET = 'TZ-7f3a9c1e5b8d246097fe1ab3cd5e7902-stealth';
+export const LICENSE_SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
 
 export const LICENSE_PREFIX = 'TZ1';

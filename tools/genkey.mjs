@@ -18,7 +18,7 @@
 import crypto from 'node:crypto';
 
 // Must match src/shared/payment.js
-const LICENSE_SECRET = 'TZ-7f3a9c1e5b8d246097fe1ab3cd5e7902-stealth';
+const LICENSE_SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
 const LICENSE_PREFIX = 'TZ1';
 
 const days = Number(process.argv[2] || 31);

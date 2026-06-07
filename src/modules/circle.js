@@ -144,7 +144,7 @@
           cost = 0;
           for (let l = level; l < level + 10; l++) cost += Math.floor((base + l * increment) * factor);
         }
-        if (!Number.isFinite(cost)) { Logger.debug('circle: bad cost', JSON.stringify(node)); return; }
+        if (!Number.isFinite(cost)) { Logger.debug('circle: bad cost', JSON.stringify(node)); cooldownUntil = Date.now() + 5 * 60000; return; }
 
         const currency = c.currency === 'bs' ? 'bs' : 'gold';
         try {

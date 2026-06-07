@@ -30,6 +30,9 @@
   "statWork": { "message": "Work shifts" },
   "statTraining": { "message": "Attributes raised" },
   "statDragon": { "message": "Dragon events" },
+  "statDungeon": { "message": "Dungeon runs" },
+  "statCave": { "message": "Cave runs" },
+  "statSold": { "message": "Items sold" },
   "statDuels": { "message": "Duels won" },
   "uiStats": { "message": "Stats" },
 

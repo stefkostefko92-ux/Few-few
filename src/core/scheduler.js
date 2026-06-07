@@ -203,13 +203,18 @@
           await action();
           consecutiveErrors = 0;
         } catch (e) {
-          consecutiveErrors++;
-          TB.Stats?.bump({ errors: 1 });
-          Logger.error(`[${mod.id}]`, e.message);
-          const limit = Storage.section('general')?.pauseAfterErrors ?? 3;
-          if (limit && consecutiveErrors >= limit) {
-            Scheduler.stop(I18n.t('reasonTooManyErrors'));
-            return;
+          // Transient transport / session errors shouldn't trip the error-stop;
+          // they recover on their own (or via auto-login).
+          const transient = /TIMEOUT|INJECT_NOT_READY|SESSION_EXPIRED|NO_SESSION|NO_GATEWAY|HTTP_/.test(e.message || '');
+          Logger[transient ? 'warn' : 'error'](`[${mod.id}]`, e.message);
+          if (!transient) {
+            consecutiveErrors++;
+            TB.Stats?.bump({ errors: 1 });
+            const limit = Storage.section('general')?.pauseAfterErrors ?? 3;
+            if (limit && consecutiveErrors >= limit) {
+              Scheduler.stop(I18n.t('reasonTooManyErrors'));
+              return;
+            }
           }
         } finally {
           currentAction = null;

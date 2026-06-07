@@ -49,7 +49,18 @@
 
   async function rpc(method, params) {
     const res = await Bridge.callXmlRpc(method, params);
-    return parse(res.xml);
+    const doc = parse(res.xml);
+    // XML-RPC faults (e.g. expired/invalid session) come back HTTP 200 with a
+    // <fault> body. Surface them so the engine can react / reconnect instead of
+    // silently treating the session as "0 gold, nothing to do".
+    if (doc.querySelector('methodResponse > fault') || doc.getElementsByTagName('fault')[0]) {
+      const faultStr = findValue(doc, 'faultString', 'string') || '';
+      if (/session|login|auth|expired|sid/i.test(faultStr) || true) {
+        State.patch({ loggedIn: false, sessionLost: Date.now() });
+      }
+      throw new Error('SESSION_EXPIRED:' + (faultStr || method));
+    }
+    return doc;
   }
 
   const Api = {

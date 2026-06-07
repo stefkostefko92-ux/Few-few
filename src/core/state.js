@@ -12,6 +12,7 @@
 
   const state = {
     loggedIn: false,
+    sessionLost: 0,             // epoch ms of the last detected session fault
     name: null,
     guild: null,
     level: 0,

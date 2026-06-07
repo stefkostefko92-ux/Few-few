@@ -4,15 +4,14 @@
  *
  * A tiny dependency-free HTTP server that records which device id first claimed
  * each license key, so a lifetime key cannot be activated on a second computer.
- * Deploy anywhere Node runs (or port the handler to a Cloudflare Worker), set
- * LICENSE_SERVER_URL in src/shared/payment.js to its /activate URL, and add the
- * host to the extension's host_permissions.
+ * Deploy anywhere Node runs (HTTPS in front), set LICENSE_SERVER_URL in
+ * src/shared/payment.js to its base URL, and add the origin to host_permissions.
  *
  *   POST /activate  {key, device} -> {ok, exp} | {ok:false, error}
  *   GET  /status?key=&device=     -> {ok, entitled, exp}
  *
- * Keys are verified with the SAME LICENSE_SECRET as the extension; bindings are
- * persisted to bindings.json next to this file.
+ * Env: LICENSE_SECRET (must match the extension), PORT (8787),
+ *      LICENSE_DB (path to bindings.json), LICENSE_ALLOW_ORIGIN (CORS origin).
  */
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -20,15 +19,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const LICENSE_SECRET = process.env.LICENSE_SECRET || 'TZ-7f3a9c1e5b8d246097fe1ab3cd5e7902-stealth';
+const LICENSE_SECRET = process.env.LICENSE_SECRET || 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
 const LICENSE_PREFIX = 'TZ1';
 const PORT = process.env.PORT || 8787;
-const DB_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'bindings.json');
+const DB_FILE = process.env.LICENSE_DB || path.join(path.dirname(fileURLToPath(import.meta.url)), 'bindings.json');
+const ALLOW_ORIGIN = process.env.LICENSE_ALLOW_ORIGIN || '';
 
-function loadDb() { try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch { return {}; } }
-function saveDb(db) { fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2)); }
+function b64urlToBuf(s) { return Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64'); }
 
-function b64urlToBuf(s) { return Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64'); }
+function safeEqual(a, b) {
+  const ba = Buffer.from(String(a)); const bb = Buffer.from(String(b));
+  return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
+}
 
 export function verifyKey(key) {
   if (typeof key !== 'string') return null;
@@ -36,7 +38,7 @@ export function verifyKey(key) {
   if (parts.length !== 3 || parts[0] !== LICENSE_PREFIX) return null;
   const [, payloadB64, sig] = parts;
   const expected = crypto.createHmac('sha256', LICENSE_SECRET).update(payloadB64).digest('base64url').slice(0, 24);
-  if (sig !== expected) return null;
+  if (!safeEqual(sig, expected)) return null;
   try {
     const payload = JSON.parse(b64urlToBuf(payloadB64).toString('utf8'));
     if (typeof payload.exp !== 'number') return null;
@@ -44,7 +46,7 @@ export function verifyKey(key) {
   } catch { return null; }
 }
 
-// Pure handler (also used by tests). db is mutated; returns {status, body}.
+// Pure handler (also used by tests). Mutates db; returns {status, body, dirty}.
 export function handle(method, url, body, db) {
   const u = new URL(url, 'http://x');
   if (method === 'POST' && u.pathname === '/activate') {
@@ -56,7 +58,7 @@ export function handle(method, url, body, db) {
     const existing = db[key];
     if (existing && existing.device !== device) return reply(409, { ok: false, error: 'BOUND_ELSEWHERE' });
     db[key] = { device, exp: payload.exp, boundAt: existing?.boundAt || Date.now() };
-    return reply(200, { ok: true, exp: payload.exp });
+    return reply(200, { ok: true, exp: payload.exp }, true);   // dirty -> persist
   }
   if (method === 'GET' && u.pathname === '/status') {
     const key = u.searchParams.get('key');
@@ -65,28 +67,45 @@ export function handle(method, url, body, db) {
     if (!payload) return reply(400, { ok: false, error: 'INVALID_KEY' });
     const rec = db[key];
     const entitled = !!rec && rec.device === device && rec.exp * 1000 > Date.now();
-    return reply(200, { ok: true, entitled, exp: payload.exp });
+    return reply(200, { ok: true, entitled, exp: payload.exp });   // read-only, not dirty
   }
   return reply(404, { ok: false, error: 'NOT_FOUND' });
 }
-function reply(status, body) { return { status, body }; }
+function reply(status, body, dirty = false) { return { status, body, dirty }; }
 
-// HTTP wrapper (skipped when imported for tests).
+/* ------------------------------ server wiring --------------------------- */
+function loadDb() { try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch { return {}; } }
+
+// Serialized atomic writes (tmp file + rename) so concurrent requests can't
+// corrupt or lose bindings.
+let writeChain = Promise.resolve();
+function persist(db) {
+  writeChain = writeChain.then(() => fs.promises.writeFile(DB_FILE + '.tmp', JSON.stringify(db, null, 2))
+    .then(() => fs.promises.rename(DB_FILE + '.tmp', DB_FILE)))
+    .catch((e) => console.error('[license-server] persist failed:', e.message));
+  return writeChain;
+}
+
 function startServer() {
+  const db = loadDb();                       // single in-memory copy
+  let busy = Promise.resolve();              // serialize activations
   const server = http.createServer((req, res) => {
     let raw = '';
     req.on('data', (c) => { raw += c; if (raw.length > 1e5) req.destroy(); });
     req.on('end', () => {
-      const db = loadDb();
-      let body = {};
-      try { body = raw ? JSON.parse(raw) : {}; } catch {}
-      const { status, body: out } = handle(req.method, req.url, body, db);
-      saveDb(db);
-      res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-      res.end(JSON.stringify(out));
+      busy = busy.then(async () => {
+        let body = {};
+        try { body = raw ? JSON.parse(raw) : {}; } catch {}
+        const { status, body: out, dirty } = handle(req.method, req.url, body, db);
+        if (dirty) await persist(db);
+        const headers = { 'Content-Type': 'application/json' };
+        if (ALLOW_ORIGIN) headers['Access-Control-Allow-Origin'] = ALLOW_ORIGIN;
+        res.writeHead(status, headers);
+        res.end(JSON.stringify(out));
+      }).catch((e) => { try { res.writeHead(500); res.end('{"ok":false}'); } catch {} console.error(e); });
     });
   });
-  server.listen(PORT, () => console.log(`[license-server] listening on :${PORT}`));
+  server.listen(PORT, () => console.log(`[license-server] listening on :${PORT} (db: ${DB_FILE})`));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

@@ -31,12 +31,13 @@ test('all preset ids resolve', () => {
 });
 
 console.log('— notifications —');
-test('telegram request built', () => {
+test('telegram request built (plain text)', () => {
   const r = telegramRequest({ enabled: true, botToken: 'abc', chatId: '42' }, 'Title', 'Hello_world');
   assert.match(r.url, /api\.telegram\.org\/botabc\/sendMessage/);
   const b = JSON.parse(r.options.body);
   assert.equal(b.chat_id, '42');
-  assert.match(b.text, /Hello\\_world/); // markdown-escaped underscore
+  assert.equal(b.text, 'Title\nHello_world');   // plain text, no markdown/parse_mode
+  assert.equal(b.parse_mode, undefined);
 });
 test('telegram null when disabled/incomplete', () => {
   assert.equal(telegramRequest({ enabled: false, botToken: 'a', chatId: 'b' }), null);
@@ -92,7 +93,7 @@ test('export then import round-trips', () => {
 });
 
 console.log('— license keys + server —');
-const SECRET = 'TZ-7f3a9c1e5b8d246097fe1ab3cd5e7902-stealth';
+const SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
 function genKey(days) {
   const exp = Math.floor(Date.now() / 1000) + Math.round(days * 86400);
   const p = Buffer.from(JSON.stringify({ exp })).toString('base64url');

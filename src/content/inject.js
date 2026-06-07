@@ -130,21 +130,17 @@
     return origFetch.apply(this, arguments);
   };
 
-  const OrigXHR = window.XMLHttpRequest;
-  function HookedXHR() {
-    const xhr = new OrigXHR();
-    let _url = '';
-    const open = xhr.open;
-    xhr.open = function (m, u) { _url = u; return open.apply(xhr, arguments); };
-    const send = xhr.send;
-    xhr.send = function (body) {
-      try { if (/xmlrpc/i.test(_url)) observe(_url, typeof body === 'string' ? body : null); } catch (_) {}
-      return send.apply(xhr, arguments);
-    };
-    return xhr;
-  }
-  HookedXHR.prototype = OrigXHR.prototype;
-  window.XMLHttpRequest = HookedXHR;
+  // Patch the prototype methods (observe only). Subclassing / replacing the
+  // constructor would lose XMLHttpRequest's static constants and break the
+  // game's own `instanceof XMLHttpRequest` checks, so we don't do that.
+  const xhrProto = window.XMLHttpRequest.prototype;
+  const origOpen = xhrProto.open;
+  const origSend = xhrProto.send;
+  xhrProto.open = function (method, url) { this.__tbUrl = url; return origOpen.apply(this, arguments); };
+  xhrProto.send = function (body) {
+    try { if (/xmlrpc/i.test(this.__tbUrl || '')) observe(this.__tbUrl, typeof body === 'string' ? body : null); } catch (_) {}
+    return origSend.apply(this, arguments);
+  };
 
   /* ------------------------------- bridge -------------------------------- */
 

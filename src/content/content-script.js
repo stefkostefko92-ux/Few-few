@@ -44,9 +44,10 @@
 
     // Keep gold / bloodstones / running-task state fresh for every module and
     // the panel. Without this, modules see a stale gold value (e.g. right after
-    // an adventure reward) and wrongly decide "not enough gold".
+    // an adventure reward) and wrongly decide "not enough gold". Only polls
+    // while the engine is actually running, so an idle Tanoth tab stays quiet.
     setInterval(() => {
-      if (Bridge.ready()) Api.refresh().catch(() => {});
+      if (Bridge.ready() && Scheduler.isRunning()) Api.refresh().catch(() => {});
     }, 30000);
   }
 

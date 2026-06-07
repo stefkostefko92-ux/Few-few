@@ -33,7 +33,7 @@ export function validateConfig(cfg) {
     if (seen.has(id)) errors.push(`duplicate account id: ${id}`);
     seen.add(id);
     if (!a.world) errors.push(`account ${id}: missing "world" URL`);
-    if (a.proxy && !/^(https?|socks5):\/\//.test(a.proxy)) errors.push(`account ${id}: proxy must start with http(s):// or socks5://`);
+    if (a.proxy && !/^(https?|socks5h?):\/\//.test(a.proxy)) errors.push(`account ${id}: proxy must start with http(s):// or socks5(h):// `);
     accounts.push(normalizeAccount(a, browser));
   }
   return { ok: errors.length === 0, errors, accounts };

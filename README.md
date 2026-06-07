@@ -208,6 +208,14 @@ src/
 
 ---
 
+## Packaging for the Chrome Web Store
+
+`bash tools/package.sh` builds `dist/tanoth-master-bot-<version>.zip` containing
+**only** the extension files (manifest, icons, _locales, popup, options, stats,
+src). It deliberately excludes `controller/`, `server/`, `tools/` (the key
+generator!), `screenshots/` and `.git/`. Set your own `LICENSE_SECRET` in
+`src/shared/payment.js` before publishing — the shipped value is a placeholder.
+
 ## Development notes
 
 - Content scripts are plain (non-module) and share a single `window.TanothBot`

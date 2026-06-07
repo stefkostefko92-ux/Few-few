@@ -102,46 +102,64 @@ async function stopAccount(id) {
 
 async function pollStats() {
   for (const e of registry.values()) {
-    if (e.status !== 'running' || !e.sw) continue;
+    if (e.status !== 'running' || !e.context) continue;
     try {
+      // The MV3 service worker can be evicted; re-acquire the handle if the
+      // cached one is dead so stats don't silently stop updating.
+      if (!e.sw || e.sw.isClosed?.()) e.sw = e.context.serviceWorkers()[0] || null;
+      if (!e.sw) continue;
       const stats = await e.sw.evaluate(() => chrome.storage.local.get('tanothBotStats').then((r) => r.tanothBotStats || {}));
       e.lastStats = stats || {};
-    } catch (_) { /* sw may be recycling */ }
+    } catch (_) {
+      e.sw = e.context.serviceWorkers()[0] || null; // refresh for next tick
+    }
   }
 }
 
 /* ------------------------------ dashboard ------------------------------ */
-function startDashboard(cfg) {
+function startDashboard(cfg, opts) {
   const port = cfg.raw.dashboard?.port || 8899;
-  const token = cfg.raw.dashboard?.token || '';
+  let token = cfg.raw.dashboard?.token || '';
+  if (!token || token === 'change-me') {     // never run with the example token
+    token = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
+    console.warn('Dashboard token was missing/"change-me" — generated a random one for this session.');
+  }
+  const localOrigin = (o) => !o || /^https?:\/\/(127\.0\.0\.1|localhost)(:|$)/.test(o);
   const server = http.createServer(async (req, res) => {
     const u = new URL(req.url, 'http://localhost');
-    if (token && u.searchParams.get('token') !== token) { res.writeHead(401); return res.end('unauthorized'); }
+    if (u.searchParams.get('token') !== token) { res.writeHead(401); return res.end('unauthorized'); }
     if (u.pathname === '/api/status') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify([...registry.values()].map((e) => accountView(e))));
     }
-    if (u.pathname === '/api/start' && req.method === 'POST') {
-      const e = registry.get(u.searchParams.get('id'));
-      if (e) launchAccount(e.account, { headless: cfg.headless });
-      res.writeHead(200); return res.end('ok');
-    }
-    if (u.pathname === '/api/stop' && req.method === 'POST') {
-      await stopAccount(u.searchParams.get('id'));
+    if (req.method === 'POST' && (u.pathname === '/api/start' || u.pathname === '/api/stop')) {
+      if (!localOrigin(req.headers.origin)) { res.writeHead(403); return res.end('forbidden'); } // anti-CSRF
+      if (u.pathname === '/api/start') {
+        const e = registry.get(u.searchParams.get('id'));
+        if (e) launchAccount(e.account, opts);   // reuse the real run opts (headless/dryRun)
+      } else {
+        await stopAccount(u.searchParams.get('id'));
+      }
       res.writeHead(200); return res.end('ok');
     }
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(renderDashboardHtml([...registry.values()].map((e) => accountView(e)), { token }));
   });
-  server.listen(port, '127.0.0.1', () => console.log(`Dashboard: http://127.0.0.1:${port}${token ? '?token=' + token : ''}`));
+  server.listen(port, '127.0.0.1', () => console.log(`Dashboard: http://127.0.0.1:${port}?token=${token}`));
 }
 
 /* ------------------------------ commands ------------------------------- */
 async function cmdRun(cfg, opts) {
+  if (opts.dryRun) {                          // validate config + flow, no browsers, no socket
+    for (const acc of enabledAccounts(cfg.parsed)) await launchAccount(acc, opts);
+    console.log('dry-run OK'); return;
+  }
+  if (!opts.headless && process.platform === 'linux' && !process.env.DISPLAY) {
+    console.warn('No $DISPLAY detected. Chromium needs a display to load the extension — run under: xvfb-run -a node controller.mjs run');
+  }
   for (const acc of enabledAccounts(cfg.parsed)) await launchAccount(acc, opts);
-  startDashboard(Object.assign({}, cfg, { headless: opts.headless }));
-  if (!opts.dryRun) setInterval(pollStats, 10000);
-  else { setTimeout(() => process.exit(0), 300); } // dry-run: validate + exit
+  startDashboard(cfg, opts);
+  setInterval(pollStats, 10000);
 }
 
 async function cmdSetup(cfg, id) {
@@ -174,7 +192,10 @@ async function main() {
   const argv = process.argv.slice(2);
   const command = argv[0] || 'run';
   const dryRun = argv.includes('--dry-run');
-  const headless = argv.includes('--headful') ? false : (process.env.HEADLESS === 'false' ? false : 'new');
+  // Headful by default: Chromium only loads extensions with a display. Use
+  // `xvfb-run` on a headless VPS. `--headless` opts into experimental new
+  // headless (extension loading there is unreliable — not recommended).
+  const headless = argv.includes('--headless') ? 'new' : false;
   const cfg = loadConfig();
   cfg.headless = headless;
 

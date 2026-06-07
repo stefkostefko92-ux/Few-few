@@ -38,12 +38,15 @@ Open the dashboard at `http://127.0.0.1:8899?token=<your token>` to see status
 (uptime, adventures, encounters, gold, errors) and Start/Stop each account.
 
 ### Headless VPS (xvfb)
+Chromium only loads extensions with a real display, so the controller runs
+**headful by default**. On a headless VPS, give it a virtual display:
 ```bash
 sudo apt-get install -y xvfb
+npx playwright install --with-deps chromium    # browser + system libs
 xvfb-run -a node controller.mjs run
 ```
-(Playwright headless="new" also loads extensions on most setups; xvfb is the
-reliable fallback.)
+Do NOT use `--headless` (headless Chromium does not reliably load the
+extension — the bot won't run).
 
 ## Per-account settings
 `settingsFile` points at a JSON file with any subset of the bot's settings

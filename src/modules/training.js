@@ -16,9 +16,14 @@
 
   const MAP = { strength: 'STR', dexterity: 'DEX', constitution: 'CON', intelligence: 'INT' };
   let spent = 0;
+  let spentDay = new Date().toDateString();
   let lastSkipLog = 0;
 
   function cfg() { return Storage.section('training') || {}; }
+  function rolloverDay() {
+    const d = new Date().toDateString();
+    if (d !== spentDay) { spentDay = d; spent = 0; }   // reset the spend cap daily
+  }
 
   function cheapest(costs) {
     let best = null, min = Infinity;
@@ -38,6 +43,7 @@
     async tick() {
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
+      rolloverDay();
 
       const costs = State.get().attributeCosts || {};
       const haveCosts = Object.values(costs).some((v) => Number.isFinite(v));

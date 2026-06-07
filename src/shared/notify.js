@@ -8,20 +8,22 @@
 
 export function telegramRequest(cfg, title, message) {
   if (!cfg || !cfg.enabled || !cfg.botToken || !cfg.chatId) return null;
-  const text = (title ? `*${escapeMd(title)}*\n` : '') + escapeMd(message || '');
+  // Plain text (no parse_mode) — avoids 400s from Markdown edge cases.
+  const text = (title ? title + '\n' : '') + (message || '');
   return {
     url: `https://api.telegram.org/bot${encodeURIComponent(cfg.botToken)}/sendMessage`,
     options: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: cfg.chatId, text, parse_mode: 'Markdown' })
+      body: JSON.stringify({ chat_id: cfg.chatId, text })
     }
   };
 }
 
 export function discordRequest(cfg, title, message) {
   if (!cfg || !cfg.enabled || !cfg.webhookUrl) return null;
-  if (!/^https:\/\/(canary\.|ptb\.)?discord(app)?\.com\/api\/webhooks\//.test(cfg.webhookUrl)) return null;
+  // Restricted to discord.com to match the extension's host_permissions.
+  if (!/^https:\/\/discord\.com\/api\/webhooks\//.test(cfg.webhookUrl)) return null;
   const content = (title ? `**${title}**\n` : '') + (message || '');
   return {
     url: cfg.webhookUrl,
@@ -40,8 +42,4 @@ export function buildExternalNotifications(notifications, title, message) {
   const dc = discordRequest(notifications?.discord, title, message);
   if (dc) reqs.push(dc);
   return reqs;
-}
-
-function escapeMd(s) {
-  return String(s).replace(/([_*`\[\]])/g, '\\$1');
 }

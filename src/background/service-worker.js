@@ -89,104 +89,76 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 /* -------------------------------------------------------------------------- */
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // All handlers go through one async dispatcher so the message port stays open
+  // (worker kept alive) until a response is sent, and every path responds even
+  // on error — no hung ports / dropped webhooks.
+  handleMessage(msg, sender)
+    .then((r) => sendResponse(r))
+    .catch((e) => sendResponse({ ok: false, error: String((e && e.message) || e) }));
+  return true;
+});
+
+async function handleMessage(msg, sender) {
   switch (msg?.type) {
     case 'GET_SETTINGS':
-      chrome.storage.local.get(STORAGE_KEY).then((r) =>
-        sendResponse(mergeSettings(r[STORAGE_KEY]))
-      );
-      return true;
+      return mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
 
-    case 'SAVE_SETTINGS':
-      chrome.storage.local.set({ [STORAGE_KEY]: mergeSettings(msg.settings) })
-        .then(() => {
-          broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: mergeSettings(msg.settings) });
-          sendResponse({ ok: true });
-        });
-      return true;
+    case 'SAVE_SETTINGS': {
+      const merged = mergeSettings(msg.settings);
+      await chrome.storage.local.set({ [STORAGE_KEY]: merged });
+      broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
+      return { ok: true };
+    }
 
-    case 'RESET_SETTINGS':
-      chrome.storage.local.set({ [STORAGE_KEY]: structuredClone(DEFAULT_SETTINGS) })
-        .then(() => {
-          broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: DEFAULT_SETTINGS });
-          sendResponse({ ok: true, settings: DEFAULT_SETTINGS });
-        });
-      return true;
+    case 'RESET_SETTINGS': {
+      const fresh = structuredClone(DEFAULT_SETTINGS);
+      await chrome.storage.local.set({ [STORAGE_KEY]: fresh });
+      broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: fresh });
+      return { ok: true, settings: fresh };
+    }
 
     case 'GET_STATS':
-      chrome.storage.local.get(STATS_KEY).then((r) =>
-        sendResponse(r[STATS_KEY] || emptyStats())
-      );
-      return true;
+      return (await chrome.storage.local.get(STATS_KEY))[STATS_KEY] || emptyStats();
 
     case 'RESET_STATS':
-      chrome.storage.local.set({ [STATS_KEY]: emptyStats() })
-        .then(() => sendResponse({ ok: true }));
-      return true;
+      await chrome.storage.local.set({ [STATS_KEY]: emptyStats() });
+      return { ok: true };
 
     case 'STATS_DELTA':
-      // Content script reports incremental stat changes; we accumulate them.
-      applyStatsDelta(msg.delta).then((stats) => sendResponse(stats));
-      return true;
+      return applyStatsDelta(msg.delta);
 
     case 'NOTIFY':
       raiseNotification(msg.title, msg.message);
-      sendWebhooks(msg.title, msg.message);
-      sendResponse({ ok: true });
-      return false;
+      await sendWebhooks(msg.title, msg.message);   // awaited so the SW survives the fetch
+      return { ok: true };
 
     case 'TEST_WEBHOOK':
-      sendWebhooks(msg.title || 'Tanoth Bot', msg.message || 'Test notification ✅')
-        .then((n) => sendResponse({ ok: true, sent: n }));
-      return true;
+      return { ok: true, sent: await sendWebhooks(msg.title || 'Tanoth Bot', msg.message || 'Test notification ✅') };
 
     case 'LIST_PROFILES':
-      chrome.storage.local.get(PROFILES_KEY).then((r) =>
-        sendResponse(Object.keys(r[PROFILES_KEY] || {})));
-      return true;
+      return Object.keys((await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {});
 
-    case 'SAVE_PROFILE':
-      saveProfile(msg.name).then((r) => sendResponse(r));
-      return true;
-
-    case 'LOAD_PROFILE':
-      loadProfile(msg.name).then((r) => sendResponse(r));
-      return true;
-
-    case 'DELETE_PROFILE':
-      deleteProfile(msg.name).then((r) => sendResponse(r));
-      return true;
+    case 'SAVE_PROFILE':   return saveProfile(msg.name);
+    case 'LOAD_PROFILE':   return loadProfile(msg.name);
+    case 'DELETE_PROFILE': return deleteProfile(msg.name);
 
     case 'OPEN_OPTIONS':
       chrome.runtime.openOptionsPage();
-      sendResponse({ ok: true });
-      return false;
+      return { ok: true };
 
-    case 'GET_LICENSE':
-      getLicenseStatus().then(sendResponse);
-      return true;
-
-    case 'ACTIVATE_LICENSE':
-      activateLicense(msg.key).then(sendResponse);
-      return true;
+    case 'GET_LICENSE':       return getLicenseStatus();
+    case 'ACTIVATE_LICENSE':  return activateLicense(msg.key);
 
     case 'OPEN_PAYMENT':
       chrome.tabs.create({ url: REVOLUT_PAYMENT_URL });
-      sendResponse({ ok: true });
-      return false;
+      return { ok: true };
 
-    case 'CONTROL':
-      // Forward start/stop/pause commands from the popup to the active tab.
-      forwardToActiveGameTab(msg).then((r) => sendResponse(r));
-      return true;
+    case 'CONTROL':     return forwardToActiveGameTab(msg);
+    case 'GET_STATUS':  return forwardToActiveGameTab({ type: 'GET_STATUS' });
 
-    case 'GET_STATUS':
-      forwardToActiveGameTab({ type: 'GET_STATUS' }).then((r) => sendResponse(r));
-      return true;
-
-    default:
-      return false;
+    default: return { ok: false, error: 'UNKNOWN_MESSAGE' };
   }
-});
+}
 
 async function applyStatsDelta(delta) {
   const cur = (await chrome.storage.local.get(STATS_KEY))[STATS_KEY] || emptyStats();
@@ -296,8 +268,16 @@ async function getLicenseStatus() {
   let boundDevice = false;
   let wrongDevice = false;
 
-  const licValid = lic && typeof lic.exp === 'number' && lic.exp * 1000 > now;
-  const licOnThisDevice = lic && (!lic.device || lic.device === device);
+  // Re-verify the stored key's SIGNATURE every time (not just at activation) so
+  // a forged/hand-edited license object in storage can't grant entitlement.
+  let licSigned = false;
+  if (lic && typeof lic.key === 'string' && typeof lic.exp === 'number') {
+    const payload = await verifyKey(lic.key);
+    licSigned = !!payload && payload.exp === lic.exp;
+  }
+  const licValid = licSigned && lic.exp * 1000 > now;
+  // Strict device binding: a stored license must carry THIS device's id.
+  const licOnThisDevice = lic && lic.device === device;
 
   if (licValid && !licOnThisDevice) {
     // Key was activated on another computer.

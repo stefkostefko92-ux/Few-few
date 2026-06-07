@@ -12,15 +12,20 @@
 
   let attempts = 0;
   let lastReload = 0;
+  let domCheck = { at: 0, val: false };
 
   function cfg() { return Storage.section('autologin') || {}; }
 
   function looksLoggedOut() {
-    // Heuristics that work across Tanoth's HTML5 client and any login redirect.
+    // Strongest signal: the API reported a session fault recently.
+    const lost = State.get().sessionLost || 0;
+    if (lost && Date.now() - lost < 120000) return true;
     if (/login|signin|account\.gameforge/i.test(location.href)) return true;
+    // innerText forces a reflow, so cache it (tick can run every ~120ms).
+    if (Date.now() - domCheck.at < 5000) return domCheck.val;
     const txt = document.body ? document.body.innerText.slice(0, 4000).toLowerCase() : '';
-    if (/session (expired|timed out)|please log in|log in to continue/.test(txt)) return true;
-    return false;
+    domCheck = { at: Date.now(), val: /session (expired|timed out)|please log in|log in to continue/.test(txt) };
+    return domCheck.val;
   }
 
   Scheduler.register({

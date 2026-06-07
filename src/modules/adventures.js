@@ -104,11 +104,14 @@
         await Api.startAdventure(choice.id);
 
         const speed = Math.max(1, Number(c.serverSpeed) || 1);
-        const waitMs = (choice.duration / speed + 5) * 1000;
+        // Floor the wait so bad/zero durations can't cause rapid re-firing of
+        // StartAdventure; then trust the server's real task timer.
+        const waitMs = Math.max(15000, (Number(choice.duration) || 0) / speed * 1000 + 5000);
         State.patch({ adventureReturnAt: Date.now() + waitMs, taskType: 'adventure' });
+        try { await Api.miniUpdate(); } catch (_) {} // adopt the real running-task timer if reported
         Stats.bump({ adventures: 1, goldEarned: choice.gold || 0, xpEarned: choice.xp || 0 });
         Logger.success(I18n.t('logAdventureStarted', [
-          String(Math.round(choice.duration / speed)), String(choice.gold || 0), String(choice.xp || 0)
+          String(Math.round((Number(choice.duration) || 0) / speed)), String(choice.gold || 0), String(choice.xp || 0)
         ]));
       };
     }

@@ -111,7 +111,7 @@
       case 'collapse': root.classList.toggle('tb-collapsed'); break;
       case 'hide': hide(); break;
       case 'options': chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' }).catch(() => chrome.runtime.openOptionsPage?.()); break;
-      case 'subscribe': Panel.showPaywall(); break;
+      case 'subscribe': TB.Panel.showPaywall(); break;
       case 'paywall-close': root.classList.remove('tb-show-paywall'); break;
       case 'pay-monthly': TB.License.openPayment(); break;
       case 'pay-lifetime': TB.License.openPayment(); break;
