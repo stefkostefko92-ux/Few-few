@@ -1,6 +1,10 @@
 import { defaultLiveOps } from "./config/liveops.js";
+import { AuthService } from "./auth/authService.js";
+import { TokenService } from "./auth/tokens.js";
+import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository.js";
 import { MemoryLedger, type Ledger } from "./data/ledger.js";
 import { MemoryPlayerRepository } from "./data/memoryRepository.js";
+import { PrismaAuthRepository } from "./data/prismaAuthRepository.js";
 import { PrismaLedger } from "./data/prismaLedger.js";
 import { PrismaPlayerRepository } from "./data/prismaRepository.js";
 import { createPrismaClient } from "./data/prismaClient.js";
@@ -18,24 +22,32 @@ try {
 
 /**
  * Prototype bootstrap. Selects adapters from the environment:
- *   - DATABASE_URL → Postgres (Prisma) repository + ledger; else in-memory
+ *   - DATABASE_URL → Postgres (Prisma) repository + ledger + auth; else in-memory
  *   - REDIS_URL    → Redis sorted-set leaderboard; else no-op
- * The GameService and HTTP routes are identical regardless of backing store.
+ * The GameService, AuthService and HTTP routes are identical regardless of store.
  */
 async function main(): Promise<void> {
   const port = Number(process.env.PORT ?? 3000);
+  const jwtSecret = process.env.JWT_SECRET ?? "dev-insecure-secret-change-me-0000";
+  if (!process.env.JWT_SECRET) {
+    // eslint-disable-next-line no-console
+    console.warn("⚠  JWT_SECRET not set — using an insecure dev secret. Do not use in production.");
+  }
 
   let repo: PlayerRepository;
   let ledger: Ledger;
+  let authRepo: AuthRepository;
   if (process.env.DATABASE_URL) {
     const prisma = createPrismaClient(process.env.DATABASE_URL);
     repo = new PrismaPlayerRepository(prisma);
     ledger = new PrismaLedger(prisma);
+    authRepo = new PrismaAuthRepository(prisma);
     // eslint-disable-next-line no-console
     console.log("storage: Postgres (Prisma)");
   } else {
     repo = new MemoryPlayerRepository();
     ledger = new MemoryLedger();
+    authRepo = new MemoryAuthRepository();
     // eslint-disable-next-line no-console
     console.log("storage: in-memory");
   }
@@ -49,7 +61,10 @@ async function main(): Promise<void> {
   }
 
   const game = new GameService({ repo, ledger, config: defaultLiveOps, leaderboard });
-  const app = createApp(game);
+  const tokens = new TokenService(jwtSecret);
+  const auth = new AuthService({ authRepo, tokens, createPlayer: (name) => game.createPlayer(name) });
+
+  const app = createApp({ game, auth, tokens });
   app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`KAGURA backend (prototype) listening on :${port}`);

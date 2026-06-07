@@ -18,6 +18,7 @@ raid → summon`, with a double-entry economy ledger and published gacha rates.
 | Published gacha drop rates + dual pity (§5.6, §12.2) | `domain/gacha.ts`, `GET /gacha/rates` |
 | Single-use action grants (attack/raid) | `domain/types.ts` `PendingAttack`/`PendingRaid` |
 | Postgres persistence + Redis leaderboards (§11.2, §7.2) | `data/prisma*.ts`, `services/leaderboard.ts` |
+| JWT auth (httpOnly cookie or Bearer) + device binding (§11.2) | `auth/` |
 
 ## Stack
 
@@ -51,7 +52,7 @@ cp .env.example .env                    # DATABASE_URL + REDIS_URL
 npm run db:push                         # create the schema
 npm run dev
 
-npm test                 # vitest — 38 in-memory tests (no infra)
+npm test                 # vitest — 44 in-memory tests (no infra)
 npm run test:integration # 3 tests against a live PG (+ Redis); needs DATABASE_URL
 npm run typecheck        # tsc --noEmit
 ```
@@ -61,27 +62,35 @@ default `npm test` never needs infra.
 
 ## API
 
-| Method & path | Body | Purpose |
-|---|---|---|
-| `GET /health` | — | liveness |
-| `GET /gacha/rates` | — | published drop rates + pity (regulatory, §12.2) |
-| `POST /players` | `{ name }` | create a player (grants starting spins) |
-| `GET /me` | — | current player (reconciles spin regen) |
-| `POST /spin` | `{ betMultiplier }` | spin the Spirit Wheel |
-| `POST /build` | `{ buildingIndex }` | upgrade a building; may unlock next island |
-| `GET /attack/candidates` | — | matchmaking pool for an open attack |
-| `POST /attack` | `{ targetId, buildingIndex }` | resolve a granted attack |
-| `POST /raid` | `{ picks }` | dig a granted raid |
-| `POST /gacha/pull` | — | summon a companion |
+| Method & path | Auth | Body | Purpose |
+|---|---|---|---|
+| `GET /health` | — | — | liveness |
+| `GET /gacha/rates` | — | — | published drop rates + pity (regulatory, §12.2) |
+| `POST /auth/register` | — | `{ name?, deviceId }` | create a player + device binding; returns tokens & one-time `deviceSecret` |
+| `POST /auth/login` | — | `{ deviceId, deviceSecret }` | exchange the device secret for tokens |
+| `POST /auth/refresh` | refresh | `{ refreshToken? }` | new access token (token also read from cookie) |
+| `POST /auth/logout` | access | — | revoke refresh tokens (bumps tokenVersion) |
+| `GET /me` | access | — | current player (reconciles spin regen) |
+| `POST /spin` | access | `{ betMultiplier }` | spin the Spirit Wheel |
+| `POST /build` | access | `{ buildingIndex }` | upgrade a building; may unlock next island |
+| `GET /attack/candidates` | access | — | matchmaking pool for an open attack |
+| `POST /attack` | access | `{ targetId, buildingIndex }` | resolve a granted attack |
+| `POST /raid` | access | `{ picks }` | dig a granted raid |
+| `POST /gacha/pull` | access | — | summon a companion |
+| `GET /leaderboard` | — | — | global top-N (Redis) |
+| `GET /leaderboard/me` | access | — | caller's rank |
 
-Auth is a placeholder `x-player-id` header for the prototype; production uses JWT
-+ device binding (§11.2). Pass it on every authenticated request.
+Auth is device-bound JWT (§11.2): `register`/`login` return a short-lived access
+token + a refresh token, sent both as an httpOnly cookie (web) and in the JSON
+body (native clients). Authenticated requests carry `Authorization: Bearer
+<accessToken>` or the cookie.
 
 ```bash
-# Example
-PID=$(curl -s -XPOST localhost:3000/players -H 'content-type: application/json' \
-      -d '{"name":"Hana"}' | jq -r .player.id)
-curl -s -XPOST localhost:3000/spin -H "x-player-id: $PID" \
+# Register (deviceId is a stable per-install id), then spin
+REG=$(curl -s -XPOST localhost:3000/auth/register -H 'content-type: application/json' \
+      -d '{"name":"Hana","deviceId":"my-device-0001"}')
+AT=$(echo "$REG" | jq -r .accessToken)
+curl -s -XPOST localhost:3000/spin -H "authorization: Bearer $AT" \
      -H 'content-type: application/json' -d '{"betMultiplier":1}'
 ```
 
@@ -96,8 +105,8 @@ curl -s -XPOST localhost:3000/spin -H "x-player-id: $PID" \
 
 ## Not yet built (next slices)
 
-Real auth/JWT + device binding, clans + WebSocket chat, IAP receipt validation
-(RevenueCat/StoreKit/Play Billing), LiveOps admin dashboard, analytics pipeline,
-and the Unity client (§11.1). Cross-aggregate atomicity (player save + ledger in
-one DB transaction) is also a follow-up — the current Prisma backend writes them
-in separate transactions, fine for the prototype.
+Clans + WebSocket chat, IAP receipt validation (RevenueCat/StoreKit/Play
+Billing), LiveOps admin dashboard, analytics pipeline, and the Unity client
+(§11.1). Cross-aggregate atomicity (player save + ledger in one DB transaction)
+is also a follow-up — the current Prisma backend writes them in separate
+transactions, fine for the prototype.

@@ -3,6 +3,19 @@ import { z } from "zod";
 import { GameError } from "../errors.js";
 import type { Player } from "../domain/types.js";
 import type { GameService } from "../services/gameService.js";
+import type { AuthService, AuthTokens } from "../auth/authService.js";
+import type { TokenService } from "../auth/tokens.js";
+
+export interface AppDeps {
+  game: GameService;
+  auth: AuthService;
+  tokens: TokenService;
+}
+
+const ACCESS_COOKIE = "kg_at";
+const REFRESH_COOKIE = "kg_rt";
+const ACCESS_MAX_AGE = 15 * 60_000;
+const REFRESH_MAX_AGE = 30 * 24 * 3_600_000;
 
 /** Minimal fixed-window rate limiter (per IP). Real infra uses Redis (§11.3). */
 function rateLimiter(maxPerWindow: number, windowMs: number) {
@@ -24,11 +37,52 @@ function rateLimiter(maxPerWindow: number, windowMs: number) {
   };
 }
 
-/** Resolves the acting player from the x-player-id header (prototype auth). */
-function requirePlayerId(req: Request): string {
-  const id = req.header("x-player-id");
-  if (!id) throw new GameError("UNAUTHENTICATED", "missing x-player-id header", 401);
-  return id;
+function readCookie(req: Request, name: string): string | undefined {
+  const header = req.headers.cookie;
+  if (!header) return undefined;
+  for (const part of header.split(";")) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    if (part.slice(0, eq).trim() === name) return decodeURIComponent(part.slice(eq + 1).trim());
+  }
+  return undefined;
+}
+
+function setAuthCookies(res: Response, tokens: AuthTokens): void {
+  const secure = process.env.NODE_ENV === "production";
+  res.cookie(ACCESS_COOKIE, tokens.accessToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    maxAge: ACCESS_MAX_AGE,
+  });
+  res.cookie(REFRESH_COOKIE, tokens.refreshToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure,
+    path: "/auth",
+    maxAge: REFRESH_MAX_AGE,
+  });
+}
+
+function clearAuthCookies(res: Response): void {
+  res.clearCookie(ACCESS_COOKIE);
+  res.clearCookie(REFRESH_COOKIE, { path: "/auth" });
+}
+
+/**
+ * Authenticate via a JWT access token, taken from the Authorization: Bearer
+ * header (native clients) or the httpOnly cookie (web, §11.2). Stateless: the
+ * signature + expiry are enough; revocation rides on the short TTL + refresh.
+ */
+async function authenticate(req: Request, tokens: TokenService): Promise<string> {
+  const auth = req.header("authorization");
+  let token: string | undefined;
+  if (auth?.startsWith("Bearer ")) token = auth.slice(7).trim();
+  token ??= readCookie(req, ACCESS_COOKIE);
+  if (!token) throw new GameError("UNAUTHENTICATED", "missing access token", 401);
+  const claims = await tokens.verifyAccess(token);
+  return claims.playerId;
 }
 
 /** Wrap an async handler so rejections reach the error middleware. */
@@ -42,9 +96,15 @@ const spinBody = z.object({ betMultiplier: z.number().int().min(1).default(1) })
 const buildBody = z.object({ buildingIndex: z.number().int().min(0) });
 const attackBody = z.object({ targetId: z.string().min(1), buildingIndex: z.number().int().min(0) });
 const raidBody = z.object({ picks: z.array(z.number().int().min(0)).min(1) });
-const createPlayerBody = z.object({ name: z.string().min(1).max(40).default("Kannushi") });
+const registerBody = z.object({
+  name: z.string().min(1).max(40).default("Kannushi"),
+  deviceId: z.string().min(8).max(128),
+});
+const loginBody = z.object({ deviceId: z.string().min(8).max(128), deviceSecret: z.string().min(1) });
+const refreshBody = z.object({ refreshToken: z.string().min(1).optional() });
 
-export function createApp(game: GameService): Express {
+export function createApp(deps: AppDeps): Express {
+  const { game, auth, tokens } = deps;
   const app = express();
   app.use(express.json({ limit: "16kb" }));
   app.use(rateLimiter(120, 60_000));
@@ -64,19 +124,61 @@ export function createApp(game: GameService): Express {
     });
   });
 
+  // ---- Auth (§11.2) ----------------------------------------------------
+
   app.post(
-    "/players",
+    "/auth/register",
     h(async (req, res) => {
-      const { name } = createPlayerBody.parse(req.body ?? {});
-      const player = await game.createPlayer(name);
-      res.status(201).json({ player: publicPlayer(player) });
+      const { name, deviceId } = registerBody.parse(req.body ?? {});
+      const result = await auth.register(name, deviceId);
+      setAuthCookies(res, result);
+      res.status(201).json({
+        player: publicPlayer(result.player),
+        deviceSecret: result.deviceSecret,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
     }),
   );
+
+  app.post(
+    "/auth/login",
+    h(async (req, res) => {
+      const { deviceId, deviceSecret } = loginBody.parse(req.body ?? {});
+      const result = await auth.login(deviceId, deviceSecret);
+      setAuthCookies(res, result);
+      res.json({ playerId: result.playerId, accessToken: result.accessToken, refreshToken: result.refreshToken });
+    }),
+  );
+
+  app.post(
+    "/auth/refresh",
+    h(async (req, res) => {
+      const body = refreshBody.parse(req.body ?? {});
+      const token = body.refreshToken ?? readCookie(req, REFRESH_COOKIE);
+      if (!token) throw new GameError("UNAUTHENTICATED", "missing refresh token", 401);
+      const result = await auth.refresh(token);
+      setAuthCookies(res, result);
+      res.json({ accessToken: result.accessToken, refreshToken: result.refreshToken });
+    }),
+  );
+
+  app.post(
+    "/auth/logout",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      await auth.logout(playerId);
+      clearAuthCookies(res);
+      res.json({ ok: true });
+    }),
+  );
+
+  // ---- Game ------------------------------------------------------------
 
   app.get(
     "/me",
     h(async (req, res) => {
-      const player = await game.getPlayer(requirePlayerId(req));
+      const player = await game.getPlayer(await authenticate(req, tokens));
       res.json({ player: publicPlayer(player) });
     }),
   );
@@ -85,7 +187,7 @@ export function createApp(game: GameService): Express {
     "/spin",
     h(async (req, res) => {
       const { betMultiplier } = spinBody.parse(req.body ?? {});
-      const { outcome, player } = await game.spin(requirePlayerId(req), betMultiplier);
+      const { outcome, player } = await game.spin(await authenticate(req, tokens), betMultiplier);
       res.json({ outcome, player: publicPlayer(player) });
     }),
   );
@@ -94,7 +196,7 @@ export function createApp(game: GameService): Express {
     "/build",
     h(async (req, res) => {
       const { buildingIndex } = buildBody.parse(req.body ?? {});
-      const result = await game.build(requirePlayerId(req), buildingIndex);
+      const result = await game.build(await authenticate(req, tokens), buildingIndex);
       res.json({ ...result, player: publicPlayer(result.player) });
     }),
   );
@@ -102,7 +204,7 @@ export function createApp(game: GameService): Express {
   app.get(
     "/attack/candidates",
     h(async (req, res) => {
-      res.json({ candidates: await game.attackCandidates(requirePlayerId(req)) });
+      res.json({ candidates: await game.attackCandidates(await authenticate(req, tokens)) });
     }),
   );
 
@@ -110,7 +212,7 @@ export function createApp(game: GameService): Express {
     "/attack",
     h(async (req, res) => {
       const { targetId, buildingIndex } = attackBody.parse(req.body ?? {});
-      const result = await game.attack(requirePlayerId(req), targetId, buildingIndex);
+      const result = await game.attack(await authenticate(req, tokens), targetId, buildingIndex);
       res.json({ ...result, player: publicPlayer(result.player) });
     }),
   );
@@ -119,7 +221,7 @@ export function createApp(game: GameService): Express {
     "/raid",
     h(async (req, res) => {
       const { picks } = raidBody.parse(req.body ?? {});
-      const result = await game.raidDig(requirePlayerId(req), picks);
+      const result = await game.raidDig(await authenticate(req, tokens), picks);
       res.json({ ...result, player: publicPlayer(result.player) });
     }),
   );
@@ -127,7 +229,7 @@ export function createApp(game: GameService): Express {
   app.post(
     "/gacha/pull",
     h(async (req, res) => {
-      const result = await game.summon(requirePlayerId(req));
+      const result = await game.summon(await authenticate(req, tokens));
       res.json(result);
     }),
   );
@@ -144,7 +246,7 @@ export function createApp(game: GameService): Express {
   app.get(
     "/leaderboard/me",
     h(async (req, res) => {
-      res.json({ rank: await game.leaderboardRank(requirePlayerId(req)) });
+      res.json({ rank: await game.leaderboardRank(await authenticate(req, tokens)) });
     }),
   );
 
@@ -164,7 +266,6 @@ export function createApp(game: GameService): Express {
       return;
     }
     const message = err instanceof Error ? err.message : "unknown error";
-    // PlayerNotFound and similar surface as 404/400; default to 400 to avoid leaking 500s in the prototype.
     const status = /not found/i.test(message) ? 404 : 400;
     res.status(status).json({ error: { code: "ERROR", message } });
   });
@@ -186,9 +287,13 @@ function publicPlayer(p: Player) {
     islands: p.islands,
     companions: p.companions,
     pendingAttack: p.pendingAttack ? { expiresAt: p.pendingAttack.expiresAt } : null,
-    // Never expose predetermined spot values — only that a raid is open and how many picks.
     pendingRaid: p.pendingRaid
-      ? { targetId: p.pendingRaid.targetId, picks: p.pendingRaid.picks, spots: p.pendingRaid.spots.length, expiresAt: p.pendingRaid.expiresAt }
+      ? {
+          targetId: p.pendingRaid.targetId,
+          picks: p.pendingRaid.picks,
+          spots: p.pendingRaid.spots.length,
+          expiresAt: p.pendingRaid.expiresAt,
+        }
       : null,
   };
 }

@@ -74,3 +74,14 @@ enum Currency {
   spiritTokens
   gems
 }
+
+// Device-bound credential (§11.2). One per player; tokenVersion is bumped on
+// logout to revoke outstanding refresh tokens.
+model Credential {
+  playerId     String   @id
+  deviceId     String   @unique
+  secretHash   String
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+}
