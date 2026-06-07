@@ -1,0 +1,112 @@
+// Схема на данните за „Помагам Бобов дол" (MVP).
+// Индекси на всеки FK и често търсено поле; миграциите се прилагат с
+// `prisma migrate deploy` на старт.
+
+generator client {
+  provider      = "prisma-client-js"
+  // Явни таргети — образът се гради и пуска на Debian (node:22-slim).
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  SENT
+  REJECTED
+  RESOLVED
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
+enum AdminRole {
+  VIEWER
+  MODERATOR
+  ADMIN
+}
+
+model Report {
+  id             String     @id @default(cuid())
+  publicCode     String     @unique // кратък код за гражданина
+  // Идемпотентност: id-то на черновата от мобилното приложение. При повторно
+  // подаване (офлайн опашка/ретрай) връщаме същия сигнал вместо дубликат.
+  clientReportId String?    @unique
+  categoryId   String
+  category     Category     @relation(fields: [categoryId], references: [slug])
+  settlementId String
+  settlement   Settlement   @relation(fields: [settlementId], references: [slug])
+  description  String?
+  lat          Float?
+  lng          Float?
+  status       ReportStatus @default(PENDING)
+  reporterName  String? // по желание
+  reporterPhone String? // по желание
+  media        ReportMedia[]
+  events       ReportEvent[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([settlementId])
+  @@index([createdAt])
+}
+
+model ReportMedia {
+  id        String    @id @default(cuid())
+  reportId  String
+  report    Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  kind      MediaKind
+  path      String // път на VPS, не URL
+  thumbPath String?
+  bytes     Int
+  createdAt DateTime  @default(now())
+
+  @@index([reportId])
+}
+
+model ReportEvent {
+  id        String     @id @default(cuid()) // одит лог
+  reportId  String
+  report    Report     @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  actorId   String?
+  actor     AdminUser? @relation(fields: [actorId], references: [id])
+  type      String // CREATED, APPROVED, REJECTED, SENT, ...
+  note      String?
+  createdAt DateTime   @default(now())
+
+  @@index([reportId])
+}
+
+model Category {
+  slug    String   @id
+  nameBg  String
+  icon    String
+  active  Boolean  @default(true)
+  reports Report[]
+}
+
+model Settlement {
+  slug    String   @id
+  nameBg  String   @unique
+  isTown  Boolean  @default(false)
+  reports Report[]
+}
+
+model AdminUser {
+  id        String        @id @default(cuid())
+  email     String        @unique
+  passHash  String // argon2id
+  role      AdminRole     @default(MODERATOR)
+  active    Boolean       @default(true)
+  events    ReportEvent[]
+  createdAt DateTime      @default(now())
+}

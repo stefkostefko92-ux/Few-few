@@ -1,0 +1,23 @@
+# Reverse proxy с автоматичен HTTPS (Let's Encrypt) за „Помагам Бобов дол".
+# Домейнът и имейлът за ACME идват от средата (виж deploy/.env).
+
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API: публично подаване, админ модерация и здравна проверка.
+	@api path /reports /reports/* /admin /admin/* /health
+	handle @api {
+		reverse_proxy api:4400
+	}
+
+	# Админ SPA (React Router) — fallback към index.html.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

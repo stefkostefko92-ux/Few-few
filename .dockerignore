@@ -1,0 +1,10 @@
+# Контекстът на build-а е коренът на репото; пазим го малък и без артефакти.
+**/node_modules
+**/dist
+**/.env
+**/.env.local
+**/*.log
+**/.expo
+.git
+.github
+apps/mobile
