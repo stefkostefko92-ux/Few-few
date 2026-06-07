@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.2
+
+- Redesigned popup: crisp inline SVG icons (no emoji), real product logo, a
+  clearer protected/paused hero state, refined metrics and a tidy footer with
+  the support link.
+
 ## 3.1.1
 
 - Cookie/consent banner dismissal now searches open shadow DOM (where many

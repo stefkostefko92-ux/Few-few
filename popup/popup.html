@@ -5,75 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="../theme.js"></script>
   <link rel="stylesheet" href="popup.css" />
-  <title>The Best ads block</title>
+  <title>The Best Ads Block</title>
 </head>
 <body>
-  <header>
-    <div class="logo">🛡️</div>
-    <div class="brand">
+  <header class="bar">
+    <img class="logo" src="../icons/icon48.png" alt="" width="26" height="26" />
+    <div class="title">
       <h1>The Best Ads Block</h1>
-      <span class="tagline">Carbon Stealth Edition</span>
+      <span>by Carbon Stealth</span>
     </div>
+    <label class="switch" title="Toggle protection">
+      <input type="checkbox" id="toggle" checked />
+      <span class="track"><span class="thumb"></span></span>
+    </label>
   </header>
 
-  <main>
-    <div class="status-card">
-      <div class="status-row">
-        <span class="status-label">Protection</span>
-        <label class="switch">
-          <input type="checkbox" id="toggle" checked />
-          <span class="slider"></span>
-        </label>
-      </div>
-      <p class="status-text" id="statusText">Active — ads are being blocked</p>
+  <section class="hero" id="hero">
+    <span class="pulse" id="pulse"></span>
+    <div class="hero-text">
+      <strong id="heroTitle">Protected</strong>
+      <span id="statusText">Active — ads are being blocked</span>
     </div>
+  </section>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-number" id="blockedTotal">0</div>
-        <div class="stat-label">Blocked</div>
-      </div>
-      <div class="stat">
-        <div class="stat-number" id="savedData">0</div>
-        <div class="stat-label">Data saved</div>
-      </div>
-      <div class="stat">
-        <div class="stat-number" id="savedTime">0</div>
-        <div class="stat-label">Time saved</div>
-      </div>
+  <section class="metrics">
+    <div class="metric">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/></svg>
+      <b id="blockedTotal">0</b>
+      <small>Blocked</small>
     </div>
-
-    <div class="site-card">
-      <span class="site-host" id="siteHost">this site</span>
-      <label class="mini-switch">
-        <span id="allowLabel">Blocking</span>
-        <input type="checkbox" id="allowToggle" checked />
-        <span class="slider sm"></span>
-      </label>
+    <div class="metric">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Zm0 5c0 1.7 3.6 3 8 3s8-1.3 8-3M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></svg>
+      <b id="savedData">0</b>
+      <small>Data saved</small>
     </div>
-
-    <div class="actions">
-      <button id="pickBtn" class="action-btn">🎯 Hide element</button>
-      <button id="settingsBtn" class="action-btn">⚙️ Settings</button>
+    <div class="metric">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+      <b id="savedTime">0</b>
+      <small>Time saved</small>
     </div>
+  </section>
 
-    <a class="promo" id="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
-      <div class="promo-text">
-        <strong>Carbon Stealth</strong>
-        <span>Sleek tools &amp; gear — visit the site</span>
-      </div>
-      <span class="promo-go">→</span>
+  <section class="site">
+    <div class="site-id">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg>
+      <span id="siteHost">this site</span>
+    </div>
+    <label class="switch sm" title="Block ads on this site">
+      <span class="lbl" id="allowLabel">Blocking</span>
+      <input type="checkbox" id="allowToggle" checked />
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </section>
+
+  <div class="actions">
+    <button id="pickBtn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      Hide element
+    </button>
+    <button id="settingsBtn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13a7.8 7.8 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1l-.4-2.5h-3.8l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1l.4 2.5h3.8l.4-2.5a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6Z"/></svg>
+      Settings
+    </button>
+  </div>
+
+  <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
+    <img src="../icons/icon32.png" alt="" width="22" height="22" />
+    <div>
+      <strong>Carbon Stealth</strong>
+      <span>Gear &amp; tools — carbonstealth.eu</span>
+    </div>
+    <em>Ad</em>
+  </a>
+
+  <footer class="bar foot">
+    <a id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
+      Support
     </a>
-
-    <div class="donate-card">
-      <span>Free forever. If it helps you, you can support us 💜</span>
-      <a class="donate-btn" id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">Donate via Revolut</a>
-    </div>
-  </main>
-
-  <footer>
-    <span>v3.1.1</span>
-    <span class="dot" id="listDot">filters</span>
+    <span class="meta"><i id="listDot">filters</i><i class="v">v3.1.2</i></span>
   </footer>
 
   <script src="popup.js"></script>

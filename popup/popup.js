@@ -1,6 +1,8 @@
 const $ = (id) => document.getElementById(id);
 
 const toggle = $("toggle");
+const hero = $("hero");
+const heroTitle = $("heroTitle");
 const statusText = $("statusText");
 const blockedTotal = $("blockedTotal");
 const savedData = $("savedData");
@@ -53,10 +55,11 @@ function load() {
 }
 
 function setStatus(enabled) {
+  heroTitle.textContent = enabled ? "Protected" : "Paused";
   statusText.textContent = enabled
     ? "Active — ads are being blocked"
-    : "Disabled — ads are shown";
-  statusText.classList.toggle("off", !enabled);
+    : "Paused — ads are shown";
+  hero.classList.toggle("off", !enabled);
 }
 
 function setAllowLabel(blocking) {
