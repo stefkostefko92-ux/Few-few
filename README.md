@@ -11,8 +11,8 @@
 | Папка | Технология | Статус |
 | --- | --- | --- |
 | `apps/mobile` | Expo SDK 56 / React Native (Android) | в разработка |
-| `apps/api` | Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ | предстои |
-| `apps/admin` | React 18 + Vite + Tailwind | предстои |
+| `apps/api` | Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ | в разработка |
+| `apps/admin` | React 18 + Vite + Tailwind | в разработка |
 | `packages/shared` | zod схеми и типове | предстои |
 
 ## Мобилно приложение
@@ -26,6 +26,33 @@ cd apps/mobile
 cp .env.example .env        # задай EXPO_PUBLIC_API_BASE_URL към твоя backend
 npm install
 npx expo start             # стартирай на Android устройство/емулатор
+```
+
+## Backend (API + worker)
+
+Сигналът пристига със статус `PENDING`. Нищо не напуска системата, докато
+модератор не го одобри — тогава отделен worker праща имейл към общината и
+сигналът става `SENT`.
+
+```bash
+docker compose up -d                       # PostgreSQL (5437) + Redis (6383)
+cd apps/api
+cp .env.example .env                       # задай JWT_SECRET, SMTP_*, ADMIN_*
+npm install
+npx prisma migrate deploy && npm run seed  # схема + референтни данни + админ
+npm run dev                                # API на :4400
+npm run worker                             # опашка/имейл (отделен процес)
+```
+
+## Админ панел
+
+React 18 + Vite + Tailwind за модерация: вход, опашка по статус, преглед на
+снимките и одобри/откажи. В разработка прокси-то на Vite сочи към API-то.
+
+```bash
+cd apps/admin
+npm install
+npm run dev                                # :5173, прокси към API на :4400
 ```
 
 Подробности и правила за разработка — виж [CLAUDE.md](./CLAUDE.md).

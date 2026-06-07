@@ -7,7 +7,7 @@
 ## Структура (monorepo)
 - `apps/mobile` — Expo SDK 56 / React Native (Android) — гражданско приложение **(в разработка)**
 - `apps/api` — Node 22, Express 5, Prisma, PostgreSQL, Redis, BullMQ **(в разработка)**
-- `apps/admin` — React 18 + Vite + Tailwind (модерация) *(предстои)*
+- `apps/admin` — React 18 + Vite + Tailwind (модерация) **(в разработка)**
 - `packages/shared` — zod схеми и типове, споделени api/admin *(предстои)*
 
 ## Команди
@@ -16,7 +16,10 @@
 - Mobile type-check: `cd apps/mobile && npm run typecheck`
 - Инфра (локално): `docker compose up -d` (PostgreSQL 5437, Redis 6383)
 - API: `cd apps/api && npm install && npx prisma migrate deploy && npm run seed && npm run dev`
+- API worker (опашка/имейл): `cd apps/api && npm run worker`
 - API type-check: `cd apps/api && npx prisma generate && npm run typecheck`
+- Admin: `cd apps/admin && npm install && npm run dev` (Vite прокси към API на 4400)
+- Admin type-check/build: `cd apps/admin && npm run build`
 
 ## Бележки по схемата
 - `Category` и `Settlement` ползват `slug` като първичен ключ — четим, стабилен
