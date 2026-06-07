@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import { afterEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 import { defaultLiveOps } from "../src/config/liveops.js";
+import { MemoryLiveOpsStore } from "../src/config/liveOpsStore.js";
 import { AuthService } from "../src/auth/authService.js";
 import { TokenService } from "../src/auth/tokens.js";
 import { MemoryAuthRepository } from "../src/data/authRepository.js";
@@ -20,7 +21,7 @@ import { IapService } from "../src/services/iapService.js";
 
 function makeStack() {
   const repo = new MemoryPlayerRepository();
-  const game = new GameService({ repo, ledger: new MemoryLedger(), config: defaultLiveOps });
+  const game = new GameService({ repo, ledger: new MemoryLedger(), liveOps: new MemoryLiveOpsStore(defaultLiveOps) });
   const tokens = new TokenService("test-secret-0123456789abcdef");
   const auth = new AuthService({
     authRepo: new MemoryAuthRepository(),
@@ -35,7 +36,7 @@ function makeStack() {
     game,
   });
   const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });
-  const app = createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret: "wh" });
+  const app = createApp({ game, auth, tokens, iap, catalog, clan, liveOps: new MemoryLiveOpsStore(defaultLiveOps), webhookSecret: "wh" });
   return { app, game, tokens, auth, clan };
 }
 

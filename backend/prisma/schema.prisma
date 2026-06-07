@@ -76,6 +76,14 @@ enum Currency {
   gems
 }
 
+// Live-tunable LiveOps config (§6.2), stored as a single JSON row (id="current")
+// so ops can retune weights/prices/drop-rates without an app release.
+model LiveOpsConfig {
+  id        String   @id
+  config    Json
+  updatedAt DateTime @updatedAt
+}
+
 // Clan (§7.2). Members are stored as a JSON id array (capped at 50 in the
 // service); the player also carries clanId for fast membership lookups.
 model Clan {

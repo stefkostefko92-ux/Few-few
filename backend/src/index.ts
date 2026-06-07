@@ -1,4 +1,6 @@
 import { defaultLiveOps } from "./config/liveops.js";
+import { MemoryLiveOpsStore, type LiveOpsStore } from "./config/liveOpsStore.js";
+import { PrismaLiveOpsStore } from "./data/prismaLiveOpsStore.js";
 import { AuthService } from "./auth/authService.js";
 import { TokenService } from "./auth/tokens.js";
 import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository.js";
@@ -48,6 +50,7 @@ async function main(): Promise<void> {
   let authRepo: AuthRepository;
   let purchases: PurchaseRepository;
   let clanRepo: ClanRepository;
+  let liveOps: LiveOpsStore;
   if (process.env.DATABASE_URL) {
     const prisma = createPrismaClient(process.env.DATABASE_URL);
     repo = new PrismaPlayerRepository(prisma);
@@ -55,6 +58,7 @@ async function main(): Promise<void> {
     authRepo = new PrismaAuthRepository(prisma);
     purchases = new PrismaPurchaseRepository(prisma);
     clanRepo = new PrismaClanRepository(prisma);
+    liveOps = new PrismaLiveOpsStore(prisma, defaultLiveOps);
     // eslint-disable-next-line no-console
     console.log("storage: Postgres (Prisma)");
   } else {
@@ -63,9 +67,11 @@ async function main(): Promise<void> {
     authRepo = new MemoryAuthRepository();
     purchases = new MemoryPurchaseRepository();
     clanRepo = new MemoryClanRepository();
+    liveOps = new MemoryLiveOpsStore(defaultLiveOps);
     // eslint-disable-next-line no-console
     console.log("storage: in-memory");
   }
+  await liveOps.load(); // seed from persistence if present
 
   let leaderboard: Leaderboard = noopLeaderboard;
   if (process.env.REDIS_URL) {
@@ -79,7 +85,7 @@ async function main(): Promise<void> {
   const game = new GameService({
     repo,
     ledger,
-    config: defaultLiveOps,
+    liveOps,
     leaderboard,
     onContribution: (playerId, points) => clan.contribute(playerId, points),
   });
@@ -105,7 +111,24 @@ async function main(): Promise<void> {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  const app = createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret, corsOrigins, devReceipt });
+  const adminKey = process.env.ADMIN_API_KEY;
+  if (adminKey) {
+    // eslint-disable-next-line no-console
+    console.log("admin: /admin/liveops enabled");
+  }
+  const app = createApp({
+    game,
+    auth,
+    tokens,
+    iap,
+    catalog,
+    clan,
+    liveOps,
+    adminKey,
+    webhookSecret,
+    corsOrigins,
+    devReceipt,
+  });
   const server = app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`KAGURA backend (prototype) listening on :${port}`);

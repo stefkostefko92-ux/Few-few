@@ -3,6 +3,7 @@ import request from "supertest";
 import { defaultLiveOps } from "../src/config/liveops.js";
 import { AuthService } from "../src/auth/authService.js";
 import { TokenService } from "../src/auth/tokens.js";
+import { MemoryLiveOpsStore } from "../src/config/liveOpsStore.js";
 import { MemoryAuthRepository } from "../src/data/authRepository.js";
 import { MemoryClanRepository } from "../src/data/clanRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
@@ -17,10 +18,12 @@ import { IapService } from "../src/services/iapService.js";
 
 const TEST_SECRET = "test-secret-0123456789abcdef";
 const WEBHOOK_SECRET = "test-webhook-secret";
+const ADMIN_KEY = "test-admin-key";
 
 function makeApp() {
   const repo = new MemoryPlayerRepository();
-  const game = new GameService({ repo, ledger: new MemoryLedger(), config: defaultLiveOps });
+  const liveOps = new MemoryLiveOpsStore(defaultLiveOps);
+  const game = new GameService({ repo, ledger: new MemoryLedger(), liveOps });
   const tokens = new TokenService(TEST_SECRET);
   const auth = new AuthService({
     authRepo: new MemoryAuthRepository(),
@@ -35,7 +38,7 @@ function makeApp() {
     game,
   });
   const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });
-  return createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret: WEBHOOK_SECRET });
+  return createApp({ game, auth, tokens, iap, catalog, clan, liveOps, adminKey: ADMIN_KEY, webhookSecret: WEBHOOK_SECRET });
 }
 
 let deviceCounter = 0;

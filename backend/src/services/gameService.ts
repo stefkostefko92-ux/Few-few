@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { LiveOpsConfig } from "../config/liveops.js";
+import { MemoryLiveOpsStore, type LiveOpsStore } from "../config/liveOpsStore.js";
 import type { Ledger } from "../data/ledger.js";
 import type { PlayerRepository } from "../data/repository.js";
 import { clampInc, regenSpins } from "../domain/economy.js";
@@ -21,7 +22,9 @@ export type ContributionSink = (playerId: string, points: number) => Promise<voi
 export interface GameServiceDeps {
   repo: PlayerRepository;
   ledger: Ledger;
-  config: LiveOpsConfig;
+  /** Either a fixed config (wrapped in a memory store) or a live-tunable store. */
+  config?: LiveOpsConfig;
+  liveOps?: LiveOpsStore;
   rng?: Rng;
   clock?: Clock;
   leaderboard?: Leaderboard;
@@ -67,16 +70,27 @@ export interface PullOutcome {
 export class GameService {
   private readonly repo: PlayerRepository;
   private readonly ledger: Ledger;
-  private readonly config: LiveOpsConfig;
+  private readonly liveOps: LiveOpsStore;
   private readonly rng: Rng;
   private readonly clock: Clock;
   private readonly leaderboard: Leaderboard;
   private readonly onContribution: ContributionSink | undefined;
 
+  /** Current LiveOps config — read live so admin tuning takes effect at once (§6.2). */
+  private get config(): LiveOpsConfig {
+    return this.liveOps.get();
+  }
+
   constructor(deps: GameServiceDeps) {
     this.repo = deps.repo;
     this.ledger = deps.ledger;
-    this.config = deps.config;
+    if (deps.liveOps) {
+      this.liveOps = deps.liveOps;
+    } else if (deps.config) {
+      this.liveOps = new MemoryLiveOpsStore(deps.config);
+    } else {
+      throw new Error("GameService requires either `config` or `liveOps`");
+    }
     this.rng = deps.rng ?? cryptoRng;
     this.clock = deps.clock ?? systemClock;
     this.leaderboard = deps.leaderboard ?? noopLeaderboard;

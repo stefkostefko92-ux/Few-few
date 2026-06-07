@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { WebSocket as NodeWebSocket } from "ws";
 import { defaultLiveOps } from "../src/config/liveops.js";
+import { MemoryLiveOpsStore } from "../src/config/liveOpsStore.js";
 import { AuthService } from "../src/auth/authService.js";
 import { TokenService } from "../src/auth/tokens.js";
 import { MemoryAuthRepository } from "../src/data/authRepository.js";
@@ -34,13 +35,13 @@ describe("KaguraClient SDK (over real HTTP/WS)", () => {
 
   beforeAll(async () => {
     const repo = new MemoryPlayerRepository();
-    const game = new GameService({ repo, ledger: new MemoryLedger(), config: defaultLiveOps });
+    const game = new GameService({ repo, ledger: new MemoryLedger(), liveOps: new MemoryLiveOpsStore(defaultLiveOps) });
     const tokens = new TokenService(SECRET);
     const auth = new AuthService({ authRepo: new MemoryAuthRepository(), tokens, createPlayer: (n) => game.createPlayer(n) });
     const catalog = new Catalog();
     const iap = new IapService({ catalog, validator: new StubReceiptValidator("rs"), purchases: new MemoryPurchaseRepository(), game });
     const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });
-    const app = createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret: "wh" });
+    const app = createApp({ game, auth, tokens, iap, catalog, clan, liveOps: new MemoryLiveOpsStore(defaultLiveOps), webhookSecret: "wh" });
     server = app.listen(0);
     new ChatHub(tokens, (id) => game.getPlayer(id)).attach(server);
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

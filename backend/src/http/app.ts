@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
 import { GameError } from "../errors.js";
@@ -8,6 +9,7 @@ import type { TokenService } from "../auth/tokens.js";
 import type { IapService } from "../services/iapService.js";
 import type { ClanService } from "../services/clanService.js";
 import type { Catalog } from "../monetization/catalog.js";
+import type { LiveOpsStore } from "../config/liveOpsStore.js";
 import { verifyWebhookSignature } from "../monetization/receipts.js";
 
 export interface AppDeps {
@@ -17,6 +19,10 @@ export interface AppDeps {
   iap: IapService;
   catalog: Catalog;
   clan: ClanService;
+  /** Live-tunable LiveOps config store, mutated by the admin endpoints (§6.2). */
+  liveOps: LiveOpsStore;
+  /** Admin API key for /admin/* routes. Omit to disable the admin surface. */
+  adminKey?: string;
   /** HMAC secret for the IAP webhook (RevenueCat-style, §8.1). */
   webhookSecret: string;
   /** Allowed CORS origins for the external web-shop/demo (§8.1). Omit for same-origin only. */
@@ -163,7 +169,7 @@ const webhookBody = z.object({
 });
 
 export function createApp(deps: AppDeps): Express {
-  const { game, auth, tokens, iap, catalog, clan, webhookSecret } = deps;
+  const { game, auth, tokens, iap, catalog, clan, liveOps, webhookSecret } = deps;
   const app = express();
   if (deps.corsOrigins && deps.corsOrigins.length > 0) {
     app.use(corsMiddleware(deps.corsOrigins));
@@ -411,6 +417,36 @@ export function createApp(deps: AppDeps): Express {
     h(async (req, res) => {
       const playerId = await authenticate(req, tokens);
       res.json({ clan: await clan.joinClan(playerId, String(req.params.id)) });
+    }),
+  );
+
+  // ---- Admin / LiveOps (§6.2, §11.2) -----------------------------------
+  // Gated by a shared admin key; lets ops retune the economy without a release.
+  const requireAdmin = (req: Request): void => {
+    const provided = req.header("x-admin-key") ?? "";
+    const expected = deps.adminKey ?? "";
+    const ok =
+      expected.length > 0 &&
+      provided.length === expected.length &&
+      timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+    if (!ok) throw new GameError("FORBIDDEN", "admin key required", 403);
+  };
+
+  app.get(
+    "/admin/liveops",
+    h((req, res) => {
+      requireAdmin(req);
+      res.json({ config: liveOps.get() });
+    }),
+  );
+
+  app.put(
+    "/admin/liveops",
+    h(async (req, res) => {
+      requireAdmin(req);
+      // replace() validates with the LiveOps zod schema; invalid → ZodError → 400.
+      const config = await liveOps.replace(req.body);
+      res.json({ config });
     }),
   );
 

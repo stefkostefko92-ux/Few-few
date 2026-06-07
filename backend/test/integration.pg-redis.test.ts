@@ -4,6 +4,7 @@ import { defaultLiveOps } from "../src/config/liveops.js";
 import { PrismaLedger } from "../src/data/prismaLedger.js";
 import { PrismaPlayerRepository } from "../src/data/prismaRepository.js";
 import { PrismaPurchaseRepository } from "../src/data/prismaPurchaseRepository.js";
+import { PrismaLiveOpsStore } from "../src/data/prismaLiveOpsStore.js";
 import { createPrismaClient } from "../src/data/prismaClient.js";
 import { playerAccount } from "../src/data/ledger.js";
 import type { Currency } from "../src/domain/types.js";
@@ -128,6 +129,20 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     expect(second.granted).toBe(false);
     expect((await repo.getOrThrow(p.id)).spins).toBe(before + 180); // granted once
     await assertBooks([p.id]);
+  });
+
+  it("persists a LiveOps config update across store instances (§6.2)", async () => {
+    await prisma.liveOpsConfig.deleteMany();
+    const store = new PrismaLiveOpsStore(prisma, defaultLiveOps);
+    await store.load(); // empty → keeps fallback default
+    expect(store.get().payouts.jackpotMultiplier).toBe(defaultLiveOps.payouts.jackpotMultiplier);
+
+    await store.replace({ ...defaultLiveOps, payouts: { ...defaultLiveOps.payouts, jackpotMultiplier: 77 } });
+
+    // A fresh store (e.g. after a restart) loads the persisted value from PG.
+    const reloaded = new PrismaLiveOpsStore(prisma, defaultLiveOps);
+    await reloaded.load();
+    expect(reloaded.get().payouts.jackpotMultiplier).toBe(77);
   });
 
   it.skipIf(!REDIS_URL)("ranks players on the Redis leaderboard", async () => {

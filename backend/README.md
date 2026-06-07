@@ -21,6 +21,7 @@ raid → summon`, with a double-entry economy ledger and published gacha rates.
 | JWT auth (httpOnly cookie or Bearer) + device binding (§11.2) | `auth/` |
 | Server-side IAP receipt validation, idempotent grants (§8, §11.3) | `monetization/`, `services/iapService.ts` |
 | Clans, clan wars, real-time chat over WebSocket (§7.2) | `services/clanService.ts`, `realtime/chatHub.ts` |
+| Live-tunable LiveOps config via admin API — no redeploy (§6.2) | `config/liveOpsStore.ts`, `GET/PUT /admin/liveops` |
 
 ## Stack
 
@@ -54,8 +55,8 @@ cp .env.example .env                    # DATABASE_URL + REDIS_URL
 npm run db:push                         # create the schema
 npm run dev
 
-npm test                 # vitest — 64 in-memory tests (no infra, incl. WebSocket chat + SDK)
-npm run test:integration # 4 tests against a live PG (+ Redis); needs DATABASE_URL
+npm test                 # vitest — 67 in-memory tests (no infra, incl. WebSocket chat + SDK)
+npm run test:integration # 5 tests against a live PG (+ Redis); needs DATABASE_URL
 npm run typecheck        # tsc --noEmit
 ```
 
@@ -90,6 +91,8 @@ default `npm test` never needs infra.
 | `POST /clans/war/declare` | access (leader) | — | declare war on a matchmade clan |
 | `GET /clans/war` | access | — | current war status/score |
 | `WS /ws?token=<access>` | access | — | real-time clan chat (history + broadcast) |
+| `GET /admin/liveops` | admin key | — | current LiveOps config |
+| `PUT /admin/liveops` | admin key | full config | retune weights/prices/drop-rates live (§6.2) |
 | `GET /leaderboard` | — | — | global top-N (Redis) |
 | `GET /leaderboard/me` | access | — | caller's rank |
 
