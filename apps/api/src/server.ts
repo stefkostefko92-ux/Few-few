@@ -2,6 +2,7 @@ import { createApp } from './app.js';
 import { env } from './env.js';
 import { logger } from './logger.js';
 import { prisma } from './prisma.js';
+import { closeEmailQueue } from './queue/email.js';
 import { ensureMediaDirs } from './reports/media.js';
 
 async function start(): Promise<void> {
@@ -14,7 +15,10 @@ async function start(): Promise<void> {
   const shutdown = (signal: string): void => {
     logger.info({ signal }, 'спиране на API');
     server.close(() => {
-      void prisma.$disconnect().finally(() => process.exit(0));
+      void closeEmailQueue()
+        .catch(() => undefined)
+        .finally(() => prisma.$disconnect())
+        .finally(() => process.exit(0));
     });
   };
   process.on('SIGTERM', () => shutdown('SIGTERM'));

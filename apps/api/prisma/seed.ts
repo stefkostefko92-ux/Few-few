@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
+import { hashPassword } from '../src/auth/password.js';
+
 const prisma = new PrismaClient();
 
 const categories: ReadonlyArray<{ slug: string; nameBg: string; icon: string }> = [
@@ -52,6 +54,21 @@ async function main(): Promise<void> {
   console.log(
     `Seed готов: ${categories.length} категории, ${settlements.length} населени места.`,
   );
+
+  // Първоначален админ — само ако са зададени ADMIN_EMAIL и ADMIN_PASSWORD.
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    const passHash = await hashPassword(adminPassword);
+    await prisma.adminUser.upsert({
+      where: { email: adminEmail },
+      update: { passHash, active: true, role: 'ADMIN' },
+      create: { email: adminEmail, passHash, role: 'ADMIN' },
+    });
+    console.log(`Админ готов: ${adminEmail} (роля ADMIN).`);
+  } else {
+    console.log('Без админ seed (липсват ADMIN_EMAIL / ADMIN_PASSWORD).');
+  }
 }
 
 main()

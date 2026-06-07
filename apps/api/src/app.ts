@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import express, {
   type NextFunction,
   type Request,
@@ -6,6 +7,8 @@ import express, {
 import { MulterError } from 'multer';
 import { pinoHttp } from 'pino-http';
 
+import { adminRouter } from './admin/router.js';
+import { authRouter } from './auth/router.js';
 import { env } from './env.js';
 import { logger } from './logger.js';
 import { prisma } from './prisma.js';
@@ -16,6 +19,8 @@ export function createApp() {
   app.set('trust proxy', 1);
 
   app.use(pinoHttp({ logger }));
+  app.use(cookieParser());
+  app.use(express.json({ limit: '100kb' }));
 
   // CORS whitelist — никога „*" на production.
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -44,6 +49,8 @@ export function createApp() {
   });
 
   app.use('/reports', reportsRouter);
+  app.use('/admin/auth', authRouter);
+  app.use('/admin', adminRouter);
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: 'Не е намерено.' });
