@@ -122,6 +122,27 @@ describe("МАГНАТ — termination & scoring", () => {
     expect(view.chance).toEqual([]);
     expect(view.chest).toEqual([]);
   });
+
+  it("never emits more than one BANKRUPT per seat in a single reduce", () => {
+    // Drive many full games and assert each reduce yields at most one bankruptcy
+    // per seat (regression for the missing already-bankrupt guard in charge()).
+    for (let g = 0; g < 30; g++) {
+      const rng = new SeededRng(`bk-${g}`);
+      let s = init(4);
+      let steps = 0;
+      while (!magnatEngine.isTerminal(s) && steps++ < 200_000) {
+        const action = magnatBot(s, s.turn, rng);
+        if (!action) break;
+        const { state, events } = magnatEngine.reduce(s, action as MagnatAction, rng);
+        const perSeat = new Map<number, number>();
+        for (const e of events) {
+          if (e.type === "BANKRUPT") perSeat.set(e.seat, (perSeat.get(e.seat) ?? 0) + 1);
+        }
+        for (const count of perSeat.values()) expect(count).toBeLessThanOrEqual(1);
+        s = state;
+      }
+    }
+  });
 });
 
 describe("МАГНАТ — heuristic bot", () => {

@@ -22,6 +22,7 @@ import {
   LinearFilter,
   Mesh,
   MeshStandardMaterial,
+  type Object3D,
   OrthographicCamera,
   PCFSoftShadowMap,
   PlaneGeometry,
@@ -29,6 +30,7 @@ import {
   RepeatWrapping,
   Scene,
   SRGBColorSpace,
+  type Texture,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -41,6 +43,22 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { BOARD, GROUP_COLORS, BOARD_SIZE, type MagnatState } from "@aso/shared";
+
+/** Recursively free a subtree's GPU resources (geometries, materials, textures). */
+function disposeObject(root: Object3D): void {
+  root.traverse((o) => {
+    const mesh = o as { geometry?: { dispose?: () => void }; material?: unknown };
+    mesh.geometry?.dispose?.();
+    const mat = mesh.material;
+    const mats = Array.isArray(mat) ? mat : mat ? [mat] : [];
+    for (const m of mats as MeshStandardMaterial[]) {
+      for (const v of Object.values(m)) {
+        if (v && (v as Texture).isTexture) (v as Texture).dispose();
+      }
+      m.dispose();
+    }
+  });
+}
 
 const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#e07a1f"];
 const T = 2; // tile pitch
@@ -264,6 +282,7 @@ function pawnGeometry(): LatheGeometry {
 export class MagnatScene {
   private renderer: WebGLRenderer;
   private composer!: EffectComposer;
+  private passes: { dispose?: () => void }[] = [];
   private scene = new Scene();
   private camera: OrthographicCamera;
   private place = placements();
@@ -272,6 +291,7 @@ export class MagnatScene {
   private tokens: Group[] = [];
   private tokenTarget: Vector3[] = [];
   private houseGroups: (Group | null)[] = new Array(BOARD_SIZE).fill(null);
+  private houseCount: number[] = new Array(BOARD_SIZE).fill(-1);
   private ownerStuds: (Mesh | null)[] = new Array(BOARD_SIZE).fill(null);
   private dice: Mesh[] = [];
   private baseMat?: MeshStandardMaterial;
@@ -291,9 +311,13 @@ export class MagnatScene {
     // opaque felt background (post-processing doesn't carry CSS transparency)
     this.scene.background = new Color("#0e2c1c");
 
-    // soft image-based reflections for tokens / dice
+    // soft image-based reflections for tokens / dice (dispose the generator and
+    // the throwaway room scene once the env map is baked)
     const pmrem = new PMREMGenerator(this.renderer);
-    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const room = new RoomEnvironment();
+    this.scene.environment = pmrem.fromScene(room, 0.04).texture;
+    pmrem.dispose();
+    disposeObject(room);
 
     const aspect = 1 / SCENE_RATIO;
     const d = H * 1.12;
@@ -319,16 +343,16 @@ export class MagnatScene {
     const w = width;
     const h = width * SCENE_RATIO;
     this.composer = new EffectComposer(this.renderer);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    const render = new RenderPass(this.scene, this.camera);
     const ssao = new SSAOPass(this.scene, this.camera, w, h);
     ssao.kernelRadius = 0.6;
     ssao.minDistance = 0.002;
     ssao.maxDistance = 0.08;
-    this.composer.addPass(ssao);
     const bloom = new UnrealBloomPass(new Vector2(w, h), 0.06, 0.4, 1.35);
-    this.composer.addPass(bloom);
-    this.composer.addPass(new OutputPass());
-    this.composer.addPass(new SMAAPass(w, h));
+    const output = new OutputPass();
+    const smaa = new SMAAPass(w, h);
+    for (const p of [render, ssao, bloom, output, smaa]) this.composer.addPass(p);
+    this.passes = [render, ssao, bloom, output, smaa];
 
     this.renderOnce();
   }
@@ -487,7 +511,10 @@ export class MagnatScene {
   }
 
   private syncHouses(i: number, count: number): void {
+    if (this.houseCount[i] === count) return; // only rebuild when it changed
+    this.houseCount[i] = count;
     if (this.houseGroups[i]) {
+      disposeObject(this.houseGroups[i]!); // free the old buildings' GPU resources
       this.scene.remove(this.houseGroups[i]!);
       this.houseGroups[i] = null;
     }
@@ -579,6 +606,16 @@ export class MagnatScene {
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
+    // Free the whole scene graph (geometries, materials, ~50 CanvasTextures),
+    // the baked environment map, the pawn geometry, and the post-processing
+    // pipeline — renderer.dispose() alone leaks all of these.
+    disposeObject(this.scene);
+    (this.scene.environment as Texture | null)?.dispose();
+    this.scene.environment = null;
+    this.pawnGeo.dispose();
+    for (const p of this.passes) p.dispose?.();
+    this.composer.dispose();
     this.renderer.dispose();
+    this.renderer.forceContextLoss();
   }
 }

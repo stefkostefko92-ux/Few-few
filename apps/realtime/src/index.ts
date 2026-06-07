@@ -17,7 +17,7 @@ import { pubClient, redis, subClient } from "./redis.js";
 import { verifyHandshake } from "./auth.js";
 import { Matchmaker } from "./matchmaking.js";
 import type { GameRoom } from "./room.js";
-import { sanitizeChat, chatRateOk } from "./chat.js";
+import { sanitizeChat, chatRateOk, socketRateOk } from "./chat.js";
 
 const queueJoinSchema = z.object({ game: z.string(), mode: z.string().optional() });
 const gameActionSchema = z.object({ matchId: z.string(), action: z.unknown() });
@@ -100,7 +100,13 @@ async function main(): Promise<void> {
           return;
         }
       } catch {
-        // Fail open on infra hiccup (JWT was already valid).
+        // Both the revocation lookup and the DB ban check failed. Fail CLOSED in
+        // production so a banned user can't connect during an infra hiccup; dev
+        // stays fail-open (JWT was already valid).
+        if (env.NODE_ENV === "production") {
+          next(new Error("unavailable"));
+          return;
+        }
       }
       (socket.data as { claims: AccessTokenClaims }).claims = claims;
       next();
@@ -152,6 +158,7 @@ async function main(): Promise<void> {
     dispatchPresence(userId, true);
 
     socket.on(SOCKET_EVENTS.QUEUE_JOIN, (payload: unknown) => {
+      if (!socketRateOk(socket, "queue", 12, 10_000)) return;
       const parsed = queueJoinSchema.safeParse(payload);
       if (!parsed.success || !isGameKey(parsed.data.game)) {
         socket.emit(SOCKET_EVENTS.ERROR, { code: "bad_request", message: "Invalid queue join" });
@@ -171,6 +178,8 @@ async function main(): Promise<void> {
     });
 
     socket.on(SOCKET_EVENTS.GAME_ACTION, (payload: unknown) => {
+      // Per-socket flood guard (each action runs legalActions + serialization).
+      if (!socketRateOk(socket, "action", 40, 10_000)) return;
       const parsed = gameActionSchema.safeParse(payload);
       if (!parsed.success) return;
       const room = matchmaker.getRoom(parsed.data.matchId);
@@ -210,6 +219,7 @@ async function main(): Promise<void> {
 
     // Invite a friend to play; they get an INVITE_RECEIVED if online.
     socket.on(SOCKET_EVENTS.INVITE_SEND, (payload: unknown) => {
+      if (!socketRateOk(socket, "invite", 10, 30_000)) return;
       const parsed = inviteSendSchema.safeParse(payload);
       if (!parsed.success || !isGameKey(parsed.data.game)) return;
       const { toUserId, game } = parsed.data;
@@ -225,6 +235,7 @@ async function main(): Promise<void> {
 
     // Accept an invite: seat both friends into a private match now.
     socket.on(SOCKET_EVENTS.INVITE_ACCEPT, (payload: unknown) => {
+      if (!socketRateOk(socket, "inviteAccept", 20, 30_000)) return;
       const parsed = inviteAcceptSchema.safeParse(payload);
       if (!parsed.success || !isGameKey(parsed.data.game)) return;
       const { fromUserId, game } = parsed.data;

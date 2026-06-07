@@ -148,10 +148,18 @@ function pocketTexture(): Texture {
 }
 
 const _felt = new Map<string, Texture>();
+const FELT_CACHE_MAX = 12; // bound growth across many equipped cloth cosmetics
 function feltTexture(a: string, b: string): Texture {
   const key = `${a}|${b}`;
   const cached = _felt.get(key);
   if (cached) return cached;
+  if (_felt.size >= FELT_CACHE_MAX) {
+    const oldest = _felt.keys().next().value;
+    if (oldest !== undefined) {
+      _felt.get(oldest)?.destroy(true);
+      _felt.delete(oldest);
+    }
+  }
   const W = 1024;
   const H = 512;
   const c = document.createElement("canvas");

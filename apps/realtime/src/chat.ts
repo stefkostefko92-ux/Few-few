@@ -77,3 +77,22 @@ export function chatRateOk(socket: Socket): boolean {
   data.chat.times = recent;
   return true;
 }
+
+/**
+ * Generic per-socket sliding-window limiter for non-chat events (game actions,
+ * queue joins, invites). State lives on the socket, so it's freed on disconnect
+ * and is per-connection. Returns false when the caller should drop the event.
+ */
+export function socketRateOk(socket: Socket, bucket: string, max: number, windowMs: number): boolean {
+  const data = socket.data as { rate?: Record<string, number[]> };
+  data.rate ??= {};
+  const now = Date.now();
+  const recent = (data.rate[bucket] ?? []).filter((t) => now - t < windowMs);
+  if (recent.length >= max) {
+    data.rate[bucket] = recent;
+    return false;
+  }
+  recent.push(now);
+  data.rate[bucket] = recent;
+  return true;
+}

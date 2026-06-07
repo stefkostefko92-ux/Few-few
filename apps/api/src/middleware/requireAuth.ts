@@ -2,6 +2,8 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ACCESS_COOKIE, type AccessTokenClaims } from "@aso/shared";
 import { verifyAccessToken } from "../auth/tokens.js";
 import { isRevoked } from "../auth/revocation.js";
+import { env } from "../env.js";
+import { logger } from "../logger.js";
 import { forbidden, unauthorized } from "../http.js";
 
 declare global {
@@ -37,8 +39,14 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
       req.user = claims;
       next();
     })
-    .catch(() => {
-      // Fail open on a revocation-store hiccup.
+    .catch((err) => {
+      // No DB backstop here, so fail CLOSED in production: a banned/revoked user
+      // must not slip through on a revocation-store hiccup. Dev stays fail-open.
+      if (env.isProd) {
+        logger.error({ err }, "revocation check failed; rejecting (fail-closed)");
+        next(unauthorized("Session check unavailable"));
+        return;
+      }
       req.user = claims;
       next();
     });

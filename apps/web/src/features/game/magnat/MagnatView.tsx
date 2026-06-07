@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { BOARD, GROUP_COLORS, isOwnable, type MagnatAction, type MagnatState } from "@aso/shared";
 import type { MagnatScene } from "./magnatScene";
 import { playCue } from "../../../lib/sound";
@@ -10,10 +10,21 @@ import "./magnat.css";
 
 const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#e07a1f"];
 
+/** WebGL availability — МАГНАТ's board needs it; otherwise we degrade to the HUD. */
+function webglSupported(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
 export function MagnatView({ title }: { title: string }) {
   const m = useMatch<MagnatState, MagnatAction>("MAGNAT");
   const { state, seat, phase, result, legal, players } = m;
   const felt = useEquippedCosmetic("MAGNAT", "ESTATE");
+  const useGL = useMemo(() => webglSupported(), []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -24,6 +35,7 @@ export function MagnatView({ title }: { title: string }) {
   feltRef.current = felt;
 
   useEffect(() => {
+    if (!useGL) return;
     let scene: MagnatScene | null = null;
     let ro: ResizeObserver | null = null;
     let cancelled = false;
@@ -32,23 +44,27 @@ export function MagnatView({ title }: { title: string }) {
     if (!canvas || !wrap) return;
     const width = () => Math.max(280, wrap.clientWidth);
 
-    void import("./magnatScene").then(({ MagnatScene }) => {
-      if (cancelled) return;
-      scene = new MagnatScene(canvas, width());
-      sceneRef.current = scene;
-      const f = feltRef.current?.colors;
-      if (f) scene.setFelt(f.a, f.b);
-      if (stateRef.current) scene.setState(stateRef.current);
-      ro = new ResizeObserver(() => scene?.resize(width()));
-      ro.observe(wrap);
-    });
+    void import("./magnatScene")
+      .then(({ MagnatScene }) => {
+        if (cancelled) return;
+        scene = new MagnatScene(canvas, width());
+        sceneRef.current = scene;
+        const f = feltRef.current?.colors;
+        if (f) scene.setFelt(f.a, f.b);
+        if (stateRef.current) scene.setState(stateRef.current);
+        ro = new ResizeObserver(() => scene?.resize(width()));
+        ro.observe(wrap);
+      })
+      .catch(() => {
+        /* WebGL init failed despite the support check — HUD still works. */
+      });
     return () => {
       cancelled = true;
       ro?.disconnect();
       scene?.destroy();
       sceneRef.current = null;
     };
-  }, []);
+  }, [useGL]);
 
   useEffect(() => {
     if (sceneRef.current && state) sceneRef.current.setState(state);
@@ -73,15 +89,36 @@ export function MagnatView({ title }: { title: string }) {
 
   const name = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `Играч ${s + 1}`;
 
+  const boardSummary =
+    state &&
+    `Дъска Магнат. ${state.cash
+      .map((c, s) => `${name(s)}: ${state.bankrupt[s] ? "банкрут" : `${c} в брой`}, на поле ${BOARD[state.pos[s]!]!.name}`)
+      .join("; ")}.`;
+  const liveLine = state ? (state.done ? "Край на играта." : `Ред: ${name(state.turn)}. ${state.log.at(-1) ?? ""}`) : "";
+
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
         <div className="mag-layout">
           <div ref={wrapRef} className="mag-board">
-            <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block" }} />
+            {useGL ? (
+              <canvas
+                ref={canvasRef}
+                role="img"
+                aria-label={boardSummary ?? "Дъска Магнат"}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            ) : (
+              <p className="mag-nogl">
+                3D дъската изисква WebGL, който не е наличен в този браузър. Можеш да играеш чрез таблото вдясно.
+              </p>
+            )}
           </div>
 
           <aside className="mag-side">
+            <p className="sr-only" aria-live="polite">
+              {liveLine}
+            </p>
             {/* players */}
             <div className="mag-players">
               {state.cash.map((cash, s) => (

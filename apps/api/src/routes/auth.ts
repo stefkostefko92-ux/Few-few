@@ -143,7 +143,8 @@ authRouter.post(
     if (!user || user.deletedAt) throw unauthorized("User no longer exists");
     // Refresh must honor bans/erasure/revocation — otherwise a long-lived
     // refresh cookie mints fresh access tokens forever, defeating the denylist.
-    if (user.banned || (await isRevoked(user.id))) {
+    // DB `banned` is the backstop here, so the revocation lookup may fail open.
+    if (user.banned || (await isRevoked(user.id).catch(() => false))) {
       clearAuthCookies(res);
       throw forbidden("Този акаунт е блокиран");
     }
@@ -344,8 +345,8 @@ authRouter.get(
         res.redirect(webUrl("/login?error=oauth_no_email"));
         return;
       }
-      // Social login must not become a ban-bypass.
-      if (user.banned || user.deletedAt || (await isRevoked(user.id))) {
+      // Social login must not become a ban-bypass (DB flags are the backstop).
+      if (user.banned || user.deletedAt || (await isRevoked(user.id).catch(() => false))) {
         res.redirect(webUrl("/login?error=banned"));
         return;
       }

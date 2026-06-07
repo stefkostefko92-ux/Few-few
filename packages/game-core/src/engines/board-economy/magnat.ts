@@ -148,7 +148,9 @@ function autoLiquidate(s: MagnatState, debtor: Seat, target: number): void {
 
 /** Move `amount` from debtor to creditor (-1 = bank). Liquidates/bankrupts as needed. */
 function charge(s: MagnatState, debtor: Seat, amount: number, creditor: Seat | null, events: MagnatEvent[]): void {
-  if (amount <= 0) return;
+  // A bankrupt debtor can't be charged again within the same reduce (would emit
+  // a duplicate BANKRUPT and misdirect the already-transferred estate).
+  if (amount <= 0 || s.bankrupt[debtor]) return;
   if (s.cash[debtor]! < amount) autoLiquidate(s, debtor, amount);
   if (s.cash[debtor]! >= amount) {
     s.cash[debtor]! -= amount;
@@ -268,7 +270,10 @@ function applyCard(s: MagnatState, seat: Seat, card: Card, events: MagnatEvent[]
       for (const o of activeSeats(s)) if (o !== seat) charge(s, o, eff.amount, seat, events);
       return { jailed: false };
     case "payEach":
-      for (const o of activeSeats(s)) if (o !== seat) charge(s, seat, eff.amount, o, events);
+      for (const o of activeSeats(s)) {
+        if (s.bankrupt[seat]) break; // a bankrupt payer can't keep paying
+        if (o !== seat) charge(s, seat, eff.amount, o, events);
+      }
       return { jailed: false };
     case "go":
       s.cash[seat]! += GO_SALARY;

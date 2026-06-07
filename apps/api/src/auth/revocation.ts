@@ -31,10 +31,13 @@ export async function unrevokeUser(userId: string): Promise<void> {
   }
 }
 
+/**
+ * Returns true iff the user's sessions are revoked. Propagates store errors so
+ * each caller can choose its failure mode: `requireAuth` (the sole
+ * currency-of-authorization check, with no DB backstop) fails CLOSED in
+ * production; refresh / OAuth / the realtime handshake have a DB `banned`
+ * backstop and may fail open on a transient Redis hiccup.
+ */
 export async function isRevoked(userId: string): Promise<boolean> {
-  try {
-    return (await redis.exists(key(userId))) === 1;
-  } catch {
-    return false; // fail open
-  }
+  return (await redis.exists(key(userId))) === 1;
 }
