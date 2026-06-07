@@ -82,23 +82,33 @@ function settleClosedListings(): void {
     .prepare('SELECT * FROM auction_listings WHERE settled = 0 AND ends_at <= ?')
     .all(cutoff) as ListingRow[];
   for (const row of closed) {
-    if (row.bidder_id) {
-      // Winner: grant item, keep gems debited (they were debited on bid).
-      const item = db.prepare('SELECT id, name FROM items WHERE id = ?').get(row.item_id) as any;
-      db.prepare(
-        `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)`,
-      ).run(row.bidder_id, row.item_id);
-      db.prepare(
-        `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
-      ).run(
-        row.bidder_id,
-        'Auction House',
-        `Won: ${item?.name || row.item_slug}`,
-        `Your bid of ${row.current_bid} gems for ${item?.name || row.item_slug} won. The item is in your bag, soul-bound.`,
-        Date.now(),
-      );
-    }
-    db.prepare('UPDATE auction_listings SET settled = 1 WHERE id = ?').run(row.id);
+    // Audit (backend round): the old code did INSERT inventory + INSERT
+    // mail BEFORE setting settled=1, all outside a transaction. Two
+    // concurrent GET /auction calls both passed the WHERE settled=0
+    // read and granted the prize + mail twice (and once the second
+    // UPDATE landed it was already settled, so the double grant
+    // persisted). Now each listing is settled in its own transaction
+    // gated by an atomic UPDATE that only the first parallel caller
+    // can win — the loser sees changes === 0 and skips the grant.
+    db.transaction(() => {
+      const claim = db.prepare('UPDATE auction_listings SET settled = 1 WHERE id = ? AND settled = 0').run(row.id);
+      if (claim.changes !== 1) return;
+      if (row.bidder_id) {
+        const item = db.prepare('SELECT id, name FROM items WHERE id = ?').get(row.item_id) as any;
+        db.prepare(
+          `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot, soul_bound) VALUES (?, ?, 1, 0, '', 1)`,
+        ).run(row.bidder_id, row.item_id);
+        db.prepare(
+          `INSERT INTO mail (character_id, from_name, subject, body, created_at) VALUES (?, ?, ?, ?, ?)`,
+        ).run(
+          row.bidder_id,
+          'Auction House',
+          `Won: ${item?.name || row.item_slug}`,
+          `Your bid of ${row.current_bid} gems for ${item?.name || row.item_slug} won. The item is in your bag, soul-bound.`,
+          Date.now(),
+        );
+      }
+    }).immediate();
   }
 }
 

@@ -253,17 +253,23 @@ router.post('/upgrade-stat', (req, res) => {
 
 router.post('/rest', (req, res) => {
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  // Resting consumes 10 energy and fully restores HP/MP
-  if (char.energy < 10) {
+  // Audit (backend round): the prior JS-side energy check + separate
+  // UPDATE let two parallel /rest calls both spend 10 energy from the
+  // same starting value, sometimes going negative. The CAS UPDATE-
+  // WHERE energy >= 10 makes it impossible for two parallel calls to
+  // both succeed regardless of how the JS scheduler interleaves them.
+  const upd = db.prepare(
+    'UPDATE characters SET hp = hp_max, mp = mp_max, energy = energy - 10 WHERE id = ? AND energy >= 10',
+  ).run(ch.id);
+  if (upd.changes !== 1) {
     res.status(400).json({ error: 'Not enough energy to rest (need 10).' });
     return;
   }
-  db.prepare('UPDATE characters SET hp = hp_max, mp = mp_max, energy = energy - 10 WHERE id = ?').run(char.id);
   res.json({ ok: true });
 });
 

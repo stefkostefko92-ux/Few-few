@@ -192,68 +192,75 @@ router.post('/advance', (req, res) => {
 
 router.post('/claim', (req, res) => {
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  const run = db.prepare('SELECT * FROM dungeon_run WHERE character_id = ?').get(char.id) as any;
-  if (!run) {
-    res.status(400).json({ error: 'You are not in a dungeon.' });
-    return;
+  // Audit (backend round): the previous flow read the run row, then
+  // applied gold/xp/items, then deleted the run — two concurrent
+  // /claim calls both passed the existence + stage checks and double-
+  // rewarded the player. Now we wrap in BEGIN IMMEDIATE and gate the
+  // whole block on DELETE FROM dungeon_run requiring changes === 1.
+  try {
+    const result = db.transaction(() => {
+      const run = db.prepare('SELECT * FROM dungeon_run WHERE character_id = ?').get(ch.id) as any;
+      if (!run) { const e: any = new Error('You are not in a dungeon.'); e.clientSafe = true; e.status = 400; throw e; }
+      const dungeon = findDungeon(run.slug);
+      if (!dungeon) {
+        db.prepare('DELETE FROM dungeon_run WHERE character_id = ?').run(ch.id);
+        const e: any = new Error('Dungeon vanished'); e.clientSafe = true; e.status = 404; throw e;
+      }
+      if (run.stage < dungeon.stages.length) { const e: any = new Error('Dungeon not yet cleared.'); e.clientSafe = true; e.status = 400; throw e; }
+      // Atomic delete-and-check — exactly one parallel claim wins.
+      const del = db.prepare('DELETE FROM dungeon_run WHERE character_id = ? AND id = ?').run(ch.id, run.id);
+      if (del.changes !== 1) { const e: any = new Error('Already claimed.'); e.clientSafe = true; e.status = 400; throw e; }
+      const items: string[] = JSON.parse(run.items_json || '[]');
+      if (dungeon.loot_pool.length) {
+        items.push(dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)]);
+      }
+      const baseXp = run.xp_pile + dungeon.xp_bonus;
+      const baseGold = run.gold_pile + dungeon.gold_bonus;
+      const reward = applyGuildMultipliers(ch.id, baseGold, baseXp);
+      const xp = reward.xp;
+      const gold = reward.gold;
+      const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
+      char.gold += gold;
+      const lvlRes = applyXp(char, xp);
+      char.hp = run.hp;
+      db.prepare(
+        `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, dungeons_cleared = dungeons_cleared + 1, total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?`,
+      ).run(
+        char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold,
+        xp, gold, char.id,
+      );
+      for (const slug of items) {
+        const item = db.prepare('SELECT id, category FROM items WHERE slug = ?').get(slug) as { id: number; category: string } | undefined;
+        if (!item) continue;
+        if (item.category === 'potion') {
+          const existing = db.prepare('SELECT id FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0').get(char.id, item.id) as { id: number } | undefined;
+          if (existing) db.prepare('UPDATE inventory SET quantity = quantity + 1 WHERE id = ?').run(existing.id);
+          else db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+        } else {
+          db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+        }
+      }
+      return { xp, gold, items, clearText: dungeon.clear_text, lvlRes };
+    }).immediate();
+    const unlocked = evaluateAchievements(db, ch.id);
+    res.json({
+      ok: true,
+      xp: result.xp,
+      gold: result.gold,
+      items: result.items,
+      clearText: result.clearText,
+      levelUp: result.lvlRes.leveled ? result.lvlRes : null,
+      unlocked,
+    });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-  const dungeon = findDungeon(run.slug);
-  if (!dungeon) {
-    db.prepare('DELETE FROM dungeon_run WHERE character_id = ?').run(char.id);
-    res.status(404).json({ error: 'Dungeon vanished' });
-    return;
-  }
-  if (run.stage < dungeon.stages.length) {
-    res.status(400).json({ error: 'Dungeon not yet cleared.' });
-    return;
-  }
-  const items: string[] = JSON.parse(run.items_json || '[]');
-  // Guaranteed extra item from loot pool at clear
-  if (dungeon.loot_pool.length) {
-    items.push(dungeon.loot_pool[Math.floor(Math.random() * dungeon.loot_pool.length)]);
-  }
-  const baseXp = run.xp_pile + dungeon.xp_bonus;
-  const baseGold = run.gold_pile + dungeon.gold_bonus;
-  const reward = applyGuildMultipliers(char.id, baseGold, baseXp);
-  const xp = reward.xp;
-  const gold = reward.gold;
-  char.gold += gold;
-  const lvlRes = applyXp(char, xp);
-  char.hp = run.hp; // exit with current HP
-  db.prepare(
-    `UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, dungeons_cleared = dungeons_cleared + 1, total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ? WHERE id = ?`,
-  ).run(
-    char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold,
-    xp, gold, char.id,
-  );
-  // Add items to inventory
-  for (const slug of items) {
-    const item = db.prepare('SELECT id, category FROM items WHERE slug = ?').get(slug) as { id: number; category: string } | undefined;
-    if (!item) continue;
-    if (item.category === 'potion') {
-      const existing = db.prepare('SELECT id FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0').get(char.id, item.id) as { id: number } | undefined;
-      if (existing) db.prepare('UPDATE inventory SET quantity = quantity + 1 WHERE id = ?').run(existing.id);
-      else db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
-    } else {
-      db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
-    }
-  }
-  db.prepare('DELETE FROM dungeon_run WHERE character_id = ?').run(char.id);
-  const unlocked = evaluateAchievements(db, char.id);
-  res.json({
-    ok: true,
-    xp,
-    gold,
-    items,
-    clearText: dungeon.clear_text,
-    levelUp: lvlRes.leveled ? lvlRes : null,
-    unlocked,
-  });
 });
 
 router.post('/abandon', (req, res) => {

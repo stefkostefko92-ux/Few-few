@@ -53,21 +53,30 @@ router.get('/', (req, res) => {
 
 router.post('/spin', (req, res) => {
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
   }
   const today = dayIndex();
-  const row = db.prepare('SELECT last_spin_day FROM daily_state WHERE character_id = ?').get(char.id) as { last_spin_day: number } | undefined;
-  if (!row) {
-    db.prepare("INSERT INTO daily_state (character_id, last_spin_day) VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET last_spin_day = excluded.last_spin_day").run(char.id, 0);
-  }
-  if (row && row.last_spin_day >= today) {
-    res.status(400).json({ error: 'You may spin once a day. Come back tomorrow.' });
-    return;
-  }
-  const seg = pickSegment();
+  // Audit (backend round): old flow read last_spin_day, then computed
+  // rewards, then bumped last_spin_day at the end. Two parallel spins
+  // both passed the JS check and double-granted (500x jackpot was the
+  // painful case). Now BEGIN IMMEDIATE serialises, and the day-bump
+  // CAS UPDATE gates the whole block — only one parallel call wins.
+  try {
+    const result = db.transaction(() => {
+      db.prepare(
+        "INSERT INTO daily_state (character_id, last_spin_day, streak, longest_streak, last_claim_day, quests_json, completed_json, quests_day) " +
+        "VALUES (?, 0, 0, 0, 0, '[]', '[]', 0) ON CONFLICT(character_id) DO NOTHING",
+      ).run(ch.id);
+      const upd = db.prepare('UPDATE daily_state SET last_spin_day = ? WHERE character_id = ? AND last_spin_day < ?').run(today, ch.id, today);
+      if (upd.changes !== 1) {
+        const e: any = new Error('You may spin once a day. Come back tomorrow.');
+        e.clientSafe = true; e.status = 400; throw e;
+      }
+      const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
+      const seg = pickSegment();
   let goldDelta = 0;
   let xpDelta = 0;
   let energyDelta = 0;
@@ -104,27 +113,32 @@ router.post('/spin', (req, res) => {
       }
     }
   }
-  db.prepare(
-    'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?',
-  ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy, goldDelta, xpDelta, char.id);
-  db.prepare("INSERT INTO daily_state (character_id, last_spin_day) VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET last_spin_day = excluded.last_spin_day").run(char.id, today);
-  trackBattlePass(char.id, 'wheel_spin', 1);
-  logFromRequest(req, {
-    category: 'wheel', action: 'spin', character_id: char.id,
-    message: `${char.name} spun the wheel: ${label}`,
-    meta: { segment: seg.kind, label, gold: goldDelta, xp: xpDelta, energy: energyDelta, item: itemSlug },
-  });
-  const unlocked = evaluateAchievements(db, char.id);
-  res.json({
-    label,
-    kind: seg.kind,
-    goldDelta,
-    xpDelta,
-    energyDelta,
-    itemSlug,
-    levelUp: lvlRes.leveled ? lvlRes : null,
-    unlocked,
-  });
+      db.prepare(
+        'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, energy = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?',
+      ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, char.energy, goldDelta, xpDelta, char.id);
+      return { seg, label, goldDelta, xpDelta, energyDelta, itemSlug, lvlRes, charName: char.name };
+    }).immediate();
+    trackBattlePass(ch.id, 'wheel_spin', 1);
+    logFromRequest(req, {
+      category: 'wheel', action: 'spin', character_id: ch.id,
+      message: `${result.charName} spun the wheel: ${result.label}`,
+      meta: { segment: result.seg.kind, label: result.label, gold: result.goldDelta, xp: result.xpDelta, energy: result.energyDelta, item: result.itemSlug },
+    });
+    const unlocked = evaluateAchievements(db, ch.id);
+    res.json({
+      label: result.label,
+      kind: result.seg.kind,
+      goldDelta: result.goldDelta,
+      xpDelta: result.xpDelta,
+      energyDelta: result.energyDelta,
+      itemSlug: result.itemSlug,
+      levelUp: result.lvlRes.leveled ? result.lvlRes : null,
+      unlocked,
+    });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
+  }
 });
 
 export default router;

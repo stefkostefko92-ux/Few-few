@@ -71,57 +71,77 @@ router.get('/', (req, res) => {
 
 router.post('/claim', (req, res) => {
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  const state = ensureDaily(db, char.id) as any;
   const today = dayIndex();
-  if (state.last_claim_day >= today) {
-    res.status(400).json({ error: 'Already claimed today. Come back tomorrow.' });
-    return;
-  }
-  const newStreak = today - state.last_claim_day === 1 ? state.streak + 1 : 1;
-  const baseReward = rewardForDay(newStreak);
-  const r = applyGuildMultipliers(char.id, baseReward.gold, baseReward.xp);
-  const reward = { ...baseReward, gold: r.gold, xp: r.xp };
-  // Grant gold + xp
-  char.gold += reward.gold;
-  const lvlRes = applyXp(char, reward.xp);
-  // Grant item if any
-  let givenItem: string | null = null;
-  if ((reward as any).item) {
-    const slug = (reward as any).item;
-    const item = db.prepare('SELECT id, category FROM items WHERE slug = ?').get(slug) as { id: number; category: string } | undefined;
-    if (item) {
-      if (item.category === 'potion') {
-        const existing = db.prepare('SELECT id FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0').get(char.id, item.id) as { id: number } | undefined;
-        if (existing) db.prepare('UPDATE inventory SET quantity = quantity + 1 WHERE id = ?').run(existing.id);
-        else db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
-      } else {
-        db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+  // Audit (backend round): the previous implementation read state, then
+  // wrote it back later. Two concurrent POSTs both passed the JS-side
+  // `last_claim_day >= today` check and double-granted gold + xp + gems
+  // (especially painful for the 25/50-gem milestones). The fix wraps the
+  // whole claim in BEGIN IMMEDIATE so SQLite serialises, and gates the
+  // first write on `WHERE last_claim_day < ?` requiring changes === 1.
+  try {
+    const result = db.transaction(() => {
+      ensureDaily(db, ch.id);
+      const upd = db.prepare(
+        `UPDATE daily_state
+         SET streak = CASE WHEN ? - last_claim_day = 1 THEN streak + 1 ELSE 1 END,
+             longest_streak = MAX(longest_streak, CASE WHEN ? - last_claim_day = 1 THEN streak + 1 ELSE 1 END),
+             last_claim_day = ?
+         WHERE character_id = ? AND last_claim_day < ?`,
+      ).run(today, today, today, ch.id, today);
+      if (upd.changes !== 1) {
+        const e: any = new Error('Already claimed today. Come back tomorrow.');
+        e.clientSafe = true; e.status = 400; throw e;
       }
-      givenItem = slug;
-    }
+      const state = db.prepare('SELECT streak FROM daily_state WHERE character_id = ?').get(ch.id) as { streak: number };
+      const newStreak = state.streak;
+      const baseReward = rewardForDay(newStreak);
+      const r = applyGuildMultipliers(ch.id, baseReward.gold, baseReward.xp);
+      const reward = { ...baseReward, gold: r.gold, xp: r.xp };
+      // Re-load the character INSIDE the transaction so applyXp's
+      // stateful level-up math runs against whatever the row looks like
+      // right now (any earlier kill/quest write has committed).
+      const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
+      char.gold += reward.gold;
+      const lvlRes = applyXp(char, reward.xp);
+      let givenItem: string | null = null;
+      if ((reward as any).item) {
+        const slug = (reward as any).item;
+        const item = db.prepare('SELECT id, category FROM items WHERE slug = ?').get(slug) as { id: number; category: string } | undefined;
+        if (item) {
+          if (item.category === 'potion') {
+            const existing = db.prepare('SELECT id FROM inventory WHERE character_id = ? AND item_id = ? AND equipped = 0').get(char.id, item.id) as { id: number } | undefined;
+            if (existing) db.prepare('UPDATE inventory SET quantity = quantity + 1 WHERE id = ?').run(existing.id);
+            else db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+          } else {
+            db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+          }
+          givenItem = slug;
+        }
+      }
+      const gemsGranted = (newStreak === 14 || newStreak === 30) ? 50 : (newStreak % 7 === 0 ? 25 : 3);
+      db.prepare(
+        'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ?, gems = gems + ?, total_gems_earned = total_gems_earned + ? WHERE id = ?',
+      ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, reward.gold, reward.xp, gemsGranted, gemsGranted, char.id);
+      return { newStreak, reward, gemsGranted, givenItem, lvlRes, charName: char.name };
+    }).immediate();
+
+    trackBattlePass(ch.id, 'daily_claim', 1);
+    const unlocked = evaluateAchievements(db, ch.id);
+    logFromRequest(req, {
+      category: 'daily', action: 'claim', character_id: ch.id,
+      message: `${result.charName} claimed Daily Tribute (streak ${result.newStreak})`,
+      meta: { streak: result.newStreak, gold: result.reward.gold, xp: result.reward.xp, gems: result.gemsGranted, item: result.givenItem },
+    });
+    res.json({ ok: true, streak: result.newStreak, reward: { ...result.reward, gems: result.gemsGranted }, item: result.givenItem, levelUp: result.lvlRes.leveled ? result.lvlRes : null, unlocked });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-  // Daily gem grant: 3 every day, 25 on the 7-day milestone (and 14 / 30).
-  const gemsGranted = (newStreak === 14 || newStreak === 30) ? 50 : (newStreak % 7 === 0 ? 25 : 3);
-  db.prepare(
-    'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ?, gems = gems + ?, total_gems_earned = total_gems_earned + ? WHERE id = ?',
-  ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, reward.gold, reward.xp, gemsGranted, gemsGranted, char.id);
-  const longest = Math.max(state.longest_streak, newStreak);
-  db.prepare('UPDATE daily_state SET streak = ?, longest_streak = ?, last_claim_day = ? WHERE character_id = ?').run(newStreak, longest, today, char.id);
-
-  trackBattlePass(char.id, 'daily_claim', 1);
-
-  const unlocked = evaluateAchievements(db, char.id);
-  logFromRequest(req, {
-    category: 'daily', action: 'claim', character_id: char.id,
-    message: `${char.name} claimed Daily Tribute (streak ${newStreak})`,
-    meta: { streak: newStreak, gold: reward.gold, xp: reward.xp, gems: gemsGranted, item: givenItem },
-  });
-  res.json({ ok: true, streak: newStreak, reward: { ...reward, gems: gemsGranted }, item: givenItem, levelUp: lvlRes.leveled ? lvlRes : null, unlocked });
 });
 
 router.get('/quests', (req, res) => {
@@ -164,47 +184,50 @@ router.get('/quests', (req, res) => {
 router.post('/quests/claim', (req, res) => {
   const { questSlug } = req.body || {};
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) {
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  const state = ensureDaily(db, char.id) as any;
-  const slugs: string[] = JSON.parse(state.quests_json || '[]');
-  let completed: string[] = JSON.parse(state.completed_json || '[]');
-  if (!slugs.includes(questSlug)) {
-    res.status(400).json({ error: 'Not one of today\'s daily quests.' });
-    return;
+  // Same race shape as /daily/claim — wrap in BEGIN IMMEDIATE and gate
+  // the completed_json write on a compare-and-set so two parallel
+  // claims of the same slug can't double-grant.
+  try {
+    const result = db.transaction(() => {
+      ensureDaily(db, ch.id);
+      const state = db.prepare('SELECT quests_json, completed_json FROM daily_state WHERE character_id = ?').get(ch.id) as { quests_json: string; completed_json: string };
+      const slugs: string[] = JSON.parse(state.quests_json || '[]');
+      const completed: string[] = JSON.parse(state.completed_json || '[]');
+      if (!slugs.includes(questSlug)) { const e: any = new Error("Not one of today's daily quests."); e.clientSafe = true; e.status = 400; throw e; }
+      if (completed.includes(questSlug)) { const e: any = new Error('Already claimed today.'); e.clientSafe = true; e.status = 400; throw e; }
+      const todayStart = dayIndex() * 86_400_000;
+      const quest = db.prepare('SELECT id, xp_reward, gold_reward FROM quests WHERE slug = ?').get(questSlug) as { id: number; xp_reward: number; gold_reward: number } | undefined;
+      if (!quest) { const e: any = new Error('Quest not found'); e.clientSafe = true; e.status = 404; throw e; }
+      const success = db
+        .prepare("SELECT id FROM quest_log WHERE character_id = ? AND quest_id = ? AND result = 'success' AND completed_at >= ?")
+        .get(ch.id, quest.id, todayStart);
+      if (!success) { const e: any = new Error('Complete the quest first before claiming the daily bonus.'); e.clientSafe = true; e.status = 400; throw e; }
+      const newCompleted = [...completed, questSlug];
+      const upd = db.prepare(
+        'UPDATE daily_state SET completed_json = ? WHERE character_id = ? AND completed_json = ?',
+      ).run(JSON.stringify(newCompleted), ch.id, state.completed_json);
+      if (upd.changes !== 1) { const e: any = new Error('Already claimed today.'); e.clientSafe = true; e.status = 400; throw e; }
+      const bonusGold = quest.gold_reward * 2;
+      const bonusXp = quest.xp_reward * 2;
+      const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
+      char.gold += bonusGold;
+      const lvlRes = applyXp(char, bonusXp);
+      db.prepare(
+        'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?',
+      ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, bonusGold, bonusXp, char.id);
+      return { bonusGold, bonusXp, lvlRes };
+    }).immediate();
+    const unlocked = evaluateAchievements(db, ch.id);
+    res.json({ ok: true, bonusGold: result.bonusGold, bonusXp: result.bonusXp, levelUp: result.lvlRes.leveled ? result.lvlRes : null, unlocked });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-  if (completed.includes(questSlug)) {
-    res.status(400).json({ error: 'Already claimed today.' });
-    return;
-  }
-  // Check the quest_log for a successful completion since the daily rotation began.
-  const todayStart = dayIndex() * 86_400_000;
-  const quest = db.prepare('SELECT id, xp_reward, gold_reward FROM quests WHERE slug = ?').get(questSlug) as { id: number; xp_reward: number; gold_reward: number } | undefined;
-  if (!quest) {
-    res.status(404).json({ error: 'Quest not found' });
-    return;
-  }
-  const success = db
-    .prepare("SELECT id FROM quest_log WHERE character_id = ? AND quest_id = ? AND result = 'success' AND completed_at >= ?")
-    .get(char.id, quest.id, todayStart);
-  if (!success) {
-    res.status(400).json({ error: 'Complete the quest first before claiming the daily bonus.' });
-    return;
-  }
-  const bonusGold = quest.gold_reward * 2;
-  const bonusXp = quest.xp_reward * 2;
-  char.gold += bonusGold;
-  const lvlRes = applyXp(char, bonusXp);
-  db.prepare(
-    'UPDATE characters SET xp = ?, level = ?, stat_points = ?, skill_points = ?, hp_max = ?, mp_max = ?, hp = ?, mp = ?, gold = ?, total_gold_earned = total_gold_earned + ?, total_xp_earned = total_xp_earned + ? WHERE id = ?',
-  ).run(char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, char.gold, bonusGold, bonusXp, char.id);
-  completed.push(questSlug);
-  db.prepare('UPDATE daily_state SET completed_json = ? WHERE character_id = ?').run(JSON.stringify(completed), char.id);
-  const unlocked = evaluateAchievements(db, char.id);
-  res.json({ ok: true, bonusGold, bonusXp, levelUp: lvlRes.leveled ? lvlRes : null, unlocked });
 });
 
 export default router;

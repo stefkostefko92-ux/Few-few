@@ -165,65 +165,69 @@ router.post('/claim', (req, res) => {
   const id = String(req.body?.id || '');
   if (!id) { res.status(400).json({ error: 'Missing bounty id' }); return; }
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  const bounties = loadOrIssueBounties(char);
-  const b = bounties.find((x) => x.id === id);
-  if (!b) { res.status(404).json({ error: 'Bounty not found' }); return; }
-  if (b.claimed) { res.status(400).json({ error: 'Already claimed' }); return; }
-  if (b.count_done < b.count_required) {
-    res.status(400).json({ error: `Need ${b.count_required - b.count_done} more ${b.monster_name} kills.` });
-    return;
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) { res.status(404).json({ error: 'No character' }); return; }
+  // Audit (backend round): old flow read the bounties_json blob, marked
+  // claimed in-memory, then wrote back — two concurrent claims of the
+  // same bounty both saw claimed=false and double-granted (especially
+  // brutal-tier bounties: 4x gold + extra trophies). Now wrapped in
+  // BEGIN IMMEDIATE and gated on a JSON CAS: only the writer whose old
+  // bounties_json matches what we read wins, so the loser sees
+  // claimed=true on re-read and bails.
+  try {
+    const result = db.transaction(() => {
+      const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
+      const bountiesBefore = loadOrIssueBounties(char);
+      const oldJson = db.prepare('SELECT bounties_json FROM character_bounties WHERE character_id = ? AND day_index = ?').get(ch.id, dayIndex()) as { bounties_json: string } | undefined;
+      const b = bountiesBefore.find((x) => x.id === id);
+      if (!b) { const e: any = new Error('Bounty not found'); e.clientSafe = true; e.status = 404; throw e; }
+      if (b.claimed) { const e: any = new Error('Already claimed'); e.clientSafe = true; e.status = 400; throw e; }
+      if (b.count_done < b.count_required) { const e: any = new Error(`Need ${b.count_required - b.count_done} more ${b.monster_name} kills.`); e.clientSafe = true; e.status = 400; throw e; }
+      const reward = applyGuildMultipliers(char.id, b.reward.gold, b.reward.xp);
+      char.gold += reward.gold;
+      const lvlRes = applyXp(char, reward.xp);
+      db.prepare(
+        `UPDATE characters SET gold = ?, xp = ?, level = ?, stat_points = ?, skill_points = ?,
+           hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max WHERE id = ?`,
+      ).run(char.gold, char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.id);
+      b.claimed = true;
+      const newJson = JSON.stringify(bountiesBefore);
+      const upd = db.prepare('UPDATE character_bounties SET bounties_json = ? WHERE character_id = ? AND day_index = ? AND bounties_json = ?')
+        .run(newJson, ch.id, dayIndex(), oldJson?.bounties_json ?? '');
+      if (upd.changes !== 1) { const e: any = new Error('Already claimed'); e.clientSafe = true; e.status = 400; throw e; }
+      // Mint trophies.
+      db.prepare(
+        `INSERT OR IGNORE INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
+           atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
+           int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
+         VALUES ('monster_trophy', 'Monster Trophy', 'misc', '', 1, 'uncommon', 1, '',
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 'icon-skull',
+                 'A grisly memento of the hunt. Buyable on the market or sold for coin.', '')`,
+      ).run();
+      const trophyId = (db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any).id;
+      for (let i = 0; i < b.reward.trophy; i++) {
+        db.prepare('INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, \'\')').run(char.id, trophyId);
+      }
+      return { b, reward, lvlRes, charName: char.name };
+    }).immediate();
+    trackBattlePass(ch.id, 'bounty_claim', 1);
+    logFromRequest(req, {
+      category: 'character', action: 'bounty_claim',
+      character_id: ch.id,
+      message: `${result.charName} claimed bounty: ${result.b.monster_name} ×${result.b.count_required}`,
+      meta: { id: result.b.id, tier: result.b.tier, monster: result.b.monster_slug, gold: result.reward.gold, xp: result.reward.xp, trophies: result.b.reward.trophy },
+    });
+    res.json({
+      ok: true,
+      gold: result.reward.gold,
+      xp: result.reward.xp,
+      trophy: result.b.reward.trophy,
+      levelUp: result.lvlRes && result.lvlRes.leveled ? result.lvlRes : null,
+    });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-
-  // Apply rewards — guild Scholarship / Merchant Charter multipliers apply.
-  const reward = applyGuildMultipliers(char.id, b.reward.gold, b.reward.xp);
-  char.gold += reward.gold;
-  const lvlRes = applyXp(char, reward.xp);
-
-  // Persist character + bounty
-  db.prepare(
-    `UPDATE characters SET gold = ?, xp = ?, level = ?, stat_points = ?, skill_points = ?,
-       hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max WHERE id = ?`,
-  ).run(char.gold, char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.id);
-  b.claimed = true;
-  saveBounties(char.id, bounties);
-
-  // Mint the trophy item(s). We ensure a "monster_trophy" item exists in
-  // the items table on demand so the seed file doesn't have to track it.
-  // INSERT OR IGNORE + SELECT is race-safe — two concurrent claims either
-  // both insert (the second one no-ops) and both reach the same row.
-  db.prepare(
-    `INSERT OR IGNORE INTO items (slug, name, category, sub_type, tier, rarity, level_req, class_req,
-       atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus,
-       int_bonus, cha_bonus, wis_bonus, heal_hp, heal_mp, buy_price, sell_price, icon, description, set_slug)
-     VALUES ('monster_trophy', 'Monster Trophy', 'misc', '', 1, 'uncommon', 1, '',
-             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 'icon-skull',
-             'A grisly memento of the hunt. Buyable on the market or sold for coin.', '')`,
-  ).run();
-  const trophyId = (db.prepare("SELECT id FROM items WHERE slug = 'monster_trophy'").get() as any).id;
-  for (let i = 0; i < b.reward.trophy; i++) {
-    db.prepare(
-      `INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')`,
-    ).run(char.id, trophyId);
-  }
-
-  trackBattlePass(char.id, 'bounty_claim', 1);
-
-  logFromRequest(req, {
-    category: 'character', action: 'bounty_claim',
-    character_id: char.id,
-    message: `${char.name} claimed bounty: ${b.monster_name} ×${b.count_required}`,
-    meta: { id: b.id, tier: b.tier, monster: b.monster_slug, gold: reward.gold, xp: reward.xp, trophies: b.reward.trophy },
-  });
-
-  res.json({
-    ok: true,
-    gold: reward.gold,
-    xp: reward.xp,
-    trophy: b.reward.trophy,
-    levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
-  });
 });
 
 export default router;

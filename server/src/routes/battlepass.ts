@@ -253,59 +253,62 @@ router.post('/claim', (req, res) => {
   const parse = claimSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const db = getDb();
-  const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
-  if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  const pass = loadOrInit(char.id);
-  const task = pass.tasks.find((t) => t.id === parse.data.id);
-  if (!task) { res.status(404).json({ error: 'Task not found' }); return; }
-
-  const done = pass.progress[task.id] || 0;
-  if (done < task.required) { res.status(400).json({ error: `Need ${task.required - done} more.` }); return; }
-
-  const slotClaimed = pass.claimed[task.id] || { free: false, premium: false };
-  if (slotClaimed[parse.data.track]) { res.status(400).json({ error: 'Already claimed.' }); return; }
-  if (parse.data.track === 'premium' && !pass.premium_unlocked) {
-    res.status(400).json({ error: 'Premium track not unlocked.' });
-    return;
+  const ch = db.prepare('SELECT id FROM characters WHERE user_id = ?').get(req.auth!.uid) as { id: number } | undefined;
+  if (!ch) { res.status(404).json({ error: 'No character' }); return; }
+  // Audit (backend round): old flow read `pass.claimed`, granted gold/
+  // gems/trial_tokens/items, then wrote the new `claimed_json` —
+  // parallel POSTs with the same id+track both passed the slotClaimed
+  // check and duplicated every reward. Now wrapped in BEGIN IMMEDIATE
+  // with a CAS UPDATE on `claimed_json` that requires the JSON to be
+  // unchanged since we read it.
+  try {
+    const result = db.transaction(() => {
+      const char = db.prepare('SELECT * FROM characters WHERE id = ?').get(ch.id) as Character;
+      const oldRow = db.prepare('SELECT claimed_json FROM battle_pass WHERE character_id = ? AND month_key = ?').get(ch.id, currentMonthKey()) as { claimed_json: string } | undefined;
+      const pass = loadOrInit(char.id);
+      const task = pass.tasks.find((t) => t.id === parse.data.id);
+      if (!task) { const e: any = new Error('Task not found'); e.clientSafe = true; e.status = 404; throw e; }
+      const done = pass.progress[task.id] || 0;
+      if (done < task.required) { const e: any = new Error(`Need ${task.required - done} more.`); e.clientSafe = true; e.status = 400; throw e; }
+      const slotClaimed = pass.claimed[task.id] || { free: false, premium: false };
+      if (slotClaimed[parse.data.track]) { const e: any = new Error('Already claimed.'); e.clientSafe = true; e.status = 400; throw e; }
+      if (parse.data.track === 'premium' && !pass.premium_unlocked) { const e: any = new Error('Premium track not unlocked.'); e.clientSafe = true; e.status = 400; throw e; }
+      // CAS the claimed_json BEFORE granting so the rewards code never
+      // runs twice in parallel.
+      slotClaimed[parse.data.track] = true;
+      pass.claimed[task.id] = slotClaimed;
+      const newJson = JSON.stringify(pass.claimed);
+      const upd = db.prepare('UPDATE battle_pass SET claimed_json = ? WHERE character_id = ? AND month_key = ? AND claimed_json = ?')
+        .run(newJson, ch.id, currentMonthKey(), oldRow?.claimed_json ?? '{}');
+      if (upd.changes !== 1) { const e: any = new Error('Already claimed.'); e.clientSafe = true; e.status = 400; throw e; }
+      const reward: Record<string, any> = parse.data.track === 'free' ? task.free : task.premium;
+      if (reward.gold)    { char.gold += reward.gold; }
+      let lvlRes = null as ReturnType<typeof applyXp> | null;
+      if (reward.xp)      { lvlRes = applyXp(char, reward.xp); }
+      if (reward.gems)    { db.prepare('UPDATE characters SET gems = gems + ?, total_gems_earned = total_gems_earned + ? WHERE id = ?').run(reward.gems, reward.gems, char.id); }
+      if (reward.trial_tokens)     { db.prepare('UPDATE characters SET trial_tokens = trial_tokens + ? WHERE id = ?').run(reward.trial_tokens, char.id); }
+      if (reward.forge_guarantees) { db.prepare('UPDATE characters SET forge_guarantees = forge_guarantees + ? WHERE id = ?').run(reward.forge_guarantees, char.id); }
+      if (reward.item_slug) {
+        const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(reward.item_slug) as any;
+        if (item) db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
+      }
+      db.prepare(
+        `UPDATE characters SET gold = ?, xp = ?, level = ?, stat_points = ?, skill_points = ?,
+           hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max WHERE id = ?`,
+      ).run(char.gold, char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.id);
+      return { reward, lvlRes, charName: char.name, taskText: task.text, taskId: task.id, taskKind: task.kind };
+    }).immediate();
+    logFromRequest(req, {
+      category: 'character', action: 'battlepass_claim',
+      character_id: ch.id,
+      message: `${result.charName} claimed ${parse.data.track} reward of "${result.taskText}"`,
+      meta: { task: result.taskId, kind: result.taskKind, track: parse.data.track, reward: result.reward },
+    });
+    res.json({ ok: true, reward: result.reward, levelUp: result.lvlRes && result.lvlRes.leveled ? result.lvlRes : null });
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
   }
-
-  // Both track shapes share a superset; widen so TS lets us probe each key.
-  const reward: Record<string, any> = parse.data.track === 'free' ? task.free : task.premium;
-
-  // Apply reward
-  if (reward.gold)    { char.gold += reward.gold; }
-  let lvlRes = null as ReturnType<typeof applyXp> | null;
-  if (reward.xp)      { lvlRes = applyXp(char, reward.xp); }
-  if (reward.gems)    { db.prepare('UPDATE characters SET gems = gems + ?, total_gems_earned = total_gems_earned + ? WHERE id = ?').run(reward.gems, reward.gems, char.id); }
-  if (reward.trial_tokens) { db.prepare('UPDATE characters SET trial_tokens = trial_tokens + ? WHERE id = ?').run(reward.trial_tokens, char.id); }
-  if (reward.forge_guarantees) { db.prepare('UPDATE characters SET forge_guarantees = forge_guarantees + ? WHERE id = ?').run(reward.forge_guarantees, char.id); }
-  if (reward.item_slug) {
-    const item = db.prepare('SELECT id FROM items WHERE slug = ?').get(reward.item_slug) as any;
-    if (item) {
-      db.prepare(`INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')`).run(char.id, item.id);
-    }
-  }
-
-  // Persist char state
-  db.prepare(
-    `UPDATE characters SET gold = ?, xp = ?, level = ?, stat_points = ?, skill_points = ?,
-       hp_max = ?, mp_max = ?, hp = hp_max, mp = mp_max WHERE id = ?`,
-  ).run(char.gold, char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.id);
-
-  // Persist claim
-  slotClaimed[parse.data.track] = true;
-  pass.claimed[task.id] = slotClaimed;
-  db.prepare('UPDATE battle_pass SET claimed_json = ? WHERE character_id = ? AND month_key = ?')
-    .run(JSON.stringify(pass.claimed), char.id, currentMonthKey());
-
-  logFromRequest(req, {
-    category: 'character', action: 'battlepass_claim',
-    character_id: char.id,
-    message: `${char.name} claimed ${parse.data.track} reward of "${task.text}"`,
-    meta: { task: task.id, kind: task.kind, track: parse.data.track, reward },
-  });
-
-  res.json({ ok: true, reward, levelUp: lvlRes && lvlRes.leveled ? lvlRes : null });
 });
 
 router.post('/unlock-premium', (req, res) => {

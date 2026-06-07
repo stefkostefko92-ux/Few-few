@@ -68,7 +68,47 @@ function sign(secret: string, body: string): string {
   return crypto.createHmac('sha256', secret).update(body).digest('hex');
 }
 
+// Audit (security round): admins can register arbitrary webhook URLs
+// that this server then POSTs to from inside the cluster. If we don't
+// vet the destination, a compromised (or malicious) admin can point a
+// webhook at `http://169.254.169.254/...` (cloud metadata) or any
+// internal service, and the server will dutifully deliver attacker-
+// crafted bodies. Block private/loopback/link-local hostnames + non-
+// http(s) schemes before every delivery (and at registration time in
+// admin.ts).
+export function isSafeWebhookUrl(raw: string): boolean {
+  let u: URL;
+  try { u = new URL(raw); } catch { return false; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+  const host = u.hostname.toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')) return false;
+  // IPv4 literal — block 10/8, 127/8, 169.254/16, 172.16/12, 192.168/16.
+  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [Number(m[1]), Number(m[2])];
+    if (a === 10 || a === 127 || a === 0) return false;
+    if (a === 169 && b === 254) return false;
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 192 && b === 168) return false;
+    if (a >= 224) return false; // multicast / reserved
+  }
+  // IPv6 literal — block ::1, fc00::/7 (ULA), fe80::/10 (link-local).
+  if (host.startsWith('[')) {
+    const v6 = host.slice(1, -1).toLowerCase();
+    if (v6 === '::1' || v6.startsWith('fc') || v6.startsWith('fd') || v6.startsWith('fe8') || v6.startsWith('fe9') || v6.startsWith('fea') || v6.startsWith('feb')) return false;
+  }
+  return true;
+}
+
 async function deliver(endpoint: { url: string; secret?: string; id?: number }, payload: any): Promise<void> {
+  if (!isSafeWebhookUrl(endpoint.url)) {
+    if (endpoint.id) {
+      getDb()
+        .prepare('UPDATE webhook_endpoints SET last_called_at = ?, last_status = ?, failures = failures + 1 WHERE id = ?')
+        .run(Date.now(), -2, endpoint.id);
+    }
+    return;
+  }
   const body = JSON.stringify(payload);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

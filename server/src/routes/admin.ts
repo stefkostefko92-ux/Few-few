@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
-import { logFromRequest } from '../lib/logger';
+import { logFromRequest, isSafeWebhookUrl } from '../lib/logger';
 
 const router = Router();
 router.use(authRequired, adminRequired);
@@ -578,7 +578,10 @@ router.get('/webhooks', (_req, res) => {
 });
 
 const webhookSchema = z.object({
-  url: z.string().url(),
+  // Audit (security round): reject loopback / RFC1918 / link-local URLs
+  // at registration time so a compromised admin cannot point a webhook
+  // at internal cloud metadata or internal services.
+  url: z.string().url().refine(isSafeWebhookUrl, 'URL must be a public http(s) endpoint — loopback, private, and link-local addresses are blocked'),
   secret: z.string().max(120).default(''),
   category_filter: z.string().max(120).default('*'),
   enabled: z.boolean().default(true),
