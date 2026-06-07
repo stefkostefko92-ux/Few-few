@@ -207,6 +207,31 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     await redis!.del(stream);
   });
 
+  it.skipIf(!REDIS_URL)("drains the analytics stream via a consumer group (§14.2)", async () => {
+    const { RedisStreamAnalytics } = await import("../src/analytics/redisAnalytics.js");
+    const { AnalyticsConsumer } = await import("../src/analytics/consumer.js");
+    const { MemoryWarehouseWriter } = await import("../src/analytics/warehouse.js");
+
+    const stream = "analytics:consumer-test";
+    await redis!.del(stream);
+    const sink = new RedisStreamAnalytics(redis!, stream);
+    const writer = new MemoryWarehouseWriter();
+    const consumer = new AnalyticsConsumer(redis!, writer, { stream, group: "g", consumer: "c1" });
+    await consumer.ensureGroup();
+
+    await sink.record({ type: "REGISTER", playerId: "p1", at: 1, name: "Aoi" });
+    await sink.record({ type: "SPIN", playerId: "p1", at: 2, bet: 1, outcome: "JACKPOT", coins: 3000 });
+    await sink.record({ type: "PURCHASE", playerId: "p1", at: 3, productId: "spin_s", transactionId: "t1", granted: true });
+
+    const processed = await consumer.drainOnce();
+    expect(processed).toBe(3);
+    expect(writer.rows.map((r) => r.type)).toEqual(["REGISTER", "SPIN", "PURCHASE"]);
+
+    // All acked → a second drain sees nothing new.
+    expect(await consumer.drainOnce()).toBe(0);
+    await redis!.del(stream);
+  });
+
   it.skipIf(!REDIS_URL)("ranks players on the Redis leaderboard", async () => {
     const rich = await game.createPlayer("Rich");
     const poor = await game.createPlayer("Poor");

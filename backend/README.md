@@ -23,7 +23,7 @@ raid → summon`, with a double-entry economy ledger and published gacha rates.
 | Server-side IAP receipt validation, idempotent grants (§8, §11.3) | `monetization/`, `services/iapService.ts` |
 | Clans, clan wars, real-time chat over WebSocket (§7.2) | `services/clanService.ts`, `realtime/chatHub.ts` |
 | Live-tunable LiveOps config via admin API — no redeploy (§6.2) | `config/liveOpsStore.ts`, `GET/PUT /admin/liveops` |
-| Analytics event pipeline → Redis Streams (§14.2) | `analytics/`, emitted from services |
+| Analytics pipeline: services → Redis Streams → consumer-group → warehouse (§14.2) | `analytics/` (`redisAnalytics`, `consumer`, `warehouse`) |
 
 ## Stack
 
@@ -58,7 +58,8 @@ npm run db:push                         # create the schema
 npm run dev
 
 npm test                 # vitest — 74 in-memory tests (no infra, incl. WebSocket chat + SDK)
-npm run test:integration # 8 tests against a live PG (+ Redis); needs DATABASE_URL
+npm run test:integration # 9 tests against a live PG (+ Redis); needs DATABASE_URL
+npm run analytics:consume  # drain the analytics stream → JSONL (needs REDIS_URL)
 npm run typecheck        # tsc --noEmit
 ```
 
@@ -123,9 +124,11 @@ curl -s -XPOST localhost:3000/spin -H "authorization: Bearer $AT" \
 
 ## Not yet built (next slices)
 
-A LiveOps admin **dashboard UI** (the API exists), warehouse consumers that
-drain the analytics stream, and the Unity client (§11.1). The
-IAP layer ships a sandbox receipt validator and the RevenueCat-style webhook
+The Unity client (§11.1) — the TypeScript SDK + web demo + LiveOps console in
+`../client` stand in for it here. The analytics consumer writes a JSONL staging
+file; pointing it at a real ClickHouse/BigQuery loader is a drop-in
+`WarehouseWriter`. The IAP layer ships a sandbox receipt validator and the
+RevenueCat-style webhook
 shape — wiring the real StoreKit/Play Billing/RevenueCat validators is a drop-in
 `ReceiptValidator`. Clan chat history is in-memory per process for the prototype
 (production persists to Postgres/Redis and scales chat across nodes).
