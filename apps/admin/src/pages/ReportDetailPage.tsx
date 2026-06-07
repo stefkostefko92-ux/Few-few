@@ -10,6 +10,7 @@ import {
   getReport,
   rejectReport,
   resendReport,
+  resolveReport,
 } from '@/api/reports';
 import type { ReportDetail, ReportMedia } from '@/api/types';
 import { useMe, canModerate } from '@/auth/useAuth';
@@ -188,8 +189,10 @@ function ActionPanel({ report, note, setNote, pending, error, run }: ActionProps
   const id = report.id;
   const isOpen = report.status === 'PENDING' || report.status === 'UNDER_REVIEW';
   const canResend = report.status === 'APPROVED';
+  const canResolve = report.status === 'SENT';
+  const showNote = isOpen || canResolve;
 
-  if (!isOpen && !canResend) {
+  if (!isOpen && !canResend && !canResolve) {
     return null;
   }
 
@@ -197,10 +200,10 @@ function ActionPanel({ report, note, setNote, pending, error, run }: ActionProps
     <div className="rounded-card bg-surface p-5 shadow-card">
       <h2 className="mb-3 text-lg font-bold text-ink">Действия</h2>
 
-      {isOpen ? (
+      {showNote ? (
         <label className="block">
           <span className="mb-1 block text-sm font-semibold text-ink">
-            Бележка (по желание при одобрение, задължителна при отказ)
+            Бележка (по желание; задължителна само при отказ)
           </span>
           <textarea
             value={note}
@@ -248,6 +251,16 @@ function ActionPanel({ report, note, setNote, pending, error, run }: ActionProps
         {canResend ? (
           <Button variant="secondary" disabled={pending} onClick={() => run(() => resendReport(id))}>
             Изпрати отново към общината
+          </Button>
+        ) : null}
+
+        {canResolve ? (
+          <Button
+            variant="primary"
+            disabled={pending}
+            onClick={() => run(() => resolveReport(id, note.trim() || undefined))}
+          >
+            Отбележи като разрешен
           </Button>
         ) : null}
       </div>

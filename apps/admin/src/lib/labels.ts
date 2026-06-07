@@ -25,6 +25,7 @@ export const STATUS_TABS: ReportStatus[] = [
   'UNDER_REVIEW',
   'APPROVED',
   'SENT',
+  'RESOLVED',
   'REJECTED',
 ];
 
@@ -34,6 +35,7 @@ const EVENT_LABEL: Record<string, string> = {
   APPROVED: 'Одобрен',
   REJECTED: 'Отказан',
   SENT: 'Изпратен към общината',
+  RESOLVED: 'Отбелязан като разрешен',
 };
 
 export function eventLabel(type: string): string {

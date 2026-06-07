@@ -41,3 +41,7 @@ export function rejectReport(id: string, note: string): Promise<StatusResult> {
 export function resendReport(id: string): Promise<StatusResult> {
   return apiSend<StatusResult>('POST', `/admin/reports/${id}/resend`);
 }
+
+export function resolveReport(id: string, note?: string): Promise<StatusResult> {
+  return apiSend<StatusResult>('POST', `/admin/reports/${id}/resolve`, note ? { note } : {});
+}

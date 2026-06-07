@@ -262,6 +262,38 @@ adminRouter.post(
   },
 );
 
+const resolveSchema = z.object({ note: z.string().trim().max(500).optional() });
+
+adminRouter.post(
+  '/reports/:id/resolve',
+  requireRole(AdminRole.MODERATOR),
+  async (req: Request, res: Response): Promise<void> => {
+    const parsed = resolveSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Невалидна бележка.' });
+      return;
+    }
+    const ok = await transition(
+      pathParam(req, 'id'),
+      [ReportStatus.SENT],
+      ReportStatus.RESOLVED,
+      req.admin!.id,
+      'RESOLVED',
+      parsed.data.note,
+    );
+    if (!ok) {
+      const status = await reportStatus(pathParam(req, 'id'));
+      res.status(status ? 409 : 404).json({
+        error: status
+          ? 'Само изпратен сигнал може да се отбележи като разрешен.'
+          : 'Сигналът не е намерен.',
+      });
+      return;
+    }
+    res.json({ status: ReportStatus.RESOLVED });
+  },
+);
+
 adminRouter.post(
   '/reports/:id/resend',
   requireRole(AdminRole.MODERATOR),
