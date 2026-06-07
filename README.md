@@ -28,4 +28,6 @@ cd client && npm install && npm run build      # SDK → dist/
 npm run demo                                    # http://localhost:5173/demo/ (backend с CORS+dev receipts)
 ```
 
+- [`unity/`](unity/) — **Unity C# клиент (скелет)** (§11.1): `KaguraClient` огледалва TypeScript SDK-то (async над `UnityWebRequest`, Newtonsoft JSON), плюс clan-chat над WebSocket и sample `KaguraBootstrap`. ⚠️ **Не е компилиран/тестван тук** — няма Unity engine в средата; отваря се в Unity 2021.3 LTS+. Виж [`unity/README.md`](unity/README.md).
+
 > Codename: KAGURA · Поверително · Created and Designed by Carbon Stealth VCC
