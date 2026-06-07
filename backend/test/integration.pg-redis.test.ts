@@ -145,6 +145,26 @@ describe.skipIf(!DATABASE_URL)("Postgres + Redis integration", () => {
     expect(reloaded.get().payouts.jackpotMultiplier).toBe(77);
   });
 
+  it.skipIf(!REDIS_URL)("appends analytics events to a Redis stream (§14.2)", async () => {
+    const { RedisStreamAnalytics } = await import("../src/analytics/redisAnalytics.js");
+    const stream = "analytics:test";
+    await redis!.del(stream);
+    const sink = new RedisStreamAnalytics(redis!, stream);
+    await sink.record({ type: "SPIN", playerId: "p1", at: 1, bet: 1, outcome: "JACKPOT", coins: 3000 });
+    await sink.record({ type: "PURCHASE", playerId: "p1", at: 2, productId: "spin_s", transactionId: "t1", granted: true });
+
+    const rows = await redis!.xrange(stream, "-", "+");
+    expect(rows).toHaveLength(2);
+    // Each row: [id, [field, value, ...]]; reconstruct the JSON payload.
+    const decoded = rows.map(([, fields]) => {
+      const i = fields.indexOf("data");
+      return JSON.parse(fields[i + 1]);
+    });
+    expect(decoded[0]).toMatchObject({ type: "SPIN", outcome: "JACKPOT" });
+    expect(decoded[1]).toMatchObject({ type: "PURCHASE", productId: "spin_s" });
+    await redis!.del(stream);
+  });
+
   it.skipIf(!REDIS_URL)("ranks players on the Redis leaderboard", async () => {
     const rich = await game.createPlayer("Rich");
     const poor = await game.createPlayer("Poor");

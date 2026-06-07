@@ -6,6 +6,7 @@ import type { Clock } from "../services/clock.js";
 import { systemClock } from "../services/clock.js";
 import { hashSecret, verifySecret } from "./password.js";
 import type { TokenService } from "./tokens.js";
+import { noopAnalytics, type Analytics } from "../analytics/analytics.js";
 
 /** Creates a fresh player (with starting bonus) — provided by GameService. */
 export type CreatePlayer = (name: string) => Promise<Player>;
@@ -30,6 +31,7 @@ export interface AuthServiceDeps {
   tokens: TokenService;
   createPlayer: CreatePlayer;
   clock?: Clock;
+  analytics?: Analytics;
 }
 
 /**
@@ -43,12 +45,14 @@ export class AuthService {
   private readonly tokens: TokenService;
   private readonly createPlayer: CreatePlayer;
   private readonly clock: Clock;
+  private readonly analytics: Analytics;
 
   constructor(deps: AuthServiceDeps) {
     this.authRepo = deps.authRepo;
     this.tokens = deps.tokens;
     this.createPlayer = deps.createPlayer;
     this.clock = deps.clock ?? systemClock;
+    this.analytics = deps.analytics ?? noopAnalytics;
   }
 
   async register(name: string, deviceId: string): Promise<RegisterResult> {
@@ -68,6 +72,7 @@ export class AuthService {
       lastSeenAt: now,
     };
     await this.authRepo.create(cred);
+    this.analytics.track({ type: "REGISTER", playerId: player.id, at: now, name });
     const tokens = await this.issue(cred);
     return { player, deviceSecret, ...tokens };
   }

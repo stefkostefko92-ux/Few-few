@@ -5,6 +5,7 @@ import type { Platform, ReceiptValidator } from "../monetization/receipts.js";
 import type { Clock } from "./clock.js";
 import { systemClock } from "./clock.js";
 import type { GameService } from "./gameService.js";
+import { noopAnalytics, type Analytics } from "../analytics/analytics.js";
 
 export interface RedeemResult {
   transactionId: string;
@@ -20,6 +21,7 @@ export interface IapServiceDeps {
   purchases: PurchaseRepository;
   game: GameService;
   clock?: Clock;
+  analytics?: Analytics;
 }
 
 /**
@@ -35,6 +37,7 @@ export class IapService {
   private readonly purchases: PurchaseRepository;
   private readonly game: GameService;
   private readonly clock: Clock;
+  private readonly analytics: Analytics;
 
   constructor(deps: IapServiceDeps) {
     this.catalog = deps.catalog;
@@ -42,6 +45,7 @@ export class IapService {
     this.purchases = deps.purchases;
     this.game = deps.game;
     this.clock = deps.clock ?? systemClock;
+    this.analytics = deps.analytics ?? noopAnalytics;
   }
 
   /** Validate a client-supplied receipt and fulfil it for the player. */
@@ -88,6 +92,7 @@ export class IapService {
     }
 
     await this.game.grant(playerId, product.grants, `IAP:${productId}`);
+    this.analytics.track({ type: "PURCHASE", playerId, at: this.clock.now(), productId, transactionId, granted: true });
     return { transactionId, productId, grants: product.grants, granted: true };
   }
 }

@@ -23,6 +23,8 @@ import { ClanService } from "./services/clanService.js";
 import { GameService } from "./services/gameService.js";
 import { IapService } from "./services/iapService.js";
 import { noopLeaderboard, RedisLeaderboard, type Leaderboard } from "./services/leaderboard.js";
+import { ConsoleAnalytics, type Analytics } from "./analytics/analytics.js";
+import { RedisStreamAnalytics } from "./analytics/redisAnalytics.js";
 
 // Native .env loading (Node 22). No-op if the file is absent.
 try {
@@ -74,11 +76,17 @@ async function main(): Promise<void> {
   await liveOps.load(); // seed from persistence if present
 
   let leaderboard: Leaderboard = noopLeaderboard;
+  let analytics: Analytics = new ConsoleAnalytics();
   if (process.env.REDIS_URL) {
     const { Redis } = await import("ioredis");
-    leaderboard = new RedisLeaderboard(new Redis(process.env.REDIS_URL));
+    const redis = new Redis(process.env.REDIS_URL);
+    leaderboard = new RedisLeaderboard(redis);
+    analytics = new RedisStreamAnalytics(redis);
     // eslint-disable-next-line no-console
-    console.log("leaderboard: Redis");
+    console.log("leaderboard + analytics: Redis");
+  } else {
+    // eslint-disable-next-line no-console
+    console.log("analytics: console");
   }
 
   const clan = new ClanService({ clanRepo, playerRepo: repo });
@@ -87,16 +95,17 @@ async function main(): Promise<void> {
     ledger,
     liveOps,
     leaderboard,
+    analytics,
     onContribution: (playerId, points) => clan.contribute(playerId, points),
   });
   const tokens = new TokenService(jwtSecret);
-  const auth = new AuthService({ authRepo, tokens, createPlayer: (name) => game.createPlayer(name) });
+  const auth = new AuthService({ authRepo, tokens, createPlayer: (name) => game.createPlayer(name), analytics });
 
   const catalog = new Catalog();
   const receiptSecret = process.env.IAP_RECEIPT_SECRET ?? "dev-receipt-secret-change-me";
   const webhookSecret = process.env.IAP_WEBHOOK_SECRET ?? "dev-webhook-secret-change-me";
   const validator = new StubReceiptValidator(receiptSecret);
-  const iap = new IapService({ catalog, validator, purchases, game });
+  const iap = new IapService({ catalog, validator, purchases, game, analytics });
 
   // DEV ONLY: let the web demo mint sandbox receipts (never enable in prod).
   let devReceipt: ((productId: string) => string) | undefined;

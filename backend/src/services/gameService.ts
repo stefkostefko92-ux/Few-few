@@ -12,6 +12,7 @@ import type { Companion, Currency, Player, SpinOutcome } from "../domain/types.j
 import { GameError, InsufficientFunds, InvalidAction } from "../errors.js";
 import { systemClock, type Clock } from "./clock.js";
 import { noopLeaderboard, type Leaderboard } from "./leaderboard.js";
+import { noopAnalytics, type Analytics } from "../analytics/analytics.js";
 
 const ACTION_GRANT_TTL_MS = 5 * 60_000; // a rolled attack/raid must be used within 5 min
 const REVENGE_TTL_MS = 24 * 3_600_000;
@@ -29,6 +30,7 @@ export interface GameServiceDeps {
   clock?: Clock;
   leaderboard?: Leaderboard;
   onContribution?: ContributionSink;
+  analytics?: Analytics;
 }
 
 export interface BuildResult {
@@ -75,6 +77,7 @@ export class GameService {
   private readonly clock: Clock;
   private readonly leaderboard: Leaderboard;
   private readonly onContribution: ContributionSink | undefined;
+  private readonly analytics: Analytics;
 
   /** Current LiveOps config — read live so admin tuning takes effect at once (§6.2). */
   private get config(): LiveOpsConfig {
@@ -95,6 +98,7 @@ export class GameService {
     this.clock = deps.clock ?? systemClock;
     this.leaderboard = deps.leaderboard ?? noopLeaderboard;
     this.onContribution = deps.onContribution;
+    this.analytics = deps.analytics ?? noopAnalytics;
   }
 
   /** Clan-war points for a coin reward: 1 point per 100 coins, min 1. */
@@ -206,6 +210,7 @@ export class GameService {
 
     await this.repo.save(player);
     await this.leaderboard.report(player);
+    this.analytics.track({ type: "SPIN", playerId: player.id, at: now, bet, outcome: outcome.type, coins: outcome.coins });
     return { outcome, player };
   }
 
@@ -240,6 +245,7 @@ export class GameService {
 
     await this.repo.save(player);
     await this.leaderboard.report(player);
+    this.analytics.track({ type: "BUILD", playerId: player.id, at: now, buildingIndex, newLevel: building.level, cost, unlockedIsland });
     return {
       player,
       buildingIndex,
@@ -309,6 +315,7 @@ export class GameService {
     await this.leaderboard.report(target);
     await this.leaderboard.report(player);
     await this.contribute(player.id, reward);
+    this.analytics.track({ type: "ATTACK", playerId: player.id, at: now, targetId, blocked, reward });
     return { player, targetId, buildingIndex, blocked, reward, targetBuildingLevel };
   }
 
@@ -381,6 +388,7 @@ export class GameService {
     await this.repo.save(player);
     await this.leaderboard.report(player);
     await this.contribute(player.id, reward);
+    this.analytics.track({ type: "RAID", playerId: player.id, at: now, targetId: grant.targetId, reward });
     return { player, targetId: grant.targetId, picks: unique, reward };
   }
 
@@ -407,6 +415,7 @@ export class GameService {
     player.companions.push(companion);
 
     await this.repo.save(player);
+    this.analytics.track({ type: "SUMMON", playerId: player.id, at: now, rarity: result.rarity, viaPity: result.viaPity });
     return { rarity: result.rarity, viaPity: result.viaPity, companion };
   }
 
