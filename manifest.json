@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Few-Few AdBlocker",
-  "version": "1.0.0",
-  "description": "Блокира всякакъв вид реклами - банери, видео реклами, popup-и и тракери.",
+  "version": "2.0.0",
+  "description": "Блокира всякакъв вид реклами навсякъде - включително YouTube pre-roll, mid-roll и видео реклами, банери, popup-и и тракери.",
   "default_locale": "bg",
   "permissions": [
     "declarativeNetRequest",
@@ -39,6 +39,20 @@
       "css": ["content.css"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": ["youtube_main.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": ["youtube_skip.js"],
+      "css": ["youtube.css"],
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   "declarative_net_request": {
@@ -47,6 +61,11 @@
         "id": "ad_rules",
         "enabled": true,
         "path": "rules/ad_rules.json"
+      },
+      {
+        "id": "youtube_rules",
+        "enabled": true,
+        "path": "rules/youtube_rules.json"
       }
     ]
   }

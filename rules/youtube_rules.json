@@ -1,0 +1,218 @@
+[
+  {
+    "id": 1000,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/pagead/",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1001,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/ptracking",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1002,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/api/stats/ads",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1003,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/api/stats/atr",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1004,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/get_midroll_",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1005,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/get_video_info?*adformat",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1006,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "googleads.g.doubleclick.net/pagead",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1007,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "static.doubleclick.net",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1008,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/youtubei/v1/player/ad_break",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1009,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/youtubei/v1/log_event",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1010,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "s.youtube.com/api/stats/ads",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  },
+  {
+    "id": 1011,
+    "priority": 2,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "youtube.com/csi_204",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "image",
+        "sub_frame",
+        "script",
+        "ping",
+        "media"
+      ]
+    }
+  }
+]

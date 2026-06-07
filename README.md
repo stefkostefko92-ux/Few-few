@@ -1,10 +1,12 @@
 # 🛡️ Few-Few AdBlocker
 
-Google Chrome разширение (Manifest V3), което блокира **всякакъв вид реклами** — банери, видео реклами, popup-и, native реклами (Taboola/Outbrain) и тракери.
+Google Chrome разширение (Manifest V3), което блокира **всякакъв вид реклами** навсякъде — включително **YouTube видео реклами** (pre-roll / mid-roll), банери, popup-и, native реклами (Taboola/Outbrain) и тракери.
 
 ## Възможности
 
-- **Блокиране на мрежово ниво** чрез `declarativeNetRequest` — над 50 правила за най-големите рекламни и тракинг мрежи (Google Ads, DoubleClick, Amazon, Criteo, Taboola, Outbrain, PopAds и др.). Заявките се спират преди да се заредят, което прави страниците по-бързи.
+- **Блокиране на мрежово ниво** чрез `declarativeNetRequest` — **237+ правила** за стотици рекламни и тракинг мрежи (Google Ads, DoubleClick, Amazon, Criteo, Taboola, Outbrain, PubMatic, PopAds, ExoClick, Adsterra и много други). Заявките се спират преди да се заредят, което прави страниците по-бързи.
+- **🎬 YouTube ad blocking** — специален MAIN-world скрипт прихваща `fetch`, `XMLHttpRequest` и `JSON.parse` и **премахва рекламните данни от player отговорите при източника**, преди плейърът да ги обработи. Това спира pre-roll и mid-roll рекламите, а не само ги скрива.
+- **🚀 Авто-skip резервен слой** — ако реклама все пак стартира, тя се превърта до края, заглушава се и Skip бутонът се натиска автоматично. Скрива и anti-adblock "видеото е на пауза" overlay-ите.
 - **Козметично филтриране** чрез content script + CSS — скрива рекламните контейнери, които остават на страницата, включително динамично заредени (чрез `MutationObserver`).
 - **Popup за управление** — включване/изключване с един клик и брояч на блокираните реклами.
 - **Badge брояч** върху иконата показва колко реклами са блокирани на текущия таб.
@@ -14,11 +16,15 @@ Google Chrome разширение (Manifest V3), което блокира **в
 ```
 .
 ├── manifest.json          # Manifest V3 конфигурация
-├── background.js          # Service worker (брояч, toggle)
-├── content.js             # Козметично скриване на реклами
+├── background.js          # Service worker (брояч, toggle на двата рулсета)
+├── content.js             # Козметично скриване на реклами (всички сайтове)
 ├── content.css            # CSS правила за скриване
+├── youtube_main.js        # MAIN-world: премахва реклами от YouTube player API
+├── youtube_skip.js        # Авто-skip / превъртане на видео реклами
+├── youtube.css            # Скриване на рекламите в YouTube UI
 ├── rules/
-│   └── ad_rules.json      # declarativeNetRequest правила за блокиране
+│   ├── ad_rules.json      # 237+ declarativeNetRequest правила
+│   └── youtube_rules.json # YouTube-специфични ad endpoint правила
 ├── popup/
 │   ├── popup.html
 │   ├── popup.css
@@ -26,6 +32,14 @@ Google Chrome разширение (Manifest V3), което блокира **в
 ├── icons/                 # 16/32/48/128 px икони
 └── _locales/bg/messages.json
 ```
+
+## Как работи YouTube блокирането
+
+YouTube сервира рекламите от **същите сървъри** като самото видео, затова обикновеното блокиране по домейн не работи (би счупило видеото). Few-Few използва три слоя:
+
+1. **Прихващане на API отговорите** (`youtube_main.js`, MAIN world) — изчиства полетата `adPlacements`, `playerAds`, `adSlots` и `adConfig` от отговорите на `/youtubei/v1/player` и `/next`. Плейърът така никога не "вижда" реклама.
+2. **Блокиране на ad endpoint-и** (`youtube_rules.json`) — спира `/pagead/`, `/ptracking`, `/api/stats/ads` и др., **без** да докосва `/player` (видеото остава непокътнато).
+3. **Авто-skip** (`youtube_skip.js`) — резервен слой, който превърта/прескача всичко промъкнало се.
 
 ## Инсталиране (Developer mode)
 
@@ -43,5 +57,5 @@ Google Chrome разширение (Manifest V3), което блокира **в
 ## Бележки
 
 - Разширението работи на всички сайтове (`<all_urls>`).
-- Списъкът с правила е лесно разширяем — добавяй нови домейни в `rules/ad_rules.json` (увеличавай `id` по нужда).
+- Списъкът с правила е лесно разширяем — добави нови домейни в списъка `AD_DOMAINS` в генератора, или директно в `rules/ad_rules.json`.
 - Броячът на блокирани заявки в реално време използва `onRuleMatchedDebug`, който е достъпен само в unpacked (development) режим.

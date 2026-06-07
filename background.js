@@ -1,7 +1,7 @@
 // Few-Few AdBlocker - background service worker
 // Управлява брояча на блокирани заявки и глобалното включване/изключване.
 
-const RULESET_ID = "ad_rules";
+const RULESET_IDS = ["ad_rules", "youtube_rules"];
 
 // Инициализация при инсталиране.
 chrome.runtime.onInstalled.addListener(async () => {
@@ -21,8 +21,8 @@ async function applyState() {
   try {
     await chrome.declarativeNetRequest.updateEnabledRulesets(
       on
-        ? { enableRulesetIds: [RULESET_ID], disableRulesetIds: [] }
-        : { enableRulesetIds: [], disableRulesetIds: [RULESET_ID] }
+        ? { enableRulesetIds: RULESET_IDS, disableRulesetIds: [] }
+        : { enableRulesetIds: [], disableRulesetIds: RULESET_IDS }
     );
   } catch (e) {
     console.warn("Few-Few: неуспешно обновяване на ruleset", e);
