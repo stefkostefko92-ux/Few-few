@@ -17,6 +17,16 @@ export const REPORT_STATUSES = [
 ] as const;
 export type ReportStatus = (typeof REPORT_STATUSES)[number];
 
+/** Български етикети на статусите за граждани и модератори (единен източник). */
+export const REPORT_STATUS_LABELS_BG: Record<ReportStatus, string> = {
+  PENDING: 'Получен, чака преглед',
+  UNDER_REVIEW: 'В преглед',
+  APPROVED: 'Одобрен',
+  SENT: 'Изпратен към общината',
+  REJECTED: 'Отхвърлен',
+  RESOLVED: 'Разрешен',
+};
+
 export const MEDIA_KINDS = ['IMAGE', 'VIDEO'] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
@@ -62,6 +72,21 @@ export interface ReportListItem {
   description: string | null;
   mediaCount: number;
   createdAt: string;
+}
+
+/**
+ * Публична справка за гражданина по неговия код. Умишлено без лични данни,
+ * описание или координати — разкрива само напредъка по сигнала.
+ */
+export interface PublicReportStatus {
+  publicCode: string;
+  status: ReportStatus;
+  statusLabel: string;
+  category: Ref;
+  settlement: Ref;
+  mediaCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ReportList {

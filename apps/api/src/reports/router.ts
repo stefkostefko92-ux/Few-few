@@ -1,4 +1,8 @@
 import { Prisma } from '@prisma/client';
+import {
+  REPORT_STATUS_LABELS_BG,
+  type PublicReportStatus,
+} from '@pomagam/shared';
 import { Router, type Request, type Response } from 'express';
 import rateLimit from 'express-rate-limit';
 
@@ -22,6 +26,15 @@ const submitLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Твърде много сигнали за кратко време. Опитай по-късно.' },
+});
+
+/** По-щедър лимит за справки по код — позволява проверка, спира изброяване. */
+const statusLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Твърде много заявки. Опитай по-късно.' },
 });
 
 function getFiles(req: Request): Express.Multer.File[] {
@@ -156,5 +169,45 @@ reportsRouter.post(
       'report received',
     );
     res.status(201).json({ publicCode: report.publicCode });
+  },
+);
+
+/**
+ * Публична справка по код — гражданинът проверява напредъка по сигнала си.
+ * Връща само нечувствителни полета (без лични данни, описание или координати).
+ */
+reportsRouter.get(
+  '/:code/status',
+  statusLimiter,
+  async (req: Request, res: Response): Promise<void> => {
+    const code = typeof req.params.code === 'string' ? req.params.code : '';
+    const report = await prisma.report.findUnique({
+      where: { publicCode: code },
+      select: {
+        publicCode: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        category: { select: { slug: true, nameBg: true } },
+        settlement: { select: { slug: true, nameBg: true } },
+        _count: { select: { media: true } },
+      },
+    });
+    if (!report) {
+      res.status(404).json({ error: 'Няма сигнал с този код.' });
+      return;
+    }
+
+    const body: PublicReportStatus = {
+      publicCode: report.publicCode,
+      status: report.status,
+      statusLabel: REPORT_STATUS_LABELS_BG[report.status],
+      category: report.category,
+      settlement: report.settlement,
+      mediaCount: report._count.media,
+      createdAt: report.createdAt.toISOString(),
+      updatedAt: report.updatedAt.toISOString(),
+    };
+    res.json(body);
   },
 );
