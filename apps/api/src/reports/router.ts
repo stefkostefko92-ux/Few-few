@@ -73,9 +73,12 @@ async function createWithUniqueCode(
       });
       return report;
     } catch (error) {
+      // Само сблъсък на publicCode се пре-опитва; друг unique (clientReportId)
+      // се препраща нагоре, за да го обработи идемпотентният път.
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === 'P2002' &&
+        String(error.meta?.target ?? '').includes('publicCode')
       ) {
         continue;
       }
@@ -121,6 +124,21 @@ reportsRouter.post(
     }
 
     const input = parsed.data;
+
+    // Идемпотентност: ако вече сме приели тази чернова (офлайн опашка/ретрай),
+    // връщаме същия код вместо да създаваме дубликат.
+    if (input.clientReportId) {
+      const existing = await prisma.report.findUnique({
+        where: { clientReportId: input.clientReportId },
+        select: { publicCode: true },
+      });
+      if (existing) {
+        await cleanupTempFiles(files);
+        res.status(201).json({ publicCode: existing.publicCode });
+        return;
+      }
+    }
+
     const [category, settlement] = await Promise.all([
       prisma.category.findFirst({ where: { slug: input.categorySlug, active: true } }),
       prisma.settlement.findUnique({ where: { slug: input.settlementSlug } }),
@@ -136,6 +154,7 @@ reportsRouter.post(
       report = await createWithUniqueCode({
         category: { connect: { slug: category.slug } },
         settlement: { connect: { slug: settlement.slug } },
+        clientReportId: input.clientReportId,
         description: input.description,
         lat: input.lat,
         lng: input.lng,
@@ -144,6 +163,21 @@ reportsRouter.post(
       });
     } catch (error) {
       await cleanupTempFiles(files);
+      // Конкурентен дубликат по clientReportId — върни вече създадения сигнал.
+      if (
+        input.clientReportId &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const existing = await prisma.report.findUnique({
+          where: { clientReportId: input.clientReportId },
+          select: { publicCode: true },
+        });
+        if (existing) {
+          res.status(201).json({ publicCode: existing.publicCode });
+          return;
+        }
+      }
       throw error;
     }
 

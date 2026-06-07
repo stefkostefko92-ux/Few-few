@@ -3,7 +3,9 @@
 // `prisma migrate deploy` на старт.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Явни таргети — образът се гради и пуска на Debian (node:22-slim).
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -32,8 +34,11 @@ enum AdminRole {
 }
 
 model Report {
-  id           String       @id @default(cuid())
-  publicCode   String       @unique // кратък код за гражданина
+  id             String     @id @default(cuid())
+  publicCode     String     @unique // кратък код за гражданина
+  // Идемпотентност: id-то на черновата от мобилното приложение. При повторно
+  // подаване (офлайн опашка/ретрай) връщаме същия сигнал вместо дубликат.
+  clientReportId String?    @unique
   categoryId   String
   category     Category     @relation(fields: [categoryId], references: [slug])
   settlementId String

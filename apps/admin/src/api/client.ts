@@ -6,6 +6,17 @@ export function apiUrl(path: string): string {
   return `${API_BASE}${path}`;
 }
 
+/**
+ * Глобална реакция при изтекла/невалидна сесия (401). Регистрира се веднъж от
+ * main.tsx и нулира кеша за текущия админ, така че приложението се връща на
+ * екрана за вход, вместо да остане заклещено в грешки.
+ */
+let onUnauthorized: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  onUnauthorized = handler;
+}
+
 export class ApiError extends Error {
   readonly status: number;
 
@@ -37,6 +48,9 @@ async function toError(res: Response): Promise<ApiError> {
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(apiUrl(path), { credentials: 'include' });
   if (!res.ok) {
+    if (res.status === 401) {
+      onUnauthorized?.();
+    }
     throw await toError(res);
   }
   return (await res.json()) as T;
@@ -54,6 +68,9 @@ export async function apiSend<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      onUnauthorized?.();
+    }
     throw await toError(res);
   }
   if (res.status === 204) {

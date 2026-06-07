@@ -48,7 +48,7 @@ export default function ReviewScreen() {
   const hasVideo = draft.media.some((m) => m.kind === 'video');
   const mediaSummary = hasVideo
     ? strings.capture.videoAttached
-    : `${photoCount} снимки`;
+    : strings.review.photos(photoCount);
 
   const contactSummary = [draft.reporterName.trim(), draft.reporterPhone.trim()]
     .filter(Boolean)

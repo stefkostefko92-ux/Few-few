@@ -140,6 +140,9 @@ adminRouter.get(
       res.status(404).json({ error: 'Файлът не е намерен.' });
       return;
     }
+    // Разширението на файла е сървърно контролирано (по MIME), а nosniff е
+    // глобален — затова съдържанието не може да се рендира като скрипт/HTML.
+    res.setHeader('Content-Disposition', 'inline');
     res.sendFile(absolute, (err) => {
       if (err && !res.headersSent) {
         res.status(404).json({ error: 'Файлът не е намерен.' });

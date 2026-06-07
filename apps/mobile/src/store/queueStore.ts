@@ -1,9 +1,15 @@
 import * as Network from 'expo-network';
 import { create } from 'zustand';
 
-import { submitReport } from '@/api/reports';
+import { SubmitError, submitReport } from '@/api/reports';
 import { loadQueue, persistMedia, removeMedia, saveQueue } from '@/queue/storage';
 import type { QueuedReport, ReportDraft, SubmitResult } from '@/types';
+
+/** Таван на опитите за един сигнал преди изоставяне (трайни мрежови провали). */
+const MAX_ATTEMPTS = 6;
+
+/** Сигнали, които точно сега се изпращат — пази от двойно подаване (review + processAll). */
+const sendingIds = new Set<string>();
 
 type QueueState = {
   items: QueuedReport[];
@@ -72,23 +78,38 @@ export const useQueueStore = create<QueueState>((set, get) => ({
     if (!report) {
       return null;
     }
-    if (!(await isOnline())) {
+    // In-flight guard: не подавай същия сигнал два пъти едновременно.
+    if (sendingIds.has(id)) {
       return null;
     }
+    sendingIds.add(id);
     try {
+      if (!(await isOnline())) {
+        return null;
+      }
       const result = await submitReport(report);
       await removeMedia(report);
       const items = get().items.filter((r) => r.id !== id);
       await saveQueue(items);
       set({ items });
       return result;
-    } catch {
-      const items = get().items.map((r) =>
-        r.id === id ? { ...r, attempts: r.attempts + 1 } : r,
-      );
-      await saveQueue(items);
-      set({ items });
+    } catch (error) {
+      const permanent = error instanceof SubmitError && error.permanent;
+      const attempts = report.attempts + 1;
+      // Постоянен отказ или изчерпани опити → маха се, за да не виси вечно.
+      if (permanent || attempts >= MAX_ATTEMPTS) {
+        await removeMedia(report).catch(() => undefined);
+        const items = get().items.filter((r) => r.id !== id);
+        await saveQueue(items);
+        set({ items });
+      } else {
+        const items = get().items.map((r) => (r.id === id ? { ...r, attempts } : r));
+        await saveQueue(items);
+        set({ items });
+      }
       return null;
+    } finally {
+      sendingIds.delete(id);
     }
   },
 

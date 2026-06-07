@@ -17,6 +17,16 @@ import { reportsRouter } from './reports/router.js';
 export function createApp() {
   const app = express();
   app.set('trust proxy', 1);
+  app.disable('x-powered-by');
+
+  // Базови защитни заглавия. Без рестриктивен CSP тук — admin SPA-то и
+  // медията се сервират от Caddy на същия домейн; CSP се добавя на reverse proxy.
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    next();
+  });
 
   app.use(pinoHttp({ logger }));
   app.use(cookieParser());

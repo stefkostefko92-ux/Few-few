@@ -78,6 +78,7 @@ export const strings = {
     settlement: 'Населено място',
     location: 'Координати',
     media: 'Снимки/клип',
+    photos: (n: number) => `${n} ${n === 1 ? 'снимка' : 'снимки'}`,
     description: 'Описание',
     contact: 'Контакт',
     none: '—',

@@ -33,6 +33,20 @@ export async function getReportStatus(
 }
 
 /**
+ * Грешка при подаване. `permanent` означава, че ретрай няма да помогне (4xx) —
+ * опашката маха такъв сигнал, вместо да го опитва безкрайно.
+ */
+export class SubmitError extends Error {
+  readonly permanent: boolean;
+
+  constructor(message: string, permanent: boolean) {
+    super(message);
+    this.name = 'SubmitError';
+    this.permanent = permanent;
+  }
+}
+
+/**
  * Подава сигнал към API-то като multipart: структурирани метаданни плюс
  * медийните файлове. Backend-ът записва статус PENDING и връща publicCode.
  *
@@ -73,7 +87,13 @@ export async function submitReport(report: QueuedReport): Promise<SubmitResult> 
   });
 
   if (!response.ok) {
-    throw new Error(`Сигналът не беше приет (HTTP ${response.status}).`);
+    // 4xx (освен 408/429) са постоянни — сигналът няма да мине при ретрай.
+    const permanent =
+      response.status >= 400 &&
+      response.status < 500 &&
+      response.status !== 408 &&
+      response.status !== 429;
+    throw new SubmitError(`Сигналът не беше приет (HTTP ${response.status}).`, permanent);
   }
 
   const data: unknown = await response.json();

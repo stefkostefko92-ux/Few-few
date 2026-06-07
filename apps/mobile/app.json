@@ -50,7 +50,7 @@
       ]
     ],
     "extra": {
-      "apiBaseUrl": "https://api.pomagam.carbonstealth.eu"
+      "apiBaseUrl": "https://pomagam.carbonstealth.eu"
     }
   }
 }

@@ -53,3 +53,20 @@ docker compose -f docker-compose.prod.yml run --rm api node dist/prisma/seed.js
 
 > Бележка: образите се изграждат от корена на репото (build context `..`), за
 > да включат `packages/shared`. `apps/mobile` е изключен през `.dockerignore`.
+
+## Резервни копия (задължително преди продукция)
+
+Базата живее в `pg_data` volume, а медията — в `media`. Логовете се ротират
+(10MB × 3 на услуга). Настрой ежедневен бекъп към външно място:
+
+```bash
+# ежедневен dump на базата (cron на хоста)
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > /backup/pomagam-$(date +%F).sql.gz
+
+# медийни файлове (rsync/tar към външно хранилище)
+docker run --rm -v pomagam_media:/data -v /backup:/backup alpine \
+  tar czf /backup/pomagam-media-$(date +%F).tar.gz -C /data .
+```
+
+Тествай възстановяване периодично (`gunzip -c … | psql …`).
