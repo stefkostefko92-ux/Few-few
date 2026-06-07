@@ -19,9 +19,41 @@ export interface AppDeps {
   clan: ClanService;
   /** HMAC secret for the IAP webhook (RevenueCat-style, §8.1). */
   webhookSecret: string;
+  /** Allowed CORS origins for the external web-shop/demo (§8.1). Omit for same-origin only. */
+  corsOrigins?: string[];
+  /**
+   * DEV ONLY: when set, exposes GET /iap/dev-receipt to mint a sandbox receipt
+   * so the web demo can exercise the purchase flow without store integration.
+   * Never enable in production — it would let anyone forge purchases.
+   */
+  devReceipt?: (productId: string) => string;
 }
 
 type RawBodyRequest = Request & { rawBody?: Buffer };
+
+/**
+ * CORS for the external web-shop/demo (§8.1, §11.3 — "CORS whitelist, никога *
+ * на prod"). Reflects only whitelisted origins and allows credentials so the
+ * httpOnly auth cookie works cross-origin.
+ */
+function corsMiddleware(origins: string[]) {
+  const allowed = new Set(origins);
+  return (req: Request, res: Response, next: NextFunction) => {
+    const origin = req.header("origin");
+    if (origin && allowed.has(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Vary", "Origin");
+      res.header("Access-Control-Allow-Credentials", "true");
+      res.header("Access-Control-Allow-Headers", "authorization, content-type");
+      res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    }
+    if (req.method === "OPTIONS") {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  };
+}
 
 const ACCESS_COOKIE = "kg_at";
 const REFRESH_COOKIE = "kg_rt";
@@ -133,6 +165,9 @@ const webhookBody = z.object({
 export function createApp(deps: AppDeps): Express {
   const { game, auth, tokens, iap, catalog, clan, webhookSecret } = deps;
   const app = express();
+  if (deps.corsOrigins && deps.corsOrigins.length > 0) {
+    app.use(corsMiddleware(deps.corsOrigins));
+  }
   // Capture the raw body so the IAP webhook can verify its HMAC signature.
   app.use(
     express.json({
@@ -275,6 +310,19 @@ export function createApp(deps: AppDeps): Express {
   app.get("/shop", (_req, res) => {
     res.json({ products: catalog.list() });
   });
+
+  // DEV ONLY sandbox receipt minter (gated by deps.devReceipt).
+  if (deps.devReceipt) {
+    const mint = deps.devReceipt;
+    app.get(
+      "/iap/dev-receipt",
+      h((req, res) => {
+        const productId = String(req.query.productId ?? "");
+        if (!catalog.get(productId)) throw new GameError("UNKNOWN_PRODUCT", "no such product", 404);
+        res.json({ receipt: mint(productId) });
+      }),
+    );
+  }
 
   // Client-driven redemption: validate the store receipt, then grant once.
   app.post(

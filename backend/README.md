@@ -54,7 +54,7 @@ cp .env.example .env                    # DATABASE_URL + REDIS_URL
 npm run db:push                         # create the schema
 npm run dev
 
-npm test                 # vitest — 58 in-memory tests (no infra, incl. WebSocket chat)
+npm test                 # vitest — 64 in-memory tests (no infra, incl. WebSocket chat + SDK)
 npm run test:integration # 4 tests against a live PG (+ Redis); needs DATABASE_URL
 npm run typecheck        # tsc --noEmit
 ```

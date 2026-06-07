@@ -89,14 +89,23 @@ async function main(): Promise<void> {
   const catalog = new Catalog();
   const receiptSecret = process.env.IAP_RECEIPT_SECRET ?? "dev-receipt-secret-change-me";
   const webhookSecret = process.env.IAP_WEBHOOK_SECRET ?? "dev-webhook-secret-change-me";
-  const iap = new IapService({
-    catalog,
-    validator: new StubReceiptValidator(receiptSecret),
-    purchases,
-    game,
-  });
+  const validator = new StubReceiptValidator(receiptSecret);
+  const iap = new IapService({ catalog, validator, purchases, game });
 
-  const app = createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret });
+  // DEV ONLY: let the web demo mint sandbox receipts (never enable in prod).
+  let devReceipt: ((productId: string) => string) | undefined;
+  if (process.env.ENABLE_DEV_RECEIPTS === "true") {
+    let n = 0;
+    devReceipt = (productId) => validator.sign(`dev-${Date.now()}-${n++}`, productId);
+    // eslint-disable-next-line no-console
+    console.warn("⚠  ENABLE_DEV_RECEIPTS=true — /iap/dev-receipt is open. Dev only.");
+  }
+
+  const corsOrigins = (process.env.CORS_ORIGINS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const app = createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret, corsOrigins, devReceipt });
   const server = app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`KAGURA backend (prototype) listening on :${port}`);

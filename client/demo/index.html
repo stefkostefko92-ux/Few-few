@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KAGURA SPIN — demo</title>
+    <style>
+      /* GDD §9.2 palette */
+      :root {
+        --sakura: #ff6fa5;
+        --gold: #ffc94d;
+        --sky: #4ecdc4;
+        --night: #2a1a4a;
+        --spirit: #9b5de5;
+        --ember: #ff7a45;
+        --cream: #fff6e9;
+        --charcoal: #2d2a32;
+        --success: #4ade80;
+        --attack: #ff5470;
+        --shield: #5bc0eb;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(120% 100% at 50% 0%, #3a2566 0%, var(--night) 60%, #1a0f30 100%);
+        color: var(--cream);
+        min-height: 100vh;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 1px;
+        background: linear-gradient(90deg, var(--sakura), var(--gold));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .res { display: flex; gap: 14px; flex-wrap: wrap; font-weight: 700; }
+      .res span { background: rgba(255, 255, 255, 0.08); padding: 6px 12px; border-radius: 999px; }
+      main { max-width: 980px; margin: 0 auto; padding: 12px 16px 60px; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+      .card { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px; }
+      .card.full { grid-column: 1 / -1; }
+      .card h2 { margin: 0 0 12px; font-size: 16px; color: var(--sky); }
+      button {
+        font: inherit; font-weight: 700; cursor: pointer; border: none; border-radius: 12px;
+        padding: 10px 16px; color: var(--night); background: var(--gold); transition: transform 0.08s;
+      }
+      button:hover { transform: translateY(-1px); }
+      button:disabled { opacity: 0.5; cursor: default; transform: none; }
+      button.alt { background: var(--sky); }
+      button.ghost { background: rgba(255,255,255,0.12); color: var(--cream); }
+      input { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.25); color: var(--cream); }
+      .reels { display: flex; gap: 10px; justify-content: center; margin: 8px 0 14px; }
+      .reel { width: 76px; height: 76px; display: grid; place-items: center; font-size: 42px; background: var(--cream); border-radius: 14px; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1); }
+      .spin-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+      .outcome { text-align: center; min-height: 22px; margin-top: 10px; font-weight: 700; }
+      .buildings { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .bld { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 8px; text-align: center; font-size: 13px; }
+      .bld .lvl { font-size: 20px; font-weight: 800; color: var(--gold); }
+      .bld button { padding: 6px 8px; font-size: 12px; margin-top: 6px; width: 100%; }
+      ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+      li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: rgba(0,0,0,0.18); border-radius: 10px; padding: 8px 10px; font-size: 14px; }
+      #chatLog { height: 160px; overflow-y: auto; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 8px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+      .login { display: grid; place-items: center; min-height: 60vh; }
+      .login .box { text-align: center; display: grid; gap: 12px; }
+      #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--attack); color: white; padding: 10px 16px; border-radius: 10px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+      #toast.show { opacity: 1; }
+      .muted { opacity: 0.7; font-size: 12px; }
+      @media (max-width: 720px) { main { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div id="login" class="login">
+      <div class="box">
+        <h1>神楽スピン · KAGURA SPIN</h1>
+        <p class="muted">Realm of Spirits — demo client</p>
+        <input id="nameInput" placeholder="Your kannushi name" value="Kannushi" />
+        <button id="playBtn">Play ▶</button>
+        <p class="muted" id="apiNote"></p>
+      </div>
+    </div>
+
+    <div id="app" style="display: none">
+      <header>
+        <h1>神楽スピン KAGURA</h1>
+        <div class="res">
+          <span>🌀 <b id="rSpins">0</b></span>
+          <span>🪙 <b id="rCoins">0</b></span>
+          <span>✨ <b id="rSpirit">0</b></span>
+          <span>💎 <b id="rGems">0</b></span>
+          <span>🛡️ <b id="rShields">0</b></span>
+          <span>🏝️ <b id="rIsland">0</b></span>
+        </div>
+        <button class="ghost" id="logoutBtn">Logout</button>
+      </header>
+
+      <main>
+        <section class="card">
+          <h2>Spirit Wheel</h2>
+          <div class="reels"><div class="reel" id="reel0">✨</div><div class="reel" id="reel1">✨</div><div class="reel" id="reel2">✨</div></div>
+          <div class="spin-row">
+            <label class="muted">bet</label>
+            <input id="bet" type="number" min="1" max="50" value="1" style="width: 70px" />
+            <button id="spinBtn">SPIN</button>
+          </div>
+          <div class="outcome" id="outcome"></div>
+        </section>
+
+        <section class="card">
+          <h2>Island — <span id="islandName">Родово светилище</span></h2>
+          <div class="buildings" id="buildings"></div>
+          <div style="margin-top: 12px; display: flex; gap: 8px">
+            <button class="alt" id="summonBtn">✨ Summon</button>
+            <span class="outcome" id="summonOut" style="flex: 1"></span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Shop</h2>
+          <ul id="shop"></ul>
+        </section>
+
+        <section class="card">
+          <h2>Leaderboard <button class="ghost" id="lbRefresh" style="float: right; padding: 4px 10px">↻</button></h2>
+          <ul id="leaderboard"></ul>
+        </section>
+
+        <section class="card full" id="clanCard">
+          <h2>Clan</h2>
+          <div id="clanBody"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

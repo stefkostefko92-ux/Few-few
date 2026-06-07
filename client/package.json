@@ -1,0 +1,23 @@
+{
+  "name": "@kagura/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "KAGURA SPIN — TypeScript client SDK (zero-dependency, isomorphic)",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "demo": "npm run build && node serve.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
