@@ -6,6 +6,7 @@ import type { GameService } from "../services/gameService.js";
 import type { AuthService, AuthTokens } from "../auth/authService.js";
 import type { TokenService } from "../auth/tokens.js";
 import type { IapService } from "../services/iapService.js";
+import type { ClanService } from "../services/clanService.js";
 import type { Catalog } from "../monetization/catalog.js";
 import { verifyWebhookSignature } from "../monetization/receipts.js";
 
@@ -15,6 +16,7 @@ export interface AppDeps {
   tokens: TokenService;
   iap: IapService;
   catalog: Catalog;
+  clan: ClanService;
   /** HMAC secret for the IAP webhook (RevenueCat-style, §8.1). */
   webhookSecret: string;
 }
@@ -116,6 +118,10 @@ const redeemBody = z.object({
   productId: z.string().min(1),
   receipt: z.string().min(1),
 });
+const createClanBody = z.object({
+  name: z.string().min(2).max(32),
+  tag: z.string().min(2).max(5),
+});
 const webhookBody = z.object({
   app_user_id: z.string().min(1),
   product_id: z.string().min(1),
@@ -125,7 +131,7 @@ const webhookBody = z.object({
 });
 
 export function createApp(deps: AppDeps): Express {
-  const { game, auth, tokens, iap, catalog, webhookSecret } = deps;
+  const { game, auth, tokens, iap, catalog, clan, webhookSecret } = deps;
   const app = express();
   // Capture the raw body so the IAP webhook can verify its HMAC signature.
   app.use(
@@ -302,6 +308,64 @@ export function createApp(deps: AppDeps): Express {
     }),
   );
 
+  // ---- Clans (§7.2) ----------------------------------------------------
+
+  app.get(
+    "/clans",
+    h(async (_req, res) => {
+      res.json({ clans: await clan.listClans() });
+    }),
+  );
+
+  app.post(
+    "/clans",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      const { name, tag } = createClanBody.parse(req.body ?? {});
+      res.status(201).json({ clan: await clan.createClan(playerId, name, tag) });
+    }),
+  );
+
+  app.post(
+    "/clans/leave",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      await clan.leaveClan(playerId);
+      res.json({ ok: true });
+    }),
+  );
+
+  app.post(
+    "/clans/war/declare",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      res.json({ war: await clan.declareWar(playerId) });
+    }),
+  );
+
+  app.get(
+    "/clans/war",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      res.json({ war: await clan.warStatus(playerId) });
+    }),
+  );
+
+  app.get(
+    "/clans/:id",
+    h(async (req, res) => {
+      res.json({ clan: await clan.getClan(String(req.params.id)) });
+    }),
+  );
+
+  app.post(
+    "/clans/:id/join",
+    h(async (req, res) => {
+      const playerId = await authenticate(req, tokens);
+      res.json({ clan: await clan.joinClan(playerId, String(req.params.id)) });
+    }),
+  );
+
   // Global leaderboard (§7.2) — Redis sorted set when configured.
   app.get(
     "/leaderboard",
@@ -367,6 +431,7 @@ function publicPlayer(p: Player) {
     currentIsland: p.currentIsland,
     islands: p.islands,
     companions: p.companions,
+    clanId: p.clanId,
     pendingAttack: p.pendingAttack ? { expiresAt: p.pendingAttack.expiresAt } : null,
     pendingRaid: p.pendingRaid
       ? {

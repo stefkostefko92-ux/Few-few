@@ -80,6 +80,8 @@ export interface Player {
 
   // Social / retention
   revengeTargets: RevengeTarget[];
+  /** Clan the player belongs to, if any (§7.2). */
+  clanId: string | null;
 
   // Open server-authoritative action grants from the most recent spin
   pendingAttack: PendingAttack | null;

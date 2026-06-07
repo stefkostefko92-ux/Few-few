@@ -44,6 +44,7 @@ model Player {
 
   // Social / retention
   revengeTargets Json    // RevengeTarget[]
+  clanId        String?
 
   // Open server-authoritative action grants (predetermined raid spots live here)
   pendingAttack Json?
@@ -73,6 +74,30 @@ enum Currency {
   coins
   spiritTokens
   gems
+}
+
+// Clan (§7.2). Members are stored as a JSON id array (capped at 50 in the
+// service); the player also carries clanId for fast membership lookups.
+model Clan {
+  id           String   @id
+  name         String
+  tag          String
+  leaderId     String
+  memberIds    Json
+  currentWarId String?
+  createdAt    DateTime @default(now())
+
+  @@index([currentWarId])
+}
+
+model ClanWar {
+  id        String   @id
+  clanAId   String
+  clanBId   String
+  scoreA    Int      @default(0)
+  scoreB    Int      @default(0)
+  startedAt DateTime @default(now())
+  endsAt    DateTime
 }
 
 // Processed IAP purchase — idempotency record keyed by the store transaction id

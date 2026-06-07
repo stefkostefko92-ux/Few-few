@@ -15,6 +15,9 @@ import { noopLeaderboard, type Leaderboard } from "./leaderboard.js";
 const ACTION_GRANT_TTL_MS = 5 * 60_000; // a rolled attack/raid must be used within 5 min
 const REVENGE_TTL_MS = 24 * 3_600_000;
 
+/** Optional sink for clan-war points earned by aggressive actions (§7.2). */
+export type ContributionSink = (playerId: string, points: number) => Promise<void>;
+
 export interface GameServiceDeps {
   repo: PlayerRepository;
   ledger: Ledger;
@@ -22,6 +25,7 @@ export interface GameServiceDeps {
   rng?: Rng;
   clock?: Clock;
   leaderboard?: Leaderboard;
+  onContribution?: ContributionSink;
 }
 
 export interface BuildResult {
@@ -67,6 +71,7 @@ export class GameService {
   private readonly rng: Rng;
   private readonly clock: Clock;
   private readonly leaderboard: Leaderboard;
+  private readonly onContribution: ContributionSink | undefined;
 
   constructor(deps: GameServiceDeps) {
     this.repo = deps.repo;
@@ -75,6 +80,13 @@ export class GameService {
     this.rng = deps.rng ?? cryptoRng;
     this.clock = deps.clock ?? systemClock;
     this.leaderboard = deps.leaderboard ?? noopLeaderboard;
+    this.onContribution = deps.onContribution;
+  }
+
+  /** Clan-war points for a coin reward: 1 point per 100 coins, min 1. */
+  private async contribute(playerId: string, reward: number): Promise<void> {
+    if (!this.onContribution || reward <= 0) return;
+    await this.onContribution(playerId, Math.max(1, Math.round(reward / 100)));
   }
 
   // ---- Player lifecycle -------------------------------------------------
@@ -98,6 +110,7 @@ export class GameService {
       pullsSinceMythic: 0,
       companions: [],
       revengeTargets: [],
+      clanId: null,
       pendingAttack: null,
       pendingRaid: null,
     };
@@ -281,6 +294,7 @@ export class GameService {
     await this.repo.save(player);
     await this.leaderboard.report(target);
     await this.leaderboard.report(player);
+    await this.contribute(player.id, reward);
     return { player, targetId, buildingIndex, blocked, reward, targetBuildingLevel };
   }
 
@@ -352,6 +366,7 @@ export class GameService {
 
     await this.repo.save(player);
     await this.leaderboard.report(player);
+    await this.contribute(player.id, reward);
     return { player, targetId: grant.targetId, picks: unique, reward };
   }
 

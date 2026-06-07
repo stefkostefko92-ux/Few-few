@@ -4,12 +4,14 @@ import { defaultLiveOps } from "../src/config/liveops.js";
 import { AuthService } from "../src/auth/authService.js";
 import { TokenService } from "../src/auth/tokens.js";
 import { MemoryAuthRepository } from "../src/data/authRepository.js";
+import { MemoryClanRepository } from "../src/data/clanRepository.js";
 import { MemoryLedger } from "../src/data/ledger.js";
 import { MemoryPlayerRepository } from "../src/data/memoryRepository.js";
 import { MemoryPurchaseRepository } from "../src/data/purchaseRepository.js";
 import { createApp } from "../src/http/app.js";
 import { Catalog } from "../src/monetization/catalog.js";
 import { StubReceiptValidator } from "../src/monetization/receipts.js";
+import { ClanService } from "../src/services/clanService.js";
 import { GameService } from "../src/services/gameService.js";
 import { IapService } from "../src/services/iapService.js";
 
@@ -17,11 +19,8 @@ const TEST_SECRET = "test-secret-0123456789abcdef";
 const WEBHOOK_SECRET = "test-webhook-secret";
 
 function makeApp() {
-  const game = new GameService({
-    repo: new MemoryPlayerRepository(),
-    ledger: new MemoryLedger(),
-    config: defaultLiveOps,
-  });
+  const repo = new MemoryPlayerRepository();
+  const game = new GameService({ repo, ledger: new MemoryLedger(), config: defaultLiveOps });
   const tokens = new TokenService(TEST_SECRET);
   const auth = new AuthService({
     authRepo: new MemoryAuthRepository(),
@@ -35,7 +34,8 @@ function makeApp() {
     purchases: new MemoryPurchaseRepository(),
     game,
   });
-  return createApp({ game, auth, tokens, iap, catalog, webhookSecret: WEBHOOK_SECRET });
+  const clan = new ClanService({ clanRepo: new MemoryClanRepository(), playerRepo: repo });
+  return createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret: WEBHOOK_SECRET });
 }
 
 let deviceCounter = 0;

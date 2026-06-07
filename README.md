@@ -13,8 +13,8 @@
 - [`backend/`](backend/) — server-authoritative backend на core loop-а (фаза Prototype, GDD §13.1): spin → build → attack → raid → summon, с double-entry ledger, CSPRNG и публикувани gacha шансове. TypeScript + Express 5. Data слоят е зад repository/ledger интерфейси с **два взаимозаменяеми backend-а**: in-memory (по подразбиране, нула infra) и **Postgres (Prisma 7) + Redis** (когато са зададени `DATABASE_URL`/`REDIS_URL`). Виж [`backend/README.md`](backend/README.md).
 
 ```bash
-cd backend && npm install && npm test   # 51 in-memory теста (без infra)
-npm run dev                              # стартира API на :3000
+cd backend && npm install && npm test   # 58 in-memory теста (без infra)
+npm run dev                              # стартира API на :3000 (+ WebSocket /ws)
 
 # С персистенция:
 docker compose up -d && cp .env.example .env && npm run db:push

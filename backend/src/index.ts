@@ -2,10 +2,12 @@ import { defaultLiveOps } from "./config/liveops.js";
 import { AuthService } from "./auth/authService.js";
 import { TokenService } from "./auth/tokens.js";
 import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository.js";
+import { MemoryClanRepository, type ClanRepository } from "./data/clanRepository.js";
 import { MemoryLedger, type Ledger } from "./data/ledger.js";
 import { MemoryPlayerRepository } from "./data/memoryRepository.js";
 import { MemoryPurchaseRepository, type PurchaseRepository } from "./data/purchaseRepository.js";
 import { PrismaAuthRepository } from "./data/prismaAuthRepository.js";
+import { PrismaClanRepository } from "./data/prismaClanRepository.js";
 import { PrismaLedger } from "./data/prismaLedger.js";
 import { PrismaPlayerRepository } from "./data/prismaRepository.js";
 import { PrismaPurchaseRepository } from "./data/prismaPurchaseRepository.js";
@@ -14,6 +16,8 @@ import type { PlayerRepository } from "./data/repository.js";
 import { createApp } from "./http/app.js";
 import { Catalog } from "./monetization/catalog.js";
 import { StubReceiptValidator } from "./monetization/receipts.js";
+import { ChatHub } from "./realtime/chatHub.js";
+import { ClanService } from "./services/clanService.js";
 import { GameService } from "./services/gameService.js";
 import { IapService } from "./services/iapService.js";
 import { noopLeaderboard, RedisLeaderboard, type Leaderboard } from "./services/leaderboard.js";
@@ -43,12 +47,14 @@ async function main(): Promise<void> {
   let ledger: Ledger;
   let authRepo: AuthRepository;
   let purchases: PurchaseRepository;
+  let clanRepo: ClanRepository;
   if (process.env.DATABASE_URL) {
     const prisma = createPrismaClient(process.env.DATABASE_URL);
     repo = new PrismaPlayerRepository(prisma);
     ledger = new PrismaLedger(prisma);
     authRepo = new PrismaAuthRepository(prisma);
     purchases = new PrismaPurchaseRepository(prisma);
+    clanRepo = new PrismaClanRepository(prisma);
     // eslint-disable-next-line no-console
     console.log("storage: Postgres (Prisma)");
   } else {
@@ -56,6 +62,7 @@ async function main(): Promise<void> {
     ledger = new MemoryLedger();
     authRepo = new MemoryAuthRepository();
     purchases = new MemoryPurchaseRepository();
+    clanRepo = new MemoryClanRepository();
     // eslint-disable-next-line no-console
     console.log("storage: in-memory");
   }
@@ -68,7 +75,14 @@ async function main(): Promise<void> {
     console.log("leaderboard: Redis");
   }
 
-  const game = new GameService({ repo, ledger, config: defaultLiveOps, leaderboard });
+  const clan = new ClanService({ clanRepo, playerRepo: repo });
+  const game = new GameService({
+    repo,
+    ledger,
+    config: defaultLiveOps,
+    leaderboard,
+    onContribution: (playerId, points) => clan.contribute(playerId, points),
+  });
   const tokens = new TokenService(jwtSecret);
   const auth = new AuthService({ authRepo, tokens, createPlayer: (name) => game.createPlayer(name) });
 
@@ -82,11 +96,14 @@ async function main(): Promise<void> {
     game,
   });
 
-  const app = createApp({ game, auth, tokens, iap, catalog, webhookSecret });
-  app.listen(port, () => {
+  const app = createApp({ game, auth, tokens, iap, catalog, clan, webhookSecret });
+  const server = app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`KAGURA backend (prototype) listening on :${port}`);
   });
+
+  // Real-time clan chat over WebSocket at /ws (§7.2).
+  new ChatHub(tokens, (id) => game.getPlayer(id)).attach(server);
 }
 
 void main();

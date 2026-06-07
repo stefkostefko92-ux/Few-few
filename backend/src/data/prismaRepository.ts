@@ -63,6 +63,7 @@ interface PlayerRow {
   pullsSinceMythic: number;
   companions: unknown;
   revengeTargets: unknown;
+  clanId: string | null;
   pendingAttack: unknown;
   pendingRaid: unknown;
 }
@@ -84,6 +85,7 @@ function toRow(p: Player) {
     pullsSinceMythic: p.pullsSinceMythic,
     companions: p.companions as unknown as object,
     revengeTargets: p.revengeTargets as unknown as object,
+    clanId: p.clanId,
     pendingAttack: (p.pendingAttack ?? null) as unknown as object,
     pendingRaid: (p.pendingRaid ?? null) as unknown as object,
   };
@@ -106,6 +108,7 @@ function fromRow(row: PlayerRow): Player {
     pullsSinceMythic: row.pullsSinceMythic,
     companions: row.companions as Player["companions"],
     revengeTargets: row.revengeTargets as Player["revengeTargets"],
+    clanId: row.clanId,
     pendingAttack: (row.pendingAttack ?? null) as Player["pendingAttack"],
     pendingRaid: (row.pendingRaid ?? null) as Player["pendingRaid"],
   };

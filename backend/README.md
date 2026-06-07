@@ -20,6 +20,7 @@ raid → summon`, with a double-entry economy ledger and published gacha rates.
 | Postgres persistence + Redis leaderboards (§11.2, §7.2) | `data/prisma*.ts`, `services/leaderboard.ts` |
 | JWT auth (httpOnly cookie or Bearer) + device binding (§11.2) | `auth/` |
 | Server-side IAP receipt validation, idempotent grants (§8, §11.3) | `monetization/`, `services/iapService.ts` |
+| Clans, clan wars, real-time chat over WebSocket (§7.2) | `services/clanService.ts`, `realtime/chatHub.ts` |
 
 ## Stack
 
@@ -53,7 +54,7 @@ cp .env.example .env                    # DATABASE_URL + REDIS_URL
 npm run db:push                         # create the schema
 npm run dev
 
-npm test                 # vitest — 51 in-memory tests (no infra)
+npm test                 # vitest — 58 in-memory tests (no infra, incl. WebSocket chat)
 npm run test:integration # 4 tests against a live PG (+ Redis); needs DATABASE_URL
 npm run typecheck        # tsc --noEmit
 ```
@@ -81,6 +82,14 @@ default `npm test` never needs infra.
 | `GET /shop` | — | — | IAP catalog (server-defined grants, §8.2) |
 | `POST /iap/redeem` | access | `{ platform, productId, receipt }` | validate a store receipt and grant once |
 | `POST /iap/webhook` | HMAC sig | RevenueCat-style event | server-to-server fulfilment (idempotent) |
+| `GET /clans` | — | — | list clans |
+| `POST /clans` | access | `{ name, tag }` | create a clan (founder is leader) |
+| `GET /clans/:id` | — | — | clan details |
+| `POST /clans/:id/join` | access | — | join a clan (cap 50) |
+| `POST /clans/leave` | access | — | leave; leader is reassigned, empty clan disbands |
+| `POST /clans/war/declare` | access (leader) | — | declare war on a matchmade clan |
+| `GET /clans/war` | access | — | current war status/score |
+| `WS /ws?token=<access>` | access | — | real-time clan chat (history + broadcast) |
 | `GET /leaderboard` | — | — | global top-N (Redis) |
 | `GET /leaderboard/me` | access | — | caller's rank |
 
@@ -109,9 +118,10 @@ curl -s -XPOST localhost:3000/spin -H "authorization: Bearer $AT" \
 
 ## Not yet built (next slices)
 
-Clans + WebSocket chat, LiveOps admin dashboard, analytics pipeline, and the
-Unity client (§11.1). The IAP layer ships a sandbox receipt validator and the
-RevenueCat-style webhook shape — wiring the real StoreKit/Play Billing/RevenueCat
-validators is a drop-in `ReceiptValidator`. Cross-aggregate atomicity (player
-save + ledger in one DB transaction) is also a follow-up — the current Prisma
-backend writes them in separate transactions, fine for the prototype.
+LiveOps admin dashboard, analytics pipeline, and the Unity client (§11.1). The
+IAP layer ships a sandbox receipt validator and the RevenueCat-style webhook
+shape — wiring the real StoreKit/Play Billing/RevenueCat validators is a drop-in
+`ReceiptValidator`. Clan chat history is in-memory per process for the prototype
+(production persists to Postgres/Redis and scales chat across nodes). Cross-
+aggregate atomicity (player save + ledger in one DB transaction) is also a
+follow-up — the current Prisma backend writes them in separate transactions.
