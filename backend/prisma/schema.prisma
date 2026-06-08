@@ -1,0 +1,133 @@
+// KAGURA SPIN — Postgres schema (GDD §11.2).
+//
+// Prisma 7 + driver adapter (@prisma/adapter-pg). The Player save-state is
+// stored as scalar currency columns plus JSONB for the nested island/companion
+// structures (a standard pattern for player aggregates); the double-entry
+// ledger is relational so balances are computed with SQL aggregation and the
+// audit log stays queryable. The in-memory repository mirrors this exactly so
+// the same GameService runs over either.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Player {
+  id            String   @id
+  name          String
+  createdAt     DateTime @default(now())
+
+  // Currencies (coins is BigInt to survive geometric late-game progression)
+  spins         Int      @default(0)
+  coins         BigInt   @default(0)
+  spiritTokens  Int      @default(0)
+  gems          Int      @default(0)
+
+  // Spin energy regen bookkeeping (epoch millis)
+  spinsUpdatedAt BigInt  @default(0)
+
+  // Defense
+  shields       Int      @default(0)
+
+  // Progression
+  currentIsland Int      @default(0)
+  islands       Json     // Island[] with nested buildings
+
+  // Gacha pity (§5.6)
+  pullsSinceEpic   Int   @default(0)
+  pullsSinceMythic Int   @default(0)
+  companions       Json  // Companion[]
+
+  // Social / retention
+  revengeTargets Json    // RevengeTarget[]
+  clanId        String?
+
+  // Open server-authoritative action grants (predetermined raid spots live here)
+  pendingAttack Json?
+  pendingRaid   Json?
+
+  @@index([currentIsland])
+}
+
+// Append-only double-entry ledger (§6.1). One row per leg; legs sharing a txId
+// MUST net to zero per currency. Never UPDATE/DELETE — corrections are new txns.
+model LedgerLeg {
+  id        String   @id @default(uuid())
+  txId      String
+  at        BigInt
+  reason    String
+  account   String   // "player:<id>" | "system:faucet" | "system:sink"
+  currency  Currency
+  delta     BigInt
+
+  @@index([txId])
+  @@index([account, currency])
+  @@index([currency])
+}
+
+enum Currency {
+  spins
+  coins
+  spiritTokens
+  gems
+}
+
+// Live-tunable LiveOps config (§6.2), stored as a single JSON row (id="current")
+// so ops can retune weights/prices/drop-rates without an app release.
+model LiveOpsConfig {
+  id        String   @id
+  config    Json
+  updatedAt DateTime @updatedAt
+}
+
+// Clan (§7.2). Members are stored as a JSON id array (capped at 50 in the
+// service); the player also carries clanId for fast membership lookups.
+model Clan {
+  id           String   @id
+  name         String
+  tag          String
+  leaderId     String
+  memberIds    Json
+  currentWarId String?
+  createdAt    DateTime @default(now())
+
+  @@index([currentWarId])
+}
+
+model ClanWar {
+  id        String   @id
+  clanAId   String
+  clanBId   String
+  scoreA    Int      @default(0)
+  scoreB    Int      @default(0)
+  startedAt DateTime @default(now())
+  endsAt    DateTime
+}
+
+// Processed IAP purchase — idempotency record keyed by the store transaction id
+// (§11.3). A repeated webhook/redeem for the same transactionId is a no-op.
+model Purchase {
+  transactionId String   @id
+  playerId      String
+  productId     String
+  platform      String
+  grants        Json
+  grantedAt     DateTime @default(now())
+
+  @@index([playerId, productId])
+}
+
+// Device-bound credential (§11.2). One per player; tokenVersion is bumped on
+// logout to revoke outstanding refresh tokens.
+model Credential {
+  playerId     String   @id
+  deviceId     String   @unique
+  secretHash   String
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+}
