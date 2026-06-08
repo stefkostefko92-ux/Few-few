@@ -27,4 +27,8 @@ export class MemoryPlayerRepository implements PlayerRepository {
   async others(excludeId: string): Promise<Player[]> {
     return [...this.players.values()].filter((p) => p.id !== excludeId);
   }
+
+  async delete(id: string): Promise<void> {
+    this.players.delete(id);
+  }
 }

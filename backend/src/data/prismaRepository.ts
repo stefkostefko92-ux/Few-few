@@ -43,6 +43,10 @@ export class PrismaPlayerRepository implements PlayerRepository {
     });
     return rows.map(fromRow);
   }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.player.deleteMany({ where: { id } }); // deleteMany = idempotent (no throw if absent)
+  }
 }
 
 // ---- Row mapping --------------------------------------------------------

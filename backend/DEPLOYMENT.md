@@ -42,6 +42,20 @@ rate limiting keys on the real client IP.
 - `GET /readyz` — **readiness**: pings Postgres + Redis; returns `503` when a
   dependency is down or during shutdown. Wire this to the load balancer.
 
+## Privacy / GDPR
+
+Authenticated self-service rights (see `docs/legal/`):
+- `GET /account/export` — download all personal data (Art. 15/20). Secret hashes
+  are never exported.
+- `DELETE /account` — erase the account: player, credential (revokes login),
+  purchase-grant linkage, and clan membership (Art. 17). Idempotent. Ledger legs
+  are **retained** as financial records (Art. 17(3)(b)) keyed by an opaque id.
+
+Draft Privacy Policy, Terms, and the loot-box odds-disclosure / store-compliance
+checklist live in `docs/legal/` — finalize with counsel before publishing, and
+wire the client UI (Settings → Privacy) to these endpoints. Google Play also
+requires a public account-deletion **web URL**.
+
 ## Graceful shutdown
 
 `SIGTERM`/`SIGINT` drains: stop new HTTP, close live WebSockets (`1001`), then

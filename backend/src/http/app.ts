@@ -8,6 +8,7 @@ import type { AuthService, AuthTokens } from "../auth/authService.js";
 import type { TokenService } from "../auth/tokens.js";
 import type { IapService } from "../services/iapService.js";
 import type { ClanService } from "../services/clanService.js";
+import type { AccountService } from "../services/accountService.js";
 import type { Catalog } from "../monetization/catalog.js";
 import type { LiveOpsStore } from "../config/liveOpsStore.js";
 import { verifyWebhookSignature } from "../monetization/receipts.js";
@@ -19,6 +20,8 @@ export interface AppDeps {
   iap: IapService;
   catalog: Catalog;
   clan: ClanService;
+  /** GDPR account rights (data export + erasure). Omit to disable those routes. */
+  account?: AccountService;
   /** Live-tunable LiveOps config store, mutated by the admin endpoints (§6.2). */
   liveOps: LiveOpsStore;
   /** Admin API key for /admin/* routes. Omit to disable the admin surface. */
@@ -187,7 +190,7 @@ const webhookBody = z.object({
 });
 
 export function createApp(deps: AppDeps): Express {
-  const { game, auth, tokens, iap, catalog, clan, liveOps, webhookSecret } = deps;
+  const { game, auth, tokens, iap, catalog, clan, account, liveOps, webhookSecret } = deps;
   const app = express();
   app.disable("x-powered-by");
   if (deps.trustProxy && deps.trustProxy > 0) app.set("trust proxy", deps.trustProxy);
@@ -280,6 +283,32 @@ export function createApp(deps: AppDeps): Express {
       res.json({ ok: true });
     }),
   );
+
+  // ---- Account / GDPR (§ privacy) --------------------------------------
+
+  if (account) {
+    // Right of access & portability (GDPR Art. 15/20): download all personal data.
+    app.get(
+      "/account/export",
+      h(async (req, res) => {
+        const playerId = await authenticate(req, tokens);
+        const data = await account.exportData(playerId);
+        res.setHeader("Content-Disposition", 'attachment; filename="kagura-account-export.json"');
+        res.json(data);
+      }),
+    );
+
+    // Right to erasure (GDPR Art. 17): permanently delete the account.
+    app.delete(
+      "/account",
+      h(async (req, res) => {
+        const playerId = await authenticate(req, tokens);
+        await account.eraseData(playerId);
+        clearAuthCookies(res);
+        res.status(200).json({ erased: true });
+      }),
+    );
+  }
 
   // ---- Game ------------------------------------------------------------
 

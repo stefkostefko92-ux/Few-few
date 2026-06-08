@@ -17,6 +17,8 @@ export interface AuthRepository {
   getByDevice(deviceId: string): Promise<Credential | undefined>;
   getByPlayer(playerId: string): Promise<Credential | undefined>;
   save(cred: Credential): Promise<void>;
+  /** Delete a player's credential (GDPR erasure / revokes login). Idempotent. */
+  deleteByPlayer(playerId: string): Promise<void>;
 }
 
 export class MemoryAuthRepository implements AuthRepository {
@@ -40,5 +42,12 @@ export class MemoryAuthRepository implements AuthRepository {
   async save(cred: Credential): Promise<void> {
     this.byPlayer.set(cred.playerId, cred);
     this.byDevice.set(cred.deviceId, cred.playerId);
+  }
+
+  async deleteByPlayer(playerId: string): Promise<void> {
+    const cred = this.byPlayer.get(playerId);
+    if (!cred) return;
+    this.byPlayer.delete(playerId);
+    this.byDevice.delete(cred.deviceId);
   }
 }

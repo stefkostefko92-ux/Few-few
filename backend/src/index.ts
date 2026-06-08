@@ -9,7 +9,8 @@ import { MemoryAuthRepository, type AuthRepository } from "./data/authRepository
 import { MemoryClanRepository, type ClanRepository } from "./data/clanRepository.js";
 import { MemoryLedger } from "./data/ledger.js";
 import { MemoryPlayerRepository } from "./data/memoryRepository.js";
-import { MemoryPurchaseRepository } from "./data/purchaseRepository.js";
+import { MemoryPurchaseRepository, type PurchaseRepository } from "./data/purchaseRepository.js";
+import { PrismaPurchaseRepository } from "./data/prismaPurchaseRepository.js";
 import { PrismaAuthRepository } from "./data/prismaAuthRepository.js";
 import { PrismaClanRepository } from "./data/prismaClanRepository.js";
 import { PrismaPlayerRepository } from "./data/prismaRepository.js";
@@ -24,6 +25,7 @@ import { ChatHub } from "./realtime/chatHub.js";
 import { ClanService } from "./services/clanService.js";
 import { GameService } from "./services/gameService.js";
 import { IapService } from "./services/iapService.js";
+import { AccountService } from "./services/accountService.js";
 import { noopLeaderboard, RedisLeaderboard, type Leaderboard } from "./services/leaderboard.js";
 import { ConsoleAnalytics, type Analytics } from "./analytics/analytics.js";
 import { RedisStreamAnalytics } from "./analytics/redisAnalytics.js";
@@ -54,6 +56,7 @@ async function main(): Promise<void> {
   let store: Store;
   let authRepo: AuthRepository;
   let clanRepo: ClanRepository;
+  let purchaseRepo: PurchaseRepository;
   let liveOps: LiveOpsStore;
   if (cfg.databaseUrl) {
     prisma = createPrismaClient(cfg.databaseUrl);
@@ -61,14 +64,17 @@ async function main(): Promise<void> {
     store = new PrismaStore(prisma); // atomic unit of work (players, ledger, purchases, clans)
     authRepo = new PrismaAuthRepository(prisma);
     clanRepo = new PrismaClanRepository(prisma); // non-transactional reads (list/get)
+    purchaseRepo = new PrismaPurchaseRepository(prisma); // GDPR export/erase reads
     liveOps = new PrismaLiveOpsStore(prisma, defaultLiveOps);
     console.log("storage: Postgres (Prisma)");
   } else {
     const memRepo = new MemoryPlayerRepository();
     const memClans = new MemoryClanRepository();
+    const memPurchases = new MemoryPurchaseRepository();
     repo = memRepo;
     clanRepo = memClans;
-    store = new MemoryStore(memRepo, new MemoryLedger(), new MemoryPurchaseRepository(), memClans);
+    purchaseRepo = memPurchases;
+    store = new MemoryStore(memRepo, new MemoryLedger(), memPurchases, memClans);
     authRepo = new MemoryAuthRepository();
     liveOps = new MemoryLiveOpsStore(defaultLiveOps);
     console.log("storage: in-memory (development)");
@@ -88,6 +94,7 @@ async function main(): Promise<void> {
   }
 
   const clan = new ClanService({ clanRepo, playerRepo: repo, store });
+  const account = new AccountService({ store, playerRepo: repo, authRepo, purchaseRepo, clan });
   const game = new GameService({
     store,
     liveOps,
@@ -139,6 +146,7 @@ async function main(): Promise<void> {
     iap,
     catalog,
     clan,
+    account,
     liveOps,
     adminKey: cfg.adminKey,
     webhookSecret: cfg.webhookSecret,

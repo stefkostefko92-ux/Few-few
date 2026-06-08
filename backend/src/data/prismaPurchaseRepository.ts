@@ -48,6 +48,22 @@ export class PrismaPurchaseRepository implements PurchaseRepository {
     const count = await this.prisma.purchase.count({ where: { playerId, productId } });
     return count > 0;
   }
+
+  async listByPlayer(playerId: string): Promise<Purchase[]> {
+    const rows = await this.prisma.purchase.findMany({ where: { playerId }, orderBy: { grantedAt: "asc" } });
+    return rows.map((row) => ({
+      transactionId: row.transactionId,
+      playerId: row.playerId,
+      productId: row.productId,
+      platform: row.platform as Platform,
+      grants: row.grants as Grant,
+      grantedAt: row.grantedAt.getTime(),
+    }));
+  }
+
+  async deleteByPlayer(playerId: string): Promise<void> {
+    await this.prisma.purchase.deleteMany({ where: { playerId } });
+  }
 }
 
 function isUniqueViolation(err: unknown): boolean {

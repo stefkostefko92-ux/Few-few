@@ -30,6 +30,10 @@ export class PrismaAuthRepository implements AuthRepository {
       },
     });
   }
+
+  async deleteByPlayer(playerId: string): Promise<void> {
+    await this.prisma.credential.deleteMany({ where: { playerId } });
+  }
 }
 
 interface CredentialRow {

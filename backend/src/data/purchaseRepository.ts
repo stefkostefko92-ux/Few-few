@@ -17,6 +17,10 @@ export interface PurchaseRepository {
   record(purchase: Purchase): Promise<boolean>;
   /** Whether this player already owns a one-time product. */
   ownsProduct(playerId: string, productId: string): Promise<boolean>;
+  /** All purchases for a player (GDPR data access). */
+  listByPlayer(playerId: string): Promise<Purchase[]>;
+  /** Delete a player's purchase records (GDPR erasure). Idempotent. */
+  deleteByPlayer(playerId: string): Promise<void>;
 }
 
 export class MemoryPurchaseRepository implements PurchaseRepository {
@@ -37,5 +41,15 @@ export class MemoryPurchaseRepository implements PurchaseRepository {
       if (p.playerId === playerId && p.productId === productId) return true;
     }
     return false;
+  }
+
+  async listByPlayer(playerId: string): Promise<Purchase[]> {
+    return [...this.byTx.values()].filter((p) => p.playerId === playerId);
+  }
+
+  async deleteByPlayer(playerId: string): Promise<void> {
+    for (const [txId, p] of this.byTx) {
+      if (p.playerId === playerId) this.byTx.delete(txId);
+    }
   }
 }

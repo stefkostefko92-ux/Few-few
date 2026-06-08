@@ -13,6 +13,8 @@ export interface PlayerRepository {
   save(player: Player): Promise<void>;
   /** All other players — matchmaking candidate pool for attack/raid. */
   others(excludeId: string): Promise<Player[]>;
+  /** Hard-delete a player (GDPR erasure). Idempotent — no-op if absent. */
+  delete(id: string): Promise<void>;
 }
 
 export class PlayerNotFoundError extends Error {
