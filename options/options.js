@@ -31,6 +31,7 @@ function load() {
     $("savedTime").textContent = fmtTime(res.saved.seconds);
 
     $("theme").value = res.theme || "carbon";
+    $("syncToggle").checked = !!res.sync;
     $("featCookies").checked = res.features.cookies !== false;
     $("featAab").checked = res.features.antiAdblock !== false;
     $("featMeta").checked = res.features.meta !== false;
@@ -122,6 +123,9 @@ function saveFeatures() {
 
 $("theme").addEventListener("change", () =>
   chrome.runtime.sendMessage({ type: "setTheme", theme: $("theme").value })
+);
+$("syncToggle").addEventListener("change", () =>
+  chrome.runtime.sendMessage({ type: "setSync", on: $("syncToggle").checked })
 );
 $("featCookies").addEventListener("change", saveFeatures);
 $("featAab").addEventListener("change", saveFeatures);

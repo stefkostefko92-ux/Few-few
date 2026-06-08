@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.3.0
+
+- Cross-device sync: optionally keep settings, allowlist and filters in sync
+  across every Chrome you're signed into (chrome.storage.sync).
+- Pause for 30 minutes from the popup, with automatic resume (chrome.alarms).
+- Cookie banners: the dismisser now runs inside consent iframes and handles
+  Sourcepoint (Mediaset and other EU media sites), including the Italian
+  "Continua senza accettare" / "Accetta" buttons. Fixes the persistent banner
+  on sportmediaset.mediaset.it.
+
 ## 3.2.0
 
 - New "My filters" editor (uBlock/AdBlock-style): write your own rules — block

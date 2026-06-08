@@ -21,9 +21,14 @@
     ".cc-deny",
     ".cookie-decline",
     ".cmpboxbtnno",
+    // Sourcepoint (Mediaset, many EU media sites) — rendered inside an iframe
+    ".sp_choice_type_13",
+    ".sp_choice_type_REJECT_ALL",
+    "button[title='Continua senza accettare']",
     "button[aria-label*='reject' i]",
     "button[aria-label*='decline' i]",
     "button[aria-label*='necessary' i]",
+    "button[title*='Rifiut' i]",
   ];
 
   const ACCEPT = [
@@ -44,13 +49,23 @@
     "button[aria-label*='accept' i]",
     "button[aria-label*='agree' i]",
     "button[aria-label*='allow' i]",
+    // Sourcepoint accept-all
+    ".sp_choice_type_11",
+    ".sp_choice_type_ACCEPT_ALL",
+    "button[title*='Accett' i]",
     // Google / YouTube consent
     "form[action*='consent'] button",
     "button[jsname='b3VHJd']",
   ];
 
-  const REJECT_TEXT = ["reject all", "reject", "decline", "disagree", "refuse", "necessary only", "only necessary"];
-  const ACCEPT_TEXT = ["accept all", "accept", "agree", "i agree", "got it", "allow all", "ok"];
+  const REJECT_TEXT = [
+    "reject all", "reject", "decline", "disagree", "refuse", "necessary only",
+    "only necessary", "continua senza accettare", "rifiuta", "rifiuta tutto",
+  ];
+  const ACCEPT_TEXT = [
+    "accept all", "accept", "agree", "i agree", "got it", "allow all", "ok",
+    "accetta", "accetta tutto", "acconsenti", "ho capito",
+  ];
 
   // Query across the document and any open shadow roots.
   function deepQuery(selector, deep) {

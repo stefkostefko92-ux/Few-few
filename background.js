@@ -45,7 +45,12 @@ const DEFAULTS = {
   customHidden: {},
   userFilters: "",
   theme: "carbon",
+  sync: false,
+  pausedUntil: 0,
 };
+
+// Settings mirrored to chrome.storage.sync when cross-device sync is on.
+const SYNC_KEYS = ["enabled", "features", "theme", "allowlist", "userFilters"];
 
 chrome.runtime.onInstalled.addListener(async () => {
   const stored = await chrome.storage.local.get(Object.keys(DEFAULTS));
@@ -62,6 +67,14 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 chrome.runtime.onStartup.addListener(async () => {
+  const { sync, pausedUntil } = await chrome.storage.local.get(["sync", "pausedUntil"]);
+  if (sync) await pullFromSync();
+  // Restore or expire a pending pause.
+  if (pausedUntil && pausedUntil > Date.now()) {
+    chrome.alarms.create("resume", { when: pausedUntil });
+  } else if (pausedUntil) {
+    await chrome.storage.local.set({ enabled: true, pausedUntil: 0 });
+  }
   await applyState();
   await syncAllowRules();
   await syncUserRules();
@@ -81,6 +94,73 @@ function createMenus() {
     });
   } catch (e) {}
 }
+
+// ---------- Cross-device sync (mirror a subset to chrome.storage.sync) ----------
+async function pushToSync() {
+  try {
+    await chrome.storage.sync.set(await chrome.storage.local.get(SYNC_KEYS));
+  } catch (e) {
+    console.warn("sync push failed", e);
+  }
+}
+
+async function pullFromSync() {
+  try {
+    const data = await chrome.storage.sync.get(SYNC_KEYS);
+    const patch = {};
+    for (const k of SYNC_KEYS) if (data[k] !== undefined) patch[k] = data[k];
+    if (Object.keys(patch).length) await chrome.storage.local.set(patch);
+  } catch (e) {}
+}
+
+chrome.storage.onChanged.addListener(async (changes, area) => {
+  const { sync } = await chrome.storage.local.get("sync");
+  if (!sync) return;
+
+  if (area === "local") {
+    const patch = {};
+    for (const k of SYNC_KEYS) if (k in changes) patch[k] = changes[k].newValue;
+    if (Object.keys(patch).length) {
+      try {
+        await chrome.storage.sync.set(patch);
+      } catch (e) {}
+    }
+  } else if (area === "sync") {
+    const patch = {};
+    for (const k of SYNC_KEYS) if (k in changes) patch[k] = changes[k].newValue;
+    if (!Object.keys(patch).length) return;
+    // Only write differing values, so the local<->sync mirror can't loop.
+    const cur = await chrome.storage.local.get(Object.keys(patch));
+    const diff = {};
+    for (const k in patch) {
+      if (JSON.stringify(cur[k]) !== JSON.stringify(patch[k])) diff[k] = patch[k];
+    }
+    if (Object.keys(diff).length) {
+      await chrome.storage.local.set(diff);
+      await applyState();
+      await syncAllowRules();
+      await syncUserRules();
+    }
+  }
+});
+
+// ---------- Temporary pause (auto-resumes via alarm) ----------
+async function pauseFor(minutes) {
+  const until = Date.now() + minutes * 60000;
+  await chrome.storage.local.set({ enabled: false, pausedUntil: until });
+  await applyState();
+  chrome.alarms.create("resume", { when: until });
+}
+
+async function resumeNow() {
+  await chrome.alarms.clear("resume");
+  await chrome.storage.local.set({ enabled: true, pausedUntil: 0 });
+  await applyState();
+}
+
+chrome.alarms.onAlarm.addListener((a) => {
+  if (a.name === "resume") resumeNow();
+});
 
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "tbab-pick" && tab?.id) {
@@ -281,15 +361,32 @@ function savedStats(bytes, count) {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   switch (msg.type) {
     case "toggle":
-      chrome.storage.local.set({ enabled: msg.enabled }, async () => {
+      // A manual toggle cancels any active timed pause.
+      chrome.alarms.clear("resume");
+      chrome.storage.local.set({ enabled: msg.enabled, pausedUntil: 0 }, async () => {
         await applyState();
+        sendResponse({ ok: true });
+      });
+      return true;
+
+    case "pause":
+      pauseFor(msg.minutes || 30).then(() => sendResponse({ ok: true }));
+      return true;
+
+    case "resume":
+      resumeNow().then(() => sendResponse({ ok: true }));
+      return true;
+
+    case "setSync":
+      chrome.storage.local.set({ sync: !!msg.on }, async () => {
+        if (msg.on) await pushToSync();
         sendResponse({ ok: true });
       });
       return true;
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "allowlist", "features", "theme"],
+        ["enabled", "blockedTotal", "savedBytes", "allowlist", "features", "theme", "sync", "pausedUntil"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -306,6 +403,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             features: data.features || DEFAULTS.features,
             theme: data.theme || "carbon",
             filterCount: FILTER_COUNT,
+            sync: !!data.sync,
+            pausedUntil: data.pausedUntil || 0,
             host,
             allowed,
           });

@@ -40,6 +40,7 @@ function load() {
       setStatus(res.enabled);
 
       listDot.textContent = (res.filterCount || 0) + "+ filters";
+      renderPause(res.pausedUntil || 0);
 
       currentHost = res.host;
       if (currentHost) {
@@ -83,6 +84,26 @@ allowToggle.addEventListener("change", () => {
       });
     }
   );
+});
+
+const pauseBtn = $("pauseBtn");
+const pauseLabel = $("pauseLabel");
+let paused = false;
+
+function renderPause(until) {
+  paused = until > Date.now();
+  pauseBtn.classList.toggle("paused", paused);
+  if (paused) {
+    const mins = Math.max(1, Math.round((until - Date.now()) / 60000));
+    pauseLabel.textContent = `Paused — resume now (${mins}m left)`;
+  } else {
+    pauseLabel.textContent = "Pause for 30 minutes";
+  }
+}
+
+pauseBtn.addEventListener("click", () => {
+  const type = paused ? "resume" : "pause";
+  chrome.runtime.sendMessage({ type, minutes: 30 }, () => load());
 });
 
 $("pickBtn").addEventListener("click", () => {

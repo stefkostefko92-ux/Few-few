@@ -50,7 +50,9 @@ html.tbab-cookies [aria-describedby*="cookie" i] {
 /* Remove scroll locks / dimming overlays these banners add. */
 html.tbab-cookies .modal-backdrop,
 html.tbab-cookies .cookie-overlay,
-html.tbab-cookies .cc-overlay {
+html.tbab-cookies .cc-overlay,
+html.tbab-cookies .sp_veil,
+html.tbab-cookies .sp_dialog_overlay {
   display: none !important;
 }
 
