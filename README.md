@@ -138,13 +138,14 @@ curl http://localhost:4500/health        # -> {"status":"ok",...}
 
 ## Ports (S18 — verify with `ss -tlnp` before deploy)
 
-| Service  | Port |
-| -------- | ---- |
-| api      | 4500 |
-| realtime | 4501 |
-| web      | 4502 |
-| postgres | 5437 |
-| redis    | 6383 |
+| Service   | Port |
+| --------- | ---- |
+| api       | 4500 |
+| realtime  | 4501 |
+| web       | 4502 |
+| marketing | 8080 |
+| postgres  | 5437 |
+| redis     | 6383 |
 
 ## Principles
 
