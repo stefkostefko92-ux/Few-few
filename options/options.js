@@ -38,7 +38,10 @@ function load() {
     renderAllowlist(res.allowlist || []);
   });
 
-  chrome.storage.local.get("customHidden", (data) => renderCustom(data.customHidden || {}));
+  chrome.storage.local.get(["customHidden", "userFilters"], (data) => {
+    renderCustom(data.customHidden || {});
+    $("userFilters").value = data.userFilters || "";
+  });
 }
 
 function renderAllowlist(list) {
@@ -135,6 +138,14 @@ $("allowAdd").addEventListener("click", () => {
 });
 $("allowInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") $("allowAdd").click();
+});
+
+$("saveFilters").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "setUserFilters", text: $("userFilters").value }, () => {
+    const hint = $("filtersSaved");
+    hint.textContent = "Saved ✓";
+    setTimeout(() => (hint.textContent = ""), 2500);
+  });
 });
 
 $("resetStats").addEventListener("click", () => {

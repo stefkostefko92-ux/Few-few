@@ -90,6 +90,20 @@
     </section>
 
     <section class="card">
+      <h2>My filters</h2>
+      <p class="row-sub">
+        One rule per line. <code>domain.com</code> blocks a domain;
+        <code>##.selector</code> hides an element everywhere;
+        <code>site.com##.selector</code> hides it only on that site.
+        Lines starting with <code>!</code> are comments.
+      </p>
+      <textarea id="userFilters" class="editor" spellcheck="false"
+        placeholder="! example&#10;ads.example.com&#10;##.sticky-ad&#10;news.com##.promoted"></textarea>
+      <button id="saveFilters" class="btn">Save filters</button>
+      <span id="filtersSaved" class="saved-hint"></span>
+    </section>
+
+    <section class="card">
       <h2>Hidden elements</h2>
       <p class="row-sub">Elements you hid manually with the picker, grouped by site.</p>
       <ul id="customList" class="list"></ul>
@@ -119,7 +133,7 @@
     </section>
   </main>
 
-  <footer>The Best Ads Block v3.1.2 · made by Carbon Stealth</footer>
+  <footer>The Best Ads Block v3.2.0 · made by Carbon Stealth</footer>
 
   <script src="options.js"></script>
 </body>

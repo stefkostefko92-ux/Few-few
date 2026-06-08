@@ -4,8 +4,16 @@ const RULESET_IDS = ["ad_rules", "youtube_rules"];
 const FILTER_COUNT = 247; // bundled static rules (ad_rules + youtube_rules)
 
 // Dynamic-rule id ranges, kept clear of the static rulesets.
+const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
 const LEGACY_LIST_BASE = 100000; // old imported-filter rules — cleaned up on load
+
+// Core domains a user filter must never take down, even by mistake.
+const NEVER_BLOCK = [
+  "googlevideo.com", "ytimg.com", "youtube.com", "ggpht.com", "gstatic.com",
+  "googleapis.com", "google.com", "fbcdn.net", "cdninstagram.com",
+];
+const isProtected = (d) => NEVER_BLOCK.some((p) => d === p || d.endsWith("." + p));
 
 // Real average payload per blocked resource type (bytes). We count the exact
 // number blocked of each type, so only the per-type size is an estimate — the
@@ -35,6 +43,7 @@ const DEFAULTS = {
   allowlist: [],
   features: { cookies: true, antiAdblock: true, meta: true, youtube: true },
   customHidden: {},
+  userFilters: "",
   theme: "carbon",
 };
 
@@ -47,13 +56,36 @@ chrome.runtime.onInstalled.addListener(async () => {
   if (Object.keys(patch).length) await chrome.storage.local.set(patch);
   await applyState();
   await syncAllowRules();
+  await syncUserRules();
   await dropLegacyRules();
+  createMenus();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   await applyState();
   await syncAllowRules();
+  await syncUserRules();
   await dropLegacyRules();
+  createMenus();
+});
+
+// Right-click "Block an element here" — like uBlock/AdBlock's element picker.
+function createMenus() {
+  try {
+    chrome.contextMenus.removeAll(() => {
+      chrome.contextMenus.create({
+        id: "tbab-pick",
+        title: "Block an element here",
+        contexts: ["page", "image", "video", "link", "frame"],
+      });
+    });
+  } catch (e) {}
+}
+
+chrome.contextMenus?.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "tbab-pick" && tab?.id) {
+    chrome.tabs.sendMessage(tab.id, { type: "activatePicker" });
+  }
 });
 
 // Enable or disable the bundled static rulesets. The YouTube ruleset also
@@ -113,6 +145,51 @@ async function syncAllowRules() {
     await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
   } catch (e) {
     console.warn("allow rules update failed", e);
+  }
+}
+
+// "My filters": lines that aren't cosmetic (no "##") and look like a domain
+// become block rules. uBlock-style ||domain^ and bare domains both work.
+function parseUserDomains(text) {
+  const set = new Set();
+  for (let line of (text || "").split("\n")) {
+    line = line.trim();
+    if (!line || line.startsWith("!") || line.includes("##")) continue;
+    const d = line
+      .replace(/^\|\|/, "")
+      .replace(/[\^/].*$/, "")
+      .replace(/^https?:\/\//, "")
+      .toLowerCase();
+    if (/^[a-z0-9.-]+\.[a-z]{2,}$/.test(d) && !isProtected(d)) set.add(d);
+  }
+  return [...set];
+}
+
+async function syncUserRules() {
+  const { userFilters = "" } = await chrome.storage.local.get("userFilters");
+  const domains = parseUserDomains(userFilters).slice(0, 2000);
+  const existing = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeRuleIds = existing
+    .filter((r) => r.id >= USER_BLOCK_BASE && r.id < ALLOW_RULE_BASE)
+    .map((r) => r.id);
+
+  const addRules = domains.map((d, i) => ({
+    id: USER_BLOCK_BASE + i,
+    priority: 1,
+    action: { type: "block" },
+    condition: {
+      urlFilter: "||" + d + "^",
+      resourceTypes: [
+        "script", "image", "sub_frame", "xmlhttprequest",
+        "media", "ping", "font", "stylesheet", "object",
+      ],
+    },
+  }));
+
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
+  } catch (e) {
+    console.warn("user rules update failed", e);
   }
 }
 
@@ -281,6 +358,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       chrome.storage.local.set(msg.data || {}, async () => {
         await applyState();
         await syncAllowRules();
+        await syncUserRules();
+        sendResponse({ ok: true });
+      });
+      return true;
+
+    case "setUserFilters":
+      chrome.storage.local.set({ userFilters: msg.text || "" }, async () => {
+        await syncUserRules();
         sendResponse({ ok: true });
       });
       return true;

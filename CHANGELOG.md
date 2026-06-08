@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.2.0
+
+- New "My filters" editor (uBlock/AdBlock-style): write your own rules — block
+  a domain, hide an element everywhere (`##.selector`) or only on one site
+  (`site.com##.selector`). Comments with `!`.
+- Right-click "Block an element here" context menu, like uBlock/AdBlock.
+- Domain block rules from My filters are applied as dynamic rules; cosmetic
+  lines are applied by the content script, with core video/CDN domains
+  protected from accidental blocking.
+
 ## 3.1.2
 
 - Redesigned popup: crisp inline SVG icons (no emoji), real product logo, a

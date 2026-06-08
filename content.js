@@ -97,27 +97,47 @@
     });
   }
 
-  function loadCustom(map) {
+  // Cosmetic selectors come from the picker (customHidden) and the user's
+  // "My filters" cosmetic lines (`##selector` or `domain##selector`).
+  let pickerMap = {};
+  let userText = "";
+
+  function rebuildSelectors() {
     customSelectors = [];
-    for (const [domain, sels] of Object.entries(map || {})) {
+    for (const [domain, sels] of Object.entries(pickerMap || {})) {
       if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
+    }
+    for (let line of (userText || "").split("\n")) {
+      line = line.trim();
+      const i = line.indexOf("##");
+      if (i === -1 || line.startsWith("!")) continue;
+      const dom = line.slice(0, i).trim();
+      const sel = line.slice(i + 2).trim();
+      if (sel && (!dom || hostMatches(dom))) customSelectors.push(sel);
     }
   }
 
-  chrome.storage?.local.get(["enabled", "allowlist", "customHidden"], (data) => {
-    enabled = data.enabled !== false;
-    const allowed = (data.allowlist || []).some(hostMatches);
-    loadCustom(data.customHidden);
-    if (enabled && !allowed) start();
-  });
+  chrome.storage?.local.get(
+    ["enabled", "allowlist", "customHidden", "userFilters"],
+    (data) => {
+      enabled = data.enabled !== false;
+      const allowed = (data.allowlist || []).some(hostMatches);
+      pickerMap = data.customHidden || {};
+      userText = data.userFilters || "";
+      rebuildSelectors();
+      if (enabled && !allowed) start();
+    }
+  );
 
   chrome.storage?.onChanged.addListener((changes) => {
     if (changes.enabled) {
       enabled = changes.enabled.newValue !== false;
       if (enabled) start();
     }
-    if (changes.customHidden) {
-      loadCustom(changes.customHidden.newValue);
+    if (changes.customHidden || changes.userFilters) {
+      if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
+      if (changes.userFilters) userText = changes.userFilters.newValue || "";
+      rebuildSelectors();
       if (enabled) hide();
     }
   });
