@@ -49,7 +49,7 @@ export class IapService {
     const product = this.catalog.get(productId);
     if (!product) throw new GameError("UNKNOWN_PRODUCT", `no such product: ${productId}`, 404);
 
-    const result = await this.validator.validate(platform, productId, receipt);
+    const result = await this.validator.validate(platform, productId, receipt, playerId);
     if (!result.valid) {
       throw new GameError("INVALID_RECEIPT", result.reason ?? "receipt validation failed", 402);
     }

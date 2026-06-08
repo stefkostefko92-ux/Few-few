@@ -19,7 +19,7 @@ import { MemoryStore, type Store } from "./data/store.js";
 import type { PlayerRepository } from "./data/repository.js";
 import { createApp } from "./http/app.js";
 import { Catalog } from "./monetization/catalog.js";
-import { StubReceiptValidator } from "./monetization/receipts.js";
+import { createReceiptValidator, StubReceiptValidator } from "./monetization/receipts.js";
 import { ChatHub } from "./realtime/chatHub.js";
 import { ClanService } from "./services/clanService.js";
 import { GameService } from "./services/gameService.js";
@@ -101,14 +101,21 @@ async function main(): Promise<void> {
   const catalog = new Catalog();
   if (!process.env.JWT_SECRET) console.warn("⚠  JWT_SECRET not set — using an insecure dev secret (development only).");
   if (!process.env.IAP_WEBHOOK_SECRET) console.warn("⚠  IAP_WEBHOOK_SECRET not set — using a public default (development only).");
-  const validator = new StubReceiptValidator(cfg.receiptSecret);
+  const validator = createReceiptValidator({
+    provider: cfg.iapProvider,
+    stubSecret: cfg.receiptSecret,
+    revenueCatApiKey: cfg.revenueCatApiKey,
+  });
+  console.log(`IAP validator: ${cfg.iapProvider}`);
   const iap = new IapService({ catalog, validator, game, analytics });
 
-  // DEV ONLY: let the web demo mint sandbox receipts (config rejects this in prod).
+  // DEV ONLY: let the web demo mint sandbox receipts (config rejects this in prod;
+  // only possible with the stub validator).
   let devReceipt: ((productId: string) => string) | undefined;
-  if (cfg.enableDevReceipts) {
+  if (cfg.enableDevReceipts && validator instanceof StubReceiptValidator) {
+    const stub = validator;
     let n = 0;
-    devReceipt = (productId) => validator.sign(`dev-${Date.now()}-${n++}`, productId);
+    devReceipt = (productId) => stub.sign(`dev-${Date.now()}-${n++}`, productId);
     console.warn("⚠  ENABLE_DEV_RECEIPTS=true — /iap/dev-receipt is open. Dev only.");
   }
   if (cfg.adminKey) console.log("admin: /admin/liveops enabled");

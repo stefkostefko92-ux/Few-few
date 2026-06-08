@@ -35,7 +35,21 @@ describe("loadConfig fail-fast (§11.3)", () => {
 
   it("refuses the sandbox IAP validator in production unless explicitly allowed", () => {
     const { ALLOW_STUB_RECEIPTS, ...rest } = prod;
-    expect(() => loadConfig(rest as NodeJS.ProcessEnv)).toThrow(/IAP receipt validator/);
+    expect(() => loadConfig(rest as NodeJS.ProcessEnv)).toThrow(/no real IAP validator/);
+  });
+
+  it("accepts a real RevenueCat provider in production without ALLOW_STUB_RECEIPTS", () => {
+    const { ALLOW_STUB_RECEIPTS, ...rest } = prod;
+    const cfg = loadConfig({ ...rest, IAP_PROVIDER: "revenuecat", REVENUECAT_API_KEY: "rc-live-key" });
+    expect(cfg.iapProvider).toBe("revenuecat");
+  });
+
+  it("refuses RevenueCat in production without an API key", () => {
+    expect(() => loadConfig({ ...prod, IAP_PROVIDER: "revenuecat" })).toThrow(/REVENUECAT_API_KEY is required/);
+  });
+
+  it("rejects an unknown IAP_PROVIDER", () => {
+    expect(() => loadConfig({ ...prod, IAP_PROVIDER: "applepay" })).toThrow(/IAP_PROVIDER must be/);
   });
 
   it("allows zero-config dev defaults outside production", () => {

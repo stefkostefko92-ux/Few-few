@@ -29,6 +29,9 @@ export interface AppConfig {
   enableDevReceipts: boolean;
   /** Explicit opt-in to ship the sandbox IAP validator (never grants real money safety). */
   allowStubReceipts: boolean;
+  /** Which IAP receipt validator to use: sandbox stub or real RevenueCat. */
+  iapProvider: "stub" | "revenuecat";
+  revenueCatApiKey?: string;
   corsOrigins: string[];
   /** Value for Express `trust proxy` — hop count behind a load balancer. */
   trustProxy: number;
@@ -43,8 +46,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const webhookSecret = env.IAP_WEBHOOK_SECRET ?? DEV_DEFAULTS.IAP_WEBHOOK_SECRET;
   const enableDevReceipts = env.ENABLE_DEV_RECEIPTS === "true";
   const allowStubReceipts = env.ALLOW_STUB_RECEIPTS === "true";
+  const iapProvider = (env.IAP_PROVIDER ?? "stub") as AppConfig["iapProvider"];
+  const revenueCatApiKey = env.REVENUECAT_API_KEY;
 
   const errors: string[] = [];
+  if (iapProvider !== "stub" && iapProvider !== "revenuecat") {
+    errors.push(`IAP_PROVIDER must be 'stub' or 'revenuecat' (got '${iapProvider}')`);
+  }
   if (isProd) {
     if (!env.DATABASE_URL) {
       errors.push("DATABASE_URL is required in production (refusing to boot the non-durable in-memory store)");
@@ -55,13 +63,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     }
     if (jwtSecret.length < 16) errors.push("JWT_SECRET must be at least 16 characters");
     if (enableDevReceipts) errors.push("ENABLE_DEV_RECEIPTS must not be 'true' in production");
-    if (!allowStubReceipts) {
-      // The shipped IAP validator is a sandbox stub; there is no real store-side
-      // verification yet. Force an explicit, eyes-open opt-in so a default prod
-      // deploy can't silently grant free currency on forged receipts.
+    if (iapProvider === "revenuecat") {
+      if (!revenueCatApiKey) errors.push("REVENUECAT_API_KEY is required when IAP_PROVIDER=revenuecat");
+    } else if (!allowStubReceipts) {
+      // The sandbox stub does no real store-side verification. Force an explicit,
+      // eyes-open opt-in so a default prod deploy can't silently grant free
+      // currency on forged receipts. Configuring a real provider clears this.
       errors.push(
-        "no real IAP receipt validator is configured. Implement a store-side validator, " +
-          "or set ALLOW_STUB_RECEIPTS=true to deploy with the sandbox stub (NOT for real money).",
+        "no real IAP validator configured: set IAP_PROVIDER=revenuecat (+ REVENUECAT_API_KEY), " +
+          "or ALLOW_STUB_RECEIPTS=true to deploy with the sandbox stub (NOT for real money).",
       );
     }
   }
@@ -82,6 +92,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     adminKey: env.ADMIN_API_KEY,
     enableDevReceipts,
     allowStubReceipts,
+    iapProvider,
+    revenueCatApiKey,
     corsOrigins: (env.CORS_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     trustProxy: Number.parseInt(env.TRUST_PROXY ?? "0", 10) || 0,
   };

@@ -61,11 +61,15 @@ HTTPS. Auth cookies are `Secure` when `NODE_ENV=production`.
 These came out of the security + backend + DevOps reviews and are **not yet done**
 — they need product/infra decisions or credentials this codebase can't supply:
 
-1. **Real IAP receipt validation (BLOCKER).** The shipped `StubReceiptValidator`
-   does only a local HMAC check — there is no Apple App Store Server API / Google
-   Play Developer API / RevenueCat verification. Implement a real `ReceiptValidator`
-   and remove `ALLOW_STUB_RECEIPTS`. Also harden the `/iap/webhook` trust model
-   (verify the transaction out-of-band; don't trust `app_user_id` from the body).
+1. **Real IAP receipt validation.** A real `RevenueCatReceiptValidator` now ships
+   and is selected by `IAP_PROVIDER=revenuecat` + `REVENUECAT_API_KEY` (verified
+   server-side against RevenueCat, which fronts Apple + Google; fails closed on
+   any error). Production boot requires either a real provider or an explicit
+   `ALLOW_STUB_RECEIPTS=true`. **Remaining:** supply a real RevenueCat key and
+   integration-test against a sandbox account; optionally add direct Apple App
+   Store Server API / Google Play Developer API validators; and harden the
+   `/iap/webhook` trust model (verify the transaction out-of-band; don't trust
+   `app_user_id` from the body).
 2. **Distributed rate limiting.** The in-process limiter is per-replica and resets
    on restart. Move to a Redis-backed limiter with tight per-route budgets
    (especially `/auth/*`) and set `TRUST_PROXY` correctly.
