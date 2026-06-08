@@ -188,7 +188,7 @@ async function applyState() {
   } catch (e) {
     console.warn("ruleset toggle failed", e);
   }
-  chrome.action.setBadgeBackgroundColor({ color: on ? "#c8102e" : "#5a5a5a" });
+  chrome.action.setBadgeBackgroundColor({ color: on ? "#00838f" : "#5a5a5a" });
 }
 
 // Remove any leftover dynamic rules from the old runtime filter import. These

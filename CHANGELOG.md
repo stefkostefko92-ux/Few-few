@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.4.0
+
+- Recolored the whole UI and icon to match the carbonstealth.eu brand palette:
+  near-black background (#060608), cream text (#f5f5f0), cyan accent (#00e5ff /
+  #00b8d4) and green "protected" state (#00ff88); paused state uses #ff3366.
+- New cyan shield icon and store graphics.
+
 ## 3.3.0
 
 - Cross-device sync: optionally keep settings, allowlist and filters in sync

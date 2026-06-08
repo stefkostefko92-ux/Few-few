@@ -74,10 +74,10 @@ def in_shield(nx, ny, mx, mtop, mbot):
 
 
 # ---- Icon sample ---------------------------------------------------------
-RIM = (16, 17, 20)            # carbon border
-C_TOP = (228, 34, 58)         # bright crimson
-C_BOT = (150, 10, 33)         # deep crimson
-WHITE = (250, 250, 252)
+RIM = (6, 6, 8)               # carbon black border (matches site #060608)
+C_TOP = (0, 229, 255)         # Carbon Stealth cyan (#00e5ff)
+C_BOT = (0, 150, 180)         # deeper cyan
+WHITE = (6, 14, 18)           # near-black prohibition mark (contrast on cyan)
 
 INNER = dict(mx=0.105, mtop=0.095, mbot=0.085)
 OUTER = dict(mx=0.06, mtop=0.05, mbot=0.05)
@@ -199,14 +199,14 @@ def main():
 
     w, h = 440, 280
     bg = carbon_bg(w, h)
-    bar(bg, w, h, 0, h - 6, w, h, (200, 16, 46))
+    bar(bg, w, h, 0, h - 6, w, h, (0, 229, 255))
     composite(bg, w, h, render(200, sample_icon), 200, 200, 40, (h - 200) // 2)
     write_png(os.path.join(store, "promo_small_440x280.png"), w, h, bg)
     print("promo 440x280")
 
     w, h = 1400, 560
     bg = carbon_bg(w, h)
-    bar(bg, w, h, 0, h - 10, w, h, (200, 16, 46))
+    bar(bg, w, h, 0, h - 10, w, h, (0, 229, 255))
     composite(bg, w, h, render(380, sample_icon), 380, 380, 130, (h - 380) // 2)
     write_png(os.path.join(store, "marquee_1400x560.png"), w, h, bg)
     print("marquee 1400x560")
