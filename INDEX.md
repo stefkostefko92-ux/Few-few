@@ -65,10 +65,10 @@ playoff slot — confirm the nation before recording)
 ## AFC — Asia (8)
 | Nation | Status |
 |--------|--------|
-| Japan 🇯🇵 | ⬜ |
-| Korea Republic 🇰🇷 | ⬜ |
-| IR Iran 🇮🇷 | ⬜ |
-| Australia 🇦🇺 | ⬜ |
+| Japan 🇯🇵 | ✅ `scripts/japan.md` |
+| Korea Republic 🇰🇷 | ✅ `scripts/south-korea.md` |
+| IR Iran 🇮🇷 | ✅ `scripts/iran.md` |
+| Australia 🇦🇺 | ✅ `scripts/australia.md` |
 | Saudi Arabia 🇸🇦 | ⬜ |
 | Qatar 🇶🇦 | ⬜ |
 | Jordan 🇯🇴 | ⬜ |
