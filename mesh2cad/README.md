@@ -1,50 +1,56 @@
-# Mesh → CAD conversion: "Aletta" scan
+# Mesh → CAD: "Aletta scannerizzata"
 
-Converts the 3D-scanned triangle mesh `Aletta v1 (1).stl` (received via
-WeTransfer, ~1.84 M triangles, ~189 × 61 × 210 mm, open/non-watertight scan)
-into a CAD model.
+Reverse-engineers the 3D-scanned triangle mesh **`Aletta v1 (1).stl`** (received
+via WeTransfer — see `SOURCE.md`) into a watertight **CAD solid** in STEP format.
 
-## Pipeline
+![raw scan vs reconstructed solid](output/comparison.png)
 
-Two complementary routes are provided:
+## What the input is
+A raw optical scan of a curved vane/flap ("aletta"):
+- 1,842,602 triangles, 921,950 vertices
+- bounding box ≈ 189 × 61 × 210 mm
+- a single open shell — **not watertight** (only the scanned side has data, with
+  noise and holes). Mesh scans carry no design intent, so they are not CAD.
 
-### 1. `mesh_to_cad.py` — spline-surface reconstruction (gmsh)
-Re-engineers the scan into analytic CAD surfaces:
-1. Clean the raw scan (merge vertices, drop degenerate/duplicate faces, fix normals).
-2. Decimate to a tractable triangle budget.
-3. `gmsh` re-parametrization: detect feature edges by dihedral angle, split the
-   surface into patches, fit a spline surface to each patch.
-4. Export **BREP** (and **STEP** when the geometry is closeable).
-
+## Pipeline — `scan_to_cad.py`
 ```
-python3 mesh_to_cad.py "Aletta v1 (1).stl" output --faces 80000 --angle 40
+python3 scan_to_cad.py "Aletta v1 (1).stl" output --faces 14000
 ```
+1. **Clean** — drop duplicate/null faces, repair non-manifold edges & vertices.
+2. **Screened Poisson reconstruction** (pymeshlab) — turns the open, noisy scan
+   into a smooth **watertight manifold** surface.
+3. **Decimate + isotropic remesh** — uniform, well-shaped triangles at a sane
+   density (~14 k faces) so the geometry is CAD-friendly, not a 1.8 M-facet blob.
+4. **OpenCASCADE (OCP)** — sew the triangles into a closed shell, promote to a
+   `TopoDS_Solid`, merge coplanar faces, and write **STEP AP214** as a
+   `MANIFOLD_SOLID_BREP`.
 
-### 2. `mesh_to_step_occ.py` — faceted B-rep solid (OpenCASCADE / OCP)
-The robust, portable route that always yields a STEP that opens in any CAD tool:
-1. Sew the triangles into a B-rep shell.
-2. `ShapeUpgrade_UnifySameDomain` merges coplanar facets into single planar faces.
-3. Promote to a solid and write **STEP** (AP214).
-
-```
-python3 mesh_to_step_occ.py output/Aletta_clean.stl output/Aletta_faceted.step
-```
-
-## Outputs (in `output/`)
-- `Aletta_clean.stl`   — cleaned + decimated mesh (intermediate)
-- `Aletta.brep` / `Aletta.step` — spline-surface CAD model
-- `Aletta_faceted.step` — faceted B-rep solid
+## Outputs (`output/`)
+| file | what |
+|------|------|
+| `Aletta_solid.step` | **the deliverable** — closed solid B-rep, opens as a solid body in SolidWorks / Fusion 360 / Onshape / FreeCAD / CATIA (volume ≈ 224 cm³) |
+| `Aletta_watertight.stl` | the cleaned, watertight, decimated mesh (intermediate / preview) |
+| `comparison.png` | raw scan vs reconstructed solid |
 
 ## Dependencies
 ```
-pip install trimesh numpy numpy-stl scipy networkx fast-simplification gmsh cadquery-ocp
-# system: libglu1-mesa (for gmsh)
+pip install numpy trimesh numpy-stl scipy networkx fast-simplification pymeshlab cadquery-ocp
+# system: libglu1-mesa
 ```
 
-## Note on "mesh to CAD"
-A scan is dense, faceted geometry with no design intent. These scripts produce
-valid, openable CAD geometry (analytic surfaces / a solid). Full *parametric*
-feature reconstruction (sketches, extrudes, fillets with editable dimensions)
-is an interactive reverse-engineering task best finished in a dedicated tool
-(SolidWorks/Geomagic, Fusion 360 Mesh workspace, Ansys SpaceClaim) starting
-from the STEP produced here.
+## Scope note — faceted vs parametric
+This produces a **tessellated solid**: a faithful, watertight B-rep of the
+scanned shape that any CAD package imports as a solid body. It is the correct
+automated end point for "mesh → CAD".
+
+It is **not** a feature tree (editable sketches / extrudes / fillets with
+dimensions). True parametric reverse-engineering of a freeform scanned part is
+an interactive job: import this STEP into a dedicated reverse-engineering tool
+(Geomagic Design X, Fusion 360 Mesh/Shape workspace, Ansys SpaceClaim,
+SolidWorks ScanTo3D) and fit analytic surfaces to taste. The clean watertight
+solid here is the ideal starting point for that.
+
+An experimental spline-surface route via gmsh `classifySurfaces` /
+`createGeometry` was evaluated; it proved unreliable on this noisy open scan
+(`Wrong topology of boundary mesh for parametrization`), so the robust
+OpenCASCADE solid route above is the shipped pipeline.
