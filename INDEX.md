@@ -38,12 +38,12 @@ playoff slot — confirm the nation before recording)
 | Portugal 🇵🇹 | ✅ `scripts/portugal.md` |
 | Germany 🇩🇪 | ✅ `scripts/germany.md` |
 | Netherlands 🇳🇱 | ✅ `scripts/netherlands.md` |
-| Belgium 🇧🇪 | ⬜ |
-| Croatia 🇭🇷 | ⬜ |
-| Switzerland 🇨🇭 | ⬜ |
-| Austria 🇦🇹 | ⬜ |
-| Norway 🇳🇴 | ⬜ |
-| Scotland 🏴 | ⬜ |
+| Belgium 🇧🇪 | ✅ `scripts/belgium.md` |
+| Croatia 🇭🇷 | ✅ `scripts/croatia.md` |
+| Switzerland 🇨🇭 | ✅ `scripts/switzerland.md` |
+| Austria 🇦🇹 | ✅ `scripts/austria.md` |
+| Norway 🇳🇴 | ✅ `scripts/norway.md` |
+| Scotland 🏴 | ✅ `scripts/scotland.md` |
 | _UEFA playoff slot 1_ | ❓ |
 | _UEFA playoff slot 2_ | ❓ |
 | _UEFA playoff slot 3_ | ❓ |
