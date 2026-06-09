@@ -1,0 +1,3 @@
+# Generated voiceover artifacts (regenerate with tools/generate_voiceover.py)
+clips/*/voiceover.mp3
+clips/*/narration.txt

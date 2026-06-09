@@ -1,6 +1,6 @@
 # {COUNTRY} — Top 10 Landmarks | World Cup 2026
 
-> Copy this file into `scripts/{country}.md` and fill every section.
+> Copy this file into `clips/{country}/script.md` and fill every section.
 > Keep the structure identical across episodes so the series stays consistent.
 
 ---

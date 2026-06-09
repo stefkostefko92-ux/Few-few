@@ -11,18 +11,31 @@ chapter timestamps and the full narration.
 
 ## Repository layout
 
+One folder per country (= one video). Each folder holds that episode's script
+and, once generated, its voiceover.
+
 ```
 .
 ├── README.md           # this file
+├── INDEX.md            # full 48-team field + production status
 ├── TEMPLATE.md         # the canonical script structure — copy for new episodes
-└── scripts/
-    └── mexico.md       # pilot episode (host nation)
+├── VOICEOVER.md        # the series voice + how to generate it
+├── tools/
+│   └── generate_voiceover.py   # script.md → voiceover.mp3 (ElevenLabs)
+└── clips/
+    ├── mexico/
+    │   ├── script.md           # title, description, tags, full narration
+    │   └── voiceover.mp3        # generated (git-ignored)
+    ├── usa/
+    │   └── script.md
+    └── ...                      # one folder per nation (39 ready)
 ```
 
-## How to use a script
+## How to make an episode
 
-1. Open the country file in `scripts/`.
-2. Record the **Narration** section as the voice-over (≈ 8–10 min of audio).
+1. Open `clips/<country>/script.md`.
+2. Generate the voice-over: `python tools/generate_voiceover.py clips/<country>`
+   (see [VOICEOVER.md](VOICEOVER.md)) — or record it yourself.
 3. Pair each landmark with B-roll / stock footage (suggested shots are noted).
 4. Copy the **Title**, **Description** and **Tags** straight into YouTube.
 5. Use the **Chapters** block in the description to enable YouTube chapters.
@@ -39,9 +52,8 @@ chapter timestamps and the full narration.
 
 ## Roadmap
 
-- [x] Pilot episode — **Mexico** (host)
-- [ ] Remaining host nations — USA, Canada
-- [ ] Qualified nations, grouped by confederation as the draw is confirmed
+- [x] **39 episodes ready** — hosts, CONMEBOL, UEFA (12), CAF (9), AFC (8), OFC (1)
+- [ ] Final 9 slots — 4 UEFA playoff winners, 3 CONCACAF, 2 intercontinental
+      playoff winners (added once the teams are confirmed)
 
-> The full 48-team field is finalised through the 2025–26 qualifiers. New
-> episodes are added as each nation books its place.
+See [INDEX.md](INDEX.md) for the full field and per-nation status.

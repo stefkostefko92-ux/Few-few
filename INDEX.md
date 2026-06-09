@@ -15,35 +15,35 @@ playoff slot — confirm the nation before recording)
 ## Hosts (3)
 | # | Nation | Status |
 |---|--------|--------|
-| 1 | Mexico 🇲🇽 | ✅ `scripts/mexico.md` |
-| 2 | United States 🇺🇸 | ✅ `scripts/usa.md` |
-| 3 | Canada 🇨🇦 | ✅ `scripts/canada.md` |
+| 1 | Mexico 🇲🇽 | ✅ `clips/mexico/script.md` |
+| 2 | United States 🇺🇸 | ✅ `clips/usa/script.md` |
+| 3 | Canada 🇨🇦 | ✅ `clips/canada/script.md` |
 
 ## CONMEBOL — South America (6)
 | Nation | Status |
 |--------|--------|
-| Argentina 🇦🇷 | ✅ `scripts/argentina.md` |
-| Brazil 🇧🇷 | ✅ `scripts/brazil.md` |
-| Uruguay 🇺🇾 | ✅ `scripts/uruguay.md` |
-| Colombia 🇨🇴 | ✅ `scripts/colombia.md` |
-| Ecuador 🇪🇨 | ✅ `scripts/ecuador.md` |
-| Paraguay 🇵🇾 | ✅ `scripts/paraguay.md` |
+| Argentina 🇦🇷 | ✅ `clips/argentina/script.md` |
+| Brazil 🇧🇷 | ✅ `clips/brazil/script.md` |
+| Uruguay 🇺🇾 | ✅ `clips/uruguay/script.md` |
+| Colombia 🇨🇴 | ✅ `clips/colombia/script.md` |
+| Ecuador 🇪🇨 | ✅ `clips/ecuador/script.md` |
+| Paraguay 🇵🇾 | ✅ `clips/paraguay/script.md` |
 
 ## UEFA — Europe (16)
 | Nation | Status |
 |--------|--------|
-| England 🏴 | ✅ `scripts/england.md` |
-| France 🇫🇷 | ✅ `scripts/france.md` |
-| Spain 🇪🇸 | ✅ `scripts/spain.md` |
-| Portugal 🇵🇹 | ✅ `scripts/portugal.md` |
-| Germany 🇩🇪 | ✅ `scripts/germany.md` |
-| Netherlands 🇳🇱 | ✅ `scripts/netherlands.md` |
-| Belgium 🇧🇪 | ✅ `scripts/belgium.md` |
-| Croatia 🇭🇷 | ✅ `scripts/croatia.md` |
-| Switzerland 🇨🇭 | ✅ `scripts/switzerland.md` |
-| Austria 🇦🇹 | ✅ `scripts/austria.md` |
-| Norway 🇳🇴 | ✅ `scripts/norway.md` |
-| Scotland 🏴 | ✅ `scripts/scotland.md` |
+| England 🏴 | ✅ `clips/england/script.md` |
+| France 🇫🇷 | ✅ `clips/france/script.md` |
+| Spain 🇪🇸 | ✅ `clips/spain/script.md` |
+| Portugal 🇵🇹 | ✅ `clips/portugal/script.md` |
+| Germany 🇩🇪 | ✅ `clips/germany/script.md` |
+| Netherlands 🇳🇱 | ✅ `clips/netherlands/script.md` |
+| Belgium 🇧🇪 | ✅ `clips/belgium/script.md` |
+| Croatia 🇭🇷 | ✅ `clips/croatia/script.md` |
+| Switzerland 🇨🇭 | ✅ `clips/switzerland/script.md` |
+| Austria 🇦🇹 | ✅ `clips/austria/script.md` |
+| Norway 🇳🇴 | ✅ `clips/norway/script.md` |
+| Scotland 🏴 | ✅ `clips/scotland/script.md` |
 | _UEFA playoff slot 1_ | ❓ |
 | _UEFA playoff slot 2_ | ❓ |
 | _UEFA playoff slot 3_ | ❓ |
@@ -52,27 +52,27 @@ playoff slot — confirm the nation before recording)
 ## CAF — Africa (9)
 | Nation | Status |
 |--------|--------|
-| Morocco 🇲🇦 | ✅ `scripts/morocco.md` |
-| Senegal 🇸🇳 | ✅ `scripts/senegal.md` |
-| Egypt 🇪🇬 | ✅ `scripts/egypt.md` |
-| Algeria 🇩🇿 | ✅ `scripts/algeria.md` |
-| Tunisia 🇹🇳 | ✅ `scripts/tunisia.md` |
-| Ghana 🇬🇭 | ✅ `scripts/ghana.md` |
-| Côte d'Ivoire 🇨🇮 | ✅ `scripts/cote-divoire.md` |
-| South Africa 🇿🇦 | ✅ `scripts/south-africa.md` |
-| Cape Verde 🇨🇻 | ✅ `scripts/cape-verde.md` |
+| Morocco 🇲🇦 | ✅ `clips/morocco/script.md` |
+| Senegal 🇸🇳 | ✅ `clips/senegal/script.md` |
+| Egypt 🇪🇬 | ✅ `clips/egypt/script.md` |
+| Algeria 🇩🇿 | ✅ `clips/algeria/script.md` |
+| Tunisia 🇹🇳 | ✅ `clips/tunisia/script.md` |
+| Ghana 🇬🇭 | ✅ `clips/ghana/script.md` |
+| Côte d'Ivoire 🇨🇮 | ✅ `clips/cote-divoire/script.md` |
+| South Africa 🇿🇦 | ✅ `clips/south-africa/script.md` |
+| Cape Verde 🇨🇻 | ✅ `clips/cape-verde/script.md` |
 
 ## AFC — Asia (8)
 | Nation | Status |
 |--------|--------|
-| Japan 🇯🇵 | ✅ `scripts/japan.md` |
-| Korea Republic 🇰🇷 | ✅ `scripts/south-korea.md` |
-| IR Iran 🇮🇷 | ✅ `scripts/iran.md` |
-| Australia 🇦🇺 | ✅ `scripts/australia.md` |
-| Saudi Arabia 🇸🇦 | ✅ `scripts/saudi-arabia.md` |
-| Qatar 🇶🇦 | ✅ `scripts/qatar.md` |
-| Jordan 🇯🇴 | ✅ `scripts/jordan.md` |
-| Uzbekistan 🇺🇿 | ✅ `scripts/uzbekistan.md` |
+| Japan 🇯🇵 | ✅ `clips/japan/script.md` |
+| Korea Republic 🇰🇷 | ✅ `clips/south-korea/script.md` |
+| IR Iran 🇮🇷 | ✅ `clips/iran/script.md` |
+| Australia 🇦🇺 | ✅ `clips/australia/script.md` |
+| Saudi Arabia 🇸🇦 | ✅ `clips/saudi-arabia/script.md` |
+| Qatar 🇶🇦 | ✅ `clips/qatar/script.md` |
+| Jordan 🇯🇴 | ✅ `clips/jordan/script.md` |
+| Uzbekistan 🇺🇿 | ✅ `clips/uzbekistan/script.md` |
 
 ## CONCACAF — North/Central America & Caribbean (3, besides hosts)
 | Nation | Status |
@@ -84,7 +84,7 @@ playoff slot — confirm the nation before recording)
 ## OFC — Oceania (1)
 | Nation | Status |
 |--------|--------|
-| New Zealand 🇳🇿 | ✅ `scripts/new-zealand.md` |
+| New Zealand 🇳🇿 | ✅ `clips/new-zealand/script.md` |
 
 ## Intercontinental playoffs (2)
 | Slot | Status |
