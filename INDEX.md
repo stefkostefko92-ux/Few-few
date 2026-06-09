@@ -52,11 +52,11 @@ playoff slot — confirm the nation before recording)
 ## CAF — Africa (9)
 | Nation | Status |
 |--------|--------|
-| Morocco 🇲🇦 | ⬜ |
-| Senegal 🇸🇳 | ⬜ |
-| Egypt 🇪🇬 | ⬜ |
-| Algeria 🇩🇿 | ⬜ |
-| Tunisia 🇹🇳 | ⬜ |
+| Morocco 🇲🇦 | ✅ `scripts/morocco.md` |
+| Senegal 🇸🇳 | ✅ `scripts/senegal.md` |
+| Egypt 🇪🇬 | ✅ `scripts/egypt.md` |
+| Algeria 🇩🇿 | ✅ `scripts/algeria.md` |
+| Tunisia 🇹🇳 | ✅ `scripts/tunisia.md` |
 | Ghana 🇬🇭 | ⬜ |
 | Côte d'Ivoire 🇨🇮 | ⬜ |
 | South Africa 🇿🇦 | ⬜ |
