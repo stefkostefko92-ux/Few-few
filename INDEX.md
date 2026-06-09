@@ -57,10 +57,10 @@ playoff slot — confirm the nation before recording)
 | Egypt 🇪🇬 | ✅ `scripts/egypt.md` |
 | Algeria 🇩🇿 | ✅ `scripts/algeria.md` |
 | Tunisia 🇹🇳 | ✅ `scripts/tunisia.md` |
-| Ghana 🇬🇭 | ⬜ |
-| Côte d'Ivoire 🇨🇮 | ⬜ |
-| South Africa 🇿🇦 | ⬜ |
-| Cape Verde 🇨🇻 | ⬜ |
+| Ghana 🇬🇭 | ✅ `scripts/ghana.md` |
+| Côte d'Ivoire 🇨🇮 | ✅ `scripts/cote-divoire.md` |
+| South Africa 🇿🇦 | ✅ `scripts/south-africa.md` |
+| Cape Verde 🇨🇻 | ✅ `scripts/cape-verde.md` |
 
 ## AFC — Asia (8)
 | Nation | Status |
