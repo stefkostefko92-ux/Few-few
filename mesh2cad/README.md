@@ -9,33 +9,37 @@ via WeTransfer — see `SOURCE.md`) into a watertight **CAD solid** in STEP form
 A raw optical scan of a curved vane/flap ("aletta"):
 - 1,842,602 triangles, 921,950 vertices
 - bounding box ≈ 189 × 61 × 210 mm
-- a single open shell — **not watertight** (only the scanned side has data, with
-  noise and holes). Mesh scans carry no design intent, so they are not CAD.
+- an **almost-closed** surface — the scan covers the whole part but has **8
+  holes** (largest ≈ 452-edge loop), so it is not yet watertight. A mesh carries
+  no design intent, so it is not CAD.
 
 ## Pipeline — `scan_to_cad.py`
 ```
-python3 scan_to_cad.py "Aletta v1 (1).stl" output --faces 14000
+python3 scan_to_cad.py "Aletta v1 (1).stl" output --faces 20000
 ```
 1. **Clean** — drop duplicate/null faces, repair non-manifold edges & vertices.
-2. **Screened Poisson reconstruction** (pymeshlab) — turns the open, noisy scan
-   into a smooth **watertight manifold** surface.
-3. **Decimate + isotropic remesh** — uniform, well-shaped triangles at a sane
-   density (~14 k faces) so the geometry is CAD-friendly, not a 1.8 M-facet blob.
+2. **Fill holes** — patch only the 8 holes, **keeping every original scanned
+   triangle**, to get a **watertight manifold**. (No global resampling, no
+   smoothing, no invented back side — so the solid stays true to the mesh.)
+3. **Decimate** — quadric edge collapse to ~20 k faces, shape/feature
+   preserving, so it is CAD-friendly rather than a 1.8 M-facet blob.
 4. **OpenCASCADE (OCP)** — sew the triangles into a closed shell, promote to a
    `TopoDS_Solid`, merge coplanar faces, and write **STEP AP214** as a
    `MANIFOLD_SOLID_BREP`.
 
+**Fidelity:** mean deviation from the raw scan ≈ **0.01 mm** (RMS 0.015 mm,
+max 0.13 mm) over a ~290 mm part — i.e. the solid is geometrically the scan.
+
 ## Outputs (`output/`)
 | file | what |
 |------|------|
-| `Aletta_solid.step` | **the deliverable** — closed solid B-rep, opens as a solid body in SolidWorks / Fusion 360 / Onshape / FreeCAD / CATIA (volume ≈ 224 cm³) |
+| `Aletta_solid.step` | **the deliverable** — closed solid B-rep, opens as a solid body in SolidWorks / Fusion 360 / Onshape / FreeCAD / CATIA (volume ≈ 229 cm³) |
 | `Aletta_watertight.stl` | the cleaned, watertight, decimated mesh (intermediate / preview) |
 | `comparison.png` | raw scan vs reconstructed solid |
 
 ## Dependencies
 ```
 pip install numpy trimesh numpy-stl scipy networkx fast-simplification pymeshlab cadquery-ocp
-# system: libglu1-mesa
 ```
 
 ## Scope note — faceted vs parametric
