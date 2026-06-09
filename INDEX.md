@@ -69,10 +69,10 @@ playoff slot — confirm the nation before recording)
 | Korea Republic 🇰🇷 | ✅ `scripts/south-korea.md` |
 | IR Iran 🇮🇷 | ✅ `scripts/iran.md` |
 | Australia 🇦🇺 | ✅ `scripts/australia.md` |
-| Saudi Arabia 🇸🇦 | ⬜ |
-| Qatar 🇶🇦 | ⬜ |
-| Jordan 🇯🇴 | ⬜ |
-| Uzbekistan 🇺🇿 | ⬜ |
+| Saudi Arabia 🇸🇦 | ✅ `scripts/saudi-arabia.md` |
+| Qatar 🇶🇦 | ✅ `scripts/qatar.md` |
+| Jordan 🇯🇴 | ✅ `scripts/jordan.md` |
+| Uzbekistan 🇺🇿 | ✅ `scripts/uzbekistan.md` |
 
 ## CONCACAF — North/Central America & Caribbean (3, besides hosts)
 | Nation | Status |
@@ -84,7 +84,7 @@ playoff slot — confirm the nation before recording)
 ## OFC — Oceania (1)
 | Nation | Status |
 |--------|--------|
-| New Zealand 🇳🇿 | ⬜ |
+| New Zealand 🇳🇿 | ✅ `scripts/new-zealand.md` |
 
 ## Intercontinental playoffs (2)
 | Slot | Status |
