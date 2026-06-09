@@ -32,12 +32,12 @@ playoff slot — confirm the nation before recording)
 ## UEFA — Europe (16)
 | Nation | Status |
 |--------|--------|
-| England 🏴 | ⬜ |
-| France 🇫🇷 | ⬜ |
-| Spain 🇪🇸 | ⬜ |
-| Portugal 🇵🇹 | ⬜ |
-| Germany 🇩🇪 | ⬜ |
-| Netherlands 🇳🇱 | ⬜ |
+| England 🏴 | ✅ `scripts/england.md` |
+| France 🇫🇷 | ✅ `scripts/france.md` |
+| Spain 🇪🇸 | ✅ `scripts/spain.md` |
+| Portugal 🇵🇹 | ✅ `scripts/portugal.md` |
+| Germany 🇩🇪 | ✅ `scripts/germany.md` |
+| Netherlands 🇳🇱 | ✅ `scripts/netherlands.md` |
 | Belgium 🇧🇪 | ⬜ |
 | Croatia 🇭🇷 | ⬜ |
 | Switzerland 🇨🇭 | ⬜ |
