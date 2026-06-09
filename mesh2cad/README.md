@@ -33,9 +33,21 @@ max 0.13 mm) over a ~290 mm part — i.e. the solid is geometrically the scan.
 ## Outputs (`output/`)
 | file | what |
 |------|------|
-| `Aletta_solid.step` | **the deliverable** — closed solid B-rep, opens as a solid body in SolidWorks / Fusion 360 / Onshape / FreeCAD / CATIA (volume ≈ 229 cm³) |
+| `Aletta_solid.step` | **the solid deliverable** — closed solid B-rep, opens as a solid body in SolidWorks / Fusion 360 / Onshape / FreeCAD / CATIA (volume ≈ 229 cm³) |
 | `Aletta_watertight.stl` | the cleaned, watertight, decimated mesh (intermediate / preview) |
 | `comparison.png` | raw scan vs reconstructed solid |
+| `Aletta_sections.step` | **parametric section model** — 25 closed B-spline cross-section curves (loft-ready); see `FEATURES.md` |
+| `Aletta_sections.png` | the section-profile stack |
+
+## Parametric / feature model — `extract_sections.py`
+```
+python3 extract_sections.py output/Aletta_watertight.stl output --sections 25
+```
+This vane is freeform (no plane/cylinder/fillet features fit — see
+**`FEATURES.md`** for the measured residuals). Its natural parametric form is a
+stack of **section profiles**: the script slices the solid along its span and
+writes the sections as B-spline curves you can **loft** into an editable solid
+in any CAD tool.
 
 ## Dependencies
 ```
