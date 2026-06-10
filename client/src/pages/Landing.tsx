@@ -292,6 +292,16 @@ export default function Landing(): React.ReactElement {
             One legendary listed per hour, server-wide. Gem-bid only; only the winner takes it
             home. You don't have to be online when the hour rolls over; settlement is automatic.
           </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title="Mythic+ endless tiers">
+            Cleared a scripted dungeon? Re-enter on the Mythic+ track. Enemy stats scale 12% per
+            tier, and every tenth tier guarantees a tier-9 loot-pool drop. Five consecutive
+            failures pity-unlocks the next tier, so the climb never stalls.
+          </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title="Four seasonal events">
+            Frostmoot, Bloomtide, Sunhigh, Emberfall. A month-long window each. Kill the
+            season's target family for points; redeem at the event vendor for a cosmetic
+            frame, a painted avatar, a season mount, and a tier-9 season trophy.
+          </FeatureCard>
         </div>
       </section>
 
@@ -400,11 +410,12 @@ export default function Landing(): React.ReactElement {
         <h2 className="section-title" data-reveal>Shipped, in flight, queued.</h2>
         <div className="roadmap-track" data-reveal>
           <RoadmapStop state="shipped" when="Shipped" what="Core game">
-            Four classes, 217 items, eight themed sets, sixteen hand-built regions covering
+            Four classes, 240+ items, eight themed sets, sixteen hand-built regions covering
             level one to three hundred and fifty, eleven unique APEX boss drops, six weekly
-            Realm Boss legendaries, three factions with six rep tiers each, sixteen named
-            quests, four scripted dungeons, ELO arena, daily and weekly loops, achievements,
-            bestiary, replays.
+            Realm Boss legendaries, three factions with six rep tiers each, thirty-eight
+            named quests, four scripted dungeons plus Mythic+ endless tiers, four seasonal
+            events with their own cosmetic + trophy vendors, ELO arena, daily and weekly
+            loops, achievements, bestiary, replays.
           </RoadmapStop>
           <RoadmapStop state="shipped" when="Shipped" what="Profile and cosmetics">
             Twelve avatars, twelve rarity-tinted frames, bios, name change, public profile

@@ -41,17 +41,21 @@ function getChar(uid: number): Character | undefined {
 function buildFoe(floor: number, seed: number) {
   // Light deterministic seeding so the same floor on the same run feels
   // consistent if the player retries within the run.
+  // Audit (balance tuning #14): foe HP was `60 + floor*22` which left
+  // floor 100 foes at ~2.2k HP while hunting lv 100 mobs were ~10.5k.
+  // Tower felt like a chore that paid pity gold. Bumped to `60+floor*60`
+  // so the climb feels like a real trial; atk + def bumps follow.
   const arch = ARCHETYPES[(seed + floor) % ARCHETYPES.length];
   const lvlScale = Math.max(1, Math.floor(floor * 1.2));
   return {
     name: `${arch} of the ${floor}${ordinal(floor)} Vault`,
     side: 'foe' as const,
     level: lvlScale,
-    hp: 60 + floor * 22,
-    hp_max: 60 + floor * 22,
-    atk_min: 8 + Math.floor(floor * 1.4),
-    atk_max: 14 + Math.floor(floor * 1.8),
-    defense: 3 + Math.floor(floor * 0.6),
+    hp: 60 + floor * 60,
+    hp_max: 60 + floor * 60,
+    atk_min: 8 + Math.floor(floor * 3.2),
+    atk_max: 14 + Math.floor(floor * 4.0),
+    defense: 3 + Math.floor(floor * 1.2),
     speed: 6 + Math.floor(floor * 0.2),
     crit_chance: 0.05 + Math.min(0.25, floor * 0.005),
     dodge_chance: 0.03 + Math.min(0.18, floor * 0.003),
@@ -73,8 +77,12 @@ function ordinal(n: number): string {
  *   gold = 6 + floor × 2 (linear, gentle)
  *   xp   = 10 + floor × 3 (linear, gentle)
  * Vault every 5th floor doubles both. */
-function towerGold(floor: number): number { return 6 + floor * 2; }
-function towerXp(floor: number): number   { return 10 + floor * 3; }
+// Reward formulas scaled up with the difficulty bump above so the
+// effort-to-payout ratio stays sane. The Tower is still a slower
+// faucet than open hunting at the same level but feels worth the
+// climb past floor ~40.
+function towerGold(floor: number): number { return 8 + floor * 5; }
+function towerXp(floor: number): number   { return 12 + floor * 7; }
 
 router.get('/status', (req, res) => {
   const char = getChar(req.auth!.uid);

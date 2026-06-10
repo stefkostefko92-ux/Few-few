@@ -13,6 +13,7 @@ import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
 import { trackWeeklyKill } from './weekly';
 import { applyFactionRepFromHunt } from './faction';
+import { awardSeasonPointsFromHunt } from './events';
 import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -295,6 +296,7 @@ router.post('/hunt', (req, res) => {
     ? applyBountyKill(char, monster.slug)
     : [];
   let factionRepGain: { faction_slug: string; rep: number } | null = null;
+  let seasonPointsGain: { season_key: string; points: number } | null = null;
   if (result.winner === 'hero') {
     trackBattlePass(char.id, 'hunt_kill', 1);
     trackWeeklyKill(char.id);
@@ -306,6 +308,9 @@ router.post('/hunt', (req, res) => {
       level: monster.level,
       slug: monster.slug,
     });
+    // Seasonal event — if a season is active AND this monster's family
+    // matches the season's target list, pay event points scaled by lvl.
+    seasonPointsGain = awardSeasonPointsFromHunt(char.id, (monster as any).family || '', monster.level);
   }
 
   res.json({
@@ -321,6 +326,7 @@ router.post('/hunt', (req, res) => {
     completedBounties,
     itemReward: itemRewardSlug || null,
     factionRep: factionRepGain,
+    seasonPoints: seasonPointsGain,
     itemDrop: itemRewardSlug
       ? (db.prepare('SELECT slug, name, category, sub_type, tier, rarity, level_req, icon, atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus, description FROM items WHERE slug=?').get(itemRewardSlug) as any)
       : null,

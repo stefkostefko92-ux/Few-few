@@ -646,4 +646,42 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
   `);
+
+  // Seasonal events — four windows per UTC year (Frostmoot, Bloomtide,
+  // Sunhigh, Emberfall). During each window any kill against an event-
+  // tagged monster pays event currency (per-season). The currency
+  // redeems for cosmetic frames, avatars, and a season-mount at the
+  // event vendor. Window dates are UTC, fixed; we don't need a window
+  // table — the season is derived from today's date.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS character_event_progress (
+      character_id INTEGER NOT NULL,
+      season_key   TEXT NOT NULL,
+      points       INTEGER NOT NULL DEFAULT 0,
+      claimed_json TEXT NOT NULL DEFAULT '[]',
+      updated_at   INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (character_id, season_key),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Mythic+ dungeon runs — once a player clears a scripted dungeon they
+  // unlock an "endless" tier track for it. Each Mythic+ tier scales
+  // monster stats by (1 + tier * 0.12). One row per character per
+  // dungeon tracks best cleared tier.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS mythic_plus_progress (
+      character_id INTEGER NOT NULL,
+      dungeon_slug TEXT NOT NULL,
+      best_tier    INTEGER NOT NULL DEFAULT 0,
+      current_tier INTEGER NOT NULL DEFAULT 0,
+      current_stage INTEGER NOT NULL DEFAULT 0,
+      run_seed     INTEGER NOT NULL DEFAULT 0,
+      run_started_at INTEGER NOT NULL DEFAULT 0,
+      consecutive_fails INTEGER NOT NULL DEFAULT 0,
+      updated_at   INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (character_id, dungeon_slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
 }
