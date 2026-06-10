@@ -63,6 +63,35 @@
         dismiss.click();
       } catch {}
     }
+
+    // Anti-adblock enforcement dialog: hiding only the dialog leaves YouTube's
+    // full-page backdrop, which swallows every click and locks scrolling. So
+    // when an enforcement message is present, remove the dialog AND its
+    // backdrop, and restore page interaction.
+    const enf = document.querySelector(
+      "ytd-enforcement-message-view-model, ytd-enforcement-message-desktop-renderer"
+    );
+    if (enf) {
+      const dialog =
+        enf.closest("ytd-popup-container, tp-yt-paper-dialog") || enf;
+      try {
+        dialog.remove();
+      } catch {}
+      document
+        .querySelectorAll("tp-yt-iron-overlay-backdrop")
+        .forEach((b) => {
+          try {
+            b.remove();
+          } catch {}
+        });
+      const html = document.documentElement;
+      const body = document.body;
+      html.style.removeProperty("overflow");
+      if (body) {
+        body.style.removeProperty("overflow");
+        body.removeAttribute("scroll-locked");
+      }
+    }
   }
 
   function start() {

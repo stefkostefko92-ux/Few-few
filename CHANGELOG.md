@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.4.2
+
+- Fix: YouTube page became unclickable while the video played. YouTube's
+  anti-adblock dialog was hidden but its full-page backdrop stayed, swallowing
+  clicks and locking scroll. The backdrop is now removed and page interaction /
+  scrolling restored (CSS + JS), scoped to the enforcement dialog only.
+
 ## 3.4.1
 
 - Fix: after a YouTube ad, the shared video element is restored to the user's

@@ -32,3 +32,14 @@ ytd-enforcement-message-view-model {
 .ad-showing video {
   display: block !important;
 }
+
+/* When the anti-adblock dialog is up, also drop its click-blocking backdrop
+   and restore scrolling (the JS layer removes them too, this avoids a flash). */
+html:has(ytd-enforcement-message-view-model) tp-yt-iron-overlay-backdrop,
+html:has(ytd-enforcement-message-desktop-renderer) tp-yt-iron-overlay-backdrop {
+  display: none !important;
+}
+html:has(ytd-enforcement-message-view-model),
+html:has(ytd-enforcement-message-view-model) body {
+  overflow: auto !important;
+}
