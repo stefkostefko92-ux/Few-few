@@ -109,6 +109,7 @@ model Impianto {
   contratti           Contratto[]
   visiteManutenzione  VisitaManutenzione[]
   verifichePeriodiche VerificaPeriodica[]
+  segnalazioni        Segnalazione[]
 
   @@map("impianti")
 }
@@ -481,6 +482,7 @@ model OrdineLavoro {
   storicoStati    StoricoStato[]
   fatture         Fattura[]
   ddt             DDT[]
+  segnalazioni    Segnalazione[]
 
   @@map("ordini_lavoro")
 }
@@ -676,6 +678,31 @@ model VerificaPeriodica {
   impianto         Impianto? @relation(fields: [impiantoId], references: [id])
 
   @@map("verifiche_periodiche")
+}
+
+// Segnalazioni guasti / centralino 24h (DPR 162/99: obbligo di pronto intervento)
+model Segnalazione {
+  id             String    @id @default(uuid())
+  numero         String?                            // SEG-2026-NNN, assegnato automaticamente
+  tipo           String    @default("GUASTO")       // GUASTO / PERSONA_BLOCCATA / RUMORE / INFILTRAZIONE / ALTRO
+  priorita       String    @default("ORDINARIA")    // ORDINARIA / URGENTE / EMERGENZA
+  stato          String    @default("APERTA")       // APERTA / IN_GESTIONE / CHIUSA
+  segnalante     String?
+  telefono       String?
+  canale         String?                            // TELEFONO / EMAIL / WHATSAPP / PORTALE
+  descrizione    String?
+  dataApertura   DateTime  @default(now())
+  dataChiusura   DateTime?
+  notaChiusura   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  impiantoId     String?
+  impianto       Impianto? @relation(fields: [impiantoId], references: [id])
+  ordineLavoroId String?
+  ordineLavoro   OrdineLavoro? @relation(fields: [ordineLavoroId], references: [id])
+
+  @@map("segnalazioni")
 }
 
 // Programma lavori (cantieri assegnati a cottimisti/tecnici)

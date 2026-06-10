@@ -15,6 +15,7 @@ import { sanitizeForModel } from './services/sanitize';
 import uploadRouter, { UPLOAD_DIR } from './routes/upload';
 import jwtSocket from 'jsonwebtoken';
 import contrattiWorkflowRoutes from './routes/contratti';
+import segnalazioniWorkflowRoutes from './routes/segnalazioni';
 import { controllaScadenze, eseguiControlloScadenze } from './services/scadenze';
 import extrasRoutes from './routes/extras';
 import { authenticate, authorize } from './middleware/auth';
@@ -185,6 +186,18 @@ app.use('/api/movimenti', apiLimiter, createCrudRouter({
     articolo: { select: { id: true, codice: true, nome: true } },
   },
 }));
+
+// ── Segnalazioni guasti (centralino 24h) ──
+app.use('/api/segnalazioni', apiLimiter, createCrudRouter({
+  model: 'segnalazione',
+  entityName: 'segnalazioni',
+  searchFields: ['numero', 'segnalante', 'telefono', 'descrizione'],
+  include: {
+    impianto: { select: { id: true, matricola: true, indirizzo: true, zona: true } },
+    ordineLavoro: { select: { id: true, numero: true, stato: true } },
+  },
+}));
+app.use('/api/segnalazioni', apiLimiter, segnalazioniWorkflowRoutes);
 
 // ── Contratti di Manutenzione ──
 app.use('/api/contratti', apiLimiter, createCrudRouter({

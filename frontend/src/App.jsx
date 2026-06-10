@@ -301,6 +301,10 @@ const STATO_COLORS = {
   CARTELLO_CANTIERE: "bg-amber-500/20 text-amber-400 border-amber-500/30", VERBALE_CANTIERE: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   CERTIFICATO: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", CONTRATTO: "bg-purple-500/20 text-purple-400 border-purple-500/30",
   ALTRO: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+  APERTA: "bg-red-500/20 text-red-400 border-red-500/30", IN_GESTIONE: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  CHIUSA: "bg-zinc-600/20 text-zinc-300 border-zinc-500/30", PERSONA_BLOCCATA: "bg-red-500/20 text-red-400 border-red-500/30",
+  GUASTO: "bg-amber-500/20 text-amber-400 border-amber-500/30", RUMORE: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  INFILTRAZIONE: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   FULL_RISK: "bg-purple-500/20 text-purple-400 border-purple-500/30", SEMI_INTEGRALE: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   PROGRAMMATA: "bg-blue-500/20 text-blue-400 border-blue-500/30", ESEGUITA: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   STRAORDINARIA: "bg-amber-500/20 text-amber-400 border-amber-500/30",
@@ -662,6 +666,23 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
       <div className="flex items-center justify-between mb-5">
         <div><h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em" }}>{title}</h1>{subtitle && <p className="text-zinc-500 text-sm">{subtitle}</p>}</div>
         <div className="flex gap-2">
+          <Btn variant="secondary" size="sm" icon={Download} onClick={() => {
+            const cols = formFields.filter(f => !f.hidden && !["photos", "files"].includes(f.type));
+            const valore = (r, f) => {
+              if (f.type === "relation") { const rel = r[f.key.replace(/Id$/, "")]; return relName(rel) || r[f.key] || ""; }
+              let v = r[f.key];
+              if (v === null || v === undefined) return "";
+              if (Array.isArray(v)) return v.map(x => x?.nome || x).join(", ");
+              if (typeof v === "object") return relName(v) || "";
+              if (f.type === "date") return fmtD(v);
+              return String(v);
+            };
+            const cell = (v) => { v = String(v).replace(/"/g, '""'); return /[;"\n]/.test(v) ? `"${v}"` : v; };
+            const csv = "\uFEFF" + [cols.map(c => c.label || c.key).join(";"), ...filtered.map(r => cols.map(f => cell(valore(r, f))).join(";"))].join("\n");
+            const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+            const a = document.createElement("a"); a.href = url; a.download = `${title.toLowerCase().replace(/\s+/g, "_")}.csv`; a.click();
+            URL.revokeObjectURL(url);
+          }}>Esporta CSV</Btn>
           {apiEndpoint && <Btn variant="secondary" size="sm" icon={Upload} onClick={() => setImportModal(true)}>Importa CSV</Btn>}
           <Btn icon={Plus} onClick={openCreate}>Nuovo {entityName}</Btn>
         </div>
@@ -1189,6 +1210,69 @@ const scaricaPdf = async (path, filename) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+};
+
+
+// ═══════════════════════════════════════════════════════
+// SEGNALAZIONI GUASTI (centralino 24h)
+// ═══════════════════════════════════════════════════════
+const SEGNALAZIONI_FIELDS = [
+  { key: "tipo", label: "Tipo", type: "select", options: ["GUASTO", "PERSONA_BLOCCATA", "RUMORE", "INFILTRAZIONE", "ALTRO"], default: "GUASTO" },
+  { key: "priorita", label: "Priorità", type: "select", options: ["ORDINARIA", "URGENTE", "EMERGENZA"], default: "ORDINARIA" },
+  { key: "stato", label: "Stato", type: "select", options: ["APERTA", "IN_GESTIONE", "CHIUSA"], default: "APERTA" },
+  { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.indirizzo || ""}`.trim() },
+  { key: "segnalante", label: "Segnalante" },
+  { key: "telefono", label: "Telefono" },
+  { key: "canale", label: "Canale", type: "select", options: ["TELEFONO", "EMAIL", "WHATSAPP", "PORTALE"], default: "TELEFONO" },
+  { key: "dataApertura", label: "Data apertura", type: "date" },
+  { key: "descrizione", label: "Descrizione", type: "textarea", wide: true },
+  { key: "notaChiusura", label: "Nota chiusura", type: "textarea", wide: true },
+];
+const SEGNALAZIONI_COLS = [
+  { key: "dataApertura", label: "Aperta il", render: r => <span className="text-zinc-300">{fmtD(r.dataApertura)}</span> },
+  { key: "tipo", label: "Tipo", render: r => <Badge value={r.tipo} /> },
+  { key: "priorita", label: "Priorità", render: r => <Badge value={r.tipo === "PERSONA_BLOCCATA" ? "EMERGENZA" : r.priorita} /> },
+  { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
+  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{relName(r.impianto, "matricola") || "—"}</span> },
+  { key: "segnalante", label: "Segnalante", render: r => <span className="text-zinc-400">{r.segnalante || "—"}{r.telefono ? <span className="text-zinc-600 text-xs"> · {r.telefono}</span> : null}</span> },
+  { key: "ordineLavoro", label: "Ordine", render: r => r.ordineLavoro ? <span className="font-mono text-cyan-400">{r.ordineLavoro.numero}</span> : <span className="text-zinc-600">—</span> },
+];
+
+const SegnalazioniPage = () => {
+  const [toast, setToast] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const azione = async (id, path) => {
+    try {
+      const r = await api.post(`/segnalazioni/${id}/${path}`);
+      setToast({ message: r.message || "Fatto", type: "success" });
+      setRefreshKey(k => k + 1);
+    } catch (e) { setToast({ message: e.message, type: "error" }); }
+  };
+  const COLS = [
+    ...SEGNALAZIONI_COLS,
+    { key: "_azioni", label: "", render: r => (
+      <div className="flex gap-1">
+        {!r.ordineLavoroId && r.stato !== "CHIUSA" && (
+          <button onClick={(e) => { e.stopPropagation(); azione(r.id, "crea-ordine"); }}
+            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-cyan-400" title="Crea ordine di lavoro">
+            <ClipboardList size={14} />
+          </button>
+        )}
+        {r.stato !== "CHIUSA" && (
+          <button onClick={(e) => { e.stopPropagation(); azione(r.id, "chiudi"); }}
+            className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-emerald-400" title="Chiudi segnalazione">
+            <CheckCircle size={14} />
+          </button>
+        )}
+      </div>
+    )},
+  ];
+  return (
+    <div>
+      <CrudModulePage key={refreshKey} title="SEGNALAZIONI GUASTI" subtitle="Centralino 24h — icone riga: crea ordine di lavoro / chiudi" apiEndpoint="/segnalazioni" columns={COLS} formFields={SEGNALAZIONI_FIELDS} entityName="Segnalazione" filterField="stato" filterOptions={["APERTA", "IN_GESTIONE", "CHIUSA"]} />
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    </div>
+  );
 };
 
 // ═══════════════════════════════════════════════════════
@@ -2499,6 +2583,7 @@ const NAV = [
   { id: "contratti", label: "Contratti", icon: FileText },
   { id: "visite", label: "Manutenzioni", icon: Activity },
   { id: "verifiche", label: "Verifiche DPR 162", icon: Shield },
+  { id: "segnalazioni", label: "Segnalazioni", icon: AlertTriangle },
   { id: "condomini", label: "Condomini", icon: Building2 },
   { id: "amministratori", label: "Amministratori", icon: Users },
   { id: "dipendenti", label: "Dipendenti", icon: HardHat },
@@ -2614,6 +2699,7 @@ export default function App() {
       case "impianti": return <ImpiantiPage />;
       case "contratti": return <ContrattiPage />;
       case "visite": return <VisitePage />;
+      case "segnalazioni": return <SegnalazioniPage />;
       case "verifiche": return <CrudModulePage title="VERIFICHE PERIODICHE" subtitle="Registro verifiche biennali Organismo Abilitato — DPR 162/99" apiEndpoint="/verifiche" columns={VERIFICHE_COLS} formFields={VERIFICHE_FIELDS} entityName="Verifica" />;
       case "condomini": return <CrudModulePage title="CONDOMINI" subtitle="Edifici e amministratori" store={condominiStore} apiEndpoint="/condomini" columns={CONDOMINI_COLS} formFields={CONDOMINI_FIELDS} entityName="Condominio" />;
       case "amministratori": return <CrudModulePage title="AMMINISTRATORI" subtitle="Persone e società" store={amministratoriStore} apiEndpoint="/amministratori" columns={AMMINISTRATORI_COLS} formFields={AMMINISTRATORI_FIELDS} entityName="Amministratore" filterField="tipo" filterOptions={["PERSONA_FISICA", "SOCIETA"]} />;
