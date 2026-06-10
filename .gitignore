@@ -1,3 +1,8 @@
 # Generated voiceover artifacts (regenerate with tools/generate_voiceover.py)
 clips/*/voiceover.mp3
 clips/*/narration.txt
+
+# Video production working files & rendered output (regenerate with tools/produce.py)
+clips/*/build/
+clips/*/assets/
+out/

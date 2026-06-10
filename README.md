@@ -20,8 +20,12 @@ and, once generated, its voiceover.
 ├── INDEX.md            # full 48-team field + production status
 ├── TEMPLATE.md         # the canonical script structure — copy for new episodes
 ├── VOICEOVER.md        # the series voice + how to generate it
+├── PRODUCTION.md       # render finished MP4s locally (ffmpeg pipeline)
 ├── tools/
-│   └── generate_voiceover.py   # script.md → voiceover.mp3 (ElevenLabs)
+│   ├── produce.py              # script.md → out/<country>.mp4 (full pipeline)
+│   ├── produce_all.sh          # render all 48 episodes
+│   ├── generate_voiceover.py   # script.md → voiceover.mp3 (ElevenLabs)
+│   └── build_preview.py        # script.md → preview.html (browser mock)
 └── clips/
     ├── mexico/
     │   ├── script.md           # title, description, tags, full narration
@@ -39,6 +43,21 @@ and, once generated, its voiceover.
 3. Pair each landmark with B-roll / stock footage (suggested shots are noted).
 4. Copy the **Title**, **Description** and **Tags** straight into YouTube.
 5. Use the **Chapters** block in the description to enable YouTube chapters.
+
+## Produce the finished video
+
+Render a YouTube-ready 1080p MP4 (Charlotte voiceover, auto stock footage,
+animated numbers, lower-thirds, subtitles, music) — see **[PRODUCTION.md](PRODUCTION.md)**:
+
+```bash
+python3 tools/produce.py check          # verify ffmpeg + keys
+python3 tools/produce.py clips/mexico --all
+# → out/mexico.mp4  +  .srt  +  .description.txt (real chapter timestamps)
+tools/produce_all.sh                    # all 48 episodes
+```
+
+> Rendering runs locally (needs ffmpeg + internet for the voice/footage APIs),
+> not in the cloud session. Free tiers cover both ElevenLabs and Pexels.
 
 ## Preview an episode (no editing needed)
 
