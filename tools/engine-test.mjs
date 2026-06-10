@@ -81,6 +81,7 @@ function freshEngine({ settings = {}, api = {}, state = {}, license = { status: 
   TB.Api = Object.assign({
     ready: () => true,
     findValue: () => null,
+    findNum: () => null,
     miniUpdate: spy('miniUpdate'),
     getAdventures: spy('getAdventures', () => ({ adventures: [], madeToday: 0, freePerDay: 0, taskRunning: false })),
     startAdventure: spy('startAdventure'),
@@ -305,6 +306,49 @@ await test('out of free adventures does not starve work (no fake busy timer)', a
   e.TB.Scheduler.start();
   await e.advance(5000);
   assert.equal(e.count('startWork'), 1, 'work ran even though adventures are exhausted');
+});
+
+await test('training: fetches costs then raises the cheapest attribute', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, training: { enabled: true, priorityStat: 'mix', maxGoldSpend: 0, keepGoldReserve: 0 } },
+    state: { gold: 1000 }
+  });
+  // Mirror the real api side-effect: GetUserAttributes patches State costs.
+  e.TB.Api.getUserAttributes = () => { e.TB.State.patch({ attributeCosts: { STR: 120, DEX: 80, CON: 200, INT: 150 } }); return Promise.resolve({ STR: 120, DEX: 80, CON: 200, INT: 150 }); };
+  e.TB.Scheduler.start();
+  await e.advance(3000);
+  assert.ok(e.count('raiseAttribute') >= 1, 'raised at least one attribute');
+  assert.equal(e.calls.raiseAttribute[0][0], 'DEX', 'picked the cheapest stat');
+});
+
+await test('training: global gold reserve blocks spending (and logs the skip)', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false, keepGoldReserve: 5000 }, adventures: { enabled: false }, training: { enabled: true, priorityStat: 'mix' } },
+    state: { gold: 1000 }
+  });
+  e.TB.Api.getUserAttributes = () => { e.TB.State.patch({ attributeCosts: { STR: 120, DEX: 80, CON: 200, INT: 150 } }); return Promise.resolve({}); };
+  e.TB.Scheduler.start();
+  await e.advance(3000);
+  assert.equal(e.count('raiseAttribute'), 0, 'reserve respected');
+});
+
+await test('autosell: sells a common unequipped equipment item', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, autosell: { enabled: true, sellCommon: true, sellSpecial: false, dumpSchema: false } }
+  });
+  // Fake item struct: the module reads it via Api.findValue / Api.directHas.
+  const item = { fields: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 } };
+  e.TB.Api.getEquipment = () => Promise.resolve({ querySelectorAll: (sel) => (sel === 'struct' ? [item] : []) });
+  e.TB.Api.findValue = (node, name) => (node && node.fields && name in node.fields ? String(node.fields[name]) : null);
+  e.TB.Api.findNum = (node, name) => {
+    const v = node && node.fields && name in node.fields ? Number(node.fields[name]) : NaN;
+    return Number.isFinite(v) ? v : null;
+  };
+  e.TB.Api.directHas = (node, name) => !!(node && node.fields && name in node.fields);
+  e.TB.Scheduler.start();
+  await e.advance(3000);
+  assert.equal(e.count('sellItem'), 1, 'sold the item');
+  assert.deepEqual(e.calls.sellItem[0], [42, 2], 'sold by id with its bag position');
 });
 
 console.log(`\n${pass} engine checks passed.`);

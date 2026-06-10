@@ -103,7 +103,8 @@ function genKey(days) {
 test('verifyKey accepts valid, rejects tampered/expired', () => {
   const k = genKey(31);
   assert.ok(verifyKey(k));
-  assert.equal(verifyKey(k.slice(0, -1) + 'X'), null);          // bad signature
+  // Flip the last sig char to a DIFFERENT one (it may already be 'X').
+  assert.equal(verifyKey(k.slice(0, -1) + (k.endsWith('X') ? 'Y' : 'X')), null);  // bad signature
   assert.equal(verifyKey(genKey(-1)) && genKey(-1) ? verifyKey(genKey(-1)).exp * 1000 < Date.now() : false, true);
 });
 test('server binds key to first device, rejects second', () => {

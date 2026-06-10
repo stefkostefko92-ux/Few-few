@@ -55,7 +55,15 @@
         // refetch would fire every single cycle.
         if (Date.now() < costsFetchAt) return null;
         costsFetchAt = Date.now() + 60000;
-        return async () => { await Api.getUserAttributes(); await Api.miniUpdate(); };
+        return async () => {
+          const fetched = await Api.getUserAttributes();
+          await Api.miniUpdate();
+          // Show what was actually parsed, so a silent no-buy is explainable
+          // from the panel log (empty costs point at a response-layout issue).
+          if (fetched && Number.isFinite(fetched.STR)) {
+            Logger.info(I18n.t('logTrainCosts', [String(fetched.STR), String(fetched.DEX), String(fetched.CON), String(fetched.INT), String(Number(State.get().gold) || 0)]));
+          }
+        };
       }
       if (c.maxGoldSpend && spent >= c.maxGoldSpend) { noteSkip('logTrainSkipCap'); return null; }
 

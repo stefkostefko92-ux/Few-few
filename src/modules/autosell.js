@@ -15,17 +15,20 @@
 
   let dumped = false;
   let lastScan = 0;
+  let lastSummary = 0;
 
   function cfg() { return Storage.section('autosell') || {}; }
 
+  // Type-agnostic member read: the server may tag a number i4/int/double or
+  // even string; try the numeric path first, then any tagged text.
   function member(struct, names) {
     for (const n of names) {
-      let v = Api.findValue(struct, n, 'i4');
-      if (v != null) return v;
-      v = Api.findValue(struct, n, 'boolean');
-      if (v != null) return v;
-      v = Api.findValue(struct, n, 'string');
-      if (v != null) return v;
+      const num = Api.findNum(struct, n);
+      if (num != null) return num;
+      for (const t of ['boolean', 'string', 'i4']) {
+        const v = Api.findValue(struct, n, t);
+        if (v != null) return v;
+      }
     }
     return null;
   }
@@ -55,19 +58,22 @@
           Logger.info(I18n.t('logSellSchema', [String(structs.length), names.join(', ')]));
         }
 
+        // Count every skip reason so a fruitless scan can explain itself in
+        // the log instead of silently doing nothing.
+        const skip = { notEquip: 0, equipped: 0, rarity: 0, noId: 0 };
         for (const s of structs) {
           const code = Number(member(s, ITEMCODE_KEYS));
-          if (Number.isFinite(code) && RUNE_ITEMCODES.has(code)) continue;  // rune/stone
+          if (Number.isFinite(code) && RUNE_ITEMCODES.has(code)) { skip.notEquip++; continue; }  // rune/stone
           const type = Number(member(s, TYPE_KEYS));
-          if (!Number.isFinite(type) || type < 1 || type > 8) continue;     // not equipment (potions etc.)
-          if (truthy(member(s, EQUIP_FLAG_KEYS))) continue;                 // never sell equipped
+          if (!Number.isFinite(type) || type < 1 || type > 8) { skip.notEquip++; continue; }     // not equipment (potions etc.)
+          if (truthy(member(s, EQUIP_FLAG_KEYS))) { skip.equipped++; continue; }                 // never sell equipped
 
           const unique = truthy(member(s, UNIQUE_KEYS));                    // epic / T1+ if true
-          if (unique && !c.sellSpecial) continue;                          // protect epics unless allowed
-          if (!unique && !c.sellCommon) continue;                          // commons disabled
+          if (unique && !c.sellSpecial) { skip.rarity++; continue; }       // protect epics unless allowed
+          if (!unique && !c.sellCommon) { skip.rarity++; continue; }       // commons disabled
 
           const id = Number(member(s, ID_KEYS));
-          if (!Number.isFinite(id)) continue;
+          if (!Number.isFinite(id)) { skip.noId++; continue; }
           const xpos = Number(member(s, XPOS_KEYS) || 0);
           const value = Number(member(s, VALUE_KEYS)) || 0;
           const rarity = unique ? I18n.t('rarityEpic') : I18n.t('rarityCommon');
@@ -76,6 +82,12 @@
           await Api.sellItem(id, xpos);
           Stats.bump({ itemsSold: 1, goldEarned: value });
           return; // one sale per cycle, then re-scan
+        }
+        if (Date.now() - lastSummary > 300000) {
+          lastSummary = Date.now();
+          Logger.info(I18n.t('logSellScanSummary', [
+            String(structs.length), String(skip.notEquip), String(skip.equipped), String(skip.rarity + skip.noId)
+          ]));
         }
       };
     }

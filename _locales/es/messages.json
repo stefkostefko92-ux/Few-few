@@ -114,6 +114,8 @@
   "logTrainSkipGold": {"message":"Entrenamiento: $1 cuesta $2 de oro (tienes $3)."},
   "logCircleSkipGold": {"message":"Círculo: se necesitan $1 de oro (tienes $2) - manteniendo la reserva."},
   "logWorkSkipGold": {"message":"Trabajo: no hay suficiente oro para la tasa de $1 de oro."},
+  "logTrainCosts": {"message":"Costes de entrenamiento: STR $1, DEX $2, CON $3, INT $4 (oro: $5)."},
+  "logSellScanSummary": {"message":"Autoventa: $1 objetos, omitidos $2 no equipo, $3 equipados, $4 por rareza/limites."},
   "logLicenseRequired": {"message":"Se requiere una suscripción para iniciar el bot."},
   "notifyLicenseRequired": {"message":"Suscríbete (4 €/mes) para iniciar el bot."},
   "uiSubscribe": {"message":"Suscribirse"},

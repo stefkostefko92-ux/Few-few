@@ -114,6 +114,8 @@
   "logTrainSkipGold": {"message":"Тренировка: $1 струва $2 злато (налични $3)."},
   "logCircleSkipGold": {"message":"Кръг: нужни са $1 злато (налични $2) - пази се резервът."},
   "logWorkSkipGold": {"message":"Работа: недостатъчно злато за таксата от $1 злато."},
+  "logTrainCosts": {"message":"Цени за тренировка: STR $1, DEX $2, CON $3, INT $4 (злато: $5)."},
+  "logSellScanSummary": {"message":"Авто-продажба: $1 предмета, пропуснати $2 не-екипировка, $3 екипирани, $4 по рядкост/лимити."},
   "logLicenseRequired": {"message":"За стартиране на бота е необходим абонамент."},
   "notifyLicenseRequired": {"message":"Абонирайте се (€4/месец), за да стартирате бота."},
   "uiSubscribe": {"message":"Абонирай се"},

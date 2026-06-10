@@ -47,10 +47,11 @@
 
   function num(v) { const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; }
 
-  // Tolerant numeric lookup: a value may be tagged <i4>, <int> or <double>, or
-  // sent as bare text inside <value>. Returns a finite number or null.
+  // Tolerant numeric lookup: a value may be tagged <i4>, <int>, <double>,
+  // <boolean>, even <string>, or sent as bare text inside <value>. The game's
+  // own decoder is type-agnostic, so ours must be too. Finite number or null.
   function findNum(node, name) {
-    for (const t of ['i4', 'int', 'double']) {
+    for (const t of ['i4', 'int', 'double', 'string', 'boolean']) {
       const v = findValue(node, name, t);
       if (v != null && v !== '') { const n = parseFloat(v); if (Number.isFinite(n)) return n; }
     }
@@ -258,6 +259,7 @@
     // For optional modules that resolve a method name at runtime.
     async raw(method, params) { return rpc(method, params); },
     findValue,
+    findNum,
     directHas,
 
     /* --------------------------- dungeon ---------------------------- */
