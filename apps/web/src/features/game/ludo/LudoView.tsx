@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
@@ -6,7 +6,17 @@ import { BoardFrame, Die } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { Scene } from "../scene/SceneShell";
 import { CENTER, HOME, N, SEAT_COLORS, TRACK, houseSeat, tokenCoord } from "./board";
+import type { LudoScene, LudoToken } from "./ludoScene";
 import "./ludo.css";
+
+function webglSupported(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
 
 interface LudoState {
   progress: number[][]; // [seat][token]: -1 base .. 44 finished
@@ -66,6 +76,58 @@ export function LudoView({ title }: { title: string }) {
     m.send({ type: "MOVE", token });
   }
 
+  /* ── 3D scene (hybrid; the 2D grid is the fallback) ─────────────────── */
+  const useGL = useMemo(webglSupported, []);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<LudoScene | null>(null);
+  const moveRef = useRef(moveToken);
+  moveRef.current = moveToken;
+  const viewRef = useRef({ state, seat, movable });
+  viewRef.current = { state, seat, movable };
+
+  useEffect(() => {
+    if (!useGL) return;
+    let scene: LudoScene | null = null;
+    let ro: ResizeObserver | null = null;
+    let cancelled = false;
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
+    const width = () => Math.max(300, wrap.clientWidth);
+    void import("./ludoScene")
+      .then(({ LudoScene }) => {
+        if (cancelled) return;
+        scene = new LudoScene(canvas, width());
+        sceneRef.current = scene;
+        const v = viewRef.current;
+        if (v.state) scene.setState(v.state.progress, v.state.seats, v.seat, v.movable, v.state.die);
+        ro = new ResizeObserver(() => scene?.resize(width()));
+        ro.observe(wrap);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      ro?.disconnect();
+      scene?.destroy();
+      sceneRef.current = null;
+    };
+  }, [useGL]);
+
+  useEffect(() => {
+    if (sceneRef.current && state) {
+      sceneRef.current.setState(state.progress, state.seats, seat, movable, state.die);
+    }
+  }, [state, seat, movable]);
+
+  function onCanvasClick(e: React.PointerEvent) {
+    const scene = sceneRef.current;
+    const canvas = canvasRef.current;
+    if (!scene || !canvas) return;
+    const hit: LudoToken | null = scene.pick(e.clientX, e.clientY, canvas.getBoundingClientRect());
+    if (hit && hit.seat === seat) moveRef.current(hit.token);
+  }
+
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
@@ -81,6 +143,24 @@ export function LudoView({ title }: { title: string }) {
             ))}
           </div>
 
+          {useGL ? (
+            <div
+              ref={wrapRef}
+              style={{
+                width: "min(86vw, 560px)",
+                borderRadius: 16,
+                overflow: "hidden",
+                lineHeight: 0,
+                boxShadow: "0 16px 40px -16px rgba(0,0,0,.7)",
+              }}
+            >
+              <canvas
+                ref={canvasRef}
+                onPointerUp={onCanvasClick}
+                style={{ width: "100%", height: "auto", display: "block", cursor: myTurn ? "pointer" : "default" }}
+              />
+            </div>
+          ) : (
           <BoardFrame>
             <div className="ludo-grid" style={{ width: "min(86vw, 540px)" }}>
               {Array.from({ length: N * N }).map((_, i) => {
@@ -127,9 +207,10 @@ export function LudoView({ title }: { title: string }) {
               })}
             </div>
           </BoardFrame>
+          )}
 
           <div className="ludo-controls">
-            {state.die ? <Die value={state.die} /> : null}
+            {state.die && !useGL ? <Die value={state.die} /> : null}
             {rollAction ? (
               <Button onClick={() => { playCue("flip"); m.send(rollAction); }}>{t("backgammon.roll")}</Button>
             ) : null}
