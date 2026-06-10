@@ -41,6 +41,7 @@ const DEFAULTS = {
   blockedTotal: 0,
   savedBytes: 0,
   smartBlocked: 0,
+  smartLog: [],
   allowlist: [],
   features: { cookies: true, antiAdblock: true, meta: true, youtube: true, smart: true },
   customHidden: {},
@@ -446,7 +447,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "resetStats":
-      chrome.storage.local.set({ blockedTotal: 0, savedBytes: 0, smartBlocked: 0 }, () => sendResponse({ ok: true }));
+      chrome.storage.local.set(
+        { blockedTotal: 0, savedBytes: 0, smartBlocked: 0, smartLog: [] },
+        () => sendResponse({ ok: true })
+      );
       return true;
 
     case "saveCustomSelector":
@@ -469,11 +473,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
       return true;
 
-    case "smartHit":
-      chrome.storage.local.get("smartBlocked", (d) => {
-        chrome.storage.local.set({ smartBlocked: (d.smartBlocked || 0) + (msg.n || 1) });
+    case "smartHit": {
+      const items = Array.isArray(msg.items) ? msg.items : [];
+      const n = items.length || msg.n || 1;
+      chrome.storage.local.get(["smartBlocked", "smartLog"], (d) => {
+        const now = Date.now();
+        const entries = items.map((it) => ({
+          host: msg.host || "",
+          w: it.w,
+          h: it.h,
+          reason: it.reason,
+          time: now,
+        }));
+        const log = entries.concat(d.smartLog || []).slice(0, 50);
+        chrome.storage.local.set({
+          smartBlocked: (d.smartBlocked || 0) + n,
+          smartLog: log,
+        });
       });
       return false;
+    }
 
     case "setUserFilters":
       chrome.storage.local.set({ userFilters: msg.text || "" }, async () => {

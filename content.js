@@ -111,6 +111,9 @@
   const nearSize = (w, h) =>
     IAB_SIZES.some(([aw, ah]) => Math.abs(w - aw) <= 2 && Math.abs(h - ah) <= 2);
 
+  const AD_TOKENS =
+    /(^|[^a-z])(ads?|advert|sponsor|promo|banner|dfp|gpt|taboola|outbrain|adslot|adunit|adsense)([^a-z]|$)/i;
+
   function isThirdParty(src) {
     try {
       const h = new URL(src, location.href).hostname.replace(/^www\./, "");
@@ -120,30 +123,76 @@
     }
   }
 
-  function smartScan() {
-    if (!enabled || !smartEnabled) return;
-    let hits = 0;
+  function hide(el, reason, r, items) {
+    el.dataset.tbabHidden = "1";
+    el.style.setProperty("display", "none", "important");
+    items.push({ reason, w: Math.round(r.width), h: Math.round(r.height) });
+  }
+
+  // Pass 1 — ad-sized cross-origin frames (works for any unknown network).
+  function scanFrames(items) {
     for (const f of document.querySelectorAll("iframe[src]")) {
       if (f.dataset.tbabHidden) continue;
       const r = f.getBoundingClientRect();
       if (!nearSize(Math.round(r.width), Math.round(r.height))) continue;
       if (!isThirdParty(f.src)) continue;
-      // Hide the iframe; if it sits in a same-size wrapper, hide that instead.
       let target = f;
       const p = f.parentElement;
       if (p && p.children.length === 1) {
         const pr = p.getBoundingClientRect();
         if (Math.abs(pr.width - r.width) < 6 && Math.abs(pr.height - r.height) < 6) {
           target = p;
+          target.dataset.tbabFrameSize = "1";
         }
       }
-      target.dataset.tbabHidden = "1";
-      target.style.setProperty("display", "none", "important");
-      hits++;
+      hide(target, "Ad-sized cross-origin frame", r, items);
     }
-    if (hits) {
+  }
+
+  // Pass 2 — sticky/fixed banner bars anchored to a screen edge. These are a
+  // classic format filter lists struggle with. We only act when there's a real
+  // ad signal (a third-party frame or an ad-named container), so sticky navbars
+  // and headers are left alone.
+  function adSignal(el) {
+    if (AD_TOKENS.test(" " + el.id + " " + el.className + " ")) return true;
+    const f = el.querySelector("iframe[src]");
+    if (f && isThirdParty(f.src)) return true;
+    return false;
+  }
+
+  function scanSticky(items) {
+    const body = document.body;
+    if (!body) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    for (const el of body.children) {
+      if (el.dataset.tbabHidden || el.tagName === "SCRIPT" || el.tagName === "STYLE")
+        continue;
+      let pos;
       try {
-        chrome.runtime.sendMessage({ type: "smartHit", n: hits });
+        pos = getComputedStyle(el).position;
+      } catch {
+        continue;
+      }
+      if (pos !== "fixed" && pos !== "sticky") continue;
+      const r = el.getBoundingClientRect();
+      const wide = r.width >= vw * 0.6;
+      const bannerH = r.height >= 24 && r.height <= 260;
+      const atEdge = r.top <= 4 || r.bottom >= vh - 4;
+      if (wide && bannerH && atEdge && adSignal(el)) {
+        hide(el, "Sticky banner ad", r, items);
+      }
+    }
+  }
+
+  function smartScan() {
+    if (!enabled || !smartEnabled) return;
+    const items = [];
+    scanFrames(items);
+    scanSticky(items);
+    if (items.length) {
+      try {
+        chrome.runtime.sendMessage({ type: "smartHit", host, items });
       } catch {}
     }
   }

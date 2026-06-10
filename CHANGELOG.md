@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.6.0
+
+- Smart Detection now also catches **sticky/anchored banner ads** (edge-pinned
+  bars carrying a third-party frame or ad-named container) — a format filter
+  lists struggle with — while leaving real sticky navbars/headers alone.
+- New **"why blocked" log**: a live, transparent list in settings showing each
+  heuristic catch with its host, size and the reason it was flagged.
+
 ## 3.5.0
 
 - New, unique **Smart Detection**: a list-free heuristic that blocks ads no

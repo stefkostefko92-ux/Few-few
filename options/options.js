@@ -41,9 +41,43 @@ function load() {
     renderAllowlist(res.allowlist || []);
   });
 
-  chrome.storage.local.get(["customHidden", "userFilters"], (data) => {
+  chrome.storage.local.get(["customHidden", "userFilters", "smartLog"], (data) => {
     renderCustom(data.customHidden || {});
     $("userFilters").value = data.userFilters || "";
+    renderSmartLog(data.smartLog || []);
+  });
+}
+
+function ago(ts) {
+  const s = Math.max(0, (Date.now() - ts) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.floor(s / 60) + "m ago";
+  if (s < 86400) return Math.floor(s / 3600) + "h ago";
+  return Math.floor(s / 86400) + "d ago";
+}
+
+function renderSmartLog(log) {
+  const ul = $("smartLog");
+  ul.innerHTML = "";
+  if (!log.length) {
+    ul.innerHTML = '<li class="empty">Nothing caught heuristically yet.</li>';
+    return;
+  }
+  log.forEach((e) => {
+    const li = document.createElement("li");
+    const left = document.createElement("div");
+    const d = document.createElement("div");
+    d.className = "domain";
+    d.textContent = e.host || "(frame)";
+    const s = document.createElement("div");
+    s.className = "sel";
+    s.textContent = `${e.reason} · ${e.w}×${e.h}`;
+    left.append(d, s);
+    const t = document.createElement("span");
+    t.className = "sel";
+    t.textContent = ago(e.time);
+    li.append(left, t);
+    ul.appendChild(li);
   });
 }
 
