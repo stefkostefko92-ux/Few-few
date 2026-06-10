@@ -13,18 +13,18 @@ import '../styles/landing.css';
 const LOCALES: Record<string, { html: string; title: string; description: string }> = {
   en: {
     html: 'en',
-    title: 'Nexus Dominion — Free Browser MMORPG · No Download',
-    description: 'A fully animated free browser MMORPG. Forge a hero across four classes, climb the Tower of Trials, found a guild, and trade with players. No download, plays in any browser.',
+    title: 'Nexus Dominion — Free Browser MMORPG',
+    description: 'Server-authoritative turn-based MMORPG. Four classes, 350 levels of roster, ELO arena, real-time auction, five-tier guilds. Free, browser-based, no installer.',
   },
   it: {
     html: 'it-IT',
-    title: 'Nexus Dominion — MMORPG gratuito da browser · Senza download',
-    description: 'Un MMORPG fantasy completamente animato, gratuito, giocabile direttamente nel browser. Forgia il tuo eroe, scala la Torre delle Prove, fonda una gilda. Niente download — gioca da qualsiasi browser, anche dall\'Italia.',
+    title: 'Nexus Dominion — MMORPG da browser, gratuito',
+    description: "MMORPG con combattimenti a turni validati dal server. Quattro classi, 350 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione.",
   },
   bg: {
     html: 'bg-BG',
-    title: 'Nexus Dominion — Безплатна браузърна ММОРПГ · Без сваляне',
-    description: 'Изцяло анимирана фентъзи ММОРПГ игра, която върви директно в браузъра. Изкови героя си, изкачи Кулата на изпитанията, основи гилдия. Без сваляне — играй откъдето и да си в България.',
+    title: 'Nexus Dominion — Безплатна браузърна ММОРПГ',
+    description: 'Пошагова ММОРПГ, валидирана на сървъра. Четири класа, 350 нива монстри, ELO арена, аукцион в реално време, гилдии на пет нива. Безплатна, без инсталация.',
   },
 };
 
@@ -125,13 +125,12 @@ export default function Landing(): React.ReactElement {
           <div className="hero-eyebrow">A Browser MMORPG · Free to Play · No Download</div>
           <h1 className="hero-title">
             <SplitText text="Nexus Dominion" />
-            <em><SplitText text="Where Legends Are Forged." /></em>
+            <em><SplitText text="A realm with a long memory." /></em>
           </h1>
           <p className="hero-subtitle" data-reveal>
-            Build a hero. Climb the Tower of Trials. Strike the Forge until your blade screams.
-            Found a guild, declare war, raid a god. Fifteen regions through level 350, four classes,
-            ten tiers of gear, a marketplace where heroes barter steel for gold — and an endless
-            arena waiting for a new king. Free. Browser. No download.
+            Four classes. Fifteen regions to push through. Ten tiers of gear, an ELO arena, an
+            auction house that runs in real time, and a Tower of Trials whose leaderboard updates
+            while you sleep. Free, browser-based, no installer. Sign up takes thirty seconds.
           </p>
           <div className="hero-cta" data-reveal>
             <Link to="/register" className="btn btn-primary btn-hero">Take Up The Sword</Link>
@@ -155,96 +154,101 @@ export default function Landing(): React.ReactElement {
 
       {/* Features */}
       <section id="features" className="section">
-        <div className="section-eyebrow" data-reveal>What Awaits</div>
-        <h2 className="section-title" data-reveal>A World Made for the Long Haul.</h2>
+        <div className="section-eyebrow" data-reveal>What you actually do</div>
+        <h2 className="section-title" data-reveal>Twelve loops, all running at once.</h2>
         <p className="section-lead" data-reveal>
-          Every hour deepens your hero and widens the story. From your first cellar rat to the
-          last stand against the Shadow Lord, there is always one more thing worth doing.
+          You log in for ten minutes and have to choose: clear a dungeon stage, settle an auction
+          listing, push the daily bounty, or finish a tower run before the leaderboard rolls
+          over. Every loop pays out separately, every loop matters.
         </p>
         <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/sword-t6.jpg" title="Cinematic Combat">
-            Every fight plays as a fully animated duel — damage-scaled screen shake, hit-flash
-            overlays, HP-drain trails, particle bursts, hit-stop on crits, and class-specific
-            impact effects.
+          <FeatureCard iconSrc="/assets/icons/sword-t6.jpg" title="Combat that respects your time">
+            Server-authoritative turn-based duels resolved in under thirty seconds, with a 3D
+            stage, real particle bursts, and a damage-scaled screen shake. Replays available
+            after every fight.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/shield-t6.jpg" title="Guilds & Wars">
-            Found a guild, recruit officers, donate to the treasury. Declare war on rivals
-            and raid bosses cooperatively. Live chat, member promotions, 5-tier upgrades.
+          <FeatureCard iconSrc="/assets/icons/shield-t6.jpg" title="Guilds that change the math">
+            Five guild tiers, each multiplying member XP, gold, crit, and dodge. Officers can
+            declare 24-hour wars on rivals; raid bosses scale to your roster size and pay every
+            participant.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/dagger-t4.jpg" title="Quests & Story">
-            16 hand-written quests across five regions. Branching outcomes, named foes,
-            real rewards.
+          <FeatureCard iconSrc="/assets/icons/dagger-t4.jpg" title="Quests with consequences">
+            Sixteen scripted quest lines across five regions. Outcomes you choose alter rewards,
+            unlock follow-ups, and feed into Bestiary completion.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title="Multi-Stage Dungeons">
-            Four chained dungeon runs from the Forgotten Crypt to the Pilgrimage of Ash.
-            Mid-run drops, escalating bosses, guaranteed loot at the end.
+          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title="Chained dungeon runs">
+            Four scripted dungeons plus ten procedural high-tier bands. Bring potions, eat
+            damage between rooms, take the guaranteed clear drop home.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/cloak-t8.jpg" title="Cosmetics & Frames">
-            12 avatars and 12 rarity-tinted frames, all earned through play. Mythwoven and
-            Eternal Crown frames glow and rotate cosmic patterns.
+          <FeatureCard iconSrc="/assets/icons/cloak-t8.jpg" title="Cosmetics you earn">
+            Twelve hand-painted avatars and twelve rarity-tinted frames, each tied to a real
+            achievement. No frame is for sale.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/helm-t6.jpg" title="Profile & Title">
-            Bio, avatar, frame, title — your hero's identity. Public profile pages
-            so the realm can see your legend.
+          <FeatureCard iconSrc="/assets/icons/helm-t6.jpg" title="Profiles other players can read">
+            Bio, avatar, frame, title, public combat history. Easy to look up, harder to forge a
+            reputation on.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/bow-t6.jpg" title="Hunting Grounds">
-            Two-energy random encounters per region. Always something to do — and every kill
-            advances your Bestiary.
+          <FeatureCard iconSrc="/assets/icons/bow-t6.jpg" title="Hunting that fills the Bestiary">
+            Pick a region, pick a window. Each kill rolls a 22% drop and counts toward bounty,
+            battle pass, and weekly trial in one go.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title="ELO Arena">
-            Matchmade duels against 15 NPC trainers and a growing roster of player heroes.
-            Climb the rating. Carry your title.
+          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title="ELO arena, real ladder">
+            Matchmade duels against fifteen NPC trainers and every player at your rating band.
+            K=32, so a streak shows up fast.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title="Daily Tribute & Streaks">
-            7-day login cycle with stacking rewards, plus 14- and 30-day milestones.
+          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title="Daily tribute that rewards habit">
+            Seven-day streak cycle with gem milestones at day fourteen and thirty. Miss a day
+            and the streak resets; nothing is sold back to you.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title="Wheel of Fortune">
-            One animated spin every 24 hours. Coins, XP, potions, rings, energy, or the
-            500-gold royal jackpot.
+          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title="One spin a day, no shop">
+            The wheel pays in gold, XP, potions, energy, or a 500-gold jackpot. It's not a
+            lootbox; it's a budgeted bonus.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title="27 Achievements + Titles">
-            Earn titles like “the Worldslayer”, “Hero of the Realm”, “Loremaster”.
+          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title="Twenty-seven achievements, twelve titles">
+            "The Worldslayer", "Hero of the Realm", "Loremaster". Titles render next to your
+            name across the realm.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/ring-t8.jpg" title="8 Themed Item Sets">
-            Wayfarer through Solar Mythwoven — collect set pieces to stack 2-, 4- and 6-piece
-            bonuses that reshape your build.
+          <FeatureCard iconSrc="/assets/icons/ring-t8.jpg" title="Eight themed sets to chase">
+            From the Wayfarer's Garb to Solar Mythwoven. Two-, four-, and six-piece bonuses
+            reshape a build; mixing tiers is encouraged.
           </FeatureCard>
         </div>
       </section>
 
       {/* Classes */}
       <section id="classes" className="section">
-        <div className="section-eyebrow" data-reveal>Choose Your Path</div>
-        <h2 className="section-title" data-reveal>Four Classes. Four Stories.</h2>
+        <div className="section-eyebrow" data-reveal>Pick a kit</div>
+        <h2 className="section-title" data-reveal>Four classes, with the math written down.</h2>
         <p className="section-lead" data-reveal>
-          Each class has its own stat curve, weapon skills, sprite, and impact effects.
-          Re-allocate every level. Switch builds when the moment calls.
+          Each class has a stat ramp, a weapon skill tree, a damage type, and its own impact
+          effects in combat. You re-allocate stat points every level; you re-spec the build
+          whenever the season changes.
         </p>
         <div className="class-grid" data-reveal-stagger>
-          <ClassCard portrait="/assets/icons/class-warrior.jpg" name="Warrior" tagline="Steel and oath. The shield of the realm." stats={[['STR', 9], ['CON', 8], ['DEX', 5]]} />
-          <ClassCard portrait="/assets/icons/class-ranger.jpg"  name="Ranger"  tagline="The arrow finds what the eye sees."         stats={[['DEX', 9], ['CON', 6], ['WIS', 5]]} />
-          <ClassCard portrait="/assets/icons/class-mage.jpg"    name="Mage"    tagline="The world bends to the disciplined mind."   stats={[['INT', 9], ['WIS', 8], ['CON', 5]]} />
-          <ClassCard portrait="/assets/icons/class-rogue.jpg"   name="Rogue"   tagline="The unseen blade. The patient hand."        stats={[['DEX', 8], ['CON', 6], ['CHA', 6]]} />
+          <ClassCard portrait="/assets/icons/class-warrior.jpg" name="Warrior" tagline="Eats hits, returns them with interest. Sword and shield, plate, calm under pressure." stats={[['STR', 9], ['CON', 8], ['DEX', 5]]} />
+          <ClassCard portrait="/assets/icons/class-ranger.jpg"  name="Ranger"  tagline="Hits first, harder than you expected, from where you weren't looking. Bow, leather, fast hands." stats={[['DEX', 9], ['CON', 6], ['WIS', 5]]} />
+          <ClassCard portrait="/assets/icons/class-mage.jpg"    name="Mage"    tagline="Slow opener, large finisher. Burns mana fast, ends fights faster. Staff, robes, library card." stats={[['INT', 9], ['WIS', 8], ['CON', 5]]} />
+          <ClassCard portrait="/assets/icons/class-rogue.jpg"   name="Rogue"   tagline="Crit-heavy duelist. Dodges everything until it can't. Dagger, dark cloth, no questions." stats={[['DEX', 8], ['CON', 6], ['CHA', 6]]} />
         </div>
       </section>
 
       {/* Item Sets */}
       <section id="sets" className="section">
-        <div className="section-eyebrow" data-reveal>Collect. Combine. Conquer.</div>
-        <h2 className="section-title" data-reveal>Eight Themed Item Sets.</h2>
+        <div className="section-eyebrow" data-reveal>Sets, not collectibles</div>
+        <h2 className="section-title" data-reveal>Eight themed sets. Every piece dropped, never bought.</h2>
         <p className="section-lead" data-reveal>
-          Equip pieces from the same set to unlock 2-, 4- and 6-piece bonuses. Mix and match
-          tiers to build the hero you want. Every set is loot — never sold for premium currency.
+          Wear the same set to unlock two-, four- and six-piece bonuses. Mix tiers for hybrid
+          builds. Nothing in this section is on the gem shop.
         </p>
         <div className="set-grid" data-reveal-stagger>
           <SetCard rarity="common"    name="Wayfarer's Garb"     tier="Tier 1 · Starter"    iconSrc="/assets/icons/boots-t1.jpg"  lore="Boiled leather and stitched hide. Every hero's first kit." bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
           <SetCard rarity="uncommon"  name="Ironguard Plate"     tier="Tier 2 · Warrior"    iconSrc="/assets/icons/armor-t2.jpg"  lore="Issue of the Iron Watch. Standard for bridge and tollroad duty." bonuses={[['2', '+25 HP, +2 STR'], ['4', '+55 HP, +6 DEF, +3 STR'], ['6', '+100 HP, +12 DEF, +5 STR, +4 ATK']]} />
           <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier="Tier 2 · Ranger"     iconSrc="/assets/icons/bow-t2.jpg"    lore="Forest-dyed leathers worn by the marshals of the Whispering Woods." bonuses={[['2', '+3 DEX, +3% Crit'], ['4', '+5 DEX, +4% Dodge, +3 ATK']]} />
           <SetCard rarity="uncommon"  name="Arcane Conclave"     tier="Tier 2 · Mage"       iconSrc="/assets/icons/staff-t2.jpg"  lore="Spell-thread robes granted to junior members of the Conclave at Aedric." bonuses={[['2', '+25 MP, +3 INT'], ['4', '+50 MP, +5 INT, +3 WIS']]} />
-          <SetCard rarity="uncommon"  name="Nightveil"           tier="Tier 2 · Rogue"      iconSrc="/assets/icons/dagger-t2.jpg" lore="A killer's wardrobe — charcoal hood, black plates, dyed leather." bonuses={[['2', '+3 DEX, +4% Dodge'], ['4', '+5 DEX, +5% Crit, +3 ATK']]} />
-          <SetCard rarity="rare"      name="Sunforged Champion"  tier="Tier 3 · Warrior"    iconSrc="/assets/icons/sword-t6.jpg"  lore="Forged in the kilns of the Ember Spires. Lava titans cannot crush it." bonuses={[['2', '+80 HP, +4 STR'], ['4', '+180 HP, +18 DEF, +6 STR, +8 ATK']]} />
-          <SetCard rarity="epic"      name="Voidshard Adept"     tier="Tier 4 · Mage"       iconSrc="/assets/icons/staff-t8.jpg"  lore="Robes woven with crystallised dark. Whispers of dead empires cling to the cloth." bonuses={[['2', '+60 MP, +6 INT'], ['4', '+120 MP, +10 INT, +8 WIS'], ['6', '+220 MP, +16 INT, +14 WIS, +16 ATK, +8% Crit']]} />
-          <SetCard rarity="legendary" name="Solar Mythwoven"     tier="Tier 5 · Legendary"  iconSrc="/assets/icons/sword-t10.jpg" lore="A regalia thought lost with the first Hero of the Realm." bonuses={[['2', '+150 HP, +6 STR'], ['4', '+320 HP, +24 DEF, +10 STR, +14 ATK'], ['6', '+600 HP, +50 DEF, +18 STR, +30 ATK, +10% Crit, +5% Dodge']]} />
+          <SetCard rarity="uncommon"  name="Nightveil"           tier="Tier 2 · Rogue"      iconSrc="/assets/icons/dagger-t2.jpg" lore="A killer's wardrobe. Charcoal hood, black-dyed plate, soft-sole boots." bonuses={[['2', '+3 DEX, +4% Dodge'], ['4', '+5 DEX, +5% Crit, +3 ATK']]} />
+          <SetCard rarity="rare"      name="Sunforged Champion"  tier="Tier 3 · Warrior"    iconSrc="/assets/icons/sword-t6.jpg"  lore="Quenched in the Ember Spire kilns. The plate has burn marks the smith did not put there." bonuses={[['2', '+80 HP, +4 STR'], ['4', '+180 HP, +18 DEF, +6 STR, +8 ATK']]} />
+          <SetCard rarity="epic"      name="Voidshard Adept"     tier="Tier 4 · Mage"       iconSrc="/assets/icons/staff-t8.jpg"  lore="Robes embroidered with shards of cooled void-glass. The hem hums when read aloud." bonuses={[['2', '+60 MP, +6 INT'], ['4', '+120 MP, +10 INT, +8 WIS'], ['6', '+220 MP, +16 INT, +14 WIS, +16 ATK, +8% Crit']]} />
+          <SetCard rarity="legendary" name="Solar Mythwoven"     tier="Tier 5 · Legendary"  iconSrc="/assets/icons/sword-t10.jpg" lore="Worn by the first Hero of the Realm. Found three centuries later in a sealed barrow." bonuses={[['2', '+150 HP, +6 STR'], ['4', '+320 HP, +24 DEF, +10 STR, +14 ATK'], ['6', '+600 HP, +50 DEF, +18 STR, +30 ATK, +10% Crit, +5% Dodge']]} />
         </div>
       </section>
 
@@ -266,12 +270,13 @@ export default function Landing(): React.ReactElement {
         </video>
         <div className="forge-band-shade" aria-hidden />
         <div className="forge-band-copy">
-          <div className="section-eyebrow">Strike Until It Sings</div>
-          <h2 className="section-title">The Forge Remembers Every Blade.</h2>
+          <div className="section-eyebrow">The Forge</div>
+          <h2 className="section-title">Spend gold, get sharper.</h2>
           <p className="forge-band-lead">
-            Drag your gear to the anvil and burn gold to raise its stats. Every upgrade ratchets
-            the cost; every break is a story. Master smiths reroll, sockets unlock at higher
-            tiers, and pity-protection guarantees a success after enough failures.
+            Drop a piece on the anvil and pay gold to raise its stats. The cost ramps; the
+            failure rate is published; pity-protection guarantees a success after enough
+            attempts. Higher tiers unlock sockets and rerolls. Nothing is hidden behind a wall
+            of premium currency.
           </p>
           <div className="forge-band-credit">
             Footage by Antti Makkonen · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>
@@ -281,93 +286,97 @@ export default function Landing(): React.ReactElement {
 
       {/* Guilds */}
       <section id="guilds" className="section">
-        <div className="section-eyebrow" data-reveal>Strength in Numbers</div>
-        <h2 className="section-title" data-reveal>Guilds. Wars. Raid Bosses.</h2>
+        <div className="section-eyebrow" data-reveal>Guilds</div>
+        <h2 className="section-title" data-reveal>A guild is the cheapest power upgrade in the game.</h2>
         <p className="section-lead" data-reveal>
-          Found a guild for 1,000 gold. Recruit up to 30 members at the top tier. Donate to the
-          treasury to power upgrades. Chat in real time. Declare war on rival guilds. Raid
-          server-tier bosses cooperatively.
+          1,000 gold to found. Up to thirty members at tier five. Five tiers of multipliers on
+          XP, gold, crit, dodge, HP, charisma. Donate gold to climb officer track, declare a
+          24-hour war against a rival, raid a server boss with thirty friends and split the
+          pot.
         </p>
         <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/shield-t8.jpg" title="Five-Tier Progression">
-            Levels 1 to 5. Each level lifts member slots (10 → 30) and stacks XP, gold, crit,
-            dodge, and HP multipliers for every member.
+          <FeatureCard iconSrc="/assets/icons/shield-t8.jpg" title="Five tiers of multipliers">
+            Tier one to tier five. Each tier widens the roster (ten to thirty members) and
+            multiplies XP, gold, crit, dodge, and HP for everyone wearing the crest.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/amulet-t5.jpg" title="Live Guild Chat">
-            Polled every 4 seconds. Avatars next to every message. Leader and officer roles
-            with kick / promote / demote.
+          <FeatureCard iconSrc="/assets/icons/amulet-t5.jpg" title="Chat that doesn't lag">
+            Polled every four seconds, avatars rendered inline, leader and officer roles with
+            kick, promote, demote. No external app needed.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/axe-t7.jpg" title="Guild Wars">
-            Officers declare 24-hour wars for 500 guild gold. Members strike enemy heroes for
-            score; the higher score at the end wins.
+          <FeatureCard iconSrc="/assets/icons/axe-t7.jpg" title="Wars on the clock">
+            Officers declare a 24-hour war for 500 guild gold. Members hit enemies for score.
+            Higher score at the deadline wins, both rosters get a payout, nobody gets banned.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title="Raid Bosses">
-            Three cooperative bosses — Sentinel of Dawn, Maw of Voidshade, Colossus Unbound.
-            HP scales with guild size. Every member contributes strikes. Cleared raids reward
-            the entire roster.
+          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title="Raids that scale">
+            Sentinel of Dawn, Maw of Voidshade, Colossus Unbound. Boss HP scales with active
+            roster. Each member's damage is logged; cleared raid pays everyone proportionally.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/shield-t10.jpg" title="Crest & Identity">
-            Pick a 2-5 character tag, a custom hex color crest, a motto. Your crest renders
-            beside your hero across the realm.
+          <FeatureCard iconSrc="/assets/icons/shield-t10.jpg" title="Your crest, your colour">
+            Two-to-five-character tag, a hex-picked crest colour, an optional motto. Renders
+            next to every member's name in every public list.
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title="Treasury & Donations">
-            Each donated gold equals one guild XP plus contribution toward your hero's role.
-            Climb to officer through tangible effort.
+          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title="Treasury that earns you rank">
+            Donate gold; each piece is one guild XP and one contribution point. Officer track is
+            opened by total contribution, not by who knows the leader.
           </FeatureCard>
         </div>
       </section>
 
       {/* World */}
       <section id="world" className="section">
-        <div className="section-eyebrow" data-reveal>The Lands of Nexus</div>
-        <h2 className="section-title" data-reveal>From Oaken Hollow to the Shadowfell.</h2>
+        <div className="section-eyebrow" data-reveal>The map</div>
+        <h2 className="section-title" data-reveal>Five hand-built regions, ten procedural high-tier bands.</h2>
         <p className="section-lead" data-reveal>
-          Five regions, each with its own monsters, dungeon, and legend.
+          Five named regions take you from level one to twenty-four. Past that, ten procedural
+          bands carry you to three hundred and fifty, each with its own monster roster, drop
+          table, and small named dungeon.
         </p>
         <div className="region-row" data-reveal-stagger>
-          <RegionCard color="#3f6a2c" art="/assets/regions/whispering_woods.jpg" name="Whispering Woods" range="Levels 1 – 5">Goblins, wolves, and cellar rats.</RegionCard>
-          <RegionCard color="#6e7a5c" art="/assets/regions/mistmoor_hills.jpg"   name="Mistmoor Hills"   range="Levels 6 – 10">Fog-laced highlands of orcs and trolls.</RegionCard>
-          <RegionCard color="#6aa7ff" art="/assets/regions/crystal_caverns.jpg"  name="Crystal Caverns"  range="Levels 10 – 15">Glittering tunnels and the Overlord.</RegionCard>
-          <RegionCard color="#c7641a" art="/assets/regions/ashen_wastes.jpg"     name="Ashen Wastes"     range="Levels 15 – 22">Burned plains and the revenant dead.</RegionCard>
-          <RegionCard color="#6f3fb6" art="/assets/regions/shadowfell.jpg"       name="The Shadowfell"   range="Level 24+">The Shadow Lord's domain.</RegionCard>
+          <RegionCard color="#3f6a2c" art="/assets/regions/whispering_woods.jpg" name="Whispering Woods" range="Lv 1 – 5">Goblins, dire wolves, the rats under the inn. The first place you draw a sword.</RegionCard>
+          <RegionCard color="#6e7a5c" art="/assets/regions/mistmoor_hills.jpg"   name="Mistmoor Hills"   range="Lv 6 – 10">Fog-laced highlands where the orcs raid down for cattle and the trolls don't bother hiding.</RegionCard>
+          <RegionCard color="#6aa7ff" art="/assets/regions/crystal_caverns.jpg"  name="Crystal Caverns"  range="Lv 10 – 15">A dwarven dig that broke into something it shouldn't have. The Overlord sleeps at the bottom.</RegionCard>
+          <RegionCard color="#c7641a" art="/assets/regions/ashen_wastes.jpg"     name="Ashen Wastes"     range="Lv 15 – 22">Burned earth from a god's argument. Revenants walk it because nothing else will.</RegionCard>
+          <RegionCard color="#6f3fb6" art="/assets/regions/shadowfell.jpg"       name="The Shadowfell"   range="Lv 24+">The Shadow Lord's territory. The road keeps going past here, into the procedural bands.</RegionCard>
         </div>
       </section>
 
       {/* Roadmap */}
       <section id="roadmap" className="section">
-        <div className="section-eyebrow" data-reveal>The Road Ahead</div>
-        <h2 className="section-title" data-reveal>A Living Game.</h2>
+        <div className="section-eyebrow" data-reveal>Roadmap</div>
+        <h2 className="section-title" data-reveal>Shipped, in flight, queued.</h2>
         <div className="roadmap-track" data-reveal>
-          <RoadmapStop state="shipped" when="Shipped" what="Core MMORPG">
-            Four classes, 37 items, eight themed sets, 17 monsters, 16 quests, four dungeons,
-            ELO arena, daily tribute, wheel of fortune, achievements, bestiary, replays.
+          <RoadmapStop state="shipped" when="Shipped" what="Core game">
+            Four classes, 200 items, eight themed sets, 350 levels of monster roster, 16 named
+            quests, four scripted dungeons plus ten procedural bands, ELO arena, daily and
+            weekly loops, achievements, bestiary, replays.
           </RoadmapStop>
-          <RoadmapStop state="shipped" when="Shipped" what="Profile & Cosmetics">
-            12 avatars, 12 rarity-tinted frames, bios, name change, public profile pages,
-            title selector.
+          <RoadmapStop state="shipped" when="Shipped" what="Profile and cosmetics">
+            Twelve avatars, twelve rarity-tinted frames, bios, name change, public profile
+            pages, title selector. All cosmetics are earned in play.
           </RoadmapStop>
           <RoadmapStop state="shipped" when="Shipped" what="Guilds">
-            Five-tier guild system, chat, wars, raid bosses, donations, treasury, member
-            management, crests.
+            Five-tier guild system, live chat, declared wars, scaling raid bosses, donation
+            ledger, treasury, member management, crest editor.
           </RoadmapStop>
-          <RoadmapStop state="now" when="Live This Month" what="Cinematic Combat 2.0">
-            Damage-scaled screen shake, hit-flash overlays, HP-bar drain, particle bursts,
-            hit-stop on crits, region-themed backdrops.
+          <RoadmapStop state="now" when="In flight" what="Cinematic combat 2.0">
+            Three.js stage with EffectComposer post-processing, hit-flash, HP-bar drain, hit-stop
+            on crits, damage-scaled screen shake. Reduced-motion respected throughout.
           </RoadmapStop>
-          <RoadmapStop state="soon" when="Next" what="Crafting & Enchanting">
-            Smithy, alchemy, and gem-socketing. Recipe drops from elite kills.
+          <RoadmapStop state="soon" when="Next" what="Crafting and enchanting">
+            Smithy, alchemy, gem socketing, recipe drops from elite kills. Same anti-paywall
+            policy: no recipe behind premium currency.
           </RoadmapStop>
-          <RoadmapStop state="later" when="Later" what="World Events">
-            Weekend boss invasions, faction wars, server-wide tournaments — prize pools paid
-            in earned gold (no premium currency, ever).
+          <RoadmapStop state="later" when="Later" what="World events">
+            Weekend boss invasions, faction wars, server-wide tournaments. Prize pools paid in
+            earned gold. No premium currency, ever.
           </RoadmapStop>
         </div>
       </section>
 
       {/* Final CTA */}
       <div className="final-cta" data-reveal="scale">
-        <h2>The Realm Awaits.</h2>
-        <p>No download. No paywall. Sign up in thirty seconds.</p>
+        <h2>Sign up. The watch needs another sword.</h2>
+        <p>No installer, no paywall. Thirty seconds and you're in Aedric.</p>
         <div className="hero-cta">
           <Link to="/register" className="btn btn-primary btn-hero">Create Your Hero</Link>
           <Link to="/login" className="btn btn-hero">I Already Play</Link>

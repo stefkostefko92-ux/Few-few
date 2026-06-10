@@ -14,12 +14,16 @@ import React, { useEffect, useRef, useState } from 'react';
  * so the user isn't ambushed every time they navigate home in the same tab.
  */
 
+// Audit: original lines were AI-fantasy-trope ("a thousand thrones held
+// the sky", "something older than gods listens"). Rewritten with the
+// restraint of an actual cold open: concrete, grounded, no em-dashes,
+// the world implied rather than declared.
 const LINES: { text: string; ms: number }[] = [
-  { text: 'A thousand thrones once held the sky.', ms: 4000 },
-  { text: 'Now ash drifts where they fell.', ms: 3600 },
-  { text: 'Beneath the Shadowfell, something older than gods turns its head — and listens.', ms: 6200 },
-  { text: 'The realm of Nexus needs no kings. It needs heroes.', ms: 4500 },
-  { text: 'Forge yours. Strike the anvil. The dominion is waiting.', ms: 5200 },
+  { text: 'The road north is open again.', ms: 3400 },
+  { text: 'Six kingdoms paid for it. None will say with what.', ms: 4600 },
+  { text: 'You start at Aedric, with a sword borrowed from the watch and a name nobody knows yet.', ms: 6800 },
+  { text: 'There is a tower at the end of the road. Climb it, and the realm learns your name.', ms: 6000 },
+  { text: 'Welcome to Nexus.', ms: 3000 },
 ];
 
 interface Props { onDone: () => void }
