@@ -1,0 +1,100 @@
+# Carbon Stealth VCC
+
+> Digital solutions agency based in Bobov Dol, Bulgaria. Specializing in web development, ERP systems, mobile applications, game development, IoT/embedded systems, and SEO/AEO optimization.
+
+## About
+
+**Company:** Carbon Stealth VCC
+**Founder & CEO:** Stefan Kostadinov
+**Founded:** 2024
+**Location:** Bobov Dol, Bulgaria (EIK: BG208725180)
+**Address:** ul. Samuil 3, Bobov Dol 2670, Bulgaria
+**Languages:** Italian, English, Bulgarian
+**Service Area:** Italy, Bulgaria, European Union, worldwide remote
+**Email:** info@carbonstealth.eu
+**Phone (Italy):** +39 379 296 9699
+**Phone (Bulgaria):** +359 877 414 874
+**Website:** https://carbonstealth.eu
+
+## Services
+
+### Web Development
+Professional websites and web applications built with React, Next.js, Vue.js, WordPress, and modern PHP frameworks. Responsive design, accessibility (WCAG), and SEO optimization included.
+- Starting price: €800
+- URL: https://carbonstealth.eu/servizi/sviluppo-siti-web/
+
+### E-Commerce
+Online stores with WooCommerce, Shopify, custom React + Stripe integrations. Multi-currency, multi-language, payment gateway integration.
+- Starting price: €1,200
+- URL: https://carbonstealth.eu/servizi/ecommerce/
+
+### Custom Software Development
+Business automation tools, REST APIs, dashboards, internal systems. Built with Node.js, Python, PostgreSQL, Docker.
+- Starting price: €2,000
+- URL: https://carbonstealth.eu/servizi/sviluppo-software/
+
+### Enterprise ERP Systems
+Complete ERP solutions: accounting, warehouse, CRM, HR, BI, manufacturing modules. Used by Italian elevator manufacturers.
+- Starting price: €5,000
+- URL: https://carbonstealth.eu/servizi/erp/
+
+### Mobile Applications
+Native iOS and Android apps with React Native and Flutter. From design to App Store/Play Store deployment.
+- Starting price: €3,000
+- URL: https://carbonstealth.eu/servizi/app-mobile/
+
+### SEO, GEO and AEO
+Optimization for Google, Bing, ChatGPT, Perplexity, Claude, Gemini. Local SEO for Italy and Bulgaria. Schema.org structured data, technical SEO.
+- Starting price: €500/month
+- URL: https://carbonstealth.eu/servizi/seo/
+
+### Cloud Hosting
+Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SLA, monitoring.
+- Starting price: €29/month
+- URL: https://carbonstealth.eu/servizi/hosting/
+
+## Notable Projects
+
+- **Nexus Dominion** — Cyberpunk browser RPG with real-time multiplayer, faction warfare, and dynamic economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. 52+ database models, real-time PvP combat.
+- **OU Nikola Vaptsarov** — Official school website in Bobov Dol. Tech: React, Vite, PHP, multilingual.
+- **Panev Ascensori** — Italian elevator manufacturer e-commerce. 27 products, Stripe integration, CAD images, Schema.org.
+- **CS Anti-Cheat v4.0** — FiveM/GTA V security platform. 40+ detection modules including DMA behavioral scoring.
+- **Gaming Portal** — Multiplayer gaming platform with chess, belot, santase. Real-time matchmaking with Socket.IO and Redis. URL: gaming.carbonstealth.eu
+- **Supreme Bot** — Bot management dashboard for automated workflows. URL: botpanel.carbonstealth.eu
+- **Treti Mart** — Bulgarian marketplace. React, Node.js, Stripe, OTP verification.
+- **ERP Ascensori** — Enterprise ERP for elevator manufacturer. Accounting, warehouse, CRM, HR, BI.
+- **Compositi Store** — E-commerce + IoT for composite materials. Eurotherm controller integration.
+
+## Tech Stack
+
+**Frontend:** React, Next.js, Vue.js, Three.js, GSAP, Tailwind CSS
+**Backend:** Node.js, TypeScript, Python, PHP, Prisma ORM
+**Database:** PostgreSQL, Redis, MySQL
+**Infrastructure:** Hetzner VPS, Docker, Nginx, Ubuntu 24.04, Let's Encrypt
+**IoT/Embedded:** Eurotherm EPC3004 (Modbus RTU/TCP), WAGO PFC200 PLC (CODESYS), Arduino, ESP32
+**Payments:** Stripe, PayPal
+**AI:** Anthropic Claude API integration
+
+## FAQ
+
+**Q: What languages does Carbon Stealth work in?**
+A: Italian, English, and Bulgarian. We serve clients across Italy, Bulgaria, and the European Union remotely.
+
+**Q: What is the minimum project size?**
+A: Starting from €800 for simple websites. ERP and custom software projects typically start at €2,000-€5,000.
+
+**Q: Does Carbon Stealth provide ongoing support?**
+A: Yes. We offer managed hosting, SEO/AEO monitoring, and software maintenance contracts starting at €29/month.
+
+**Q: Where is Carbon Stealth based?**
+A: Headquarters in Bobov Dol, Bulgaria (EIK BG208725180). All work delivered remotely.
+
+**Q: What makes Carbon Stealth different?**
+A: We build what others won't touch — complex web platforms, FiveM anti-cheat systems, embedded IoT integrations, and full enterprise ERP. Multilingual (IT/EN/BG) with response within 24 hours.
+
+## Contact
+
+For inquiries: info@carbonstealth.eu
+WhatsApp Italy: +39 379 296 9699
+WhatsApp Bulgaria: +359 877 414 874
+Free quote within 24 hours.

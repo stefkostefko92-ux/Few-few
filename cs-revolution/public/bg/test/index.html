@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Безплатен Анализ на Сайта | Carbon Stealth VCC</title>
+<meta name="description" content="Разбери дали сайтът ти губи клиенти. Безплатен анализ на скорост, SEO, Core Web Vitals и AI-готовност за 30 секунди.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://carbonstealth.eu/bg/test/">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/logo.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Безплатен Анализ на Сайта — Разбери дали Губиш Клиенти">
+<meta property="og:description" content="30 секунди. Скорост, SEO, AEO, сигурност. Да видим къде сайтът ти губи пари.">
+<meta property="og:image" content="https://carbonstealth.eu/og-image-bg.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://carbonstealth.eu/og-image-bg.png">
+<meta property="og:url" content="https://carbonstealth.eu/bg/test/">
+
+<!-- hreflang -->
+<link rel="alternate" hreflang="it" href="https://carbonstealth.eu/test/">
+<link rel="alternate" hreflang="en" href="https://carbonstealth.eu/en/test/">
+<link rel="alternate" hreflang="bg" href="https://carbonstealth.eu/bg/test/">
+<link rel="alternate" hreflang="x-default" href="https://carbonstealth.eu/test/">
+
+<!-- Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Carbon Stealth Site Analyzer",
+  "url": "https://carbonstealth.eu/test/",
+  "applicationCategory": "SEOApplication",
+  "operatingSystem": "All",
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+  "description": "Free website analysis tool. Checks speed, SEO, AEO readiness, security, and Core Web Vitals using Google PageSpeed Insights.",
+  "provider": {"@type": "Organization", "name": "Carbon Stealth VCC", "url": "https://carbonstealth.eu"}
+}
+</script>
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:#06060a;
+  color:#f0f0eb;
+  font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ═══ GLITCH EFFECTS ═══ */
+@keyframes glitch-1{
+  0%,100%{clip-path:inset(0 0 0 0);transform:translate(0)}
+  20%{clip-path:inset(20% 0 60% 0);transform:translate(-2px,1px)}
+  40%{clip-path:inset(50% 0 20% 0);transform:translate(2px,-1px)}
+  60%{clip-path:inset(10% 0 70% 0);transform:translate(-1px,2px)}
+  80%{clip-path:inset(70% 0 10% 0);transform:translate(1px,-2px)}
+}
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 20px rgba(255,51,102,0.3),0 0 40px rgba(255,51,102,0.1)}
+  50%{box-shadow:0 0 40px rgba(255,51,102,0.6),0 0 80px rgba(255,51,102,0.3)}
+}
+@keyframes pulse-glow-good{
+  0%,100%{box-shadow:0 0 20px rgba(0,255,136,0.3),0 0 40px rgba(0,255,136,0.1)}
+  50%{box-shadow:0 0 40px rgba(0,255,136,0.6),0 0 80px rgba(0,255,136,0.3)}
+}
+@keyframes scan-line{
+  0%{transform:translateY(-100vh)}
+  100%{transform:translateY(100vh)}
+}
+@keyframes counter-pop{
+  0%{transform:scale(0.5);opacity:0}
+  60%{transform:scale(1.15);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes slide-up{
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  10%,30%,50%,70%,90%{transform:translateX(-3px)}
+  20%,40%,60%,80%{transform:translateX(3px)}
+}
+@keyframes flicker{
+  0%,100%{opacity:1}
+  41.99%{opacity:1}
+  42%{opacity:0.3}
+  43%{opacity:1}
+  47.99%{opacity:1}
+  48%{opacity:0.5}
+  48.5%{opacity:1}
+}
+@keyframes particle-rise{
+  from{transform:translateY(100vh);opacity:0}
+  10%{opacity:1}
+  90%{opacity:1}
+  to{transform:translateY(-100vh);opacity:0}
+}
+.glitch-text{position:relative;display:inline-block}
+.glitch-text::before,.glitch-text::after{
+  content:attr(data-text);position:absolute;top:0;left:0;width:100%;
+  background:transparent;pointer-events:none;
+}
+.glitch-text::before{color:#ff006f;animation:glitch-1 3.2s infinite linear alternate-reverse;z-index:-1;opacity:0.5}
+.glitch-text::after{color:#00e5ff;animation:glitch-1 2.8s infinite linear alternate;z-index:-1;opacity:0.5}
+
+/* === BACKGROUND === */
+.cs-bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at top,#0c0c14 0%,#05050a 60%,#020204 100%)}
+.cs-bg::before{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(circle at 1px 1px,rgba(0,229,255,0.08) 1px,transparent 1px);
+  background-size:32px 32px;opacity:.5;
+  animation:gridMove 60s linear infinite;
+}
+@keyframes gridMove{from{background-position:0 0}to{background-position:32px 32px}}
+.cs-bg::after{
+  content:"";position:absolute;top:-200px;left:50%;transform:translateX(-50%);
+  width:900px;height:900px;
+  background:radial-gradient(circle,rgba(0,229,255,0.06),transparent 60%);
+  filter:blur(60px);
+}
+
+/* Floating particles */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.particles span{
+  position:absolute;display:block;width:2px;height:2px;background:#00e5ff;
+  border-radius:50%;opacity:0;box-shadow:0 0 6px #00e5ff;
+  animation:particle-rise linear infinite;
+}
+
+/* Scan line overlay when analyzing */
+.scan-overlay{position:fixed;inset:0;pointer-events:none;z-index:10;opacity:0;transition:opacity .3s}
+.scan-overlay.active{opacity:1}
+.scan-overlay::before{
+  content:"";position:absolute;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,#00e5ff,transparent);
+  box-shadow:0 0 20px rgba(0,229,255,0.8);
+  animation:scan-line 2s linear infinite;
+}
+
+/* === NAVBAR === */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;background:rgba(6,6,10,0.75);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,0.08)}
+nav .row{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+nav .logo{display:flex;align-items:center;gap:10px;color:#f0f0eb;text-decoration:none;font-weight:800;letter-spacing:-0.3px;font-size:15px}
+nav .logo img{height:28px;filter:drop-shadow(0 0 12px rgba(0,229,255,0.5))}
+nav a.back{color:#aaa;text-decoration:none;font-size:13px;letter-spacing:0.05em}
+nav a.back:hover{color:#00e5ff}
+
+/* === HERO === */
+.hero{padding:100px 24px 48px;text-align:center;position:relative}
+.hero .eyebrow{display:inline-block;padding:6px 16px;border:1px solid rgba(0,229,255,0.3);border-radius:24px;color:#00e5ff;font-size:11px;letter-spacing:3px;font-weight:600;margin-bottom:24px;background:rgba(0,229,255,0.05)}
+.hero h1{font-size:clamp(36px,6vw,72px);font-weight:900;letter-spacing:-2px;line-height:1.02;margin-bottom:16px}
+.hero h1 .gradient{background:linear-gradient(135deg,#00e5ff 0%,#7e4eff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .subtitle{font-size:clamp(16px,2.2vw,20px);color:#aaa;max-width:620px;margin:0 auto 40px;line-height:1.5}
+.hero .subtitle strong{color:#fff}
+
+/* === INPUT FORM === */
+.analyzer{max-width:720px;margin:0 auto;padding:24px 24px 60px}
+.analyzer-box{background:linear-gradient(135deg,rgba(14,14,22,0.9),rgba(8,8,14,0.9));border:1px solid rgba(0,229,255,0.2);border-radius:20px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 80px rgba(0,229,255,0.05);position:relative;overflow:hidden}
+.analyzer-box::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#00e5ff,transparent)}
+.input-row{display:flex;gap:10px;flex-wrap:wrap}
+.input-row input{flex:1;min-width:250px;padding:18px 20px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;font-size:16px;font-family:inherit;outline:none;transition:all 0.2s}
+.input-row input:focus{border-color:#00e5ff;background:rgba(0,0,0,0.6);box-shadow:0 0 0 4px rgba(0,229,255,0.1)}
+.input-row input::placeholder{color:#555}
+.btn-analyze{padding:18px 36px;background:linear-gradient(135deg,#00e5ff 0%,#00b8d4 100%);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;box-shadow:0 8px 24px rgba(0,229,255,0.3);font-family:inherit}
+.btn-analyze:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,229,255,0.5)}
+.btn-analyze:disabled{opacity:0.5;cursor:not-allowed}
+.consent{display:flex;align-items:flex-start;gap:10px;margin-top:18px;font-size:12px;color:#888;line-height:1.5}
+.consent input[type="checkbox"]{margin-top:3px;accent-color:#00e5ff}
+.consent a{color:#00e5ff;text-decoration:none}
+.consent a:hover{text-decoration:underline}
+
+/* === LOADING STATE === */
+.loading{text-align:center;padding:60px 24px;display:none}
+.loading.active{display:block}
+.loader{display:inline-block;width:80px;height:80px;border:3px solid rgba(0,229,255,0.1);border-top-color:#00e5ff;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading h2{font-size:24px;margin-bottom:8px;font-weight:700}
+.loading p{color:#888;font-size:14px}
+.loading-steps{display:flex;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap}
+.loading-step{padding:6px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:20px;font-size:11px;color:#666;letter-spacing:0.1em;transition:all 0.3s}
+.loading-step.active{background:rgba(0,229,255,0.15);border-color:#00e5ff;color:#00e5ff}
+.loading-step.done{background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.3);color:#00ff88}
+
+/* === RESULTS === */
+.results{max-width:1200px;margin:0 auto;padding:0 24px 60px;display:none}
+.results.active{display:block;animation:fadeUp 0.6s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.verdict{background:linear-gradient(135deg,rgba(255,51,102,0.1),rgba(255,51,102,0.02));border:1px solid rgba(255,51,102,0.3);border-radius:20px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden}
+.verdict.good{background:linear-gradient(135deg,rgba(0,255,136,0.1),rgba(0,255,136,0.02));border-color:rgba(0,255,136,0.3)}
+.verdict.warn{background:linear-gradient(135deg,rgba(255,170,0,0.1),rgba(255,170,0,0.02));border-color:rgba(255,170,0,0.3)}
+.verdict .label{display:inline-block;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:800;letter-spacing:0.2em;margin-bottom:12px;background:rgba(255,51,102,0.2);color:#ff3366}
+.verdict.good .label{background:rgba(0,255,136,0.2);color:#00ff88}
+.verdict.warn .label{background:rgba(255,170,0,0.2);color:#ffaa00}
+.verdict h2{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-1px;line-height:1.1;margin-bottom:12px}
+.verdict .shock{font-size:22px;font-weight:700;color:#fff;margin-top:16px}
+.verdict .shock-big{font-size:52px;font-weight:900;color:#ff3366;line-height:1;margin:12px 0;letter-spacing:-2px}
+.verdict.good .shock-big{color:#00ff88}
+.verdict.warn .shock-big{color:#ffaa00}
+.verdict .shock-sub{color:#aaa;font-size:14px}
+
+.scores-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.score-card{background:rgba(14,14,22,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;position:relative;overflow:hidden;transition:transform 0.2s;animation:slide-up 0.6s ease-out backwards}
+.score-card:nth-child(1){animation-delay:0.1s}
+.score-card:nth-child(2){animation-delay:0.2s}
+.score-card:nth-child(3){animation-delay:0.3s}
+.score-card:nth-child(4){animation-delay:0.4s}
+.score-card:nth-child(5){animation-delay:0.5s}
+.score-card:hover{transform:translateY(-4px)}
+.score-card .cat{font-size:11px;color:#666;letter-spacing:0.2em;margin-bottom:12px;font-weight:600}
+.score-card .value{font-size:64px;font-weight:900;line-height:1;letter-spacing:-3px}
+.score-card .unit{font-size:18px;color:#555;font-weight:700}
+.score-card .bar{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;margin-top:12px;overflow:hidden}
+.score-card .bar-fill{height:100%;transition:width 1s ease}
+.score-card.good .value,.score-card.good .bar-fill{color:#00ff88;background:#00ff88}
+.score-card.warn .value,.score-card.warn .bar-fill{color:#ffaa00;background:#ffaa00}
+.score-card.bad .value,.score-card.bad .bar-fill{color:#ff3366;background:#ff3366}
+
+/* === SECTION BOXES === */
+.section{background:rgba(14,14,22,0.6);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:28px;margin-bottom:16px}
+.section h3{font-size:18px;font-weight:800;margin-bottom:4px;letter-spacing:-0.3px}
+.section .section-sub{color:#666;font-size:13px;margin-bottom:20px}
+.issues-list{display:grid;gap:10px}
+.issue{display:grid;grid-template-columns:28px 1fr auto;gap:14px;padding:14px;background:rgba(255,51,102,0.05);border:1px solid rgba(255,51,102,0.15);border-radius:10px;align-items:center}
+.issue.warn{background:rgba(255,170,0,0.05);border-color:rgba(255,170,0,0.15)}
+.issue.good{background:rgba(0,255,136,0.05);border-color:rgba(0,255,136,0.15)}
+.issue .dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:rgba(255,51,102,0.15);color:#ff3366}
+.issue.warn .dot{background:rgba(255,170,0,0.15);color:#ffaa00}
+.issue.good .dot{background:rgba(0,255,136,0.15);color:#00ff88}
+.issue .text{font-size:14px;color:#ddd}
+.issue .text strong{color:#fff}
+.issue .badge{font-size:10px;padding:3px 8px;border-radius:8px;background:rgba(255,255,255,0.05);color:#999;letter-spacing:0.1em;font-weight:700;white-space:nowrap}
+
+/* === CWV === */
+.cwv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px}
+.cwv-card{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:18px;text-align:center}
+.cwv-card .abbr{font-size:10px;color:#555;letter-spacing:0.2em;font-weight:700;margin-bottom:6px}
+.cwv-card .val{font-size:24px;font-weight:800;letter-spacing:-0.5px}
+.cwv-card .th{font-size:11px;color:#666;margin-top:2px}
+.cwv-card.good .val{color:#00ff88}
+.cwv-card.warn .val{color:#ffaa00}
+.cwv-card.bad .val{color:#ff3366}
+
+/* === COMPARISON === */
+.comparison{background:linear-gradient(135deg,rgba(126,78,255,0.08),rgba(0,229,255,0.04));border:1px solid rgba(126,78,255,0.2);border-radius:20px;padding:32px;margin:24px 0;text-align:center}
+.comparison .label{color:#7e4eff;font-size:11px;letter-spacing:0.2em;font-weight:700;margin-bottom:16px}
+.comparison h3{font-size:22px;font-weight:800;margin-bottom:24px}
+.comparison-bars{display:grid;gap:18px;max-width:600px;margin:0 auto;text-align:left}
+.comp-bar{display:grid;grid-template-columns:140px 1fr 60px;gap:14px;align-items:center}
+.comp-bar .name{font-size:13px;color:#aaa;font-weight:600}
+.comp-bar .track{height:10px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden}
+.comp-bar .fill{height:100%;border-radius:5px;transition:width 1.2s ease}
+.comp-bar .num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;text-align:right}
+.source-note{font-size:10px;color:#555;margin-top:16px;letter-spacing:0.05em}
+
+/* === LEAD CAPTURE === */
+.lead-box{background:linear-gradient(135deg,#0c0c18,#1a0f24);border:1px solid rgba(0,229,255,0.3);border-radius:24px;padding:40px;margin:40px 0;text-align:center;position:relative;overflow:hidden;box-shadow:0 20px 80px rgba(0,229,255,0.15)}
+.lead-box::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,#7e4eff,transparent)}
+.lead-box .label{display:inline-block;padding:6px 16px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:24px;color:#00e5ff;font-size:11px;letter-spacing:0.2em;font-weight:700;margin-bottom:16px}
+.lead-box h2{font-size:clamp(24px,3.5vw,36px);font-weight:900;margin-bottom:12px;letter-spacing:-1px}
+.lead-box p{color:#aaa;max-width:520px;margin:0 auto 28px;font-size:15px}
+.lead-form{display:grid;gap:10px;max-width:440px;margin:0 auto}
+.lead-form input,.lead-form textarea{width:100%;padding:14px 18px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:all 0.2s}
+.lead-form input:focus,.lead-form textarea:focus{border-color:#00e5ff;background:rgba(0,0,0,0.7)}
+.lead-form textarea{resize:vertical;min-height:80px}
+.lead-form button{padding:16px;background:linear-gradient(135deg,#00e5ff,#00b8d4);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:all 0.2s;margin-top:6px}
+.lead-form button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,229,255,0.4)}
+.lead-form button:disabled{opacity:0.5}
+.lead-success{display:none;padding:24px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;color:#00ff88;font-weight:700}
+.lead-success.active{display:block}
+
+/* === ERROR === */
+.error-box{background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.3);border-radius:16px;padding:24px;text-align:center;color:#ff3366;display:none}
+.error-box.active{display:block}
+
+/* === FOOTER === */
+footer{text-align:center;padding:40px 24px;color:#444;font-size:12px;border-top:1px solid rgba(255,255,255,0.05);margin-top:60px}
+footer a{color:#888;text-decoration:none}
+footer a:hover{color:#00e5ff}
+
+/* === MOBILE === */
+@media(max-width:640px){
+  .hero{padding:90px 16px 32px}
+  .analyzer{padding:16px 16px 40px}
+  .analyzer-box{padding:20px}
+  .input-row{flex-direction:column}
+  .input-row input{min-width:0}
+  .btn-analyze{width:100%}
+  .results{padding:0 16px 40px}
+  .section{padding:20px}
+  .verdict{padding:24px 20px}
+  .comp-bar{grid-template-columns:100px 1fr 50px;gap:10px}
+  .issue{grid-template-columns:24px 1fr}
+  .issue .badge{grid-column:2;justify-self:start}
+  .lead-box{padding:28px 20px}
+}
+</style>
+
+<!-- Umami Analytics (uncomment after deploying Umami) -->
+<!-- <script defer src="https://analytics.carbonstealth.eu/cs-track.js" data-website-id="UMAMI_SITE_ID"></script> -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="cs-bg"></div>
+<div class="particles" id="particles"></div>
+<div class="scan-overlay" id="scan-overlay"></div>
+
+<nav>
+  <div class="row">
+    <a href="/" class="logo">
+      <img src="/logo.png" alt="Carbon Stealth VCC">
+      <span>CARBON STEALTH</span>
+    </a>
+    <a href="/bg/" class="back">← НАЧАЛО</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">БЕЗПЛАТЕН АНАЛИЗ · 30 СЕКУНДИ</div>
+  <h1>Сайтът ти <span class="gradient">губи клиенти</span>.<br>Да разберем заедно.</h1>
+  <p class="subtitle">
+    Въведи URL. Анализираме <strong>скорост</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-готовност</strong> и сигурност.
+    Безплатно. Без регистрация. Без глупости.
+  </p>
+</section>
+
+<section class="analyzer">
+  <div class="analyzer-box">
+    <div class="input-row">
+      <input type="text" id="url-input" placeholder="https://example.bg" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn-analyze" id="analyze-btn">Анализирай Сега</button>
+    </div>
+    <label class="consent">
+      <input type="checkbox" id="consent-check">
+      <span>Съгласен съм Carbon Stealth да съхранява анонимни резултати за агрегирани анализи. <a href="/bg/privacy/" target="_blank">Политика за поверителност</a></span>
+    </label>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="loader"></div>
+    <h2>Анализиране...</h2>
+    <p>Свързваме се с Google PageSpeed Insights и проверяваме десетки параметри.</p>
+    <div class="loading-steps" id="loading-steps">
+      <div class="loading-step" data-step="0">PING DNS</div>
+      <div class="loading-step" data-step="1">HTML SCAN</div>
+      <div class="loading-step" data-step="2">SSL CHECK</div>
+      <div class="loading-step" data-step="3">ROBOTS.TXT</div>
+      <div class="loading-step" data-step="4">SITEMAP.XML</div>
+      <div class="loading-step" data-step="5">SCHEMA.ORG</div>
+      <div class="loading-step" data-step="6">PSI MOBILE</div>
+      <div class="loading-step" data-step="7">PSI DESKTOP</div>
+      <div class="loading-step" data-step="8">CWV METRICS</div>
+    </div>
+  </div>
+
+  <div class="error-box" id="error-box"></div>
+</section>
+
+<section class="results" id="results"></section>
+
+<footer>
+  Carbon Stealth VCC · <a href="/">carbonstealth.eu</a> · EIK BG208725180 · Bobov Dol, Bulgaria<br>
+  Powered by <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a>
+</footer>
+
+<script>
+// ═══ A/B TESTING ═══
+const AB_VARIANTS = {
+  A: {
+    eyebrow: 'БЕЗПЛАТЕН АНАЛИЗ · 30 СЕКУНДИ',
+    h1: 'Сайтът ти <span class="gradient">губи клиенти</span>.<br>Да разберем заедно.',
+    sub: 'Въведи URL. Анализираме <strong>скорост</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-готовност</strong> и сигурност.<br>Безплатно. Без регистрация. Без глупости.',
+    cta: 'Анализирай Сега'
+  },
+  B: {
+    eyebrow: 'БЕЗПЛАТНО · БЕЗ РЕГИСТРАЦИЯ',
+    h1: 'Колко бърз е <span class="gradient">твоят сайт</span>?<br>Казваме ти за 30 секунди.',
+    sub: 'Google наказва бавните сайтове. Разбери <strong>реалния си резултат</strong> за скорост, SEO, сигурност и AI-готовност.<br>100% безплатно. Без спам.',
+    cta: 'Виж Резултата'
+  }
+};
+
+function getABVariant() {
+  const match = document.cookie.match(/cs_ab=([AB])/);
+  if (match) return match[1];
+  const variant = Math.random() < 0.5 ? 'A' : 'B';
+  document.cookie = 'cs_ab=' + variant + ';path=/;max-age=2592000;SameSite=Lax';
+  return variant;
+}
+
+const AB_VARIANT = getABVariant();
+const AB = AB_VARIANTS[AB_VARIANT];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const eyebrow = document.querySelector('.hero .eyebrow');
+  const h1 = document.querySelector('.hero h1');
+  const subtitle = document.querySelector('.hero .subtitle');
+  const btnEl = document.querySelector('.btn-analyze');
+  if (eyebrow) eyebrow.textContent = AB.eyebrow;
+  if (h1) h1.innerHTML = AB.h1;
+  if (subtitle) subtitle.innerHTML = AB.sub;
+  if (btnEl) btnEl.textContent = AB.cta;
+});
+
+// ═══ ANALYZER LOGIC ═══
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+const input = $('#url-input');
+const btn = $('#analyze-btn');
+const loading = $('#loading');
+const results = $('#results');
+const errorBox = $('#error-box');
+const consent = $('#consent-check');
+const scanOverlay = $('#scan-overlay');
+
+// Particle spawner — 30 floating particles
+(function spawnParticles(){
+  const container = $('#particles');
+  if(!container) return;
+  for(let i = 0; i < 30; i++){
+    const p = document.createElement('span');
+    const left = Math.random() * 100;
+    const delay = Math.random() * 20;
+    const duration = 15 + Math.random() * 25;
+    const size = 1 + Math.random() * 3;
+    p.style.left = left + '%';
+    p.style.bottom = '-10px';
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.animationDelay = delay + 's';
+    p.style.animationDuration = duration + 's';
+    p.style.opacity = (0.2 + Math.random() * 0.6).toFixed(2);
+    container.appendChild(p);
+  }
+})();
+
+// Auto-prefix https://
+input.addEventListener('blur', () => {
+  let v = input.value.trim();
+  if (v && !v.match(/^https?:\/\//i)) {
+    input.value = 'https://' + v;
+  }
+});
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') runAnalysis();
+});
+
+btn.addEventListener('click', runAnalysis);
+
+// Loading step animation
+function setLoadingStep(step) {
+  $$('.loading-step').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove('active', 'done');
+    if (s < step) el.classList.add('done');
+    else if (s === step) el.classList.add('active');
+  });
+}
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add('active');
+  loading.classList.remove('active');
+  scanOverlay.classList.remove('active');
+  btn.disabled = false;
+  btn.textContent = 'Анализирай Сега';
+}
+
+async function runAnalysis() {
+  let url = input.value.trim();
+  if (!url) { input.focus(); return; }
+  if (!url.match(/^https?:\/\//i)) url = 'https://' + url;
+
+  try { new URL(url); } catch { showError('Невалиден URL'); return; }
+
+  errorBox.classList.remove('active');
+  results.classList.remove('active');
+  loading.classList.add('active');
+  scanOverlay.classList.add('active');
+  btn.disabled = true;
+  btn.textContent = 'Анализиране...';
+
+  // Animate loading steps
+  let step = 0;
+  setLoadingStep(0);
+  const stepInterval = setInterval(() => {
+    step++;
+    if (step > 8) { clearInterval(stepInterval); return; }
+    setLoadingStep(step);
+  }, 2500);
+
+  try {
+    const res = await fetch('/api/analyze.php?action=analyze', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ url, consent: consent.checked })
+    });
+    const data = await res.json();
+    clearInterval(stepInterval);
+    $$('.loading-step').forEach(el => el.classList.add('done'));
+    
+    if (!data.ok) { showError(data.error || 'Неизвестна грешка'); return; }
+    
+    setTimeout(() => {
+      loading.classList.remove('active');
+      scanOverlay.classList.remove('active');
+      renderResults(data);
+      btn.disabled = false;
+      btn.textContent = 'Анализирай друг сайт';
+    }, 400);
+  } catch (e) {
+    clearInterval(stepInterval);
+    scanOverlay.classList.remove('active');
+    showError('Грешка при свързване. Опитай отново.');
+  }
+}
+
+// === RENDER RESULTS ===
+function renderResults(d) {
+  const html = d.html || {};
+  const psi_m = d.psi_mobile || {};
+  const psi_d = d.psi_desktop || {};
+  const robots = d.robots || {};
+  const sitemap = d.sitemap || {};
+  const ssl = d.ssl;
+
+  // Compute overall score (mobile perf is most important)
+  const psiAvailable = psi_m.performance !== null && psi_m.performance !== undefined && !psi_m.error;
+  const perfM = psi_m.performance ?? 0;
+  const seoM = psi_m.seo ?? 0;
+  const accM = psi_m.accessibility ?? 0;
+  const bpM = psi_m.best_practices ?? 0;
+  const overall = Math.round((perfM + seoM + accM + bpM) / 4);
+
+  // Shock stat: estimated visitors lost
+  // Google/Akamai: every +1s load time = 7% conversion loss
+  // Bounce rate jumps from 32% (1s) → 90% (5s)
+  const lcp = psi_m.lcp_ms || 0;
+  const lcpSec = lcp / 1000;
+  let lostPct = 0;
+  if (lcpSec > 2.5) lostPct = Math.min(90, Math.round(7 * (lcpSec - 2.5) + 20));
+  else if (lcpSec > 1.5) lostPct = Math.min(50, Math.round(7 * (lcpSec - 1.5) + 5));
+  else lostPct = Math.max(0, Math.round(5 * lcpSec));
+
+  let verdictClass = 'bad', verdictLabel = 'КРИТИЧНО';
+  let verdictTitle = 'Сайтът ти губи пари всеки ден.';
+  if (overall >= 80) {
+    verdictClass = 'good'; verdictLabel = 'ОТЛИЧНО';
+    verdictTitle = 'Сайтът ти е в добро състояние.';
+  } else if (overall >= 55) {
+    verdictClass = 'warn'; verdictLabel = 'ТРЯБВА РАБОТА';
+    verdictTitle = 'Сайтът ти има проблеми, които ти струват конверсии.';
+  }
+
+  let html_out = '';
+  
+  // === PSI ERROR BANNER ===
+  if (!psiAvailable) {
+    const psiErr = psi_m.error || 'API unavailable';
+    html_out += `<div style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);border-radius:12px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
+      <div style="font-size:28px">⚠️</div>
+      <div>
+        <div style="color:#ffaa00;font-weight:700;font-size:14px;margin-bottom:4px">Google PageSpeed Insights non disponibile</div>
+        <div style="color:#999;font-size:13px">${psiErr.includes('429') ? "Limite giornaliero raggiunto. Riprova domani o contattaci per un&#39;analisi completa." : "Errore API: " + psiErr}</div>
+        <div style="color:#666;font-size:11px;margin-top:6px">I dati HTML, SEO on-page, Schema.org e sicurezza sono comunque analizzati correttamente.</div>
+      </div>
+    </div>`;
+  }
+
+  // === VERDICT ===
+  if (psiAvailable) {
+  html_out += `
+    <div class="verdict ${verdictClass}" style="${verdictClass === 'good' ? 'animation: pulse-glow-good 3s ease-in-out infinite' : verdictClass === 'bad' ? 'animation: pulse-glow 3s ease-in-out infinite' : ''}">
+      <div class="label">${verdictLabel}</div>
+      <h2 class="glitch-text" data-text="${escapeHtml(verdictTitle)}">${verdictTitle}</h2>
+      <div class="shock">С LCP от <strong>${lcpSec.toFixed(1)}s</strong> губиш оценено</div>
+      <div class="shock-big" data-target="${lostPct}" style="animation: counter-pop 0.8s ease-out">0%</div>
+      <div class="shock-sub">от потенциални клиенти, които си тръгват преди да се зареди страницата<br><small style="opacity:0.6">Източник: Google/Akamai — всяка +1s LCP = 7% загубени конверсии</small></div>
+    </div>
+  `;
+  } else {
+    html_out += `
+      <div class="verdict warn">
+        <div class="label">ЧАСТИЧЕН АНАЛИЗ</div>
+        <h2>Анализирахме HTML, SEO и сигурността на сайта ти.</h2>
+        <div style="color:#aaa;margin-top:12px;font-size:15px">PageSpeed резултати (скорост, Core Web Vitals) не са налични в момента.<br>Свържи се с нас за пълен анализ.</div>
+      </div>
+    `;
+  }
+
+  // === SCORES GRID ===
+  if (psiAvailable) {
+  html_out += `<div class="scores-grid">`;
+  const scoreCards = [
+    ['ПРОИЗВОДИТЕЛНОСТ MOBILE', perfM, '/100'],
+    ['ПРОИЗВОДИТЕЛНОСТ DESKTOP', psi_d.performance ?? 0, '/100'],
+    ['SEO', seoM, '/100'],
+    ['ДОСТЪПНОСТ', accM, '/100'],
+    ['ДОБРИ ПРАКТИКИ', bpM, '/100'],
+  ];
+  scoreCards.forEach(([label, val, unit]) => {
+    const isNA = !psiAvailable && (label.includes('PERFORM') || label === 'SEO' || label.includes('ACCESS') || label.includes('BEST') || label.includes('ДОСТЪП') || label.includes('ДОБРИ') || label.includes('ПРОИЗВОДИТЕЛНОСТ'));
+    const cls = isNA ? '' : val >= 90 ? 'good' : val >= 50 ? 'warn' : 'bad';
+    html_out += `
+      <div class="score-card ${cls}">
+        <div class="cat">${label}</div>
+        <div class="value">${isNA ? '<span style="color:#555;font-size:32px">N/A</span>' : val + '<span class="unit">' + unit + '</span>'}</div>
+        <div class="bar"><div class="bar-fill" style="width:${isNA ? 0 : val}%"></div></div>
+      </div>
+    `;
+  });
+  html_out += `</div>`;
+  } // end psiAvailable scores
+
+  // === CORE WEB VITALS ===
+  if (psiAvailable) {
+  html_out += `<div class="section">
+    <h3>⚡ Core Web Vitals (Mobile)</h3>
+    <p class="section-sub">Google ги използва като ranking фактор. Числата трябва да са зелени.</p>
+    <div class="cwv-grid">
+      ${cwvCard('LCP', psi_m.lcp_ms, 'ms', 2500, 4000)}
+      ${cwvCard('FCP', psi_m.fcp_ms, 'ms', 1800, 3000)}
+      ${cwvCard('CLS', psi_m.cls, '', 0.1, 0.25)}
+      ${cwvCard('TBT', psi_m.tbt_ms, 'ms', 200, 600)}
+      ${cwvCard('SI', psi_m.si_ms, 'ms', 3400, 5800)}
+      ${cwvCard('TTI', psi_m.tti_ms, 'ms', 3800, 7300)}
+    </div>
+  </div>`;
+  } // end psiAvailable CWV
+
+  // === ISSUES ===
+  const issues = buildIssues(html, robots, sitemap, ssl, psi_m);
+  if (issues.length) {
+    const badCount = issues.filter(i => i.severity === 'bad').length;
+    const warnCount = issues.filter(i => i.severity === 'warn').length;
+    const goodCount = issues.filter(i => i.severity === 'good').length;
+    
+    html_out += `<div class="section">
+      <h3>🔍 Подробен Одит</h3>
+      <p class="section-sub">${badCount} критични · ${warnCount} предупреждения · ${goodCount} OK</p>
+      <div class="issues-list">
+        ${issues.map(i => `
+          <div class="issue ${i.severity}">
+            <div class="dot">${i.severity === 'bad' ? '✕' : i.severity === 'warn' ? '!' : '✓'}</div>
+            <div class="text"><strong>${i.title}</strong>${i.detail ? '<br><span style="color:#999">' + i.detail + '</span>' : ''}</div>
+            <div class="badge">${i.category}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+
+  // === COMPARISON ===
+  if (psiAvailable) html_out += renderComparison(perfM, seoM);
+
+  // === LEAD CAPTURE ===
+  const urgency = overall < 55 ? 'Твоят сайт ha bisogno di lavoro urgente.' :
+                  overall < 80 ? 'Ci sono ottimizzazioni importanti da fare.' :
+                  "Винаги има място за подобрение.";
+  
+  html_out += `
+    <div class="lead-box" id="lead-box">
+      <div class="label">БЕЗПЛАТНА КОНСУЛТАЦИЯ · 15 МИНУТИ</div>
+      <h2>${urgency}</h2>
+      <p>Остави ни контактите си. Ще се обадим в рамките на 24ч с <strong>конкретен план за действие</strong> за всеки намерен проблем. Без ангажимент, без агресивни продавачи.</p>
+      <form class="lead-form" id="lead-form">
+        <input type="text" name="name" placeholder="Име и фамилия" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="tel" name="phone" placeholder="Телефон (незадължително)">
+        <textarea name="message" placeholder="Искаш ли да добавиш нещо? (незадължително)" rows="2"></textarea>
+        <input type="hidden" name="tested_url" value="${escapeHtml(d.url)}">
+        <button type="submit">Поискай безплатна консултация</button>
+      </form>
+      <div class="lead-success" id="lead-success">
+        ✓ Заявката е изпратена! Ще се свържем в рамките на 24 часа.
+      </div>
+    </div>
+  `;
+
+  results.innerHTML = html_out;
+  results.classList.add('active');
+  results.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+  // Animate score bars
+  setTimeout(() => {
+    $$('.bar-fill').forEach(el => {
+      const w = el.style.width;
+      el.style.width = '0';
+      requestAnimationFrame(() => { el.style.width = w; });
+    });
+  }, 200);
+
+  // Counter animation for shock-big number
+  setTimeout(() => {
+    const el = $('.shock-big');
+    if (el) {
+      const target = parseInt(el.getAttribute('data-target'));
+      let current = 0;
+      const duration = 1400;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.round(target * eased);
+        el.textContent = current + '%';
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+  }, 600);
+
+  // Animate scores counting up
+  setTimeout(() => {
+    $$('.score-card .value').forEach(el => {
+      const text = el.textContent;
+      const num = parseInt(text);
+      if (isNaN(num)) return;
+      const unit = el.querySelector('.unit');
+      const unitText = unit ? unit.outerHTML : '';
+      let current = 0;
+      const duration = 1200;
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.round(num * eased);
+        el.innerHTML = current + unitText;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }, 400);
+
+  // Attach lead form handler
+  const leadForm = $('#lead-form');
+  if (leadForm) leadForm.addEventListener('submit', handleLeadSubmit);
+}
+
+function cwvCard(abbr, val, unit, goodTh, warnTh) {
+  if (val === null || val === undefined) {
+    return `<div class="cwv-card"><div class="abbr">${abbr}</div><div class="val" style="color:#444">—</div><div class="th">n/a</div></div>`;
+  }
+  let display = unit === 'ms' ? (val >= 1000 ? (val/1000).toFixed(1) + 's' : Math.round(val) + 'ms') : val;
+  let cls = 'good', th = 'добро';
+  if (val > warnTh) { cls = 'bad'; th = 'лошо'; }
+  else if (val > goodTh) { cls = 'warn'; th = 'средно'; }
+  return `<div class="cwv-card ${cls}"><div class="abbr">${abbr}</div><div class="val">${display}</div><div class="th">${th}</div></div>`;
+}
+
+function buildIssues(html, robots, sitemap, ssl, psi) {
+  const issues = [];
+  
+  // === TITLE ===
+  if (!html.title) issues.push({severity:'bad', category:'SEO', title:'Meta title липсва', detail:'Google ще покаже автоматично заглавие'});
+  else if (html.title_length < 30) issues.push({severity:'warn', category:'SEO', title:`Title е твърде кратък (${html.title_length} символа)`, detail:'Оптимално: 50-60 символа'});
+  else if (html.title_length > 65) issues.push({severity:'warn', category:'SEO', title:`Title е твърде дълъг (${html.title_length} символа)`, detail:'Google го отрязва над 60 символа'});
+  else issues.push({severity:'good', category:'SEO', title:`Meta title оптимален (${html.title_length} символа)`});
+
+  // === DESCRIPTION ===
+  if (!html.description) issues.push({severity:'bad', category:'SEO', title:'Meta description липсва', detail:'Google ще генерира автоматичен snippet, намаляващ CTR'});
+  else if (html.description_length < 100) issues.push({severity:'warn', category:'SEO', title:`Description е твърде кратък (${html.description_length} символа)`, detail:'Оптимално: 140-160 символа'});
+  else if (html.description_length > 170) issues.push({severity:'warn', category:'SEO', title:`Description е твърде дълъг (${html.description_length} символа)`, detail:'Google го отрязва над 160'});
+  else issues.push({severity:'good', category:'SEO', title:`Meta description оптимален (${html.description_length} символа)`});
+
+  // === CANONICAL ===
+  if (!html.canonical) issues.push({severity:'warn', category:'SEO', title:'Canonical URL липсва', detail:'Риск от дублирано съдържание'});
+  else issues.push({severity:'good', category:'SEO', title:'Canonical URL зададен'});
+
+  // === H1 ===
+  if (html.h1_count === 0) issues.push({severity:'bad', category:'SEO', title:'Няма H1 таг', detail:'Google използва H1 за темата на страницата'});
+  else if (html.h1_count > 1) issues.push({severity:'warn', category:'SEO', title:`${html.h1_count} H1 тага намерени`, detail:'Best practice: един H1 на страница'});
+  else issues.push({severity:'good', category:'SEO', title:'H1 правилно дефиниран'});
+
+  // === VIEWPORT ===
+  if (!html.viewport) issues.push({severity:'bad', category:'MOBILE', title:'Meta viewport липсва', detail:'Сайтът НЯМА да е mobile-friendly'});
+  else issues.push({severity:'good', category:'MOBILE', title:'Meta viewport присъства'});
+
+  // === HTTPS ===
+  if (!html.is_https) issues.push({severity:'bad', category:'СИГУРНОСТ', title:'Сайтът не е на HTTPS', detail:'Google наказва HTTP сайтове + браузърите показват "не е сигурен"'});
+  else issues.push({severity:'good', category:'СИГУРНОСТ', title:'HTTPS активен'});
+
+  // === SSL EXPIRY ===
+  if (ssl && ssl.days_until_expiry !== undefined) {
+    if (ssl.days_until_expiry < 7) issues.push({severity:'bad', category:'СИГУРНОСТ', title:`SSL сертификатът изтича след ${ssl.days_until_expiry} дни`, detail:`Издаден от: ${ssl.issuer}`});
+    else if (ssl.days_until_expiry < 30) issues.push({severity:'warn', category:'СИГУРНОСТ', title:`SSL сертификатът изтича след ${ssl.days_until_expiry} дни`, detail:'Подновете скоро'});
+    else issues.push({severity:'good', category:'СИГУРНОСТ', title:`SSL сертификатът е валиден (${ssl.days_until_expiry} дни)`});
+  }
+
+  // === SECURITY HEADERS ===
+  const missingSec = [];
+  if (!html.has_hsts) missingSec.push('HSTS');
+  if (!html.has_csp) missingSec.push('CSP');
+  if (!html.has_xfo) missingSec.push('X-Frame-Options');
+  if (!html.has_xcto) missingSec.push('X-Content-Type-Options');
+  if (!html.has_referrer_policy) missingSec.push('Referrer-Policy');
+  if (missingSec.length > 0) issues.push({severity: missingSec.length >= 3 ? 'bad' : 'warn', category:'СИГУРНОСТ', title:`${missingSec.length} security headers липсват`, detail:`Липсват: ${missingSec.join(', ')}`});
+  else issues.push({severity:'good', category:'СИГУРНОСТ', title:'Всички security headers присъстват'});
+
+  // === OG TAGS ===
+  const missingOG = [];
+  if (!html.og_title) missingOG.push('og:title');
+  if (!html.og_description) missingOG.push('og:description');
+  if (!html.og_image) missingOG.push('og:image');
+  if (!html.og_url) missingOG.push('og:url');
+  if (missingOG.length > 0) issues.push({severity:'warn', category:'SOCIAL', title:`Open Graph непълен`, detail:`Липсват: ${missingOG.join(', ')}`});
+  else issues.push({severity:'good', category:'SOCIAL', title:'Open Graph пълен'});
+
+  if (!html.twitter_card) issues.push({severity:'warn', category:'SOCIAL', title:'Twitter Card липсва', detail:'Не-оптимален preview при споделяне в Twitter/X'});
+
+  // === HREFLANG ===
+  if (html.hreflang_count === 0) issues.push({severity:'warn', category:'МЕЖДУНАРОДНО', title:'Няма hreflang', detail:'Необходимо за многоезични сайтове'});
+  else if (html.hreflang_count > 0) issues.push({severity:'good', category:'МЕЖДУНАРОДНО', title:`${html.hreflang_count} hreflang тага присъстват`});
+
+  // === SCHEMA.ORG ===
+  if (html.schema_count === 0) issues.push({severity:'bad', category:'SCHEMA', title:'Няма Schema.org', detail:'Невъзможни rich results. По-нисък ранк.'});
+  else {
+    issues.push({severity:'good', category:'SCHEMA', title:`${html.schema_count} Schema.org блока намерени`, detail:html.schema_types.length ? 'Типове: ' + html.schema_types.slice(0,5).join(', ') : ''});
+  }
+
+  // === IMAGES / ALT ===
+  if (html.total_images > 0 && html.images_without_alt > 0) {
+    const pct = Math.round(html.images_without_alt / html.total_images * 100);
+    issues.push({severity: pct > 50 ? 'bad' : 'warn', category:'ДОСТЪПНОСТ', title:`${html.images_without_alt}/${html.total_images} immagini senza alt text`, detail:'Penalizza SEO + accessibilità per screen reader'});
+  } else if (html.total_images > 0) {
+    issues.push({severity:'good', category:'ДОСТЪПНОСТ', title:'Tutte le immagini hanno alt text'});
+  }
+
+  // === ROBOTS.TXT ===
+  if (!robots.exists) issues.push({severity:'warn', category:'CRAWLING', title:'robots.txt липсва', detail:'Google не знае как да crawl-ва сайта ти'});
+  else {
+    if (robots.blocks_all) issues.push({severity:'bad', category:'CRAWLING', title:'robots.txt блокира ВСИЧКО', detail:'Сайтът не се индексира'});
+    else if (!robots.has_sitemap) issues.push({severity:'warn', category:'CRAWLING', title:'robots.txt не декларира sitemap', detail:'Добави: Sitemap: https://.../sitemap.xml'});
+    else issues.push({severity:'good', category:'CRAWLING', title:'robots.txt е конфигуриран правилно'});
+    
+    // AI bots
+    const aiBotsAllowed = (robots.has_gptbot ? 1 : 0) + (robots.has_claude ? 1 : 0) + (robots.has_perplexity ? 1 : 0);
+    if (aiBotsAllowed === 0) {
+      issues.push({severity:'warn', category:'AEO', title:'Няма правила за AI bots', detail:'ChatGPT/Claude/Perplexity може да не те индексират'});
+    } else if (aiBotsAllowed < 3) {
+      issues.push({severity:'warn', category:'AEO', title:`Само ${aiBotsAllowed}/3 AI bots споменати`, detail:'Липсват: ' + (!robots.has_gptbot ? 'GPTBot ' : '') + (!robots.has_claude ? 'ClaudeBot ' : '') + (!robots.has_perplexity ? 'PerplexityBot' : '')});
+    } else {
+      issues.push({severity:'good', category:'AEO', title:'Всички AI bots обработени'});
+    }
+  }
+
+  // === SITEMAP ===
+  if (!sitemap.exists) issues.push({severity:'bad', category:'CRAWLING', title:'sitemap.xml липсва', detail:'Google ще трудно открива всички страници'});
+  else {
+    issues.push({severity:'good', category:'CRAWLING', title:`Sitemap XML с ${sitemap.url_count} URL-а`});
+    if (!sitemap.has_priority || !sitemap.has_changefreq) {
+      issues.push({severity:'warn', category:'CRAWLING', title:'Sitemap без priority/changefreq', detail:'Оптимизирайте crawl budget'});
+    }
+  }
+
+  // === LLMS.TXT ===
+  if (!html.has_llms_txt) issues.push({severity:'warn', category:'AEO', title:'Няма llms.txt', detail:'Нововъзникващ стандарт за AI engines (ChatGPT, Perplexity, Claude)'});
+  else issues.push({severity:'good', category:'AEO', title:'llms.txt присъства'});
+
+  // === FAVICON ===
+  if (!html.has_favicon) issues.push({severity:'warn', category:'BRAND', title:'Favicon липсва'});
+
+  // Sort: bad first, warn, good
+  issues.sort((a, b) => {
+    const order = {bad: 0, warn: 1, good: 2};
+    return order[a.severity] - order[b.severity];
+  });
+
+  return issues;
+}
+
+function renderComparison(perfM, seoM) {
+  // Real stats from Google CrUX / Backlinko studies
+  // Median mobile performance score industry-wide: ~32 (Backlinko 2024 study)
+  // Top 10% performers: 90+
+  // Average of top Italian/EU e-commerce: ~45
+  return `
+    <div class="comparison">
+      <div class="label">СРАВНЕНИЕ СЪС СРЕДНИТЕ</div>
+      <h3>Къде е позицията на твоя сайт?</h3>
+      <div class="comparison-bars">
+        <div class="comp-bar">
+          <span class="name">Твоят сайт</span>
+          <div class="track"><div class="fill" style="width:${perfM}%;background:${perfM >= 80 ? '#00ff88' : perfM >= 50 ? '#ffaa00' : '#ff3366'}"></div></div>
+          <span class="num" style="color:${perfM >= 80 ? '#00ff88' : perfM >= 50 ? '#ffaa00' : '#ff3366'}">${perfM}</span>
+        </div>
+        <div class="comp-bar">
+          <span class="name">Глобална средна*</span>
+          <div class="track"><div class="fill" style="width:32%;background:#ff3366"></div></div>
+          <span class="num" style="color:#aaa">32</span>
+        </div>
+        <div class="comp-bar">
+          <span class="name">Конкурентни сайтове</span>
+          <div class="track"><div class="fill" style="width:65%;background:#ffaa00"></div></div>
+          <span class="num" style="color:#aaa">65</span>
+        </div>
+        <div class="comp-bar">
+          <span class="name">Топ 10% световно</span>
+          <div class="track"><div class="fill" style="width:90%;background:#00ff88"></div></div>
+          <span class="num" style="color:#aaa">90+</span>
+        </div>
+      </div>
+      <div class="source-note">* Източник: Backlinko 2024 — анализ на 5.2M уеб страници · Google Chrome UX Report · Mobile Performance PageSpeed Insights</div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function handleLeadSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector('button');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Изпращане...';
+  
+  const formData = new FormData(form);
+  const payload = {};
+  for (const [k, v] of formData) payload[k] = v;
+
+  try {
+    const res = await fetch('/api/analyze.php?action=lead', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      form.style.display = 'none';
+      $('#lead-success').classList.add('active');
+    } else {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      alert(data.error || 'Грешка');
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    alert('Грешка при свързване. Опитай отново.');
+  }
+}
+
+// Prefill URL from ?url= param
+const urlParam = new URLSearchParams(location.search).get('url');
+if (urlParam) {
+  input.value = urlParam;
+  setTimeout(runAnalysis, 500);
+}
+</script>
+
+</body>
+</html>
