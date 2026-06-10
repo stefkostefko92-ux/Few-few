@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top 10 Most AMAZING Landmarks in Mexico 🇲🇽 | World Cup 2026 — Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:#000; }
+  #stage { position: fixed; inset: 0; overflow: hidden; color: #fff; }
+  .slide { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
+           padding: 8vw; opacity:0; transition: opacity .6s ease; }
+  .slide.on { opacity:1; }
+  .rank { position:absolute; top:2vh; right:4vw; font-size:34vh; font-weight:900;
+          line-height:1; color:rgba(255,255,255,.10); }
+  .kicker { font-size: clamp(14px,2.2vw,26px); letter-spacing:.3em; text-transform:uppercase;
+            opacity:.85; margin-bottom:1.5vh; }
+  .name { font-size: clamp(30px,6.5vw,84px); font-weight:800; line-height:1.05; margin-bottom:3vh;
+          text-shadow:0 4px 30px rgba(0,0,0,.4); max-width:18ch; }
+  .text { font-size: clamp(16px,2.6vw,30px); line-height:1.5; max-width:30ch; opacity:.96; }
+  .broll { position:absolute; left:8vw; bottom:9vh; font-size: clamp(12px,1.6vw,18px);
+           opacity:.8; max-width:40ch; }
+  .broll b { letter-spacing:.15em; text-transform:uppercase; opacity:.9; }
+  #bar { position:fixed; left:0; bottom:0; height:6px; background:#fff; width:0; transition:width .25s linear; }
+  #hud { position:fixed; left:0; bottom:0; width:100%; height:6px; background:rgba(255,255,255,.2); }
+  #ctrl { position:fixed; top:2vh; left:4vw; display:flex; gap:10px; align-items:center; z-index:5;
+          font-size:14px; }
+  button, select { font:inherit; font-size:14px; padding:8px 12px; border:0; border-radius:8px;
+            background:rgba(255,255,255,.16); color:#fff; cursor:pointer; backdrop-filter:blur(6px); }
+  button:hover { background:rgba(255,255,255,.28); }
+  #brand { position:fixed; top:2vh; right:4vw; font-weight:700; letter-spacing:.1em; opacity:.9; z-index:5;
+           font-size: clamp(12px,1.5vw,18px); }
+  #intro-hint { position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+                background:rgba(0,0,0,.6); z-index:10; cursor:pointer; text-align:center; }
+  #intro-hint div { font-size: clamp(18px,3vw,30px); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="hud"></div><div id="bar"></div>
+<div id="ctrl">
+  <button id="pp">⏸ Pause</button>
+  <button id="prev">◀ Prev</button>
+  <button id="next">Next ▶</button>
+  <button id="mute">🔊 Voice on</button>
+  <select id="voice" title="Narration voice"></select>
+</div>
+<div id="brand">MEXICO • TOP 10</div>
+<div id="intro-hint"><div>▶ Click anywhere to play the preview<br><small>(with narration voice)</small></div></div>
+<script>
+const DATA = {"title": "Top 10 Most AMAZING Landmarks in Mexico \ud83c\uddf2\ud83c\uddfd | World Cup 2026", "thumb": "MEXICO \u2022 TOP 10", "slides": [{"rank": null, "name": "Intro", "text": "In 2026, Mexico becomes the first country ever to host the World Cup three times. Millions of fans will land here for the football \u2014 but the real magic of Mexico is everything around the stadiums. Ancient pyramids, colonial cities, turquoise sinkholes and Pacific cliffs. So before you pack your jersey, here are the Top 10 landmarks you absolutely have to see in Mexico. Let's count them down.", "broll": "fast montage \u2014 pyramid, beach, cathedral, fans waving Mexican flags"}, {"rank": 10, "name": "Palacio de Bellas Artes (Mexico City)", "text": "We start in the heart of the capital with Mexico's grandest cultural landmark. The Palacio de Bellas Artes is a dazzling blend of white Italian marble on the outside and bold Art Deco inside, crowned by a shimmering glass curtain by Tiffany depicting the Valley of Mexico. It's home to the Ballet Folkl\u00f3rico and murals by giants like Diego Rivera. If Mexico City had a crown jewel of the arts, this is it.", "broll": "drone over the marble dome, interior murals, the Tiffany curtain"}, {"rank": 9, "name": "Guanajuato", "text": "Next, a city that looks like it was poured into a valley and left to glow. The colourful houses of Guanajuato stack up the hillsides in pinks, yellows and blues, connected by twisting alleys and underground tunnels once built for the silver-mining boom. Wander the Callej\u00f3n del Beso \u2014 the \"Alley of the Kiss\" \u2014 so narrow that couples on opposite balconies can lean in and touch. At sunset, the whole city turns gold.", "broll": "hillside panorama at dusk, narrow alleys, the funicular view"}, {"rank": 8, "name": "Cabo San Lucas & El Arco", "text": "Down at the very tip of the Baja California peninsula, the desert meets the sea in dramatic fashion. El Arco \u2014 \"The Arch\" \u2014 is a natural rock formation carved by the ocean, marking the exact point where the Pacific meets the Sea of Cortez. Sea lions lounge on the rocks, and in winter, grey and humpback whales cruise right past. It's Mexico's most photographed natural landmark on the west coast.", "broll": "boat approaching the arch, sea lions, whale breach"}, {"rank": 7, "name": "Monte Alb\u00e1n (Oaxaca)", "text": "Time to go ancient. Perched on a flattened mountaintop overlooking Oaxaca, Monte Alb\u00e1n was one of the earliest cities in the Americas, the capital of the Zapotec civilisation for over a thousand years. Its vast central plaza, pyramids and carved stone figures sit nearly 2,000 metres above sea level, with views in every direction. Standing here, you feel just how advanced these cultures were long before Europeans arrived.", "broll": "aerial of the plateau plaza, carved stone \"Danzantes\", valley views"}, {"rank": 6, "name": "Tulum", "text": "Now the postcard shot everyone knows. Tulum is the only major Maya city built right on the coast, its weathered stone temples perched on a cliff above a Caribbean sea so blue it almost looks fake. Below the ruins sits a perfect white sand beach. Once a thriving port city, today it's where ancient history meets turquoise paradise \u2014 arrive early to beat the crowds and the heat.", "broll": "cliff-top temple, turquoise water, beach below the ruins"}, {"rank": 5, "name": "The Cenotes of Yucat\u00e1n", "text": "Hidden beneath the jungle of the Yucat\u00e1n Peninsula is a secret world. Cenotes are natural sinkholes \u2014 collapsed limestone caves filled with crystal-clear freshwater, where shafts of sunlight pierce down into glowing blue pools. The Maya considered them sacred gateways to the underworld. Today you can swim, snorkel and dive in them. Ik Kil and Dos Ojos are among the most breathtaking on Earth.", "broll": "sunbeam into a cenote, swimmer in clear water, hanging vines"}, {"rank": 4, "name": "Palenque", "text": "Deep in the rainforest of Chiapas lies the most atmospheric ruin in all of Mexico. Palenque rises out of the jungle mist, its elegant Maya temples wrapped in green and echoing with howler monkeys. The Temple of the Inscriptions hides the tomb of the great ruler Pakal \u2014 one of the most important archaeological discoveries in the Americas. Smaller than Chich\u00e9n Itz\u00e1, but for many travellers, far more magical.", "broll": "temples in jungle mist, monkeys, the Temple of Inscriptions"}, {"rank": 3, "name": "Teotihuac\u00e1n", "text": "Just outside Mexico City stands a city so old that even the Aztecs found it abandoned and called it \"the place where the gods were created.\" Teotihuac\u00e1n was once one of the largest cities in the world, and its two colossal pyramids \u2014 the Pyramid of the Sun and the Pyramid of the Moon \u2014 still dominate the landscape. Walk the long Avenue of the Dead between them and try to imagine a metropolis of a hundred thousand people. At sunrise, hot-air balloons drift over the whole valley.", "broll": "Pyramid of the Sun, Avenue of the Dead, hot-air balloons at dawn"}, {"rank": 2, "name": "Z\u00f3calo & Metropolitan Cathedral (Mexico City)", "text": "Back in the capital for our number two. The Z\u00f3calo is one of the largest city squares in the world, the beating heart of Mexico City \u2014 and of the entire nation. On one side rises the Metropolitan Cathedral, the oldest and largest cathedral in the Americas, built over three centuries on the ruins of the Aztec capital Tenochtitl\u00e1n. Right beside it, the Templo Mayor reminds you that this exact spot has been the centre of power for 700 years.", "broll": "aerial of the square with a giant flag, cathedral fa\u00e7ade, Templo Mayor"}, {"rank": 1, "name": "Chich\u00e9n Itz\u00e1", "text": "And our number one is the icon of Mexico itself. Chich\u00e9n Itz\u00e1, one of the New Seven Wonders of the World, is crowned by El Castillo \u2014 the great pyramid of Kukulc\u00e1n. It's a giant stone calendar: 365 steps, one for every day of the year. And twice a year, on the equinox, the setting sun casts a shadow down the staircase that looks exactly like a serpent slithering to the ground \u2014 Maya engineering so precise it still stuns scientists today. If you see one landmark in Mexico, make it this one.", "broll": "El Castillo wide shot, the equinox serpent shadow, ball court, crowds"}, {"rank": null, "name": "Honourable mentions", "text": "A few that just missed the cut: the Copper Canyon \u2014 larger and deeper than the Grand Canyon; Frida Kahlo's Casa Azul in Mexico City; and the monarch butterfly sanctuaries of Michoac\u00e1n, where millions of butterflies turn the forest orange.", "broll": "quick three-shot montage"}, {"rank": null, "name": "Outro", "text": "So there you have it \u2014 the Top 10 landmarks of Mexico. Which one would you visit first when the World Cup kicks off? Let me know in the comments. And subscribe, because we're counting down the Top 10 landmarks of every single nation at the 2026 World Cup. See you in the next country.", "broll": "best-of montage, end screen with subscribe button and next-video card"}]};
+const PALETTES = [
+  ['#0f2027','#2c5364'],['#3a1c71','#d76d77'],['#134e5e','#71b280'],['#1a2a6c','#b21f1f'],
+  ['#00467f','#a5cc82'],['#232526','#414345'],['#0b486b','#f56217'],['#42275a','#734b6d'],
+  ['#1f4037','#99f2c8'],['#16222a','#3a6073'],['#4b6cb7','#182848'],['#000428','#004e92']
+];
+const stage = document.getElementById('stage');
+const slides = DATA.slides.map((s,i)=>{
+  const el = document.createElement('div'); el.className='slide';
+  const [a,b] = PALETTES[i % PALETTES.length];
+  el.style.background = `linear-gradient(135deg, ${a}, ${b})`;
+  const kicker = s.rank!=null ? `Number ${s.rank}` : (i===0?'Intro':'');
+  el.innerHTML = `
+    ${s.rank!=null?`<div class="rank">${s.rank}</div>`:''}
+    ${kicker?`<div class="kicker">${kicker}</div>`:''}
+    <div class="name">${s.name}</div>
+    <div class="text">${s.text}</div>
+    ${s.broll?`<div class="broll"><b>🎬 B-roll:</b> ${s.broll}</div>`:''}`;
+  stage.appendChild(el); return el;
+});
+const bar = document.getElementById('bar');
+let idx=0, playing=false, voiceOn=true, timer=null, voices=[], chosen=null;
+const wpm=160;
+
+function dur(t){ const w=(t.match(/\S+/g)||[]).length; return Math.max(4200, w/wpm*60000)+700; }
+function speak(t){ if(!voiceOn||!window.speechSynthesis) return false;
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.rate=1.0; u.pitch=1.0;
+  if(chosen) u.voice=chosen; u.onend=()=>{ if(playing) next(); }; speechSynthesis.speak(u); return true; }
+function show(i){ slides.forEach((el,j)=>el.classList.toggle('on', j===i)); idx=i;
+  bar.style.transition='none'; bar.style.width='0';
+  const d=dur(DATA.slides[i].text); requestAnimationFrame(()=>{ bar.style.transition=`width ${d}ms linear`; bar.style.width='100%'; });
+  clearTimeout(timer);
+  const spoke = speak(DATA.slides[i].text);
+  if(!spoke && playing) timer=setTimeout(next, d);
+}
+function next(){ if(idx<slides.length-1) show(idx+1); else stop(); }
+function prev(){ show(Math.max(0,idx-1)); }
+function play(){ playing=true; document.getElementById('pp').textContent='⏸ Pause'; show(idx); }
+function stop(){ playing=false; clearTimeout(timer); if(window.speechSynthesis) speechSynthesis.cancel();
+  document.getElementById('pp').textContent='▶ Play'; }
+document.getElementById('pp').onclick=()=> playing?stop():play();
+document.getElementById('next').onclick=()=>{ stop(); next(); };
+document.getElementById('prev').onclick=()=>{ stop(); prev(); };
+document.getElementById('mute').onclick=function(){ voiceOn=!voiceOn;
+  this.textContent= voiceOn?'🔊 Voice on':'🔇 Voice off'; if(!voiceOn&&window.speechSynthesis) speechSynthesis.cancel(); };
+
+function loadVoices(){ voices=(window.speechSynthesis?speechSynthesis.getVoices():[]).filter(v=>v.lang.startsWith('en'));
+  const sel=document.getElementById('voice'); sel.innerHTML='';
+  const fem=/female|woman|samantha|victoria|karen|moira|tessa|fiona|serena|zira|jenny|aria|sonia|libby|charlotte|amelia|google uk english female/i;
+  voices.sort((a,b)=>(fem.test(b.name)?1:0)-(fem.test(a.name)?1:0));
+  voices.forEach((v,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=v.name+' ('+v.lang+')'; sel.appendChild(o); });
+  chosen = voices.find(v=>fem.test(v.name)) || voices[0] || null;
+  if(chosen) sel.value = voices.indexOf(chosen);
+  sel.onchange=()=> chosen=voices[sel.value];
+}
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+document.getElementById('intro-hint').onclick=function(){ this.style.display='none'; play(); };
+show(0);
+</script>
+</body>
+</html>
