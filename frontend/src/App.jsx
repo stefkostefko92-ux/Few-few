@@ -865,6 +865,7 @@ const IMPIANTI_FIELDS = [
   { key: "portata", label: "Portata (kg)", type: "number", placeholder: "630" },
   { key: "fermate", label: "Fermate", type: "number", placeholder: "8" },
   { key: "quadro", label: "Quadro di Manovra", placeholder: "Marca, modello, tipo (es: VVVF, 2 velocità...)" },
+  { key: "zona", label: "Zona / Giro manutenzione", placeholder: "es. Milano Nord" },
   { key: "stato", label: "Stato", type: "select", options: ["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"], default: "ATTIVO" },
   { key: "condominioId", label: "Condominio", type: "relation", endpoint: "/condomini", labelFn: o => o.nome },
   { key: "indirizzo", label: "Indirizzo", wide: true, placeholder: "Via, Città" },
@@ -881,6 +882,7 @@ const IMPIANTI_COLS = [
   { key: "quadro", label: "Quadro", render: r => <span className="text-zinc-400 text-xs">{r.quadro || "—"}</span> },
   { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
   { key: "condominio", label: "Condominio", render: r => <span className="text-zinc-400">{relName(r.condominio, "nome") || "—"}</span> },
+  { key: "zona", label: "Zona", render: r => r.zona ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{r.zona}</span> : <span className="text-zinc-600">—</span> },
   { key: "media", label: "Media", render: r => {
     const nf = (r.foto || []).length;
     const nd = (r.documenti || []).length;
@@ -1150,7 +1152,7 @@ const VISITE_COLS = [
   }},
   { key: "tipo", label: "Tipo", render: r => <Badge value={r.tipo} /> },
   { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
-  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{relName(r.impianto, "matricola") || "—"}</span> },
+  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{relName(r.impianto, "matricola") || "—"}{r.impianto?.zona ? <span className="ml-1 text-[10px] text-cyan-400">({r.impianto.zona})</span> : null}</span> },
   { key: "tecnico", label: "Tecnico", render: r => relName(r.tecnico) || <span className="text-zinc-600 italic">N/A</span> },
   { key: "esito", label: "Esito", render: r => r.esito ? <Badge value={r.esito} /> : <span className="text-zinc-600">—</span> },
   { key: "dataEsecuzione", label: "Eseguita", render: r => <span className="text-zinc-500">{fmtD(r.dataEsecuzione) || "—"}</span> },
@@ -1178,6 +1180,40 @@ const VERIFICHE_COLS = [
   { key: "prescrizioni", label: "Prescrizioni", render: r => r.prescrizioni ? <span className="text-amber-400 text-xs max-w-[200px] truncate block">{r.prescrizioni}</span> : <span className="text-zinc-600">—</span> },
 ];
 
+
+// Изтегляне на PDF с Bearer токен
+const scaricaPdf = async (path, filename) => {
+  const res = await fetch(`/api${path}`, { headers: api.token ? { Authorization: `Bearer ${api.token}` } : {} });
+  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "Download fallito"); }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
+
+// ═══════════════════════════════════════════════════════
+// PAGE: IMPIANTI (con rendiconto manutenzioni PDF)
+// ═══════════════════════════════════════════════════════
+const ImpiantiPage = () => {
+  const [toast, setToast] = useState(null);
+  const COLS = [
+    ...IMPIANTI_COLS,
+    { key: "_rendiconto", label: "", render: r => (
+      <button onClick={async (e) => { e.stopPropagation();
+        try { await scaricaPdf(`/pdf/rendiconto/${r.id}`, `Rendiconto_${r.matricola}.pdf`); }
+        catch (err) { setToast({ message: err.message, type: "error" }); }
+      }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-cyan-400" title="Rendiconto manutenzioni (PDF)">
+        <FileOutput size={14} />
+      </button>
+    )},
+  ];
+  return (
+    <div>
+      <CrudModulePage title="IMPIANTI" subtitle="Registro completo con scadenze — icona riga: rendiconto manutenzioni PDF" apiEndpoint="/impianti" columns={COLS} formFields={IMPIANTI_FIELDS} entityName="Impianto" filterField="stato" filterOptions={["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO"]} />
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    </div>
+  );
+};
 
 // ═══════════════════════════════════════════════════════
 // PAGE: CONTRATTI (con azioni workflow)
@@ -2575,7 +2611,7 @@ export default function App() {
   const renderPage = () => {
     switch (page) {
       case "dashboard": return <DashboardPage />;
-      case "impianti": return <CrudModulePage title="IMPIANTI" subtitle="Registro completo con scadenze" store={impiantiStore} apiEndpoint="/impianti" columns={IMPIANTI_COLS} formFields={IMPIANTI_FIELDS} entityName="Impianto" filterField="stato" filterOptions={["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO"]} />;
+      case "impianti": return <ImpiantiPage />;
       case "contratti": return <ContrattiPage />;
       case "visite": return <VisitePage />;
       case "verifiche": return <CrudModulePage title="VERIFICHE PERIODICHE" subtitle="Registro verifiche biennali Organismo Abilitato — DPR 162/99" apiEndpoint="/verifiche" columns={VERIFICHE_COLS} formFields={VERIFICHE_FIELDS} entityName="Verifica" />;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate, authorize } from '../middleware/auth';
-import { generaFatturaPDF, generaPreventivoPDF, generaDDTPDF, generaOrdinePDF } from '../services/pdf';
+import { generaFatturaPDF, generaPreventivoPDF, generaDDTPDF, generaOrdinePDF, generaRendicontoPDF } from '../services/pdf';
 import { generaFatturaPA, validaFatturaPA } from '../services/fatturaPA';
 import { sendFatturaEmail, sendPreventivoEmail, sendEmail, isEmailConfigured } from '../services/email';
 import { PrismaClient } from '@prisma/client';
@@ -21,6 +21,11 @@ router.get('/pdf/preventivo/:id', authenticate, async (req: any, res: any) => {
 router.get('/pdf/ddt/:id', authenticate, async (req: any, res: any) => {
   try { const buf = await generaDDTPDF(req.params.id); const d = await prisma.dDT.findUnique({ where: { id: req.params.id } });
     res.setHeader('Content-Type','application/pdf'); res.setHeader('Content-Disposition',`attachment; filename="DDT_${d?.numero||'doc'}.pdf"`); res.send(buf);
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+router.get('/pdf/rendiconto/:impiantoId', authenticate, async (req: any, res: any) => {
+  try { const buf = await generaRendicontoPDF(req.params.impiantoId); const i = await prisma.impianto.findUnique({ where: { id: req.params.impiantoId } });
+    res.setHeader('Content-Type','application/pdf'); res.setHeader('Content-Disposition',`attachment; filename="Rendiconto_${i?.matricola||'impianto'}.pdf"`); res.send(buf);
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 router.get('/pdf/ordine/:id', authenticate, async (req: any, res: any) => {

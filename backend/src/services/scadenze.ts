@@ -185,10 +185,41 @@ export async function controllaScadenze(): Promise<ScadenzaAlert[]> {
   return alerts;
 }
 
+// Contratti oltre la data di fine: rinnovo automatico (+1 anno) o passaggio a SCADUTO
+export async function aggiornaContrattiScaduti() {
+  const now = new Date();
+  const oltre = await prisma.contratto.findMany({
+    where: { stato: 'ATTIVO', dataFine: { not: null, lt: now } },
+  });
+  let rinnovati = 0, scaduti = 0;
+  for (const c of oltre) {
+    if (c.rinnovoAutomatico) {
+      const nuovaFine = new Date(c.dataFine!);
+      while (nuovaFine < now) nuovaFine.setFullYear(nuovaFine.getFullYear() + 1);
+      await prisma.contratto.update({ where: { id: c.id }, data: { dataFine: nuovaFine } });
+      await createAuditLog({
+        azione: 'RINNOVO_CONTRATTO', entita: 'contratti', entitaId: c.id,
+        dettagli: { numero: c.numero, vecchiaScadenza: c.dataFine, nuovaScadenza: nuovaFine },
+      });
+      rinnovati++;
+    } else {
+      await prisma.contratto.update({ where: { id: c.id }, data: { stato: 'SCADUTO' } });
+      await createAuditLog({
+        azione: 'CONTRATTO_SCADUTO', entita: 'contratti', entitaId: c.id,
+        dettagli: { numero: c.numero, dataFine: c.dataFine },
+      });
+      scaduti++;
+    }
+  }
+  if (rinnovati || scaduti) console.log(`📄 Contratti: ${rinnovati} rinnovati, ${scaduti} scaduti`);
+  return { rinnovati, scaduti };
+}
+
 // Cron-like function to run daily
 export async function eseguiControlloScadenze() {
   console.log('⏰ Controllo scadenze avviato...');
   try {
+    await aggiornaContrattiScaduti();
     const alerts = await controllaScadenze();
     const critici = alerts.filter(a => a.livello === 'scaduto' || a.livello === 'critico');
 

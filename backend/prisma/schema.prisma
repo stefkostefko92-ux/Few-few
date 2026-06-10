@@ -84,6 +84,7 @@ model Impianto {
   fermate             Int?
   stato               StatoImpianto   @default(ATTIVO)
   quadro              String?         // quadro di manovra (marca/modello/tipo)
+  zona                String?         // zona/giro di manutenzione (es. "Milano Nord")
   indirizzo           String?
   piano               String?
   note                String?

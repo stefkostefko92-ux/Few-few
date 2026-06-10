@@ -174,3 +174,61 @@ export async function generaOrdinePDF(id: string): Promise<Buffer> {
     drawFooter(d, az);
   });
 }
+
+// ── Rendiconto manutenzioni per impianto (storico visite/contratti/verifiche) ──
+export async function generaRendicontoPDF(impiantoId: string): Promise<Buffer> {
+  const imp: any = await prisma.impianto.findUnique({
+    where: { id: impiantoId },
+    include: {
+      condominio: true,
+      amministratore: true,
+      contratti: { orderBy: { createdAt: 'desc' }, take: 10 },
+      visiteManutenzione: { orderBy: { dataProgrammata: 'desc' }, take: 40, include: { tecnico: true } },
+      verifichePeriodiche: { orderBy: { dataVerifica: 'desc' }, take: 8 },
+    },
+  });
+  if (!imp) throw new Error('Impianto non trovato');
+  const az = getAzienda();
+  const fd = (v: any) => (v ? new Date(v).toLocaleDateString('it-IT') : '—');
+
+  return makePDF((d: any) => {
+    drawHeader(d, az, 'RENDICONTO', imp.matricola);
+    drawFooter(d, az);
+    let y = 125;
+    const br = (need = 60) => { if (y > d.page.height - need - 60) { d.addPage(); drawFooter(d, az); y = 50; } };
+    const sez = (titolo: string) => { br(80); d.fillColor(C.primary).font(F.b).fontSize(11).text(titolo, 40, y); y += 16; };
+    const riga = (testo: string, opts: any = {}) => { br(); d.fillColor(opts.color || C.text).font(opts.font || F.r).fontSize(8.5).text(testo, 40, y, { width: 515 }); y += 12; };
+
+    sez('DATI IMPIANTO');
+    riga(`Matricola: ${imp.matricola}  |  ${imp.marca} ${imp.modello}  |  Anno: ${imp.anno || '—'}  |  Portata: ${imp.portata || '—'} kg  |  Fermate: ${imp.fermate || '—'}`);
+    riga(`Indirizzo: ${imp.indirizzo || '—'}${imp.zona ? `  |  Zona: ${imp.zona}` : ''}${imp.condominio ? `  |  Condominio: ${imp.condominio.nome}` : ''}`);
+    if (imp.amministratore) riga(`Amministratore: ${imp.amministratore.ragioneSociale || `${imp.amministratore.nome || ''} ${imp.amministratore.cognome || ''}`.trim()}`);
+    if (imp.quadro) riga(`Quadro di manovra: ${imp.quadro}`);
+    y += 6;
+
+    sez('CONTRATTI DI MANUTENZIONE');
+    if (imp.contratti.length === 0) riga('Nessun contratto registrato', { color: C.muted, font: F.i });
+    for (const c of imp.contratti) {
+      riga(`${c.numero}  |  ${c.tipo}  |  ${c.stato}  |  Canone: € ${Number(c.canoneAnnuo).toLocaleString('it-IT')}  |  ${c.visiteAnno} visite/anno  |  ${fd(c.dataInizio)} → ${fd(c.dataFine)}`);
+    }
+    y += 6;
+
+    sez('STORICO VISITE DI MANUTENZIONE');
+    if (imp.visiteManutenzione.length === 0) riga('Nessuna visita registrata', { color: C.muted, font: F.i });
+    for (const v of imp.visiteManutenzione) {
+      riga(`${fd(v.dataEsecuzione || v.dataProgrammata)}  |  ${v.tipo}  |  ${v.stato}${v.esito ? `  |  Esito: ${v.esito}` : ''}${v.tecnico ? `  |  ${v.tecnico.nome} ${v.tecnico.cognome}` : ''}${v.descrizione ? `  |  ${String(v.descrizione).slice(0, 60)}` : ''}`);
+      if (v.anomalie) riga(`   ⚠ Anomalie: ${String(v.anomalie).slice(0, 100)}`, { color: '#b45309' });
+    }
+    y += 6;
+
+    sez('VERIFICHE PERIODICHE (DPR 162/99)');
+    if (imp.verifichePeriodiche.length === 0) riga('Nessuna verifica registrata', { color: C.muted, font: F.i });
+    for (const vf of imp.verifichePeriodiche) {
+      riga(`${fd(vf.dataVerifica)}  |  ${vf.organismo || '—'}  |  Esito: ${vf.esito || '—'}  |  Prossima scadenza: ${fd(vf.prossimaScadenza)}`);
+      if (vf.prescrizioni) riga(`   Prescrizioni: ${String(vf.prescrizioni).slice(0, 120)}`, { color: '#b45309' });
+    }
+
+    y += 14; br(40);
+    d.fillColor(C.muted).font(F.i).fontSize(8).text(`Documento generato il ${new Date().toLocaleString('it-IT')} — ERP Ascensori Enterprise`, 40, y);
+  });
+}

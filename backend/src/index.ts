@@ -104,7 +104,7 @@ app.use('/api/magazzino-movimenti', apiLimiter, magazzinoRoutes);
 app.use('/api/impianti', apiLimiter, createCrudRouter({
   model: 'impianto',
   entityName: 'impianti',
-  searchFields: ['matricola', 'marca', 'modello', 'indirizzo'],
+  searchFields: ['matricola', 'marca', 'modello', 'indirizzo', 'zona'],
   include: {
     condominio: { select: { id: true, nome: true } },
     amministratore: { select: { id: true, nome: true, cognome: true } },
@@ -206,7 +206,7 @@ app.use('/api/visite', apiLimiter, createCrudRouter({
   entityName: 'visite_manutenzione',
   searchFields: ['descrizione', 'anomalie', 'esito'],
   include: {
-    impianto: { select: { id: true, matricola: true, indirizzo: true } },
+    impianto: { select: { id: true, matricola: true, indirizzo: true, zona: true } },
     contratto: { select: { id: true, numero: true } },
     tecnico: { select: { id: true, nome: true, cognome: true } },
   },
