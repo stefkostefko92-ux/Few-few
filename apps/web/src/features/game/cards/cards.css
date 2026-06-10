@@ -76,10 +76,24 @@ button.aso-card:hover {
 
 /* ---- Face ---- */
 .aso-card__face {
+  /* warm ivory + top-left sheen, with a milled-brass inner frame — matches the
+     hero card treatment so in-game cards look just as premium. */
   background:
-    radial-gradient(120% 90% at 30% 0%, #fffdf6 0%, #f6f1e4 55%, #ece3cf 100%);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 42%),
+    radial-gradient(130% 100% at 28% 0%, #fffdf7 0%, #f3ead4 60%, #e6d8bb 100%);
+  border: 1px solid rgba(120, 92, 38, 0.38);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.7),
+    inset 0 0 0 3.5px rgba(217, 178, 95, 0.5);
+}
+/* gloss sweep, painted under the pips/corners (::before) so colours stay vivid */
+.aso-card__face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.42) 50%, transparent 60%);
+  opacity: 0.32;
+  pointer-events: none;
 }
 
 .aso-card__corner {
