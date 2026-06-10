@@ -121,7 +121,7 @@
     }
   }
 
-  function hide(el, reason, r, items) {
+  function flagHidden(el, reason, r, items) {
     el.dataset.tbabHidden = "1";
     el.style.setProperty("display", "none", "important");
     items.push({ reason, w: Math.round(r.width), h: Math.round(r.height) });
@@ -143,7 +143,7 @@
           target.dataset.tbabFrameSize = "1";
         }
       }
-      hide(target, "Ad-sized cross-origin frame", r, items);
+      flagHidden(target, "Ad-sized cross-origin frame", r, items);
     }
   }
 
@@ -176,7 +176,7 @@
       const bannerH = r.height >= 24 && r.height <= 260;
       const atEdge = r.top <= 4 || r.bottom >= vh - 4;
       if (wide && bannerH && atEdge && adSignal(el)) {
-        hide(el, "Sticky banner ad", r, items);
+        flagHidden(el, "Sticky banner ad", r, items);
       }
     }
   }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.6.2
+
+- Fix a regression that broke all cosmetic filtering: the Smart Detection
+  helper was named `hide`, shadowing the cosmetic `hide()` and throwing
+  "Cannot read properties of undefined (reading 'dataset')" on every page.
+  Renamed it to `flagHidden`.
+
 ## 3.6.1
 
 - Housekeeping: tidied comments and copy across the codebase for a cleaner,
