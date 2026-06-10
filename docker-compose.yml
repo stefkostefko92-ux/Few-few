@@ -17,21 +17,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: erp-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD:-ErpRedis2026!}
-    volumes:
-      - erp_redisdata:/data
-    ports:
-      - "6380:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-ErpRedis2026!}", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
   backend:
     build:
       context: ./backend
@@ -40,7 +25,6 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://erp_admin:${DB_PASSWORD:-ErpAscensori2026!}@postgres:5432/erp_ascensori
-      REDIS_URL: redis://:${REDIS_PASSWORD:-ErpRedis2026!}@redis:6379
       JWT_SECRET: ${JWT_SECRET:-erp-jwt-secret-2026-change-me}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-erp-refresh-secret-2026-change-me}
       HMAC_SECRET: ${HMAC_SECRET:-erp-hmac-secret-2026}
@@ -72,13 +56,34 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-}
       SMTP_SECURE: ${SMTP_SECURE:-false}
+      UPLOAD_DIR: /app/uploads
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin2025}
       PORT: 4000
+    volumes:
+      - erp_uploads:/app/uploads
     ports:
       - "4100:4000"
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+    restart: unless-stopped
+
+  backup:
+    image: postgres:16-alpine
+    container_name: erp-backup
+    environment:
+      PGPASSWORD: ${DB_PASSWORD:-ErpAscensori2026!}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      sh -c 'while true; do
+        pg_dump -h postgres -U erp_admin erp_ascensori | gzip > /backups/erp_$$(date +%Y%m%d_%H%M%S).sql.gz;
+        ls -1t /backups/erp_*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm;
+        echo "Backup completato: $$(date)";
+        sleep 86400;
+      done'
+    depends_on:
+      postgres:
         condition: service_healthy
     restart: unless-stopped
 
@@ -95,4 +100,4 @@ services:
 
 volumes:
   erp_pgdata:
-  erp_redisdata:
+  erp_uploads:

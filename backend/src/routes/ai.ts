@@ -58,7 +58,7 @@ interface DocumentPart {
   mimeType: string;
 }
 
-async function callGemini(messages: AIMessage[], document?: DocumentPart, jsonMode = false): Promise<string> {
+async function callGemini(messages: AIMessage[], document?: DocumentPart, jsonMode = false, _isRetry = false): Promise<string> {
   const { geminiKey, geminiModel } = getAIConfig();
   const contents = messages
     .filter(m => m.role !== 'system')
@@ -71,6 +71,8 @@ async function callGemini(messages: AIMessage[], document?: DocumentPart, jsonMo
       parts.push({ text: m.content });
       return { role: m.role === 'assistant' ? 'model' : 'user', parts };
     });
+  // Gemini richiede che la conversazione inizi con un turno utente
+  while (contents.length && contents[0].role === 'model') contents.shift();
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`,
@@ -95,6 +97,11 @@ async function callGemini(messages: AIMessage[], document?: DocumentPart, jsonMo
   if (!response.ok) {
     const error = await response.text();
     if (response.status === 429) {
+      // Piano free: un retry automatico dopo una breve attesa prima di arrendersi
+      if (!_isRetry) {
+        await new Promise(r => setTimeout(r, 5000));
+        return callGemini(messages, document, jsonMode, true);
+      }
       throw new Error('Limite gratuito Gemini raggiunto. Attendi un minuto e riprova (il piano free ha un numero limitato di richieste al minuto).');
     }
     if (response.status === 400 && error.includes('API key')) {
@@ -229,10 +236,25 @@ function parseJSONResponse(text: string): Record<string, any> {
   }
 }
 
+function parseJSONArrayResponse(text: string): Record<string, any>[] {
+  const cleaned = text.replace(/```(?:json)?/gi, '').trim();
+  try {
+    const parsed = JSON.parse(cleaned);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    const start = cleaned.indexOf('[');
+    const end = cleaned.lastIndexOf(']');
+    if (start >= 0 && end > start) {
+      return JSON.parse(cleaned.slice(start, end + 1));
+    }
+    return [parseJSONResponse(cleaned)];
+  }
+}
+
 // POST /api/ai/extract — Legge un documento (PDF/immagine/CSV) e compila i campi
 router.post('/extract', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { fileBase64, mimeType, fileName, fields, entity } = req.body;
+    const { fileBase64, mimeType, fileName, fields, entity, multi } = req.body;
 
     if (!fileBase64 || typeof fileBase64 !== 'string') {
       res.status(400).json({ error: 'File richiesto (fileBase64)' });
@@ -268,16 +290,28 @@ router.post('/extract', authenticate, async (req: AuthRequest, res: Response) =>
       return line;
     }).join('\n');
 
-    const prompt = `Analizza il documento allegato${fileName ? ` ("${fileName}")` : ''} ed estrai i valori per i campi del modulo "${entity || 'anagrafica'}".
+    const formatRules = `- Includi solo i campi di cui trovi l'informazione nel documento: NON inventare dati.
+- Date sempre in formato YYYY-MM-DD. Numeri come numeri JSON (senza simboli di valuta).
+- Per i campi con valori ammessi, scegli solo uno dei valori elencati.`;
+
+    const prompt = multi
+      ? `Analizza il documento allegato${fileName ? ` ("${fileName}")` : ''} ed estrai TUTTI i record per il modulo "${entity || 'anagrafica'}".
+
+Campi di ogni record:
+${fieldLines}
+
+Istruzioni:
+- Rispondi SOLO con un ARRAY JSON valido di oggetti, le cui chiavi sono esattamente i "key" elencati sopra.
+${formatRules}
+- Un elemento dell'array per ogni record/riga presente nel documento (max 100).`
+      : `Analizza il documento allegato${fileName ? ` ("${fileName}")` : ''} ed estrai i valori per i campi del modulo "${entity || 'anagrafica'}".
 
 Campi da compilare:
 ${fieldLines}
 
 Istruzioni:
 - Rispondi SOLO con un oggetto JSON valido le cui chiavi sono esattamente i "key" elencati sopra.
-- Includi solo i campi di cui trovi l'informazione nel documento: NON inventare dati.
-- Date sempre in formato YYYY-MM-DD. Numeri come numeri JSON (senza simboli di valuta).
-- Per i campi con valori ammessi, scegli solo uno dei valori elencati.
+${formatRules}
 - Se il documento contiene più record, estrai il primo/principale.`;
 
     let document: DocumentPart | undefined;
@@ -293,25 +327,37 @@ Istruzioni:
     }
 
     const responseText = await callProvider(messages, document, true);
-    const extracted = parseJSONResponse(responseText);
 
     // Restituisce solo i campi richiesti, scartando chiavi estranee
     const allowedKeys = new Set(fields.map((f: any) => f.key));
-    const data: Record<string, any> = {};
-    for (const [k, v] of Object.entries(extracted)) {
-      if (allowedKeys.has(k) && v !== null && v !== undefined && v !== '') data[k] = v;
+    const pick = (obj: Record<string, any>) => {
+      const out: Record<string, any> = {};
+      for (const [k, v] of Object.entries(obj || {})) {
+        if (allowedKeys.has(k) && v !== null && v !== undefined && v !== '') out[k] = v;
+      }
+      return out;
+    };
+
+    let data: Record<string, any> = {};
+    let records: Record<string, any>[] | undefined;
+    if (multi) {
+      const parsed = parseJSONArrayResponse(responseText);
+      records = parsed.slice(0, 100).map(pick).filter(r => Object.keys(r).length > 0);
+      data = records[0] || {};
+    } else {
+      data = pick(parseJSONResponse(responseText));
     }
 
     const { provider } = getAIConfig();
     await createAuditLog({
       azione: 'AI_EXTRACT',
       entita: entity || 'documento',
-      dettagli: { fileName, mimeType: mime, fieldsExtracted: Object.keys(data).length, provider },
+      dettagli: { fileName, mimeType: mime, fieldsExtracted: Object.keys(data).length, records: records?.length, provider },
       utenteId: req.user?.id,
       ip: req.ip,
     });
 
-    res.json({ data, provider, fileName });
+    res.json({ data, records, provider, fileName });
   } catch (error: any) {
     console.error('AI extract error:', error.message);
     res.status(500).json({ error: `Errore lettura documento: ${error.message}` });

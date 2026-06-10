@@ -121,6 +121,15 @@ const api = {
   post(ep, body) { return this.fetch(ep, { method: "POST", body }); },
   put(ep, body) { return this.fetch(ep, { method: "PUT", body }); },
   del(ep) { return this.fetch(ep, { method: "DELETE" }); },
+  async upload(file) {
+    const fd = new FormData();
+    fd.append("file", file);
+    const headers = {};
+    if (this.token) headers["Authorization"] = `Bearer ${this.token}`;
+    const res = await fetch(`${API_BASE}/upload`, { method: "POST", headers, body: fd });
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `HTTP ${res.status}`); }
+    return res.json();
+  },
   async login(email, password) {
     const res = await fetch(`${API_BASE}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "Login fallito"); }
@@ -237,19 +246,6 @@ const ordiniStore = makeStore([
   { id: "1", numero: "OL-00001", oggetto: "Manutenzione straordinaria KONE MonoSpace", stato: "IN_LAVORO", priorita: "URGENTE", impianto: "MI-2024-001", tecnico: "Marco Rossi", cottimista: "", data: "2025-03-20", noteInterne: "", noteCommittente: "" },
   { id: "2", numero: "OL-00002", oggetto: "Revisione periodica Otis Gen2", stato: "CONFERMATO", priorita: "ORDINARIA", impianto: "MI-2024-002", tecnico: "Luca Ferrari", cottimista: "", data: "2025-03-22", noteInterne: "", noteCommittente: "" },
   { id: "3", numero: "OL-00003", oggetto: "Emergenza blocco Schindler 3300", stato: "EMESSO", priorita: "EMERGENZA", impianto: "MI-2024-003", tecnico: "", cottimista: "", data: "2025-03-25", noteInterne: "", noteCommittente: "" },
-]);
-
-const lavoriStore = makeStore([
-  { id: "l1", ordine: "OL-00001", commessa: "2026/050-1_2", indirizzo: "Via Buschi 3, Milano", matricola: "MI-2024-001", cliente: "Dallagiovanna & C. SRL", cottimista: "Panev Ascensori", tecnico: "Marco Rossi", stato: "IN_LAVORO", dataInizio: "2025-03-20", dataFinePrevista: "2025-04-15", dataFineEffettiva: "", oggetto: "Manutenzione straordinaria KONE MonoSpace", priorita: "URGENTE", percentuale: 60, note: "Smaltimento materiali incluso" },
-  { id: "l2", ordine: "OL-00002", commessa: "2026/051-3", indirizzo: "Piazza Duomo 3, Milano", matricola: "MI-2024-002", cliente: "Condominio Palazzo Duomo", cottimista: "", tecnico: "Luca Ferrari", stato: "CONFERMATO", dataInizio: "2025-03-28", dataFinePrevista: "2025-04-05", dataFineEffettiva: "", oggetto: "Revisione periodica Otis Gen2", priorita: "ORDINARIA", percentuale: 0, note: "" },
-  { id: "l3", ordine: "OL-00003", commessa: "2026/052-1", indirizzo: "Via Garibaldi 22, Milano", matricola: "MI-2024-003", cliente: "Residenza del Parco", cottimista: "Ascensori Rapidi SNC", tecnico: "", stato: "IN_LAVORO", dataInizio: "2025-03-25", dataFinePrevista: "2025-05-16", dataFineEffettiva: "", oggetto: "Emergenza blocco Schindler 3300 — lavori straordinari", priorita: "EMERGENZA", percentuale: 25, note: "Fermo impianto comunicato al condominio" },
-  { id: "l4", ordine: "", commessa: "2026/053-2", indirizzo: "Via Cellini 4, Milano", matricola: "7485", cliente: "Prandoni & Curci", cottimista: "Panev Ascensori", tecnico: "Marco Rossi", stato: "COMPLETATO", dataInizio: "2025-02-10", dataFinePrevista: "2025-03-10", dataFineEffettiva: "2025-03-08", oggetto: "Sostituzione argano, funi, limitatore, quadro manovra, pulsantiere", priorita: "ORDINARIA", percentuale: 100, note: "Adeguamento UNI 10411.1-2021" },
-  { id: "l5", ordine: "", commessa: "2026/054-1", indirizzo: "Appiani 25, Cinisello Balsamo", matricola: "30724", cliente: "Dallagiovanna & C. SRL", cottimista: "Ascensori Rapidi SNC", tecnico: "Luca Ferrari", stato: "IN_LAVORO", dataInizio: "2025-04-28", dataFinePrevista: "2025-05-16", dataFineEffettiva: "", oggetto: "Lavori straordinari ascensore matr. 30724", priorita: "URGENTE", percentuale: 10, note: "Impianto fermo dal 28/04 al 16/05" },
-]);
-
-const buoniLavoroStore = makeStore([
-  { id: "b1", numero: "BDL-2026-001", dataConferma: "2025-03-20", ordine: "OL-00001", offerta: "PRV-00001", commessa: "2026/050-1_2", matricola: "MI-2024-001", ubicazione: "Via Buschi 3, Milano", geometra: "Simone Dallagiovanna", tecnicoCapo: "Marco Rossi", cottimista: "Panev Ascensori", posConsegnato: true, dataInizio: "2025-03-20", oraInizio: "08:00", dataFine: "", oraFine: "", sequenzeLavoro: "1. Smontaggio vecchio argano\n2. Installazione nuovo argano standard\n3. Sostituzione funi di trazione\n4. Nuovo limitatore + fune + tenditore in fossa", controlliExtracorsa: "", controlliLimitatore: "", controlliSicurezza: "", controlliSerrature: "", controlliPorte: "", controlliCircuito: "", noteEsecuzione: "Smaltimento materiali incluso nell'importo confermato", noteSospensioni: "", firmaCustode: "", firmaTecnico: "", firmaGeometra: "", firmaCapoOfficina: "" },
-  { id: "b2", numero: "BDL-2026-002", dataConferma: "2025-02-10", ordine: "", offerta: "2023/041-534", commessa: "2023/050-328", matricola: "7485", ubicazione: "Via Cellini 4, Milano", geometra: "Luisa Colosimo", tecnicoCapo: "Marco Rossi", cottimista: "Panev Ascensori", posConsegnato: true, dataInizio: "2025-02-10", oraInizio: "07:30", dataFine: "2025-03-08", oraFine: "16:00", sequenzeLavoro: "1. Nuovo argano standard\n2. Nuove funi di trazione\n3. Nuovo limitatore + fune + tenditore in fossa (adeg. UNI 10411.1-2021)\n4. Nuovo quadro manovra con inverter + cavi + linee + serrature\n5. Sostituzione elettromagnete pattino retrattile\n6. Nuovo operatore standard da 600 a 700\n7. Nuova pulsantiera cabina + display e predisp. GSM\n8. Nuova pulsantiera di piano standard\n9. Nuovo telesoccorso su rete GSM + derivato tettocabina", controlliExtracorsa: "OK", controlliLimitatore: "OK", controlliSicurezza: "OK", controlliSerrature: "OK", controlliPorte: "OK", controlliCircuito: "OK", noteEsecuzione: "Estetica pulsantiere: Piastra lineare tipo LUNA, pulsante dardo quadrato, occupato rosso e presente bianco, display sfondo bianco numero in blu", noteSospensioni: "", firmaCustode: "", firmaTecnico: "M. Rossi", firmaGeometra: "L. Colosimo", firmaCapoOfficina: "" },
 ]);
 
 const fattureEmesseStore = makeStore([
@@ -375,6 +371,11 @@ const relName = (v, ...keys) => {
   for (const k of keys) if (v[k]) return v[k];
   return [v.nome, v.cognome].filter(Boolean).join(" ") || v.ragioneSociale || v.matricola || v.numero || "";
 };
+
+// Gerarchia ruoli (allineata al backend): livello più basso = più permessi
+const ROLE_LEVELS_FE = { MASTER: 1, ADMIN: 2, DIREZIONE: 3, RESPONSABILE: 4, TECNICO: 5, OPERATORE: 6, CLIENTE: 7 };
+const currentRole = () => { try { return JSON.parse(localStorage.getItem("erp_user") || "{}").ruolo || "OPERATORE"; } catch { return "OPERATORE"; } };
+const hasRole = (minRole) => (ROLE_LEVELS_FE[currentRole()] ?? 9) <= (ROLE_LEVELS_FE[minRole] ?? 1);
 
 const SearchBar = ({ value, onChange, placeholder = "Cerca..." }) => (
   <div className="relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" /><input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/50" /></div>
@@ -575,7 +576,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={(e) => { e.stopPropagation(); openView(row); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-cyan-400"><Eye size={14} /></button>
         <button onClick={(e) => { e.stopPropagation(); openEdit(row); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-amber-400"><Edit size={14} /></button>
-        <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(row.id); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>
+        {hasRole("ADMIN") && <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(row.id); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>}
       </div>
     )
   };
@@ -603,6 +604,36 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
     const reader = new FileReader();
     reader.onload = (ev) => parseCSV(ev.target?.result);
     reader.readAsText(file);
+  };
+
+  const aiImportRef = useRef(null);
+  const [aiImporting, setAiImporting] = useState(false);
+  const handleAiImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setAiImporting(true);
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(new Error("Lettura file fallita")); r.readAsDataURL(file);
+      });
+      const extractFields = formFields.filter(f => !f.hidden && !["photos", "files", "relation"].includes(f.type));
+      const res = await api.post("/ai/extract", {
+        fileBase64: String(dataUrl).split(",")[1] || "",
+        mimeType: file.type || "application/octet-stream",
+        fileName: file.name,
+        entity: entityName,
+        multi: true,
+        fields: extractFields.map(f => ({ key: f.key, label: f.label, type: f.type || "text", options: f.options })),
+      });
+      const records = res?.records || [];
+      if (!records.length) { setToast({ message: "Nessun record riconosciuto nel documento", type: "error" }); return; }
+      setCsvHeaders([...new Set(records.flatMap(r => Object.keys(r)))]);
+      setCsvData(records);
+      setToast({ message: `${records.length} record estratti con AI — controlla l'anteprima e importa`, type: "success" });
+    } catch (err) {
+      setToast({ message: `AI import: ${err.message}`, type: "error" });
+    } finally { setAiImporting(false); }
   };
 
   const executeImport = async () => {
@@ -706,17 +737,15 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
                       <label className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-700 hover:border-cyan-500/50 flex flex-col items-center justify-center cursor-pointer transition-colors bg-zinc-800/30">
                         <Upload size={16} className="text-zinc-500 mb-1" />
                         <span className="text-[9px] text-zinc-500">Aggiungi</span>
-                        <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
                           const files = Array.from(e.target.files || []);
-                          const newPhotos = [...(formData[f.key] || [])];
-                          files.forEach(file => {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                              newPhotos.push({ url: ev.target?.result, nome: file.name, tipo: file.type, data: new Date().toISOString() });
-                              setField(f.key, [...newPhotos]);
-                            };
-                            reader.readAsDataURL(file);
-                          });
+                          e.target.value = "";
+                          for (const file of files) {
+                            try {
+                              const u = await api.upload(file);
+                              setFormData(prev => ({ ...prev, [f.key]: [...(prev[f.key] || []), { url: u.url, nome: u.nome, tipo: u.tipo, data: new Date().toISOString() }] }));
+                            } catch (err) { console.error("Upload foto:", err); }
+                          }
                         }} />
                       </label>
                     )}
@@ -731,7 +760,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
                       <div key={di} className="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/40 border border-zinc-700/50 group">
                         <FileText size={14} className="text-cyan-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-zinc-300 truncate">{doc.nome}</p>
+                          {doc.url ? <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-cyan-400 hover:underline truncate block">{doc.nome}</a> : <p className="text-xs text-zinc-300 truncate">{doc.nome}</p>}
                           <p className="text-[10px] text-zinc-600">{doc.size ? `${(doc.size / 1024).toFixed(0)} KB` : ""} {doc.data ? `· ${doc.data.slice(0, 10)}` : ""}</p>
                         </div>
                         {modalMode !== "view" && (
@@ -746,13 +775,15 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
                       <label className="flex items-center gap-2 p-2.5 rounded-lg border-2 border-dashed border-zinc-700 hover:border-cyan-500/50 cursor-pointer transition-colors bg-zinc-800/20">
                         <Upload size={14} className="text-zinc-500" />
                         <span className="text-xs text-zinc-500">Carica documento (PDF, DOC, XLS...)</span>
-                        <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip" multiple className="hidden" onChange={(e) => {
+                        <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip" multiple className="hidden" onChange={async (e) => {
                           const files = Array.from(e.target.files || []);
-                          const newDocs = [...(formData[f.key] || [])];
-                          files.forEach(file => {
-                            newDocs.push({ nome: file.name, size: file.size, tipo: file.type, data: new Date().toISOString() });
-                          });
-                          setField(f.key, [...newDocs]);
+                          e.target.value = "";
+                          for (const file of files) {
+                            try {
+                              const u = await api.upload(file);
+                              setFormData(prev => ({ ...prev, [f.key]: [...(prev[f.key] || []), { url: u.url, nome: u.nome, size: u.size, tipo: u.tipo, data: new Date().toISOString() }] }));
+                            } catch (err) { console.error("Upload documento:", err); }
+                          }
                         }} />
                       </label>
                     )}
@@ -775,7 +806,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-800">
             <Btn variant="secondary" onClick={() => setModalMode(null)}>Chiudi</Btn>
             <Btn variant="primary" icon={Edit} onClick={() => setModalMode("edit")}>Modifica</Btn>
-            <Btn variant="danger" icon={Trash2} onClick={() => { setDeleteConfirm(selectedId); setModalMode(null); }}>Elimina</Btn>
+            {hasRole("ADMIN") && <Btn variant="danger" icon={Trash2} onClick={() => { setDeleteConfirm(selectedId); setModalMode(null); }}>Elimina</Btn>}
           </div>
         )}
       </Modal>
@@ -785,8 +816,12 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
           <div className="p-4 rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-800/20 text-center">
             <Upload size={24} className="mx-auto mb-2 text-zinc-500" />
             <p className="text-sm text-zinc-400 mb-2">Carica file CSV, TSV o incolla i dati</p>
-            <Btn variant="secondary" icon={FileUp} onClick={() => importFileRef.current?.click()}>Scegli File</Btn>
+            <div className="flex gap-2 justify-center">
+              <Btn variant="secondary" icon={FileUp} onClick={() => importFileRef.current?.click()}>Scegli File CSV</Btn>
+              <Btn variant="primary" icon={Sparkles} loading={aiImporting} onClick={() => aiImportRef.current?.click()}>Importa con AI (PDF/foto/CSV)</Btn>
+            </div>
             <input ref={importFileRef} type="file" accept=".csv,.tsv,.txt" className="hidden" onChange={handleImportFile} />
+            <input ref={aiImportRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.txt" className="hidden" onChange={handleAiImportFile} />
           </div>
           {csvData.length > 0 && (
             <div>
@@ -815,18 +850,18 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
 // MODULE CONFIGS — fields + columns per ogni modulo
 // ═══════════════════════════════════════════════════════
 const IMPIANTI_FIELDS = [
-  { key: "matricola", label: "Matricola", placeholder: "MI-2025-XXX", aiHint: "MI-2025-006", aiFileHint: "MI-CSV-001" },
-  { key: "marca", label: "Marca", placeholder: "KONE, Otis, Schindler...", aiHint: "KONE" },
-  { key: "modello", label: "Modello", placeholder: "Modello", aiHint: "MonoSpace 700" },
-  { key: "anno", label: "Anno", type: "number", placeholder: "2025", aiHint: 2024 },
-  { key: "portata", label: "Portata (kg)", type: "number", placeholder: "630", aiHint: 630 },
-  { key: "fermate", label: "Fermate", type: "number", placeholder: "8", aiHint: 10 },
+  { key: "matricola", label: "Matricola", placeholder: "MI-2025-XXX" },
+  { key: "marca", label: "Marca", placeholder: "KONE, Otis, Schindler..." },
+  { key: "modello", label: "Modello", placeholder: "Modello" },
+  { key: "anno", label: "Anno", type: "number", placeholder: "2025" },
+  { key: "portata", label: "Portata (kg)", type: "number", placeholder: "630" },
+  { key: "fermate", label: "Fermate", type: "number", placeholder: "8" },
   { key: "quadro", label: "Quadro di Manovra", placeholder: "Marca, modello, tipo (es: VVVF, 2 velocità...)" },
   { key: "stato", label: "Stato", type: "select", options: ["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"], default: "ATTIVO" },
   { key: "condominioId", label: "Condominio", type: "relation", endpoint: "/condomini", labelFn: o => o.nome },
   { key: "indirizzo", label: "Indirizzo", wide: true, placeholder: "Via, Città" },
   { key: "prossimaRevisione", label: "Prossima Revisione", type: "date" },
-  { key: "note", label: "Note", type: "textarea", wide: true, aiHint: "Impianto in buone condizioni generali. Ultima manutenzione regolare." },
+  { key: "note", label: "Note", type: "textarea", wide: true },
   { key: "foto", label: "Foto Impianto", type: "photos", wide: true, default: [] },
   { key: "documenti", label: "Documenti Allegati", type: "files", wide: true, default: [] },
 ];
@@ -848,7 +883,7 @@ const IMPIANTI_COLS = [
 ];
 
 const CONDOMINI_FIELDS = [
-  { key: "nome", label: "Nome", placeholder: "Nome condominio", aiFileHint: "Condominio Importato da CSV" },
+  { key: "nome", label: "Nome", placeholder: "Nome condominio" },
   { key: "indirizzo", label: "Indirizzo", placeholder: "Via..." },
   { key: "citta", label: "Città", placeholder: "Milano" }, { key: "cap", label: "CAP", placeholder: "20121" }, { key: "provincia", label: "Prov.", placeholder: "MI" },
   { key: "unitaImmobiliari", label: "Unità immobiliari", type: "number" },
@@ -892,7 +927,7 @@ const DIPENDENTI_COLS = [
 ];
 
 const AUTOMEZZI_FIELDS = [
-  { key: "targa", label: "Targa", aiFileHint: "AA000BB" }, { key: "marca", label: "Marca" }, { key: "modello", label: "Modello" },
+  { key: "targa", label: "Targa" }, { key: "marca", label: "Marca" }, { key: "modello", label: "Modello" },
   { key: "anno", label: "Anno", type: "number" }, { key: "chilometraggio", label: "Km", type: "number" },
   { key: "stato", label: "Semaforo", type: "select", options: ["verde", "giallo", "rosso"], default: "verde" },
   { key: "conducenteId", label: "Conducente", type: "relation", endpoint: "/dipendenti", labelFn: o => `${o.nome || ""} ${o.cognome || ""}`.trim() },
@@ -922,7 +957,7 @@ const COTTIMISTI_COLS = [
 ];
 
 const MAGAZZINO_FIELDS = [
-  { key: "codice", label: "Codice", aiFileHint: "IMP-001" }, { key: "barcode", label: "Barcode" }, { key: "nome", label: "Nome articolo" },
+  { key: "codice", label: "Codice" }, { key: "barcode", label: "Barcode" }, { key: "nome", label: "Nome articolo" },
   { key: "tipo", label: "Tipo", type: "select", options: ["COMPONENTI", "VENDITA"], default: "COMPONENTI" },
   { key: "categoria", label: "Categoria" }, { key: "ubicazione", label: "Ubicazione", placeholder: "A1-01" },
   { key: "quantita", label: "Quantità", type: "number", default: 0 }, { key: "sogliaMinima", label: "Soglia minima", type: "number", default: 0 },
@@ -938,13 +973,13 @@ const MAGAZZINO_COLS = [
 ];
 
 const PREVENTIVI_FIELDS = [
-  { key: "numero", label: "Numero", placeholder: "PRV-XXXXX" }, { key: "oggetto", label: "Oggetto", wide: true, aiHint: "Manutenzione straordinaria impianto elevatore" },
+  { key: "numero", label: "Numero", placeholder: "PRV-XXXXX" }, { key: "oggetto", label: "Oggetto", wide: true },
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "INVIATO", "APPROVATO", "RIFIUTATO", "SCADUTO"], default: "BOZZA" },
   { key: "totaleLordo", label: "Totale lordo €", type: "number" },
   { key: "amministratoreId", label: "Amministratore", type: "relation", endpoint: "/amministratori", labelFn: o => o.ragioneSociale || `${o.nome || ""} ${o.cognome || ""}`.trim() },
   { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.marca || ""} ${o.modello || ""}`.trim() },
   { key: "data", label: "Data", type: "date" },
-  { key: "note", label: "Note", type: "textarea", wide: true, aiHint: "Offerta valida 30 giorni dalla data di emissione. Materiali e manodopera inclusi." },
+  { key: "note", label: "Note", type: "textarea", wide: true },
 ];
 const PREVENTIVI_COLS = [
   { key: "numero", label: "Numero", render: r => <span className="font-mono text-cyan-400 font-bold">{r.numero}</span> },
@@ -954,7 +989,7 @@ const PREVENTIVI_COLS = [
 ];
 
 const ORDINI_FIELDS = [
-  { key: "numero", label: "Numero", placeholder: "OL-XXXXX" }, { key: "oggetto", label: "Oggetto", wide: true, aiHint: "Intervento di manutenzione programmata" },
+  { key: "numero", label: "Numero", placeholder: "OL-XXXXX" }, { key: "oggetto", label: "Oggetto", wide: true },
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "EMESSO", "CONFERMATO", "IN_LAVORO", "SOSPESO", "COMPLETATO", "CHIUSO", "CONTESTATO", "ANNULLATO"], default: "BOZZA" },
   { key: "priorita", label: "Priorità", type: "select", options: ["ORDINARIA", "URGENTE", "EMERGENZA"], default: "ORDINARIA" },
   { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.marca || ""} ${o.modello || ""}`.trim() },
@@ -974,7 +1009,7 @@ const ORDINI_COLS = [
 const FATTURE_EMESSE_FIELDS = [
   { key: "numero", label: "Numero", placeholder: "FT-2025-XXX" },
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "EMESSA", "INVIATA", "PAGATA", "SCADUTA", "STORNATA"], default: "BOZZA" },
-  { key: "oggetto", label: "Oggetto / Descrizione", wide: true, aiHint: "Fattura per intervento di manutenzione straordinaria impianto elevatore" },
+  { key: "oggetto", label: "Oggetto / Descrizione", wide: true },
   { key: "cliente", label: "Cliente / Amministratore", placeholder: "Ragione sociale o nome cliente" },
   { key: "ordineLavoroId", label: "Ordine di Lavoro", type: "relation", endpoint: "/ordini", labelFn: o => `${o.numero} — ${o.oggetto || ""}`.slice(0, 60) },
   { key: "tipo", hidden: true, default: "EMESSA" },
@@ -1043,9 +1078,9 @@ const DDT_COLS = [
 ];
 
 const DOC_FIELDS = [
-  { key: "titolo", label: "Titolo", wide: true, aiHint: "Documento tecnico generato da AI" },
+  { key: "titolo", label: "Titolo", wide: true },
   { key: "tipo", label: "Tipo", type: "select", options: ["CARTELLO_CANTIERE", "VERBALE_CANTIERE", "CERTIFICATO", "CONTRATTO", "ALTRO"], default: "ALTRO" },
-  { key: "contenuto", label: "Contenuto", type: "textarea", wide: true, aiHint: "Il presente documento attesta..." },
+  { key: "contenuto", label: "Contenuto", type: "textarea", wide: true },
   { key: "note", label: "Note", type: "textarea", wide: true },
 ];
 const DOC_COLS = [
@@ -1573,8 +1608,10 @@ const AIPage = () => {
     setMessages(p => [...p, { role: "user", text: userMsg }]);
     setAiLoading(true);
     try {
-      const res = await api.post("/ai/generate", { prompt: userMsg, tipo: "CHAT" });
-      setMessages(p => [...p, { role: "assistant", text: res.testo || "Nessuna risposta generata." }]);
+      const history = [...messages.slice(-8), { role: "user", text: userMsg }]
+        .map(m => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.text }));
+      const res = await api.post("/ai/chat", { messages: history });
+      setMessages(p => [...p, { role: "assistant", text: res.content || "Nessuna risposta generata." }]);
     } catch (e) {
       setMessages(p => [...p, { role: "assistant", text: `Errore: ${e.message}. Verifica la configurazione AI in Impostazioni.` }]);
     } finally { setAiLoading(false); }
@@ -1633,13 +1670,52 @@ const printDocument = (title, contentHtml) => {
 // ═══════════════════════════════════════════════════════
 // PAGE: LAVORI (Programma lavori)
 // ═══════════════════════════════════════════════════════
+const LAVORI_FIELDS = [
+  { key: "commessa", label: "N° Commessa", placeholder: "2026/XXX-X" },
+  { key: "ordine", label: "Ordine di Lavoro", placeholder: "OL-XXXXX" },
+  { key: "oggetto", label: "Oggetto", wide: true },
+  { key: "indirizzo", label: "Indirizzo" },
+  { key: "matricola", label: "Matricola impianto" },
+  { key: "cliente", label: "Cliente" },
+  { key: "cottimista", label: "Cottimista" },
+  { key: "tecnico", label: "Tecnico" },
+  { key: "stato", label: "Stato", type: "select", options: ["EMESSO", "CONFERMATO", "IN_LAVORO", "SOSPESO", "COMPLETATO"], default: "CONFERMATO" },
+  { key: "priorita", label: "Priorità", type: "select", options: ["ORDINARIA", "URGENTE", "EMERGENZA"], default: "ORDINARIA" },
+  { key: "dataInizio", label: "Data inizio", type: "date" },
+  { key: "dataFinePrevista", label: "Fine prevista", type: "date" },
+  { key: "dataFineEffettiva", label: "Fine effettiva", type: "date" },
+  { key: "percentuale", label: "Avanzamento %", type: "number", default: 0 },
+  { key: "note", label: "Note", type: "textarea", wide: true },
+];
+
 const LavoriPage = () => {
-  const [data, setData] = useState(lavoriStore.getAll());
-  const [viewMode, setViewMode] = useState("lista"); // lista | timeline
+  const { data, loading, add, update, remove } = useApiData("/lavori");
   const [search, setSearch] = useState("");
   const [filterStato, setFilterStato] = useState("");
   const [filterCottimista, setFilterCottimista] = useState("");
-  const refresh = () => setData(lavoriStore.getAll());
+  const [modalMode, setModalMode] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [selectedId, setSelectedId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const setField = (k, v) => setFormData(p => ({ ...p, [k]: v }));
+
+  const openCreate = () => { const e = {}; LAVORI_FIELDS.forEach(f => { e[f.key] = f.default ?? ""; }); setFormData(e); setSelectedId(null); setModalMode("create"); };
+  const openEdit = (l) => { setFormData({ ...l }); setSelectedId(l.id); setModalMode("edit"); };
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (modalMode === "create") { await add(formData); setToast({ message: "Lavoro creato", type: "success" }); }
+      else { await update(selectedId, formData); setToast({ message: "Lavoro aggiornato", type: "success" }); }
+      setModalMode(null);
+    } catch (e) { setToast({ message: `Errore: ${e.message}`, type: "error" }); }
+    finally { setSaving(false); }
+  };
+  const handleDelete = async (id) => {
+    try { await remove(id); setDeleteConfirm(null); setToast({ message: "Lavoro eliminato", type: "info" }); }
+    catch (e) { setToast({ message: `Errore: ${e.message}`, type: "error" }); }
+  };
 
   const cottimisti = [...new Set(data.map(l => l.cottimista).filter(Boolean))];
   const filtered = data.filter(l => {
@@ -1659,10 +1735,10 @@ const LavoriPage = () => {
 
   const printProgrammaLavori = () => {
     const rows = filtered.map(l => `<tr>
-      <td style="font-weight:700">${l.commessa}</td><td>${l.indirizzo}</td><td>${l.matricola}</td>
-      <td>${l.cottimista || "—"}</td><td>${l.tecnico || "—"}</td>
-      <td><span class="badge${l.priorita === "URGENTE" ? " urgente" : l.priorita === "EMERGENZA" ? " emergenza" : ""}">${l.stato.replace(/_/g, " ")}</span></td>
-      <td>${l.dataInizio} → ${l.dataFinePrevista}</td><td style="text-align:center;font-weight:700">${l.percentuale}%</td>
+      <td style="font-weight:700">${esc(l.commessa)}</td><td>${esc(l.indirizzo)}</td><td>${esc(l.matricola)}</td>
+      <td>${esc(l.cottimista) || "—"}</td><td>${esc(l.tecnico) || "—"}</td>
+      <td><span class="badge${l.priorita === "URGENTE" ? " urgente" : l.priorita === "EMERGENZA" ? " emergenza" : ""}">${esc((l.stato || "").replace(/_/g, " "))}</span></td>
+      <td>${fmtD(l.dataInizio)} → ${fmtD(l.dataFinePrevista)}</td><td style="text-align:center;font-weight:700">${l.percentuale ?? 0}%</td>
     </tr>`).join("");
     printDocument("Programma Lavori", `<h1>Programma Lavori in Corso</h1>
       <table><thead><tr><th>Commessa</th><th>Indirizzo</th><th>Matr.</th><th>Cottimista</th><th>Tecnico</th><th>Stato</th><th>Periodo</th><th>%</th></tr></thead><tbody>${rows}</tbody></table>`);
@@ -1674,7 +1750,7 @@ const LavoriPage = () => {
         <div><h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em" }}>PROGRAMMA LAVORI</h1><p className="text-zinc-500 text-sm">Tutti i lavori in corso e assegnati ai cottimisti</p></div>
         <div className="flex gap-2">
           <Btn size="sm" variant="secondary" icon={Download} onClick={printProgrammaLavori}>Stampa</Btn>
-          <Btn icon={Plus}>Nuovo Lavoro</Btn>
+          <Btn icon={Plus} onClick={openCreate}>Nuovo Lavoro</Btn>
         </div>
       </div>
 
@@ -1728,8 +1804,12 @@ const LavoriPage = () => {
                         <span className="flex items-center gap-1"><Hash size={12} />Matr. {l.matricola}</span>
                       </p>
                     </div>
-                    <div className="text-right shrink-0">
+                    <div className="text-right shrink-0 flex items-start gap-2">
                       <p className="text-3xl font-bold" style={{ color: l.percentuale === 100 ? "#10b981" : l.percentuale > 50 ? "#06b6d4" : "#f59e0b" }}>{l.percentuale}%</p>
+                      <div className="flex flex-col gap-1">
+                        <button onClick={() => openEdit(l)} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-amber-400" title="Modifica"><Edit size={14} /></button>
+                        <button onClick={() => setDeleteConfirm(l.id)} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-red-400" title="Elimina"><Trash2 size={14} /></button>
+                      </div>
                     </div>
                   </div>
                   {/* Progress bar */}
@@ -1738,18 +1818,38 @@ const LavoriPage = () => {
                   </div>
                   {/* Details row */}
                   <div className="flex items-center gap-4 text-xs text-zinc-500 flex-wrap">
-                    <span className="flex items-center gap-1"><Calendar size={12} />{l.dataInizio} → {l.dataFinePrevista}</span>
+                    <span className="flex items-center gap-1"><Calendar size={12} />{fmtD(l.dataInizio)} → {fmtD(l.dataFinePrevista)}</span>
                     {l.cottimista && <span className="flex items-center gap-1 text-cyan-400"><HardHat size={12} />{l.cottimista}</span>}
                     {l.tecnico && <span className="flex items-center gap-1"><Wrench size={12} />{l.tecnico}</span>}
                     <span>{l.cliente}</span>
-                    {l.dataFineEffettiva && <span className="text-emerald-400">Completato: {l.dataFineEffettiva}</span>}
+                    {l.dataFineEffettiva && <span className="text-emerald-400">Completato: {fmtD(l.dataFineEffettiva)}</span>}
                   </div>
                 </div>
               </div>
             </Card>
           );
         })}
+        {filtered.length === 0 && !loading && <Card><p className="text-center text-zinc-600 py-8">Nessun lavoro trovato — crea il primo con "Nuovo Lavoro"</p></Card>}
       </div>
+
+      <Modal open={!!modalMode} onClose={() => setModalMode(null)} title={modalMode === "create" ? "Nuovo Lavoro" : "Modifica Lavoro"} wide>
+        <AIAutoFillButton fields={LAVORI_FIELDS} formData={formData} setFormData={setFormData} context="Programma Lavori" />
+        <div className="grid grid-cols-2 gap-4">
+          {LAVORI_FIELDS.map(f => (
+            <div key={f.key} className={f.wide ? "col-span-2" : ""}>
+              {f.type === "select" ? <Select label={f.label} value={formData[f.key] || ""} onChange={e => setField(f.key, e.target.value)}><option value="">—</option>{f.options?.map(o => <option key={o} value={o}>{o.replace(/_/g, " ")}</option>)}</Select>
+              : f.type === "textarea" ? <TextArea label={f.label} value={formData[f.key] || ""} onChange={e => setField(f.key, e.target.value)} rows={3} />
+              : <Input label={f.label} type={f.type || "text"} value={f.type === "date" ? fmtD(formData[f.key]) : formData[f.key] ?? ""} onChange={e => setField(f.key, f.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)} placeholder={f.placeholder} />}
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-800">
+          <Btn variant="secondary" onClick={() => setModalMode(null)}>Annulla</Btn>
+          <Btn icon={Save} onClick={handleSave} loading={saving}>{modalMode === "create" ? "Crea" : "Salva"}</Btn>
+        </div>
+      </Modal>
+      <ConfirmDialog open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} onConfirm={() => handleDelete(deleteConfirm)} />
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 };
@@ -1773,7 +1873,7 @@ const BUONO_FIELDS = [
   { key: "oraInizio", label: "Ora inizio", placeholder: "08:00" },
   { key: "dataFine", label: "Data fine lavori", type: "date" },
   { key: "oraFine", label: "Ora fine", placeholder: "17:00" },
-  { key: "sequenzeLavoro", label: "Sequenze di lavoro (elenco attività)", type: "textarea", wide: true, aiHint: "1. Smontaggio vecchio argano\n2. Installazione nuovo argano\n3. Sostituzione funi di trazione\n4. Collaudo e prove di sicurezza" },
+  { key: "sequenzeLavoro", label: "Sequenze di lavoro (elenco attività)", type: "textarea", wide: true },
   { key: "controlliExtracorsa", label: "Prova extra-corsa", type: "select", options: ["", "OK", "NON OK"], default: "" },
   { key: "controlliLimitatore", label: "Prova limitatore velocità", type: "select", options: ["", "OK", "NON OK"], default: "" },
   { key: "controlliSicurezza", label: "Verifica organi sicurezza (cunei)", type: "select", options: ["", "OK", "NON OK"], default: "" },
@@ -1790,7 +1890,7 @@ const BUONO_COLS = [
   { key: "ubicazione", label: "Ubicazione", render: r => <span className="text-zinc-400 max-w-[180px] truncate block">{r.ubicazione}</span> },
   { key: "cottimista", label: "Cottimista", render: r => <span className="text-cyan-400">{r.cottimista || "—"}</span> },
   { key: "tecnicoCapo", label: "Capo Tecnico" },
-  { key: "dataInizio", label: "Inizio", render: r => <span className="text-zinc-500">{r.dataInizio}</span> },
+  { key: "dataInizio", label: "Inizio", render: r => <span className="text-zinc-500">{fmtD(r.dataInizio)}</span> },
   { key: "controlli", label: "Controlli", render: r => {
     const checks = [r.controlliExtracorsa, r.controlliLimitatore, r.controlliSicurezza, r.controlliSerrature, r.controlliPorte, r.controlliCircuito].filter(Boolean);
     const ok = checks.filter(c => c === "OK").length;
@@ -1800,29 +1900,29 @@ const BUONO_COLS = [
 
 const printBuonoDiLavoro = (b) => {
   const cEsito = (v) => v === "OK" ? "✓ OK" : v === "NON OK" ? "✗ NON OK" : "";
-  const seqRows = (b.sequenzeLavoro || "").split("\n").filter(Boolean).map((s, i) => `<tr><td style="width:30px;text-align:center">${i + 1}</td><td>${s.replace(/^\d+[\.\)]\s*/, "")}</td><td style="width:60px"></td><td style="width:60px"></td><td style="width:100px"></td><td style="width:120px"></td></tr>`).join("");
-  printDocument(`Buono di Lavoro ${b.numero}`, `
+  const seqRows = (b.sequenzeLavoro || "").split("\n").filter(Boolean).map((s, i) => `<tr><td style="width:30px;text-align:center">${i + 1}</td><td>${esc(s.replace(/^\d+[\.\)]\s*/, ""))}</td><td style="width:60px"></td><td style="width:60px"></td><td style="width:100px"></td><td style="width:120px"></td></tr>`).join("");
+  printDocument(`Buono di Lavoro ${esc(b.numero)}`, `
     <h1>BUONO DI LAVORO</h1>
     <h2>Dati Generali</h2>
     <div class="grid grid-3">
-      <div class="field"><label>Data conferma</label><span>${b.dataConferma || "—"}</span></div>
-      <div class="field"><label>Geometra</label><span>${b.geometra || "—"}</span></div>
-      <div class="field"><label>N° BDL</label><span>${b.numero}</span></div>
+      <div class="field"><label>Data conferma</label><span>${fmtD(b.dataConferma) || "—"}</span></div>
+      <div class="field"><label>Geometra</label><span>${esc(b.geometra) || "—"}</span></div>
+      <div class="field"><label>N° BDL</label><span>${esc(b.numero)}</span></div>
     </div>
     <div class="grid grid-3" style="margin-top:6px">
-      <div class="field"><label>Ordine n°</label><span>${b.ordine || "—"} ${b.ordine ? "(Ordine da preventivo)" : ""}</span></div>
-      <div class="field"><label>Offerta n°</label><span>${b.offerta || "—"}</span></div>
-      <div class="field"><label>Commessa n°</label><span>${b.commessa || "—"}</span></div>
+      <div class="field"><label>Ordine n°</label><span>${esc(b.ordine) || "—"} ${b.ordine ? "(Ordine da preventivo)" : ""}</span></div>
+      <div class="field"><label>Offerta n°</label><span>${esc(b.offerta) || "—"}</span></div>
+      <div class="field"><label>Commessa n°</label><span>${esc(b.commessa) || "—"}</span></div>
     </div>
     <div class="grid grid-2" style="margin-top:6px">
-      <div class="field"><label>Matricola impianto</label><span>${b.matricola}</span></div>
-      <div class="field"><label>Ubicazione</label><span>${b.ubicazione}</span></div>
+      <div class="field"><label>Matricola impianto</label><span>${esc(b.matricola) || "—"}</span></div>
+      <div class="field"><label>Ubicazione</label><span>${esc(b.ubicazione) || "—"}</span></div>
     </div>
     <div class="grid grid-2" style="margin-top:6px">
-      <div class="field"><label>Cottimista / Subappaltatore</label><span>${b.cottimista || "—"}</span></div>
+      <div class="field"><label>Cottimista / Subappaltatore</label><span>${esc(b.cottimista) || "—"}</span></div>
       <div class="field"><label>P.O.S.</label><span>${b.posConsegnato ? "✓ Consegnato" : "☐ Non consegnato"}</span></div>
     </div>
-    ${b.noteEsecuzione ? `<div class="field" style="margin-top:6px"><label>Note e commenti</label><span>${b.noteEsecuzione}</span></div>` : ""}
+    ${b.noteEsecuzione ? `<div class="field" style="margin-top:6px"><label>Note e commenti</label><span>${esc(b.noteEsecuzione)}</span></div>` : ""}
 
     <h2>Sequenze di Lavoro</h2>
     <table><thead><tr><th>N.</th><th>Descrizione attività</th><th>OK</th><th>NON OK</th><th>Data / Firma</th><th>Fornitore rif.</th></tr></thead><tbody>${seqRows || '<tr><td colspan="6" style="text-align:center;color:#999">Nessuna sequenza definita</td></tr>'}</tbody></table>
@@ -1840,19 +1940,19 @@ const printBuonoDiLavoro = (b) => {
         <tr><td>Controllo circuito di cabina</td><td>${cEsito(b.controlliCircuito)}</td></tr>
       </tbody>
     </table>
-    ${b.noteSospensioni ? `<div class="field"><label>Eventuali sospensioni</label><span>${b.noteSospensioni}</span></div>` : ""}
+    ${b.noteSospensioni ? `<div class="field"><label>Eventuali sospensioni</label><span>${esc(b.noteSospensioni)}</span></div>` : ""}
 
     <h2>Resoconto Attività</h2>
     <div class="grid grid-2">
-      <div class="field"><label>Data inizio lavori</label><span>${b.dataInizio || "___/___/______"} ore ${b.oraInizio || "____"}</span></div>
-      <div class="field"><label>Data fine lavori</label><span>${b.dataFine || "___/___/______"} ore ${b.oraFine || "____"}</span></div>
+      <div class="field"><label>Data inizio lavori</label><span>${fmtD(b.dataInizio) || "___/___/______"} ore ${esc(b.oraInizio) || "____"}</span></div>
+      <div class="field"><label>Data fine lavori</label><span>${fmtD(b.dataFine) || "___/___/______"} ore ${esc(b.oraFine) || "____"}</span></div>
     </div>
 
     <div class="signatures">
-      <div class="sig-box">Firma del Custode / Responsabile in loco<br><br>${b.firmaCustode || ""}</div>
-      <div class="sig-box">Cognome dei Tecnici<br><br>${b.firmaTecnico || ""}</div>
-      <div class="sig-box">Firma del Capo Tecnico<br><br>${b.tecnicoCapo || ""}</div>
-      <div class="sig-box">Firma del Geometra<br><br>${b.firmaGeometra || ""}</div>
+      <div class="sig-box">Firma del Custode / Responsabile in loco<br><br>${esc(b.firmaCustode) || ""}</div>
+      <div class="sig-box">Cognome dei Tecnici<br><br>${esc(b.firmaTecnico) || ""}</div>
+      <div class="sig-box">Firma del Capo Tecnico<br><br>${esc(b.tecnicoCapo) || ""}</div>
+      <div class="sig-box">Firma del Geometra<br><br>${esc(b.firmaGeometra) || ""}</div>
     </div>
   `);
 };
@@ -1908,7 +2008,7 @@ const FattureEmessePageWithPrint = () => {
         <tbody><tr><td>${esc(f.oggetto) || "—"}</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
         <tfoot>
           <tr><td style="text-align:right">Imponibile</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
-          <tr><td style="text-align:right">IVA 22%</td><td style="text-align:right">€ ${Number(f.totaleIva || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
+          <tr><td style="text-align:right">IVA</td><td style="text-align:right">€ ${Number(f.totaleIva || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
           <tr><td style="text-align:right;font-weight:700;border-top:2px solid #333">TOTALE</td><td style="text-align:right;font-weight:700;font-size:16px;border-top:2px solid #333">€ ${Number(f.totaleLordo || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
         </tfoot>
       </table>
@@ -2074,24 +2174,31 @@ const DocumentiPageWithPrint = () => {
 
 // BuonoLavoroPage with CRUD + print
 const BuonoLavoroPage = () => {
-  const [data, setData] = useState(buoniLavoroStore.getAll());
+  const { data, add, update, remove } = useApiData("/buoni-lavoro");
   const [search, setSearch] = useState("");
   const [modalMode, setModalMode] = useState(null);
   const [formData, setFormData] = useState({});
   const [selectedId, setSelectedId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [toast, setToast] = useState(null);
-  const refresh = () => setData(buoniLavoroStore.getAll());
+  const [saving, setSaving] = useState(false);
 
   const filtered = data.filter(row => !search || Object.values(row).some(v => typeof v === "string" && v.toLowerCase().includes(search.toLowerCase())));
 
   const openCreate = () => { const e = {}; BUONO_FIELDS.forEach(f => { e[f.key] = f.default ?? ""; }); setFormData(e); setSelectedId(null); setModalMode("create"); };
   const openEdit = (r) => { setFormData({ ...r }); setSelectedId(r.id); setModalMode("edit"); };
-  const handleSave = () => {
-    if (modalMode === "create") buoniLavoroStore.add(formData); else buoniLavoroStore.update(selectedId, formData);
-    refresh(); setModalMode(null); setToast({ message: modalMode === "create" ? "Buono creato" : "Buono aggiornato", type: "success" });
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (modalMode === "create") await add(formData); else await update(selectedId, formData);
+      setModalMode(null); setToast({ message: modalMode === "create" ? "Buono creato" : "Buono aggiornato", type: "success" });
+    } catch (e) { setToast({ message: `Errore: ${e.message}`, type: "error" }); }
+    finally { setSaving(false); }
   };
-  const handleDelete = (id) => { buoniLavoroStore.remove(id); refresh(); setDeleteConfirm(null); setToast({ message: "Buono eliminato", type: "info" }); };
+  const handleDelete = async (id) => {
+    try { await remove(id); setDeleteConfirm(null); setToast({ message: "Buono eliminato", type: "info" }); }
+    catch (e) { setToast({ message: `Errore: ${e.message}`, type: "error" }); }
+  };
   const setField = (k, v) => setFormData(p => ({ ...p, [k]: v }));
 
   const actionCol = { key: "_actions", label: "", render: (row) => (
@@ -2128,7 +2235,7 @@ const BuonoLavoroPage = () => {
               {f.type === "select" ? <Select label={f.label} value={formData[f.key] || ""} onChange={e => setField(f.key, e.target.value)}><option value="">—</option>{f.options?.map(o => <option key={o} value={o}>{o}</option>)}</Select>
               : f.type === "textarea" ? <TextArea label={f.label} value={formData[f.key] || ""} onChange={e => setField(f.key, e.target.value)} rows={4} />
               : f.type === "checkbox" ? <div className="space-y-1"><label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{f.label}</label><label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={!!formData[f.key]} onChange={e => setField(f.key, e.target.checked)} className="w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-cyan-600" /><span className="text-sm text-zinc-300">{formData[f.key] ? "Sì" : "No"}</span></label></div>
-              : <Input label={f.label} type={f.type || "text"} value={formData[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} placeholder={f.placeholder} />}
+              : <Input label={f.label} type={f.type || "text"} value={f.type === "date" ? fmtD(formData[f.key]) : formData[f.key] ?? ""} onChange={e => setField(f.key, e.target.value)} placeholder={f.placeholder} />}
             </div>
           ))}
         </div>
@@ -2136,7 +2243,7 @@ const BuonoLavoroPage = () => {
           {modalMode === "edit" && <Btn variant="secondary" icon={Download} onClick={() => printBuonoDiLavoro(formData)}>Stampa BDL</Btn>}
           <div className="flex gap-2 ml-auto">
             <Btn variant="secondary" onClick={() => setModalMode(null)}>Annulla</Btn>
-            <Btn icon={Save} onClick={handleSave}>{modalMode === "create" ? "Crea" : "Salva"}</Btn>
+            <Btn icon={Save} onClick={handleSave} loading={saving}>{modalMode === "create" ? "Crea" : "Salva"}</Btn>
           </div>
         </div>
       </Modal>
@@ -2166,10 +2273,10 @@ const NAV = [
   { id: "fatture_ricevute", label: "Fatture Ricevute", icon: Download },
   { id: "ddt", label: "DDT / Bolle", icon: FileOutput },
   { id: "documenti", label: "Documenti", icon: FolderOpen },
-  { id: "audit", label: "Audit Log", icon: Shield },
+  { id: "audit", label: "Audit Log", icon: Shield, minRole: "ADMIN" },
   { id: "ai", label: "AI Assistant", icon: Bot },
-  { id: "utenti", label: "Gestione Utenti", icon: Lock },
-  { id: "settings", label: "Impostazioni", icon: Settings },
+  { id: "utenti", label: "Gestione Utenti", icon: Lock, minRole: "ADMIN" },
+  { id: "settings", label: "Impostazioni", icon: Settings, minRole: "ADMIN" },
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -2311,7 +2418,7 @@ export default function App() {
             </div>
           </div>
           <nav className="flex-1 overflow-y-auto py-1.5 px-1.5 space-y-0.5">
-            {NAV.map(n => {
+            {NAV.filter(n => !n.minRole || hasRole(n.minRole)).map(n => {
               const I = n.icon; const a = page === n.id;
               return <button key={n.id} onClick={() => setPage(n.id)} className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-all border ${a ? "text-white border-opacity-20" : "border-transparent hover:bg-white/5"}`} style={a ? { background: theme.primaryLight, color: theme.accent, borderColor: theme.primary + "33" } : { color: theme.textMuted }} title={!sidebarOpen ? n.label : undefined}><I size={16} className="shrink-0" />{sidebarOpen && <span className="truncate text-[13px]" style={{ fontWeight: 500 }}>{n.label}</span>}</button>;
             })}

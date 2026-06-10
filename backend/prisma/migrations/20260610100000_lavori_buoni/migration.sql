@@ -1,0 +1,60 @@
+-- Programma Lavori e Buoni di Lavoro: da store locale del frontend a tabelle persistenti
+
+CREATE TABLE "lavori" (
+    "id" TEXT NOT NULL,
+    "commessa" TEXT,
+    "ordine" TEXT,
+    "indirizzo" TEXT,
+    "matricola" TEXT,
+    "cliente" TEXT,
+    "cottimista" TEXT,
+    "tecnico" TEXT,
+    "stato" TEXT NOT NULL DEFAULT 'CONFERMATO',
+    "priorita" TEXT NOT NULL DEFAULT 'ORDINARIA',
+    "oggetto" TEXT,
+    "dataInizio" TIMESTAMP(3),
+    "dataFinePrevista" TIMESTAMP(3),
+    "dataFineEffettiva" TIMESTAMP(3),
+    "percentuale" INTEGER NOT NULL DEFAULT 0,
+    "note" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "lavori_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "buoni_lavoro" (
+    "id" TEXT NOT NULL,
+    "numero" TEXT NOT NULL,
+    "dataConferma" TIMESTAMP(3),
+    "ordine" TEXT,
+    "offerta" TEXT,
+    "commessa" TEXT,
+    "matricola" TEXT,
+    "ubicazione" TEXT,
+    "geometra" TEXT,
+    "tecnicoCapo" TEXT,
+    "cottimista" TEXT,
+    "posConsegnato" BOOLEAN NOT NULL DEFAULT false,
+    "dataInizio" TIMESTAMP(3),
+    "oraInizio" TEXT,
+    "dataFine" TIMESTAMP(3),
+    "oraFine" TEXT,
+    "sequenzeLavoro" TEXT,
+    "controlliExtracorsa" TEXT,
+    "controlliLimitatore" TEXT,
+    "controlliSicurezza" TEXT,
+    "controlliSerrature" TEXT,
+    "controlliPorte" TEXT,
+    "controlliCircuito" TEXT,
+    "noteEsecuzione" TEXT,
+    "noteSospensioni" TEXT,
+    "firmaCustode" TEXT,
+    "firmaTecnico" TEXT,
+    "firmaGeometra" TEXT,
+    "firmaCapoOfficina" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "buoni_lavoro_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "buoni_lavoro_numero_key" ON "buoni_lavoro"("numero");

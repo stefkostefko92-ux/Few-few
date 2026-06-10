@@ -606,6 +606,67 @@ enum TipoDocumento {
   ALTRO
 }
 
+// Programma lavori (cantieri assegnati a cottimisti/tecnici)
+model Lavoro {
+  id                String    @id @default(uuid())
+  commessa          String?
+  ordine            String?   // riferimento libero a OL
+  indirizzo         String?
+  matricola         String?
+  cliente           String?
+  cottimista        String?
+  tecnico           String?
+  stato             String    @default("CONFERMATO") // EMESSO/CONFERMATO/IN_LAVORO/SOSPESO/COMPLETATO
+  priorita          String    @default("ORDINARIA")  // ORDINARIA/URGENTE/EMERGENZA
+  oggetto           String?
+  dataInizio        DateTime?
+  dataFinePrevista  DateTime?
+  dataFineEffettiva DateTime?
+  percentuale       Int       @default(0)
+  note              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("lavori")
+}
+
+// Buono di Lavoro (modulo PO-05-3)
+model BuonoLavoro {
+  id                  String    @id @default(uuid())
+  numero              String    @unique
+  dataConferma        DateTime?
+  ordine              String?
+  offerta             String?
+  commessa            String?
+  matricola           String?
+  ubicazione          String?
+  geometra            String?
+  tecnicoCapo         String?
+  cottimista          String?
+  posConsegnato       Boolean   @default(false)
+  dataInizio          DateTime?
+  oraInizio           String?
+  dataFine            DateTime?
+  oraFine             String?
+  sequenzeLavoro      String?
+  controlliExtracorsa String?
+  controlliLimitatore String?
+  controlliSicurezza  String?
+  controlliSerrature  String?
+  controlliPorte      String?
+  controlliCircuito   String?
+  noteEsecuzione      String?
+  noteSospensioni     String?
+  firmaCustode        String?
+  firmaTecnico        String?
+  firmaGeometra       String?
+  firmaCapoOfficina   String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("buoni_lavoro")
+}
+
 model Documento {
   id          String        @id @default(uuid())
   tipo        TipoDocumento

@@ -29,10 +29,12 @@ router.get('/pdf/ordine/:id', authenticate, async (req: any, res: any) => {
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 
+const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
 // Email send
 router.post('/email/fattura/:id', authenticate, async (req: any, res: any) => {
   try { if (!isEmailConfigured()) return res.status(503).json({ error: 'SMTP non configurato' });
-    const { to } = req.body; if (!to) return res.status(400).json({ error: 'Email destinatario richiesta' });
+    const { to } = req.body; if (!to || !isValidEmail(to)) return res.status(400).json({ error: 'Email destinatario non valida' });
     const f = await prisma.fattura.findUnique({ where: { id: req.params.id }, include: { amministratore: true } }); if (!f) return res.status(404).json({ error: 'Fattura non trovata' });
     const pdf = await generaFatturaPDF(req.params.id); const ok = await sendFatturaEmail(to, f, pdf);
     res.json({ ok, message: ok ? `Inviata a ${to}` : 'Invio fallito' });
@@ -40,7 +42,7 @@ router.post('/email/fattura/:id', authenticate, async (req: any, res: any) => {
 });
 router.post('/email/preventivo/:id', authenticate, async (req: any, res: any) => {
   try { if (!isEmailConfigured()) return res.status(503).json({ error: 'SMTP non configurato' });
-    const { to } = req.body; if (!to) return res.status(400).json({ error: 'Email destinatario richiesta' });
+    const { to } = req.body; if (!to || !isValidEmail(to)) return res.status(400).json({ error: 'Email destinatario non valida' });
     const p = await prisma.preventivo.findUnique({ where: { id: req.params.id }, include: { amministratore: true } }); if (!p) return res.status(404).json({ error: 'Preventivo non trovato' });
     const pdf = await generaPreventivoPDF(req.params.id); const ok = await sendPreventivoEmail(to, p, pdf);
     res.json({ ok, message: ok ? `Inviato a ${to}` : 'Invio fallito' });

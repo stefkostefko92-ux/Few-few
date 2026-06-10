@@ -14,7 +14,9 @@ async function main() {
   }
 
   // ── Users ──
-  const password = await bcrypt.hash('admin2025', 10);
+  // ADMIN_PASSWORD consente al deploy di generare una password casuale
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin2025';
+  const password = await bcrypt.hash(adminPassword, 10);
   const master = await prisma.user.upsert({
     where: { email: 'admin@erp-ascensori.it' },
     update: {},
@@ -320,8 +322,29 @@ async function main() {
     },
   });
 
+  // ── Programma Lavori ──
+  await prisma.lavoro.createMany({
+    data: [
+      { commessa: '2026/050-1_2', ordine: 'OL-00001', indirizzo: 'Via Buschi 3, Milano', matricola: 'MI-2024-001', cliente: 'Dallagiovanna & C. SRL', cottimista: 'Panev Ascensori', tecnico: 'Marco Rossi', stato: 'IN_LAVORO', priorita: 'URGENTE', oggetto: 'Manutenzione straordinaria KONE MonoSpace', dataInizio: new Date('2026-03-20'), dataFinePrevista: new Date('2026-04-15'), percentuale: 60, note: 'Smaltimento materiali incluso' },
+      { commessa: '2026/051-3', indirizzo: 'Piazza Duomo 3, Milano', matricola: 'MI-2024-002', cliente: 'Condominio Palazzo Duomo', tecnico: 'Luca Ferrari', stato: 'CONFERMATO', priorita: 'ORDINARIA', oggetto: 'Revisione periodica Otis Gen2', dataInizio: new Date('2026-03-28'), dataFinePrevista: new Date('2026-04-05'), percentuale: 0 },
+      { commessa: '2026/053-2', indirizzo: 'Via Cellini 4, Milano', matricola: '7485', cliente: 'Prandoni & Curci', cottimista: 'Panev Ascensori', tecnico: 'Marco Rossi', stato: 'COMPLETATO', priorita: 'ORDINARIA', oggetto: 'Sostituzione argano, funi, limitatore, quadro manovra', dataInizio: new Date('2026-02-10'), dataFinePrevista: new Date('2026-03-10'), dataFineEffettiva: new Date('2026-03-08'), percentuale: 100, note: 'Adeguamento UNI 10411.1-2021' },
+    ],
+  });
+
+  // ── Buoni di Lavoro ──
+  await prisma.buonoLavoro.create({
+    data: {
+      numero: 'BDL-2026-001', dataConferma: new Date('2026-03-20'), ordine: 'OL-00001', offerta: 'PRV-00001',
+      commessa: '2026/050-1_2', matricola: 'MI-2024-001', ubicazione: 'Via Buschi 3, Milano',
+      geometra: 'Simone Dallagiovanna', tecnicoCapo: 'Marco Rossi', cottimista: 'Panev Ascensori',
+      posConsegnato: true, dataInizio: new Date('2026-03-20'), oraInizio: '08:00',
+      sequenzeLavoro: '1. Smontaggio vecchio argano\n2. Installazione nuovo argano standard\n3. Sostituzione funi di trazione\n4. Nuovo limitatore + fune + tenditore in fossa',
+      noteEsecuzione: 'Smaltimento materiali incluso nell\'importo confermato',
+    },
+  });
+
   console.log('✅ Seed completato!');
-  console.log('   📧 Admin: admin@erp-ascensori.it / admin2025');
+  console.log(`   📧 Admin: admin@erp-ascensori.it / ${adminPassword}`);
   console.log('   📧 Tecnico: tecnico@erp-ascensori.it / tecnico2025');
 }
 

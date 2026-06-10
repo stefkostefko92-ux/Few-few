@@ -12,6 +12,8 @@ import aiRoutes from './routes/ai';
 import magazzinoRoutes from './routes/magazzino';
 import { createCrudRouter, createVociRouter } from './routes/crud';
 import { sanitizeForModel } from './services/sanitize';
+import uploadRouter, { UPLOAD_DIR } from './routes/upload';
+import jwtSocket from 'jsonwebtoken';
 import { controllaScadenze, eseguiControlloScadenze } from './services/scadenze';
 import extrasRoutes from './routes/extras';
 import { authenticate, authorize } from './middleware/auth';
@@ -80,6 +82,10 @@ const aiLimiter = rateLimit({
 app.get('/api/health', (_, res) => {
   res.json({ status: 'ok', version: '1.0.0', timestamp: new Date().toISOString() });
 });
+
+// Upload file (foto impianti, documenti allegati)
+app.use('/api/upload', apiLimiter, uploadRouter);
+app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '1y', immutable: true }));
 
 // Auth
 app.use('/api/auth', loginLimiter, authRoutes);
@@ -177,6 +183,20 @@ app.use('/api/movimenti', apiLimiter, createCrudRouter({
   include: {
     articolo: { select: { id: true, codice: true, nome: true } },
   },
+}));
+
+// ── Programma Lavori ──
+app.use('/api/lavori', apiLimiter, createCrudRouter({
+  model: 'lavoro',
+  entityName: 'lavori',
+  searchFields: ['commessa', 'ordine', 'indirizzo', 'matricola', 'cliente', 'cottimista', 'tecnico', 'oggetto'],
+}));
+
+// ── Buoni di Lavoro (PO-05-3) ──
+app.use('/api/buoni-lavoro', apiLimiter, createCrudRouter({
+  model: 'buonoLavoro',
+  entityName: 'buoni_lavoro',
+  searchFields: ['numero', 'commessa', 'matricola', 'ubicazione', 'cottimista', 'tecnicoCapo'],
 }));
 
 // ── Modulo 9: Preventivi ──
@@ -435,6 +455,18 @@ app.get('/api/scadenze', apiLimiter, authenticate, async (_req, res) => {
 // ═══════════════════════════════════════════════════════
 // SOCKET.IO — Real-time updates
 // ═══════════════════════════════════════════════════════
+// Handshake autenticato: il client passa il JWT in socket.handshake.auth.token
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token
+      || String(socket.handshake.headers.authorization || '').replace('Bearer ', '');
+    jwtSocket.verify(token, process.env.JWT_SECRET || 'erp-ascensori-jwt-secret');
+    next();
+  } catch {
+    next(new Error('Non autenticato'));
+  }
+});
+
 io.on('connection', (socket) => {
   console.log(`🔌 Client connesso: ${socket.id}`);
 
