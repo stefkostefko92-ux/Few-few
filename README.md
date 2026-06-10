@@ -36,9 +36,13 @@ Conforme a **EN 81-20 / EN 81-50** (nuovo) e idoneo a modernizzazioni
 | [`docs/02-parametri-wifi.md`](docs/02-parametri-wifi.md) | Mappa parametri app WiFi (safety vs non-safety) |
 | [`docs/03-lista-io.md`](docs/03-lista-io.md) | **Lista I/O completa** per il cablaggio |
 | [`docs/04-morsettiera-cavi.md`](docs/04-morsettiera-cavi.md) | **Morsettiera + lista cavi numerata** |
+| [`docs/05-distinta-materiali.md`](docs/05-distinta-materiali.md) | **Distinta materiali** con codici e prezzi |
+| [`docs/06-fascicolo-tecnico.md`](docs/06-fascicolo-tecnico.md) | **Fascicolo tecnico + checklist conformità** EN 81-20/50 |
 | [`config/parametri.json`](config/parametri.json) | Mappa parametri machine-readable |
 | [`config/lista-io.csv`](config/lista-io.csv) | Lista I/O machine-readable (import EPLAN/Excel) |
 | [`config/lista-cavi.csv`](config/lista-cavi.csv) | Schedario cavi machine-readable |
+| [`config/distinta-materiali.csv`](config/distinta-materiali.csv) | BOM machine-readable (codici, prezzi) |
+| [`config/checklist-collaudo.csv`](config/checklist-collaudo.csv) | Checklist di collaudo machine-readable |
 | [`firmware/esp32-quadro-wifi/`](firmware/esp32-quadro-wifi/) | Prototipo modulo WiFi: web-server + Modbus + `/api/hmi` |
 
 ## Architettura in breve

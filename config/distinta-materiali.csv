@@ -1,0 +1,24 @@
+categoria;rif;descrizione;produttore;codice;qta;prezzo_unit_eur;impianto;note
+PLC;-A1;CPU S7-1200 1214C DC/DC/DC (14DI/10DQ);Siemens;6ES7214-1AG40-0XB0;1;270;both;cervello logica di manovra
+PLC;-A1.1;Modulo espansione SM1223 16DI/16DQ;Siemens;6ES7223-1BL32-0XB0;1;150;both;I/O aggiuntivi + riserva 20%
+SICUREZZA;-KA-SIC;Rele di sicurezza a contatti guidati;Pizzato;CS AR-05V024;1;85;both;certificato esame UE del tipo
+SICUREZZA;-KA-SEQ;Rele sequenza/mancanza fase;Lovato;PMV50A440;1;35;both;protezione rete trifase
+POTENZA;-KM-S/-KM-D/-KM-V/-KM-L;Contattore 18A 24Vdc (x4);Lovato;BF1801A024;4;25;geared;direzione + 2 velocita' (interbloccati)
+POTENZA;-A-FRE;Raddrizzatore freno + sovreccitazione;Lovato;rettif. freno;1;40;geared;comando freno doppio circuito
+POTENZA;-KM-P/-KM-Y/-KM-D;Contattore 25A 24Vdc (x3);Lovato;BF2510A024;3;35;idraulico;avviamento stella-triangolo pompa
+POTENZA;-EV;Interfaccia comando elettrovalvole;Finder;rele 24V 2P;2;12;idraulico;EV salita/discesa
+SICUREZZA;-A3;Dispositivo UCM/A3 (rope brake / valvola blocco);n.d.;UCM-A3;1;230;geared;certificato; doppio freno o rope brake
+SICUREZZA;-A3;Dispositivo UCM/A3 idraulico (valvola blocco + anti-deriva);n.d.;UCM-A3-IDR;1;180;idraulico;certificato esame UE del tipo
+ALIMENTAZIONE;-T1;Alimentatore DIN 24Vdc 2.5A;Mean Well;DR-60-24;1;40;both;logica, sensori, bus, WiFi
+WIFI;-A5;Scheda ESP32 DevKit;Espressif;ESP32-DevKitC;1;12;both;modulo parametri non-safety + /api/hmi
+WIFI;-A5.1;Modulo transceiver RS485 (MAX485);n.d.;MAX485-MOD;1;6;both;Modbus RTU verso PLC
+PROTEZIONI;-QS1;Sezionatore generale 4P 25A bloccoporta;ABB;OT25F4N2;1;40;geared;sezionamento manutenzione
+PROTEZIONI;-QS1;Sezionatore generale 4P 32A bloccoporta;ABB;OT40F4N2;1;55;idraulico;portata pompa
+PROTEZIONI;-Q1;Magnetotermico 4P curva D 16A;ABB;S204-D16;1;45;geared;protezione motore
+PROTEZIONI;-Q1;Magnetotermico 4P curva D 25A;ABB;S204-D25;1;55;idraulico;protezione pompa
+CABLAGGIO;-X1..-X4;Morsetti componibili + accessori;Phoenix;UT 2.5 / UT 4;1;130;both;morsettiere numerate + ponti
+CABLAGGIO;misc;Guida DIN, canaline, capicorda, ferrule, etichette;n.d.;misc;1;60;both;minuteria di cablaggio
+CARPENTERIA;-armadio;Armadio metallico IP55 600x400x200 + piastra;Gewiss;GW46004;1;110;both;quadro di manovra
+OPZIONALE;-A2;Inverter VVVF (variante geared);n.d.;VVVF-5.5;1;320;geared;alternativa al 2 velocita' (sostituisce -KM-V/-KM-L)
+OPZIONALE;-soft;Soft-starter (variante idraulico);n.d.;SOFT-25;1;130;idraulico;alternativa a stella-triangolo
+ACCESSORI;-COP/-LOP;Bottoniere cabina/piani (set base);n.d.;COP-LOP;1;180;both;non incluso nel totale quadro
