@@ -42,12 +42,19 @@ export function applyXp(char: Character, xpGain: number): LevelUpResult {
     return { leveled: false, fromLevel, toLevel: fromLevel, statPointsGained: 0, skillPointsGained: 0, hpGained: 0, mpGained: 0, gemsGained: 0 };
   }
   const levelsGained = newLevel - fromLevel;
-  // Stats and skills are now gold-driven (see /api/character/upgrade-stat).
-  // Levels grant HP/MP scaling. Gems trickle through daily claims & dungeon
-  // clears (handled in those routes) so this function stays side-effect free.
+  // Audit (balance landmine #4): stats + skills were "gold-driven only"
+  // (see /api/character/upgrade-stat), but at lv 200+ a player who blew
+  // through the broken XP curve had earned far less gold than the
+  // ~745k needed to push a single stat to +500. Restoring 3 stat
+  // points and 1 skill point per level guarantees a baseline build
+  // recovery while the gold-buy path remains for power players.
+  const statPointsGained = levelsGained * 3;
+  const skillPointsGained = levelsGained;
   const hpGained = levelsGained * 10;
   const mpGained = levelsGained * 4;
   char.level = newLevel;
+  char.stat_points = (char.stat_points || 0) + statPointsGained;
+  char.skill_points = (char.skill_points || 0) + skillPointsGained;
   char.hp_max += hpGained;
   char.mp_max += mpGained;
   char.hp = Math.min(char.hp + hpGained, char.hp_max);
@@ -56,8 +63,8 @@ export function applyXp(char: Character, xpGain: number): LevelUpResult {
     leveled: true,
     fromLevel,
     toLevel: newLevel,
-    statPointsGained: 0,
-    skillPointsGained: 0,
+    statPointsGained,
+    skillPointsGained,
     hpGained,
     mpGained,
     gemsGained: 0,

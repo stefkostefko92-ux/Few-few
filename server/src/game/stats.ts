@@ -190,8 +190,14 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
   let atk_min = Math.round(atkMin + classDmg * 0.5 + skill * 0.4 + atkBonus + typedDmgBonus);
   let atk_max = Math.round(atkMax + classDmg + skill * 0.8 + atkBonus + typedDmgBonus);
   def += phys_def + mag_def;
-  const hp_max = 40 + con * 6 + ch.level * 6 + hp_bonus;
-  const mp_max = 10 + int_ * 3 + wis * 2 + mp_bonus;
+  // Audit (balance landmine #2): hero HP per level was `lvl * 6` —
+  // a lv 350 hero with con=120 ended up at ~3.5k HP staring down a
+  // 26k-HP monster that hit for ~1300, so endgame fights died inside
+  // 3 monster swings. Bumped to `lvl * 15` so the geared lv 350 sits
+  // at ~7k HP and the survivability ratio holds. MP gets a smaller
+  // bump for spell sustain.
+  const hp_max = 40 + con * 6 + ch.level * 15 + hp_bonus;
+  const mp_max = 10 + int_ * 3 + wis * 2 + ch.level * 2 + mp_bonus;
 
   const dodge_chance = Math.min(0.45, dex * 0.005 + ch.skill_stealth * 0.004 + dodgeBonus);
   const crit_chance = Math.min(0.5, dex * 0.004 + ch.skill_sword * 0.003 + ch.skill_bow * 0.003 + 0.03 + critBonus);

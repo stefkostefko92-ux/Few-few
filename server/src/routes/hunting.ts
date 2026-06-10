@@ -176,7 +176,13 @@ router.post('/hunt', (req, res) => {
            WHERE character_id=? AND item_id=? AND listed=0 LIMIT 1`,
         ).get(char.id, candidates.id) as { id: number } | undefined;
         if (owned) {
-          const refund = Math.max(1, Math.floor((candidates.sell_price || 0) * 0.5));
+          // Audit (balance landmine #5): refund used to be 50% of the
+          // sell price, which combined with the 90% mount + 3× guild
+          // multipliers produced ~450k g/hr from dup auto-vendor alone
+          // at lv 320. Trimmed to 20% so duplicates are a meaningful
+          // signal that you should head to the market, not a primary
+          // gold faucet.
+          const refund = Math.max(1, Math.floor((candidates.sell_price || 0) * 0.2));
           char.gold += refund;
           goldGain += refund;
           itemRewardSlug = candidates.slug + '_dup';

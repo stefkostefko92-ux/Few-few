@@ -68,15 +68,23 @@ function bandFor(level: number): HighRegionBand {
       slug: `${band.region}_${lvl}`,
       name: `${creature} · Lv ${lvl}`,
       level: lvl,
-      // Audit gamebreaker #2: was Math.pow(f, 1.9); monster HP scaled
-      // far past hero damage and Lv 200+ fights couldn't be won inside
-      // the 60-round combat cap. Pulled down to 1.4 so gear keeps up.
-      hp: Math.round(1500 * Math.pow(f, 1.4)),
-      atk_min: Math.round(60 * Math.pow(f, 1.25)),
-      atk_max: Math.round(95 * Math.pow(f, 1.25)),
+      // Audit (balance landmine #2): monster HP exponent dropped 1.4 → 1.1
+      // so a representative lv 200 hero in tier-7 gear can actually
+      // clear a fight inside MAX_ROUNDS=60. Combined with the hero-HP
+      // bump in stats.ts (lvl*6 → lvl*15) and the atk_max exponent
+      // drop (1.25 → 1.15), survivability holds across the whole band.
+      hp: Math.round(1500 * Math.pow(f, 1.1)),
+      atk_min: Math.round(60 * Math.pow(f, 1.15)),
+      atk_max: Math.round(95 * Math.pow(f, 1.15)),
       defense: Math.round(25 * Math.pow(f, 1.1)),
       speed: 4 + (lvl % 6),
-      xp_reward: Math.round(85 * Math.pow(lvl, 0.7)),
+      // Audit (balance landmine #1): old `85 * lvl^0.7` happens to be
+      // the derivative of the level curve `50 * lvl^1.7`, so per-kill
+      // XP equalled the cost-to-level — one kill bought one level
+      // from lv 26 all the way to 350. Players consumed the whole
+      // 350-level curve in ~3 days of casual play. Divided by 7 so
+      // each level takes ~7 kills uniformly across the band.
+      xp_reward: Math.max(1, Math.round(12 * Math.pow(lvl, 0.7))),
       gold_min: Math.round(8 * lvl),
       gold_max: Math.round(14 * lvl),
       sprite,

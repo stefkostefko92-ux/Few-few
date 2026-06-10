@@ -20,7 +20,11 @@ export type ActionKind = 'hunt' | 'camp' | 'tower' | 'dungeon' | 'quest' | 'aren
 
 const MIN_COOLDOWN_MS = 60_000;       // 1 minute
 const MAX_COOLDOWN_MS = 20 * 60_000;  // 20 minutes
-const MAX_REDUCTION_PCT = 90;         // never reduce below 10% of the base time
+// Audit (balance landmine #5): cap mount cooldown reduction at 50%, not
+// 90%. The 90% cap + 3× guild Merchant Charter combined to ~600k g/hr at
+// lv 320 with no matching gold sink. 50% keeps the World Serpent
+// premium mount aspirational without breaking the pacing of the realm.
+const MAX_REDUCTION_PCT = 50;
 
 /** Read the equipped mount's cooldown-reduction property, if any. */
 function mountReductionPct(characterId: number): number {
