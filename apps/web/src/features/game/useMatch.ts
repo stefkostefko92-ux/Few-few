@@ -82,6 +82,18 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     socket.on(SOCKET_EVENTS.PRESENCE, onPresence);
 
     const join = () => socket.emit(SOCKET_EVENTS.QUEUE_JOIN, { game: gameKey });
+    // On (re)connect: a live match resyncs (the fresh socket re-joined the user
+    // room on handshake, but missed any state sent during the gap); only when
+    // there is no live match do we (re-)enter the queue — otherwise a mid-match
+    // reconnect would leave a stale queue entry behind.
+    const onConnect = () => {
+      const m = useMatchStore.getState();
+      if (m.matchId && m.phase !== "over") {
+        socket.emit(SOCKET_EVENTS.GAME_RESYNC, { matchId: m.matchId });
+      } else if (!adopting) {
+        join();
+      }
+    };
     if (adopting) {
       // Hydrate from the store and pull the current state; do NOT queue.
       setMatchId(existing.matchId);
@@ -89,10 +101,10 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       setPlayers(existing.players);
       setPhase("playing");
       socket.emit(SOCKET_EVENTS.GAME_RESYNC, { matchId: existing.matchId });
-    } else {
-      if (socket.connected) join();
-      socket.on("connect", join);
+    } else if (socket.connected) {
+      join();
     }
+    socket.on("connect", onConnect);
 
     return () => {
       if (!adopting) socket.emit(SOCKET_EVENTS.QUEUE_LEAVE);
@@ -100,7 +112,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       socket.off(SOCKET_EVENTS.GAME_STATE, onState);
       socket.off(SOCKET_EVENTS.GAME_OVER, onOver);
       socket.off(SOCKET_EVENTS.PRESENCE, onPresence);
-      socket.off("connect", join);
+      socket.off("connect", onConnect);
       useMatchStore.getState().clearMatch();
     };
   }, [gameKey]);

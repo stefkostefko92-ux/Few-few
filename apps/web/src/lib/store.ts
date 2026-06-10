@@ -66,6 +66,20 @@ export const useMatchStore = create<MatchState>((set) => ({
 }));
 
 /**
+ * Realtime connection health, fed by the socket singleton. `down` is true only
+ * for unexpected drops (not logout), so the chrome can show a reconnect banner.
+ */
+interface ConnectionState {
+  down: boolean;
+  setDown: (down: boolean) => void;
+}
+
+export const useConnectionStore = create<ConnectionState>((set) => ({
+  down: false,
+  setDown: (down) => set({ down }),
+}));
+
+/**
  * App-wide quick-store modal. Opened from the wallet bar (incl. mid-game, since
  * the header renders during matches) so players can top up without leaving the
  * table. `reason` lets callers tailor the heading (e.g. low on chips).

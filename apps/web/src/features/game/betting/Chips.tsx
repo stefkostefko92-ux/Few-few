@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "../../../ui";
 import "./chips.css";
 
@@ -17,11 +18,12 @@ export function ChipStack({ amount, size = "md" }: { amount: number; size?: "sm"
 
 /** Pot display: chip pile + the amount in tabular figures. */
 export function Pot({ amount, label }: { amount: number; label: string }) {
+  const { i18n } = useTranslation();
   return (
     <div className="pot">
       <ChipStack amount={amount} />
       <span className="pot__amount tnum">
-        {label}: {amount.toLocaleString("bg-BG")}
+        {label}: {amount.toLocaleString(i18n.language)}
       </span>
     </div>
   );

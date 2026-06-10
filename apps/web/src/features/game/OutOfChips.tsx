@@ -9,7 +9,7 @@ import { useStoreModal } from "../../lib/store";
  * non-coercive monetization surface (chips are also earnable for free).
  */
 export function OutOfChips({ minBuyIn, chips }: { minBuyIn: number; chips: number }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const openStore = useStoreModal((s) => s.openStore);
 
@@ -21,7 +21,7 @@ export function OutOfChips({ minBuyIn, chips }: { minBuyIn: number; chips: numbe
         </div>
         <h1 className="mb-2 text-2xl text-brass-300">{t("outOfChips.title")}</h1>
         <p className="text-ink-300">
-          {t("outOfChips.body", { min: minBuyIn.toLocaleString("bg-BG"), chips: chips.toLocaleString("bg-BG") })}
+          {t("outOfChips.body", { min: minBuyIn.toLocaleString(i18n.language), chips: chips.toLocaleString(i18n.language) })}
         </p>
         <p className="mt-2 text-xs text-ink-muted">{t("outOfChips.free")}</p>
 

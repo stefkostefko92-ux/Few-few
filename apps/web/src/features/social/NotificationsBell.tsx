@@ -6,7 +6,7 @@ const POLL_MS = 30_000;
 
 /** Header bell: unread count + a dropdown of recent notifications. */
 export function NotificationsBell() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
@@ -110,7 +110,7 @@ export function NotificationsBell() {
                   <div>
                     <div>{label(n)}</div>
                     <div className="text-[11px] text-ink-muted">
-                      {new Date(n.createdAt).toLocaleString("bg-BG")}
+                      {new Date(n.createdAt).toLocaleString(i18n.language)}
                     </div>
                   </div>
                 </li>

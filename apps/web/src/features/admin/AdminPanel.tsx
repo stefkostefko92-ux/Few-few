@@ -54,7 +54,7 @@ export function AdminPanel() {
 const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState<AdminStats | null>(null);
 
   useEffect(() => {
@@ -129,7 +129,7 @@ function Dashboard() {
               <li key={a.id} className="flex flex-wrap items-center gap-x-2">
                 <span className="text-brass-300">{a.action}</span>
                 <span className="text-ink-muted">· {a.actorName} ·</span>
-                <span className="text-ink-muted">{new Date(a.createdAt).toLocaleString("bg-BG")}</span>
+                <span className="text-ink-muted">{new Date(a.createdAt).toLocaleString(i18n.language)}</span>
               </li>
             ))}
           </ul>

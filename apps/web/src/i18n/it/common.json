@@ -403,5 +403,13 @@
     "yourTurnBih": "Palla in mano — posiziona e tira",
     "placeCue": "Posiziona la bianca",
     "placeHint": "Clicca per posizionare la bianca"
+  },
+  "net": {
+    "reconnecting": "Connessione persa — riconnessione…"
+  },
+  "error": {
+    "title": "Qualcosa è andato storto",
+    "body": "Si è verificato un errore imprevisto. Torna alla lobby e riprova.",
+    "backToLobby": "Alla lobby"
   }
 }

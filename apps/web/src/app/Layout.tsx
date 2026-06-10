@@ -2,6 +2,8 @@ import { Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { useConnectionStore } from "../lib/store";
 import { VerifyBanner } from "../features/auth/VerifyBanner";
 import { StoreModal } from "../features/shop/StoreModal";
 import { CosmeticsModal } from "../features/shop/CosmeticsModal";
@@ -10,6 +12,7 @@ import { InviteWatcher } from "../features/social/InviteWatcher";
 /** Authenticated app chrome: skip-link + header + routed content + footer. */
 export function Layout() {
   const { t } = useTranslation();
+  const netDown = useConnectionStore((s) => s.down);
   return (
     <div className="flex min-h-screen flex-col">
       <a
@@ -18,10 +21,17 @@ export function Layout() {
       >
         {t("a11y.skipToContent")}
       </a>
+      {netDown ? (
+        <div role="status" className="bg-amber-900/80 px-4 py-1.5 text-center text-sm text-amber-100">
+          {t("net.reconnecting")}
+        </div>
+      ) : null}
       <VerifyBanner />
       <Header />
       <main id="main" className="flex-1 px-4 py-8 sm:px-8">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <Footer />
       <StoreModal />

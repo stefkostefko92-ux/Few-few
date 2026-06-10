@@ -403,5 +403,13 @@
     "yourTurnBih": "Ball in hand — place and shoot",
     "placeCue": "Place cue ball",
     "placeHint": "Click to place the cue ball"
+  },
+  "net": {
+    "reconnecting": "Connection lost — reconnecting…"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "An unexpected error occurred. Go back to the lobby and try again.",
+    "backToLobby": "Back to lobby"
   }
 }

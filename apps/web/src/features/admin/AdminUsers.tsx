@@ -101,7 +101,7 @@ function UserDetailModal({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const meRole = useAuthStore((s) => s.user?.role);
   const canWrite = isAdmin(meRole);
 
@@ -234,7 +234,7 @@ function UserDetailModal({
                 {detail.audits.map((a) => (
                   <li key={a.id}>
                     <span className="text-brass-300">{a.action}</span> · {a.actorName} ·{" "}
-                    {new Date(a.createdAt).toLocaleString("bg-BG")}
+                    {new Date(a.createdAt).toLocaleString(i18n.language)}
                   </li>
                 ))}
               </ul>
