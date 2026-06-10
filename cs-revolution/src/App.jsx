@@ -844,8 +844,8 @@ function AdminPanel(props) {
 // ═══════════════════════════════════════════════════════════════
 function SEOInjector() {
   useEffect(function() {
-    // ── Title ──
-    document.title = "Carbon Stealth VCC | Digital Solutions Agency | Bulgaria";
+    // Title comes from the static index.html <head> (Italian, keyword-rich) —
+    // overriding it here with an English string would undo the SEO title.
 
     // ── Meta tags ──
     var metas = [

@@ -92,6 +92,17 @@ A: Headquarters in Bobov Dol, Bulgaria (EIK BG208725180). All work delivered rem
 **Q: What makes Carbon Stealth different?**
 A: We build what others won't touch — complex web platforms, FiveM anti-cheat systems, embedded IoT integrations, and full enterprise ERP. Multilingual (IT/EN/BG) with response within 24 hours.
 
+## Service Areas
+
+Carbon Stealth VCC works remotely across the EU with dedicated local pages for:
+
+**Bulgaria:** Sofia, Plovdiv, Varna, Burgas, Ruse, Stara Zagora, Veliko Tarnovo, Blagoevgrad, Kyustendil, Dupnitsa
+- Hub: https://carbonstealth.eu/bg/geo/
+
+**Italy:** Milano, Roma, Torino, Firenze, Napoli, Bologna, Verona, Genova, Bari, Padova
+- Hub: https://carbonstealth.eu/geo/
+- Italian phone: +39 379 296 9699, project management in Italian, EU invoicing (reverse charge)
+
 ## Contact
 
 For inquiries: info@carbonstealth.eu
