@@ -325,18 +325,25 @@ export default function Landing(): React.ReactElement {
       {/* World */}
       <section id="world" className="section">
         <div className="section-eyebrow" data-reveal>The map</div>
-        <h2 className="section-title" data-reveal>Five hand-built regions, ten procedural high-tier bands.</h2>
+        <h2 className="section-title" data-reveal>Eleven hand-built regions, five procedural divine bands.</h2>
         <p className="section-lead" data-reveal>
-          Five named regions take you from level one to twenty-four. Past that, ten procedural
-          bands carry you to three hundred and fifty, each with its own monster roster, drop
-          table, and small named dungeon.
+          Five act-one regions take you from level one to twenty-five. Six mid-tier named
+          regions carry you through to level two hundred, each with its own monster roster and
+          a named APEX boss who drops a unique legendary. Past that, five procedural divine
+          bands push you to level three hundred and fifty.
         </p>
         <div className="region-row" data-reveal-stagger>
           <RegionCard color="#3f6a2c" art="/assets/regions/whispering_woods.jpg" name="Whispering Woods" range="Lv 1 – 5">Goblins, dire wolves, the rats under the inn. The first place you draw a sword.</RegionCard>
           <RegionCard color="#6e7a5c" art="/assets/regions/mistmoor_hills.jpg"   name="Mistmoor Hills"   range="Lv 6 – 10">Fog-laced highlands where the orcs raid down for cattle and the trolls don't bother hiding.</RegionCard>
           <RegionCard color="#6aa7ff" art="/assets/regions/crystal_caverns.jpg"  name="Crystal Caverns"  range="Lv 10 – 15">A dwarven dig that broke into something it shouldn't have. The Overlord sleeps at the bottom.</RegionCard>
           <RegionCard color="#c7641a" art="/assets/regions/ashen_wastes.jpg"     name="Ashen Wastes"     range="Lv 15 – 22">Burned earth from a god's argument. Revenants walk it because nothing else will.</RegionCard>
-          <RegionCard color="#6f3fb6" art="/assets/regions/shadowfell.jpg"       name="The Shadowfell"   range="Lv 24+">The Shadow Lord's territory. The road keeps going past here, into the procedural bands.</RegionCard>
+          <RegionCard color="#6f3fb6" art="/assets/regions/shadowfell.jpg"       name="The Shadowfell"   range="Lv 24 – 25">The Shadow Lord's court. End of act one; first APEX kill of your career.</RegionCard>
+          <RegionCard color="#c7411a" art="/assets/regions/ashen_wastes.jpg"     name="Emberreach"       range="Lv 26 – 50">Volcanic frontier. Wyrmkin clans rule it. APEX: Khalad the Wyrm-Touched.</RegionCard>
+          <RegionCard color="#7a5a3a" art="/assets/regions/crystal_caverns.jpg"  name="Hammerhand Pass"  range="Lv 50 – 75">A dwarven mining city overrun by its own. APEX: Gorvak the Iron Tyrant.</RegionCard>
+          <RegionCard color="#9a5ad0" art="/assets/regions/shadowfell.jpg"       name="Conclave of Aedric" range="Lv 75 – 105">A magical academy in open rebellion. APEX: Archlector Vex.</RegionCard>
+          <RegionCard color="#3f8a6a" art="/assets/regions/mistmoor_hills.jpg"   name="Saltmarsh"         range="Lv 105 – 140">Lizardfolk swamp under the Sunken King. APEX: the King himself.</RegionCard>
+          <RegionCard color="#9ac7ff" art="/assets/regions/crystal_caverns.jpg"  name="Frostvale"         range="Lv 140 – 175">Arctic tundra ruled by frost giants. APEX: Jarl Snowtooth.</RegionCard>
+          <RegionCard color="#3a1a1a" art="/assets/regions/ashen_wastes.jpg"     name="Black Spire"       range="Lv 175 – 200">Demonic incursion at the mountain's peak. APEX: Azhtek the Black Pyrelord.</RegionCard>
         </div>
       </section>
 
@@ -346,9 +353,10 @@ export default function Landing(): React.ReactElement {
         <h2 className="section-title" data-reveal>Shipped, in flight, queued.</h2>
         <div className="roadmap-track" data-reveal>
           <RoadmapStop state="shipped" when="Shipped" what="Core game">
-            Four classes, 200 items, eight themed sets, 350 levels of monster roster, 16 named
-            quests, four scripted dungeons plus ten procedural bands, ELO arena, daily and
-            weekly loops, achievements, bestiary, replays.
+            Four classes, 206 items, eight themed sets, eleven hand-built regions plus five
+            procedural divine bands, 350 levels of monster roster, six unique APEX boss drops,
+            16 named quests, four scripted dungeons, ELO arena, daily and weekly loops,
+            achievements, bestiary, replays.
           </RoadmapStop>
           <RoadmapStop state="shipped" when="Shipped" what="Profile and cosmetics">
             Twelve avatars, twelve rarity-tinted frames, bios, name change, public profile

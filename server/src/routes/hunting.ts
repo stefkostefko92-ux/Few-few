@@ -19,9 +19,13 @@ import { logFromRequest } from '../lib/logger';
 const router = Router();
 router.use(authRequired);
 
+// Five act-one regions plus six named mid-tier regions (lv 26-200)
+// hand-built in the content expansion, then the procedural divine
+// bands (lv 201-350). Keep all three lists ordered low-to-high so the
+// region picker reads as a single progression chain.
 const BASE_REGIONS = ['whispering_woods', 'mistmoor_hills', 'crystal_caverns', 'ashen_wastes', 'shadowfell'];
-// Base regions plus the endless high-level bands (lv 26 → 350), in order.
-const REGION_ORDER = [...BASE_REGIONS, ...REGION_BANDS.map((b) => b.region)];
+const NAMED_MID_REGIONS = ['emberreach', 'hammerhand_pass', 'conclave_aedric', 'saltmarsh', 'frostvale', 'black_spire'];
+const REGION_ORDER = [...BASE_REGIONS, ...NAMED_MID_REGIONS, ...REGION_BANDS.map((b) => b.region)];
 
 const REGION_GATES: Record<string, number> = {
   whispering_woods: 1,
@@ -29,11 +33,30 @@ const REGION_GATES: Record<string, number> = {
   crystal_caverns: 10,
   ashen_wastes: 15,
   shadowfell: 24,
+  emberreach: 26,
+  hammerhand_pass: 50,
+  conclave_aedric: 75,
+  saltmarsh: 105,
+  frostvale: 140,
+  black_spire: 175,
   ...Object.fromEntries(REGION_BANDS.map((b) => [b.region, b.gate])),
 };
 
-// Pretty names for the high-level regions so the UI can label them.
-export const REGION_NAMES: Record<string, string> = Object.fromEntries(REGION_BANDS.map((b) => [b.region, b.name]));
+const NAMED_MID_REGION_LABELS: Record<string, string> = {
+  emberreach: 'Emberreach',
+  hammerhand_pass: 'Hammerhand Pass',
+  conclave_aedric: 'Conclave of Aedric',
+  saltmarsh: 'Saltmarsh',
+  frostvale: 'Frostvale',
+  black_spire: 'Black Spire',
+};
+
+// Pretty names for every region beyond the BASE_REGIONS five so the
+// client doesn't have to hard-code labels for each new band.
+export const REGION_NAMES: Record<string, string> = {
+  ...NAMED_MID_REGION_LABELS,
+  ...Object.fromEntries(REGION_BANDS.map((b) => [b.region, b.name])),
+};
 
 router.get('/regions', (req, res) => {
   const db = getDb();
@@ -133,10 +156,36 @@ router.post('/hunt', (req, res) => {
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
 
-    // Item drop. 22% chance per kill. Tier mapped from the monster's
-    // *item-tier* band (not just /35), so the lvl_req of items in each
-    // tier lines up with the player's actual level. Audit balance #11.
-    if (Math.random() < 0.22) {
+    // APEX boss kills — guaranteed unique legendary drop, regardless of
+    // the regular 22% roll below. Each named-region APEX has exactly one
+    // signature item that ONLY drops here. If the hero already owns the
+    // piece (in bag or equipped), the drop falls back to the normal
+    // random roll so the kill still feels rewarding.
+    const APEX_DROPS: Record<string, string> = {
+      'emberreach_apex_khalad':     'khalad_fang',
+      'hammerhand_apex_gorvak':     'gorvak_mace',
+      'conclave_apex_vex':          'vex_staff',
+      'saltmarsh_apex_sunken_king': 'sunken_king_trident',
+      'frostvale_apex_snowtooth':   'snowtooth_axe',
+      'blackspire_apex_azhtek':     'azhtek_armor',
+    };
+    const apexSlug = APEX_DROPS[monster.slug];
+    if (apexSlug) {
+      const apexItem = db.prepare('SELECT id FROM items WHERE slug = ?').get(apexSlug) as { id: number } | undefined;
+      if (apexItem) {
+        const ownsApex = db.prepare(
+          'SELECT id FROM inventory WHERE character_id = ? AND item_id = ? AND listed = 0 LIMIT 1',
+        ).get(char.id, apexItem.id) as { id: number } | undefined;
+        if (!ownsApex) {
+          db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, apexItem.id);
+          itemRewardSlug = apexSlug;
+        }
+      }
+    }
+
+    // Regular drop — fires whenever the APEX guarantee didn't claim the
+    // slot. 22% chance per kill.
+    if (!itemRewardSlug && Math.random() < 0.22) {
       // Mapping: monster level → drop tier (matches the seeded
       // level_req of the equipment tiers).
       const mlvl = monster.level;
