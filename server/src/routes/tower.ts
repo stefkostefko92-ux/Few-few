@@ -8,6 +8,7 @@ import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown, loadCooldowns } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
+import { grantDrop, DROP_RATES } from '../game/drops';
 import type { Character, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -140,6 +141,7 @@ router.post('/climb', (req, res) => {
   let runEnded = false;
   let tokensGained = 0;
 
+  let itemDropSlug: string | null = null;
   if (result.winner === 'hero') {
     const vault = targetFloor % 5 === 0;
     const baseGold = towerGold(targetFloor) * (vault ? 2 : 1);
@@ -152,6 +154,17 @@ router.post('/climb', (req, res) => {
     lvlRes = applyXp(char, xpGain);
     newFloor = targetFloor;
     newBest = Math.max(newBest, targetFloor);
+    // Tower drops — unified through game/drops.ts. 8% per regular
+    // floor, 20% on every fifth (vault) floor, tier mapped from the
+    // floor number using the same scale as hunting so the drop tier
+    // tracks the hero's actual progression.
+    const dropChance = vault ? DROP_RATES.tower_vault : DROP_RATES.tower;
+    if (Math.random() < dropChance) {
+      const eff = Math.min(350, Math.round(targetFloor * 1.2));
+      const drop = grantDrop(char.id, char.level, char.class || '', eff);
+      if (drop.slug) itemDropSlug = drop.slug;
+      if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
+    }
   } else {
     newFloor = 0;
     runSeed = 0;
@@ -202,6 +215,10 @@ router.post('/climb', (req, res) => {
     run_ended: runEnded,
     cooldown_ms: cooldownMs,
     vault: targetFloor % 5 === 0 && result.winner === 'hero',
+    itemReward: itemDropSlug,
+    itemDrop: itemDropSlug
+      ? (db.prepare('SELECT slug, name, category, sub_type, tier, rarity, level_req, icon, atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus, description FROM items WHERE slug=?').get(itemDropSlug.replace(/_dup$/, '')) as any)
+      : null,
   });
 });
 

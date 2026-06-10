@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
 import { adminRequired } from '../middleware/admin';
-import { logFromRequest, isSafeWebhookUrl } from '../lib/logger';
+import { logFromRequest, logEvent, isSafeWebhookUrl } from '../lib/logger';
 import { passwordRule, PASSWORD_BCRYPT_ROUNDS } from './auth';
 
 const router = Router();
@@ -605,6 +605,41 @@ router.post('/webhooks', (req, res) => {
 router.delete('/webhooks/:id', (req, res) => {
   getDb().prepare('DELETE FROM webhook_endpoints WHERE id = ?').run(Number(req.params.id));
   res.json({ ok: true });
+});
+
+// Toggle a webhook on/off without deleting it.
+router.patch('/webhooks/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const fields: string[] = [];
+  const params: any[] = [];
+  if (typeof req.body?.enabled === 'boolean') { fields.push('enabled = ?'); params.push(req.body.enabled ? 1 : 0); }
+  if (typeof req.body?.category_filter === 'string') { fields.push('category_filter = ?'); params.push(req.body.category_filter); }
+  if (typeof req.body?.secret === 'string') { fields.push('secret = ?'); params.push(req.body.secret); }
+  if (fields.length === 0) { res.status(400).json({ error: 'No fields to update.' }); return; }
+  params.push(id);
+  getDb().prepare(`UPDATE webhook_endpoints SET ${fields.join(', ')} WHERE id = ?`).run(...params);
+  res.json({ ok: true });
+});
+
+// Fire a test event through a single webhook so the admin can confirm
+// it actually arrives in Discord (or wherever) without waiting for a
+// real game event. Picks the webhook by id, builds a sample payload
+// tagged `system.webhook_test`, and resets the failures counter on
+// success.
+router.post('/webhooks/:id/test', async (req, res) => {
+  const id = Number(req.params.id);
+  const row = getDb().prepare('SELECT * FROM webhook_endpoints WHERE id = ?').get(id) as { id: number; url: string; secret: string } | undefined;
+  if (!row) { res.status(404).json({ error: 'Webhook not found' }); return; }
+  // Reuse the public log path so the test payload follows the same
+  // discord-formatting and SSRF-guard codepath as a real event.
+  logEvent({
+    category: 'system',
+    action: 'webhook_test',
+    level: 'info',
+    message: 'Webhook test fired from admin panel.',
+    meta: { triggered_by_admin_id: req.auth?.uid, webhook_id: id, ts: Date.now() },
+  });
+  res.json({ ok: true, message: 'Test event queued. Check the destination for delivery.' });
 });
 
 router.get('/server', (_req, res) => {

@@ -10,6 +10,7 @@ import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
+import { grantDrop, DROP_RATES } from '../game/drops';
 import type { Character, Item, InventoryEntry, CombatActor } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
@@ -79,12 +80,20 @@ router.post('/challenge', (req, res) => {
   let xpGain = 0;
   let goldGain = 0;
   let lvlRes = null as ReturnType<typeof applyXp> | null;
+  let itemDropSlug: string | null = null;
   if (result.winner === 'hero') {
     const r = applyGuildMultipliers(char.id, 10 + opp.level * 2, 25 + opp.level * 5);
     xpGain = r.xp;
     goldGain = r.gold;
     lvlRes = applyXp(char, xpGain);
     char.gold += goldGain;
+    // Arena drops — 6% on win, tier mapped from opponent level (same
+    // scale as hunting so the drop matches the difficulty band).
+    if (Math.random() < DROP_RATES.arena) {
+      const drop = grantDrop(char.id, char.level, char.class || '', opp.level);
+      if (drop.slug) itemDropSlug = drop.slug;
+      if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
+    }
   }
   char.hp = Math.max(1, result.hero.hp);
   const cooldownMs = setCooldown(char.id, 'arena');
@@ -157,8 +166,13 @@ router.post('/challenge', (req, res) => {
     ratingDelta: delta,
     newRating: newCharRating,
     xp: xpGain,
+    gold: goldGain,
     levelUp: lvlRes && lvlRes.leveled ? lvlRes : null,
     unlocked,
+    itemReward: itemDropSlug,
+    itemDrop: itemDropSlug
+      ? (db.prepare('SELECT slug, name, category, sub_type, tier, rarity, level_req, icon, atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus, description FROM items WHERE slug=?').get(itemDropSlug.replace(/_dup$/, '')) as any)
+      : null,
   });
 });
 

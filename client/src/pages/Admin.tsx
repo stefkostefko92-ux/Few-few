@@ -811,7 +811,21 @@ function EventLogs() {
   );
 }
 
-/* ===== Webhook endpoints ===== */
+/* ===== Webhook endpoints =====
+   The category-filter field is a comma-separated list of allowed
+   categories (combat / payment / inventory / guild / character /
+   daily / system / auction / market) or * for all. If the URL points
+   at discord.com / discordapp.com, the server auto-formats the
+   payload as a Discord embed instead of raw JSON. */
+const CATEGORY_OPTIONS = ['*', 'combat', 'payment', 'inventory', 'guild', 'character', 'daily', 'system', 'auction', 'market'];
+
+function isDiscordUrl(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === 'discord.com' || h === 'discordapp.com' || h.endsWith('.discord.com') || h.endsWith('.discordapp.com');
+  } catch { return false; }
+}
+
 function Webhooks() {
   const toast = useStore((s) => s.toast);
   const [rows, setRows] = useState<any[]>([]);
@@ -826,7 +840,7 @@ function Webhooks() {
   async function add() {
     try {
       await api.post('/admin/webhooks', draft);
-      toast('Webhook added.', 'success');
+      toast(isDiscordUrl(draft.url) ? 'Discord webhook added — embeds will format automatically.' : 'Webhook added.', 'success');
       setDraft({ url: '', secret: '', category_filter: '*', enabled: true });
       load();
     } catch (e: any) { toast(e.message, 'error'); }
@@ -836,21 +850,59 @@ function Webhooks() {
     try { await api.delete(`/admin/webhooks/${id}`); load(); }
     catch (e: any) { toast(e.message, 'error'); }
   }
+  async function toggle(id: number, enabled: boolean) {
+    try { await api.patch(`/admin/webhooks/${id}`, { enabled }); load(); }
+    catch (e: any) { toast(e.message, 'error'); }
+  }
+  async function patchFilter(id: number, category_filter: string) {
+    try { await api.patch(`/admin/webhooks/${id}`, { category_filter }); load(); }
+    catch (e: any) { toast(e.message, 'error'); }
+  }
+  async function fireTest(id: number) {
+    try {
+      await api.post(`/admin/webhooks/${id}/test`, {});
+      toast('Test event sent — check destination.', 'success');
+      setTimeout(load, 1500);
+    } catch (e: any) { toast(e.message, 'error'); }
+  }
+
+  const draftIsDiscord = isDiscordUrl(draft.url);
 
   return (
     <>
-      <div className="admin-toolbar"><h1>Webhook Endpoints <span className="muted" style={{ fontSize: 14 }}>({rows.length})</span></h1></div>
-      <p className="muted" style={{ marginBottom: 14 }}>
-        Every event posts <code>POST {'<url>'}</code> with the full log JSON. Filter by category (e.g. <code>payment,admin</code>) or use <code>*</code> for all. If a secret is set, requests carry <code>X-Signature: sha256={'<hmac>'}</code>.
-      </p>
+      <div className="admin-toolbar">
+        <h1>Webhook Endpoints <span className="muted" style={{ fontSize: 14 }}>({rows.length})</span></h1>
+      </div>
+      <div className="card" style={{ marginBottom: 14, padding: '12px 16px' }}>
+        <strong style={{ color: '#d6a13d' }}>Discord-aware</strong>
+        <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+          Paste a Discord webhook URL and events arrive as formatted embeds with category-coloured
+          bars, character ids, route, and a Details block extracted from the event meta. Custom
+          headers and HMAC signatures are suppressed for Discord hosts (Discord ignores them).
+          For everything else, requests carry <code>X-Signature: sha256={'<hmac>'}</code> when a
+          secret is set, and the raw event JSON in the body.
+        </div>
+      </div>
       <div className="card" style={{ marginBottom: 18 }}>
         <div className="field-grid">
-          <div className="field"><label>URL</label><input value={draft.url} onChange={(e) => setDraft({ ...draft, url: e.target.value })} placeholder="https://example.com/hooks/nexus" style={{ width: '100%' }} /></div>
-          <div className="field"><label>Secret (optional)</label><input value={draft.secret} onChange={(e) => setDraft({ ...draft, secret: e.target.value })} placeholder="HMAC signing secret" style={{ width: '100%' }} /></div>
+          <div className="field">
+            <label>URL {draftIsDiscord && <span className="tag emerald" style={{ marginLeft: 8 }}>discord</span>}</label>
+            <input value={draft.url} onChange={(e) => setDraft({ ...draft, url: e.target.value })} placeholder="https://discord.com/api/webhooks/... or any HTTPS endpoint" style={{ width: '100%' }} />
+          </div>
+          <div className="field">
+            <label>Secret {draftIsDiscord && <span className="muted text-sm">(ignored for Discord)</span>}</label>
+            <input value={draft.secret} onChange={(e) => setDraft({ ...draft, secret: e.target.value })} placeholder="HMAC signing secret" style={{ width: '100%' }} disabled={draftIsDiscord} />
+          </div>
         </div>
         <div className="field-grid">
-          <div className="field"><label>Category filter</label><input value={draft.category_filter} onChange={(e) => setDraft({ ...draft, category_filter: e.target.value })} placeholder="* or auth,payment,combat" style={{ width: '100%' }} /></div>
-          <div className="field"><label>Enabled</label>
+          <div className="field">
+            <label>Category filter</label>
+            <select value={draft.category_filter} onChange={(e) => setDraft({ ...draft, category_filter: e.target.value })} style={{ width: '100%' }}>
+              {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>Enabled</label>
             <select value={draft.enabled ? 'true' : 'false'} onChange={(e) => setDraft({ ...draft, enabled: e.target.value === 'true' })} style={{ width: '100%' }}>
               <option value="true">Yes</option><option value="false">No</option>
             </select>
@@ -859,18 +911,36 @@ function Webhooks() {
         <button className="btn btn-primary" disabled={!draft.url.startsWith('http')} onClick={add}>Add Endpoint</button>
       </div>
       <table className="admin-table">
-        <thead><tr><th>URL</th><th>Filter</th><th>Status</th><th>Last call</th><th>Failures</th><th></th></tr></thead>
+        <thead><tr><th>URL</th><th>Filter</th><th>State</th><th>Last call</th><th>Failures</th><th style={{ width: 220 }}></th></tr></thead>
         <tbody>
-          {rows.map((w) => (
-            <tr key={w.id}>
-              <td><code style={{ fontSize: 11 }}>{w.url}</code></td>
-              <td><span className="tag">{w.category_filter}</span></td>
-              <td>{w.enabled ? <span className="tag emerald">on</span> : <span className="tag">off</span>} {w.last_status ? <span className="muted text-sm" style={{ marginLeft: 6 }}>{w.last_status}</span> : null}</td>
-              <td className="muted text-sm">{w.last_called_at ? new Date(w.last_called_at).toLocaleString() : '—'}</td>
-              <td className="muted text-sm">{w.failures}</td>
-              <td><button className="btn btn-sm btn-danger" onClick={() => del(w.id)}><IconTrash size={12} /></button></td>
-            </tr>
-          ))}
+          {rows.map((w) => {
+            const dscd = isDiscordUrl(w.url);
+            return (
+              <tr key={w.id}>
+                <td>
+                  {dscd && <span className="tag emerald" style={{ marginRight: 6 }}>discord</span>}
+                  <code style={{ fontSize: 11 }}>{w.url.length > 60 ? w.url.slice(0, 57) + '…' : w.url}</code>
+                </td>
+                <td>
+                  <select value={w.category_filter} onChange={(e) => patchFilter(w.id, e.target.value)} style={{ fontSize: 12, padding: '2px 6px' }}>
+                    {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </td>
+                <td>
+                  <button className={`btn btn-sm ${w.enabled ? 'btn-primary' : ''}`} onClick={() => toggle(w.id, !w.enabled)}>
+                    {w.enabled ? 'enabled' : 'disabled'}
+                  </button>
+                  {w.last_status ? <span className="muted text-sm" style={{ marginLeft: 6 }}>http {w.last_status}</span> : null}
+                </td>
+                <td className="muted text-sm">{w.last_called_at ? new Date(w.last_called_at).toLocaleString() : '—'}</td>
+                <td className="muted text-sm">{w.failures}</td>
+                <td>
+                  <button className="btn btn-sm" onClick={() => fireTest(w.id)}>Send Test</button>{' '}
+                  <button className="btn btn-sm btn-danger" onClick={() => del(w.id)}><IconTrash size={12} /></button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </>

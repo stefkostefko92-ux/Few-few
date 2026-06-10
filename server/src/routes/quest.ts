@@ -8,6 +8,7 @@ import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
 import { loadEquipped } from '../game/equipment';
 import { applyGuildMultipliers } from '../game/rewards';
+import { grantDrop, DROP_RATES } from '../game/drops';
 import { assertReady, setCooldown } from '../game/cooldowns';
 import { trackBattlePass } from './battlepass';
 import type { Character, Monster, Quest, Item, InventoryEntry } from '../types/domain';
@@ -140,7 +141,10 @@ router.post('/start', (req, res) => {
     goldGain = r.gold;
     char.gold += goldGain;
     lvlRes = applyXp(char, xpGain);
-    // Item drop?
+    // Item drop. Explicit quest.item_reward gives a guaranteed grant
+    // (legendary turn-in quests use this). Otherwise kill quests roll
+    // the unified 35% Tower/Arena/Hunt drop path so the player who
+    // turns in a region quest reliably leaves with a piece of gear.
     if (quest.item_reward && Math.random() < 0.6) {
       itemRewardSlug = quest.item_reward;
       const item = db.prepare('SELECT * FROM items WHERE slug = ?').get(itemRewardSlug) as Item | undefined;
@@ -150,6 +154,10 @@ router.post('/start', (req, res) => {
           item.id,
         );
       }
+    } else if (quest.monster_slug && Math.random() < DROP_RATES.quest) {
+      const drop = grantDrop(char.id, char.level, char.class || '', monster.level);
+      if (drop.slug) itemRewardSlug = drop.slug;
+      if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   }
   char.hp = Math.max(1, result.hpAfter > 0 ? result.hpAfter : 1);

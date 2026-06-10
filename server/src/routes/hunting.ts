@@ -14,6 +14,7 @@ import { trackBattlePass } from './battlepass';
 import { trackWeeklyKill } from './weekly';
 import { applyFactionRepFromHunt } from './faction';
 import { awardSeasonPointsFromHunt } from './events';
+import { grantDrop, DROP_RATES } from '../game/drops';
 import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -192,66 +193,14 @@ router.post('/hunt', (req, res) => {
       }
     }
 
-    // Regular drop — fires whenever the APEX guarantee didn't claim the
-    // slot. 22% chance per kill.
-    if (!itemRewardSlug && Math.random() < 0.22) {
-      // Mapping: monster level → drop tier (matches the seeded
-      // level_req of the equipment tiers).
-      const mlvl = monster.level;
-      const tier =
-        mlvl >= 320 ? 10 :
-        mlvl >= 280 ? 9  :
-        mlvl >= 230 ? 8  :
-        mlvl >= 180 ? 7  :
-        mlvl >= 130 ? 6  :
-        mlvl >= 95  ? 5  :
-        mlvl >= 60  ? 4  :
-        mlvl >= 25  ? 3  :
-        mlvl >= 12  ? 2  : 1;
-      // Audit BUG #1: previously the SQL ignored level_req and class_req,
-      // so a Lv 1 hero hunting tier-1 mobs could roll a Lv 25 legendary
-      // dragonbane. Now we filter by player level + class, with a
-      // graceful fallback if nothing matches.
-      const cls = char.class || '';
-      const pickFor = (whereExtra: string) => db.prepare(
-        `SELECT * FROM items
-         WHERE tier = ?
-           AND category IN ('weapon','armor','helm','shield','gloves','boots','amulet','ring','cloak')
-           AND level_req <= ?
-           AND (class_req = '' OR class_req = ?)
-           ${whereExtra}
-         ORDER BY RANDOM() LIMIT 1`,
-      ).get(tier, char.level, cls) as any;
-      const candidates = pickFor('') || pickFor("AND class_req = ''");
-      if (candidates) {
-        // Audit balance #7: don't flood the bag with duplicates. If the
-        // player already owns an unequipped copy (or has it equipped),
-        // auto-vendor the drop for half its sell price instead of
-        // inserting a second row. That keeps drops feeling rewarding
-        // without bloating the inventory grid.
-        const owned = db.prepare(
-          `SELECT id FROM inventory
-           WHERE character_id=? AND item_id=? AND listed=0 LIMIT 1`,
-        ).get(char.id, candidates.id) as { id: number } | undefined;
-        if (owned) {
-          // Audit (balance landmine #5): refund used to be 50% of the
-          // sell price, which combined with the 90% mount + 3× guild
-          // multipliers produced ~450k g/hr from dup auto-vendor alone
-          // at lv 320. Trimmed to 20% so duplicates are a meaningful
-          // signal that you should head to the market, not a primary
-          // gold faucet.
-          const refund = Math.max(1, Math.floor((candidates.sell_price || 0) * 0.2));
-          char.gold += refund;
-          goldGain += refund;
-          itemRewardSlug = candidates.slug + '_dup';
-        } else {
-          itemRewardSlug = candidates.slug;
-          db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(
-            char.id,
-            candidates.id,
-          );
-        }
-      }
+    // Regular drop — fires whenever the APEX guarantee didn't claim
+    // the slot. Routed through the unified game/drops.ts helper so the
+    // tier mapping, player level/class gating, and duplicate auto-
+    // vendor rate are identical to Tower / Arena / Quest drops.
+    if (!itemRewardSlug && Math.random() < DROP_RATES.hunt) {
+      const drop = grantDrop(char.id, char.level, char.class || '', monster.level);
+      if (drop.slug) itemRewardSlug = drop.slug;
+      if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   }
   char.hp = Math.max(1, result.hero.hp > 0 ? result.hero.hp : 1);

@@ -100,6 +100,58 @@ export function isSafeWebhookUrl(raw: string): boolean {
   return true;
 }
 
+/** Discord webhook routes expect a content + embeds payload rather than
+ *  a raw JSON envelope. Detect by hostname and re-shape the body before
+ *  delivery so admins can paste a Discord webhook URL straight in and
+ *  get pretty embeds. The signature header is suppressed for Discord
+ *  hosts since Discord ignores custom headers. */
+function isDiscordWebhook(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === 'discord.com' || h === 'discordapp.com' || h.endsWith('.discord.com') || h.endsWith('.discordapp.com');
+  } catch { return false; }
+}
+
+const CATEGORY_COLOR: Record<string, number> = {
+  combat:    0xff7468, // red — fights, deaths, raid clears
+  payment:   0xd6a13d, // gold — Stripe + premium grants
+  inventory: 0x6ad8a4, // green — drops, crafts, sales
+  guild:     0x6aa7ff, // blue — wars, raids, donations
+  character: 0xd6a13d, // gold — level-ups, profile changes
+  daily:     0xffb159, // orange — daily/weekly rolls
+  system:    0x9aa3b4, // gray — boot, errors, migrations
+  auction:   0xc294ff, // purple — listings, bids, settlements
+  market:    0x6ad8a4, // green — market activity
+};
+
+function formatDiscordPayload(payload: any): any {
+  const color = CATEGORY_COLOR[payload.category] || 0x9aa3b4;
+  const fields: any[] = [];
+  if (payload.character_id) fields.push({ name: 'Character', value: `#${payload.character_id}`, inline: true });
+  if (payload.target_id) fields.push({ name: 'Target', value: `${payload.target_type || ''} #${payload.target_id}`.trim(), inline: true });
+  if (payload.route) fields.push({ name: 'Route', value: payload.route, inline: true });
+  if (payload.country) fields.push({ name: 'Country', value: payload.country, inline: true });
+  if (payload.meta && typeof payload.meta === 'object') {
+    const summary = Object.entries(payload.meta)
+      .filter(([, v]) => v !== null && v !== undefined && v !== '')
+      .slice(0, 8) // keep embeds within Discord limits
+      .map(([k, v]) => `**${k}**: ${typeof v === 'object' ? '`' + JSON.stringify(v).slice(0, 120) + '`' : String(v).slice(0, 120)}`)
+      .join('\n');
+    if (summary) fields.push({ name: 'Details', value: summary });
+  }
+  return {
+    username: 'Nexus Dominion',
+    embeds: [{
+      title: `[${payload.category || 'event'}] ${payload.action || 'log'}`,
+      description: (payload.message || '').slice(0, 1800),
+      color,
+      fields,
+      timestamp: new Date(payload.ts || Date.now()).toISOString(),
+      footer: { text: payload.level ? payload.level.toUpperCase() : 'INFO' },
+    }],
+  };
+}
+
 async function deliver(endpoint: { url: string; secret?: string; id?: number }, payload: any): Promise<void> {
   if (!isSafeWebhookUrl(endpoint.url)) {
     if (endpoint.id) {
@@ -109,14 +161,18 @@ async function deliver(endpoint: { url: string; secret?: string; id?: number }, 
     }
     return;
   }
-  const body = JSON.stringify(payload);
+  const discordMode = isDiscordWebhook(endpoint.url);
+  const finalPayload = discordMode ? formatDiscordPayload(payload) : payload;
+  const body = JSON.stringify(finalPayload);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'User-Agent': 'NexusDominion-Webhook/1',
-    'X-Event-Category': payload.category,
-    'X-Event-Action': payload.action,
   };
-  if (endpoint.secret) headers['X-Signature'] = `sha256=${sign(endpoint.secret, body)}`;
+  if (!discordMode) {
+    headers['X-Event-Category'] = payload.category;
+    headers['X-Event-Action'] = payload.action;
+  }
+  if (endpoint.secret && !discordMode) headers['X-Signature'] = `sha256=${sign(endpoint.secret, body)}`;
   try {
     const res = await fetch(endpoint.url, { method: 'POST', body, headers });
     if (endpoint.id) {
