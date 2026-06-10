@@ -1,0 +1,808 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// MULTI-TENANT
+model Tenant {
+  id                    String    @id @default(uuid())
+  slug                  String    @unique
+  ragioneSociale        String
+  email                 String
+  piano                 String    @default("TRIAL")
+  attivo                Boolean   @default(true)
+  scadenzaAbbonamento   DateTime?
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  @@map("tenants")
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTH & USERS
+// ═══════════════════════════════════════════════════════
+
+enum UserRole {
+  MASTER        // L1 - Visione totale
+  ADMIN         // L2 - Amministrazione
+  DIREZIONE     // L3 - Direzione
+  RESPONSABILE  // L4 - Responsabile area
+  TECNICO       // L5 - Tecnico operativo
+  OPERATORE     // L6 - Operatore base
+  CLIENTE       // L7 - Cliente esterno
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String    // bcrypt 10 rounds
+  nome            String
+  cognome         String
+  ruolo           UserRole  @default(OPERATORE)
+  attivo          Boolean   @default(true)
+  tentativi       Int       @default(0)
+  bloccatoFino    DateTime?
+  ultimoAccesso   DateTime?
+  refreshToken    String?
+  tenantId        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  auditLogs       AuditLog[]
+  preventivi      Preventivo[]
+  ordiniLavoro    OrdineLavoro[]
+  fatture         Fattura[]
+  documenti       Documento[]
+
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 1: IMPIANTI
+// ═══════════════════════════════════════════════════════
+
+enum StatoImpianto {
+  ATTIVO
+  FERMO
+  MANUTENZIONE
+  FUORI_SERVIZIO
+  DISMESSO
+}
+
+model Impianto {
+  id                  String          @id @default(uuid())
+  matricola           String          @unique
+  marca               String
+  modello             String
+  anno                Int?
+  portata             Int?            // kg
+  fermate             Int?
+  stato               StatoImpianto   @default(ATTIVO)
+  quadro              String?         // quadro di manovra (marca/modello/tipo)
+  zona                String?         // zona/giro di manutenzione (es. "Milano Nord")
+  indirizzo           String?
+  piano               String?
+  note                String?
+  foto                Json            @default("[]")
+  documenti           Json            @default("[]")
+  dataInstallazione   DateTime?
+  prossimaRevisione   DateTime?
+  ultimaRevisione     DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  condominioId        String?
+  condominio          Condominio?     @relation(fields: [condominioId], references: [id])
+  amministratoreId    String?
+  amministratore      Amministratore? @relation(fields: [amministratoreId], references: [id])
+
+  media               ImpiantoMedia[]
+  ordiniLavoro        OrdineLavoro[]
+  assegnazioni        AssegnazioneTecnico[]
+  preventivi          Preventivo[]
+  scadenze            ScadenzaImpianto[]
+  contratti           Contratto[]
+  visiteManutenzione  VisitaManutenzione[]
+  verifichePeriodiche VerificaPeriodica[]
+  segnalazioni        Segnalazione[]
+
+  @@map("impianti")
+}
+
+model ImpiantoMedia {
+  id          String   @id @default(uuid())
+  impiantoId  String
+  impianto    Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+  tipo        String   // foto, video, documento
+  url         String
+  nome        String?
+  createdAt   DateTime @default(now())
+
+  @@map("impianti_media")
+}
+
+model ScadenzaImpianto {
+  id            String   @id @default(uuid())
+  impiantoId    String
+  impianto      Impianto @relation(fields: [impiantoId], references: [id], onDelete: Cascade)
+  tipo          String   // revisione, certificazione, manutenzione
+  dataScadenza  DateTime
+  notificato90  Boolean  @default(false)
+  notificato60  Boolean  @default(false)
+  notificato30  Boolean  @default(false)
+  completata    Boolean  @default(false)
+  note          String?
+  createdAt     DateTime @default(now())
+
+  @@map("scadenze_impianti")
+}
+
+model AssegnazioneTecnico {
+  id            String      @id @default(uuid())
+  impiantoId    String
+  impianto      Impianto    @relation(fields: [impiantoId], references: [id])
+  dipendenteId  String
+  dipendente    Dipendente  @relation(fields: [dipendenteId], references: [id])
+  dataInizio    DateTime    @default(now())
+  dataFine      DateTime?
+  attiva        Boolean     @default(true)
+
+  @@map("assegnazioni_tecnici")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 2: CONDOMINI
+// ═══════════════════════════════════════════════════════
+
+model Condominio {
+  id                String          @id @default(uuid())
+  nome              String
+  indirizzo         String
+  citta             String
+  cap               String?
+  provincia         String?
+  codiceFiscale     String?
+  unitaImmobiliari  Int?
+  note              String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  amministratoreId  String?
+  amministratore    Amministratore? @relation(fields: [amministratoreId], references: [id])
+
+  impianti          Impianto[]
+
+  @@map("condomini")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 3: AMMINISTRATORI
+// ═══════════════════════════════════════════════════════
+
+enum TipoAmministratore {
+  PERSONA_FISICA
+  SOCIETA
+}
+
+model Amministratore {
+  id            String              @id @default(uuid())
+  tipo          TipoAmministratore  @default(PERSONA_FISICA)
+  nome          String
+  cognome       String?
+  ragioneSociale String?
+  email         String?
+  telefono      String?
+  pec           String?
+  codiceFiscale String?
+  partitaIva    String?
+  indirizzo     String?
+  citta         String?
+  cap           String?
+  note          String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  condomini     Condominio[]
+  impianti      Impianto[]
+  preventivi    Preventivo[]
+  fatture       Fattura[]
+  contratti     Contratto[]
+
+  @@map("amministratori")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 4: DIPENDENTI
+// ═══════════════════════════════════════════════════════
+
+enum TipoDipendente {
+  TECNICO
+  AMMINISTRATIVO
+  COMMERCIALE
+  MAGAZZINIERE
+}
+
+model Dipendente {
+  id                String          @id @default(uuid())
+  nome              String
+  cognome           String
+  tipo              TipoDipendente  @default(TECNICO)
+  email             String?
+  telefono          String?
+  codiceFiscale     String?
+  dataAssunzione    DateTime?
+  patente           String?
+  specializzazioni  String[]
+  attivo            Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  assegnazioni      AssegnazioneTecnico[]
+  ordiniLavoro      OrdineLavoro[]
+  automezzo         Automezzo?      @relation("ConducenteAutomezzo")
+  visiteManutenzione VisitaManutenzione[]
+
+  @@map("dipendenti")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 5: AUTOMEZZI
+// ═══════════════════════════════════════════════════════
+
+model Automezzo {
+  id                  String    @id @default(uuid())
+  targa               String    @unique
+  marca               String
+  modello             String
+  anno                Int?
+  chilometraggio      Int?      @default(0)
+  scadenzaRevisione   DateTime?
+  scadenzaAssicurazione DateTime?
+  scadenzaTagliando   DateTime?
+  stato               String    @default("verde") // verde, giallo, rosso
+  note                String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  conducenteId        String?   @unique
+  conducente          Dipendente? @relation("ConducenteAutomezzo", fields: [conducenteId], references: [id])
+
+  @@map("automezzi")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 6: COTTIMISTI
+// ═══════════════════════════════════════════════════════
+
+enum TipoCottimista {
+  DITTA_INDIVIDUALE
+  COOPERATIVA
+  AZIENDA
+}
+
+model Cottimista {
+  id              String          @id @default(uuid())
+  ragioneSociale  String
+  tipo            TipoCottimista  @default(AZIENDA)
+  partitaIva      String?
+  email           String?
+  telefono        String?
+  indirizzo       String?
+  note            String?
+  attivo          Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  squadre         Squadra[]
+  ordiniLavoro    OrdineLavoro[]
+
+  @@map("cottimisti")
+}
+
+model Squadra {
+  id            String      @id @default(uuid())
+  nome          String
+  cottimista    Cottimista   @relation(fields: [cottimistiId], references: [id])
+  cottimistiId  String
+  capocantiere  String?
+  membri        String[]    // nomi membri
+  attiva        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  ordiniLavoro  OrdineLavoro[]
+
+  @@map("squadre")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 7-8: MAGAZZINO COMPONENTI & VENDITA
+// ═══════════════════════════════════════════════════════
+
+enum TipoMagazzino {
+  COMPONENTI
+  VENDITA
+}
+
+model ArticoloMagazzino {
+  id              String          @id @default(uuid())
+  codice          String          @unique
+  barcode         String?
+  nome            String
+  descrizione     String?
+  tipo            TipoMagazzino
+  categoria       String?
+  ubicazione      String?
+  quantita        Int             @default(0)
+  sogliaMinima    Int             @default(0)
+  prezzoAcquisto  Decimal?        @db.Decimal(10, 2)
+  prezzoVendita   Decimal?        @db.Decimal(10, 2)
+  marginePerc     Decimal?        @db.Decimal(5, 2)
+  aliquotaIva     Decimal         @default(22) @db.Decimal(5, 2)
+  attivo          Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  movimenti       MovimentoMagazzino[]
+  vociPreventivo  VocePreventivo[]
+
+  @@map("articoli_magazzino")
+}
+
+enum TipoMovimento {
+  ENTRATA
+  USCITA
+  RETTIFICA
+}
+
+model MovimentoMagazzino {
+  id          String        @id @default(uuid())
+  articoloId  String
+  articolo    ArticoloMagazzino @relation(fields: [articoloId], references: [id])
+  tipo        TipoMovimento
+  quantita    Int
+  nota        String?
+  ddtId       String?
+  ddt         DDT?          @relation(fields: [ddtId], references: [id])
+  createdAt   DateTime      @default(now())
+
+  @@map("movimenti_magazzino")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 9: PREVENTIVI
+// ═══════════════════════════════════════════════════════
+
+enum StatoPreventivo {
+  BOZZA
+  INVIATO
+  APPROVATO
+  RIFIUTATO
+  SCADUTO
+}
+
+model Preventivo {
+  id                String          @id @default(uuid())
+  numero            String          @unique
+  data              DateTime        @default(now())
+  stato             StatoPreventivo @default(BOZZA)
+  oggetto           String
+  descrizione       String?
+  note              String?
+  totaleNetto       Decimal         @default(0) @db.Decimal(12, 2)
+  totaleIva         Decimal         @default(0) @db.Decimal(12, 2)
+  totaleLordo       Decimal         @default(0) @db.Decimal(12, 2)
+  validitaGiorni    Int             @default(30)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  impiantoId        String?
+  impianto          Impianto?       @relation(fields: [impiantoId], references: [id])
+  amministratoreId  String?
+  amministratore    Amministratore? @relation(fields: [amministratoreId], references: [id])
+  utenteId          String?
+  utente            User?           @relation(fields: [utenteId], references: [id])
+
+  voci              VocePreventivo[]
+  ordiniLavoro      OrdineLavoro[]
+
+  @@map("preventivi")
+}
+
+model VocePreventivo {
+  id            String            @id @default(uuid())
+  preventivoId  String
+  preventivo    Preventivo        @relation(fields: [preventivoId], references: [id], onDelete: Cascade)
+  articoloId    String?
+  articolo      ArticoloMagazzino? @relation(fields: [articoloId], references: [id])
+  descrizione   String
+  quantita      Decimal           @default(1) @db.Decimal(10, 2)
+  prezzoUnitario Decimal          @default(0) @db.Decimal(10, 2)
+  aliquotaIva   Decimal           @default(22) @db.Decimal(5, 2)
+  totale        Decimal           @default(0) @db.Decimal(12, 2)
+  ordine        Int               @default(0)
+
+  @@map("voci_preventivo")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 10: ORDINI DI LAVORO (9 stati workflow)
+// ═══════════════════════════════════════════════════════
+
+enum StatoOrdine {
+  BOZZA
+  EMESSO
+  CONFERMATO
+  IN_LAVORO
+  SOSPESO
+  COMPLETATO
+  CHIUSO
+  CONTESTATO
+  ANNULLATO
+}
+
+enum PrioritaOrdine {
+  ORDINARIA
+  URGENTE
+  EMERGENZA
+}
+
+model OrdineLavoro {
+  id              String          @id @default(uuid())
+  numero          String          @unique
+  data            DateTime        @default(now())
+  stato           StatoOrdine     @default(BOZZA)
+  priorita        PrioritaOrdine  @default(ORDINARIA)
+  oggetto         String
+  descrizione     String?
+  noteInterne     String?         // visibili solo al personale
+  noteCommittente String?
+  dataInizio      DateTime?
+  dataFine        DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  impiantoId      String?
+  impianto        Impianto?       @relation(fields: [impiantoId], references: [id])
+  preventivoId    String?
+  preventivo      Preventivo?     @relation(fields: [preventivoId], references: [id])
+  tecnicoId       String?
+  tecnico         Dipendente?     @relation(fields: [tecnicoId], references: [id])
+  cottimistiId    String?
+  cottimista      Cottimista?     @relation(fields: [cottimistiId], references: [id])
+  squadraId       String?
+  squadra         Squadra?        @relation(fields: [squadraId], references: [id])
+  utenteId        String?
+  utente          User?           @relation(fields: [utenteId], references: [id])
+
+  storicoStati    StoricoStato[]
+  fatture         Fattura[]
+  ddt             DDT[]
+  segnalazioni    Segnalazione[]
+
+  @@map("ordini_lavoro")
+}
+
+model StoricoStato {
+  id              String       @id @default(uuid())
+  ordineLavoroId  String
+  ordineLavoro    OrdineLavoro @relation(fields: [ordineLavoroId], references: [id], onDelete: Cascade)
+  statoPrecedente StatoOrdine?
+  statoNuovo      StatoOrdine
+  nota            String?
+  utente          String       // email o nome
+  createdAt       DateTime     @default(now())
+
+  @@map("storico_stati")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 11: FATTURAZIONE
+// ═══════════════════════════════════════════════════════
+
+enum TipoFattura {
+  EMESSA
+  RICEVUTA
+}
+
+enum StatoFattura {
+  BOZZA
+  EMESSA
+  INVIATA
+  PAGATA
+  SCADUTA
+  STORNATA
+}
+
+model Fattura {
+  id                String          @id @default(uuid())
+  numero            String          @unique
+  tipo              TipoFattura     @default(EMESSA)
+  stato             StatoFattura    @default(BOZZA)
+  data              DateTime        @default(now())
+  dataScadenza      DateTime?
+  dataPagamento     DateTime?
+  metodoPagamento   String?
+  cliente           String?         // denominazione libera (in alternativa ad amministratoreId)
+  fornitore         String?         // per fatture RICEVUTE
+  numeroFornitore   String?         // numero documento del fornitore
+  oggetto           String?
+  totaleNetto       Decimal         @default(0) @db.Decimal(12, 2)
+  totaleIva         Decimal         @default(0) @db.Decimal(12, 2)
+  totaleLordo       Decimal         @default(0) @db.Decimal(12, 2)
+  note              String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  amministratoreId  String?
+  amministratore    Amministratore? @relation(fields: [amministratoreId], references: [id])
+  ordineLavoroId    String?
+  ordineLavoro      OrdineLavoro?   @relation(fields: [ordineLavoroId], references: [id])
+  utenteId          String?
+  utente            User?           @relation(fields: [utenteId], references: [id])
+
+  vociFattura       VoceFattura[]
+
+  @@map("fatture")
+}
+
+model VoceFattura {
+  id              String    @id @default(uuid())
+  fatturaId       String
+  fattura         Fattura   @relation(fields: [fatturaId], references: [id], onDelete: Cascade)
+  descrizione     String
+  quantita        Decimal   @default(1) @db.Decimal(10, 2)
+  prezzoUnitario  Decimal   @default(0) @db.Decimal(10, 2)
+  aliquotaIva     Decimal   @default(22) @db.Decimal(5, 2)
+  totale          Decimal   @default(0) @db.Decimal(12, 2)
+  ordine          Int       @default(0)
+
+  @@map("voci_fattura")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 12: DDT / BOLLE
+// ═══════════════════════════════════════════════════════
+
+model DDT {
+  id              String    @id @default(uuid())
+  numero          String    @unique
+  data            DateTime  @default(now())
+  causale         String?   // trasporto, conto visione, etc.
+  destinatario    String?
+  indirizzoConsegna String?
+  vettore         String?
+  note            String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ordineLavoroId  String?
+  ordineLavoro    OrdineLavoro? @relation(fields: [ordineLavoroId], references: [id])
+
+  righe           RigaDDT[]
+  movimenti       MovimentoMagazzino[]
+
+  @@map("ddt")
+}
+
+model RigaDDT {
+  id          String    @id @default(uuid())
+  ddtId       String
+  ddt         DDT       @relation(fields: [ddtId], references: [id], onDelete: Cascade)
+  descrizione String
+  quantita    Decimal   @default(1) @db.Decimal(10, 2)
+  um          String?   // unità di misura
+  peso        Decimal?  @db.Decimal(10, 2)
+  ordine      Int       @default(0)
+
+  @@map("righe_ddt")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 13: DOCUMENTI (Cartello + Verbale cantiere)
+// ═══════════════════════════════════════════════════════
+
+enum TipoDocumento {
+  CARTELLO_CANTIERE
+  VERBALE_CANTIERE
+  CERTIFICATO
+  CONTRATTO
+  ALTRO
+}
+
+// Contratti di manutenzione (cuore del business ascensoristico)
+model Contratto {
+  id                String    @id @default(uuid())
+  numero            String    @unique
+  tipo              String    @default("ORDINARIA") // ORDINARIA / SEMI_INTEGRALE / FULL_RISK
+  stato             String    @default("ATTIVO")    // ATTIVO / SOSPESO / DISDETTO / SCADUTO
+  canoneAnnuo       Decimal   @default(0) @db.Decimal(12, 2)
+  visiteAnno        Int       @default(2)           // DPR 162/99: minimo 2 visite/anno
+  dataInizio        DateTime?
+  dataFine          DateTime?
+  rinnovoAutomatico Boolean   @default(true)
+  note              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  impiantoId        String?
+  impianto          Impianto? @relation(fields: [impiantoId], references: [id])
+  amministratoreId  String?
+  amministratore    Amministratore? @relation(fields: [amministratoreId], references: [id])
+
+  visite            VisitaManutenzione[]
+
+  @@map("contratti")
+}
+
+// Visite di manutenzione programmata (giri di manutenzione)
+model VisitaManutenzione {
+  id              String    @id @default(uuid())
+  tipo            String    @default("ORDINARIA")   // ORDINARIA / STRAORDINARIA / EMERGENZA
+  stato           String    @default("PROGRAMMATA") // PROGRAMMATA / ESEGUITA / ANNULLATA
+  dataProgrammata DateTime?
+  dataEsecuzione  DateTime?
+  esito           String?                            // OK / ANOMALIE / FERMO_IMPIANTO
+  descrizione     String?
+  anomalie        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  impiantoId      String?
+  impianto        Impianto? @relation(fields: [impiantoId], references: [id])
+  contrattoId     String?
+  contratto       Contratto? @relation(fields: [contrattoId], references: [id])
+  tecnicoId       String?
+  tecnico         Dipendente? @relation(fields: [tecnicoId], references: [id])
+
+  @@map("visite_manutenzione")
+}
+
+// Verifiche periodiche biennali DPR 162/99 (Organismo Abilitato)
+model VerificaPeriodica {
+  id               String    @id @default(uuid())
+  dataVerifica     DateTime?
+  organismo        String?                           // ente abilitato (es. IMQ, Eco Cert...)
+  esito            String?                           // POSITIVO / NEGATIVO / CON_PRESCRIZIONI
+  prescrizioni     String?
+  prossimaScadenza DateTime?                         // dataVerifica + 2 anni
+  note             String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  impiantoId       String?
+  impianto         Impianto? @relation(fields: [impiantoId], references: [id])
+
+  @@map("verifiche_periodiche")
+}
+
+// Segnalazioni guasti / centralino 24h (DPR 162/99: obbligo di pronto intervento)
+model Segnalazione {
+  id             String    @id @default(uuid())
+  numero         String?                            // SEG-2026-NNN, assegnato automaticamente
+  tipo           String    @default("GUASTO")       // GUASTO / PERSONA_BLOCCATA / RUMORE / INFILTRAZIONE / ALTRO
+  priorita       String    @default("ORDINARIA")    // ORDINARIA / URGENTE / EMERGENZA
+  stato          String    @default("APERTA")       // APERTA / IN_GESTIONE / CHIUSA
+  segnalante     String?
+  telefono       String?
+  canale         String?                            // TELEFONO / EMAIL / WHATSAPP / PORTALE
+  descrizione    String?
+  dataApertura   DateTime  @default(now())
+  dataChiusura   DateTime?
+  notaChiusura   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  impiantoId     String?
+  impianto       Impianto? @relation(fields: [impiantoId], references: [id])
+  ordineLavoroId String?
+  ordineLavoro   OrdineLavoro? @relation(fields: [ordineLavoroId], references: [id])
+
+  @@map("segnalazioni")
+}
+
+// Programma lavori (cantieri assegnati a cottimisti/tecnici)
+model Lavoro {
+  id                String    @id @default(uuid())
+  commessa          String?
+  ordine            String?   // riferimento libero a OL
+  indirizzo         String?
+  matricola         String?
+  cliente           String?
+  cottimista        String?
+  tecnico           String?
+  stato             String    @default("CONFERMATO") // EMESSO/CONFERMATO/IN_LAVORO/SOSPESO/COMPLETATO
+  priorita          String    @default("ORDINARIA")  // ORDINARIA/URGENTE/EMERGENZA
+  oggetto           String?
+  dataInizio        DateTime?
+  dataFinePrevista  DateTime?
+  dataFineEffettiva DateTime?
+  percentuale       Int       @default(0)
+  note              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("lavori")
+}
+
+// Buono di Lavoro (modulo PO-05-3)
+model BuonoLavoro {
+  id                  String    @id @default(uuid())
+  numero              String    @unique
+  dataConferma        DateTime?
+  ordine              String?
+  offerta             String?
+  commessa            String?
+  matricola           String?
+  ubicazione          String?
+  geometra            String?
+  tecnicoCapo         String?
+  cottimista          String?
+  posConsegnato       Boolean   @default(false)
+  dataInizio          DateTime?
+  oraInizio           String?
+  dataFine            DateTime?
+  oraFine             String?
+  sequenzeLavoro      String?
+  controlliExtracorsa String?
+  controlliLimitatore String?
+  controlliSicurezza  String?
+  controlliSerrature  String?
+  controlliPorte      String?
+  controlliCircuito   String?
+  noteEsecuzione      String?
+  noteSospensioni     String?
+  firmaCustode        String?
+  firmaTecnico        String?
+  firmaGeometra       String?
+  firmaCapoOfficina   String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("buoni_lavoro")
+}
+
+model Documento {
+  id          String        @id @default(uuid())
+  tipo        TipoDocumento
+  titolo      String
+  contenuto   String?
+  fileUrl     String?
+  indirizzo   String?       // per cartelli di cantiere
+  citta       String?
+  note        String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  utenteId    String?
+  utente      User?         @relation(fields: [utenteId], references: [id])
+
+  @@map("documenti")
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULO 15: AUDIT LOG (HMAC-SHA256 immutabile)
+// ═══════════════════════════════════════════════════════
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  azione      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, STATE_CHANGE
+  entita      String   // nome tabella/modulo
+  entitaId    String?  // id record
+  dettagli    Json?    // dati prima/dopo
+  ip          String?
+  userAgent   String?
+  hmac        String   // HMAC-SHA256 signature
+  createdAt   DateTime @default(now())
+
+  utenteId    String?
+  utente      User?    @relation(fields: [utenteId], references: [id])
+
+  @@index([entita, entitaId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
