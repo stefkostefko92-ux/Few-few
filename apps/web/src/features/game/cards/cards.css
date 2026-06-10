@@ -17,7 +17,31 @@
   box-shadow:
     0 6px 14px -6px rgba(0, 0, 0, 0.6),
     0 2px 3px rgba(0, 0, 0, 0.4);
+  /* Deal-in: cards rise, settle and un-rotate as they enter a hand/trick.
+     Direct-sibling cards stagger for a "dealt" cascade (see nth-child below).
+     `backwards` (not `both`) so the finished animation releases `transform`
+     back to the base rule — otherwise it would override hover/selected lift. */
+  animation: aso-card-deal 0.34s var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15)) backwards;
 }
+@keyframes aso-card-deal {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.9) rotate(-4deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+.aso-card:nth-child(2) { animation-delay: 0.035s; }
+.aso-card:nth-child(3) { animation-delay: 0.07s; }
+.aso-card:nth-child(4) { animation-delay: 0.105s; }
+.aso-card:nth-child(5) { animation-delay: 0.14s; }
+.aso-card:nth-child(6) { animation-delay: 0.175s; }
+.aso-card:nth-child(7) { animation-delay: 0.21s; }
+.aso-card:nth-child(8) { animation-delay: 0.245s; }
+.aso-card:nth-child(9) { animation-delay: 0.28s; }
+.aso-card:nth-child(n + 10) { animation-delay: 0.315s; }
 button.aso-card {
   cursor: pointer;
 }
@@ -155,6 +179,9 @@ button.aso-card:hover {
   .aso-card,
   button.aso-card:hover {
     transition: none;
+  }
+  .aso-card {
+    animation: none;
   }
 }
 
