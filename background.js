@@ -1,7 +1,7 @@
 // Service worker: rule toggling, allowlist, stats and messaging.
 
 const RULESET_IDS = ["ad_rules", "youtube_rules"];
-const FILTER_COUNT = 247; // bundled static rules (ad_rules + youtube_rules)
+const FILTER_COUNT = 248; // bundled static rules (ad_rules + youtube_rules)
 
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules

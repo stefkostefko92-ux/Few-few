@@ -1,23 +1,37 @@
 #!/usr/bin/env bash
-# Build the Chrome Web Store upload zip with only the runtime files.
+# Build the Chrome Web Store upload zip.
+# Everything in the repo ships except dev-only files, so a new runtime file
+# can never be left out of the package by mistake.
 set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
 mkdir -p dist
-out="dist/the-best-ads-block-$(node -p "require('./package.json').version" 2>/dev/null || echo dev).zip"
+ver="$(node -p "require('./package.json').version" 2>/dev/null || echo dev)"
+out="dist/the-best-ads-block-$ver.zip"
 rm -f "$out"
 
-zip -r "$out" \
-  manifest.json \
-  background.js theme.js \
-  content.js content.css \
-  cookies.js cookies.css \
-  antiadblock.js antiadblock.css \
-  picker.js picker.css \
-  meta.js \
-  youtube_main.js youtube_skip.js youtube.css \
-  rules/ popup/ options/ icons/ _locales/ \
+zip -r "$out" . \
+  -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' \
+     '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
 
 echo "Built $out"
+
+# Sanity check: every file the manifest references must be in the zip.
+node - "$out" <<'NODE'
+const { execSync } = require("child_process");
+const m = require("./manifest.json");
+const zip = execSync(`unzip -Z1 "${process.argv[2]}"`).toString();
+const refs = new Set();
+(m.content_scripts || []).forEach(cs => [...(cs.js||[]), ...(cs.css||[])].forEach(f => refs.add(f)));
+(m.web_accessible_resources || []).forEach(w => (w.resources||[]).forEach(f => refs.add(f)));
+if (m.background?.service_worker) refs.add(m.background.service_worker);
+Object.values(m.icons || {}).forEach(f => refs.add(f));
+if (m.action?.default_popup) refs.add(m.action.default_popup);
+if (m.options_ui?.page) refs.add(m.options_ui.page);
+(m.declarative_net_request?.rule_resources || []).forEach(r => refs.add(r.path));
+const missing = [...refs].filter(f => !zip.split("\n").includes(f));
+if (missing.length) { console.error("MISSING from package:", missing); process.exit(1); }
+console.log("Package contains every manifest-referenced file.");
+NODE
