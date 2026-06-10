@@ -6,6 +6,7 @@ import { sfx, preloadAllSfx } from './lib/audio';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toasts from './components/Toasts';
+import CookieBanner from './components/CookieBanner';
 
 // Eager: routes a first-time visitor (or someone deep-linking the
 // auth flow) hits before they ever reach the in-app shell. Keeping
@@ -49,6 +50,12 @@ const BattlePass = React.lazy(() => import('./pages/BattlePass'));
 const Recipes = React.lazy(() => import('./pages/Recipes'));
 const Auction = React.lazy(() => import('./pages/Auction'));
 const MountShop = React.lazy(() => import('./pages/MountShop'));
+const RealmBoss = React.lazy(() => import('./pages/RealmBoss'));
+const Factions = React.lazy(() => import('./pages/Factions'));
+const Events = React.lazy(() => import('./pages/Events'));
+const MythicPlus = React.lazy(() => import('./pages/MythicPlus'));
+const Terms = React.lazy(() => import('./pages/Terms'));
+const Privacy = React.lazy(() => import('./pages/Privacy'));
 import LevelUpOverlay from './components/LevelUpOverlay';
 import CooldownTicker from './components/CooldownTicker';
 import PageBackdrop from './components/PageBackdrop';
@@ -188,11 +195,14 @@ export default function App(): React.ReactElement {
   return (
     <BrowserRouter>
       <Bootstrapper>
+        <CookieBanner />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/create" element={<CharacterCreate />} />
+          <Route path="/terms" element={<Suspense fallback={<LazyFallback />}><Terms /></Suspense>} />
+          <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><Privacy /></Suspense>} />
           <Route path="/admin/*" element={
             <AdminGate>
               <Navbar />
@@ -233,6 +243,10 @@ export default function App(): React.ReactElement {
             <Route path="recipes" element={<Recipes />} />
             <Route path="auction" element={<Auction />} />
             <Route path="stables" element={<MountShop />} />
+            <Route path="realm-boss" element={<RealmBoss />} />
+            <Route path="factions" element={<Factions />} />
+            <Route path="events" element={<Events />} />
+            <Route path="mythic-plus" element={<MythicPlus />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

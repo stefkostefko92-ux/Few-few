@@ -1787,3 +1787,84 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   .hero-tabs { flex-wrap: wrap; }
   .hero-tab { flex: 1 1 auto; min-width: 0; padding: 8px 10px; font-size: 12px; }
 }
+
+/* ===== Launch-readiness UI: cookie banner, legal pages, endgame pages ===== */
+.cookie-banner {
+  position: fixed; bottom: 14px; left: 14px; right: 14px;
+  max-width: 760px; margin: 0 auto;
+  background: rgba(11,13,18,.96);
+  border: 1px solid rgba(214,161,61,.4);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;
+  z-index: 9000;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6);
+}
+.cookie-banner-text { flex: 1 1 360px; font-size: 13px; color: var(--text-2); }
+.cookie-banner-text a { color: var(--gold-1); }
+.cookie-banner-actions { display: flex; gap: 8px; }
+
+.legal-page {
+  max-width: 760px; margin: 0 auto;
+  padding: 32px 24px 80px;
+  color: var(--text-1);
+  line-height: 1.7;
+}
+.legal-head { margin-bottom: 24px; }
+.legal-page h1 { font-family: var(--font-display); color: var(--gold-1); }
+.legal-page h2 { font-family: var(--font-display); margin-top: 28px; color: var(--gold-2); font-size: 22px; }
+.legal-page p { margin-bottom: 12px; color: var(--text-2); }
+.legal-page ul { margin: 12px 0; padding-left: 24px; color: var(--text-2); }
+.legal-page ul li { margin-bottom: 6px; }
+.legal-page code { background: rgba(214,161,61,.1); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+/* Realm Boss page */
+.boss-card { padding: 24px; }
+.boss-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
+.boss-card-name { font-family: var(--font-display); font-size: 28px; color: var(--gold-1); }
+.boss-card-week { color: var(--text-3); margin-top: 4px; }
+.boss-hp { margin: 16px 0; }
+.boss-hp-bar { width: 100%; height: 32px; background: rgba(40,30,30,.7); border-radius: 8px; overflow: hidden; border: 1px solid rgba(214,161,61,.3); }
+.boss-hp-fill { height: 100%; background: linear-gradient(90deg, #b6261b, #ff7468); transition: width .4s; }
+.boss-hp-text { margin-top: 6px; font-size: 13px; color: var(--text-3); }
+.boss-killshot { padding: 12px; background: rgba(214,161,61,.1); border: 1px solid rgba(214,161,61,.3); border-radius: 8px; margin-top: 12px; }
+.contribution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 18px; margin-bottom: 16px; }
+.contrib-num { font-family: var(--font-display); font-size: 24px; color: var(--gold-1); margin-top: 4px; }
+
+/* Factions page */
+.faction-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px; }
+.faction-card { padding: 20px; }
+.faction-motto { font-style: italic; margin-bottom: 16px; }
+.faction-tier { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.rep-bar { width: 100%; height: 12px; background: rgba(40,30,30,.5); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+.rep-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold-3), var(--gold-1)); transition: width .4s; }
+.rep-text { font-size: 13px; margin-bottom: 16px; }
+.vendor-card { padding: 20px; margin-top: 18px; }
+.vendor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.vendor-rep { margin-bottom: 14px; }
+
+/* Events page */
+.events-page .event-flavor { font-style: italic; margin-bottom: 16px; }
+.event-points { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.event-points-num { font-family: var(--font-display); font-size: 28px; color: var(--gold-1); }
+.event-rewards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.event-reward { background: rgba(22,26,35,.8); border: 1px solid var(--border-2); border-radius: 12px; padding: 14px; }
+.event-reward.owned { opacity: .6; }
+.event-reward-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.event-reward-cost { color: var(--gold-1); font-weight: 600; }
+.event-reward-name { font-family: var(--font-display); color: var(--gold-1); margin-bottom: 4px; }
+.event-reward-flavor { margin-bottom: 12px; }
+
+/* Mythic+ page */
+.dungeon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.dungeon-card { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.dungeon-card h3 { font-family: var(--font-display); color: var(--gold-1); margin: 0; }
+.mythic-stats { display: flex; gap: 16px; }
+.mythic-stats .num { font-family: var(--font-display); font-size: 22px; color: var(--gold-1); }
+.mythic-tier-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.mythic-progress { padding: 10px; background: rgba(214,161,61,.08); border-radius: 8px; }
+
+@media (max-width: 800px) {
+  .cookie-banner { bottom: 8px; left: 8px; right: 8px; padding: 12px; }
+  .cookie-banner-text { flex: 1 1 100%; }
+}

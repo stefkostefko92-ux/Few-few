@@ -60,6 +60,15 @@ const SECTIONS: SectionDef[] = [
     ],
   },
   {
+    heading: 'Endgame',
+    items: [
+      { to: '/app/realm-boss', label: 'Realm Boss', icon: IconSkull },
+      { to: '/app/factions', label: 'Factions', icon: IconCrown },
+      { to: '/app/events', label: 'Seasonal Events', icon: IconFlame },
+      { to: '/app/mythic-plus', label: 'Mythic+ Dungeons', icon: IconCrown },
+    ],
+  },
+  {
     heading: 'Society',
     items: [
       { to: '/app/guild', label: 'Guild', icon: IconCrown },

@@ -475,10 +475,9 @@ export default function Landing(): React.ReactElement {
           </div>
           <div>
             <h4>Studio</h4>
-            <a href="#">About</a>
-            <a href="#">Press Kit</a>
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
+            <Link to="/terms">Terms of Service</Link>
+            <Link to="/privacy">Privacy Policy</Link>
+            <a href="mailto:support@nexus-dominion.example">Contact Support</a>
           </div>
         </div>
         <div className="footer-bottom">
