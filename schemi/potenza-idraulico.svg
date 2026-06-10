@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1123 794" font-family="Arial, Helvetica, sans-serif">
+  <style>
+    .wire{stroke:#111;stroke-width:2;fill:none}
+    .comp{fill:#fff;stroke:#111;stroke-width:2}
+    .lbl{font-size:13px;fill:#111}
+    .lblb{font-size:13px;fill:#111;font-weight:bold}
+    .ref{font-size:12px;fill:#b00;font-weight:bold}
+    .note{font-size:11px;fill:#333}
+    .dash{stroke:#888;stroke-width:1;stroke-dasharray:4 3;fill:none}
+    .title{font-size:18px;font-weight:bold;fill:#111}
+    .oil{fill:#cfe8ff;stroke:#06c;stroke-width:1.5}
+  </style>
+
+  <rect x="8" y="8" width="1107" height="778" fill="none" stroke="#111" stroke-width="2"/>
+
+  <text x="30" y="40" class="title">SCHEMA DI POTENZA — ASCENSORE IDRAULICO (centralina + pistone)</text>
+  <text x="30" y="60" class="note">Salita: pompa + valvola di salita. Discesa: per gravita' tramite valvola di discesa (motore fermo). Avviamento stella-triangolo o soft-starter.</text>
+
+  <!-- alimentazione -->
+  <text x="60" y="95" class="lblb">L1  L2  L3   N   PE</text>
+  <line x1="70"  y1="100" x2="70"  y2="560" class="wire"/>
+  <line x1="110" y1="100" x2="110" y2="560" class="wire"/>
+  <line x1="150" y1="100" x2="150" y2="560" class="wire"/>
+  <line x1="220" y1="100" x2="220" y2="620" class="wire" stroke="#0a0"/>
+  <text x="205" y="120" class="note" fill="#0a0">PE</text>
+
+  <!-- sezionatore -->
+  <rect x="50" y="130" width="120" height="46" class="comp"/>
+  <line x1="60" y1="153" x2="160" y2="138" class="wire"/>
+  <text x="180" y="150" class="ref">-QS1</text>
+  <text x="180" y="166" class="note">Sezionatore gen. 4P 32A bloccoporta</text>
+
+  <!-- magnetotermico -->
+  <rect x="50" y="195" width="120" height="46" class="comp"/>
+  <text x="90" y="223" class="lbl">I&gt;</text>
+  <text x="180" y="215" class="ref">-Q1</text>
+  <text x="180" y="231" class="note">Magnetotermico pompa curva D 25A</text>
+
+  <!-- relè sequenza fase -->
+  <rect x="50" y="258" width="120" height="40" class="comp"/>
+  <text x="78" y="283" class="lbl">L1·L2·L3</text>
+  <text x="180" y="276" class="ref">-KA-SEQ</text>
+  <text x="180" y="291" class="note">Relè sequenza/mancanza fase</text>
+
+  <!-- avviamento stella-triangolo -->
+  <rect x="40" y="320" width="140" height="50" class="comp"/>
+  <text x="78" y="350" class="lbl">KM linea</text>
+  <text x="190" y="340" class="ref">-KM-P</text>
+  <text x="190" y="356" class="note">Contattore di linea pompa</text>
+
+  <rect x="40" y="388" width="64" height="44" class="comp"/>
+  <text x="58" y="415" class="lbl">Y</text>
+  <text x="40" y="448" class="ref">-KM-Y</text>
+  <text x="40" y="463" class="note">Stella</text>
+
+  <rect x="116" y="388" width="64" height="44" class="comp"/>
+  <text x="138" y="415" class="lbl">Δ</text>
+  <text x="116" y="448" class="ref">-KM-Δ</text>
+  <text x="116" y="463" class="note">Triangolo</text>
+
+  <!-- protezione termica -->
+  <rect x="40" y="486" width="140" height="40" class="comp"/>
+  <text x="70" y="511" class="lbl">θ&gt;  PTC</text>
+  <text x="190" y="504" class="ref">-F-MOT</text>
+  <text x="190" y="519" class="note">Termistori PTC + termostato olio</text>
+
+  <!-- motore pompa -->
+  <circle cx="110" cy="585" r="34" class="comp"/>
+  <text x="92" y="582" class="lblb">M</text>
+  <text x="100" y="598" class="lbl">3~</text>
+  <text x="150" y="585" class="ref">-M1</text>
+  <text x="150" y="601" class="note">Motore pompa (sommerso o esterno)</text>
+
+  <!-- nota soft starter -->
+  <rect x="40" y="640" width="430" height="56" class="dash"/>
+  <text x="55" y="662" class="lblb">VARIANTE SOFT-STARTER</text>
+  <text x="55" y="682" class="note">In alternativa a Y/Δ: soft-starter per spunto graduale e minor stress idraulico. Si eliminano -KM-Y / -KM-Δ.</text>
+
+  <!-- gruppo idraulico -->
+  <rect x="360" y="120" width="320" height="270" class="oil"/>
+  <text x="375" y="142" class="lblb">CENTRALINA OLEODINAMICA</text>
+
+  <!-- serbatoio -->
+  <rect x="380" y="300" width="280" height="70" fill="#eaf4ff" stroke="#06c"/>
+  <text x="430" y="340" class="note">Serbatoio olio + filtro + termostato</text>
+
+  <!-- pompa -->
+  <circle cx="430" cy="270" r="20" fill="#fff" stroke="#06c" stroke-width="1.5"/>
+  <text x="423" y="275" class="lbl">P</text>
+  <text x="405" y="245" class="note">Pompa</text>
+
+  <!-- blocco valvole -->
+  <rect x="500" y="175" width="150" height="100" fill="#fff" stroke="#06c" stroke-width="1.5"/>
+  <text x="512" y="195" class="lbl">BLOCCO VALVOLE</text>
+  <rect x="515" y="205" width="120" height="26" class="comp"/>
+  <text x="525" y="223" class="lbl">EV SALITA</text>
+  <text x="640" y="223" class="ref">-EV-S</text>
+  <rect x="515" y="239" width="120" height="26" class="comp"/>
+  <text x="525" y="257" class="lbl">EV DISCESA</text>
+  <text x="640" y="257" class="ref">-EV-D</text>
+
+  <!-- pistone -->
+  <rect x="600" y="285" width="30" height="95" fill="#ddd" stroke="#111"/>
+  <text x="595" y="398" class="note">Pistone</text>
+  <line x1="650" y1="225" x2="615" y2="285" class="wire" stroke="#06c"/>
+
+  <!-- valvola di sicurezza paracadute idraulico -->
+  <rect x="360" y="400" width="320" height="46" fill="#fff8e1" stroke="#b8860b" stroke-width="1.5"/>
+  <text x="372" y="420" class="lblb">Valvola di blocco rottura tubo (rupture valve)</text>
+  <text x="372" y="437" class="note">Dispositivo di sicurezza meccanico contro la caduta — certificato</text>
+
+  <!-- riquadro A3 idraulico -->
+  <rect x="720" y="120" width="355" height="150" class="dash"/>
+  <text x="735" y="142" class="lblb">A3 — UCM idraulico</text>
+  <text x="735" y="164" class="note">Protezione discesa: valvola di blocco / pawl device.</text>
+  <text x="735" y="182" class="note">Anti-deriva elettrico (re-livellamento) per cedimento olio.</text>
+  <text x="735" y="200" class="note">A porte aperte: arresto se la cabina lascia la zona di</text>
+  <text x="735" y="218" class="note">livellamento (segnali -B1/-B2 ridondanti).</text>
+  <text x="735" y="244" class="note">Componenti con certificato di esame UE del tipo.</text>
+
+  <!-- nota emergenza manuale -->
+  <rect x="720" y="290" width="355" height="120" fill="#fff" stroke="#111" stroke-width="1"/>
+  <text x="735" y="312" class="lblb">DISCESA DI EMERGENZA</text>
+  <text x="735" y="334" class="note">Valvola manuale di discesa a uomo presente per riporto</text>
+  <text x="735" y="352" class="note">al piano in mancanza rete (no UPS di trazione necessario).</text>
+  <text x="735" y="370" class="note">Pompa a mano per piccoli recuperi di livello.</text>
+  <text x="735" y="392" class="note">Funzioni non-safety gestite/segnalate dal PLC.</text>
+
+  <!-- cartiglio -->
+  <rect x="620" y="640" width="475" height="120" class="comp"/>
+  <line x1="620" y1="676" x2="1095" y2="676" stroke="#111"/>
+  <line x1="620" y1="712" x2="1095" y2="712" stroke="#111"/>
+  <line x1="880" y1="640" x2="880" y2="760" stroke="#111"/>
+  <text x="630" y="662" class="lblb">Quadro di manovra ascensore — POTENZA IDRAULICO</text>
+  <text x="630" y="698" class="note">Progetto: concept didattico EN 81-20/50 · UNI 10411</text>
+  <text x="630" y="734" class="note">Impianto: centralina + pistone · 4-6 pers · 4 fermate</text>
+  <text x="890" y="662" class="note">Foglio 2/4</text>
+  <text x="890" y="698" class="note">Rev. A</text>
+  <text x="890" y="734" class="note">Scala: —</text>
+</svg>

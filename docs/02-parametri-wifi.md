@@ -12,8 +12,9 @@ Quindi:
   da tastiera locale del controller, in regime protetto (non esposti a scrittura
   remota in nessun caso).
 
-I codici registro Modbus sono **placeholder** da mappare sul manuale del controller
-realmente usato (qui: stile Monarch NICE3000new). La mappa machine-readable è in
+I codici registro Modbus sono **placeholder** da mappare sui tag del PLC realmente
+usato (S7-1200 / Codesys). **Sistemi gearless esclusi**: i parametri coprono impianti
+geared (argano 2V/VVVF) e idraulici. La mappa machine-readable è in
 [`config/parametri.json`](../config/parametri.json), consumata dal firmware ESP32.
 
 ---
@@ -45,6 +46,9 @@ realmente usato (qui: stile Monarch NICE3000new). La mappa machine-readable è i
 | `call_priority` | Logica chiamate (selettiva/collettiva) | 0x1032 | 0–2 | 1 | enum | NS |
 | `arrival_gong` | Gong di arrivo | 0x1040 | 0/1 | 1 | bool | NS |
 | `vip_floor` | Piano prioritario VIP | 0x1041 | 0–5 | 0 | piano | NS |
+| `star_delta_time` | Tempo avviamento Y/Δ (idraulico) | 0x104A | 0.5–3.0 | 1.5 | s | NS |
+| `descent_valve_delay` | Ritardo valvola discesa (idraulico) | 0x104B | 0.0–2.0 | 0.5 | s | NS |
+| `high_speed_ratio` | Rapporto alta velocità (geared 2V) | 0x104C | 0.5–1.0 | 1.0 | p.u. | NS |
 
 ---
 
@@ -61,6 +65,8 @@ Ogni scrittura è registrata nel log eventi.
 | `relevel_speed` | Velocità di rilivellamento | 0x2004 | 0.02–0.30 | 0.05 | m/s | SR |
 | `aro_speed` | Velocità riporto emergenza (ARO) | 0x2005 | 0.05–0.30 | 0.10 | m/s | SR |
 | `motor_overcurrent` | Soglia sovracorrente motore | 0x2006 | 100–200 | 150 | % In | SR |
+| `brake_release_delay` | Ritardo serraggio freno (geared) | 0x2007 | 0.20–0.80 | 0.40 | s | SR |
+| `oil_temp_max` | Soglia max temperatura olio (idraulico) | 0x2008 | 50–80 | 70 | °C | SR |
 
 > Vincolo EN 81-20: la **velocità di ispezione ≤ 0,63 m/s** e quella di
 > **rilivellamento ≤ 0,30 m/s** (§5.12.1.4 / §5.12.1.1.3). Il firmware
@@ -94,6 +100,8 @@ Mai scrivibili da remoto. Visualizzati per diagnostica.
 | `trip_counter` | Contatore corse | 0x3104 | n |
 | `fault_code` | Codice guasto attivo | 0x3105 | enum |
 | `last_10_faults` | Storico ultimi 10 guasti | 0x3106.. | enum[] |
+| `oil_temperature` | Temperatura olio (idraulico) | 0x3110 | °C |
+| `line_pressure` | Pressione impianto (idraulico) | 0x3111 | bar |
 
 ---
 

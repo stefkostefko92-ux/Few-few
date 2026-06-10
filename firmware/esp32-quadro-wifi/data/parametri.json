@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "impianto": {
-    "descrizione": "Gearless MRL 450kg/6p, 1.0 m/s, 5.5 kW, 6 fermate",
-    "controller": "Monarch NICE3000new (mappa registri placeholder)",
+    "descrizione": "Ascensore geared (argano 2V/VVVF) oppure idraulico, 4-6 pers, 4-6 fermate",
+    "controller": "PLC S7-1200 / Codesys (registri Modbus placeholder) — gearless ESCLUSO",
     "modbus": { "baud": 19200, "parity": "E", "data_bits": 8, "stop_bits": 1, "slave_id": 1 }
   },
   "categorie": {
@@ -32,6 +32,12 @@
     { "id": "relevel_speed",   "label": "Velocita rilivellamento",  "reg": 8196, "scale": 1000,"min": 0.02, "max": 0.30, "def": 0.05, "unit": "m/s",   "cat": "SR" },
     { "id": "aro_speed",       "label": "Velocita riporto ARO",     "reg": 8197, "scale": 100, "min": 0.05, "max": 0.30, "def": 0.10, "unit": "m/s",   "cat": "SR" },
     { "id": "motor_overcurrent","label": "Soglia sovracorrente",    "reg": 8198, "scale": 1,   "min": 100,  "max": 200,  "def": 150,  "unit": "%In",   "cat": "SR" },
+    { "id": "brake_release_delay","label": "Ritardo serraggio freno (geared)","reg": 8199,"scale": 1000,"min": 0.20,"max": 0.80,"def": 0.40,"unit": "s","cat": "SR" },
+    { "id": "oil_temp_max",    "label": "Soglia max temp olio (idraulico)","reg": 8200,"scale": 1, "min": 50,   "max": 80,   "def": 70,   "unit": "degC",  "cat": "SR" },
+
+    { "id": "star_delta_time", "label": "Tempo avviamento Y/D (idraulico)","reg": 4170,"scale": 100,"min": 0.5,  "max": 3.0,  "def": 1.5,  "unit": "s",     "cat": "NS" },
+    { "id": "descent_valve_delay","label": "Ritardo valvola discesa (idr.)","reg": 4171,"scale": 100,"min": 0.0,"max": 2.0,"def": 0.5,"unit": "s","cat": "NS" },
+    { "id": "high_speed_ratio","label": "Rapporto alta velocita (geared 2V)","reg": 4172,"scale": 100,"min": 0.5,"max": 1.0,"def": 1.0,"unit": "p.u.","cat": "NS" },
 
     { "id": "rated_speed",     "label": "Velocita nominale",        "reg": 12289,"scale": 100, "unit": "m/s",   "cat": "SC" },
     { "id": "overspeed_trip",  "label": "Soglia limitatore",        "reg": 12290,"scale": 100, "unit": "m/s",   "cat": "SC" },
@@ -44,6 +50,8 @@
     { "id": "motor_current",   "label": "Corrente motore",          "reg": 12546,"scale": 10,  "unit": "A",     "cat": "RO" },
     { "id": "dcbus_voltage",   "label": "Tensione bus DC",          "reg": 12547,"scale": 1,   "unit": "V",     "cat": "RO" },
     { "id": "trip_counter",    "label": "Contatore corse",          "reg": 12548,"scale": 1,   "unit": "n",     "cat": "RO" },
-    { "id": "fault_code",      "label": "Codice guasto attivo",     "reg": 12549,"scale": 1,   "unit": "enum",  "cat": "RO" }
+    { "id": "fault_code",      "label": "Codice guasto attivo",     "reg": 12549,"scale": 1,   "unit": "enum",  "cat": "RO" },
+    { "id": "oil_temperature", "label": "Temperatura olio (idraulico)","reg": 12550,"scale": 1, "unit": "degC",  "cat": "RO" },
+    { "id": "line_pressure",   "label": "Pressione impianto (idraulico)","reg": 12551,"scale": 10,"unit": "bar",  "cat": "RO" }
   ]
 }

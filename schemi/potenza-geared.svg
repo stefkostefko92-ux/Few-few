@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1123 794" font-family="Arial, Helvetica, sans-serif">
+  <style>
+    .wire{stroke:#111;stroke-width:2;fill:none}
+    .wire3{stroke:#111;stroke-width:2;fill:none}
+    .comp{fill:#fff;stroke:#111;stroke-width:2}
+    .lbl{font-size:13px;fill:#111}
+    .lblb{font-size:13px;fill:#111;font-weight:bold}
+    .ref{font-size:12px;fill:#b00;font-weight:bold}
+    .note{font-size:11px;fill:#333}
+    .dash{stroke:#888;stroke-width:1;stroke-dasharray:4 3;fill:none}
+    .title{font-size:18px;font-weight:bold;fill:#111}
+  </style>
+
+  <!-- cornice -->
+  <rect x="8" y="8" width="1107" height="778" fill="none" stroke="#111" stroke-width="2"/>
+
+  <text x="30" y="40" class="title">SCHEMA DI POTENZA — ASCENSORE A FUNE CON ARGANO (GEARED), MOTORE A 2 VELOCITA'</text>
+  <text x="30" y="60" class="note">Motore Dahlander 2 velocita' (alta = marcia / bassa = avvicinamento e livellamento). Variante VVVF in nota.</text>
+
+  <!-- alimentazione -->
+  <text x="60" y="95" class="lblb">L1  L2  L3   N   PE</text>
+  <line x1="70"  y1="100" x2="70"  y2="720" class="wire"/>
+  <line x1="110" y1="100" x2="110" y2="720" class="wire"/>
+  <line x1="150" y1="100" x2="150" y2="720" class="wire"/>
+  <line x1="190" y1="100" x2="190" y2="660" class="wire" stroke-dasharray="2 2"/>
+  <line x1="220" y1="100" x2="220" y2="720" class="wire" stroke="#0a0"/>
+  <text x="205" y="120" class="note" fill="#0a0">PE</text>
+
+  <!-- sezionatore generale QS -->
+  <rect x="50" y="130" width="120" height="46" class="comp"/>
+  <line x1="60" y1="153" x2="160" y2="138" class="wire"/>
+  <text x="180" y="150" class="ref">-QS1</text>
+  <text x="180" y="166" class="note">Sezionatore gen. 4P 25A bloccoporta</text>
+
+  <!-- magnetotermico Q1 -->
+  <rect x="50" y="195" width="120" height="46" class="comp"/>
+  <text x="90" y="223" class="lbl">I&gt;</text>
+  <text x="180" y="215" class="ref">-Q1</text>
+  <text x="180" y="231" class="note">Magnetotermico motore curva D 16A</text>
+
+  <!-- relè sequenza fase -->
+  <rect x="50" y="258" width="120" height="40" class="comp"/>
+  <text x="78" y="283" class="lbl">L1·L2·L3</text>
+  <text x="180" y="276" class="ref">-KA-SEQ</text>
+  <text x="180" y="291" class="note">Relè sequenza/mancanza fase</text>
+
+  <!-- contattori direzione: KMS salita / KMD discesa -->
+  <rect x="40" y="320" width="140" height="56" class="comp"/>
+  <line x1="55" y1="348" x2="80" y2="332" class="wire"/><line x1="95" y1="348" x2="120" y2="332" class="wire"/><line x1="135" y1="348" x2="160" y2="332" class="wire"/>
+  <text x="190" y="345" class="ref">-KM-S</text>
+  <text x="190" y="361" class="note">Contattore SALITA (inverte 2 fasi)</text>
+
+  <rect x="40" y="396" width="140" height="56" class="comp"/>
+  <line x1="55" y1="424" x2="80" y2="408" class="wire"/><line x1="95" y1="424" x2="120" y2="408" class="wire"/><line x1="135" y1="424" x2="160" y2="408" class="wire"/>
+  <text x="190" y="421" class="ref">-KM-D</text>
+  <text x="190" y="437" class="note">Contattore DISCESA · interbloccato con -KM-S</text>
+
+  <!-- contattori velocità -->
+  <rect x="40" y="478" width="140" height="50" class="comp"/>
+  <text x="70" y="508" class="lbl">2p (ALTA)</text>
+  <text x="190" y="500" class="ref">-KM-V</text>
+  <text x="190" y="516" class="note">Contattore ALTA velocita'</text>
+
+  <rect x="40" y="546" width="140" height="50" class="comp"/>
+  <text x="70" y="576" class="lbl">4p (BASSA)</text>
+  <text x="190" y="568" class="ref">-KM-L</text>
+  <text x="190" y="584" class="note">Contattore BASSA velocita' · interbloccato</text>
+
+  <!-- protezione termica motore -->
+  <rect x="40" y="612" width="140" height="40" class="comp"/>
+  <text x="70" y="637" class="lbl">θ&gt;  PTC</text>
+  <text x="190" y="630" class="ref">-F-MOT</text>
+  <text x="190" y="645" class="note">Termistori PTC avvolgimenti</text>
+
+  <!-- motore -->
+  <circle cx="110" cy="700" r="34" class="comp"/>
+  <text x="95" y="697" class="lblb">M</text>
+  <text x="100" y="713" class="lbl">3~</text>
+  <text x="150" y="700" class="ref">-M1</text>
+  <text x="150" y="716" class="note">Motore argano 2 vel. (Dahlander)</text>
+
+  <!-- ramo freno -->
+  <line x1="380" y1="100" x2="380" y2="300" class="wire"/>
+  <rect x="350" y="150" width="120" height="44" class="comp"/>
+  <text x="362" y="177" class="lbl">~ / =</text>
+  <text x="480" y="170" class="ref">-A-FRE</text>
+  <text x="480" y="186" class="note">Raddrizzatore freno + sovreccitazione</text>
+  <rect x="350" y="214" width="120" height="44" class="comp"/>
+  <text x="375" y="241" class="lbl">YB</text>
+  <text x="480" y="232" class="ref">-YB1</text>
+  <text x="480" y="248" class="note">Freno elettromeccanico a doppio circuito</text>
+  <rect x="350" y="278" width="120" height="40" class="comp"/>
+  <text x="362" y="303" class="lbl">S1·S2</text>
+  <text x="480" y="294" class="ref">-S-FRE</text>
+  <text x="480" y="310" class="note">Microcontatti controllo freno (per UCM/A3)</text>
+
+  <!-- riquadro UCM/A3 -->
+  <rect x="640" y="120" width="430" height="120" class="dash"/>
+  <text x="655" y="142" class="lblb">FUNZIONE A3 — UCM (movimento incontrollato)</text>
+  <text x="655" y="164" class="note">Rilevazione zona porta ridondante (-B1/-B2) + controllo freno (-S-FRE).</text>
+  <text x="655" y="182" class="note">Su geared: doppio freno validato come elemento di arresto OPPURE</text>
+  <text x="655" y="200" class="note">dispositivo esterno (rope brake) con certificato di esame UE del tipo.</text>
+  <text x="655" y="224" class="note">Arresto attivato a porte aperte fuori zona di livellamento.</text>
+
+  <!-- nota VVVF -->
+  <rect x="640" y="270" width="430" height="150" class="dash"/>
+  <text x="655" y="292" class="lblb">VARIANTE VVVF (geared con inverter)</text>
+  <text x="655" y="314" class="note">In alternativa al Dahlander: inverter VVVF a monte del motore</text>
+  <text x="655" y="332" class="note">asincrono con argano. Migliore comfort e livellamento.</text>
+  <text x="655" y="350" class="note">- Si eliminano -KM-V / -KM-L (gestione velocita' dall'inverter)</text>
+  <text x="655" y="368" class="note">- Restano contattori a valle inverter per direzione/abilitazione</text>
+  <text x="655" y="386" class="note">- Resistenza di frenatura sul bus DC</text>
+  <text x="655" y="404" class="note">- Logica di rampa/jerk parametrica (vedi config/parametri.json)</text>
+
+  <!-- avvertenza -->
+  <rect x="640" y="450" width="430" height="120" fill="#fff8e1" stroke="#b8860b" stroke-width="1.5"/>
+  <text x="655" y="472" class="lblb">AVVERTENZA NORMATIVA</text>
+  <text x="655" y="494" class="note">La catena di sicurezza (EN 81-20 §5.11) e' CABLATA e separata</text>
+  <text x="655" y="512" class="note">dalla logica PLC. Vedi schemi 'catena-sicurezza.svg' e 'io-plc.svg'.</text>
+  <text x="655" y="530" class="note">Tutti i contatti di sicurezza ad apertura positiva. Relè di</text>
+  <text x="655" y="548" class="note">sicurezza a contatti guidati certificato a valle della catena.</text>
+
+  <!-- cartiglio -->
+  <rect x="640" y="640" width="455" height="120" class="comp"/>
+  <line x1="640" y1="676" x2="1095" y2="676" stroke="#111"/>
+  <line x1="640" y1="712" x2="1095" y2="712" stroke="#111"/>
+  <line x1="880" y1="640" x2="880" y2="760" stroke="#111"/>
+  <text x="650" y="662" class="lblb">Quadro di manovra ascensore — POTENZA GEARED 2V</text>
+  <text x="650" y="698" class="note">Progetto: concept didattico EN 81-20/50 · UNI 10411</text>
+  <text x="650" y="734" class="note">Impianto: argano 2 velocita' · 4-6 pers · 6 fermate</text>
+  <text x="890" y="662" class="note">Foglio 1/4</text>
+  <text x="890" y="698" class="note">Rev. A</text>
+  <text x="890" y="734" class="note">Scala: —</text>
+</svg>

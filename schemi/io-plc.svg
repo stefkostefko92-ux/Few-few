@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1123 794" font-family="Arial, Helvetica, sans-serif">
+  <style>
+    .wire{stroke:#111;stroke-width:1.6;fill:none}
+    .comp{fill:#fff;stroke:#111;stroke-width:2}
+    .plc{fill:#eef3ff;stroke:#234;stroke-width:2}
+    .lbl{font-size:12px;fill:#111}
+    .lblb{font-size:13px;fill:#111;font-weight:bold}
+    .ref{font-size:11px;fill:#b00;font-weight:bold}
+    .note{font-size:11px;fill:#333}
+    .title{font-size:18px;font-weight:bold;fill:#111}
+    .io{font-size:11px;fill:#111}
+  </style>
+
+  <rect x="8" y="8" width="1107" height="778" fill="none" stroke="#111" stroke-width="2"/>
+  <text x="30" y="40" class="title">SCHEMA I/O PLC — LOGICA DI MANOVRA (geared / idraulico)</text>
+  <text x="30" y="60" class="note">PLC Siemens S7-1200 (o Codesys). Gestisce SOLO la manovra. La sicurezza resta cablata (foglio 3). Riferimento variabili: plc/src/GVL_IO.st</text>
+
+  <!-- PLC centrale -->
+  <rect x="430" y="120" width="270" height="560" class="plc"/>
+  <text x="500" y="148" class="lblb">PLC — CPU 1214C</text>
+  <text x="470" y="166" class="note">24Vdc · DI 14 · DQ 10 · + moduli espansione</text>
+
+  <!-- alimentatore -->
+  <rect x="430" y="700" width="270" height="60" class="comp"/>
+  <text x="450" y="724" class="lblb">-T1  Alimentatore 24Vdc 5A (Mean Well)</text>
+  <text x="450" y="744" class="note">alimenta PLC, sensori, CANbus/serie, modulo WiFi ESP32</text>
+
+  <!-- INGRESSI (sinistra) -->
+  <text x="40" y="110" class="lblb">INGRESSI DIGITALI (DI)</text>
+  <g class="io">
+    <text x="40" y="140">-KA-SIC   stato catena sicurezza</text>
+    <text x="40" y="164">-S-REV    selettore revisione</text>
+    <text x="40" y="188">-SB-REVU  revisione SALITA (uomo presente)</text>
+    <text x="40" y="212">-SB-REVD  revisione DISCESA (uomo presente)</text>
+    <text x="40" y="236">-B-ZP1 / -B-ZP2  zona porta (ridondante)</text>
+    <text x="40" y="260">-B-RALL-U  rallentamento salita (KU)</text>
+    <text x="40" y="284">-B-RALL-D  rallentamento discesa (KD)</text>
+    <text x="40" y="308">-B-PIANI   impulsi conteggio piani / encoder</text>
+    <text x="40" y="332">-S-SOVR    sovraccarico cabina</text>
+    <text x="40" y="356">-S-FOTO    fotocellula / costa mobile porta</text>
+    <text x="40" y="380">-S-FAP     porta tutta aperta</text>
+    <text x="40" y="404">-S-FCP     porta tutta chiusa</text>
+    <text x="40" y="428">-SB-CAB-0..5  pulsanti chiamata CABINA</text>
+    <text x="40" y="452">-SB-PIA-0..5  pulsanti chiamata PIANO</text>
+    <text x="40" y="476">-F-MOT     termica motore / termostato olio</text>
+    <text x="40" y="500">-S-MINP    pressione minima (solo idraulico)</text>
+    <text x="40" y="524">-S-FRE     controllo freno (solo geared)</text>
+  </g>
+  <!-- linee ingressi al PLC -->
+  <g class="wire">
+    <line x1="370" y1="136" x2="430" y2="160"/>
+    <line x1="370" y1="232" x2="430" y2="230"/>
+    <line x1="370" y1="328" x2="430" y2="300"/>
+    <line x1="370" y1="448" x2="430" y2="380"/>
+    <line x1="370" y1="520" x2="430" y2="450"/>
+  </g>
+
+  <!-- USCITE (destra) -->
+  <text x="760" y="110" class="lblb">USCITE DIGITALI (DQ)</text>
+  <g class="io">
+    <text x="730" y="140">-KM-S    contattore SALITA</text>
+    <text x="730" y="164">-KM-D    contattore DISCESA</text>
+    <text x="730" y="188">-KM-V    alta velocita'   (geared 2V)</text>
+    <text x="730" y="212">-KM-L    bassa velocita'  (geared 2V)</text>
+    <text x="730" y="236">-KM-FRE  comando freno    (geared)</text>
+    <text x="730" y="260">-KM-P    linea pompa      (idraulico)</text>
+    <text x="730" y="284">-KM-Y / -KM-Δ  stella/triangolo (idr.)</text>
+    <text x="730" y="308">-EV-S    valvola salita   (idraulico)</text>
+    <text x="730" y="332">-EV-D    valvola discesa  (idraulico)</text>
+    <text x="730" y="356">-KM-APRE  apertura porte</text>
+    <text x="730" y="380">-KM-CHIU  chiusura porte</text>
+    <text x="730" y="404">-H-DIR    frecce direzione</text>
+    <text x="730" y="428">-H-POS    display posizione (BCD/serie)</text>
+    <text x="730" y="452">-H-GONG   gong di arrivo</text>
+    <text x="730" y="476">-H-OOS    fuori servizio / allarme</text>
+  </g>
+  <g class="wire">
+    <line x1="700" y1="160" x2="730" y2="136"/>
+    <line x1="700" y1="230" x2="730" y2="232"/>
+    <line x1="700" y1="300" x2="730" y2="320"/>
+    <line x1="700" y1="380" x2="730" y2="404"/>
+    <line x1="700" y1="450" x2="730" y2="464"/>
+  </g>
+
+  <!-- comunicazione -->
+  <rect x="430" y="600" width="270" height="80" fill="#fff" stroke="#234" stroke-width="1.5"/>
+  <text x="445" y="622" class="lblb">COMUNICAZIONE</text>
+  <text x="445" y="642" class="note">RS485 Modbus RTU → modulo WiFi ESP32</text>
+  <text x="445" y="660" class="note">(parametri non-safety, vedi firmware/)</text>
+  <text x="445" y="676" class="note">CANbus → COP cabina / LOP piani</text>
+
+  <!-- modulo wifi -->
+  <rect x="760" y="600" width="320" height="80" class="comp"/>
+  <text x="775" y="622" class="lblb">-A5  Modulo WiFi ESP32</text>
+  <text x="775" y="642" class="note">Access Point locale · parametri NON-safety</text>
+  <text x="775" y="660" class="note">Gate hardware: chiave -S-EN per categoria SR</text>
+  <text x="775" y="676" class="note">Vedi docs/02-parametri-wifi.md</text>
+  <line x1="700" y1="630" x2="760" y2="630" class="wire"/>
+
+  <!-- cartiglio -->
+  <rect x="760" y="700" width="320" height="60" class="comp"/>
+  <line x1="980" y1="700" x2="980" y2="760" stroke="#111"/>
+  <text x="770" y="722" class="lblb">Schema I/O PLC</text>
+  <text x="770" y="744" class="note">manovra geared / idraulico</text>
+  <text x="990" y="722" class="note">Foglio 4/4</text>
+  <text x="990" y="744" class="note">Rev. A</text>
+</svg>
