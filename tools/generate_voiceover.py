@@ -26,8 +26,8 @@ from pathlib import Path
 # Keep these IDENTICAL across every episode for a consistent series voice.
 # Public ElevenLabs voice IDs (premade library):
 VOICES = {
-    "Jessica": "cgSgspJ2msm6clMCkdW9",   # ⭐ recommended — young, expressive
-    "Charlotte": "XB0fDUnXU5powFXDhCwa",  # warm, cinematic
+    "Charlotte": "XB0fDUnXU5powFXDhCwa",  # ⭐ series voice — warm, cinematic, alluring
+    "Jessica": "cgSgspJ2msm6clMCkdW9",   # young, expressive
     "Sarah": "EXAVITQu4vr4xnSDxMaL",      # calm, documentary
     "Matilda": "XrExE9yKIg1WjnnlVkGX",    # friendly, warm
     "Alice": "Xb7hH8MSUJpSbSDYk0k2",      # clear British
@@ -91,8 +91,8 @@ def synthesize(text: str, voice_id: str, out_path: Path, api_key: str) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("folder", help="country folder, e.g. clips/mexico")
-    ap.add_argument("--voice", default="Jessica", choices=sorted(VOICES),
-                    help="series voice (default: Jessica)")
+    ap.add_argument("--voice", default="Charlotte", choices=sorted(VOICES),
+                    help="series voice (default: Charlotte)")
     ap.add_argument("--dry-run", action="store_true",
                     help="write the cleaned narration to narration.txt, skip the API")
     args = ap.parse_args()

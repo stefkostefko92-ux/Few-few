@@ -4,12 +4,13 @@ A consistent, "addictive" narration voice is what turns a list of facts into a
 binge-watchable series. Pick **one** female voice and use it for **every** episode
 so the channel builds a recognisable identity.
 
-## ⭐ Recommended voice
+## ⭐ Series voice — CHOSEN: "Charlotte"
 
-**ElevenLabs — "Jessica"** (American English, young, expressive)
-- Why: punchy, warm and energetic with a slightly conspiratorial "you've got to
-  see this" delivery — the exact tone that keeps viewers on fast-paced Top 10
-  travel countdowns. It reads naturally over B-roll without sounding robotic.
+**ElevenLabs — "Charlotte"** (warm, smooth, slightly alluring) — this is the
+locked-in voice for every episode.
+- Why: a rich, cinematic, faintly seductive delivery that makes the travel
+  footage feel premium and keeps viewers leaning in — addictive without being
+  over-the-top. It's the default in `tools/generate_voiceover.py`.
 - Model: `eleven_multilingual_v2` (best quality) or `eleven_turbo_v2_5` (cheaper/faster).
 - Suggested settings:
   - **Stability:** 45% (enough variation to stay lively, not so much it wobbles)
@@ -18,11 +19,14 @@ so the channel builds a recognisable identity.
   - **Speaker boost:** on
   - **Speed:** 1.0–1.05
 
-## Strong alternatives (same provider)
+> Tweak to taste: for an even calmer, more cinematic read, drop Style to ~25%.
+> For a touch more energy, nudge Style toward 50%.
+
+## Alternatives (same provider)
 
 | Voice | Character | Best for |
 |-------|-----------|----------|
-| **Charlotte** | Warm, smooth, slightly alluring | A more cinematic, premium feel |
+| **Jessica** | Young, punchy, expressive | A higher-energy, social-media feel |
 | **Sarah** | Calm, soft, documentary | A relaxing "fall-asleep travel" vibe |
 | **Matilda** | Friendly, warm, natural | Approachable, mass-appeal narration |
 | **Alice** | Clear British English | If you prefer a UK accent |
