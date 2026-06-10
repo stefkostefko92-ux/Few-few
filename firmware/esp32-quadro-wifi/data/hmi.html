@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>HMI Quadro Ascensore</title>
+<style>
+  :root{--bg:#0b1020;--pan:#131a2e;--ln:#26314f;--tx:#e8edf7;--mut:#8b96ad;
+        --ok:#2ecc71;--wr:#f1c40f;--er:#e74c3c;--ac:#3a86ff}
+  *{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--tx);height:100vh;display:flex;flex-direction:column}
+  header{background:var(--pan);padding:10px 16px;border-bottom:1px solid var(--ln);
+         display:flex;align-items:center;gap:14px}
+  header h1{font-size:16px;margin:0}
+  .pill{margin-left:auto;font-size:12px;padding:4px 10px;border-radius:20px;background:#1c2746}
+  .pill.on{background:#123a23;color:var(--ok)} .pill.off{background:#3a1414;color:var(--er)}
+  nav{display:flex;background:var(--pan);border-bottom:1px solid var(--ln)}
+  nav button{flex:1;padding:14px;border:0;background:transparent;color:var(--mut);
+    font-size:15px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent}
+  nav button.sel{color:var(--tx);border-bottom-color:var(--ac)}
+  main{flex:1;overflow:auto;padding:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{background:var(--pan);border:1px solid var(--ln);border-radius:12px;padding:14px}
+  .card .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .card .v{font-size:30px;font-weight:700;margin-top:6px}
+  .card .u{font-size:14px;color:var(--mut);font-weight:400}
+  .big{grid-column:1/-1;display:flex;align-items:center;gap:20px}
+  .floor{font-size:64px;font-weight:800;line-height:1}
+  .arrow{font-size:48px;color:var(--mut)} .arrow.act{color:var(--ac)}
+  .state{font-size:24px;font-weight:700}
+  .io{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+  .bit{display:flex;align-items:center;gap:8px;background:var(--pan);border:1px solid var(--ln);
+    border-radius:8px;padding:8px 10px;font-size:13px}
+  .led{width:12px;height:12px;border-radius:50%;background:#33405f;flex:none}
+  .led.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .led.warn.on{background:var(--wr);box-shadow:0 0 8px var(--wr)}
+  table{width:100%;border-collapse:collapse}
+  td,th{padding:10px;border-bottom:1px solid var(--ln);text-align:left;font-size:14px}
+  .alm{color:var(--er)} .hide{display:none}
+  footer{padding:8px 16px;font-size:11px;color:var(--mut);border-top:1px solid var(--ln);background:var(--pan)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛗 HMI Quadro di manovra</h1>
+  <span id="impianto" class="pill">—</span>
+  <span id="link" class="pill off">OFFLINE</span>
+</header>
+<nav>
+  <button data-t="stato" class="sel">STATO</button>
+  <button data-t="io">I/O</button>
+  <button data-t="allarmi">ALLARMI</button>
+  <button data-t="manut">MANUTENZIONE</button>
+</nav>
+<main>
+  <section id="stato">
+    <div class="grid">
+      <div class="card big">
+        <div class="floor" id="floor">–</div>
+        <div>
+          <span class="arrow" id="aUp">▲</span>
+          <span class="arrow" id="aDn">▼</span>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div class="k">Stato</div>
+          <div class="state" id="state">—</div>
+        </div>
+      </div>
+      <div class="card"><div class="k">Porte</div><div class="v" id="doors">—</div></div>
+      <div class="card"><div class="k">Velocità</div><div class="v"><span id="spd">0.00</span><span class="u"> m/s</span></div></div>
+      <div class="card"><div class="k">Corrente motore</div><div class="v"><span id="cur">0.0</span><span class="u"> A</span></div></div>
+      <div class="card" id="cardOil"><div class="k">Temp. olio</div><div class="v"><span id="oil">–</span><span class="u"> °C</span></div></div>
+      <div class="card" id="cardPress"><div class="k">Pressione</div><div class="v"><span id="press">–</span><span class="u"> bar</span></div></div>
+    </div>
+  </section>
+
+  <section id="io" class="hide">
+    <h3>Ingressi (DI)</h3>
+    <div class="io" id="diList"></div>
+    <h3>Uscite (DQ)</h3>
+    <div class="io" id="dqList"></div>
+  </section>
+
+  <section id="allarmi" class="hide">
+    <table><thead><tr><th>Codice</th><th>Descrizione</th><th>Stato</th></tr></thead>
+    <tbody id="almBody"></tbody></table>
+    <p id="noAlm" class="hide" style="color:var(--ok)">Nessun allarme attivo ✓</p>
+  </section>
+
+  <section id="manut" class="hide">
+    <div class="grid">
+      <div class="card"><div class="k">Contatore corse</div><div class="v" id="trips">—</div></div>
+      <div class="card"><div class="k">Ore servizio</div><div class="v" id="hours">—</div></div>
+      <div class="card"><div class="k">Chiave parametri</div><div class="v" id="key">—</div></div>
+      <div class="card"><div class="k">Uptime modulo</div><div class="v" id="up">—</div></div>
+    </div>
+    <p style="color:var(--mut);font-size:13px;margin-top:14px">
+      I parametri si modificano dalla pagina dedicata (categoria non-safety via WiFi;
+      safety solo con chiave fisica in quadro). Vedi <code>/index.html</code> del modulo parametri.
+    </p>
+  </section>
+</main>
+<footer>HMI sola lettura · dati da <code>/api/hmi</code> (Modbus→PLC) · la sicurezza è cablata e indipendente</footer>
+
+<script>
+const DI = [
+  ["catena","Catena sicurezza"],["revisione","Revisione",1],["zp","Zona porta"],
+  ["foto","Fotocellula"],["sovr","Sovraccarico",1],["fap","Porta aperta"],
+  ["fcp","Porta chiusa"],["termica","Termica/olio"],["minp","Pressione min (idr.)"],
+  ["freno","Controllo freno (geared)"]
+];
+const DQ = [
+  ["km_s","KM salita"],["km_d","KM discesa"],["km_v","Alta vel. (geared)"],
+  ["km_l","Bassa vel. (geared)"],["km_fre","Freno (geared)"],["km_p","Pompa (idr.)"],
+  ["ev_s","Valvola salita (idr.)"],["ev_d","Valvola discesa (idr.)"],
+  ["apri","Apri porte"],["chiudi","Chiudi porte"],["gong","Gong"],["oos","Fuori servizio",1]
+];
+const ALARMS = {
+  0:"Nessun guasto", 11:"Sovratemperatura motore", 12:"Discordanza zona porta",
+  13:"Controllo freno", 21:"Bassa pressione (idr.)", 22:"Sovratemperatura olio (idr.)",
+  31:"Sequenza fase errata", 41:"Timeout corsa"
+};
+
+// navigazione tab
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel');
+  ['stato','io','allarmi','manut'].forEach(s=>document.getElementById(s).classList.add('hide'));
+  document.getElementById(b.dataset.t).classList.remove('hide');
+});
+
+// costruisci liste I/O
+function buildIO(){
+  diList.innerHTML = DI.map(([id,l,w])=>`<div class="bit"><span class="led ${w?'warn':''}" id="di_${id}"></span>${l}</div>`).join('');
+  dqList.innerHTML = DQ.map(([id,l,w])=>`<div class="bit"><span class="led ${w?'warn':''}" id="dq_${id}"></span>${l}</div>`).join('');
+}
+buildIO();
+
+const STATI = {0:"RIPOSO",2:"CHIUSURA",3:"PARTENZA",4:"MARCIA",5:"RALLENTA",
+  6:"LIVELLA",7:"ARRESTO",8:"APERTURA",9:"ATTESA",20:"REVISIONE",90:"GUASTO",91:"EMERGENZA"};
+
+function setLed(id,on){const e=document.getElementById(id);if(e)e.classList.toggle('on',!!on);}
+
+function render(d){
+  link.textContent = d._online?"ONLINE":"DEMO";
+  link.className = "pill "+(d._online?"on":"off");
+  impianto.textContent = (d.tipo_impianto||"geared").toUpperCase();
+  floor.textContent = (d.piano!=null?d.piano:"–");
+  aUp.classList.toggle('act', d.direzione===1);
+  aDn.classList.toggle('act', d.direzione===2);
+  state.textContent = STATI[d.stato] ?? "—";
+  doors.textContent = d.porte || "—";
+  spd.textContent = (d.car_speed??0).toFixed(2);
+  cur.textContent = (d.motor_current??0).toFixed(1);
+  oil.textContent = d.oil_temp>=0? d.oil_temp : "–";
+  press.textContent = d.line_pressure>=0? d.line_pressure : "–";
+  // I/O
+  const di=d.di||{}, dq=d.dq||{};
+  DI.forEach(([id])=>setLed("di_"+id, di[id]));
+  DQ.forEach(([id])=>setLed("dq_"+id, dq[id]));
+  // allarmi
+  const fc=d.fault_code|0;
+  almBody.innerHTML="";
+  if(fc>0){ noAlm.classList.add('hide');
+    almBody.innerHTML=`<tr><td>E${fc}</td><td class="alm">${ALARMS[fc]||"Guasto"}</td><td class="alm">ATTIVO</td></tr>`;
+  } else { noAlm.classList.remove('hide'); }
+  // manutenzione
+  trips.textContent = d.trip_counter??"—";
+  hours.textContent = d.ore_servizio??Math.floor((d.uptime_s||0)/3600);
+  key.textContent = d.key_inserted?"INSERITA":"assente";
+  up.textContent = d.uptime_s? (d.uptime_s+" s"):"—";
+  // mostra/nascondi card idrauliche
+  const idr=(d.tipo_impianto==="idraulico");
+  cardOil.style.display=idr?"":"none"; cardPress.style.display=idr?"":"none";
+}
+
+// --- DEMO: dati simulati quando /api/hmi non è raggiungibile ---
+let demo={piano:0,stato:0,direzione:0,t:0,tipo:"geared"};
+function demoStep(){
+  demo.t++; const cyc=demo.t%60;
+  if(cyc<4){demo.stato=2;demo.direzione=0;}
+  else if(cyc<8){demo.stato=3;demo.direzione=1;}
+  else if(cyc<24){demo.stato=4;demo.direzione=1;}
+  else if(cyc<30){demo.stato=5;demo.direzione=1;}
+  else if(cyc<33){demo.stato=6;demo.direzione=1;}
+  else if(cyc<36){demo.stato=7;demo.direzione=0;if(demo.piano<5)demo.piano++;else demo.piano=0;}
+  else if(cyc<42){demo.stato=8;}
+  else {demo.stato=9;}
+  const m=demo.stato===4;
+  return {_online:false,tipo_impianto:demo.tipo,piano:demo.piano,stato:demo.stato,
+    direzione:demo.direzione,porte:(demo.stato>=8&&demo.stato<=9)?"APERTE":"CHIUSE",
+    car_speed:m?1.0:(demo.stato===5||demo.stato===6?0.1:0),motor_current:m?6.2:0.3,
+    oil_temp:-1,line_pressure:-1,trip_counter:1287,uptime_s:demo.t*2,key_inserted:false,
+    fault_code:0,
+    di:{catena:1,zp:(demo.stato>=6&&demo.stato<=9),foto:1,fap:(demo.stato>=8),fcp:!(demo.stato>=8)},
+    dq:{km_s:(m&&demo.direzione===1),km_v:m,km_l:(demo.stato===5||demo.stato===6),
+        km_fre:(demo.stato>=3&&demo.stato<=6),apri:(demo.stato===8),chiudi:(demo.stato===2),
+        gong:(demo.stato===8)}};
+}
+
+async function tick(){
+  try{
+    const r=await fetch('/api/hmi',{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const d=await r.json(); d._online=true;
+    // mappa campi grezzi del firmware -> struttura HMI (placeholder)
+    d.piano = d.car_position!=null? Math.round(d.car_position/3000):0; // mm->piano (h interpiano ~3m)
+    render(d);
+  }catch(e){ render(demoStep()); }
+}
+setInterval(tick,1000); tick();
+</script>
+</body>
+</html>

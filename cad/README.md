@@ -12,6 +12,7 @@ LibreCAD, DraftSight, QCAD, BricsCAD. Generati programmaticamente da
 | 2/4 Potenza idraulico (Y/Δ + valvole) | `potenza-idraulico.dxf` | `preview-potenza-idraulico.png` |
 | 3/4 Catena di sicurezza | `catena-sicurezza.dxf` | `preview-catena-sicurezza.png` |
 | 4/4 I/O PLC | `io-plc.dxf` | `preview-io-plc.png` |
+| 5/5 Morsettiera e cavi numerati | `morsettiera.dxf` | `preview-morsettiera.png` |
 
 Le versioni SVG (più ricche graficamente) restano in [`../schemi/`](../schemi/).
 

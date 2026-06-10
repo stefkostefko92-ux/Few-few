@@ -27,15 +27,19 @@ Conforme a **EN 81-20 / EN 81-50** (nuovo) e idoneo a modernizzazioni
 | [`schemi/potenza-idraulico.svg`](schemi/potenza-idraulico.svg) | Schema di potenza — centralina idraulica (Y/Δ + valvole) |
 | [`schemi/catena-sicurezza.svg`](schemi/catena-sicurezza.svg) | Catena di sicurezza cablata (comune) |
 | [`schemi/io-plc.svg`](schemi/io-plc.svg) | Schema I/O del PLC di manovra |
+| [`schemi/pannello-operatore.svg`](schemi/pannello-operatore.svg) | Pannello operatore fisico + HMI touch (foglio 6/6) |
 | [`cad/`](cad/) | **Export CAD** degli schemi in DXF (AutoCAD/LibreCAD) + anteprime PNG |
 | [`plc/`](plc/) | Software PLC IEC 61131-3 ST (geared + idraulico) |
 | [`sim/`](sim/) | **Simulazione + test** eseguibili della logica PLC (Python, 11 test) |
+| [`hmi/`](hmi/) | **HMI / pannello operatore** touch (sola lettura) via `/api/hmi` |
 | [`docs/01-schema-elettrico.md`](docs/01-schema-elettrico.md) | Descrizione schemi, BOM, conformità |
 | [`docs/02-parametri-wifi.md`](docs/02-parametri-wifi.md) | Mappa parametri app WiFi (safety vs non-safety) |
-| [`docs/03-lista-io.md`](docs/03-lista-io.md) | **Lista I/O completa** per il cablaggio (morsetti, cavi) |
+| [`docs/03-lista-io.md`](docs/03-lista-io.md) | **Lista I/O completa** per il cablaggio |
+| [`docs/04-morsettiera-cavi.md`](docs/04-morsettiera-cavi.md) | **Morsettiera + lista cavi numerata** |
 | [`config/parametri.json`](config/parametri.json) | Mappa parametri machine-readable |
 | [`config/lista-io.csv`](config/lista-io.csv) | Lista I/O machine-readable (import EPLAN/Excel) |
-| [`firmware/esp32-quadro-wifi/`](firmware/esp32-quadro-wifi/) | Prototipo modulo WiFi: web-server + Modbus |
+| [`config/lista-cavi.csv`](config/lista-cavi.csv) | Schedario cavi machine-readable |
+| [`firmware/esp32-quadro-wifi/`](firmware/esp32-quadro-wifi/) | Prototipo modulo WiFi: web-server + Modbus + `/api/hmi` |
 
 ## Architettura in breve
 

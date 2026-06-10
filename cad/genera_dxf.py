@@ -336,6 +336,77 @@ def io_plc():
     return d
 
 
+# ===========================================================================
+#  FOGLIO 5 - MORSETTIERA E CAVI NUMERATI
+# ===========================================================================
+def _strip(d, x, y, nome, terminali, cavo_sopra, cavo_sotto):
+    """Disegna una morsettiera orizzontale con morsetti numerati.
+    terminali = lista di (numero, sigla_filo)."""
+    w = 9
+    d.text(x, y + 20, nome, 3.0, "TESTO")
+    d.text(x, y + 15, f"campo: {cavo_sopra}", 2.0, "TESTO")
+    d.text(x, y - 14, f"interno quadro: {cavo_sotto}", 2.0, "TESTO")
+    for k, (num, filo) in enumerate(terminali):
+        bx = x + 22 + k * w
+        d.rect(bx, y, w - 1, 10, "COMP")
+        d.text(bx + 1.5, y + 11.5, str(num), 2.0, "TESTO")   # numero morsetto
+        d.text(bx + 0.6, y + 4, filo, 1.7, "POTENZA")        # filo
+        d.line(bx + (w - 1) / 2, y + 10, bx + (w - 1) / 2, y + 13, "POTENZA")  # su
+        d.line(bx + (w - 1) / 2, y, bx + (w - 1) / 2, y - 3, "COMP")           # giu
+
+
+def morsettiera():
+    d = Dxf()
+    d.rect(0, 0, 297, 210, "CORNICE")
+    d.text(8, 200, "MORSETTIERA E CAVI NUMERATI - quadro di manovra (geared/idraulico)", 4.0)
+
+    _strip(d, 12, 168,
+           "-X1  Sicurezza / segnali ingresso",
+           [(11, "11"), (12, "12"), (13, "13"), (14, "14"), (15, "15"),
+            (16, "16"), (17, "17"), (18, "18"), (19, "19"), (20, "20"),
+            (21, "21"), (22, "22"), (23, "23"), (24, "24"), (25, "25"), (26, "26")],
+           "W4 catena (cabina/vano) + W7 segnali vano",
+           "PLC DI %I0.0..%I1.7")
+
+    _strip(d, 12, 130,
+           "-X2  Chiamate cabina/piani",
+           [(1, "C0"), (2, "C1"), (3, "C2"), (4, "C3"), (5, "C4"), (6, "C5"),
+            (7, "PU0"), (8, "PU1"), (9, "PU2"), (10, "PD3"), (11, "PD4"), (12, "PD5")],
+           "W5 bus cabina (COP) + W6 bus piani (LOP)",
+           "PLC DI %IW2..%IW6")
+
+    _strip(d, 12, 92,
+           "-X3  Uscite comando/potenza",
+           [(1, "S"), (2, "D"), (3, "V"), (4, "L"), (5, "FRE"),
+            (6, "P"), (7, "Y"), (8, "TR"), (9, "EVS"), (10, "EVD"),
+            (11, "AP"), (12, "CH"), (13, "GO"), (14, "OOS")],
+           "W2 motore/pompa + W3 freno + valvole",
+           "PLC DQ %Q0.0..%Q1.5 -> bobine -KM / -EV")
+
+    _strip(d, 12, 54,
+           "-X4  Segnalazioni",
+           [(1, "P0"), (2, "P1"), (3, "P2"), (4, "P4"), (5, "P8"),
+            (6, "-"), (7, "-"), (8, "-"), (9, "DU"), (10, "DD"), (11, "0V"), (12, "+24")],
+           "W7 segnalazioni cabina/piani",
+           "PLC DQ %QW2..%QW4 + alim. 24V")
+
+    # legenda cavi
+    d.rect(12, 8, 273, 34, "COMP")
+    d.text(15, 37, "LEGENDA CAVI (vedi config/lista-cavi.csv e docs/04-morsettiera-cavi.md)", 2.5)
+    cavi = [
+        "W1 rete 4G6 + PE        W2 motore/pompa 4G2.5    W3 freno 3G1.5",
+        "W4 catena sicurezza nG1  W5 COP cabina (CAN+24V)  W6 LOP piani (CAN+24V)",
+        "W7 segnali vano nG0.75   W8 RS485 2x0.5 schermato W9 ausiliari 24V 2x1.0",
+    ]
+    yy = 30
+    for r in cavi:
+        d.text(15, yy, r, 2.2, "TESTO")
+        yy -= 6
+
+    d.cartiglio(178, 8, "MORSETTIERA / CAVI", "Foglio 5/5")
+    return d
+
+
 if __name__ == "__main__":
     import os
     here = os.path.dirname(os.path.abspath(__file__))
@@ -344,6 +415,7 @@ if __name__ == "__main__":
         "potenza-idraulico.dxf": potenza_idraulico(),
         "catena-sicurezza.dxf":  catena_sicurezza(),
         "io-plc.dxf":            io_plc(),
+        "morsettiera.dxf":       morsettiera(),
     }
     for name, dxf in out.items():
         path = os.path.join(here, name)

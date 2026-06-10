@@ -228,6 +228,36 @@ void handleStatus(AsyncWebServerRequest* req) {
   req->send(200, "application/json", out);
 }
 
+// GET /api/hmi -> stato sintetico per il pannello operatore (HMI)
+// Legge alcuni registri diagnostici dal PLC/controller via Modbus.
+void handleHmi(AsyncWebServerRequest* req) {
+  uint16_t raw;
+  auto rd = [&](const char* id) -> float {
+    JsonObject p = findParam(id);
+    if (p.isNull()) return -1;
+    if (modbusRead(p["reg"].as<uint16_t>(), raw)) {
+      float s = p["scale"] | 1.0;
+      return raw / s;
+    }
+    return -1;
+  };
+
+  JsonDocument res;
+  res["car_position"] = rd("car_position");   // mm
+  res["car_speed"]    = rd("car_speed");       // m/s
+  res["motor_current"]= rd("motor_current");   // A
+  res["oil_temp"]     = rd("oil_temperature"); // C (idraulico)
+  res["line_pressure"]= rd("line_pressure");   // bar (idraulico)
+  res["trip_counter"] = (long)rd("trip_counter");
+  res["fault_code"]   = (int)rd("fault_code");
+  res["key_inserted"] = keyInserted();
+  res["clients"]      = WiFi.softAPgetStationNum();
+  res["uptime_s"]     = millis() / 1000;
+
+  String out; serializeJson(res, out);
+  req->send(200, "application/json", out);
+}
+
 // --------------------------- SETUP / LOOP ----------------------------------
 bool loadParamDb() {
   File f = LittleFS.open("/parametri.json", "r");
@@ -265,6 +295,7 @@ void setup() {
   // API
   server.on("/api/params", HTTP_GET, handleGetParams);
   server.on("/api/status", HTTP_GET, handleStatus);
+  server.on("/api/hmi", HTTP_GET, handleHmi);
 
   auto* loginH = new AsyncCallbackJsonWebHandler("/api/login",
     [](AsyncWebServerRequest* r, JsonVariant& j){ handleLogin(r, j); });
