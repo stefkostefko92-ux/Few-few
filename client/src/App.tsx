@@ -174,7 +174,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
   const authed = !!token;
   const path = location.pathname;
-  const isPublic = path === '/' || path === '/login' || path === '/register';
+  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/terms' || path === '/privacy';
   const isCreateRoute = path === '/create';
   const isAdminRoute = path.startsWith('/admin');
 
