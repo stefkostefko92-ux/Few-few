@@ -1,5 +1,5 @@
 /**
- * Canonical game roster (18 games) and the 6 engine patterns they reduce to.
+ * Canonical game roster (22 games) and the engine patterns they reduce to.
  * Mirrors the `GameKey` enum in the Prisma schema — keep both in sync.
  */
 

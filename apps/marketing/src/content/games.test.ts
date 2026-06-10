@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isGameKey } from "@aso/shared";
+import { GAME_KEYS, isGameKey } from "@aso/shared";
 import { GAME_CONTENT, getGameContent } from "./games";
 import { faqLd, howToLd, videoGameLd } from "../lib/jsonld";
 
@@ -11,6 +11,12 @@ describe("marketing game content", () => {
       expect(slugs.has(g.slug)).toBe(false);
       slugs.add(g.slug);
     }
+  });
+
+  it("covers every game in the canonical roster (no missing landing page)", () => {
+    const covered = new Set(GAME_CONTENT.map((g) => g.key));
+    for (const key of GAME_KEYS) expect(covered.has(key)).toBe(true);
+    expect(GAME_CONTENT).toHaveLength(GAME_KEYS.length);
   });
 
   it("keeps meta summaries within ~160 chars and has at least one FAQ + HowTo step", () => {

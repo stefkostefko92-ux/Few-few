@@ -36,6 +36,7 @@ model User {
   inventory  InventoryItem[]
   matches    MatchPlayer[]
   purchases  Purchase[]
+  subscription Subscription?
   quests     Quest[]
   authTokens AuthToken[]
   oauth      OAuthAccount[]
@@ -213,6 +214,7 @@ model Subscription {
   tier             VipTier
   status           String
   currentPeriodEnd DateTime
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model InventoryItem {

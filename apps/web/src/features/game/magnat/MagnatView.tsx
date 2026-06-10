@@ -175,10 +175,10 @@ export function MagnatView({ title }: { title: string }) {
                         {state.mortgaged[i] ? " · ипотека" : ""}
                       </span>
                       <span className="mag-prop-acts">
-                        {tileHas("BUILD", i) ? <button onClick={() => send({ type: "BUILD", tile: i })}>+🏠</button> : null}
-                        {tileHas("SELL", i) ? <button onClick={() => send({ type: "SELL", tile: i })}>−</button> : null}
-                        {tileHas("MORTGAGE", i) ? <button onClick={() => send({ type: "MORTGAGE", tile: i })}>ипотека</button> : null}
-                        {tileHas("UNMORTGAGE", i) ? <button onClick={() => send({ type: "UNMORTGAGE", tile: i })}>откупи</button> : null}
+                        {tileHas("BUILD", i) ? <button type="button" onClick={() => send({ type: "BUILD", tile: i })}>+🏠</button> : null}
+                        {tileHas("SELL", i) ? <button type="button" onClick={() => send({ type: "SELL", tile: i })}>−</button> : null}
+                        {tileHas("MORTGAGE", i) ? <button type="button" onClick={() => send({ type: "MORTGAGE", tile: i })}>ипотека</button> : null}
+                        {tileHas("UNMORTGAGE", i) ? <button type="button" onClick={() => send({ type: "UNMORTGAGE", tile: i })}>откупи</button> : null}
                       </span>
                     </div>
                   );

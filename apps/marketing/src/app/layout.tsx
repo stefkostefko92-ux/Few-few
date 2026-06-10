@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false, email: false, address: false },
   alternates: {
     canonical: "/",
-    languages: { bg: "/", it: "/it/", en: "/en/", "x-default": "/" },
+    languages: { bg: "/", "x-default": "/" },
   },
   openGraph: {
     type: "website",

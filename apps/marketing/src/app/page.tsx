@@ -25,6 +25,18 @@ const GAME_GLYPH: Record<string, string> = {
   EIGHTBALL: "🎱",
   NINEBALL: "⑨",
   SNOOKER: "🔴",
+  WAR: "⚔",
+  GOFISH: "🐟",
+  KENT: "♤",
+  DRAUGHTS: "⛀",
+  LUDO: "🎲",
+  RUMMY: "🃏",
+  DOMINO: "🁫",
+  BRIDGE: "♢",
+  BATTLESHIP: "⚓",
+  DICE: "⚄",
+  BINGO: "🔵",
+  WORDS: "✍",
 };
 
 const FEATURES = [
@@ -158,7 +170,7 @@ export default function Home() {
         <h2>Игрите</h2>
         <p className="lp-section-sub">Всяка с пълни правила и собствена премиум маса.</p>
         <div className="lp-games">
-          {GAME_CONTENT.map((g) => (
+          {GAME_CONTENT.slice(0, 12).map((g) => (
             <Link key={g.key} href={`/games/${g.slug}/`} className="lp-game">
               <div className="lp-game-glyph" aria-hidden>
                 {GAME_GLYPH[g.key] ?? "♠"}
