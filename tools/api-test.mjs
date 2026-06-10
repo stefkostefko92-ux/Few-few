@@ -88,6 +88,17 @@ await test('getUserAttributes computes costs via floor((bought*incr+base)*factor
   assert.equal(c.DEX, 30);    // floor((0+15)*2)
 });
 
+await test('getUserAttributes tolerates <int> type tags (not just <i4>)', async () => {
+  const a = makeApi();
+  a.setXml(resp(
+    m('attributeCostBase', 'int', 15) + m('attributeCostFactor', 'double', '2.0') + m('attributeCostIncrement', 'int', 5) +
+    m('str_bought', 'int', 10) + m('dex_bought', 'int', 0) + m('con_bought', 'int', 0) + m('int_bought', 'int', 0)
+  ));
+  const c = await a.TB.Api.getUserAttributes();
+  assert.equal(c.STR, 130);
+  assert.equal(c.DEX, 30);
+});
+
 await test('getCircle parses node colon-strings into number arrays', async () => {
   const a = makeApi();
   a.setXml(resp(

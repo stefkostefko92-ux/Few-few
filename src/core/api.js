@@ -47,6 +47,39 @@
 
   function num(v) { const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; }
 
+  // Tolerant numeric lookup: a value may be tagged <i4>, <int> or <double>, or
+  // sent as bare text inside <value>. Returns a finite number or null.
+  function findNum(node, name) {
+    for (const t of ['i4', 'int', 'double']) {
+      const v = findValue(node, name, t);
+      if (v != null && v !== '') { const n = parseFloat(v); if (Number.isFinite(n)) return n; }
+    }
+    // Bare <value>text</value> with no inner type tag.
+    const members = Array.from(node.getElementsByTagName('member'));
+    const member = members.find((m) => {
+      const nm = m.getElementsByTagName('name')[0];
+      return nm && nm.textContent === name;
+    });
+    if (member) {
+      const value = member.getElementsByTagName('value')[0];
+      if (value && !value.children.length) {
+        const n = parseFloat(value.textContent);
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    return null;
+  }
+
+  // One-time dump of the member names in a response, so an unexpected field
+  // layout can be diagnosed from the in-game log instead of failing silently.
+  const _dumped = new Set();
+  function dumpMembers(doc, label) {
+    if (_dumped.has(label)) return;
+    _dumped.add(label);
+    const names = Array.from(doc.getElementsByTagName('name')).map((n) => n.textContent);
+    Logger.warn(`[api] ${label}: unexpected fields -> ${names.join(', ') || '(none)'}`);
+  }
+
   // Track the character level when a response carries it; bump the level-up
   // counter and (optionally) notify on an increase.
   function noteLevel(doc) {
@@ -157,16 +190,21 @@
     async getUserAttributes() {
       const doc = await rpc('GetUserAttributes', []);
       noteLevel(doc);
-      const base = parseFloat(findValue(doc, 'attributeCostBase', 'i4'));
-      if (Number.isNaN(base)) return {};   // missing cost fields: don't patch NaN costs
-      const factor = parseFloat(findValue(doc, 'attributeCostFactor', 'double'));
-      const increment = parseFloat(findValue(doc, 'attributeCostIncrement', 'i4'));
+      const base = findNum(doc, 'attributeCostBase');
+      const factor = findNum(doc, 'attributeCostFactor');
+      const increment = findNum(doc, 'attributeCostIncrement');
+      if (base == null || factor == null || increment == null) {
+        // Don't patch NaN costs; surface the actual field names once so the
+        // layout can be checked against the live server.
+        dumpMembers(doc, 'GetUserAttributes');
+        return {};
+      }
       const calc = (bought) => Math.floor((base + bought * increment) * factor);
       const costs = {
-        STR: calc(num(findValue(doc, 'str_bought', 'i4')) || 0),
-        DEX: calc(num(findValue(doc, 'dex_bought', 'i4')) || 0),
-        CON: calc(num(findValue(doc, 'con_bought', 'i4')) || 0),
-        INT: calc(num(findValue(doc, 'int_bought', 'i4')) || 0)
+        STR: calc(findNum(doc, 'str_bought') || 0),
+        DEX: calc(findNum(doc, 'dex_bought') || 0),
+        CON: calc(findNum(doc, 'con_bought') || 0),
+        INT: calc(findNum(doc, 'int_bought') || 0)
       };
       State.patch({ attributeCosts: costs });
       return costs;
@@ -179,16 +217,16 @@
       ]);
       noteLevel(doc);
       // Response echoes new costs; re-read them.
-      const base = parseFloat(findValue(doc, 'attributeCostBase', 'i4'));
-      if (!Number.isNaN(base)) {
-        const factor = parseFloat(findValue(doc, 'attributeCostFactor', 'double'));
-        const increment = parseFloat(findValue(doc, 'attributeCostIncrement', 'i4'));
+      const base = findNum(doc, 'attributeCostBase');
+      const factor = findNum(doc, 'attributeCostFactor');
+      const increment = findNum(doc, 'attributeCostIncrement');
+      if (base != null && factor != null && increment != null) {
         const calc = (b) => Math.floor((base + b * increment) * factor);
         State.patch({ attributeCosts: {
-          STR: calc(num(findValue(doc, 'str_bought', 'i4')) || 0),
-          DEX: calc(num(findValue(doc, 'dex_bought', 'i4')) || 0),
-          CON: calc(num(findValue(doc, 'con_bought', 'i4')) || 0),
-          INT: calc(num(findValue(doc, 'int_bought', 'i4')) || 0)
+          STR: calc(findNum(doc, 'str_bought') || 0),
+          DEX: calc(findNum(doc, 'dex_bought') || 0),
+          CON: calc(findNum(doc, 'con_bought') || 0),
+          INT: calc(findNum(doc, 'int_bought') || 0)
         } });
       }
     },
