@@ -21,6 +21,14 @@ C19;Funzionale;PRG_Idraulico.st;Avviamento stella-triangolo pompa (idraulico);os
 C20;Funzionale;PRG_Idraulico.st;Discesa per gravita - pompa ferma (idraulico);osservazione;
 C21;Funzionale;PRG_*.st;Mancanza rete: riporto/discesa emergenza al piano;prova mancanza rete;
 C22;Funzionale;EN 81-20 5.4.10;Allarme bidirezionale e comunicazione cabina;prova pulsante allarme;
+C28;Sicurezza;EN 81-28 4.1;Allarme attivato solo dopo filtro temporale sul pulsante;prova pressione breve/prolungata;
+C29;Sicurezza;EN 81-28 4.2;Pittogramma giallo (allarme inviato) e verde (collegamento);prova visiva cabina;
+C30;Sicurezza;EN 81-28 4.3;Autonomia batteria >= 1h comunicazione dopo mancanza rete;prova scarica/dichiarazione;
+C31;Sicurezza;EN 81-28 4.4;Test automatico periodico (<= 3 giorni) di linea e batteria;verifica log/prova;
+C32;Accessibilita;EN 81-70 5.4.2;Tempo sosta porte esteso su chiamata accessibile;misura tempo porte;
+C33;Accessibilita;EN 81-70 5.4.3;Segnalazioni acustiche e visive di arrivo/direzione;prova;
+C34;Cybersecurity;CRA 2024 Annex I;Nessuna password in chiaro: hash salati + lockout anti brute-force;ispezione firmware/log;
+C35;Cybersecurity;CRA 2024 Annex I;Audit log persistente degli accessi e delle modifiche parametri;verifica /audit.log;
 C23;EMC;EN 12015/12016;Compatibilita elettromagnetica (emissione/immunita);dichiarazione/prova;
 C24;Documentazione;2014/33/UE;Dichiarazione di conformita UE + marcatura CE;verifica documentale;
 C25;Documentazione;DPR 162/99;Verifica/collaudo da Organismo Notificato o soggetto abilitato;verbale;

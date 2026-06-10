@@ -68,6 +68,8 @@ class Parametri:
     relivell_abilitato: bool = True
     star_delta_time: float = 1.5
     gong: bool = True
+    tempo_filtro_allarme: float = 3.0      # EN 81-28
+    tempo_porte_accessibile: float = 10.0  # EN 81-70
 
 
 @dataclass
@@ -90,6 +92,13 @@ class Inputs:
     chiamate_cabina: int = 0          # bitmask
     chiamate_piano_su: int = 0
     chiamate_piano_giu: int = 0
+    # EN 81-28 allarme / EN 81-70 accessibilita
+    pulsante_allarme: bool = False
+    comm_ok: bool = True
+    batteria_allarme_ok: bool = True
+    riscontro_oper: bool = False
+    reset_allarme: bool = False
+    chiamata_accessibile: bool = False
 
 
 @dataclass
@@ -108,6 +117,11 @@ class Outputs:
     km_chiudi: bool = False
     gong: bool = False
     fuori_servizio: bool = False
+    # EN 81-28
+    allarme_registrato: bool = False
+    comunicazione_attiva: bool = False
+    avvia_combinatore: bool = False
+    guasto_allarme: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +162,7 @@ class FBPorte:
         self.porte_chiuse = False
         self.porte_aperte = False
         self.blocco_sovracc = False
+        self.pronto_chiusura = False   # dwell porte trascorso
 
     def step(self, comando_apri, richiesta_chiudi, i: Inputs, in_zona_porta,
              t_attesa, nudging):
@@ -161,6 +176,7 @@ class FBPorte:
             self.apertura_in_corso = False
 
         attesa_q = self.ton_attesa(i.porta_aperta, cycles(t_attesa))
+        self.pronto_chiusura = attesa_q
         self.apri = False
         self.chiudi = False
 
@@ -236,6 +252,29 @@ class FBChiamate:
 
 
 # ---------------------------------------------------------------------------
+#  FB_AllarmeEmergenza (EN 81-28:2022)
+# ---------------------------------------------------------------------------
+class AlarmSystem:
+    def __init__(self):
+        self.ton_filtro = TON()
+        self.registrato = False
+        self.comunicazione = False
+        self.avvia = False
+        self.guasto = False
+
+    def step(self, i: Inputs, filtro_s: float):
+        if self.ton_filtro(i.pulsante_allarme, cycles(filtro_s)):
+            self.registrato = True          # latch fino al reset tecnico
+        if i.reset_allarme:
+            self.registrato = False
+            self.comunicazione = False
+        self.avvia = self.registrato and not self.comunicazione
+        if self.registrato and i.riscontro_oper:
+            self.comunicazione = True
+        self.guasto = (not i.batteria_allarme_ok) or (not i.comm_ok)
+
+
+# ---------------------------------------------------------------------------
 #  Macchina a stati (PRG_Geared / PRG_Idraulico)
 # ---------------------------------------------------------------------------
 class Ascensore:
@@ -247,6 +286,7 @@ class Ascensore:
         self.fb_sic = FBSicurezza()
         self.fb_porte = FBPorte()
         self.fb_call = FBChiamate(n_piani)
+        self.fb_allarme = AlarmSystem()
         self.stato = Stato.RIPOSO
         self.direzione = Direzione.FERMO
         self.piano_corrente = 0
@@ -265,9 +305,19 @@ class Ascensore:
                           i.chiamate_piano_giu, self.piano_corrente,
                           self.direzione, reset_target=(self.stato == Stato.APRI_PORTE))
 
+        # EN 81-28 allarme di emergenza
+        self.fb_allarme.step(i, self.par.tempo_filtro_allarme)
+        o.allarme_registrato = self.fb_allarme.registrato
+        o.comunicazione_attiva = self.fb_allarme.comunicazione
+        o.avvia_combinatore = self.fb_allarme.avvia
+        o.guasto_allarme = self.fb_allarme.guasto
+
         comando_apri = self.stato in (Stato.APRI_PORTE, Stato.ATTESA)
+        # EN 81-70: sosta porte estesa per chiamata accessibile
+        t_sosta = (self.par.tempo_porte_accessibile if i.chiamata_accessibile
+                   else self.par.tempo_porte_aperte)
         self.fb_porte.step(comando_apri, self.stato == Stato.CHIUDI_PORTE, i,
-                          self.fb_sic.in_zona_porta, self.par.tempo_porte_aperte,
+                          self.fb_sic.in_zona_porta, t_sosta,
                           self.par.nudging)
         o.km_apri = self.fb_porte.apri
         o.km_chiudi = self.fb_porte.chiudi
@@ -369,12 +419,10 @@ class Ascensore:
                 self.stato = Stato.ATTESA
 
         elif s == Stato.ATTESA:
+            # mantiene le porte aperte per il tempo di sosta (dwell); esce
+            # solo quando il door manager segnala 'pronto_chiusura'
             o.km_apri = self.fb_porte.apri
-            if self.fb_call.chiamate_attive:
-                self.stato = Stato.CHIUDI_PORTE
-            elif self.fb_porte.porte_chiuse:
-                self.stato = Stato.RIPOSO
-            else:
+            if self.fb_porte.pronto_chiusura:
                 self.stato = Stato.CHIUDI_PORTE
 
         elif s == Stato.REVISIONE:
@@ -482,11 +530,7 @@ class Ascensore:
 
         elif s == Stato.ATTESA:
             o.km_apri = self.fb_porte.apri
-            if self.fb_call.chiamate_attive:
-                self.stato = Stato.CHIUDI_PORTE
-            elif self.fb_porte.porte_chiuse:
-                self.stato = Stato.RIPOSO
-            else:
+            if self.fb_porte.pronto_chiusura:
                 self.stato = Stato.CHIUDI_PORTE
 
         elif s == Stato.REVISIONE:
@@ -596,6 +640,8 @@ PARAM_META = {
     "door_nudging":      ("nudging",            0,   1,    "NS"),
     "arrival_gong":      ("gong",               0,   1,    "NS"),
     "star_delta_time":   ("star_delta_time",    0.5, 3.0,  "NS"),
+    "alarm_filter_time": ("tempo_filtro_allarme", 1.0, 10.0, "NS"),
+    "door_time_disabled":("tempo_porte_accessibile", 5.0, 30.0, "NS"),
     "inspection_speed":  ("velocita_ispezione", 0.10, 0.63, "SR"),
     "releveling_enable": ("relivell_abilitato", 0,   1,    "SR"),
     # esempi di sola lettura

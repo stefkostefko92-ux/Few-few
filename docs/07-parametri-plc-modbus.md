@@ -51,6 +51,8 @@ PLC come **Modbus RTU slave** (slave id 1, 19200 8E1). Area `awModbusHR[0..63]`.
 | 13 | Tempo avviamento Y/Δ (idr.) | ×100 | TempoStellaTriangolo |
 | 14 | Ritardo valvola discesa (idr.) | ×100 | RitardoValvolaDiscesa |
 | 15 | Rapporto alta velocità (geared) | ×100 | RapportoAltaVelocita |
+| 16 | Filtro pulsante allarme (EN 81-28) | ×10 | TempoFiltroAllarme |
+| 17 | Sosta porte accessibilità (EN 81-70) | ×1 | TempoPorteAccessibile |
 
 ### Scrivibili — SAFETY-RELEVANT (SR), reg 20..27 — **richiede chiave -S-EN**
 | Reg | Parametro | Scala | Limite normativo |

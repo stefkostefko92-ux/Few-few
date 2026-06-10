@@ -59,9 +59,16 @@ pio device monitor       # log seriale / audit
 - `200` ok · `401` non autenticato/ruolo errato · `403` sola lettura (SC/RO)
 - `422` valore fuori range normativo · `423` chiave non inserita (SR) · `502` errore Modbus
 
-## Hardening per produzione (NON incluso nel prototipo)
-- Password con hash + storage in NVS cifrata; rotazione credenziali.
+## Cybersecurity (CRA + EN 81-20) — implementato nel prototipo
+Vedi [`../../docs/09-cybersecurity-cra.md`](../../docs/09-cybersecurity-cra.md).
+- **Password con hash SHA-256 salati** (nessun segreto in chiaro), confronto a tempo costante.
+- **Lockout anti brute-force**: 5 tentativi → blocco 60 s (HTTP 429).
+- **Audit log persistente** su LittleFS (`/audit.log`) con rotazione.
+- WiFi in **AP locale** WPA2/WPA3, nessuna esposizione a Internet.
+- Doppio gate (firmware + PLC) sulla chiave fisica per i parametri safety.
+
+## Hardening ulteriore per produzione (TODO)
+- KDF lento (PBKDF2/scrypt/Argon2) con salt per-utente; rotazione credenziali.
 - TLS (HTTPS) o accesso solo da rete manutenzione isolata.
-- Rate limiting / lockout dopo N tentativi.
-- Audit log persistente su file (append) invece che seriale.
+- Aggiornamenti firmware firmati + SBOM; gestione vulnerabilità (CRA).
 - Watchdog e gestione robusta timeout Modbus.

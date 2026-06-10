@@ -86,6 +86,23 @@ VAR_GLOBAL
     diContatoreCorse : DINT := 0;        (* contatore corse (telemetria) *)
 END_VAR
 
+(* ------------- ALLARME EMERGENZA EN 81-28 / ACCESSIBILITA EN 81-70 ----- *)
+VAR_GLOBAL
+    (* Ingressi *)
+    xPulsanteAllarme   : BOOL AT %I8.1;  (* pulsante allarme cabina *)
+    xUnitaCommOk       : BOOL AT %I8.2;  (* combinatore/linea ok *)
+    xBatteriaAllarmeOk : BOOL AT %I8.3;  (* batteria allarme ok *)
+    xRiscontroOper     : BOOL AT %I8.4;  (* soccorso ha preso in carico *)
+    xResetAllarme      : BOOL AT %I8.5;  (* reset tecnico *)
+    xChiamataAccessibile : BOOL AT %I8.6;(* chiamata da pulsante accessibile (EN 81-70) *)
+
+    (* Uscite *)
+    xAllarmeRegistrato   : BOOL AT %Q6.0; (* pittogramma GIALLO *)
+    xComunicazioneAttiva : BOOL AT %Q6.1; (* pittogramma VERDE *)
+    xAvviaCombinatore    : BOOL AT %Q6.2; (* avvio autodialer *)
+    xGuastoAllarme       : BOOL AT %Q6.3; (* guasto sistema allarme *)
+END_VAR
+
 (* ------------------------- VARIABILI INTERNE -------------------------- *)
 VAR_GLOBAL
     Par           : ST_Parametri;        (* parametri (anche via Modbus/WiFi) *)

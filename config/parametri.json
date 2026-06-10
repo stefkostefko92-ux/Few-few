@@ -29,6 +29,8 @@
     { "id": "star_delta_time", "label": "Tempo avviamento Y/D (idraulico)","reg": 13,"scale": 100,"min": 0.5,  "max": 3.0,  "def": 1.5,  "unit": "s",     "cat": "NS" },
     { "id": "descent_valve_delay","label": "Ritardo valvola discesa (idr.)","reg": 14,"scale": 100,"min": 0.0,"max": 2.0,"def": 0.5,"unit": "s","cat": "NS" },
     { "id": "high_speed_ratio","label": "Rapporto alta velocita (geared 2V)","reg": 15,"scale": 100,"min": 0.5,"max": 1.0,"def": 1.0,"unit": "p.u.","cat": "NS" },
+    { "id": "alarm_filter_time","label": "Filtro pulsante allarme (EN 81-28)","reg": 16,"scale": 10,"min": 1.0,"max": 10.0,"def": 3.0,"unit": "s","cat": "NS" },
+    { "id": "door_time_disabled","label": "Sosta porte accessibilita (EN 81-70)","reg": 17,"scale": 1,"min": 5,"max": 30,"def": 10,"unit": "s","cat": "NS" },
 
     { "id": "releveling_enable","label": "Rilivellamento porte aperte","reg": 20,"scale": 1,  "min": 0,    "max": 1,    "def": 1,    "unit": "bool",  "cat": "SR" },
     { "id": "door_zone_window","label": "Finestra zona porta",      "reg": 21, "scale": 1,   "min": 10,   "max": 80,   "def": 35,   "unit": "mm",    "cat": "SR" },

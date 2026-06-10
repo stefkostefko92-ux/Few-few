@@ -25,6 +25,7 @@ VAR_OUTPUT
     xPorteChiuse    : BOOL;   (* porte completamente chiuse (consenso marcia) *)
     xPorteAperte    : BOOL;
     xBloccoSovracc  : BOOL;   (* segnalazione sovraccarico: non parte *)
+    xProntoChiusura : BOOL;   (* dwell trascorso: si puo' uscire da ATTESA *)
 END_VAR
 VAR
     tonAttesa : TON;
@@ -45,6 +46,7 @@ END_IF
 
 (* --- temporizzazione attesa con porte aperte --- *)
 tonAttesa(IN := xPortaAperta, PT := tAttesa);
+xProntoChiusura := tonAttesa.Q;   (* dwell porte trascorso *)
 
 (* --- decisione apertura/chiusura --- *)
 xApri := FALSE;

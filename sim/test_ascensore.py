@@ -238,5 +238,66 @@ class TestParametriWeb(unittest.TestCase):
         self.assertGreater(t_lungo, t_corto)   # più tempo Y/Δ -> valvola dopo
 
 
+class TestAllarmeEN8128(unittest.TestCase):
+    """Sistema di allarme e comunicazione di emergenza (EN 81-28:2022)."""
+
+    def test_filtro_pressione_breve_non_attiva(self):
+        sim = Simulatore("geared", par=Parametri(tempo_filtro_allarme=3.0))
+        sim.i.pulsante_allarme = True
+        sim.run(20)                 # 2 s < filtro 3 s
+        sim.i.pulsante_allarme = False
+        self.assertFalse(sim.asc.out.allarme_registrato)
+
+    def test_pressione_prolungata_registra_e_chiama(self):
+        sim = Simulatore("geared", par=Parametri(tempo_filtro_allarme=2.0))
+        sim.i.pulsante_allarme = True
+        sim.run(40)                 # 4 s > filtro 2 s
+        self.assertTrue(sim.asc.out.allarme_registrato)
+        self.assertTrue(sim.asc.out.avvia_combinatore)   # avvia autodialer
+        self.assertFalse(sim.asc.out.comunicazione_attiva)
+
+    def test_comunicazione_e_reset(self):
+        sim = Simulatore("geared", par=Parametri(tempo_filtro_allarme=1.0))
+        sim.i.pulsante_allarme = True
+        sim.run(20)
+        sim.i.pulsante_allarme = False
+        sim.i.riscontro_oper = True             # soccorso prende in carico
+        sim.run(5)
+        self.assertTrue(sim.asc.out.comunicazione_attiva)
+        self.assertFalse(sim.asc.out.avvia_combinatore)  # gia' in comunicazione
+        sim.i.riscontro_oper = False
+        sim.i.reset_allarme = True              # reset tecnico
+        sim.run(3)
+        self.assertFalse(sim.asc.out.allarme_registrato)
+
+    def test_guasto_batteria_o_linea(self):
+        sim = Simulatore("geared")
+        sim.i.batteria_allarme_ok = False
+        sim.run(3)
+        self.assertTrue(sim.asc.out.guasto_allarme)
+
+
+class TestAccessibilitaEN8170(unittest.TestCase):
+    """Sosta porte estesa per chiamata accessibile (EN 81-70:2021)."""
+
+    def _durata_porte_aperte(self, accessibile):
+        par = Parametri(tempo_porte_aperte=0.5, tempo_porte_accessibile=2.0)
+        sim = Simulatore("geared", piano_iniziale=0, par=par)
+        sim.i.chiamata_accessibile = accessibile
+        sim.i.chiamate_cabina = 1 << 2
+        cicli_aperte = [0]
+
+        def osserva(t, s):
+            if s.plant.door >= 1.0:
+                cicli_aperte[0] += 1
+        sim.run(500, on_cycle=osserva)
+        return cicli_aperte[0]
+
+    def test_chiamata_accessibile_estende_sosta(self):
+        normale = self._durata_porte_aperte(False)
+        accessibile = self._durata_porte_aperte(True)
+        self.assertGreater(accessibile, normale)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

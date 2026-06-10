@@ -18,6 +18,17 @@ xControlloFreno;%I1.7;X1:26;DI;IN;24Vdc;0.75;geared;-S-FRE;Microcontatti control
 wChiamateCabina;%IW2;X2:1-6;DI;IN;24Vdc;0.5;both;-SB-CAB-0..5;Pulsanti chiamata cabina (bus/parallelo)
 wChiamatePianoSu;%IW4;X2:7-12;DI;IN;24Vdc;0.5;both;-SB-PIA-U;Chiamate piano salita
 wChiamatePianoGiu;%IW6;X2:13-18;DI;IN;24Vdc;0.5;both;-SB-PIA-D;Chiamate piano discesa
+xAbilitaParam;%I8.0;X1:27;DI;IN;24Vdc;0.75;both;-S-EN;Chiave abilitazione parametri safety (web)
+xPulsanteAllarme;%I8.1;X5:1;DI;IN;24Vdc;0.75;both;-SB-ALL;Pulsante allarme cabina (EN 81-28)
+xUnitaCommOk;%I8.2;X5:2;DI;IN;24Vdc;0.75;both;-A-COMB;Combinatore/linea ok (EN 81-28)
+xBatteriaAllarmeOk;%I8.3;X5:3;DI;IN;24Vdc;0.75;both;-G-BATT;Batteria allarme ok (EN 81-28)
+xRiscontroOper;%I8.4;X5:4;DI;IN;24Vdc;0.75;both;-A-COMB;Chiamata presa in carico (EN 81-28)
+xResetAllarme;%I8.5;X5:5;DI;IN;24Vdc;0.75;both;-SB-RST;Reset tecnico allarme (EN 81-28)
+xChiamataAccessibile;%I8.6;X5:6;DI;IN;24Vdc;0.75;both;-SB-ACC;Pulsante chiamata accessibile (EN 81-70)
+xAllarmeRegistrato;%Q6.0;X6:1;DQ;OUT;24Vdc;0.5;both;-H-ALL-Y;Pittogramma giallo allarme inviato (EN 81-28)
+xComunicazioneAttiva;%Q6.1;X6:2;DQ;OUT;24Vdc;0.5;both;-H-ALL-G;Pittogramma verde collegamento (EN 81-28)
+xAvviaCombinatore;%Q6.2;X6:3;DQ;OUT;24Vdc;0.5;both;-A-COMB;Avvio autodialer (EN 81-28)
+xGuastoAllarme;%Q6.3;X6:4;DQ;OUT;24Vdc;0.5;both;-H-ALL-F;Guasto sistema allarme (EN 81-28)
 xKM_Salita;%Q0.0;X3:1;DQ;OUT;24Vdc/rele;1.0;both;-KM-S;Contattore salita
 xKM_Discesa;%Q0.1;X3:2;DQ;OUT;24Vdc/rele;1.0;both;-KM-D;Contattore discesa
 xKM_Veloce;%Q0.2;X3:3;DQ;OUT;24Vdc/rele;1.0;geared;-KM-V;Contattore alta velocita'

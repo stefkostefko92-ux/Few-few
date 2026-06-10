@@ -16,12 +16,14 @@ VAR
     fbPorte : FB_GestionePorte;
     fbCall  : FB_GestioneChiamate;
     fbParam : FB_ParametriModbus;   (* interfaccia parametri web/Modbus *)
+    fbAllarme : FB_AllarmeEmergenza;(* EN 81-28 allarme/comunicazione *)
 
     iTarget   : INT := -1;
     tonArresto: TON;
     tonGong   : TON;
     xVeloce   : BOOL;     (* richiesta alta velocita' *)
     iGuasto   : INT;
+    tSostaPorte : TIME;   (* sosta porte (estesa se chiamata accessibile) *)
 END_VAR
 
 (* ------------------------------------------------------------------ *)
@@ -73,8 +75,28 @@ fbCall(
     xResetTarget    := (eStato = ST_APRI_PORTE));
 
 (* ------------------------------------------------------------------ *)
-(* 3) GESTIONE PORTE                                                   *)
+(* 2b) ALLARME E COMUNICAZIONE DI EMERGENZA (EN 81-28)                 *)
 (* ------------------------------------------------------------------ *)
+fbAllarme(
+    xPulsanteAllarme := xPulsanteAllarme,
+    xUnitaCommOk     := xUnitaCommOk,
+    xBatteriaOk      := xBatteriaAllarmeOk,
+    xRiscontroOper   := xRiscontroOper,
+    xResetTecnico    := xResetAllarme,
+    rTempoFiltro     := Par.TempoFiltroAllarme);
+xAllarmeRegistrato   := fbAllarme.xAllarmeRegistrato;
+xComunicazioneAttiva := fbAllarme.xComunicazioneAttiva;
+xAvviaCombinatore    := fbAllarme.xAvviaCombinatore;
+xGuastoAllarme       := fbAllarme.xGuastoAllarme;
+
+(* ------------------------------------------------------------------ *)
+(* 3) GESTIONE PORTE  (sosta estesa per chiamata accessibile EN 81-70) *)
+(* ------------------------------------------------------------------ *)
+IF xChiamataAccessibile THEN
+    tSostaPorte := Par.TempoPorteAccessibile;
+ELSE
+    tSostaPorte := Par.TempoPorteAperte;
+END_IF
 fbPorte(
     xComandoApri     := (eStato = ST_APRI_PORTE) OR (eStato = ST_ATTESA),
     xRichiestaChiudi := (eStato = ST_CHIUDI_PORTE),
@@ -83,7 +105,7 @@ fbPorte(
     xFotocellula     := xFotocellula,
     xSovraccarico    := xSovraccarico,
     xInZonaPorta     := fbSic.xInZonaPorta,
-    tAttesa          := Par.TempoPorteAperte,
+    tAttesa          := tSostaPorte,
     xNudging         := Par.NudgingAbilitato);
 
 xKM_ApriPorte   := fbPorte.xApri;
@@ -201,16 +223,10 @@ CASE eStato OF
         END_IF
 
     ST_ATTESA:
-        (* attende temporizzazione porte; poi se altre chiamate richiude *)
-        IF fbCall.xChiamateAttive THEN
+        (* mantiene le porte aperte per il tempo di sosta (dwell, esteso se
+           chiamata accessibile EN 81-70); esce solo a dwell trascorso *)
+        IF fbPorte.xProntoChiusura THEN
             eStato := ST_CHIUDI_PORTE;
-        ELSE
-            (* nessuna chiamata: resta a riposo a porte chiuse *)
-            IF fbPorte.xPorteChiuse THEN
-                eStato := ST_RIPOSO;
-            ELSE
-                eStato := ST_CHIUDI_PORTE;
-            END_IF
         END_IF
 
     ST_REVISIONE:

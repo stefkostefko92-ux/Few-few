@@ -26,6 +26,7 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 #include <ModbusMaster.h>
+#include "mbedtls/sha256.h"
 
 // ----------------------------- CONFIG HW -----------------------------------
 #define PIN_RS485_RX   16   // ESP32 RX2  <- MAX485 RO
@@ -41,11 +42,20 @@
 static const char* AP_SSID = "QUADRO-ASC-MANUT";
 static const char* AP_PASS = "Cambiami-Subito-2026!";   // WPA2, da cambiare
 
-// Credenziali demo (in produzione: hash + storage sicuro, non in chiaro!)
-static const char* OPERATOR_USER = "operator";
-static const char* OPERATOR_PASS = "op-2026";
-static const char* ADMIN_USER    = "admin";
-static const char* ADMIN_PASS    = "admin-2026";
+// --------------------- SICUREZZA / CREDENZIALI (CRA, EN 81-20 §5.12) --------
+// Nessuna password in chiaro: si memorizzano gli hash SHA-256 salati.
+// hash = SHA-256( SALT + password ).  In produzione usare un KDF lento
+// (PBKDF2/scrypt) con salt per-utente e cambio password al primo accesso.
+static const char* AUTH_SALT      = "few-few-quadro-2026";
+static const char* OPERATOR_USER  = "operator";
+static const char* OPERATOR_HASH  = "f72d894320f18165f22f1c31c24719bc2c28cae2133b0754cb41a71f330fec09";
+static const char* ADMIN_USER     = "admin";
+static const char* ADMIN_HASH     = "ff455de934d6e3c157af12eace5c66fdc75de0ece794027c6721583712dc2209";
+
+// Anti brute-force: lockout dopo N tentativi falliti entro la finestra.
+static const uint8_t  MAX_TENTATIVI   = 5;
+static const uint32_t LOCKOUT_MS      = 60UL * 1000UL;    // 60 s
+static const uint32_t AUDIT_MAX_BYTES = 32768;            // rotazione log
 
 // ----------------------------- STATO ---------------------------------------
 ModbusMaster   node;
@@ -56,6 +66,10 @@ JsonDocument   paramDb;          // mappa parametri caricata da /parametri.json
 struct Session { String token; String role; uint32_t expiresMs; };
 Session g_session = { "", "", 0 };
 static const uint32_t SESSION_TTL_MS = 10UL * 60UL * 1000UL;  // 10 minuti
+
+// Stato anti brute-force
+uint8_t  g_tentativiFalliti = 0;
+uint32_t g_lockoutFineMs    = 0;
 
 // ----------------------------- MODBUS DIR ----------------------------------
 void preTx()  { digitalWrite(PIN_RS485_DE, HIGH); }
@@ -85,10 +99,42 @@ String bearer(AsyncWebServerRequest* req) {
   return "";
 }
 
+// SHA-256 esadecimale di una stringa (mbedtls, disponibile su ESP32).
+String sha256hex(const String& in) {
+  uint8_t hash[32];
+  mbedtls_sha256_context ctx;
+  mbedtls_sha256_init(&ctx);
+  mbedtls_sha256_starts(&ctx, 0);  // 0 = SHA-256
+  mbedtls_sha256_update(&ctx, (const unsigned char*)in.c_str(), in.length());
+  mbedtls_sha256_finish(&ctx, hash);
+  mbedtls_sha256_free(&ctx);
+  char hex[65];
+  for (int i = 0; i < 32; i++) sprintf(hex + i * 2, "%02x", hash[i]);
+  hex[64] = 0;
+  return String(hex);
+}
+
+// Confronto a tempo costante per non rivelare info via timing.
+bool secureEquals(const String& a, const String& b) {
+  if (a.length() != b.length()) return false;
+  uint8_t diff = 0;
+  for (size_t i = 0; i < a.length(); i++) diff |= (a[i] ^ b[i]);
+  return diff == 0;
+}
+
+// Audit log PERSISTENTE su LittleFS con rotazione (CRA: tracciabilità eventi).
 void auditLog(const String& who, const String& id, float value, const char* result) {
-  // Prototipo: log seriale. In produzione -> file append su LittleFS/NVS.
   Serial.printf("[AUDIT] user=%s param=%s value=%.3f result=%s t=%lu\n",
                 who.c_str(), id.c_str(), value, result, millis());
+  // rotazione se il file supera la soglia
+  File st = LittleFS.open("/audit.log", "r");
+  if (st && st.size() > AUDIT_MAX_BYTES) { st.close(); LittleFS.remove("/audit.log"); }
+  else if (st) st.close();
+  File f = LittleFS.open("/audit.log", "a");
+  if (f) {
+    f.printf("%lu;%s;%s;%.3f;%s\n", millis(), who.c_str(), id.c_str(), value, result);
+    f.close();
+  }
 }
 
 // Legge un holding register dal controller. Ritorna true se ok.
@@ -106,16 +152,37 @@ bool modbusWrite(uint16_t reg, uint16_t value) {
 
 // POST /api/login   { "user":"...", "pass":"..." }
 void handleLogin(AsyncWebServerRequest* req, JsonVariant& body) {
+  // --- lockout anti brute-force ---
+  if (g_lockoutFineMs && millis() < g_lockoutFineMs) {
+    uint32_t rem = (g_lockoutFineMs - millis()) / 1000;
+    auditLog("?", "login", 0, "LOCKED");
+    JsonDocument e; e["error"] = "accesso bloccato (troppi tentativi)"; e["retry_s"] = rem;
+    String out; serializeJson(e, out);
+    req->send(429, "application/json", out);
+    return;
+  }
+
   String user = body["user"] | "";
   String pass = body["pass"] | "";
+  String h = sha256hex(String(AUTH_SALT) + pass);  // hash salato del tentativo
   String role;
-  if (user == ADMIN_USER && pass == ADMIN_PASS)            role = "admin";
-  else if (user == OPERATOR_USER && pass == OPERATOR_PASS) role = "operator";
-  else { req->send(401, "application/json", "{\"error\":\"credenziali non valide\"}"); return; }
+  if (user == ADMIN_USER && secureEquals(h, ADMIN_HASH))         role = "admin";
+  else if (user == OPERATOR_USER && secureEquals(h, OPERATOR_HASH)) role = "operator";
+  else {
+    if (++g_tentativiFalliti >= MAX_TENTATIVI) {
+      g_lockoutFineMs = millis() + LOCKOUT_MS;
+      g_tentativiFalliti = 0;
+    }
+    auditLog(user, "login", 0, "FAIL_AUTH");
+    req->send(401, "application/json", "{\"error\":\"credenziali non valide\"}");
+    return;
+  }
 
+  g_tentativiFalliti = 0;
   g_session.token     = String((uint32_t)esp_random(), HEX) + String((uint32_t)esp_random(), HEX);
   g_session.role      = role;
   g_session.expiresMs = millis() + SESSION_TTL_MS;
+  auditLog(user, "login", 0, "OK");
 
   JsonDocument res;
   res["token"] = g_session.token;

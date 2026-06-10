@@ -63,6 +63,25 @@ mai sostitutivi della catena cablata. Applicabilità: `both` = geared + idraulic
 | DQ usati | ~14 | ~16 | Y/Δ + valvole su idraulico |
 | Riserva consigliata | +20% | +20% | prevedere 1 modulo SM 1223 di espansione |
 
+## C-bis. I/O aggiuntivi — allarme EN 81-28 e accessibilità EN 81-70
+
+Morsettiere dedicate **-X5** (ingressi) e **-X6** (uscite). Dettaglio in
+[`../config/lista-io.csv`](../config/lista-io.csv).
+
+| Tag | Indirizzo | Morsetto | Sigla | Norma | Descrizione |
+|-----|:---------:|:--------:|-------|:-----:|-------------|
+| xAbilitaParam | %I8.0 | X1:27 | -S-EN | EN 81-20 | Chiave abilitazione parametri safety (web) |
+| xPulsanteAllarme | %I8.1 | X5:1 | -SB-ALL | EN 81-28 | Pulsante allarme cabina |
+| xUnitaCommOk | %I8.2 | X5:2 | -A-COMB | EN 81-28 | Combinatore/linea ok |
+| xBatteriaAllarmeOk | %I8.3 | X5:3 | -G-BATT | EN 81-28 | Batteria allarme ok |
+| xRiscontroOper | %I8.4 | X5:4 | -A-COMB | EN 81-28 | Chiamata presa in carico |
+| xResetAllarme | %I8.5 | X5:5 | -SB-RST | EN 81-28 | Reset tecnico allarme |
+| xChiamataAccessibile | %I8.6 | X5:6 | -SB-ACC | EN 81-70 | Pulsante chiamata accessibile |
+| xAllarmeRegistrato | %Q6.0 | X6:1 | -H-ALL-Y | EN 81-28 | Pittogramma giallo (allarme inviato) |
+| xComunicazioneAttiva | %Q6.1 | X6:2 | -H-ALL-G | EN 81-28 | Pittogramma verde (collegamento) |
+| xAvviaCombinatore | %Q6.2 | X6:3 | -A-COMB | EN 81-28 | Avvio autodialer |
+| xGuastoAllarme | %Q6.3 | X6:4 | -H-ALL-F | EN 81-28 | Guasto sistema allarme |
+
 ## D. Note di cablaggio (officina)
 
 1. **Separazione**: cavi di potenza e segnali 24 V in canaline distinte; segnali

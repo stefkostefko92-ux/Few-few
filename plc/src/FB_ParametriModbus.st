@@ -64,6 +64,8 @@ Par.PianoVip        := WORD_TO_INT(LIMIT(0, WORD_TO_INT(awHR[12]), 5));
 Par.TempoStellaTriangolo := LIMIT(0.5, RegToReal(awHR[13], 100.0), 3.0);
 Par.RitardoValvolaDiscesa:= LIMIT(0.0, RegToReal(awHR[14], 100.0), 2.0);
 Par.RapportoAltaVelocita := LIMIT(0.5, RegToReal(awHR[15], 100.0), 1.0);
+Par.TempoFiltroAllarme   := LIMIT(1.0, RegToReal(awHR[16], 10.0), 10.0);   (* EN 81-28 *)
+Par.TempoPorteAccessibile:= SecToTime(LIMIT(5.0, RegToReal(awHR[17], 1.0), 30.0)); (* EN 81-70 *)
 
 (* feedback del valore effettivamente applicato (clampato) *)
 awHR[0]  := RealToReg(Par.Accelerazione, 100.0);
@@ -82,6 +84,8 @@ awHR[12] := INT_TO_WORD(Par.PianoVip);
 awHR[13] := RealToReg(Par.TempoStellaTriangolo, 100.0);
 awHR[14] := RealToReg(Par.RitardoValvolaDiscesa, 100.0);
 awHR[15] := RealToReg(Par.RapportoAltaVelocita, 100.0);
+awHR[16] := RealToReg(Par.TempoFiltroAllarme, 10.0);
+awHR[17] := RealToReg(TimeToSec(Par.TempoPorteAccessibile), 1.0);
 
 (* ===================== SAFETY-RELEVANT (gate chiave) ====================== *)
 xSrRifiutato := FALSE;

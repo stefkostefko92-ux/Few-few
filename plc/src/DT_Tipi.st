@@ -56,6 +56,8 @@ STRUCT
     TempoStellaTriangolo : REAL := 1.5;    (* reg 13 s (idraulico) *)
     RitardoValvolaDiscesa: REAL := 0.5;    (* reg 14 s (idraulico) *)
     RapportoAltaVelocita : REAL := 1.0;    (* reg 15 p.u. (geared) *)
+    TempoFiltroAllarme   : REAL := 3.0;    (* reg 16 s  — EN 81-28 filtro pulsante *)
+    TempoPorteAccessibile: TIME := T#10S;  (* reg 17 s  — EN 81-70 sosta porte accessibile *)
 
     (* ---------- SAFETY-RELEVANT (SR) — registri HR 20..27 ---------- *)
     (* Modificabili SOLO con chiave fisica -S-EN (xAbilitaParam). *)
