@@ -309,6 +309,91 @@ function pawnGeometry(): LatheGeometry {
   return new LatheGeometry(pts, 28);
 }
 
+/* ── procedural normal maps (height field → tangent-space normals) ───────── */
+function heightCanvas(S: number, fn: (u: number, v: number) => number): HTMLCanvasElement {
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const ctx = c.getContext("2d")!;
+  const img = ctx.createImageData(S, S);
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const v = Math.max(0, Math.min(1, fn(x / S, y / S))) * 255;
+      const i = (y * S + x) * 4;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+
+function heightToNormal(src: HTMLCanvasElement, strength: number): CanvasTexture {
+  const S = src.width;
+  const sd = src.getContext("2d")!.getImageData(0, 0, S, S).data;
+  const out = document.createElement("canvas");
+  out.width = out.height = S;
+  const octx = out.getContext("2d")!;
+  const od = octx.createImageData(S, S);
+  const at = (x: number, y: number) => sd[(((y + S) % S) * S + ((x + S) % S)) * 4]! / 255;
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const dx = (at(x + 1, y) - at(x - 1, y)) * strength;
+      const dy = (at(x, y + 1) - at(x, y - 1)) * strength;
+      const len = Math.hypot(dx, dy, 1);
+      const i = (y * S + x) * 4;
+      od.data[i] = ((-dx / len) * 0.5 + 0.5) * 255;
+      od.data[i + 1] = ((-dy / len) * 0.5 + 0.5) * 255;
+      od.data[i + 2] = (1 / len) * 0.5 * 255 + 127.5;
+      od.data[i + 3] = 255;
+    }
+  }
+  octx.putImageData(od, 0, 0);
+  const tex = new CanvasTexture(out);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
+  return tex;
+}
+
+const hash2 = (x: number, y: number) => {
+  const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+// The Sobel pass is cached once; callers get a lightweight clone (shares the
+// source canvas) so per-instance disposal never frees the shared singleton.
+const cloneTex = (t: CanvasTexture): CanvasTexture => {
+  const c = t.clone();
+  c.wrapS = c.wrapT = RepeatWrapping;
+  c.needsUpdate = true;
+  return c;
+};
+let _clothN: CanvasTexture | null = null;
+function clothNormal(): CanvasTexture {
+  _clothN ??= heightToNormal(
+    heightCanvas(128, (u, v) => 0.5 + 0.25 * Math.sin(u * Math.PI * 2 * 16) + 0.25 * Math.sin(v * Math.PI * 2 * 16)),
+    2.2,
+  );
+  return cloneTex(_clothN);
+}
+let _woodN: CanvasTexture | null = null;
+function woodNormal(): CanvasTexture {
+  _woodN ??= heightToNormal(
+    heightCanvas(256, (u, v) => {
+      const grain = 0.5 + 0.16 * Math.sin(v * Math.PI * 2 * 5 + Math.sin(u * 9) * 1.6) + 0.08 * Math.sin(v * Math.PI * 2 * 38);
+      return grain + (hash2(Math.floor(u * 64), Math.floor(v * 256)) - 0.5) * 0.05;
+    }),
+    1.6,
+  );
+  return cloneTex(_woodN);
+}
+let _paperN: CanvasTexture | null = null;
+function paperNormal(): CanvasTexture {
+  _paperN ??= heightToNormal(
+    heightCanvas(128, (u, v) => 0.5 + (hash2(Math.floor(u * 128), Math.floor(v * 128)) - 0.5) * 0.6),
+    1.0,
+  );
+  return cloneTex(_paperN);
+}
+
 export class MagnatScene {
   private renderer: WebGLRenderer;
   private composer!: EffectComposer;
@@ -405,8 +490,16 @@ export class MagnatScene {
     const railW = 1.7;
     const railH = 1.15;
 
-    // base (felt) — sits under the whole board incl. rail
-    this.baseMat = new MeshStandardMaterial({ color: new Color("#1a5a36"), roughness: 0.96, metalness: 0 });
+    // base (felt) — sits under the whole board incl. rail; cloth-weave normal
+    const clothN = this.aniso(clothNormal());
+    clothN.repeat.set(46, 46);
+    this.baseMat = new MeshStandardMaterial({
+      color: new Color("#1a5a36"),
+      roughness: 0.96,
+      metalness: 0,
+      normalMap: clothN,
+      normalScale: new Vector2(0.45, 0.45),
+    });
     const base = new Mesh(new BoxGeometry(2 * (outer + railW) + 0.6, 1, 2 * (outer + railW) + 0.6), this.baseMat);
     base.position.y = -0.5;
     base.receiveShadow = true;
@@ -415,7 +508,15 @@ export class MagnatScene {
     // walnut rail frame around the ring
     const woodTex = this.aniso(woodTexture());
     woodTex.repeat.set(7, 1);
-    const woodMat = new MeshStandardMaterial({ map: woodTex, roughness: 0.5, metalness: 0.08 });
+    const woodN = this.aniso(woodNormal());
+    woodN.repeat.set(7, 1);
+    const woodMat = new MeshStandardMaterial({
+      map: woodTex,
+      roughness: 0.5,
+      metalness: 0.08,
+      normalMap: woodN,
+      normalScale: new Vector2(0.6, 0.6),
+    });
     const e = outer + railW / 2;
     const len = 2 * e + railW;
     const beams: [number, number, number, number][] = [
@@ -442,7 +543,15 @@ export class MagnatScene {
     plaque.receiveShadow = true;
     this.scene.add(plaque);
 
-    const tileMat = new MeshStandardMaterial({ color: new Color("#efe6d2"), roughness: 0.78, metalness: 0.02 });
+    const paperN = this.aniso(paperNormal());
+    paperN.repeat.set(2, 2);
+    const tileMat = new MeshStandardMaterial({
+      color: new Color("#efe6d2"),
+      roughness: 0.78,
+      metalness: 0.02,
+      normalMap: paperN,
+      normalScale: new Vector2(0.12, 0.12),
+    });
 
     this.place.forEach((p, i) => {
       const tl = BOARD[i]!;
