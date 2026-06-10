@@ -38,6 +38,7 @@ Conforme a **EN 81-20 / EN 81-50** (nuovo) e idoneo a modernizzazioni
 | [`docs/04-morsettiera-cavi.md`](docs/04-morsettiera-cavi.md) | **Morsettiera + lista cavi numerata** |
 | [`docs/05-distinta-materiali.md`](docs/05-distinta-materiali.md) | **Distinta materiali** con codici e prezzi |
 | [`docs/06-fascicolo-tecnico.md`](docs/06-fascicolo-tecnico.md) | **Fascicolo tecnico + checklist conformità** EN 81-20/50 |
+| [`docs/07-parametri-plc-modbus.md`](docs/07-parametri-plc-modbus.md) | **Parametri PLC via web**: flusso dati + mappa registri Modbus |
 | [`config/parametri.json`](config/parametri.json) | Mappa parametri machine-readable |
 | [`config/lista-io.csv`](config/lista-io.csv) | Lista I/O machine-readable (import EPLAN/Excel) |
 | [`config/lista-cavi.csv`](config/lista-cavi.csv) | Schedario cavi machine-readable |

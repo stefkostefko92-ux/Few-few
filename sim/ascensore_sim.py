@@ -586,6 +586,46 @@ class Simulatore:
         return self.asc.out
 
 
+# ---------------------------------------------------------------------------
+#  Interfaccia parametri "web" — stessa logica di firmware/ e FB_ParametriModbus
+#  Dimostra che alcuni parametri del PLC sono modificabili via interfaccia web.
+# ---------------------------------------------------------------------------
+# id -> (attributo Parametri, min, max, categoria)
+PARAM_META = {
+    "door_open_time":    ("tempo_porte_aperte", 2.0, 20.0, "NS"),
+    "door_nudging":      ("nudging",            0,   1,    "NS"),
+    "arrival_gong":      ("gong",               0,   1,    "NS"),
+    "star_delta_time":   ("star_delta_time",    0.5, 3.0,  "NS"),
+    "inspection_speed":  ("velocita_ispezione", 0.10, 0.63, "SR"),
+    "releveling_enable": ("relivell_abilitato", 0,   1,    "SR"),
+    # esempi di sola lettura
+    "car_position":      (None, None, None, "RO"),
+    "rated_speed":       (None, None, None, "SC"),
+}
+
+
+def scrivi_parametro(asc, pid, value, key_inserted=False):
+    """Applica una scrittura parametro dall'interfaccia web.
+    Ritorna (ok, valore_applicato, motivo). Rispecchia firmware + PLC:
+    SC/RO sola lettura; SR solo con chiave fisica; clamp ai limiti normativi."""
+    meta = PARAM_META.get(pid)
+    if meta is None:
+        return (False, None, "parametro inesistente")
+    attr, mn, mx, cat = meta
+    if cat in ("SC", "RO"):
+        return (False, None, "sola lettura (safety-critical/telemetria)")
+    if cat == "SR" and not key_inserted:
+        return (False, None, "chiave di abilitazione non inserita")
+    v = value
+    if mn is not None:
+        v = max(mn, min(mx, value))      # clamp
+    cur = getattr(asc.par, attr)
+    if isinstance(cur, bool):
+        v = bool(round(v))
+    setattr(asc.par, attr, v)
+    return (True, v, "ok")
+
+
 if __name__ == "__main__":
     # demo: chiamata al piano 3 su impianto geared
     par = Parametri(tempo_porte_aperte=0.5)

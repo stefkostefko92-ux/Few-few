@@ -11,7 +11,8 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ascensore_sim import Simulatore, Parametri, Stato, Direzione  # noqa: E402
+from ascensore_sim import (Simulatore, Parametri, Stato, Direzione,  # noqa: E402
+                           scrivi_parametro)
 
 
 def par_veloce():
@@ -173,6 +174,68 @@ class TestIdraulico(unittest.TestCase):
         self.assertEqual(sim.asc.stato, Stato.EMERGENZA)
         o = sim.asc.out
         self.assertFalse(o.ev_salita or o.ev_discesa or o.km_pompa)
+
+
+class TestParametriWeb(unittest.TestCase):
+    """Modifica parametri PLC tramite interfaccia web (firmware + FB_ParametriModbus)."""
+
+    def test_ns_modificabile(self):
+        sim = Simulatore("geared")
+        ok, v, _ = scrivi_parametro(sim.asc, "door_open_time", 8)
+        self.assertTrue(ok)
+        self.assertEqual(v, 8)
+        self.assertEqual(sim.asc.par.tempo_porte_aperte, 8)
+
+    def test_ns_clamp_ai_limiti(self):
+        sim = Simulatore("geared")
+        ok, v, _ = scrivi_parametro(sim.asc, "door_open_time", 999)
+        self.assertTrue(ok)
+        self.assertEqual(v, 20)          # clampato al massimo normativo
+
+    def test_sr_rifiutato_senza_chiave(self):
+        sim = Simulatore("geared")
+        prima = sim.asc.par.velocita_ispezione
+        ok, v, motivo = scrivi_parametro(sim.asc, "inspection_speed", 0.5,
+                                         key_inserted=False)
+        self.assertFalse(ok)
+        self.assertIn("chiave", motivo)
+        self.assertEqual(sim.asc.par.velocita_ispezione, prima)  # invariato
+
+    def test_sr_accettato_con_chiave_e_clamp(self):
+        sim = Simulatore("geared")
+        ok, v, _ = scrivi_parametro(sim.asc, "inspection_speed", 0.5,
+                                    key_inserted=True)
+        self.assertTrue(ok)
+        self.assertAlmostEqual(sim.asc.par.velocita_ispezione, 0.5)
+        # oltre il limite EN 81-20 (0.63) -> clamp
+        ok, v, _ = scrivi_parametro(sim.asc, "inspection_speed", 0.9,
+                                    key_inserted=True)
+        self.assertAlmostEqual(v, 0.63)
+
+    def test_readonly_non_scrivibile(self):
+        sim = Simulatore("geared")
+        ok, v, motivo = scrivi_parametro(sim.asc, "car_position", 1234,
+                                         key_inserted=True)
+        self.assertFalse(ok)
+        self.assertIn("lettura", motivo)
+
+    def test_parametro_influenza_manovra(self):
+        """Aumentando il tempo Y/Δ (idraulico) la partenza ritarda davvero."""
+        def primo_ev_salita(star_delta):
+            sim = Simulatore("idraulico", piano_iniziale=0, par=Parametri(tempo_porte_aperte=0.5))
+            scrivi_parametro(sim.asc, "star_delta_time", star_delta)
+            sim.i.chiamate_cabina = 1 << 2
+            t_ev = [None]
+            def osserva(t, s):
+                if t_ev[0] is None and s.asc.out.ev_salita:
+                    t_ev[0] = t
+            sim.run(200, on_cycle=osserva)
+            return t_ev[0]
+        t_corto = primo_ev_salita(0.5)
+        t_lungo = primo_ev_salita(3.0)
+        self.assertIsNotNone(t_corto)
+        self.assertIsNotNone(t_lungo)
+        self.assertGreater(t_lungo, t_corto)   # più tempo Y/Δ -> valvola dopo
 
 
 if __name__ == "__main__":

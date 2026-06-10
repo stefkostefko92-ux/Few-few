@@ -34,23 +34,39 @@ TYPE E_Direzione :
 ) E_Direzione;
 END_TYPE
 
-(* Parametri configurabili (mappati su Modbus per il modulo WiFi).
-   I valori safety-relevant (SR) restano protetti da chiave fisica. *)
+(* Parametri configurabili (mappati su Modbus per il modulo WiFi/PLC).
+   I valori safety-relevant (SR) restano protetti da chiave fisica.
+   Mappa registri: vedi FB_ParametriModbus.st e config/parametri.json. *)
 TYPE ST_Parametri :
 STRUCT
-    (* --- non-safety (NS) --- *)
-    TempoPorteAperte   : TIME := T#5S;    (* attesa porte aperte        *)
-    TempoRichiusura    : TIME := T#3S;    (* dwell prima richiusura     *)
-    NudgingAbilitato   : BOOL := TRUE;    (* richiusura forzata         *)
-    TempoLuceOff       : TIME := T#120S;  (* spegnimento luce cabina    *)
-    PianoParcheggio    : INT  := 0;       (* piano di sosta             *)
-    RitardoParcheggio  : TIME := T#60S;
-    GongAbilitato      : BOOL := TRUE;
-    (* --- safety-relevant (SR) — modificabili solo con chiave fisica --- *)
-    VelocitaIspezione  : REAL := 0.30;    (* m/s, <= 0.63 EN 81-20      *)
-    VelocitaLivell     : REAL := 0.05;    (* m/s, <= 0.30               *)
-    FinestraZonaPorta  : INT  := 35;      (* mm                         *)
-    RelivellAbilitato  : BOOL := TRUE;
+    (* ---------- NON-SAFETY (NS) — registri HR 0..15 ---------- *)
+    Accelerazione        : REAL := 0.7;    (* reg 0  m/s2  *)
+    Decelerazione        : REAL := 0.7;    (* reg 1  m/s2  *)
+    Jerk                 : REAL := 1.3;    (* reg 2  m/s3  *)
+    VelocitaLivell       : REAL := 0.05;   (* reg 3  m/s   *)
+    TempoPorteAperte     : TIME := T#5S;   (* reg 4  s     *)
+    TempoRichiusura      : TIME := T#3S;   (* reg 5  s     *)
+    NudgingAbilitato     : BOOL := TRUE;   (* reg 6        *)
+    TempoLuceOff         : TIME := T#120S; (* reg 7  s     *)
+    PianoParcheggio      : INT  := 0;      (* reg 8        *)
+    RitardoParcheggio    : TIME := T#60S;  (* reg 9  s     *)
+    LogicaChiamate       : INT  := 1;      (* reg 10 enum  *)
+    GongAbilitato        : BOOL := TRUE;   (* reg 11       *)
+    PianoVip             : INT  := 0;      (* reg 12       *)
+    TempoStellaTriangolo : REAL := 1.5;    (* reg 13 s (idraulico) *)
+    RitardoValvolaDiscesa: REAL := 0.5;    (* reg 14 s (idraulico) *)
+    RapportoAltaVelocita : REAL := 1.0;    (* reg 15 p.u. (geared) *)
+
+    (* ---------- SAFETY-RELEVANT (SR) — registri HR 20..27 ---------- *)
+    (* Modificabili SOLO con chiave fisica -S-EN (xAbilitaParam). *)
+    RelivellAbilitato    : BOOL := TRUE;   (* reg 20       *)
+    FinestraZonaPorta    : INT  := 35;     (* reg 21 mm    *)
+    VelocitaIspezione    : REAL := 0.30;   (* reg 22 m/s, <= 0.63 EN 81-20 *)
+    VelocitaRelivell     : REAL := 0.05;   (* reg 23 m/s, <= 0.30 *)
+    VelocitaAro          : REAL := 0.10;   (* reg 24 m/s, <= 0.30 *)
+    SogliaSovracorrente  : INT  := 150;    (* reg 25 %In   *)
+    RitardoFreno         : REAL := 0.40;   (* reg 26 s (geared) *)
+    SogliaTempOlio       : INT  := 70;     (* reg 27 degC (idraulico) *)
 END_STRUCT
 END_TYPE
 

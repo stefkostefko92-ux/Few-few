@@ -70,6 +70,22 @@ VAR_GLOBAL
     wFrecceDir     : WORD AT %QW4;  (* -H-DIR direzione *)
 END_VAR
 
+(* ------------------- PARAMETRI / INTERFACCIA WEB ---------------------- *)
+VAR_GLOBAL
+    (* Chiave fisica -S-EN: abilita la scrittura dei parametri SAFETY (SR)
+       dall'interfaccia web. Cablata anche al modulo WiFi (gate doppio). *)
+    xAbilitaParam : BOOL AT %I8.0;
+
+    (* Area Holding Register mappata sul Modbus Slave del PLC.
+       Indici = registri usati dal modulo WiFi (config/parametri.json):
+         0..15  parametri NS (scrivibili)
+         20..27 parametri SR (scrivibili solo con chiave)
+         40..57 sola lettura (SC/telemetria) *)
+    awModbusHR : ARRAY[0..63] OF WORD;
+
+    diContatoreCorse : DINT := 0;        (* contatore corse (telemetria) *)
+END_VAR
+
 (* ------------------------- VARIABILI INTERNE -------------------------- *)
 VAR_GLOBAL
     Par           : ST_Parametri;        (* parametri (anche via Modbus/WiFi) *)

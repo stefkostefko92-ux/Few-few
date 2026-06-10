@@ -19,6 +19,8 @@ Logica di manovra in **IEC 61131-3 Structured Text**, portabile su
 | `src/FB_CatenaSicurezza.st` | Monitoraggio (lettura) sicurezza, zona porta ridondante, coerenza freno |
 | `src/FB_GestionePorte.st` | Operatore porte: apertura/chiusura, fotocellula, nudging, attesa |
 | `src/FB_GestioneChiamate.st` | Registro chiamate + selezione prossimo piano (collettiva selettiva) |
+| `src/FB_ParametriModbus.st` | **Parametri modificabili da web**: mappa Modbus ↔ `ST_Parametri`, clamp + gate chiave |
+| `src/FC_Util.st` | Funzioni di conversione registro/scala/TIME |
 | `src/PRG_Geared.st` | Programma principale **geared** (2 velocità / VVVF) |
 | `src/PRG_Idraulico.st` | Programma principale **idraulico** (Y/Δ + valvole, anti-deriva) |
 | `docs/architettura-sw.md` | Macchina a stati, ciclo di scansione, note di portabilità |

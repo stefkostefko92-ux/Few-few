@@ -16,13 +16,40 @@ VAR
     fbSic   : FB_CatenaSicurezza;
     fbPorte : FB_GestionePorte;
     fbCall  : FB_GestioneChiamate;
+    fbParam : FB_ParametriModbus;   (* interfaccia parametri web/Modbus *)
 
     iTarget    : INT := -1;
     tonStella  : TON;     (* tempo avviamento in stella *)
     tonGong    : TON;
     tonRelivel : TON;     (* ritardo intervento anti-deriva *)
     xPompaOn   : BOOL;
+    iGuasto    : INT;
+    iTempOlioMis : INT := 45;   (* misura temperatura olio (placeholder) *)
 END_VAR
+
+(* ------------------------------------------------------------------ *)
+(* 0) PARAMETRI DA INTERFACCIA WEB (Modbus) — clamp + gate a chiave    *)
+(* ------------------------------------------------------------------ *)
+IF fbSic.xEmergenza THEN iGuasto := 12;
+ELSIF fbSic.xGuasto THEN iGuasto := 21;   (* es. bassa pressione *)
+ELSE iGuasto := 0; END_IF
+
+fbParam(
+    Par := Par, awHR := awModbusHR,
+    xAbilitaParam := xAbilitaParam,
+    iPosizione_mm := iPianoCorrente * 3000,
+    rVelocita     := SEL((eStato = ST_MARCIA), 0.1, 0.4),
+    rCorrente     := 0.0,
+    iTensioneBus  := 0,
+    diContatore   := diContatoreCorse,
+    iCodiceGuasto := iGuasto,
+    iTempOlio     := iTempOlioMis,
+    rPressione    := 35.0,
+    wStatoCatena  := SEL(fbSic.xConsensoMarcia, WORD#16#0001, WORD#16#0000),
+    wFeedbackFreno:= WORD#16#0000,
+    xUcmAbilitato := TRUE,
+    rVelNominale  := 0.63,
+    rSogliaOversp := 0.80);
 
 (* ------------------------------------------------------------------ *)
 (* 1) MONITORAGGIO SICUREZZA (include pressione minima)                *)
@@ -120,7 +147,7 @@ CASE eStato OF
             (* avvio pompa in stella, poi triangolo, poi apri valvola salita *)
             xKM_Pompa := TRUE;
             xKM_Stella := TRUE;
-            tonStella(IN := TRUE, PT := T#1S500MS);
+            tonStella(IN := TRUE, PT := SecToTime(Par.TempoStellaTriangolo));
             IF tonStella.Q THEN
                 xKM_Stella := FALSE;
                 xKM_Triangolo := TRUE;
@@ -161,6 +188,7 @@ CASE eStato OF
            della pompa per evitare colpi d'ariete *)
         xEV_Salita := FALSE; xEV_Discesa := FALSE;
         xKM_Triangolo := FALSE; xKM_Stella := FALSE; xKM_Pompa := FALSE;
+        diContatoreCorse := diContatoreCorse + 1;   (* telemetria corse *)
         eStato := ST_APRI_PORTE;
 
     ST_APRI_PORTE:

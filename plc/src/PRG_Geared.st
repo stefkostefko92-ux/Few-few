@@ -15,12 +15,39 @@ VAR
     fbSic   : FB_CatenaSicurezza;
     fbPorte : FB_GestionePorte;
     fbCall  : FB_GestioneChiamate;
+    fbParam : FB_ParametriModbus;   (* interfaccia parametri web/Modbus *)
 
     iTarget   : INT := -1;
     tonArresto: TON;
     tonGong   : TON;
     xVeloce   : BOOL;     (* richiesta alta velocita' *)
+    iGuasto   : INT;
 END_VAR
+
+(* ------------------------------------------------------------------ *)
+(* 0) PARAMETRI DA INTERFACCIA WEB (Modbus) — aggiorna Par con clamp   *)
+(*    e gate a chiave per i parametri safety; pubblica la telemetria.  *)
+(* ------------------------------------------------------------------ *)
+IF fbSic.xEmergenza THEN iGuasto := 12;
+ELSIF fbSic.xGuasto THEN iGuasto := 11;
+ELSE iGuasto := 0; END_IF
+
+fbParam(
+    Par := Par, awHR := awModbusHR,
+    xAbilitaParam := xAbilitaParam,
+    iPosizione_mm := iPianoCorrente * 3000,
+    rVelocita     := SEL(xKM_Veloce, 0.3, 1.0),
+    rCorrente     := 0.0,
+    iTensioneBus  := 0,
+    diContatore   := diContatoreCorse,
+    iCodiceGuasto := iGuasto,
+    iTempOlio     := 0,
+    rPressione    := 0.0,
+    wStatoCatena  := SEL(fbSic.xConsensoMarcia, WORD#16#0001, WORD#16#0000),
+    wFeedbackFreno:= SEL(xControlloFreno, WORD#16#0001, WORD#16#0000),
+    xUcmAbilitato := TRUE,
+    rVelNominale  := 1.0,
+    rSogliaOversp := 1.15);
 
 (* ------------------------------------------------------------------ *)
 (* 1) MONITORAGGIO SICUREZZA                                           *)
@@ -161,6 +188,7 @@ CASE eStato OF
             xKM_Salita := FALSE; xKM_Discesa := FALSE;
             xKM_Veloce := FALSE; xKM_Lento := FALSE;
             tonArresto(IN := FALSE);
+            diContatoreCorse := diContatoreCorse + 1;   (* telemetria corse *)
             eStato := ST_APRI_PORTE;
         END_IF
 
