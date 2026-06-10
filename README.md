@@ -40,6 +40,19 @@ and, once generated, its voiceover.
 4. Copy the **Title**, **Description** and **Tags** straight into YouTube.
 5. Use the **Chapters** block in the description to enable YouTube chapters.
 
+## Preview an episode (no editing needed)
+
+Want to *see* a clip before producing it? Build a self-contained HTML preview:
+
+```bash
+python tools/build_preview.py clips/mexico   # → clips/mexico/preview.html
+```
+
+Open `preview.html` in any browser and it auto-plays through the episode like a
+video — one full-screen slide per landmark (countdown 10 → 1), timed, with a
+progress bar — and narrates each slide aloud using a browser female voice as a
+stand-in for the final "Charlotte" voiceover. Great for checking pacing.
+
 ## Production notes
 
 - **Footage:** every landmark line notes the kind of shot to look for. Use
