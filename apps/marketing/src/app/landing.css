@@ -121,24 +121,64 @@
   perspective: 900px;
 }
 .lp-fan-card {
-  width: 78px;
-  height: 110px;
-  margin-left: -26px;
-  border-radius: 10px;
-  background: radial-gradient(120% 90% at 30% 0%, #fffdf6, #ece3cf);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-shadow: 0 12px 26px -8px rgba(0, 0, 0, 0.7);
-  display: grid;
-  place-items: center;
+  position: relative;
+  width: 84px;
+  height: 118px;
+  margin-left: -28px;
+  border-radius: 11px;
+  /* warm ivory face with a soft top-left sheen */
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 42%),
+    radial-gradient(130% 100% at 28% 0%, #fffdf7, #f3ead4 62%, #e6d8bb);
+  /* milled-brass rim + lift */
+  box-shadow:
+    0 0 0 1px rgba(120, 92, 38, 0.5),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.65),
+    inset 0 0 0 3px rgba(217, 178, 95, 0.55),
+    0 16px 30px -10px rgba(0, 0, 0, 0.75);
   font-family: var(--font-display, serif);
-  font-size: 1.8rem;
-  font-weight: 700;
   transform-origin: bottom center;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.3s ease;
+  overflow: hidden;
+}
+/* glossy highlight sweep across the face (under the pips) */
+.lp-fan-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.4) 50%, transparent 62%);
+  opacity: 0.35;
+  pointer-events: none;
 }
 .lp-fan-card:first-child { margin-left: 0; }
 .lp-fan-card.red { color: var(--suit-red); }
 .lp-fan-card.black { color: var(--suit-black); }
+
+.lp-fan-idx {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.8;
+  font-weight: 800;
+}
+.lp-fan-idx b { font-size: 1rem; }
+.lp-fan-idx i { font-size: 0.82rem; font-style: normal; margin-top: 1px; }
+.lp-fan-idx--tl { top: 7px; left: 8px; }
+.lp-fan-idx--br { bottom: 7px; right: 8px; transform: rotate(180deg); }
+.lp-fan-pip {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+}
+.lp-fan-card.red { color: #c0241f; }
+.lp-fan-card.black { color: #1b1b22; }
 
 /* STATS band */
 .lp-stats {

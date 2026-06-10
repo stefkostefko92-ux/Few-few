@@ -85,8 +85,15 @@ export default function Home() {
               className={`lp-fan-card ${c.c}`}
               style={{ transform: `rotate(${c.rot}deg) translateY(${Math.abs(c.rot) * 0.4}px)` }}
             >
-              {c.r}
-              {c.s}
+              <span className="lp-fan-idx lp-fan-idx--tl">
+                <b>{c.r}</b>
+                <i>{c.s}</i>
+              </span>
+              <span className="lp-fan-pip">{c.s}</span>
+              <span className="lp-fan-idx lp-fan-idx--br">
+                <b>{c.r}</b>
+                <i>{c.s}</i>
+              </span>
             </span>
           ))}
         </div>
