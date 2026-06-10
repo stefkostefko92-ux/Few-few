@@ -6,6 +6,16 @@
   const SRC_PAGE = 'tanoth-bot-inject';
   const SRC_CONTENT = 'tanoth-bot-content';
 
+  // Re-entry guard. After an extension reload the old page-world instance
+  // survives; a second copy would execute every XML-RPC request twice (the
+  // bridge dedupes responses, but the fetch side effects would both fire).
+  // The old instance keeps serving the new content script, so just re-announce.
+  if (window.__tanothBotInjected) {
+    window.postMessage({ source: SRC_PAGE, type: 'inject-ready' }, location.origin);
+    return;
+  }
+  window.__tanothBotInjected = true;
+
   const ctx = {
     url: null,            // resolved /xmlrpc gateway
     sessionId: null,      // flashvars.sessionID (or sniffed)
@@ -92,8 +102,9 @@
       ctx.methods[method] = true;
       if (!ctx.url && /xmlrpc/i.test(url)) ctx.url = url.split('#')[0];
       if (!ctx.sessionId) {
-        // First string param of a methodCall is the session id.
-        const sm = body.match(/<params>\s*<param>\s*<value>\s*<string>([^<]+)<\/string>/);
+        // First string param of a methodCall is the session id. Capture only
+        // token-safe chars so XML entities can't end up double-escaped later.
+        const sm = body.match(/<params>\s*<param>\s*<value>\s*<string>([\w-]+)<\/string>/);
         if (sm) ctx.sessionId = sm[1];
       }
       postContext();

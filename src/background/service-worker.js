@@ -163,13 +163,24 @@ async function handleMessage(msg, sender) {
   }
 }
 
-async function applyStatsDelta(delta) {
-  const cur = (await chrome.storage.local.get(STATS_KEY))[STATS_KEY] || emptyStats();
-  for (const [k, v] of Object.entries(delta || {})) {
-    if (typeof v === 'number') cur[k] = (cur[k] || 0) + v;
-  }
-  await chrome.storage.local.set({ [STATS_KEY]: cur });
-  return cur;
+// Storage read-modify-write ops are chained so two near-simultaneous deltas
+// (e.g. from two game tabs) can't interleave and lose an update.
+let statsChain = Promise.resolve();
+
+function applyStatsDelta(delta) {
+  const run = statsChain.then(async () => {
+    const cur = (await chrome.storage.local.get(STATS_KEY))[STATS_KEY] || emptyStats();
+    const known = emptyStats();
+    for (const [k, v] of Object.entries(delta || {})) {
+      // Whitelist + finite check: NaN/Infinity or unknown keys must not
+      // poison the stored counters.
+      if (Number.isFinite(v) && k in known && k !== 'since') cur[k] = (Number(cur[k]) || 0) + v;
+    }
+    await chrome.storage.local.set({ [STATS_KEY]: cur });
+    return cur;
+  });
+  statsChain = run.catch(() => {});
+  return run;
 }
 
 async function broadcastToGameTabs(message) {
@@ -353,17 +364,20 @@ async function sendWebhooks(title, message) {
 }
 
 /* ---- Settings profiles (multi-account) ---- */
+// Own-property checks everywhere: a profile named "constructor" or "__proto__"
+// must not hit Object.prototype (it would silently reset settings / no-op).
 async function saveProfile(name) {
-  if (!name) return { ok: false, error: 'NO_NAME' };
+  if (!name || typeof name !== 'string') return { ok: false, error: 'NO_NAME' };
   const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
-  profiles[name] = settings;
-  await chrome.storage.local.set({ [PROFILES_KEY]: profiles });
-  return { ok: true, profiles: Object.keys(profiles) };
+  const clean = Object.assign(Object.create(null), profiles);
+  clean[name] = settings;
+  await chrome.storage.local.set({ [PROFILES_KEY]: Object.assign({}, clean) });
+  return { ok: true, profiles: Object.keys(clean) };
 }
 async function loadProfile(name) {
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
-  if (!profiles[name]) return { ok: false, error: 'NOT_FOUND' };
+  if (!Object.hasOwn(profiles, name)) return { ok: false, error: 'NOT_FOUND' };
   const merged = mergeSettings(profiles[name]);
   await chrome.storage.local.set({ [STORAGE_KEY]: merged });
   broadcastToGameTabs({ type: 'SETTINGS_UPDATED', settings: merged });
@@ -371,7 +385,7 @@ async function loadProfile(name) {
 }
 async function deleteProfile(name) {
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
-  delete profiles[name];
+  if (Object.hasOwn(profiles, name)) delete profiles[name];
   await chrome.storage.local.set({ [PROFILES_KEY]: profiles });
   return { ok: true, profiles: Object.keys(profiles) };
 }

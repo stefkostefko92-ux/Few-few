@@ -49,7 +49,7 @@
           .filter((s) => ID_KEYS.some((k) => Api.directHas(s, k)) && TYPE_KEYS.some((k) => Api.directHas(s, k)));
         if (!structs.length) { Logger.debug('autosell: no items parsed'); return; }
 
-        if (!dumped) {
+        if (!dumped && c.dumpSchema) {
           dumped = true;
           const names = Array.from(structs[0].querySelectorAll(':scope > member > name')).map((n) => n.textContent);
           Logger.info(I18n.t('logSellSchema', [String(structs.length), names.join(', ')]));

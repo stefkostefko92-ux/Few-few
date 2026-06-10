@@ -15,7 +15,9 @@ services:
     environment:
       - LICENSE_SECRET=${LICENSE_SECRET:?set LICENSE_SECRET in .env}
       - PORT=8787
+      - HOST=0.0.0.0                  # inside the container; Caddy fronts it
       - LICENSE_DB=/data/bindings.json
+      - LICENSE_ADMIN_TOKEN=${LICENSE_ADMIN_TOKEN:-}
       - LICENSE_ALLOW_ORIGIN=${LICENSE_ALLOW_ORIGIN:-}
     volumes:
       - license-data:/data

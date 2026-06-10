@@ -8,7 +8,8 @@ claimed each key and rejects the same key on a second machine.
 signs and verifies keys with it). Keep it secret and don't commit your real one.
 
 One dependency-free file, `license-server.mjs`. Endpoints:
-`POST /activate {key,device}`, `GET /status?key=&device=`, `GET /health`.
+`POST /activate {key,device}`, `GET /status?key=&device=`, `GET /health`,
+`POST /unbind {key,admin}` (support tool, see below).
 
 ## Option A: Docker + Caddy (automatic HTTPS)
 
@@ -71,8 +72,23 @@ access.
 | --- | --- | --- |
 | `LICENSE_SECRET` | (placeholder) | HMAC secret - must match the extension |
 | `PORT` | `8787` | listen port |
+| `HOST` | `127.0.0.1` | bind address; Docker sets `0.0.0.0` (Caddy fronts it) |
 | `LICENSE_DB` | `./bindings.json` | path to the bindings store (use a volume) |
+| `LICENSE_ADMIN_TOKEN` | empty | enables `POST /unbind`; keep it long and private |
 | `LICENSE_ALLOW_ORIGIN` | empty | optional CORS `Access-Control-Allow-Origin` |
+
+## Unbinding a key (support)
+
+Reinstalling the extension generates a new device id, so a bound key would be
+rejected with `BOUND_ELSEWHERE`. To let a customer re-activate:
+
+```bash
+curl -X POST https://license.example.com/unbind \
+  -H 'Content-Type: application/json' \
+  -d '{"key":"TZ1.xxx.yyy","admin":"YOUR-LICENSE_ADMIN_TOKEN"}'
+```
+
+The next activation from any device re-binds the key.
 
 ## Backups
 The whole state is `bindings.json` (`key -> {device, exp}`). Back it up; losing it

@@ -141,7 +141,9 @@
           if (currency === 'gold') {
             await Api.miniUpdate();
             const gold = Number(State.get().gold) || 0;
-            if (gold - cost < (c.keepGoldReserve || 0)) {
+            const gen = Storage.section('general') || {};
+            const reserve = Math.max(Number(gen.keepGoldReserve) || 0, Number(c.keepGoldReserve) || 0);
+            if (gold - cost < reserve) {
               Logger.info(I18n.t('logCircleSkipGold', [String(cost), String(gold)]));
               cooldownUntil = Date.now() + 30000; // back off until gold recovers
               return;

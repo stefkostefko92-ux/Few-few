@@ -35,7 +35,9 @@ const els = {
   payMsg: document.getElementById('pay-msg')
 };
 
-let entitled = true;
+// Pessimistic until the first GET_LICENSE response: an expired user should
+// never see an enabled Start button, even briefly.
+let entitled = false;
 
 function send(message) { return chrome.runtime.sendMessage(message).catch(() => null); }
 function control(action) { send({ type: 'CONTROL', action }).then(() => setTimeout(refresh, 150)); }

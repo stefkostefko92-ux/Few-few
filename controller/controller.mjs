@@ -53,12 +53,16 @@ function loadAccountSettings(acc) {
 
 /* ------------------------------ launching ------------------------------ */
 async function launchAccount(acc, opts) {
-  if (registry.get(acc.id)?.status === 'running') return;
+  const cur = registry.get(acc.id)?.status;
+  if (cur === 'running' || cur === 'launching') return;
   if (opts.dryRun) {
     registry.set(acc.id, { account: acc, status: 'dry-run', startedAt: Date.now(), lastStats: {} });
     console.log(`[dry-run] would launch ${acc.id} -> ${acc.world} (profile ${acc.profileDir}${acc.proxy ? ', proxy' : ''})`);
     return;
   }
+  // Claim the slot synchronously: a second Start click while this launch is
+  // still awaiting must be a no-op, not a parallel launch on the same profile.
+  registry.set(acc.id, { account: acc, status: 'launching', startedAt: Date.now(), lastStats: registry.get(acc.id)?.lastStats || {} });
   const { chromium } = await import('playwright');
   const profileDir = path.resolve(HERE, acc.profileDir);
   fs.mkdirSync(profileDir, { recursive: true });
@@ -128,7 +132,17 @@ function startDashboard(cfg, opts) {
       query: Object.fromEntries(u.searchParams), origin: req.headers.origin, token,
       views: views(), render: () => renderDashboardHtml(views(), { token })
     });
-    if (r.action === 'start') { const e = registry.get(r.id); if (e) launchAccount(e.account, opts); }
+    if (r.action === 'start') {
+      const e = registry.get(r.id);
+      // Never fire-and-forget: an unhandled rejection here (e.g. a locked
+      // profile dir) would take down the whole controller process.
+      if (e) {
+        launchAccount(e.account, opts).catch((err) => {
+          console.error(`[${r.id}] launch failed: ${err.message}`);
+          registry.set(r.id, { account: e.account, status: 'error', lastStats: e.lastStats || {} });
+        });
+      }
+    }
     if (r.action === 'stop') { await stopAccount(r.id); }
     res.writeHead(r.status, { 'Content-Type': r.contentType });
     res.end(r.body);
@@ -145,7 +159,15 @@ async function cmdRun(cfg, opts) {
   if (!opts.headless && process.platform === 'linux' && !process.env.DISPLAY) {
     console.warn('No $DISPLAY detected. Chromium needs a display to load the extension - run under: xvfb-run -a node controller.mjs run');
   }
-  for (const acc of enabledAccounts(cfg.parsed)) await launchAccount(acc, opts);
+  for (const acc of enabledAccounts(cfg.parsed)) {
+    // One account failing to launch (locked profile, bad proxy) should not
+    // stop the rest from coming up.
+    try { await launchAccount(acc, opts); }
+    catch (e) {
+      console.error(`[${acc.id}] launch failed: ${e.message}`);
+      registry.set(acc.id, { account: acc, status: 'error', lastStats: {} });
+    }
+  }
   startDashboard(cfg, opts);
   setInterval(pollStats, 10000);
 }

@@ -126,6 +126,20 @@ test('server status reflects binding', () => {
   const bad = handle('GET', `/status?key=${encodeURIComponent(key)}&device=PC-B`, null, db);
   assert.equal(bad.body.entitled, false);
 });
+test('server unbind releases the device binding (admin only)', () => {
+  const db = {};
+  const key = genKey(365000);
+  handle('POST', '/activate', { key, device: 'PC-A' }, db);
+  // wrong admin token refused; /unbind disabled when no token is configured
+  assert.equal(handle('POST', '/unbind', { key, admin: 'wrong' }, db, 'sekret').status, 403);
+  assert.equal(handle('POST', '/unbind', { key, admin: 'sekret' }, db, '').status, 403);
+  // correct token unbinds and the key re-binds on a new device
+  const un = handle('POST', '/unbind', { key, admin: 'sekret' }, db, 'sekret');
+  assert.equal(un.body.ok, true);
+  assert.equal(un.dirty, true);
+  const r = handle('POST', '/activate', { key, device: 'PC-B' }, db);
+  assert.equal(r.body.ok, true);
+});
 
 console.log('- multi-account controller -');
 test('validateConfig accepts good config, normalizes defaults', () => {

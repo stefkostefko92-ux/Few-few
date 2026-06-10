@@ -47,6 +47,25 @@
 
   function num(v) { const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; }
 
+  // Track the character level when a response carries it; bump the level-up
+  // counter and (optionally) notify on an increase.
+  function noteLevel(doc) {
+    const lvl = num(findValue(doc, 'level', 'i4'));
+    if (lvl == null || lvl <= 0) return;
+    const prev = Number(State.get().level) || 0;
+    if (lvl === prev) return;
+    State.patch({ level: lvl });
+    if (prev > 0 && lvl > prev) {
+      TB.Stats?.bump({ levelUps: lvl - prev });
+      const g = TB.Storage?.section('general') || {};
+      if (g.notifications && g.notifyOnLevelUp) {
+        chrome.runtime.sendMessage({
+          type: 'NOTIFY', title: TB.I18n.t('extName'), message: TB.I18n.t('notifyLevelUp', [String(lvl)])
+        }).catch(() => {});
+      }
+    }
+  }
+
   // True only if `name` is a DIRECT <member> child of `node`. Needed because
   // findValue() searches descendants, so the outer response <struct> would
   // otherwise match a nested monster/item's field and create a phantom entry.
@@ -62,6 +81,12 @@
   async function rpc(method, params) {
     const res = await Bridge.callXmlRpc(method, params);
     const doc = parse(res.xml);
+    // An empty or truncated body parses to a <parsererror> document; treat it
+    // as a transient transport error instead of a silently "successful" call.
+    if (doc.getElementsByTagName('parsererror').length ||
+        !doc.getElementsByTagName('methodResponse').length) {
+      throw new Error('BAD_XML:' + method);
+    }
     // XML-RPC faults come back HTTP 200 with a <fault> body. Only treat genuine
     // session/auth faults as a lost session (-> auto-login). Ordinary faults
     // (not enough gold, on cooldown, daily limit, invalid action, ...) become a
@@ -131,7 +156,9 @@
     /* ---------------------------- attributes ------------------------ */
     async getUserAttributes() {
       const doc = await rpc('GetUserAttributes', []);
+      noteLevel(doc);
       const base = parseFloat(findValue(doc, 'attributeCostBase', 'i4'));
+      if (Number.isNaN(base)) return {};   // missing cost fields: don't patch NaN costs
       const factor = parseFloat(findValue(doc, 'attributeCostFactor', 'double'));
       const increment = parseFloat(findValue(doc, 'attributeCostIncrement', 'i4'));
       const calc = (bought) => Math.floor((base + bought * increment) * factor);
@@ -150,6 +177,7 @@
         { type: 'string', value: name },
         { type: 'int', value: 1 }
       ]);
+      noteLevel(doc);
       // Response echoes new costs; re-read them.
       const base = parseFloat(findValue(doc, 'attributeCostBase', 'i4'));
       if (!Number.isNaN(base)) {

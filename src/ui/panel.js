@@ -90,7 +90,10 @@
     renderLicense(TB.License.get());
 
     // Live countdown / status refresh (adventure timer ticks down here).
-    setInterval(() => renderStatus(Scheduler.status()), 1000);
+    const ticker = setInterval(() => {
+      if (!root.isConnected) { clearInterval(ticker); return; }  // panel removed by the page
+      renderStatus(Scheduler.status());
+    }, 1000);
   }
 
   function onClick(ev) {
@@ -175,7 +178,7 @@
       pvp.value = (s.pvp && s.pvp.opponents) || '';
       pvp.addEventListener('change', async () => {
         const cur = Storage.get();
-        cur.pvp.opponents = pvp.value.trim();
+        (cur.pvp = cur.pvp || {}).opponents = pvp.value.trim();
         await Storage.save(cur);
         Logger.info(I18n.t('logPvpTargetsSet', [pvp.value.trim() || '-']));
       });
@@ -185,6 +188,7 @@
       circle.addEventListener('change', async () => {
         const cur = Storage.get();
         const val = circle.value.trim();
+        cur.circle = cur.circle || {};
         cur.circle.manualNodes = val;
         cur.circle.mode = val ? 'manual' : 'auto';
         await Storage.save(cur);
@@ -282,6 +286,11 @@
       dragging = true;
       const r = target.getBoundingClientRect();
       sx = e.clientX; sy = e.clientY; ox = r.left; oy = r.top;
+      // Pin the current position inline BEFORE dropping the tb-left class, or
+      // a plain click on a left-docked panel makes it jump to the right edge.
+      target.style.left = r.left + 'px';
+      target.style.top = r.top + 'px';
+      target.style.right = 'auto';
       target.classList.remove('tb-left');
       e.preventDefault();
     });

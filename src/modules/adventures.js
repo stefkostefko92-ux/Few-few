@@ -9,6 +9,11 @@
 
   function cfg() { return Storage.section('adventures') || {}; }
 
+  // Module-local retry backoff. Never park this in adventureReturnAt: that is
+  // the shared "character is busy" timer, and faking it starves the dungeon,
+  // event-quest and work modules while the character is actually idle.
+  let retryAt = 0;
+
   // Circle multipliers: Amethyst (node 8) boosts adventure gold, Jade (node 1)
   // boosts XP, at +0.2% per refinement level. Used by the 'smart' strategy.
   function circleMult() {
@@ -46,6 +51,7 @@
 
       // Busy with a running task - wait it out.
       if (State.get().adventureReturnAt > Date.now()) return null;
+      if (Date.now() < retryAt) { Scheduler.wakeAt(retryAt); return null; }
 
       return async () => {
         // GetAdventures both lists options and resolves a finished task.
@@ -76,7 +82,7 @@
 
         if (freeLeft <= 0 && !canBloodstone) {
           Logger.info(I18n.t('logNoAdventures'));
-          State.patch({ adventureReturnAt: Date.now() + 20 * 60000 }); // retry in 20 min
+          retryAt = Date.now() + 20 * 60000; // retry in 20 min
           return;
         }
 
@@ -87,7 +93,7 @@
         const choice = chooseAdventure(data.adventures, c);
         if (!choice) {
           Logger.warn(I18n.t('logNoEligibleAdventure', [c.difficulty]));
-          State.patch({ adventureReturnAt: Date.now() + 10 * 60000 });
+          retryAt = Date.now() + 10 * 60000;
           return;
         }
 

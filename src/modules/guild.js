@@ -18,7 +18,8 @@
       return async () => {
         await Api.miniUpdate();                       // fresh gold
         const gold = Number(State.get().gold) || 0;
-        const reserve = Number(c.keepGoldReserve) || 0;
+        const gen = Storage.section('general') || {};
+        const reserve = Math.max(Number(gen.keepGoldReserve) || 0, Number(c.keepGoldReserve) || 0);
         const surplus = gold - reserve;
         if (surplus < (Number(c.minDonation) || 1000)) {
           cooldownUntil = Date.now() + 5 * 60000;     // not enough surplus yet

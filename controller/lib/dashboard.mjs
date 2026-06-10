@@ -6,9 +6,18 @@
 // anti-CSRF Origin check on mutations; returns what to send and, for mutations,
 // which action the caller should perform (so this stays side-effect free).
 //   opts: { method, pathname, query:{token,id}, origin, token, views, render }
+// Constant-time string compare (no early exit on the first mismatching char).
+function safeEqual(a, b) {
+  const x = String(a), y = String(b);
+  if (x.length !== y.length) return false;
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x.charCodeAt(i) ^ y.charCodeAt(i);
+  return diff === 0;
+}
+
 export function dashboardResponse(opts) {
   const { method, pathname, query = {}, origin, token, views = [], render } = opts;
-  if (!token || query.token !== token) {
+  if (!token || !safeEqual(query.token, token)) {
     return { status: 401, contentType: 'text/plain', body: 'unauthorized' };
   }
   const localOrigin = !origin || /^https?:\/\/(127\.0\.0\.1|localhost)(:|$)/.test(origin);
@@ -49,11 +58,11 @@ export function renderDashboardHtml(views, opts = {}) {
     <tr class="st-${esc(v.status)}">
       <td>${esc(v.label)}</td>
       <td><span class="dot"></span>${esc(v.status)}</td>
-      <td>${v.uptimeMin}m</td>
-      <td>${fmt(v.adventures)}</td>
-      <td>${fmt(v.encounters)}</td>
-      <td>${fmt(v.gold)}</td>
-      <td>${v.errors}</td>
+      <td>${esc(v.uptimeMin)}m</td>
+      <td>${esc(fmt(v.adventures))}</td>
+      <td>${esc(fmt(v.encounters))}</td>
+      <td>${esc(fmt(v.gold))}</td>
+      <td>${esc(v.errors)}</td>
       <td>${v.proxy ? '🛡️' : ''}</td>
       <td>
         <button onclick="ctl('start','${esc(v.id)}')">Start</button>

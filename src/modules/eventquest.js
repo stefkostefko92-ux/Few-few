@@ -17,18 +17,24 @@
       if (Date.now() < cooldownUntil) { Scheduler.wakeAt(cooldownUntil); return null; }
 
       return async () => {
-        const ev = await Api.getGameEvent();
-        if (!ev.questId) {
-          cooldownUntil = Date.now() + 20 * 60000;   // none offered now
-          return;
+        try {
+          const ev = await Api.getGameEvent();
+          if (!ev.questId) {
+            cooldownUntil = Date.now() + 20 * 60000;   // none offered now
+            return;
+          }
+          Logger.info(I18n.t('logEventStart', [String(ev.rewardGold), String(ev.rewardExp)]));
+          await Api.startEventAction();
+          await Api.miniUpdate();                        // adopt the quest's busy timer
+          if (State.get().adventureReturnAt <= Date.now()) {
+            State.patch({ adventureReturnAt: Date.now() + 10 * 60000, taskType: 'mission' });
+          }
+          Stats.bump({ eventQuests: 1, goldEarned: ev.rewardGold, xpEarned: ev.rewardExp });
+        } finally {
+          // Always back off a bit, so a faulting StartEventAction can't retry
+          // every cycle and trip the engine's error stop.
+          if (Date.now() >= cooldownUntil) cooldownUntil = Date.now() + 5 * 60000;
         }
-        Logger.info(I18n.t('logEventStart', [String(ev.rewardGold), String(ev.rewardExp)]));
-        await Api.startEventAction();
-        await Api.miniUpdate();                        // adopt the quest's busy timer
-        if (State.get().adventureReturnAt <= Date.now()) {
-          State.patch({ adventureReturnAt: Date.now() + 10 * 60000, taskType: 'mission' });
-        }
-        Stats.bump({ eventQuests: 1, goldEarned: ev.rewardGold, xpEarned: ev.rewardExp });
       };
     }
   });

@@ -15,16 +15,40 @@ const STATS = ['mix', 'strength', 'dexterity', 'constitution', 'intelligence'];
 const RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
 // Arcane Circle nodes (names from the Tanoth wiki) -> RPC node number.
+// Aliases mirror src/modules/circle.js so names typed in the in-game panel
+// ("jade, skull") resolve to the same checkboxes here.
 const CIRCLE_NODES = [
-  { n: 1, label: 'Jade (exp)' }, { n: 2, label: 'Aquamarine (potion duration)' },
-  { n: 3, label: 'Sapphire (fame)' }, { n: 4, label: 'Emerald (sell price)' },
-  { n: 5, label: 'Ruby (potion power)' }, { n: 6, label: 'Topaz (inventory slots)' },
-  { n: 7, label: 'Amber (work salary)' }, { n: 8, label: 'Amethyst (adventure gold)' },
-  { n: 9, label: 'Diamond (shop discount)' }, { n: 10, label: "Tiger's Eye (travel speed)" },
-  { n: 11, label: 'Negotiation Rune (INT)' }, { n: 12, label: 'Wisdom Rune (CON)' },
-  { n: 13, label: 'Diligence Rune (DEX)' }, { n: 14, label: 'Courage Rune (STR)' },
-  { n: 15, label: 'Glory Rune (drop rate)' }, { n: 16, label: 'Demon Skull (major bonuses)' }
+  { n: 1, label: 'Jade (exp)', aliases: ['jade', 'exp', 'experience'] },
+  { n: 2, label: 'Aquamarine (potion duration)', aliases: ['aquamarine', 'potion duration', 'potionduration'] },
+  { n: 3, label: 'Sapphire (fame)', aliases: ['sapphire', 'fame'] },
+  { n: 4, label: 'Emerald (sell price)', aliases: ['emerald', 'sell', 'sellprice', 'selling'] },
+  { n: 5, label: 'Ruby (potion power)', aliases: ['ruby', 'potion power', 'potioneffect', 'poteff'] },
+  { n: 6, label: 'Topaz (inventory slots)', aliases: ['topaz', 'inventory', 'slots', 'invslot'] },
+  { n: 7, label: 'Amber (work salary)', aliases: ['amber', 'salary', 'work', 'wage'] },
+  { n: 8, label: 'Amethyst (adventure gold)', aliases: ['amethyst', 'advgold', 'adventuregold'] },
+  { n: 9, label: 'Diamond (shop discount)', aliases: ['diamond', 'discount', 'cheaper'] },
+  { n: 10, label: "Tiger's Eye (travel speed)", aliases: ["tiger's eye", 'tigers eye', 'tigerseye', 'tiger', 'speed', 'travel'] },
+  { n: 11, label: 'Negotiation Rune (INT)', aliases: ['negotiation', 'int', 'intelligence'] },
+  { n: 12, label: 'Wisdom Rune (CON)', aliases: ['wisdom', 'con', 'constitution'] },
+  { n: 13, label: 'Diligence Rune (DEX)', aliases: ['diligence', 'dex', 'dexterity'] },
+  { n: 14, label: 'Courage Rune (STR)', aliases: ['courage', 'str', 'strength'] },
+  { n: 15, label: 'Glory Rune (drop rate)', aliases: ['glory', 'drop', 'droprate', 'loot'] },
+  { n: 16, label: 'Demon Skull (major bonuses)', aliases: ['demon skull', 'skull', 'demon'] }
 ];
+
+// Same resolution rule as circle.js resolveNodes: numbers pass through,
+// otherwise match a node name or alias.
+function resolveNodeToken(tokRaw) {
+  const tok = String(tokRaw).trim().toLowerCase();
+  if (!tok) return null;
+  const num = parseInt(tok, 10);
+  if (Number.isInteger(num) && num >= 1 && num <= 16) return num;
+  for (const c of CIRCLE_NODES) {
+    const name = c.label.split(' (')[0].toLowerCase();
+    if (name === tok || c.aliases.some((a) => a === tok || tok.includes(a))) return c.n;
+  }
+  return null;
+}
 
 // Map regions (canonical order). The player orders these by priority.
 const MAP_REGIONS = [
@@ -181,9 +205,10 @@ function renderChecklist(section, f) {
   const box = document.createElement('div');
   box.className = 'checklist';
 
-  // Circle stores node NUMBERS.
+  // The stored list may mix numbers and names (the in-game panel accepts both);
+  // resolve every token so named entries show as checked here.
   const current = String(settings[section][f.k] || '').split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
-  const selected = new Set(current.map((s) => String(parseInt(s, 10))));
+  const selected = new Set(current.map(resolveNodeToken).filter((n) => n != null).map(String));
 
   function commit() {
     const chosen = Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value);
@@ -310,7 +335,15 @@ function renderField(section, f) {
     if (f.max != null) input.max = f.max;
     if (f.step != null) input.step = f.step;
     input.value = val;
-    input.addEventListener('change', () => { settings[section][f.k] = Number(input.value); });
+    input.addEventListener('change', () => {
+      // Clamp to the declared range; an emptied field would otherwise save 0.
+      let v = Number(input.value);
+      if (!Number.isFinite(v)) v = Number(f.min) || 0;
+      if (f.min != null) v = Math.max(Number(f.min), v);
+      if (f.max != null) v = Math.min(Number(f.max), v);
+      input.value = v;
+      settings[section][f.k] = v;
+    });
   } else if (f.type === 'time') {
     input = document.createElement('input');
     input.type = 'time';

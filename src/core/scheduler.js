@@ -10,6 +10,7 @@
   let paused = false;
   let pausedByWindow = false;   // true only when paused by the active-hours window
   let loopHandle = null;
+  let loopGen = 0;           // invalidates stale loop chains (pause/stop while a cycle is awaiting)
   let consecutiveErrors = 0;
   let onBreakUntil = 0;
   let wakeAt = 0;            // earliest module-requested re-evaluation time (epoch ms)
@@ -62,16 +63,19 @@
       paused = false;
       pausedByWindow = false;
       consecutiveErrors = 0;
+      onBreakUntil = 0;
+      wakeAt = 0;
       scheduleNextBreak();
       Logger.success(I18n.t('logEngineStarted'));
       emitStatus();
-      loop();
+      kickLoop();
     },
 
     stop(reason) {
       if (!running) return;
       running = false;
       paused = false;
+      loopGen++;
       clearTimeout(loopHandle);
       currentAction = null;
       Logger.warn(I18n.t('logEngineStopped') + (reason ? ` (${reason})` : ''));
@@ -91,8 +95,17 @@
       if (typeof ts === 'number' && ts > Date.now()) wakeAt = wakeAt ? Math.min(wakeAt, ts) : ts;
     },
 
-    pause() { paused = true; pausedByWindow = false; Logger.info(I18n.t('logEnginePaused')); emitStatus(); },
-    resume() { if (paused) { paused = false; pausedByWindow = false; Logger.info(I18n.t('logEngineResumed')); emitStatus(); loop(); } },
+    pause() {
+      paused = true; pausedByWindow = false;
+      loopGen++; clearTimeout(loopHandle);
+      Logger.info(I18n.t('logEnginePaused')); emitStatus();
+    },
+    resume() {
+      if (!paused) return;
+      paused = false; pausedByWindow = false;
+      Logger.info(I18n.t('logEngineResumed')); emitStatus();
+      kickLoop();
+    },
 
     // Called by the service-worker heartbeat to re-evaluate the active window.
     heartbeat() {
@@ -101,7 +114,7 @@
         if (!paused) { paused = true; pausedByWindow = true; Logger.info(I18n.t('logOutsideWindow')); emitStatus(); }
       } else if (paused && pausedByWindow && Date.now() >= onBreakUntil) {
         // Auto-resume ONLY a window-induced pause - never override a manual pause.
-        paused = false; pausedByWindow = false; emitStatus(); loop();
+        paused = false; pausedByWindow = false; emitStatus(); kickLoop();
       }
     }
   };
@@ -111,9 +124,10 @@
     if (!s || !s.enabled) return true;
     const now = new Date();
     const cur = now.getHours() * 60 + now.getMinutes();
-    const [fh, fm] = s.activeFrom.split(':').map(Number);
-    const [th, tm] = s.activeTo.split(':').map(Number);
+    const [fh, fm] = String(s.activeFrom || '00:00').split(':').map(Number);
+    const [th, tm] = String(s.activeTo || '23:59').split(':').map(Number);
     const from = fh * 60 + fm, to = th * 60 + tm;
+    if (!Number.isFinite(from) || !Number.isFinite(to)) return true;  // bad value: never wedge the loop
     return from <= to ? (cur >= from && cur <= to) : (cur >= from || cur <= to);
   }
 
@@ -164,28 +178,42 @@
     return Math.round(base + longPause);
   }
 
-  async function loop() {
-    if (!running || paused) return;
+  // Starts a fresh loop chain, invalidating any previous one (a pending timer
+  // or a cycle still awaiting an action would otherwise keep running alongside
+  // the new chain and double every game action).
+  function kickLoop() {
+    clearTimeout(loopHandle);
+    loopGen++;
+    loop(loopGen);
+  }
+
+  async function loop(gen) {
+    const alive = () => gen === loopGen && running && !paused;
+    if (!alive()) return;
 
     // Respect active time window and breaks.
-    if (!withinActiveWindow()) { paused = true; emitStatus(); return; }
-    if (!breaksEnabled()) onBreakUntil = 0;          // disabling breaks ends any current one
-    if (Date.now() < onBreakUntil) {
-      loopHandle = setTimeout(loop, 5000);
+    if (!withinActiveWindow()) {
+      // Window-induced pause, so the heartbeat may auto-resume it later.
+      paused = true; pausedByWindow = true; emitStatus();
       return;
     }
-    maybeTakeBreak();
+    if (!breaksEnabled()) onBreakUntil = 0;          // disabling breaks ends any current one
+    if (Date.now() < onBreakUntil || maybeTakeBreak()) {
+      loopHandle = setTimeout(() => loop(gen), 5000);
+      return;
+    }
 
     wakeAt = 0;              // modules re-register their cooldown waits this pass
     let acted = false;
     for (const mod of registered) {
-      if (!running || paused) return;
+      if (!alive()) return;
       let action = null;
       try {
         action = await mod.tick();
       } catch (e) {
         Logger.error(`[${mod.id}] tick`, e.message);
       }
+      if (!alive()) return;
       if (typeof action === 'function') {
         currentAction = mod.id;
         emitStatus();
@@ -195,7 +223,7 @@
         } catch (e) {
           // Transient transport / session errors shouldn't trip the error-stop;
           // they recover on their own (or via auto-login).
-          const transient = /TIMEOUT|INJECT_NOT_READY|SESSION_EXPIRED|NO_SESSION|NO_GATEWAY|HTTP_/.test(e.message || '');
+          const transient = /TIMEOUT|INJECT_NOT_READY|SESSION_EXPIRED|NO_SESSION|NO_GATEWAY|HTTP_|BAD_XML/.test(e.message || '');
           Logger[transient ? 'warn' : 'error'](`[${mod.id}]`, e.message);
           if (!transient) {
             consecutiveErrors++;
@@ -210,6 +238,7 @@
           currentAction = null;
           emitStatus();
         }
+        if (!alive()) return;
         acted = true;
         break; // one action per cycle
       }
@@ -230,7 +259,7 @@
         delay = Math.min(delay, Math.max(floor, wakeAt - Date.now()));
       }
     }
-    loopHandle = setTimeout(loop, delay);
+    loopHandle = setTimeout(() => loop(gen), delay);
   }
 
   TB.Scheduler = Scheduler;

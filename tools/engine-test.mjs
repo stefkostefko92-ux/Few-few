@@ -256,4 +256,55 @@ await test('guild: donates surplus gold above the reserve', async () => {
   assert.equal(e.calls.guildSpendGold[0][0], 4000, 'donated gold - reserve');
 });
 
+await test('pause/resume never spawns a second loop chain (no doubled actions)', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false } } });
+  let acted = 0;
+  e.TB.Scheduler.register({ id: 'counter', priority: 99, tick: () => async () => { acted++; } });
+  e.TB.Scheduler.start();
+  await e.advance(600);
+  // Rapid pause/resume cycles: the old code left the pending timer alive and
+  // each resume started another chain, multiplying actions per cycle.
+  for (let i = 0; i < 3; i++) { e.TB.Scheduler.pause(); e.TB.Scheduler.resume(); }
+  acted = 0;
+  await e.advance(1200);
+  // Single chain at the 120ms spam delay -> ~10 actions; a doubled chain
+  // would give ~20+.
+  assert.ok(acted > 0, 'engine still acting after pause/resume');
+  assert.ok(acted <= 12, `single loop chain only (got ${acted} actions in 1.2s)`);
+});
+
+await test('active-hours: loop-induced pause is auto-resumed by heartbeat', async () => {
+  const e = freshEngine({ settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false } } });
+  const h = new Date(e.nowMs()).getHours();
+  const closed = `${String((h + 2) % 24).padStart(2, '0')}:00`;
+  const closedTo = `${String((h + 3) % 24).padStart(2, '0')}:00`;
+  e.TB.Scheduler.start();
+  await e.advance(200);
+  // Close the window: the LOOP (not the heartbeat) must detect it and pause
+  // in a way the heartbeat can undo later.
+  e.TB.Storage._set(mergeSettings({ general: { enabled: true, humanize: false }, scheduler: { enabled: true, activeFrom: closed, activeTo: closedTo } }));
+  await e.advance(5000);
+  assert.equal(e.TB.Scheduler.isPaused(), true, 'paused outside the active window');
+  // Reopen the window and fire the heartbeat: it must auto-resume.
+  e.TB.Storage._set(mergeSettings({ general: { enabled: true, humanize: false }, scheduler: { enabled: false } }));
+  e.TB.Scheduler.heartbeat();
+  await e.drain();
+  assert.equal(e.TB.Scheduler.isPaused(), false, 'heartbeat resumed a window-induced pause');
+});
+
+await test('out of free adventures does not starve work (no fake busy timer)', async () => {
+  const e = freshEngine({
+    settings: {
+      general: { enabled: true, humanize: false },
+      adventures: { enabled: true, useBloodstones: false },
+      work: { enabled: true, durationHours: 2, stopWhenAdventureReady: false }
+    },
+    api: { getAdventures: () => Promise.resolve({ adventures: [], madeToday: 5, freePerDay: 5, taskRunning: false }) }
+  });
+  e.TB.Api.getWorkData = () => { e.TB.State.patch({ work: { maxHours: 8, goldFee: 0 } }); return Promise.resolve(); };
+  e.TB.Scheduler.start();
+  await e.advance(5000);
+  assert.equal(e.count('startWork'), 1, 'work ran even though adventures are exhausted');
+});
+
 console.log(`\n${pass} engine checks passed.`);

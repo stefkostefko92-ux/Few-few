@@ -4,6 +4,7 @@
 #   sudo cp license-server.mjs /opt/tanoth-license/
 #   sudo chown -R tanoth:tanoth /var/lib/tanoth-license
 #   echo 'LICENSE_SECRET=...same as the extension...' | sudo tee /etc/tanoth-license.env
+#   sudo chmod 600 /etc/tanoth-license.env    # the secret must not be world-readable
 #   sudo cp tanoth-license.service /etc/systemd/system/
 #   sudo systemctl enable --now tanoth-license
 # Then put nginx/Caddy in front for HTTPS (see DEPLOY.md).

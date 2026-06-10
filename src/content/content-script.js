@@ -42,6 +42,17 @@
     setInterval(() => {
       if (Bridge.ready() && Scheduler.isRunning()) Api.refresh().catch(() => {});
     }, 30000);
+
+    // Orphan check: when the extension is reloaded/updated, this copy of the
+    // content script survives with dead chrome.* APIs while a fresh copy boots.
+    // Stop the old engine so two bots never automate the same tab in parallel.
+    const orphanCheck = setInterval(() => {
+      let dead = false;
+      try { dead = !(chrome.runtime && chrome.runtime.id); } catch (_) { dead = true; }
+      if (!dead) return;
+      clearInterval(orphanCheck);
+      try { Scheduler.stop('reload'); } catch (_) {}
+    }, 10000);
   }
 
   /* ---------------------- popup / service-worker bridge ------------------- */

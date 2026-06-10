@@ -122,6 +122,7 @@
   "logTrainSkipCap": { "message": "Training paused - spend cap reached." },
   "logTrainSkipGold": { "message": "Training: $1 costs $2 gold (have $3)." },
   "logCircleSkipGold": { "message": "Circle: need $1 gold (have $2) - keeping reserve." },
+  "logWorkSkipGold": { "message": "Work: not enough gold for the $1 gold fee." },
   "logLicenseRequired": { "message": "A subscription is required to start the bot." },
   "notifyLicenseRequired": { "message": "Subscribe (€4/month) to start the bot." },
 
