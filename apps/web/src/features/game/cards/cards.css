@@ -99,7 +99,14 @@ button.aso-card:hover {
 .aso-card__corner {
   position: absolute;
   display: flex;
-  font-size: 13px;
+  font-size: 12px;
+}
+/* Scale the index with the card so it never crowds the central figure. */
+.aso-card[data-size="sm"] .aso-card__corner {
+  font-size: 9px;
+}
+.aso-card[data-size="lg"] .aso-card__corner {
+  font-size: 15px;
 }
 .aso-card__corner--tl {
   top: 5px;
@@ -120,7 +127,8 @@ button.aso-card:hover {
 
 .aso-card__pips {
   position: absolute;
-  inset: 14% 18%;
+  /* extra top/bottom inset so the corner indices never touch the outer pips */
+  inset: 21% 17%;
 }
 .aso-card__pip {
   position: absolute;
@@ -129,7 +137,8 @@ button.aso-card:hover {
 /* Court cards — brass ar-deco frame + monogram. */
 .aso-card__court {
   position: absolute;
-  inset: 19% 21%;
+  /* clear the corner indices top/bottom so the J/Q/K frame never overlaps them */
+  inset: 25% 20%;
   display: grid;
   place-items: center;
   gap: 2px;

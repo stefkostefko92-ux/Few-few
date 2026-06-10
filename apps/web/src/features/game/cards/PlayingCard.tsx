@@ -24,10 +24,10 @@ const SIZES = {
 } as const;
 
 /** Corner index: rank over a small suit glyph (drawn twice, rotated). */
-function CornerIndex({ rank, suit, color }: { rank: string; suit: SuitChar; color: string }) {
+function CornerIndex({ rank, suit, color, glyph }: { rank: string; suit: SuitChar; color: string; glyph: number }) {
   const label = RANK_LABEL[rank] ?? rank;
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 0.82 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 0.78 }}>
       <span
         style={{
           color,
@@ -39,7 +39,7 @@ function CornerIndex({ rank, suit, color }: { rank: string; suit: SuitChar; colo
       >
         {label}
       </span>
-      <SuitGlyph suit={suit} size={11} color={color} />
+      <SuitGlyph suit={suit} size={glyph} color={color} />
     </div>
   );
 }
@@ -59,6 +59,7 @@ export const PlayingCard = memo(function PlayingCard({
   style,
 }: PlayingCardProps) {
   const { w, h } = SIZES[size];
+  const cornerGlyph = size === "lg" ? 12 : size === "md" ? 9 : 7;
   const { game } = useParams<{ game: string }>();
   const key = game?.toUpperCase();
   const cardBack = useEquippedCosmetic(key && isGameKey(key) ? key : null, "CARDBACK");
@@ -83,6 +84,7 @@ export const PlayingCard = memo(function PlayingCard({
         height: h,
         ...style,
       }}
+      data-size={size}
       data-dimmed={dimmed ? "true" : undefined}
     >
       {faceDown ? (
@@ -99,16 +101,16 @@ export const PlayingCard = memo(function PlayingCard({
         <span className="aso-card__face" style={{ color }}>
           {/* corners */}
           <span className="aso-card__corner aso-card__corner--tl">
-            <CornerIndex rank={rank} suit={suit} color={color} />
+            <CornerIndex rank={rank} suit={suit} color={color} glyph={cornerGlyph} />
           </span>
           <span className="aso-card__corner aso-card__corner--br">
-            <CornerIndex rank={rank} suit={suit} color={color} />
+            <CornerIndex rank={rank} suit={suit} color={color} glyph={cornerGlyph} />
           </span>
 
           {/* center */}
           {isAce ? (
             <span className="aso-card__center">
-              <SuitGlyph suit={suit} size={size === "lg" ? 56 : size === "md" ? 42 : 30} color={color} />
+              <SuitGlyph suit={suit} size={size === "lg" ? 50 : size === "md" ? 38 : 26} color={color} />
             </span>
           ) : isCourt ? (
             <CourtArt rank={rank} suit={suit} color={color} size={size} />
