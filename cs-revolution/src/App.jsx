@@ -1890,11 +1890,12 @@ function AITerminal(props){
   function add(nl){setLines(function(p){return p.concat(nl)})}
 
   async function callAI(msg){setThinking(true);add([{t:"sys",x:(lang==="it"?"\u23f3 Elaborazione...":lang==="bg"?"\u23f3 \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430...":"\u23f3 Processing...")}]);
-    try{const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,
-        system:"You are the AI brain embedded in Carbon Stealth VCC's website (carbonstealth.eu). Carbon Stealth is a digital solutions agency registered in Bulgaria (EIK: BG208725180) based in Bobov Dol, Bulgaria. CEO: Stefko. Services: full-stack web dev (React, Node, Prisma, PostgreSQL), game development (FiveM scripting, browser MMOs), embedded systems (PLC, Modbus, Eurotherm ovens), branding and design, DevOps (Docker, Nginx, Hetzner VPS). Real projects: Nexus Dominion (medieval dark fantasy browser MMO, React+Node+PostgreSQL+Redis), Panev Ascensori SAS (Italian elevator bracket manufacturer website, 28 products), ERP Ascensori Enterprise (management system), Compositi Store (carbon fiber e-commerce with Eurotherm EPC3004 oven integration), Gaming Portal (multiplayer chess, belot, santase at gaming.carbonstealth.eu), Supreme Bot (bot management dashboard at botpanel.carbonstealth.eu), CS Anticheat v4.0 (FiveM security, 40+ detection modules). Also: CarbonOBD Pro (automotive diagnostics), Flora Somnia (iOS game), Treti Mart (Bulgarian marketplace), OU Nikola Vaptsarov (official school website, ouvaptsarov.com, Bobov Dol). Based: Bobov Dol, Bulgaria. Serving clients across Europe and worldwide. Visual identity: carbon fiber textures, cyan (#00e5ff) accent, CS monogram. You live inside the most advanced website ever built with Three.js 3D particle text, Web Audio, Speech Synthesis, Claude AI. Be direct, technically sharp, brutalist. Keep answers SHORT (2-5 sentences). Never break character.",
-        messages:[{role:"user",content:msg}]})});
-      const data=await res.json();const txt=data.content&&data.content[0]?data.content[0].text:"ERROR: No response.";
+    // Calls our server-side proxy (api/ai-chat.php) — never api.anthropic.com
+    // directly: a browser call has no API key (always 401) and embedding one
+    // would leak it. The system prompt also lives server-side.
+    try{const res=await fetch("/api/ai-chat.php",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:msg})});
+      const data=await res.json();const txt=data.text||data.error||"ERROR: No response.";
       const tl=txt.split("\n").filter(function(l){return l.trim()!==""}).map(function(l){return{t:"ai",x:l}});
       setLines(function(p){return p.filter(function(l){return l.x!==(lang==="it"?"\u23f3 Elaborazione...":lang==="bg"?"\u23f3 \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430...":"\u23f3 Processing...")}).concat(tl)});
     }catch(err){setLines(function(p){return p.concat([{t:"err",x:"ERROR: "+err.message}])})}
