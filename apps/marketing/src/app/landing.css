@@ -354,6 +354,61 @@
   color: var(--win);
 }
 
+/* ─── Entrance + scroll-reveal animations ──────────────────────────────────
+   Hero elements animate in on load with a stagger. Sections/cards reveal on
+   scroll via a scroll-timeline — guarded by @supports so browsers without it
+   (and reduced-motion users) simply show the content, never hide it. */
+
+@keyframes lp-rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lp-eyebrow,
+.lp-title,
+.lp-sub,
+.lp-lead,
+.lp-cta-row,
+.lp-fan {
+  animation: lp-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.lp-title { animation-delay: 0.06s; }
+.lp-sub { animation-delay: 0.14s; }
+.lp-lead { animation-delay: 0.22s; }
+.lp-cta-row { animation-delay: 0.3s; }
+.lp-fan { animation-delay: 0.4s; }
+
+/* richer hover micro-interactions */
+.lp-feature,
+.lp-game {
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.lp-feature:hover { transform: translateY(-6px) scale(1.015); }
+.lp-game:hover { transform: translateY(-6px) scale(1.02); }
+.lp-fan-card:hover { transform: translateY(-12px) rotate(0deg) scale(1.06) !important; z-index: 2; }
+.cta-lg { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.cta-lg:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -8px rgba(217, 178, 95, 0.6); }
+
+/* scroll-reveal for the lower sections (progressive enhancement only) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-stats,
+    .lp-section h2,
+    .lp-section .lp-section-sub,
+    .lp-feature,
+    .lp-step,
+    .lp-game,
+    .lp-faq-item,
+    .lp-final h2,
+    .lp-trust {
+      animation: lp-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 26%;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lp-mote { animation: none; }
+  .lp-eyebrow, .lp-title, .lp-sub, .lp-lead, .lp-cta-row, .lp-fan { animation: none; }
 }
