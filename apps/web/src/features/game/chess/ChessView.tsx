@@ -1,19 +1,32 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
 import { MatchChrome, TurnBadge } from "../cards/MatchChrome";
 import { useMatch } from "../useMatch";
 import { ChessBoard } from "./ChessBoard";
+import { ChessBoard3D } from "./ChessBoard3D";
 import type { ChessAction, ChessState } from "./types";
+
+function webglSupported(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
 
 export function ChessView({ title }: { title: string }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<ChessState, ChessAction>("CHESS");
   const { state, legal, seat, turn, phase, result, players } = m;
+  const useGL = useMemo(webglSupported, []);
 
   const myTurn = turn === seat && legal.length > 0;
   const opponent = players.find((p) => p.seat !== seat)?.displayName ?? t("game.opponent");
+  const Board = useGL ? ChessBoard3D : ChessBoard;
 
   return (
     <MatchChrome title={title} phase={phase} seat={seat} result={result}>
@@ -24,7 +37,7 @@ export function ChessView({ title }: { title: string }) {
             <TurnBadge myTurn={myTurn} over={phase === "over"} />
           </div>
 
-          <ChessBoard
+          <Board
             fen={state.fen}
             legalActions={legal}
             myTurn={myTurn && phase === "playing"}
