@@ -10,23 +10,26 @@ import {
   BoxGeometry,
   Color,
   DirectionalLight,
+  ExtrudeGeometry,
   Group,
   HemisphereLight,
   LatheGeometry,
   Mesh,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
   PCFSoftShadowMap,
   Plane,
   Raycaster,
   Scene,
+  Shape,
   SphereGeometry,
   Vector2,
   Vector3,
   WebGLRenderer,
   type BufferGeometry,
 } from "three";
-import { bakeEnvironment, disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
+import { bakeEnvironment, disposeObject, easeInOut, makeComposer, woodNormal, woodTexture } from "../gl/helpers.js";
 import { parseFen, type Orientation } from "./types.js";
 
 const SQ = 1; // square size
@@ -34,8 +37,6 @@ const HALF = 4 * SQ; // board half-extent
 const RAIL = 0.7;
 const SCENE_RATIO = 0.82;
 const MOVE_MS = 380;
-const LIGHT = "#efe6d2";
-const DARK = "#2a2622";
 
 type PieceType = "K" | "Q" | "R" | "B" | "N" | "P";
 
@@ -71,8 +72,35 @@ function bodyGeo(t: PieceType): BufferGeometry {
   return g;
 }
 
+let _knight: BufferGeometry | null = null;
+/** Extruded horse-head silhouette for the knight (broadside, looking +x). */
+function knightHead(): BufferGeometry {
+  if (_knight) return _knight;
+  const pts: [number, number][] = [
+    [-0.22, 0.0], [-0.26, 0.22], [-0.22, 0.4], [-0.24, 0.56], [-0.1, 0.6],
+    [-0.05, 0.74], [0.03, 0.6], [0.09, 0.63], [0.17, 0.54], [0.31, 0.44],
+    [0.41, 0.34], [0.45, 0.26], [0.4, 0.2], [0.3, 0.2], [0.22, 0.1], [0.1, 0.04],
+  ];
+  const s = new Shape();
+  s.moveTo(pts[0]![0], pts[0]![1]);
+  for (let i = 1; i < pts.length; i++) s.lineTo(pts[i]![0], pts[i]![1]);
+  s.closePath();
+  const g = new ExtrudeGeometry(s, { depth: 0.17, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2 });
+  g.center();
+  _knight = g;
+  return g;
+}
+
+/** Polished marble (white) / obsidian (black) with a clear-coat sheen. */
+function pieceMaterial(white: boolean): MeshPhysicalMaterial {
+  return white
+    ? new MeshPhysicalMaterial({ color: new Color("#f1e7d0"), roughness: 0.4, metalness: 0, clearcoat: 0.7, clearcoatRoughness: 0.25 })
+    : new MeshPhysicalMaterial({ color: new Color("#1b1916"), roughness: 0.22, metalness: 0.18, clearcoat: 1, clearcoatRoughness: 0.12 });
+}
+
 export class ChessScene {
   private renderer: WebGLRenderer;
+  private fx!: ReturnType<typeof makeComposer>;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private ray = new Raycaster();
@@ -118,6 +146,7 @@ export class ChessScene {
 
     this.scene.add(this.pieceLayer, this.hiLayer);
     this.build();
+    this.fx = makeComposer(this.renderer, this.scene, this.camera, width, width * SCENE_RATIO);
     this.renderOnce();
   }
 
@@ -135,8 +164,8 @@ export class ChessScene {
     frame.receiveShadow = true;
     this.scene.add(frame);
 
-    const lightMat = new MeshStandardMaterial({ color: new Color("#d9c9a3"), roughness: 0.6 });
-    const darkMat = new MeshStandardMaterial({ color: new Color("#6b4a2c"), roughness: 0.6 });
+    const lightMat = new MeshPhysicalMaterial({ color: new Color("#ddccA3".toLowerCase()), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.4 });
+    const darkMat = new MeshPhysicalMaterial({ color: new Color("#5f3f24"), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.4 });
     const sqGeo = new BoxGeometry(SQ * 0.99, 0.12, SQ * 0.99);
     for (let f = 0; f < 8; f++) {
       for (let r = 0; r < 8; r++) {
@@ -158,49 +187,43 @@ export class ChessScene {
   }
 
   private buildPiece(piece: string): Mesh {
-    const color = piece[0] === "w" ? LIGHT : DARK;
     const type = piece[1] as PieceType;
-    const mat = new MeshStandardMaterial({ color: new Color(color), roughness: 0.32, metalness: 0.2 });
+    const mat = pieceMaterial(piece[0] === "w");
     // Clone the cached body so per-setState disposal never frees the shared
     // singleton (clone copies buffers; original survives for the session).
     const node = new Mesh(bodyGeo(type).clone(), mat);
     node.castShadow = true;
     node.scale.setScalar(0.95);
-    // finials / heads
     if (type === "Q" || type === "P" || type === "B") {
-      const ball = new Mesh(new SphereGeometry(type === "P" ? 0.13 : 0.11, 16, 12), mat);
-      ball.position.y = (type === "P" ? 0.5 : type === "B" ? 0.86 : 0.96) * 0.82;
+      const ball = new Mesh(new SphereGeometry(type === "P" ? 0.12 : 0.1, 18, 14), mat);
+      ball.position.y = type === "P" ? 0.5 : type === "B" ? 0.86 : 0.96;
       ball.castShadow = true;
       node.add(ball);
     }
     if (type === "K") {
-      const v = new Mesh(new BoxGeometry(0.07, 0.26, 0.07), mat);
-      const h = new Mesh(new BoxGeometry(0.2, 0.07, 0.07), mat);
-      v.position.y = 1.06 * 0.82;
-      h.position.y = 1.02 * 0.82;
-      v.castShadow = true; h.castShadow = true;
+      const v = new Mesh(new BoxGeometry(0.07, 0.28, 0.07), mat);
+      const h = new Mesh(new BoxGeometry(0.22, 0.07, 0.07), mat);
+      v.position.y = 1.12;
+      h.position.y = 1.07;
+      v.castShadow = true;
+      h.castShadow = true;
       node.add(v, h);
     }
     if (type === "R") {
       for (let i = 0; i < 4; i++) {
-        const c = new Mesh(new BoxGeometry(0.1, 0.1, 0.1), mat);
+        const c = new Mesh(new BoxGeometry(0.11, 0.12, 0.11), mat);
         const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-        c.position.set(Math.cos(a) * 0.22, 0.72 * 0.82, Math.sin(a) * 0.22);
+        c.position.set(Math.cos(a) * 0.22, 0.72, Math.sin(a) * 0.22);
         c.castShadow = true;
         node.add(c);
       }
     }
     if (type === "N") {
-      // stylised horse head from a couple of angled blocks
-      const headMat = mat;
-      const neck = new Mesh(new BoxGeometry(0.2, 0.34, 0.26), headMat);
-      neck.position.set(0, 0.56 * 0.82, 0.02);
-      neck.rotation.x = -0.35;
-      const snout = new Mesh(new BoxGeometry(0.18, 0.16, 0.3), headMat);
-      snout.position.set(0, 0.66 * 0.82, 0.16);
-      snout.rotation.x = 0.2;
-      neck.castShadow = true; snout.castShadow = true;
-      node.add(neck, snout);
+      const head = new Mesh(knightHead().clone(), mat);
+      head.scale.setScalar(0.66);
+      head.position.set(-0.02, 0.7, 0);
+      head.castShadow = true;
+      node.add(head);
     }
     return node;
   }
@@ -271,12 +294,14 @@ export class ChessScene {
   }
 
   resize(width: number): void {
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
+    const h = width * SCENE_RATIO;
+    this.renderer.setSize(width, h, false);
+    this.fx.setSize(width, h);
     this.renderOnce();
   }
 
   private renderOnce(): void {
-    this.renderer.render(this.scene, this.camera);
+    this.fx.composer.render();
   }
 
   private startAnim(): void {
@@ -308,6 +333,7 @@ export class ChessScene {
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
+    this.fx.dispose();
     disposeObject(this.scene);
     (this.scene.environment as { dispose?: () => void } | null)?.dispose?.();
     this.scene.environment = null;

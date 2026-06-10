@@ -11,11 +11,19 @@ import {
   type Object3D,
   PMREMGenerator,
   RepeatWrapping,
+  type Scene,
   SRGBColorSpace,
   type Texture,
   type WebGLRenderer,
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { Vector2 } from "three";
+import type { Camera } from "three";
 
 export const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 export const easeOutBack = (t: number) => 1 + 2.7 * (t - 1) ** 3 + 1.7 * (t - 1) ** 2;
@@ -38,6 +46,29 @@ export function disposeObject(root: Object3D): void {
       m.dispose();
     }
   });
+}
+
+/** A cinematic post-processing stack: ambient occlusion → bloom → SMAA → ACES.
+ *  Returns a composer plus setSize/dispose that also handle every pass. */
+export function makeComposer(renderer: WebGLRenderer, scene: Scene, camera: Camera, w: number, h: number) {
+  // NB: SSAOPass misbehaves under an orthographic camera (over-darkens flat
+  // surfaces), so depth comes from real shadows; the composer does bloom + AA +
+  // ACES only.
+  const composer = new EffectComposer(renderer);
+  const render = new RenderPass(scene, camera);
+  const bloom = new UnrealBloomPass(new Vector2(w, h), 0.14, 0.5, 1.1);
+  const output = new OutputPass();
+  const smaa = new SMAAPass(w, h);
+  const passes = [render, bloom, output, smaa];
+  for (const p of passes) composer.addPass(p);
+  return {
+    composer,
+    setSize: (nw: number, nh: number) => composer.setSize(nw, nh),
+    dispose: () => {
+      for (const p of passes) (p as { dispose?: () => void }).dispose?.();
+      composer.dispose();
+    },
+  };
 }
 
 /** Bake a soft image-based environment for reflections; disposes the generator. */

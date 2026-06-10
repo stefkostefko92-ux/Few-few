@@ -17,6 +17,7 @@ import {
   Group,
   HemisphereLight,
   Mesh,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
   PCFSoftShadowMap,
@@ -32,6 +33,7 @@ import {
   bakeEnvironment,
   disposeObject,
   faceUp,
+  makeComposer,
   pipFaces,
   woodNormal,
   woodTexture,
@@ -70,6 +72,7 @@ function place(i: number): { x: number; z: number; top: boolean } {
 
 export class BackgammonScene {
   private renderer: WebGLRenderer;
+  private fx!: ReturnType<typeof makeComposer>;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private ray = new Raycaster();
@@ -118,6 +121,7 @@ export class BackgammonScene {
 
     this.scene.add(this.checkerLayer, this.hiLayer);
     this.build();
+    this.fx = makeComposer(this.renderer, this.scene, this.camera, width, width * SCENE_RATIO);
     this.renderOnce();
   }
 
@@ -204,9 +208,9 @@ export class BackgammonScene {
     // rebuild checkers each state (≤30 cylinders — cheap, and disposed cleanly)
     disposeObject(this.checkerLayer);
     this.checkerLayer.clear();
-    const geo = new CylinderGeometry(PW * 0.42, PW * 0.42, 0.22, 26);
-    const matW = new MeshStandardMaterial({ color: new Color(WHITE), roughness: 0.35, metalness: 0.15 });
-    const matB = new MeshStandardMaterial({ color: new Color(BLACK), roughness: 0.4, metalness: 0.25 });
+    const geo = new CylinderGeometry(PW * 0.42, PW * 0.42, 0.22, 30);
+    const matW = new MeshPhysicalMaterial({ color: new Color(WHITE), roughness: 0.32, metalness: 0.05, clearcoat: 0.8, clearcoatRoughness: 0.2 });
+    const matB = new MeshPhysicalMaterial({ color: new Color(BLACK), roughness: 0.2, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.12 });
 
     for (let i = 0; i < 24; i++) {
       const v = state.points[i] ?? 0;
@@ -266,7 +270,7 @@ export class BackgammonScene {
     }
     while (this.dice.length < 2) {
       const faces = pipFaces();
-      const mats = DICE_FACE_ORDER.map((f) => new MeshStandardMaterial({ map: faces[f], roughness: 0.45 }));
+      const mats = DICE_FACE_ORDER.map((f) => new MeshPhysicalMaterial({ map: faces[f], roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2 }));
       const die = new Mesh(new BoxGeometry(0.9, 0.9, 0.9), mats);
       die.castShadow = true;
       this.scene.add(die);
@@ -294,12 +298,14 @@ export class BackgammonScene {
   }
 
   resize(width: number): void {
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
+    const h = width * SCENE_RATIO;
+    this.renderer.setSize(width, h, false);
+    this.fx.setSize(width, h);
     this.renderOnce();
   }
 
   private renderOnce(): void {
-    this.renderer.render(this.scene, this.camera);
+    this.fx.composer.render();
   }
 
   private startAnim(): void {
@@ -350,6 +356,7 @@ export class BackgammonScene {
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
+    this.fx.dispose();
     disposeObject(this.scene);
     (this.scene.environment as { dispose?: () => void } | null)?.dispose?.();
     this.scene.environment = null;

@@ -408,7 +408,66 @@
   }
 }
 
+/* ─── Cinematic hero ambiance ──────────────────────────────────────────────
+   A slowly drifting golden aurora behind the hero, a moving sheen across the
+   wordmark, a swaying light shaft and glowing brass motes. */
+.lp-hero {
+  background:
+    radial-gradient(40% 36% at 22% 18%, rgba(217, 178, 95, 0.16), transparent 70%),
+    radial-gradient(46% 40% at 80% 24%, rgba(56, 142, 96, 0.18), transparent 70%),
+    radial-gradient(60% 50% at 50% 0%, rgba(255, 240, 205, 0.12), transparent 60%),
+    radial-gradient(90% 70% at 50% 120%, rgba(31, 90, 64, 0.35), transparent 60%),
+    linear-gradient(180deg, #05201600 0%, #0a1d15 60%, #060807 100%);
+  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%, 100% 100%;
+  animation: lp-aurora 22s ease-in-out infinite alternate;
+}
+@keyframes lp-aurora {
+  0% { background-position: 0% 0%, 100% 0%, 0 0, 0 0, 0 0; }
+  100% { background-position: 60% 40%, 30% 60%, 0 0, 0 0, 0 0; }
+}
+.lp-hero::before {
+  animation: lp-shaft 11s ease-in-out infinite alternate;
+  transform-origin: 50% 0;
+}
+@keyframes lp-shaft {
+  0% { transform: translateX(-50%) rotate(-2.5deg); opacity: 0.85; }
+  100% { transform: translateX(-50%) rotate(2.5deg); opacity: 1; }
+}
+
+/* golden sheen travelling across the wordmark */
+.lp-title {
+  background: linear-gradient(
+    110deg,
+    var(--brass-300) 0%,
+    var(--brass-100) 18%,
+    #fff7e2 30%,
+    var(--brass-100) 42%,
+    var(--brass-400) 70%,
+    var(--brass-300) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    lp-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.06s both,
+    lp-sheen 7s ease-in-out 0.8s infinite;
+}
+@keyframes lp-sheen {
+  0%, 100% { background-position: 0% 0; }
+  50% { background-position: 100% 0; }
+}
+
+/* glowier, livelier motes */
+.lp-mote {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 12px 2px var(--brass-300);
+  opacity: 0.55;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lp-mote { animation: none; }
+  .lp-hero, .lp-hero::before { animation: none; }
   .lp-eyebrow, .lp-title, .lp-sub, .lp-lead, .lp-cta-row, .lp-fan { animation: none; }
 }
