@@ -21,9 +21,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import { validateConfig, enabledAccounts } from './lib/config.mjs';
-import { accountView, renderDashboardHtml } from './lib/dashboard.mjs';
-import { mergeSettings } from '../src/shared/defaults.js';
+import { validateConfig, enabledAccounts, accountSettings } from './lib/config.mjs';
+import { accountView, renderDashboardHtml, dashboardResponse } from './lib/dashboard.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const EXT_PATH = path.resolve(HERE, '..');                 // the extension root
@@ -49,10 +48,7 @@ function loadAccountSettings(acc) {
     const p = path.resolve(HERE, acc.settingsFile);
     if (fs.existsSync(p)) { try { partial = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) {} }
   }
-  const s = mergeSettings(partial);
-  s.general.enabled = true;
-  s.general.startOnLoad = true;   // auto-start once the game protocol is ready
-  return s;
+  return accountSettings(partial);   // merge + force enabled/startOnLoad (unit-tested)
 }
 
 /* ------------------------------ launching ------------------------------ */
@@ -124,26 +120,18 @@ function startDashboard(cfg, opts) {
     token = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
     console.warn('Dashboard token was missing/"change-me" — generated a random one for this session.');
   }
-  const localOrigin = (o) => !o || /^https?:\/\/(127\.0\.0\.1|localhost)(:|$)/.test(o);
   const server = http.createServer(async (req, res) => {
     const u = new URL(req.url, 'http://localhost');
-    if (u.searchParams.get('token') !== token) { res.writeHead(401); return res.end('unauthorized'); }
-    if (u.pathname === '/api/status') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify([...registry.values()].map((e) => accountView(e))));
-    }
-    if (req.method === 'POST' && (u.pathname === '/api/start' || u.pathname === '/api/stop')) {
-      if (!localOrigin(req.headers.origin)) { res.writeHead(403); return res.end('forbidden'); } // anti-CSRF
-      if (u.pathname === '/api/start') {
-        const e = registry.get(u.searchParams.get('id'));
-        if (e) launchAccount(e.account, opts);   // reuse the real run opts (headless/dryRun)
-      } else {
-        await stopAccount(u.searchParams.get('id'));
-      }
-      res.writeHead(200); return res.end('ok');
-    }
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(renderDashboardHtml([...registry.values()].map((e) => accountView(e)), { token }));
+    const views = () => [...registry.values()].map((e) => accountView(e));
+    const r = dashboardResponse({
+      method: req.method, pathname: u.pathname,
+      query: Object.fromEntries(u.searchParams), origin: req.headers.origin, token,
+      views: views(), render: () => renderDashboardHtml(views(), { token })
+    });
+    if (r.action === 'start') { const e = registry.get(r.id); if (e) launchAccount(e.account, opts); }
+    if (r.action === 'stop') { await stopAccount(r.id); }
+    res.writeHead(r.status, { 'Content-Type': r.contentType });
+    res.end(r.body);
   });
   server.listen(port, '127.0.0.1', () => console.log(`Dashboard: http://127.0.0.1:${port}?token=${token}`));
 }

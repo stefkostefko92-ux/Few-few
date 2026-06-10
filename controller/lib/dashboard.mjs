@@ -2,6 +2,26 @@
  * Multi-account controller — dashboard view model + HTML (pure, unit-tested).
  */
 
+// Pure dashboard request handler (unit-tested). Enforces the token and an
+// anti-CSRF Origin check on mutations; returns what to send and, for mutations,
+// which action the caller should perform (so this stays side-effect free).
+//   opts: { method, pathname, query:{token,id}, origin, token, views, render }
+export function dashboardResponse(opts) {
+  const { method, pathname, query = {}, origin, token, views = [], render } = opts;
+  if (!token || query.token !== token) {
+    return { status: 401, contentType: 'text/plain', body: 'unauthorized' };
+  }
+  const localOrigin = !origin || /^https?:\/\/(127\.0\.0\.1|localhost)(:|$)/.test(origin);
+  if (method === 'POST' && (pathname === '/api/start' || pathname === '/api/stop')) {
+    if (!localOrigin) return { status: 403, contentType: 'text/plain', body: 'forbidden' };
+    return { status: 200, contentType: 'text/plain', body: 'ok', action: pathname === '/api/start' ? 'start' : 'stop', id: query.id };
+  }
+  if (pathname === '/api/status') {
+    return { status: 200, contentType: 'application/json', body: JSON.stringify(views) };
+  }
+  return { status: 200, contentType: 'text/html', body: render ? render() : '' };
+}
+
 export function accountView(entry, now = Date.now()) {
   const s = entry.lastStats || {};
   return {

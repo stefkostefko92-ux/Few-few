@@ -4,6 +4,16 @@
  * No filesystem or browser here; just normalises and validates the accounts.json
  * structure so controller.mjs can rely on clean data.
  */
+import { mergeSettings } from '../../src/shared/defaults.js';
+
+// Per-account bot settings: a partial overlaid on the defaults, forced to
+// auto-start so the account begins playing as soon as the game protocol is ready.
+export function accountSettings(partial) {
+  const s = mergeSettings(partial || {});
+  s.general.enabled = true;
+  s.general.startOnLoad = true;
+  return s;
+}
 
 export function normalizeAccount(acc, defaults = {}) {
   return {

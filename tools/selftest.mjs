@@ -7,8 +7,8 @@ import { applyPreset, PRESET_IDS } from '../src/shared/presets.js';
 import { telegramRequest, discordRequest, buildExternalNotifications } from '../src/shared/notify.js';
 import { circleMultipliers, smartScore, chooseSmart } from '../src/shared/smart.js';
 import { verifyKey, handle } from '../server/license-server.mjs';
-import { validateConfig, normalizeAccount, enabledAccounts } from '../controller/lib/config.mjs';
-import { accountView, renderDashboardHtml } from '../controller/lib/dashboard.mjs';
+import { validateConfig, normalizeAccount, enabledAccounts, accountSettings } from '../controller/lib/config.mjs';
+import { accountView, renderDashboardHtml, dashboardResponse } from '../controller/lib/dashboard.mjs';
 
 let pass = 0;
 function test(name, fn) { try { fn(); console.log('  ok  ' + name); pass++; } catch (e) { console.error('FAIL ' + name + '\n     ' + e.message); process.exitCode = 1; } }
@@ -162,6 +162,34 @@ test('dashboard view + html render', () => {
   const html = renderDashboardHtml([v], { token: 't' });
   assert.ok(html.includes('Main'));
   assert.ok(html.includes('1.5k'));
+});
+
+test('accountSettings overlays partial + forces auto-start', () => {
+  const s = accountSettings({ adventures: { enabled: true, strategy: 'smart' } });
+  assert.equal(s.general.enabled, true);
+  assert.equal(s.general.startOnLoad, true);
+  assert.equal(s.adventures.strategy, 'smart');
+  assert.ok(s.pvp && typeof s.pvp.cooldownSeconds === 'number'); // defaults filled
+});
+
+test('dashboardResponse: token + CSRF + routing', () => {
+  const base = { token: 'secret', views: [{ id: 'a', label: 'A' }], render: () => '<html>' };
+  // missing / wrong token
+  assert.equal(dashboardResponse({ ...base, method: 'GET', pathname: '/', query: {} }).status, 401);
+  assert.equal(dashboardResponse({ ...base, method: 'GET', pathname: '/', query: { token: 'nope' } }).status, 401);
+  // status JSON
+  const st = dashboardResponse({ ...base, method: 'GET', pathname: '/api/status', query: { token: 'secret' } });
+  assert.equal(st.status, 200); assert.ok(st.body.includes('"id":"a"'));
+  // cross-origin POST blocked
+  const evil = dashboardResponse({ ...base, method: 'POST', pathname: '/api/start', query: { token: 'secret', id: 'a' }, origin: 'https://evil.com' });
+  assert.equal(evil.status, 403);
+  // local POST -> action
+  const ok = dashboardResponse({ ...base, method: 'POST', pathname: '/api/start', query: { token: 'secret', id: 'a' }, origin: 'http://127.0.0.1:8899' });
+  assert.equal(ok.status, 200); assert.equal(ok.action, 'start'); assert.equal(ok.id, 'a');
+  // no Origin (curl/same-process) allowed
+  assert.equal(dashboardResponse({ ...base, method: 'POST', pathname: '/api/stop', query: { token: 'secret', id: 'a' } }).action, 'stop');
+  // default -> html
+  assert.equal(dashboardResponse({ ...base, method: 'GET', pathname: '/', query: { token: 'secret' } }).contentType, 'text/html');
 });
 
 console.log(`\n${pass} checks passed.`);
