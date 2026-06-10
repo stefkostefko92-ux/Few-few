@@ -1,17 +1,4 @@
-/**
- * Auto-sell module (verified call: SellItem(id, char_id|0, itemXpos)).
- *
- * Sells ONLY equipment, and by rarity:
- *   - Common (normal) items  -> sold when `sellCommon` is on (default).
- *   - Unique / epic (T1+)    -> protected; sold ONLY when `sellSpecial` is on.
- * Runes/stones (itemcode 18-23) and non-equipment (e.g. potions, type not 1-8)
- * are never sold, and equipped items are never sold.
- *
- * Item fields are the real ones from the game client's GetEquipment payload:
- *   id, is_equipped, is_unique, type (1-8 = equipment slot), itemcode,
- *   sellvalue, screen_x (bag x position). On first scan it logs the field names
- *   for verification. Disabled by default.
- */
+// Sells equipment (never runes/stones/potions), by rarity. Off by default.
 (function () {
   'use strict';
   const TB = window.TanothBot;

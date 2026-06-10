@@ -64,9 +64,9 @@
     const doc = parse(res.xml);
     // XML-RPC faults come back HTTP 200 with a <fault> body. Only treat genuine
     // session/auth faults as a lost session (-> auto-login). Ordinary faults
-    // (not enough gold, on cooldown, daily limit, invalid action, …) become a
+    // (not enough gold, on cooldown, daily limit, invalid action, ...) become a
     // plain FAULT error the caller/module handles or that counts toward the
-    // error-stop — never a wrongful page reload or an infinite transient retry.
+    // error-stop - never a wrongful page reload or an infinite transient retry.
     const fault = doc.querySelector('methodResponse > fault');
     if (fault) {
       const faultStr = findValue(doc, 'faultString', 'string') || '';

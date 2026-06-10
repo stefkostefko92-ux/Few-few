@@ -1,7 +1,4 @@
-/**
- * Session statistics. Increments are batched locally for the live panel and
- * forwarded to the service worker so totals survive page reloads.
- */
+// Session counters, mirrored to the service worker so totals survive reloads.
 (function () {
   'use strict';
   const TB = window.TanothBot;

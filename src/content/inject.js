@@ -1,25 +1,5 @@
-/**
- * Page-world XML-RPC client for Tanoth.
- *
- * Runs in the page's own context so it can read `window.flashvars.sessionID`
- * (the game's session token, not reachable from the isolated content world)
- * and POST to the game's gateway with the right cookies and origin.
- *
- * Tanoth's HTML5 client talks to the server over **XML-RPC**: an HTTP POST of a
- * `<methodCall>` document to `<gameUrl>/xmlrpc`, where the game client lives at
- * `<gameUrl>/main/client`. Every call's first parameter is the session id as a
- * string. (Verified against the open-source BoTanoth client.)
- *
- * Responsibilities:
- *   1. Discover the gateway URL and session id (from flashvars, with a sniffing
- *      fallback for client variants that don't expose flashvars).
- *   2. Execute `callXmlRpc(method, params)` on request from the content world,
- *      prepending the session id, and return the raw XML response text (parsed
- *      in the content world, which also has DOMParser).
- *   3. Passively sniff the game's own XML-RPC traffic to learn the full set of
- *      method names available — so optional modules can use methods this file
- *      doesn't hard-code.
- */
+// Runs in the page context. Reads window.flashvars.sessionID and posts XML-RPC
+// calls to <world>/xmlrpc, and exposes a replay bridge to the content script.
 (function () {
   'use strict';
 
@@ -170,7 +150,7 @@
   // before any context (which can trigger auto-start) arrives.
   post({ type: 'inject-ready' });
 
-  // Keep trying to read flashvars — it may be set slightly after load.
+  // Keep trying to read flashvars - it may be set slightly after load.
   refreshContext();
   let tries = 0;
   const iv = setInterval(() => {

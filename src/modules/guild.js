@@ -1,11 +1,4 @@
-/**
- * Guild module (verified: Guild_SpendGold).
- *
- * An optional gold sink: donates surplus gold to the guild treasury, keeping a
- * reserve. Useful if you'd rather bank gold into guild upgrades than the circle
- * or attributes. Disabled by default. (Guild creation/invites/fights are
- * intentionally NOT automated — they affect other players.)
- */
+// Optional gold sink: donate surplus gold to the guild treasury.
 (function () {
   'use strict';
   const TB = window.TanothBot;

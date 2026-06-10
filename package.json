@@ -3,7 +3,7 @@
   "version": "1.9.0",
   "private": true,
   "type": "module",
-  "description": "Tanoth Master Bot — Chrome extension + tooling (tests/dev only; the store package is built by tools/package.sh)",
+  "description": "Tanoth Master Bot - Chrome extension + tooling (tests/dev only; the store package is built by tools/package.sh)",
   "scripts": {
     "test": "bash tools/test.sh",
     "test:ext": "node tools/ext-test.mjs"

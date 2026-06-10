@@ -1,5 +1,5 @@
 /**
- * Multi-account controller — dashboard view model + HTML (pure, unit-tested).
+ * Multi-account controller - dashboard view model + HTML (pure, unit-tested).
  */
 
 // Pure dashboard request handler (unit-tested). Enforces the token and an

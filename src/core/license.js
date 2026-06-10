@@ -1,11 +1,4 @@
-/**
- * Content-side licensing gate.
- *
- * Mirrors the subscription status owned by the service worker (trial / active /
- * expired) and exposes a synchronous `entitled()` the scheduler can check
- * before starting. Payment and key verification live in the service worker;
- * this module only reflects state and relays user actions.
- */
+// Content-side view of the subscription state owned by the service worker.
 (function () {
   'use strict';
   const TB = window.TanothBot;

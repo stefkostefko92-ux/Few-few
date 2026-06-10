@@ -1,14 +1,4 @@
-/**
- * Map module (verified: GetMapDetails / StartLiberation, plus
- * StartIllusionCave / StartDragon).
- *
- * The world map's "encounters" (срещи) are Liberation battles: GetMapDetails
- * returns `energy` (the X/X encounters left) and a list of `monsters`, each at
- * a map `location` slot with `stars` (>=1 = available to fight). This module
- * auto-clears the available encounters one per cycle (optionally buying energy),
- * limited to a chosen set of location slots, and also runs the Cave (Dungeon of
- * Illusions) and Dragon events on a slower timer.
- */
+// Map: liberation encounters in region-priority order, plus cave and dragon.
 (function () {
   'use strict';
   const TB = window.TanothBot;
@@ -90,7 +80,7 @@
             catch (e) { encounterCooldown = Date.now() + 30 * 60000; }
             return;
           }
-          // Nothing to fight right now — wait the real regen cooldown the game
+          // Nothing to fight right now - wait the real regen cooldown the game
           // reports (next_attack is an epoch-second timestamp), so we don't poll.
           const nextMs = (map.nextAttack && map.nextAttack > 0) ? map.nextAttack * 1000 - Date.now() : 0;
           const waitMs = nextMs > 0 ? nextMs + 1000 : 20 * 60000;
@@ -125,7 +115,7 @@
         };
       }
 
-      // Waiting on cooldowns — ask the scheduler to wake us exactly when the
+      // Waiting on cooldowns - ask the scheduler to wake us exactly when the
       // earliest one ends, so encounters resend the moment regen completes.
       const waits = [];
       if (c.encounters && encounterCooldown > Date.now()) waits.push(encounterCooldown);

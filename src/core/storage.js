@@ -1,11 +1,4 @@
-/**
- * Settings access for the content side.
- *
- * Reads the merged settings the service worker seeded into chrome.storage,
- * caches them, keeps the cache fresh on storage changes, and exposes helpers
- * for modules to read their own slice. Persisting goes through the service
- * worker so the merge/migration logic stays in one place.
- */
+// Settings cache for the content side, synced via chrome.storage.
 (function () {
   'use strict';
   const TB = window.TanothBot;

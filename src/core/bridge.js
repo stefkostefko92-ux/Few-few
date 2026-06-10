@@ -1,12 +1,4 @@
-/**
- * Content-world half of the page bridge.
- *
- * Injects inject.js into the page context, then exposes a promise-based
- * `callXmlRpc(method, params)` that round-trips through window.postMessage to
- * the page-world XML-RPC client. It also tracks the discovered context
- * (gateway URL, whether a session was found, and the set of method names seen
- * in the game's own traffic).
- */
+// Connects the page-world inject.js to the isolated content world.
 (function () {
   'use strict';
   const TB = window.TanothBot;

@@ -115,7 +115,7 @@ export const DEFAULT_SETTINGS = {
   autosell: {
     enabled: false,
     sellCommon: true,              // sell common (normal) equipment
-    sellSpecial: false,            // ALSO sell unique / epic (T1+) equipment — opt in
+    sellSpecial: false,            // ALSO sell unique / epic (T1+) equipment - opt in
     dumpSchema: true               // log the inventory item fields once for verification
   },
 

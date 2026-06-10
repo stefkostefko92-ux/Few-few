@@ -1,10 +1,4 @@
-/**
- * Event / Mission Quest module (verified: GetGameEvent / StartEventAction).
- *
- * The King's mission is a timed quest (like an adventure) that yields gold/XP and
- * sometimes a gem/item. When the character is free and a quest is offered, this
- * starts it and waits out the timer; otherwise it backs off until the next one.
- */
+// The King's mission quest (a timed quest like an adventure).
 (function () {
   'use strict';
   const TB = window.TanothBot;

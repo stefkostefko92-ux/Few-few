@@ -1,11 +1,4 @@
-/**
- * Work module (verified: GetWorkData / StartWork).
- *
- * Low-priority filler: when nothing else is running it sends the character on a
- * paid work shift of the configured length (capped to the server's
- * max_working_hours). Yields to adventures when free adventures are available
- * so the higher-value daily content is never blocked.
- */
+// Paid work shifts, used as idle-time filler.
 (function () {
   'use strict';
   const TB = window.TanothBot;

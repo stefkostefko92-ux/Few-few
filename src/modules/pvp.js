@@ -1,13 +1,4 @@
-/**
- * Arena / PvP module (verified: Fight).
- *
- * Tanoth's arena has a cooldown between fights. Fighting DURING the cooldown
- * makes the server spend bloodstones, so by default this module waits the
- * cooldown (no bloodstones spent) and only fights when it's over. Enable
- * `useBloodstones` to fight during the cooldown anyway — spending bloodstones to
- * skip it — down to the configured reserve. Farms the configured opponent
- * name(s) up to a daily cap.
- */
+// Arena duels. Waits the cooldown unless you allow spending bloodstones.
 (function () {
   'use strict';
   const TB = window.TanothBot;

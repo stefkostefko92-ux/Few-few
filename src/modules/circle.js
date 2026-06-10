@@ -1,16 +1,4 @@
-/**
- * Evocation Circle module ("arcane upgrades") — verified XML-RPC protocol.
- *
- * The circle is a tree of 16 nodes; node 16 is the centre whose level (0–10)
- * gates the others. Each node array is [level, …, base, increment, factor] and
- * the gold cost is floor((base + level*increment) * factor). The node-selection
- * order below is ported verbatim from the official client so purchases follow
- * the optimal path.
- *
- * Detail/visibility: logs the centre progress (Lv X/10) and the total of the
- * outer nodes each pass, plus the cost of every purchase. Honours currency
- * (gold/bloodstones), buy-multiple, a centre-level stop target and a reserve.
- */
+// Evocation circle: buy the optimal node automatically, or only the ones you pick.
 (function () {
   'use strict';
   const TB = window.TanothBot;
@@ -172,7 +160,7 @@
           }
           Stats.bump({ circleNodes: multiple });
         } catch (e) {
-          // Locked/maxed node (common in manual mode) — skip it for a while.
+          // Locked/maxed node (common in manual mode) - skip it for a while.
           nodeFailUntil[best] = Date.now() + 5 * 60000;
           Logger.warn(I18n.t('logCircleBuyFail', [nodeName(best), e.message]));
         }

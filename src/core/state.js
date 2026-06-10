@@ -1,11 +1,4 @@
-/**
- * In-memory snapshot of the player's current game state.
- *
- * Populated by the API layer as responses are observed, and read by modules to
- * make decisions (e.g. "do I have a free adventure?", "is my HP high enough?").
- * The shape mirrors the data Tanoth surfaces; fields default to null/0 until
- * the bot has seen a corresponding response.
- */
+// In-memory snapshot of the character/game state.
 (function () {
   'use strict';
   const TB = window.TanothBot;

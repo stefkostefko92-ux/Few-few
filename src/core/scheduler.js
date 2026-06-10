@@ -1,17 +1,5 @@
-/**
- * The automation engine.
- *
- * Runs a cooperative loop: each cycle it asks every enabled module (in priority
- * order) whether it has work to do; the first module that returns an action is
- * executed, then the loop waits a humanized delay before the next cycle. This
- * keeps exactly one action in flight at a time — mirroring how a human plays —
- * and lets high-priority concerns (auto-login, free adventures) pre-empt
- * lower-priority grinding (training, selling).
- *
- * Modules register via TB.Scheduler.register({ id, priority, tick }). `tick`
- * returns either null (nothing to do) or a function that performs one unit of
- * work and resolves when done.
- */
+// The automation loop. Each cycle the highest-priority ready module runs one
+// action, then we wait a humanized delay (or barely wait, if humanize is off).
 (function () {
   'use strict';
   const TB = window.TanothBot;
@@ -112,7 +100,7 @@
       if (!withinActiveWindow()) {
         if (!paused) { paused = true; pausedByWindow = true; Logger.info(I18n.t('logOutsideWindow')); emitStatus(); }
       } else if (paused && pausedByWindow && Date.now() >= onBreakUntil) {
-        // Auto-resume ONLY a window-induced pause — never override a manual pause.
+        // Auto-resume ONLY a window-induced pause - never override a manual pause.
         paused = false; pausedByWindow = false; emitStatus(); loop();
       }
     }
@@ -228,7 +216,7 @@
     }
 
     // Between actions: the humanized delay (or spam when humanize is off).
-    // When nothing was actionable, idle — but if a module registered a precise
+    // When nothing was actionable, idle - but if a module registered a precise
     // wake (e.g. a map/pvp cooldown end), sleep exactly until then so it resends
     // the moment the cooldown is over rather than on the next idle poll.
     const g = Storage.section('general') || {};

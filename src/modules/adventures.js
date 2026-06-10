@@ -1,19 +1,10 @@
-/**
- * Adventures module — the core daily loop (verified XML-RPC protocol).
- *
- * Each active cycle (when no task is running) it calls GetAdventures, which
- * also resolves a just-finished adventure server-side. It then picks the best
- * adventure within the configured difficulty using the chosen strategy and
- * calls StartAdventure, marking the character busy for the adventure's duration
- * (scaled by the server speed). When the free daily adventures are spent it can
- * optionally keep going on bloodstones, otherwise it backs off for 20 minutes.
- */
+// Adventures: pick one by strategy/difficulty, start it, wait out the timer.
 (function () {
   'use strict';
   const TB = window.TanothBot;
   const { Api, State, Storage, Stats, Logger, I18n, Scheduler } = TB;
 
-  // Tanoth difficulty values (verified): easy=-1 … very_difficult=2.
+  // Tanoth difficulty values (verified): easy=-1 ... very_difficult=2.
   const DIFFICULTY = { easy: -1, medium: 0, difficult: 1, very_difficult: 2 };
 
   function cfg() { return Storage.section('adventures') || {}; }
@@ -53,7 +44,7 @@
       if (!c.enabled) return null;
       if (!Api.ready()) return null;
 
-      // Busy with a running task — wait it out.
+      // Busy with a running task - wait it out.
       if (State.get().adventureReturnAt > Date.now()) return null;
 
       return async () => {
@@ -73,7 +64,7 @@
           if (mu.taskTime > 0) {
             Logger.info(I18n.t('logTaskRunning', [String(mu.taskType || '?'), String(mu.taskTime)]));
           } else {
-            // Unknown remaining time — back off a few minutes.
+            // Unknown remaining time - back off a few minutes.
             State.patch({ adventureReturnAt: Date.now() + 5 * 60000 });
           }
           return;

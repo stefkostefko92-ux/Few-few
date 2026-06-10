@@ -13,7 +13,7 @@ import { accountView, renderDashboardHtml, dashboardResponse } from '../controll
 let pass = 0;
 function test(name, fn) { try { fn(); console.log('  ok  ' + name); pass++; } catch (e) { console.error('FAIL ' + name + '\n     ' + e.message); process.exitCode = 1; } }
 
-console.log('— presets —');
+console.log('- presets -');
 test('presets apply and do not mutate input', () => {
   const base = mergeSettings(null);
   const out = applyPreset(base, 'grind');
@@ -30,7 +30,7 @@ test('all preset ids resolve', () => {
   }
 });
 
-console.log('— notifications —');
+console.log('- notifications -');
 test('telegram request built (plain text)', () => {
   const r = telegramRequest({ enabled: true, botToken: 'abc', chatId: '42' }, 'Title', 'Hello_world');
   assert.match(r.url, /api\.telegram\.org\/botabc\/sendMessage/);
@@ -56,7 +56,7 @@ test('buildExternalNotifications aggregates enabled channels', () => {
   assert.equal(reqs.length, 2);
 });
 
-console.log('— smart adventure picker —');
+console.log('- smart adventure picker -');
 test('circle multipliers from node levels', () => {
   const m = circleMultipliers({ 1: [10], 8: [100] }); // Jade lvl 10, Amethyst lvl 100
   assert.ok(Math.abs(m.xp - 1.02) < 1e-9);   // +0.2%*10
@@ -76,7 +76,7 @@ test('smartScore is per-second', () => {
   assert.equal(smartScore({ gold: 100, xp: 0, duration: 50 }, m, 1), 2);
 });
 
-console.log('— settings merge (export/import) —');
+console.log('- settings merge (export/import) -');
 test('merge fills new sections and keeps user values', () => {
   const stored = { adventures: { strategy: 'smart' }, webhooks: { telegram: { enabled: true, botToken: 'x', chatId: 'y' } } };
   const m = mergeSettings(stored);
@@ -92,7 +92,7 @@ test('export then import round-trips', () => {
   assert.equal(b.pvp.opponents, 'Bob, Alice');
 });
 
-console.log('— license keys + server —');
+console.log('- license keys + server -');
 const SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
 function genKey(days) {
   const exp = Math.floor(Date.now() / 1000) + Math.round(days * 86400);
@@ -127,7 +127,7 @@ test('server status reflects binding', () => {
   assert.equal(bad.body.entitled, false);
 });
 
-console.log('— multi-account controller —');
+console.log('- multi-account controller -');
 test('validateConfig accepts good config, normalizes defaults', () => {
   const r = validateConfig({ browser: { proxyDefault: '' }, accounts: [{ id: 'a', world: 'https://x/game' }] });
   assert.equal(r.ok, true);

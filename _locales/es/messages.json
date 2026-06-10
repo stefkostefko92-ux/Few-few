@@ -45,7 +45,7 @@
     "message": "Ajustes"
   },
   "uiProtoWaiting": {
-    "message": "Aprendiendo el protocolo…"
+    "message": "Aprendiendo el protocolo..."
   },
   "uiProtoReady": {
     "message": "Protocolo listo"
@@ -144,7 +144,7 @@
     "message": "Mostrar panel"
   },
   "popupNoChar": {
-    "message": "Esperando datos del personaje…"
+    "message": "Esperando datos del personaje..."
   },
   "logEngineStarted": {
     "message": "Motor iniciado."

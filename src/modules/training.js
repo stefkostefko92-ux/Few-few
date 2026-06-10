@@ -1,14 +1,4 @@
-/**
- * Training module — raises character attributes via RaiseAttribute (verified).
- *
- * Cost (verified from the client): floor((bought * increment + base) * factor),
- * where `bought` is the attribute's current value and base/increment/factor are
- * the global cost parameters from GetUserAttributes.
- *
- * To avoid the "not enough gold" false-negative, the affordability check uses a
- * FRESH gold value: the action runs MiniUpdate immediately before deciding, so
- * gold earned from a just-finished adventure is taken into account.
- */
+// Spend gold raising STR/DEX/CON/INT (or whichever is cheapest).
 (function () {
   'use strict';
   const TB = window.TanothBot;

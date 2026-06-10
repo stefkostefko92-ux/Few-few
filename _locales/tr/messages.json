@@ -45,7 +45,7 @@
     "message": "Ayarlar"
   },
   "uiProtoWaiting": {
-    "message": "Protokol öğreniliyor…"
+    "message": "Protokol öğreniliyor..."
   },
   "uiProtoReady": {
     "message": "Protokol hazır"
@@ -144,7 +144,7 @@
     "message": "Paneli göster"
   },
   "popupNoChar": {
-    "message": "Karakter verisi bekleniyor…"
+    "message": "Karakter verisi bekleniyor..."
   },
   "logEngineStarted": {
     "message": "Motor başlatıldı."

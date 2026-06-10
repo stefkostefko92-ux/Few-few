@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * api.js parsing tests — runs the REAL src/core/api.js against crafted Tanoth
+ * api.js parsing tests - runs the REAL src/core/api.js against crafted Tanoth
  * XML-RPC responses, using linkedom as a standards DOM (DOMParser + querySelector
  * + getElementsByTagName). Covers the most fragile area: field-name extraction,
  * fault handling (SESSION_EXPIRED vs FAULT), and the phantom-struct guard.
@@ -41,7 +41,7 @@ const m = (name, type, val) => `<member><name>${name}</name><value><${type}>${va
 let pass = 0;
 async function test(name, fn) { try { await fn(); console.log('  ok  ' + name); pass++; } catch (e) { console.error('FAIL ' + name + '\n     ' + (e.stack || e.message)); process.exitCode = 1; } }
 
-console.log('— api.js XML-RPC parsing —');
+console.log('- api.js XML-RPC parsing -');
 
 await test('miniUpdate parses gold/bs and sets a running-task timer', async () => {
   const a = makeApi();
@@ -109,7 +109,7 @@ await test('parseMap reads energy/next_attack/monsters WITHOUT a phantom outer s
   ), 'text/xml'));
   assert.equal(doc.energy, 9);
   assert.equal(doc.nextAttack, 1700001234);
-  assert.equal(doc.monsters.length, 2, 'exactly two monsters — no phantom from the wrapper struct');
+  assert.equal(doc.monsters.length, 2, 'exactly two monsters - no phantom from the wrapper struct');
   assert.deepEqual(doc.monsters.map((x) => x.location).sort(), [2, 5]);
 });
 

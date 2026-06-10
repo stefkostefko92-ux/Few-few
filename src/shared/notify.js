@@ -8,7 +8,7 @@
 
 export function telegramRequest(cfg, title, message) {
   if (!cfg || !cfg.enabled || !cfg.botToken || !cfg.chatId) return null;
-  // Plain text (no parse_mode) — avoids 400s from Markdown edge cases.
+  // Plain text (no parse_mode) - avoids 400s from Markdown edge cases.
   const text = (title ? title + '\n' : '') + (message || '');
   return {
     url: `https://api.telegram.org/bot${encodeURIComponent(cfg.botToken)}/sendMessage`,

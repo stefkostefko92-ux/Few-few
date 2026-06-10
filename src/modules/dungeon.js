@@ -1,11 +1,4 @@
-/**
- * Dungeon module (verified: GetDungeon / StartDungeon, + Shadow dungeon:
- * StartShadowdungeon / FightShadowdungeon / ClaimShadowdungeon).
- *
- * Runs the daily dungeon while free tries remain. Mode 'normal' does a normal
- * run; mode 'shadow' descends the Shadow dungeon (start -> fight rounds ->
- * claim) — both consume the same daily tries. Backs off when tries are spent.
- */
+// Daily dungeon, normal or shadow mode (both use the same daily tries).
 (function () {
   'use strict';
   const TB = window.TanothBot;

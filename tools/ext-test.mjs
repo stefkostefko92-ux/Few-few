@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Extension integration test — loads the REAL unpacked extension into a real
+ * Extension integration test - loads the REAL unpacked extension into a real
  * Chromium (Playwright) and verifies it boots cleanly: the MV3 service worker
  * registers, the options/popup/stats pages run their JS without uncaught errors
  * and resolve i18n, and the content script mounts the in-game panel on a (faked)
@@ -31,7 +31,7 @@ try {
   // 1) Service worker registers (MV3 + manifest valid).
   let [sw] = context.serviceWorkers();
   if (!sw) sw = await context.waitForEvent('serviceworker', { timeout: 20000 }).catch(() => null);
-  check('MV3 service worker registers', !!sw, 'no service worker — manifest/SW failed to load');
+  check('MV3 service worker registers', !!sw, 'no service worker - manifest/SW failed to load');
   if (!sw) throw new Error('no service worker');
   const extId = new URL(sw.url()).host;
   console.log('  extension id:', extId);

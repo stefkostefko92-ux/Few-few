@@ -3,7 +3,7 @@
  * that mirrors DEFAULT_SETTINGS, so adding a field is a one-line change here
  * plus a label in the locale file. Labels/descriptions resolve through
  * chrome.i18n, which falls back to the default (English) locale for any key a
- * translation is missing — that is how the 6 supported languages degrade
+ * translation is missing - that is how the 6 supported languages degrade
  * gracefully for advanced options.
  */
 import { DEFAULT_SETTINGS, mergeSettings } from '../src/shared/defaults.js';
@@ -16,14 +16,14 @@ const RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
 // Arcane Circle nodes (names from the Tanoth wiki) -> RPC node number.
 const CIRCLE_NODES = [
-  { n: 1, label: 'Jade — +exp' }, { n: 2, label: 'Aquamarine — potion duration' },
-  { n: 3, label: 'Sapphire — fame' }, { n: 4, label: 'Emerald — sell price' },
-  { n: 5, label: 'Ruby — potion power' }, { n: 6, label: 'Topaz — inventory slots' },
-  { n: 7, label: 'Amber — work salary' }, { n: 8, label: 'Amethyst — adventure gold' },
-  { n: 9, label: 'Diamond — shop discount' }, { n: 10, label: "Tiger's Eye — travel speed" },
-  { n: 11, label: 'Negotiation Rune — INT' }, { n: 12, label: 'Wisdom Rune — CON' },
-  { n: 13, label: 'Diligence Rune — DEX' }, { n: 14, label: 'Courage Rune — STR' },
-  { n: 15, label: 'Glory Rune — drop rate' }, { n: 16, label: 'Demon Skull — major bonuses' }
+  { n: 1, label: 'Jade (exp)' }, { n: 2, label: 'Aquamarine (potion duration)' },
+  { n: 3, label: 'Sapphire (fame)' }, { n: 4, label: 'Emerald (sell price)' },
+  { n: 5, label: 'Ruby (potion power)' }, { n: 6, label: 'Topaz (inventory slots)' },
+  { n: 7, label: 'Amber (work salary)' }, { n: 8, label: 'Amethyst (adventure gold)' },
+  { n: 9, label: 'Diamond (shop discount)' }, { n: 10, label: "Tiger's Eye (travel speed)" },
+  { n: 11, label: 'Negotiation Rune (INT)' }, { n: 12, label: 'Wisdom Rune (CON)' },
+  { n: 13, label: 'Diligence Rune (DEX)' }, { n: 14, label: 'Courage Rune (STR)' },
+  { n: 15, label: 'Glory Rune (drop rate)' }, { n: 16, label: 'Demon Skull (major bonuses)' }
 ];
 
 // Map regions (canonical order). The player orders these by priority.
@@ -254,7 +254,7 @@ function renderPriorityList(section, f) {
       });
       const rank = document.createElement('span');
       rank.className = 'prio-rank';
-      rank.textContent = enabledSet.has(name) ? (order.filter((r, j) => enabledSet.has(r) && j <= i).length) : '–';
+      rank.textContent = enabledSet.has(name) ? (order.filter((r, j) => enabledSet.has(r) && j <= i).length) : '-';
       const nm = document.createElement('span');
       nm.className = 'prio-name'; nm.textContent = name;
       const up = document.createElement('button'); up.type = 'button'; up.textContent = '▲'; up.className = 'prio-btn';

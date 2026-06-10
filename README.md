@@ -1,245 +1,111 @@
 # Tanoth Master Bot
 
-An automation companion (Chrome extension, Manifest V3) for the browser RPG
-**[Tanoth](https://gameforge.com/play/tanoth)**. It automates the game's core
-daily loop using Tanoth's **real XML-RPC protocol**, wrapped in a polished UI
-with scheduling, statistics and six languages.
+Chrome extension (Manifest V3) that automates the daily grind in the browser RPG
+[Tanoth](https://gameforge.com/play/tanoth). It talks to the game over its own
+XML-RPC API and adds a scheduler, an in-game control panel, statistics and a few
+languages.
 
-> ⚠️ **Use at your own risk.** Automating a game may violate Gameforge's Terms
-> of Service and can lead to account penalties. Provided for educational
-> purposes; you are responsible for how you use it.
+Automating a game can break Gameforge's Terms of Service and get accounts
+banned. Use it on accounts you don't mind losing.
+
+## What it does
+
+Runs the repeatable daily content on a loop:
+
+- Adventures (gold / xp / shortest / longest / smart)
+- Dungeon (normal and Shadow), Mission quest
+- Map encounters (Liberation), Cave of Illusions, Dragon
+- Arena duels, Work shifts
+- Evocation Circle and attribute training (gold sinks)
+- Optional guild gold donation, auto-sell, auto-login
+
+Plus a draggable panel inside the game, a toolbar popup, a full settings page, a
+stats page and Telegram/Discord alerts. See `FEATURES.md` for the full map of
+which game actions are covered and which are left out on purpose.
+
+## Install (unpacked)
+
+1. `chrome://extensions` -> enable Developer mode -> Load unpacked -> pick this
+   folder.
+2. Log into a Tanoth world. The panel shows up on the right; the footer says
+   "Protocol ready" once the session is detected. Hit Start.
+
+## How it works
+
+The gateway URL and session aren't hard-coded. `src/content/inject.js` runs in
+the page, reads `window.flashvars.sessionID`, and posts XML-RPC `<methodCall>`s
+to `<world>/xmlrpc` with the page's own cookies. `src/core/api.js` wraps that
+with typed calls and parses the responses into a shared state object. The
+scheduler (`src/core/scheduler.js`) asks each enabled module for one action per
+cycle, in priority order, then waits a humanized delay (or spams, if humanize is
+off). Method names live in `api.js`, so a server revision that renames one is a
+one-line change.
 
 ## Subscription
 
-The bot is paid, via **Revolut**, with two plans:
+Paid via Revolut, two plans: €4/month (31-day key) or €20 lifetime (one-off,
+locks to the first machine it's activated on). New installs get a 3-day trial
+with everything unlocked; after that, Start needs a key. The popup, options page
+and panel paywall all have pay buttons (they open the Revolut link; you enter
+the amount) and an Activate field for the key.
 
-- **€4 / month** — a 31-day key.
-- **€20 lifetime** — a one-off key that **locks to the first computer it is
-  activated on** (device-bound).
-
-Details:
-
-- Every new install includes a **3-day free trial** — full functionality, no key.
-- After the trial, **Start** is locked until a license key is activated.
-- Pick a plan with the in-app pay buttons (popup, options page, or the in-game
-  panel's paywall) — both open the seller's Revolut link; enter €4 or €20 — then
-  paste the key you receive into the **Activate** field.
-- A live badge shows the state: *Lifetime*, *Active — N days left*, *Trial*, or
-  *locked to another computer*. The bot stops automatically if entitlement lapses.
-
-### For the seller (issuing keys)
-
-Keys are signed offline. Set your own values in `src/shared/payment.js`
-(`REVOLUT_PAYMENT_URL`, `LICENSE_SECRET`) and mint keys:
-
-```bash
-node tools/genkey.mjs 31        # monthly key (€4)
-node tools/genkey.mjs 365000    # lifetime key (€20)
-```
-
-**Device binding:** a lifetime key is bound to the install it is first activated
-on (a per-install device id stored locally). This stops the key from being moved
-between profiles on the same machine; **truly preventing the same key being
-activated on a *different* computer requires the server-side check** (the
-`ACTIVATE_LICENSE` handler is the single place to add a call that records which
-device id first claimed each key).
-
-> The signing secret ships inside the extension, so offline verification is a
-> deterrent, not unbreakable DRM. For strong enforcement, move key validation
-> to a server and have the client call it (the `ACTIVATE_LICENSE` handler in
-> `src/background/service-worker.js` is the single place to swap in a fetch).
-
-## Extras
-
-- **Telegram / Discord alerts** — get pinged externally on key events; configure
-  a bot token + chat id or a Discord webhook URL under *Telegram / Discord
-  alerts*, and use *Send test notification* to verify.
-- **Smart adventures** — a `smart` strategy that weights each adventure's
-  reward by your Evocation Circle multipliers (Amethyst→gold, Jade→XP) with a
-  configurable XP-vs-gold weight.
-- **Scheduler presets** — one-click *Daily chores*, *Full grind*, *Overnight
-  (work)* and *Safe & slow*.
-- **Export / import & profiles** — back up your config to JSON, or save named
-  profiles (per account) and switch between them.
-- **Statistics dashboard** — `stats/stats.html` shows totals, per-hour rates and
-  an activity breakdown chart (open from the popup or options).
-- **Optional license server** — `server/license-server.mjs` enforces the
-  lifetime one-computer lock across machines (see Subscription).
-- **Multi-account controller** — `controller/` runs several accounts at once on
-  one machine you control (your PC or a VPS), each in its own browser profile
-  with its own settings/proxy, plus a local dashboard. No PC needs to stay on
-  and nobody else holds your logins. See `controller/CONTROLLER.md`.
-
-All of the above ships with an automated test suite — `npm install` then
-`npm test` (or `bash tools/test.sh`); it also runs in CI (`.github/workflows`):
-- `tools/selftest.mjs` — shared logic (presets, notification payloads, smart
-  scoring, settings merge/round-trip, license signing, server device binding).
-- `tools/engine-test.mjs` — runs the **real scheduler + modules** in Node with a
-  fake clock/timers (no browser): licence gate, adventure loop/wait, humanize
-  spam vs delay, breaks-off, manual-pause, PvP cooldown/bloodstones, dungeon.
-- `tools/api-test.mjs` — runs the **real api.js** against crafted Tanoth XML-RPC
-  responses (via linkedom): field parsing, attribute-cost math, circle/​map
-  parsing, and fault handling (session vs ordinary). ~36 checks total.
-- `tools/ext-test.mjs` (`npm run test:ext`) — loads the **real unpacked
-  extension into headed Chromium** (Playwright + xvfb) and asserts the MV3
-  service worker registers, the options/popup/stats pages run their JS without
-  uncaught errors and resolve i18n, and the content script mounts the in-game
-  panel on a faked Tanoth page. (Live game flow still needs a real account.)
-
-The licence server can be deployed with Docker+Caddy (auto-HTTPS) or
-systemd+nginx — see `server/DEPLOY.md`.
-
-### Look & feel
-
-The UI uses a **carbon-stealth palette** — matte carbon-black surfaces,
-graphite borders and a single restrained emerald accent — across the in-game
-panel, popup and options page.
-
----
-
-## What it does (and why it works)
-
-Unlike a guessed-at scraper, this talks to the game the same way the game's own
-client does. The protocol was verified against the open-source
-[`adpego/BoTanoth`](https://github.com/adpego/BoTanoth) client:
-
-- **Gateway:** the game client at `<server>/main/client` posts to
-  `<server>/xmlrpc`.
-- **Transport:** HTTP `POST`, `Content-Type: text/xml`, an XML-RPC
-  `<methodCall>` body; responses are XML parsed with `DOMParser`.
-- **Auth:** every call's first parameter is `window.flashvars.sessionID`, the
-  session token the page already holds.
-
-### Automation modules
-
-| Module | Method(s) used | What it does |
-| --- | --- | --- |
-| **Adventures** | `GetAdventures`, `StartAdventure`, `MiniUpdate` | Runs adventures by strategy (most gold, most XP, shortest, longest) within a difficulty cap; resolves finished runs; optional bloodstone use with a reserve; backs off when the daily allowance is spent. |
-| **Dungeon** | `GetDungeon`, `StartDungeon` | Runs the daily dungeon while `free_tries_today` remain, then backs off until reset. |
-| **Map events** | `StartIllusionCave`, `StartDragon` | Cycles the Cave of Illusions and Dragon event on a cooldown. |
-| **Arena / PvP** | `Fight` | Farms configured opponent name(s) up to a daily cap with a cooldown. |
-| **Work** | `GetWorkData`, `StartWork` | Idle-time filler: paid work shifts (capped to the server max), yielding to adventures. |
-| **Evocation Circle** | `EvocationCircle_getCircle`, `EvocationCircle_buyNode` | Spends gold upgrading the circle along the game-correct optimal node path, keeping a gold reserve. |
-| **Training** | `GetUserAttributes`, `RaiseAttribute` | Raises STR/DEX/CON/INT — a chosen attribute or "mix" (always the cheapest) — honouring a reserve and optional spend cap. |
-| **Auto-sell** | `GetEquipment`, `SellItem` | **Conservative & opt-in.** Only sells items whose rarity it can positively read as below the threshold; never sells equipped/unclassified items. Off by default. |
-| **Auto-login** | — | Detects a dropped session and reloads to reconnect, with a capped retry count. |
-
-All method names and signatures were extracted from the game's own client
-(`/webroot/game/TanothHtml5.js`, e.g. `callMethod("StartDungeon",[],cb)`), so
-the calls match exactly. A single in-game task runs at a time (tracked via
-`MiniUpdate`'s `time`/`type`), so the task modules (adventures, dungeon, map,
-work) cooperate through one busy timer; PvP and auto-sell are instant and
-interleave during waits.
-
-### Around the modules
-
-- **Priority scheduler** — one action in flight at a time with **humanized
-  delays** and optional active-hours window + random breaks. While an adventure
-  is running, training/circle keep spending gold and the panel shows a live
-  **countdown** to the next action.
-- **In-game overlay panel** — draggable/collapsible, with start/stop/pause, a
-  live activity log, session statistics, per-module quick toggles and the
-  subscription badge/paywall.
-- **Toolbar popup** — compact remote control + live status.
-- **Schema-driven options page** for every setting.
-- **Statistics** persisted across reloads (adventures, circle nodes, gold/XP,
-  errors, runtime).
-- **6 languages** — English, Spanish, Polish, Turkish, Portuguese, Bulgarian
-  (automatic English fallback for any untranslated string).
-
----
-
-## Installation (unpacked)
-
-1. Open `chrome://extensions`.
-2. Enable **Developer mode**.
-3. **Load unpacked** → select this folder.
-4. Open and log into your Tanoth world (`https://sX-en.tanoth.gameforge.com/…`).
-   The panel appears on the right; the footer shows **“Protocol ready”** once
-   the session is detected. Click **Start**.
-
----
-
-## Scope & honesty
-
-This release deliberately ships only what is **verified to work** end to end:
-adventures, the evocation circle, attribute training and auto-reconnect — which
-is exactly the core daily grind the proven open-source bot performs.
-
-Features such as arena duels, dungeon, Cave of Illusions, work shifts and
-auto-sell exist in the closed-source store bots, but their exact XML-RPC method
-names aren’t publicly documented and shipping guessed names would silently
-fail. To make adding them safe, the bot **observes the game’s own XML-RPC
-traffic** and records every method name it sees (`Bridge.findMethod`); once a
-method is confirmed, wiring up a new module is a few lines in `src/core/api.js`
-plus a module file. Open the console while playing to see discovered methods.
-
----
-
-## How the pieces fit
+Issuing keys (seller side): set your own `REVOLUT_PAYMENT_URL` and
+`LICENSE_SECRET` in `src/shared/payment.js`, then:
 
 ```
-manifest.json
-icons/                          generated PNG icons
-_locales/<lang>/messages.json   en, es, pl, tr, pt, bg
-popup/                          toolbar popup
-options/                        schema-driven settings page
-tools/genkey.mjs                license key generator (seller side)
-src/
-  shared/
-    defaults.js                 settings schema + merge/migrate (ES module)
-    payment.js                  price, trial, Revolut URL, signing secret
-  background/service-worker.js  install, messaging, notifications, heartbeat,
-                                trial + license verification (HMAC-SHA256)
-  content/
-    inject.js                   page-world XML-RPC client (reads flashvars,
-                                builds <methodCall>, POSTs, sniffs methods)
-    content-script.js           orchestrator (boots everything)
-  core/
-    namespace.js i18n.js logger.js storage.js state.js stats.js
-    license.js                  content-side subscription gate
-    bridge.js                   page<->content messaging + callXmlRpc
-    api.js                      semantic Tanoth API + XML response parsing
-    scheduler.js                cooperative priority loop (license-gated start)
-  ui/ panel.js panel.css        in-game overlay (carbon-stealth theme)
-  modules/
-    adventures.js circle.js training.js autologin.js
+node tools/genkey.mjs 31        # monthly
+node tools/genkey.mjs 365000    # lifetime
 ```
 
-### Request flow
+Offline keys are signed with `LICENSE_SECRET`. Because that secret ships in the
+extension, offline checks are a deterrent, not real DRM. For cross-machine
+enforcement run the license server (`server/`) and set `LICENSE_SERVER_URL`.
 
-1. `inject.js` (page world) reads `flashvars.sessionID`, derives the `/xmlrpc`
-   gateway, and exposes `callXmlRpc(method, params)` — prepending the session
-   id, building the XML, and POSTing with the page's own cookies.
-2. `bridge.js` (content world) relays calls over `window.postMessage`.
-3. `api.js` exposes typed operations (`getAdventures`, `startAdventure`,
-   `raiseAttribute`, `getCircle`, `buyCircleNode`, …) and parses the XML-RPC
-   responses into the shared `State`.
-4. `scheduler.js` asks each enabled module, in priority order, for one action
-   per cycle, then waits a humanized delay.
+## Build for the Web Store
 
-> Method names live in one place (`src/core/api.js`); if a server revision
-> renames one, that's the only edit needed.
+```
+bash tools/package.sh
+```
 
----
+Produces `dist/tanoth-master-bot-<version>.zip` with only the extension files
+(manifest, icons, _locales, popup, options, stats, src). It leaves out
+`controller/`, `server/`, `tools/` (including the key generator) and screenshots.
+Change `LICENSE_SECRET` before publishing.
 
-## Packaging for the Chrome Web Store
+## Tests
 
-`bash tools/package.sh` builds `dist/tanoth-master-bot-<version>.zip` containing
-**only** the extension files (manifest, icons, _locales, popup, options, stats,
-src). It deliberately excludes `controller/`, `server/`, `tools/` (the key
-generator!), `screenshots/` and `.git/`. Set your own `LICENSE_SECRET` in
-`src/shared/payment.js` before publishing — the shipped value is a placeholder.
+`npm install` then `npm test` (also runs in CI):
 
-## Development notes
+- `tools/selftest.mjs` - presets, notification payloads, smart scoring, settings
+  merge, license signing, license-server device binding.
+- `tools/engine-test.mjs` - the scheduler and modules in Node with a fake clock:
+  licence gate, adventure loop, humanize, breaks, manual pause, pvp cooldown,
+  dungeon, mission, shadow, guild.
+- `tools/api-test.mjs` - `api.js` against crafted XML-RPC responses (linkedom):
+  field parsing, attribute costs, circle/map parsing, fault handling.
+- `tools/ext-test.mjs` (`npm run test:ext`) - loads the unpacked extension in
+  headed Chromium (Playwright + xvfb) and checks the service worker, every page
+  and the content-script panel boot without errors.
 
-- Content scripts are plain (non-module) and share a single `window.TanothBot`
-  namespace, loaded in the order declared in the manifest.
-- The service worker, popup and options page are ES modules sharing
-  `src/shared/defaults.js`.
-- Icons are generated with `node` (no native deps).
-- No build step, no dependencies — load the folder as-is.
+The live in-game data flow needs a real account, so it isn't covered by the
+automated tests.
 
-**Credit:** the XML-RPC protocol details and the evocation-circle node ordering
-were learned from the open-source [`adpego/BoTanoth`](https://github.com/adpego/BoTanoth)
-(MIT-spirited community bot).
+## Layout
+
+```
+manifest.json, icons/, _locales/      extension shell
+popup/ options/ stats/                UI pages
+src/shared/                           settings schema, payment, presets, notify, smart
+src/background/service-worker.js      install, messaging, licensing, webhooks
+src/content/                          inject.js (page) + content-script.js (boot)
+src/core/                             bridge, api, scheduler, state, storage, ...
+src/ui/                               in-game panel
+src/modules/                          one file per activity
+controller/                           self-hosted multi-account runner (Playwright)
+server/                               optional license server (Docker/systemd)
+tools/                                tests, key generator, packaging
+```
+
+The multi-account controller (`controller/CONTROLLER.md`) runs several accounts
+on one machine, each in its own browser profile. The license server
+(`server/DEPLOY.md`) enforces the one-machine lifetime lock across computers.

@@ -45,7 +45,7 @@
     "message": "Настройки"
   },
   "uiProtoWaiting": {
-    "message": "Изучаване на протокола…"
+    "message": "Изучаване на протокола..."
   },
   "uiProtoReady": {
     "message": "Протоколът е готов"
@@ -144,7 +144,7 @@
     "message": "Покажи панела"
   },
   "popupNoChar": {
-    "message": "Изчакване на данни за героя…"
+    "message": "Изчакване на данни за героя..."
   },
   "logEngineStarted": {
     "message": "Двигателят е стартиран."

@@ -1,10 +1,4 @@
-/**
- * Auto-login / session keep-alive module (highest priority).
- *
- * Detects a dropped session (the game shows a login screen or the API starts
- * returning auth errors) and reloads the page to re-establish it, with a capped
- * number of attempts so a genuinely logged-out account doesn't reload forever.
- */
+// Reloads the page to reconnect when the session drops.
 (function () {
   'use strict';
   const TB = window.TanothBot;
@@ -50,7 +44,7 @@
         };
       }
 
-      // Logged in and healthy — reset the counter.
+      // Logged in and healthy - reset the counter.
       if (State.get().loggedIn) attempts = 0;
       return null;
     }

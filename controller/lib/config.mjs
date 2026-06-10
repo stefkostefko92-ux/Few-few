@@ -1,5 +1,5 @@
 /**
- * Multi-account controller — config validation (pure, unit-tested).
+ * Multi-account controller - config validation (pure, unit-tested).
  *
  * No filesystem or browser here; just normalises and validates the accounts.json
  * structure so controller.mjs can rely on clean data.

@@ -1,13 +1,13 @@
 # Tanoth Multi-Account Controller (self-hosted)
 
-Run several Tanoth accounts at once on **one machine you control** (your PC or a
-VPS) — each in its own Chromium profile with the extension loaded, its own
-settings and optional proxy — and watch them from a small local dashboard. You
-run it yourself; logins stay in per-account profile folders on your box.
+Run several Tanoth accounts at once on one machine you control (your PC or a
+VPS). Each account gets its own Chromium profile with the extension loaded, its
+own settings and an optional proxy, and there's a small local dashboard to watch
+them. Logins stay in per-account profile folders on your box.
 
 ## Requirements
 - Node.js 18+
-- On a **headless VPS**: a virtual display (`xvfb`) — Chromium needs a display to
+- On a **headless VPS**: a virtual display (`xvfb`) - Chromium needs a display to
   load extensions.
 
 ## Install
@@ -46,29 +46,29 @@ npx playwright install --with-deps chromium    # browser + system libs
 xvfb-run -a node controller.mjs run
 ```
 Do NOT use `--headless` (headless Chromium does not reliably load the
-extension — the bot won't run).
+extension - the bot won't run).
 
 ## Per-account settings
 `settingsFile` points at a JSON file with any subset of the bot's settings
 (strategy, modules, webhooks, etc.). The controller merges it over the defaults
 and forces `general.enabled` + `general.startOnLoad` so the account auto-starts.
 Each account also gets its **own trial/licence** binding (the licence is
-device-bound; see the main README — for many accounts on one box use a lifetime
+device-bound; see the main README - for many accounts on one box use a lifetime
 key or the licence server).
 
 ## Proxies (recommended for many accounts)
-Set `proxy` per account (`http://user:pass@host:port` or `socks5://…`). Running
+Set `proxy` per account (`http://user:pass@host:port` or `socks5://...`). Running
 many accounts from one IP raises ban risk; a proxy per account mitigates it.
 
 ## Security
-- `accounts.json`, `profiles/` and `settings/*.json` are git-ignored — they stay
+- `accounts.json`, `profiles/` and `settings/*.json` are git-ignored - they stay
   on your machine.
 - The dashboard binds to `127.0.0.1` only and requires the token; if you expose
   it, put it behind a tunnel/VPN, never the open internet.
 
-## Honest caveats
-- This automates a game; it can get accounts banned. Use proxies, sane delays
-  (Humanize on) and modest account counts.
-- ~150–400 MB RAM per Chromium, so size the VPS accordingly.
-- Gameforge login/SSO and occasional "verify it's you" prompts are handled by the
-  one-time manual `setup` (session reuse), not by storing passwords.
+## Notes
+- This automates a game and can get accounts banned. Use proxies, keep Humanize
+  on, and don't run too many accounts.
+- Budget ~150-400 MB RAM per Chromium when sizing the VPS.
+- Gameforge login/SSO and the occasional "verify it's you" prompt are handled by
+  the one-time `setup` (the session is reused), so passwords are never stored.

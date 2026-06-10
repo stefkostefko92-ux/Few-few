@@ -45,7 +45,7 @@
     "message": "Ustawienia"
   },
   "uiProtoWaiting": {
-    "message": "Uczenie protokołu…"
+    "message": "Uczenie protokołu..."
   },
   "uiProtoReady": {
     "message": "Protokół gotowy"
@@ -144,7 +144,7 @@
     "message": "Pokaż panel"
   },
   "popupNoChar": {
-    "message": "Oczekiwanie na dane postaci…"
+    "message": "Oczekiwanie na dane postaci..."
   },
   "logEngineStarted": {
     "message": "Silnik uruchomiony."

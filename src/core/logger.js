@@ -1,9 +1,4 @@
-/**
- * Ring-buffer logger shared by every module.
- *
- * Keeps the last N entries in memory, mirrors them to the console, and notifies
- * subscribers (the in-game panel) so the activity feed updates live.
- */
+// Ring-buffer logger shared by the panel and modules.
 (function () {
   'use strict';
   const TB = window.TanothBot;

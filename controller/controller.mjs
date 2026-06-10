@@ -2,8 +2,8 @@
 /**
  * Tanoth multi-account controller (self-hosted; no cloud).
  *
- * Runs several Tanoth accounts on ONE machine/VPS — each in its own Chromium
- * profile with the extension loaded, its own settings and optional proxy — and
+ * Runs several Tanoth accounts on ONE machine/VPS - each in its own Chromium
+ * profile with the extension loaded, its own settings and optional proxy - and
  * exposes a small local dashboard to watch/start/stop them. You run it; nobody
  * else holds your logins (sessions live in per-account profile folders).
  *
@@ -118,7 +118,7 @@ function startDashboard(cfg, opts) {
   let token = cfg.raw.dashboard?.token || '';
   if (!token || token === 'change-me') {     // never run with the example token
     token = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2));
-    console.warn('Dashboard token was missing/"change-me" — generated a random one for this session.');
+    console.warn('Dashboard token was missing/"change-me" - generated a random one for this session.');
   }
   const server = http.createServer(async (req, res) => {
     const u = new URL(req.url, 'http://localhost');
@@ -143,7 +143,7 @@ async function cmdRun(cfg, opts) {
     console.log('dry-run OK'); return;
   }
   if (!opts.headless && process.platform === 'linux' && !process.env.DISPLAY) {
-    console.warn('No $DISPLAY detected. Chromium needs a display to load the extension — run under: xvfb-run -a node controller.mjs run');
+    console.warn('No $DISPLAY detected. Chromium needs a display to load the extension - run under: xvfb-run -a node controller.mjs run');
   }
   for (const acc of enabledAccounts(cfg.parsed)) await launchAccount(acc, opts);
   startDashboard(cfg, opts);
@@ -163,7 +163,7 @@ async function cmdSetup(cfg, id) {
   });
   const page = context.pages()[0] || await context.newPage();
   await page.goto(acc.world).catch(() => {});
-  console.log(`\n[${acc.id}] Log into Tanoth in the opened window, reach the game, then press Enter here to save the session…`);
+  console.log(`\n[${acc.id}] Log into Tanoth in the opened window, reach the game, then press Enter here to save the session...`);
   await new Promise((r) => { const rl = readline.createInterface({ input: process.stdin }); rl.question('', () => { rl.close(); r(); }); });
   await context.close();
   console.log(`[${acc.id}] session saved to ${acc.profileDir}`);
@@ -182,7 +182,7 @@ async function main() {
   const dryRun = argv.includes('--dry-run');
   // Headful by default: Chromium only loads extensions with a display. Use
   // `xvfb-run` on a headless VPS. `--headless` opts into experimental new
-  // headless (extension loading there is unreliable — not recommended).
+  // headless (extension loading there is unreliable - not recommended).
   const headless = argv.includes('--headless') ? 'new' : false;
   const cfg = loadConfig();
   cfg.headless = headless;

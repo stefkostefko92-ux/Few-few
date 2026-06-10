@@ -1,19 +1,16 @@
 # Deploying the Tanoth license server
 
-This optional service enforces the **one-computer lifetime lock across machines**
-(offline device binding alone can't — see the main README). It records which
-device id first claimed each key and rejects activation on a second machine.
+Optional service that enforces the one-machine lifetime lock across computers
+(offline device binding alone can't do that). It records which device id first
+claimed each key and rejects the same key on a second machine.
 
-> `LICENSE_SECRET` **must be identical** to the value in `src/shared/payment.js`
-> (the extension verifies key signatures with the same secret). Keep it secret —
-> never commit your real one.
+`LICENSE_SECRET` must match the value in `src/shared/payment.js` (the extension
+signs and verifies keys with it). Keep it secret and don't commit your real one.
 
-The service is a single dependency-free file: `license-server.mjs`.
-Endpoints: `POST /activate {key,device}`, `GET /status?key=&device=`, `GET /health`.
+One dependency-free file, `license-server.mjs`. Endpoints:
+`POST /activate {key,device}`, `GET /status?key=&device=`, `GET /health`.
 
----
-
-## Option A — Docker + Caddy (automatic HTTPS) — recommended
+## Option A: Docker + Caddy (automatic HTTPS)
 
 ```bash
 cd server
@@ -29,7 +26,7 @@ docker compose up -d --build
 curl https://license.example.com/health      # -> {"ok":true}
 ```
 
-## Option B — systemd + nginx
+## Option B: systemd + nginx
 
 ```bash
 sudo useradd -r -s /usr/sbin/nologin tanoth
@@ -72,7 +69,7 @@ access.
 ## Env vars
 | var | default | meaning |
 | --- | --- | --- |
-| `LICENSE_SECRET` | (placeholder) | HMAC secret — must match the extension |
+| `LICENSE_SECRET` | (placeholder) | HMAC secret - must match the extension |
 | `PORT` | `8787` | listen port |
 | `LICENSE_DB` | `./bindings.json` | path to the bindings store (use a volume) |
 | `LICENSE_ALLOW_ORIGIN` | empty | optional CORS `Access-Control-Allow-Origin` |

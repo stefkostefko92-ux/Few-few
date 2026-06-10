@@ -1,11 +1,4 @@
-/**
- * Content-script orchestrator (runs last in the manifest js array).
- *
- * Boots the subsystems in order: load settings -> inject the page hook ->
- * mount the panel -> wire popup/service-worker messaging -> optionally
- * auto-start. Everything above this file has only *defined* its piece on the
- * TanothBot namespace; this is where it all comes alive.
- */
+// Boots the content-side subsystems and relays popup/service-worker messages.
 (function () {
   'use strict';
   const TB = window.TanothBot;

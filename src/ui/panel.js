@@ -1,12 +1,4 @@
-/**
- * In-game overlay panel.
- *
- * A draggable, collapsible control surface mounted directly into the Tanoth
- * page so the player can start/stop the bot, watch the live activity log, see
- * session statistics and quickly toggle individual modules without leaving the
- * game. It reflects live state from the Scheduler, Stats, Logger and State
- * subsystems and writes module toggles straight back to Storage.
- */
+// The draggable control panel injected into the game page.
 (function () {
   'use strict';
   const TB = window.TanothBot;
@@ -37,7 +29,7 @@
       <div class="tb-header">
         <span class="tb-dot"></span>
         <span class="tb-title">${I18n.t('extName')}</span>
-        <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}">–</button>
+        <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}">-</button>
         <button class="tb-icon-btn" data-act="hide" title="${I18n.t('uiHide')}">×</button>
       </div>
       <div class="tb-body">
@@ -185,7 +177,7 @@
         const cur = Storage.get();
         cur.pvp.opponents = pvp.value.trim();
         await Storage.save(cur);
-        Logger.info(I18n.t('logPvpTargetsSet', [pvp.value.trim() || '—']));
+        Logger.info(I18n.t('logPvpTargetsSet', [pvp.value.trim() || '-']));
       });
     }
     if (circle) {
@@ -203,7 +195,7 @@
           const lvl = circleData[n] ? circleData[n][0] : '?';
           return `${TB.Circle.nodeName(n)}→#${n} (Lv ${lvl})`;
         }).join(', ');
-        Logger.info(I18n.t('logCircleNodesSet', [desc || val || '—']));
+        Logger.info(I18n.t('logCircleNodesSet', [desc || val || '-']));
       });
     }
   }

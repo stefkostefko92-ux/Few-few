@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Engine simulation tests — runs the REAL content-script engine (scheduler +
+ * Engine simulation tests - runs the REAL content-script engine (scheduler +
  * modules) in Node with a fake clock and fake timers, no browser/game.
  *
  * Each scenario builds a fresh engine (its own vm context, so module-scoped
@@ -134,7 +134,7 @@ function freshEngine({ settings = {}, api = {}, state = {}, license = { status: 
 let pass = 0;
 async function test(name, fn) { try { await fn(); console.log('  ok  ' + name); pass++; } catch (e) { console.error('FAIL ' + name + '\n     ' + (e.stack || e.message)); process.exitCode = 1; } }
 
-console.log('— engine: scheduler + real modules —');
+console.log('- engine: scheduler + real modules -');
 
 await test('license gate blocks start when not entitled', async () => {
   const e = freshEngine({ license: { status: 'expired', entitled: false }, settings: { general: { enabled: true }, adventures: { enabled: true } } });

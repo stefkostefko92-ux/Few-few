@@ -94,7 +94,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // All handlers go through one async dispatcher so the message port stays open
   // (worker kept alive) until a response is sent, and every path responds even
-  // on error — no hung ports / dropped webhooks.
+  // on error - no hung ports / dropped webhooks.
   handleMessage(msg, sender)
     .then((r) => sendResponse(r))
     .catch((e) => sendResponse({ ok: false, error: String((e && e.message) || e) }));
@@ -288,7 +288,7 @@ async function getLicenseStatus() {
     expISO = new Date(lic.exp * 1000).toISOString();
     status = (lic.exp * 1000 - now) > lifetimeMs ? 'lifetime' : 'active';
   } else if (licValid) {
-    wrongDevice = true;   // bound elsewhere — note it, but still allow the trial below
+    wrongDevice = true;   // bound elsewhere - note it, but still allow the trial below
   }
   // A valid trial entitles regardless of a foreign-bound key.
   if (!entitled && now < trialEnds) {
