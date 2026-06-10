@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.5.0
+
+- New, unique **Smart Detection**: a list-free heuristic that blocks ads no
+  filter list knows yet. A cross-origin iframe sized to a standard IAB ad slot
+  (300×250, 728×90, 160×600, 320×50, …) is hidden on sight, regardless of
+  network — catching "zero-day" ad placements that rule-based blockers miss.
+  Toggleable, with a live "caught so far" counter in settings.
+
 ## 3.4.2
 
 - Fix: YouTube page became unclickable while the video played. YouTube's

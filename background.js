@@ -40,8 +40,9 @@ const DEFAULTS = {
   enabled: true,
   blockedTotal: 0,
   savedBytes: 0,
+  smartBlocked: 0,
   allowlist: [],
-  features: { cookies: true, antiAdblock: true, meta: true, youtube: true },
+  features: { cookies: true, antiAdblock: true, meta: true, youtube: true, smart: true },
   customHidden: {},
   userFilters: "",
   theme: "carbon",
@@ -391,7 +392,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "allowlist", "features", "theme", "sync", "pausedUntil"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -408,6 +409,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             features: data.features || DEFAULTS.features,
             theme: data.theme || "carbon",
             filterCount: FILTER_COUNT,
+            smartBlocked: data.smartBlocked || 0,
             sync: !!data.sync,
             pausedUntil: data.pausedUntil || 0,
             host,
@@ -444,7 +446,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "resetStats":
-      chrome.storage.local.set({ blockedTotal: 0, savedBytes: 0 }, () => sendResponse({ ok: true }));
+      chrome.storage.local.set({ blockedTotal: 0, savedBytes: 0, smartBlocked: 0 }, () => sendResponse({ ok: true }));
       return true;
 
     case "saveCustomSelector":
@@ -466,6 +468,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: true });
       });
       return true;
+
+    case "smartHit":
+      chrome.storage.local.get("smartBlocked", (d) => {
+        chrome.storage.local.set({ smartBlocked: (d.smartBlocked || 0) + (msg.n || 1) });
+      });
+      return false;
 
     case "setUserFilters":
       chrome.storage.local.set({ userFilters: msg.text || "" }, async () => {

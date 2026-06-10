@@ -36,6 +36,8 @@ function load() {
     $("featAab").checked = res.features.antiAdblock !== false;
     $("featMeta").checked = res.features.meta !== false;
     $("featYoutube").checked = res.features.youtube !== false;
+    $("featSmart").checked = res.features.smart !== false;
+    $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString();
     renderAllowlist(res.allowlist || []);
   });
 
@@ -117,6 +119,7 @@ function saveFeatures() {
       antiAdblock: $("featAab").checked,
       meta: $("featMeta").checked,
       youtube: $("featYoutube").checked,
+      smart: $("featSmart").checked,
     },
   });
 }
@@ -131,6 +134,7 @@ $("featCookies").addEventListener("change", saveFeatures);
 $("featAab").addEventListener("change", saveFeatures);
 $("featMeta").addEventListener("change", saveFeatures);
 $("featYoutube").addEventListener("change", saveFeatures);
+$("featSmart").addEventListener("change", saveFeatures);
 
 $("allowAdd").addEventListener("click", () => {
   const domain = normalizeDomain($("allowInput").value);

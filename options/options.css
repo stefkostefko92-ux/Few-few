@@ -137,6 +137,18 @@ main {
   font-size: 14px;
   font-weight: 600;
 }
+.badge-new {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #04232a;
+  background: linear-gradient(135deg, #00e5ff, #00b8d4);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
 .row-sub {
   font-size: 12px;
   color: var(--muted);
