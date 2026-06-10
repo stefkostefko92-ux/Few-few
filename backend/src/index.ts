@@ -15,6 +15,7 @@ import { sanitizeForModel } from './services/sanitize';
 import uploadRouter, { UPLOAD_DIR } from './routes/upload';
 import jwtSocket from 'jsonwebtoken';
 import contrattiWorkflowRoutes from './routes/contratti';
+import { fullPermissionMap, ROLE_DESCRIPTIONS, requirePermission } from './services/permissions';
 import segnalazioniWorkflowRoutes from './routes/segnalazioni';
 import { controllaScadenze, eseguiControlloScadenze } from './services/scadenze';
 import extrasRoutes from './routes/extras';
@@ -197,7 +198,7 @@ app.use('/api/segnalazioni', apiLimiter, createCrudRouter({
     ordineLavoro: { select: { id: true, numero: true, stato: true } },
   },
 }));
-app.use('/api/segnalazioni', apiLimiter, segnalazioniWorkflowRoutes);
+app.use('/api/segnalazioni', apiLimiter, authenticate, requirePermission('segnalazioni', 'edit'), segnalazioniWorkflowRoutes);
 
 // ── Contratti di Manutenzione ──
 app.use('/api/contratti', apiLimiter, createCrudRouter({
@@ -211,7 +212,7 @@ app.use('/api/contratti', apiLimiter, createCrudRouter({
   },
 }));
 
-app.use('/api/contratti', apiLimiter, contrattiWorkflowRoutes);
+app.use('/api/contratti', apiLimiter, authenticate, requirePermission('contratti', 'edit'), contrattiWorkflowRoutes);
 
 // ── Visite di Manutenzione (giri programmati DPR 162/99) ──
 app.use('/api/visite', apiLimiter, createCrudRouter({
@@ -282,7 +283,7 @@ app.use('/api/ordini', apiLimiter, createCrudRouter({
     _count: { select: { storicoStati: true, fatture: true, ddt: true } },
   },
 }));
-app.use('/api/ordini', apiLimiter, ordiniWorkflowRoutes);
+app.use('/api/ordini', apiLimiter, authenticate, requirePermission('ordini', 'edit'), ordiniWorkflowRoutes);
 
 // ── Modulo 11: Fatturazione ──
 app.use('/api/fatture', apiLimiter, createCrudRouter({
@@ -426,6 +427,17 @@ notificheRouter.post('/leggi', authenticate, (req: any, res: any) => {
 });
 
 app.use('/api/notifiche', apiLimiter, notificheRouter);
+
+// ── Permessi del ruolo corrente (guida l'interfaccia) ──
+app.get('/api/auth/permissions', authenticate, (req: any, res: any) => {
+  const mappa = fullPermissionMap();
+  res.json({
+    ruolo: req.user.ruolo,
+    permissions: mappa[req.user.ruolo] || {},
+    matrice: mappa,                 // per l'anteprima ruolo (solo visuale: il backend applica sempre il ruolo reale)
+    descrizioni: ROLE_DESCRIPTIONS,
+  });
+});
 
 // ═══════════════════════════════════════════════════════
 // PASSWORD RESET

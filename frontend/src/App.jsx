@@ -386,8 +386,28 @@ const relName = (v, ...keys) => {
 
 // Gerarchia ruoli (allineata al backend): livello più basso = più permessi
 const ROLE_LEVELS_FE = { MASTER: 1, ADMIN: 2, DIREZIONE: 3, RESPONSABILE: 4, TECNICO: 5, OPERATORE: 6, CLIENTE: 7 };
-const currentRole = () => { try { return JSON.parse(localStorage.getItem("erp_user") || "{}").ruolo || "OPERATORE"; } catch { return "OPERATORE"; } };
+const realRole = () => { try { return JSON.parse(localStorage.getItem("erp_user") || "{}").ruolo || "OPERATORE"; } catch { return "OPERATORE"; } };
+// Anteprima ruolo (solo visuale: il backend applica sempre il ruolo reale)
+const currentRole = () => localStorage.getItem("erp_role_preview") || realRole();
 const hasRole = (minRole) => (ROLE_LEVELS_FE[currentRole()] ?? 9) <= (ROLE_LEVELS_FE[minRole] ?? 1);
+
+// Matrice permessi scaricata da /api/auth/permissions (unica fonte di verità)
+let PERM_DATA = null;
+try { PERM_DATA = JSON.parse(localStorage.getItem("erp_permissions") || "null"); } catch {}
+const caricaPermessi = async () => {
+  try { PERM_DATA = await api.get("/auth/permissions"); localStorage.setItem("erp_permissions", JSON.stringify(PERM_DATA)); } catch {}
+  return PERM_DATA;
+};
+// può("fatture", "edit") → bool, secondo il ruolo (o l'anteprima)
+const può = (module, action = "view") => {
+  const ruolo = currentRole();
+  const m = PERM_DATA?.matrice?.[ruolo]?.[module];
+  if (m) return !!m[action];
+  return hasRole("ADMIN"); // matrice non ancora caricata: prudente
+};
+// modulo canonico da un endpoint API ("/fatture?tipo=EMESSA" → "fatture")
+const moduloDi = (endpoint) => (endpoint || "").replace(/^\//, "").split("?")[0];
+const NAV_MODULE = { fatture_emesse: "fatture", fatture_ricevute: "fatture", buoni_lavoro: "buoni-lavoro" };
 
 const SearchBar = ({ value, onChange, placeholder = "Cerca..." }) => (
   <div className="relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" /><input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/50" /></div>
@@ -522,6 +542,10 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
   const [saving, setSaving] = useState(false);
 
   const useApi = !!apiEndpoint;
+  const permModule = moduloDi(apiEndpoint);
+  const puòCreare = !apiEndpoint || può(permModule, "create");
+  const puòModificare = !apiEndpoint || può(permModule, "edit");
+  const puòEliminare = !apiEndpoint || può(permModule, "delete");
   const data = useApi ? apiData.data : localData;
   const loading = useApi ? apiData.loading : false;
   const refresh = useApi ? apiData.refresh : () => setLocalData(store.getAll());
@@ -587,8 +611,8 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
     key: "_actions", label: "", render: (row) => (
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={(e) => { e.stopPropagation(); openView(row); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-cyan-400"><Eye size={14} /></button>
-        <button onClick={(e) => { e.stopPropagation(); openEdit(row); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-amber-400"><Edit size={14} /></button>
-        {hasRole("ADMIN") && <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(row.id); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>}
+        {puòModificare && <button onClick={(e) => { e.stopPropagation(); openEdit(row); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-amber-400"><Edit size={14} /></button>}
+        {puòEliminare && <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(row.id); }} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-red-400"><Trash2 size={14} /></button>}
       </div>
     )
   };
@@ -666,6 +690,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
       <div className="flex items-center justify-between mb-5">
         <div><h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em" }}>{title}</h1>{subtitle && <p className="text-zinc-500 text-sm">{subtitle}</p>}</div>
         <div className="flex gap-2">
+          {puòCreare && apiEndpoint && <Btn variant="secondary" size="sm" icon={Upload} onClick={() => setImportModal(true)}>Importa CSV</Btn>}
           <Btn variant="secondary" size="sm" icon={Download} onClick={() => {
             const cols = formFields.filter(f => !f.hidden && !["photos", "files"].includes(f.type));
             const valore = (r, f) => {
@@ -683,8 +708,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
             const a = document.createElement("a"); a.href = url; a.download = `${title.toLowerCase().replace(/\s+/g, "_")}.csv`; a.click();
             URL.revokeObjectURL(url);
           }}>Esporta CSV</Btn>
-          {apiEndpoint && <Btn variant="secondary" size="sm" icon={Upload} onClick={() => setImportModal(true)}>Importa CSV</Btn>}
-          <Btn icon={Plus} onClick={openCreate}>Nuovo {entityName}</Btn>
+          {puòCreare && <Btn icon={Plus} onClick={openCreate}>Nuovo {entityName}</Btn>}
         </div>
       </div>
 
@@ -706,7 +730,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
             <thead><tr className="border-b border-zinc-800">{[...columns, actionCol].map(c => <th key={c.key} className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{c.label}</th>)}</tr></thead>
             <tbody>
               {filtered.map(row => (
-                <tr key={row.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group cursor-pointer" onDoubleClick={() => openEdit(row)}>
+                <tr key={row.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group cursor-pointer" onDoubleClick={() => puòModificare ? openEdit(row) : openView(row)}>
                   {[...columns, actionCol].map(c => <td key={c.key} className="px-4 py-3 text-sm text-zinc-300">{c.render ? c.render(row) : row[c.key]}</td>)}
                 </tr>
               ))}
@@ -834,8 +858,9 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
         {modalMode === "view" && (
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-zinc-800">
             <Btn variant="secondary" onClick={() => setModalMode(null)}>Chiudi</Btn>
-            <Btn variant="primary" icon={Edit} onClick={() => setModalMode("edit")}>Modifica</Btn>
-            {hasRole("ADMIN") && <Btn variant="danger" icon={Trash2} onClick={() => { setDeleteConfirm(selectedId); setModalMode(null); }}>Elimina</Btn>}
+            {puòModificare && <Btn variant="primary" icon={Edit} onClick={() => setModalMode("edit")}>Modifica</Btn>}
+            {puòEliminare && <Btn variant="danger" icon={Trash2} onClick={() => { setDeleteConfirm(selectedId); setModalMode(null); }}>Elimina</Btn>}
+            {!puòModificare && <span />}
           </div>
         )}
       </Modal>
@@ -2541,7 +2566,7 @@ const BuonoLavoroPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full"><thead><tr className="border-b border-zinc-800">{[...BUONO_COLS, actionCol].map(c => <th key={c.key} className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{c.label}</th>)}</tr></thead>
           <tbody>{filtered.map(row => (
-            <tr key={row.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group cursor-pointer" onDoubleClick={() => openEdit(row)}>
+            <tr key={row.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group cursor-pointer" onDoubleClick={() => puòModificare ? openEdit(row) : openView(row)}>
               {[...BUONO_COLS, actionCol].map(c => <td key={c.key} className="px-4 py-3 text-sm text-zinc-300">{c.render ? c.render(row) : row[c.key]}</td>)}
             </tr>
           ))}{filtered.length === 0 && <tr><td colSpan={BUONO_COLS.length + 1} className="text-center py-10 text-zinc-600">Nessun buono</td></tr>}</tbody></table>
@@ -2647,6 +2672,83 @@ const LoginPage = ({ onLogin, theme }) => {
   );
 };
 
+
+// ═══════════════════════════════════════════════════════
+// IL MIO ACCOUNT — ogni account vede cosa può fare
+// ═══════════════════════════════════════════════════════
+const MODULE_LABELS = {
+  impianti: "Impianti", contratti: "Contratti", visite: "Manutenzioni", verifiche: "Verifiche DPR 162",
+  segnalazioni: "Segnalazioni", condomini: "Condomini", amministratori: "Amministratori", dipendenti: "Dipendenti",
+  automezzi: "Automezzi", cottimisti: "Cottimisti", magazzino: "Magazzino", movimenti: "Movimenti magazzino",
+  preventivi: "Preventivi", lavori: "Programma Lavori", "buoni-lavoro": "Buoni di Lavoro", ordini: "Ordini di Lavoro",
+  fatture: "Fatture", ddt: "DDT / Bolle", documenti: "Documenti", audit: "Audit Log", ai: "Assistente AI",
+  utenti: "Gestione Utenti", settings: "Impostazioni",
+};
+
+const ProfiloModal = ({ open, onClose, user, onPreviewChange }) => {
+  const [, force] = useState(0);
+  if (!open) return null;
+  const ruoloReale = realRole();
+  const ruoloVisto = currentRole();
+  const perms = PERM_DATA?.matrice?.[ruoloVisto] || {};
+  const descr = PERM_DATA?.descrizioni?.[ruoloVisto] || "";
+  const inAnteprima = !!localStorage.getItem("erp_role_preview");
+  const setPreview = (r) => {
+    if (!r || r === ruoloReale) localStorage.removeItem("erp_role_preview");
+    else localStorage.setItem("erp_role_preview", r);
+    force(x => x + 1);
+    onPreviewChange?.();
+  };
+  const Mark = ({ ok }) => ok ? <Check size={13} className="text-emerald-400 mx-auto" /> : <span className="text-zinc-700 block text-center">—</span>;
+  return (
+    <Modal open={open} onClose={onClose} title="Il mio account" wide>
+      <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+        <div>
+          <p className="text-lg font-bold text-white">{user?.nome} {user?.cognome}</p>
+          <p className="text-sm text-zinc-500">{user?.email}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge value={ruoloVisto} />
+            {inAnteprima && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">ANTEPRIMA — il tuo ruolo reale è {ruoloReale}</span>}
+          </div>
+          <p className="text-xs text-zinc-400 mt-2 max-w-md">{descr}</p>
+        </div>
+        {hasRoleReal("ADMIN") && (
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Anteprima ruolo (solo visuale)</label>
+            <select value={inAnteprima ? ruoloVisto : ""} onChange={e => setPreview(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-200">
+              <option value="">— Il mio ruolo ({ruoloReale}) —</option>
+              {Object.keys(ROLE_LEVELS_FE).filter(r => r !== ruoloReale).map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <p className="text-[10px] text-zinc-600 max-w-[220px]">Vedi l'app come la vedrebbe un altro ruolo. Il server applica sempre i permessi reali.</p>
+          </div>
+        )}
+      </div>
+      <div className="overflow-x-auto rounded-lg border border-zinc-800">
+        <table className="w-full text-sm">
+          <thead><tr className="bg-zinc-800/60">
+            <th className="text-left px-3 py-2 text-[11px] font-semibold text-zinc-500 uppercase">Modulo</th>
+            {["Vedi", "Crea", "Modifica", "Elimina"].map(h => <th key={h} className="px-3 py-2 text-[11px] font-semibold text-zinc-500 uppercase text-center">{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {Object.entries(MODULE_LABELS).map(([k, label]) => {
+              const p = perms[k] || {};
+              return (
+                <tr key={k} className={`border-t border-zinc-800/60 ${!p.view ? "opacity-40" : ""}`}>
+                  <td className="px-3 py-1.5 text-zinc-300">{label}</td>
+                  <td><Mark ok={p.view} /></td><td><Mark ok={p.create} /></td><td><Mark ok={p.edit} /></td><td><Mark ok={p.delete} /></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] text-zinc-600 mt-3">I permessi sono definiti centralmente sul server e applicati sia all'interfaccia sia alle API.</p>
+    </Modal>
+  );
+};
+const hasRoleReal = (minRole) => (ROLE_LEVELS_FE[realRole()] ?? 9) <= (ROLE_LEVELS_FE[minRole] ?? 1);
+
 // ═══════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════
@@ -2665,6 +2767,15 @@ export default function App() {
   const [notifiche, setNotifiche] = useState([]);
   const [notificheOpen, setNotificheOpen] = useState(false);
   const nonLette = notifiche.filter(n => !n.letta).length;
+
+  const [profiloOpen, setProfiloOpen] = useState(false);
+  const [, forcePerm] = useState(0);
+
+  // Carica i permessi del ruolo (guida NAV e pulsanti)
+  useEffect(() => {
+    if (!loggedIn) return;
+    caricaPermessi().then(() => forcePerm(x => x + 1));
+  }, [loggedIn]);
 
   // Reinvia al server la config AI salvata nel browser (il backend la perde al riavvio)
   useEffect(() => {
@@ -2747,7 +2858,7 @@ export default function App() {
             </div>
           </div>
           <nav className="flex-1 overflow-y-auto py-1.5 px-1.5 space-y-0.5">
-            {NAV.filter(n => !n.minRole || hasRole(n.minRole)).map(n => {
+            {NAV.filter(n => n.id === "dashboard" || può(NAV_MODULE[n.id] || n.id, "view")).map(n => {
               const I = n.icon; const a = page === n.id;
               return <button key={n.id} onClick={() => setPage(n.id)} className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm transition-all border ${a ? "text-white border-opacity-20" : "border-transparent hover:bg-white/5"}`} style={a ? { background: theme.primaryLight, color: theme.accent, borderColor: theme.primary + "33" } : { color: theme.textMuted }} title={!sidebarOpen ? n.label : undefined}><I size={16} className="shrink-0" />{sidebarOpen && <span className="truncate text-[13px]" style={{ fontWeight: 500 }}>{n.label}</span>}</button>;
             })}
@@ -2790,13 +2901,22 @@ export default function App() {
                 )}
               </div>
               <div className="flex items-center gap-2 pl-3 border-l" style={{ borderColor: theme.border }}>
-                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: theme.primaryLight }}><span className="text-[10px] font-bold" style={{ color: theme.accent }}>{(user?.nome?.[0] || "")}{(user?.cognome?.[0] || "")}</span></div>
-                <div className="text-right"><p className="text-[11px] font-medium text-white">{user?.nome || "Utente"}</p><p className="text-[9px]" style={{ color: theme.textMuted }}>{user?.ruolo || ""}</p></div>
+                <button onClick={() => setProfiloOpen(true)} className="flex items-center gap-2 hover:opacity-80" title="Il mio account: cosa posso fare">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: theme.primaryLight }}><span className="text-[10px] font-bold" style={{ color: theme.accent }}>{(user?.nome?.[0] || "")}{(user?.cognome?.[0] || "")}</span></div>
+                  <div className="text-right"><p className="text-[11px] font-medium text-white">{user?.nome || "Utente"}</p><p className="text-[9px]" style={{ color: theme.textMuted }}>{currentRole()}</p></div>
+                </button>
                 <button onClick={handleLogout} className="p-1 rounded-lg hover:bg-white/5" style={{ color: theme.textMuted }}><LogOut size={14} /></button>
               </div>
             </div>
           </header>
+          {localStorage.getItem("erp_role_preview") && (
+            <div className="shrink-0 px-5 py-1.5 bg-purple-500/15 border-b border-purple-500/30 flex items-center justify-between">
+              <span className="text-xs text-purple-300">👁 Anteprima ruolo <b>{currentRole()}</b> — stai vedendo l'app come la vedrebbe questo ruolo (i permessi reali restano i tuoi)</span>
+              <button onClick={() => { localStorage.removeItem("erp_role_preview"); forcePerm(x => x + 1); }} className="text-xs text-purple-300 hover:text-white underline">Esci dall'anteprima</button>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto p-5">{renderPage()}</div>
+          <ProfiloModal open={profiloOpen} onClose={() => setProfiloOpen(false)} user={user} onPreviewChange={() => forcePerm(x => x + 1)} />
         </main>
       </div>
     </ThemeContext.Provider>

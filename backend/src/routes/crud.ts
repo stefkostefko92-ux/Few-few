@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { createAuditLog } from '../services/audit';
 import { sanitizeForModel, SanitizeError } from '../services/sanitize';
+import { can, moduleForEntity } from '../services/permissions';
 
 const prisma = new PrismaClient();
 
@@ -26,9 +27,19 @@ export function createCrudRouter(options: CrudOptions): Router {
   const router = Router();
   const { model, entityName, include, searchFields, orderBy, readOnly } = options;
   const prismaModel = (prisma as any)[model];
+  const permModule = moduleForEntity(entityName);
+  // Permessi dalla matrice centrale (services/permissions.ts)
+  const checkPerm = (action: 'view' | 'create' | 'edit' | 'delete') =>
+    (req: AuthRequest, res: Response, next: any) => {
+      if (!can(req.user?.ruolo, permModule, action)) {
+        res.status(403).json({ error: `Il tuo ruolo (${req.user?.ruolo}) non può eseguire "${action}" su "${permModule}"` });
+        return;
+      }
+      next();
+    };
 
   // GET /  — List with pagination, search, filters
-  router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
+  router.get('/', authenticate, checkPerm('view'), async (req: AuthRequest, res: Response) => {
     try {
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 25));
@@ -84,7 +95,7 @@ export function createCrudRouter(options: CrudOptions): Router {
   });
 
   // GET /:id  — Single record
-  router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
+  router.get('/:id', authenticate, checkPerm('view'), async (req: AuthRequest, res: Response) => {
     try {
       const record = await prismaModel.findUnique({
         where: { id: req.params.id },
@@ -102,7 +113,7 @@ export function createCrudRouter(options: CrudOptions): Router {
 
   if (!readOnly) {
     // POST /  — Create
-    router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
+    router.post('/', authenticate, checkPerm('create'), async (req: AuthRequest, res: Response) => {
       try {
         const data = sanitizeForModel(model, req.body);
         const record = await prismaModel.create({
@@ -137,7 +148,7 @@ export function createCrudRouter(options: CrudOptions): Router {
     });
 
     // PUT /:id  — Update
-    router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
+    router.put('/:id', authenticate, checkPerm('edit'), async (req: AuthRequest, res: Response) => {
       try {
         const existing = await prismaModel.findUnique({ where: { id: req.params.id } });
         if (!existing) {
@@ -178,7 +189,7 @@ export function createCrudRouter(options: CrudOptions): Router {
     });
 
     // DELETE /:id  — Delete
-    router.delete('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response) => {
+    router.delete('/:id', authenticate, checkPerm('delete'), async (req: AuthRequest, res: Response) => {
       try {
         const existing = await prismaModel.findUnique({ where: { id: req.params.id } });
         if (!existing) {
@@ -215,6 +226,13 @@ import { Router as VociRouter } from 'express';
 export function createVociRouter(parentModel: string, vociModel: string, parentIdField: string): VociRouter {
   const router = VociRouter({ mergeParams: true });
   const prismaVoci = (prisma as any)[vociModel];
+  const parentPermModule = parentModel === 'fattura' ? 'fatture' : 'preventivi';
+  const checkVociEdit = (req: any, res: any, next: any) => {
+    if (!can(req.user?.ruolo, parentPermModule, 'edit')) {
+      return res.status(403).json({ error: `Il tuo ruolo non può modificare ${parentPermModule}` });
+    }
+    next();
+  };
   const round2 = (n: number) => Math.round(n * 100) / 100;
 
   // IVA calcolata per voce secondo la sua aliquota (non hardcoded 22%)
@@ -244,7 +262,7 @@ export function createVociRouter(parentModel: string, vociModel: string, parentI
   });
 
   // POST /:parentId/voci
-  router.post('/:parentId/voci', authenticate, async (req: any, res: any) => {
+  router.post('/:parentId/voci', authenticate, checkVociEdit, async (req: any, res: any) => {
     try {
       if (!(await parentExists(req.params.parentId))) {
         return res.status(404).json({ error: `${parentModel} non trovato` });
@@ -266,7 +284,7 @@ export function createVociRouter(parentModel: string, vociModel: string, parentI
   });
 
   // PUT /:parentId/voci/:voceId
-  router.put('/:parentId/voci/:voceId', authenticate, async (req: any, res: any) => {
+  router.put('/:parentId/voci/:voceId', authenticate, checkVociEdit, async (req: any, res: any) => {
     try {
       const data = sanitizeForModel(vociModel, req.body);
       const voce = await prismaVoci.update({ where: { id: req.params.voceId }, data });
@@ -284,7 +302,7 @@ export function createVociRouter(parentModel: string, vociModel: string, parentI
   });
 
   // DELETE /:parentId/voci/:voceId
-  router.delete('/:parentId/voci/:voceId', authenticate, async (req: any, res: any) => {
+  router.delete('/:parentId/voci/:voceId', authenticate, checkVociEdit, async (req: any, res: any) => {
     try {
       await prismaVoci.delete({ where: { id: req.params.voceId } });
       await ricalcolaTotali(req.params.parentId);
