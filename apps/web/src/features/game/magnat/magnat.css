@@ -112,10 +112,16 @@
 }
 .mag-prop-name {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--ink-200);
 }
 .mag-prop-acts {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 4px;
 }
 .mag-prop-acts button {

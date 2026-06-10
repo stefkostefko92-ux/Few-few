@@ -80,8 +80,8 @@ export function Header() {
                 lowChips ? "border-loss/50" : "border-brass-400/20 hover:border-brass-300",
               )}
             >
-              <span className="tnum text-sm text-ink-100">🪙 {user.chips}</span>
-              <span className="tnum hidden text-sm text-ink-100 sm:inline">💎 {user.gems}</span>
+              <span className="tnum text-sm text-ink-100">🪙 {user.chips.toLocaleString()}</span>
+              <span className="tnum hidden text-sm text-ink-100 sm:inline">💎 {user.gems.toLocaleString()}</span>
               <span
                 className="grid size-6 place-items-center rounded-full bg-gradient-to-b from-brass-300 to-brass-400 text-sm font-bold text-charcoal-900"
                 aria-hidden

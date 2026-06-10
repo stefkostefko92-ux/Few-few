@@ -2,8 +2,22 @@
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { PlayingCard } from "./PlayingCard";
+import { fitOverlap } from "../scene/SceneShell";
 import "../../../styles/tokens.css";
 import "./cards.css";
+
+const SUIT4 = ["S", "H", "D", "C"] as const;
+const RK = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"] as const;
+function Hand({ n }: { n: number }) {
+  const cards = Array.from({ length: n }, (_, i) => `${RK[i % 13]}${SUIT4[i % 4]}`);
+  return (
+    <div style={{ display: "flex", width: 360, maxWidth: "100%", margin: "0 auto", justifyContent: "center" }}>
+      {cards.map((c, i) => (
+        <PlayingCard key={i} card={c} size="md" style={{ marginLeft: i ? -fitOverlap(n, "md") : 0 }} />
+      ))}
+    </div>
+  );
+}
 
 const SUITS = ["S", "H", "D", "C"] as const;
 const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "5", "3", "2"] as const;
@@ -31,6 +45,10 @@ function Demo() {
         {["AS", "KH", "QD", "JC"].map((c) => (
           <PlayingCard key={`sm-${c}`} card={c} size="sm" />
         ))}
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
+          <Hand n={8} />
+          <Hand n={13} />
+        </div>
       </div>
     </MemoryRouter>
   );

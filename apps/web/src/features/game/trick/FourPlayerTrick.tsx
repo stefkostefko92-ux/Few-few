@@ -90,8 +90,10 @@ export function FourPlayerTrick({
             badge={seatBadge?.(s)}
           >
             <div style={{ display: "flex" }}>
-              {Array.from({ length: state.hands[s]?.length ?? 0 }).map((_, i) => (
-                <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -24 : 0 }} />
+              {/* compact face-down fan (cap the shown count so a 13-card hand
+                  never runs into the centre trick on small screens) */}
+              {Array.from({ length: Math.min(state.hands[s]?.length ?? 0, 8) }).map((_, i) => (
+                <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -40 : 0 }} />
               ))}
             </div>
           </Seat>
@@ -117,6 +119,7 @@ export function FourPlayerTrick({
                 key={`${card}-${i}`}
                 card={card}
                 index={i}
+                count={(state.hands[seat] ?? []).length}
                 playable={myTurn && playable.has(card)}
                 onPlay={handlePlay}
               />

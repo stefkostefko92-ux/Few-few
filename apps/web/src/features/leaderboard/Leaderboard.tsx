@@ -54,13 +54,13 @@ export function Leaderboard() {
                 key={e.userId}
                 className="flex items-center justify-between border-b border-brass-400/10 px-6 py-3 last:border-0"
               >
-                <div className="flex items-center gap-4">
-                  <Badge tone={e.rank <= 3 ? "brass" : "felt"} className="tnum w-8 justify-center">
+                <div className="flex min-w-0 items-center gap-4">
+                  <Badge tone={e.rank <= 3 ? "brass" : "felt"} className="tnum w-8 shrink-0 justify-center">
                     {e.rank}
                   </Badge>
-                  <span className="text-ink-100">{e.displayName}</span>
+                  <span className="min-w-0 truncate text-ink-100">{e.displayName}</span>
                 </div>
-                <span className="tnum text-brass-300">{e.rating}</span>
+                <span className="tnum shrink-0 pl-3 text-brass-300">{e.rating}</span>
               </li>
             ))}
           </ul>

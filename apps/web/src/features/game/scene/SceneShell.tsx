@@ -86,10 +86,24 @@ export function ScorePill({ label, value, highlight }: { label: string; value: R
   );
 }
 
-/** A hand card that captures its DOM node so the scene can animate the play. */
+const CARD_W = { sm: 52, md: 72, lg: 96 } as const;
+
+/** Overlap (px) so a hand of `count` cards fits ~`target`px wide — more overlap
+ *  for bigger hands (e.g. Bridge/Kent's 13) so they never clip on mobile. */
+export function fitOverlap(count: number, size: "sm" | "md" | "lg" = "md", target = 358): number {
+  if (count <= 1) return 0;
+  const W = CARD_W[size];
+  const step = (target - W) / (count - 1);
+  const min = size === "sm" ? 16 : 22;
+  return Math.min(W - 16, Math.max(min, W - step));
+}
+
+/** A hand card that captures its DOM node so the scene can animate the play.
+ *  Pass `count` (hand size) for an auto-fit overlap, or a fixed `overlap`. */
 export function HandCard({
   card,
   index,
+  count,
   overlap = 28,
   playable,
   size = "md",
@@ -97,14 +111,16 @@ export function HandCard({
 }: {
   card: string;
   index: number;
+  count?: number;
   overlap?: number;
   playable: boolean;
   size?: "sm" | "md" | "lg";
   onPlay: (card: string, node: HTMLElement | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const ov = count !== undefined ? fitOverlap(count, size) : overlap;
   return (
-    <div ref={ref} style={{ marginLeft: index ? -overlap : 0 }}>
+    <div ref={ref} style={{ marginLeft: index ? -ov : 0 }}>
       <PlayingCard
         card={card}
         size={size}

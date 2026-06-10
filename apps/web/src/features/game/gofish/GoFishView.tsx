@@ -6,7 +6,7 @@ import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
-import { Scene, ScorePill } from "../scene/SceneShell";
+import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
 
 interface GoFishState {
   hands: string[][];
@@ -102,7 +102,12 @@ export function GoFishView({ title }: { title: string }) {
               >
                 <div className="aso-myhand" style={{ display: "flex" }}>
                   {(state.hands[seat] ?? []).map((card, i) => (
-                    <PlayingCard key={`${card}-${i}`} card={card} size="md" style={{ marginLeft: i ? -24 : 0 }} />
+                    <PlayingCard
+                      key={`${card}-${i}`}
+                      card={card}
+                      size="md"
+                      style={{ marginLeft: i ? -fitOverlap((state.hands[seat] ?? []).length, "md") : 0 }}
+                    />
                   ))}
                 </div>
               </Seat>

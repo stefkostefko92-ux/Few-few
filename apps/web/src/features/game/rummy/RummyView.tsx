@@ -123,6 +123,7 @@ export function RummyView({ title }: { title: string }) {
                       key={`${card}-${i}`}
                       card={card}
                       index={i}
+                      count={(state.hands[seat] ?? []).length}
                       playable={myTurn && inDiscardPhase && discardFor.has(card)}
                       onPlay={onDiscard}
                     />

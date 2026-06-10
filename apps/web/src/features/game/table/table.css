@@ -133,8 +133,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 150px;
   padding: 5px 14px;
   border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   background: linear-gradient(180deg, rgba(20, 26, 24, 0.7), rgba(8, 11, 10, 0.78));
   border: 1px solid rgba(217, 178, 95, 0.28);
   color: var(--ink-100);

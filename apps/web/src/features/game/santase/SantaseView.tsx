@@ -139,6 +139,7 @@ export function SantaseView({ title }: { title: string }) {
                       key={`${card}-${i}`}
                       card={card}
                       index={i}
+                      count={(state.hands[seat] ?? []).length}
                       playable={myTurn && playFor.has(card)}
                       onPlay={onPlay}
                     />

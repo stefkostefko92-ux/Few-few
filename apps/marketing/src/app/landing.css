@@ -119,6 +119,15 @@
   display: flex;
   justify-content: center;
   perspective: 900px;
+  max-width: 100%;
+}
+/* shrink the fan on very small phones so it never causes horizontal scroll */
+@media (max-width: 400px) {
+  .lp-fan-card {
+    width: 62px;
+    height: 88px;
+    margin-left: -22px;
+  }
 }
 .lp-fan-card {
   position: relative;

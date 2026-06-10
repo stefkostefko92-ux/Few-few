@@ -10,7 +10,7 @@ import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
-import { GameOverPanel } from "../scene/SceneShell";
+import { GameOverPanel, fitOverlap } from "../scene/SceneShell";
 import "../cards/cards.css";
 
 interface Play {
@@ -149,7 +149,14 @@ export function BeloteView({ title }: { title: string }) {
               {(state.hands[seat] ?? []).map((card, i) => {
                 const playable = myTurn && state.phase === "PLAY" && playMap.has(card);
                 return (
-                  <CardSlot key={`${card}-${i}`} index={i} card={card} playable={playable} onPlay={onPlay} />
+                  <CardSlot
+                    key={`${card}-${i}`}
+                    index={i}
+                    count={(state.hands[seat] ?? []).length}
+                    card={card}
+                    playable={playable}
+                    onPlay={onPlay}
+                  />
                 );
               })}
             </div>
@@ -214,18 +221,20 @@ export function BeloteView({ title }: { title: string }) {
 
 function CardSlot({
   index,
+  count,
   card,
   playable,
   onPlay,
 }: {
   index: number;
+  count: number;
   card: string;
   playable: boolean;
   onPlay: (card: string, node: HTMLElement | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   return (
-    <div ref={ref} style={{ marginLeft: index ? -28 : 0 }}>
+    <div ref={ref} style={{ marginLeft: index ? -fitOverlap(count, "md") : 0 }}>
       <PlayingCard
         card={card}
         size="md"

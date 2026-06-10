@@ -14,7 +14,7 @@ function GameTile({ game }: { game: GameCard }) {
   return (
     <Panel
       className={cn(
-        "group relative flex h-40 flex-col justify-between p-5 transition-transform duration-fast ease-snap",
+        "group relative flex min-h-40 flex-col justify-between p-5 transition-transform duration-fast ease-snap",
         game.ready ? "hover:-translate-y-1" : "opacity-70",
       )}
     >
