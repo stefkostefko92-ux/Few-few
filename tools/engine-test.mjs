@@ -24,8 +24,9 @@ const CORE = [
 ];
 const MODULES = [
   'src/modules/adventures.js', 'src/modules/training.js', 'src/modules/circle.js',
-  'src/modules/dungeon.js', 'src/modules/map.js', 'src/modules/pvp.js',
-  'src/modules/work.js', 'src/modules/autosell.js', 'src/modules/autologin.js'
+  'src/modules/dungeon.js', 'src/modules/eventquest.js', 'src/modules/map.js',
+  'src/modules/pvp.js', 'src/modules/work.js', 'src/modules/guild.js',
+  'src/modules/autosell.js', 'src/modules/autologin.js'
 ];
 
 /* Build a fresh, fully isolated engine with a controllable clock. */
@@ -89,6 +90,12 @@ function freshEngine({ settings = {}, api = {}, state = {}, license = { status: 
     buyCircleNode: spy('buyCircleNode'),
     getDungeon: spy('getDungeon', () => ({ freeTries: 0 })),
     startDungeon: spy('startDungeon'),
+    startShadowdungeon: spy('startShadowdungeon'),
+    fightShadowdungeon: spy('fightShadowdungeon'),
+    claimShadowdungeon: spy('claimShadowdungeon'),
+    getGameEvent: spy('getGameEvent', () => ({ questId: 0, rewardGold: 0, rewardExp: 0 })),
+    startEventAction: spy('startEventAction'),
+    guildSpendGold: spy('guildSpendGold'),
     getWorkData: spy('getWorkData', () => ({ maxHours: 8 })),
     startWork: spy('startWork'),
     fight: spy('fight', () => ({ won: true, gold: 10 })),
@@ -212,6 +219,41 @@ await test('dungeon: runs when tries available, then cools down (no re-fire)', a
   assert.equal(e.count('startDungeon'), 1);
   await e.advance(20000);            // within the 30s post-run cooldown
   assert.equal(e.count('startDungeon'), 1, 'no back-to-back dungeon');
+});
+
+await test('event quest: starts the mission when one is offered', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, eventquest: { enabled: true } }
+  });
+  e.TB.Api.getGameEvent = () => Promise.resolve({ questId: 42, rewardGold: 500, rewardExp: 120 });
+  e.TB.Scheduler.start();
+  await e.advance(2000);
+  assert.equal(e.count('startEventAction'), 1);
+  assert.ok(e.TB.State.get().adventureReturnAt > e.nowMs(), 'busy after starting the mission');
+});
+
+await test('dungeon shadow mode: start -> fight rounds -> claim', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, dungeon: { enabled: true, mode: 'shadow', shadowRounds: 4 } }
+  });
+  e.TB.Api.getDungeon = () => { e.TB.State.patch({ dungeon: { freeTries: 1, level: 3 } }); return Promise.resolve(); };
+  e.TB.Scheduler.start();
+  await e.advance(3000);
+  assert.equal(e.count('startShadowdungeon'), 1);
+  assert.equal(e.count('fightShadowdungeon'), 4, 'fought the configured rounds');
+  assert.equal(e.count('claimShadowdungeon'), 1);
+  assert.equal(e.count('startDungeon'), 0, 'shadow mode did not run a normal dungeon');
+});
+
+await test('guild: donates surplus gold above the reserve', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, guild: { enabled: true, donateGold: true, keepGoldReserve: 1000, minDonation: 100 } },
+    state: { gold: 5000 }
+  });
+  e.TB.Scheduler.start();
+  await e.advance(2000);
+  assert.equal(e.count('guildSpendGold'), 1);
+  assert.equal(e.calls.guildSpendGold[0][0], 4000, 'donated gold - reserve');
 });
 
 console.log(`\n${pass} engine checks passed.`);

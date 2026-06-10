@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
   "icons": {
@@ -58,9 +58,11 @@
         "src/modules/training.js",
         "src/modules/circle.js",
         "src/modules/dungeon.js",
+        "src/modules/eventquest.js",
         "src/modules/map.js",
         "src/modules/pvp.js",
         "src/modules/work.js",
+        "src/modules/guild.js",
         "src/modules/autosell.js",
         "src/modules/autologin.js",
         "src/ui/panel.js",

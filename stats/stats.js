@@ -14,6 +14,8 @@ const CARDS = [
   ['adventures', 'statAdventures'],
   ['encounters', 'statEncounters'],
   ['dungeonRuns', 'statDungeon'],
+  ['shadowRuns', 'statShadow'],
+  ['eventQuests', 'statEvent'],
   ['caveRuns', 'statCave'],
   ['dragonRuns', 'statDragon'],
   ['workShifts', 'statWork'],
@@ -21,6 +23,7 @@ const CARDS = [
   ['attributesRaised', 'statTraining'],
   ['itemsSold', 'statSold'],
   ['goldEarned', 'statGold'],
+  ['goldDonated', 'statDonated'],
   ['xpEarned', 'statXp'],
   ['errors', 'statErrors']
 ];

@@ -64,7 +64,22 @@ export const DEFAULT_SETTINGS = {
 
   /* ---- Dungeon ---- */
   dungeon: {
-    enabled: false                 // run the daily dungeon while free tries remain
+    enabled: false,                // run the daily dungeon while free tries remain
+    mode: 'normal',                // normal | shadow (Shadow dungeon shares the daily tries)
+    shadowRounds: 10               // max fight rounds per shadow run before claiming
+  },
+
+  /* ---- Event / Mission quest ---- */
+  eventquest: {
+    enabled: false                 // run the King's mission when offered
+  },
+
+  /* ---- Guild (gold sink) ---- */
+  guild: {
+    enabled: false,
+    donateGold: false,             // donate surplus gold to the guild treasury
+    keepGoldReserve: 0,
+    minDonation: 1000              // only donate when surplus is at least this much
   },
 
   /* ---- Map (Liberation encounters + Cave/Dragon events) ---- */

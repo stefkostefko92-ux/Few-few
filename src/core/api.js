@@ -208,6 +208,25 @@
     },
     async startDungeon() { await rpc('StartDungeon', []); },
 
+    /* ----------------------- shadow dungeon ------------------------- */
+    async startShadowdungeon() { await rpc('StartShadowdungeon', []); },
+    async fightShadowdungeon() { return rpc('FightShadowdungeon', []); },
+    async claimShadowdungeon() { return rpc('ClaimShadowdungeon', []); },
+
+    /* ----------------------- event / mission quest ------------------ */
+    async getGameEvent() {
+      const doc = await rpc('GetGameEvent', []);
+      return {
+        questId: num(findValue(doc, 'quest_id', 'i4')) || 0,
+        rewardGold: num(findValue(doc, 'reward_gold', 'i4')) || 0,
+        rewardExp: num(findValue(doc, 'reward_exp', 'i4')) || 0
+      };
+    },
+    async startEventAction() { await rpc('StartEventAction', []); },
+
+    /* ----------------------------- guild ---------------------------- */
+    async guildSpendGold(value) { await rpc('Guild_SpendGold', [{ type: 'int', value }]); },
+
     /* ----------------------------- work ----------------------------- */
     async getWorkData() {
       const doc = await rpc('GetWorkData', []);

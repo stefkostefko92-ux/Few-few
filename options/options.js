@@ -73,7 +73,18 @@ const SCHEMA = [
     { k: 'keepGoldReserve', type: 'number', min: 0 }
   ] },
   { id: 'dungeon', fields: [
+    { k: 'enabled', type: 'bool' },
+    { k: 'mode', type: 'select', options: ['normal', 'shadow'] },
+    { k: 'shadowRounds', type: 'number', min: 1, max: 50 }
+  ] },
+  { id: 'eventquest', fields: [
     { k: 'enabled', type: 'bool' }
+  ] },
+  { id: 'guild', fields: [
+    { k: 'enabled', type: 'bool' },
+    { k: 'donateGold', type: 'bool' },
+    { k: 'keepGoldReserve', type: 'number', min: 0 },
+    { k: 'minDonation', type: 'number', min: 1 }
   ] },
   { id: 'map', fields: [
     { k: 'enabled', type: 'bool' },
