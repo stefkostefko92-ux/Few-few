@@ -301,6 +301,14 @@ const STATO_COLORS = {
   CARTELLO_CANTIERE: "bg-amber-500/20 text-amber-400 border-amber-500/30", VERBALE_CANTIERE: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   CERTIFICATO: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", CONTRATTO: "bg-purple-500/20 text-purple-400 border-purple-500/30",
   ALTRO: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+  FULL_RISK: "bg-purple-500/20 text-purple-400 border-purple-500/30", SEMI_INTEGRALE: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  PROGRAMMATA: "bg-blue-500/20 text-blue-400 border-blue-500/30", ESEGUITA: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  STRAORDINARIA: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  OK: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", ANOMALIE: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  FERMO_IMPIANTO: "bg-red-500/20 text-red-400 border-red-500/30",
+  POSITIVO: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", NEGATIVO: "bg-red-500/20 text-red-400 border-red-500/30",
+  CON_PRESCRIZIONI: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  DISDETTO: "bg-red-500/20 text-red-400 border-red-500/30",
   MASTER: "bg-red-500/20 text-red-400 border-red-500/30", ADMIN: "bg-orange-500/20 text-orange-400 border-orange-500/30",
   DIREZIONE: "bg-amber-500/20 text-amber-400 border-amber-500/30", RESPONSABILE: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   OPERATORE: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30", CLIENTE: "bg-zinc-600/20 text-zinc-400 border-zinc-600/30",
@@ -1087,6 +1095,87 @@ const DOC_COLS = [
   { key: "titolo", label: "Titolo", render: r => <span className="text-zinc-200">{r.titolo}</span> },
   { key: "tipo", label: "Tipo", render: r => <Badge value={r.tipo} /> },
   { key: "data", label: "Data", render: r => <span className="text-zinc-500">{r.data || r.createdAt?.slice(0, 10)}</span> },
+];
+
+
+// ═══════════════════════════════════════════════════════
+// MODULE CONFIGS — Contratti / Visite / Verifiche (DPR 162/99)
+// ═══════════════════════════════════════════════════════
+const CONTRATTI_FIELDS = [
+  { key: "numero", label: "Numero contratto", placeholder: "CTR-2026-XXX" },
+  { key: "tipo", label: "Tipo", type: "select", options: ["ORDINARIA", "SEMI_INTEGRALE", "FULL_RISK"], default: "ORDINARIA" },
+  { key: "stato", label: "Stato", type: "select", options: ["ATTIVO", "SOSPESO", "DISDETTO", "SCADUTO"], default: "ATTIVO" },
+  { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.marca || ""} ${o.modello || ""}`.trim() },
+  { key: "amministratoreId", label: "Amministratore", type: "relation", endpoint: "/amministratori", labelFn: o => o.ragioneSociale || `${o.nome || ""} ${o.cognome || ""}`.trim() },
+  { key: "canoneAnnuo", label: "Canone annuo €", type: "number" },
+  { key: "visiteAnno", label: "Visite/anno (min 2 — DPR 162/99)", type: "number", default: 2 },
+  { key: "dataInizio", label: "Data inizio", type: "date" },
+  { key: "dataFine", label: "Data fine", type: "date" },
+  { key: "rinnovoAutomatico", label: "Rinnovo automatico", type: "checkbox", default: true },
+  { key: "note", label: "Note", type: "textarea", wide: true },
+];
+const CONTRATTI_COLS = [
+  { key: "numero", label: "Numero", render: r => <span className="font-mono text-cyan-400 font-bold">{r.numero}</span> },
+  { key: "tipo", label: "Tipo", render: r => <Badge value={r.tipo} /> },
+  { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
+  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{relName(r.impianto, "matricola") || "—"}</span> },
+  { key: "amministratore", label: "Amministratore", render: r => <span className="text-zinc-400">{relName(r.amministratore) || "—"}</span> },
+  { key: "canoneAnnuo", label: "Canone", render: r => <span className="text-emerald-400 font-bold">€ {Number(r.canoneAnnuo || 0).toLocaleString("it-IT")}</span> },
+  { key: "visiteAnno", label: "Visite/anno", render: r => <span className={Number(r.visiteAnno) < 2 ? "text-red-400 font-bold" : "text-zinc-400"}>{r.visiteAnno}{Number(r.visiteAnno) < 2 ? " ⚠" : ""}</span> },
+  { key: "dataFine", label: "Scadenza", render: r => {
+    if (!r.dataFine) return <span className="text-zinc-600">—</span>;
+    const d = Math.ceil((new Date(r.dataFine) - new Date()) / 86400000);
+    return <span className={d < 0 ? "text-red-400 font-bold" : d <= 60 ? "text-amber-400" : "text-zinc-400"}>{fmtD(r.dataFine)}</span>;
+  }},
+];
+
+const VISITE_FIELDS = [
+  { key: "tipo", label: "Tipo visita", type: "select", options: ["ORDINARIA", "STRAORDINARIA", "EMERGENZA"], default: "ORDINARIA" },
+  { key: "stato", label: "Stato", type: "select", options: ["PROGRAMMATA", "ESEGUITA", "ANNULLATA"], default: "PROGRAMMATA" },
+  { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.indirizzo || ""}`.trim() },
+  { key: "contrattoId", label: "Contratto", type: "relation", endpoint: "/contratti", labelFn: o => o.numero },
+  { key: "tecnicoId", label: "Tecnico", type: "relation", endpoint: "/dipendenti?tipo=TECNICO", labelFn: o => `${o.nome || ""} ${o.cognome || ""}`.trim() },
+  { key: "dataProgrammata", label: "Data programmata", type: "date" },
+  { key: "dataEsecuzione", label: "Data esecuzione", type: "date" },
+  { key: "esito", label: "Esito", type: "select", options: ["OK", "ANOMALIE", "FERMO_IMPIANTO"], default: "" },
+  { key: "descrizione", label: "Descrizione attività", type: "textarea", wide: true },
+  { key: "anomalie", label: "Anomalie riscontrate", type: "textarea", wide: true },
+];
+const VISITE_COLS = [
+  { key: "dataProgrammata", label: "Programmata", render: r => {
+    if (!r.dataProgrammata) return <span className="text-zinc-600">—</span>;
+    const d = Math.ceil((new Date(r.dataProgrammata) - new Date()) / 86400000);
+    const late = r.stato === "PROGRAMMATA" && d < 0;
+    return <span className={late ? "text-red-400 font-bold" : "text-zinc-300"}>{fmtD(r.dataProgrammata)}{late ? " (in ritardo)" : ""}</span>;
+  }},
+  { key: "tipo", label: "Tipo", render: r => <Badge value={r.tipo} /> },
+  { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
+  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{relName(r.impianto, "matricola") || "—"}</span> },
+  { key: "tecnico", label: "Tecnico", render: r => relName(r.tecnico) || <span className="text-zinc-600 italic">N/A</span> },
+  { key: "esito", label: "Esito", render: r => r.esito ? <Badge value={r.esito} /> : <span className="text-zinc-600">—</span> },
+  { key: "dataEsecuzione", label: "Eseguita", render: r => <span className="text-zinc-500">{fmtD(r.dataEsecuzione) || "—"}</span> },
+];
+
+const VERIFICHE_FIELDS = [
+  { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.marca || ""} ${o.modello || ""}`.trim() },
+  { key: "dataVerifica", label: "Data verifica", type: "date" },
+  { key: "organismo", label: "Organismo abilitato", placeholder: "es. IMQ, Eco Cert..." },
+  { key: "esito", label: "Esito", type: "select", options: ["POSITIVO", "NEGATIVO", "CON_PRESCRIZIONI"], default: "" },
+  { key: "prossimaScadenza", label: "Prossima scadenza (biennale)", type: "date" },
+  { key: "prescrizioni", label: "Prescrizioni", type: "textarea", wide: true },
+  { key: "note", label: "Note", type: "textarea", wide: true },
+];
+const VERIFICHE_COLS = [
+  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-cyan-400 font-bold">{relName(r.impianto, "matricola") || "—"}</span> },
+  { key: "dataVerifica", label: "Data verifica", render: r => <span className="text-zinc-300">{fmtD(r.dataVerifica) || "—"}</span> },
+  { key: "organismo", label: "Organismo", render: r => <span className="text-zinc-400">{r.organismo || "—"}</span> },
+  { key: "esito", label: "Esito", render: r => r.esito ? <Badge value={r.esito} /> : <span className="text-zinc-600">—</span> },
+  { key: "prossimaScadenza", label: "Prossima scadenza", render: r => {
+    if (!r.prossimaScadenza) return <span className="text-zinc-600">—</span>;
+    const d = Math.ceil((new Date(r.prossimaScadenza) - new Date()) / 86400000);
+    return <span className={d < 0 ? "text-red-400 font-bold" : d <= 60 ? "text-amber-400" : "text-zinc-400"}>{fmtD(r.prossimaScadenza)} ({d < 0 ? `scaduta da ${Math.abs(d)}gg` : `${d}gg`})</span>;
+  }},
+  { key: "prescrizioni", label: "Prescrizioni", render: r => r.prescrizioni ? <span className="text-amber-400 text-xs max-w-[200px] truncate block">{r.prescrizioni}</span> : <span className="text-zinc-600">—</span> },
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -2259,6 +2348,9 @@ const BuonoLavoroPage = () => {
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "impianti", label: "Impianti", icon: Wrench },
+  { id: "contratti", label: "Contratti", icon: FileText },
+  { id: "visite", label: "Manutenzioni", icon: Activity },
+  { id: "verifiche", label: "Verifiche DPR 162", icon: Shield },
   { id: "condomini", label: "Condomini", icon: Building2 },
   { id: "amministratori", label: "Amministratori", icon: Users },
   { id: "dipendenti", label: "Dipendenti", icon: HardHat },
@@ -2372,6 +2464,9 @@ export default function App() {
     switch (page) {
       case "dashboard": return <DashboardPage />;
       case "impianti": return <CrudModulePage title="IMPIANTI" subtitle="Registro completo con scadenze" store={impiantiStore} apiEndpoint="/impianti" columns={IMPIANTI_COLS} formFields={IMPIANTI_FIELDS} entityName="Impianto" filterField="stato" filterOptions={["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO"]} />;
+      case "contratti": return <CrudModulePage title="CONTRATTI DI MANUTENZIONE" subtitle="Canoni, periodicità visite e rinnovi" apiEndpoint="/contratti" columns={CONTRATTI_COLS} formFields={CONTRATTI_FIELDS} entityName="Contratto" filterField="stato" filterOptions={["ATTIVO", "SOSPESO", "DISDETTO", "SCADUTO"]} />;
+      case "visite": return <CrudModulePage title="MANUTENZIONI PROGRAMMATE" subtitle="Visite ordinarie (min. 2/anno — DPR 162/99), straordinarie ed emergenze" apiEndpoint="/visite" columns={VISITE_COLS} formFields={VISITE_FIELDS} entityName="Visita" filterField="stato" filterOptions={["PROGRAMMATA", "ESEGUITA", "ANNULLATA"]} />;
+      case "verifiche": return <CrudModulePage title="VERIFICHE PERIODICHE" subtitle="Registro verifiche biennali Organismo Abilitato — DPR 162/99" apiEndpoint="/verifiche" columns={VERIFICHE_COLS} formFields={VERIFICHE_FIELDS} entityName="Verifica" />;
       case "condomini": return <CrudModulePage title="CONDOMINI" subtitle="Edifici e amministratori" store={condominiStore} apiEndpoint="/condomini" columns={CONDOMINI_COLS} formFields={CONDOMINI_FIELDS} entityName="Condominio" />;
       case "amministratori": return <CrudModulePage title="AMMINISTRATORI" subtitle="Persone e società" store={amministratoriStore} apiEndpoint="/amministratori" columns={AMMINISTRATORI_COLS} formFields={AMMINISTRATORI_FIELDS} entityName="Amministratore" filterField="tipo" filterOptions={["PERSONA_FISICA", "SOCIETA"]} />;
       case "dipendenti": return <CrudModulePage title="DIPENDENTI" subtitle="Personale attivo" store={dipendentiStore} apiEndpoint="/dipendenti" columns={DIPENDENTI_COLS} formFields={DIPENDENTI_FIELDS} entityName="Dipendente" filterField="tipo" filterOptions={["TECNICO", "AMMINISTRATIVO", "COMMERCIALE", "MAGAZZINIERE"]} />;

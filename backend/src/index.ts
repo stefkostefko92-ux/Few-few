@@ -185,6 +185,40 @@ app.use('/api/movimenti', apiLimiter, createCrudRouter({
   },
 }));
 
+// ── Contratti di Manutenzione ──
+app.use('/api/contratti', apiLimiter, createCrudRouter({
+  model: 'contratto',
+  entityName: 'contratti',
+  searchFields: ['numero', 'tipo', 'note'],
+  include: {
+    impianto: { select: { id: true, matricola: true, marca: true, modello: true, indirizzo: true } },
+    amministratore: { select: { id: true, nome: true, cognome: true, ragioneSociale: true } },
+    _count: { select: { visite: true } },
+  },
+}));
+
+// ── Visite di Manutenzione (giri programmati DPR 162/99) ──
+app.use('/api/visite', apiLimiter, createCrudRouter({
+  model: 'visitaManutenzione',
+  entityName: 'visite_manutenzione',
+  searchFields: ['descrizione', 'anomalie', 'esito'],
+  include: {
+    impianto: { select: { id: true, matricola: true, indirizzo: true } },
+    contratto: { select: { id: true, numero: true } },
+    tecnico: { select: { id: true, nome: true, cognome: true } },
+  },
+}));
+
+// ── Verifiche Periodiche biennali (Organismo Abilitato) ──
+app.use('/api/verifiche', apiLimiter, createCrudRouter({
+  model: 'verificaPeriodica',
+  entityName: 'verifiche_periodiche',
+  searchFields: ['organismo', 'esito', 'prescrizioni'],
+  include: {
+    impianto: { select: { id: true, matricola: true, marca: true, modello: true, indirizzo: true } },
+  },
+}));
+
 // ── Programma Lavori ──
 app.use('/api/lavori', apiLimiter, createCrudRouter({
   model: 'lavoro',

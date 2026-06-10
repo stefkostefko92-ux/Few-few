@@ -10,7 +10,8 @@ type ModelName = 'impianto' | 'condominio' | 'amministratore' | 'dipendente' |
   'automezzo' | 'cottimista' | 'squadra' | 'articoloMagazzino' |
   'movimentoMagazzino' | 'preventivo' | 'vocePreventivo' |
   'ordineLavoro' | 'fattura' | 'dDT' | 'documento' | 'auditLog' |
-  'impiantoMedia' | 'scadenzaImpianto' | 'storicoStato' | 'lavoro' | 'buonoLavoro';
+  'impiantoMedia' | 'scadenzaImpianto' | 'storicoStato' | 'lavoro' | 'buonoLavoro' |
+  'contratto' | 'visitaManutenzione' | 'verificaPeriodica';
 
 interface CrudOptions {
   model: ModelName;

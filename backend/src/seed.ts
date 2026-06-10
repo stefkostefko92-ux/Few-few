@@ -343,6 +343,46 @@ async function main() {
     },
   });
 
+  // ── Contratti di manutenzione ──
+  const contratto1 = await prisma.contratto.create({
+    data: {
+      numero: 'CTR-2026-001', tipo: 'FULL_RISK', stato: 'ATTIVO', canoneAnnuo: 2400, visiteAnno: 4,
+      dataInizio: new Date('2026-01-01'), dataFine: new Date('2026-12-31'), rinnovoAutomatico: true,
+      impiantoId: imp1.id, amministratoreId: amm1.id,
+    },
+  });
+  await prisma.contratto.create({
+    data: {
+      numero: 'CTR-2026-002', tipo: 'ORDINARIA', stato: 'ATTIVO', canoneAnnuo: 1200, visiteAnno: 2,
+      dataInizio: new Date('2026-03-01'), dataFine: new Date('2027-02-28'), rinnovoAutomatico: true,
+      impiantoId: imp2.id, amministratoreId: amm2.id,
+    },
+  });
+
+  // ── Visite di manutenzione ──
+  await prisma.visitaManutenzione.createMany({
+    data: [
+      { tipo: 'ORDINARIA', stato: 'ESEGUITA', dataProgrammata: new Date('2026-03-15'), dataEsecuzione: new Date('2026-03-15'), esito: 'OK', descrizione: 'Visita semestrale: lubrificazione guide, controllo funi', impiantoId: imp1.id, contrattoId: contratto1.id, tecnicoId: dip1.id },
+      { tipo: 'ORDINARIA', stato: 'PROGRAMMATA', dataProgrammata: new Date('2026-09-15'), descrizione: 'Visita semestrale programmata', impiantoId: imp1.id, contrattoId: contratto1.id, tecnicoId: dip1.id },
+      { tipo: 'EMERGENZA', stato: 'ESEGUITA', dataProgrammata: new Date('2026-04-02'), dataEsecuzione: new Date('2026-04-02'), esito: 'ANOMALIE', descrizione: 'Blocco porte piano 3', anomalie: 'Operatore porte usurato, da sostituire', impiantoId: imp3.id, tecnicoId: dip2.id },
+    ],
+  });
+
+  // ── Verifiche periodiche biennali ──
+  await prisma.verificaPeriodica.create({
+    data: {
+      dataVerifica: new Date('2025-06-10'), organismo: 'IMQ S.p.A.', esito: 'POSITIVO',
+      prossimaScadenza: new Date('2027-06-10'), impiantoId: imp1.id,
+    },
+  });
+  await prisma.verificaPeriodica.create({
+    data: {
+      dataVerifica: new Date('2024-08-20'), organismo: 'Eco Cert SRL', esito: 'CON_PRESCRIZIONI',
+      prescrizioni: 'Sostituire illuminazione di emergenza cabina entro 6 mesi',
+      prossimaScadenza: new Date('2026-08-20'), impiantoId: imp3.id,
+    },
+  });
+
   console.log('✅ Seed completato!');
   console.log(`   📧 Admin: admin@erp-ascensori.it / ${adminPassword}`);
   console.log('   📧 Tecnico: tecnico@erp-ascensori.it / tecnico2025');

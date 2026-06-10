@@ -105,6 +105,9 @@ model Impianto {
   assegnazioni        AssegnazioneTecnico[]
   preventivi          Preventivo[]
   scadenze            ScadenzaImpianto[]
+  contratti           Contratto[]
+  visiteManutenzione  VisitaManutenzione[]
+  verifichePeriodiche VerificaPeriodica[]
 
   @@map("impianti")
 }
@@ -206,6 +209,7 @@ model Amministratore {
   impianti      Impianto[]
   preventivi    Preventivo[]
   fatture       Fattura[]
+  contratti     Contratto[]
 
   @@map("amministratori")
 }
@@ -239,6 +243,7 @@ model Dipendente {
   assegnazioni      AssegnazioneTecnico[]
   ordiniLavoro      OrdineLavoro[]
   automezzo         Automezzo?      @relation("ConducenteAutomezzo")
+  visiteManutenzione VisitaManutenzione[]
 
   @@map("dipendenti")
 }
@@ -604,6 +609,72 @@ enum TipoDocumento {
   CERTIFICATO
   CONTRATTO
   ALTRO
+}
+
+// Contratti di manutenzione (cuore del business ascensoristico)
+model Contratto {
+  id                String    @id @default(uuid())
+  numero            String    @unique
+  tipo              String    @default("ORDINARIA") // ORDINARIA / SEMI_INTEGRALE / FULL_RISK
+  stato             String    @default("ATTIVO")    // ATTIVO / SOSPESO / DISDETTO / SCADUTO
+  canoneAnnuo       Decimal   @default(0) @db.Decimal(12, 2)
+  visiteAnno        Int       @default(2)           // DPR 162/99: minimo 2 visite/anno
+  dataInizio        DateTime?
+  dataFine          DateTime?
+  rinnovoAutomatico Boolean   @default(true)
+  note              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  impiantoId        String?
+  impianto          Impianto? @relation(fields: [impiantoId], references: [id])
+  amministratoreId  String?
+  amministratore    Amministratore? @relation(fields: [amministratoreId], references: [id])
+
+  visite            VisitaManutenzione[]
+
+  @@map("contratti")
+}
+
+// Visite di manutenzione programmata (giri di manutenzione)
+model VisitaManutenzione {
+  id              String    @id @default(uuid())
+  tipo            String    @default("ORDINARIA")   // ORDINARIA / STRAORDINARIA / EMERGENZA
+  stato           String    @default("PROGRAMMATA") // PROGRAMMATA / ESEGUITA / ANNULLATA
+  dataProgrammata DateTime?
+  dataEsecuzione  DateTime?
+  esito           String?                            // OK / ANOMALIE / FERMO_IMPIANTO
+  descrizione     String?
+  anomalie        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  impiantoId      String?
+  impianto        Impianto? @relation(fields: [impiantoId], references: [id])
+  contrattoId     String?
+  contratto       Contratto? @relation(fields: [contrattoId], references: [id])
+  tecnicoId       String?
+  tecnico         Dipendente? @relation(fields: [tecnicoId], references: [id])
+
+  @@map("visite_manutenzione")
+}
+
+// Verifiche periodiche biennali DPR 162/99 (Organismo Abilitato)
+model VerificaPeriodica {
+  id               String    @id @default(uuid())
+  dataVerifica     DateTime?
+  organismo        String?                           // ente abilitato (es. IMQ, Eco Cert...)
+  esito            String?                           // POSITIVO / NEGATIVO / CON_PRESCRIZIONI
+  prescrizioni     String?
+  prossimaScadenza DateTime?                         // dataVerifica + 2 anni
+  note             String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  impiantoId       String?
+  impianto         Impianto? @relation(fields: [impiantoId], references: [id])
+
+  @@map("verifiche_periodiche")
 }
 
 // Programma lavori (cantieri assegnati a cottimisti/tecnici)

@@ -4,7 +4,7 @@ import { createAuditLog } from './audit';
 const prisma = new PrismaClient();
 
 interface ScadenzaAlert {
-  tipo: 'revisione' | 'assicurazione' | 'tagliando' | 'certificazione';
+  tipo: 'revisione' | 'assicurazione' | 'tagliando' | 'certificazione' | 'contratto' | 'visita' | 'verifica';
   entita: string;
   entitaId: string;
   descrizione: string;
@@ -123,6 +123,60 @@ export async function controllaScadenze(): Promise<ScadenzaAlert[]> {
         data: { stato: nuovoStato },
       });
     }
+  }
+
+  // ── Contratti in scadenza ──
+  const contratti = await prisma.contratto.findMany({
+    where: { stato: 'ATTIVO', dataFine: { not: null, lte: in90 } },
+    include: { impianto: { select: { matricola: true } } },
+  });
+  for (const c of contratti) {
+    const gg = Math.ceil((c.dataFine!.getTime() - now.getTime()) / 86400000);
+    alerts.push({
+      tipo: 'contratto',
+      entita: 'contratti',
+      entitaId: c.id,
+      descrizione: `Contratto ${c.numero}${c.impianto ? ` (${c.impianto.matricola})` : ''} in scadenza${c.rinnovoAutomatico ? ' — rinnovo automatico' : ''}`,
+      dataScadenza: c.dataFine!,
+      giorniRimanenti: gg,
+      livello: gg < 0 ? 'scaduto' : gg <= 30 ? 'critico' : gg <= 60 ? 'attenzione' : 'informativo',
+    });
+  }
+
+  // ── Visite programmate in ritardo o imminenti ──
+  const visite = await prisma.visitaManutenzione.findMany({
+    where: { stato: 'PROGRAMMATA', dataProgrammata: { not: null, lte: in30 } },
+    include: { impianto: { select: { matricola: true } }, tecnico: { select: { nome: true, cognome: true } } },
+  });
+  for (const v of visite) {
+    const gg = Math.ceil((v.dataProgrammata!.getTime() - now.getTime()) / 86400000);
+    alerts.push({
+      tipo: 'visita',
+      entita: 'visite_manutenzione',
+      entitaId: v.id,
+      descrizione: `Visita ${v.tipo.toLowerCase()}${v.impianto ? ` ${v.impianto.matricola}` : ''}${v.tecnico ? ` — ${v.tecnico.nome} ${v.tecnico.cognome}` : ''}`,
+      dataScadenza: v.dataProgrammata!,
+      giorniRimanenti: gg,
+      livello: gg < 0 ? 'scaduto' : gg <= 7 ? 'critico' : 'attenzione',
+    });
+  }
+
+  // ── Verifiche biennali DPR 162/99 in scadenza ──
+  const verifiche = await prisma.verificaPeriodica.findMany({
+    where: { prossimaScadenza: { not: null, lte: in90 } },
+    include: { impianto: { select: { matricola: true } } },
+  });
+  for (const vf of verifiche) {
+    const gg = Math.ceil((vf.prossimaScadenza!.getTime() - now.getTime()) / 86400000);
+    alerts.push({
+      tipo: 'verifica',
+      entita: 'verifiche_periodiche',
+      entitaId: vf.id,
+      descrizione: `Verifica biennale DPR 162/99${vf.impianto ? ` ${vf.impianto.matricola}` : ''}${vf.organismo ? ` (${vf.organismo})` : ''}`,
+      dataScadenza: vf.prossimaScadenza!,
+      giorniRimanenti: gg,
+      livello: gg < 0 ? 'scaduto' : gg <= 30 ? 'critico' : gg <= 60 ? 'attenzione' : 'informativo',
+    });
   }
 
   // Sort: scaduto first, then by days remaining

@@ -1,6 +1,8 @@
 # ERP Ascensori Enterprise
 
-Gestionale completo per aziende di manutenzione e installazione impianti elevatori: impianti, condomini, amministratori, dipendenti, automezzi, cottimisti, magazzino, preventivi, ordini di lavoro, buoni di lavoro, fatturazione, DDT, documenti, audit log e assistente AI.
+Gestionale completo per aziende di manutenzione e installazione impianti elevatori: impianti, **contratti di manutenzione**, **visite programmate e verifiche periodiche DPR 162/99**, condomini, amministratori, dipendenti, automezzi, cottimisti, magazzino, preventivi, programma lavori, ordini di lavoro, buoni di lavoro, fatturazione, DDT, documenti, audit log e assistente AI.
+
+**Conformità DPR 162/99:** registro contratti con periodicità visite (minimo 2/anno), giri di manutenzione programmata con esiti e anomalie, registro delle verifiche biennali dell'Organismo Abilitato con prescrizioni — tutto integrato nello scadenzario automatico (alert a 90/60/30 giorni).
 
 **Stack:** React 18 + Vite + Tailwind (frontend) · Node.js + Express + Prisma + PostgreSQL + Redis + Socket.IO (backend) · Docker Compose (deploy)
 
