@@ -1,0 +1,13 @@
+cavo;da;a;poli;sezione_mm2;tipo;funzione;lunghezza_stim_m
+W1;Rete edificio;-QS1 (X0:L1L2L3N PE);5;6;FG16OR16 0.6/1kV;Alimentazione rete 400V trifase;5
+W2;-A1 drive/-KM (X3:U V W);Motore argano / pompa (-M1);4;2.5;FG16OR16;Potenza motore (geared) o pompa (idraulico);8
+W3;-A-FRE (X3:BR1 BR2);Freno -YB1 (geared);3;1.5;FG16OR16;Alimentazione freno elettromeccanico;8
+W4;Catena sicurezza vano/cabina;-X1:11..14;4;1.0;FROR 450/750;Catena di sicurezza (apertura positiva);40
+W5;COP cabina (-A-COP);-X2:1..6 + 24V;5;0.5;LiYCY schermato;Bus cabina CANbus + chiamate + 24V;35
+W6;LOP piani (-A-LOP);-X2:7..12 + 24V;6;0.5;LiYCY schermato;Bus piani CANbus + chiamate;30
+W7;Sensori vano (-B-ZP/-B-RALL/finecorsa);-X1:15..26 / -X4;8;0.75;LiYCY schermato;Zona porta, rallentamenti, finecorsa, segnalazioni;40
+W8;-A5 Modulo WiFi ESP32 (RS485);-A1 PLC porta Modbus;2;0.5;2x0.5 schermato twisted;RS485 Modbus RTU parametri non-safety;2
+W9;-T1 Alimentatore 24Vdc;Carichi ausiliari (-X4:11-12);2;1.0;FROR 450/750;Alimentazione ausiliaria 24V;3
+W10;-S-FRE microcontatti freno;-X1 (controllo freno);2;0.75;LiYCY schermato;Controllo freno per UCM/A3 (solo geared);8
+W11;-S-MINP pressostato;-X1 (pressione min);2;0.75;FROR;Pressione minima (solo idraulico);6
+W12;-EV-S/-EV-D valvole;-X3:9-10;3;1.0;FROR;Comando elettrovalvole (solo idraulico);6

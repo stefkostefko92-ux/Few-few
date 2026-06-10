@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1123 794" font-family="Arial, Helvetica, sans-serif">
+  <style>
+    .wire{stroke:#111;stroke-width:2.5;fill:none}
+    .comp{fill:#fff;stroke:#111;stroke-width:2}
+    .lbl{font-size:12px;fill:#111}
+    .lblb{font-size:13px;fill:#111;font-weight:bold}
+    .ref{font-size:11px;fill:#b00;font-weight:bold}
+    .note{font-size:11px;fill:#333}
+    .title{font-size:18px;font-weight:bold;fill:#111}
+  </style>
+
+  <rect x="8" y="8" width="1107" height="778" fill="none" stroke="#111" stroke-width="2"/>
+  <text x="30" y="40" class="title">CATENA DI SICUREZZA (circuito di sicurezza in serie) — EN 81-20 §5.11</text>
+  <text x="30" y="60" class="note">Tutti i contatti ad APERTURA POSITIVA. Valida sia per impianti geared sia idraulici. Il PLC legge lo stato ma NON sostituisce la catena.</text>
+
+  <!-- alimentazione sicurezza -->
+  <text x="40" y="100" class="lblb">+ 110V~ (o 24Vdc) sicurezza</text>
+  <line x1="60" y1="110" x2="60" y2="690" class="wire"/>
+
+  <!-- serie di contatti -->
+  <!-- funzione per disegnare contatto: rettangolo con riferimento -->
+  <!-- 1 -->
+  <line x1="60" y1="130" x2="120" y2="130" class="wire"/>
+  <rect x="120" y="116" width="40" height="28" class="comp"/>
+  <line x1="124" y1="138" x2="156" y2="122" class="wire"/>
+  <text x="170" y="128" class="ref">-S1</text><text x="210" y="128" class="lbl">Arresto emergenza FOSSA</text>
+  <line x1="160" y1="130" x2="640" y2="130" class="wire"/>
+
+  <!-- 2 -->
+  <rect x="120" y="156" width="40" height="28" class="comp"/>
+  <line x1="124" y1="178" x2="156" y2="162" class="wire"/>
+  <line x1="60" y1="170" x2="120" y2="170" class="wire"/>
+  <text x="170" y="168" class="ref">-S2</text><text x="210" y="168" class="lbl">Arresto emergenza TETTO CABINA</text>
+  <line x1="160" y1="170" x2="640" y2="170" class="wire"/>
+
+  <!-- 3 -->
+  <rect x="120" y="196" width="40" height="28" class="comp"/>
+  <line x1="124" y1="218" x2="156" y2="202" class="wire"/>
+  <line x1="60" y1="210" x2="120" y2="210" class="wire"/>
+  <text x="170" y="208" class="ref">-S3</text><text x="210" y="208" class="lbl">Commutatore ISPEZIONE / REVISIONE</text>
+  <line x1="160" y1="210" x2="640" y2="210" class="wire"/>
+
+  <!-- 4 -->
+  <rect x="120" y="236" width="40" height="28" class="comp"/>
+  <line x1="124" y1="258" x2="156" y2="242" class="wire"/>
+  <line x1="60" y1="250" x2="120" y2="250" class="wire"/>
+  <text x="170" y="248" class="ref">-S4</text><text x="210" y="248" class="lbl">Extracorsa SUPERIORE (final limit alto)</text>
+  <line x1="160" y1="250" x2="640" y2="250" class="wire"/>
+
+  <!-- 5 -->
+  <rect x="120" y="276" width="40" height="28" class="comp"/>
+  <line x1="124" y1="298" x2="156" y2="282" class="wire"/>
+  <line x1="60" y1="290" x2="120" y2="290" class="wire"/>
+  <text x="170" y="288" class="ref">-S5</text><text x="210" y="288" class="lbl">Extracorsa INFERIORE (final limit basso)</text>
+  <line x1="160" y1="290" x2="640" y2="290" class="wire"/>
+
+  <!-- 6 -->
+  <rect x="120" y="316" width="40" height="28" class="comp"/>
+  <line x1="124" y1="338" x2="156" y2="322" class="wire"/>
+  <line x1="60" y1="330" x2="120" y2="330" class="wire"/>
+  <text x="170" y="328" class="ref">-S6</text><text x="210" y="328" class="lbl">Tensione fune LIMITATORE di velocita'</text>
+  <line x1="160" y1="330" x2="640" y2="330" class="wire"/>
+
+  <!-- 7 -->
+  <rect x="120" y="356" width="40" height="28" class="comp"/>
+  <line x1="124" y1="378" x2="156" y2="362" class="wire"/>
+  <line x1="60" y1="370" x2="120" y2="370" class="wire"/>
+  <text x="170" y="368" class="ref">-S7</text><text x="210" y="368" class="lbl">Intervento LIMITATORE (overspeed)</text>
+  <line x1="160" y1="370" x2="640" y2="370" class="wire"/>
+
+  <!-- 8 -->
+  <rect x="120" y="396" width="40" height="28" class="comp"/>
+  <line x1="124" y1="418" x2="156" y2="402" class="wire"/>
+  <line x1="60" y1="410" x2="120" y2="410" class="wire"/>
+  <text x="170" y="408" class="ref">-S8</text><text x="210" y="408" class="lbl">Contatto PARACADUTE (geared) / valvola blocco (idraulico)</text>
+  <line x1="160" y1="410" x2="640" y2="410" class="wire"/>
+
+  <!-- 9 -->
+  <rect x="120" y="436" width="40" height="28" class="comp"/>
+  <line x1="124" y1="458" x2="156" y2="442" class="wire"/>
+  <line x1="60" y1="450" x2="120" y2="450" class="wire"/>
+  <text x="170" y="448" class="ref">-S9</text><text x="210" y="448" class="lbl">Ammortizzatori / fine corsa fossa</text>
+  <line x1="160" y1="450" x2="640" y2="450" class="wire"/>
+
+  <!-- porte di piano (gruppo) -->
+  <rect x="120" y="478" width="520" height="64" fill="#fff" stroke="#111" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="132" y="498" class="lblb">PORTE DI PIANO — serrature in serie (contatto chiusura + blocco)</text>
+  <line x1="60" y1="510" x2="120" y2="510" class="wire"/>
+  <!-- contatti porte piccoli -->
+  <g>
+    <rect x="140" y="514" width="26" height="18" class="comp"/><text x="143" y="528" class="ref" font-size="9">P0</text>
+    <rect x="186" y="514" width="26" height="18" class="comp"/><text x="189" y="528" class="ref" font-size="9">P1</text>
+    <rect x="232" y="514" width="26" height="18" class="comp"/><text x="235" y="528" class="ref" font-size="9">P2</text>
+    <rect x="278" y="514" width="26" height="18" class="comp"/><text x="281" y="528" class="ref" font-size="9">P3</text>
+    <rect x="324" y="514" width="26" height="18" class="comp"/><text x="327" y="528" class="ref" font-size="9">P4</text>
+    <rect x="370" y="514" width="26" height="18" class="comp"/><text x="373" y="528" class="ref" font-size="9">P5</text>
+    <line x1="166" y1="523" x2="186" y2="523" class="wire"/>
+    <line x1="212" y1="523" x2="232" y2="523" class="wire"/>
+    <line x1="258" y1="523" x2="278" y2="523" class="wire"/>
+    <line x1="304" y1="523" x2="324" y2="523" class="wire"/>
+    <line x1="350" y1="523" x2="370" y2="523" class="wire"/>
+  </g>
+  <text x="410" y="528" class="ref">-S11.x</text>
+  <line x1="640" y1="510" x2="640" y2="130" class="wire"/>
+  <line x1="396" y1="523" x2="640" y2="523" class="wire"/>
+  <line x1="640" y1="523" x2="640" y2="560" class="wire"/>
+
+  <!-- 12 porta cabina -->
+  <rect x="120" y="556" width="40" height="28" class="comp"/>
+  <line x1="124" y1="578" x2="156" y2="562" class="wire"/>
+  <line x1="60" y1="570" x2="120" y2="570" class="wire"/>
+  <text x="170" y="568" class="ref">-S12</text><text x="210" y="568" class="lbl">Contatto PORTA DI CABINA</text>
+  <line x1="160" y1="570" x2="640" y2="570" class="wire"/>
+
+  <!-- collettore verticale a relè sicurezza -->
+  <line x1="640" y1="560" x2="640" y2="610" class="wire"/>
+  <line x1="640" y1="610" x2="760" y2="610" class="wire"/>
+
+  <!-- relè di sicurezza -->
+  <rect x="760" y="560" width="220" height="110" fill="#fff" stroke="#111" stroke-width="2"/>
+  <text x="772" y="582" class="lblb">RELE' DI SICUREZZA</text>
+  <text x="772" y="600" class="note">contatti guidati (forced-guided)</text>
+  <text x="772" y="616" class="note">auto-monitoraggio, categoria sicurezza</text>
+  <text x="772" y="640" class="ref">-KA-SIC</text>
+  <text x="772" y="658" class="note">Pizzato / Pilz / Schmersal — certificato</text>
+
+  <!-- uscite relè -->
+  <line x1="980" y1="590" x2="1050" y2="590" class="wire"/>
+  <text x="1000" y="584" class="note">→ abilita bobine</text>
+  <text x="1000" y="604" class="note">-KM marcia + freno</text>
+  <line x1="980" y1="640" x2="1050" y2="640" class="wire"/>
+  <text x="1000" y="634" class="note">→ feedback al PLC</text>
+  <text x="1000" y="654" class="note">(solo lettura stato)</text>
+
+  <!-- ritorno alimentazione -->
+  <line x1="60" y1="690" x2="640" y2="690" class="wire"/>
+  <line x1="640" y1="670" x2="640" y2="690" class="wire"/>
+  <text x="40" y="710" class="lblb">− ritorno sicurezza</text>
+
+  <!-- cartiglio -->
+  <rect x="640" y="700" width="455" height="80" class="comp"/>
+  <line x1="880" y1="700" x2="880" y2="780" stroke="#111"/>
+  <text x="650" y="722" class="lblb">Catena di sicurezza — geared / idraulico</text>
+  <text x="650" y="744" class="note">EN 81-20 §5.11 · apertura positiva</text>
+  <text x="650" y="766" class="note">Concept didattico · UNI 10411</text>
+  <text x="890" y="722" class="note">Foglio 3/4</text>
+  <text x="890" y="744" class="note">Rev. A</text>
+</svg>
