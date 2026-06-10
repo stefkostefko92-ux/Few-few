@@ -104,6 +104,12 @@ router.post('/strike', (req, res) => {
   const slug = String((req.body || {}).slug || '');
   const dungeon = DUNGEONS.find((d) => d.slug === slug);
   if (!dungeon) { res.status(404).json({ error: 'Unknown dungeon' }); return; }
+  // Wounded guard — striking a tier-scaled stage at 1 HP is a
+  // guaranteed wipe that resets the whole run.
+  if (char.hp <= Math.floor(char.hp_max * 0.1)) {
+    res.status(400).json({ error: 'Too wounded to fight. Rest first.' });
+    return;
+  }
   const prog = db.prepare('SELECT * FROM mythic_plus_progress WHERE character_id = ? AND dungeon_slug = ?').get(char.id, slug) as any;
   if (!prog || !prog.run_started_at) { res.status(400).json({ error: 'No active Mythic+ run. POST /enter first.' }); return; }
   if (prog.current_stage >= dungeon.stages.length) { res.status(400).json({ error: 'Run already cleared. POST /claim.' }); return; }

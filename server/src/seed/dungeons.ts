@@ -1,6 +1,7 @@
 /** Dungeons — multi-stage chained encounters that pay out big at the end. */
 
-import { REGION_BANDS } from './monsters';
+import { MONSTER_SEED } from './monsters';
+import { tierForEffectiveLevel } from '../game/drops';
 
 export interface DungeonStage {
   monster_slug: string;
@@ -22,17 +23,33 @@ export interface DungeonDef {
   cooldown_hours: number;
 }
 
-/* Audit balance #4: there were only 4 hand-built dungeons (max level_req
- * 18), but the realm extends to Lv 350. Past Lv 24 the only PvE was
- * hunting. We now procedurally generate one dungeon per high-tier region
- * band, mirroring the same pattern monsters use — same creatures from
- * the region's pool, energy/loot/cooldown scaled with band level. */
+/* One dungeon per expansion region, generated from the region's ACTUAL
+ * hand-built monster roster rather than slug-pattern guessing. The four
+ * stages are picked by level: the region's lowest monster (scout), two
+ * mid-band picks, and the region cap-boss (APEX). Loot pools map the
+ * region's mid-level to the matching shop-tier gear set.
+ *
+ * Reading from MONSTER_SEED keeps this generator correct by
+ * construction — a stage can only reference a monster that exists,
+ * which scripts/verify-content.ts asserts at build time. */
+const EXPANSION_REGIONS: Array<{ region: string; name: string; gate: number }> = [
+  { region: 'emberreach',       name: 'Emberreach',         gate: 26 },
+  { region: 'hammerhand_pass',  name: 'Hammerhand Pass',    gate: 50 },
+  { region: 'conclave_aedric',  name: 'Conclave of Aedric', gate: 75 },
+  { region: 'saltmarsh',        name: 'Saltmarsh',          gate: 105 },
+  { region: 'frostvale',        name: 'Frostvale',          gate: 140 },
+  { region: 'black_spire',      name: 'Black Spire',        gate: 175 },
+  { region: 'stormpeaks',       name: 'The Stormpeaks',     gate: 201 },
+  { region: 'voidshade_hollow', name: 'Voidshade Hollow',   gate: 231 },
+  { region: 'mooncradle',       name: 'Mooncradle',         gate: 261 },
+  { region: 'worldspine',       name: 'The Worldspine',     gate: 291 },
+  { region: 'eternal_throne',   name: 'The Eternal Throne', gate: 321 },
+];
+
 function generateBandDungeons(): DungeonDef[] {
   const out: DungeonDef[] = [];
-  const lootBySlug = (band: string, tier: number) => {
-    // Pull from the auto-generated tier-N pool by slug pattern; falls back
-    // to the legendary catch-alls if the player's tier isn't seeded yet.
-    const prefix = ['', '', '', '', 'elite', '', 'mythic', 'ascendant', 'cosmic', 'eldritch', 'divine'][tier];
+  const lootByTier = (tier: number) => {
+    const prefix = ['', '', '', '', 'elite', 'adept', 'mythic', 'ascendant', 'cosmic', 'eldritch', 'divine'][tier];
     if (!prefix) return ['dragonbane', 'voidwhisper', 'ring_of_power'];
     return [
       `${prefix}_sword_${tier}`,
@@ -42,21 +59,18 @@ function generateBandDungeons(): DungeonDef[] {
       `${prefix}_ring_${tier}`,
     ];
   };
-  for (let i = 0; i < REGION_BANDS.length; i++) {
-    const b = REGION_BANDS[i];
-    const midLevel = Math.round((b.gate + b.max) / 2);
-    const tier = Math.min(10, Math.max(4, Math.ceil(midLevel / 35)));
-    // Pick 4 monsters from the band's procedural slug range (lvl gate+1,
-    // mid-low, mid-high, max-1) so the dungeon scales from "tutorial of
-    // the band" to "boss of the band".
-    const lo = b.gate + 1;
-    const hi = Math.max(lo + 1, b.max - 1);
-    const stages: DungeonStage[] = [
-      { monster_slug: `${b.region}_${lo}`,                        narration: `A scout of the ${b.name.toLowerCase()} bars your path.` },
-      { monster_slug: `${b.region}_${Math.round((lo + hi) / 2)}`, narration: `Deeper in, a sworn-warrior of the realm.` },
-      { monster_slug: `${b.region}_${Math.round((lo + hi*2) / 3)}`, narration: `A champion of the band, bristling with relics.` },
-      { monster_slug: `${b.region}_${hi}`,                        narration: `The warlord at the heart of ${b.name}.` },
-    ];
+  for (const b of EXPANSION_REGIONS) {
+    const roster = MONSTER_SEED
+      .filter((m) => m.region === b.region)
+      .sort((x, y) => x.level - y.level);
+    if (roster.length < 4) continue; // defensive — verify-content flags this
+    const pick = (frac: number) => roster[Math.min(roster.length - 1, Math.round(frac * (roster.length - 1)))];
+    const s1 = pick(0), s2 = pick(0.4), s3 = pick(0.7), s4 = roster[roster.length - 1];
+    const midLevel = s2.level;
+    // Unified tier mapping (game/drops.ts) so dungeon loot tiers line
+    // up with hunt/tower/arena drops at the same level. Floor at T4 —
+    // the prefixed gear sets start there.
+    const tier = Math.max(4, tierForEffectiveLevel(midLevel));
     out.push({
       slug: `${b.region}_descent`,
       name: `${b.name} — Descent`,
@@ -66,10 +80,15 @@ function generateBandDungeons(): DungeonDef[] {
       cooldown_hours: 24,
       intro: `You stand at the threshold of ${b.name}. The air thickens; the path goes down.`,
       clear_text: `You emerge from ${b.name} with a hoard, and a story none will believe.`,
-      stages,
+      stages: [
+        { monster_slug: s1.slug, narration: `${s1.name} bars the entrance.` },
+        { monster_slug: s2.slug, narration: `Deeper in: ${s2.name}.` },
+        { monster_slug: s3.slug, narration: `${s3.name} guards the inner hall.` },
+        { monster_slug: s4.slug, narration: `${s4.name} waits at the heart of ${b.name}.` },
+      ],
       xp_bonus: Math.round(2000 * Math.pow(midLevel / 25, 1.3)),
       gold_bonus: Math.round(800 * Math.pow(midLevel / 25, 1.25)),
-      loot_pool: lootBySlug(b.region, tier),
+      loot_pool: lootByTier(tier),
     });
   }
   return out;

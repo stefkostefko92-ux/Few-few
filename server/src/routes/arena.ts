@@ -56,6 +56,12 @@ router.post('/challenge', (req, res) => {
   }
   try { assertReady(char.id, 'arena'); }
   catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'arena' }); return; }
+  // Wounded guard — entering a duel at 1 HP is a guaranteed rating
+  // loss plus a burned cooldown.
+  if (char.hp <= Math.floor(char.hp_max * 0.1)) {
+    res.status(400).json({ error: 'Too wounded to duel. Rest first.' });
+    return;
+  }
   const opp = db.prepare('SELECT * FROM characters WHERE id = ?').get(parse.data.opponentId) as Character | undefined;
   if (!opp || opp.id === char.id) {
     res.status(404).json({ error: 'Opponent not found' });

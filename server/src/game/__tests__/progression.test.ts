@@ -45,9 +45,11 @@ test('applyXp grants level up rewards', () => {
   const r = applyXp(c, XP_TABLE[3]);
   assert.ok(r.leveled);
   assert.equal(r.toLevel, 3);
+  // Balance round 1: 3 stat points + 1 skill point per level gained.
   assert.equal(r.statPointsGained, 6);
-  assert.equal(r.skillPointsGained, 4);
+  assert.equal(r.skillPointsGained, 2);
   assert.equal(c.stat_points, 6);
+  assert.equal(c.skill_points, 2);
   assert.equal(c.level, 3);
   assert.ok(c.hp_max > 80);
 });

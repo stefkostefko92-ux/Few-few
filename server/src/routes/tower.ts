@@ -42,21 +42,24 @@ function getChar(uid: number): Character | undefined {
 function buildFoe(floor: number, seed: number) {
   // Light deterministic seeding so the same floor on the same run feels
   // consistent if the player retries within the run.
-  // Audit (balance tuning #14): foe HP was `60 + floor*22` which left
-  // floor 100 foes at ~2.2k HP while hunting lv 100 mobs were ~10.5k.
-  // Tower felt like a chore that paid pity gold. Bumped to `60+floor*60`
-  // so the climb feels like a real trial; atk + def bumps follow.
+  // Tower difficulty curve, second pass. The first fix (`60+floor*60`
+  // linear) hit the audit's floor-100 target but made floor 1 a
+  // guaranteed wipe for a fresh lv 1 hero (120 HP foe vs ~80 HP hero) —
+  // caught by the launch smoke test. Quadratic ramp instead: gentle
+  // through the first ~15 floors (matches a lv 1-12 player), then
+  // steepens so floor 100 still lands at ~12k HP, in line with hunting
+  // lv 100 mobs (~10.5k).
   const arch = ARCHETYPES[(seed + floor) % ARCHETYPES.length];
   const lvlScale = Math.max(1, Math.floor(floor * 1.2));
   return {
     name: `${arch} of the ${floor}${ordinal(floor)} Vault`,
     side: 'foe' as const,
     level: lvlScale,
-    hp: 60 + floor * 60,
-    hp_max: 60 + floor * 60,
-    atk_min: 8 + Math.floor(floor * 3.2),
-    atk_max: 14 + Math.floor(floor * 4.0),
-    defense: 3 + Math.floor(floor * 1.2),
+    hp: Math.round(60 + floor * 22 + floor * floor * 1.0),
+    hp_max: Math.round(60 + floor * 22 + floor * floor * 1.0),
+    atk_min: Math.round(8 + floor * 1.4 + floor * floor * 0.035),
+    atk_max: Math.round(14 + floor * 1.8 + floor * floor * 0.045),
+    defense: Math.round(3 + floor * 0.6 + floor * floor * 0.008),
     speed: 6 + Math.floor(floor * 0.2),
     crit_chance: 0.05 + Math.min(0.25, floor * 0.005),
     dodge_chance: 0.03 + Math.min(0.18, floor * 0.003),
@@ -120,6 +123,12 @@ router.post('/climb', (req, res) => {
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   try { assertReady(char.id, 'tower'); }
   catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'tower' }); return; }
+  // Same wounded guard hunting has — entering a fight at 1 HP is a
+  // guaranteed wipe plus a burned cooldown, a pure UX trap.
+  if (char.hp <= Math.floor(char.hp_max * 0.1)) {
+    res.status(400).json({ error: 'Too wounded to climb. Rest first.' });
+    return;
+  }
 
   // Lazy-init the run seed so each run is a different gauntlet.
   let seed = (char as any).tower_run_seed;
