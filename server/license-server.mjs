@@ -49,6 +49,7 @@ export function verifyKey(key) {
 // Pure handler (also used by tests). Mutates db; returns {status, body, dirty}.
 export function handle(method, url, body, db) {
   const u = new URL(url, 'http://x');
+  if (method === 'GET' && u.pathname === '/health') return reply(200, { ok: true });
   if (method === 'POST' && u.pathname === '/activate') {
     const { key, device } = body || {};
     const payload = verifyKey(key);

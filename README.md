@@ -70,9 +70,16 @@ device id first claimed each key).
   with its own settings/proxy, plus a local dashboard. No PC needs to stay on
   and nobody else holds your logins. See `controller/CONTROLLER.md`.
 
-All of the above ships with an automated logic test suite:
-`node tools/selftest.mjs` (presets, notification payloads, smart scoring,
-settings merge/round-trip, license signing and the server's device binding).
+All of the above ships with an automated test suite — run everything with
+`bash tools/test.sh`:
+- `tools/selftest.mjs` — shared logic (presets, notification payloads, smart
+  scoring, settings merge/round-trip, license signing, server device binding).
+- `tools/engine-test.mjs` — runs the **real scheduler + modules** in Node with a
+  fake clock/timers (no browser): licence gate, adventure loop/wait, humanize
+  spam vs delay, breaks-off, manual-pause, PvP cooldown/bloodstones, dungeon.
+
+The licence server can be deployed with Docker+Caddy (auto-HTTPS) or
+systemd+nginx — see `server/DEPLOY.md`.
 
 ### Look & feel
 

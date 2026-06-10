@@ -1,0 +1,7 @@
+bindings.json
+bindings.json.tmp
+.env
+*.md
+docker-compose.yml
+Caddyfile
+tanoth-license.service
