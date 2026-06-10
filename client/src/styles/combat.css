@@ -773,3 +773,52 @@
   .cinematic-overlay .crit-stamp { font-size: 44px; }
   .cinematic-overlay .letterbox { height: 10%; }
 }
+
+/* ====================================================================
+ * Audit (animation round): vestibular safety net.
+ *
+ * The combat stack ships a lot of high-amplitude motion — hit-stop,
+ * crit-zoom, slow-mo, dolly-zoom, screen shake, letterbox, defeat
+ * vignette, speed lines, shockwaves. None of these were guarded by
+ * prefers-reduced-motion. For users with vestibular conditions this
+ * is a genuine trigger hazard, and shipping a public game without
+ * the guard is an accessibility blocker.
+ *
+ * Strategy: when reduce-motion is requested we kill all transforms
+ * on the heavy effects and dial every keyframe down to a near-static
+ * pose. The damage numbers and HP-bar fills still update (gameplay
+ * info), they just don't fly across the screen.
+ * ================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-overlay .crit-zoom,
+  .cinematic-overlay .slow-mo,
+  .cinematic-overlay .hit-stop,
+  .cinematic-overlay .shake-3,
+  .cinematic-overlay .shake-2,
+  .cinematic-overlay .shake-1,
+  .cinematic-overlay .defeat-vignette,
+  .cinematic-overlay .speedlines,
+  .cinematic-overlay .letterbox {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .combat-stage .windup-hero,
+  .combat-stage .windup-foe,
+  .combat-stage .strike-hero,
+  .combat-stage .strike-foe,
+  .combat-stage .hurt,
+  .combat-stage .dodge-hero,
+  .combat-stage .dodge-foe,
+  .combat-stage .defeated,
+  .combat-stage .block,
+  .combat-stage .crit-aura,
+  .combat-stage .shockwave,
+  .combat-stage .spark-fly,
+  .combat-stage .dmg-fly {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+  .combat-stage .embers,
+  .combat-stage .idle-bob { animation: none !important; }
+}

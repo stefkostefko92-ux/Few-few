@@ -43,19 +43,31 @@
   100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(.2); }
 }
 
-/* Custom cursor reticle (just CSS, no JS) */
-.landing::after {
-  content: '';
-  position: fixed;
-  top: 0; left: 0;
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(214,161,61,.7);
-  box-shadow: 0 0 18px rgba(214,161,61,.4), inset 0 0 6px rgba(214,161,61,.3);
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  animation: reticle-pulse 1.6s ease-in-out infinite;
+/* Custom cursor reticle (just CSS, no JS).
+   Audit (animation round): only render the reticle on devices with a
+   real fine pointer, AND honour prefers-reduced-motion. Without the
+   pointer guard, touch-laptops show a gold ring stuck in the top-left
+   corner pulsing forever (the cursor is never actually there); with
+   reduce-motion the pulse alone is a vestibular trigger. */
+@media (hover: hover) and (pointer: fine) {
+  .landing::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(214,161,61,.7);
+    box-shadow: 0 0 18px rgba(214,161,61,.4), inset 0 0 6px rgba(214,161,61,.3);
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    animation: reticle-pulse 1.6s ease-in-out infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing::after { animation: none !important; }
+  .landing { cursor: auto !important; }
+  .landing *, .landing a, .landing button { cursor: auto !important; }
 }
 @keyframes reticle-pulse {
   0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .6; }

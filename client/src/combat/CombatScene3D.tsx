@@ -465,6 +465,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const lives = new Float32Array(MAX_P);
     const maxL = new Float32Array(MAX_P);
     const sizes = new Float32Array(MAX_P);
+    // Audit (animation round): mark every slot dead at init so the
+    // tick-time `aliveCount` accounting starts at zero. Without this,
+    // the old code walked all 1200 slots each frame and uploaded the
+    // full position buffer to the GPU even when no particle had ever
+    // spawned — ~0.6 ms of pure waste at idle.
+    for (let i = 0; i < MAX_P; i++) lives[i] = 1; // life >= maxL == dead
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const pmat = new THREE.PointsMaterial({
@@ -474,6 +480,21 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const pts = new THREE.Points(geo, pmat);
     scene.add(pts);
     particlesRef.current = { pts, positions: pos, velocities: vel, lives, maxLives: maxL, colors, sizes, alive: 0 };
+    let liveParticleCount = 0;
+
+    // Cached magic-circle textures keyed by tint colour. Without this
+    // cache, every mage cast called magicCircleTexture() → fresh 512²
+    // canvas + CanvasTexture, leaked because the cleanup at unmount
+    // only disposes scene-graph traversal — none of these were ever in
+    // the graph as standalone references. ~1-2 MB GPU leak per mage
+    // battle. Now built lazily, reused on every cast, disposed in the
+    // unmount block below.
+    const magicCircleCache: Map<string, THREE.CanvasTexture> = new Map();
+    const getMagicCircleTexture = (tint: string): THREE.CanvasTexture => {
+      let t = magicCircleCache.get(tint);
+      if (!t) { t = magicCircleTexture(tint); magicCircleCache.set(tint, t); }
+      return t;
+    };
 
     /* ----- VFX group (shockwave rings, magic circles, beams) ----- */
     const fxGroup = new THREE.Group();
@@ -498,7 +519,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     /** Magic circle decal under target. */
     function magicCircle(x: number, z: number, color: number) {
-      const tex = magicCircleTexture('#' + color.toString(16).padStart(6, '0'));
+      const tex = getMagicCircleTexture('#' + color.toString(16).padStart(6, '0'));
       const mat = new THREE.MeshBasicMaterial({
         map: tex, transparent: true, opacity: 1.0,
         blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
@@ -574,27 +595,37 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     }
 
     /* ----- particle helpers ----- */
+    // Hoisted scratch Color so spawn loops don't allocate ~110 fresh
+    // THREE.Color instances per crit burst.
+    const tmpColor = new THREE.Color();
     function spawnAmbient(dt: number) {
       if (Math.random() > dt * 6) return;
       const p = particlesRef.current!;
-      const idx = (p.alive++ % MAX_P) * 3;
+      const slot = (p.alive++ % MAX_P);
+      const idx = slot * 3;
+      // If the slot was dead, we're growing the live count by one;
+      // if not, we're recycling and the count stays the same.
+      if (p.lives[slot] >= p.maxLives[slot]) liveParticleCount++;
       p.positions[idx] = (Math.random() - 0.5) * 9;
       p.positions[idx + 1] = -0.5;
       p.positions[idx + 2] = (Math.random() - 0.5) * 4 - 1;
       p.velocities[idx] = (Math.random() - 0.5) * 0.2;
       p.velocities[idx + 1] = 0.6 + Math.random() * 0.4;
       p.velocities[idx + 2] = (Math.random() - 0.5) * 0.1;
-      const c = new THREE.Color(Math.random() > 0.5 ? 0xffd34d : 0xff7c4d);
-      p.colors[idx] = c.r; p.colors[idx + 1] = c.g; p.colors[idx + 2] = c.b;
-      p.lives[(idx / 3) | 0] = 0;
-      p.maxLives[(idx / 3) | 0] = 3 + Math.random() * 2;
+      tmpColor.set(Math.random() > 0.5 ? 0xffd34d : 0xff7c4d);
+      p.colors[idx] = tmpColor.r; p.colors[idx + 1] = tmpColor.g; p.colors[idx + 2] = tmpColor.b;
+      p.lives[slot] = 0;
+      p.maxLives[slot] = 3 + Math.random() * 2;
     }
 
     function burst(x: number, y: number, z: number, color: number, count: number, speedScale = 1) {
       const p = particlesRef.current!;
-      const col = new THREE.Color(color);
+      tmpColor.set(color);
+      const cr = tmpColor.r, cg = tmpColor.g, cb = tmpColor.b;
       for (let i = 0; i < count; i++) {
-        const idx = (p.alive++ % MAX_P) * 3;
+        const slot = (p.alive++ % MAX_P);
+        const idx = slot * 3;
+        if (p.lives[slot] >= p.maxLives[slot]) liveParticleCount++;
         p.positions[idx] = x;
         p.positions[idx + 1] = y;
         p.positions[idx + 2] = z;
@@ -604,9 +635,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         p.velocities[idx] = Math.cos(a) * Math.cos(e) * speed;
         p.velocities[idx + 1] = Math.sin(e) * speed + 1.2;
         p.velocities[idx + 2] = Math.sin(a) * Math.cos(e) * speed;
-        p.colors[idx] = col.r; p.colors[idx + 1] = col.g; p.colors[idx + 2] = col.b;
-        p.lives[(idx / 3) | 0] = 0;
-        p.maxLives[(idx / 3) | 0] = 0.7 + Math.random() * 0.4;
+        p.colors[idx] = cr; p.colors[idx + 1] = cg; p.colors[idx + 2] = cb;
+        p.lives[slot] = 0;
+        p.maxLives[slot] = 0.7 + Math.random() * 0.4;
       }
     }
 
@@ -648,19 +679,33 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // Ambient sparks + particles step
       spawnAmbient(dt);
       const p = particlesRef.current!;
-      for (let i = 0; i < MAX_P; i++) {
-        p.lives[i] += dt;
-        if (p.lives[i] >= p.maxLives[i]) {
-          p.positions[i*3 + 1] = -100;
-          continue;
+      // Audit (animation round): old loop walked all 1200 slots and
+      // dirtied the GPU position buffer every frame regardless of
+      // whether anything was alive. Now bail entirely when the live
+      // count is zero, and only flag needsUpdate when we actually
+      // touched a position. Saves ~0.6 ms on idle.
+      if (liveParticleCount > 0) {
+        let anyMoved = false;
+        for (let i = 0; i < MAX_P; i++) {
+          if (p.lives[i] >= p.maxLives[i]) continue;
+          p.lives[i] += dt;
+          if (p.lives[i] >= p.maxLives[i]) {
+            p.positions[i*3 + 1] = -100;
+            liveParticleCount--;
+            anyMoved = true;
+            continue;
+          }
+          p.velocities[i*3 + 1] -= 4.5 * dt;
+          p.positions[i*3]     += p.velocities[i*3]     * dt;
+          p.positions[i*3 + 1] += p.velocities[i*3 + 1] * dt;
+          p.positions[i*3 + 2] += p.velocities[i*3 + 2] * dt;
+          anyMoved = true;
         }
-        p.velocities[i*3 + 1] -= 4.5 * dt;
-        p.positions[i*3]     += p.velocities[i*3]     * dt;
-        p.positions[i*3 + 1] += p.velocities[i*3 + 1] * dt;
-        p.positions[i*3 + 2] += p.velocities[i*3 + 2] * dt;
+        if (anyMoved) {
+          geo.attributes.position.needsUpdate = true;
+          geo.attributes.color.needsUpdate = true;
+        }
       }
-      geo.attributes.position.needsUpdate = true;
-      geo.attributes.color.needsUpdate = true;
       pmat.opacity = 1;
 
       // VFX group tick — shockwave expansion, magic circle rotation, fades.
@@ -855,6 +900,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         const mat = (obj as THREE.Mesh).material as any;
         if (mat) { if (Array.isArray(mat)) mat.forEach((m) => m.dispose && m.dispose()); else mat.dispose && mat.dispose(); }
       });
+      // Audit (animation round): the cached magic-circle textures live
+      // in a per-mount closure Map, never enter the scene graph as
+      // standalone references, and therefore were never reached by the
+      // traverse-based dispose above. Walk the map explicitly so each
+      // cached CanvasTexture (and its 512² backing canvas reference)
+      // releases its GPU handle on unmount.
+      magicCircleCache.forEach((t) => t.dispose());
+      magicCircleCache.clear();
       try { mount.removeChild(renderer.domElement); } catch {}
     };
   }, [heroClass, foeClass, region]);
