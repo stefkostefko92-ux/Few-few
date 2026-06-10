@@ -52,10 +52,17 @@ export default function CooldownTicker(): React.ReactElement | null {
   const [now, setNow] = useState(Date.now());
   const [skipping, setSkipping] = useState(false);
 
+  // Audit (animation MEDIUM #12): the old ticker fired a setInterval
+  // unconditionally — every second the parent re-rendered even when
+  // no cooldowns were active. Now the tick only runs while at least
+  // one cooldown is in the future, and the interval shuts off the
+  // moment everything is ready.
+  const hasActive = Object.values(cooldowns || {}).some((v) => typeof v === 'number' && v > now);
   useEffect(() => {
+    if (!hasActive) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [hasActive]);
 
   // When the soonest cooldown elapses, pull fresh data so the bar clears
   // (and any matching "ready" toast the user expects from a successful

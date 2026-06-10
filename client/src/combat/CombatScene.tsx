@@ -164,28 +164,19 @@ export default function CombatScene(props: Props): React.ReactElement {
     else setFoeAnim('windup-foe');
     // Audible swing on the windup, choose magic clip for spell attacks.
     sfx.play(r.effect === 'magic' ? 'magic' : 'swing', { volume: 0.55 });
-    stage3DRef.current?.attack({
-      attacker: r.attacker,
-      effect: r.effect,
-      crit: r.action === 'crit',
-      missed: r.action === 'miss',
-      dodged: r.action === 'dodge',
-      damageRatio: Math.min(1, r.damage / Math.max(1, attackerIsHero ? foe.hp_max : hero.hp_max)),
-    });
-
-    const windupTime = Math.min(220, speedMs * 0.18);
-    const strikeStart = setTimeout(() => {
-      if (attackerIsHero) setHeroAnim('strike-hero');
-      else setFoeAnim('strike-foe');
-    }, windupTime);
-
-    // 2) Impact (mid-strike)
-    const impactDelay = windupTime + Math.min(280, speedMs * 0.22);
-    const impact = setTimeout(() => {
+    // Audit (animation CRITICAL #4): the DOM-side impact body (SFX,
+    // canvas burst, screen shake, crit overlay, hurt animation, HP
+    // drain) is now hoisted into a single fireImpactDom closure that
+    // runs at MOST once per attack. The 3D scene invokes it via the
+    // onImpact callback at its exact visual impact frame; the
+    // wall-clock setTimeout below is a fallback for the rare case
+    // where the 3D scene isn't mounted or has stalled.
+    let impactFired = false;
+    const fireImpactDom = () => {
+      if (impactFired) return;
+      impactFired = true;
       const targetSide: 'hero' | 'foe' = attackerIsHero ? 'foe' : 'hero';
       const targetMax = attackerIsHero ? foe.hp_max : hero.hp_max;
-
-      // Pop labels — font size scales continuously with damage / target HP.
       const tier = damageTier(r.damage, targetMax);
       const ratio = Math.min(1, r.damage / Math.max(1, targetMax));
       let popText = `${r.damage}`;
@@ -273,7 +264,29 @@ export default function CombatScene(props: Props): React.ReactElement {
 
       // Append to log
       setLogVisible((arr) => [...arr, r]);
-    }, impactDelay);
+    };
+    stage3DRef.current?.attack({
+      attacker: r.attacker,
+      effect: r.effect,
+      crit: r.action === 'crit',
+      missed: r.action === 'miss',
+      dodged: r.action === 'dodge',
+      damageRatio: Math.min(1, r.damage / Math.max(1, attackerIsHero ? foe.hp_max : hero.hp_max)),
+      onImpact: fireImpactDom,
+    });
+
+    const windupTime = Math.min(220, speedMs * 0.18);
+    const strikeStart = setTimeout(() => {
+      if (attackerIsHero) setHeroAnim('strike-hero');
+      else setFoeAnim('strike-foe');
+    }, windupTime);
+
+    // Fallback impact — fires if the 3D scene never reached its
+    // own visual impact frame (no WebGL, stalled tick, reduce-motion
+    // bail). The impactFired guard inside fireImpactDom prevents a
+    // duplicate when the 3D scene actually runs.
+    const impactDelay = windupTime + Math.min(280, speedMs * 0.22);
+    const impact = setTimeout(fireImpactDom, impactDelay);
 
     // 3) Reset to idle, advance round
     const next = setTimeout(() => {

@@ -53,7 +53,7 @@ const SPRITE_W = 256;
 const SPRITE_H = 320;
 
 export interface CombatScene3DHandle {
-  attack: (opts: { attacker: 'hero' | 'foe'; effect?: string; crit?: boolean; damageRatio?: number; missed?: boolean; dodged?: boolean; }) => void;
+  attack: (opts: { attacker: 'hero' | 'foe'; effect?: string; crit?: boolean; damageRatio?: number; missed?: boolean; dodged?: boolean; onImpact?: () => void; }) => void;
   defeat: (side: 'hero' | 'foe') => void;
   resetCamera: () => void;
 }
@@ -847,6 +847,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /** Handles impact bookkeeping for both sides — particle bursts, light flashes,
      *  shockwave/magic/arrow signature VFX, camera shake, dolly-zoom on crits. */
     function fireImpact(attacker: 'hero' | 'foe', a: any) {
+      // Drive the DOM-side impact (SFX, canvas burst, screen flash,
+      // crit overlay, hurt animation) from THIS exact frame so the
+      // visual particle burst, the hit-stop, and the sound cue all
+      // align — fixes the slow-laptop drift the animation audit
+      // surfaced. Guarded so it can only fire once per attack.
+      try { a.onImpact && a.onImpact(); } catch { /* never let the DOM caller break the 3D tick */ }
+      a.onImpact = null;
       const isHero = attacker === 'hero';
       const target = isHero ? foeRef.current! : heroRef.current!;
       const targetLight = isHero ? foeLightRef.current! : heroLightRef.current!;
@@ -913,9 +920,16 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   }, [heroClass, foeClass, region]);
 
   useImperativeHandle(ref, () => ({
-    attack({ attacker, effect, crit, damageRatio = 0.3, missed, dodged }) {
+    attack({ attacker, effect, crit, damageRatio = 0.3, missed, dodged, onImpact }) {
       const color = effect === 'magic' ? 0xc294ff : effect === 'arrow' ? 0x9ad9ff : effect === 'pierce' ? 0xffe7a8 : 0xffd34d;
-      animRef.current = { kind: attacker === 'hero' ? 'windup-hero' : 'windup-foe', t: 0, color, crit: !!crit, effect, didImpact: false };
+      // Audit (animation CRITICAL #4): the caller used to fire its
+      // SFX + canvas burst + crit overlay from a wall-clock setTimeout
+      // while the 3D scene resolved impact on its own dt-driven anim
+      // time — on slower laptops the two visibly drifted (sound a
+      // frame or two ahead of the burst). Stash the impact callback
+      // on the anim record so fireImpact() invokes it on the SAME
+      // frame as the 3D burst, eliminating the drift.
+      animRef.current = { kind: attacker === 'hero' ? 'windup-hero' : 'windup-foe', t: 0, color, crit: !!crit, effect, didImpact: false, onImpact };
       // Pre-position camera for the lunge (overridden again on impact).
       if ((damageRatio || 0) > 0.25 || crit) { camAnchorRef.current.z = 7.0; }
       else camAnchorRef.current.z = 8.0;

@@ -122,6 +122,17 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
       atkMin = item.atk_min + (e.atk_min || 0);
       atkMax = item.atk_max + (e.atk_max || 0);
       weaponSub = item.sub_type;
+      // Audit (balance tuning #10): Wyrmsong promises "strikes harder
+      // the higher you climb" but used to ship as a static lv-18 sword
+      // — at lv 25+ a veteran sword outclassed it. Scale its atk_max
+      // with the player's best tower floor so the description matches
+      // reality: +1.2 atk_max per floor cleared, capped at +200 so it
+      // doesn't completely overshadow tier-10 drops.
+      if (item.slug === 'wyrmsong_blade') {
+        const climb = Math.min(200, Math.floor(((ch as any).tower_best_floor || 0) * 1.2));
+        atkMin += Math.floor(climb * 0.6);
+        atkMax += climb;
+      }
     } else {
       // Forge enchants can roll an attack bonus onto non-weapons too;
       // those add into the global atkBonus pool.
@@ -179,7 +190,13 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     cha  = Math.round(cha  * guildBuffs.attr_multiplier);
   }
 
-  const classDmg = ch.class === 'mage' ? int_ * 0.7 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
+  // Audit (balance tuning #8): mage classDmg was 0.7 vs others 0.6,
+  // so a mage with int 200 + Supreme Intellect elixir out-DPS'd a
+  // matched warrior by ~14%. Mage already has the MP scaling advantage
+  // (int_*3 + wis*2) for spell sustain — damage parity is fair. All
+  // four classes now share the same 0.6 dmg coefficient on their
+  // primary stat.
+  const classDmg = ch.class === 'mage' ? int_ * 0.6 : ch.class === 'ranger' ? dex * 0.6 : str * 0.6;
   const skill = classWeaponSkill(ch.class, weaponSub, ch);
 
   // Mages use mag_dmg, every other class uses phys_dmg. Defense in the

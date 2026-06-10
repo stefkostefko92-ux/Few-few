@@ -80,22 +80,27 @@ const TINT: Record<Scene, string> = {
 export default function PageBackdrop(): React.ReactElement {
   const { pathname } = useLocation();
   const scene = sceneFor(pathname);
-  // Two layers cross-fade. `currentSrc` is the live image; `prevSrc` is
-  // the outgoing one held for the duration of the fade so we don't get a
-  // flash to nothing while the new one loads.
-  const [currentSrc, setCurrentSrc] = useState<string>(IMG_FOR[scene]);
-  const [prevSrc, setPrevSrc] = useState<string | null>(null);
-  const fadeTimer = useRef<number | null>(null);
+  // Audit (animation MEDIUM #14): the old implementation re-keyed the
+  // <img> on every scene change, which forced React to unmount and
+  // remount the node — the CSS kenburns animation restarted from
+  // scale 1.00 on every navigation, producing a visible jump. Now we
+  // keep two persistent <img> layers (A and B), continuously animate
+  // both, and on route change we update src on the off-screen layer
+  // and crossfade. The kenburns is never interrupted.
+  const [srcA, setSrcA] = useState<string>(IMG_FOR[scene]);
+  const [srcB, setSrcB] = useState<string>(IMG_FOR[scene]);
+  const [frontIsA, setFrontIsA] = useState(true);
 
   useEffect(() => {
     const next = IMG_FOR[scene];
-    if (next === currentSrc) return;
-    setPrevSrc(currentSrc);
-    setCurrentSrc(next);
-    if (fadeTimer.current) window.clearTimeout(fadeTimer.current);
-    fadeTimer.current = window.setTimeout(() => setPrevSrc(null), 900);
-    // Pre-warm the next image in case the user keeps navigating quickly.
-    return () => { if (fadeTimer.current) window.clearTimeout(fadeTimer.current); };
+    const front = frontIsA ? srcA : srcB;
+    if (next === front) return;
+    if (frontIsA) setSrcB(next); else setSrcA(next);
+    // Defer the swap one frame so the new image has time to decode
+    // and paint into its layer before the opacity transition kicks
+    // off — eliminates the brief flash of empty layer on first load.
+    const id = requestAnimationFrame(() => setFrontIsA((v) => !v));
+    return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene]);
 
@@ -103,20 +108,15 @@ export default function PageBackdrop(): React.ReactElement {
 
   return (
     <div className="page-backdrop" aria-hidden style={WRAP_STYLE}>
-      {prevSrc && (
-        <img
-          src={prevSrc}
-          alt=""
-          style={{ ...IMG_STYLE, opacity: 0, transition: 'opacity 800ms ease-out' }}
-          /* The previous image fades out over 800ms; it gets removed
-             from the tree after 900ms by the effect above. */
-        />
-      )}
       <img
-        key={currentSrc}
-        src={currentSrc}
+        src={srcA}
         alt=""
-        style={IMG_STYLE}
+        style={{ ...IMG_STYLE, opacity: frontIsA ? 1 : 0, transition: 'opacity 800ms ease-out' }}
+      />
+      <img
+        src={srcB}
+        alt=""
+        style={{ ...IMG_STYLE, opacity: frontIsA ? 0 : 1, transition: 'opacity 800ms ease-out' }}
       />
       <div
         style={{

@@ -29,6 +29,29 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
   const [closing, setClosing] = useState(false);
   const timerRef = useRef<number | null>(null);
   const utteredRef = useRef(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const skipBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Audit (animation HIGH #7): the dialog wrapper was non-focusable
+  // and the skip button never received focus, so keyboard / screen-
+  // reader users had no path to dismiss this full-screen overlay.
+  // Focus the skip button on mount, then trap focus inside the
+  // overlay until it closes.
+  useEffect(() => {
+    const root = rootRef.current;
+    skipBtnRef.current?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !root) return;
+      const focusables = root.querySelectorAll<HTMLElement>('button, [href], [tabindex]:not([tabindex="-1"])');
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   // Wire up speech synthesis once, then walk the line list.
   useEffect(() => {
@@ -90,7 +113,7 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
   }
 
   return (
-    <div className={`cinematic-intro ${closing ? 'is-closing' : ''}`} onClick={finish} role="dialog" aria-label="Intro narration">
+    <div ref={rootRef} className={`cinematic-intro ${closing ? 'is-closing' : ''}`} onClick={finish} role="dialog" aria-modal="true" aria-label="Intro narration" tabIndex={-1}>
       <div className="ci-sky" />
       <div className="ci-embers">
         {Array.from({ length: 60 }).map((_, i) => (
@@ -144,7 +167,7 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
         </div>
       </div>
 
-      <button className="ci-skip" onClick={(e) => { e.stopPropagation(); finish(); }}>
+      <button ref={skipBtnRef} className="ci-skip" onClick={(e) => { e.stopPropagation(); finish(); }} aria-label="Skip intro narration">
         Skip · <kbd>Esc</kbd>
       </button>
     </div>

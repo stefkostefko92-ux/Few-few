@@ -194,12 +194,18 @@ router.get('/upgrade-costs', (req, res) => {
   res.json({ costs, gold: char.gold });
 });
 
+// Audit (balance tuning #12): max batch lowered 50 → 10. With the
+// stat-upgrade cost ramp, a max=50 click let a lv 5 player drop 1000g
+// into +50 dexterity in a single request and trivialise low content.
+// The cap is gentler at high level too — `min(10, char.level)` is
+// applied at handler entry so a lv 3 hero can't batch past their
+// level.
 const upgradeStatSchema = z.object({
   stat: z.enum([
     'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma',
     'skill_sword', 'skill_axe', 'skill_bow', 'skill_staff', 'skill_magic', 'skill_stealth',
   ]),
-  count: z.number().int().min(1).max(50).default(1),
+  count: z.number().int().min(1).max(10).default(1),
 });
 
 router.post('/upgrade-stat', (req, res) => {
@@ -210,7 +216,10 @@ router.post('/upgrade-stat', (req, res) => {
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const counts = parseCounts((char as any).stat_upgrades);
   const stat = parse.data.stat as StatKey;
-  const want = parse.data.count;
+  // Audit (balance tuning #12): also gate the per-request batch to
+  // `min(10, char.level)` so low-level heroes can't burn a single
+  // huge click on +10 stats in their first 10 minutes of play.
+  const want = Math.min(parse.data.count, Math.max(1, char.level));
   const currentCount = counts[stat] || 0;
   const totalCost = batchCost(currentCount, want);
   if (char.gold < totalCost) {
