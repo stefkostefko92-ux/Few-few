@@ -57,7 +57,9 @@
         lastScan = Date.now();
         const doc = await Api.getEquipment();
         const structs = Array.from(doc.querySelectorAll('struct'))
-          .filter((s) => member(s, ID_KEYS) != null && member(s, TYPE_KEYS) != null);
+          // Direct-member check: avoids matching the outer response struct (whose
+          // descendants include an item's id/type) as a phantom item.
+          .filter((s) => ID_KEYS.some((k) => Api.directHas(s, k)) && TYPE_KEYS.some((k) => Api.directHas(s, k)));
         if (!structs.length) { Logger.debug('autosell: no items parsed'); return; }
 
         if (!dumped) {

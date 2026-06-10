@@ -70,13 +70,16 @@ device id first claimed each key).
   with its own settings/proxy, plus a local dashboard. No PC needs to stay on
   and nobody else holds your logins. See `controller/CONTROLLER.md`.
 
-All of the above ships with an automated test suite — run everything with
-`bash tools/test.sh`:
+All of the above ships with an automated test suite — `npm install` then
+`npm test` (or `bash tools/test.sh`); it also runs in CI (`.github/workflows`):
 - `tools/selftest.mjs` — shared logic (presets, notification payloads, smart
   scoring, settings merge/round-trip, license signing, server device binding).
 - `tools/engine-test.mjs` — runs the **real scheduler + modules** in Node with a
   fake clock/timers (no browser): licence gate, adventure loop/wait, humanize
   spam vs delay, breaks-off, manual-pause, PvP cooldown/bloodstones, dungeon.
+- `tools/api-test.mjs` — runs the **real api.js** against crafted Tanoth XML-RPC
+  responses (via linkedom): field parsing, attribute-cost math, circle/​map
+  parsing, and fault handling (session vs ordinary). ~34 checks total.
 
 The licence server can be deployed with Docker+Caddy (auto-HTTPS) or
 systemd+nginx — see `server/DEPLOY.md`.

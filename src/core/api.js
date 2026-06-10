@@ -47,6 +47,18 @@
 
   function num(v) { const n = parseInt(v, 10); return Number.isNaN(n) ? null : n; }
 
+  // True only if `name` is a DIRECT <member> child of `node`. Needed because
+  // findValue() searches descendants, so the outer response <struct> would
+  // otherwise match a nested monster/item's field and create a phantom entry.
+  function directHas(node, name) {
+    for (const child of Array.from(node.children || [])) {
+      if (!child.tagName || child.tagName.toLowerCase() !== 'member') continue;
+      const n = child.getElementsByTagName('name')[0];
+      if (n && n.textContent === name) return true;
+    }
+    return false;
+  }
+
   async function rpc(method, params) {
     const res = await Bridge.callXmlRpc(method, params);
     const doc = parse(res.xml);
@@ -180,6 +192,7 @@
     // For optional modules that resolve a method name at runtime.
     async raw(method, params) { return rpc(method, params); },
     findValue,
+    directHas,
 
     /* --------------------------- dungeon ---------------------------- */
     async getDungeon() {
@@ -238,7 +251,7 @@
       const energyCost = num(findValue(doc, 'energy_cost', 'i4'));
       const nextAttack = num(findValue(doc, 'next_attack', 'i4'));
       const monsters = Array.from(doc.querySelectorAll('struct'))
-        .filter((s) => findValue(s, 'location', 'i4') != null && findValue(s, 'stars', 'i4') != null)
+        .filter((s) => directHas(s, 'location') && directHas(s, 'stars'))   // real monster structs only
         .map((s) => ({
           location: num(findValue(s, 'location', 'i4')),
           stars: num(findValue(s, 'stars', 'i4')) || 0,

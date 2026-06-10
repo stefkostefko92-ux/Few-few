@@ -23,3 +23,10 @@ node tools/selftest.mjs | tail -1
 
 echo "== engine simulation tests =="
 node tools/engine-test.mjs | tail -1
+
+echo "== api.js XML-RPC parsing tests =="
+if node -e "import('linkedom').then(()=>process.exit(0)).catch(()=>process.exit(1))" 2>/dev/null; then
+  node tools/api-test.mjs | tail -1
+else
+  echo "  (skipped — run 'npm install' to enable: needs linkedom)"
+fi
