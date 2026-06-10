@@ -52,8 +52,8 @@ and, once generated, its voiceover.
 
 ## Roadmap
 
-- [x] **39 episodes ready** — hosts, CONMEBOL, UEFA (12), CAF (9), AFC (8), OFC (1)
-- [ ] Final 9 slots — 4 UEFA playoff winners, 3 CONCACAF, 2 intercontinental
-      playoff winners (added once the teams are confirmed)
+- [x] **All 48 episodes ready** — the complete World Cup 2026 field 🎉
+  - Hosts (3), CONMEBOL (6), UEFA (16), CAF (9), AFC (8), CONCACAF (3), OFC (1),
+    intercontinental play-off winners (2)
 
 See [INDEX.md](INDEX.md) for the full field and per-nation status.

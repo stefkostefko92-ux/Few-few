@@ -3,12 +3,14 @@
 48 teams. One episode per nation. This index tracks the full field by
 confederation and the production status of each script.
 
-**Status key:** ✅ script ready · ⬜ to do · ❓ qualification to confirm (final
-playoff slot — confirm the nation before recording)
+**🎉 The full 48-team field is confirmed — all 48 scripts are ready.**
 
-> Knowledge note: a few final places (UEFA playoff winners, intercontinental
-> playoff winners) were decided in March 2026. Those slots are marked ❓ — confirm
-> the team, then the script gets written.
+**Status key:** ✅ script ready · ⬜ to do
+
+> The final 9 places were decided in the March 2026 play-offs: the UEFA winners
+> (Bosnia and Herzegovina, Czechia, Sweden, Türkiye), the CONCACAF qualifiers
+> (Panama, Curaçao, Haiti) and the intercontinental play-off winners (DR Congo,
+> Iraq). Notable absentees include Italy, who lost the Path A final to Bosnia.
 
 ---
 
@@ -44,10 +46,10 @@ playoff slot — confirm the nation before recording)
 | Austria 🇦🇹 | ✅ `clips/austria/script.md` |
 | Norway 🇳🇴 | ✅ `clips/norway/script.md` |
 | Scotland 🏴 | ✅ `clips/scotland/script.md` |
-| _UEFA playoff slot 1_ | ❓ |
-| _UEFA playoff slot 2_ | ❓ |
-| _UEFA playoff slot 3_ | ❓ |
-| _UEFA playoff slot 4_ | ❓ |
+| Bosnia and Herzegovina 🇧🇦 | ✅ `clips/bosnia-herzegovina/script.md` |
+| Czechia 🇨🇿 | ✅ `clips/czechia/script.md` |
+| Sweden 🇸🇪 | ✅ `clips/sweden/script.md` |
+| Türkiye 🇹🇷 | ✅ `clips/turkiye/script.md` |
 
 ## CAF — Africa (9)
 | Nation | Status |
@@ -77,9 +79,9 @@ playoff slot — confirm the nation before recording)
 ## CONCACAF — North/Central America & Caribbean (3, besides hosts)
 | Nation | Status |
 |--------|--------|
-| _CONCACAF slot 1_ | ❓ |
-| _CONCACAF slot 2_ | ❓ |
-| _CONCACAF slot 3_ | ❓ |
+| Panama 🇵🇦 | ✅ `clips/panama/script.md` |
+| Curaçao 🇨🇼 | ✅ `clips/curacao/script.md` |
+| Haiti 🇭🇹 | ✅ `clips/haiti/script.md` |
 
 ## OFC — Oceania (1)
 | Nation | Status |
@@ -89,5 +91,5 @@ playoff slot — confirm the nation before recording)
 ## Intercontinental playoffs (2)
 | Slot | Status |
 |------|--------|
-| _Playoff winner 1_ | ❓ |
-| _Playoff winner 2_ | ❓ |
+| DR Congo 🇨🇩 | ✅ `clips/dr-congo/script.md` |
+| Iraq 🇮🇶 | ✅ `clips/iraq/script.md` |
