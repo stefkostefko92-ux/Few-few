@@ -65,7 +65,7 @@ function drawTable(d: any, y: number, voci: any[]) {
     d.text(v.descrizione || '', 46, yi + 6, { width: 270, ellipsis: true });
     d.text(Number(v.quantita || 1).toFixed(2), 320, yi + 6, { width: 50, align: 'center' });
     d.text(`€${Number(v.prezzoUnitario || 0).toFixed(2)}`, 375, yi + 6, { width: 60, align: 'right' });
-    d.text(`${Number(v.iva || 22)}%`, 440, yi + 6, { width: 40, align: 'right' });
+    d.text(`${Number(v.aliquotaIva ?? v.iva ?? 22)}%`, 440, yi + 6, { width: 40, align: 'right' });
     d.text(`€${Number(v.totale || 0).toFixed(2)}`, 485, yi + 6, { width: 65, align: 'right' });
     yi += 20;
   });
@@ -77,7 +77,7 @@ function drawTable(d: any, y: number, voci: any[]) {
 function drawTotals(d: any, y: number, netto: number, iva: number, lordo: number) {
   d.fillColor(C.text).font(F.r).fontSize(10);
   d.text('Imponibile:', 340, y + 8, { width: 110, align: 'right' }); d.text(`€ ${netto.toFixed(2)}`, 455, y + 8, { width: 95, align: 'right' });
-  d.text('IVA (22%):', 340, y + 24, { width: 110, align: 'right' }); d.text(`€ ${iva.toFixed(2)}`, 455, y + 24, { width: 95, align: 'right' });
+  d.text('IVA:', 340, y + 24, { width: 110, align: 'right' }); d.text(`€ ${iva.toFixed(2)}`, 455, y + 24, { width: 95, align: 'right' });
   d.rect(340, y + 42, 215, 28).fillAndStroke(C.primary, C.primary);
   d.fillColor('#fff').font(F.b).fontSize(13);
   d.text('TOTALE:', 340, y + 50, { width: 110, align: 'right' }); d.text(`€ ${lordo.toFixed(2)}`, 455, y + 50, { width: 95, align: 'right' });

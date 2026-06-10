@@ -11,15 +11,36 @@ import ordiniWorkflowRoutes from './routes/ordini';
 import aiRoutes from './routes/ai';
 import magazzinoRoutes from './routes/magazzino';
 import { createCrudRouter, createVociRouter } from './routes/crud';
+import { sanitizeForModel } from './services/sanitize';
 import { controllaScadenze, eseguiControlloScadenze } from './services/scadenze';
 import extrasRoutes from './routes/extras';
 import { authenticate, authorize } from './middleware/auth';
 import { createAuditLog } from './services/audit';
 
+// In produzione i segreti JWT devono essere impostati e non di default
+if (process.env.NODE_ENV === 'production') {
+  for (const name of ['JWT_SECRET', 'JWT_REFRESH_SECRET']) {
+    const v = process.env[name] || '';
+    if (!v || v.includes('change-me') || v.length < 16) {
+      console.error(`❌ ${name} mancante o debole: imposta un valore casuale (min 16 caratteri) nel file .env`);
+      process.exit(1);
+    }
+  }
+}
+
 const app = express();
 const httpServer = createServer(app);
+
+// Il frontend è servito same-origin tramite proxy (nginx/Vite): cross-origin
+// è consentito solo agli origin elencati in ALLOWED_ORIGINS (CSV)
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+const corsOptions = {
+  origin: allowedOrigins.length > 0 ? allowedOrigins : false,
+  credentials: true,
+};
+
 const io = new SocketIO(httpServer, {
-  cors: { origin: '*', methods: ['GET', 'POST'] },
+  cors: { origin: allowedOrigins.length > 0 ? allowedOrigins : true, methods: ['GET', 'POST'] },
 });
 
 const PORT = parseInt(process.env.PORT || '4000');
@@ -28,7 +49,7 @@ const PORT = parseInt(process.env.PORT || '4000');
 // MIDDLEWARE GLOBALI
 // ═══════════════════════════════════════════════════════
 app.use(helmet());
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -388,7 +409,7 @@ app.post('/api/import/:modulo', authenticate, authorize('ADMIN'), async (req: an
 
     for (const record of records) {
       try {
-        await prismaModel.create({ data: record });
+        await prismaModel.create({ data: sanitizeForModel(model, record) });
         imported++;
       } catch (e: any) {
         errors.push(`Riga ${imported + errors.length + 1}: ${e.message?.slice(0, 80)}`);
@@ -402,7 +423,7 @@ app.post('/api/import/:modulo', authenticate, authorize('ADMIN'), async (req: an
 });
 
 // ── Scadenze Alert API ──
-app.get('/api/scadenze', apiLimiter, async (_req, res) => {
+app.get('/api/scadenze', apiLimiter, authenticate, async (_req, res) => {
   try {
     const alerts = await controllaScadenze();
     res.json(alerts);

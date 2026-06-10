@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { createAuditLog } from '../services/audit';
+import { sanitizeForModel, SanitizeError } from '../services/sanitize';
 
 const prisma = new PrismaClient();
 
@@ -102,8 +103,9 @@ export function createCrudRouter(options: CrudOptions): Router {
     // POST /  — Create
     router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
       try {
+        const data = sanitizeForModel(model, req.body);
         const record = await prismaModel.create({
-          data: req.body,
+          data,
           include,
         });
 
@@ -111,7 +113,7 @@ export function createCrudRouter(options: CrudOptions): Router {
           azione: 'CREATE',
           entita: entityName,
           entitaId: record.id,
-          dettagli: req.body,
+          dettagli: data,
           utenteId: req.user?.id,
           ip: req.ip,
         });
@@ -119,8 +121,14 @@ export function createCrudRouter(options: CrudOptions): Router {
         res.status(201).json(record);
       } catch (error: any) {
         console.error(`POST /${entityName} error:`, error);
-        if (error.code === 'P2002') {
+        if (error instanceof SanitizeError) {
+          res.status(400).json({ error: error.message });
+        } else if (error.code === 'P2002') {
           res.status(409).json({ error: 'Record duplicato', campo: error.meta?.target });
+        } else if (error.code === 'P2003') {
+          res.status(400).json({ error: 'Riferimento non valido (record collegato inesistente)' });
+        } else if (error.name === 'PrismaClientValidationError') {
+          res.status(400).json({ error: 'Dati non validi: controlla i campi obbligatori' });
         } else {
           res.status(500).json({ error: 'Errore nella creazione' });
         }
@@ -136,9 +144,10 @@ export function createCrudRouter(options: CrudOptions): Router {
           return;
         }
 
+        const data = sanitizeForModel(model, req.body);
         const record = await prismaModel.update({
           where: { id: req.params.id },
-          data: req.body,
+          data,
           include,
         });
 
@@ -146,15 +155,21 @@ export function createCrudRouter(options: CrudOptions): Router {
           azione: 'UPDATE',
           entita: entityName,
           entitaId: record.id,
-          dettagli: { prima: existing, dopo: req.body },
+          dettagli: { prima: existing, dopo: data },
           utenteId: req.user?.id,
           ip: req.ip,
         });
 
         res.json(record);
       } catch (error: any) {
-        if (error.code === 'P2002') {
+        if (error instanceof SanitizeError) {
+          res.status(400).json({ error: error.message });
+        } else if (error.code === 'P2002') {
           res.status(409).json({ error: 'Record duplicato', campo: error.meta?.target });
+        } else if (error.code === 'P2003') {
+          res.status(400).json({ error: 'Riferimento non valido (record collegato inesistente)' });
+        } else if (error.name === 'PrismaClientValidationError') {
+          res.status(400).json({ error: 'Dati non validi: controlla i campi obbligatori' });
         } else {
           res.status(500).json({ error: 'Errore nell\'aggiornamento' });
         }
@@ -199,6 +214,22 @@ import { Router as VociRouter } from 'express';
 export function createVociRouter(parentModel: string, vociModel: string, parentIdField: string): VociRouter {
   const router = VociRouter({ mergeParams: true });
   const prismaVoci = (prisma as any)[vociModel];
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  // IVA calcolata per voce secondo la sua aliquota (non hardcoded 22%)
+  const ricalcolaTotali = async (parentId: string) => {
+    const voci = await prismaVoci.findMany({ where: { [parentIdField]: parentId } });
+    const totaleNetto = round2(voci.reduce((s: number, v: any) => s + Number(v.totale || 0), 0));
+    const totaleIva = round2(voci.reduce((s: number, v: any) =>
+      s + Number(v.totale || 0) * (Number(v.aliquotaIva ?? 22) / 100), 0));
+    await (prisma as any)[parentModel].update({
+      where: { id: parentId },
+      data: { totaleNetto, totaleIva, totaleLordo: round2(totaleNetto + totaleIva) },
+    });
+  };
+
+  const parentExists = async (parentId: string) =>
+    !!(await (prisma as any)[parentModel].findUnique({ where: { id: parentId }, select: { id: true } }));
 
   // GET /:parentId/voci
   router.get('/:parentId/voci', authenticate, async (req: any, res: any) => {
@@ -214,51 +245,57 @@ export function createVociRouter(parentModel: string, vociModel: string, parentI
   // POST /:parentId/voci
   router.post('/:parentId/voci', authenticate, async (req: any, res: any) => {
     try {
+      if (!(await parentExists(req.params.parentId))) {
+        return res.status(404).json({ error: `${parentModel} non trovato` });
+      }
+      const data = sanitizeForModel(vociModel, req.body);
       const voce = await prismaVoci.create({
-        data: { ...req.body, [parentIdField]: req.params.parentId },
+        data: { ...data, [parentIdField]: req.params.parentId },
       });
-      // Ricalcola totali
-      const voci = await prismaVoci.findMany({ where: { [parentIdField]: req.params.parentId } });
-      const totaleNetto = voci.reduce((s: number, v: any) => s + Number(v.totale || 0), 0);
-      const totaleIva = totaleNetto * 0.22;
-      const totaleLordo = totaleNetto + totaleIva;
-      await (prisma as any)[parentModel].update({
-        where: { id: req.params.parentId },
-        data: { totaleNetto, totaleIva, totaleLordo },
+      await ricalcolaTotali(req.params.parentId);
+      await createAuditLog({
+        azione: 'CREATE', entita: vociModel, entitaId: voce.id, dettagli: data,
+        utenteId: req.user?.id, ip: req.ip,
       });
       res.status(201).json(voce);
-    } catch (e) { res.status(500).json({ error: 'Errore creazione voce' }); }
+    } catch (e: any) {
+      if (e instanceof SanitizeError) return res.status(400).json({ error: e.message });
+      res.status(500).json({ error: 'Errore creazione voce' });
+    }
   });
 
   // PUT /:parentId/voci/:voceId
   router.put('/:parentId/voci/:voceId', authenticate, async (req: any, res: any) => {
     try {
-      const voce = await prismaVoci.update({ where: { id: req.params.voceId }, data: req.body });
-      // Ricalcola totali
-      const voci = await prismaVoci.findMany({ where: { [parentIdField]: req.params.parentId } });
-      const totaleNetto = voci.reduce((s: number, v: any) => s + Number(v.totale || 0), 0);
-      const totaleIva = totaleNetto * 0.22;
-      await (prisma as any)[parentModel].update({
-        where: { id: req.params.parentId },
-        data: { totaleNetto, totaleIva, totaleLordo: totaleNetto + totaleIva },
+      const data = sanitizeForModel(vociModel, req.body);
+      const voce = await prismaVoci.update({ where: { id: req.params.voceId }, data });
+      await ricalcolaTotali(req.params.parentId);
+      await createAuditLog({
+        azione: 'UPDATE', entita: vociModel, entitaId: voce.id, dettagli: data,
+        utenteId: req.user?.id, ip: req.ip,
       });
       res.json(voce);
-    } catch (e) { res.status(500).json({ error: 'Errore aggiornamento voce' }); }
+    } catch (e: any) {
+      if (e instanceof SanitizeError) return res.status(400).json({ error: e.message });
+      if (e.code === 'P2025') return res.status(404).json({ error: 'Voce non trovata' });
+      res.status(500).json({ error: 'Errore aggiornamento voce' });
+    }
   });
 
   // DELETE /:parentId/voci/:voceId
   router.delete('/:parentId/voci/:voceId', authenticate, async (req: any, res: any) => {
     try {
       await prismaVoci.delete({ where: { id: req.params.voceId } });
-      const voci = await prismaVoci.findMany({ where: { [parentIdField]: req.params.parentId } });
-      const totaleNetto = voci.reduce((s: number, v: any) => s + Number(v.totale || 0), 0);
-      const totaleIva = totaleNetto * 0.22;
-      await (prisma as any)[parentModel].update({
-        where: { id: req.params.parentId },
-        data: { totaleNetto, totaleIva, totaleLordo: totaleNetto + totaleIva },
+      await ricalcolaTotali(req.params.parentId);
+      await createAuditLog({
+        azione: 'DELETE', entita: vociModel, entitaId: req.params.voceId,
+        utenteId: req.user?.id, ip: req.ip,
       });
       res.json({ message: 'Voce eliminata' });
-    } catch (e) { res.status(500).json({ error: 'Errore eliminazione voce' }); }
+    } catch (e: any) {
+      if (e.code === 'P2025') return res.status(404).json({ error: 'Voce non trovata' });
+      res.status(500).json({ error: 'Errore eliminazione voce' });
+    }
   });
 
   return router;

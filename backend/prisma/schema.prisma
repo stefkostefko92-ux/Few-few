@@ -83,9 +83,12 @@ model Impianto {
   portata             Int?            // kg
   fermate             Int?
   stato               StatoImpianto   @default(ATTIVO)
+  quadro              String?         // quadro di manovra (marca/modello/tipo)
   indirizzo           String?
   piano               String?
   note                String?
+  foto                Json            @default("[]")
+  documenti           Json            @default("[]")
   dataInstallazione   DateTime?
   prossimaRevisione   DateTime?
   ultimaRevisione     DateTime?
@@ -510,10 +513,15 @@ enum StatoFattura {
 model Fattura {
   id                String          @id @default(uuid())
   numero            String          @unique
-  tipo              TipoFattura
+  tipo              TipoFattura     @default(EMESSA)
   stato             StatoFattura    @default(BOZZA)
   data              DateTime        @default(now())
   dataScadenza      DateTime?
+  dataPagamento     DateTime?
+  metodoPagamento   String?
+  cliente           String?         // denominazione libera (in alternativa ad amministratoreId)
+  fornitore         String?         // per fatture RICEVUTE
+  numeroFornitore   String?         // numero documento del fornitore
   oggetto           String?
   totaleNetto       Decimal         @default(0) @db.Decimal(12, 2)
   totaleIva         Decimal         @default(0) @db.Decimal(12, 2)
@@ -604,6 +612,8 @@ model Documento {
   titolo      String
   contenuto   String?
   fileUrl     String?
+  indirizzo   String?       // per cartelli di cantiere
+  citta       String?
   note        String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt

@@ -30,8 +30,18 @@ export async function generaFatturaPA(fatturaId: string): Promise<string> {
   const b = x.ele('FatturaElettronicaBody'); const dg = b.ele('DatiGenerali').ele('DatiGeneraliDocumento');
   dg.ele('TipoDocumento').txt('TD01'); dg.ele('Divisa').txt('EUR'); dg.ele('Data').txt(data); dg.ele('Numero').txt(f.numero); dg.ele('ImportoTotaleDocumento').txt(lordo.toFixed(2));
   const dbs = b.ele('DatiBeniServizi');
-  voci.forEach((v: any, i: number) => { const l = dbs.ele('DettaglioLinee'); l.ele('NumeroLinea').txt(String(i+1)); l.ele('Descrizione').txt(v.descrizione||'Servizio'); l.ele('Quantita').txt(Number(v.quantita||1).toFixed(2)); l.ele('PrezzoUnitario').txt(Number(v.prezzoUnitario||0).toFixed(2)); l.ele('PrezzoTotale').txt(Number(v.totale||0).toFixed(2)); l.ele('AliquotaIVA').txt(Number(v.iva||22).toFixed(2)); });
-  const dr = dbs.ele('DatiRiepilogo'); dr.ele('AliquotaIVA').txt('22.00'); dr.ele('ImponibileImporto').txt(netto.toFixed(2)); dr.ele('Imposta').txt(iva.toFixed(2)); dr.ele('EsigibilitaIVA').txt('I');
+  const aliquotaDi = (v: any) => Number(v.aliquotaIva ?? v.iva ?? 22);
+  voci.forEach((v: any, i: number) => { const l = dbs.ele('DettaglioLinee'); l.ele('NumeroLinea').txt(String(i+1)); l.ele('Descrizione').txt(v.descrizione||'Servizio'); l.ele('Quantita').txt(Number(v.quantita||1).toFixed(2)); l.ele('PrezzoUnitario').txt(Number(v.prezzoUnitario||0).toFixed(2)); l.ele('PrezzoTotale').txt(Number(v.totale||0).toFixed(2)); l.ele('AliquotaIVA').txt(aliquotaDi(v).toFixed(2)); });
+  // Un DatiRiepilogo per ogni aliquota IVA presente (obbligatorio per FatturaPA)
+  const perAliquota = new Map<number, number>();
+  voci.forEach((v: any) => { const a = aliquotaDi(v); perAliquota.set(a, (perAliquota.get(a) || 0) + Number(v.totale || 0)); });
+  for (const [aliquota, imponibile] of perAliquota) {
+    const dr = dbs.ele('DatiRiepilogo');
+    dr.ele('AliquotaIVA').txt(aliquota.toFixed(2));
+    dr.ele('ImponibileImporto').txt(imponibile.toFixed(2));
+    dr.ele('Imposta').txt((imponibile * aliquota / 100).toFixed(2));
+    dr.ele('EsigibilitaIVA').txt('I');
+  }
   if(f.dataScadenza){ const dp = b.ele('DatiPagamento'); dp.ele('CondizioniPagamento').txt('TP02'); const ddp = dp.ele('DettaglioPagamento'); ddp.ele('ModalitaPagamento').txt('MP05'); ddp.ele('DataScadenzaPagamento').txt(new Date(f.dataScadenza).toISOString().split('T')[0]); ddp.ele('ImportoPagamento').txt(lordo.toFixed(2)); if(process.env.AZIENDA_IBAN) ddp.ele('IBAN').txt(process.env.AZIENDA_IBAN.replace(/\s/g,'')); }
   return x.end({ prettyPrint: true });
 }

@@ -343,6 +343,39 @@ const Select = ({ label, children, ...props }) => (
   <div className="space-y-1"><label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{label}</label><select {...props} className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-cyan-500/50 transition-colors">{children}</select></div>
 );
 
+// Select per campi relazione: carica le opzioni dall'API e salva l'ID
+const RelationSelect = ({ label, endpoint, labelFn, value, onChange, disabled }) => {
+  const [options, setOptions] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    api.get(`${endpoint}?limit=100`).then(r => { if (alive) setOptions(r?.data || []); }).catch(() => {});
+    return () => { alive = false; };
+  }, [endpoint]);
+  return (
+    <div className="space-y-1">
+      <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{label}</label>
+      <select value={value || ""} onChange={onChange} disabled={disabled} className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-cyan-500/50 transition-colors">
+        <option value="">— Nessuno —</option>
+        {options.map(o => <option key={o.id} value={o.id}>{labelFn(o)}</option>)}
+      </select>
+    </div>
+  );
+};
+
+// Escape HTML per i documenti di stampa (evita XSS da campi liberi)
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Date API (ISO) → YYYY-MM-DD per visualizzazione e input type=date
+const fmtD = (v) => (v ? String(v).slice(0, 10) : "");
+
+// Nome leggibile per valori relazione: stringa o oggetto annidato dall'API
+const relName = (v, ...keys) => {
+  if (!v) return "";
+  if (typeof v === "string") return v;
+  for (const k of keys) if (v[k]) return v[k];
+  return [v.nome, v.cognome].filter(Boolean).join(" ") || v.ragioneSociale || v.matricola || v.numero || "";
+};
+
 const SearchBar = ({ value, onChange, placeholder = "Cerca..." }) => (
   <div className="relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" /><input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/50" /></div>
 );
@@ -392,7 +425,7 @@ const AIAutoFillButton = ({ fields, formData, setFormData, context }) => {
   const [status, setStatus] = useState(null);
   const fileRef = useRef(null);
 
-  const extractableFields = fields.filter(f => !["photos", "files", "documents"].includes(f.type));
+  const extractableFields = fields.filter(f => !f.hidden && !["photos", "files", "documents", "relation"].includes(f.type));
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -634,9 +667,11 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
           <AIAutoFillButton fields={formFields} formData={formData} setFormData={setFormData} context={entityName} />
         )}
         <div className="grid grid-cols-2 gap-4">
-          {formFields.map(f => (
+          {formFields.filter(f => !f.hidden).map(f => (
             <div key={f.key} className={f.wide ? "col-span-2" : ""}>
-              {f.type === "select" ? (
+              {f.type === "relation" ? (
+                <RelationSelect label={f.label} endpoint={f.endpoint} labelFn={f.labelFn || ((o) => o.nome || o.id)} value={formData[f.key]} onChange={e => setField(f.key, e.target.value || null)} disabled={modalMode === "view"} />
+              ) : f.type === "select" ? (
                 <Select label={f.label} value={formData[f.key] || ""} onChange={e => setField(f.key, e.target.value)} disabled={modalMode === "view"}>
                   <option value="">— Seleziona —</option>
                   {f.options?.map(o => <option key={o} value={o}>{o.replace(/_/g, " ")}</option>)}
@@ -725,7 +760,7 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
                   {(formData[f.key] || []).length === 0 && modalMode === "view" && <p className="text-xs text-zinc-600 italic">Nessun documento caricato</p>}
                 </div>
               ) : (
-                <Input label={f.label} type={f.type || "text"} value={formData[f.key] ?? ""} onChange={e => setField(f.key, f.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)} disabled={modalMode === "view"} placeholder={f.placeholder} />
+                <Input label={f.label} type={f.type || "text"} value={f.type === "date" ? fmtD(formData[f.key]) : formData[f.key] ?? ""} onChange={e => setField(f.key, f.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)} disabled={modalMode === "view"} placeholder={f.placeholder} />
               )}
             </div>
           ))}
@@ -788,7 +823,7 @@ const IMPIANTI_FIELDS = [
   { key: "fermate", label: "Fermate", type: "number", placeholder: "8", aiHint: 10 },
   { key: "quadro", label: "Quadro di Manovra", placeholder: "Marca, modello, tipo (es: VVVF, 2 velocità...)" },
   { key: "stato", label: "Stato", type: "select", options: ["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO", "DISMESSO"], default: "ATTIVO" },
-  { key: "condominio", label: "Condominio", placeholder: "Nome condominio" },
+  { key: "condominioId", label: "Condominio", type: "relation", endpoint: "/condomini", labelFn: o => o.nome },
   { key: "indirizzo", label: "Indirizzo", wide: true, placeholder: "Via, Città" },
   { key: "prossimaRevisione", label: "Prossima Revisione", type: "date" },
   { key: "note", label: "Note", type: "textarea", wide: true, aiHint: "Impianto in buone condizioni generali. Ultima manutenzione regolare." },
@@ -802,27 +837,28 @@ const IMPIANTI_COLS = [
   { key: "fermate", label: "Fermate/Portata", render: r => <span className="text-zinc-400">{r.fermate}F / {r.portata}kg</span> },
   { key: "quadro", label: "Quadro", render: r => <span className="text-zinc-400 text-xs">{r.quadro || "—"}</span> },
   { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
-  { key: "condominio", label: "Condominio", render: r => <span className="text-zinc-400">{r.condominio}</span> },
+  { key: "condominio", label: "Condominio", render: r => <span className="text-zinc-400">{relName(r.condominio, "nome") || "—"}</span> },
   { key: "media", label: "Media", render: r => {
     const nf = (r.foto || []).length;
     const nd = (r.documenti || []).length;
     if (nf === 0 && nd === 0) return <span className="text-zinc-600">—</span>;
     return <span className="flex items-center gap-2 text-xs">{nf > 0 && <span className="flex items-center gap-0.5 text-cyan-400" title={`${nf} foto`}><Image size={12} />{nf}</span>}{nd > 0 && <span className="flex items-center gap-0.5 text-zinc-400" title={`${nd} documenti`}><FileText size={12} />{nd}</span>}</span>;
   }},
-  { key: "prossimaRevisione", label: "Revisione", render: r => { if (!r.prossimaRevisione) return "—"; const d = Math.ceil((new Date(r.prossimaRevisione) - new Date()) / 86400000); return <span className={d < 0 ? "text-red-400 font-bold" : d <= 30 ? "text-amber-400" : "text-zinc-400"}>{r.prossimaRevisione}</span>; } },
+  { key: "prossimaRevisione", label: "Revisione", render: r => { if (!r.prossimaRevisione) return "—"; const d = Math.ceil((new Date(r.prossimaRevisione) - new Date()) / 86400000); return <span className={d < 0 ? "text-red-400 font-bold" : d <= 30 ? "text-amber-400" : "text-zinc-400"}>{fmtD(r.prossimaRevisione)}</span>; } },
 ];
 
 const CONDOMINI_FIELDS = [
   { key: "nome", label: "Nome", placeholder: "Nome condominio", aiFileHint: "Condominio Importato da CSV" },
   { key: "indirizzo", label: "Indirizzo", placeholder: "Via..." },
   { key: "citta", label: "Città", placeholder: "Milano" }, { key: "cap", label: "CAP", placeholder: "20121" }, { key: "provincia", label: "Prov.", placeholder: "MI" },
-  { key: "unitaImmobiliari", label: "Unità immobiliari", type: "number" }, { key: "amministratore", label: "Amministratore", placeholder: "Nome amministratore" },
+  { key: "unitaImmobiliari", label: "Unità immobiliari", type: "number" },
+  { key: "amministratoreId", label: "Amministratore", type: "relation", endpoint: "/amministratori", labelFn: o => o.ragioneSociale || `${o.nome || ""} ${o.cognome || ""}`.trim() },
   { key: "note", label: "Note", type: "textarea", wide: true },
 ];
 const CONDOMINI_COLS = [
   { key: "nome", label: "Nome", render: r => <span className="text-zinc-200 font-medium">{r.nome}</span> },
   { key: "indirizzo", label: "Indirizzo", render: r => <span className="text-zinc-400">{r.indirizzo}, {r.citta}</span> },
-  { key: "unitaImmobiliari", label: "Unità" }, { key: "amministratore", label: "Amministratore", render: r => <span className="text-zinc-400">{r.amministratore}</span> },
+  { key: "unitaImmobiliari", label: "Unità" }, { key: "amministratore", label: "Amministratore", render: r => <span className="text-zinc-400">{relName(r.amministratore) || "—"}</span> },
 ];
 
 const AMMINISTRATORI_FIELDS = [
@@ -859,7 +895,8 @@ const AUTOMEZZI_FIELDS = [
   { key: "targa", label: "Targa", aiFileHint: "AA000BB" }, { key: "marca", label: "Marca" }, { key: "modello", label: "Modello" },
   { key: "anno", label: "Anno", type: "number" }, { key: "chilometraggio", label: "Km", type: "number" },
   { key: "stato", label: "Semaforo", type: "select", options: ["verde", "giallo", "rosso"], default: "verde" },
-  { key: "conducente", label: "Conducente" }, { key: "scadenzaRevisione", label: "Scad. Revisione", type: "date" },
+  { key: "conducenteId", label: "Conducente", type: "relation", endpoint: "/dipendenti", labelFn: o => `${o.nome || ""} ${o.cognome || ""}`.trim() },
+  { key: "scadenzaRevisione", label: "Scad. Revisione", type: "date" },
   { key: "scadenzaAssicurazione", label: "Scad. Assicurazione", type: "date" }, { key: "note", label: "Note", type: "textarea", wide: true },
 ];
 const AUTOMEZZI_COLS = [
@@ -867,7 +904,7 @@ const AUTOMEZZI_COLS = [
   { key: "v", label: "Veicolo", render: r => <span>{r.marca} {r.modello}</span> },
   { key: "chilometraggio", label: "Km", render: r => <span className="text-zinc-400">{r.chilometraggio?.toLocaleString()} km</span> },
   { key: "stato", label: "Stato", render: r => <Semaforo v={r.stato} /> },
-  { key: "conducente", label: "Conducente", render: r => r.conducente || <span className="text-zinc-600 italic">N/A</span> },
+  { key: "conducente", label: "Conducente", render: r => relName(r.conducente) || <span className="text-zinc-600 italic">N/A</span> },
 ];
 
 const COTTIMISTI_FIELDS = [
@@ -903,29 +940,35 @@ const MAGAZZINO_COLS = [
 const PREVENTIVI_FIELDS = [
   { key: "numero", label: "Numero", placeholder: "PRV-XXXXX" }, { key: "oggetto", label: "Oggetto", wide: true, aiHint: "Manutenzione straordinaria impianto elevatore" },
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "INVIATO", "APPROVATO", "RIFIUTATO", "SCADUTO"], default: "BOZZA" },
-  { key: "totaleLordo", label: "Totale lordo €", type: "number" }, { key: "amministratore", label: "Amministratore" }, { key: "data", label: "Data", type: "date" },
+  { key: "totaleLordo", label: "Totale lordo €", type: "number" },
+  { key: "amministratoreId", label: "Amministratore", type: "relation", endpoint: "/amministratori", labelFn: o => o.ragioneSociale || `${o.nome || ""} ${o.cognome || ""}`.trim() },
+  { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.marca || ""} ${o.modello || ""}`.trim() },
+  { key: "data", label: "Data", type: "date" },
   { key: "note", label: "Note", type: "textarea", wide: true, aiHint: "Offerta valida 30 giorni dalla data di emissione. Materiali e manodopera inclusi." },
 ];
 const PREVENTIVI_COLS = [
   { key: "numero", label: "Numero", render: r => <span className="font-mono text-cyan-400 font-bold">{r.numero}</span> },
   { key: "oggetto", label: "Oggetto" }, { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
   { key: "totaleLordo", label: "Importo", render: r => <span className="text-emerald-400 font-bold">€ {r.totaleLordo?.toLocaleString()}</span> },
-  { key: "data", label: "Data", render: r => <span className="text-zinc-500">{r.data}</span> },
+  { key: "data", label: "Data", render: r => <span className="text-zinc-500">{fmtD(r.data)}</span> },
 ];
 
 const ORDINI_FIELDS = [
   { key: "numero", label: "Numero", placeholder: "OL-XXXXX" }, { key: "oggetto", label: "Oggetto", wide: true, aiHint: "Intervento di manutenzione programmata" },
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "EMESSO", "CONFERMATO", "IN_LAVORO", "SOSPESO", "COMPLETATO", "CHIUSO", "CONTESTATO", "ANNULLATO"], default: "BOZZA" },
   { key: "priorita", label: "Priorità", type: "select", options: ["ORDINARIA", "URGENTE", "EMERGENZA"], default: "ORDINARIA" },
-  { key: "impianto", label: "Impianto (matricola)" }, { key: "tecnico", label: "Tecnico" }, { key: "cottimista", label: "Cottimista" }, { key: "data", label: "Data", type: "date" },
+  { key: "impiantoId", label: "Impianto", type: "relation", endpoint: "/impianti", labelFn: o => `${o.matricola} — ${o.marca || ""} ${o.modello || ""}`.trim() },
+  { key: "tecnicoId", label: "Tecnico", type: "relation", endpoint: "/dipendenti?tipo=TECNICO", labelFn: o => `${o.nome || ""} ${o.cognome || ""}`.trim() },
+  { key: "cottimistiId", label: "Cottimista", type: "relation", endpoint: "/cottimisti", labelFn: o => o.ragioneSociale },
+  { key: "data", label: "Data", type: "date" },
   { key: "noteInterne", label: "Note interne", type: "textarea", wide: true }, { key: "noteCommittente", label: "Note committente", type: "textarea", wide: true },
 ];
 const ORDINI_COLS = [
   { key: "numero", label: "Numero", render: r => <span className="font-mono text-cyan-400 font-bold">{r.numero}</span> },
   { key: "oggetto", label: "Oggetto", render: r => <span className="max-w-[200px] truncate block">{r.oggetto}</span> },
   { key: "priorita", label: "Priorità", render: r => <Badge value={r.priorita} /> }, { key: "stato", label: "Stato", render: r => <Badge value={r.stato} /> },
-  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{r.impianto}</span> },
-  { key: "tecnico", label: "Tecnico", render: r => r.tecnico || <span className="text-zinc-600 italic">N/A</span> },
+  { key: "impianto", label: "Impianto", render: r => <span className="font-mono text-zinc-400">{relName(r.impianto, "matricola") || "—"}</span> },
+  { key: "tecnico", label: "Tecnico", render: r => relName(r.tecnico) || <span className="text-zinc-600 italic">N/A</span> },
 ];
 
 const FATTURE_EMESSE_FIELDS = [
@@ -933,7 +976,8 @@ const FATTURE_EMESSE_FIELDS = [
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "EMESSA", "INVIATA", "PAGATA", "SCADUTA", "STORNATA"], default: "BOZZA" },
   { key: "oggetto", label: "Oggetto / Descrizione", wide: true, aiHint: "Fattura per intervento di manutenzione straordinaria impianto elevatore" },
   { key: "cliente", label: "Cliente / Amministratore", placeholder: "Ragione sociale o nome cliente" },
-  { key: "ordineLavoro", label: "Ordine di Lavoro", placeholder: "OL-XXXXX (opzionale)" },
+  { key: "ordineLavoroId", label: "Ordine di Lavoro", type: "relation", endpoint: "/ordini", labelFn: o => `${o.numero} — ${o.oggetto || ""}`.slice(0, 60) },
+  { key: "tipo", hidden: true, default: "EMESSA" },
   { key: "metodoPagamento", label: "Metodo Pagamento", type: "select", options: ["Bonifico 30gg", "Bonifico 60gg", "Bonifico 90gg", "RiBa 30gg", "RiBa 60gg", "Contanti", "Carta", "Altro"], default: "" },
   { key: "totaleNetto", label: "Imponibile €", type: "number" },
   { key: "totaleIva", label: "IVA €", type: "number" },
@@ -952,9 +996,9 @@ const FATTURE_EMESSE_COLS = [
   { key: "dataScadenza", label: "Scadenza", render: r => {
     if (!r.dataScadenza) return <span className="text-zinc-600">—</span>;
     const d = Math.ceil((new Date(r.dataScadenza) - new Date()) / 86400000);
-    return <span className={r.stato === "PAGATA" ? "text-zinc-500 line-through" : d < 0 ? "text-red-400 font-bold" : d <= 7 ? "text-amber-400" : "text-zinc-400"}>{r.dataScadenza}{d < 0 && r.stato !== "PAGATA" ? ` (${Math.abs(d)}gg)` : ""}</span>;
+    return <span className={r.stato === "PAGATA" ? "text-zinc-500 line-through" : d < 0 ? "text-red-400 font-bold" : d <= 7 ? "text-amber-400" : "text-zinc-400"}>{fmtD(r.dataScadenza)}{d < 0 && r.stato !== "PAGATA" ? ` (${Math.abs(d)}gg)` : ""}</span>;
   }},
-  { key: "pagamento", label: "Pagata", render: r => r.stato === "PAGATA" ? <span className="text-emerald-400 text-xs">✓ {r.dataPagamento}</span> : r.stato === "SCADUTA" ? <span className="text-red-400 text-xs font-bold">SCADUTA</span> : <span className="text-zinc-600">—</span> },
+  { key: "pagamento", label: "Pagata", render: r => r.stato === "PAGATA" ? <span className="text-emerald-400 text-xs">✓ {fmtD(r.dataPagamento)}</span> : r.stato === "SCADUTA" ? <span className="text-red-400 text-xs font-bold">SCADUTA</span> : <span className="text-zinc-600">—</span> },
 ];
 
 const FATTURE_RICEVUTE_FIELDS = [
@@ -963,6 +1007,7 @@ const FATTURE_RICEVUTE_FIELDS = [
   { key: "stato", label: "Stato", type: "select", options: ["BOZZA", "EMESSA", "INVIATA", "PAGATA", "SCADUTA", "STORNATA"], default: "EMESSA" },
   { key: "oggetto", label: "Oggetto / Descrizione", wide: true },
   { key: "fornitore", label: "Fornitore", placeholder: "Ragione sociale fornitore" },
+  { key: "tipo", hidden: true, default: "RICEVUTA" },
   { key: "metodoPagamento", label: "Metodo Pagamento", type: "select", options: ["Bonifico 30gg", "Bonifico 60gg", "Bonifico 90gg", "RiBa 30gg", "RiBa 60gg", "Contanti", "Carta", "Altro"], default: "" },
   { key: "totaleNetto", label: "Imponibile €", type: "number" },
   { key: "totaleIva", label: "IVA €", type: "number" },
@@ -982,9 +1027,9 @@ const FATTURE_RICEVUTE_COLS = [
   { key: "dataScadenza", label: "Scadenza", render: r => {
     if (!r.dataScadenza) return <span className="text-zinc-600">—</span>;
     const d = Math.ceil((new Date(r.dataScadenza) - new Date()) / 86400000);
-    return <span className={r.stato === "PAGATA" ? "text-zinc-500 line-through" : d < 0 ? "text-red-400 font-bold" : d <= 7 ? "text-amber-400" : "text-zinc-400"}>{r.dataScadenza}</span>;
+    return <span className={r.stato === "PAGATA" ? "text-zinc-500 line-through" : d < 0 ? "text-red-400 font-bold" : d <= 7 ? "text-amber-400" : "text-zinc-400"}>{fmtD(r.dataScadenza)}</span>;
   }},
-  { key: "pagamento", label: "Pagata", render: r => r.stato === "PAGATA" ? <span className="text-emerald-400 text-xs">✓ {r.dataPagamento}</span> : <span className="text-zinc-600">—</span> },
+  { key: "pagamento", label: "Pagata", render: r => r.stato === "PAGATA" ? <span className="text-emerald-400 text-xs">✓ {fmtD(r.dataPagamento)}</span> : <span className="text-zinc-600">—</span> },
 ];
 
 const DDT_FIELDS = [
@@ -994,7 +1039,7 @@ const DDT_FIELDS = [
 ];
 const DDT_COLS = [
   { key: "numero", label: "Numero", render: r => <span className="font-mono text-cyan-400 font-bold">{r.numero}</span> },
-  { key: "data", label: "Data" }, { key: "destinatario", label: "Destinatario" }, { key: "causale", label: "Causale" },
+  { key: "data", label: "Data", render: r => fmtD(r.data) }, { key: "destinatario", label: "Destinatario" }, { key: "causale", label: "Causale" },
 ];
 
 const DOC_FIELDS = [
@@ -1560,7 +1605,7 @@ const AIPage = () => {
 // ═══════════════════════════════════════════════════════
 const printDocument = (title, contentHtml) => {
   const w = window.open("", "_blank", "width=800,height=600");
-  w.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>
+  w.document.write(`<!DOCTYPE html><html><head><title>${esc(title)}</title><style>
     @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Rajdhani',Arial,sans-serif;color:#1a1a1a;padding:30px;font-size:13px}
     h1{font-size:22px;text-transform:uppercase;border-bottom:3px solid #0891b2;padding-bottom:8px;margin-bottom:16px;letter-spacing:2px}
@@ -1816,20 +1861,20 @@ const printBuonoDiLavoro = (b) => {
 const PreventiviPageWithPrint = () => {
   const printPreventivo = (p) => {
     printDocument(`Preventivo ${p.numero}`, `
-      <h1>PREVENTIVO ${p.numero}</h1>
+      <h1>PREVENTIVO ${esc(p.numero)}</h1>
       <div class="grid grid-2">
-        <div class="field"><label>Numero</label><span>${p.numero}</span></div>
-        <div class="field"><label>Data</label><span>${p.data || "—"}</span></div>
-        <div class="field"><label>Stato</label><span class="badge">${p.stato?.replace(/_/g, " ")}</span></div>
-        <div class="field"><label>Amministratore</label><span>${p.amministratore || "—"}</span></div>
+        <div class="field"><label>Numero</label><span>${esc(p.numero)}</span></div>
+        <div class="field"><label>Data</label><span>${fmtD(p.data) || "—"}</span></div>
+        <div class="field"><label>Stato</label><span class="badge">${esc(p.stato?.replace(/_/g, " "))}</span></div>
+        <div class="field"><label>Amministratore</label><span>${esc(relName(p.amministratore)) || "—"}</span></div>
       </div>
-      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${p.oggetto || "—"}</span></div>
+      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${esc(p.oggetto) || "—"}</span></div>
       <table style="margin-top:16px">
         <thead><tr><th style="width:60%">Descrizione</th><th>Importo</th></tr></thead>
-        <tbody><tr><td>${p.oggetto || "—"}</td><td style="text-align:right;font-weight:700">€ ${Number(p.totaleLordo || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
+        <tbody><tr><td>${esc(p.oggetto) || "—"}</td><td style="text-align:right;font-weight:700">€ ${Number(p.totaleLordo || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
         <tfoot><tr><td style="text-align:right;font-weight:700;border-top:2px solid #333">TOTALE LORDO</td><td style="text-align:right;font-weight:700;font-size:16px;border-top:2px solid #333">€ ${Number(p.totaleLordo || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tfoot>
       </table>
-      ${p.note ? `<div class="field" style="margin-top:12px"><label>Note e condizioni</label><span style="white-space:pre-wrap">${p.note}</span></div>` : ""}
+      ${p.note ? `<div class="field" style="margin-top:12px"><label>Note e condizioni</label><span style="white-space:pre-wrap">${esc(p.note)}</span></div>` : ""}
       <p style="margin-top:20px;font-size:11px;color:#888">Offerta valida 30 giorni dalla data di emissione.</p>
       <div class="signatures" style="margin-top:30px"><div class="sig-box">Timbro e Firma Azienda</div><div class="sig-box">Firma per Accettazione Cliente</div></div>
     `);
@@ -1845,30 +1890,30 @@ const PreventiviPageWithPrint = () => {
 const FattureEmessePageWithPrint = () => {
   const printFattura = (f) => {
     printDocument(`Fattura ${f.numero}`, `
-      <h1>FATTURA ${f.numero}</h1>
+      <h1>FATTURA ${esc(f.numero)}</h1>
       <div class="grid grid-2">
-        <div class="field"><label>Numero</label><span>${f.numero}</span></div>
-        <div class="field"><label>Data emissione</label><span>${f.data || "—"}</span></div>
-        <div class="field"><label>Stato</label><span class="badge">${f.stato?.replace(/_/g, " ")}</span></div>
-        <div class="field"><label>Scadenza pagamento</label><span>${f.dataScadenza || "—"}</span></div>
+        <div class="field"><label>Numero</label><span>${esc(f.numero)}</span></div>
+        <div class="field"><label>Data emissione</label><span>${fmtD(f.data) || "—"}</span></div>
+        <div class="field"><label>Stato</label><span class="badge">${esc(f.stato?.replace(/_/g, " "))}</span></div>
+        <div class="field"><label>Scadenza pagamento</label><span>${fmtD(f.dataScadenza) || "—"}</span></div>
       </div>
       <div class="grid grid-2" style="margin-top:8px">
-        <div class="field"><label>Cliente</label><span>${f.cliente || "—"}</span></div>
-        <div class="field"><label>Metodo pagamento</label><span>${f.metodoPagamento || "—"}</span></div>
+        <div class="field"><label>Cliente</label><span>${esc(f.cliente || relName(f.amministratore)) || "—"}</span></div>
+        <div class="field"><label>Metodo pagamento</label><span>${esc(f.metodoPagamento) || "—"}</span></div>
       </div>
-      ${f.ordineLavoro ? `<div class="field" style="margin-top:8px"><label>Ordine di Lavoro</label><span>${f.ordineLavoro}</span></div>` : ""}
-      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${f.oggetto || "—"}</span></div>
+      ${f.ordineLavoro ? `<div class="field" style="margin-top:8px"><label>Ordine di Lavoro</label><span>${esc(relName(f.ordineLavoro, "numero"))}</span></div>` : ""}
+      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${esc(f.oggetto) || "—"}</span></div>
       <table style="margin-top:16px">
         <thead><tr><th style="width:60%">Descrizione</th><th>Importo</th></tr></thead>
-        <tbody><tr><td>${f.oggetto || "—"}</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
+        <tbody><tr><td>${esc(f.oggetto) || "—"}</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
         <tfoot>
           <tr><td style="text-align:right">Imponibile</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
           <tr><td style="text-align:right">IVA 22%</td><td style="text-align:right">€ ${Number(f.totaleIva || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
           <tr><td style="text-align:right;font-weight:700;border-top:2px solid #333">TOTALE</td><td style="text-align:right;font-weight:700;font-size:16px;border-top:2px solid #333">€ ${Number(f.totaleLordo || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
         </tfoot>
       </table>
-      ${f.note ? `<div class="field" style="margin-top:12px"><label>Note</label><span>${f.note}</span></div>` : ""}
-      ${f.dataPagamento ? `<div class="field" style="margin-top:8px"><label>Pagata il</label><span>${f.dataPagamento}</span></div>` : ""}
+      ${f.note ? `<div class="field" style="margin-top:12px"><label>Note</label><span>${esc(f.note)}</span></div>` : ""}
+      ${f.dataPagamento ? `<div class="field" style="margin-top:8px"><label>Pagata il</label><span>${fmtD(f.dataPagamento)}</span></div>` : ""}
     `);
   };
   const FE_COLS_PRINT = [
@@ -1882,29 +1927,29 @@ const FattureEmessePageWithPrint = () => {
 const FattureRicevutePageWithPrint = () => {
   const printFattura = (f) => {
     printDocument(`Fattura Ricevuta ${f.numero}`, `
-      <h1>FATTURA RICEVUTA ${f.numero}</h1>
+      <h1>FATTURA RICEVUTA ${esc(f.numero)}</h1>
       <div class="grid grid-2">
-        <div class="field"><label>N. Interno</label><span>${f.numero}</span></div>
-        <div class="field"><label>N. Fornitore</label><span>${f.numeroFornitore || "—"}</span></div>
-        <div class="field"><label>Data ricezione</label><span>${f.data || "—"}</span></div>
-        <div class="field"><label>Scadenza</label><span>${f.dataScadenza || "—"}</span></div>
+        <div class="field"><label>N. Interno</label><span>${esc(f.numero)}</span></div>
+        <div class="field"><label>N. Fornitore</label><span>${esc(f.numeroFornitore) || "—"}</span></div>
+        <div class="field"><label>Data ricezione</label><span>${fmtD(f.data) || "—"}</span></div>
+        <div class="field"><label>Scadenza</label><span>${fmtD(f.dataScadenza) || "—"}</span></div>
       </div>
       <div class="grid grid-2" style="margin-top:8px">
-        <div class="field"><label>Fornitore</label><span>${f.fornitore || "—"}</span></div>
-        <div class="field"><label>Metodo pagamento</label><span>${f.metodoPagamento || "—"}</span></div>
+        <div class="field"><label>Fornitore</label><span>${esc(f.fornitore) || "—"}</span></div>
+        <div class="field"><label>Metodo pagamento</label><span>${esc(f.metodoPagamento) || "—"}</span></div>
       </div>
-      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${f.oggetto || "—"}</span></div>
+      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${esc(f.oggetto) || "—"}</span></div>
       <table style="margin-top:16px">
         <thead><tr><th style="width:60%">Descrizione</th><th>Importo</th></tr></thead>
-        <tbody><tr><td>${f.oggetto || "—"}</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
+        <tbody><tr><td>${esc(f.oggetto) || "—"}</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr></tbody>
         <tfoot>
           <tr><td style="text-align:right">Imponibile</td><td style="text-align:right">€ ${Number(f.totaleNetto || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
           <tr><td style="text-align:right">IVA</td><td style="text-align:right">€ ${Number(f.totaleIva || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
           <tr><td style="text-align:right;font-weight:700;border-top:2px solid #333">TOTALE</td><td style="text-align:right;font-weight:700;font-size:16px;border-top:2px solid #333">€ ${Number(f.totaleLordo || 0).toLocaleString("it-IT", { minimumFractionDigits: 2 })}</td></tr>
         </tfoot>
       </table>
-      ${f.note ? `<div class="field" style="margin-top:12px"><label>Note</label><span>${f.note}</span></div>` : ""}
-      ${f.dataPagamento ? `<div class="field" style="margin-top:8px"><label>Pagata il</label><span>${f.dataPagamento}</span></div>` : ""}
+      ${f.note ? `<div class="field" style="margin-top:12px"><label>Note</label><span>${esc(f.note)}</span></div>` : ""}
+      ${f.dataPagamento ? `<div class="field" style="margin-top:8px"><label>Pagata il</label><span>${fmtD(f.dataPagamento)}</span></div>` : ""}
     `);
   };
   const FR_COLS_PRINT = [
@@ -1921,18 +1966,18 @@ const DDTPageWithPrint = () => {
       <h1 style="text-align:center">DOCUMENTO DI TRASPORTO (DDT)</h1>
       <p style="text-align:center;font-size:11px;color:#888;margin-bottom:16px">D.P.R. 472 del 14/08/1996</p>
       <div class="grid grid-2">
-        <div class="field"><label>Documento N.</label><span>${d.numero}</span></div>
-        <div class="field"><label>Data</label><span>${d.data || "—"}</span></div>
+        <div class="field"><label>Documento N.</label><span>${esc(d.numero)}</span></div>
+        <div class="field"><label>Data</label><span>${fmtD(d.data) || "—"}</span></div>
       </div>
-      <div class="field" style="margin-top:8px"><label>Destinatario</label><span>${d.destinatario || "—"}</span></div>
-      <div class="field" style="margin-top:8px"><label>Indirizzo consegna</label><span>${d.indirizzoConsegna || "—"}</span></div>
+      <div class="field" style="margin-top:8px"><label>Destinatario</label><span>${esc(d.destinatario) || "—"}</span></div>
+      <div class="field" style="margin-top:8px"><label>Indirizzo consegna</label><span>${esc(d.indirizzoConsegna) || "—"}</span></div>
       <div class="grid grid-2" style="margin-top:8px">
-        <div class="field"><label>Causale del trasporto</label><span>${d.causale || "—"}</span></div>
-        <div class="field"><label>Vettore</label><span>${d.vettore || "Mittente"}</span></div>
+        <div class="field"><label>Causale del trasporto</label><span>${esc(d.causale) || "—"}</span></div>
+        <div class="field"><label>Vettore</label><span>${esc(d.vettore) || "Mittente"}</span></div>
       </div>
       <table style="margin-top:16px">
         <thead><tr><th>Qta</th><th style="width:70%">Descrizione dei beni</th><th>U.M.</th></tr></thead>
-        <tbody><tr><td style="text-align:center">—</td><td>${d.note || "Materiale come da ordine"}</td><td>—</td></tr></tbody>
+        <tbody><tr><td style="text-align:center">—</td><td>${esc(d.note) || "Materiale come da ordine"}</td><td>—</td></tr></tbody>
       </table>
       <div class="grid grid-3" style="margin-top:16px">
         <div class="field"><label>Aspetto esteriore</label><span>Visibili</span></div>
@@ -1961,22 +2006,22 @@ const DDTPageWithPrint = () => {
 const OrdiniPageWithPrint = () => {
   const printOrdine = (o) => {
     printDocument(`Ordine ${o.numero}`, `
-      <h1>ORDINE DI LAVORO ${o.numero}</h1>
+      <h1>ORDINE DI LAVORO ${esc(o.numero)}</h1>
       <div class="grid grid-2">
-        <div class="field"><label>Numero</label><span>${o.numero}</span></div>
-        <div class="field"><label>Data</label><span>${o.data}</span></div>
-        <div class="field"><label>Stato</label><span class="badge">${o.stato?.replace(/_/g, " ")}</span></div>
-        <div class="field"><label>Priorità</label><span class="badge ${o.priorita?.toLowerCase()}">${o.priorita}</span></div>
+        <div class="field"><label>Numero</label><span>${esc(o.numero)}</span></div>
+        <div class="field"><label>Data</label><span>${fmtD(o.data) || "—"}</span></div>
+        <div class="field"><label>Stato</label><span class="badge">${esc(o.stato?.replace(/_/g, " "))}</span></div>
+        <div class="field"><label>Priorità</label><span class="badge ${o.priorita?.toLowerCase()}">${esc(o.priorita)}</span></div>
       </div>
-      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${o.oggetto}</span></div>
+      <div class="field" style="margin-top:8px"><label>Oggetto</label><span>${esc(o.oggetto)}</span></div>
       <div class="grid grid-2" style="margin-top:8px">
-        <div class="field"><label>Impianto</label><span>${o.impianto || "—"}</span></div>
-        <div class="field"><label>Tecnico</label><span>${o.tecnico || "Non assegnato"}</span></div>
-        <div class="field"><label>Cottimista</label><span>${o.cottimista || "—"}</span></div>
-        <div class="field"><label>Commessa</label><span>${o.commessa || "—"}</span></div>
+        <div class="field"><label>Impianto</label><span>${esc(relName(o.impianto, "matricola")) || "—"}</span></div>
+        <div class="field"><label>Tecnico</label><span>${esc(relName(o.tecnico)) || "Non assegnato"}</span></div>
+        <div class="field"><label>Cottimista</label><span>${esc(relName(o.cottimista, "ragioneSociale")) || "—"}</span></div>
+        <div class="field"><label>Commessa</label><span>${esc(o.commessa) || "—"}</span></div>
       </div>
-      ${o.noteInterne ? `<div class="field" style="margin-top:8px"><label>Note interne</label><span>${o.noteInterne}</span></div>` : ""}
-      ${o.noteCommittente ? `<div class="field" style="margin-top:8px"><label>Note committente</label><span>${o.noteCommittente}</span></div>` : ""}
+      ${o.noteInterne ? `<div class="field" style="margin-top:8px"><label>Note interne</label><span>${esc(o.noteInterne)}</span></div>` : ""}
+      ${o.noteCommittente ? `<div class="field" style="margin-top:8px"><label>Note committente</label><span>${esc(o.noteCommittente)}</span></div>` : ""}
       <div class="signatures"><div class="sig-box">Firma Responsabile</div><div class="sig-box">Firma Tecnico</div></div>
     `);
   };
@@ -1995,21 +2040,21 @@ const DocumentiPageWithPrint = () => {
       body = `<div style="border:3px solid #333;padding:30px;text-align:center">
         <h1 style="border:none;font-size:32px;margin-bottom:20px">LAVORI IN CORSO</h1>
         <div class="grid grid-3" style="text-align:left;margin-bottom:20px">
-          <div class="field"><label>Data</label><span>${d.data || "___/___/___"}</span></div>
-          <div class="field"><label>Indirizzo</label><span>${d.indirizzo || ""}</span></div>
-          <div class="field"><label>Città</label><span>${d.citta || ""}</span></div>
+          <div class="field"><label>Data</label><span>${fmtD(d.data || d.createdAt) || "___/___/___"}</span></div>
+          <div class="field"><label>Indirizzo</label><span>${esc(d.indirizzo) || ""}</span></div>
+          <div class="field"><label>Città</label><span>${esc(d.citta) || ""}</span></div>
         </div>
         <h2 style="font-size:24px;color:#333;margin:30px 0">INFORMAZIONE AGLI UTENTI</h2>
-        <p style="font-size:15px;line-height:1.8;text-align:left">${d.contenuto || "SI COMUNICA CHE DAL GIORNO ____________ VERRÀ SOSPESO IL FUNZIONAMENTO DELL'ELEVATORE MATR. ____________ A CAUSA LAVORI STRAORDINARI."}</p>
+        <p style="font-size:15px;line-height:1.8;text-align:left">${esc(d.contenuto) || "SI COMUNICA CHE DAL GIORNO ____________ VERRÀ SOSPESO IL FUNZIONAMENTO DELL'ELEVATORE MATR. ____________ A CAUSA LAVORI STRAORDINARI."}</p>
         <p style="font-size:15px;margin-top:10px;text-align:left">L'IMPIANTO SARÀ RIATTIVATO IN DATA: ____________</p>
         <p style="margin-top:30px;font-size:13px">CERTI DELLA VOSTRA COLLABORAZIONE, PORGIAMO I NOSTRI CORDIALI SALUTI</p>
         <div style="margin-top:40px;padding:20px;background:#ffff00;display:inline-block;font-size:28px;font-weight:700">AVVISO DI FERMO<br>IMPIANTO ASCENSORE</div>
       </div>`;
     } else {
-      body = `<h1>${d.tipo?.replace(/_/g, " ")} — ${d.titolo}</h1>
-        <div class="grid grid-2"><div class="field"><label>Data</label><span>${d.data || "—"}</span></div><div class="field"><label>Tipo</label><span>${d.tipo?.replace(/_/g, " ")}</span></div></div>
-        ${d.contenuto ? `<div class="field" style="margin-top:12px"><label>Contenuto</label><span style="white-space:pre-wrap">${d.contenuto}</span></div>` : ""}
-        ${d.note ? `<div class="field" style="margin-top:8px"><label>Note</label><span>${d.note}</span></div>` : ""}
+      body = `<h1>${esc(d.tipo?.replace(/_/g, " "))} — ${esc(d.titolo)}</h1>
+        <div class="grid grid-2"><div class="field"><label>Data</label><span>${fmtD(d.data || d.createdAt) || "—"}</span></div><div class="field"><label>Tipo</label><span>${esc(d.tipo?.replace(/_/g, " "))}</span></div></div>
+        ${d.contenuto ? `<div class="field" style="margin-top:12px"><label>Contenuto</label><span style="white-space:pre-wrap">${esc(d.contenuto)}</span></div>` : ""}
+        ${d.note ? `<div class="field" style="margin-top:8px"><label>Note</label><span>${esc(d.note)}</span></div>` : ""}
         <div class="signatures"><div class="sig-box">Firma Responsabile</div><div class="sig-box">Firma Tecnico</div></div>`;
     }
     printDocument(d.titolo, body);
