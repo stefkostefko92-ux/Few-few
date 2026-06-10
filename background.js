@@ -6,19 +6,17 @@ const FILTER_COUNT = 247; // bundled static rules (ad_rules + youtube_rules)
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
-const LEGACY_LIST_BASE = 100000; // old imported-filter rules — cleaned up on load
+const LEGACY_LIST_BASE = 100000; // old imported-filter rules, cleaned up on load
 
-// Core domains a user filter must never take down, even by mistake.
+// never block these from a user filter, even by mistake
 const NEVER_BLOCK = [
   "googlevideo.com", "ytimg.com", "youtube.com", "ggpht.com", "gstatic.com",
   "googleapis.com", "google.com", "fbcdn.net", "cdninstagram.com",
 ];
 const isProtected = (d) => NEVER_BLOCK.some((p) => d === p || d.endsWith("." + p));
 
-// Real average payload per blocked resource type (bytes). We count the exact
-// number blocked of each type, so only the per-type size is an estimate — the
-// same approach uBlock/AdGuard use, since a blocked request is never downloaded
-// and its true size can't be known.
+// avg bytes per blocked resource type. count is exact, size is approximate
+// (the request never loads, so its real size is unknown)
 const SIZE_BY_TYPE = {
   script: 95 * 1024,
   image: 38 * 1024,
@@ -84,7 +82,7 @@ chrome.runtime.onStartup.addListener(async () => {
   createMenus();
 });
 
-// Right-click "Block an element here" — like uBlock/AdBlock's element picker.
+// right-click entry that fires the element picker
 function createMenus() {
   try {
     chrome.contextMenus.removeAll(() => {
@@ -97,7 +95,7 @@ function createMenus() {
   } catch (e) {}
 }
 
-// ---------- Cross-device sync (mirror a subset to chrome.storage.sync) ----------
+// cross-device sync via chrome.storage.sync
 async function pushToSync() {
   try {
     await chrome.storage.sync.set(await chrome.storage.local.get(SYNC_KEYS));
@@ -151,7 +149,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   }
 });
 
-// ---------- Temporary pause (auto-resumes via alarm) ----------
+// temporary pause, auto-resumes via alarm
 async function pauseFor(minutes) {
   const until = Date.now() + minutes * 60000;
   await chrome.storage.local.set({ enabled: false, pausedUntil: until });
@@ -280,7 +278,7 @@ async function syncUserRules() {
   }
 }
 
-// ---------- Blocked-request accounting ----------
+// blocked-request counters
 const tabMatched = new Map();
 let pendingCount = 0;
 let pendingBytes = 0;
@@ -341,7 +339,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 chrome.tabs.onActivated.addListener(({ tabId }) => refreshBadge(tabId));
 chrome.tabs.onRemoved.addListener((tabId) => tabMatched.delete(tabId));
 
-// ---------- Helpers ----------
+// helpers
 function hostFromUrl(url) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -364,7 +362,7 @@ function savedStats(bytes, count) {
   };
 }
 
-// ---------- Messaging ----------
+// messages from popup / options / content
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   switch (msg.type) {
     case "toggle":

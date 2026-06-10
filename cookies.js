@@ -21,7 +21,7 @@
     ".cc-deny",
     ".cookie-decline",
     ".cmpboxbtnno",
-    // Sourcepoint (Mediaset, many EU media sites) — rendered inside an iframe
+    // Sourcepoint (Mediaset, many EU media sites), rendered inside an iframe
     ".sp_choice_type_13",
     ".sp_choice_type_REJECT_ALL",
     "button[title='Continua senza accettare']",

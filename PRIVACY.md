@@ -1,4 +1,4 @@
-# Privacy Policy — The Best Ads Block
+# Privacy Policy, The Best Ads Block
 
 _Last updated: June 2026_
 
@@ -30,10 +30,10 @@ inside the extension and run entirely on your device.
 
 ## Permissions
 
-- `declarativeNetRequest` — block ad/tracker network requests via rules.
-- `storage` — save your settings locally.
-- `tabs` — show the per-tab blocked count and the current site in the popup.
-- host access (`<all_urls>`) — apply blocking and cosmetic filtering on the
+- `declarativeNetRequest`, block ad/tracker network requests via rules.
+- `storage`, save your settings locally.
+- `tabs`, show the per-tab blocked count and the current site in the popup.
+- host access (`<all_urls>`), apply blocking and cosmetic filtering on the
   pages you visit. Page content is processed locally and never sent anywhere.
 
 ## Contact

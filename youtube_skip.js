@@ -41,7 +41,7 @@
         video.playbackRate = 16;
       } catch {}
     } else if (adActive && video) {
-      // Ad finished — restore the user's mute/speed on the shared element.
+      // Ad finished, restore the user's mute/speed on the shared element.
       adActive = false;
       try {
         video.playbackRate = prevRate || 1;

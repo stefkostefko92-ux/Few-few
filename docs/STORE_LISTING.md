@@ -4,28 +4,28 @@
 The Best ads block
 
 ## Summary (132 chars max)
-Block ads everywhere — YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.
+Block ads everywhere, YouTube video ads, banners, pop-ups, trackers and cookie prompts. Free, fast and private.
 
 ## Category
 Productivity / Tools
 
 ## Detailed description
 
-The Best Ads Block keeps the web clean and fast — without watching what you do.
+The Best Ads Block keeps the web clean and fast, without watching what you do.
 
-★ Blocks YouTube video ads (pre-roll & mid-roll) at the source
-★ Removes banners, pop-ups, pop-unders and native "recommended" ads
-★ Hides sponsored posts on Facebook & Instagram
-★ Stops trackers and behavioural analytics
-★ Dismisses cookie / consent banners for you
-★ Bypasses "please disable your adblocker" walls
-★ Element picker — hide anything on a page with one click
-★ Per-site allowlist for sites you want to support
-★ Curated, regularly maintained filter rules built in
-★ Live stats: ads blocked, data saved, time saved
-★ Sleek Carbon Stealth theme (dark) with a light option
+- Blocks YouTube video ads (pre-roll & mid-roll) at the source
+- Removes banners, pop-ups, pop-unders and native "recommended" ads
+- Hides sponsored posts on Facebook & Instagram
+- Stops trackers and behavioural analytics
+- Dismisses cookie / consent banners for you
+- Bypasses "please disable your adblocker" walls
+- Element picker, hide anything on a page with one click
+- Per-site allowlist for sites you want to support
+- Curated, regularly maintained filter rules built in
+- Live stats: ads blocked, data saved, time saved
+- Sleek Carbon Stealth theme (dark) with a light option
 
-100% free. No account, no telemetry, no data collection — everything stays on
+100% free. No account, no telemetry, no data collection, everything stays on
 your device. If it makes your browsing better, donations are welcome but never
 required.
 

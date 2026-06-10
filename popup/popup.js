@@ -58,8 +58,8 @@ function load() {
 function setStatus(enabled) {
   heroTitle.textContent = enabled ? "Protected" : "Paused";
   statusText.textContent = enabled
-    ? "Active — ads are being blocked"
-    : "Paused — ads are shown";
+    ? "Blocking ads on this page"
+    : "Protection is off";
   hero.classList.toggle("off", !enabled);
 }
 
@@ -95,7 +95,7 @@ function renderPause(until) {
   pauseBtn.classList.toggle("paused", paused);
   if (paused) {
     const mins = Math.max(1, Math.round((until - Date.now()) / 60000));
-    pauseLabel.textContent = `Paused — resume now (${mins}m left)`;
+    pauseLabel.textContent = `Paused, resume now (${mins}m left)`;
   } else {
     pauseLabel.textContent = "Pause for 30 minutes";
   }

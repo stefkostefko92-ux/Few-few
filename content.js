@@ -99,10 +99,8 @@
     });
   }
 
-  // ---- Smart Detection (list-free heuristic) --------------------------------
-  // What other blockers don't do: catch ads no filter list knows yet. A
-  // cross-origin <iframe> sized to a standard IAB ad slot is almost always an
-  // ad, regardless of which network serves it — so we hide it without any rule.
+  // Heuristic detection (no filter list). A cross-origin iframe sized to a
+  // standard IAB ad slot is almost always an ad, so hide it on sight.
   const IAB_SIZES = [
     [300, 250], [336, 280], [728, 90], [970, 250], [970, 90], [320, 50],
     [320, 100], [160, 600], [300, 600], [468, 60], [234, 60], [250, 250],
@@ -129,7 +127,7 @@
     items.push({ reason, w: Math.round(r.width), h: Math.round(r.height) });
   }
 
-  // Pass 1 — ad-sized cross-origin frames (works for any unknown network).
+  // ad-sized cross-origin frames (works for any unknown network)
   function scanFrames(items) {
     for (const f of document.querySelectorAll("iframe[src]")) {
       if (f.dataset.tbabHidden) continue;
@@ -149,10 +147,8 @@
     }
   }
 
-  // Pass 2 — sticky/fixed banner bars anchored to a screen edge. These are a
-  // classic format filter lists struggle with. We only act when there's a real
-  // ad signal (a third-party frame or an ad-named container), so sticky navbars
-  // and headers are left alone.
+  // edge-anchored sticky/fixed banner bars. only act when there's a real ad
+  // signal so we don't touch sticky navbars or headers.
   function adSignal(el) {
     if (AD_TOKENS.test(" " + el.id + " " + el.className + " ")) return true;
     const f = el.querySelector("iframe[src]");

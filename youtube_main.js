@@ -1,6 +1,6 @@
 // Remove ad payloads from YouTube player responses before the player reads
 // them. Runs in the page (MAIN) world. We prune the ad fields in place from
-// whatever the player parses (JSON.parse / Response.json) — we never rebuild
+// whatever the player parses (JSON.parse / Response.json), we never rebuild
 // the network response, so the video stream and its signature are untouched.
 (function () {
   "use strict";

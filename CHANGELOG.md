@@ -1,10 +1,15 @@
 # Changelog
 
+## 3.6.1
+
+- Housekeeping: tidied comments and copy across the codebase for a cleaner,
+  consistent style. No behaviour changes.
+
 ## 3.6.0
 
 - Smart Detection now also catches **sticky/anchored banner ads** (edge-pinned
-  bars carrying a third-party frame or ad-named container) — a format filter
-  lists struggle with — while leaving real sticky navbars/headers alone.
+  bars carrying a third-party frame or ad-named container), a format filter
+  lists struggle with, while leaving real sticky navbars/headers alone.
 - New **"why blocked" log**: a live, transparent list in settings showing each
   heuristic catch with its host, size and the reason it was flagged.
 
@@ -12,8 +17,8 @@
 
 - New, unique **Smart Detection**: a list-free heuristic that blocks ads no
   filter list knows yet. A cross-origin iframe sized to a standard IAB ad slot
-  (300×250, 728×90, 160×600, 320×50, …) is hidden on sight, regardless of
-  network — catching "zero-day" ad placements that rule-based blockers miss.
+  (300×250, 728×90, 160×600, 320×50, ...) is hidden on sight, regardless of
+  network, catching "zero-day" ad placements that rule-based blockers miss.
   Toggleable, with a live "caught so far" counter in settings.
 
 ## 3.4.2
@@ -52,7 +57,7 @@
 
 ## 3.2.0
 
-- New "My filters" editor (uBlock/AdBlock-style): write your own rules — block
+- New "My filters" editor (uBlock/AdBlock-style): write your own rules, block
   a domain, hide an element everywhere (`##.selector`) or only on one site
   (`site.com##.selector`). Comments with `!`.
 - Right-click "Block an element here" context menu, like uBlock/AdBlock.
@@ -70,19 +75,18 @@
 
 - Cookie/consent banner dismissal now searches open shadow DOM (where many
   modern consent managers live), covers many more frameworks (Osano, Iubenda,
-  Termly, Cookie-Script, Quantcast FC, CookieYes, …) and removes leftover
+  Termly, Cookie-Script, Quantcast FC, CookieYes, ...) and removes leftover
   dimming overlays/scroll locks.
 
 ## 3.1.0
 
 - New "YouTube ad blocking" toggle in settings. When off, the extension does
-  not touch YouTube at all (no network rules, no player script, no auto-skip) —
-  useful if a network/region ever has trouble playing video.
+  not touch YouTube at all (no network rules, no player script, no auto-skip), useful if a network/region ever has trouble playing video.
 - YouTube handling now also respects the per-site allowlist: allowlist
   youtube.com to disable all YouTube interference for your account.
 - The YouTube player script is injected on demand by a loader, so the toggle
   and allowlist fully control whether it runs.
-- Built-in filter rules only — no remote fetches and no remotely hosted code.
+- Built-in filter rules only, no remote fetches and no remotely hosted code.
 
 ## 3.0.3
 
@@ -98,7 +102,7 @@
   which could keep a site (e.g. YouTube) broken until the extension was removed.
 - Removed the runtime EasyList/EasyPrivacy network import. Blocking now relies
   on the bundled curated rules plus per-page cosmetic filtering and YouTube
-  response sanitising — the stable approach used by MV3 blockers. Dropped the
+  response sanitising, the stable approach used by MV3 blockers. Dropped the
   `alarms` permission and any leftover imported rules are cleaned up on load.
 - UI: clearer "time saved" formatting for small values; footer shows the
   bundled filter count.
@@ -111,7 +115,7 @@
   being blocked at the network layer.
 - Stop blocking log_event / csi_204 (logging & timing, not ads).
 - Imported filter lists can never block core video/CDN domains (googlevideo,
-  ytimg, gstatic, …).
+  ytimg, gstatic, ...).
 
 ## 3.0.0
 
