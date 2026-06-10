@@ -14,6 +14,7 @@ import { createCrudRouter, createVociRouter } from './routes/crud';
 import { sanitizeForModel } from './services/sanitize';
 import uploadRouter, { UPLOAD_DIR } from './routes/upload';
 import jwtSocket from 'jsonwebtoken';
+import contrattiWorkflowRoutes from './routes/contratti';
 import { controllaScadenze, eseguiControlloScadenze } from './services/scadenze';
 import extrasRoutes from './routes/extras';
 import { authenticate, authorize } from './middleware/auth';
@@ -196,6 +197,8 @@ app.use('/api/contratti', apiLimiter, createCrudRouter({
     _count: { select: { visite: true } },
   },
 }));
+
+app.use('/api/contratti', apiLimiter, contrattiWorkflowRoutes);
 
 // ── Visite di Manutenzione (giri programmati DPR 162/99) ──
 app.use('/api/visite', apiLimiter, createCrudRouter({

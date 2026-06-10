@@ -1178,6 +1178,118 @@ const VERIFICHE_COLS = [
   { key: "prescrizioni", label: "Prescrizioni", render: r => r.prescrizioni ? <span className="text-amber-400 text-xs max-w-[200px] truncate block">{r.prescrizioni}</span> : <span className="text-zinc-600">—</span> },
 ];
 
+
+// ═══════════════════════════════════════════════════════
+// PAGE: CONTRATTI (con azioni workflow)
+// ═══════════════════════════════════════════════════════
+const ContrattiPage = () => {
+  const [toast, setToast] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const azione = async (id, path, refreshHint) => {
+    setBusy(id + path);
+    try {
+      const r = await api.post(`/contratti/${id}/${path}`);
+      setToast({ message: r.message || "Operazione completata", type: "success" });
+    } catch (e) { setToast({ message: e.message, type: "error" }); }
+    finally { setBusy(null); }
+  };
+  const COLS = [
+    ...CONTRATTI_COLS,
+    { key: "_azioni", label: "", render: r => (
+      <div className="flex gap-1">
+        <button onClick={(e) => { e.stopPropagation(); azione(r.id, "genera-visite"); }} disabled={busy === r.id + "genera-visite"}
+          className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-cyan-400 disabled:opacity-40" title="Genera visite programmate">
+          <Calendar size={14} />
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); azione(r.id, "genera-fattura"); }} disabled={busy === r.id + "genera-fattura"}
+          className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-emerald-400 disabled:opacity-40" title="Genera fattura canone (bozza)">
+          <Receipt size={14} />
+        </button>
+      </div>
+    )},
+  ];
+  return (
+    <div>
+      <CrudModulePage title="CONTRATTI DI MANUTENZIONE" subtitle="Canoni, periodicità visite e rinnovi — icone riga: genera visite / fattura canone" apiEndpoint="/contratti" columns={COLS} formFields={CONTRATTI_FIELDS} entityName="Contratto" filterField="stato" filterOptions={["ATTIVO", "SOSPESO", "DISDETTO", "SCADUTO"]} />
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════
+// PAGE: VISITE con vista calendario
+// ═══════════════════════════════════════════════════════
+const CalendarioVisite = () => {
+  const { data } = useApiData("/visite");
+  const [mese, setMese] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
+  const giorni = [];
+  const primo = new Date(mese);
+  const offset = (primo.getDay() + 6) % 7; // lunedì = 0
+  const nGiorni = new Date(mese.getFullYear(), mese.getMonth() + 1, 0).getDate();
+  for (let i = 0; i < offset; i++) giorni.push(null);
+  for (let d = 1; d <= nGiorni; d++) giorni.push(new Date(mese.getFullYear(), mese.getMonth(), d));
+  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const visiteDi = (giorno) => data.filter(v => v.dataProgrammata && fmtD(v.dataProgrammata) === ymd(giorno));
+  const STATO_DOT = { PROGRAMMATA: "#06b6d4", ESEGUITA: "#10b981", ANNULLATA: "#71717a" };
+  const oggi = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`;
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-4">
+        <Btn size="sm" variant="secondary" icon={ArrowLeft} onClick={() => setMese(new Date(mese.getFullYear(), mese.getMonth() - 1, 1))}>Prec</Btn>
+        <h3 className="text-lg font-bold text-white capitalize" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em" }}>
+          {mese.toLocaleString("it-IT", { month: "long", year: "numeric" })}
+        </h3>
+        <Btn size="sm" variant="secondary" onClick={() => setMese(new Date(mese.getFullYear(), mese.getMonth() + 1, 1))}>Succ <ArrowRight size={14} /></Btn>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center mb-1">
+        {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map(g => <div key={g} className="text-[10px] font-bold text-zinc-500 uppercase py-1">{g}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {giorni.map((g, i) => {
+          if (!g) return <div key={`e${i}`} />;
+          const vs = visiteDi(g);
+          const isOggi = ymd(g) === oggi;
+          return (
+            <div key={i} className={`min-h-[72px] rounded-lg border p-1 ${isOggi ? "border-cyan-500/60 bg-cyan-500/5" : "border-zinc-800 bg-zinc-900/40"}`}>
+              <p className={`text-[10px] font-bold ${isOggi ? "text-cyan-400" : "text-zinc-500"}`}>{g.getDate()}</p>
+              <div className="space-y-0.5 mt-0.5">
+                {vs.slice(0, 3).map(v => (
+                  <div key={v.id} className="flex items-center gap-1 px-1 py-0.5 rounded bg-zinc-800/80 overflow-hidden" title={`${v.tipo} — ${relName(v.impianto, "matricola")} ${relName(v.tecnico) ? "· " + relName(v.tecnico) : ""}`}>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: STATO_DOT[v.stato] || "#71717a" }} />
+                    <span className="text-[9px] text-zinc-300 truncate">{relName(v.impianto, "matricola") || v.tipo}</span>
+                  </div>
+                ))}
+                {vs.length > 3 && <p className="text-[9px] text-zinc-500 px-1">+{vs.length - 3} altre</p>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-4 mt-3 text-[10px] text-zinc-500">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: "#06b6d4" }} />Programmata</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: "#10b981" }} />Eseguita</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: "#71717a" }} />Annullata</span>
+      </div>
+    </Card>
+  );
+};
+
+const VisitePage = () => {
+  const [vista, setVista] = useState("lista");
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        {[{ id: "lista", label: "Lista", icon: ClipboardList }, { id: "calendario", label: "Calendario", icon: Calendar }].map(v => (
+          <button key={v.id} onClick={() => setVista(v.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${vista === v.id ? "bg-cyan-600/15 text-cyan-400 border border-cyan-500/20" : "bg-zinc-800/50 text-zinc-500 hover:text-zinc-300 border border-transparent"}`}><v.icon size={16} />{v.label}</button>
+        ))}
+      </div>
+      {vista === "lista"
+        ? <CrudModulePage title="MANUTENZIONI PROGRAMMATE" subtitle="Visite ordinarie (min. 2/anno — DPR 162/99), straordinarie ed emergenze" apiEndpoint="/visite" columns={VISITE_COLS} formFields={VISITE_FIELDS} entityName="Visita" filterField="stato" filterOptions={["PROGRAMMATA", "ESEGUITA", "ANNULLATA"]} />
+        : <CalendarioVisite />}
+    </div>
+  );
+};
+
 // ═══════════════════════════════════════════════════════
 // PAGES: USER MANAGEMENT
 // ═══════════════════════════════════════════════════════
@@ -2464,8 +2576,8 @@ export default function App() {
     switch (page) {
       case "dashboard": return <DashboardPage />;
       case "impianti": return <CrudModulePage title="IMPIANTI" subtitle="Registro completo con scadenze" store={impiantiStore} apiEndpoint="/impianti" columns={IMPIANTI_COLS} formFields={IMPIANTI_FIELDS} entityName="Impianto" filterField="stato" filterOptions={["ATTIVO", "FERMO", "MANUTENZIONE", "FUORI_SERVIZIO"]} />;
-      case "contratti": return <CrudModulePage title="CONTRATTI DI MANUTENZIONE" subtitle="Canoni, periodicità visite e rinnovi" apiEndpoint="/contratti" columns={CONTRATTI_COLS} formFields={CONTRATTI_FIELDS} entityName="Contratto" filterField="stato" filterOptions={["ATTIVO", "SOSPESO", "DISDETTO", "SCADUTO"]} />;
-      case "visite": return <CrudModulePage title="MANUTENZIONI PROGRAMMATE" subtitle="Visite ordinarie (min. 2/anno — DPR 162/99), straordinarie ed emergenze" apiEndpoint="/visite" columns={VISITE_COLS} formFields={VISITE_FIELDS} entityName="Visita" filterField="stato" filterOptions={["PROGRAMMATA", "ESEGUITA", "ANNULLATA"]} />;
+      case "contratti": return <ContrattiPage />;
+      case "visite": return <VisitePage />;
       case "verifiche": return <CrudModulePage title="VERIFICHE PERIODICHE" subtitle="Registro verifiche biennali Organismo Abilitato — DPR 162/99" apiEndpoint="/verifiche" columns={VERIFICHE_COLS} formFields={VERIFICHE_FIELDS} entityName="Verifica" />;
       case "condomini": return <CrudModulePage title="CONDOMINI" subtitle="Edifici e amministratori" store={condominiStore} apiEndpoint="/condomini" columns={CONDOMINI_COLS} formFields={CONDOMINI_FIELDS} entityName="Condominio" />;
       case "amministratori": return <CrudModulePage title="AMMINISTRATORI" subtitle="Persone e società" store={amministratoriStore} apiEndpoint="/amministratori" columns={AMMINISTRATORI_COLS} formFields={AMMINISTRATORI_FIELDS} entityName="Amministratore" filterField="tipo" filterOptions={["PERSONA_FISICA", "SOCIETA"]} />;
