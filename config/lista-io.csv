@@ -1,0 +1,36 @@
+tag;indirizzo;morsetto;tipo;direzione;tensione;sezione_mm2;impianto;sigla;descrizione
+xCatenaSicurezzaOK;%I0.0;X1:11;DI;IN;24Vdc;0.75;both;-KA-SIC;Feedback rele sicurezza (1=catena chiusa)
+xRevisione;%I0.1;X1:12;DI;IN;24Vdc;0.75;both;-S-REV;Selettore revisione/ispezione
+xRevSalita;%I0.2;X1:13;DI;IN;24Vdc;0.75;both;-SB-REVU;Pulsante revisione salita (uomo presente)
+xRevDiscesa;%I0.3;X1:14;DI;IN;24Vdc;0.75;both;-SB-REVD;Pulsante revisione discesa (uomo presente)
+xZonaPorta1;%I0.4;X1:15;DI;IN;24Vdc;0.75;both;-B-ZP1;Sensore zona porta 1
+xZonaPorta2;%I0.5;X1:16;DI;IN;24Vdc;0.75;both;-B-ZP2;Sensore zona porta 2 (ridondante)
+xRallentSalita;%I0.6;X1:17;DI;IN;24Vdc;0.75;both;-B-RALL-U;Camma rallentamento salita
+xRallentDiscesa;%I0.7;X1:18;DI;IN;24Vdc;0.75;both;-B-RALL-D;Camma rallentamento discesa
+xImpulsoPiano;%I1.0;X1:19;DI;IN;24Vdc;0.75;both;-B-PIANI;Impulso conteggio piani / encoder
+xSovraccarico;%I1.1;X1:20;DI;IN;24Vdc;0.75;both;-S-SOVR;Sovraccarico cabina
+xFotocellula;%I1.2;X1:21;DI;IN;24Vdc;0.75;both;-S-FOTO;Fotocellula/costa mobile porta (1=libero)
+xPortaAperta;%I1.3;X1:22;DI;IN;24Vdc;0.75;both;-S-FAP;Finecorsa porta tutta aperta
+xPortaChiusa;%I1.4;X1:23;DI;IN;24Vdc;0.75;both;-S-FCP;Finecorsa porta tutta chiusa
+xTermicaMotore;%I1.5;X1:24;DI;IN;24Vdc;0.75;both;-F-MOT;Termica motore/termostato olio (1=ok)
+xPressioneMin;%I1.6;X1:25;DI;IN;24Vdc;0.75;idraulico;-S-MINP;Pressostato di minima (1=ok)
+xControlloFreno;%I1.7;X1:26;DI;IN;24Vdc;0.75;geared;-S-FRE;Microcontatti controllo freno (1=integro)
+wChiamateCabina;%IW2;X2:1-6;DI;IN;24Vdc;0.5;both;-SB-CAB-0..5;Pulsanti chiamata cabina (bus/parallelo)
+wChiamatePianoSu;%IW4;X2:7-12;DI;IN;24Vdc;0.5;both;-SB-PIA-U;Chiamate piano salita
+wChiamatePianoGiu;%IW6;X2:13-18;DI;IN;24Vdc;0.5;both;-SB-PIA-D;Chiamate piano discesa
+xKM_Salita;%Q0.0;X3:1;DQ;OUT;24Vdc/rele;1.0;both;-KM-S;Contattore salita
+xKM_Discesa;%Q0.1;X3:2;DQ;OUT;24Vdc/rele;1.0;both;-KM-D;Contattore discesa
+xKM_Veloce;%Q0.2;X3:3;DQ;OUT;24Vdc/rele;1.0;geared;-KM-V;Contattore alta velocita'
+xKM_Lento;%Q0.3;X3:4;DQ;OUT;24Vdc/rele;1.0;geared;-KM-L;Contattore bassa velocita'
+xKM_Freno;%Q0.4;X3:5;DQ;OUT;24Vdc/rele;1.0;geared;-KM-FRE;Comando freno elettromeccanico
+xKM_Pompa;%Q0.5;X3:6;DQ;OUT;24Vdc/rele;1.0;idraulico;-KM-P;Contattore linea pompa
+xKM_Stella;%Q0.6;X3:7;DQ;OUT;24Vdc/rele;1.0;idraulico;-KM-Y;Contattore stella
+xKM_Triangolo;%Q0.7;X3:8;DQ;OUT;24Vdc/rele;1.0;idraulico;-KM-D;Contattore triangolo
+xEV_Salita;%Q1.0;X3:9;DQ;OUT;24Vdc;1.0;idraulico;-EV-S;Elettrovalvola salita
+xEV_Discesa;%Q1.1;X3:10;DQ;OUT;24Vdc;1.0;idraulico;-EV-D;Elettrovalvola discesa
+xKM_ApriPorte;%Q1.2;X3:11;DQ;OUT;24Vdc/rele;0.75;both;-KM-APRE;Comando apertura porte
+xKM_ChiudiPorte;%Q1.3;X3:12;DQ;OUT;24Vdc/rele;0.75;both;-KM-CHIU;Comando chiusura porte
+xGong;%Q1.4;X3:13;DQ;OUT;24Vdc;0.5;both;-H-GONG;Gong di arrivo
+xFuoriServizio;%Q1.5;X3:14;DQ;OUT;24Vdc;0.5;both;-H-OOS;Segnalazione fuori servizio/allarme
+wDisplayPos;%QW2;X4:1-8;DQ;OUT;24Vdc;0.5;both;-H-POS;Display posizione cabina (BCD/serie)
+wFrecceDir;%QW4;X4:9-12;DQ;OUT;24Vdc;0.5;both;-H-DIR;Frecce direzione

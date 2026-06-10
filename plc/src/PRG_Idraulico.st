@@ -96,7 +96,7 @@ CASE eStato OF
             iTarget := fbCall.Richiesta.PianoTarget;
             IF iTarget = iPianoCorrente THEN
                 eStato := ST_APRI_PORTE;
-            ELSE
+            ELSIF NOT xSovraccarico THEN
                 eStato := ST_CHIUDI_PORTE;
             END_IF
         END_IF
@@ -104,8 +104,13 @@ CASE eStato OF
     ST_CHIUDI_PORTE:
         xKM_ChiudiPorte := TRUE;
         IF fbPorte.xPorteChiuse THEN
-            eDirezione := fbCall.Richiesta.Direzione;
-            eStato := ST_PARTENZA;
+            IF fbCall.Richiesta.Valida AND NOT xSovraccarico THEN
+                iTarget := fbCall.Richiesta.PianoTarget;
+                eDirezione := fbCall.Richiesta.Direzione;
+                eStato := ST_PARTENZA;
+            ELSE
+                eStato := ST_RIPOSO;
+            END_IF
         END_IF
 
     ST_PARTENZA:

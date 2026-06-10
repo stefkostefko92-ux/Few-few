@@ -27,10 +27,14 @@ Conforme a **EN 81-20 / EN 81-50** (nuovo) e idoneo a modernizzazioni
 | [`schemi/potenza-idraulico.svg`](schemi/potenza-idraulico.svg) | Schema di potenza — centralina idraulica (Y/Δ + valvole) |
 | [`schemi/catena-sicurezza.svg`](schemi/catena-sicurezza.svg) | Catena di sicurezza cablata (comune) |
 | [`schemi/io-plc.svg`](schemi/io-plc.svg) | Schema I/O del PLC di manovra |
+| [`cad/`](cad/) | **Export CAD** degli schemi in DXF (AutoCAD/LibreCAD) + anteprime PNG |
 | [`plc/`](plc/) | Software PLC IEC 61131-3 ST (geared + idraulico) |
+| [`sim/`](sim/) | **Simulazione + test** eseguibili della logica PLC (Python, 11 test) |
 | [`docs/01-schema-elettrico.md`](docs/01-schema-elettrico.md) | Descrizione schemi, BOM, conformità |
 | [`docs/02-parametri-wifi.md`](docs/02-parametri-wifi.md) | Mappa parametri app WiFi (safety vs non-safety) |
+| [`docs/03-lista-io.md`](docs/03-lista-io.md) | **Lista I/O completa** per il cablaggio (morsetti, cavi) |
 | [`config/parametri.json`](config/parametri.json) | Mappa parametri machine-readable |
+| [`config/lista-io.csv`](config/lista-io.csv) | Lista I/O machine-readable (import EPLAN/Excel) |
 | [`firmware/esp32-quadro-wifi/`](firmware/esp32-quadro-wifi/) | Prototipo modulo WiFi: web-server + Modbus |
 
 ## Architettura in breve
