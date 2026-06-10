@@ -4,6 +4,9 @@
   "use strict";
 
   let enabled = true;
+  let adActive = false;
+  let prevMuted = false;
+  let prevRate = 1;
 
   const SKIP = [
     ".ytp-ad-skip-button",
@@ -21,14 +24,28 @@
 
     const player = document.querySelector(".html5-video-player");
     const video = document.querySelector("video.html5-main-video, video");
+    const showing = !!player?.classList.contains("ad-showing");
 
-    if (player?.classList.contains("ad-showing") && video) {
+    if (showing && video) {
+      // Remember the real playback state once, before we fast-forward the ad.
+      if (!adActive) {
+        adActive = true;
+        prevMuted = video.muted;
+        prevRate = video.playbackRate;
+      }
       try {
         if (video.duration && isFinite(video.duration) && video.duration > 0) {
           video.currentTime = video.duration;
         }
         video.muted = true;
         video.playbackRate = 16;
+      } catch {}
+    } else if (adActive && video) {
+      // Ad finished — restore the user's mute/speed on the shared element.
+      adActive = false;
+      try {
+        video.playbackRate = prevRate || 1;
+        video.muted = prevMuted;
       } catch {}
     }
 

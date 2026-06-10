@@ -39,10 +39,16 @@
     active = true;
     document.documentElement.classList.add("tbab-aab");
     cleanup();
-    new MutationObserver(cleanup).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
+    // Throttle: scanning every element is costly, so cap it on busy pages.
+    let queued = false;
+    new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      setTimeout(() => {
+        queued = false;
+        cleanup();
+      }, 500);
+    }).observe(document.documentElement, { childList: true, subtree: true });
     let n = 0;
     const t = setInterval(() => {
       if (!active || n++ > 10) return clearInterval(t);

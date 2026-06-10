@@ -132,7 +132,10 @@
   chrome.storage?.onChanged.addListener((changes) => {
     if (changes.enabled) {
       enabled = changes.enabled.newValue !== false;
-      if (enabled) start();
+      if (enabled) {
+        start();
+        hide();
+      }
     }
     if (changes.customHidden || changes.userFilters) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
@@ -142,17 +145,22 @@
     }
   });
 
+  let started = false;
   function start() {
+    if (started) return; // guard against repeated enable toggles
+    started = true;
     hide();
     collapseEmpty();
 
-    new MutationObserver((mutations) => {
-      if (!enabled) return;
-      for (const m of mutations) {
-        for (const node of m.addedNodes) {
-          if (node.nodeType === 1) hide(node.parentNode || document);
-        }
-      }
+    // Coalesce DOM mutations into at most one scan per frame.
+    let scheduled = false;
+    new MutationObserver(() => {
+      if (!enabled || scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        hide();
+      });
     }).observe(document.documentElement, { childList: true, subtree: true });
 
     // A few delayed passes catch lazily injected ads.

@@ -63,10 +63,16 @@
   function start() {
     run = true;
     scan();
-    new MutationObserver(scan).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
+    // Feeds mutate constantly; throttle the scan.
+    let queued = false;
+    new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      setTimeout(() => {
+        queued = false;
+        scan();
+      }, 350);
+    }).observe(document.documentElement, { childList: true, subtree: true });
   }
 
   chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {

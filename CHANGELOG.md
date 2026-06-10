@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.4.1
+
+- Fix: after a YouTube ad, the shared video element is restored to the user's
+  real mute state and playback speed (it could stay muted or stuck at 16x).
+- Performance: throttle the cosmetic, cookie, anti-adblock and Meta observers,
+  coalescing DOM mutations so busy pages (YouTube, feeds) stay smooth.
+- Guard the content script against starting twice on repeated toggles, and
+  re-hide immediately when protection is turned back on.
+- Cache the sync flag instead of reading storage on every change.
+
 ## 3.4.0
 
 - Recolored the whole UI and icon to match the carbonstealth.eu brand palette:

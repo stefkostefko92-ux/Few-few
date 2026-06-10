@@ -113,9 +113,14 @@ async function pullFromSync() {
   } catch (e) {}
 }
 
+// Cache the sync flag so we don't hit storage on every change (the stats
+// counter writes once a second).
+let syncOn = false;
+chrome.storage.local.get("sync", (d) => (syncOn = !!d.sync));
+
 chrome.storage.onChanged.addListener(async (changes, area) => {
-  const { sync } = await chrome.storage.local.get("sync");
-  if (!sync) return;
+  if (area === "local" && changes.sync) syncOn = !!changes.sync.newValue;
+  if (!syncOn) return;
 
   if (area === "local") {
     const patch = {};

@@ -133,11 +133,16 @@
     document.documentElement.classList.add("tbab-cookies");
     dismiss(true);
 
-    // Light passes on DOM changes (no shadow walk — keeps it cheap).
-    new MutationObserver(() => dismiss(false)).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
+    // Light passes on DOM changes, throttled so busy pages stay smooth.
+    let queued = false;
+    new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      setTimeout(() => {
+        queued = false;
+        dismiss(false);
+      }, 400);
+    }).observe(document.documentElement, { childList: true, subtree: true });
 
     // A few deeper passes catch shadow-DOM and late banners.
     let n = 0;
