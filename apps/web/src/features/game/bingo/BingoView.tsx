@@ -22,7 +22,7 @@ export function BingoView({ title }: { title: string }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BingoState, BingoAction>("BINGO");
-  const { state, legal, seat, phase, result } = m;
+  const { state, legal, seat, phase, result, send } = m;
 
   const canDraw = legal.some((a) => a.type === "DRAW");
   const drawnSet = new Set(state?.drawn ?? []);
@@ -34,11 +34,11 @@ export function BingoView({ title }: { title: string }) {
     if (canDraw && state) {
       const id = setTimeout(() => {
         playCue("flip");
-        m.send({ type: "DRAW" });
+        send({ type: "DRAW" });
       }, 1100);
       return () => clearTimeout(id);
     }
-  }, [canDraw, state, m]);
+  }, [canDraw, state, send]);
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>

@@ -16,6 +16,7 @@ import {
   Color,
   ConeGeometry,
   DirectionalLight,
+  Euler,
   Group,
   HemisphereLight,
   LatheGeometry,
@@ -65,6 +66,35 @@ const T = 2; // tile pitch
 const H = 5 * T; // board half-size
 const RING_DEPTH = T * 1.7;
 const SCENE_RATIO = 0.66;
+const HOP_MS = 145; // per-tile token hop
+const HOP_H = 0.7; // hop arc height
+const DICE_MS = 760; // dice tumble
+const POP_MS = 340; // house build pop-in
+const TOKEN_Y = 0.5;
+
+const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+const easeOutBack = (t: number) => 1 + 2.7 * (t - 1) ** 3 + 1.7 * (t - 1) ** 2;
+
+/** Cube rotation that puts dice value `v` face-up (face layout: +X1 -X6 +Y2 -Y5 +Z3 -Z4). */
+function faceUp(v: number): Euler {
+  switch (v) {
+    case 1: return new Euler(0, 0, Math.PI / 2);
+    case 6: return new Euler(0, 0, -Math.PI / 2);
+    case 2: return new Euler(0, 0, 0);
+    case 5: return new Euler(Math.PI, 0, 0);
+    case 3: return new Euler(-Math.PI / 2, 0, 0);
+    default: return new Euler(Math.PI / 2, 0, 0); // 4
+  }
+}
+
+/** Forward tile path from `from` to `to` around the ring; a single hop for teleports. */
+function ringPath(from: number, to: number): number[] {
+  const fwd = (to - from + BOARD_SIZE) % BOARD_SIZE;
+  if (fwd === 0 || fwd > 13) return [to]; // same tile or a jump (jail / advance to GO)
+  const out: number[] = [];
+  for (let s = 1; s <= fwd; s++) out.push((from + s) % BOARD_SIZE);
+  return out;
+}
 
 interface TilePlacement {
   x: number;
@@ -290,6 +320,13 @@ export class MagnatScene {
   private maxAniso = 1;
   private tokens: Group[] = [];
   private tokenTarget: Vector3[] = [];
+  private prevPos: number[] = [];
+  private walks: ({ pts: Vector3[]; from: Vector3; seg: number; t: number } | null)[] = [];
+  private prevDice = "";
+  private diceAnim: { start: number; from: [Euler, Euler]; to: [Euler, Euler] } | null = null;
+  private housePops: { g: Group; born: number }[] = [];
+  private lastFrame = 0;
+  private reduceMotion = false;
   private houseGroups: (Group | null)[] = new Array(BOARD_SIZE).fill(null);
   private houseCount: number[] = new Array(BOARD_SIZE).fill(-1);
   private ownerStuds: (Mesh | null)[] = new Array(BOARD_SIZE).fill(null);
@@ -307,6 +344,7 @@ export class MagnatScene {
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
     this.maxAniso = this.renderer.capabilities.getMaxAnisotropy();
+    this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
     // opaque felt background (post-processing doesn't carry CSS transparency)
     this.scene.background = new Color("#0e2c1c");
@@ -463,19 +501,31 @@ export class MagnatScene {
       this.scene.add(g);
       this.tokens.push(g);
       this.tokenTarget.push(new Vector3());
+      this.walks.push(null);
     }
 
     this.tokens.forEach((g, seat) => {
       g.visible = seat < seats;
       if (seat >= seats) return;
-      const target = this.tokenPos(state.pos[seat]!, seat, seats);
+      const pos = state.pos[seat]!;
+      const target = this.tokenPos(pos, seat, seats);
       this.tokenTarget[seat] = target;
       g.scale.setScalar(state.bankrupt[seat] ? 0.45 : 1);
       const mat = (g.children[0] as Mesh).material as MeshStandardMaterial;
       const active = seat === state.turn && !state.done;
-      mat.emissive = new Color(active ? PLAYER_COLORS[seat % PLAYER_COLORS.length] : "#000000");
-      mat.emissiveIntensity = active ? 0.35 : 0;
-      if (g.position.lengthSq() === 0) g.position.copy(target);
+      mat.emissive.set(active ? (PLAYER_COLORS[seat % PLAYER_COLORS.length] as string) : "#000000");
+      mat.emissiveIntensity = active ? 0.4 : 0;
+
+      const prev = this.prevPos[seat];
+      if (prev === undefined || g.position.lengthSq() === 0 || this.reduceMotion) {
+        g.position.copy(target); // first placement / reduced-motion → snap
+        this.walks[seat] = null;
+      } else if (prev !== pos) {
+        // walk tile-by-tile from the current tile to the new one
+        const pts = ringPath(prev, pos).map((idx) => this.tokenPos(idx, seat, seats));
+        this.walks[seat] = { pts, from: g.position.clone(), seg: 0, t: 0 };
+      }
+      this.prevPos[seat] = pos;
     });
 
     for (let i = 0; i < BOARD_SIZE; i++) {
@@ -508,6 +558,21 @@ export class MagnatScene {
 
     this.syncDice(state.dice);
     this.startAnim();
+  }
+
+  /** Spin both dice and settle them on the rolled values. */
+  private rollDice(values: [number, number]): void {
+    const to: [Euler, Euler] = [faceUp(values[0]), faceUp(values[1])];
+    if (this.reduceMotion || this.dice.length < 2) {
+      this.dice.forEach((d, n) => d.rotation.copy(to[n]!));
+      this.diceAnim = null;
+      return;
+    }
+    this.diceAnim = {
+      start: performance.now(),
+      from: [this.dice[0]!.rotation.clone(), this.dice[1]!.rotation.clone()],
+      to,
+    };
   }
 
   private syncHouses(i: number, count: number): void {
@@ -543,11 +608,17 @@ export class MagnatScene {
     g.position.set(p.x, 0, p.z);
     this.scene.add(g);
     this.houseGroups[i] = g;
+    if (!this.reduceMotion) {
+      g.scale.setScalar(0.01); // pop in
+      this.housePops.push({ g, born: performance.now() });
+    }
   }
 
   private syncDice(dice: [number, number] | null): void {
     if (!dice) {
       this.dice.forEach((d) => (d.visible = false));
+      this.prevDice = "";
+      this.diceAnim = null;
       return;
     }
     if (this.dice.length === 0) {
@@ -556,14 +627,18 @@ export class MagnatScene {
       for (let n = 0; n < 2; n++) {
         const mats = order.map((f) => new MeshStandardMaterial({ map: faces[f], roughness: 0.45, metalness: 0.05 }));
         const die = new Mesh(new BoxGeometry(1.1, 1.1, 1.1), mats);
-        die.position.set(n === 0 ? -1.5 : 1.5, 1.2, 2.6);
-        die.rotation.set(0.5, 0.3, 0.1);
+        die.position.set(n === 0 ? -1.5 : 1.5, 0.55, 2.6);
         die.castShadow = true;
         this.scene.add(die);
         this.dice.push(die);
       }
     }
     this.dice.forEach((d) => (d.visible = true));
+    const key = dice.join(",");
+    if (key !== this.prevDice) {
+      this.prevDice = key;
+      this.rollDice(dice);
+    }
   }
 
   /** Apply an equipped board-felt cosmetic (ESTATE) — recolours base + bg. */
@@ -587,18 +662,83 @@ export class MagnatScene {
   private startAnim(): void {
     if (this.animating) return;
     this.animating = true;
+    this.lastFrame = performance.now();
     const step = () => {
-      let moving = false;
+      const now = performance.now();
+      const dt = Math.min(now - this.lastFrame, 50);
+      this.lastFrame = now;
+      let busy = false;
+
+      // tokens: hop tile-by-tile along their walk path
       this.tokens.forEach((g, seat) => {
-        const target = this.tokenTarget[seat];
-        if (!target) return;
-        if (g.position.distanceToSquared(target) > 0.0004) {
-          g.position.lerp(target, 0.16);
-          moving = true;
-        } else g.position.copy(target);
+        const w = this.walks[seat];
+        if (!w) {
+          const target = this.tokenTarget[seat];
+          if (target && g.position.distanceToSquared(target) > 1e-5) {
+            g.position.lerp(target, 0.2);
+            busy = true;
+          }
+          return;
+        }
+        busy = true;
+        w.t += dt / HOP_MS;
+        while (w.t >= 1 && w.seg < w.pts.length - 1) {
+          w.seg += 1;
+          w.t -= 1;
+        }
+        const to = w.pts[w.seg]!;
+        const from = w.seg === 0 ? w.from : w.pts[w.seg - 1]!;
+        if (w.seg >= w.pts.length - 1 && w.t >= 1) {
+          g.position.copy(to);
+          this.walks[seat] = null;
+        } else {
+          const tt = Math.min(w.t, 1);
+          g.position.lerpVectors(from, to, easeInOut(tt));
+          g.position.y = TOKEN_Y + Math.sin(Math.PI * tt) * HOP_H; // arc
+        }
       });
+
+      // dice: fast tumble, then settle on the rolled faces
+      if (this.diceAnim) {
+        const t = (now - this.diceAnim.start) / DICE_MS;
+        if (t >= 1) {
+          this.dice.forEach((d, n) => d.rotation.copy(this.diceAnim!.to[n]!));
+          this.diceAnim = null;
+        } else {
+          busy = true;
+          const spin = t < 0.7;
+          this.dice.forEach((d, n) => {
+            if (spin) {
+              d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
+              d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
+            } else {
+              const k = 0.25; // ease toward the resting face
+              const to = this.diceAnim!.to[n]!;
+              d.rotation.x += (to.x - d.rotation.x) * k;
+              d.rotation.y += (to.y - d.rotation.y) * k;
+              d.rotation.z += (to.z - d.rotation.z) * k;
+            }
+            d.position.y = 0.55 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.5 * (1 - t); // bounce
+          });
+        }
+      }
+
+      // houses: pop in with an overshoot
+      if (this.housePops.length > 0) {
+        busy = true;
+        this.housePops = this.housePops.filter((p) => {
+          const t = (now - p.born) / POP_MS;
+          if (t >= 1) {
+            p.g.scale.setScalar(1);
+            return false;
+          }
+          p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
+          return true;
+        });
+      }
+
       this.renderOnce();
-      if (moving) this.raf = requestAnimationFrame(step);
+      if (busy) this.raf = requestAnimationFrame(step);
       else this.animating = false;
     };
     this.raf = requestAnimationFrame(step);

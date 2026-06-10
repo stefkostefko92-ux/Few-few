@@ -27,6 +27,11 @@ const chatSendSchema = z.object({ matchId: z.string(), text: z.string().min(1).m
 const inviteSendSchema = z.object({ toUserId: z.string().min(1).max(64), game: z.string() });
 const inviteAcceptSchema = z.object({ fromUserId: z.string().min(1).max(64), game: z.string() });
 
+// Last-resort guards: a stray async error must not take down a node holding
+// live matches (the reduce/bot paths are fire-and-forget).
+process.on("unhandledRejection", (reason) => logger.error({ reason }, "unhandledRejection"));
+process.on("uncaughtException", (err) => logger.error({ err }, "uncaughtException"));
+
 const userRoom = (userId: string): string => `u:${userId}`;
 const presenceKey = (userId: string): string => `presence:online:${userId}`;
 

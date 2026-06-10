@@ -237,7 +237,16 @@ export class GameRoom {
   }
 
   private applyReduce(action: unknown): void {
-    const { state, events } = this.engine.reduce(this.state, action, this.rng);
+    let result: { state: unknown; events: unknown };
+    try {
+      result = this.engine.reduce(this.state, action, this.rng);
+    } catch (err) {
+      // An illegal/stale action must never crash the node (it would kill every
+      // live match here). Log and ignore — the authoritative state is unchanged.
+      logger.warn({ err, matchId: this.matchId }, "engine.reduce threw; ignoring action");
+      return;
+    }
+    const { state, events } = result;
     this.state = state;
     for (const s of this.seats) {
       if (s.userId) {
@@ -268,14 +277,15 @@ export class GameRoom {
       while (!this.done && !this.engine.isTerminal(this.state)) {
         const seat = this.currentSeat();
         if (!seat || !seat.isBot || !seat.bot) break;
-        const action = seat.bot.pick(this.engine, this.state, seat.seat);
-        if (action === null) break;
         // Small delay so the client can animate the bot's move naturally.
         await new Promise((r) => setTimeout(r, 350));
-        if (this.done) break;
-        // Re-validate after the await: only apply if it's still this bot's turn.
+        if (this.done || this.engine.isTerminal(this.state)) break;
+        // Recompute against the CURRENT state after the await (it may have moved
+        // on, e.g. a turn timeout), and only act if it's still this bot's turn.
         const now = this.currentSeat();
-        if (!now || now.seat !== seat.seat) continue;
+        if (!now || !now.isBot || !now.bot || now.seat !== seat.seat) continue;
+        const action = now.bot.pick(this.engine, this.state, now.seat);
+        if (action === null) break;
         this.applyReduce(action);
       }
     } finally {

@@ -6,7 +6,7 @@ import { ApiError, api, type CosmeticView } from "../../lib/api";
 import { useAuthStore, useCosmeticsModal, useCosmeticsStore, useStoreModal } from "../../lib/store";
 import { GAME_CATALOG } from "../lobby/games";
 
-const TYPE_ORDER: CosmeticType[] = ["FELT", "CARDBACK", "BOARD"];
+const TYPE_ORDER: CosmeticType[] = ["FELT", "CARDBACK", "BOARD", "CUE", "ESTATE"];
 
 /** Per-game cosmetics shop. Buys with gems; equips instantly. Opened from the
  *  lobby tile or in-match via `useCosmeticsModal`. */

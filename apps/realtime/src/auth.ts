@@ -11,7 +11,15 @@ function parseCookies(header: string | undefined): Record<string, string> {
     if (idx < 0) continue;
     const k = part.slice(0, idx).trim();
     const v = part.slice(idx + 1).trim();
-    if (k) out[k] = decodeURIComponent(v);
+    // A stray "%" makes decodeURIComponent throw URIError — never let a
+    // malformed cookie crash the handshake; fall back to the raw value.
+    if (k) {
+      try {
+        out[k] = decodeURIComponent(v);
+      } catch {
+        out[k] = v;
+      }
+    }
   }
   return out;
 }

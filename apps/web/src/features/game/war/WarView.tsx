@@ -22,7 +22,7 @@ export function WarView({ title }: { title: string }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<WarState, WarAction>("WAR");
-  const { state, legal, seat, phase, result, players } = m;
+  const { state, legal, seat, phase, result, players, send } = m;
 
   const opp = seat === 0 ? 1 : 0;
   const canFlip = legal.some((a) => a.type === "FLIP");
@@ -35,11 +35,11 @@ export function WarView({ title }: { title: string }) {
     if (canFlip && state && !state.done) {
       const id = setTimeout(() => {
         playCue(pileLen > 2 ? "loss" : "flip");
-        m.send({ type: "FLIP" });
+        send({ type: "FLIP" });
       }, 900);
       return () => clearTimeout(id);
     }
-  }, [canFlip, state, pileLen, m]);
+  }, [canFlip, state, pileLen, send]);
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>

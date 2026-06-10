@@ -261,7 +261,9 @@
     "type": {
       "FELT": "Table felt",
       "CARDBACK": "Card back",
-      "BOARD": "Board"
+      "BOARD": "Board",
+      "CUE": "Cue cloth",
+      "ESTATE": "Board felt"
     }
   },
   "outOfChips": {

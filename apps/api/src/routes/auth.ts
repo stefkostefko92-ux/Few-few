@@ -282,7 +282,7 @@ authRouter.get(
 );
 
 /** Find or create the local user for a federated profile, linking by email. */
-async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthProfile) {
+async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthProfile, retry = true) {
   const existingLink = await prisma.oAuthAccount.findUnique({
     where: {
       provider_providerAccountId: { provider, providerAccountId: profile.providerAccountId },
@@ -295,27 +295,36 @@ async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthProfile) 
   // matching local account; otherwise we cannot safely create one.
   if (!profile.email) return null;
 
-  const byEmail = await prisma.user.findUnique({ where: { email: profile.email } });
-  if (byEmail) {
-    await prisma.oAuthAccount.create({
-      data: { userId: byEmail.id, provider, providerAccountId: profile.providerAccountId },
-    });
-    // A verified federated email upgrades an unverified local account.
-    if (profile.emailVerified && !byEmail.emailVerified) {
-      return prisma.user.update({ where: { id: byEmail.id }, data: { emailVerified: true } });
+  try {
+    const byEmail = await prisma.user.findUnique({ where: { email: profile.email } });
+    if (byEmail) {
+      await prisma.oAuthAccount.create({
+        data: { userId: byEmail.id, provider, providerAccountId: profile.providerAccountId },
+      });
+      // A verified federated email upgrades an unverified local account.
+      if (profile.emailVerified && !byEmail.emailVerified) {
+        return prisma.user.update({ where: { id: byEmail.id }, data: { emailVerified: true } });
+      }
+      return byEmail;
     }
-    return byEmail;
-  }
 
-  return prisma.user.create({
-    data: {
-      email: profile.email,
-      passwordHash: null,
-      emailVerified: profile.emailVerified,
-      displayName: profile.displayName.slice(0, 32),
-      oauth: { create: { provider, providerAccountId: profile.providerAccountId } },
-    },
-  });
+    return await prisma.user.create({
+      data: {
+        email: profile.email,
+        passwordHash: null,
+        emailVerified: profile.emailVerified,
+        displayName: profile.displayName.slice(0, 32),
+        oauth: { create: { provider, providerAccountId: profile.providerAccountId } },
+      },
+    });
+  } catch (err) {
+    // Concurrent first login for the same email/link → unique violation. The
+    // other request won the race; re-resolve once to pick up its row.
+    if (retry && (err as { code?: string }).code === "P2002") {
+      return resolveOAuthUser(provider, profile, false);
+    }
+    throw err;
+  }
 }
 
 /** GET /api/auth/oauth/:provider/callback — exchange the code and sign in. */

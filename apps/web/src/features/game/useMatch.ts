@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   SOCKET_EVENTS,
   type GameKey,
@@ -105,9 +105,14 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     };
   }, [gameKey]);
 
-  const send = (action: A) => {
-    if (matchId) getSocket().emit(SOCKET_EVENTS.GAME_ACTION, { matchId, action });
-  };
+  // Stable across renders (changes only with matchId) so effects that auto-act
+  // (War/Bingo timers) can safely depend on it without restarting each render.
+  const send = useCallback(
+    (action: A) => {
+      if (matchId) getSocket().emit(SOCKET_EVENTS.GAME_ACTION, { matchId, action });
+    },
+    [matchId],
+  );
 
   return { phase, matchId, seat, players, state, legal, turn, terminal, result, send };
 }

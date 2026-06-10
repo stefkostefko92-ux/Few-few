@@ -6,6 +6,10 @@ import { redis } from "./redis.js";
 import { seedProducts } from "./economy/seed.js";
 import { initSentry } from "./integrations/sentry.js";
 
+// Last-resort guards: a stray async error must not silently kill the process.
+process.on("unhandledRejection", (reason) => logger.error({ reason }, "unhandledRejection"));
+process.on("uncaughtException", (err) => logger.error({ err }, "uncaughtException"));
+
 async function main(): Promise<void> {
   initSentry();
   const app = createApp();

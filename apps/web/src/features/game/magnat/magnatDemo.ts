@@ -49,6 +49,21 @@ function sampleState(): MagnatState {
 }
 
 const scene = new MagnatScene(document.getElementById("c") as HTMLCanvasElement, 720);
-scene.setState(sampleState());
+const s0 = sampleState();
+scene.setState(s0);
+
+// Expose a "make a move" hook so the screenshot driver can capture the token
+// walk + dice tumble mid-flight.
+(window as unknown as { __advance?: () => void }).__advance = () => {
+  const s1: MagnatState = {
+    ...s0,
+    pos: [(s0.pos[0]! + 6) % 40, s0.pos[1]!, s0.pos[2]!, s0.pos[3]!],
+    dice: [5, 4],
+    turn: 0,
+    houses: s0.houses.map((h, i) => (i === 13 ? 1 : h)), // a fresh build to pop in
+  };
+  scene.setState(s1);
+};
+
 // give the token glide a moment, then flag ready for the screenshot driver.
-setTimeout(() => ((window as unknown as { __magnatReady?: boolean }).__magnatReady = true), 400);
+setTimeout(() => ((window as unknown as { __magnatReady?: boolean }).__magnatReady = true), 1000);

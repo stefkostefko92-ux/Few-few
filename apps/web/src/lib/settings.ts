@@ -44,6 +44,13 @@ function persist(s: { muted: boolean; reducedMotion: boolean }): void {
 
 const initial = load();
 
+// Apply the stored/OS preference to the DOM immediately so the CSS gate
+// (`:root[data-reduced-motion="true"]`) is correct on first paint, not just
+// after a manual toggle.
+if (typeof document !== "undefined") {
+  document.documentElement.dataset.reducedMotion = initial.reducedMotion ? "true" : "false";
+}
+
 export const useSettings = create<SettingsState>((set, get) => ({
   muted: initial.muted,
   reducedMotion: initial.reducedMotion,

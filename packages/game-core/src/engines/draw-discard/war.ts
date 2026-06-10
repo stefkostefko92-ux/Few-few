@@ -6,7 +6,7 @@ import {
   type SeatScore,
 } from "../../kernel/contract.js";
 import type { SeededRng } from "../../kernel/rng.js";
-import { buildDeck, RANK_VALUE, RANKS_52, rankOf, type Card } from "../cards.js";
+import { buildDeck, hiddenLike, RANK_VALUE, RANKS_52, rankOf, type Card } from "../cards.js";
 
 /**
  * Война (War) — 2p luck game (§4.4). Each FLIP both players reveal their top
@@ -106,8 +106,15 @@ export const warEngine: GameEngine<WarState, WarAction, WarEvent> = {
     ];
   },
 
-  // No hidden info beyond face-down piles, which are not revealed to anyone.
-  redact: (s) => s,
+  // The decks and the buried pile are face-down — never ship their ident/ order
+  // to clients (War is fully determined by the shuffle, so leaking a deck leaks
+  // the whole result). Only the revealed `table` cards are public; counts are
+  // preserved so clients can show remaining-card tallies.
+  redact: (s) => ({
+    ...s,
+    hands: [hiddenLike(s.hands[0]!), hiddenLike(s.hands[1]!)],
+    pile: hiddenLike(s.pile),
+  }),
 };
 
 function settle(
