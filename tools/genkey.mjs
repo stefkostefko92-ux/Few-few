@@ -21,9 +21,10 @@ import crypto from 'node:crypto';
 const LICENSE_SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
 const LICENSE_PREFIX = 'TZ1';
 
-const days = Number(process.argv[2] || 31);
+const arg = process.argv[2] || '31';
+const days = arg === 'lifetime' ? 365000 : Number(arg);
 if (!Number.isFinite(days) || days <= 0) {
-  console.error('Usage: node tools/genkey.mjs [days>0]');
+  console.error('Usage: node tools/genkey.mjs [days>0 | lifetime]');
   process.exit(1);
 }
 
