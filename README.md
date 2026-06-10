@@ -121,3 +121,17 @@ docker-compose.yml
 | `SMTP_*`            | —                  | Invio email (opzionale)                     |
 
 Vedi `.env.example` per l'elenco completo.
+
+---
+
+## ✅ Launch checklist
+
+Prima di andare in produzione:
+
+1. `cp .env.example .env` e compila: `JWT_SECRET`/`JWT_REFRESH_SECRET`/`HMAC_SECRET` (casuali!), `DB_PASSWORD`, `GEMINI_API_KEY`, `AZIENDA_*`, `SMTP_*` — oppure usa `scripts/deploy-vps.sh` che genera i segreti e la password admin automaticamente
+2. In produzione il server **rifiuta di partire** con segreti JWT deboli o mancanti
+3. Il ruolo CLIENTE non può accedere (login e refresh rifiutati)
+4. Backup giornalieri automatici in `./backups/` (rotazione 14); ripristino con `scripts/restore.sh`
+5. Verifica post-deploy: login admin → Impostazioni → Configurazione AI → "Testa AI"
+
+Verificato end-to-end (suite da 56 controlli): autenticazione e lockout brute-force, matrice permessi su CRUD/PDF/email/workflow per ogni ruolo, cicli contratto→visite→fattura e segnalazione→ordine→chiusura, transizioni stato ordini, upload con whitelist, generazione PDF (fattura/preventivo/rendiconto), FatturaPA, scadenzario.

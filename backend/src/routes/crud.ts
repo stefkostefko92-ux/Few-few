@@ -250,8 +250,15 @@ export function createVociRouter(parentModel: string, vociModel: string, parentI
   const parentExists = async (parentId: string) =>
     !!(await (prisma as any)[parentModel].findUnique({ where: { id: parentId }, select: { id: true } }));
 
+  const checkVociView = (req: any, res: any, next: any) => {
+    if (!can(req.user?.ruolo, parentPermModule, 'view')) {
+      return res.status(403).json({ error: `Il tuo ruolo non può vedere ${parentPermModule}` });
+    }
+    next();
+  };
+
   // GET /:parentId/voci
-  router.get('/:parentId/voci', authenticate, async (req: any, res: any) => {
+  router.get('/:parentId/voci', authenticate, checkVociView, async (req: any, res: any) => {
     try {
       const voci = await prismaVoci.findMany({
         where: { [parentIdField]: req.params.parentId },

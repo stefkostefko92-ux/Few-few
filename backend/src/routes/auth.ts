@@ -125,6 +125,10 @@ router.post('/refresh', async (req: Request, res: Response) => {
     const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
+    if (user && user.ruolo === 'CLIENTE') {
+      res.status(403).json({ error: 'Accesso riservato al personale aziendale' });
+      return;
+    }
     if (!user || user.refreshToken !== refreshToken || !user.attivo) {
       res.status(401).json({ error: 'Refresh token non valido' });
       return;

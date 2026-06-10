@@ -102,6 +102,9 @@ const api = {
     localStorage.removeItem("erp_token");
     localStorage.removeItem("erp_refresh");
     localStorage.removeItem("erp_user");
+    localStorage.removeItem("erp_permissions");
+    localStorage.removeItem("erp_role_preview");
+    if (typeof PERM_DATA !== "undefined") PERM_DATA = null;
   },
   async fetch(endpoint, opts = {}) {
     const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
@@ -356,7 +359,8 @@ const RelationSelect = ({ label, endpoint, labelFn, value, onChange, disabled })
   const [options, setOptions] = useState([]);
   useEffect(() => {
     let alive = true;
-    api.get(`${endpoint}?limit=100`).then(r => { if (alive) setOptions(r?.data || []); }).catch(() => {});
+    const sep = endpoint.includes("?") ? "&" : "?";
+    api.get(`${endpoint}${sep}limit=100`).then(r => { if (alive) setOptions(r?.data || []); }).catch(() => {});
     return () => { alive = false; };
   }, [endpoint]);
   return (
@@ -403,7 +407,7 @@ const può = (module, action = "view") => {
   const ruolo = currentRole();
   const m = PERM_DATA?.matrice?.[ruolo]?.[module];
   if (m) return !!m[action];
-  return hasRole("ADMIN"); // matrice non ancora caricata: prudente
+  return true; // matrice non ancora caricata: il backend applica comunque i permessi reali
 };
 // modulo canonico da un endpoint API ("/fatture?tipo=EMESSA" → "fatture")
 const moduloDi = (endpoint) => (endpoint || "").replace(/^\//, "").split("?")[0];
@@ -860,7 +864,6 @@ const CrudModulePage = ({ title, subtitle, store, apiEndpoint, columns, formFiel
             <Btn variant="secondary" onClick={() => setModalMode(null)}>Chiudi</Btn>
             {puòModificare && <Btn variant="primary" icon={Edit} onClick={() => setModalMode("edit")}>Modifica</Btn>}
             {puòEliminare && <Btn variant="danger" icon={Trash2} onClick={() => { setDeleteConfirm(selectedId); setModalMode(null); }}>Elimina</Btn>}
-            {!puòModificare && <span />}
           </div>
         )}
       </Modal>
@@ -2530,6 +2533,7 @@ const BuonoLavoroPage = () => {
 
   const filtered = data.filter(row => !search || Object.values(row).some(v => typeof v === "string" && v.toLowerCase().includes(search.toLowerCase())));
 
+  const puòModificareBuono = può("buoni-lavoro", "edit");
   const openCreate = () => { const e = {}; BUONO_FIELDS.forEach(f => { e[f.key] = f.default ?? ""; }); setFormData(e); setSelectedId(null); setModalMode("create"); };
   const openEdit = (r) => { setFormData({ ...r }); setSelectedId(r.id); setModalMode("edit"); };
   const handleSave = async () => {
@@ -2565,7 +2569,7 @@ const BuonoLavoroPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full"><thead><tr className="border-b border-zinc-800">{[...BUONO_COLS, actionCol].map(c => <th key={c.key} className="text-left px-4 py-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">{c.label}</th>)}</tr></thead>
           <tbody>{filtered.map(row => (
-            <tr key={row.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group cursor-pointer" onDoubleClick={() => puòModificare ? openEdit(row) : openView(row)}>
+            <tr key={row.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group cursor-pointer" onDoubleClick={() => puòModificareBuono && openEdit(row)}>
               {[...BUONO_COLS, actionCol].map(c => <td key={c.key} className="px-4 py-3 text-sm text-zinc-300">{c.render ? c.render(row) : row[c.key]}</td>)}
             </tr>
           ))}{filtered.length === 0 && <tr><td colSpan={BUONO_COLS.length + 1} className="text-center py-10 text-zinc-600">Nessun buono</td></tr>}</tbody></table>
