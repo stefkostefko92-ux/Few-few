@@ -50,15 +50,19 @@
   async function rpc(method, params) {
     const res = await Bridge.callXmlRpc(method, params);
     const doc = parse(res.xml);
-    // XML-RPC faults (e.g. expired/invalid session) come back HTTP 200 with a
-    // <fault> body. Surface them so the engine can react / reconnect instead of
-    // silently treating the session as "0 gold, nothing to do".
-    if (doc.querySelector('methodResponse > fault') || doc.getElementsByTagName('fault')[0]) {
+    // XML-RPC faults come back HTTP 200 with a <fault> body. Only treat genuine
+    // session/auth faults as a lost session (-> auto-login). Ordinary faults
+    // (not enough gold, on cooldown, daily limit, invalid action, …) become a
+    // plain FAULT error the caller/module handles or that counts toward the
+    // error-stop — never a wrongful page reload or an infinite transient retry.
+    const fault = doc.querySelector('methodResponse > fault');
+    if (fault) {
       const faultStr = findValue(doc, 'faultString', 'string') || '';
-      if (/session|login|auth|expired|sid/i.test(faultStr) || true) {
+      if (/session|not logged|logged out|auth|expired|invalid sid|\bsid\b/i.test(faultStr)) {
         State.patch({ loggedIn: false, sessionLost: Date.now() });
+        throw new Error('SESSION_EXPIRED:' + faultStr);
       }
-      throw new Error('SESSION_EXPIRED:' + (faultStr || method));
+      throw new Error('FAULT:' + (faultStr || method));
     }
     return doc;
   }

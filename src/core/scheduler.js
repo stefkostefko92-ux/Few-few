@@ -20,6 +20,7 @@
   const registered = [];     // {id, priority, tick}
   let running = false;
   let paused = false;
+  let pausedByWindow = false;   // true only when paused by the active-hours window
   let loopHandle = null;
   let consecutiveErrors = 0;
   let onBreakUntil = 0;
@@ -71,6 +72,7 @@
       }
       running = true;
       paused = false;
+      pausedByWindow = false;
       consecutiveErrors = 0;
       scheduleNextBreak();
       Logger.success(I18n.t('logEngineStarted'));
@@ -101,17 +103,17 @@
       if (typeof ts === 'number' && ts > Date.now()) wakeAt = wakeAt ? Math.min(wakeAt, ts) : ts;
     },
 
-    pause() { paused = true; Logger.info(I18n.t('logEnginePaused')); emitStatus(); },
-    resume() { if (paused) { paused = false; Logger.info(I18n.t('logEngineResumed')); emitStatus(); loop(); } },
+    pause() { paused = true; pausedByWindow = false; Logger.info(I18n.t('logEnginePaused')); emitStatus(); },
+    resume() { if (paused) { paused = false; pausedByWindow = false; Logger.info(I18n.t('logEngineResumed')); emitStatus(); loop(); } },
 
-    // Called by the service-worker heartbeat to re-evaluate time windows.
+    // Called by the service-worker heartbeat to re-evaluate the active window.
     heartbeat() {
       if (!running) return;
       if (!withinActiveWindow()) {
-        if (!paused) { paused = true; Logger.info(I18n.t('logOutsideWindow')); emitStatus(); }
-      } else if (paused && Date.now() >= onBreakUntil) {
-        // Auto-resume when re-entering the active window (unless on a break).
-        paused = false; emitStatus(); loop();
+        if (!paused) { paused = true; pausedByWindow = true; Logger.info(I18n.t('logOutsideWindow')); emitStatus(); }
+      } else if (paused && pausedByWindow && Date.now() >= onBreakUntil) {
+        // Auto-resume ONLY a window-induced pause — never override a manual pause.
+        paused = false; pausedByWindow = false; emitStatus(); loop();
       }
     }
   };

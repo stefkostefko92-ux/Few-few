@@ -279,22 +279,23 @@ async function getLicenseStatus() {
   // Strict device binding: a stored license must carry THIS device's id.
   const licOnThisDevice = lic && lic.device === device;
 
-  if (licValid && !licOnThisDevice) {
-    // Key was activated on another computer.
-    wrongDevice = true;
-  } else if (licValid) {
+  if (licValid && licOnThisDevice) {
     entitled = true;
     boundDevice = !!lic.device;
     expISO = new Date(lic.exp * 1000).toISOString();
     status = (lic.exp * 1000 - now) > lifetimeMs ? 'lifetime' : 'active';
-  } else if (now < trialEnds) {
+  } else if (licValid) {
+    wrongDevice = true;   // bound elsewhere — note it, but still allow the trial below
+  }
+  // A valid trial entitles regardless of a foreign-bound key.
+  if (!entitled && now < trialEnds) {
     status = 'trial';
     entitled = true;
     expISO = new Date(trialEnds).toISOString();
   }
 
   const ref = status === 'lifetime' || status === 'active' ? lic.exp * 1000 : trialEnds;
-  const daysLeft = status === 'lifetime' ? null : Math.max(0, Math.ceil((ref - now) / 86400000));
+  const daysLeft = status === 'lifetime' ? null : (entitled ? Math.max(0, Math.ceil((ref - now) / 86400000)) : 0);
 
   return { status, entitled, expISO, daysLeft, boundDevice, wrongDevice, payment: PAYMENT_INFO };
 }

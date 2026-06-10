@@ -41,7 +41,6 @@
     circle: {},
 
     // jobs
-    workReturnAt: 0,
     jobs: [],
 
     // dungeon / cave
@@ -73,11 +72,10 @@
       if (!state.maxHealth) return 100;
       return Math.round((state.health / state.maxHealth) * 100);
     },
-    adventureBusy() {
+    // adventureReturnAt is the single shared "busy until" timer for all task
+    // activities (adventure / dungeon / work / map event).
+    busy() {
       return state.adventureReturnAt > Date.now();
-    },
-    workBusy() {
-      return state.workReturnAt > Date.now();
     }
   };
 })();

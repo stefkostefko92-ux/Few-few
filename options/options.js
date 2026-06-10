@@ -178,6 +178,9 @@ function renderChecklist(section, f) {
     const chosen = Array.from(box.querySelectorAll('input:checked')).map((cb) => cb.value);
     settings[section][f.k] = chosen.join(', ');
     settings.circle.mode = chosen.length ? 'manual' : 'auto';
+    // Keep the visible Mode dropdown in sync with the checklist.
+    const modeSel = document.querySelector('[data-field="circle.mode"]');
+    if (modeSel) modeSel.value = settings.circle.mode;
   }
 
   CIRCLE_NODES.forEach((c) => {
@@ -278,13 +281,17 @@ function renderField(section, f) {
     input.addEventListener('change', () => { settings[section][f.k] = input.checked; });
   } else if (f.type === 'select') {
     input = document.createElement('select');
+    input.dataset.field = section + '.' + f.k;
+    const numeric = f.options.every((o) => typeof o === 'number');
     f.options.forEach((opt) => {
       const o = document.createElement('option');
       o.value = opt; o.textContent = optionLabel(opt);
-      if (opt === val) o.selected = true;
+      if (String(opt) === String(val)) o.selected = true;   // coerce: stored value may be a string
       input.appendChild(o);
     });
-    input.addEventListener('change', () => { settings[section][f.k] = input.value; });
+    input.addEventListener('change', () => {
+      settings[section][f.k] = numeric ? Number(input.value) : input.value;
+    });
   } else if (f.type === 'number') {
     input = document.createElement('input');
     input.type = 'number';

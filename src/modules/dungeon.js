@@ -38,9 +38,12 @@
         await Api.startDungeon();
         await Api.miniUpdate();        // picks up a running-task timer if any
         Stats.bump({ dungeonRuns: 1 });
-        // Refresh remaining tries on the next cycle.
+        // Optimistically drop a try and force a fresh GetDungeon next cycle.
         State.patch({ dungeon: Object.assign({}, info, { freeTries: (info.freeTries || 1) - 1 }) });
         lastCheck = 0;
+        // Local cooldown so we never re-fire StartDungeon back-to-back even if
+        // MiniUpdate didn't surface a running-task timer for the dungeon.
+        cooldownUntil = Date.now() + 30000;
         Logger.success(I18n.t('logDungeonDone'));
       };
     }

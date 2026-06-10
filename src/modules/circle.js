@@ -69,7 +69,9 @@
   TB.Circle = { NODES, nodeName, resolveNodes };
 
   function getBestCircleItem(ci) {
-    const g = (i) => (ci[i] ? ci[i][0] : undefined);
+    // Missing/locked node -> level 0 (so comparisons stay numeric, never NaN).
+    const g = (i) => (ci[i] && Number.isFinite(ci[i][0]) ? ci[i][0] : 0);
+    if (!ci[16]) return null;          // no centre node in the response -> nothing to decide
     if (g(16) === 10) return null;
     if (g(8) < (g(16) + 1) * 100) return 8;
     if (g(1) < (g(16) + 1) * 100) return 1;
