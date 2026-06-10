@@ -79,7 +79,12 @@ All of the above ships with an automated test suite — `npm install` then
   spam vs delay, breaks-off, manual-pause, PvP cooldown/bloodstones, dungeon.
 - `tools/api-test.mjs` — runs the **real api.js** against crafted Tanoth XML-RPC
   responses (via linkedom): field parsing, attribute-cost math, circle/​map
-  parsing, and fault handling (session vs ordinary). ~34 checks total.
+  parsing, and fault handling (session vs ordinary). ~36 checks total.
+- `tools/ext-test.mjs` (`npm run test:ext`) — loads the **real unpacked
+  extension into headed Chromium** (Playwright + xvfb) and asserts the MV3
+  service worker registers, the options/popup/stats pages run their JS without
+  uncaught errors and resolve i18n, and the content script mounts the in-game
+  panel on a faked Tanoth page. (Live game flow still needs a real account.)
 
 The licence server can be deployed with Docker+Caddy (auto-HTTPS) or
 systemd+nginx — see `server/DEPLOY.md`.

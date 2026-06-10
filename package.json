@@ -5,9 +5,11 @@
   "type": "module",
   "description": "Tanoth Master Bot — Chrome extension + tooling (tests/dev only; the store package is built by tools/package.sh)",
   "scripts": {
-    "test": "bash tools/test.sh"
+    "test": "bash tools/test.sh",
+    "test:ext": "node tools/ext-test.mjs"
   },
   "devDependencies": {
-    "linkedom": "^0.18.5"
+    "linkedom": "^0.18.5",
+    "playwright": "^1.60.0"
   }
 }

@@ -24,3 +24,17 @@ jobs:
             echo "::error::store zip contains files that must not ship"; exit 1
           fi
           echo "package zip is clean"
+
+  # Loads the real unpacked extension in headed Chromium (xvfb) and checks the
+  # service worker + all pages + content script boot without errors.
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - name: Extension integration test (Chromium + xvfb)
+        run: xvfb-run -a npm run test:ext
