@@ -1505,7 +1505,6 @@ const UsersPage = () => {
             { ruolo: "RESPONSABILE", livello: "L4", desc: "Responsabile di area. Gestisce impianti, ordini lavoro, dipendenti e cottimisti della propria zona.", color: "border-cyan-500/30 bg-cyan-500/5" },
             { ruolo: "TECNICO", livello: "L5", desc: "Operativo sul campo. Vede gli impianti e ordini assegnati, aggiorna stati, carica foto e note tecniche.", color: "border-cyan-500/30 bg-cyan-500/5" },
             { ruolo: "OPERATORE", livello: "L6", desc: "Accesso base. Consultazione dati, inserimento movimenti magazzino e note. Nessuna cancellazione.", color: "border-zinc-500/30 bg-zinc-500/5" },
-            { ruolo: "CLIENTE", livello: "L7", desc: "Accesso esterno. Vede solo i propri impianti, preventivi e fatture. Nessuna modifica ai dati.", color: "border-zinc-600/30 bg-zinc-600/5" },
           ].map(r => (
             <div key={r.ruolo} className={`p-3 rounded-lg border ${r.color} transition-colors`}>
               <div className="flex items-center gap-2 mb-1.5">
@@ -1557,7 +1556,7 @@ const UsersPage = () => {
           <Input label="Email" type="email" value={formData.email || ""} onChange={e => setField("email", e.target.value)} />
           <Input label={modalMode === "edit" ? "Nuova Password (lascia vuoto per non cambiare)" : "Password"} type="password" value={formData.password || ""} onChange={e => setField("password", e.target.value)} placeholder={modalMode === "edit" ? "••••••••" : ""} />
           <Select label="Ruolo" value={formData.ruolo || "OPERATORE"} onChange={e => setField("ruolo", e.target.value)}>
-            {["MASTER", "ADMIN", "DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE", "CLIENTE"].map(r => <option key={r} value={r}>{r} (L{["MASTER", "ADMIN", "DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE", "CLIENTE"].indexOf(r) + 1})</option>)}
+            {["MASTER", "ADMIN", "DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE"].map(r => <option key={r} value={r}>{r} (L{["MASTER", "ADMIN", "DIREZIONE", "RESPONSABILE", "TECNICO", "OPERATORE"].indexOf(r) + 1})</option>)}
           </Select>
           <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800">
             <Btn variant="secondary" onClick={() => setModalMode(null)}>Annulla</Btn>
@@ -2718,7 +2717,7 @@ const ProfiloModal = ({ open, onClose, user, onPreviewChange }) => {
             <select value={inAnteprima ? ruoloVisto : ""} onChange={e => setPreview(e.target.value)}
               className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-zinc-200">
               <option value="">— Il mio ruolo ({ruoloReale}) —</option>
-              {Object.keys(ROLE_LEVELS_FE).filter(r => r !== ruoloReale).map(r => <option key={r} value={r}>{r}</option>)}
+              {Object.keys(ROLE_LEVELS_FE).filter(r => r !== ruoloReale && r !== "CLIENTE").map(r => <option key={r} value={r}>{r}</option>)}
             </select>
             <p className="text-[10px] text-zinc-600 max-w-[220px]">Vedi l'app come la vedrebbe un altro ruolo. Il server applica sempre i permessi reali.</p>
           </div>

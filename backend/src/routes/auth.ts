@@ -44,6 +44,12 @@ router.post('/login', async (req: Request, res: Response) => {
       return;
     }
 
+    // I clienti non hanno accesso alla piattaforma
+    if (user.ruolo === 'CLIENTE') {
+      res.status(403).json({ error: 'Accesso riservato al personale aziendale' });
+      return;
+    }
+
     // Check brute force lock
     if (user.bloccatoFino && user.bloccatoFino > new Date()) {
       const minRimanenti = Math.ceil((user.bloccatoFino.getTime() - Date.now()) / 60000);

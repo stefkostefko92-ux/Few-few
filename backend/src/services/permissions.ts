@@ -5,6 +5,7 @@ import { AuthRequest } from '../middleware/auth';
 // MATRICE PERMESSI — unica fonte di verità per backend E frontend.
 // Livelli: 1=MASTER 2=ADMIN 3=DIREZIONE 4=RESPONSABILE 5=TECNICO 6=OPERATORE 7=CLIENTE
 // Il numero è il livello MASSIMO (più permissivo) che può eseguire l'azione.
+// NB: CLIENTE (7) non ha accesso alla piattaforma: il login lo rifiuta e la matrice non gli concede nulla.
 // ═══════════════════════════════════════════════════════
 
 export const ROLE_LEVELS: Record<string, number> = {
@@ -15,12 +16,12 @@ export interface ModulePerms { view: number; create: number; edit: number; delet
 
 // Chiavi canoniche = endpoint frontend
 export const PERMISSION_MATRIX: Record<string, ModulePerms> = {
-  dashboard:       { view: 7, create: 1, edit: 1, delete: 1 },
-  impianti:        { view: 7, create: 4, edit: 4, delete: 2 },
+  dashboard:       { view: 6, create: 1, edit: 1, delete: 1 },
+  impianti:        { view: 6, create: 4, edit: 4, delete: 2 },
   contratti:       { view: 4, create: 3, edit: 3, delete: 2 },
-  visite:          { view: 7, create: 4, edit: 5, delete: 2 },
-  verifiche:       { view: 7, create: 4, edit: 4, delete: 2 },
-  segnalazioni:    { view: 7, create: 7, edit: 5, delete: 2 },
+  visite:          { view: 6, create: 4, edit: 5, delete: 2 },
+  verifiche:       { view: 6, create: 4, edit: 4, delete: 2 },
+  segnalazioni:    { view: 6, create: 6, edit: 5, delete: 2 },
   condomini:       { view: 5, create: 4, edit: 4, delete: 2 },
   amministratori:  { view: 5, create: 4, edit: 4, delete: 2 },
   dipendenti:      { view: 4, create: 2, edit: 2, delete: 2 },
@@ -60,7 +61,7 @@ export const ROLE_DESCRIPTIONS: Record<string, string> = {
   RESPONSABILE: 'Coordinamento operativo: impianti, visite, ordini, lavori, magazzino, anagrafiche.',
   TECNICO: 'Operatività sul campo: esegue visite e ordini, compila buoni di lavoro, registra movimenti di magazzino e segnalazioni.',
   OPERATORE: 'Consultazione operativa e apertura segnalazioni; usa l\'assistente AI.',
-  CLIENTE: 'Vede i propri impianti, visite e verifiche; può aprire segnalazioni guasti.',
+  CLIENTE: 'Accesso disabilitato: i clienti non accedono alla piattaforma.',
 };
 
 export function moduleForEntity(entityName: string): string {
