@@ -38,6 +38,8 @@ import recipeRoutes from './routes/recipes';
 import auctionRoutes from './routes/auction';
 import mountRoutes from './routes/mount';
 import weeklyRoutes from './routes/weekly';
+import realmBossRoutes from './routes/realmBoss';
+import factionRoutes from './routes/faction';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
 
@@ -173,6 +175,8 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/auction', auctionRoutes);
 app.use('/api/mount', mountRoutes);
 app.use('/api/weekly', weeklyRoutes);
+app.use('/api/realm-boss', realmBossRoutes);
+app.use('/api/faction', factionRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

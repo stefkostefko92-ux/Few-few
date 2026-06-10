@@ -601,4 +601,49 @@ export function applySchema(db: Database.Database): void {
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
   `);
+
+  // Realm Boss — one server-wide boss per ISO week. Every character can
+  // strike it once per cooldown; the boss has a shared HP pool that
+  // ticks down across the whole realm. Whoever lands the kill earns the
+  // lion's share; everyone who landed a hit gets a proportional payout
+  // on settlement (run from realmBoss.ts when the week rolls over).
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS realm_boss (
+      iso_week     TEXT NOT NULL PRIMARY KEY,
+      boss_slug    TEXT NOT NULL,
+      boss_name    TEXT NOT NULL,
+      hp_max       INTEGER NOT NULL,
+      hp_remaining INTEGER NOT NULL,
+      started_at   INTEGER NOT NULL,
+      ends_at      INTEGER NOT NULL,
+      cleared_at   INTEGER NOT NULL DEFAULT 0,
+      kill_blow_character_id INTEGER NOT NULL DEFAULT 0,
+      settled_at   INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS realm_boss_contributions (
+      iso_week     TEXT NOT NULL,
+      character_id INTEGER NOT NULL,
+      damage       INTEGER NOT NULL DEFAULT 0,
+      strikes      INTEGER NOT NULL DEFAULT 0,
+      last_strike_at INTEGER NOT NULL DEFAULT 0,
+      claimed_at   INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (iso_week, character_id),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Faction reputation — three factions earn rep from quest turn-ins and
+  // specific kill counts. Reputation tiers unlock exclusive faction
+  // vendor stock (handled in routes/faction.ts). Single denormalised
+  // row per (character, faction) so the join cost stays at zero.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS character_faction_rep (
+      character_id INTEGER NOT NULL,
+      faction_slug TEXT NOT NULL,
+      rep          INTEGER NOT NULL DEFAULT 0,
+      updated_at   INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (character_id, faction_slug),
+      FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
+    );
+  `);
 }

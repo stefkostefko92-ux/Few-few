@@ -89,66 +89,100 @@ export const MONSTER_SEED = [
   { slug: 'blackspire_pyromancer', name: "Pyromancer Adept", level: 192, hp: 14125, atk_min: 626, atk_max: 991, defense: 235, speed: 4, xp_reward: 357, gold_min: 1536, gold_max: 2688, sprite: 'witch', family: 'magic', region: 'black_spire' },
   { slug: 'blackspire_titan', name: "Demon-Wrought Titan", level: 197, hp: 14530, atk_min: 644, atk_max: 1020, defense: 242, speed: 9, xp_reward: 363, gold_min: 1576, gold_max: 2758, sprite: 'golem', family: 'construct', region: 'black_spire' },
   { slug: 'blackspire_apex_azhtek', name: "Azhtek, the Black Pyrelord", level: 200, hp: 25116, atk_min: 853, atk_max: 1349, defense: 320, speed: 6, xp_reward: 2202, gold_min: 6400, gold_max: 11200, sprite: 'shadowlord', family: 'demon', region: 'black_spire' },
-];
 
+  // ======================================================================
+  // ENDGAME EXPANSION — five fully hand-built divine bands (lv 201-350)
+  // replacing the previous procedural generator. Each band has 11-12
+  // named monsters at fixed levels, two named "Lieutenant" mini-bosses
+  // inside the band (2.5x XP, 2x gold), and one APEX cap-boss with a
+  // unique legendary drop (see hunting.ts -> APEX_DROPS).
+  // ======================================================================
+
+  // ===== Stormpeaks (lv 201-230) — sky-piercing range, storm elementals =====
+  { slug: 'stormpeaks_galestrider', name: "Galestrider", level: 201, hp: 14855, atk_min: 659, atk_max: 1044, defense: 248, speed: 7, xp_reward: 369, gold_min: 1608, gold_max: 2814, sprite: 'orc', family: 'elemental', region: 'stormpeaks' },
+  { slug: 'stormpeaks_thunder_roc', name: "Thunder Roc", level: 204, hp: 15099, atk_min: 671, atk_max: 1062, defense: 252, speed: 4, xp_reward: 372, gold_min: 1632, gold_max: 2856, sprite: 'drake', family: 'beast', region: 'stormpeaks' },
+  { slug: 'stormpeaks_skyglass_knight', name: "Skyglass Knight", level: 207, hp: 15344, atk_min: 682, atk_max: 1080, defense: 256, speed: 7, xp_reward: 376, gold_min: 1656, gold_max: 2898, sprite: 'overlord', family: 'humanoid', region: 'stormpeaks' },
+  { slug: 'stormpeaks_lightning_drake', name: "Lightning Drake", level: 211, hp: 15670, atk_min: 697, atk_max: 1104, defense: 261, speed: 5, xp_reward: 381, gold_min: 1688, gold_max: 2954, sprite: 'drake', family: 'dragon', region: 'stormpeaks' },
+  { slug: 'stormpeaks_cloud_reaver', name: "Cloud Reaver", level: 214, hp: 15915, atk_min: 709, atk_max: 1122, defense: 265, speed: 8, xp_reward: 385, gold_min: 1712, gold_max: 2996, sprite: 'wraith', family: 'aberration', region: 'stormpeaks' },
+  { slug: 'stormpeaks_vorrik', name: "Captain Vorrik the Skybandit", level: 217, hp: 21009, atk_min: 828, atk_max: 1311, defense: 309, speed: 5, xp_reward: 972, gold_min: 3472, gold_max: 6076, sprite: 'bandit', family: 'humanoid', region: 'stormpeaks' },
+  { slug: 'stormpeaks_hierophant', name: "Storm Hierophant", level: 220, hp: 16407, atk_min: 732, atk_max: 1158, defense: 273, speed: 8, xp_reward: 393, gold_min: 1760, gold_max: 3080, sprite: 'witch', family: 'magic', region: 'stormpeaks' },
+  { slug: 'stormpeaks_tempest', name: "Tempest Warden", level: 223, hp: 16653, atk_min: 743, atk_max: 1177, defense: 278, speed: 5, xp_reward: 396, gold_min: 1784, gold_max: 3122, sprite: 'shadowlord', family: 'elemental', region: 'stormpeaks' },
+  { slug: 'stormpeaks_stormcrown', name: "The Stormcrown", level: 225, hp: 21862, atk_min: 864, atk_max: 1367, defense: 322, speed: 7, xp_reward: 998, gold_min: 3600, gold_max: 6300, sprite: 'titan', family: 'giant', region: 'stormpeaks' },
+  { slug: 'stormpeaks_wyrm', name: "Wind-bound Wyrm", level: 227, hp: 16982, atk_min: 758, atk_max: 1201, defense: 283, speed: 9, xp_reward: 401, gold_min: 1816, gold_max: 3178, sprite: 'serpent', family: 'dragon', region: 'stormpeaks' },
+  { slug: 'stormpeaks_cyclone', name: "Cyclone Ascendant", level: 229, hp: 17147, atk_min: 766, atk_max: 1213, defense: 286, speed: 5, xp_reward: 404, gold_min: 1832, gold_max: 3206, sprite: 'shadowlord', family: 'elemental', region: 'stormpeaks' },
+  { slug: 'stormpeaks_apex_karna', name: "Skyfather Karna", level: 230, hp: 29289, atk_min: 1001, atk_max: 1585, defense: 373, speed: 6, xp_reward: 2430, gold_min: 7360, gold_max: 12880, sprite: 'shadowlord', family: 'dragon', region: 'stormpeaks' },
+
+  // ===== Voidshade Hollow (lv 231-260) — crack in reality, void aberrations =====
+  { slug: 'voidshade_walker', name: "Hollow Walker", level: 231, hp: 17311, atk_min: 774, atk_max: 1225, defense: 289, speed: 7, xp_reward: 406, gold_min: 1848, gold_max: 3234, sprite: 'wraith', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_reaver', name: "Void Reaver", level: 234, hp: 17559, atk_min: 785, atk_max: 1244, defense: 293, speed: 4, xp_reward: 410, gold_min: 1872, gold_max: 3276, sprite: 'shadowlord', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_horror', name: "Rift Horror", level: 237, hp: 17807, atk_min: 797, atk_max: 1262, defense: 297, speed: 7, xp_reward: 414, gold_min: 1896, gold_max: 3318, sprite: 'serpent', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_unmade', name: "Echo of the Unmade", level: 240, hp: 18055, atk_min: 809, atk_max: 1280, defense: 301, speed: 4, xp_reward: 417, gold_min: 1920, gold_max: 3360, sprite: 'witch', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_blade_aspect', name: "Bladeshade Aspect", level: 242, hp: 23686, atk_min: 938, atk_max: 1487, defense: 350, speed: 6, xp_reward: 1050, gold_min: 3872, gold_max: 6776, sprite: 'overlord', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_null_serpent', name: "Null Serpent", level: 244, hp: 18386, atk_min: 824, atk_max: 1305, defense: 306, speed: 8, xp_reward: 422, gold_min: 1952, gold_max: 3416, sprite: 'serpent', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_tyrant', name: "Voidshade Tyrant", level: 247, hp: 18635, atk_min: 836, atk_max: 1323, defense: 311, speed: 5, xp_reward: 426, gold_min: 1976, gold_max: 3458, sprite: 'titan', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_aspect', name: "Hollow Aspect", level: 250, hp: 18884, atk_min: 848, atk_max: 1342, defense: 315, speed: 8, xp_reward: 429, gold_min: 2000, gold_max: 3500, sprite: 'shadowlord', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_first_dark', name: "Shade of the First Dark", level: 253, hp: 24873, atk_min: 988, atk_max: 1564, defense: 367, speed: 5, xp_reward: 1082, gold_min: 4048, gold_max: 7084, sprite: 'shadowlord', family: 'demon', region: 'voidshade_hollow' },
+  { slug: 'voidshade_devourer', name: "Hollow Devourer", level: 256, hp: 19383, atk_min: 871, atk_max: 1379, defense: 323, speed: 8, xp_reward: 437, gold_min: 2048, gold_max: 3584, sprite: 'drake', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_silent_aspect', name: "Silent Aspect", level: 258, hp: 19550, atk_min: 879, atk_max: 1391, defense: 326, speed: 4, xp_reward: 439, gold_min: 2064, gold_max: 3612, sprite: 'wraith', family: 'aberration', region: 'voidshade_hollow' },
+  { slug: 'voidshade_apex_caethra', name: "Caethra, the Voidshade Heart", level: 260, hp: 33517, atk_min: 1153, atk_max: 1825, defense: 428, speed: 6, xp_reward: 2646, gold_min: 8320, gold_max: 14560, sprite: 'shadowlord', family: 'aberration', region: 'voidshade_hollow' },
+
+  // ===== Mooncradle (lv 261-290) — floating lunar isles, pale court =====
+  { slug: 'mooncradle_stalker', name: "Lunar Stalker", level: 261, hp: 19800, atk_min: 891, atk_max: 1410, defense: 330, speed: 7, xp_reward: 442, gold_min: 2088, gold_max: 3654, sprite: 'wolf', family: 'beast', region: 'mooncradle' },
+  { slug: 'mooncradle_priest', name: "Tidecaller Priest", level: 264, hp: 20050, atk_min: 902, atk_max: 1429, defense: 334, speed: 4, xp_reward: 446, gold_min: 2112, gold_max: 3696, sprite: 'wraith', family: 'magic', region: 'mooncradle' },
+  { slug: 'mooncradle_silver_wyrm', name: "Silver Wyrm", level: 267, hp: 20301, atk_min: 914, atk_max: 1447, defense: 338, speed: 7, xp_reward: 450, gold_min: 2136, gold_max: 3738, sprite: 'serpent', family: 'dragon', region: 'mooncradle' },
+  { slug: 'mooncradle_sentinel', name: "Cradle Sentinel", level: 271, hp: 20636, atk_min: 930, atk_max: 1472, defense: 344, speed: 5, xp_reward: 454, gold_min: 2168, gold_max: 3794, sprite: 'overlord', family: 'construct', region: 'mooncradle' },
+  { slug: 'mooncradle_pale_seer', name: "Pale Seer of the Cradle", level: 273, hp: 27044, atk_min: 1079, atk_max: 1708, defense: 399, speed: 7, xp_reward: 1142, gold_min: 4368, gold_max: 7644, sprite: 'witch', family: 'magic', region: 'mooncradle' },
+  { slug: 'mooncradle_reaper', name: "Moonglass Reaper", level: 275, hp: 20971, atk_min: 946, atk_max: 1497, defense: 350, speed: 9, xp_reward: 459, gold_min: 2200, gold_max: 3850, sprite: 'shadowlord', family: 'aberration', region: 'mooncradle' },
+  { slug: 'mooncradle_hierophant', name: "Pale Hierophant", level: 279, hp: 21307, atk_min: 962, atk_max: 1522, defense: 355, speed: 7, xp_reward: 464, gold_min: 2232, gold_max: 3906, sprite: 'witch', family: 'magic', region: 'mooncradle' },
+  { slug: 'mooncradle_devourer', name: "Lunar Devourer", level: 283, hp: 21643, atk_min: 977, atk_max: 1548, defense: 361, speed: 5, xp_reward: 468, gold_min: 2264, gold_max: 3962, sprite: 'drake', family: 'aberration', region: 'mooncradle' },
+  { slug: 'mooncradle_archon', name: "Archon of the Pale Court", level: 285, hp: 28356, atk_min: 1133, atk_max: 1794, defense: 419, speed: 7, xp_reward: 1178, gold_min: 4560, gold_max: 7980, sprite: 'overlord', family: 'humanoid', region: 'mooncradle' },
+  { slug: 'mooncradle_sovereign', name: "Mooncradle Sovereign", level: 287, hp: 21980, atk_min: 993, atk_max: 1573, defense: 366, speed: 9, xp_reward: 473, gold_min: 2296, gold_max: 4018, sprite: 'titan', family: 'aberration', region: 'mooncradle' },
+  { slug: 'mooncradle_wyrm_priest', name: "Silver Wyrm-Priest", level: 289, hp: 22149, atk_min: 1001, atk_max: 1585, defense: 369, speed: 5, xp_reward: 475, gold_min: 2312, gold_max: 4046, sprite: 'serpent', family: 'magic', region: 'mooncradle' },
+  { slug: 'mooncradle_apex_selan', name: "Selan, the Pale Empress", level: 290, hp: 37796, atk_min: 1306, atk_max: 2070, defense: 482, speed: 6, xp_reward: 2856, gold_min: 9280, gold_max: 16240, sprite: 'shadowlord', family: 'aberration', region: 'mooncradle' },
+
+  // ===== Worldspine (lv 291-320) — backbone of the world, bone dragons =====
+  { slug: 'worldspine_spinewyrm', name: "Spinewyrm", level: 291, hp: 22317, atk_min: 1009, atk_max: 1598, defense: 372, speed: 7, xp_reward: 477, gold_min: 2328, gold_max: 4074, sprite: 'serpent', family: 'dragon', region: 'worldspine' },
+  { slug: 'worldspine_bone_titan', name: "Bone Titan", level: 294, hp: 22570, atk_min: 1021, atk_max: 1617, defense: 376, speed: 4, xp_reward: 481, gold_min: 2352, gold_max: 4116, sprite: 'titan', family: 'undead', region: 'worldspine' },
+  { slug: 'worldspine_marrow_reaver', name: "Marrow Reaver", level: 297, hp: 22824, atk_min: 1033, atk_max: 1636, defense: 380, speed: 7, xp_reward: 484, gold_min: 2376, gold_max: 4158, sprite: 'wraith', family: 'undead', region: 'worldspine' },
+  { slug: 'worldspine_druid', name: "Worldspine Druid", level: 300, hp: 23078, atk_min: 1045, atk_max: 1655, defense: 385, speed: 4, xp_reward: 488, gold_min: 2400, gold_max: 4200, sprite: 'witch', family: 'magic', region: 'worldspine' },
+  { slug: 'worldspine_marrow_lord', name: "Marrow Lord of the Old Bones", level: 303, hp: 30332, atk_min: 1216, atk_max: 1925, defense: 447, speed: 7, xp_reward: 1228, gold_min: 4848, gold_max: 8484, sprite: 'shadowlord', family: 'undead', region: 'worldspine' },
+  { slug: 'worldspine_colossus', name: "Stoneflesh Colossus", level: 306, hp: 23586, atk_min: 1069, atk_max: 1693, defense: 393, speed: 4, xp_reward: 495, gold_min: 2448, gold_max: 4284, sprite: 'golem', family: 'construct', region: 'worldspine' },
+  { slug: 'worldspine_roost_tyrant', name: "Roost Tyrant", level: 309, hp: 23840, atk_min: 1081, atk_max: 1712, defense: 397, speed: 7, xp_reward: 498, gold_min: 2472, gold_max: 4326, sprite: 'drake', family: 'dragon', region: 'worldspine' },
+  { slug: 'worldspine_marrow_knight', name: "Marrow Knight", level: 312, hp: 24095, atk_min: 1093, atk_max: 1731, defense: 402, speed: 4, xp_reward: 501, gold_min: 2496, gold_max: 4368, sprite: 'overlord', family: 'undead', region: 'worldspine' },
+  { slug: 'worldspine_old_wyrm', name: "Old Wyrm of the Spine", level: 314, hp: 31544, atk_min: 1267, atk_max: 2006, defense: 465, speed: 6, xp_reward: 1260, gold_min: 5024, gold_max: 8792, sprite: 'drake', family: 'dragon', region: 'worldspine' },
+  { slug: 'worldspine_aspect', name: "Worldspine Aspect", level: 317, hp: 24520, atk_min: 1114, atk_max: 1763, defense: 409, speed: 9, xp_reward: 507, gold_min: 2536, gold_max: 4438, sprite: 'titan', family: 'dragon', region: 'worldspine' },
+  { slug: 'worldspine_bone_priest', name: "Bone Priest of the Hollow Crown", level: 319, hp: 24690, atk_min: 1122, atk_max: 1776, defense: 412, speed: 5, xp_reward: 509, gold_min: 2552, gold_max: 4466, sprite: 'wraith', family: 'magic', region: 'worldspine' },
+  { slug: 'worldspine_apex_vhastar', name: "Vhastar, the Spine-Wyrm", level: 320, hp: 42118, atk_min: 1464, atk_max: 2317, defense: 537, speed: 6, xp_reward: 3060, gold_min: 10240, gold_max: 17920, sprite: 'shadowlord', family: 'dragon', region: 'worldspine' },
+
+  // ===== The Eternal Throne (lv 321-350) — god's last court =====
+  { slug: 'throne_throneguard', name: "Throneguard Titan", level: 321, hp: 24861, atk_min: 1130, atk_max: 1789, defense: 414, speed: 7, xp_reward: 511, gold_min: 2568, gold_max: 4494, sprite: 'titan', family: 'construct', region: 'eternal_throne' },
+  { slug: 'throne_shadow', name: "God-King's Shadow", level: 324, hp: 25116, atk_min: 1142, atk_max: 1808, defense: 419, speed: 4, xp_reward: 515, gold_min: 2592, gold_max: 4536, sprite: 'shadowlord', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_unmaker', name: "The Unmaker", level: 327, hp: 25372, atk_min: 1154, atk_max: 1827, defense: 423, speed: 7, xp_reward: 518, gold_min: 2616, gold_max: 4578, sprite: 'overlord', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_avatar_end', name: "Avatar of the End", level: 330, hp: 25628, atk_min: 1166, atk_max: 1847, defense: 427, speed: 4, xp_reward: 521, gold_min: 2640, gold_max: 4620, sprite: 'shadowlord', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_seven_kings', name: "Herald of the Seven Kings", level: 332, hp: 33539, atk_min: 1350, atk_max: 2139, defense: 494, speed: 6, xp_reward: 1310, gold_min: 5312, gold_max: 9296, sprite: 'overlord', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_sovereign', name: "Eternal Sovereign", level: 335, hp: 26056, atk_min: 1187, atk_max: 1879, defense: 434, speed: 9, xp_reward: 527, gold_min: 2680, gold_max: 4690, sprite: 'titan', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_herald_last_day', name: "Herald of the Last Day", level: 338, hp: 26313, atk_min: 1199, atk_max: 1898, defense: 439, speed: 6, xp_reward: 530, gold_min: 2704, gold_max: 4732, sprite: 'wraith', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_aspect', name: "Throne-Aspect", level: 341, hp: 26570, atk_min: 1211, atk_max: 1918, defense: 443, speed: 9, xp_reward: 534, gold_min: 2728, gold_max: 4774, sprite: 'titan', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_silence', name: "Avatar of Silence", level: 344, hp: 26827, atk_min: 1223, atk_max: 1937, defense: 447, speed: 6, xp_reward: 537, gold_min: 2752, gold_max: 4816, sprite: 'shadowlord', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_dawn_unmaker', name: "The Dawn-Unmaker", level: 346, hp: 35099, atk_min: 1417, atk_max: 2242, defense: 518, speed: 8, xp_reward: 1348, gold_min: 5536, gold_max: 9688, sprite: 'shadowlord', family: 'demon', region: 'eternal_throne' },
+  { slug: 'throne_wyrm_silence', name: "Wyrm of Silence", level: 348, hp: 27170, atk_min: 1240, atk_max: 1963, defense: 453, speed: 4, xp_reward: 541, gold_min: 2784, gold_max: 4872, sprite: 'drake', family: 'dragon', region: 'eternal_throne' },
+  { slug: 'throne_apex_unname', name: "The Unname, God-of-Endings", level: 350, hp: 46481, atk_min: 1622, atk_max: 2569, defense: 593, speed: 6, xp_reward: 3258, gold_min: 11200, gold_max: 19600, sprite: 'shadowlord', family: 'demon', region: 'eternal_throne' },
+];
 
 /* =========================================================================
- * Endless content — procedurally generated monsters for levels 201 → 350.
- *
- * The named region expansion above carries the 25-200 stretch. The five
- * procedural bands below cover the divine end-game from lv 201 through
- * the level cap at 350. Each band has eight creature names cycled across
- * its level range, doubled from the previous four-name rosters so a
- * player pushing through it sees more variety.
- *
- * Stats scale on smooth curves anchored to the lv 200 APEX boss
- * (≈ 16000 HP). Each band ends at a divine cap boss.
+ * REGION_BANDS retained as metadata for hunting.ts (region gates +
+ * pretty names). The procedural generator that used to populate the
+ * lv 201-350 stretch is gone — every monster in those levels now
+ * exists as a hand-built entry above, with explicit stats and a name
+ * that doesn't end in "· Lv 247".
  * ======================================================================= */
 
-export interface HighRegionBand { region: string; name: string; gate: number; max: number; creatures: string[]; sprites: string[]; family: string; }
+export interface HighRegionBand { region: string; name: string; gate: number; max: number; family: string; }
 
 export const REGION_BANDS: HighRegionBand[] = [
-  { region: 'stormpeaks',         name: 'The Stormpeaks',          gate: 201, max: 230, creatures: ['Thunder Roc', 'Galestorm Elemental', 'Sky Titan', 'Tempest Warden', 'Lightning Drake', 'Cloud Reaver', 'Skyglass Knight', 'Storm Hierophant'], sprites: ['titan', 'drake', 'golem', 'overlord', 'serpent', 'wraith', 'shadowlord', 'witch'], family: 'elemental' },
-  { region: 'voidshade_hollow',   name: 'Voidshade Hollow',        gate: 230, max: 260, creatures: ['Hollow Walker', 'Void Reaver', 'Rift Horror', 'Echo of the Unmade', 'Null Serpent', 'Voidshade Tyrant', 'Hollow Aspect', 'Shade of the First Dark'], sprites: ['wraith', 'shadowlord', 'serpent', 'overlord', 'golem', 'titan', 'drake', 'witch'], family: 'aberration' },
-  { region: 'mooncradle',         name: 'Mooncradle',              gate: 260, max: 290, creatures: ['Lunar Stalker', 'Tidecaller Priest', 'Silver Wyrm', 'Cradle Sentinel', 'Moonglass Reaper', 'Pale Hierophant', 'Lunar Devourer', 'Mooncradle Sovereign'], sprites: ['wolf', 'wraith', 'serpent', 'overlord', 'shadowlord', 'witch', 'drake', 'titan'], family: 'aberration' },
-  { region: 'worldspine',         name: 'The Worldspine',          gate: 290, max: 320, creatures: ['Spinewyrm', 'Bone Titan', 'Marrow Reaver', 'Worldspine Druid', 'Stoneflesh Colossus', 'Roost Tyrant', 'Marrow Knight', 'Worldspine Aspect'], sprites: ['serpent', 'titan', 'wraith', 'witch', 'golem', 'overlord', 'shadowlord', 'drake'], family: 'dragon' },
-  { region: 'eternal_throne',     name: 'The Eternal Throne',      gate: 320, max: 351, creatures: ['Throneguard Titan', "God-King's Shadow", 'The Unmaker', 'Avatar of the End', 'Eternal Sovereign', 'Herald of the Last Day', 'Throne-Aspect', 'Avatar of Silence'], sprites: ['shadowlord', 'titan', 'overlord', 'golem', 'drake', 'serpent', 'wraith', 'witch'], family: 'demon' },
+  { region: 'stormpeaks',       name: 'The Stormpeaks',     gate: 201, max: 231, family: 'elemental'  },
+  { region: 'voidshade_hollow', name: 'Voidshade Hollow',   gate: 231, max: 261, family: 'aberration' },
+  { region: 'mooncradle',       name: 'Mooncradle',         gate: 261, max: 291, family: 'aberration' },
+  { region: 'worldspine',       name: 'The Worldspine',     gate: 291, max: 321, family: 'dragon'     },
+  { region: 'eternal_throne',   name: 'The Eternal Throne', gate: 321, max: 351, family: 'demon'      },
 ];
-
-function bandFor(level: number): HighRegionBand {
-  for (const b of REGION_BANDS) if (level >= b.gate && level < b.max) return b;
-  return REGION_BANDS[REGION_BANDS.length - 1];
-}
-
-(() => {
-  for (let lvl = 201; lvl <= 350; lvl++) {
-    const band = bandFor(lvl);
-    const idx = lvl % band.creatures.length;
-    const creature = band.creatures[idx];
-    const sprite = band.sprites[idx % band.sprites.length];
-    const f = lvl / 25; // scale factor anchored at the lv 25 hand-built boss
-    MONSTER_SEED.push({
-      slug: `${band.region}_${lvl}`,
-      name: `${creature} · Lv ${lvl}`,
-      level: lvl,
-      hp: Math.round(1500 * Math.pow(f, 1.1)),
-      atk_min: Math.round(60 * Math.pow(f, 1.15)),
-      atk_max: Math.round(95 * Math.pow(f, 1.15)),
-      defense: Math.round(25 * Math.pow(f, 1.1)),
-      speed: 4 + (lvl % 6),
-      // Audit (content expansion): per-kill XP coefficient lowered from
-      // 12 to 9 so the 350-level curve stretches to ~3,300 kills total
-      // (was 2,450). At a casual one-hour-per-day cadence with the 5-12
-      // minute hunt cooldowns, that lands the cap at roughly nine months
-      // of play — the 8-10 month target. Hardcore players hit it sooner
-      // because dungeons, arena, daily, and weekly events all contribute
-      // outside the hunt loop.
-      xp_reward: Math.max(1, Math.round(9 * Math.pow(lvl, 0.7))),
-      gold_min: Math.round(8 * lvl),
-      gold_max: Math.round(14 * lvl),
-      sprite,
-      family: band.family,
-      region: band.region,
-    });
-  }
-})();

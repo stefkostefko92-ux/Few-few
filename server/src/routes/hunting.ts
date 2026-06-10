@@ -12,6 +12,7 @@ import { assertReady, setCooldown } from '../game/cooldowns';
 import { applyBountyKill } from './bounties';
 import { trackBattlePass } from './battlepass';
 import { trackWeeklyKill } from './weekly';
+import { applyFactionRepFromHunt } from './faction';
 import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
@@ -162,12 +163,19 @@ router.post('/hunt', (req, res) => {
     // piece (in bag or equipped), the drop falls back to the normal
     // random roll so the kill still feels rewarding.
     const APEX_DROPS: Record<string, string> = {
+      // Mid-tier (lv 50-200)
       'emberreach_apex_khalad':     'khalad_fang',
       'hammerhand_apex_gorvak':     'gorvak_mace',
       'conclave_apex_vex':          'vex_staff',
       'saltmarsh_apex_sunken_king': 'sunken_king_trident',
       'frostvale_apex_snowtooth':   'snowtooth_axe',
       'blackspire_apex_azhtek':     'azhtek_armor',
+      // Endgame divine bands (lv 230-350)
+      'stormpeaks_apex_karna':      'karna_blade',
+      'voidshade_apex_caethra':     'caethra_crown',
+      'mooncradle_apex_selan':      'selan_mantle',
+      'worldspine_apex_vhastar':    'vhastar_ring',
+      'throne_apex_unname':         'unname_blade',
     };
     const apexSlug = APEX_DROPS[monster.slug];
     if (apexSlug) {
@@ -286,9 +294,18 @@ router.post('/hunt', (req, res) => {
   const completedBounties = result.winner === 'hero'
     ? applyBountyKill(char, monster.slug)
     : [];
+  let factionRepGain: { faction_slug: string; rep: number } | null = null;
   if (result.winner === 'hero') {
     trackBattlePass(char.id, 'hunt_kill', 1);
     trackWeeklyKill(char.id);
+    // Faction reputation — map monster family/slug to the matching
+    // faction; APEX kills pay a 20x multiplier to the matching faction.
+    factionRepGain = applyFactionRepFromHunt(char.id, {
+      region: monster.region,
+      family: (monster as any).family || '',
+      level: monster.level,
+      slug: monster.slug,
+    });
   }
 
   res.json({
@@ -303,6 +320,7 @@ router.post('/hunt', (req, res) => {
     monsterSlug: monster.slug,
     completedBounties,
     itemReward: itemRewardSlug || null,
+    factionRep: factionRepGain,
     itemDrop: itemRewardSlug
       ? (db.prepare('SELECT slug, name, category, sub_type, tier, rarity, level_req, icon, atk_min, atk_max, defense, hp_bonus, mp_bonus, str_bonus, dex_bonus, con_bonus, int_bonus, cha_bonus, wis_bonus, description FROM items WHERE slug=?').get(itemRewardSlug) as any)
       : null,

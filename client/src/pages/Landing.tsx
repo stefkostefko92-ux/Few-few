@@ -86,6 +86,7 @@ export default function Landing(): React.ReactElement {
           <a href="#features">Features</a>
           <a href="#classes">Classes</a>
           <a href="#sets">Item Sets</a>
+          <a href="#endgame">Endgame</a>
           <a href="#guilds">Guilds</a>
           <a href="#world">World</a>
           <a href="#roadmap">Roadmap</a>
@@ -252,6 +253,48 @@ export default function Landing(): React.ReactElement {
         </div>
       </section>
 
+      {/* Endgame loops */}
+      <section id="endgame" className="section">
+        <div className="section-eyebrow" data-reveal>Endgame</div>
+        <h2 className="section-title" data-reveal>The realm keeps moving while you're logged out.</h2>
+        <p className="section-lead" data-reveal>
+          Past the act-one tutorial the realm runs on weekly cycles. Server-wide bosses, faction
+          reputation tracks, the auction, weekly trials. Three months of named content from your
+          last APEX kill to the cap, and the systems below carry you through it.
+        </p>
+        <div className="feature-grid" data-reveal-stagger>
+          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title="Weekly Realm Boss">
+            Six bosses on a rotating week. The realm shares one HP pool; you can strike once every
+            four hours. The hero who lands the killing blow earns a one-of-a-kind legendary;
+            everyone who hit it splits gold, gems, and XP at settlement.
+          </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title="Faction Reputation">
+            Three factions — Iron Watch, Conclave, Wyrmkin — track rep separately. Hit the
+            matching enemy family and your standing climbs. Six rep tiers; each one unlocks a
+            piece of vendor stock that nobody else can reach.
+          </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title="Eleven APEX legendaries">
+            One unique drop per region APEX boss, mid-tier and divine combined. Guaranteed on
+            first kill; the kit-defining items at every band. Sixteen named regions, eleven
+            APEX kills to collect.
+          </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title="Tower of Trials">
+            A trial floor that resets weekly. Climb as far as you can on a single run. Your best
+            floor goes on the leaderboard and feeds back into Wyrmsong, the only weapon in the
+            realm that scales with your tower climb.
+          </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title="Weekly Trial Cache">
+            Fifty kills a week unlocks a tier-appropriate equipment drop plus scaling gold and
+            ten gems. Resets Mondays at midnight UTC. Skip one week, no harm; the cache is yours
+            when you come back.
+          </FeatureCard>
+          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title="Auction settles hourly">
+            One legendary listed per hour, server-wide. Gem-bid only; only the winner takes it
+            home. You don't have to be online when the hour rolls over; settlement is automatic.
+          </FeatureCard>
+        </div>
+      </section>
+
       {/* Mid-page rhythm break — second cinematic plate.
           Working blacksmith at Möhkö Ironworks (CC BY 3.0, Wikimedia
           Commons; see /assets/video/CREDITS.md). 21:9 stripe so it
@@ -325,12 +368,11 @@ export default function Landing(): React.ReactElement {
       {/* World */}
       <section id="world" className="section">
         <div className="section-eyebrow" data-reveal>The map</div>
-        <h2 className="section-title" data-reveal>Eleven hand-built regions, five procedural divine bands.</h2>
+        <h2 className="section-title" data-reveal>Sixteen hand-built regions, all the way to three hundred and fifty.</h2>
         <p className="section-lead" data-reveal>
-          Five act-one regions take you from level one to twenty-five. Six mid-tier named
-          regions carry you through to level two hundred, each with its own monster roster and
-          a named APEX boss who drops a unique legendary. Past that, five procedural divine
-          bands push you to level three hundred and fifty.
+          Five act-one regions, six mid-tier regions, five divine endgame regions. Every monster
+          is named, every region has an APEX boss with a unique legendary drop. No procedural
+          filler; no "Cinder Marauder · Lv 247" anywhere in the realm.
         </p>
         <div className="region-row" data-reveal-stagger>
           <RegionCard color="#3f6a2c" art="/assets/regions/whispering_woods.jpg" name="Whispering Woods" range="Lv 1 – 5">Goblins, dire wolves, the rats under the inn. The first place you draw a sword.</RegionCard>
@@ -344,6 +386,11 @@ export default function Landing(): React.ReactElement {
           <RegionCard color="#3f8a6a" art="/assets/regions/mistmoor_hills.jpg"   name="Saltmarsh"         range="Lv 105 – 140">Lizardfolk swamp under the Sunken King. APEX: the King himself.</RegionCard>
           <RegionCard color="#9ac7ff" art="/assets/regions/crystal_caverns.jpg"  name="Frostvale"         range="Lv 140 – 175">Arctic tundra ruled by frost giants. APEX: Jarl Snowtooth.</RegionCard>
           <RegionCard color="#3a1a1a" art="/assets/regions/ashen_wastes.jpg"     name="Black Spire"       range="Lv 175 – 200">Demonic incursion at the mountain's peak. APEX: Azhtek the Black Pyrelord.</RegionCard>
+          <RegionCard color="#6aa7ff" art="/assets/regions/mistmoor_hills.jpg"   name="The Stormpeaks"    range="Lv 201 – 230">Sky-piercing mountains, storm elementals, sky-pirate clans. APEX: Skyfather Karna.</RegionCard>
+          <RegionCard color="#5a2c8a" art="/assets/regions/shadowfell.jpg"       name="Voidshade Hollow"  range="Lv 231 – 260">A crack in reality. Aberrations that should not be. APEX: Caethra, the Voidshade Heart.</RegionCard>
+          <RegionCard color="#a0b8d0" art="/assets/regions/crystal_caverns.jpg"  name="Mooncradle"        range="Lv 261 – 290">Floating lunar isles under a pale court. APEX: Selan, the Pale Empress.</RegionCard>
+          <RegionCard color="#8a6a3a" art="/assets/regions/ashen_wastes.jpg"     name="The Worldspine"    range="Lv 291 – 320">The mountain that is the backbone of the world. APEX: Vhastar, the Spine-Wyrm.</RegionCard>
+          <RegionCard color="#1a1a1a" art="/assets/regions/shadowfell.jpg"       name="The Eternal Throne" range="Lv 321 – 350">The god's last court. End of the road. APEX: The Unname, God-of-Endings.</RegionCard>
         </div>
       </section>
 
@@ -353,10 +400,11 @@ export default function Landing(): React.ReactElement {
         <h2 className="section-title" data-reveal>Shipped, in flight, queued.</h2>
         <div className="roadmap-track" data-reveal>
           <RoadmapStop state="shipped" when="Shipped" what="Core game">
-            Four classes, 206 items, eight themed sets, eleven hand-built regions plus five
-            procedural divine bands, 350 levels of monster roster, six unique APEX boss drops,
-            16 named quests, four scripted dungeons, ELO arena, daily and weekly loops,
-            achievements, bestiary, replays.
+            Four classes, 217 items, eight themed sets, sixteen hand-built regions covering
+            level one to three hundred and fifty, eleven unique APEX boss drops, six weekly
+            Realm Boss legendaries, three factions with six rep tiers each, sixteen named
+            quests, four scripted dungeons, ELO arena, daily and weekly loops, achievements,
+            bestiary, replays.
           </RoadmapStop>
           <RoadmapStop state="shipped" when="Shipped" what="Profile and cosmetics">
             Twelve avatars, twelve rarity-tinted frames, bios, name change, public profile
