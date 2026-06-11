@@ -10,10 +10,12 @@
   const EQUIP_FLAG_KEYS = ['is_equipped', 'equipped'];
   const UNIQUE_KEYS = ['is_unique', 'unique'];
   const TYPE_KEYS = ['type', 'item_type', 'slot'];
-  const ITEMCODE_KEYS = ['itemcode', 'item_code'];
+  // The live client reads the rune/stone code from itemObj.item (set_itemcode).
+  const ITEMCODE_KEYS = ['item', 'itemcode', 'item_code'];
   const RUNE_ITEMCODES = new Set([18, 19, 20, 21, 22, 23]);
 
   let dumped = false;
+  let probed = false;
   let lastScan = 0;
   let lastSummary = 0;
 
@@ -51,9 +53,30 @@
         // them as direct children). Then keep only the INNERMOST matches:
         // that drops the outer response struct, which would otherwise alias
         // its first item's fields and act as a phantom entry.
-        const matching = Array.from(doc.querySelectorAll('struct'))
+        const allStructs = Array.from(doc.querySelectorAll('struct'));
+        const matching = allStructs
           .filter((s) => member(s, ID_KEYS) != null && member(s, TYPE_KEYS) != null);
         const structs = matching.filter((s) => !matching.some((o) => o !== s && s.contains(o)));
+
+        // One-time loud probe: shows exactly what the scan sees, so a fruitless
+        // run can be diagnosed from a single screenshot of the panel log. Wrapped
+        // so a diagnostic can never break the actual selling.
+        if (!probed) {
+          probed = true;
+          try {
+            Logger.info(`autosell: ${allStructs.length} structs, ${structs.length} look like items`);
+            const memberNames = (s) => Array.from(s.getElementsByTagName('member'))
+              .map((m) => m.getElementsByTagName('name')[0]).filter(Boolean)
+              .map((n) => n.textContent).slice(0, 25).join(', ');
+            if (structs[0]) {
+              Logger.info(`autosell first item fields: ${memberNames(structs[0]) || '(none)'}`);
+              Logger.info(`autosell first item -> id=${member(structs[0], ID_KEYS)} type=${member(structs[0], TYPE_KEYS)} code=${member(structs[0], ITEMCODE_KEYS)} equipped=${member(structs[0], EQUIP_FLAG_KEYS)} unique=${member(structs[0], UNIQUE_KEYS)} sell=${member(structs[0], VALUE_KEYS)}`);
+            } else if (allStructs[0]) {
+              Logger.warn(`autosell: no item-shaped structs. First struct members: ${memberNames(allStructs[0])}`);
+            }
+          } catch (e) { Logger.warn(`autosell probe failed: ${e.message}`); }
+        }
+
         if (!structs.length) { Logger.warn('autosell: no items parsed'); return; }
 
         if (!dumped && c.dumpSchema) {

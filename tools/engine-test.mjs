@@ -339,8 +339,8 @@ await test('autosell: sells a common unequipped equipment item', async () => {
   // Fake structs: an OUTER response struct (whose descendant search aliases
   // the item's fields) plus the real item. The innermost-match filter must
   // keep only the item, never the phantom outer struct.
-  const item = { fields: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 }, contains: () => false };
-  const outer = { fields: item.fields, contains: (o) => o === item };
+  const item = { fields: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 }, contains: () => false, getElementsByTagName: () => [] };
+  const outer = { fields: item.fields, contains: (o) => o === item, getElementsByTagName: () => [] };
   e.TB.Api.getEquipment = () => Promise.resolve({ querySelectorAll: (sel) => (sel === 'struct' ? [outer, item] : []) });
   e.TB.Api.findValue = (node, name) => (node && node.fields && name in node.fields ? String(node.fields[name]) : null);
   e.TB.Api.findNum = (node, name) => {
