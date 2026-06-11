@@ -1,6 +1,6 @@
 {
   "name": "tanoth-master-bot",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "private": true,
   "type": "module",
   "description": "Tanoth Master Bot - Chrome extension + tooling (tests/dev only; the store package is built by tools/package.sh)",

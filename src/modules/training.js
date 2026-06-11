@@ -78,7 +78,11 @@
       const reserve = Math.max(Number(g.keepGoldReserve) || 0, Number(c.keepGoldReserve) || 0);
       const cachedGold = Number(State.get().gold) || 0;
       if (cost > cachedGold - reserve) {
-        noteSkip('logTrainSkipGold', [stat, String(cost), String(cachedGold)]);
+        // Say WHICH limit blocks the buy: the raw gold, or a configured
+        // reserve (the global reserve only became effective in 1.9.1, so a
+        // long-forgotten value can silently stop training after an update).
+        if (cost <= cachedGold && reserve > 0) noteSkip('logTrainSkipReserve', [String(reserve)]);
+        else noteSkip('logTrainSkipGold', [stat, String(cost), String(cachedGold)]);
         return null;
       }
 

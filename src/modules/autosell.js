@@ -46,11 +46,15 @@
       return async () => {
         lastScan = Date.now();
         const doc = await Api.getEquipment();
-        const structs = Array.from(doc.querySelectorAll('struct'))
-          // Direct-member check: avoids matching the outer response struct (whose
-          // descendants include an item's id/type) as a phantom item.
-          .filter((s) => ID_KEYS.some((k) => Api.directHas(s, k)) && TYPE_KEYS.some((k) => Api.directHas(s, k)));
-        if (!structs.length) { Logger.debug('autosell: no items parsed'); return; }
+        // An item struct is one whose subtree carries an id and a type (the
+        // exact nesting differs between server revisions, so don't require
+        // them as direct children). Then keep only the INNERMOST matches:
+        // that drops the outer response struct, which would otherwise alias
+        // its first item's fields and act as a phantom entry.
+        const matching = Array.from(doc.querySelectorAll('struct'))
+          .filter((s) => member(s, ID_KEYS) != null && member(s, TYPE_KEYS) != null);
+        const structs = matching.filter((s) => !matching.some((o) => o !== s && s.contains(o)));
+        if (!structs.length) { Logger.warn('autosell: no items parsed'); return; }
 
         if (!dumped && c.dumpSchema) {
           dumped = true;

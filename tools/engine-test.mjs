@@ -336,9 +336,12 @@ await test('autosell: sells a common unequipped equipment item', async () => {
   const e = freshEngine({
     settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, autosell: { enabled: true, sellCommon: true, sellSpecial: false, dumpSchema: false } }
   });
-  // Fake item struct: the module reads it via Api.findValue / Api.directHas.
-  const item = { fields: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 } };
-  e.TB.Api.getEquipment = () => Promise.resolve({ querySelectorAll: (sel) => (sel === 'struct' ? [item] : []) });
+  // Fake structs: an OUTER response struct (whose descendant search aliases
+  // the item's fields) plus the real item. The innermost-match filter must
+  // keep only the item, never the phantom outer struct.
+  const item = { fields: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 }, contains: () => false };
+  const outer = { fields: item.fields, contains: (o) => o === item };
+  e.TB.Api.getEquipment = () => Promise.resolve({ querySelectorAll: (sel) => (sel === 'struct' ? [outer, item] : []) });
   e.TB.Api.findValue = (node, name) => (node && node.fields && name in node.fields ? String(node.fields[name]) : null);
   e.TB.Api.findNum = (node, name) => {
     const v = node && node.fields && name in node.fields ? Number(node.fields[name]) : NaN;
