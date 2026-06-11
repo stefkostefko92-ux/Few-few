@@ -321,33 +321,44 @@ await test('training: fetches costs then raises the cheapest attribute', async (
   assert.equal(e.calls.raiseAttribute[0][0], 'DEX', 'picked the cheapest stat');
 });
 
-await test('training: global gold reserve blocks spending (and logs the skip)', async () => {
-  const e = freshEngine({
-    settings: { general: { enabled: true, humanize: false, keepGoldReserve: 5000 }, adventures: { enabled: false }, training: { enabled: true, priorityStat: 'mix' } },
+await test('training: per-module reserve blocks; global reserve does NOT', async () => {
+  const blocked = freshEngine({
+    settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, training: { enabled: true, priorityStat: 'mix', keepGoldReserve: 5000 } },
     state: { gold: 1000 }
   });
-  e.TB.Api.getUserAttributes = () => { e.TB.State.patch({ attributeCosts: { STR: 120, DEX: 80, CON: 200, INT: 150 } }); return Promise.resolve({}); };
-  e.TB.Scheduler.start();
-  await e.advance(3000);
-  assert.equal(e.count('raiseAttribute'), 0, 'reserve respected');
+  blocked.TB.Api.getUserAttributes = () => { blocked.TB.State.patch({ attributeCosts: { STR: 120, DEX: 80, CON: 200, INT: 150 } }); return Promise.resolve({}); };
+  blocked.TB.Scheduler.start();
+  await blocked.advance(3000);
+  assert.equal(blocked.count('raiseAttribute'), 0, 'per-module reserve respected');
+
+  const open = freshEngine({
+    settings: { general: { enabled: true, humanize: false, keepGoldReserve: 5000 }, adventures: { enabled: false }, training: { enabled: true, priorityStat: 'mix', keepGoldReserve: 0 } },
+    state: { gold: 1000 }
+  });
+  open.TB.Api.getUserAttributes = () => { open.TB.State.patch({ attributeCosts: { STR: 120, DEX: 80, CON: 200, INT: 150 } }); return Promise.resolve({}); };
+  open.TB.Scheduler.start();
+  await open.advance(3000);
+  assert.ok(open.count('raiseAttribute') >= 1, 'global reserve ignored by training (1.6.0 behaviour)');
 });
 
 await test('autosell: sells a common unequipped equipment item', async () => {
   const e = freshEngine({
     settings: { general: { enabled: true, humanize: false }, adventures: { enabled: false }, autosell: { enabled: true, sellCommon: true, sellSpecial: false, dumpSchema: false } }
   });
-  // Fake structs: an OUTER response struct (whose descendant search aliases
-  // the item's fields) plus the real item. The innermost-match filter must
-  // keep only the item, never the phantom outer struct.
-  const item = { fields: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 }, contains: () => false, getElementsByTagName: () => [] };
-  const outer = { fields: item.fields, contains: (o) => o === item, getElementsByTagName: () => [] };
+  // Fake structs: the OUTER response struct (direct member 'items' only; its
+  // id/type appear just via descendant search) plus the real item struct
+  // (direct id/type). directHas selection must keep only the item.
+  const item = { direct: { id: 42, type: 3, sellvalue: 250, is_equipped: 0, is_unique: 0, itemcode: 1, item_in_bag_x: 2 }, descend: {}, getElementsByTagName: () => [] };
+  item.descend = item.direct;
+  const outer = { direct: { items: 1 }, descend: item.direct, getElementsByTagName: () => [] };
   e.TB.Api.getEquipment = () => Promise.resolve({ querySelectorAll: (sel) => (sel === 'struct' ? [outer, item] : []) });
-  e.TB.Api.findValue = (node, name) => (node && node.fields && name in node.fields ? String(node.fields[name]) : null);
+  // findValue/findNum search descendants; directHas checks direct members only.
+  e.TB.Api.findValue = (node, name) => (node && node.descend && name in node.descend ? String(node.descend[name]) : null);
   e.TB.Api.findNum = (node, name) => {
-    const v = node && node.fields && name in node.fields ? Number(node.fields[name]) : NaN;
+    const v = node && node.descend && name in node.descend ? Number(node.descend[name]) : NaN;
     return Number.isFinite(v) ? v : null;
   };
-  e.TB.Api.directHas = (node, name) => !!(node && node.fields && name in node.fields);
+  e.TB.Api.directHas = (node, name) => !!(node && node.direct && name in node.direct);
   e.TB.Scheduler.start();
   await e.advance(3000);
   assert.equal(e.count('sellItem'), 1, 'sold the item');

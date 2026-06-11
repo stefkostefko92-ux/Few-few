@@ -72,15 +72,12 @@
       if (!Number.isFinite(cost)) return null;
 
       // Gate on the cached gold (kept fresh by the 30s global MiniUpdate) so we
-      // don't poll the server every cycle while unaffordable. The reserve is
-      // the stricter of the global and the per-module setting.
-      const g = Storage.section('general') || {};
-      const reserve = Math.max(Number(g.keepGoldReserve) || 0, Number(c.keepGoldReserve) || 0);
+      // don't poll the server every cycle while unaffordable. Reserve is the
+      // per-module setting ONLY (1.6.0 behaviour): the global reserve must not
+      // silently block training after an update.
+      const reserve = Number(c.keepGoldReserve) || 0;
       const cachedGold = Number(State.get().gold) || 0;
       if (cost > cachedGold - reserve) {
-        // Say WHICH limit blocks the buy: the raw gold, or a configured
-        // reserve (the global reserve only became effective in 1.9.1, so a
-        // long-forgotten value can silently stop training after an update).
         if (cost <= cachedGold && reserve > 0) noteSkip('logTrainSkipReserve', [String(reserve)]);
         else noteSkip('logTrainSkipGold', [stat, String(cost), String(cachedGold)]);
         return null;

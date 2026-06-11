@@ -54,9 +54,15 @@
         // that drops the outer response struct, which would otherwise alias
         // its first item's fields and act as a phantom entry.
         const allStructs = Array.from(doc.querySelectorAll('struct'));
-        const matching = allStructs
-          .filter((s) => member(s, ID_KEYS) != null && member(s, TYPE_KEYS) != null);
-        const structs = matching.filter((s) => !matching.some((o) => o !== s && s.contains(o)));
+        // Prefer real item structs by their OWN direct members (drops the outer
+        // response struct, whose id/type only appear via descendant search, and
+        // any nested sub-struct). If that yields nothing - e.g. an unusual
+        // nesting - fall back to 1.6.0's loose descendant match so a scan can
+        // never come up empty while items actually exist.
+        let structs = allStructs.filter((s) => ID_KEYS.some((k) => Api.directHas(s, k)) && TYPE_KEYS.some((k) => Api.directHas(s, k)));
+        if (!structs.length) {
+          structs = allStructs.filter((s) => member(s, ID_KEYS) != null && member(s, TYPE_KEYS) != null);
+        }
 
         // One-time loud probe: shows exactly what the scan sees, so a fruitless
         // run can be diagnosed from a single screenshot of the panel log. Wrapped
