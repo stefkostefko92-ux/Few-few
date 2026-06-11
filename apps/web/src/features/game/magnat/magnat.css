@@ -1,0 +1,149 @@
+/* МАГНАТ — 3D board + side HUD. */
+.mag-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+.mag-board {
+  flex: 1 1 460px;
+  max-width: 680px;
+  min-width: 300px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(120% 100% at 50% 0%, #1a4030, #0b2418);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+}
+.mag-nogl {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--ink-200);
+  font-size: 0.95rem;
+}
+.mag-side {
+  flex: 0 1 320px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mag-players {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mag-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(18, 48, 38, 0.5);
+  border: 1px solid transparent;
+}
+.mag-player.is-turn {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.12);
+}
+.mag-player.is-out {
+  opacity: 0.45;
+}
+.mag-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.mag-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--ink-100);
+}
+.mag-cash {
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-300);
+  font-weight: 600;
+}
+
+.mag-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mag-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mag-hint {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+.mag-dice {
+  color: var(--ink-200);
+  font-size: 0.95rem;
+}
+
+.mag-props {
+  background: rgba(11, 14, 13, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.mag-props h4 {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.mag-prop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 0.85rem;
+}
+.mag-prop-band {
+  width: 8px;
+  height: 18px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.mag-prop-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-200);
+}
+.mag-prop-acts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.mag-prop-acts button {
+  border: 1px solid rgba(217, 178, 95, 0.35);
+  background: transparent;
+  color: var(--brass-300);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.mag-prop-acts button:hover {
+  background: rgba(217, 178, 95, 0.15);
+}
+
+.mag-log {
+  background: rgba(11, 14, 13, 0.4);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+.mag-log p {
+  padding: 1px 0;
+}

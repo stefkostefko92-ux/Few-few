@@ -1,0 +1,78 @@
+/* Не се сърди човече (§4.10) — the classic cross board on an 11×11 grid. */
+.ludo-grid {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  aspect-ratio: 1;
+  background: radial-gradient(120% 120% at 50% 30%, #16402e, var(--felt-900));
+}
+.ludo-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 0.5px solid rgba(0, 0, 0, 0.18);
+}
+.ludo-cell--track {
+  background: radial-gradient(120% 120% at 30% 20%, #f3ead4, #e0d2b0);
+}
+.ludo-cell--home {
+  /* tint applied inline per seat */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+.ludo-cell--center {
+  background: radial-gradient(circle, var(--brass-300), var(--brass-400));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.ludo-goal {
+  color: var(--charcoal-900);
+  font-size: 0.9rem;
+}
+
+.ludo-pawn {
+  position: absolute;
+  width: 64%;
+  height: 64%;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  cursor: default;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(255, 255, 255, 0.35),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+}
+.ludo-pawn--movable {
+  cursor: pointer;
+  outline: 2px solid var(--brass-100);
+  outline-offset: 1px;
+  box-shadow: 0 0 12px var(--brass-glow), 0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+}
+.ludo-pawn--movable:hover {
+  transform: scale(1.12) !important;
+}
+
+.ludo-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(11, 14, 13, 0.5);
+  border: 1px solid rgba(217, 178, 95, 0.12);
+  font-size: 0.85rem;
+  color: var(--ink-300);
+}
+.ludo-legend--active {
+  border-color: var(--brass-300);
+  box-shadow: 0 0 14px var(--brass-glow);
+  color: var(--brass-100);
+}
+.ludo-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.ludo-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+}

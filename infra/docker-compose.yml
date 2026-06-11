@@ -1,0 +1,122 @@
+# АСО — local / staging stack (S17). Ports per S18 (verify with `ss -tlnp`).
+# Run from repo root: `docker compose -f infra/docker-compose.yml up -d`
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aso}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aso}
+      POSTGRES_DB: ${POSTGRES_DB:-aso}
+    ports:
+      - "5437:5432"
+    volumes:
+      - aso_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aso}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6383:6379"
+    volumes:
+      - aso_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      API_PORT: 4500
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
+    ports:
+      - "4500:4500"
+
+  realtime:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.realtime
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      REALTIME_PORT: 4501
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
+      BOT_FALLBACK_SECONDS: ${BOT_FALLBACK_SECONDS:-8}
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4500}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
+    ports:
+      - "4501:4501"
+
+  worker:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD:-aso}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      SEASON_DAYS: ${SEASON_DAYS:-35}
+
+  # Play app (Vite SPA) — static, served under /app/ by its own nginx. The edge
+  # nginx (aso.conf) proxies non-/api,/socket.io traffic here.
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    restart: unless-stopped
+    ports:
+      - "4502:4502"
+
+  # Public marketing/SEO layer (Next.js static export) served by its own nginx.
+  marketing:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.marketing
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+volumes:
+  aso_pgdata:
+  aso_redisdata:

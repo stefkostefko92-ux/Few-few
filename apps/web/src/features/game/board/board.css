@@ -1,0 +1,146 @@
+/* Wooden board frame (§4.7/§4.8) — the stage for board games, mirroring the
+   premium nocturnal-tabletop feel of the felt card tables. */
+
+.aso-board {
+  position: relative;
+  display: inline-block;
+  border-radius: 20px;
+  padding: 18px;
+  /* Polished walnut: grain + bevel sheen, matching the felt tables. */
+  background:
+    linear-gradient(180deg, rgba(255, 226, 170, 0.22) 0%, transparent 8%),
+    repeating-linear-gradient(
+      94deg,
+      rgba(0, 0, 0, 0.16) 0 2px,
+      rgba(255, 220, 160, 0.04) 2px 5px,
+      transparent 5px 11px
+    ),
+    radial-gradient(120% 140% at 50% -20%, #5a3d22 0%, #3a2616 40%, var(--wood-800) 68%, #150c06 100%);
+  box-shadow:
+    0 30px 70px -20px rgba(0, 0, 0, 0.78),
+    0 4px 0 rgba(0, 0, 0, 0.5),
+    inset 0 2px 1px rgba(255, 226, 170, 0.3),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.6);
+}
+.aso-board__inner {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Milled brass inner rim around the play surface. */
+  box-shadow:
+    inset 0 0 0 2px rgba(217, 178, 95, 0.55),
+    inset 0 0 0 3px rgba(0, 0, 0, 0.4),
+    inset 0 0 50px rgba(0, 0, 0, 0.55);
+}
+
+/* 8x8 checker grid (Шах, Дама). */
+.aso-grid8 {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+}
+.aso-cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+/* --sq-light / --sq-dark are set by BoardFrame when a BOARD cosmetic is
+   equipped; otherwise the default walnut-on-cream scheme applies. */
+.aso-cell--light {
+  background: radial-gradient(120% 120% at 30% 20%, var(--sq-light, #f0e6cf), color-mix(in srgb, var(--sq-light, #f0e6cf) 86%, #000 14%));
+}
+.aso-cell--dark {
+  background: radial-gradient(120% 120% at 30% 20%, var(--sq-dark, #2a5740), color-mix(in srgb, var(--sq-dark, #2a5740) 64%, #000 36%));
+}
+.aso-cell--target::after {
+  content: "";
+  position: absolute;
+  width: 26%;
+  height: 26%;
+  border-radius: 50%;
+  background: var(--brass-300);
+  opacity: 0.75;
+  box-shadow: 0 0 12px var(--brass-glow);
+}
+.aso-cell--from {
+  box-shadow: inset 0 0 0 3px var(--brass-300);
+}
+.aso-cell--last {
+  box-shadow: inset 0 0 0 3px rgba(217, 178, 95, 0.45);
+}
+
+/* A draughts / ludo piece. */
+.aso-piece {
+  width: 72%;
+  height: 72%;
+  border-radius: 50%;
+  cursor: default;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 2px 3px rgba(255, 255, 255, 0.25);
+  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
+}
+.aso-piece--w {
+  background: radial-gradient(circle at 35% 30%, #fffdf6, #d9cdb0);
+}
+.aso-piece--b {
+  background: radial-gradient(circle at 35% 30%, #3a4048, #14171a);
+}
+.aso-piece--king::after {
+  content: "♛";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--brass-400);
+  font-size: 1.1rem;
+}
+button.aso-piece-btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+/* Dice. */
+.aso-dice {
+  display: inline-flex;
+  gap: 10px;
+}
+.aso-die {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #fffdf6, #e3d4b0);
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 6px;
+  gap: 2px;
+}
+.aso-die--rolling {
+  animation: die-roll 0.5s ease;
+}
+@keyframes die-roll {
+  0% { transform: rotate(-25deg) scale(0.8); }
+  60% { transform: rotate(15deg) scale(1.08); }
+  100% { transform: rotate(0) scale(1); }
+}
+.aso-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--suit-black);
+  align-self: center;
+  justify-self: center;
+}
+.aso-pip--off {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aso-die--rolling { animation: none; }
+}

@@ -1,0 +1,69 @@
+/* Casino chip visuals for betting games (§4.3). Virtual chips only. */
+.chipstack {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+}
+.chipstack--sm {
+  width: 24px;
+  height: 24px;
+}
+.chip {
+  position: absolute;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background-image: repeating-conic-gradient(rgba(255, 255, 255, 0.35) 0 12deg, transparent 12deg 30deg);
+  background-blend-mode: overlay;
+}
+.chipstack--sm .chip {
+  width: 24px;
+  height: 24px;
+}
+.chip::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 255, 255, 0.6);
+}
+.chipstack--sm .chip::after {
+  inset: 4px;
+}
+.chip--brass {
+  background-color: var(--brass-400);
+}
+.chip--red {
+  background-color: var(--suit-red);
+}
+.chip--felt {
+  background-color: var(--felt-700);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(217, 178, 95, 0.4);
+}
+
+.pot {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(11, 14, 13, 0.7);
+  border: 1px solid var(--brass-400);
+  box-shadow: 0 0 22px var(--brass-glow);
+}
+.pot__amount {
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  color: var(--brass-100);
+}
+
+/* Betting-game regulatory notice (§11.4). */
+.betting-notice {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}

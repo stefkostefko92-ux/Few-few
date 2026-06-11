@@ -1,0 +1,115 @@
+/* Покер на зарове (§4.16). */
+.dice-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  align-items: flex-start;
+}
+.dice-tray {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-radius: var(--r-panel);
+  background: radial-gradient(120% 100% at 50% 0%, #1a4030, var(--felt-900));
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5), 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+}
+.dice-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* WebGL dice tray: canvas visuals with transparent, focusable hold buttons. */
+.dice-gl {
+  position: relative;
+  width: min(360px, 72vw);
+}
+.dice-gl__hit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+.dice-gl__btn {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.dice-gl__btn:disabled {
+  cursor: default;
+}
+.dice-gl__btn:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: -2px;
+}
+.dice-slot {
+  position: relative;
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.dice-slot--held {
+  background: rgba(217, 178, 95, 0.15);
+  box-shadow: inset 0 0 0 2px var(--brass-300);
+}
+.dice-empty {
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px dashed rgba(217, 178, 95, 0.3);
+}
+.dice-held-tag {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: var(--brass-300);
+}
+
+.dice-card {
+  border-radius: var(--r-panel);
+  border: 1px solid rgba(217, 178, 95, 0.2);
+  background: rgba(11, 14, 13, 0.5);
+  overflow: hidden;
+}
+.dice-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.dice-table th,
+.dice-table td {
+  padding: 5px 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(217, 178, 95, 0.08);
+}
+.dice-table td:first-child,
+.dice-table th:first-child {
+  text-align: left;
+  color: var(--ink-300);
+}
+.dice-me {
+  background: rgba(217, 178, 95, 0.08);
+}
+.dice-score--pick {
+  cursor: pointer;
+  color: var(--brass-300);
+}
+.dice-score--pick:hover {
+  background: var(--brass-400);
+  color: var(--charcoal-900);
+}
+.dice-total td {
+  font-weight: 700;
+  color: var(--brass-100);
+  border-top: 1px solid var(--brass-400);
+}

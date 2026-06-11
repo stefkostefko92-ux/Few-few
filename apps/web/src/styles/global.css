@@ -1,0 +1,62 @@
+@import "./tokens.css";
+
+/* Self-hosted fonts (woff2, swap) — validated for BG Cyrillic (§3.3, §15). */
+@import "@fontsource/playfair-display/cyrillic-400.css";
+@import "@fontsource/playfair-display/cyrillic-700.css";
+@import "@fontsource/playfair-display/latin-400.css";
+@import "@fontsource/playfair-display/latin-700.css";
+@import "@fontsource/manrope/cyrillic-400.css";
+@import "@fontsource/manrope/cyrillic-500.css";
+@import "@fontsource/manrope/cyrillic-700.css";
+@import "@fontsource/manrope/latin-400.css";
+@import "@fontsource/manrope/latin-500.css";
+@import "@fontsource/manrope/latin-700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-felt-900 font-body text-ink-100 antialiased;
+    /* Warm tungsten ambient glow in the corners (§3.1). */
+    background-image:
+      radial-gradient(120% 80% at 12% -10%, rgba(217, 178, 95, 0.06), transparent 60%),
+      radial-gradient(120% 80% at 100% 110%, rgba(31, 90, 64, 0.18), transparent 55%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  /* tabular numbers for chips/timers (§3.3) */
+  .tnum {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* In-app "reduced motion" toggle (settings store sets the attribute). Mirrors
+   the OS media query above so the preference works without an OS change. */
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

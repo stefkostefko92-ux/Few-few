@@ -1,0 +1,415 @@
+{
+  "brand": "АСО",
+  "tagline": "Giochi di carte e da tavolo premium",
+  "nav": {
+    "lobby": "Lobby",
+    "shop": "Negozio",
+    "leaderboard": "Classifica",
+    "friends": "Amici",
+    "admin": "Admin",
+    "profile": "Profilo",
+    "logout": "Esci"
+  },
+  "friends": {
+    "title": "Amici",
+    "search": "Cerca un giocatore per nome",
+    "searchBtn": "Cerca",
+    "add": "Aggiungi",
+    "incoming": "Richieste per te",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "yourFriends": "I tuoi amici",
+    "empty": "Ancora nessun amico. Cerca qualcuno qui sopra!",
+    "outgoing": "Richieste inviate",
+    "pending": "in attesa",
+    "online": "Online",
+    "offline": "Offline",
+    "invite": "Invita",
+    "remove": "Rimuovi"
+  },
+  "notif": {
+    "title": "Notifiche",
+    "empty": "Nessuna notifica.",
+    "friendRequest": "Nuova richiesta di amicizia",
+    "friendAccepted": "Richiesta di amicizia accettata",
+    "system": "Avviso di sistema",
+    "achievement": "Obiettivo sbloccato 🏆"
+  },
+  "invite": {
+    "received": "{{name}} ti ha invitato a {{game}}",
+    "accept": "Accetta"
+  },
+  "admin": {
+    "title": "Pannello admin",
+    "subtitle": "Gestisci giocatori, segnalazioni e notifiche.",
+    "dashboard": "Cruscotto",
+    "users": "Giocatori",
+    "flags": "Segnalazioni",
+    "totalUsers": "Giocatori totali",
+    "newToday": "Nuovi oggi",
+    "matchesToday": "Partite oggi",
+    "revenue": "Ricavi",
+    "purchases": "Acquisti",
+    "openFlags": "Segnalazioni aperte",
+    "banned": "Bannati",
+    "vipBreakdown": "Distribuzione VIP",
+    "recentActions": "Azioni recenti",
+    "noActions": "Nessuna azione.",
+    "searchUsers": "Cerca per nome o email",
+    "search": "Cerca",
+    "player": "Giocatore",
+    "role": "Ruolo",
+    "manage": "Gestisci",
+    "noUsers": "Nessun giocatore.",
+    "level": "Livello",
+    "matches": "Partite",
+    "saveRoleVip": "Salva ruolo/VIP",
+    "saved": "Salvato.",
+    "grantChips": "Dai gettoni",
+    "grantGems": "Dai gemme",
+    "granted": "Accreditato.",
+    "ban": "Banna",
+    "unban": "Sbanna",
+    "readOnly": "Sola lettura (richiede diritti ADMIN).",
+    "history": "Cronologia",
+    "actionError": "Errore. Riprova.",
+    "noFlags": "Nessuna segnalazione aperta 🎉",
+    "dismiss": "Ignora",
+    "confirm": "Conferma",
+    "discordHint": "Notifiche per registrazioni, acquisti, VIP e azioni admin.",
+    "connected": "Connesso",
+    "notConfigured": "Non configurato",
+    "broadcastTitle": "Annuncio su Discord",
+    "broadcastPlaceholder": "Scrivi un messaggio…",
+    "send": "Invia",
+    "sendTest": "Test",
+    "discordSent": "Inviato su Discord.",
+    "discordDisabled": "Webhook Discord non configurato.",
+    "gamesToday": "Partite di oggi per tipo",
+    "noGames": "Nessuna partita oggi."
+  },
+  "auth": {
+    "loginTitle": "Accedi",
+    "registerTitle": "Crea account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Nome giocatore",
+    "loginCta": "Accedi",
+    "registerCta": "Crea account",
+    "toRegister": "Non hai un account? Registrati",
+    "toLogin": "Hai già un account? Accedi",
+    "errorGeneric": "Qualcosa è andato storto. Riprova.",
+    "errorCredentials": "Email o password errati",
+    "errorEmailTaken": "Questa email è già registrata",
+    "forgotPassword": "Password dimenticata?",
+    "or": "oppure",
+    "continueGoogle": "Continua con Google",
+    "continueFacebook": "Continua con Facebook",
+    "oauthNoEmail": "Il provider non ha condiviso un'email. Registrati con l'email.",
+    "oauthUnavailable": "Questo metodo di accesso non è disponibile al momento.",
+    "oauthFailed": "Accesso non riuscito. Riprova.",
+    "emailUnverified": "La tua email non è ancora verificata.",
+    "resend": "Invia di nuovo il link",
+    "resendSent": "Abbiamo inviato un nuovo link di verifica.",
+    "consentPre": "Ho 18+ e accetto i",
+    "consentTerms": "Termini di servizio",
+    "consentAnd": "e la",
+    "consentPrivacy": "Privacy Policy"
+  },
+  "account": {
+    "title": "Account",
+    "verified": "Email verificata",
+    "unverified": "Non verificata",
+    "level": "Livello",
+    "privacy": "Privacy e dati",
+    "privacyHint": "Scarica una copia dei tuoi dati o elimina l'account (GDPR).",
+    "exportData": "Scarica i miei dati",
+    "deleteAccount": "Elimina account",
+    "deleteTitle": "Elimina account",
+    "deleteBody": "Questo anonimizza i tuoi dati personali e termina l'accesso. Gettoni, gemme e cosmetici virtuali andranno persi per sempre. Sei sicuro?",
+    "cancel": "Annulla",
+    "confirmDelete": "Sì, elimina",
+    "achievements": "Obiettivi"
+  },
+  "cookie": {
+    "text": "Usiamo solo cookie strettamente necessari per l'accesso.",
+    "learn": "Scopri di più",
+    "accept": "Ho capito"
+  },
+  "live": {
+    "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
+    "yourTurnTimer": "Il tuo turno: {{s}}s"
+  },
+  "verify": {
+    "title": "Verifica email",
+    "verifying": "Verifica dell'email in corso…",
+    "success": "Email verificata! 🎉",
+    "successBody": "Ora hai accesso a tutte le funzioni dell'account.",
+    "continue": "Vai all'app",
+    "failed": "Il link non è valido o è scaduto.",
+    "backToLogin": "Torna all'accesso"
+  },
+  "forgot": {
+    "title": "Password dimenticata",
+    "intro": "Inserisci la tua email e ti invieremo un link per reimpostarla.",
+    "submit": "Invia link",
+    "sent": "Se l'email esiste, abbiamo inviato un link per reimpostare la password.",
+    "backToLogin": "Torna all'accesso"
+  },
+  "reset": {
+    "title": "Nuova password",
+    "intro": "Inserisci la tua nuova password.",
+    "newPassword": "Nuova password",
+    "submit": "Salva password",
+    "success": "Password cambiata! Ora puoi accedere.",
+    "goLogin": "Vai all'accesso",
+    "invalid": "Il link non è valido o è scaduto.",
+    "requestNew": "Richiedi un nuovo link"
+  },
+  "lobby": {
+    "title": "Scegli un gioco",
+    "welcome": "Benvenuto, {{name}}",
+    "comingSoon": "Prossimamente",
+    "play": "Gioca"
+  },
+  "game": {
+    "searching": "Ricerca di un avversario…",
+    "yourTurn": "Il tuo turno",
+    "opponentTurn": "Turno dell'avversario",
+    "opponent": "Avversario",
+    "you": "Tu",
+    "gameOver": "Partita finita",
+    "youWin": "Hai vinto!",
+    "youLose": "Hai perso",
+    "draw": "Pareggio",
+    "leave": "Esci",
+    "backToLobby": "Torna alla lobby"
+  },
+  "santase": {
+    "trump": "Briscola",
+    "stock": "Mazzo: {{count}}",
+    "close": "Chiudi",
+    "exchange": "Cambia briscola"
+  },
+  "belote": {
+    "yourTeam": "La tua squadra",
+    "theirTeam": "Avversari",
+    "pass": "Passo",
+    "emptyTrick": "In attesa della prima carta",
+    "auction": "Asta — chiama la briscola",
+    "contract": "Briscola",
+    "decl": {
+      "tierce": "Terza",
+      "fifty": "Cinquanta",
+      "hundred": "Cento",
+      "carre": "Quartetto",
+      "belote": "Belote"
+    }
+  },
+  "shop": {
+    "disclaimer": "Il denaro acquista solo cosmetici, comfort e fiche d'ingresso. Le fiche non vengono mai riconvertite in denaro.",
+    "purchaseSuccess": "Grazie! Acquisto completato.",
+    "purchaseCancel": "Acquisto annullato.",
+    "unavailable": "I pagamenti non sono attivi al momento.",
+    "error": "Qualcosa è andato storto. Riprova.",
+    "grantGems": "+{{n}} gemme",
+    "grantChips": "+{{n}} fiche",
+    "perMonth": "al mese",
+    "perk": {
+      "noAds": "Niente pubblicità",
+      "xp": "+{{p}}% XP",
+      "daily": "+{{p}}% bonus giornaliero",
+      "gems": "{{n}} 💎 al mese",
+      "cosmetics": "Cosmetici esclusivi",
+      "quests": "{{n}} slot missioni",
+      "badge": "Distintivo VIP e nome colorato"
+    },
+    "kind": {
+      "VIP_SUB": "Abbonamento VIP",
+      "GEMS": "Gemme",
+      "CHIP_PACK": "Pacchetti di fiche",
+      "COSMETIC": "Cosmetici"
+    }
+  },
+  "daily": {
+    "title": "Bonus giornaliero",
+    "prompt": "Accedi oggi per fiche gratuite!",
+    "already": "Bonus di oggi riscattato.",
+    "claimed": "+{{chips}} fiche, +{{gems}} gemme!",
+    "claim": "Riscatta"
+  },
+  "leaderboard": {
+    "empty": "Ancora nessun giocatore in classifica."
+  },
+  "wallet": {
+    "chips": "Fiche",
+    "gems": "Gemme",
+    "level": "Livello {{level}}"
+  },
+  "footer": {
+    "attribution": "Created and Designed by Carbon Stealth VCC",
+    "notGambling": "Gioco sociale — non è gioco d'azzardo con denaro reale."
+  },
+  "cosmetics": {
+    "title": "Personalizza",
+    "subtitle": "Personalizza il tuo tavolo — si paga con gemme 💎.",
+    "customize": "Personalizza",
+    "equip": "Equipaggia",
+    "equipped": "Equipaggiato",
+    "vipOnly": "Solo VIP",
+    "needGems": "Gemme insufficienti",
+    "type": {
+      "FELT": "Panno del tavolo",
+      "CARDBACK": "Dorso delle carte",
+      "BOARD": "Scacchiera",
+      "CUE": "Panno biliardo",
+      "ESTATE": "Panno del tabellone"
+    }
+  },
+  "outOfChips": {
+    "title": "Gettoni esauriti",
+    "body": "Servono almeno {{min}} gettoni per sederti a questo tavolo. Ne hai {{chips}}.",
+    "free": "I gettoni si guadagnano anche gratis — bonus giornaliero e vittorie.",
+    "topUp": "Compra gettoni"
+  },
+  "store": {
+    "title": "Negozio rapido",
+    "topUp": "Ricarica saldo",
+    "fullShop": "Negozio completo",
+    "lowChips": "Pochi gettoni? Ricarica!",
+    "lowGems": "Ti servono gemme",
+    "vipTitle": "Diventa VIP"
+  },
+  "chat": {
+    "title": "Chat",
+    "send": "Invia",
+    "placeholder": "Scrivi un messaggio…",
+    "empty": "Saluta il tavolo 👋",
+    "mute": "Silenzia",
+    "unmute": "Riattiva",
+    "quick": {
+      "hi": "Ciao! 👋",
+      "gl": "Buona fortuna!",
+      "nice": "Bravo! 👏",
+      "gg": "Bella partita",
+      "oops": "Ops! 😅",
+      "thanks": "Grazie"
+    }
+  },
+  "common": {
+    "loading": "Caricamento…",
+    "dismiss": "Chiudi"
+  },
+  "a11y": {
+    "skipToContent": "Vai al contenuto",
+    "toggleSound": "Attiva/disattiva audio",
+    "toggleMotion": "Movimento ridotto"
+  },
+  "svara": {
+    "pot": "Piatto",
+    "call": "Vedo",
+    "raise": "Rilancio",
+    "fold": "Passo",
+    "notice": "Gioco sociale con fiche virtuali — non è gioco d'azzardo con denaro reale."
+  },
+  "holdem": {
+    "check": "Check",
+    "bet": "Punta"
+  },
+  "bridge": {
+    "auction": "Asta",
+    "contract": "Contratto",
+    "yourBid": "La tua dichiarazione",
+    "weTricks": "Nostre prese",
+    "theyTricks": "Loro prese",
+    "double": "Contro",
+    "redouble": "Surcontro"
+  },
+  "war": {
+    "flip": "Gira",
+    "battle": "GUERRA"
+  },
+  "rummy": {
+    "stock": "Mazzo",
+    "discard": "Scarti",
+    "phase": "Fase",
+    "drawPhase": "Pesca",
+    "discardPhase": "Scarta",
+    "knock": "Bussa",
+    "discardHint": "Scegli una carta da scartare",
+    "drawHint": "Pesca dal mazzo o dagli scarti"
+  },
+  "gofish": {
+    "ocean": "Oceano",
+    "askFrom": "Chiedi",
+    "books": "Gruppi"
+  },
+  "backgammon": {
+    "roll": "Lancia",
+    "pass": "Passa",
+    "bar": "Barra",
+    "off": "Fuori"
+  },
+  "battleship": {
+    "enemy": "Nemico: {{name}}",
+    "yourFleet": "La tua flotta"
+  },
+  "dice": {
+    "roll": "Lancia",
+    "reroll": "Rilancia ({{n}})",
+    "held": "Tenuto",
+    "holdHint": "Tocca un dado per tenerlo",
+    "category": "Categoria",
+    "total": "Totale",
+    "cat": {
+      "ones": "Uno",
+      "twos": "Due",
+      "threes": "Tre",
+      "fours": "Quattro",
+      "fives": "Cinque",
+      "sixes": "Sei",
+      "threeKind": "Tris",
+      "fourKind": "Poker",
+      "fullHouse": "Full",
+      "smallStraight": "Scala piccola",
+      "largeStraight": "Scala grande",
+      "chance": "Chance",
+      "yahtzee": "Yahtzee"
+    }
+  },
+  "bingo": {
+    "draw": "Estrai",
+    "drawn": "Estratti: {{n}}",
+    "yourCard": "La tua cartella"
+  },
+  "words": {
+    "nextLetter": "Prossima lettera",
+    "pass": "Passo"
+  },
+  "ludo": {
+    "base": "base",
+    "home": "casa",
+    "pickToken": "Scegli una pedina"
+  },
+  "domino": {
+    "empty": "Posiziona il primo domino",
+    "side": "Lato",
+    "draw": "Pesca"
+  },
+  "cue": {
+    "power": "Potenza",
+    "shoot": "Tira",
+    "yourTurn": "Mira e tira",
+    "yourTurnBih": "Palla in mano — posiziona e tira",
+    "placeCue": "Posiziona la bianca",
+    "placeHint": "Clicca per posizionare la bianca"
+  },
+  "net": {
+    "reconnecting": "Connessione persa — riconnessione…"
+  },
+  "error": {
+    "title": "Qualcosa è andato storto",
+    "body": "Si è verificato un errore imprevisto. Torna alla lobby e riprova.",
+    "backToLobby": "Alla lobby"
+  }
+}

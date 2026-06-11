@@ -1,0 +1,38 @@
+/* Морски бой grids (§4.15 'Командна зала'). */
+.bs-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  width: min(42vw, 320px);
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(120, 180, 210, 0.12), transparent 60%),
+    linear-gradient(180deg, #0e3247, #07202e);
+}
+.bs-cell {
+  aspect-ratio: 1;
+  border: 0.5px solid rgba(180, 210, 230, 0.18);
+  background: transparent;
+  color: var(--ink-100);
+  font-size: 0.8rem;
+  display: grid;
+  place-items: center;
+  cursor: default;
+}
+.bs-cell--fireable {
+  cursor: crosshair;
+}
+.bs-cell--fireable:hover {
+  background: rgba(217, 178, 95, 0.2);
+  box-shadow: inset 0 0 0 1px var(--brass-300);
+}
+.bs-cell--ship {
+  background: linear-gradient(180deg, #4a5560, #2c343c);
+  box-shadow: inset 0 0 0 1px rgba(217, 178, 95, 0.3);
+}
+.bs-cell--miss {
+  color: rgba(180, 210, 230, 0.6);
+}
+.bs-cell--hit {
+  color: var(--suit-red);
+  background: radial-gradient(circle, rgba(194, 54, 47, 0.4), transparent 70%);
+  text-shadow: 0 0 8px var(--loss);
+}
