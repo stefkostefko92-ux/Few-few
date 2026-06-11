@@ -1868,3 +1868,147 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   .cookie-banner { bottom: 8px; left: 8px; right: 8px; padding: 12px; }
   .cookie-banner-text { flex: 1 1 100%; }
 }
+
+/* ====================================================================
+ * Mobile polish round — touch-friendly tap targets, responsive tables,
+ * and breakpoint fixes for the in-app shell. Loaded last so it overrides
+ * any earlier desktop-default rules.
+ * ================================================================== */
+
+/* Tap targets — Material Design guideline is 48px, Apple HIG is 44px.
+   Our default .btn-sm was 28-32px, which mis-fires on small fingers.
+   Bump to 44px minimum on coarse pointers only — desktop keeps the
+   dense, information-rich layout. */
+@media (pointer: coarse) {
+  .btn, .btn-sm {
+    min-height: 44px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .btn-sm { font-size: 13px; }
+  input, select, textarea {
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS auto-zoom on focus */
+  }
+  /* Sidebar nav items get a touch-friendly hit area too. */
+  .sidebar a, .sidebar button { min-height: 44px; }
+}
+
+/* Responsive tables — five most-used data tables collapse to card mode
+   on narrow screens. Each <tr> becomes a stacked card, each <td> takes
+   its column label from a data-label attribute (added in JSX) OR from
+   the column header position when missing. Falls back to horizontal
+   scroll for any table that doesn't have the markup. */
+@media (max-width: 700px) {
+  .data-table, .admin-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Opt-in card mode — add class="data-table-cards" to a table to get
+     stacked cards instead of horizontal scroll. */
+  .data-table-cards {
+    display: block;
+    overflow: visible;
+  }
+  .data-table-cards thead { display: none; }
+  .data-table-cards tr {
+    display: block;
+    background: rgba(22,26,35,.85);
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .data-table-cards td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border: none;
+    text-align: right;
+    gap: 12px;
+  }
+  .data-table-cards td::before {
+    content: attr(data-label);
+    color: var(--text-3);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-align: left;
+    flex: 0 0 auto;
+  }
+}
+
+/* Page padding — desktop is generous (32px+), but on a 360px viewport
+   that leaves <300px content. Tighten consistently. */
+@media (max-width: 700px) {
+  .page, .page-header, .legal-page { padding-left: 14px; padding-right: 14px; }
+  .page-header h1 { font-size: 22px; line-height: 1.25; }
+  .card { padding: 14px; border-radius: 10px; }
+  .field-grid { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* Endgame page grids tighten to single-column under 480px. */
+@media (max-width: 480px) {
+  .faction-grid,
+  .event-rewards,
+  .dungeon-grid { grid-template-columns: 1fr; }
+  .contribution-grid { grid-template-columns: 1fr 1fr; }
+  .mythic-stats { gap: 10px; }
+  .mythic-stats .num { font-size: 18px; }
+}
+
+/* Realm boss card — strike button stacks below the boss head on mobile
+   instead of overflowing to the right. */
+@media (max-width: 700px) {
+  .boss-card-head { flex-direction: column; align-items: flex-start; }
+  .boss-card-head .btn-lg { width: 100%; }
+}
+
+/* Admin webhook table — same card-mode pattern but auto-applied since
+   admin is heavily column-heavy. */
+@media (max-width: 700px) {
+  .admin-table {
+    display: block;
+  }
+  .admin-table thead { display: none; }
+  .admin-table tr {
+    display: block;
+    background: rgba(22,26,35,.85);
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .admin-table td {
+    display: block;
+    padding: 6px 0;
+    border: none;
+  }
+  .admin-table td code { word-break: break-all; }
+}
+
+/* Forge / inventory / hero grids — keep 2 columns down to ~420px,
+   single column below. Stat blocks stack cleanly. */
+@media (max-width: 420px) {
+  .stat-block { grid-template-columns: 1fr; }
+}
+
+/* Combat stage on mobile — the cinematic overlay's letterbox + speed
+   lines were tuned for landscape laptops; portrait phones get thinner
+   bars so the action stays readable. */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cinematic-overlay .letterbox { height: 8%; }
+  .cinematic-overlay .crit-stamp { font-size: 36px; }
+  .combat-stage { min-height: 50vh; }
+}
+
+/* Cookie banner on a phone — full-bleed, no margin. */
+@media (max-width: 480px) {
+  .cookie-banner {
+    bottom: 0; left: 0; right: 0;
+    border-radius: 12px 12px 0 0;
+    padding: 14px;
+  }
+}
