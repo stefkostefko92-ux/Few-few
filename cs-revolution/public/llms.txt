@@ -48,6 +48,10 @@ Optimization for Google, Bing, ChatGPT, Perplexity, Claude, Gemini. Local SEO fo
 - Starting price: €500/month
 - URL: https://carbonstealth.eu/servizi/seo/
 
+### Reverse Engineering & 3D Printing
+Reverse engineering of mechanical parts and devices: scanning, CAD reconstruction, firmware and protocol analysis. 3D printing (FDM) of prototypes, unobtainable spare parts and small production batches.
+- Pricing: per project, free quote within 24 hours
+
 ### Cloud Hosting
 Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SLA, monitoring.
 - Starting price: €29/month
@@ -55,42 +59,11 @@ Managed VPS hosting on Hetzner with SSL, CDN, automated backups, 99.9% uptime SL
 
 ## Notable Projects
 
-- **Nexus Dominion** — Cyberpunk browser RPG with real-time multiplayer, faction warfare, and dynamic economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. 52+ database models, real-time PvP combat.
-- **OU Nikola Vaptsarov** — Official school website in Bobov Dol. Tech: React, Vite, PHP, multilingual.
-- **Panev Ascensori** — Italian elevator manufacturer e-commerce. 27 products, Stripe integration, CAD images, Schema.org.
-- **CS Anti-Cheat v4.0** — FiveM/GTA V security platform. 40+ detection modules including DMA behavioral scoring.
-- **Gaming Portal** — Multiplayer gaming platform with chess, belot, santase. Real-time matchmaking with Socket.IO and Redis. URL: gaming.carbonstealth.eu
-- **Supreme Bot** — Bot management dashboard for automated workflows. URL: botpanel.carbonstealth.eu
-- **Treti Mart** — Bulgarian marketplace. React, Node.js, Stripe, OTP verification.
-- **ERP Ascensori** — Enterprise ERP for elevator manufacturer. Accounting, warehouse, CRM, HR, BI.
-- **Compositi Store** — E-commerce + IoT for composite materials. Eurotherm controller integration.
-
-## Tech Stack
-
-**Frontend:** React, Next.js, Vue.js, Three.js, GSAP, Tailwind CSS
-**Backend:** Node.js, TypeScript, Python, PHP, Prisma ORM
-**Database:** PostgreSQL, Redis, MySQL
-**Infrastructure:** Hetzner VPS, Docker, Nginx, Ubuntu 24.04, Let's Encrypt
-**IoT/Embedded:** Eurotherm EPC3004 (Modbus RTU/TCP), WAGO PFC200 PLC (CODESYS), Arduino, ESP32
-**Payments:** Stripe, PayPal
-**AI:** Anthropic Claude API integration
-
-## FAQ
-
-**Q: What languages does Carbon Stealth work in?**
-A: Italian, English, and Bulgarian. We serve clients across Italy, Bulgaria, and the European Union remotely.
-
-**Q: What is the minimum project size?**
-A: Starting from €800 for simple websites. ERP and custom software projects typically start at €2,000-€5,000.
-
-**Q: Does Carbon Stealth provide ongoing support?**
-A: Yes. We offer managed hosting, SEO/AEO monitoring, and software maintenance contracts starting at €29/month.
-
-**Q: Where is Carbon Stealth based?**
-A: Headquarters in Bobov Dol, Bulgaria (EIK BG208725180). All work delivered remotely.
-
-**Q: What makes Carbon Stealth different?**
-A: We build what others won't touch — complex web platforms, FiveM anti-cheat systems, embedded IoT integrations, and full enterprise ERP. Multilingual (IT/EN/BG) with response within 24 hours.
+- **Nexus Dominion** — Browser MMO with real-time multiplayer, guilds, PvP arena and player-driven economy. Tech: React, Node.js, PostgreSQL, Redis, Socket.IO, Docker. URL: https://nexus.carbonstealth.eu
+- **OU Nikola Vaptsarov** — Official school website in Bobov Dol. Tech: React, Vite, PHP, multilingual. URL: https://ouvaptsarov.com
+- **ERP Ascensori** — Custom ERP for an Italian elevator manufacturer: production tracking, warehouse, invoicing, 7-level roles. URL: https://erp.carbonstealth.eu
+- **CS Anticheat v4.0** — Enterprise anti-cheat for FiveM servers: 40+ detection modules, HMAC-signed forensic reports. URL: https://ac.carbonstealth.eu
+- **Treti Mart** — Bulgarian marketplace for vehicles, real estate and services. URL: https://tretimart.carbonstealth.eu
 
 ## Service Areas
 

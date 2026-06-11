@@ -10,7 +10,7 @@ var LANGS = {
   nav_manifesto: { it: "CHI SIAMO", en: "ABOUT", bg: "\u0417\u0410 \u041D\u0410\u0421" },
   nav_services: { it: "SERVIZI", en: "SERVICES", bg: "\u0423\u0421\u041B\u0423\u0413\u0418" },
   nav_work: { it: "PORTFOLIO", en: "WORK", bg: "\u041F\u041E\u0420\u0422\u0424\u041E\u041B\u0418\u041E" },
-  nav_ai: { it: "TERMINALE AI", en: "AI TERMINAL", bg: "AI \u0422\u0415\u0420\u041C\u0418\u041D\u0410\u041B" },
+  nav_lab: { it: "REVERSE LAB", en: "REVERSE LAB", bg: "REVERSE LAB" },
   nav_contact: { it: "CONTATTI", en: "CONTACT", bg: "\u041A\u041E\u041D\u0422\u0410\u041A\u0422\u0418" },
   // ── HERO ──
   hero_eyebrow: {
@@ -29,9 +29,9 @@ var LANGS = {
     bg: "\u041C\u0418\u041D\u0418 \u041E\u0422\u0422\u0423\u041A \u2014 \u0411\u0423\u041A\u0412\u0418\u0422\u0415 \u0411\u042F\u0413\u0410\u0422"
   },
   hero_desc: {
-    it: "Muovi il cursore sul testo \u2014 reagisce al tuo tocco. Ogni pixel di questo sito \u00e8 vivo. Il terminale AI pensa e risponde a voce.",
-    en: "Move your cursor over the text \u2014 it reacts to your touch. Every pixel of this site is alive. The AI terminal thinks and responds out loud.",
-    bg: "\u041F\u0440\u0435\u043C\u0435\u0441\u0442\u0438 \u043A\u0443\u0440\u0441\u043E\u0440\u0430 \u043D\u0430\u0434 \u0442\u0435\u043A\u0441\u0442\u0430 \u2014 \u0442\u043E\u0439 \u0440\u0435\u0430\u0433\u0438\u0440\u0430 \u043D\u0430 \u0434\u043E\u043A\u043E\u0441\u0432\u0430\u043D\u0435\u0442\u043E \u0442\u0438. \u0412\u0441\u0435\u043A\u0438 \u043F\u0438\u043A\u0441\u0435\u043B \u043D\u0430 \u0442\u043E\u0437\u0438 \u0441\u0430\u0439\u0442 \u0435 \u0436\u0438\u0432. AI \u0442\u0435\u0440\u043C\u0438\u043D\u0430\u043B\u044A\u0442 \u043C\u0438\u0441\u043B\u0438 \u0438 \u043E\u0442\u0433\u043E\u0432\u0430\u0440\u044F \u043D\u0430 \u0433\u043B\u0430\u0441."
+    it: "Muovi il cursore sul testo \u2014 reagisce al tuo tocco. Ogni pixel di questo sito \u00e8 vivo: 3D, fisica, arte generativa in tempo reale.",
+    en: "Move your cursor over the text \u2014 it reacts to your touch. Every pixel of this site is alive: 3D, physics, generative art in real time.",
+    bg: "\u041F\u0440\u0435\u043C\u0435\u0441\u0442\u0438 \u043A\u0443\u0440\u0441\u043E\u0440\u0430 \u043D\u0430\u0434 \u0442\u0435\u043A\u0441\u0442\u0430 \u2014 \u0442\u043E\u0439 \u0440\u0435\u0430\u0433\u0438\u0440\u0430 \u043D\u0430 \u0434\u043E\u043A\u043E\u0441\u0432\u0430\u043D\u0435\u0442\u043E \u0442\u0438. \u0412\u0441\u0435\u043A\u0438 \u043F\u0438\u043A\u0441\u0435\u043B \u043D\u0430 \u0442\u043E\u0437\u0438 \u0441\u0430\u0439\u0442 \u0435 \u0436\u0438\u0432: 3D, \u0444\u0438\u0437\u0438\u043A\u0430, \u0433\u0435\u043D\u0435\u0440\u0430\u0442\u0438\u0432\u043D\u043E \u0438\u0437\u043A\u0443\u0441\u0442\u0432\u043E \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435."
   },
   // ── ABOUT ──
   about_tag: { it: "// CHI SIAMO", en: "// ABOUT US", bg: "// \u0417\u0410 \u041D\u0410\u0421" },
@@ -58,14 +58,18 @@ var LANGS = {
   // ── PRODUCTS ──
   prod_tag: { it: "// PRODOTTI LIVE", en: "// LIVE PRODUCTS", bg: "// \u041D\u0410\u0428\u0418 \u041F\u0420\u041E\u0414\u0423\u041A\u0422\u0418" },
   prod_title: { it: "LE NOSTRE PIATTAFORME", en: "OUR PLATFORMS", bg: "\u041D\u0410\u0428\u0418\u0422\u0415 \u041F\u041B\u0410\u0422\u0424\u041E\u0420\u041C\u0418" },
-  // ── AI TERMINAL ──
-  ai_tag: { it: "// TERMINALE AI", en: "// AI TERMINAL", bg: "// AI \u0422\u0415\u0420\u041C\u0418\u041D\u0410\u041B" },
-  ai_title: { it: "PARLA CON LA MACCHINA", en: "ASK THE MACHINE", bg: "\u041F\u0418\u0422\u0410\u0419 \u041C\u0410\u0428\u0418\u041D\u0410\u0422\u0410" },
-  ai_desc: {
-    it: "Questo terminale \u00e8 alimentato da Claude AI. Chiedi qualsiasi cosa \u2014 tecnologie, progetti, filosofia. Pensa e ti risponde a voce alta.",
-    en: "This terminal is powered by Claude AI. Ask anything \u2014 tech stack, projects, philosophy. Ask anything about our services, tech stack, or projects.",
-    bg: "\u0422\u043E\u0437\u0438 \u0442\u0435\u0440\u043C\u0438\u043D\u0430\u043B \u0440\u0430\u0431\u043E\u0442\u0438 \u0441 Claude AI. \u041F\u0438\u0442\u0430\u0439 \u043A\u0430\u043A\u0432\u043E\u0442\u043E \u0438 \u0434\u0430 \u0435 \u2014 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0438, \u043F\u0440\u043E\u0435\u043A\u0442\u0438, \u0444\u0438\u043B\u043E\u0441\u043E\u0444\u0438\u044F. \u041C\u0438\u0441\u043B\u0438 \u0438 \u043E\u0442\u0433\u043E\u0432\u0430\u0440\u044F \u043D\u0430 \u0433\u043B\u0430\u0441."
+  // ── REVERSE LAB ──
+  lab_tag: { it: "// REVERSE LAB", en: "// REVERSE LAB", bg: "// REVERSE LAB" },
+  lab_title: { it: "DAL FISICO AL DIGITALE E RITORNO", en: "FROM PHYSICAL TO DIGITAL AND BACK", bg: "\u041e\u0422 \u0424\u0418\u0417\u0418\u0427\u041d\u041e\u0422\u041e \u041a\u042a\u041c \u0414\u0418\u0413\u0418\u0422\u0410\u041b\u041d\u041e\u0422\u041e \u0418 \u041e\u0411\u0420\u0410\u0422\u041d\u041e" },
+  lab_desc: {
+    it: "Reverse engineering di componenti e dispositivi: scansione, ricostruzione CAD, analisi di protocolli e firmware. Poi stampiamo in 3D prototipi, ricambi introvabili e piccole serie \u2014 dal pezzo rotto al file STL al pezzo nuovo.",
+    en: "Reverse engineering of parts and devices: scanning, CAD reconstruction, protocol and firmware analysis. Then we 3D print prototypes, unobtainable spare parts and small batches \u2014 from broken part to STL file to new part.",
+    bg: "Reverse engineering \u043d\u0430 \u0447\u0430\u0441\u0442\u0438 \u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430: \u0441\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435, CAD \u0440\u0435\u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f, \u0430\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0438 \u0438 \u0444\u044a\u0440\u043c\u0443\u0435\u0440. \u0421\u043b\u0435\u0434 \u0442\u043e\u0432\u0430 \u043f\u0440\u0438\u043d\u0442\u0438\u0440\u0430\u043c\u0435 \u043d\u0430 3D \u043f\u0440\u0438\u043d\u0442\u0435\u0440 \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0438, \u043d\u0435\u043d\u0430\u043c\u0438\u0440\u0430\u0435\u043c\u0438 \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0438 \u0447\u0430\u0441\u0442\u0438 \u0438 \u043c\u0430\u043b\u043a\u0438 \u0441\u0435\u0440\u0438\u0438 \u2014 \u043e\u0442 \u0441\u0447\u0443\u043f\u0435\u043d\u0430\u0442\u0430 \u0447\u0430\u0441\u0442 \u043f\u0440\u0435\u0437 STL \u0444\u0430\u0439\u043b\u0430 \u0434\u043e \u043d\u043e\u0432\u0430\u0442\u0430."
   },
+  lab_b1: { it: "Scansione e ricostruzione CAD di parti meccaniche", en: "Scanning and CAD reconstruction of mechanical parts", bg: "\u0421\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435 \u0438 CAD \u0440\u0435\u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u044f \u043d\u0430 \u043c\u0435\u0445\u0430\u043d\u0438\u0447\u043d\u0438 \u0447\u0430\u0441\u0442\u0438" },
+  lab_b2: { it: "Stampa 3D: prototipi, ricambi, piccole serie (FDM)", en: "3D printing: prototypes, spare parts, small batches (FDM)", bg: "3D \u043f\u0435\u0447\u0430\u0442: \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0438, \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0438 \u0447\u0430\u0441\u0442\u0438, \u043c\u0430\u043b\u043a\u0438 \u0441\u0435\u0440\u0438\u0438 (FDM)" },
+  lab_b3: { it: "Analisi di protocolli, firmware e dispositivi embedded", en: "Protocol, firmware and embedded device analysis", bg: "\u0410\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0438, \u0444\u044a\u0440\u043c\u0443\u0435\u0440 \u0438 embedded \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430" },
+  lab_cta: { it: "PORTACI IL PEZZO \u2192", en: "BRING US THE PART \u2192", bg: "\u0414\u041e\u041d\u0415\u0421\u0418 \u041d\u0418 \u0427\u0410\u0421\u0422\u0422\u0410 \u2192" },
   // ── CTA ──
   cta_title: { it: "HAI UN PROGETTO?", en: "GOT A PROJECT?", bg: "\u0418\u041C\u0410\u0428 \u041F\u0420\u041E\u0415\u041A\u0422?" },
   cta_sub: {
@@ -165,13 +169,14 @@ var SRV_DATA = {
     {n:"03",t:"Sviluppo Software",d:"Software su misura per automatizzare processi aziendali, integrare sistemi e creare workflow efficienti.",tags:"PYTHON / NODE.JS / API REST"},
     {n:"04",t:"ERP Professionale",d:"Sistemi ERP personalizzati per PMI e enterprise. Contabilita, magazzino, CRM, HR e produzione.",tags:"ERP CUSTOM / CRM / BI DASHBOARD"},
     {n:"05",t:"App Mobile",d:"Applicazioni iOS e Android native e cross-platform. Dalla UX allo sviluppo e pubblicazione.",tags:"REACT NATIVE / FLUTTER / SWIFT"},
-    {n:"06",t:"Game Dev & Anti-Cheat",d:"Browser MMOs, FiveM resources, anti-cheat avanzati con AI detection e analisi real-time.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
+    {n:"06",t:"Game Dev & Anti-Cheat",d:"Browser MMOs, FiveM resources, anti-cheat avanzati con euristiche comportamentali e analisi real-time.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
     {n:"07",t:"SEO & GEO Avanzato",d:"Ottimizzazione motori di ricerca locale e internazionale. Google My Business, link building, SEO tecnico.",tags:"SEO ON-PAGE / GEO SEO / LOCAL SEO"},
-    {n:"08",t:"AEO - AI Engine Optimization",d:"Ottimizzazione per ChatGPT, Perplexity, Google SGE e Gemini. Il futuro della visibilita online.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
+    {n:"08",t:"AEO - Answer Engine Optimization",d:"Ottimizzazione per ChatGPT, Perplexity, Google SGE e Gemini. Il futuro della visibilita online.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
     {n:"09",t:"SEO Analytics & Trust",d:"Monitoraggio posizionamento, analisi concorrenza, trust factor check e report mensili data-driven.",tags:"ANALYTICS / TRUST SCORE / COMPETITOR"},
     {n:"10",t:"Hosting & Cloud",d:"Hosting gestito ad alte prestazioni con SSL gratuito, CDN globale, backup e SLA 99.9% uptime.",tags:"SSL / CDN / 99.9% UPTIME"},
     {n:"11",t:"Cybersecurity & Audit",d:"Audit di sicurezza, penetration testing, protezione DDoS e best practice OWASP.",tags:"PEN TEST / DDOS SHIELD / AES-256"},
     {n:"12",t:"Integrazioni API",d:"Integrazione con CRM, ERP, gestionali, pagamenti e sistemi terzi tramite API REST o webhook.",tags:"REST API / WEBHOOK / OAUTH 2.0"},
+    {n:"13",t:"Reverse Engineering & Stampa 3D",d:"Ricostruzione CAD di parti meccaniche, analisi di firmware e protocolli. Stampa 3D di prototipi, ricambi e piccole serie.",tags:"CAD / STL / FDM / FIRMWARE"},
   ],
   en: [
     {n:"01",t:"Web Development",d:"Showcase sites, corporate portals and high-conversion landing pages. Responsive design and premium UX.",tags:"HTML5 / REACT / NEXT.JS / WORDPRESS"},
@@ -179,13 +184,14 @@ var SRV_DATA = {
     {n:"03",t:"Software Development",d:"Custom software to automate business processes, integrate systems and create efficient workflows.",tags:"PYTHON / NODE.JS / API REST"},
     {n:"04",t:"Professional ERP",d:"Custom ERP systems for SMEs and enterprises. Accounting, inventory, CRM, HR and production.",tags:"ERP CUSTOM / CRM / BI DASHBOARD"},
     {n:"05",t:"Mobile Apps",d:"Native and cross-platform iOS and Android applications. From UX design to development and publishing.",tags:"REACT NATIVE / FLUTTER / SWIFT"},
-    {n:"06",t:"Game Dev & Anti-Cheat",d:"Browser MMOs, FiveM resources, advanced anti-cheat with AI detection and real-time analysis.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
+    {n:"06",t:"Game Dev & Anti-Cheat",d:"Browser MMOs, FiveM resources, advanced anti-cheat with behavioral heuristics and real-time analysis.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
     {n:"07",t:"Advanced SEO & GEO",d:"Local and international search engine optimization. Google My Business, link building, technical SEO.",tags:"SEO ON-PAGE / GEO SEO / LOCAL SEO"},
-    {n:"08",t:"AEO - AI Engine Optimization",d:"Optimization for ChatGPT, Perplexity, Google SGE and Gemini. The future of online visibility.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
+    {n:"08",t:"AEO - Answer Engine Optimization",d:"Optimization for ChatGPT, Perplexity, Google SGE and Gemini. The future of online visibility.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
     {n:"09",t:"SEO Analytics & Trust",d:"Position monitoring, competitor analysis, trust factor checks and monthly data-driven reports.",tags:"ANALYTICS / TRUST SCORE / COMPETITOR"},
     {n:"10",t:"Hosting & Cloud",d:"Managed high-performance hosting with free SSL, global CDN, backups and 99.9% uptime SLA.",tags:"SSL / CDN / 99.9% UPTIME"},
     {n:"11",t:"Cybersecurity & Audit",d:"Security audits, penetration testing, DDoS protection and OWASP best practices.",tags:"PEN TEST / DDOS SHIELD / AES-256"},
     {n:"12",t:"API Integrations",d:"Integration with CRM, ERP, management tools, payments and third-party systems via REST API or webhook.",tags:"REST API / WEBHOOK / OAUTH 2.0"},
+    {n:"13",t:"Reverse Engineering & 3D Printing",d:"CAD reconstruction of mechanical parts, firmware and protocol analysis. 3D printing of prototypes, spare parts and small batches.",tags:"CAD / STL / FDM / FIRMWARE"},
   ],
   bg: [
     {n:"01",t:"\u0423\u0435\u0431 \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430",d:"\u0424\u0438\u0440\u043C\u0435\u043D\u0438 \u0441\u0430\u0439\u0442\u043E\u0432\u0435, \u043A\u043E\u0440\u043F\u043E\u0440\u0430\u0442\u0438\u0432\u043D\u0438 \u043F\u043E\u0440\u0442\u0430\u043B\u0438 \u0438 landing \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0438 \u0441 \u0432\u0438\u0441\u043E\u043A\u0430 \u043A\u043E\u043D\u0432\u0435\u0440\u0441\u0438\u044F. \u0410\u0434\u0430\u043F\u0442\u0438\u0432\u0435\u043D \u0434\u0438\u0437\u0430\u0439\u043D \u0438 \u043F\u0440\u0435\u043C\u0438\u0443\u043C UX.",tags:"HTML5 / REACT / NEXT.JS / WORDPRESS"},
@@ -193,19 +199,20 @@ var SRV_DATA = {
     {n:"03",t:"\u0421\u043E\u0444\u0442\u0443\u0435\u0440\u043D\u0430 \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430",d:"\u0421\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u043F\u043E\u0440\u044A\u0447\u043A\u0430 \u0437\u0430 \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0437\u0430\u0446\u0438\u044F \u043D\u0430 \u0431\u0438\u0437\u043D\u0435\u0441 \u043F\u0440\u043E\u0446\u0435\u0441\u0438, \u0438\u043D\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u044F \u043D\u0430 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0438 \u0435\u0444\u0435\u043A\u0442\u0438\u0432\u043D\u0438 \u0440\u0430\u0431\u043E\u0442\u043D\u0438 \u043F\u043E\u0442\u043E\u0446\u0438.",tags:"PYTHON / NODE.JS / API REST"},
     {n:"04",t:"\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u0435\u043D ERP",d:"ERP \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u043F\u043E \u043F\u043E\u0440\u044A\u0447\u043A\u0430 \u0437\u0430 \u043C\u0430\u043B\u043A\u0438 \u0438 \u0441\u0440\u0435\u0434\u043D\u0438 \u0444\u0438\u0440\u043C\u0438. \u0421\u0447\u0435\u0442\u043E\u0432\u043E\u0434\u0441\u0442\u0432\u043E, \u0441\u043A\u043B\u0430\u0434, CRM, \u0447\u043E\u0432\u0435\u0448\u043A\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u0438 \u0438 \u043F\u0440\u043E\u0438\u0437\u0432\u043E\u0434\u0441\u0442\u0432\u043E.",tags:"ERP CUSTOM / CRM / BI DASHBOARD"},
     {n:"05",t:"\u041C\u043E\u0431\u0438\u043B\u043D\u0438 \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F",d:"\u041D\u0430\u0442\u0438\u0432\u043D\u0438 \u0438 \u043A\u0440\u043E\u0441\u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0435\u043D\u0438 \u043F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F \u0437\u0430 iOS \u0438 Android. \u041E\u0442 UX \u0434\u0438\u0437\u0430\u0439\u043D \u0434\u043E \u043F\u0443\u0431\u043B\u0438\u043A\u0443\u0432\u0430\u043D\u0435 \u0432 App Store \u0438 Google Play.",tags:"REACT NATIVE / FLUTTER / SWIFT"},
-    {n:"06",t:"\u0418\u0433\u0440\u0438 \u0438 Anti-Cheat",d:"\u0411\u0440\u0430\u0443\u0437\u044A\u0440 MMO \u0438\u0433\u0440\u0438, FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438, \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u0438\u0437\u043A\u0443\u0441\u0442\u0432\u0435\u043D \u0438\u043D\u0442\u0435\u043B\u0435\u043A\u0442 \u0438 \u0430\u043D\u0430\u043B\u0438\u0437 \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
+    {n:"06",t:"\u0418\u0433\u0440\u0438 \u0438 Anti-Cheat",d:"\u0411\u0440\u0430\u0443\u0437\u044A\u0440 MMO \u0438\u0433\u0440\u0438, FiveM \u0440\u0435\u0441\u0443\u0440\u0441\u0438, \u0430\u043D\u0442\u0438\u0447\u0438\u0439\u0442 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0441 \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0447\u0435\u0441\u043A\u0438 \u0435\u0432\u0440\u0438\u0441\u0442\u0438\u043A\u0438 \u0438 \u0430\u043D\u0430\u043B\u0438\u0437 \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435.",tags:"FIVEM / LUA / SOCKET.IO / REDIS"},
     {n:"07",t:"\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u043D\u043E SEO \u0438 GEO",d:"\u041B\u043E\u043A\u0430\u043B\u043D\u0430 \u0438 \u043C\u0435\u0436\u0434\u0443\u043D\u0430\u0440\u043E\u0434\u043D\u0430 \u043E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 \u0442\u044A\u0440\u0441\u0430\u0447\u043A\u0438. Google My Business, \u043B\u0438\u043D\u043A \u0431\u0438\u043B\u0434\u0438\u043D\u0433, \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u043E SEO.",tags:"SEO ON-PAGE / GEO SEO / LOCAL SEO"},
-    {n:"08",t:"AEO \u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 AI",d:"\u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 ChatGPT, Perplexity, Google SGE \u0438 Gemini. \u0411\u044A\u0434\u0435\u0449\u0435\u0442\u043E \u043D\u0430 \u043E\u043D\u043B\u0430\u0439\u043D \u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u0442\u0430 \u0435 \u0442\u0443\u043A.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
+    {n:"08",t:"AEO - Answer Engine \u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F",d:"\u041E\u043F\u0442\u0438\u043C\u0438\u0437\u0430\u0446\u0438\u044F \u0437\u0430 ChatGPT, Perplexity, Google SGE \u0438 Gemini. \u0411\u044A\u0434\u0435\u0449\u0435\u0442\u043E \u043D\u0430 \u043E\u043D\u043B\u0430\u0439\u043D \u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u0442\u0430 \u0435 \u0442\u0443\u043A.",tags:"CHATGPT / PERPLEXITY / SCHEMA FAQ"},
     {n:"09",t:"SEO \u0410\u043D\u0430\u043B\u0438\u0442\u0438\u043A\u0430",d:"\u041C\u043E\u043D\u0438\u0442\u043E\u0440\u0438\u043D\u0433 \u043D\u0430 \u043F\u043E\u0437\u0438\u0446\u0438\u0438, \u0430\u043D\u0430\u043B\u0438\u0437 \u043D\u0430 \u043A\u043E\u043D\u043A\u0443\u0440\u0435\u043D\u0442\u0438, trust factor \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0430 \u0438 \u043C\u0435\u0441\u0435\u0447\u043D\u0438 \u043E\u0442\u0447\u0435\u0442\u0438 \u0431\u0430\u0437\u0438\u0440\u0430\u043D\u0438 \u043D\u0430 \u0434\u0430\u043D\u043D\u0438.",tags:"ANALYTICS / TRUST SCORE / COMPETITOR"},
     {n:"10",t:"\u0425\u043E\u0441\u0442\u0438\u043D\u0433 \u0438 Cloud",d:"\u0423\u043F\u0440\u0430\u0432\u043B\u044F\u0432\u0430\u043D \u0445\u043E\u0441\u0442\u0438\u043D\u0433 \u0441 \u0432\u0438\u0441\u043E\u043A\u0430 \u043F\u0440\u043E\u0438\u0437\u0432\u043E\u0434\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442, \u0431\u0435\u0437\u043F\u043B\u0430\u0442\u0435\u043D SSL, \u0433\u043B\u043E\u0431\u0430\u043B\u0435\u043D CDN \u0438 99.9% uptime \u0433\u0430\u0440\u0430\u043D\u0446\u0438\u044F.",tags:"SSL / CDN / 99.9% UPTIME"},
     {n:"11",t:"\u041A\u0438\u0431\u0435\u0440\u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442",d:"\u041E\u0434\u0438\u0442 \u043D\u0430 \u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442\u0442\u0430, penetration testing, DDoS \u0437\u0430\u0449\u0438\u0442\u0430 \u0438 \u043F\u0440\u0438\u043B\u0430\u0433\u0430\u043D\u0435 \u043D\u0430 OWASP \u043D\u0430\u0439-\u0434\u043E\u0431\u0440\u0438 \u043F\u0440\u0430\u043A\u0442\u0438\u043A\u0438.",tags:"PEN TEST / DDOS SHIELD / AES-256"},
     {n:"12",t:"API \u0418\u043D\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u0438",d:"\u0421\u0432\u044A\u0440\u0437\u0432\u0430\u043D\u0435 \u0441 CRM, ERP, \u043F\u043B\u0430\u0442\u0435\u0436\u043D\u0438 \u0441\u0438\u0441\u0442\u0435\u043C\u0438 \u0438 \u0441\u043E\u0444\u0442\u0443\u0435\u0440 \u043D\u0430 \u0442\u0440\u0435\u0442\u0438 \u0441\u0442\u0440\u0430\u043D\u0438 \u0447\u0440\u0435\u0437 REST API \u0438\u043B\u0438 webhook.",tags:"REST API / WEBHOOK / OAUTH 2.0"},
+    {n:"13",t:"Reverse Engineering \u0438 3D \u041F\u0435\u0447\u0430\u0442",d:"CAD \u0440\u0435\u043A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0446\u0438\u044F \u043D\u0430 \u043C\u0435\u0445\u0430\u043D\u0438\u0447\u043D\u0438 \u0447\u0430\u0441\u0442\u0438, \u0430\u043D\u0430\u043B\u0438\u0437 \u043D\u0430 \u0444\u044A\u0440\u043C\u0443\u0435\u0440 \u0438 \u043F\u0440\u043E\u0442\u043E\u043A\u043E\u043B\u0438. 3D \u043F\u0435\u0447\u0430\u0442 \u043D\u0430 \u043F\u0440\u043E\u0442\u043E\u0442\u0438\u043F\u0438, \u0440\u0435\u0437\u0435\u0440\u0432\u043D\u0438 \u0447\u0430\u0441\u0442\u0438 \u0438 \u043C\u0430\u043B\u043A\u0438 \u0441\u0435\u0440\u0438\u0438.",tags:"CAD / STL / FDM / FIRMWARE"},
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════
 // ADMIN STATS DASHBOARD — Secret panel for all CS sites
-// Access: type "admin" in the AI terminal or press Ctrl+Shift+A
+// Access: press Ctrl+Shift+A
 // ═══════════════════════════════════════════════════════════════
 function AdminPanel(props) {
   var [auth, setAuth] = useState(false);
@@ -249,9 +256,6 @@ function AdminPanel(props) {
     {name:"ac.carbonstealth.eu",url:"https://ac.carbonstealth.eu",label:"CS Anti-Cheat",type:"SECURITY",tech:"Python+Flask+PG",port:443,proto:"HTTPS/2",cdn:"None"},
     {name:"tretimart.carbonstealth.eu",url:"https://tretimart.carbonstealth.eu",label:"Treti Mart",type:"MARKETPLACE",tech:"React+Node+Stripe",port:443,proto:"HTTPS/2",cdn:"None"},
     {name:"erp.carbonstealth.eu",url:"https://erp.carbonstealth.eu",label:"ERP Ascensori",type:"ERP SYSTEM",tech:"React+Prisma+PG",port:443,proto:"HTTPS/2",cdn:"None"},
-    {name:"compositi.carbonstealth.eu",url:"https://compositi.carbonstealth.eu",label:"Compositi Store",type:"E-COMMERCE",tech:"React+Eurotherm",port:443,proto:"HTTPS/2",cdn:"None"},
-    {name:"gaming.carbonstealth.eu",url:"https://gaming.carbonstealth.eu",label:"Gaming Portal",type:"MULTIPLAYER",tech:"React+Socket.IO+Redis",port:443,proto:"HTTPS/2",cdn:"None"},{name:"botpanel.carbonstealth.eu",url:"https://botpanel.carbonstealth.eu",label:"Supreme Bot",type:"BOT PLATFORM",tech:"React+Node+API",port:443,proto:"HTTPS/2",cdn:"None"},
-    {name:"gaming.carbonstealth.eu",url:"https://gaming.carbonstealth.eu",label:"Gaming Portal",type:"GAMING",tech:"React+Socket.IO",port:443,proto:"HTTPS/2",cdn:"None"},
   ];
 
   async function checkPwd() {
@@ -267,7 +271,8 @@ function AdminPanel(props) {
     fetch("/api/monitor.php").then(function(res){return res.json()}).then(function(d){if(d.ok){setServerStats(d);
       if(d.top_ips&&d.top_ips.length&&Object.keys(countries).length===0){
         d.top_ips.slice(0,5).forEach(function(entry){
-          fetch("http://ip-api.com/json/"+entry.ip+"/json/").then(function(r){return r.json()}).then(function(geo){
+          // HTTPS endpoint — ip-api.com free tier is HTTP-only and gets blocked as mixed content
+          fetch("https://ipapi.co/"+entry.ip+"/json/").then(function(r){return r.json()}).then(function(geo){
             setCountries(function(prev){var n=Object.assign({},prev);n[entry.ip]={country:geo.country_name||"Unknown",code:geo.country_code||"",city:geo.city||""};return n})
           }).catch(function(){})
         })
@@ -332,6 +337,24 @@ function AdminPanel(props) {
   function delTask(id){var u=tasks.filter(function(t){return t.id!==id});setTasks(u);save("cs_tasks",u)}
   function addClient(){if(!cliName.trim())return;var u=clients.concat([{id:Date.now(),name:cliName,project:cliProj,budget:cliBudget,status:"ACTIVE",date:new Date().toISOString().slice(0,10)}]);setClients(u);save("cs_clients",u);setCliName("");setCliProj("");setCliBudget("")}
   function delClient(id){var u=clients.filter(function(c){return c.id!==id});setClients(u);save("cs_clients",u)}
+  // Export any array of objects as a CSV download (admin convenience)
+  function exportCSV(rows, name){
+    if(!rows||!rows.length){alert("Nothing to export");return}
+    var cols=Object.keys(rows[0]);
+    var esc=function(v){v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+    var csv=cols.join(",")+"\n"+rows.map(function(r){return cols.map(function(c){return esc(r[c])}).join(",")}).join("\n");
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    a.download=name+"_"+new Date().toISOString().slice(0,10)+".csv";
+    a.click();URL.revokeObjectURL(a.href);
+  }
+  var [newPwd,setNewPwd]=useState("");var [newHash,setNewHash]=useState("");
+  function genHash(){
+    if(!newPwd)return;
+    crypto.subtle.digest("SHA-256",new TextEncoder().encode(newPwd)).then(function(buf){
+      setNewHash(Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0")}).join(""));
+    });
+  }
   function saveSMTP(){save("cs_smtp",cfgSmtp);setCfgSaved(true);setTimeout(function(){setCfgSaved(false)},3000);fetch("/api/admin-settings.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save_smtp",data:cfgSmtp})}).catch(function(){})}
 
   var onN=Object.values(stats).filter(function(s){return s.status==="ONLINE"}).length;
@@ -578,6 +601,20 @@ function AdminPanel(props) {
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("170,136,255")}),React.createElement("div",{style:lb},"UNIQUE VISITORS"),React.createElement("div",{style:vl()},serverStats.unique_visitors||0)),
             React.createElement("div",{style:card()},React.createElement("div",{style:cardGlow("255,204,0")}),React.createElement("div",{style:lb},"CONTACTS"),React.createElement("div",{style:vl()},contacts.length))
           ),
+          // Quick actions
+          React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:Math.round(20*F)}},
+            React.createElement("div",{onClick:function(){
+              if(indexNowBusy)return;setIndexNowBusy(true);
+              fetch("/api/indexnow.php?action=bulk&key="+encodeURIComponent("CS@dmin2026!"),{method:"POST"}).then(function(r){return r.json()}).then(function(d){
+                setIndexNowBusy(false);
+                if(d.ok)alert("IndexNow: submitted "+d.submitted+" URLs");else alert("IndexNow error: "+(d.error||"?"));
+              }).catch(function(){setIndexNowBusy(false);alert("IndexNow request failed")});
+            },style:btn("#00ff88")},indexNowBusy?"\u23f3 SUBMITTING...":"\u26a1 INDEXNOW: SUBMIT ALL"),
+            React.createElement("a",{href:"https://search.google.com/search-console",target:"_blank",rel:"noopener",style:Object.assign({},btn(),{textDecoration:"none"})},"\u2197 SEARCH CONSOLE"),
+            React.createElement("a",{href:"https://www.bing.com/webmasters",target:"_blank",rel:"noopener",style:Object.assign({},btn(),{textDecoration:"none"})},"\u2197 BING WEBMASTER"),
+            React.createElement("a",{href:"/sitemap.xml",target:"_blank",rel:"noopener",style:Object.assign({},btn(),{textDecoration:"none"})},"\u2197 SITEMAP"),
+            React.createElement("div",{onClick:function(){setTab("contacts")},style:btn("#ffaa00")},"\u2709 LATEST LEADS")
+          ),
           // Sites grid with sparklines
           React.createElement("div",{style:{marginBottom:Math.round(8*F)}},React.createElement("div",{style:Object.assign({},lb,{marginBottom:Math.round(10*F)})},"REAL-TIME MONITORING \u00b7 REFRESH EVERY 15s")),
           sites.map(function(site){
@@ -624,7 +661,10 @@ function AdminPanel(props) {
         tab==="contacts"&&React.createElement("div",null,
           React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:Math.round(14*F)}},
             React.createElement("div",{style:lb},"FORM SUBMISSIONS (",contacts.length,")"),
-            React.createElement("div",{onClick:function(){fetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){})},style:btn()},"\u21bb REFRESH")
+            React.createElement("div",{style:{display:"flex",gap:6}},
+              React.createElement("div",{onClick:function(){exportCSV(contacts,"cs_leads")},style:btn("#00ff88")},"\u2913 EXPORT CSV"),
+              React.createElement("div",{onClick:function(){fetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){})},style:btn()},"\u21bb REFRESH")
+            )
           ),
           contacts.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(245,245,240,.04)",color:"#555"}},"No submissions yet"),
           contacts.map(function(c,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(245,245,240,.04)"}},
@@ -732,6 +772,9 @@ function AdminPanel(props) {
 
         // ═══ CRM ═══
         tab==="crm"&&React.createElement("div",null,
+          React.createElement("div",{style:{display:"flex",justifyContent:"flex-end",marginBottom:Math.round(10*F)}},
+            React.createElement("div",{onClick:function(){exportCSV(clients,"cs_clients")},style:btn("#00ff88")},"\u2913 EXPORT CSV")
+          ),
           React.createElement("div",{style:Object.assign({},card(),{marginBottom:Math.round(16*F)})},
             React.createElement("div",{style:cardGlow()}),
             React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"ADD CLIENT"),
@@ -819,10 +862,16 @@ function AdminPanel(props) {
           React.createElement("div",{style:card()},
             React.createElement("div",{style:cardGlow("255,51,102")}),
             React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"ADMIN PASSWORD"),
-            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#666",lineHeight:1.8}},
-              "SHA-256 hash: ",React.createElement("code",{style:{color:C,fontSize:Math.round(9*F),wordBreak:"break-all"}},PASS_HASH),
-              React.createElement("br",null),
-              "Change: ",React.createElement("a",{href:"https://emn178.github.io/online-tools/sha256.html",target:"_blank",style:{color:C}},"SHA-256 Generator")," \u2192 replace PASS_HASH \u2192 rebuild"
+            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#666",lineHeight:1.8,marginBottom:10}},
+              "Current hash: ",React.createElement("code",{style:{color:C,fontSize:Math.round(9*F),wordBreak:"break-all"}},PASS_HASH)
+            ),
+            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 140px",gap:8,marginBottom:8}},
+              React.createElement("input",{type:"password",value:newPwd,onChange:function(e){setNewPwd(e.target.value)},placeholder:"New password...",style:ip,onKeyDown:function(e){if(e.key==="Enter")genHash()}}),
+              React.createElement("div",{onClick:genHash,style:Object.assign({},btn(),{textAlign:"center"})},"GENERATE HASH")
+            ),
+            newHash&&React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#999",lineHeight:1.8}},
+              "New hash (paste into PASS_HASH in src/App.jsx, then rebuild):",React.createElement("br",null),
+              React.createElement("code",{onClick:function(){try{navigator.clipboard.writeText(newHash)}catch(e){}},title:"Click to copy",style:{color:"#00ff88",fontSize:Math.round(9*F),wordBreak:"break-all",cursor:"copy"}},newHash)
             )
           )
         )
@@ -949,8 +998,8 @@ function SEOInjector() {
         #portfolio a[style*="grid"] { grid-template-columns:40px 1fr !important; }
         #portfolio a span:last-child { display:none; }
         
-        /* AI Terminal */
-        #ai { padding:40px 16px 60px !important; }
+        /* Reverse Lab */
+        #lab { padding:40px 16px 60px !important; }
         
         /* Contact form: stack inputs */
         #contact { padding:60px 16px !important; }
@@ -1881,51 +1930,120 @@ function Scene3D(){
 }
 
 // ═══════════════════════════════════════════════════
-// AI TERMINAL
+// CIRCUIT SWEEP — post-boot reveal: PCB traces grow out from the
+// center of the screen, then fade. One-shot overlay.
 // ═══════════════════════════════════════════════════
-function AITerminal(props){
-  var lang = props.lang || "en";
-  const[lines,setLines]=useState([{t:"sys",x:lang==="it"?"CS TERMINALE AI v5.0 — Claude AI":lang==="bg"?"CS AI \u0422\u0415\u0420\u041C\u0418\u041D\u0410\u041B v5.0 — Claude — \u0413\u043B\u0430\u0441\u043E\u0432 \u0438\u0437\u0445\u043E\u0434":"CS AI TERMINAL v5.0 — Claude-powered"},{t:"sys",x:lang==="it"?"Chiedi qualsiasi cosa. Scrivi \"help\" per i comandi.":lang==="bg"?"\u041F\u0438\u0442\u0430\u0439 \u043A\u0430\u043A\u0432\u043E\u0442\u043E \u0438 \u0434\u0430 \u0435. \u041D\u0430\u043F\u0438\u0448\u0438 \"help\" \u0437\u0430 \u043A\u043E\u043C\u0430\u043D\u0434\u0438.":"Ask anything about CS. Type \"help\" for built-in commands."},{t:"sys",x:"\u2500".repeat(50)}]);
-  const[input,setInput]=useState("");const[thinking,setThinking]=useState(false);const btm=useRef(null);
-  function add(nl){setLines(function(p){return p.concat(nl)})}
+function CircuitSweep(){
+  var ref=useRef(null);
+  useEffect(function(){
+    var c=ref.current;if(!c)return;
+    var ctx=c.getContext("2d");
+    var W=c.width=window.innerWidth,H=c.height=window.innerHeight;
+    var traces=[];
+    for(var i=0;i<28;i++){
+      var a=Math.floor(Math.random()*4)*(Math.PI/2);
+      traces.push({x:W/2,y:H/2,dir:a,len:0,max:160+Math.random()*Math.max(W,H)*.45,seg:[],turns:0});
+    }
+    var t0=performance.now(),raf;
+    function step(now){
+      var el=now-t0;
+      ctx.clearRect(0,0,W,H);
+      ctx.globalAlpha=el>1600?Math.max(0,1-(el-1600)/600):1;
+      traces.forEach(function(tr){
+        if(tr.len<tr.max){
+          tr.seg.push({x:tr.x,y:tr.y});
+          tr.x+=Math.cos(tr.dir)*14;tr.y+=Math.sin(tr.dir)*14;tr.len+=14;
+          if(Math.random()<.12&&tr.turns<5){tr.dir+=(Math.random()<.5?1:-1)*Math.PI/2;tr.turns++}
+        }
+        if(!tr.seg.length)return;
+        ctx.beginPath();ctx.moveTo(tr.seg[0].x,tr.seg[0].y);
+        tr.seg.forEach(function(p){ctx.lineTo(p.x,p.y)});
+        ctx.lineTo(tr.x,tr.y);
+        ctx.strokeStyle="rgba(0,229,255,.45)";ctx.lineWidth=1;ctx.stroke();
+        ctx.fillStyle="rgba(0,229,255,.95)";ctx.fillRect(tr.x-1.5,tr.y-1.5,3,3);
+      });
+      ctx.globalAlpha=1;
+      if(el<2200)raf=requestAnimationFrame(step);
+      else{ctx.clearRect(0,0,W,H);c.style.display="none"}
+    }
+    raf=requestAnimationFrame(step);
+    return function(){cancelAnimationFrame(raf)};
+  },[]);
+  return <canvas ref={ref} style={{position:"fixed",inset:0,zIndex:9999,pointerEvents:"none"}}/>;
+}
 
-  async function callAI(msg){setThinking(true);add([{t:"sys",x:(lang==="it"?"\u23f3 Elaborazione...":lang==="bg"?"\u23f3 \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430...":"\u23f3 Processing...")}]);
-    // Calls our server-side proxy (api/ai-chat.php) — never api.anthropic.com
-    // directly: a browser call has no API key (always 401) and embedding one
-    // would leak it. The system prompt also lives server-side.
-    try{const res=await fetch("/api/ai-chat.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:msg})});
-      const data=await res.json();const txt=data.text||data.error||"ERROR: No response.";
-      const tl=txt.split("\n").filter(function(l){return l.trim()!==""}).map(function(l){return{t:"ai",x:l}});
-      setLines(function(p){return p.filter(function(l){return l.x!==(lang==="it"?"\u23f3 Elaborazione...":lang==="bg"?"\u23f3 \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430...":"\u23f3 Processing...")}).concat(tl)});
-    }catch(err){setLines(function(p){return p.concat([{t:"err",x:"ERROR: "+err.message}])})}
-    setThinking(false)}
-
-  function exec(){if(!input.trim()||thinking)return;var raw=input.trim();var cmd=raw.toLowerCase();add([{t:"in",x:"> "+raw}]);setInput("");
-    if(cmd==="clear"){setLines([{t:"sys",x:"Cleared."}]);return}
-    if(cmd==="admin"){window.dispatchEvent(new CustomEvent("cs-admin-toggle"));add([{t:"out",x:"ADMIN PANEL TOGGLED"}]);return}
-    if(cmd==="status"){[{t:"out",x:"FPS: "+props.fps},{t:"out",x:"BAT: "+props.battery},{t:"out",x:"NET: "+props.netInfo},{t:"out",x:"\u25cf NOMINAL"}].forEach(function(l){add([l])});return}
-    if(cmd==="help"){[{t:"out",x:lang==="it"?"Comandi: status, projects, clear":lang==="bg"?"\u041A\u043E\u043C\u0430\u043D\u0434\u0438: status, projects, clear":"Built-in: status, projects, clear"},{t:"out",x:lang==="it"?"Oppure chiedi QUALSIASI COSA — AI risponde":lang==="bg"?"\u0418\u043B\u0438 \u043F\u0438\u0442\u0430\u0439 \u041A\u0410\u041A\u0412\u041E\u0422\u041E \u0418 \u0414\u0410 \u0415 — AI \u043E\u0442\u0433\u043E\u0432\u0430\u0440\u044F \u0438 \u0433\u043E\u0432\u043E\u0440\u0438":"Or ask ANYTHING — AI responds"}].forEach(function(l){add([l])});return}
-    if(cmd==="projects"){["001 NEXUS DOMINION — Browser MMO","002 PANEV ASCENSORI — 28 Products","003 ERP ASCENSORI — Management","004 COMPOSITI.CS — E-Comm+IoT","005 SYNDICATE X — Cyberpunk RPG","006 CARBON ANTICHEAT"].forEach(function(l){add([{t:"out",x:l}])});return}
-    callAI(raw)}
-
-  useEffect(function(){if(btm.current)btm.current.scrollIntoView({behavior:"smooth"})},[lines]);
-  return(
-    <div style={{background:"rgba(0,0,0,.95)",border:"1px solid rgba("+CR+",.2)",display:"flex",flexDirection:"column",maxHeight:460,fontFamily:"inherit",fontSize:11,position:"relative"}}>
-      {thinking&&<div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"linear-gradient(90deg,transparent,"+C+",transparent)",animation:"scanH 1s linear infinite",zIndex:10}}/>}
-      <div style={{padding:"8px 14px",borderBottom:"1px solid rgba("+CR+",.1)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <span style={{color:C,fontSize:9,letterSpacing:".3em"}}>{lang==="it"?"TERMINALE AI — CLAUDE — VOCE":lang==="bg"?"AI \u0422\u0415\u0420\u041C\u0418\u041D\u0410\u041B — CLAUDE — \u0413\u041B\u0410\u0421":"AI TERMINAL — CLAUDE — SPEECH"}</span>
-        <div style={{display:"flex",gap:4,alignItems:"center"}}>{thinking&&<span style={{fontSize:8,color:C,marginRight:8,animation:"blink 1s steps(1) infinite"}}>{lang==="it"?"ELABORO":lang==="bg"?"\u041C\u0418\u0421\u041B\u042F":"THINKING"}</span>}<div style={{width:6,height:6,background:C}}/></div>
-      </div>
-      <div style={{flex:1,overflow:"auto",padding:14,minHeight:200}}>
-        {lines.map(function(l,i){var color=l.t==="err"?"#ff3366":l.t==="in"?"#f5f5f0":l.t==="sys"?"#ccc":l.t==="ai"?C:"#00b8d4";
-          return <div key={i} style={{color:color,marginBottom:l.t==="ai"?3:1,lineHeight:1.7,fontWeight:l.t==="in"?700:l.t==="ai"?500:400,paddingLeft:l.t==="ai"?8:0,borderLeft:l.t==="ai"?"2px solid rgba("+CR+",.3)":"none"}}>{l.x}</div>})}
-        <div ref={btm}/></div>
-      <div style={{borderTop:"1px solid rgba("+CR+",.1)",padding:"8px 14px",display:"flex",alignItems:"center",gap:8}}>
-        <span style={{color:thinking?"#ddd":C}}>{thinking?"\u23f3":">"}</span>
-        <input value={input} onChange={function(e){setInput(e.target.value)}} onKeyDown={function(e){if(e.key==="Enter")exec()}}
-          placeholder={thinking?(lang==="it"?"AI sta pensando...":lang==="bg"?"AI \u043C\u0438\u0441\u043B\u0438...":"AI thinking..."):(lang==="it"?"chiedi qualsiasi cosa a Carbon Stealth...":lang==="bg"?"\u043F\u0438\u0442\u0430\u0439 \u043A\u0430\u043A\u0432\u043E\u0442\u043E \u0438 \u0434\u0430 \u0435 Carbon Stealth...":"ask anything about Carbon Stealth...")} disabled={thinking}
-          style={{flex:1,background:"transparent",border:"none",outline:"none",color:thinking?"#ddd":"#f5f5f0",fontFamily:"inherit",fontSize:"inherit",caretColor:C,letterSpacing:".05em",opacity:thinking?.5:1}} /></div></div>)}
+// ═══════════════════════════════════════════════════
+// PRINT FORGE — Reverse Engineering / 3D printing visual.
+// A part materializes layer by layer under a moving print head,
+// then a scan beam sweeps it back to a wireframe (reverse
+// engineering) and the cycle restarts.
+// ═══════════════════════════════════════════════════
+function PrintForge(){
+  var ref=useRef(null);
+  useEffect(function(){
+    var c=ref.current;if(!c)return;
+    var ctx=c.getContext("2d");
+    var W,H;function fit(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight}
+    fit();window.addEventListener("resize",fit);
+    // Part silhouette: half-widths per layer, bottom -> top (a turbine-hub-like profile)
+    var prof=[];
+    var NL=34;
+    for(var i=0;i<NL;i++){
+      var t=i/(NL-1);
+      var w=.42-.16*Math.sin(t*Math.PI)-(t>.75?(t-.75)*.7:0)+(i%6===0?.05:0);
+      prof.push(Math.max(.08,w));
+    }
+    var layer=0,sub=0,phase=0,scanY=0; // phase 0=print 1=hold 2=scan(wireframe) 3=reset-fade
+    var raf;
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      var cx=W/2,baseY=H*.88,lh=(H*.72)/NL;
+      // build plate
+      ctx.strokeStyle="rgba(245,245,240,.15)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(W*.08,baseY+6);ctx.lineTo(W*.92,baseY+6);ctx.stroke();
+      for(var g=0;g<12;g++){ctx.beginPath();ctx.moveTo(W*.08+g*(W*.84/11),baseY+6);ctx.lineTo(W*.08+g*(W*.84/11)+8,baseY+12);ctx.strokeStyle="rgba(245,245,240,.06)";ctx.stroke()}
+      var visible=phase===0?layer:NL;
+      for(var i=0;i<visible;i++){
+        var hw=prof[i]*W*.5,y=baseY-i*lh;
+        var wire=phase===2&&y>scanY||phase===3;
+        if(wire){
+          ctx.strokeStyle="rgba(0,229,255,.55)";ctx.lineWidth=1;
+          ctx.strokeRect(cx-hw,y-lh+1,hw*2,lh-2);
+        }else{
+          ctx.fillStyle="rgba(0,229,255,"+(0.10+0.10*(i/NL))+")";
+          ctx.fillRect(cx-hw,y-lh+1,hw*2,lh-2);
+          ctx.strokeStyle="rgba(0,229,255,.35)";ctx.lineWidth=.5;
+          ctx.strokeRect(cx-hw,y-lh+1,hw*2,lh-2);
+        }
+      }
+      if(phase===0&&layer<NL){
+        // print head sweeping the current layer
+        var hw2=prof[layer]*W*.5,y2=baseY-layer*lh;
+        var hx=cx-hw2+(sub%1)*(hw2*2);
+        ctx.strokeStyle="rgba(245,245,240,.25)";ctx.beginPath();ctx.moveTo(W*.05,y2-lh);ctx.lineTo(W*.95,y2-lh);ctx.stroke();
+        ctx.fillStyle="#f5f5f0";ctx.beginPath();ctx.moveTo(hx,y2-lh+2);ctx.lineTo(hx-5,y2-lh-8);ctx.lineTo(hx+5,y2-lh-8);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(0,229,255,.9)";ctx.fillRect(hx-1,y2-lh+2,2,4);
+        sub+=.06;if(sub>=1){sub=0;layer++}
+        if(layer>=NL){phase=1;setTimeout(function(){phase=2;scanY=baseY-NL*lh},900)}
+      }else if(phase===2){
+        // reverse-engineering scan beam
+        ctx.fillStyle="rgba(0,229,255,.10)";ctx.fillRect(W*.06,scanY-2,W*.88,4);
+        ctx.fillStyle="rgba(0,229,255,.9)";ctx.fillRect(W*.06,scanY,W*.88,1);
+        scanY+=2.4;
+        if(scanY>baseY){phase=3;setTimeout(function(){layer=0;sub=0;phase=0},1200)}
+      }
+      // HUD labels
+      ctx.font="9px Space Mono,monospace";ctx.fillStyle="rgba(0,229,255,.7)";
+      ctx.fillText(phase===2?"> SCANNING GEOMETRY...":phase===3?"> MESH RECONSTRUCTED":"LAYER "+Math.min(layer+1,NL)+"/"+NL+"  0.20 MM",12,18);
+      ctx.fillStyle="rgba(245,245,240,.35)";
+      ctx.fillText(phase>=2?"REVERSE ENGINEERING MODE":"ADDITIVE BUILD MODE",12,32);
+      raf=requestAnimationFrame(draw);
+    }
+    raf=requestAnimationFrame(draw);
+    return function(){cancelAnimationFrame(raf);window.removeEventListener("resize",fit)};
+  },[]);
+  return <canvas ref={ref} style={{width:"100%",height:"100%",display:"block"}}/>;
+}
 
 // ═══════════════════════════════════════════════════
 // MAIN APP
@@ -2024,7 +2142,7 @@ export default function App(){
       { delay: 2600, text: "  [OK] THREE.JS 3D ENGINE", color: "#00ff88" },
       { delay: 2750, text: "  [OK] WEB AUDIO SYNTHESIZER", color: "#00ff88" },
       { delay: 2900, text: "  [OK] SPEECH SYNTHESIS CORE", color: "#00ff88" },
-      { delay: 3050, text: "  [OK] CLAUDE AI NEURAL LINK", color: "#00ff88" },
+      { delay: 3050, text: "  [OK] REVERSE LAB / 3D PRINT PIPELINE", color: "#00ff88" },
       { delay: 3200, text: "  [OK] CANVAS PARTICLE ENGINE", color: "#00ff88" },
       { delay: 3350, text: "  [OK] GENERATIVE ART MODULE", color: "#00ff88" },
       { delay: 3500, text: "  [OK] VARIABLE TYPOGRAPHY ENGINE", color: "#00ff88" },
@@ -2351,7 +2469,9 @@ export default function App(){
   return(
     <div style={{background:"#000",color:"#f5f5f0",fontFamily:"'Space Mono',monospace",fontSize:12,cursor:"crosshair",letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
       {showAdmin && <AdminPanel onClose={function(){setShowAdmin(false)}} />}
-      <style>{"::selection{background:"+C+";color:#000}*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow-x:hidden}@keyframes blink{50%{opacity:.3}}@keyframes scanH{from{transform:translateX(-100%)}to{transform:translateX(100%)}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes diagScan{from{transform:translateY(-200%) rotate(45deg)}to{transform:translateY(200%) rotate(45deg)}}input::placeholder{color:#999}input:disabled{cursor:wait}"}</style>
+      {/* Post-boot circuit trace reveal (one-shot, removes itself) */}
+      <CircuitSweep />
+      <style>{"::selection{background:"+C+";color:#000}*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow-x:hidden}@keyframes blink{50%{opacity:.3}}@keyframes scanH{from{transform:translateX(-100%)}to{transform:translateX(100%)}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes diagScan{from{transform:translateY(-200%) rotate(45deg)}to{transform:translateY(200%) rotate(45deg)}}input::placeholder{color:#999}input:disabled{cursor:wait}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}"}</style>
 
       {/* Generative painting canvas */}
       <CodeRain />
@@ -2370,7 +2490,7 @@ export default function App(){
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba(245,245,240,.08)",background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo.png" alt="Carbon Stealth VCC" style={{height:28,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
-        <div className="cs-nav-links" style={{display:"flex",gap:20}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_ai"),id:"ai"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} onClick={function(){scrollToId(item.id)}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em",cursor:"crosshair"}}/></div>})}</div>
+        <div className="cs-nav-links" style={{display:"flex",gap:20}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} onClick={function(){scrollToId(item.id)}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em",cursor:"crosshair"}}/></div>})}</div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{fps}FPS</span>
           {bat!=="N/A"&&<span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{bat}</span>}
@@ -2386,7 +2506,7 @@ export default function App(){
       <div className={"cs-mobile-menu"+(mobileMenu?" open":"")} style={{position:"fixed",top:0,left:0,width:"100%",height:"100vh",background:"rgba(0,0,0,.97)",zIndex:99999,display:mobileMenu?"flex":"none",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24,backdropFilter:"blur(12px)"}}>
         <div className="cs-mobile-menu-close" onClick={function(){setMobileMenu(false)}} style={{position:"absolute",top:16,right:16,width:40,height:40,border:"1px solid rgba("+CR+",.3)",display:"flex",alignItems:"center",justifyContent:"center",color:C,fontSize:18}}>\u2715</div>
         <img src="/logo.png" alt="CS" style={{height:36,marginBottom:12}}/>
-        {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_ai"),id:"ai"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" onClick={function(){scrollToId(item.id);setMobileMenu(false)}} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
+        {[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} className="cs-mobile-menu-item" onClick={function(){scrollToId(item.id);setMobileMenu(false)}} style={{fontSize:13,letterSpacing:".3em",color:"#ccc",padding:"14px 32px",border:"1px solid rgba(245,245,240,.06)",minWidth:220,textAlign:"center"}}>{item.txt}</div>})}
         <div style={{display:"flex",gap:6,marginTop:12}}>{["it","en","bg"].map(function(l){return <span key={l} onClick={function(){setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:10,padding:"6px 12px",border:"1px solid "+(lang===l?"rgba("+CR+",.4)":"rgba(245,245,240,.08)"),background:lang===l?"rgba("+CR+",.12)":"transparent",color:lang===l?C:"#ccc"}}>{l.toUpperCase()}</span>})}</div>
       </div>
 
@@ -2426,7 +2546,7 @@ export default function App(){
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderTop:"1px solid rgba(245,245,240,.1)",paddingTop:18,marginTop:32}}>
             <p style={{maxWidth:340,fontSize:12,lineHeight:1.9,color:"#ddd"}}>{t("hero_desc")}</p>
-            <div style={{fontSize:10,color:"#ddd",lineHeight:2,textAlign:"right"}}>{fps}FPS | {bat} | {net}<br/><span style={{color:C}}>{"\u25cf"} CS AI ACTIVE</span></div>
+            <div style={{fontSize:10,color:"#ddd",lineHeight:2,textAlign:"right"}}>{fps}FPS | {bat} | {net}<br/><span style={{color:C}}>{"\u25cf"} CS CORE ACTIVE</span></div>
           </div>
         </div>
       </section>
@@ -2504,7 +2624,7 @@ export default function App(){
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:2,maxWidth:1100,margin:"0 auto"}}>
           {[
-            {id:"WF-001",title:"AI BRAIN IN WEBSITE",desc:lang==="it"?"Claude AI integrato nel terminale con risposte AI in tempo reale":lang==="bg"?"Claude AI \u0432\u0433\u0440\u0430\u0434\u0435\u043d \u0432 \u0442\u0435\u0440\u043c\u0438\u043d\u0430\u043b\u0430 \u0441 \u0433\u043b\u0430\u0441\u043e\u0432\u0438 \u043e\u0442\u0433\u043e\u0432\u043e\u0440\u0438":"Claude AI embedded in terminal with real-time responses",tech:"ANTHROPIC API + REAL-TIME AI",year:"2026"},
+            {id:"WF-001",title:"LIVE PRINT FORGE",desc:lang==="it"?"Stampante 3D simulata in canvas: il pezzo nasce strato per strato in tempo reale":lang==="bg"?"\u0421\u0438\u043c\u0443\u043b\u0438\u0440\u0430\u043d 3D \u043f\u0440\u0438\u043d\u0442\u0435\u0440 \u0432 canvas: \u0447\u0430\u0441\u0442\u0442\u0430 \u0441\u0435 \u0440\u0430\u0436\u0434\u0430 \u0441\u043b\u043e\u0439 \u043f\u043e \u0441\u043b\u043e\u0439 \u0432 \u0440\u0435\u0430\u043b\u043d\u043e \u0432\u0440\u0435\u043c\u0435":"Simulated 3D printer in canvas: the part is built layer by layer in real time",tech:"CANVAS 2D + ADDITIVE SIM",year:"2026"},
             {id:"WF-002",title:"8K PARTICLE TEXT",desc:lang==="it"?"8.000 particelle GLSL che formano testo e reagiscono al cursore":lang==="bg"?"8000 GLSL \u0447\u0430\u0441\u0442\u0438\u0446\u0438 \u0444\u043e\u0440\u043c\u0438\u0440\u0430\u0449\u0438 \u0442\u0435\u043a\u0441\u0442 \u0438 \u0440\u0435\u0430\u0433\u0438\u0440\u0430\u0449\u0438 \u043d\u0430 \u043a\u0443\u0440\u0441\u043e\u0440\u0430":"8,000 GLSL particles forming text with mouse repulsion physics",tech:"THREE.JS + CUSTOM GLSL SHADERS",year:"2026"},
             {id:"WF-003",title:"HARDWARE BIOS BOOT",desc:lang==="it"?"Scansione hardware reale del dispositivo (CPU, GPU, RAM, batteria, rete)":lang==="bg"?"\u0420\u0435\u0430\u043b\u043d\u043e \u0441\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435 \u043d\u0430 \u0445\u0430\u0440\u0434\u0443\u0435\u0440 (CPU, GPU, RAM, \u0431\u0430\u0442\u0435\u0440\u0438\u044f)":"Real device hardware scan (CPU, GPU, RAM, battery, network)",tech:"NAVIGATOR API + WEBGL_DEBUG",year:"2026"},
             {id:"WF-004",title:"SVG LIQUID DISTORTION",desc:lang==="it"?"Filtro SVG feTurbulence animato applicato all'intero hero in tempo reale":lang==="bg"?"\u0410\u043d\u0438\u043c\u0438\u0440\u0430\u043d SVG feTurbulence \u0444\u0438\u043b\u0442\u044a\u0440 \u0432\u044a\u0440\u0445\u0443 \u0446\u044f\u043b\u043e\u0442\u043e hero":"Animated SVG feTurbulence filter applied to entire hero section",tech:"SVG FILTER + REQUESTANIMATIONFRAME",year:"2026"},
@@ -2513,7 +2633,7 @@ export default function App(){
             {id:"WF-007",title:"GENERATIVE CANVAS PAINTING",desc:lang==="it"?"Il cursore lascia segni permanenti — ogni visitatore crea un'opera unica":lang==="bg"?"\u041a\u0443\u0440\u0441\u043e\u0440\u044a\u0442 \u043e\u0441\u0442\u0430\u0432\u044f \u043f\u0435\u0440\u043c\u0430\u043d\u0435\u043d\u0442\u043d\u0438 \u0441\u043b\u0435\u0434\u0438 \u2014 \u0432\u0441\u0435\u043a\u0438 \u043f\u043e\u0441\u0435\u0442\u0438\u0442\u0435\u043b \u0441\u044a\u0437\u0434\u0430\u0432\u0430 \u0443\u043d\u0438\u043a\u0430\u043b\u043d\u043e":"Cursor leaves permanent marks — every visitor creates unique artwork",tech:"CANVAS 2D + NO CLEAR",year:"2026"},
             {id:"WF-008",title:"PHOSPHOR CURSOR TRAIL",desc:lang==="it"?"Scia luminosa CRT con persistenza fosforo — il cursore emette luce":lang==="bg"?"CRT \u0441\u0432\u0435\u0442\u043b\u0438\u043d\u043d\u0430 \u0441\u043b\u0435\u0434\u0430 \u0441 \u0444\u043e\u0441\u0444\u043e\u0440\u043d\u0430 \u043f\u0435\u0440\u0441\u0438\u0441\u0442\u0435\u043d\u0442\u043d\u043e\u0441\u0442":"CRT-style phosphor persistence light trail from cursor movement",tech:"RADIAL GRADIENT + ALPHA FADE",year:"2026"},
             {id:"WF-009",title:"30+ BROWSER APIs",desc:lang==="it"?"Piu di 30 API browser usate simultaneamente in un singolo file React":lang==="bg"?"\u041d\u0430\u0434 30 \u0431\u0440\u0430\u0443\u0437\u044a\u0440 API \u0438\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u043d\u0438 \u0435\u0434\u043d\u043e\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u0432 \u0435\u0434\u0438\u043d React \u0444\u0430\u0439\u043b":"Over 30 browser APIs used simultaneously in a single React file",tech:"WEB AUDIO + SPEECH + BATTERY + NET",year:"2026"},
-            {id:"WF-010",title:"2000+ LINES / 1 FILE",desc:lang==="it"?"Oltre 2.000 righe di React con 3D, AI, schema SEO in un file":lang==="bg"?"\u041d\u0430\u0434 2000 \u0440\u0435\u0434\u0430 React \u0441 3D, AI, \u0430\u0443\u0434\u0438\u043e, \u0433\u043b\u0430\u0441\u043e\u0432 \u0441\u0438\u043d\u0442\u0435\u0437 \u0432 \u0435\u0434\u0438\u043d \u0444\u0430\u0439\u043b":"Over 2,000 lines of React with 3D, AI, SEO schemas in one file",tech:"REACT + THREE.JS + ANTHROPIC",year:"2026"},
+            {id:"WF-010",title:"2000+ LINES / 1 FILE",desc:lang==="it"?"Oltre 2.000 righe di React con 3D, audio, fisica e schema SEO in un file":lang==="bg"?"\u041d\u0430\u0434 2000 \u0440\u0435\u0434\u0430 React \u0441 3D, \u0430\u0443\u0434\u0438\u043e, \u0444\u0438\u0437\u0438\u043a\u0430 \u0438 SEO \u0441\u0445\u0435\u043c\u0438 \u0432 \u0435\u0434\u0438\u043d \u0444\u0430\u0439\u043b":"Over 2,000 lines of React with 3D, audio, physics and SEO schemas in one file",tech:"REACT + THREE.JS + WEBGL",year:"2026"},
           ].map(function(wf,i){
             return <div key={i} style={{border:"1px solid rgba("+CR+",.12)",padding:"20px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,position:"relative",overflow:"hidden"}}>
               {/* Background glow */}
@@ -2543,7 +2663,7 @@ export default function App(){
         <EchoText fontFamily={HEAD} fontSize="clamp(2rem,5vw,4rem)" letterSpacing="-.03em">{t("work_title")}</EchoText>
         <div style={{height:48}}/>
 
-        {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com"],["003","PANEV ASCENSORI","PRODUCTION SITE","https://panevascensori.it"],["004","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu"],["005","COMPOSITI.CS","E-COMMERCE + IOT","https://compositi.carbonstealth.eu"],["006","GAMING PORTAL","MULTIPLAYER GAMES","https://gaming.carbonstealth.eu"],["007","SUPREME BOT","BOT MANAGEMENT","https://botpanel.carbonstealth.eu"],["008","CS ANTICHEAT v4.0","FIVEM 40+ MODULES","https://ac.carbonstealth.eu"],["009","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu"]].map(function(w){
+        {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu"],["004","CS ANTICHEAT v4.0","FIVEM 40+ MODULES","https://ac.carbonstealth.eu"],["005","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu"]].map(function(w){
           return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" style={{display:"grid",gridTemplateColumns:"60px 1fr auto",gap:16,padding:"16px 0",borderBottom:"1px solid rgba(245,245,240,.08)",cursor:"crosshair",textDecoration:"none",color:"inherit"}}>
             <span style={{fontSize:9,color:"#ccc",letterSpacing:".2em"}}>{w[0]}</span>
             <Scr text={w[1]} style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em"}}/>
@@ -2576,14 +2696,26 @@ export default function App(){
       </section>
 
       {/* ═══════════════════════════════════════════
-          AI TERMINAL
+          REVERSE LAB — reverse engineering + 3D printing
           ═══════════════════════════════════════════ */}
-      <section id="ai" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
-        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("ai_tag")}</div>
-        <ProximityText text={t("ai_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#f5f5f0",fontWeight:700}}/>
-        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:500}}>{t("ai_desc")}</p>
-        <AITerminal battery={bat} netInfo={net} fps={fps} lang={lang}/>
-        
+      <section id="lab" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("lab_tag")}</div>
+        <ProximityText text={t("lab_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#f5f5f0",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("lab_desc")}</p>
+        <div className="cs-lab-grid" style={{display:"grid",gridTemplateColumns:"minmax(280px,1fr) minmax(280px,1fr)",gap:2,alignItems:"stretch"}}>
+          <div style={{border:"1px solid rgba("+CR+",.15)",background:"rgba("+CR+",.02)",minHeight:340,position:"relative"}}>
+            <PrintForge/>
+          </div>
+          <div style={{border:"1px solid rgba(245,245,240,.06)",padding:"28px 24px",display:"flex",flexDirection:"column",justifyContent:"center",gap:18}}>
+            {[t("lab_b1"),t("lab_b2"),t("lab_b3")].map(function(b,i){
+              return <div key={i} style={{display:"flex",gap:14,alignItems:"baseline"}}>
+                <span style={{color:C,fontSize:10,letterSpacing:".2em",flexShrink:0}}>{"0"+(i+1)}</span>
+                <span style={{fontSize:11,color:"#ddd",lineHeight:1.8,letterSpacing:".05em"}}>{b}</span>
+              </div>
+            })}
+            <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"crosshair",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
+          </div>
+        </div>
       </section>
 
       {/* ═══ CTA ═══ */}
@@ -2752,7 +2884,7 @@ export default function App(){
 
         {/* POWERED BY */}
         <div style={{padding:"10px 20px",textAlign:"center",borderTop:"1px solid rgba(245,245,240,.02)"}}>
-          <span style={{fontSize:7,color:"#444",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} AI-POWERED {"\u00b7"} THREE.JS {"\u00b7"} WEB AUDIO {"\u00b7"} SPEECH SYNTHESIS {"\u00b7"} CLAUDE AI</span>
+          <span style={{fontSize:7,color:"#444",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} THREE.JS {"\u00b7"} WEB AUDIO {"\u00b7"} WEBGL {"\u00b7"} CANVAS 2D</span>
         </div>
       </footer>
 
