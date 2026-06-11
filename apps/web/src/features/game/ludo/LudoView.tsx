@@ -86,8 +86,10 @@ export function LudoView({ title }: { title: string }) {
   const viewRef = useRef({ state, seat, movable });
   viewRef.current = { state, seat, movable };
 
+  // Canvas mounts only once state arrives — re-run the GL init on that flip.
+  const glReady = !!state;
   useEffect(() => {
-    if (!useGL) return;
+    if (!useGL || !glReady) return;
     let scene: LudoScene | null = null;
     let ro: ResizeObserver | null = null;
     let cancelled = false;
@@ -112,7 +114,7 @@ export function LudoView({ title }: { title: string }) {
       scene?.destroy();
       sceneRef.current = null;
     };
-  }, [useGL]);
+  }, [useGL, glReady]);
 
   useEffect(() => {
     if (sceneRef.current && state) {

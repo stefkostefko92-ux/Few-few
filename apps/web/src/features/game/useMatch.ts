@@ -51,7 +51,17 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     const adopting =
       existing.matchId !== null && existing.game === gameKey && existing.phase !== "over";
 
+    // The server emits to the per-USER room, so this socket also receives
+    // events from other matches the user is (still) seated in — e.g. a game
+    // abandoned mid-match keeps auto-playing server-side. Bind this view to
+    // exactly one matchId and drop everything else, or foreign-shaped states
+    // crash the view.
+    const boundId = { current: adopting ? existing.matchId : null };
+
     const onFound = (m: MatchFoundMsg) => {
+      if (m.game !== gameKey) return; // another game's match
+      if (boundId.current && boundId.current !== m.matchId) return; // already bound
+      boundId.current = m.matchId;
       setMatchId(m.matchId);
       setSeat(m.seat);
       setPlayers(m.players);
@@ -60,6 +70,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       useMatchStore.getState().setMatch({ matchId: m.matchId, seat: m.seat, players: m.players, game: m.game });
     };
     const onState = (s: GameStateMsg) => {
+      if (s.matchId !== boundId.current) return;
       setState(s.state as S);
       setLegal((s.legalActions as A[]) ?? []);
       setTurn(s.turn);
@@ -67,12 +78,13 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       useMatchStore.getState().setLive(s.turn, s.turnEndsAt ?? 0);
     };
     const onOver = (o: GameOverMsg) => {
+      if (o.matchId !== boundId.current) return;
       setResult(o);
       setPhase("over");
       useMatchStore.getState().setPhase("over");
     };
     const onPresence = (p: PresenceMsg) => {
-      // Single active match per client, so apply directly.
+      if (p.matchId !== boundId.current) return;
       useMatchStore.getState().setPresence(p.seat, p.connected);
     };
 

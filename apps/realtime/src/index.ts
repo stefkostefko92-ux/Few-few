@@ -169,6 +169,10 @@ async function main(): Promise<void> {
         socket.emit(SOCKET_EVENTS.ERROR, { code: "bad_request", message: "Invalid queue join" });
         return;
       }
+      // Queueing anew while still seated in a live match means the player has
+      // moved on — resign that seat so the old table ends cleanly instead of
+      // auto-playing forever (its states would also keep streaming to this user).
+      matchmaker.activeRoomForUser(userId)?.resign(userId);
       void matchmaker
         .joinQueue(userId, parsed.data.game, parsed.data.mode)
         .then((ok) => {

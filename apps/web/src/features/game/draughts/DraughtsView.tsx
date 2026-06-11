@@ -71,8 +71,10 @@ export function DraughtsView({ title }: { title: string }) {
   const viewRef = useRef({ board: state?.board, from, targets });
   viewRef.current = { board: state?.board, from, targets };
 
+  // Canvas mounts only once state arrives — re-run the GL init on that flip.
+  const glReady = !!state;
   useEffect(() => {
-    if (!useGL) return;
+    if (!useGL || !glReady) return;
     let scene: DraughtsScene | null = null;
     let ro: ResizeObserver | null = null;
     let cancelled = false;
@@ -97,7 +99,7 @@ export function DraughtsView({ title }: { title: string }) {
       scene?.destroy();
       sceneRef.current = null;
     };
-  }, [useGL, seat]);
+  }, [useGL, glReady, seat]);
 
   useEffect(() => {
     if (sceneRef.current && state) {

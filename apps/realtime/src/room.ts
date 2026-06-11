@@ -236,6 +236,19 @@ export class GameRoom {
     void this.finish(score);
   }
 
+  /** Explicit abandon (the player queued for a new match while seated here):
+   *  the seat loses immediately so the table doesn't drag on with auto-play. */
+  resign(userId: string): void {
+    const seat = this.seatOf(userId);
+    if (!seat || seat.isBot || this.done) return;
+    logger.info({ matchId: this.matchId, seat: seat.seat }, "seat resigned (re-queued elsewhere)");
+    const score: SeatScore[] = this.seats.map((s) => ({
+      seat: s.seat,
+      result: s.seat === seat.seat ? "loss" : "win",
+    }));
+    void this.finish(score);
+  }
+
   private applyReduce(action: unknown): void {
     let result: { state: unknown; events: unknown };
     try {

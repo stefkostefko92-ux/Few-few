@@ -34,8 +34,12 @@ export function MagnatView({ title }: { title: string }) {
   const feltRef = useRef(felt);
   feltRef.current = felt;
 
+  // The canvas exists only once the match state arrives (it renders behind
+  // `{state ? ...}`), so the GL effect must re-run on that flip — otherwise it
+  // bails on the missing canvas at mount and the board stays blank forever.
+  const glReady = !!state;
   useEffect(() => {
-    if (!useGL) return;
+    if (!useGL || !glReady) return;
     let scene: MagnatScene | null = null;
     let ro: ResizeObserver | null = null;
     let cancelled = false;
@@ -64,7 +68,7 @@ export function MagnatView({ title }: { title: string }) {
       scene?.destroy();
       sceneRef.current = null;
     };
-  }, [useGL]);
+  }, [useGL, glReady]);
 
   useEffect(() => {
     if (sceneRef.current && state) sceneRef.current.setState(state);
