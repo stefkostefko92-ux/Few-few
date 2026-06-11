@@ -36,7 +36,24 @@ La deviazione di volume tra piena risoluzione e versione 50k è < 0,1%: la decim
 
 ![Anteprima](aletta_preview.png)
 
-## Suggerimento per FreeCAD 1.1
+## Solido B-Rep già convertito
+
+La conversione mesh → solido è già stata eseguita con il kernel OpenCascade
+(lo stesso di FreeCAD): facce dai triangoli → cucitura a 0,01 mm → shell →
+solido → correzione orientamento → validazione `BRepCheck_Analyzer` superata.
+
+| File | Contenuto | Dimensione |
+|---|---|---|
+| `Aletta_v1_solid_50k.brep` | Solido nativo OpenCascade — si apre direttamente in FreeCAD | 33 MB |
+| `Aletta_v1_solid_50k.step.zip` | Stesso solido in formato STEP AP214 (decomprimere prima) | 25 MB (124 MB estratto) |
+
+Volume del solido: **228,85 cm³**, identico alla mesh di partenza. Un solo
+solido, valido, pronto per operazioni booleane, tagli e misure nel workbench
+Part. Nota: essendo nato da una scansione, il B-Rep è composto da ~50.000
+facce triangolari piane — perfettamente lavorabile ma non parametrico; per
+rimodellare in modo parametrico usarlo come riferimento per sketch e sezioni.
+
+## Suggerimento per FreeCAD 1.1 (conversione manuale, se preferita)
 
 1. `File → Importa` la versione 50k (o 200k se serve più dettaglio).
 2. Workbench **Mesh**: `Analizza → Valuta e ripara mesh` confermerà 0 difetti.
