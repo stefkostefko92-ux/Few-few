@@ -92,6 +92,36 @@ Sulle superfici principali della vela la deviazione è < 0,3 mm.
 Per il lavoro manuale di precisione usare il CAD parametrico come base e le
 mesh/solidi tassellati (`Aletta_v1_solid_*.brep`) come riferimento esatto.
 
+## v2 — boss modellati con fedeltà dalla scansione
+
+La v1 sostituiva i boss di attacco dei perni con collari cilindrici prolungati.
+Nella **v2** i boss sono ritagliati **esatti dalla scansione** (blocchi watertight
+attorno a ciascun perno), uniti al corpo parametrico e ai perni ideali M8 in
+spazio mesh (le booleane CAD fallivano per quasi-tangenza tra boss e skin),
+quindi riconvertiti in B-Rep valido.
+
+| File | Contenuto |
+|---|---|
+| `Aletta_parametrica_v2.FCStd` | Documento FreeCAD 1.1: sketch sezioni + corpo parametrico + profili/rivoluzioni perni + `Boss_1`/`Boss_2` esatti + solido finale `Aletta` |
+| `Aletta_v2_solid.brep` | Solido finale v2 (valido, 242,7 cm³) |
+| `Aletta_v2_solid.step.zip` | Stesso solido in STEP (decomprimere) |
+
+### Fedeltà v2 vs v1 (zone boss, scan→CAD)
+
+| Zona | v1 media / max | v2 media / max |
+|---|---|---|
+| Boss perno 1 | 1,20 / 9,4 mm | **0,31 / 3,3 mm** |
+| Boss perno 2 | 1,58 / 11,6 mm | **0,50 / 4,6 mm** |
+
+Globale v2: mediana 0,19 mm, p95 3,4 mm (vedi `deviation_map_v2.png`).
+Inoltre la v2 elimina il collare artificiale nella gola della forcella.
+Le fasce residue di deviazione tra le stazioni della forcella superiore
+restano (limite dello skinning a singola superficie, documentato in v1).
+
+Nel documento v2 il solido finale `Aletta` è una feature statica (il fuso
+mesh-spazio); corpo, perni e boss restano oggetti separati e modificabili
+per la rilavorazione manuale.
+
 ## Suggerimento per FreeCAD 1.1 (conversione manuale, se preferita)
 
 1. `File → Importa` la versione 50k (o 200k se serve più dettaglio).
