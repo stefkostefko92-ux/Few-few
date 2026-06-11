@@ -70,6 +70,14 @@ var LANGS = {
   lab_b2: { it: "Stampa 3D: prototipi, ricambi, piccole serie (FDM)", en: "3D printing: prototypes, spare parts, small batches (FDM)", bg: "3D \u043f\u0435\u0447\u0430\u0442: \u043f\u0440\u043e\u0442\u043e\u0442\u0438\u043f\u0438, \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u0438 \u0447\u0430\u0441\u0442\u0438, \u043c\u0430\u043b\u043a\u0438 \u0441\u0435\u0440\u0438\u0438 (FDM)" },
   lab_b3: { it: "Analisi di protocolli, firmware e dispositivi embedded", en: "Protocol, firmware and embedded device analysis", bg: "\u0410\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0438, \u0444\u044a\u0440\u043c\u0443\u0435\u0440 \u0438 embedded \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430" },
   lab_cta: { it: "PORTACI IL PEZZO \u2192", en: "BRING US THE PART \u2192", bg: "\u0414\u041e\u041d\u0415\u0421\u0418 \u041d\u0418 \u0427\u0410\u0421\u0422\u0422\u0410 \u2192" },
+  // ── MONUMENT ──
+  mon_tag: { it: "// IL MONUMENTO", en: "// THE MONUMENT", bg: "// \u041c\u041e\u041d\u0423\u041c\u0415\u041d\u0422\u042a\u0422" },
+  mon_title: { it: "COSTRUITO DA OGNI VISITATORE", en: "BUILT BY EVERY VISITOR", bg: "\u0418\u0417\u0413\u0420\u0410\u0414\u0415\u041d \u041e\u0422 \u0412\u0421\u0415\u041a\u0418 \u041f\u041e\u0421\u0415\u0422\u0418\u0422\u0415\u041b" },
+  mon_desc: {
+    it: "Un cristallo che cresce per sempre. Ogni visita forgia dal proprio comportamento \u2014 movimento del cursore, ritmo di scroll, tempo \u2014 un'impronta anonima che diventa un frammento permanente della struttura. Nessun dato personale: solo entropia. Questo monumento non potr\u00e0 mai diminuire. Anche tu ora ne fai parte.",
+    en: "A crystal that grows forever. Every visit forges an anonymous imprint from its own behavior \u2014 cursor movement, scroll rhythm, time \u2014 and that imprint becomes a permanent shard of the structure. No personal data: pure entropy. This monument can never shrink. You are now part of it.",
+    bg: "\u041a\u0440\u0438\u0441\u0442\u0430\u043b, \u043a\u043e\u0439\u0442\u043e \u0440\u0430\u0441\u0442\u0435 \u0437\u0430\u0432\u0438\u043d\u0430\u0433\u0438. \u0412\u0441\u044f\u043a\u043e \u043f\u043e\u0441\u0435\u0449\u0435\u043d\u0438\u0435 \u0438\u0437\u043a\u043e\u0432\u0430\u0432\u0430 \u043e\u0442 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043e\u0442\u043e \u0441\u0438 \u043f\u043e\u0432\u0435\u0434\u0435\u043d\u0438\u0435 \u2014 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435 \u043d\u0430 \u043a\u0443\u0440\u0441\u043e\u0440\u0430, \u0440\u0438\u0442\u044a\u043c \u043d\u0430 \u0441\u043a\u0440\u043e\u043b\u0430, \u0432\u0440\u0435\u043c\u0435 \u2014 \u0430\u043d\u043e\u043d\u0438\u043c\u0435\u043d \u043e\u0442\u043f\u0435\u0447\u0430\u0442\u044a\u043a, \u043a\u043e\u0439\u0442\u043e \u0441\u0442\u0430\u0432\u0430 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u0435\u043d \u0448\u0430\u0440\u0434 \u043e\u0442 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0430\u0442\u0430. \u0411\u0435\u0437 \u043b\u0438\u0447\u043d\u0438 \u0434\u0430\u043d\u043d\u0438: \u0447\u0438\u0441\u0442\u0430 \u0435\u043d\u0442\u0440\u043e\u043f\u0438\u044f. \u0422\u043e\u0437\u0438 \u043c\u043e\u043d\u0443\u043c\u0435\u043d\u0442 \u043d\u0438\u043a\u043e\u0433\u0430 \u043d\u0435 \u043c\u043e\u0436\u0435 \u0434\u0430 \u043d\u0430\u043c\u0430\u043b\u0435\u0435. \u0412\u0435\u0447\u0435 \u0441\u0438 \u0447\u0430\u0441\u0442 \u043e\u0442 \u043d\u0435\u0433\u043e."
+  },
   // ── CTA ──
   cta_title: { it: "HAI UN PROGETTO?", en: "GOT A PROJECT?", bg: "\u0418\u041C\u0410\u0428 \u041F\u0420\u041E\u0415\u041A\u0422?" },
   cta_sub: {
@@ -2046,6 +2054,130 @@ function PrintForge(){
 }
 
 // ═══════════════════════════════════════════════════
+// THE MONUMENT — a permanent, collectively-built crystal.
+// Each visit hashes its own behavior (mouse, scroll, timing,
+// device) into an anonymous seed; the server stores it forever and
+// every seed becomes one shard in a phyllotaxis spiral. The
+// visitor's own shard pulses white. The structure can only grow.
+// ═══════════════════════════════════════════════════
+function Monument(props){
+  var lang=props.lang||"en";
+  var ref=useRef(null);
+  var [count,setCount]=useState(null);
+  var [mine,setMine]=useState(-1);
+  var seedsRef=useRef([]);
+  var entropy=useRef({mx:0,md:0,sc:0,t0:performance.now()});
+
+  // collect behavioral entropy for this visit's seed
+  useEffect(function(){
+    var e=entropy.current,lx=0,ly=0;
+    function onMove(ev){var dx=ev.clientX-lx,dy=ev.clientY-ly;lx=ev.clientX;ly=ev.clientY;e.mx++;e.md+=Math.sqrt(dx*dx+dy*dy)}
+    function onScroll(){e.sc=Math.max(e.sc,window.scrollY)}
+    window.addEventListener("mousemove",onMove);window.addEventListener("scroll",onScroll);
+    return function(){window.removeEventListener("mousemove",onMove);window.removeEventListener("scroll",onScroll)};
+  },[]);
+
+  // fetch the monument, then (once per session, after 8s of life) forge our shard
+  useEffect(function(){
+    var alive=true;
+    fetch("/api/monument.php").then(function(r){return r.json()}).then(function(d){
+      if(!alive||!d.ok)return;
+      seedsRef.current=d.seeds||[];setCount(d.count||0);
+    }).catch(function(){
+      // local preview when the API isn't reachable (dev): procedural shards
+      var s=[];for(var i=0;i<260;i++){var h="";for(var j=0;j<12;j++)h+="0123456789abcdef"[(i*2654435761+j*40503)%16];s.push(h)}
+      seedsRef.current=s;setCount(null);
+    });
+    var t=setTimeout(function(){
+      var e=entropy.current;
+      var raw=[e.mx,Math.round(e.md),e.sc,Math.round(performance.now()-e.t0),screen.width,screen.height,
+               Intl.DateTimeFormat().resolvedOptions().timeZone,navigator.language,Date.now()].join("|");
+      crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw)).then(function(buf){
+        var seed=Array.from(new Uint8Array(buf)).slice(0,6).map(function(b){return b.toString(16).padStart(2,"0")}).join("");
+        try{if(sessionStorage.getItem("cs_shard")){return}}catch(err){}
+        fetch("/api/monument.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({seed:seed})})
+          .then(function(r){return r.json()}).then(function(d){
+            if(!alive||!d.ok)return;
+            try{sessionStorage.setItem("cs_shard","1")}catch(err){}
+            if(d.index>=0){seedsRef.current=seedsRef.current.concat([seed]);setMine(seedsRef.current.length-1);setCount(d.count)}
+          }).catch(function(){
+            // offline: still show the visitor their shard locally
+            seedsRef.current=seedsRef.current.concat([seed]);setMine(seedsRef.current.length-1);
+          });
+      });
+    },8000);
+    return function(){alive=false;clearTimeout(t)};
+  },[]);
+
+  // renderer — static shards on an offscreen layer, live layer for pulse + rotation
+  useEffect(function(){
+    var c=ref.current;if(!c)return;
+    var ctx=c.getContext("2d");
+    var W,H,off,octx,builtFor=-1;
+    function fit(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight;off=document.createElement("canvas");off.width=W;off.height=H;octx=off.getContext("2d");builtFor=-1}
+    fit();window.addEventListener("resize",fit);
+    var GA=Math.PI*(3-Math.sqrt(5)); // golden angle — phyllotaxis
+    function shardGeo(seed,i,n){
+      var h=parseInt(seed.substring(0,4),16)/0xffff;
+      var r0=10+Math.sqrt(i)*(Math.min(W,H)*.42/Math.sqrt(Math.max(n,60)));
+      var a=i*GA+h*.35;
+      var len=8+(parseInt(seed.substring(4,8),16)/0xffff)*26;
+      var wdt=1+(parseInt(seed.substring(8,12),16)/0xffff)*3.2;
+      return {x:W/2+Math.cos(a)*r0,y:H/2+Math.sin(a)*r0,a:a,len:len,w:wdt,b:.25+h*.55};
+    }
+    function drawShard(g,x,y,gctx,glow){
+      gctx.save();gctx.translate(x,y);gctx.rotate(g.a+Math.PI/2);
+      gctx.beginPath();gctx.moveTo(0,-g.len/2);gctx.lineTo(g.w,g.len/2);gctx.lineTo(-g.w,g.len/2);gctx.closePath();
+      if(glow){gctx.shadowColor="rgba(245,245,240,.9)";gctx.shadowBlur=14;gctx.fillStyle="rgba(245,245,240,"+glow+")"}
+      else gctx.fillStyle="rgba(0,229,255,"+g.b*.5+")";
+      gctx.fill();
+      if(!glow){gctx.strokeStyle="rgba(0,229,255,"+g.b+")";gctx.lineWidth=.6;gctx.stroke()}
+      gctx.restore();
+    }
+    var raf;
+    function frame(now){
+      var seeds=seedsRef.current,n=seeds.length;
+      if(n!==builtFor&&octx){ // rebuild static layer only when the monument grows
+        octx.clearRect(0,0,W,H);
+        for(var i=0;i<n;i++){if(i===mine)continue;var g=shardGeo(seeds[i],i,n);drawShard(g,g.x,g.y,octx,null)}
+        builtFor=n;
+      }
+      ctx.clearRect(0,0,W,H);
+      var rot=Math.sin(now*.00004)*.05;
+      ctx.save();ctx.translate(W/2,H/2);ctx.rotate(rot);ctx.translate(-W/2,-H/2);
+      ctx.drawImage(off,0,0);
+      if(mine>=0&&mine<seedsRef.current.length){
+        var gm=shardGeo(seedsRef.current[mine],mine,n);
+        drawShard(gm,gm.x,gm.y,ctx,.55+Math.sin(now*.004)*.35);
+      }
+      ctx.restore();
+      // core
+      ctx.fillStyle="rgba(0,229,255,"+(0.5+Math.sin(now*.002)*.2)+")";
+      ctx.beginPath();ctx.arc(W/2,H/2,2.5,0,Math.PI*2);ctx.fill();
+      raf=requestAnimationFrame(frame);
+    }
+    raf=requestAnimationFrame(frame);
+    return function(){cancelAnimationFrame(raf);window.removeEventListener("resize",fit)};
+  },[mine]);
+
+  var L={
+    shards:{it:"FRAMMENTI",en:"SHARDS",bg:"\u0428\u0410\u0420\u0414\u0410"},
+    yours:{it:"IL TUO FRAMMENTO PULSA IN BIANCO",en:"YOUR SHARD PULSES WHITE",bg:"\u0422\u0412\u041e\u042f\u0422 \u0428\u0410\u0420\u0414 \u041f\u0423\u041b\u0421\u0418\u0420\u0410 \u0412 \u0411\u042f\u041b\u041e"},
+    forging:{it:"OSSERVANDO LA TUA VISITA...",en:"OBSERVING YOUR VISIT...",bg:"\u041d\u0410\u0411\u041b\u042e\u0414\u0410\u0412\u0410\u041c\u0415 \u041f\u041e\u0421\u0415\u0429\u0415\u041d\u0418\u0415\u0422\u041e \u0422\u0418..."}
+  };
+  function tt(k){return L[k][lang]||L[k].en}
+  return <div style={{position:"relative",width:"100%",height:"100%"}}>
+    <canvas ref={ref} style={{width:"100%",height:"100%",display:"block"}}/>
+    <div style={{position:"absolute",top:12,left:14,fontSize:9,letterSpacing:".2em",color:"rgba(0,229,255,.7)"}}>
+      {count!=null?count.toLocaleString()+" "+tt("shards"):"LOCAL PREVIEW"}
+    </div>
+    <div style={{position:"absolute",bottom:12,left:14,fontSize:8,letterSpacing:".2em",color:mine>=0?"#f5f5f0":"#555"}}>
+      {mine>=0?"\u25c6 "+tt("yours"):"\u25cc "+tt("forging")}
+    </div>
+  </div>;
+}
+
+// ═══════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════
 export default function App(){
@@ -2625,6 +2757,7 @@ export default function App(){
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:2,maxWidth:1100,margin:"0 auto"}}>
           {[
             {id:"WF-001",title:"LIVE PRINT FORGE",desc:lang==="it"?"Stampante 3D simulata in canvas: il pezzo nasce strato per strato in tempo reale":lang==="bg"?"\u0421\u0438\u043c\u0443\u043b\u0438\u0440\u0430\u043d 3D \u043f\u0440\u0438\u043d\u0442\u0435\u0440 \u0432 canvas: \u0447\u0430\u0441\u0442\u0442\u0430 \u0441\u0435 \u0440\u0430\u0436\u0434\u0430 \u0441\u043b\u043e\u0439 \u043f\u043e \u0441\u043b\u043e\u0439 \u0432 \u0440\u0435\u0430\u043b\u043d\u043e \u0432\u0440\u0435\u043c\u0435":"Simulated 3D printer in canvas: the part is built layer by layer in real time",tech:"CANVAS 2D + ADDITIVE SIM",year:"2026"},
+            {id:"WF-011",title:"LIVING MONUMENT",desc:lang==="it"?"Cristallo permanente costruito dal comportamento di ogni visitatore \u2014 pu\u00f2 solo crescere":lang==="bg"?"\u041f\u0435\u0440\u043c\u0430\u043d\u0435\u043d\u0442\u0435\u043d \u043a\u0440\u0438\u0441\u0442\u0430\u043b, \u0438\u0437\u0433\u0440\u0430\u0436\u0434\u0430\u043d \u043e\u0442 \u043f\u043e\u0432\u0435\u0434\u0435\u043d\u0438\u0435\u0442\u043e \u043d\u0430 \u0432\u0441\u0435\u043a\u0438 \u043f\u043e\u0441\u0435\u0442\u0438\u0442\u0435\u043b \u2014 \u043c\u043e\u0436\u0435 \u0441\u0430\u043c\u043e \u0434\u0430 \u0440\u0430\u0441\u0442\u0435":"Permanent crystal grown from every visitor's behavior \u2014 it can only get bigger",tech:"SHA-256 ENTROPY + PHYLLOTAXIS",year:"2026"},
             {id:"WF-002",title:"8K PARTICLE TEXT",desc:lang==="it"?"8.000 particelle GLSL che formano testo e reagiscono al cursore":lang==="bg"?"8000 GLSL \u0447\u0430\u0441\u0442\u0438\u0446\u0438 \u0444\u043e\u0440\u043c\u0438\u0440\u0430\u0449\u0438 \u0442\u0435\u043a\u0441\u0442 \u0438 \u0440\u0435\u0430\u0433\u0438\u0440\u0430\u0449\u0438 \u043d\u0430 \u043a\u0443\u0440\u0441\u043e\u0440\u0430":"8,000 GLSL particles forming text with mouse repulsion physics",tech:"THREE.JS + CUSTOM GLSL SHADERS",year:"2026"},
             {id:"WF-003",title:"HARDWARE BIOS BOOT",desc:lang==="it"?"Scansione hardware reale del dispositivo (CPU, GPU, RAM, batteria, rete)":lang==="bg"?"\u0420\u0435\u0430\u043b\u043d\u043e \u0441\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435 \u043d\u0430 \u0445\u0430\u0440\u0434\u0443\u0435\u0440 (CPU, GPU, RAM, \u0431\u0430\u0442\u0435\u0440\u0438\u044f)":"Real device hardware scan (CPU, GPU, RAM, battery, network)",tech:"NAVIGATOR API + WEBGL_DEBUG",year:"2026"},
             {id:"WF-004",title:"SVG LIQUID DISTORTION",desc:lang==="it"?"Filtro SVG feTurbulence animato applicato all'intero hero in tempo reale":lang==="bg"?"\u0410\u043d\u0438\u043c\u0438\u0440\u0430\u043d SVG feTurbulence \u0444\u0438\u043b\u0442\u044a\u0440 \u0432\u044a\u0440\u0445\u0443 \u0446\u044f\u043b\u043e\u0442\u043e hero":"Animated SVG feTurbulence filter applied to entire hero section",tech:"SVG FILTER + REQUESTANIMATIONFRAME",year:"2026"},
@@ -2715,6 +2848,18 @@ export default function App(){
             })}
             <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"crosshair",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
           </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          THE MONUMENT — permanent visitor-built crystal
+          ═══════════════════════════════════════════ */}
+      <section id="monument" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("mon_tag")}</div>
+        <ProximityText text={t("mon_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#f5f5f0",fontWeight:700}}/>
+        <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("mon_desc")}</p>
+        <div style={{border:"1px solid rgba("+CR+",.15)",background:"radial-gradient(circle at 50% 50%, rgba("+CR+",.04), transparent 70%)",height:"min(72vh,560px)",position:"relative"}}>
+          <Monument lang={lang}/>
         </div>
       </section>
 
