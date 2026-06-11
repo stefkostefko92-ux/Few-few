@@ -1,0 +1,47 @@
+services:
+  nexus-dominion:
+    build: .
+    image: nexus-dominion:latest
+    container_name: nexus-dominion
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DB_PATH: /app/data/nexus-dominion.db
+      JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in .env}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
+      # Audit (deploy round): no wildcard fallback. server.ts refuses
+      # to boot under NODE_ENV=production if CORS_ORIGIN is missing or
+      # '*' — surfacing that at compose time rather than after the
+      # process exits inside the container.
+      CORS_ORIGIN: "${CORS_ORIGIN:?Set CORS_ORIGIN in .env (comma-separated origin list)}"
+    ports:
+      - "4000:4000"
+    volumes:
+      - nexus-dominion_data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional: reverse proxy with TLS. Comment out if you already run one.
+  caddy:
+    image: caddy:2-alpine
+    container_name: nexus-dominion-caddy
+    restart: unless-stopped
+    depends_on:
+      - nexus-dominion
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  nexus-dominion_data:
+  caddy_data:
+  caddy_config:
