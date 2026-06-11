@@ -1,0 +1,5 @@
+node_modules/
+profiles/
+accounts.json
+settings/*.json
+!settings/*.example.json

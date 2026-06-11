@@ -1,0 +1,85 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extName__",
+  "version": "1.9.2",
+  "default_locale": "en",
+  "description": "__MSG_extDescription__",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "__MSG_extName__",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "options_page": "options/options.html",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "*://*.tanoth.gameforge.com/*",
+    "https://api.telegram.org/*",
+    "https://discord.com/api/webhooks/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.tanoth.gameforge.com/*"
+      ],
+      "css": [
+        "src/ui/panel.css"
+      ],
+      "js": [
+        "src/core/namespace.js",
+        "src/core/i18n.js",
+        "src/core/logger.js",
+        "src/core/storage.js",
+        "src/core/state.js",
+        "src/core/stats.js",
+        "src/core/license.js",
+        "src/core/bridge.js",
+        "src/core/api.js",
+        "src/core/scheduler.js",
+        "src/modules/adventures.js",
+        "src/modules/training.js",
+        "src/modules/circle.js",
+        "src/modules/dungeon.js",
+        "src/modules/eventquest.js",
+        "src/modules/map.js",
+        "src/modules/pvp.js",
+        "src/modules/work.js",
+        "src/modules/guild.js",
+        "src/modules/autosell.js",
+        "src/modules/autologin.js",
+        "src/ui/panel.js",
+        "src/content/content-script.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/inject.js"
+      ],
+      "matches": [
+        "*://*.tanoth.gameforge.com/*"
+      ]
+    }
+  ]
+}
