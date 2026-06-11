@@ -15,6 +15,12 @@
   let encounterCooldown = 0;
   let eventNextAt = 0;
   let eventTurn = 0;
+  // After map acts it steps aside for a few scheduler cycles so lower priority
+  // modules (training, circle, autosell, ...) are not starved while map works
+  // through a batch of encounters. The scheduler runs one action per cycle by
+  // priority, so without this a module that re-arms every cycle wins forever.
+  let stepAside = 0;
+  const STEP_ASIDE = 4;
 
   function cfg() { return Storage.section('map') || {}; }
 
@@ -49,6 +55,13 @@
       const c = cfg();
       if (!c.enabled || !Api.ready()) return null;
 
+      // Yield to lower-priority modules for a few cycles after we act.
+      if (stepAside > 0) {
+        stepAside--;
+        Scheduler.wakeAt(Date.now() + 1500); // come back soon even if all idle
+        return null;
+      }
+
       // 1) Liberation encounters (instant, interleave freely).
       if (c.encounters && Date.now() >= encounterCooldown) {
         return async () => {
@@ -71,12 +84,13 @@
             Logger.info(I18n.t('logMapEncounter', [label, String(map.energy != null ? map.energy : '?')]));
             await Api.startLiberation(m.location);
             Stats.bump({ encounters: 1 });
-            encounterCooldown = 0; // keep clearing; the scheduler paces (or spams)
+            encounterCooldown = 0;       // more encounters may remain to clear
+            stepAside = STEP_ASIDE;      // but let other modules run in between
             return;
           }
           if (map.energy != null && map.energy <= 0 && c.buyEnergy) {
             Logger.info(I18n.t('logMapBuyEnergy'));
-            try { await Api.buyLiberationEnergy(); encounterCooldown = 0; }
+            try { await Api.buyLiberationEnergy(); encounterCooldown = 0; stepAside = STEP_ASIDE; }
             catch (e) { encounterCooldown = Date.now() + 30 * 60000; }
             return;
           }
@@ -99,6 +113,7 @@
         eventTurn++;
         return async () => {
           eventNextAt = Date.now() + Math.max(2, Number(c.cooldownMinutes) || 10) * 60000;
+          stepAside = STEP_ASIDE;
           try {
             if (pick === 'cave') {
               const d = await Api.getCaveDetails();

@@ -365,4 +365,36 @@ await test('autosell: sells a common unequipped equipment item', async () => {
   assert.deepEqual(e.calls.sellItem[0], [42, 2], 'sold by id with its bag position');
 });
 
+await test('map with endless encounters does NOT starve training/autosell', async () => {
+  const e = freshEngine({
+    settings: {
+      general: { enabled: true, humanize: false },
+      adventures: { enabled: false },
+      map: { enabled: true, encounters: true, regions: '', buyEnergy: false },
+      training: { enabled: true, priorityStat: 'mix', keepGoldReserve: 0 },
+      autosell: { enabled: true, sellCommon: true, sellSpecial: false, dumpSchema: false }
+    },
+    // Finite gold: training raises a few times then can't afford more and
+    // yields - exactly like the real game, where attribute costs climb fast.
+    state: { gold: 250 }
+  });
+  // Map always reports an available encounter with energy -> without fairness
+  // it would re-arm (encounterCooldown=0) and win every cycle forever.
+  e.TB.Api.getMapDetails = () => Promise.resolve({});
+  e.TB.Api.parseMap = () => ({ energy: 99, nextAttack: 0, monsters: [{ location: 0, stars: 1 }] });
+  e.TB.Api.getUserAttributes = () => { e.TB.State.patch({ attributeCosts: { STR: 50, DEX: 50, CON: 50, INT: 50 } }); return Promise.resolve({ STR: 50, DEX: 50, CON: 50, INT: 50 }); };
+  const item = { direct: { id: 7, type: 3, sellvalue: 100, is_equipped: 0, is_unique: 0, item: 1, screen_x: 0 }, getElementsByTagName: () => [] };
+  item.descend = item.direct;
+  e.TB.Api.getEquipment = () => Promise.resolve({ querySelectorAll: (s) => (s === 'struct' ? [item] : []) });
+  e.TB.Api.findValue = (n, k) => (n && n.descend && k in n.descend ? String(n.descend[k]) : null);
+  e.TB.Api.findNum = (n, k) => { const v = n && n.descend && k in n.descend ? Number(n.descend[k]) : NaN; return Number.isFinite(v) ? v : null; };
+  e.TB.Api.directHas = (n, k) => !!(n && n.direct && k in n.direct);
+
+  e.TB.Scheduler.start();
+  await e.advance(120000);
+  assert.ok(e.count('startLiberation') > 0, 'map still clears encounters');
+  assert.ok(e.count('raiseAttribute') > 0, 'training was NOT starved by map');
+  assert.ok(e.count('sellItem') > 0, 'autosell was NOT starved by map');
+});
+
 console.log(`\n${pass} engine checks passed.`);
