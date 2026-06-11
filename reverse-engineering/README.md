@@ -10,9 +10,14 @@ workflow classico di reverse engineering a sezioni:
    (passo ≈ 2,5 mm, per filtrare il rumore di scansione) e interpolata con
    una **BSpline** (nello script è `Part.BSplineCurve.interpolate`, che è
    esattamente ciò che fa lo strumento *Interpolate* del workbench Curves);
-3. **Ambiente Surface** → le curve di contorno vengono riempite con
-   **Surface ▸ Sections** (oggetti parametrici `Surface::Sections`, con
-   fallback su loft) per generare le superfici.
+3. **Ambiente Surface** → le superfici vengono generate per **skinning
+   delle sezioni**: ogni sezione è ricampionata con lo stesso numero di
+   punti e la superficie è una `Part.BSplineSurface` interpolata sulla
+   griglia risultante. È l'equivalente robusto di *Surface ▸ Sections /
+   fill boundary curves* (il loft OCC su queste sezioni di scansione
+   produce twist; l'interpolazione di griglia no). I profili chiusi sono
+   divisi in due archi ai vertici estremi, così le metà esterna/interna
+   restano superfici separate e ben parametrizzate.
 
 ## La feritoia d'aria resta APERTA
 
@@ -45,13 +50,22 @@ freecadcmd reverse-engineering/build_aletta_re.py
 
 ## Struttura del modello
 
-- **Sup_Base** — guscio chiuso sotto la feritoia (z −418 … −378), loft di
-  sezioni BSpline periodiche;
+- **Sup_Base_Esterna / Sup_Base_Interna** — guscio sotto la feritoia
+  (z −418 … −378), diviso nelle due metà del profilo chiuso;
 - **Sup_PelleEsterna_DX** / **Sup_PelleInterna_SX** — le due pelli del
   louver nella zona della feritoia (curve aperte → la fessura resta aperta);
-- **Sup_Sommita** — guscio chiuso sopra la feritoia fino al bordo superiore;
-- **Sup_Perno1 / Sup_Perno2** — i perni/borchie di fissaggio superiori,
-  loftati dalle loro sezioni.
+- **Sup_Sommita_Esterna / Sup_Sommita_Interna** — guscio sopra la feritoia
+  fino al bordo superiore;
+- **Sup_Perno1_A/B, Sup_Perno2_A/B** — i perni/borchie di fissaggio
+  superiori, rivestiti dalle loro sezioni.
+
+## Qualità della ricostruzione
+
+Deviazione superfici → scansione (160 000 punti campionati):
+**media 0,32 mm, 95° percentile 0,99 mm**. Le deviazioni maggiori sono
+localizzate nella fascia superiore (z ≈ −290 … −255), dove la scansione ha
+buchi/occlusioni intorno alle borchie e il bordo superiore inclinato fa
+ritirare rapidamente le sezioni: è la prima zona da rifinire in GUI.
 
 ## Rifinitura consigliata in GUI
 

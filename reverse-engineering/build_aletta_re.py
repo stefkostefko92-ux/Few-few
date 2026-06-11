@@ -6,16 +6,17 @@ Workflow (equivalente scriptato di quello richiesto in GUI):
   1. Ambiente Mesh   : sezioni trasversali della mesh scansionata (piani Z)
   2. Curves          : interpolazione BSpline delle polilinee di sezione
                        (equivalente di Curves -> Interpolate / freehand bspline)
-  3. Ambiente Surface: superfici dalle curve di contorno (Surface::Sections,
-                       equivalente di "fill boundary curves" / Sections)
+  3. Ambiente Surface: superfici dalle curve di contorno per interpolazione
+                       di griglia BSpline (skinning delle sezioni, stesso
+                       risultato di Surface -> Sections / fill boundary curves
+                       ma immune da twist/esplosioni del loft OCC)
 
 La feritoia di ventilazione centrale (louver) divide le sezioni in due pelli
-separate: vengono loftate separatamente, quindi I FORI/LA FERITOIA A META'
+separate: vengono rivestite separatamente, quindi I FORI/LA FERITOIA A META'
 DEL PEZZO RESTANO APERTI per far entrare l'aria.
 
 Uso:  freecadcmd build_aletta_re.py  (con aletta.stl in /tmp/aletta.stl)
 """
-import math
 import Mesh, Part, FreeCAD as App
 from FreeCAD import Base
 
@@ -52,12 +53,11 @@ def stitch_chains(polys, tol=3.5):
 def chain_length(pts):
     return sum((pts[k + 1] - pts[k]).Length for k in range(len(pts) - 1))
 
-def resample(pts, spacing=2.5, nmin=14, nmax=110):
-    """Ricampionamento uniforme per lunghezza d'arco (riduce il rumore di
-    scansione prima dell'interpolazione, come si farebbe scegliendo i punti
-    a mano con Curves->Interpolate)."""
+def resample_n(pts, n):
+    """Ricampionamento a n punti uniformi per lunghezza d'arco (filtra anche
+    il rumore di scansione, come scegliere i punti a mano in
+    Curves->Interpolate)."""
     L = chain_length(pts)
-    n = max(nmin, min(nmax, int(L / spacing)))
     cum = [0.0]
     for k in range(len(pts) - 1):
         cum.append(cum[-1] + (pts[k + 1] - pts[k]).Length)
@@ -69,7 +69,11 @@ def resample(pts, spacing=2.5, nmin=14, nmax=110):
         seg = cum[k + 1] - cum[k]
         f = 0.0 if seg < 1e-9 else (t - cum[k]) / seg
         out.append(pts[k] + (pts[k + 1] - pts[k]) * f)
-    # elimina punti consecutivi coincidenti
+    return out
+
+def resample_spacing(pts, spacing=2.5, nmin=14, nmax=110):
+    n = max(nmin, min(nmax, int(chain_length(pts) / spacing)))
+    out = resample_n(pts, n)
     clean = [out[0]]
     for p in out[1:]:
         if (p - clean[-1]).Length > 1e-3:
@@ -86,35 +90,51 @@ def orient_closed(pts):
         area += p.x * q.y - q.x * p.y
     return pts if area > 0 else pts[::-1]
 
-def align_start(pts, ref):
-    """Ruota la sequenza chiusa perché parta vicino a ref (evita twist nel loft)."""
-    if ref is None:
-        return pts
-    i = min(range(len(pts)), key=lambda k: (pts[k] - ref).Length)
-    return pts[i:] + pts[:i]
+def split_closed(pts, n_arc):
+    """Divide un profilo chiuso in due archi ai punti di x minima e massima
+    (i 'vertici' geometrici: il taglio è identico su tutte le sezioni, quindi
+    lo skinning non può attorcigliarsi). Ritorna (arco_sup, arco_inf), ognuno
+    ricampionato a n_arc punti e orientato da x-min a x-max."""
+    i_min = min(range(len(pts)), key=lambda k: pts[k].x)
+    i_max = max(range(len(pts)), key=lambda k: pts[k].x)
+    a, b = sorted((i_min, i_max))
+    arc1 = pts[a:b + 1]
+    arc2 = pts[b:] + pts[:a + 1]
+    if arc1[0].x > arc1[-1].x:
+        arc1 = arc1[::-1]
+    if arc2[0].x > arc2[-1].x:
+        arc2 = arc2[::-1]
+    y1 = sum(p.y for p in arc1) / len(arc1)
+    y2 = sum(p.y for p in arc2) / len(arc2)
+    top, bot = (arc1, arc2) if y1 >= y2 else (arc2, arc1)
+    return resample_n(top, n_arc), resample_n(bot, n_arc)
 
-def bspline_edge(pts, closed):
+def bspline_wire(pts, closed):
     bs = Part.BSplineCurve()
     bs.interpolate(Points=pts, PeriodicFlag=closed)
-    return bs.toShape()
+    return Part.Wire([bs.toShape()])
 
 def add_curve(doc, group, name, pts, closed):
     obj = doc.addObject('Part::Feature', name)
-    obj.Shape = Part.Wire([bspline_edge(pts, closed)])
+    obj.Shape = bspline_wire(pts, closed)
     group.addObject(obj)
     return obj
 
-def surface_sections(doc, group, name, curve_objs):
-    """Surface::Sections (ambiente Surface) con fallback Part.makeLoft."""
-    obj = doc.addObject('Surface::Sections', name)
-    obj.NSections = [(c, ('Edge1',)) for c in curve_objs]
-    doc.recompute()
-    if obj.Shape.isNull() or not obj.Shape.Faces:
-        doc.removeObject(obj.Name)
-        loft = Part.makeLoft([c.Shape for c in curve_objs], False, False)
-        obj = doc.addObject('Part::Feature', name)
-        obj.Shape = loft
+def grid_surface(doc, group, name, rows):
+    """Superficie BSpline interpolata su una griglia di punti
+    (righe = sezioni, colonne = punti lungo la sezione)."""
+    surf = Part.BSplineSurface()
+    # parametrizzazione uniforme: l'interpolazione chord-length OCC è mal
+    # condizionata sulle sezioni di scansione e fa esplodere i poli;
+    # la tolleranza 0,2 mm smussa anche il rumore dello scanner
+    surf.approximate(Points=[[p for p in row] for row in rows],
+                     DegMin=3, DegMax=3, Tolerance=0.2, ParamType='Uniform')
+    obj = doc.addObject('Part::Feature', name)
+    obj.Shape = surf.toShape()
     group.addObject(obj)
+    span = abs(rows[-1][0].z - rows[0][0].z)
+    est = sum(chain_length(r) for r in rows) / len(rows) * span
+    print('  %-24s area %8.0f mm2 (attesa ~%.0f)' % (name, obj.Shape.Area, est))
     return obj
 
 # ---------------------------------------------------------------- mesh
@@ -130,24 +150,24 @@ doc = App.newDocument('Aletta_RE')
 g_sez = doc.addObject('App::DocumentObjectGroup', 'Sezioni')
 g_sez.Label = 'Sezioni (BSpline interpolate)'
 g_sup = doc.addObject('App::DocumentObjectGroup', 'Superfici')
-g_sup.Label = 'Superfici (Sections / fill)'
+g_sup.Label = 'Superfici (skinning sezioni)'
 
 # ------------------------------------------------ ZONA A: base (sez. chiuse)
 ZA = [-418.5, -414, -409, -404, -399, -394, -389, -384, -380, -378.2]
-curves_A, prev_start = [], None
+rows_A_top, rows_A_bot = [], []
 for z, sec in zip(ZA, sections_at(ZA)):
     chains = stitch_chains(sec, 3.5)
     chains.sort(key=chain_length, reverse=True)
-    pts = orient_closed(resample(chains[0]))
-    pts = align_start(pts, prev_start)
-    prev_start = pts[0]
-    curves_A.append(add_curve(doc, g_sez, 'SezA_z%d' % round(-z), pts, True))
+    pts = orient_closed(chains[0])
+    add_curve(doc, g_sez, 'SezA_z%d' % round(-z), resample_spacing(pts), True)
+    top, bot = split_closed(pts, 80)
+    rows_A_top.append(top)
+    rows_A_bot.append(bot)
 
 # --------------------------------- ZONA B: feritoia (due pelli, sez. APERTE)
 ZB = [-377.2, -374, -370, -365, -360, -355, -350, -345, -340, -335, -330,
       -325, -320, -315, -310, -305, -300, -296, -292]
-curves_R, curves_L = [], []
-ref_R, ref_L = None, None
+rows_R, rows_L = [], []
 for z, sec in zip(ZB, sections_at(ZB)):
     chains = stitch_chains(sec, 3.5)
     chains = [c for c in chains if chain_length(c) > 40]
@@ -158,21 +178,17 @@ for z, sec in zip(ZB, sections_at(ZB)):
     two = chains[:2]
     right = max(two, key=lambda c: max(p.x for p in c))
     left = two[0] if two[1] is right else two[1]
-    for pts_raw, store, ref_name in ((right, curves_R, 'R'), (left, curves_L, 'L')):
-        pts = resample(pts_raw)
-        ref = ref_R if ref_name == 'R' else ref_L
-        if ref is not None and (pts[0] - ref).Length > (pts[-1] - ref).Length:
+    for raw, rows, tag in ((right, rows_R, 'R'), (left, rows_L, 'L')):
+        pts = resample_n(raw, 110)
+        if rows and (pts[0] - rows[-1][0]).Length > (pts[-1] - rows[-1][0]).Length:
             pts = pts[::-1]
-        if ref_name == 'R':
-            ref_R = pts[0]
-        else:
-            ref_L = pts[0]
-        store.append(add_curve(doc, g_sez, 'SezB_%s_z%d' % (ref_name, round(-z)), pts, False))
+        rows.append(pts)
+        add_curve(doc, g_sez, 'SezB_%s_z%d' % (tag, round(-z)), pts, False)
 
 # ------------------------------------------- ZONA C: sopra la feritoia
 ZC = [-287, -283, -279, -275, -271, -267, -263, -259, -255, -251,
       -247, -243, -239, -235, -232]
-curves_C, prev_start = [], None
+rows_C_top, rows_C_bot = [], []
 for z, sec in zip(ZC, sections_at(ZC)):
     chains = stitch_chains(sec, 4.0)
     chains = [c for c in chains if chain_length(c) > 80]
@@ -180,32 +196,32 @@ for z, sec in zip(ZC, sections_at(ZC)):
         print('  zona C: salto z=%.1f' % z)
         continue
     chains.sort(key=chain_length, reverse=True)
-    pts = orient_closed(resample(chains[0]))
-    pts = align_start(pts, prev_start)
-    prev_start = pts[0]
-    curves_C.append(add_curve(doc, g_sez, 'SezC_z%d' % round(-z), pts, True))
+    pts = orient_closed(chains[0])
+    add_curve(doc, g_sez, 'SezC_z%d' % round(-z), resample_spacing(pts), True)
+    top, bot = split_closed(pts, 80)
+    rows_C_top.append(top)
+    rows_C_bot.append(bot)
 
 # ------------------------------------------------ PERNI di fissaggio
 ZS = [round(-262 + 2 * k, 1) for k in range(27)]   # -262 .. -210
-stud_secs = []   # (z, centro, punti)
+stud_secs = []
 for z, sec in zip(ZS, sections_at(ZS)):
-    for chains in [stitch_chains(sec, 2.0)]:
-        for c in chains:
-            L = chain_length(c)
-            if not (8 < L < 65):
-                continue
-            if (c[0] - c[-1]).Length > 4:
-                continue
-            xs = [p.x for p in c]; ys = [p.y for p in c]
-            if max(xs) - min(xs) > 22 or max(ys) - min(ys) > 22:
-                continue
-            ctr = Base.Vector(sum(xs) / len(xs), sum(ys) / len(ys), z)
-            stud_secs.append((z, ctr, c))
-# raggruppa per posizione XY
+    for c in stitch_chains(sec, 2.0):
+        L = chain_length(c)
+        if not (8 < L < 65):
+            continue
+        if (c[0] - c[-1]).Length > 4:
+            continue
+        xs = [p.x for p in c]
+        ys = [p.y for p in c]
+        if max(xs) - min(xs) > 22 or max(ys) - min(ys) > 22:
+            continue
+        ctr = Base.Vector(sum(xs) / len(xs), sum(ys) / len(ys), 0)
+        stud_secs.append((z, ctr, c))
 clusters = []
 for z, ctr, c in stud_secs:
     for cl in clusters:
-        if (Base.Vector(ctr.x, ctr.y, 0) - Base.Vector(cl[-1][1].x, cl[-1][1].y, 0)).Length < 7:
+        if (ctr - cl[-1][1]).Length < 7:
             cl.append((z, ctr, c))
             break
     else:
@@ -213,32 +229,35 @@ for z, ctr, c in stud_secs:
 clusters = [cl for cl in clusters if len(cl) >= 3]
 print('Perni trovati:', len(clusters))
 
-stud_curve_groups = []
+stud_grids = []   # (indice, righe_top, righe_bot)
 for si, cl in enumerate(clusters):
     cl.sort(key=lambda t: t[0])
-    objs, prev_start = [], None
+    r_top, r_bot = [], []
     for z, ctr, c in cl:
-        pts = orient_closed(resample(c, spacing=1.2, nmin=10, nmax=48))
-        pts = align_start(pts, prev_start)
-        prev_start = pts[0]
-        objs.append(add_curve(doc, g_sez, 'Perno%d_z%d' % (si + 1, round(-z)), pts, True))
-    stud_curve_groups.append(objs)
+        pts = orient_closed(c)
+        add_curve(doc, g_sez, 'Perno%d_z%d' % (si + 1, round(-z)),
+                  resample_spacing(pts, spacing=1.2, nmin=10, nmax=48), True)
+        top, bot = split_closed(pts, 28)
+        r_top.append(top)
+        r_bot.append(bot)
+    stud_grids.append((si + 1, r_top, r_bot))
 
 doc.recompute()
 
-# ------------------------------------------------ SUPERFICI
+# ------------------------------------------------ SUPERFICI (skinning)
 print('Superfici...')
-surf_objs = []
-surf_objs.append(surface_sections(doc, g_sup, 'Sup_Base', curves_A))
-surf_objs.append(surface_sections(doc, g_sup, 'Sup_PelleEsterna_DX', curves_R))
-surf_objs.append(surface_sections(doc, g_sup, 'Sup_PelleInterna_SX', curves_L))
-surf_objs.append(surface_sections(doc, g_sup, 'Sup_Sommita', curves_C))
-for si, objs in enumerate(stud_curve_groups):
-    surf_objs.append(surface_sections(doc, g_sup, 'Sup_Perno%d' % (si + 1), objs))
+surf_objs = [
+    grid_surface(doc, g_sup, 'Sup_Base_Esterna', rows_A_top),
+    grid_surface(doc, g_sup, 'Sup_Base_Interna', rows_A_bot),
+    grid_surface(doc, g_sup, 'Sup_PelleEsterna_DX', rows_R),
+    grid_surface(doc, g_sup, 'Sup_PelleInterna_SX', rows_L),
+    grid_surface(doc, g_sup, 'Sup_Sommita_Esterna', rows_C_top),
+    grid_surface(doc, g_sup, 'Sup_Sommita_Interna', rows_C_bot),
+]
+for si, r_top, r_bot in stud_grids:
+    surf_objs.append(grid_surface(doc, g_sup, 'Sup_Perno%d_A' % si, r_top))
+    surf_objs.append(grid_surface(doc, g_sup, 'Sup_Perno%d_B' % si, r_bot))
 doc.recompute()
-
-for o in surf_objs:
-    print(' ', o.Name, 'facce:', len(o.Shape.Faces), 'area: %.0f mm2' % o.Shape.Area)
 
 # mesh decimata di riferimento nel documento
 dm = Mesh.Mesh(STL)
@@ -251,12 +270,22 @@ print('Mesh decimata:', dm.CountFacets, 'facce')
 doc.recompute()
 doc.saveAs(OUT_DIR + '/Aletta_RE.FCStd')
 
-shapes = [o.Shape for o in surf_objs if not o.Shape.isNull()]
-Part.export(shapes and [Part.makeCompound(shapes)] or [], OUT_DIR + '/Aletta_RE.step')
+Part.export([o for o in surf_objs if not o.Shape.isNull()],
+            OUT_DIR + '/Aletta_RE.step')
 
-# STL delle superfici per la verifica visiva
-out_mesh = Mesh.Mesh()
-for s in shapes:
-    out_mesh.addMesh(Mesh.Mesh(s.tessellate(0.25)))
-out_mesh.write('/tmp/aletta_re_surfaces.stl')
+# campionamento UV per la verifica visiva (niente tessellazione OCC: lenta)
+try:
+    import numpy as np
+    samples = []
+    for o in surf_objs:
+        f = o.Shape.Faces[0]
+        u0, u1, v0, v1 = f.ParameterRange
+        for u in [u0 + (u1 - u0) * i / 199.0 for i in range(200)]:
+            for v in [v0 + (v1 - v0) * j / 79.0 for j in range(80)]:
+                p = f.Surface.value(u, v)
+                samples.append((p.x, p.y, p.z))
+    np.save('/tmp/re_points.npy', np.array(samples))
+    print('campioni superfici:', len(samples))
+except Exception as e:
+    print('campionamento saltato:', e)
 print('FATTO')
