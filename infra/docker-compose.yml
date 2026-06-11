@@ -1,5 +1,11 @@
-# АСО — local / staging stack (S17). Ports per S18 (verify with `ss -tlnp`).
-# Run from repo root: `docker compose -f infra/docker-compose.yml up -d`
+# АСО — stack built FROM SOURCE on the host (manual deploy; no registry).
+# Upload the repo (WinSCP) and run from the repo root:
+#   docker compose -f infra/docker-compose.yml --env-file .env up -d --build
+#
+# Security: app ports + DB bind to 127.0.0.1 only — the public entrypoint is the
+# host nginx (infra/nginx/aso.conf) on 443. Postgres/Redis are not published at
+# all (reached over the internal compose network). Ports are env-overridable;
+# marketing defaults to 8090 (8080 is often taken on shared boxes).
 
 services:
   postgres:
@@ -9,8 +15,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-aso}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aso}
       POSTGRES_DB: ${POSTGRES_DB:-aso}
-    ports:
-      - "5437:5432"
     volumes:
       - aso_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +27,6 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "6383:6379"
     volumes:
       - aso_redisdata:/data
     healthcheck:
@@ -55,9 +57,10 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
+      WEB_BASE_PATH: ${WEB_BASE_PATH:-/app}
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
     ports:
-      - "4500:4500"
+      - "127.0.0.1:${API_HOST_PORT:-4500}:4500"
 
   realtime:
     build:
@@ -80,7 +83,7 @@ services:
       API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4500}
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-dev-internal-secret-change-me}
     ports:
-      - "4501:4501"
+      - "127.0.0.1:${RT_HOST_PORT:-4501}:4501"
 
   worker:
     build:
@@ -98,24 +101,23 @@ services:
       REDIS_URL: redis://redis:6379
       SEASON_DAYS: ${SEASON_DAYS:-35}
 
-  # Play app (Vite SPA) — static, served under /app/ by its own nginx. The edge
-  # nginx (aso.conf) proxies non-/api,/socket.io traffic here.
+  # Play app (Vite SPA) — static, served under /app/ by its own nginx.
   web:
     build:
       context: ..
       dockerfile: infra/Dockerfile.web
     restart: unless-stopped
     ports:
-      - "4502:4502"
+      - "127.0.0.1:${WEB_HOST_PORT:-4502}:4502"
 
-  # Public marketing/SEO layer (Next.js static export) served by its own nginx.
+  # Public marketing/SEO layer (Next.js static export).
   marketing:
     build:
       context: ..
       dockerfile: infra/Dockerfile.marketing
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "127.0.0.1:${MK_HOST_PORT:-8090}:8080"
 
 volumes:
   aso_pgdata:
