@@ -8,6 +8,10 @@ Mesh originale: `Aletta v1 (1).stl` (scansione 3D, 92 MB, 1.842.602 triangoli) s
 |---|---|---|---|
 | `Aletta_v1_clean_200k.stl` | 199.684 | 9,5 MB | Massimo dettaglio pratico in FreeCAD |
 | `Aletta_v1_clean_50k.stl` | 50.000 | 2,4 MB | Conversione mesh → solido più rapida |
+| `Aletta_v1_clean_20k.stl` | 20.000 | 1,0 MB | Versione leggera per booleane veloci |
+
+Solidi B-Rep tassellati già convertiti: `Aletta_v1_solid_50k.brep` /
+`.step.zip` e `Aletta_v1_solid_20k.brep` / `.step.zip` (vedi sotto).
 
 Entrambe le versioni sono **watertight** (chiuse), **2-manifold**, con normali coerenti e un'unica componente connessa — pronte per `Part → Crea forma da mesh → Converti in solido` in FreeCAD 1.1 senza errori di shape non valida.
 
@@ -52,6 +56,41 @@ solido, valido, pronto per operazioni booleane, tagli e misure nel workbench
 Part. Nota: essendo nato da una scansione, il B-Rep è composto da ~50.000
 facce triangolari piane — perfettamente lavorabile ma non parametrico; per
 rimodellare in modo parametrico usarlo come riferimento per sketch e sezioni.
+
+## Modello CAD parametrico (ricostruzione con sketch sulle sezioni)
+
+Ricostruzione reverse-engineering eseguita in FreeCAD 1.1 headless
+(script: `genera_cad.py`):
+
+| File | Contenuto | Dimensione |
+|---|---|---|
+| `Aletta_parametrica.FCStd` | Documento FreeCAD 1.1: 24 sketch di sezione (B-spline), 2 sketch profilo perni + rivoluzioni, corpo a superficie B-spline, fusione finale | 0,4 MB |
+| `Aletta_parametrica.step` | Lo stesso solido in STEP (superfici B-spline native, non tassellate) | 0,3 MB |
+
+- **Corpo**: superficie B-spline C2 ottenuta per skinning di 24 sezioni
+  della scansione su piani X=cost (sketch modificabili nel documento).
+- **Perni**: profilo a gradini misurato dalla scansione (collare Ø13,7/13,2 →
+  gambo Ø8 = M8 → punta Ø4,3 con smusso), sketch + rivoluzione a 360° lungo
+  gli assi fittati (inclinazioni 3,4° e 2,6° rispetto a Z); i collari sono
+  prolungati dentro il corpo per garantire la fusione.
+- **Risultato**: un singolo solido valido di 239,6 cm³, booleane funzionanti.
+
+### Fedeltà alla scansione (40.000 punti campionati)
+
+| Metrica scan→CAD | Valore |
+|---|---|
+| Mediana | 0,22 mm |
+| Media | 0,74 mm |
+| 95° percentile | 3,6 mm |
+
+La deviazione è concentrata (vedi `deviation_map.png`): nelle zone dei
+**boss dei perni** (la nervatura locale è sostituita dal collare cilindrico
+prolungato) e in alcune fasce **tra le stazioni** della forcella superiore,
+dove la gola stretta (~1,5 mm) è alla risoluzione limite dello skinning.
+Sulle superfici principali della vela la deviazione è < 0,3 mm.
+
+Per il lavoro manuale di precisione usare il CAD parametrico come base e le
+mesh/solidi tassellati (`Aletta_v1_solid_*.brep`) come riferimento esatto.
 
 ## Suggerimento per FreeCAD 1.1 (conversione manuale, se preferita)
 
