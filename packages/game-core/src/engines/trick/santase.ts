@@ -51,9 +51,16 @@ export interface SantaseState {
   closedBy: Seat | null;
   /** Whether the closer had already taken a trick when they closed. */
   closerHadTrick: boolean;
-  /** Game points the winner earns (1/2/3), set at finish. */
+  /** Game points the winner earned in the LAST finished deal (1/2/3). */
   gamePoints: number;
   lastTrickWinner: Seat | null;
+  /** Running match points; first to MATCH_TARGET_GP (11) wins the match. */
+  matchPoints: [number, number];
+  dealNo: number;
+  /** Who leads the first trick of the current deal (alternates per deal). */
+  firstLeader: Seat;
+  /** Winner of the last finished deal (display between deals). */
+  lastDealWinner: Seat | null;
   winner: Seat | null;
   done: boolean;
 }
@@ -69,7 +76,9 @@ export type SantaseEvent =
   | { type: "EXCHANGE"; seat: Seat }
   | { type: "CLOSE"; seat: Seat }
   | { type: "TRICK"; seat: Seat; points: number }
-  | { type: "WIN"; seat: Seat };
+  | { type: "WIN"; seat: Seat }
+  | { type: "DEAL_END"; seat: Seat; gamePoints: number; matchPoints: [number, number] }
+  | { type: "MATCH"; seat: Seat };
 
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 const isPhase2 = (s: SantaseState): boolean =>
@@ -96,16 +105,63 @@ function normalGamePoints(loserPoints: number): number {
   return loserPoints === 0 ? 3 : loserPoints < 33 ? 2 : 1;
 }
 
+/** Мачът се играе до 11 точки (раздаванията носят 1/2/3). */
+export const MATCH_TARGET_GP = 11;
+
+/** Reset all per-deal fields and deal the next hand. */
+function freshDeal(state: SantaseState, rng: SeededRng): void {
+  const deck = rng.shuffle(buildDeck(RANKS));
+  const trumpCard = deck[12]!;
+  state.hands = [deck.slice(0, 6), deck.slice(6, 12)];
+  state.stock = deck.slice(13);
+  state.trump = suitOf(trumpCard);
+  state.trumpCard = trumpCard;
+  state.trick = [];
+  state.points = [0, 0];
+  state.wonTrick = [false, false];
+  state.closed = false;
+  state.closedBy = null;
+  state.closerHadTrick = false;
+  state.lastTrickWinner = null;
+  state.firstLeader = other(state.firstLeader);
+  state.leader = state.firstLeader;
+  state.turn = state.firstLeader;
+  state.dealNo += 1;
+}
+
+/** Award `gp` to the deal winner; end the match at 11 or deal again. */
+function settle(
+  state: SantaseState,
+  winner: Seat,
+  gp: number,
+  events: SantaseEvent[],
+  rng: SeededRng,
+): { state: SantaseState; events: SantaseEvent[] } {
+  state.gamePoints = gp;
+  state.lastDealWinner = winner;
+  state.matchPoints = [
+    state.matchPoints[0] + (winner === 0 ? gp : 0),
+    state.matchPoints[1] + (winner === 1 ? gp : 0),
+  ];
+  events.push({ type: "WIN", seat: winner });
+  events.push({ type: "DEAL_END", seat: winner, gamePoints: gp, matchPoints: [...state.matchPoints] });
+  if ((state.matchPoints[winner] ?? 0) >= MATCH_TARGET_GP) {
+    state.winner = winner;
+    state.done = true;
+    events.push({ type: "MATCH", seat: winner });
+  } else {
+    freshDeal(state, rng);
+  }
+  return { state, events };
+}
+
 function finish(
   state: SantaseState,
   winner: Seat,
   events: SantaseEvent[],
+  rng: SeededRng,
 ): { state: SantaseState; events: SantaseEvent[] } {
-  state.winner = winner;
-  state.done = true;
-  state.gamePoints = normalGamePoints(state.points[other(winner)] ?? 0);
-  events.push({ type: "WIN", seat: winner });
-  return { state, events };
+  return settle(state, winner, normalGamePoints(state.points[other(winner)] ?? 0), events, rng);
 }
 
 /**
@@ -117,19 +173,16 @@ function finish(
 function finishClosed(
   state: SantaseState,
   events: SantaseEvent[],
+  rng: SeededRng,
 ): { state: SantaseState; events: SantaseEvent[] } {
   const closer = state.closedBy!;
   const opp = other(closer);
   if ((state.points[closer] ?? 0) >= 66) {
-    return finish(state, closer, events);
+    return finish(state, closer, events, rng);
   }
   // Closer failed → opponent wins with a penalty.
-  state.winner = opp;
-  state.done = true;
   const penalty = state.closerHadTrick ? 2 : 3;
-  state.gamePoints = Math.max(penalty, normalGamePoints(state.points[closer] ?? 0));
-  events.push({ type: "WIN", seat: opp });
-  return { state, events };
+  return settle(state, opp, Math.max(penalty, normalGamePoints(state.points[closer] ?? 0)), events, rng);
 }
 
 export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent> = {
@@ -151,6 +204,10 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       closerHadTrick: false,
       gamePoints: 1,
       lastTrickWinner: null,
+      matchPoints: [0, 0],
+      dealNo: 1,
+      firstLeader: 0,
+      lastDealWinner: null,
       winner: null,
       done: false,
     };
@@ -194,7 +251,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     return actions;
   },
 
-  reduce(state, action, _rng) {
+  reduce(state, action, rng) {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     const legal = this.legalActions(state, seat);
@@ -216,6 +273,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       trick: state.trick.slice(),
       points: [state.points[0], state.points[1]],
       wonTrick: [state.wonTrick[0], state.wonTrick[1]],
+      matchPoints: [state.matchPoints[0], state.matchPoints[1]],
     };
     const events: SantaseEvent[] = [];
 
@@ -241,7 +299,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       const value = suit === next.trump ? 40 : 20;
       next.points[seat] = (next.points[seat] ?? 0) + value;
       events.push({ type: "MARRIAGE", seat, suit, value });
-      if ((next.points[seat] ?? 0) >= 66) return finish(next, seat, events);
+      if ((next.points[seat] ?? 0) >= 66) return finish(next, seat, events, rng);
     }
 
     next.hands[seat] = next.hands[seat]!.filter((c) => c !== action.card);
@@ -267,8 +325,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
 
     // Reaching 66: in a closed game the closer must be the one to reach it.
     if ((next.points[winner] ?? 0) >= 66) {
-      if (next.closed) return finishClosed(next, events);
-      return finish(next, winner, events);
+      if (next.closed) return finishClosed(next, events, rng);
+      return finish(next, winner, events, rng);
     }
 
     if (!isPhase2(next)) {
@@ -284,8 +342,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
 
     if (next.hands[0]!.length === 0 && next.hands[1]!.length === 0) {
       // Hands exhausted. If closed and the closer never reached 66, they failed.
-      if (next.closed) return finishClosed(next, events);
-      return finish(next, next.lastTrickWinner ?? winner, events);
+      if (next.closed) return finishClosed(next, events, rng);
+      return finish(next, next.lastTrickWinner ?? winner, events, rng);
     }
 
     return { state: next, events };
@@ -296,10 +354,9 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
   score(state): SeatScore[] {
     const winner = state.winner ?? 0;
     const loser = other(winner);
-    // gamePoints carries the normal (1/2/3) or closed-stock-penalty value.
     return [
-      { seat: winner, result: "win", points: state.gamePoints },
-      { seat: loser, result: "loss", points: 0 },
+      { seat: winner, result: "win", points: state.matchPoints[winner] ?? 0 },
+      { seat: loser, result: "loss", points: state.matchPoints[loser] ?? 0 },
     ];
   },
 

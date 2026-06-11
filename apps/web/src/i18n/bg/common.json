@@ -189,7 +189,10 @@
     "trump": "Коз",
     "stock": "Тесте: {{count}}",
     "close": "Затвори",
-    "exchange": "Смени коза"
+    "exchange": "Смени коза",
+    "match": "Мач",
+    "dealNo": "Раздаване",
+    "toEleven": "до 11"
   },
   "belote": {
     "yourTeam": "Твой отбор",
@@ -204,7 +207,21 @@
       "hundred": "Сто",
       "carre": "Каре",
       "belote": "Белот"
-    }
+    },
+    "noTrump": "БК",
+    "allTrump": "ВК",
+    "noTrumpFull": "Без коз",
+    "allTrumpFull": "Всичко коз",
+    "contra": "Контра",
+    "recontra": "Реконтра",
+    "match": "Мач",
+    "deal": "Раздаване",
+    "target": "до",
+    "hanging": "висящи",
+    "dealPoints": "Това раздаване",
+    "lastDeal": "Раздаване",
+    "valat": "Валат!",
+    "inside": "Вътре"
   },
   "wallet": {
     "chips": "Чипове",

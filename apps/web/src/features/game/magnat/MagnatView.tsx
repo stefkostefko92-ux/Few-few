@@ -101,7 +101,7 @@ export function MagnatView({ title }: { title: string }) {
   const liveLine = state ? (state.done ? "Край на играта." : `Ред: ${name(state.turn)}. ${state.log.at(-1) ?? ""}`) : "";
 
   return (
-    <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+    <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result} wide>
       {state ? (
         <div className="mag-layout">
           <div ref={wrapRef} className="mag-board">

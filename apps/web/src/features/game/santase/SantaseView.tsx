@@ -24,6 +24,8 @@ interface SantaseState {
   trick: Play[];
   points: [number, number];
   closed: boolean;
+  matchPoints: [number, number];
+  dealNo: number;
 }
 type SantaseAction =
   | { type: "PLAY"; card: string; marriage?: boolean }
@@ -154,6 +156,10 @@ export function SantaseView({ title }: { title: string }) {
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <ScorePill label={t("game.you")} value={state.points[seat] ?? 0} highlight />
             <ScorePill label={oppName} value={state.points[opp] ?? 0} />
+            <span className="text-xs text-ink-muted">
+              {t("santase.match")}: {state.matchPoints?.[seat] ?? 0}:{state.matchPoints?.[opp] ?? 0} ·{" "}
+              {t("santase.dealNo")} {state.dealNo ?? 1} · {t("santase.toEleven")}
+            </span>
             {closeAction ? (
               <Button variant="felt" onClick={() => m.send(closeAction)}>
                 {t("santase.close")}

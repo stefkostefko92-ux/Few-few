@@ -20,6 +20,8 @@ import { buildDeck, RANK_VALUE, RANKS_52, rankOf, suitOf, hiddenLike, type Card 
 const SMALL_BLIND = 5;
 const BIG_BLIND = 10;
 const STARTING_CHIPS = 1000;
+/** Мачът: ръце до отпадане на всички освен един, но не повече от MAX_HANDS. */
+export const MAX_HANDS = 25;
 
 export type Street = "preflop" | "flop" | "turn" | "river" | "showdown";
 
@@ -40,6 +42,8 @@ export interface HoldemState {
   button: Seat;
   actedThisStreet: boolean[];
   seats: number;
+  /** Номер на текущата ръка; мачът свършва при 1 оцелял или MAX_HANDS. */
+  handNo: number;
   winner: Seat | null;
   done: boolean;
 }
@@ -60,7 +64,9 @@ export type HoldemEvent =
   | { type: "BET"; seat: Seat; to: number }
   | { type: "RAISE"; seat: Seat; to: number }
   | { type: "SHOWDOWN"; seat: Seat; rank: number }
-  | { type: "WIN"; seat: Seat; pot: number };
+  | { type: "WIN"; seat: Seat; pot: number }
+  | { type: "HAND"; handNo: number }
+  | { type: "MATCH"; seat: Seat };
 
 export const HOLDEM_VIRTUAL_CHIPS_NOTICE =
   "Социална игра с виртуални чипове — не е хазарт за реални пари.";
@@ -99,6 +105,7 @@ export const holdemEngine: GameEngine<HoldemState, HoldemAction, HoldemEvent> = 
       button,
       actedThisStreet: new Array<boolean>(seats).fill(false),
       seats,
+      handNo: 1,
       winner: null,
       done: false,
     };
@@ -119,7 +126,34 @@ export const holdemEngine: GameEngine<HoldemState, HoldemAction, HoldemEvent> = 
     return actions;
   },
 
-  reduce(state, action) {
+  reduce(state, action, rng) {
+    const result = reduceHand(state, action);
+    if (result.state.done) return nextHandOrEnd(result.state, result.events, rng);
+    return result;
+  },
+
+  isTerminal: (s) => s.done,
+
+  score(state): SeatScore[] {
+    const winner = state.winner ?? 0;
+    return state.hole.map((_, seat) => ({
+      seat,
+      result: seat === winner ? "win" : "loss",
+      points: state.chips[seat] ?? 0,
+    }));
+  },
+
+  redact(state, seat) {
+    const hole = state.hole.map((h, i) => (i === seat || state.done ? h.slice() : hiddenLike(h)));
+    return { ...state, hole, deck: hiddenLike(state.deck) };
+  },
+};
+
+/** One betting action inside the current hand (the original single-hand reducer). */
+function reduceHand(
+  state: HoldemState,
+  action: HoldemAction,
+): { state: HoldemState; events: HoldemEvent[] } {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     if (state.folded[seat] || state.allIn[seat]) throw new IllegalActionError("Cannot act");
@@ -178,24 +212,70 @@ export const holdemEngine: GameEngine<HoldemState, HoldemAction, HoldemEvent> = 
     }
     next.turn = nextToAct(next, seat);
     return { state: next, events };
-  },
+}
 
-  isTerminal: (s) => s.done,
+/** After a finished hand: end the match (1 survivor / hand cap) or deal again. */
+function nextHandOrEnd(
+  state: HoldemState,
+  events: HoldemEvent[],
+  rng: SeededRng,
+): { state: HoldemState; events: HoldemEvent[] } {
+  const alive: Seat[] = [];
+  for (let s = 0; s < state.seats; s++) if ((state.chips[s] ?? 0) > 0) alive.push(s);
 
-  score(state): SeatScore[] {
-    const winner = state.winner ?? 0;
-    return state.hole.map((_, seat) => ({
-      seat,
-      result: seat === winner ? "win" : "loss",
-      points: seat === winner ? 1 : 0,
-    }));
-  },
+  if (alive.length <= 1 || state.handNo >= MAX_HANDS) {
+    // Мачът свършва: печели чиплидерът.
+    let winner: Seat = alive[0] ?? 0;
+    for (let s = 0; s < state.seats; s++) {
+      if ((state.chips[s] ?? 0) > (state.chips[winner] ?? 0)) winner = s as Seat;
+    }
+    events.push({ type: "MATCH", seat: winner });
+    return { state: { ...state, winner, done: true }, events };
+  }
 
-  redact(state, seat) {
-    const hole = state.hole.map((h, i) => (i === seat || state.done ? h.slice() : hiddenLike(h)));
-    return { ...state, hole, deck: hiddenLike(state.deck) };
-  },
-};
+  // Следваща ръка: местим бутона на следващия оцелял и раздаваме наново.
+  const next = clone(state);
+  next.done = false;
+  next.winner = null;
+  next.handNo += 1;
+  const nextAlive = (from: Seat): Seat => {
+    for (let i = 1; i <= next.seats; i++) {
+      const cand = ((from + i) % next.seats) as Seat;
+      if ((next.chips[cand] ?? 0) > 0) return cand;
+    }
+    return from;
+  };
+  next.button = nextAlive(next.button);
+
+  const deck = rng.shuffle(buildDeck(RANKS_52));
+  next.deck = deck;
+  next.community = [];
+  next.pot = 0;
+  next.currentBet = 0;
+  next.lastRaise = BIG_BLIND;
+  next.street = "preflop";
+  for (let s = 0; s < next.seats; s++) {
+    const busted = (next.chips[s] ?? 0) <= 0;
+    next.hole[s] = busted ? [] : next.deck.splice(0, 2);
+    next.bet[s] = 0;
+    next.totalBet[s] = 0;
+    next.folded[s] = busted; // отпадналите са трайно извън играта
+    next.allIn[s] = false;
+    next.actedThisStreet[s] = false;
+  }
+
+  const sbSeat = alive.length === 2 ? next.button : nextAlive(next.button);
+  const bbSeat = nextAlive(sbSeat);
+  postBlind(next.chips, next.bet, next.totalBet, sbSeat, SMALL_BLIND);
+  postBlind(next.chips, next.bet, next.totalBet, bbSeat, BIG_BLIND);
+  if ((next.chips[sbSeat] ?? 0) === 0) next.allIn[sbSeat] = true;
+  if ((next.chips[bbSeat] ?? 0) === 0) next.allIn[bbSeat] = true;
+  next.pot = (next.bet[sbSeat] ?? 0) + (next.bet[bbSeat] ?? 0);
+  next.currentBet = Math.max(next.bet[sbSeat] ?? 0, next.bet[bbSeat] ?? 0);
+  next.turn = nextAlive(bbSeat);
+  events.push({ type: "HAND", handNo: next.handNo });
+  return { state: next, events };
+}
 
 // ---- helpers ----
 

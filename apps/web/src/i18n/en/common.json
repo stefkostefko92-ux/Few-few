@@ -189,7 +189,10 @@
     "trump": "Trump",
     "stock": "Stock: {{count}}",
     "close": "Close",
-    "exchange": "Swap trump"
+    "exchange": "Swap trump",
+    "match": "Match",
+    "dealNo": "Deal",
+    "toEleven": "to 11"
   },
   "belote": {
     "yourTeam": "Your team",
@@ -204,7 +207,21 @@
       "hundred": "Hundred",
       "carre": "Carré",
       "belote": "Belote"
-    }
+    },
+    "noTrump": "NT",
+    "allTrump": "AT",
+    "noTrumpFull": "No trumps",
+    "allTrumpFull": "All trumps",
+    "contra": "Double",
+    "recontra": "Redouble",
+    "match": "Match",
+    "deal": "Deal",
+    "target": "to",
+    "hanging": "hanging",
+    "dealPoints": "This deal",
+    "lastDeal": "Deal",
+    "valat": "Capot!",
+    "inside": "Inside"
   },
   "wallet": {
     "chips": "Chips",

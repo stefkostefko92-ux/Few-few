@@ -8,8 +8,9 @@
   width: 100%;
 }
 .mag-board {
-  flex: 1 1 460px;
-  max-width: 680px;
+  /* Дъската е звездата: взима почти цялата широчина, HUD-ът е отстрани. */
+  flex: 1 1 760px;
+  max-width: 1100px;
   min-width: 300px;
   border-radius: 18px;
   overflow: hidden;

@@ -189,7 +189,10 @@
     "trump": "Briscola",
     "stock": "Mazzo: {{count}}",
     "close": "Chiudi",
-    "exchange": "Cambia briscola"
+    "exchange": "Cambia briscola",
+    "match": "Partita",
+    "dealNo": "Mano",
+    "toEleven": "a 11"
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -204,7 +207,21 @@
       "hundred": "Cento",
       "carre": "Quartetto",
       "belote": "Belote"
-    }
+    },
+    "noTrump": "SA",
+    "allTrump": "TA",
+    "noTrumpFull": "Senza atout",
+    "allTrumpFull": "Tutto atout",
+    "contra": "Contre",
+    "recontra": "Surcontre",
+    "match": "Partita",
+    "deal": "Mano",
+    "target": "a",
+    "hanging": "in sospeso",
+    "dealPoints": "Questa mano",
+    "lastDeal": "Mano",
+    "valat": "Cappotto!",
+    "inside": "Dentro"
   },
   "shop": {
     "disclaimer": "Il denaro acquista solo cosmetici, comfort e fiche d'ingresso. Le fiche non vengono mai riconvertite in denaro.",

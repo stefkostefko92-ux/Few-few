@@ -22,24 +22,47 @@ interface Decl {
   kind: "tierce" | "fifty" | "hundred" | "carre" | "belote";
   value: number;
 }
+type Contract = "S" | "H" | "D" | "C" | "NT" | "AT";
+interface DealSummary {
+  dealNo: number;
+  contract: Contract;
+  declarer: number;
+  doubling: 1 | 2 | 4;
+  raw: [number, number];
+  awarded: [number, number];
+  inside: boolean;
+  hung: number;
+  valat: number | null;
+}
 interface BeloteState {
   phase: "BID" | "PLAY";
   hands: string[][];
   trump: string | null;
+  contract: Contract | null;
+  doubling: 1 | 2 | 4;
   declarer: number | null;
   turn: number;
   trick: Play[];
   teamPoints: [number, number];
   declPoints: [number, number];
   declarations: Decl[];
+  matchPoints: [number, number];
+  hanging: number;
+  dealNo: number;
+  lastDeal: DealSummary | null;
 }
 type BeloteAction =
   | { type: "PASS" }
-  | { type: "CALL"; suit: string }
+  | { type: "BID"; contract: Contract }
+  | { type: "CONTRA" }
+  | { type: "RECONTRA" }
   | { type: "PLAY"; card: string };
 
-const SUITS = ["S", "H", "D", "C"] as const;
 const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
+/** Bid ladder for the auction panel (♣ < ♦ < ♥ < ♠ < БК < ВК). */
+const BID_LADDER: Contract[] = ["C", "D", "H", "S", "NT", "AT"];
+const contractGlyph = (c: Contract | null, t: (k: string) => string): string =>
+  c === null ? "A" : c === "NT" ? t("belote.noTrump") : c === "AT" ? t("belote.allTrump") : SUIT_GLYPH[c]!;
 
 /** Map an absolute seat to a table position relative to my seat. */
 function relativePos(seat: number, mySeat: number): SeatPos {
@@ -65,15 +88,17 @@ export function BeloteView({ title }: { title: string }) {
       ),
     [legal],
   );
-  const callBySuit = (suit: string) =>
-    legal.find((a): a is Extract<BeloteAction, { type: "CALL" }> => a.type === "CALL" && a.suit === suit);
+  const bidFor = (contract: Contract) =>
+    legal.find((a): a is Extract<BeloteAction, { type: "BID" }> => a.type === "BID" && a.contract === contract);
   const passAction = legal.find((a) => a.type === "PASS");
+  const contraAction = legal.find((a) => a.type === "CONTRA");
+  const recontraAction = legal.find((a) => a.type === "RECONTRA");
 
-  // Deal animation once the player's hand first appears.
-  const dealtRef = useRef(false);
+  // Deal animation whenever a new deal's hand appears (multi-deal match).
+  const dealtRef = useRef(0);
   useEffect(() => {
-    if (state && !dealtRef.current && (state.hands[seat]?.length ?? 0) > 0) {
-      dealtRef.current = true;
+    if (state && dealtRef.current !== state.dealNo && (state.hands[seat]?.length ?? 0) > 0) {
+      dealtRef.current = state.dealNo;
       requestAnimationFrame(() => dealIn(".aso-myhand .aso-card"));
       playCue("deal");
     }
@@ -106,7 +131,7 @@ export function BeloteView({ title }: { title: string }) {
       </div>
 
       <div ref={tableRef}>
-        <FeltTable crest={state.trump ? SUIT_GLYPH[state.trump] : "A"}>
+        <FeltTable crest={contractGlyph(state.contract, t)}>
           {seats
             .filter((s) => s !== seat)
             .map((s) => {
@@ -166,9 +191,31 @@ export function BeloteView({ title }: { title: string }) {
         </FeltTable>
       </div>
 
+      {/* Match scoreboard: игра до 151 + текущо раздаване. */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <ScorePill label={t("belote.yourTeam")} value={state.teamPoints[myTeam] ?? 0} highlight />
+        <ScorePill
+          label={`${t("belote.match")} · ${t("belote.yourTeam")}`}
+          value={state.matchPoints[myTeam] ?? 0}
+          highlight
+        />
+        <ScorePill
+          label={t("belote.theirTeam")}
+          value={state.matchPoints[myTeam === 0 ? 1 : 0] ?? 0}
+        />
+        <span className="text-xs text-ink-muted">
+          {t("belote.deal")} {state.dealNo} · {t("belote.target")} 151
+          {state.hanging > 0 ? ` · ${t("belote.hanging")}: ${state.hanging}` : ""}
+        </span>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+        <ScorePill label={t("belote.dealPoints")} value={state.teamPoints[myTeam] ?? 0} highlight />
         <ScorePill label={t("belote.theirTeam")} value={state.teamPoints[myTeam === 0 ? 1 : 0] ?? 0} />
+        {state.contract ? (
+          <span className="rounded-full border border-brass-400/30 bg-felt-900/60 px-3 py-1 text-xs text-brass-100">
+            {t("belote.contract")}: {contractGlyph(state.contract, t)}
+            {state.doubling === 2 ? ` · ${t("belote.contra")}` : state.doubling === 4 ? ` · ${t("belote.recontra")}` : ""}
+          </span>
+        ) : null}
       </div>
 
       {state.declarations.length > 0 ? (
@@ -191,27 +238,54 @@ export function BeloteView({ title }: { title: string }) {
 
       {state.phase === "BID" && myTurn ? (
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-          {SUITS.map((suit) => {
-            const call = callBySuit(suit);
+          {BID_LADDER.map((c) => {
+            const bid = bidFor(c);
+            const red = c === "H" || c === "D";
             return (
               <button
-                key={suit}
+                key={c}
                 type="button"
-                disabled={!call}
-                onClick={() => call && m.send(call)}
+                disabled={!bid}
+                onClick={() => bid && m.send(bid)}
                 className="aso-bid"
-                style={{ color: suit === "H" || suit === "D" ? "var(--suit-red)" : "var(--ink-100)" }}
+                style={{
+                  color: red ? "var(--suit-red)" : "var(--ink-100)",
+                  opacity: bid ? 1 : 0.3,
+                  fontSize: c === "NT" || c === "AT" ? "0.7rem" : undefined,
+                }}
+                title={c === "NT" ? t("belote.noTrumpFull") : c === "AT" ? t("belote.allTrumpFull") : undefined}
               >
-                {SUIT_GLYPH[suit]}
+                {contractGlyph(c, t)}
               </button>
             );
           })}
+          {contraAction ? (
+            <Button variant="ghost" onClick={() => m.send(contraAction)}>
+              {t("belote.contra")}
+            </Button>
+          ) : null}
+          {recontraAction ? (
+            <Button variant="ghost" onClick={() => m.send(recontraAction)}>
+              {t("belote.recontra")}
+            </Button>
+          ) : null}
           {passAction ? (
             <Button variant="ghost" onClick={() => m.send(passAction)}>
               {t("belote.pass")}
             </Button>
           ) : null}
         </div>
+      ) : null}
+
+      {/* Последно раздаване (между раздаванията). */}
+      {state.lastDeal && state.dealNo > state.lastDeal.dealNo ? (
+        <p className="mt-3 text-center text-xs text-ink-muted">
+          {t("belote.lastDeal")} #{state.lastDeal.dealNo}: {contractGlyph(state.lastDeal.contract, t)}
+          {state.lastDeal.valat !== null ? ` · ${t("belote.valat")}` : ""}
+          {state.lastDeal.inside ? ` · ${t("belote.inside")}` : ""}
+          {" · "}
+          {state.lastDeal.awarded[myTeam]}:{state.lastDeal.awarded[myTeam === 0 ? 1 : 0]}
+        </p>
       ) : null}
 
       {phase === "over" && result ? <GameOverPanel seat={seat} result={result} /> : null}

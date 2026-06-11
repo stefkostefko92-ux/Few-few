@@ -139,6 +139,7 @@ export function Scene({
   seat,
   result,
   children,
+  wide,
 }: {
   title: string;
   phase: Phase;
@@ -147,9 +148,11 @@ export function Scene({
   seat: number;
   result: GameOverMsg | null;
   children: ReactNode;
+  /** Wide tables (e.g. Магнат) get the full viewport instead of max-w-4xl. */
+  wide?: boolean;
 }) {
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className={wide ? "mx-auto max-w-[1500px]" : "mx-auto max-w-4xl"}>
       <SceneHeader title={title} />
       {!ready || phase === "searching" ? (
         <div className="mx-auto max-w-md text-center">

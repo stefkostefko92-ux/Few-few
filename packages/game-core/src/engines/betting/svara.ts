@@ -33,6 +33,8 @@ export interface SvaraState {
   current: number; // highest bet to match
   turn: Seat;
   seats: number;
+  /** Номер на ръката; мачът свършва при 1 платежоспособен или MAX_HANDS_SVARA. */
+  handNo: number;
   winner: Seat | null;
   done: boolean;
 }
@@ -47,12 +49,16 @@ export type SvaraEvent =
   | { type: "RAISE"; seat: Seat; to: number }
   | { type: "FOLD"; seat: Seat }
   | { type: "SHOWDOWN"; seat: Seat; pot: number }
-  | { type: "WIN"; seat: Seat; pot: number };
+  | { type: "WIN"; seat: Seat; pot: number }
+  | { type: "HAND"; handNo: number }
+  | { type: "MATCH"; seat: Seat };
 
 export const SVARA_VIRTUAL_CHIPS_NOTICE =
   "Социална игра с виртуални чипове — не е хазарт за реални пари.";
 
 const STARTING_CHIPS = 500;
+/** Свара: ръце до 1 платежоспособен играч, но не повече от MAX_HANDS_SVARA. */
+export const MAX_HANDS_SVARA = 20;
 
 export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
   init(opts: InitOpts, rng: SeededRng): SvaraState {
@@ -75,6 +81,7 @@ export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
       current: ANTE,
       turn: 0,
       seats,
+      handNo: 1,
       winner: null,
       done: false,
     };
@@ -89,7 +96,34 @@ export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
     return actions;
   },
 
-  reduce(state, action) {
+  reduce(state, action, rng) {
+    const result = reduceHand(state, action);
+    if (result.state.done) return nextHandOrEnd(result.state, result.events, rng);
+    return result;
+  },
+
+  isTerminal: (s) => s.done,
+
+  score(state): SeatScore[] {
+    const winner = state.winner ?? 0;
+    return state.hands.map((_, seat) => ({
+      seat,
+      result: seat === winner ? "win" : "loss",
+      points: state.chips[seat] ?? 0,
+    }));
+  },
+
+  redact(state, seat) {
+    const hands = state.hands.map((h, i) => (i === seat || state.done ? h.slice() : hiddenLike(h)));
+    return { ...state, hands };
+  },
+};
+
+/** One betting action inside the current hand (original single-hand reducer). */
+function reduceHand(
+  state: SvaraState,
+  action: SvaraAction,
+): { state: SvaraState; events: SvaraEvent[] } {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     if (state.folded[seat]) throw new IllegalActionError("Folded player cannot act");
@@ -135,24 +169,55 @@ export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
       return showdown(next, events);
     }
     return { state: next, events };
-  },
+}
 
-  isTerminal: (s) => s.done,
+/** After a finished hand: end the match (1 платежоспособен / cap) or deal again. */
+function nextHandOrEnd(
+  state: SvaraState,
+  events: SvaraEvent[],
+  rng: SeededRng,
+): { state: SvaraState; events: SvaraEvent[] } {
+  const alive: Seat[] = [];
+  for (let s = 0; s < state.seats; s++) if ((state.chips[s] ?? 0) >= ANTE) alive.push(s);
 
-  score(state): SeatScore[] {
-    const winner = state.winner ?? 0;
-    return state.hands.map((_, seat) => ({
-      seat,
-      result: seat === winner ? "win" : "loss",
-      points: seat === winner ? 1 : 0,
-    }));
-  },
+  if (alive.length <= 1 || state.handNo >= MAX_HANDS_SVARA) {
+    let winner: Seat = alive[0] ?? 0;
+    for (let s = 0; s < state.seats; s++) {
+      if ((state.chips[s] ?? 0) > (state.chips[winner] ?? 0)) winner = s as Seat;
+    }
+    events.push({ type: "MATCH", seat: winner });
+    return { state: { ...state, winner, done: true }, events };
+  }
 
-  redact(state, seat) {
-    const hands = state.hands.map((h, i) => (i === seat || state.done ? h.slice() : hiddenLike(h)));
-    return { ...state, hands };
-  },
-};
+  // Нова ръка: анте от всички платежоспособни, новo раздаване.
+  const next: SvaraState = {
+    ...state,
+    hands: state.hands.map(() => []),
+    chips: state.chips.slice(),
+    bet: new Array<number>(state.seats).fill(0),
+    folded: state.folded.slice(),
+    done: false,
+    winner: null,
+  };
+  next.handNo += 1;
+  const deck = rng.shuffle(buildDeck(RANKS));
+  let pot = 0;
+  for (let s = 0; s < next.seats; s++) {
+    const playing = (next.chips[s] ?? 0) >= ANTE;
+    next.folded[s] = !playing; // без чипове за анте → извън ръката
+    if (playing) {
+      next.hands[s] = deck.splice(0, 3);
+      next.chips[s]! -= ANTE;
+      next.bet[s] = ANTE;
+      pot += ANTE;
+    }
+  }
+  next.pot = pot;
+  next.current = ANTE;
+  next.turn = next.folded[0] ? nextActive(next, 0) : 0;
+  events.push({ type: "HAND", handNo: next.handNo });
+  return { state: next, events };
+}
 
 function activeSeats(state: SvaraState): Seat[] {
   const out: Seat[] = [];

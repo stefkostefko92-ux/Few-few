@@ -19,7 +19,7 @@ import { buildDeck, hiddenLike, RANK_VALUE, RANKS_52, rankOf, suitOf, type Card 
  * Lay-offs supported (§4.11): on a knock (not gin), the defender removes any
  * deadwood that extends the knocker's melds before comparison; an undercut
  * (defender deadwood <= knocker) awards the defender. Scoring is win/loss by
- * deadwood comparison, not a running 100-point match (single deal).
+ * deadwood comparison; deals repeat into a running match to 100 points.
  */
 
 export interface RummyState {
@@ -30,7 +30,12 @@ export interface RummyState {
   phase: "DRAW" | "DISCARD";
   winner: Seat | null;
   done: boolean;
-  deadwood: [number, number] | null; // filled at finish
+  deadwood: [number, number] | null; // filled at deal end
+  /** Running match score; first to MATCH_TARGET wins (gin/undercut bonuses). */
+  matchScore: [number, number];
+  dealNo: number;
+  /** Who deals first this deal (loser of the previous deal draws first). */
+  firstTurn: Seat;
 }
 
 export type RummyAction =
@@ -42,10 +47,48 @@ export type RummyEvent =
   | { type: "DRAW"; seat: Seat; from: "stock" | "discard" }
   | { type: "DISCARD"; seat: Seat; card: Card }
   | { type: "KNOCK"; seat: Seat; deadwood: number }
-  | { type: "WIN"; seat: Seat };
+  | { type: "WIN"; seat: Seat }
+  | { type: "DEAL_END"; seat: Seat; points: number; matchScore: [number, number] }
+  | { type: "MATCH"; seat: Seat };
 
 const HAND = 10;
 const deadwoodValue = (r: string): number => Math.min(RANK_VALUE[r] ?? 0, 10);
+/** Стандартен джин-реми мач: до 100 точки; джин +25, undercut +25. */
+export const RUMMY_TARGET = 100;
+const GIN_BONUS = 25;
+const UNDERCUT_BONUS = 25;
+
+/** Award deal points and either finish the match or deal again. */
+function settleDeal(
+  next: RummyState,
+  winner: Seat,
+  points: number,
+  events: RummyEvent[],
+  rng: SeededRng,
+): { state: RummyState; events: RummyEvent[] } {
+  next.matchScore = [
+    next.matchScore[0] + (winner === 0 ? points : 0),
+    next.matchScore[1] + (winner === 1 ? points : 0),
+  ];
+  events.push({ type: "WIN", seat: winner });
+  events.push({ type: "DEAL_END", seat: winner, points, matchScore: [...next.matchScore] });
+  if ((next.matchScore[winner] ?? 0) >= RUMMY_TARGET) {
+    events.push({ type: "MATCH", seat: winner });
+    return { state: { ...next, winner, done: true }, events };
+  }
+  // Нова ръка: губещият започва пръв.
+  const deck = rng.shuffle(buildDeck(RANKS_52));
+  next.hands = [deck.splice(0, HAND), deck.splice(0, HAND)];
+  next.discard = [deck.shift()!];
+  next.stock = deck;
+  next.firstTurn = winner === 0 ? 1 : 0;
+  next.turn = next.firstTurn;
+  next.phase = "DRAW";
+  next.deadwood = null;
+  next.dealNo += 1;
+  next.winner = null;
+  return { state: next, events };
+}
 
 export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
   init(_opts: InitOpts, rng: SeededRng): RummyState {
@@ -61,6 +104,9 @@ export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
       winner: null,
       done: false,
       deadwood: null,
+      matchScore: [0, 0],
+      dealNo: 1,
+      firstTurn: 0,
     };
   },
 
@@ -83,7 +129,7 @@ export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
     return actions;
   },
 
-  reduce(state, action) {
+  reduce(state, action, rng) {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     const next: RummyState = {
@@ -91,6 +137,7 @@ export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
       hands: state.hands.map((h) => h.slice()),
       stock: state.stock.slice(),
       discard: state.discard.slice(),
+      matchScore: [state.matchScore[0], state.matchScore[1]],
     };
     const events: RummyEvent[] = [];
 
@@ -131,22 +178,24 @@ export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
           ? bestDeadwood(next.hands[opp]!)
           : deadwoodAfterLayoff(next.hands[opp]!, knockerMelds);
       events.push({ type: "KNOCK", seat, deadwood: myDead });
-      // Knocker wins if strictly lower; tie or undercut → defender (incl. gin
-      // bonus is implicit: gin's 0 almost always wins).
-      const winner: Seat = myDead < oppDead || (myDead === 0 && myDead <= oppDead) ? seat : opp;
+      // Knocker wins if strictly lower; tie or undercut → defender with bonus.
+      const knockerWins = myDead < oppDead || (myDead === 0 && myDead <= oppDead);
+      const winner: Seat = knockerWins ? seat : opp;
       next.deadwood = seat === 0 ? [myDead, oppDead] : [oppDead, myDead];
-      events.push({ type: "WIN", seat: winner });
-      return { state: { ...next, winner, done: true }, events };
+      const margin = Math.abs(myDead - oppDead);
+      const points = knockerWins
+        ? margin + (myDead === 0 ? GIN_BONUS : 0)
+        : margin + UNDERCUT_BONUS;
+      return settleDeal(next, winner, Math.max(1, points), events, rng);
     }
 
-    // No knock; if stock is empty, end by deadwood comparison.
+    // No knock; if stock is empty, end the deal by deadwood comparison.
     if (next.stock.length === 0) {
       const d0 = bestDeadwood(next.hands[0]!);
       const d1 = bestDeadwood(next.hands[1]!);
       const winner: Seat = d0 <= d1 ? 0 : 1;
       next.deadwood = [d0, d1];
-      events.push({ type: "WIN", seat: winner });
-      return { state: { ...next, winner, done: true }, events };
+      return settleDeal(next, winner, Math.max(1, Math.abs(d0 - d1)), events, rng);
     }
 
     next.turn = seat === 0 ? 1 : 0;
@@ -159,10 +208,9 @@ export const rummyEngine: GameEngine<RummyState, RummyAction, RummyEvent> = {
   score(state): SeatScore[] {
     const winner = state.winner ?? 0;
     const loser: Seat = winner === 0 ? 1 : 0;
-    const margin = state.deadwood ? Math.abs(state.deadwood[0] - state.deadwood[1]) : 0;
     return [
-      { seat: winner, result: "win", points: Math.max(1, margin) },
-      { seat: loser, result: "loss", points: 0 },
+      { seat: winner, result: "win", points: state.matchScore[winner] ?? 0 },
+      { seat: loser, result: "loss", points: state.matchScore[loser] ?? 0 },
     ];
   },
 

@@ -5,7 +5,13 @@ import { rankOf, suitOf, type Card, type Suit } from "./cards.js";
  * Pure, deterministic detection + resolution so it can be unit-tested and
  * replayed. Only the team with the single best sequence/carré scores all of
  * its sequence+carré declarations; belote (K+Q of trump) always scores.
+ *
+ * Contract modes: a plain Suit (that suit is trump), "AT" (всичко коз — every
+ * suit is trump, belote counts in all four suits), "NT" (без коз — NO
+ * declarations of any kind score).
  */
+
+export type DeclMode = Suit | "AT" | "NT";
 
 export type DeclKind = "tierce" | "fifty" | "hundred" | "carre" | "belote";
 
@@ -24,12 +30,16 @@ const NATURAL: Record<string, number> = { "7": 0, "8": 1, "9": 2, T: 3, J: 4, Q:
 
 const CARRE_VALUE: Record<string, number> = { J: 200, "9": 150, A: 100, T: 100, K: 100, Q: 100 };
 
+const ALL_SUITS = ["S", "H", "D", "C"] as const satisfies readonly Suit[];
+
 /** Detect all sequences (len>=3), carrés, and belote in a single hand. */
-export function detectHand(hand: Card[], trump: Suit, seat: number): Declaration[] {
+export function detectHand(hand: Card[], mode: DeclMode, seat: number): Declaration[] {
+  if (mode === "NT") return []; // без коз: никакви обяви
   const out: Declaration[] = [];
+  const trumpSuits: readonly Suit[] = mode === "AT" ? ALL_SUITS : [mode];
 
   // ── Sequences: per suit, runs of consecutive natural ranks. ──
-  for (const suit of ["S", "H", "D", "C"] as Suit[]) {
+  for (const suit of ALL_SUITS) {
     const idxs = hand
       .filter((c) => suitOf(c) === suit)
       .map((c) => NATURAL[rankOf(c)] ?? -1)
@@ -43,7 +53,7 @@ export function detectHand(hand: Card[], trump: Suit, seat: number): Declaration
           const top = idxs[i - 1]!;
           const value = len >= 5 ? 100 : len === 4 ? 50 : 20;
           const kind: DeclKind = len >= 5 ? "hundred" : len === 4 ? "fifty" : "tierce";
-          out.push({ seat, kind, value, top, suit, trump: suit === trump });
+          out.push({ seat, kind, value, top, suit, trump: trumpSuits.includes(suit) });
         }
         runStart = i;
       }
@@ -59,9 +69,11 @@ export function detectHand(hand: Card[], trump: Suit, seat: number): Declaration
     }
   }
 
-  // ── Belote: King + Queen of trump. ──
-  if (hand.includes(`K${trump}`) && hand.includes(`Q${trump}`)) {
-    out.push({ seat, kind: "belote", value: 20, top: NATURAL["K"] ?? 6, suit: trump, trump: true });
+  // ── Belote: King + Queen of a trump suit (all four suits in „всичко коз"). ──
+  for (const suit of trumpSuits) {
+    if (hand.includes(`K${suit}`) && hand.includes(`Q${suit}`)) {
+      out.push({ seat, kind: "belote", value: 20, top: NATURAL["K"] ?? 6, suit, trump: true });
+    }
   }
 
   return out;
@@ -87,9 +99,9 @@ export interface ResolvedDeclarations {
  * scores none of theirs. Belote is independent — each holder's team gets +20.
  * Exact tie on the best sequence/carré → neither team scores those (rare).
  */
-export function resolveDeclarations(hands: Card[][], trump: Suit): ResolvedDeclarations {
+export function resolveDeclarations(hands: Card[][], mode: DeclMode): ResolvedDeclarations {
   const teamOf = (seat: number) => seat % 2;
-  const all = hands.flatMap((h, seat) => detectHand(h, trump, seat));
+  const all = hands.flatMap((h, seat) => detectHand(h, mode, seat));
 
   const belotes = all.filter((d) => d.kind === "belote");
   const combos = all.filter((d) => d.kind !== "belote");
