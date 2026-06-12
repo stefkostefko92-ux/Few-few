@@ -340,7 +340,14 @@
     "weTricks": "Nostre prese",
     "theyTricks": "Loro prese",
     "double": "Contro",
-    "redouble": "Surcontro"
+    "redouble": "Surcontro",
+    "rubber": "Rubber",
+    "deal": "Mano",
+    "games": "Giochi",
+    "vulnerable": "In zona!",
+    "lastDeal": "Ultima",
+    "made": "fatto",
+    "defeated": "sotto"
   },
   "war": {
     "flip": "Gira",
@@ -411,7 +418,12 @@
   "domino": {
     "empty": "Posiziona il primo domino",
     "side": "Lato",
-    "draw": "Pesca"
+    "draw": "Pesca",
+    "round": "Round",
+    "target": "a",
+    "lastRound": "Ultimo round",
+    "out": "esaurito",
+    "blocked": "bloccato"
   },
   "cue": {
     "power": "Potenza",
@@ -428,5 +440,21 @@
     "title": "Qualcosa è andato storto",
     "body": "Si è verificato un errore imprevisto. Torna alla lobby e riprova.",
     "backToLobby": "Alla lobby"
+  },
+  "kent": {
+    "round": "Round",
+    "passes": "Scambi",
+    "yourPass": "Passa una carta a sinistra",
+    "waiting": "Attendi gli altri…",
+    "pickToPass": "In attesa",
+    "signaled": "Segnale!",
+    "chosen": "scelto",
+    "youHaveKent": "Hai KENT! Segnala al compagno o chiama Kupe.",
+    "signal": "Segnala",
+    "callKupe": "Kupe!",
+    "target": "a",
+    "lastCall": "Ultimo Kupe",
+    "correct": "giusto ✓",
+    "wrong": "errato ✗"
   }
 }

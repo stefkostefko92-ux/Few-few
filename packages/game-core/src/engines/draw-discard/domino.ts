@@ -28,6 +28,12 @@ export interface DominoState {
   turn: Seat;
   seats: number;
   passes: number; // consecutive passes -> blocked
+  /** Running match score per seat; first to MATCH_TARGET_DOMINO wins. */
+  matchScore: number[];
+  roundNo: number;
+  firstTurn: Seat;
+  /** Who won the last round + how (for the UI between rounds). */
+  lastRound: { seat: Seat; reason: "out" | "blocked"; points: number } | null;
   winner: Seat | null;
   done: boolean;
 }
@@ -41,7 +47,9 @@ export type DominoEvent =
   | { type: "PLAY"; seat: Seat; tile: Tile; side: "L" | "R" }
   | { type: "DRAW"; seat: Seat }
   | { type: "PASS"; seat: Seat }
-  | { type: "WIN"; seat: Seat; reason: "out" | "blocked" };
+  | { type: "WIN"; seat: Seat; reason: "out" | "blocked" }
+  | { type: "ROUND"; seat: Seat; points: number; matchScore: number[] }
+  | { type: "MATCH"; seat: Seat };
 
 const pips = (t: Tile): [number, number] => {
   const [a, b] = t.split("-").map(Number) as [number, number];
@@ -51,6 +59,11 @@ const tilePipSum = (t: Tile): number => {
   const [a, b] = pips(t);
   return a + b;
 };
+
+/** Домино мач до 100 точки; победителят на кръга взима пиповете на другите. */
+export const MATCH_TARGET_DOMINO = 100;
+
+const handPips = (hand: Tile[]): number => hand.reduce((a, t) => a + tilePipSum(t), 0);
 
 function fullSet(): Tile[] {
   const set: Tile[] = [];
@@ -80,6 +93,10 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
       boneyard: shuffled,
       line: [],
       ends: null,
+      matchScore: new Array<number>(seats).fill(0),
+      roundNo: 1,
+      firstTurn: 0,
+      lastRound: null,
       turn: 0,
       seats,
       passes: 0,
@@ -102,7 +119,7 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
     return state.boneyard.length > 0 ? [{ type: "DRAW" }] : [{ type: "PASS" }];
   },
 
-  reduce(state, action) {
+  reduce(state, action, rng) {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     const next: DominoState = {
@@ -111,6 +128,7 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
       boneyard: state.boneyard.slice(),
       line: state.line.slice(),
       ends: state.ends ? [state.ends[0], state.ends[1]] : null,
+      matchScore: state.matchScore.slice(),
     };
     const events: DominoEvent[] = [];
 
@@ -130,7 +148,7 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
       }
       events.push({ type: "PASS", seat });
       next.passes += 1;
-      if (next.passes >= next.seats) return blockedFinish(next, events);
+      if (next.passes >= next.seats) return blockedFinish(next, events, rng);
       next.turn = (seat + 1) % next.seats;
       return { state: next, events };
     }
@@ -159,7 +177,9 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
 
     if (next.hands[seat]!.length === 0) {
       events.push({ type: "WIN", seat, reason: "out" });
-      return { state: { ...next, winner: seat, done: true }, events };
+      const pts = next.hands.reduce((sum, h, s) => sum + (s === seat ? 0 : handPips(h)), 0);
+      next.lastRound = { seat, reason: "out", points: pts };
+      return settleRound(next, seat, pts, events, rng);
     }
 
     next.turn = (seat + 1) % next.seats;
@@ -169,12 +189,11 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winner =
-      state.winner ?? lowestPipSeat(state);
+    const winner = state.winner ?? lowestPipSeat(state);
     return state.hands.map((_, seat) => ({
       seat,
       result: seat === winner ? "win" : "loss",
-      points: seat === winner ? 1 : 0,
+      points: state.matchScore[seat] ?? 0,
     }));
   },
 
@@ -209,8 +228,51 @@ function lowestPipSeat(state: DominoState): Seat {
 function blockedFinish(
   state: DominoState,
   events: DominoEvent[],
+  rng: SeededRng,
 ): { state: DominoState; events: DominoEvent[] } {
   const winner = lowestPipSeat(state);
   events.push({ type: "WIN", seat: winner, reason: "blocked" });
-  return { state: { ...state, winner, done: true }, events };
+  const pts = state.hands.reduce((sum, h, s) => sum + (s === winner ? 0 : handPips(h)), 0);
+  state.lastRound = { seat: winner, reason: "blocked", points: pts };
+  return settleRound(state, winner, pts, events, rng);
+}
+
+/** Award round points and either end the match (≥100) or deal the next round. */
+function settleRound(
+  state: DominoState,
+  winner: Seat,
+  points: number,
+  events: DominoEvent[],
+  rng: SeededRng,
+): { state: DominoState; events: DominoEvent[] } {
+  state.matchScore = state.matchScore.slice();
+  state.matchScore[winner] = (state.matchScore[winner] ?? 0) + points;
+  events.push({ type: "ROUND", seat: winner, points, matchScore: state.matchScore.slice() });
+  if ((state.matchScore[winner] ?? 0) >= MATCH_TARGET_DOMINO) {
+    events.push({ type: "MATCH", seat: winner });
+    return { state: { ...state, winner, done: true }, events };
+  }
+  // Next round: re-shuffle, deal, rotate the opening seat.
+  const seats = state.seats;
+  const shuffled = rng.shuffle(fullSet());
+  const handSize = seats <= 2 ? 7 : 5;
+  const hands: Tile[][] = [];
+  for (let s = 0; s < seats; s++) hands.push(shuffled.splice(0, handSize));
+  const firstTurn = ((state.firstTurn + 1) % seats) as Seat;
+  return {
+    state: {
+      ...state,
+      hands,
+      boneyard: shuffled,
+      line: [],
+      ends: null,
+      passes: 0,
+      turn: firstTurn,
+      firstTurn,
+      roundNo: state.roundNo + 1,
+      winner: null,
+      done: false,
+    },
+    events,
+  };
 }

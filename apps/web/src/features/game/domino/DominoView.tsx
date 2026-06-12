@@ -15,6 +15,9 @@ interface DominoState {
   ends: [number, number] | null;
   turn: number;
   seats: number;
+  matchScore: number[];
+  roundNo: number;
+  lastRound: { seat: number; reason: "out" | "blocked"; points: number } | null;
 }
 type DominoAction =
   | { type: "PLAY"; tile: string; side: "L" | "R" }
@@ -130,6 +133,26 @@ export function DominoView({ title }: { title: string }) {
             value={myTurn ? t("game.yourTurn") : ""}
             highlight={myTurn}
           />
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span className="text-ink-muted">
+              {t("domino.round")} {state.roundNo ?? 1} · {t("domino.target")} 100
+            </span>
+            {(state.matchScore ?? []).map((pts, s) => (
+              <span
+                key={s}
+                className="rounded-full border border-brass-400/25 bg-felt-900/60 px-2.5 py-1"
+                style={{ color: s === seat ? "var(--brass-100)" : "var(--ink-300)" }}
+              >
+                {players.find((p) => p.seat === s)?.displayName ?? `#${s}`}: {pts}
+              </span>
+            ))}
+          </div>
+          {state.lastRound ? (
+            <p className="mt-1 text-center text-xs text-ink-muted">
+              {t("domino.lastRound")}: {players.find((p) => p.seat === state.lastRound!.seat)?.displayName ?? `#${state.lastRound!.seat}`}{" "}
+              +{state.lastRound!.points} ({t(`domino.${state.lastRound!.reason}`)})
+            </p>
+          ) : null}
         </div>
       ) : null}
     </Scene>

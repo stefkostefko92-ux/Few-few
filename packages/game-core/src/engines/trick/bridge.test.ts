@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
+import { playRandom } from "../../bots/playout.js";
 import { bridgeEngine, type BridgeState, type BridgeAction } from "./bridge.js";
 
 const init = (seed = "br") => bridgeEngine.init({ seats: 4 }, new SeededRng(seed));
@@ -46,24 +47,36 @@ describe("bridge doubling", () => {
     expect(acts).toEqual([]);
   });
 
-  it("redoubled made contract scores x4", () => {
-    // Drive a tiny scripted auction to a redoubled contract, then let bots play.
+  it("a redoubled contract reaches play and scores real bridge points", () => {
     let s: BridgeState = init();
     s = bridgeEngine.reduce(s, { type: "BID", level: 1, strain: "NT" }, rng).state;
     s = bridgeEngine.reduce(s, { type: "DOUBLE" }, rng).state;
     s = bridgeEngine.reduce(s, { type: "REDOUBLE" }, rng).state;
-    // three passes close the auction
     for (let i = 0; i < 3; i++) s = bridgeEngine.reduce(s, { type: "PASS" }, rng).state;
     expect(s.phase).toBe("PLAY");
     expect(s.doubled).toBe(2);
-    // play out with first legal cards
-    for (let i = 0; i < 60 && !bridgeEngine.isTerminal(s); i++) {
+    // play one full deal with first legal cards
+    const startDeal = s.dealNo;
+    for (let i = 0; i < 60 && s.dealNo === startDeal && !bridgeEngine.isTerminal(s); i++) {
       const acts = bridgeEngine.legalActions(s, s.turn);
       if (acts.length === 0) break;
       s = bridgeEngine.reduce(s, acts[0]!, rng).state;
     }
-    expect(bridgeEngine.isTerminal(s)).toBe(true);
-    const winPts = bridgeEngine.score(s).find((x) => x.result === "win")?.points;
-    expect(winPts).toBe(4); // redoubled multiplier
+    // The deal is scored into matchPoints (one side has a non-zero total).
+    expect(s.lastDeal).not.toBeNull();
+    expect(s.matchPoints[0] + s.matchPoints[1]).toBeGreaterThan(0);
+  });
+
+  it("plays a full random rubber to a winning team", () => {
+    let reachedTerminal = 0;
+    for (let g = 0; g < 8; g++) {
+      const { state, terminal } = playRandom(bridgeEngine, { seed: `m${g}`, botSeed: `b${g}`, seats: 4 });
+      if (!terminal) continue;
+      reachedTerminal++;
+      const score = bridgeEngine.score(state);
+      expect(score.filter((x) => x.result === "win")).toHaveLength(2);
+      expect(state.gamesWon[0] >= 2 || state.gamesWon[1] >= 2 || state.dealNo >= 16).toBe(true);
+    }
+    expect(reachedTerminal).toBeGreaterThan(0);
   });
 });

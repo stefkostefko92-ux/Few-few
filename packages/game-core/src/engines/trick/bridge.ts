@@ -55,6 +55,12 @@ export interface BridgeState {
   doubled: number;
   // play
   tricksWon: [number, number];
+  // ── match (rubber) ──
+  matchPoints: [number, number];
+  gamesWon: [number, number];
+  vulnerable: [boolean, boolean];
+  dealNo: number;
+  lastDeal: { declarer: Seat; level: number; strain: Strain; doubled: number; made: boolean; tricks: number; declScore: number; defScore: number } | null;
   winningTeam: number | null;
   done: boolean;
 }
@@ -74,7 +80,9 @@ export type BridgeEvent =
   | { type: "CONTRACT"; declarer: Seat; level: number; strain: Strain; doubled: number }
   | { type: "PLAY"; seat: Seat; card: Card }
   | { type: "TRICK"; seat: Seat }
-  | { type: "RESULT"; team: number; made: boolean; tricks: number };
+  | { type: "RESULT"; team: number; made: boolean; tricks: number }
+  | { type: "DEAL_END"; declTeam: number; declScore: number; defScore: number; matchPoints: [number, number] }
+  | { type: "MATCH"; team: number };
 
 const next4 = (s: Seat): Seat => ((s + 1) % 4) as Seat;
 const team = (s: Seat): number => s % 2;
@@ -88,6 +96,53 @@ function beats(a: Card, b: Card, trump: Suit | null): boolean {
   if (!aT && bT) return false;
   if (suitOf(a) !== suitOf(b)) return false;
   return (STRENGTH[rankOf(a)] ?? 0) > (STRENGTH[rankOf(b)] ?? 0);
+}
+
+/** Рубер: играе се до 2 спечелени гейма (или таван от MAX_DEALS раздавания). */
+export const MAX_DEALS_BRIDGE = 16;
+
+const isMinor = (s: Strain): boolean => s === "C" || s === "D";
+
+/** Standard contract-bridge scoring for one finished deal. */
+function scoreDeal(
+  level: number,
+  strain: Strain,
+  doubled: number,
+  declTricks: number,
+  vul: boolean,
+): { declScore: number; defScore: number; gameMade: boolean } {
+  const need = 6 + level;
+  const dmult = doubled === 2 ? 4 : doubled === 1 ? 2 : 1;
+  const perTrick = isMinor(strain) ? 20 : 30;
+  const trickPts = (strain === "NT" ? 40 + 30 * (level - 1) : perTrick * level) * dmult;
+
+  if (declTricks >= need) {
+    let score = trickPts;
+    const over = declTricks - need;
+    if (doubled === 0) score += over * (strain === "NT" ? 30 : perTrick);
+    else score += over * (doubled === 2 ? (vul ? 400 : 200) : vul ? 200 : 100);
+    const gameMade = trickPts >= 100;
+    score += gameMade ? (vul ? 500 : 300) : 50; // game vs part-score bonus
+    if (level === 6) score += vul ? 750 : 500; // small slam
+    if (level === 7) score += vul ? 1500 : 1000; // grand slam
+    if (doubled === 1) score += 50; // insult
+    if (doubled === 2) score += 100;
+    return { declScore: score, defScore: 0, gameMade };
+  }
+
+  // Defeated — defenders score undertrick penalties.
+  const under = need - declTricks;
+  let pen = 0;
+  if (doubled === 0) {
+    pen = under * (vul ? 100 : 50);
+  } else {
+    for (let i = 1; i <= under; i++) {
+      if (vul) pen += i === 1 ? 200 : 300;
+      else pen += i === 1 ? 100 : i <= 3 ? 200 : 300;
+    }
+    if (doubled === 2) pen *= 2;
+  }
+  return { declScore: 0, defScore: pen, gameMade: false };
 }
 
 export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = {
@@ -110,6 +165,11 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
       contractLevel: 0,
       doubled: 0,
       tricksWon: [0, 0],
+      matchPoints: [0, 0],
+      gamesWon: [0, 0],
+      vulnerable: [false, false],
+      dealNo: 1,
+      lastDeal: null,
       winningTeam: null,
       done: false,
     };
@@ -144,7 +204,7 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
     return pool.map((card) => ({ type: "PLAY", card }));
   },
 
-  reduce(state, action) {
+  reduce(state, action, rng) {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     const next: BridgeState = {
@@ -152,6 +212,9 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
       hands: state.hands.map((h) => h.slice()),
       trick: state.trick.slice(),
       tricksWon: [state.tricksWon[0], state.tricksWon[1]],
+      matchPoints: [state.matchPoints[0], state.matchPoints[1]],
+      gamesWon: [state.gamesWon[0], state.gamesWon[1]],
+      vulnerable: [state.vulnerable[0], state.vulnerable[1]],
     };
     const events: BridgeEvent[] = [];
 
@@ -235,17 +298,7 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
     events.push({ type: "TRICK", seat: winner });
 
     if (next.hands.every((h) => h.length === 0)) {
-      const declTeam = team(next.declarer!);
-      const need = 6 + next.contractLevel;
-      const made = next.tricksWon[declTeam]! >= need;
-      next.winningTeam = made ? declTeam : 1 - declTeam;
-      next.done = true;
-      events.push({
-        type: "RESULT",
-        team: next.winningTeam,
-        made,
-        tricks: next.tricksWon[declTeam]!,
-      });
+      settleDeal(next, events, rng);
     }
     return { state: next, events };
   },
@@ -253,13 +306,11 @@ export const bridgeEngine: GameEngine<BridgeState, BridgeAction, BridgeEvent> = 
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winTeam = state.winningTeam ?? 0;
-    // Doubling multiplies the deal's worth: x2 doubled, x4 redoubled.
-    const mult = state.doubled === 2 ? 4 : state.doubled === 1 ? 2 : 1;
+    const winTeam = state.winningTeam ?? (state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1);
     return [0, 1, 2, 3].map((seat) => ({
       seat,
       result: team(seat as Seat) === winTeam ? "win" : "loss",
-      points: team(seat as Seat) === winTeam ? mult : 0,
+      points: team(seat as Seat) === winTeam ? state.matchPoints[winTeam] : 0,
     }));
   },
 
@@ -288,4 +339,70 @@ function openContract(
   state.turn = first;
   events.push({ type: "CONTRACT", declarer: state.declarer!, level: state.bidLevel, strain, doubled: state.doubled });
   return { state, events };
+}
+
+/** Score the finished deal, update the rubber, and deal again or end the match. */
+function settleDeal(state: BridgeState, events: BridgeEvent[], rng: SeededRng): void {
+  const declTeam = team(state.declarer!);
+  const defTeam = 1 - declTeam;
+  const made = state.tricksWon[declTeam]! >= 6 + state.contractLevel;
+  const { declScore, defScore, gameMade } = scoreDeal(
+    state.contractLevel,
+    state.bidStrain!,
+    state.doubled,
+    state.tricksWon[declTeam]!,
+    state.vulnerable[declTeam as 0 | 1],
+  );
+  state.matchPoints[declTeam as 0 | 1] += declScore;
+  state.matchPoints[defTeam as 0 | 1] += defScore;
+  state.lastDeal = {
+    declarer: state.declarer!,
+    level: state.contractLevel,
+    strain: state.bidStrain!,
+    doubled: state.doubled,
+    made,
+    tricks: state.tricksWon[declTeam]!,
+    declScore,
+    defScore,
+  };
+  events.push({ type: "RESULT", team: made ? declTeam : defTeam, made, tricks: state.tricksWon[declTeam]! });
+
+  if (gameMade) {
+    state.gamesWon[declTeam as 0 | 1] += 1;
+    state.vulnerable[declTeam as 0 | 1] = true;
+  }
+  events.push({ type: "DEAL_END", declTeam, declScore, defScore, matchPoints: [...state.matchPoints] });
+
+  // Rubber over: a side won two games (bonus 700, or 500 if opponents vulnerable).
+  if (state.gamesWon[declTeam as 0 | 1] >= 2) {
+    state.matchPoints[declTeam as 0 | 1] += state.vulnerable[defTeam as 0 | 1] ? 500 : 700;
+    state.winningTeam = declTeam;
+    state.done = true;
+    events.push({ type: "MATCH", team: declTeam });
+    return;
+  }
+  if (state.dealNo >= MAX_DEALS_BRIDGE) {
+    state.winningTeam = state.matchPoints[0] >= state.matchPoints[1] ? 0 : 1;
+    state.done = true;
+    events.push({ type: "MATCH", team: state.winningTeam });
+    return;
+  }
+
+  // Next deal: rotate dealer, redeal, reset the auction.
+  const deck = rng.shuffle(buildDeck(RANKS));
+  state.hands = [deck.slice(0, 13), deck.slice(13, 26), deck.slice(26, 39), deck.slice(39, 52)];
+  state.dealer = next4(state.dealer);
+  state.phase = "AUCTION";
+  state.turn = next4(state.dealer);
+  state.leader = next4(state.dealer);
+  state.trick = [];
+  state.bidLevel = 0;
+  state.bidStrain = null;
+  state.declarer = null;
+  state.passes = 0;
+  state.trump = null;
+  state.contractLevel = 0;
+  state.doubled = 0;
+  state.tricksWon = [0, 0];
+  state.dealNo += 1;
 }

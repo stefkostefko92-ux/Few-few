@@ -340,7 +340,14 @@
     "weTricks": "Our tricks",
     "theyTricks": "Their tricks",
     "double": "Double",
-    "redouble": "Redouble"
+    "redouble": "Redouble",
+    "rubber": "Rubber",
+    "deal": "Deal",
+    "games": "Games",
+    "vulnerable": "Vulnerable!",
+    "lastDeal": "Last",
+    "made": "made",
+    "defeated": "down"
   },
   "war": {
     "flip": "Flip",
@@ -411,7 +418,12 @@
   "domino": {
     "empty": "Place the first domino",
     "side": "Side",
-    "draw": "Draw"
+    "draw": "Draw",
+    "round": "Round",
+    "target": "to",
+    "lastRound": "Last round",
+    "out": "went out",
+    "blocked": "blocked"
   },
   "cue": {
     "power": "Power",
@@ -428,5 +440,21 @@
     "title": "Something went wrong",
     "body": "An unexpected error occurred. Go back to the lobby and try again.",
     "backToLobby": "Back to lobby"
+  },
+  "kent": {
+    "round": "Round",
+    "passes": "Swaps",
+    "yourPass": "Pass a card left",
+    "waiting": "Waiting for others…",
+    "pickToPass": "Awaiting passes",
+    "signaled": "Signal!",
+    "chosen": "chose",
+    "youHaveKent": "You have KENT! Signal your partner or call Kupe.",
+    "signal": "Signal",
+    "callKupe": "Kupe!",
+    "target": "to",
+    "lastCall": "Last Kupe",
+    "correct": "correct ✓",
+    "wrong": "false ✗"
   }
 }

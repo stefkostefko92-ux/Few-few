@@ -22,7 +22,13 @@ interface BridgeState {
   bidLevel: number;
   bidStrain: Strain | null;
   declarer: number | null;
+  doubled: number;
   tricksWon: [number, number];
+  matchPoints: [number, number];
+  gamesWon: [number, number];
+  vulnerable: [boolean, boolean];
+  dealNo: number;
+  lastDeal: { declarer: number; level: number; strain: Strain; made: boolean; tricks: number; declScore: number; defScore: number } | null;
 }
 type BridgeAction =
   | { type: "PASS" }
@@ -146,6 +152,27 @@ export function BridgeView({ title }: { title: string }) {
             <ScorePill label={t("bridge.weTricks")} value={state.tricksWon[myTeam] ?? 0} highlight />
             <ScorePill label={t("bridge.theyTricks")} value={state.tricksWon[myTeam === 0 ? 1 : 0] ?? 0} />
           </div>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+            <ScorePill
+              label={`${t("bridge.rubber")} · ${t("belote.yourTeam")}`}
+              value={state.matchPoints?.[myTeam] ?? 0}
+              highlight
+            />
+            <ScorePill label={t("belote.theirTeam")} value={state.matchPoints?.[myTeam === 0 ? 1 : 0] ?? 0} />
+            <span className="text-xs text-ink-muted">
+              {t("bridge.deal")} {state.dealNo ?? 1} · {t("bridge.games")} {state.gamesWon?.[myTeam] ?? 0}–
+              {state.gamesWon?.[myTeam === 0 ? 1 : 0] ?? 0}
+              {state.vulnerable?.[myTeam] ? ` · ${t("bridge.vulnerable")}` : ""}
+            </span>
+          </div>
+          {state.lastDeal ? (
+            <p className="mt-1 text-center text-xs text-ink-muted">
+              {t("bridge.lastDeal")}: {state.lastDeal.level}
+              {state.lastDeal.strain} ·{" "}
+              {state.lastDeal.made ? t("bridge.made") : t("bridge.defeated")} ({state.lastDeal.tricks}) ·{" "}
+              +{Math.max(state.lastDeal.declScore, state.lastDeal.defScore)}
+            </p>
+          ) : null}
         </>
       ) : null}
     </Scene>
