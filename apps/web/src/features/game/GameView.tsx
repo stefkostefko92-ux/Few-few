@@ -12,7 +12,6 @@ import { ChessView } from "./chess/ChessView";
 import { SantaseView } from "./santase/SantaseView";
 import { BeloteView } from "./belote/BeloteView";
 import { SvaraView } from "./svara/SvaraView";
-import { HoldemView } from "./holdem/HoldemView";
 import { KentView } from "./kent/KentView";
 import { BridgeView } from "./bridge/BridgeView";
 import { WarView } from "./war/WarView";
@@ -37,7 +36,6 @@ const TONE: Partial<Record<GameKey, Tone>> = {
   SANTASE: "warm",
   WAR: "midnight",
   SVARA: "midnight",
-  HOLDEM: "midnight",
   BATTLESHIP: "cool",
   GOFISH: "cool",
   EIGHTBALL: "midnight",
@@ -55,8 +53,6 @@ function renderGame(gameKey: GameKey, title: string) {
       return <BeloteView title={title} />;
     case "SVARA":
       return <SvaraView title={title} />;
-    case "HOLDEM":
-      return <HoldemView title={title} />;
     case "KENT":
       return <KentView title={title} />;
     case "BRIDGE":
@@ -97,7 +93,6 @@ function renderGame(gameKey: GameKey, title: string) {
 /** Chip-wagering games and the chips needed to sit down (§11.4 virtual only). */
 const CHIP_BUYIN: Partial<Record<GameKey, number>> = {
   SVARA: 200,
-  HOLDEM: 200,
 };
 
 /** Dispatches to a bespoke per-game view, wrapped in the cinematic stage. */

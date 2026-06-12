@@ -331,10 +331,6 @@
     "fold": "Fold",
     "notice": "Social game with virtual chips — not real-money gambling."
   },
-  "holdem": {
-    "check": "Check",
-    "bet": "Bet"
-  },
   "bridge": {
     "auction": "Auction",
     "contract": "Contract",

@@ -9,7 +9,7 @@ const SEATS: Record<string, number> = {
   CHESS: 2, DRAUGHTS: 2, BACKGAMMON: 2, LUDO: 4, DICE: 2,
   SANTASE: 2, BELOTE: 4, KENT: 4, BRIDGE: 4,
   WAR: 2, GOFISH: 4, DOMINO: 4, RUMMY: 2,
-  SVARA: 4, HOLDEM: 6, BATTLESHIP: 2, BINGO: 4, WORDS: 4,
+  SVARA: 4, BATTLESHIP: 2, BINGO: 4, WORDS: 4,
   EIGHTBALL: 2, NINEBALL: 2, SNOOKER: 2,
   MAGNAT: 4,
 };
@@ -20,8 +20,8 @@ const SEATS: Record<string, number> = {
 const LIGHT = new Set(["CHESS", "EIGHTBALL", "NINEBALL", "SNOOKER"]);
 
 describe("engine registry", () => {
-  it("registers all 22 games", () => {
-    expect(Object.keys(GAME_ENGINES)).toHaveLength(22);
+  it("registers all 21 games", () => {
+    expect(Object.keys(GAME_ENGINES)).toHaveLength(21);
   });
 });
 

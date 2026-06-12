@@ -19,7 +19,6 @@ export * from "./engines/draw-discard/domino.js";
 export * from "./engines/draw-discard/rummy.js";
 // betting
 export * from "./engines/betting/svara.js";
-export * from "./engines/betting/holdem.js";
 // grid-guess
 export * from "./engines/grid-guess/battleship.js";
 export * from "./engines/grid-guess/bingo.js";

@@ -29,7 +29,6 @@ const CARD_GAMES: GameKey[] = [
   "BELOTE",
   "SANTASE",
   "SVARA",
-  "HOLDEM",
   "KENT",
   "BRIDGE",
   "WAR",

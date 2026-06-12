@@ -14,7 +14,6 @@ import { goFishEngine } from "../engines/draw-discard/gofish.js";
 import { dominoEngine } from "../engines/draw-discard/domino.js";
 import { rummyEngine } from "../engines/draw-discard/rummy.js";
 import { svaraEngine } from "../engines/betting/svara.js";
-import { holdemEngine } from "../engines/betting/holdem.js";
 import { battleshipEngine } from "../engines/grid-guess/battleship.js";
 import { bingoEngine } from "../engines/grid-guess/bingo.js";
 import { wordsEngine } from "../engines/grid-guess/words.js";
@@ -29,7 +28,7 @@ export type AnyEngine = GameEngine<unknown, unknown, GameEvent>;
 
 const e = (engine: unknown): AnyEngine => engine as AnyEngine;
 
-/** All 18 engines (§2). 6 reusable cores, not 18 implementations. */
+/** All 21 engines (§2). Reusable cores, not 21 bespoke implementations. */
 export const GAME_ENGINES: Partial<Record<GameKey, AnyEngine>> = {
   // move-validation
   CHESS: e(chessEngine),
@@ -50,7 +49,6 @@ export const GAME_ENGINES: Partial<Record<GameKey, AnyEngine>> = {
   RUMMY: e(rummyEngine),
   // betting (virtual chips only, §11.4)
   SVARA: e(svaraEngine),
-  HOLDEM: e(holdemEngine),
   // grid-guess
   BATTLESHIP: e(battleshipEngine),
   BINGO: e(bingoEngine),

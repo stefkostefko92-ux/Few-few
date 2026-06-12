@@ -68,7 +68,7 @@ export default function OgImage() {
           }}
         />
         <div style={{ fontSize: 30, color: "#9fb3a8", marginTop: 36 }}>
-          22 игри · 3 езика · безплатно в браузъра
+          21 игри · 3 езика · безплатно в браузъра
         </div>
       </div>
     ),

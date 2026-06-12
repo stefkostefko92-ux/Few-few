@@ -1,6 +1,7 @@
 /**
- * Canonical game roster (22 games) and the engine patterns they reduce to.
- * Mirrors the `GameKey` enum in the Prisma schema — keep both in sync.
+ * Canonical game roster (21 games) and the engine patterns they reduce to.
+ * The Prisma `GameKey` enum keeps the retired HOLDEM value (dropping a Postgres
+ * enum value is unsafe) — the roster below is the source of truth for play.
  */
 
 export const GAME_KEYS = [
@@ -15,7 +16,6 @@ export const GAME_KEYS = [
   "DRAUGHTS",
   "LUDO",
   "RUMMY",
-  "HOLDEM",
   "DOMINO",
   "BRIDGE",
   "BATTLESHIP",
@@ -51,7 +51,6 @@ export const GAME_ENGINE: Record<GameKey, EnginePattern> = {
   KENT: "trick",
   BRIDGE: "trick",
   SVARA: "betting",
-  HOLDEM: "betting",
   BACKGAMMON: "dice-race",
   LUDO: "dice-race",
   DICE: "dice-race",
@@ -71,7 +70,7 @@ export const GAME_ENGINE: Record<GameKey, EnginePattern> = {
 };
 
 /** Betting games carry the regulatory "social gaming, not real-money gambling" label (S11.4). */
-export const BETTING_GAMES: readonly GameKey[] = ["SVARA", "HOLDEM"];
+export const BETTING_GAMES: readonly GameKey[] = ["SVARA"];
 
 /** Number of seats per match. Defaults to 2; team/party games override. */
 export const GAME_SEATS: Record<GameKey, number> = {
@@ -86,7 +85,6 @@ export const GAME_SEATS: Record<GameKey, number> = {
   DRAUGHTS: 2,
   LUDO: 4,
   RUMMY: 2,
-  HOLDEM: 6,
   DOMINO: 4,
   BRIDGE: 4,
   BATTLESHIP: 2,

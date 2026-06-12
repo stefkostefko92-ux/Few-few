@@ -12,7 +12,7 @@ export interface GameCard {
   glyph: string;
 }
 
-/** The full 22-game roster (§2), in lobby display order. All playable (S7). */
+/** The full 21-game roster (§2), in lobby display order. All playable (S7). */
 export const GAME_CATALOG: GameCard[] = [
   { key: "CHESS", title: "Шах", players: "2", ready: true, bespoke: true, glyph: "♞" },
   { key: "BACKGAMMON", title: "Табла", players: "2", ready: true, glyph: "⚀" },
@@ -25,7 +25,6 @@ export const GAME_CATALOG: GameCard[] = [
   { key: "DRAUGHTS", title: "Дама", players: "2", ready: true, glyph: "⛀" },
   { key: "LUDO", title: "Не се сърди човече", players: "2–4", ready: true, glyph: "🎲" },
   { key: "RUMMY", title: "Реми", players: "2", ready: true, glyph: "🃏" },
-  { key: "HOLDEM", title: "Тексас Холдем", players: "2–9", ready: true, glyph: "♧" },
   { key: "DOMINO", title: "Домино", players: "2–4", ready: true, glyph: "🁫" },
   { key: "BRIDGE", title: "Бридж", players: "4", ready: true, glyph: "♢" },
   { key: "BATTLESHIP", title: "Морски бой", players: "2", ready: true, glyph: "⚓" },
