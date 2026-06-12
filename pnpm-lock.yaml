@@ -264,6 +264,9 @@ importers:
       '@aso/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@aso/game-core':
+        specifier: workspace:*
+        version: link:../../packages/game-core
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.29
