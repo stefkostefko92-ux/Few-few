@@ -49,7 +49,7 @@ export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, o
 
   return (
     <BoardFrame>
-      <div className="aso-grid8" style={{ width: "min(76vw, 520px)" }}>
+      <div className="aso-grid8" style={{ width: "min(90vw, 72vh, 720px)" }}>
         {rows.flat().map((cell) => {
           const fileIdx = cell.square.charCodeAt(0) - 97;
           const rankIdx = Number(cell.square[1]) - 1;

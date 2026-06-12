@@ -2,7 +2,7 @@
 .bs-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  width: min(42vw, 320px);
+  width: min(44vw, 42vh, 420px);
   background:
     radial-gradient(120% 120% at 50% 0%, rgba(120, 180, 210, 0.12), transparent 60%),
     linear-gradient(180deg, #0e3247, #07202e);

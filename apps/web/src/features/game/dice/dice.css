@@ -23,7 +23,7 @@
 /* WebGL dice tray: canvas visuals with transparent, focusable hold buttons. */
 .dice-gl {
   position: relative;
-  width: min(360px, 72vw);
+  width: min(460px, 84vw);
 }
 .dice-gl__hit {
   position: absolute;

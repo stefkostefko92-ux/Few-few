@@ -89,7 +89,7 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
       ref={wrapRef}
       className="chess-gl"
       style={{
-        width: "min(78vw, 540px)",
+        width: "min(90vw, 72vh, 780px)",
         borderRadius: "16px",
         overflow: "hidden",
         lineHeight: 0,

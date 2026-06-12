@@ -7,7 +7,9 @@
   --table-felt-dark: var(--felt-900);
   position: relative;
   width: 100%;
-  min-height: 560px;
+  /* Plot scales with the viewport height so big monitors get a big table,
+     while laptops stay within one screen. */
+  min-height: clamp(520px, 74vh, 960px);
   border-radius: 30px;
   overflow: hidden;
   isolation: isolate;
@@ -62,7 +64,7 @@
 .aso-table__felt {
   position: relative;
   height: 100%;
-  min-height: 524px;
+  min-height: clamp(484px, calc(74vh - 36px), 924px);
   border-radius: 19px;
   background:
     radial-gradient(120% 100% at 50% 10%, rgba(255, 242, 205, 0.08), transparent 52%),

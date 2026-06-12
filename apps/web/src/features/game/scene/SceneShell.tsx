@@ -152,7 +152,7 @@ export function Scene({
   wide?: boolean;
 }) {
   return (
-    <div className={wide ? "mx-auto max-w-[1500px]" : "mx-auto max-w-4xl"}>
+    <div className={wide ? "mx-auto w-full max-w-[min(96vw,1500px)]" : "mx-auto w-full max-w-[min(94vw,1240px)]"}>
       <SceneHeader title={title} />
       {!ready || phase === "searching" ? (
         <div className="mx-auto max-w-md text-center">

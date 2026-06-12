@@ -122,7 +122,7 @@ export function BeloteView({ title }: { title: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto w-full max-w-[min(94vw,1240px)]">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-3xl text-brass-300">{title}</h1>
         <Button variant="ghost" onClick={() => navigate("/")}>

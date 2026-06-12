@@ -4,7 +4,7 @@
 
 .aso-cue {
   position: relative;
-  width: min(92vw, 760px);
+  width: min(94vw, 1120px);
   border-radius: 26px;
   padding: 18px;
   isolation: isolate;

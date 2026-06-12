@@ -22,7 +22,7 @@ export function MatchChrome({ title, phase, seat, result, children }: Props) {
   const myDelta = result?.ratingDeltas[seat] ?? 0;
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col items-center gap-6">
+    <div className="mx-auto flex w-full max-w-[min(94vw,1240px)] flex-col items-center gap-6">
       <div className="flex w-full items-center justify-between">
         <h1 className="text-3xl text-brass-300">{title}</h1>
         <Button variant="ghost" onClick={() => navigate("/")}>

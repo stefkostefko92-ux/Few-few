@@ -69,7 +69,7 @@ export function KentView({ title }: { title: string }) {
   const myKent = myHand.length === 4 && myHand.every((c) => c.slice(-1) && c[0] === myHand[0]![0]);
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto w-full max-w-[min(94vw,1240px)]">
       <h1 className="mb-4 text-center text-3xl text-brass-300">{title}</h1>
 
       <FeltTable crest="♤">

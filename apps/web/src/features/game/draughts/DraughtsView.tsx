@@ -124,7 +124,7 @@ export function DraughtsView({ title }: { title: string }) {
             <div
               ref={wrapRef}
               style={{
-                width: "min(82vw, 520px)",
+                width: "min(90vw, 72vh, 780px)",
                 borderRadius: 16,
                 overflow: "hidden",
                 lineHeight: 0,
@@ -139,7 +139,7 @@ export function DraughtsView({ title }: { title: string }) {
             </div>
           ) : (
           <BoardFrame>
-            <div className="aso-grid8" style={{ width: "min(76vw, 480px)" }}>
+            <div className="aso-grid8" style={{ width: "min(90vw, 72vh, 700px)" }}>
               {cells.map((i) => {
                 const r = Math.floor(i / 8);
                 const c = i % 8;

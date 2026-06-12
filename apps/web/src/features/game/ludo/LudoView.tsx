@@ -149,7 +149,7 @@ export function LudoView({ title }: { title: string }) {
             <div
               ref={wrapRef}
               style={{
-                width: "min(86vw, 560px)",
+                width: "min(90vw, 74vh, 800px)",
                 borderRadius: 16,
                 overflow: "hidden",
                 lineHeight: 0,
@@ -164,7 +164,7 @@ export function LudoView({ title }: { title: string }) {
             </div>
           ) : (
           <BoardFrame>
-            <div className="ludo-grid" style={{ width: "min(86vw, 540px)" }}>
+            <div className="ludo-grid" style={{ width: "min(90vw, 74vh, 760px)" }}>
               {Array.from({ length: N * N }).map((_, i) => {
                 const c = i % N;
                 const r = Math.floor(i / N);
