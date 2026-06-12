@@ -429,7 +429,8 @@
     "yourTurn": "Aim and shoot",
     "yourTurnBih": "Ball in hand — place and shoot",
     "placeCue": "Place cue ball",
-    "placeHint": "Click to place the cue ball"
+    "placeHint": "Click to place the cue ball",
+    "shootKey": "Shoot with the Space key"
   },
   "net": {
     "reconnecting": "Connection lost — reconnecting…"

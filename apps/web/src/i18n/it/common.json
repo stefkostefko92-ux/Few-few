@@ -429,7 +429,8 @@
     "yourTurn": "Mira e tira",
     "yourTurnBih": "Palla in mano — posiziona e tira",
     "placeCue": "Posiziona la bianca",
-    "placeHint": "Clicca per posizionare la bianca"
+    "placeHint": "Clicca per posizionare la bianca",
+    "shootKey": "Tira con il tasto Spazio"
   },
   "net": {
     "reconnecting": "Connessione persa — riconnessione…"

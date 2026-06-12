@@ -99,3 +99,18 @@
   flex: 1;
   accent-color: var(--brass-300);
 }
+
+/* Inline keyboard hint (e.g. the Space shoot shortcut). */
+.aso-kbd {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1.4;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  vertical-align: middle;
+}

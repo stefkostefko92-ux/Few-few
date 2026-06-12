@@ -1,6 +1,7 @@
 import type { Server } from "socket.io";
 import { getEngine, SeededRng, type AnyEngine, type SeatScore } from "@aso/game-core";
 import {
+  GAME_ENGINE,
   SOCKET_EVENTS,
   type GameKey,
   type MatchFoundMsg,
@@ -290,8 +291,11 @@ export class GameRoom {
       while (!this.done && !this.engine.isTerminal(this.state)) {
         const seat = this.currentSeat();
         if (!seat || !seat.isBot || !seat.bot) break;
-        // Small delay so the client can animate the bot's move naturally.
-        await new Promise((r) => setTimeout(r, 350));
+        // Cue sports: a 2–3s "aiming" pause before the AI shoots so it feels
+        // human; other games get a short beat to let the move animate.
+        const isCue = GAME_ENGINE[this.game] === "cue-sport";
+        const botDelay = isCue ? 2000 + Math.floor(Math.random() * 1000) : 350;
+        await new Promise((r) => setTimeout(r, botDelay));
         if (this.done || this.engine.isTerminal(this.state)) break;
         // Recompute against the CURRENT state after the await (it may have moved
         // on, e.g. a turn timeout), and only act if it's still this bot's turn.

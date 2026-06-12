@@ -170,6 +170,22 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     m.send(action);
   }
 
+  // Shoot with the Space bar (mirrors the button). A ref keeps the handler
+  // bound once while always calling the latest shoot/turn closure.
+  const shootRef = useRef(shoot);
+  shootRef.current = shoot;
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.code !== "Space" && e.key !== " ") return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      e.preventDefault(); // no page scroll / focused-button double fire
+      shootRef.current();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Aim guide endpoint (just a visual ray).
   const guideLen = 0.6;
   const gx = cuePos.x + Math.cos(angle) * guideLen;
@@ -296,8 +312,8 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 disabled={!myTurn}
                 onChange={(e) => setPower(Number(e.target.value))}
               />
-              <Button onClick={shoot} disabled={!myTurn}>
-                {t("cue.shoot")}
+              <Button onClick={shoot} disabled={!myTurn} title={t("cue.shootKey")}>
+                {t("cue.shoot")} <kbd className="aso-kbd">Space</kbd>
               </Button>
             </div>
 
