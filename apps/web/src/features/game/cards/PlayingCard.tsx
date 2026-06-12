@@ -18,9 +18,9 @@ export interface PlayingCardProps {
 }
 
 const SIZES = {
-  sm: { w: 52, h: 74 },
-  md: { w: 72, h: 102 },
-  lg: { w: 96, h: 136 },
+  sm: { w: 60, h: 84 },
+  md: { w: 88, h: 124 },
+  lg: { w: 120, h: 168 },
 } as const;
 
 /** Corner index: rank over a small suit glyph (drawn twice, rotated). */
@@ -59,7 +59,7 @@ export const PlayingCard = memo(function PlayingCard({
   style,
 }: PlayingCardProps) {
   const { w, h } = SIZES[size];
-  const cornerGlyph = size === "lg" ? 12 : size === "md" ? 9 : 7;
+  const cornerGlyph = size === "lg" ? 15 : size === "md" ? 11 : 8;
   const { game } = useParams<{ game: string }>();
   const key = game?.toUpperCase();
   const cardBack = useEquippedCosmetic(key && isGameKey(key) ? key : null, "CARDBACK");
@@ -110,7 +110,7 @@ export const PlayingCard = memo(function PlayingCard({
           {/* center */}
           {isAce ? (
             <span className="aso-card__center">
-              <SuitGlyph suit={suit} size={size === "lg" ? 50 : size === "md" ? 38 : 26} color={color} />
+              <SuitGlyph suit={suit} size={size === "lg" ? 62 : size === "md" ? 47 : 32} color={color} />
             </span>
           ) : isCourt ? (
             <CourtArt rank={rank} suit={suit} color={color} size={size} />

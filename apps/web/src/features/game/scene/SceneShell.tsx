@@ -86,11 +86,18 @@ export function ScorePill({ label, value, highlight }: { label: string; value: R
   );
 }
 
-const CARD_W = { sm: 52, md: 72, lg: 96 } as const;
+const CARD_W = { sm: 60, md: 88, lg: 120 } as const;
+
+/** Target hand width — scales with the monitor (compact on phones, spread on
+ *  big screens) so the larger cards make full use of the adaptive table. */
+function handTarget(): number {
+  const w = typeof window === "undefined" ? 1024 : window.innerWidth;
+  return Math.round(Math.min(Math.max(w * 0.82, 320), 600));
+}
 
 /** Overlap (px) so a hand of `count` cards fits ~`target`px wide — more overlap
  *  for bigger hands (e.g. Bridge/Kent's 13) so they never clip on mobile. */
-export function fitOverlap(count: number, size: "sm" | "md" | "lg" = "md", target = 358): number {
+export function fitOverlap(count: number, size: "sm" | "md" | "lg" = "md", target = handTarget()): number {
   if (count <= 1) return 0;
   const W = CARD_W[size];
   const step = (target - W) / (count - 1);

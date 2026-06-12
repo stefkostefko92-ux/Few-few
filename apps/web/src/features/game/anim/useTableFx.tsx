@@ -6,6 +6,8 @@ import { useGameEvents } from "../useGameEvents";
 import { relativePos4 } from "../trick/FourPlayerTrick";
 import type { SeatPos } from "../table/FeltTable";
 
+type SoundCue = "deal" | "flip" | "win" | "loss" | "click" | "error" | "alert";
+
 export type BannerTone = "brass" | "win" | "loss";
 export interface Banner {
   id: number;
@@ -74,12 +76,15 @@ function flyTrick(
 type BannerSpec = { text: string; tone?: BannerTone };
 export type ToBanner = (event: Record<string, unknown>) => BannerSpec | BannerSpec[] | null;
 
-/** Shared transient-banner queue (auto-dismiss, keep last few). */
-function useBannerQueue(): { banners: Banner[]; push: (text: string, tone: BannerTone) => void } {
+/** Shared transient-banner queue (auto-dismiss, keep last few). Each push
+ *  plays a sound: an explicit `cue`, else a default by tone (brass = silent). */
+function useBannerQueue(): { banners: Banner[]; push: (text: string, tone: BannerTone, cue?: SoundCue) => void } {
   const [banners, setBanners] = useState<Banner[]>([]);
-  const push = useCallback((text: string, tone: BannerTone) => {
+  const push = useCallback((text: string, tone: BannerTone, cue?: SoundCue) => {
     const id = bannerSeq++;
     setBanners((b) => [...b.slice(-3), { id, text, tone }]);
+    const sound = cue ?? (tone === "win" ? "win" : tone === "loss" ? "loss" : null);
+    if (sound) playCue(sound);
     setTimeout(() => setBanners((b) => b.filter((x) => x.id !== id)), 1900);
   }, []);
   return { banners, push };
@@ -137,7 +142,7 @@ export function useGameAnnouncements({
 }: {
   matchId: string | null;
   toBanner?: ToBanner;
-}): { banners: Banner[]; announce: (text: string, tone?: BannerTone) => void } {
+}): { banners: Banner[]; announce: (text: string, tone?: BannerTone, cue?: SoundCue) => void } {
   const { banners, push } = useBannerQueue();
   useGameEvents(matchId, (events) => {
     for (const raw of events) {
@@ -145,7 +150,10 @@ export function useGameAnnouncements({
       if (made) for (const b of Array.isArray(made) ? made : [made]) push(b.text, b.tone ?? "brass");
     }
   });
-  const announce = useCallback((text: string, tone: BannerTone = "brass") => push(text, tone), [push]);
+  const announce = useCallback(
+    (text: string, tone: BannerTone = "brass", cue?: SoundCue) => push(text, tone, cue),
+    [push],
+  );
   return { banners, announce };
 }
 

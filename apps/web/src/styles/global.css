@@ -50,6 +50,17 @@
   }
 }
 
+/* Quick horizontal shake for invalid input (e.g. an impossible chess move). */
+@keyframes aso-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-9px) rotate(-0.6deg); }
+  30% { transform: translateX(8px) rotate(0.6deg); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+}
+.aso-shake { animation: aso-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
 /* In-app "reduced motion" toggle (settings store sets the attribute). Mirrors
    the OS media query above so the preference works without an OS change. */
 :root[data-reduced-motion="true"] *,

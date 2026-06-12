@@ -99,14 +99,14 @@ button.aso-card:hover {
 .aso-card__corner {
   position: absolute;
   display: flex;
-  font-size: 12px;
+  font-size: 14px;
 }
 /* Scale the index with the card so it never crowds the central figure. */
 .aso-card[data-size="sm"] .aso-card__corner {
-  font-size: 9px;
+  font-size: 10px;
 }
 .aso-card[data-size="lg"] .aso-card__corner {
-  font-size: 15px;
+  font-size: 18px;
 }
 .aso-card__corner--tl {
   top: 5px;

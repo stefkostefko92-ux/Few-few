@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
@@ -42,6 +42,18 @@ export function ChessView({ title }: { title: string }) {
     },
   });
 
+  // Illegal move → red banner + error sound + a quick board shake.
+  const boardWrapRef = useRef<HTMLDivElement>(null);
+  function onIllegal() {
+    announce(t("chess.illegal"), "loss", "error");
+    const el = boardWrapRef.current;
+    if (el) {
+      el.classList.remove("aso-shake");
+      void el.offsetWidth; // reflow so the animation can retrigger
+      el.classList.add("aso-shake");
+    }
+  }
+
   return (
     <MatchChrome title={title} phase={phase} seat={seat} result={result}>
       {state ? (
@@ -52,15 +64,17 @@ export function ChessView({ title }: { title: string }) {
             <TurnBadge myTurn={myTurn} over={phase === "over"} />
           </div>
 
-          <Board
-            fen={state.fen}
-            legalActions={legal}
-            myTurn={myTurn && phase === "playing"}
-            orientation={seat === 1 ? "black" : "white"}
-            lastMove={state.lastMove}
-            onMove={(a) => m.send(a)}
-            onIllegal={() => announce(t("chess.illegal"), "loss")}
-          />
+          <div ref={boardWrapRef}>
+            <Board
+              fen={state.fen}
+              legalActions={legal}
+              myTurn={myTurn && phase === "playing"}
+              orientation={seat === 1 ? "black" : "white"}
+              lastMove={state.lastMove}
+              onMove={(a) => m.send(a)}
+              onIllegal={onIllegal}
+            />
+          </div>
 
           <Badge tone="felt">{user?.displayName ?? t("game.you")}</Badge>
         </div>
