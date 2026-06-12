@@ -8,6 +8,7 @@ import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { type SuitChar } from "../cards/suits";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
+import { useTableFx, Announcements } from "../anim/useTableFx";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill, HandCard } from "../scene/SceneShell";
 
@@ -42,6 +43,20 @@ export function SantaseView({ title }: { title: string }) {
 
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn, playCard } = useCardAnimations(tableRef);
+
+  // Trick flights (2-handed: winner is bottom if me, else top) + marriage banners.
+  const { banners } = useTableFx({
+    matchId: m.matchId,
+    seat,
+    scopeRef: tableRef,
+    posOf: (winner, mine) => (winner === mine ? "bottom" : "top"),
+    toBanner: (ev) => {
+      if (ev.type === "MARRIAGE" && typeof ev.value === "number") {
+        return { text: `${ev.value === 40 ? t("santase.trumpMarriage") : t("santase.marriage")} +${ev.value}`, tone: "win" };
+      }
+      return null;
+    },
+  });
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const opp = seat === 0 ? 1 : 0;
@@ -82,7 +97,8 @@ export function SantaseView({ title }: { title: string }) {
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
         <>
-          <div ref={tableRef}>
+          <div ref={tableRef} style={{ position: "relative" }}>
+            <Announcements banners={banners} />
             {/* Candlelit two-player duel (§4.2). */}
             <FeltTable crest={SUIT_GLYPH[state.trump]} feltColor="#15392c" feltDark="#0a1d15">
               <Seat
@@ -125,7 +141,11 @@ export function SantaseView({ title }: { title: string }) {
                 {state.trick.length === 0 ? (
                   <span className="text-sm text-ink-muted">{t("belote.emptyTrick")}</span>
                 ) : (
-                  state.trick.map((p) => <PlayingCard key={p.seat} card={p.card} size="md" />)
+                  state.trick.map((p) => (
+                    <span key={p.seat} className="aso-trick-card" style={{ display: "inline-block" }}>
+                      <PlayingCard card={p.card} size="md" />
+                    </span>
+                  ))
                 )}
               </TableCenter>
 

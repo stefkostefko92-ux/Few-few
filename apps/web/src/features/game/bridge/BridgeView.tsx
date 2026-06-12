@@ -70,6 +70,16 @@ export function BridgeView({ title }: { title: string }) {
             state={state}
             seat={seat}
             playable={playable}
+            matchId={m.matchId}
+            toBanner={(ev) => {
+              if (ev.type === "DOUBLE") return { text: t("belote.contra") + "!", tone: "loss" };
+              if (ev.type === "REDOUBLE") return { text: t("belote.recontra") + "!", tone: "win" };
+              if (ev.type === "CONTRACT" && typeof ev.level === "number")
+                return { text: `${ev.level}${STRAIN_GLYPH[ev.strain as Strain]}`, tone: "brass" };
+              if (ev.type === "RESULT")
+                return { text: ev.made ? t("bridge.made") + "!" : t("bridge.defeated") + "!", tone: ev.made ? "win" : "loss" };
+              return null;
+            }}
             names={(s) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`}
             emptyTrickLabel={state.phase === "AUCTION" ? t("bridge.auction") : t("belote.emptyTrick")}
             announce={

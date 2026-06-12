@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
+import { useTableFx, Announcements } from "../anim/useTableFx";
 import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
 import { PlayingCard } from "../cards/PlayingCard";
@@ -42,6 +43,22 @@ export function KentView({ title }: { title: string }) {
   const signalAction = legal.find((a) => a.type === "SIGNAL");
   const kupeAction = legal.find((a) => a.type === "CALL_KUPE");
 
+  const tableRef = useRef<HTMLDivElement>(null);
+  const myTeamForFx = seat % 2;
+  const { banners } = useTableFx({
+    matchId: m.matchId,
+    seat,
+    scopeRef: tableRef,
+    toBanner: (ev) => {
+      if (ev.type === "KUPE")
+        return {
+          text: `${t("kent.callKupe")} ${ev.correct ? "✓" : "✗"}`,
+          tone: ev.winningTeam === myTeamForFx ? "win" : "loss",
+        };
+      return null;
+    },
+  });
+
   const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
 
   if (!state) {
@@ -72,7 +89,9 @@ export function KentView({ title }: { title: string }) {
     <div className="mx-auto w-full max-w-[min(94vw,1240px)]">
       <h1 className="mb-4 text-center text-3xl text-brass-300">{title}</h1>
 
-      <FeltTable crest="♤">
+      <div ref={tableRef} style={{ position: "relative" }}>
+        <Announcements banners={banners} />
+        <FeltTable crest="♤">
         {[0, 1, 2, 3]
           .filter((s) => s !== seat)
           .map((s) => (
@@ -132,7 +151,8 @@ export function KentView({ title }: { title: string }) {
             })}
           </div>
         </Seat>
-      </FeltTable>
+        </FeltTable>
+      </div>
 
       {/* Kent banner + actions */}
       {myKent ? (

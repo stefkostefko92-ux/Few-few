@@ -9,6 +9,7 @@ import { type SuitChar } from "../cards/suits";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
+import { useTableFx, Announcements } from "../anim/useTableFx";
 import { useMatch } from "../useMatch";
 import { GameOverPanel, fitOverlap } from "../scene/SceneShell";
 import "../cards/cards.css";
@@ -80,6 +81,27 @@ export function BeloteView({ title }: { title: string }) {
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn, playCard } = useCardAnimations(tableRef);
 
+  // Event-driven juice: trick flights + declaration/contra/valat banners.
+  const { banners } = useTableFx({
+    matchId: m.matchId,
+    seat,
+    scopeRef: tableRef,
+    toBanner: (ev) => {
+      if (ev.type === "DECLARATIONS") {
+        const decls = (ev.declarations as Array<{ kind: string; value: number }>) ?? [];
+        return decls.map((d) => ({ text: `${t(`belote.decl.${d.kind}`)} +${d.value}`, tone: "brass" as const }));
+      }
+      if (ev.type === "CONTRA") return { text: t("belote.contra") + "!", tone: "loss" };
+      if (ev.type === "RECONTRA") return { text: t("belote.recontra") + "!", tone: "win" };
+      if (ev.type === "DEAL_END") {
+        const s = ev.summary as { valat: number | null; inside: boolean } | undefined;
+        if (typeof s?.valat === "number") return { text: t("belote.valat"), tone: "win" };
+        if (s?.inside) return { text: t("belote.inside") + "!", tone: "loss" };
+      }
+      return null;
+    },
+  });
+
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const playMap = useMemo(
     () =>
@@ -130,7 +152,8 @@ export function BeloteView({ title }: { title: string }) {
         </Button>
       </div>
 
-      <div ref={tableRef}>
+      <div ref={tableRef} style={{ position: "relative" }}>
+        <Announcements banners={banners} />
         <FeltTable crest={contractGlyph(state.contract, t)}>
           {seats
             .filter((s) => s !== seat)
@@ -160,7 +183,11 @@ export function BeloteView({ title }: { title: string }) {
                 {state.phase === "BID" ? t("belote.auction") : t("belote.emptyTrick")}
               </span>
             ) : (
-              state.trick.map((p) => <PlayingCard key={p.seat} card={p.card} size="md" />)
+              state.trick.map((p) => (
+                <span key={p.seat} className="aso-trick-card" style={{ display: "inline-block" }}>
+                  <PlayingCard card={p.card} size="md" />
+                </span>
+              ))
             )}
           </TableCenter>
 

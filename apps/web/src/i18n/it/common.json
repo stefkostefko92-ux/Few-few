@@ -192,7 +192,9 @@
     "exchange": "Cambia briscola",
     "match": "Partita",
     "dealNo": "Mano",
-    "toEleven": "a 11"
+    "toEleven": "a 11",
+    "marriage": "Matrimonio",
+    "trumpMarriage": "Matrimonio atout"
   },
   "belote": {
     "yourTeam": "La tua squadra",

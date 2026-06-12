@@ -263,6 +263,36 @@ button.aso-card:hover {
   .aso-announce { animation: none; }
 }
 
+/* Stacked announce banners over the table (trick/declaration/contra FX). */
+.aso-fx-layer {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.aso-fx-layer .aso-announce {
+  position: static;
+  transform: none;
+}
+.aso-announce[data-tone="win"] {
+  background: linear-gradient(to bottom, #d8f5d0, #6fbf73);
+  color: #0c2410;
+}
+.aso-announce[data-tone="win"]::before,
+.aso-announce[data-tone="win"]::after { background: #6fbf73; }
+.aso-announce[data-tone="loss"] {
+  background: linear-gradient(to bottom, #f6d4d2, #c0241f);
+  color: #fff;
+}
+.aso-announce[data-tone="loss"]::before,
+.aso-announce[data-tone="loss"]::after { background: #c0241f; }
+
 /* Bridge auction bid buttons (compact grid). */
 .aso-bridge-bid {
   padding: 6px 0;

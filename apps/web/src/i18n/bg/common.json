@@ -192,7 +192,9 @@
     "exchange": "Смени коза",
     "match": "Мач",
     "dealNo": "Раздаване",
-    "toEleven": "до 11"
+    "toEleven": "до 11",
+    "marriage": "Белот",
+    "trumpMarriage": "Коз белот"
   },
   "belote": {
     "yourTeam": "Твой отбор",

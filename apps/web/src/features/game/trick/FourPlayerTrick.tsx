@@ -5,6 +5,7 @@ import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
+import { useTableFx, Announcements, type BannerTone } from "../anim/useTableFx";
 import { HandCard } from "../scene/SceneShell";
 
 interface Play {
@@ -38,6 +39,9 @@ interface Props {
   onPlay: (card: string) => void;
   /** Extra seat badge (e.g. team dot). */
   seatBadge?: (seat: number) => ReactNode;
+  /** Match id + event→banner mapper to drive trick flights & announce banners. */
+  matchId?: string | null;
+  toBanner?: (event: Record<string, unknown>) => { text: string; tone?: BannerTone } | null;
 }
 
 /** Reusable felt-table trick scene for 4-player games (Kent, Bridge play). */
@@ -53,11 +57,14 @@ export function FourPlayerTrick({
   feltDark,
   onPlay,
   seatBadge,
+  matchId,
+  toBanner,
 }: Props) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn, playCard } = useCardAnimations(tableRef);
+  const { banners } = useTableFx({ matchId: matchId ?? null, seat, scopeRef: tableRef, toBanner });
 
   const myTurn = state.turn === seat && playable.size > 0;
   const others = useMemo(() => [0, 1, 2, 3].filter((s) => s !== seat), [seat]);
@@ -79,7 +86,8 @@ export function FourPlayerTrick({
   }
 
   return (
-    <div ref={tableRef}>
+    <div ref={tableRef} style={{ position: "relative" }}>
+      <Announcements banners={banners} />
       <FeltTable crest={crest} feltColor={feltColor} feltDark={feltDark}>
         {others.map((s) => (
           <Seat
@@ -103,7 +111,11 @@ export function FourPlayerTrick({
           {state.trick.length === 0 ? (
             <span className="text-sm text-ink-muted">{emptyTrickLabel}</span>
           ) : (
-            state.trick.map((p) => <PlayingCard key={p.seat} card={p.card} size="md" />)
+            state.trick.map((p) => (
+              <span key={p.seat} className="aso-trick-card" style={{ display: "inline-block" }}>
+                <PlayingCard card={p.card} size="md" />
+              </span>
+            ))
           )}
         </TableCenter>
 

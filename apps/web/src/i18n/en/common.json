@@ -192,7 +192,9 @@
     "exchange": "Swap trump",
     "match": "Match",
     "dealNo": "Deal",
-    "toEleven": "to 11"
+    "toEleven": "to 11",
+    "marriage": "Marriage",
+    "trumpMarriage": "Trump marriage"
   },
   "belote": {
     "yourTeam": "Your team",
