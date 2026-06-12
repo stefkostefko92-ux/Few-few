@@ -276,6 +276,12 @@ button.aso-card:hover {
   gap: 8px;
   pointer-events: none;
 }
+/* Board / non-felt games: float near the top of the viewport. */
+.aso-fx-layer--fixed {
+  position: fixed;
+  top: 78px;
+  z-index: 55;
+}
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;

@@ -4,6 +4,7 @@ import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { BoardFrame, Die } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
 import { CENTER, HOME, N, SEAT_COLORS, TRACK, houseSeat, tokenCoord } from "./board";
 import type { LudoScene, LudoToken } from "./ludoScene";
@@ -42,6 +43,20 @@ export function LudoView({ title }: { title: string }) {
   const { t } = useTranslation();
   const m = useMatch<LudoState, LudoAction>("LUDO");
   const { state, legal, seat, phase, result, players } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "CAPTURE") {
+        if (ev.seat === seat) return { text: t("fx.capture"), tone: "win" };
+        if (ev.victim === seat) return { text: t("fx.captured"), tone: "loss" };
+        return { text: t("fx.capture"), tone: "brass" };
+      }
+      if (ev.type === "ROLL" && ev.die === 6) return { text: t("fx.six"), tone: "brass" };
+      return null;
+    },
+  });
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const rollAction = legal.find((a) => a.type === "ROLL");
@@ -132,6 +147,7 @@ export function LudoView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <div className="flex flex-col items-center gap-4">
           {/* Player legend. */}

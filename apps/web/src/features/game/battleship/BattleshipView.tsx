@@ -5,6 +5,7 @@ import { playCue } from "../../../lib/sound";
 import { cn } from "../../../ui";
 import { BoardFrame } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import "./battleship.css";
 
@@ -23,6 +24,15 @@ export function BattleshipView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BattleshipState, BattleshipAction>("BATTLESHIP");
   const { state, legal, seat, phase, result, players } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "FIRE" && ev.hit) return ev.seat === seat ? { text: t("fx.fireHit"), tone: "win" } : { text: t("fx.fireHitYou"), tone: "loss" };
+      return null;
+    },
+  });
   const opp = seat === 0 ? 1 : 0;
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
@@ -44,6 +54,7 @@ export function BattleshipView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <div className="flex flex-col items-center gap-5 lg:flex-row lg:items-start lg:justify-center">
           {/* Firing grid (opponent waters). */}

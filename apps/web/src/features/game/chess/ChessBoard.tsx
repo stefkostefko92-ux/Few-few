@@ -15,9 +15,11 @@ interface Props {
   orientation: Orientation;
   lastMove: { from: string; to: string } | null;
   onMove: (action: ChessAction) => void;
+  /** Player clicked an illegal destination for the selected piece. */
+  onIllegal?: () => void;
 }
 
-export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, onMove }: Props) {
+export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, onMove, onIllegal }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const rows = useMemo(() => {
@@ -44,6 +46,7 @@ export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, o
       setSelected(square);
       return;
     }
+    if (selected) onIllegal?.();
     setSelected(null);
   }
 

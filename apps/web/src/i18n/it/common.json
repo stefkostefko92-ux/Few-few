@@ -458,5 +458,34 @@
     "lastCall": "Ultimo Kupe",
     "correct": "giusto ✓",
     "wrong": "errato ✗"
+  },
+  "chess": {
+    "check": "Scacco!",
+    "checkmate": "Scacco matto!",
+    "mateWin": "Scacco matto — vinci!",
+    "drawn": "Patta",
+    "illegal": "Mossa illegale!"
+  },
+  "fx": {
+    "hit": "Colpito!",
+    "hitYou": "Sei colpito!",
+    "capture": "Mangiata!",
+    "captured": "Sei mangiato!",
+    "six": "Sei!",
+    "take": "Presa!",
+    "lostPiece": "Pezzo perso",
+    "king": "Dama!",
+    "oppKing": "Avversario in dama",
+    "fireHit": "Colpito!",
+    "fireHitYou": "Sei colpito!",
+    "book": "Quartetto!",
+    "oppBook": "Quartetto (avv.)",
+    "oppPass": "Avversario passa",
+    "blocked": "Bloccato!",
+    "war": "GUERRA!",
+    "fold": "Passo",
+    "raise": "Rilancio!",
+    "winPot": "vince il piatto",
+    "youWinPot": "Vinci il piatto!"
   }
 }

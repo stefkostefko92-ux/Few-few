@@ -7,6 +7,7 @@ import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
 import { ChipStack, Pot } from "../betting/Chips";
 import "../betting/chips.css";
@@ -42,6 +43,18 @@ export function SvaraView({ title }: { title: string }) {
   const m = useMatch<SvaraState, SvaraAction>("SVARA");
   const { state, legal, seat, phase, result, players } = m;
 
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "WIN") return { text: ev.seat === seat ? t("fx.youWinPot") : t("fx.winPot"), tone: ev.seat === seat ? "win" : "brass" };
+      if (ev.seat === seat) return null;
+      if (ev.type === "FOLD") return { text: t("fx.fold"), tone: "brass" };
+      if (ev.type === "RAISE") return { text: t("fx.raise"), tone: "loss" };
+      return null;
+    },
+  });
+
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn } = useCardAnimations(tableRef);
 
@@ -63,6 +76,7 @@ export function SvaraView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <>
           <div ref={tableRef}>

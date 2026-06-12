@@ -72,12 +72,25 @@ function flyTrick(
 }
 
 type BannerSpec = { text: string; tone?: BannerTone };
+export type ToBanner = (event: Record<string, unknown>) => BannerSpec | BannerSpec[] | null;
+
+/** Shared transient-banner queue (auto-dismiss, keep last few). */
+function useBannerQueue(): { banners: Banner[]; push: (text: string, tone: BannerTone) => void } {
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const push = useCallback((text: string, tone: BannerTone) => {
+    const id = bannerSeq++;
+    setBanners((b) => [...b.slice(-3), { id, text, tone }]);
+    setTimeout(() => setBanners((b) => b.filter((x) => x.id !== id)), 1900);
+  }, []);
+  return { banners, push };
+}
+
 interface FxOpts {
   matchId: string | null;
   seat: number;
   scopeRef: RefObject<HTMLElement | null>;
   /** Map an engine event to one or more banners (declarations, contra…). */
-  toBanner?: (event: Record<string, unknown>) => BannerSpec | BannerSpec[] | null;
+  toBanner?: ToBanner;
   /** Where the trick winner sits relative to me (default: 4-handed layout). */
   posOf?: (winner: number, mine: number) => SeatPos;
 }
@@ -90,16 +103,10 @@ interface FxOpts {
  */
 export function useTableFx({ matchId, seat, scopeRef, toBanner, posOf }: FxOpts): { banners: Banner[] } {
   const reduced = useSettings((s) => s.reducedMotion);
-  const [banners, setBanners] = useState<Banner[]>([]);
+  const { banners, push } = useBannerQueue();
   const reducedRef = useRef(reduced);
   reducedRef.current = reduced;
   const pos = posOf ?? relativePos4;
-
-  const push = useCallback((text: string, tone: BannerTone) => {
-    const id = bannerSeq++;
-    setBanners((b) => [...b.slice(-3), { id, text, tone }]);
-    setTimeout(() => setBanners((b) => b.filter((x) => x.id !== id)), 1900);
-  }, []);
 
   useGameEvents(matchId, (events) => {
     for (const raw of events) {
@@ -119,11 +126,35 @@ export function useTableFx({ matchId, seat, scopeRef, toBanner, posOf }: FxOpts)
   return { banners };
 }
 
-/** Stacked brass announce banners over the table (declarations, contra, valat). */
-export function Announcements({ banners }: { banners: Banner[] }) {
+/**
+ * Banner-only announcements for non-card games (chess, board, betting…): no
+ * trick flight. Returns `announce` so the view can also raise CLIENT-side
+ * banners (e.g. an illegal move the server never sees).
+ */
+export function useGameAnnouncements({
+  matchId,
+  toBanner,
+}: {
+  matchId: string | null;
+  toBanner?: ToBanner;
+}): { banners: Banner[]; announce: (text: string, tone?: BannerTone) => void } {
+  const { banners, push } = useBannerQueue();
+  useGameEvents(matchId, (events) => {
+    for (const raw of events) {
+      const made = toBanner?.(raw as Record<string, unknown>);
+      if (made) for (const b of Array.isArray(made) ? made : [made]) push(b.text, b.tone ?? "brass");
+    }
+  });
+  const announce = useCallback((text: string, tone: BannerTone = "brass") => push(text, tone), [push]);
+  return { banners, announce };
+}
+
+/** Stacked announce banners. `fixed` floats them near the top of the screen
+ *  (board games); otherwise they sit over the felt table (absolute parent). */
+export function Announcements({ banners, fixed }: { banners: Banner[]; fixed?: boolean }) {
   if (banners.length === 0) return null;
   return (
-    <div className="aso-fx-layer" aria-live="polite">
+    <div className={fixed ? "aso-fx-layer aso-fx-layer--fixed" : "aso-fx-layer"} aria-live="polite">
       {banners.map((b) => (
         <span key={b.id} className="aso-announce" data-tone={b.tone}>
           {b.text}

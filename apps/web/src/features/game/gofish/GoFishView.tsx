@@ -6,6 +6,7 @@ import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
 
 interface GoFishState {
@@ -32,6 +33,15 @@ export function GoFishView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<GoFishState, GoFishAction>("GOFISH");
   const { state, legal, seat, phase, result, players } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "BOOK") return ev.seat === seat ? { text: t("fx.book"), tone: "win" } : { text: t("fx.oppBook"), tone: "brass" };
+      return null;
+    },
+  });
 
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn } = useCardAnimations(tableRef);
@@ -66,6 +76,7 @@ export function GoFishView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <>
           <div ref={tableRef}>

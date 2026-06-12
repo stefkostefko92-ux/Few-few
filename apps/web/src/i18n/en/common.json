@@ -458,5 +458,34 @@
     "lastCall": "Last Kupe",
     "correct": "correct ✓",
     "wrong": "false ✗"
+  },
+  "chess": {
+    "check": "Check!",
+    "checkmate": "Checkmate!",
+    "mateWin": "Checkmate — you win!",
+    "drawn": "Draw",
+    "illegal": "Illegal move!"
+  },
+  "fx": {
+    "hit": "Hit!",
+    "hitYou": "You were hit!",
+    "capture": "Capture!",
+    "captured": "You were captured!",
+    "six": "Six!",
+    "take": "Capture!",
+    "lostPiece": "Lost a piece",
+    "king": "King!",
+    "oppKing": "Opponent kinged",
+    "fireHit": "Hit!",
+    "fireHitYou": "You were hit!",
+    "book": "Book!",
+    "oppBook": "Book (opponent)",
+    "oppPass": "Opponent passes",
+    "blocked": "Blocked!",
+    "war": "WAR!",
+    "fold": "Fold",
+    "raise": "Raise!",
+    "winPot": "wins the pot",
+    "youWinPot": "You win the pot!"
   }
 }

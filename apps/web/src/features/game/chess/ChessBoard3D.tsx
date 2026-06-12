@@ -9,11 +9,13 @@ interface Props {
   orientation: Orientation;
   lastMove: { from: string; to: string } | null;
   onMove: (action: ChessAction) => void;
+  /** Player clicked an illegal destination for the selected piece. */
+  onIllegal?: () => void;
 }
 
 /** WebGL 3D chess board. Mirrors ChessBoard's select/target/move logic, but
  *  renders a three.js scene and picks squares by raycast. Lazy-loads three. */
-export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove, onMove }: Props) {
+export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove, onMove, onIllegal }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const movableFrom = useMemo(() => new Set(legalActions.map((a) => a.from)), [legalActions]);
@@ -32,8 +34,13 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
       setSelected(null);
       return;
     }
-    if (movableFrom.has(square)) setSelected(square);
-    else setSelected(null);
+    if (movableFrom.has(square)) {
+      setSelected(square);
+      return;
+    }
+    // A piece was up and the player clicked an illegal destination.
+    if (selected) onIllegal?.();
+    setSelected(null);
   }
 
   const canvasRef = useRef<HTMLCanvasElement>(null);

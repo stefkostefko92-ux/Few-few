@@ -6,6 +6,7 @@ import { playCue } from "../../../lib/sound";
 import { cn } from "../../../ui";
 import { BoardFrame, DiceRow } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import type { BackgammonScene, PointId } from "./backgammonScene";
 import "./backgammon.css";
@@ -43,6 +44,15 @@ export function BackgammonView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BackgammonState, BackgammonAction>("BACKGAMMON");
   const { state, legal, seat, phase, result, players, send } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "HIT") return ev.seat === seat ? { text: t("fx.hit"), tone: "win" } : { text: t("fx.hitYou"), tone: "loss" };
+      return null;
+    },
+  });
   const [fromSel, setFromSel] = useState<number | "BAR" | null>(null);
   const useGL = useMemo(webglSupported, []);
 
@@ -181,6 +191,7 @@ export function BackgammonView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <div className="flex flex-col items-center gap-4">
           <ScorePill label={oppName} value={`${t("backgammon.off")}: ${state.off[seat === 0 ? 1 : 0] ?? 0}`} />

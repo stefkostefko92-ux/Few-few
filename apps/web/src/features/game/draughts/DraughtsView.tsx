@@ -5,6 +5,7 @@ import { playCue } from "../../../lib/sound";
 import { cn } from "../../../ui";
 import { BoardFrame } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import type { DraughtsScene } from "./draughtsScene";
 
@@ -29,6 +30,16 @@ export function DraughtsView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<DraughtsState, DraughtsAction>("DRAUGHTS");
   const { state, legal, seat, phase, result, players } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "MOVE" && typeof ev.captured === "number") return ev.seat === seat ? { text: t("fx.take"), tone: "win" } : { text: t("fx.lostPiece"), tone: "loss" };
+      if (ev.type === "KING") return ev.seat === seat ? { text: t("fx.king"), tone: "win" } : { text: t("fx.oppKing"), tone: "brass" };
+      return null;
+    },
+  });
   const [from, setFrom] = useState<number | null>(null);
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
@@ -117,6 +128,7 @@ export function DraughtsView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <div className="flex flex-col items-center gap-4">
           <ScorePill label={oppName} value="" />

@@ -6,6 +6,7 @@ import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 
 interface WarState {
@@ -23,6 +24,15 @@ export function WarView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<WarState, WarAction>("WAR");
   const { state, legal, seat, phase, result, players, send } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "WAR") return { text: t("fx.war"), tone: "brass" };
+      return null;
+    },
+  });
 
   const opp = seat === 0 ? 1 : 0;
   const canFlip = legal.some((a) => a.type === "FLIP");
@@ -43,6 +53,7 @@ export function WarView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <>
           <FeltTable crest="⚔" feltColor="#2a1530" feltDark="#120817">

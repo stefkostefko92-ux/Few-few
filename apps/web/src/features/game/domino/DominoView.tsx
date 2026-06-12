@@ -4,6 +4,7 @@ import { useAuthStore } from "../../../lib/store";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { DominoTile } from "./DominoTile";
 import "./domino.css";
@@ -29,6 +30,16 @@ export function DominoView({ title }: { title: string }) {
   const user = useAuthStore((s) => s.user);
   const m = useMatch<DominoState, DominoAction>("DOMINO");
   const { state, legal, seat, phase, result, players } = m;
+
+  // Opponent-visible action announcements.
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (ev) => {
+      if (ev.type === "PASS" && ev.seat !== seat) return { text: t("fx.oppPass"), tone: "brass" };
+      if (ev.type === "WIN" && ev.reason === "blocked") return { text: t("fx.blocked"), tone: "brass" };
+      return null;
+    },
+  });
   const [side, setSide] = useState<"L" | "R">("R");
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
@@ -59,6 +70,7 @@ export function DominoView({ title }: { title: string }) {
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+      <Announcements banners={banners} fixed />
       {state ? (
         <div className="dom-layout">
           {/* Opponents (tile counts). */}
