@@ -216,7 +216,10 @@ function exportMessages() {
   messagesCache.forEach(m => rows.push([
     m.nome, m.email, m.tel, m.citta, m.azienda, m.servizio, m.messaggio, fmtDate(m.data), m.source
   ]));
-  const csv = rows.map(r => r.map(c => `"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  // Neutralise CSV/formula injection: a leading = + - @ (tab/CR) is treated as a
+  // formula by Excel/Sheets, so prefix such cells with a single quote.
+  const csvCell = c => { let s = (c == null ? '' : c).toString(); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return `"${s.replace(/"/g,'""')}"`; };
+  const csv = rows.map(r => r.map(csvCell).join(',')).join('\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = `messaggi_panev_${new Date().toISOString().slice(0,10)}.csv`;

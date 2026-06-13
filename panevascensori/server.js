@@ -95,9 +95,10 @@ function securityHeaders(req, res, next) {
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
-    "object-src 'self'",
+    "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
+    "frame-ancestors 'self'",
     "upgrade-insecure-requests",
   ].join('; ');
 
@@ -152,8 +153,11 @@ app.use(express.json({ limit: '100kb' }));
 
 // Hide sensitive files — MUST be BEFORE express.static to block before it serves
 app.use((req, res, next) => {
-  const blocked = [/^\/data\b/, /^\/scripts\b/, /^\/lib\b/, /^\/node_modules\b/,
-                   /^\/\.env/, /^\/package(-lock)?\.json$/, /\.db(-journal|-wal|-shm)?$/];
+  // Case-insensitive: on case-insensitive filesystems /Data/panev.DB etc. would
+  // otherwise bypass the blocklist and disclose the SQLite DB (hashes + PII).
+  const blocked = [/^\/data\b/i, /^\/scripts\b/i, /^\/lib\b/i, /^\/node_modules\b/i,
+                   /^\/\.env/i, /^\/package(-lock)?\.json$/i, /\.db(-journal|-wal|-shm)?$/i,
+                   /^\/\.git\b/i];
   if (blocked.some(r => r.test(req.path))) return res.status(404).send('Not found');
   next();
 });
@@ -171,6 +175,10 @@ const CLEAN_URL_PAGES = new Set([
 
 app.use((req, res, next) => {
   const p = req.path;
+
+  // Guard against protocol-relative / backslash open redirects:
+  // a request to //evil.com would otherwise yield Location: //evil.com.
+  if (p.startsWith('//') || p.includes('\\')) return res.status(400).send('Bad request');
 
   // Skip asset requests and API
   if (p.startsWith('/api/') || p.startsWith('/admin') ||
@@ -212,6 +220,7 @@ app.use(express.static(path.join(__dirname), {
   maxAge: IS_PROD ? '7d' : 0,
   etag: true,
   lastModified: true,
+  dotfiles: 'deny',
   index: ['index.html'],
   setHeaders(res, filePath) {
     if (filePath.endsWith('.pdf')) {
@@ -306,6 +315,16 @@ function escHtml(s) {
   return String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// Safe embedding of JSON into <script> blocks: JSON.stringify does NOT escape
+// '<' or the line separators, so a raw </script> or U+2028/2029 in any field
+// could break out of the script element. Escape them at the output boundary.
+function ldjson(obj) {
+  return JSON.stringify(obj)
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
 
 function renderProductPage(p) {
@@ -471,8 +490,8 @@ function renderProductPage(p) {
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="msapplication-config" content="/browserconfig.xml">
 
-<script type="application/ld+json">${JSON.stringify(productSchema)}</script>
-<script type="application/ld+json">${JSON.stringify(breadcrumbSchema)}</script>
+<script type="application/ld+json">${ldjson(productSchema)}</script>
+<script type="application/ld+json">${ldjson(breadcrumbSchema)}</script>
 </head>
 <body>
 
@@ -673,14 +692,18 @@ app.get('/api/session-status', apiLimiter, async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['payment_intent', 'line_items'],
     });
+    // This endpoint is UNAUTHENTICATED and the cs_ id leaks via success_url,
+    // Referer and analytics — so never echo customer PII (email/name/phone/
+    // address/notes in metadata). Return only the non-personal order outcome.
     res.json({
-      status:        session.payment_status,
-      customerEmail: session.customer_email,
-      customerName:  session.metadata?.cliente_nome || '',
-      amountTotal:   session.amount_total,
-      currency:      session.currency,
-      lineItems:     session.line_items?.data || [],
-      metadata:      session.metadata || {},
+      status:      session.payment_status,
+      amountTotal: session.amount_total,
+      currency:    session.currency,
+      lineItems:   (session.line_items?.data || []).map(li => ({
+        description: li.description,
+        quantity:    li.quantity,
+        price:       { unit_amount: li.price?.unit_amount },
+      })),
     });
   } catch (err) {
     console.error('[session-status]', err.message);
@@ -731,7 +754,7 @@ app.post('/api/contact', contactLimiter, (req, res) => {
       ip:        auth.clientIp(req),
     });
 
-    console.log(`[contact] ${msg.id} ${msg.nome} <${msg.email}> source=${source}${items ? ' items=' + items.length : ''}`);
+    console.log(`[contact] ${msg.id} ${msg.nome} <${msg.email}> source=${msg.source}${items ? ' items=' + items.length : ''}`);
 
     // Send email (admin + user confirmation) — fire & return immediately
     mailer.sendContactEmails({
@@ -768,7 +791,12 @@ function handleStripeWebhook(req, res) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!secret) {
-    console.warn('[webhook] STRIPE_WEBHOOK_SECRET non configurato — skip verifica');
+    // Fail closed in production: processing unverified webhook events is unsafe.
+    if (IS_PROD) {
+      console.error('[webhook] STRIPE_WEBHOOK_SECRET non configurato — rifiuto in produzione');
+      return res.status(503).send('Webhook non configurato');
+    }
+    console.warn('[webhook] STRIPE_WEBHOOK_SECRET non configurato — skip verifica (dev)');
     return res.json({ received: true, verified: false });
   }
 
@@ -836,6 +864,19 @@ function handleStripeWebhook(req, res) {
 // ─────────────────────────────────────────────────────────────
 //  ADMIN AUTH
 // ─────────────────────────────────────────────────────────────
+
+// CSRF defense for the cookie-authenticated admin API: the session cookie is
+// SameSite=strict, and additionally we reject any cross-origin state-changing
+// request by validating the Origin header against the allowlist.
+app.use('/api/admin', (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') {
+    const origin = req.headers.origin;
+    if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+      return res.status(403).json({ error: 'Richiesta cross-origin non consentita' });
+    }
+  }
+  next();
+});
 
 // Login
 app.post('/api/admin/login', loginLimiter, async (req, res) => {
@@ -961,7 +1002,7 @@ app.post('/api/admin/products', auth.requireAdmin, (req, res) => {
     res.status(201).json({ product });
   } catch (err) {
     console.error('[admin products POST]', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: IS_PROD ? 'Errore interno' : err.message });
   }
 });
 
@@ -984,7 +1025,7 @@ app.put('/api/admin/products/:id', auth.requireAdmin, (req, res) => {
     res.json({ product });
   } catch (err) {
     console.error('[admin products PUT]', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: IS_PROD ? 'Errore interno' : err.message });
   }
 });
 

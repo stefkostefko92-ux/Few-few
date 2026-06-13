@@ -13,11 +13,6 @@ Disallow: /carrello
 Disallow: /carrello.html
 Disallow: /success
 Disallow: /success.html
-Disallow: /data/
-Disallow: /scripts/
-Disallow: /lib/
-Disallow: /*.env$
-Disallow: /*.db$
 
 # ── Search engines ───────────────────────────────────────────
 User-agent: Googlebot

@@ -20,12 +20,23 @@ if (!JWT_SECRET) {
 
 const ACTIVE_SECRET = JWT_SECRET || 'panev-dev-secret-do-not-use-in-production-please-set-JWT_SECRET-env-var';
 
+// Fail closed in production: a missing/weak JWT_SECRET means tokens are signed
+// with the public in-repo fallback, which is a trivial admin-forgery bypass.
+if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET.length < 32)) {
+  console.error('\n  ✗ FATALE: JWT_SECRET mancante o troppo corto in produzione (min 32 caratteri).');
+  console.error('  ✗ Genera: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"\n');
+  process.exit(1);
+}
+
 // ── Brute force protection ────────────────────────────────────
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS   = 15 * 60 * 1000; // 15 min
 
 function clientIp(req) {
-  return (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || 'unknown';
+  // Trust only the proxy-resolved address (app.set('trust proxy', 1)).
+  // Never parse the raw X-Forwarded-For header: a client can spoof it to evade
+  // the login lockout / rate limiting and to poison stored IP audit data.
+  return req.ip || 'unknown';
 }
 
 function isLocked(ip) {
@@ -67,7 +78,7 @@ function issueToken(user) {
 
 function verifyToken(token) {
   try {
-    return jwt.verify(token, ACTIVE_SECRET);
+    return jwt.verify(token, ACTIVE_SECRET, { algorithms: ['HS256'] });
   } catch {
     return null;
   }
@@ -77,7 +88,7 @@ function setAuthCookie(res, token, isProd) {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     secure: !!isProd,
-    sameSite: 'lax',
+    sameSite: 'strict',
     maxAge: COOKIE_MAX_MS,
     path: '/',
   });

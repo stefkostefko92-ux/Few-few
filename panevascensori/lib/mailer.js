@@ -56,15 +56,15 @@ function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio,
   const isQuote = source === 'carrello' || source === 'quote' || (items && items.length);
 
   const fields = [
-    ['Nome',       nome],
+    ['Nome',       escape(nome)],
     ['Email',      `<a href="mailto:${escape(email)}" style="color:#162861">${escape(email)}</a>`],
     ['Telefono',   tel ? `<a href="tel:${escape(tel)}" style="color:#162861">${escape(tel)}</a>` : '—'],
-    ['Azienda',    azienda || '—'],
-    ['Città',      citta || '—'],
-    ['Servizio',   servizio || '—'],
-    ['Fonte',      source || 'website'],
-    ['ID',         msgId],
-    ['IP',         ip || '—'],
+    ['Azienda',    escape(azienda) || '—'],
+    ['Città',      escape(citta) || '—'],
+    ['Servizio',   escape(servizio) || '—'],
+    ['Fonte',      escape(source) || 'website'],
+    ['ID',         escape(msgId)],
+    ['IP',         escape(ip) || '—'],
     ['Data/ora',   new Date().toLocaleString('it-IT', { timeZone: 'Europe/Rome' })],
   ];
   const fieldRows = fields.map(([k, v]) =>
@@ -212,7 +212,9 @@ async function sendContactEmails(data) {
     await t.sendMail({
       from: MAIL_FROM,
       to: MAIL_TO_ADMIN,
-      replyTo: data.email ? `"${data.nome}" <${data.email}>` : undefined,
+      // Structured address so nodemailer encodes it safely (blocks header injection
+      // via attacker-supplied name/email from the public contact form).
+      replyTo: data.email ? { name: String(data.nome || ''), address: String(data.email) } : undefined,
       subject: adminSubject,
       html: buildAdminHtml(data),
       text: `Nuovo messaggio da ${data.nome} <${data.email}>\n\nServizio: ${data.servizio || '—'}\nTelefono: ${data.tel || '—'}\n\nMessaggio:\n${data.messaggio}`,

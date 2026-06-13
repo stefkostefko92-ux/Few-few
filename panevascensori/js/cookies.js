@@ -43,6 +43,8 @@
     // Imposta window.PANEV_GA_ID = 'G-XXXXXXXXXX' nel tuo HTML prima di caricare questo script
     const GA_ID = window.PANEV_GA_ID;
     if (!GA_ID) return; // GA4 non configurato — configurare in js/ga4.js
+    // Validate the Measurement ID format before using it in a selector/URL.
+    if (!/^G-[A-Z0-9]+$/.test(GA_ID)) { console.warn('[cookies] PANEV_GA_ID non valido'); return; }
     if (document.querySelector(`script[src*="${GA_ID}"]`)) return;
 
     // Rispetta Do Not Track
