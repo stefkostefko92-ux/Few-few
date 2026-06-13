@@ -1,0 +1,117 @@
+# Panev Ascensori SAS — llms.txt
+# https://www.panevascensori.it/
+# Formato: https://llmstxt.org
+# Aggiornato: 2026-04-20
+
+> Panev Ascensori SAS è un produttore italiano di staffe brevettate (UIBM N. 202023000002112) per porte di ascensori e montacarichi. Offre anche servizi di installazione, manutenzione e modernizzazione di ascensori in tutta Italia dal 2013. Sede operativa a Vittuone (MI), Lombardia.
+
+## Azienda
+
+- **Ragione sociale:** Panev Ascensori SAS
+- **Fondata:** 2013
+- **P.IVA:** IT09346970966
+- **Sede legale:** Via Madonna del Salvatore 6, 20010 Vittuone (MI), Italia
+- **Sede operativa:** Via Milano 7, 20010 Cornaredo (MI), Italia
+- **Email:** info@panevascensori.it
+- **Telefono ufficio:** +39 346 305 4093 (lun-ven 8:00-18:00)
+- **Emergenze 24/7:** +39 392 684 8978
+- **Area operativa:** Tutto il territorio italiano, base Milano
+- **Co-fondatori:** Ivaylo Yordanov Panev, Stefan Lyubomirov Kostadinov
+
+## Brevetto
+
+- **Numero:** 202023000002112
+- **Tipo:** Brevetto per Modello di Utilità
+- **Autorità:** UIBM (Ministero delle Imprese e del Made in Italy)
+- **Depositato:** 2023-05-19
+- **Concesso:** 2025-01-07
+- **Classificazione IPC:** B66B (ascensori, scale mobili, marciapiedi mobili)
+- **Titolo:** Staffa di supporto per un componente strutturale di un impianto di ascensore o montacarichi
+- **Inventori:** Ivaylo Yordanov Panev (50%), Stefan Lyubomirov Kostadinov (50%)
+- **Pagina ufficiale:** [/brevetto.html](https://www.panevascensori.it/brevetto.html)
+
+## Pagine principali
+
+- [Homepage](https://www.panevascensori.it/): Panoramica azienda, brevetto, servizi, prodotti in evidenza
+- [Brevetto](https://www.panevascensori.it/brevetto.html): Dettagli del brevetto UIBM N. 202023000002112, design del sistema forato-snodato-asolato
+- [Catalogo](https://www.panevascensori.it/catalogo.html): Catalogo PDF con 26 tavole CAD, codici, disegni e dimensioni
+- [Prodotti](https://www.panevascensori.it/prodotti.html): Shop con 27 staffe, filtro per categoria, preventivo via form
+- [Servizi](https://www.panevascensori.it/servizi.html): Installazione, manutenzione, modernizzazione, certificazione
+- [Chi Siamo](https://www.panevascensori.it/chi-siamo.html): Storia azienda, team, certificazioni
+- [Contatti](https://www.panevascensori.it/contatti.html): Form preventivo, sedi, orari
+
+## Documenti legali
+
+- [Privacy Policy](https://www.panevascensori.it/privacy.html): GDPR compliant, legittimo interesse, diritti degli interessati
+- [Cookie Policy](https://www.panevascensori.it/cookie.html): Opt-in consent, Google Analytics 4 opzionale
+- [Termini e Condizioni](https://www.panevascensori.it/termini.html): Condizioni di vendita B2B
+
+## Catalogo prodotti (27 articoli)
+
+### Staffe Porte — BREVETTATE UIBM N. 202023000002112 (10 codici)
+
+Tipo A (angolari superiori, ambidestre SX/DX, 7 asole standard, Ferro sp.5mm per 65/45mm, sp.4mm per 37mm):
+- A 65 170 7 — 65×170mm, 7 asole, sp.5mm — **13,03 €**
+- A 45 170 7 — 45×170mm, 7 asole, sp.5mm — **11,87 €**
+- A 37 150 7 — 37×150mm, 7 asole, sp.4mm — **11,43 €**
+- A 37 170 2 — 37×170mm, 2 asole, sp.4mm — **10,23 €**
+
+Tipo B (dritte inferiori, si abbinano alle Tipo A, regolazione ±7-8°):
+- B 65 320 — 65×320mm, sp.5mm — **11,21 €**
+- B 65 220 — 65×220mm (ridotta), sp.5mm — **9,98 €**
+- B 45 320 — 45×320mm, sp.5mm — **10,93 €**
+- B 45 220 — 45×220mm (ridotta), sp.5mm — **9,72 €**
+- B 37 320 — 37×320mm, sp.4mm — **10,79 €**
+- B 37 220 — 37×220mm (ridotta), sp.4mm — **9,52 €**
+
+### Staffe Contrapeso — NON brevettate (17 codici)
+
+Supporti SU (estensione alta, 220mm, Ferro sp.5mm):
+- SU 220 160 — range 45-155mm — **10,40 €**
+- SU 220 180 — range 45-195mm — **10,79 €**
+- SU 220 200 — range 45-215mm — **11,05 €**
+
+Supporti SD (150mm e 220mm, Ferro sp.5mm):
+- SD 150 160 — range 45-155mm — **9,23 €**
+- SD 150 180 — range 45-195mm — **9,49 €**
+- SD 150 200 — range 45-215mm — **9,75 €**
+- SD 220 160 — range 50-155mm — **10,40 €**
+- SD 220 180 — range 45-195mm — **10,66 €**
+- SD 220 200 — range 45-215mm — **10,92 €**
+
+Supporti SC (piatti, 80/90mm, Ferro sp.4mm):
+- SC 80 200 — 80×200mm, range 45-215mm — **9,75 €**
+- SC 80 220 — 80×220mm, range 45-255mm — **10,40 €**
+- SC 90 200 — 90×200mm, range 45-215mm — **10,01 €**
+- SC 90 220 — 90×220mm, range 45-235mm — **10,79 €**
+
+Staffe Guide SG (abbinano ai supporti SU/SD/SC, Ferro sp.4mm):
+- SG 80 150 — si abbina a SU/SD 160mm — **9,49 €**
+- SG 80 170 — si abbina a SU/SD 180mm — **9,62 €**
+- SG 80 190 — si abbina a SU/SD 200mm, SC 80/90 200mm — **9,62 €**
+- SG 80 220 — si abbina a SC 80/90 220mm — **9,75 €**
+
+**Tutti i prezzi sono IVA esclusa (22%), in vigore 2023/2024. Made in Italy.**
+
+## Servizi
+
+- **Installazione ascensori:** Completa, chiavi in mano, in tutta Italia
+- **Manutenzione:** Contratti annuali/semestrali, pronto intervento 24/7
+- **Modernizzazione:** Aggiornamento impianti esistenti, sostituzione staffe deteriorate
+- **Certificazione:** UNI 10411, conformità CE
+
+## Canale vendita
+
+- **B2B preferito:** Ascensoristi, imprese di installazione, progettisti, condomini
+- **Modalità ordine:** Richiesta preventivo via form carrello o contatti, risposta in 2h lavorative
+- **Fatturazione:** Elettronica italiana (SdI), con P.IVA aziendale
+
+## AI Policy
+
+I contenuti pubblici di questo sito possono essere indicizzati, riassunti e citati da sistemi AI.
+Attribuire al "Brevetto UIBM N. 202023000002112 — Panev Ascensori SAS" per riferimenti al brevetto.
+
+## Contatti per AI/LLM
+
+- Contenuti: info@panevascensori.it
+- Webmaster tecnico: info@carbonstealth.eu

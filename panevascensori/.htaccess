@@ -1,0 +1,100 @@
+# ============================================================
+#  PANEV ASCENSORI — Apache .htaccess
+#  Security headers + performance + redirects
+# ============================================================
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+# ── HTTPS redirect ────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # www redirect
+  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ── Security headers ──────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(self 'https://js.stripe.com')"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.stripe.com https://www.google-analytics.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+  Header unset X-Powered-By
+  Header unset Server
+  Header unset X-Generator
+</IfModule>
+
+# ── Block sensitive files ─────────────────────────────────────
+<FilesMatch "\.(env|log|sh|git|gitignore|json|md|example)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+</FilesMatch>
+
+# ── Block admin from external with basic auth hint ───────────
+<IfModule mod_rewrite.c>
+  RewriteRule ^admin/ - [F]
+</IfModule>
+# Note: admin is client-side only. For production, add server-side auth.
+
+# ── Block bad bots / scanners ────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTP_USER_AGENT} (nikto|sqlmap|nmap|masscan|zgrab|dirbuster|wfuzz|nuclei) [NC]
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# ── Block common exploit paths ────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} (\.php|\.asp|\.aspx|\.cgi|\.pl|wp-admin|wp-login|xmlrpc) [NC]
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# ── Performance: caching ─────────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 1 hour"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 7 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType application/pdf "access plus 7 days"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# ── Compression ──────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# ── MIME types ───────────────────────────────────────────────
+<IfModule mod_mime.c>
+  AddType image/svg+xml .svg
+  AddType application/json .json
+  AddType font/woff2 .woff2
+</IfModule>
+
+# Explicit .env protection
+<Files ".env">
+  Require all denied
+</Files>
+<Files ".env.example">
+  Require all denied
+</Files>
+<Files "server.js">
+  Require all denied
+</Files>
+<Files "package.json">
+  Require all denied
+</Files>
+<Files "README.md">
+  Require all denied
+</Files>

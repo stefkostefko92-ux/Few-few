@@ -1,0 +1,32 @@
+# humanstxt.org
+
+/* TEAM */
+
+Owner: Panev Ascensori SAS
+Contact: info@panevascensori.it
+Location: Vittuone (MI), Italia
+Founded: 2013
+
+Co-founders:
+  - Ivaylo Yordanov Panev
+  - Stefan Lyubomirov Kostadinov
+
+Patent: UIBM N. 202023000002112
+  Filed:   2023-05-19
+  Granted: 2025-01-07
+  Subject: Staffa di supporto per componente strutturale di ascensori
+  Classification: IPC B66B
+
+/* THANKS */
+
+Web design & development: Carbon Stealth VCC
+  Site: https://carbonstealth.eu
+  Contact: info@carbonstealth.eu
+
+/* SITE */
+
+Last update:    2026-04-20
+Language:       Italiano (it-IT)
+Standards:      HTML5, CSS3, ES2020+, WCAG 2.1 AA
+Components:     Node.js 20, Express 4, SQLite, Stripe
+Fonts:          Rajdhani, DM Sans

@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 80" fill="none" role="img" aria-label="Panev Ascensori SAS — Logo">
+  <defs>
+    <!-- Chrome/metallic gradient for PANEV text -->
+    <linearGradient id="metalGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#a8d4f8"/>
+      <stop offset="18%"  stop-color="#d0ebff"/>
+      <stop offset="38%"  stop-color="#f4fbff"/>
+      <stop offset="52%"  stop-color="#bde0ff"/>
+      <stop offset="72%"  stop-color="#5ca8e8"/>
+      <stop offset="100%" stop-color="#1a6bb0"/>
+    </linearGradient>
+    <!-- Dark navy outline / shadow -->
+    <linearGradient id="shadowGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#0a2040"/>
+      <stop offset="100%" stop-color="#041228"/>
+    </linearGradient>
+    <!-- Icon gradient - dark blue metallic -->
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#2a6cbd"/>
+      <stop offset="40%"  stop-color="#1a4d8f"/>
+      <stop offset="100%" stop-color="#0a2040"/>
+    </linearGradient>
+    <!-- Icon highlight -->
+    <linearGradient id="iconHigh" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"  stop-color="#4a9ddf"/>
+      <stop offset="50%" stop-color="#1e6bb5"/>
+      <stop offset="100%" stop-color="#0d3d72"/>
+    </linearGradient>
+    <!-- Cyan accent for outline -->
+    <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#00c8e0"/>
+      <stop offset="100%" stop-color="#0090b0"/>
+    </linearGradient>
+    <!-- Background for icon box -->
+    <linearGradient id="iconBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#1c4c8a"/>
+      <stop offset="100%" stop-color="#071d3a"/>
+    </linearGradient>
+    <!-- Glow filter for metallic sheen -->
+    <filter id="glow" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation="0.8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Drop shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="150%">
+      <feDropShadow dx="1.5" dy="2" stdDeviation="2" flood-color="#000918" flood-opacity="0.7"/>
+    </filter>
+    <filter id="textShadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="1.5" flood-color="#001428" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- ══ ICON — elevator/house shape on the left ══ -->
+  <g transform="translate(4, 4)">
+    <!-- Outer bevel frame -->
+    <rect x="0" y="0" width="66" height="70" rx="4" ry="4" fill="url(#shadowGrad)" stroke="#00c8e0" stroke-width="0.8" opacity="0.6"/>
+    <!-- Main icon body -->
+    <rect x="2" y="2" width="62" height="66" rx="3" ry="3" fill="url(#iconBg)"/>
+    
+    <!-- Roof / peak triangle -->
+    <polygon points="33,4 62,22 4,22" fill="url(#iconGrad)" stroke="#00c8e0" stroke-width="0.6" filter="url(#shadow)"/>
+    <!-- Roof highlight strip -->
+    <polygon points="33,4 62,22 4,22" fill="none" stroke="url(#metalGrad)" stroke-width="0.4" opacity="0.7"/>
+    
+    <!-- Building body -->
+    <rect x="6" y="22" width="54" height="40" fill="url(#iconGrad)" stroke="#1a5a90" stroke-width="0.4"/>
+    
+    <!-- Left panel line -->
+    <rect x="6" y="22" width="24" height="40" fill="url(#iconHigh)" opacity="0.4"/>
+    
+    <!-- Elevator shaft lines (vertical) -->
+    <line x1="30" y1="22" x2="30" y2="62" stroke="#00c8e0" stroke-width="1.2" opacity="0.9"/>
+    
+    <!-- Elevator cab (stylized, right side) -->
+    <rect x="32" y="30" width="24" height="18" rx="1" fill="#0a2c58" stroke="#00c8e0" stroke-width="0.7"/>
+    <!-- Cab door lines -->
+    <line x1="44" y1="31" x2="44" y2="47" stroke="#2a8fd4" stroke-width="0.7" opacity="0.8"/>
+    <!-- Cab top indicator -->
+    <rect x="34" y="28" width="20" height="3" rx="0.5" fill="#00c8e0" opacity="0.6"/>
+    
+    <!-- Windows / floors (left) -->
+    <rect x="9"  y="27" width="18" height="4"  rx="0.5" fill="#1a5faa" stroke="#2a90d4" stroke-width="0.3" opacity="0.8"/>
+    <rect x="9"  y="34" width="18" height="4"  rx="0.5" fill="#1a5faa" stroke="#2a90d4" stroke-width="0.3" opacity="0.8"/>
+    <rect x="9"  y="41" width="18" height="4"  rx="0.5" fill="#1a5faa" stroke="#2a90d4" stroke-width="0.3" opacity="0.8"/>
+    <rect x="9"  y="48" width="18" height="4"  rx="0.5" fill="#1a5faa" stroke="#2a90d4" stroke-width="0.3" opacity="0.8"/>
+
+    <!-- Roof tip highlight -->
+    <polygon points="33,5 44,17 33,17" fill="url(#metalGrad)" opacity="0.25"/>
+    
+    <!-- Cyan base line -->
+    <rect x="2" y="62" width="62" height="4" rx="0 0 2 2" fill="url(#cyanGrad)" opacity="0.9"/>
+  </g>
+
+  <!-- ══ PANEV — large italic bold metallic text ══ -->
+  <g filter="url(#textShadow)">
+    <!-- Shadow/extrude layer (offset) -->
+    <text x="77" y="52"
+      font-family="'Rajdhani', 'Arial Black', sans-serif"
+      font-size="50"
+      font-weight="900"
+      font-style="italic"
+      letter-spacing="-1"
+      fill="#041228"
+      opacity="0.8">PANEV</text>
+    <!-- Main metallic fill -->
+    <text x="75" y="50"
+      font-family="'Rajdhani', 'Arial Black', sans-serif"
+      font-size="50"
+      font-weight="900"
+      font-style="italic"
+      letter-spacing="-1"
+      fill="url(#metalGrad)">PANEV</text>
+    <!-- Thin cyan stroke outline -->
+    <text x="75" y="50"
+      font-family="'Rajdhani', 'Arial Black', sans-serif"
+      font-size="50"
+      font-weight="900"
+      font-style="italic"
+      letter-spacing="-1"
+      fill="none"
+      stroke="url(#cyanGrad)"
+      stroke-width="0.6"
+      opacity="0.7">PANEV</text>
+  </g>
+
+  <!-- ══ ASCENSORI — smaller text below ══ -->
+  <g>
+    <!-- Border/outline pill behind ASCENSORI -->
+    <rect x="75" y="55" width="186" height="18" rx="2" fill="#071a35" stroke="#00c8e0" stroke-width="0.5" opacity="0.6"/>
+    <!-- ASCENSORI text -->
+    <text x="168" y="68"
+      font-family="'Rajdhani', 'DM Sans', sans-serif"
+      font-size="13"
+      font-weight="700"
+      letter-spacing="4.5"
+      fill="#00c8e0"
+      text-anchor="middle"
+      dominant-baseline="auto">ASCENSORI</text>
+  </g>
+</svg>

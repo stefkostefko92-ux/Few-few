@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ═══ SECURITY ═══ -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="format-detection" content="telephone=no">
+  <title>Accesso Admin | Panev Ascensori</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="shortcut icon" href="../favicon.ico">
+</head>
+<body class="login-page">
+
+<div class="login-wrap">
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="login-logo-mark">
+        <span>PA</span>
+      </div>
+      <img src="../img/logo.svg" alt="Panev Ascensori SAS" style="height:48px;width:auto;display:block;margin:0 auto 1rem;filter:drop-shadow(0 2px 12px rgba(0,200,224,0.3))">
+      <p class="login-brand-tag">Pannello di Amministrazione</p>
+    </div>
+    <div class="login-decorative">
+      <div class="login-cable"></div>
+      <div class="login-lift">🛗</div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <div class="login-header">
+        <h2>Accedi al Pannello</h2>
+        <p>Inserisci le credenziali di accesso</p>
+      </div>
+
+      <div id="login-error" class="login-error" style="display:none">
+        <span>⚠</span>
+        <span id="login-error-text">Email o password non corretti.</span>
+      </div>
+
+      <div id="login-timeout-notice" class="login-error" style="display:none;background:rgba(52,152,219,.1);border-color:rgba(52,152,219,.3);color:#3498db">
+        <span>ℹ</span>
+        <span>Sessione scaduta per inattività. Esegui di nuovo l'accesso.</span>
+      </div>
+
+      <div class="login-field">
+        <label for="l-email">Email</label>
+        <input type="email" id="l-email" placeholder="info@panevascensori.it" autocomplete="email" autofocus>
+      </div>
+
+      <div class="login-field">
+        <label for="l-password">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="l-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="pw-toggle" type="button" onclick="togglePw(this)">👁</button>
+        </div>
+      </div>
+
+      <div class="login-actions">
+        <label class="remember-me">
+          <input type="checkbox" id="l-remember">
+          <span>Ricordami</span>
+        </label>
+        <a href="#" class="forgot-link" onclick="showForgot();return false">Password dimenticata?</a>
+      </div>
+
+      <button class="login-btn" onclick="doLogin()" id="login-submit">
+        <span id="login-btn-text">Accedi</span>
+        <span id="login-btn-spin" style="display:none">⟳</span>
+      </button>
+
+      <div id="forgot-msg" class="forgot-msg" style="display:none">
+        <p>Contatta lo sviluppatore del sito per reimpostare la password:<br>
+        <strong>Carbon Stealth VCC</strong> — info@carbonstealth.eu</p>
+      </div>
+    </div>
+
+    <div class="login-footer-note">
+      <a href="../index.html">← Torna al sito</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Admin Auth — server-side via /api/admin/login (JWT httpOnly cookie) */
+
+// Show timeout notice if redirected from expired session
+if (new URLSearchParams(location.search).get('timeout') === '1') {
+  document.getElementById('login-timeout-notice').style.display = 'flex';
+}
+
+// Check already logged in — if yes, redirect to dashboard
+fetch('/api/admin/me', { credentials: 'same-origin' })
+  .then(r => { if (r.ok) location.href = 'index.html'; })
+  .catch(() => {});
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pw    = document.getElementById('l-password').value;
+  const remember = document.getElementById('l-remember').checked;
+  const errEl   = document.getElementById('login-error');
+  const errText = document.getElementById('login-error-text');
+  const btn     = document.getElementById('login-submit');
+  const btnText = document.getElementById('login-btn-text');
+  const btnSpin = document.getElementById('login-btn-spin');
+
+  if (!email || !pw) {
+    errText.textContent = 'Compila email e password.';
+    errEl.style.display = 'flex';
+    return;
+  }
+
+  btnText.style.display = 'none';
+  btnSpin.style.display = 'inline';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw, remember })
+    });
+    const data = await r.json().catch(() => ({}));
+
+    if (r.ok && data.ok) {
+      // Cookie set by server — redirect to dashboard
+      location.href = 'index.html';
+      return;
+    }
+
+    if (r.status === 429 && data.lockedForMinutes) {
+      errText.textContent = `Troppi tentativi falliti. Riprova tra ${data.lockedForMinutes} minuti.`;
+    } else if (data.remaining != null) {
+      errText.textContent = data.error + ' (tentativi rimasti: ' + data.remaining + ')';
+    } else {
+      errText.textContent = data.error || 'Email o password non corretti.';
+    }
+    errEl.style.display = 'flex';
+    document.getElementById('l-password').value = '';
+  } catch (err) {
+    errText.textContent = 'Errore di connessione. Riprova.';
+    errEl.style.display = 'flex';
+  } finally {
+    btnText.style.display = 'inline';
+    btnSpin.style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+function togglePw(btn) {
+  const inp = btn.previousElementSibling;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function showForgot() {
+  document.getElementById('forgot-msg').style.display = 'block';
+}
+</script>
+</body>
+</html>
