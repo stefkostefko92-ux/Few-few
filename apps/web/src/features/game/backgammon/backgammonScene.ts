@@ -6,7 +6,6 @@
  * tumble) and honours prefers-reduced-motion.
  */
 import {
-  ACESFilmicToneMapping,
   AmbientLight,
   BoxGeometry,
   Color,
@@ -20,24 +19,21 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
-  PCFSoftShadowMap,
   Raycaster,
   Scene,
   Shape,
   ShapeGeometry,
   Vector2,
-  WebGLRenderer,
 } from "three";
 import {
   DICE_FACE_ORDER,
-  bakeEnvironment,
   disposeObject,
   faceUp,
-  makeComposer,
   pipFaces,
   woodNormal,
   woodTexture,
 } from "../gl/helpers.js";
+import { RenderCore } from "../gl/render.js";
 
 export interface BgState {
   points: number[]; // 24 signed (+seat0/white, -seat1/black)
@@ -71,8 +67,7 @@ function place(i: number): { x: number; z: number; top: boolean } {
 }
 
 export class BackgammonScene {
-  private renderer: WebGLRenderer;
-  private fx!: ReturnType<typeof makeComposer>;
+  private core!: RenderCore;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private ray = new Raycaster();
@@ -82,23 +77,13 @@ export class BackgammonScene {
   private dice: Mesh[] = [];
   private diceAnim: { start: number; from: [Euler, Euler]; to: [Euler, Euler] } | null = null;
   private prevDice = "";
-  private raf = 0;
-  private animating = false;
   private lastFrame = 0;
   private reduceMotion = false;
   private depth: number;
 
   constructor(canvas: HTMLCanvasElement, width: number) {
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(2, globalThis.devicePixelRatio || 1));
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.06;
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     this.scene.background = new Color("#0e2117");
-    this.scene.environment = bakeEnvironment(this.renderer);
 
     const W = 2 * HALF + BARW + 2 * RAIL;
     this.depth = 2 * PLEN + 2 * RAIL + 1.2;
@@ -121,8 +106,43 @@ export class BackgammonScene {
 
     this.scene.add(this.checkerLayer, this.hiLayer);
     this.build();
-    this.fx = makeComposer(this.renderer, this.scene, this.camera, width, width * SCENE_RATIO);
-    this.renderOnce();
+    this.core = new RenderCore({
+      canvas,
+      scene: this.scene,
+      camera: this.camera,
+      width,
+      ratio: SCENE_RATIO,
+      exposure: 1.0,
+      onFrame: () => this.frame(),
+    });
+  }
+
+  /** Per-frame hook from RenderCore: tumble the dice toward their faces. */
+  private frame(): void {
+    const now = performance.now();
+    const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
+    this.lastFrame = now;
+    if (!this.diceAnim) return;
+    const t = (now - this.diceAnim.start) / DICE_MS;
+    if (t >= 1) {
+      this.dice.forEach((d, n) => this.diceAnim!.to[n] && d.rotation.copy(this.diceAnim!.to[n]!));
+      this.diceAnim = null;
+    } else {
+      const spin = t < 0.7;
+      this.dice.forEach((d, n) => {
+        const to = this.diceAnim!.to[n];
+        if (!to) return;
+        if (spin) {
+          d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
+          d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
+        } else {
+          d.rotation.x += (to.x - d.rotation.x) * 0.25;
+          d.rotation.y += (to.y - d.rotation.y) * 0.25;
+          d.rotation.z += (to.z - d.rotation.z) * 0.25;
+        }
+        d.position.y = 0.5 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+      });
+    }
   }
 
   private build(): void {
@@ -247,7 +267,6 @@ export class BackgammonScene {
 
     this.syncDice(state.remaining.length ? state.remaining : state.dice);
     void mySeat;
-    this.startAnim();
   }
 
   private addHighlight(i: number, color: string): void {
@@ -298,69 +317,11 @@ export class BackgammonScene {
   }
 
   resize(width: number): void {
-    const h = width * SCENE_RATIO;
-    this.renderer.setSize(width, h, false);
-    this.fx.setSize(width, h);
-    this.renderOnce();
-  }
-
-  private renderOnce(): void {
-    this.fx.composer.render();
-  }
-
-  private startAnim(): void {
-    if (this.animating) {
-      this.renderOnce();
-      return;
-    }
-    if (!this.diceAnim) {
-      this.renderOnce();
-      return;
-    }
-    this.animating = true;
-    this.lastFrame = performance.now();
-    const step = () => {
-      const now = performance.now();
-      const dt = Math.min(now - this.lastFrame, 50);
-      this.lastFrame = now;
-      let busy = false;
-      if (this.diceAnim) {
-        const t = (now - this.diceAnim.start) / DICE_MS;
-        if (t >= 1) {
-          this.dice.forEach((d, n) => this.diceAnim!.to[n] && d.rotation.copy(this.diceAnim!.to[n]!));
-          this.diceAnim = null;
-        } else {
-          busy = true;
-          const spin = t < 0.7;
-          this.dice.forEach((d, n) => {
-            const to = this.diceAnim!.to[n];
-            if (!to) return;
-            if (spin) {
-              d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
-              d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
-            } else {
-              d.rotation.x += (to.x - d.rotation.x) * 0.25;
-              d.rotation.y += (to.y - d.rotation.y) * 0.25;
-              d.rotation.z += (to.z - d.rotation.z) * 0.25;
-            }
-            d.position.y = 0.5 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
-          });
-        }
-      }
-      this.renderOnce();
-      if (busy) this.raf = requestAnimationFrame(step);
-      else this.animating = false;
-    };
-    this.raf = requestAnimationFrame(step);
+    this.core.setSize(width);
   }
 
   destroy(): void {
-    cancelAnimationFrame(this.raf);
-    this.fx.dispose();
+    this.core.dispose();
     disposeObject(this.scene);
-    (this.scene.environment as { dispose?: () => void } | null)?.dispose?.();
-    this.scene.environment = null;
-    this.renderer.dispose();
-    this.renderer.forceContextLoss();
   }
 }

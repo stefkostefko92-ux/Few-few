@@ -5,7 +5,6 @@
  * disposal on unmount. The React view keeps its select/target/move logic.
  */
 import {
-  ACESFilmicToneMapping,
   AmbientLight,
   BoxGeometry,
   Color,
@@ -18,7 +17,6 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
-  PCFSoftShadowMap,
   Plane,
   Raycaster,
   Scene,
@@ -26,10 +24,10 @@ import {
   SphereGeometry,
   Vector2,
   Vector3,
-  WebGLRenderer,
   type BufferGeometry,
 } from "three";
-import { bakeEnvironment, disposeObject, easeInOut, makeComposer, woodNormal, woodTexture } from "../gl/helpers.js";
+import { disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
+import { RenderCore } from "../gl/render.js";
 import { parseFen, type Orientation } from "./types.js";
 
 const SQ = 1; // square size
@@ -99,8 +97,7 @@ function pieceMaterial(white: boolean): MeshPhysicalMaterial {
 }
 
 export class ChessScene {
-  private renderer: WebGLRenderer;
-  private fx!: ReturnType<typeof makeComposer>;
+  private core!: RenderCore;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private ray = new Raycaster();
@@ -109,21 +106,11 @@ export class ChessScene {
   private hiLayer = new Group();
   private prevFen = "";
   private anim: { mesh: Mesh; from: Vector3; to: Vector3; start: number } | null = null;
-  private raf = 0;
-  private animating = false;
   private reduceMotion = false;
 
   constructor(canvas: HTMLCanvasElement, width: number, orientation: Orientation) {
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(2, globalThis.devicePixelRatio || 1));
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     this.scene.background = new Color("#0e2117");
-    this.scene.environment = bakeEnvironment(this.renderer);
 
     const span = HALF + RAIL;
     const d = span * 1.12;
@@ -146,8 +133,27 @@ export class ChessScene {
 
     this.scene.add(this.pieceLayer, this.hiLayer);
     this.build();
-    this.fx = makeComposer(this.renderer, this.scene, this.camera, width, width * SCENE_RATIO);
-    this.renderOnce();
+    this.core = new RenderCore({
+      canvas,
+      scene: this.scene,
+      camera: this.camera,
+      width,
+      ratio: SCENE_RATIO,
+      onFrame: (now) => this.frame(now),
+    });
+  }
+
+  /** Per-frame hook from RenderCore's loop: advance the move glide (no render). */
+  private frame(now: number): void {
+    if (!this.anim) return;
+    const t = (now - this.anim.start) / MOVE_MS;
+    if (t >= 1) {
+      this.anim.mesh.position.copy(this.anim.to);
+      this.anim = null;
+    } else {
+      this.anim.mesh.position.lerpVectors(this.anim.from, this.anim.to, easeInOut(t));
+      this.anim.mesh.position.y = 0.16 + Math.sin(Math.PI * t) * 0.45; // lift arc
+    }
   }
 
   private build(): void {
@@ -267,8 +273,6 @@ export class ChessScene {
       if (highlight.selected) this.addSquareHi(highlight.selected, "#3a9bd0", 0.35);
       for (const tg of highlight.targets) this.addSquareHi(tg, "#3ad07a", 0.3);
     }
-
-    this.startAnim();
   }
 
   private addSquareHi(square: string, color: string, opacity: number): void {
@@ -294,51 +298,12 @@ export class ChessScene {
   }
 
   resize(width: number): void {
-    const h = width * SCENE_RATIO;
-    this.renderer.setSize(width, h, false);
-    this.fx.setSize(width, h);
-    this.renderOnce();
-  }
-
-  private renderOnce(): void {
-    this.fx.composer.render();
-  }
-
-  private startAnim(): void {
-    if (!this.anim) {
-      this.renderOnce();
-      return;
-    }
-    if (this.animating) return;
-    this.animating = true;
-    const step = () => {
-      let busy = false;
-      if (this.anim) {
-        const t = (performance.now() - this.anim.start) / MOVE_MS;
-        if (t >= 1) {
-          this.anim.mesh.position.copy(this.anim.to);
-          this.anim = null;
-        } else {
-          busy = true;
-          this.anim.mesh.position.lerpVectors(this.anim.from, this.anim.to, easeInOut(t));
-          this.anim.mesh.position.y = 0.16 + Math.sin(Math.PI * t) * 0.45; // lift arc
-        }
-      }
-      this.renderOnce();
-      if (busy) this.raf = requestAnimationFrame(step);
-      else this.animating = false;
-    };
-    this.raf = requestAnimationFrame(step);
+    this.core.setSize(width);
   }
 
   destroy(): void {
-    cancelAnimationFrame(this.raf);
-    this.fx.dispose();
+    this.core.dispose();
     disposeObject(this.scene);
-    (this.scene.environment as { dispose?: () => void } | null)?.dispose?.();
-    this.scene.environment = null;
     // _bodies are shared session-lifetime singletons — intentionally not disposed.
-    this.renderer.dispose();
-    this.renderer.forceContextLoss();
   }
 }

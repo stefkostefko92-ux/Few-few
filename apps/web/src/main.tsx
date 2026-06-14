@@ -5,6 +5,10 @@ import { BrowserRouter } from "react-router-dom";
 import "./i18n";
 import "./styles/global.css";
 import { App } from "./app/App";
+import { installGfxPanel } from "./features/game/gl/gfxGui";
+
+// Opt-in live graphics tuning (press ` or ?gfx=1); lil-gui loads only on demand.
+installGfxPanel();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },

@@ -6,7 +6,6 @@
  * camera flips for the black seat. Render-on-demand; reduced-motion aware.
  */
 import {
-  ACESFilmicToneMapping,
   AmbientLight,
   BoxGeometry,
   Color,
@@ -17,16 +16,15 @@ import {
   Mesh,
   MeshPhysicalMaterial,
   OrthographicCamera,
-  PCFSoftShadowMap,
   Plane,
   Raycaster,
   Scene,
   TorusGeometry,
   Vector2,
   Vector3,
-  WebGLRenderer,
 } from "three";
-import { bakeEnvironment, disposeObject, easeOutBack, makeComposer, woodNormal, woodTexture } from "../gl/helpers.js";
+import { disposeObject, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
+import { RenderCore } from "../gl/render.js";
 
 type Piece = "w" | "W" | "b" | "B" | null;
 type Orientation = "white" | "black";
@@ -44,8 +42,7 @@ function pieceMaterial(white: boolean): MeshPhysicalMaterial {
 }
 
 export class DraughtsScene {
-  private renderer: WebGLRenderer;
-  private fx!: ReturnType<typeof makeComposer>;
+  private core!: RenderCore;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private ray = new Raycaster();
@@ -54,21 +51,11 @@ export class DraughtsScene {
   private hiLayer = new Group();
   private prev: Piece[] = [];
   private pops: { g: Group; born: number }[] = [];
-  private raf = 0;
-  private animating = false;
   private reduceMotion = false;
 
   constructor(canvas: HTMLCanvasElement, width: number, orientation: Orientation) {
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(2, globalThis.devicePixelRatio || 1));
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     this.scene.background = new Color("#0e2117");
-    this.scene.environment = bakeEnvironment(this.renderer);
 
     const span = HALF + RAIL;
     const d = span * 1.12;
@@ -91,8 +78,30 @@ export class DraughtsScene {
 
     this.scene.add(this.pieceLayer, this.hiLayer);
     this.build();
-    this.fx = makeComposer(this.renderer, this.scene, this.camera, width, width * SCENE_RATIO);
-    this.renderOnce();
+    this.core = new RenderCore({
+      canvas,
+      scene: this.scene,
+      camera: this.camera,
+      width,
+      ratio: SCENE_RATIO,
+      exposure: 0.98,
+      onFrame: () => this.frame(),
+    });
+  }
+
+  /** Per-frame hook from RenderCore: advance the piece pop-in (no render). */
+  private frame(): void {
+    if (this.pops.length === 0) return;
+    const now = performance.now();
+    this.pops = this.pops.filter((p) => {
+      const t = (now - p.born) / POP_MS;
+      if (t >= 1) {
+        p.g.scale.setScalar(1);
+        return false;
+      }
+      p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
+      return true;
+    });
   }
 
   private build(): void {
@@ -178,7 +187,6 @@ export class DraughtsScene {
       for (const t of highlight.targets) this.addCellHi(t, "#3ad07a", 0.32);
     }
 
-    this.startAnim();
   }
 
   private addCellHi(i: number, color: string, opacity: number): void {
@@ -204,48 +212,11 @@ export class DraughtsScene {
   }
 
   resize(width: number): void {
-    const h = width * SCENE_RATIO;
-    this.renderer.setSize(width, h, false);
-    this.fx.setSize(width, h);
-    this.renderOnce();
-  }
-
-  private renderOnce(): void {
-    this.fx.composer.render();
-  }
-
-  private startAnim(): void {
-    if (this.pops.length === 0) {
-      this.renderOnce();
-      return;
-    }
-    if (this.animating) return;
-    this.animating = true;
-    const step = () => {
-      const now = performance.now();
-      this.pops = this.pops.filter((p) => {
-        const t = (now - p.born) / POP_MS;
-        if (t >= 1) {
-          p.g.scale.setScalar(1);
-          return false;
-        }
-        p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
-        return true;
-      });
-      this.renderOnce();
-      if (this.pops.length > 0) this.raf = requestAnimationFrame(step);
-      else this.animating = false;
-    };
-    this.raf = requestAnimationFrame(step);
+    this.core.setSize(width);
   }
 
   destroy(): void {
-    cancelAnimationFrame(this.raf);
-    this.fx.dispose();
+    this.core.dispose();
     disposeObject(this.scene);
-    (this.scene.environment as { dispose?: () => void } | null)?.dispose?.();
-    this.scene.environment = null;
-    this.renderer.dispose();
-    this.renderer.forceContextLoss();
   }
 }

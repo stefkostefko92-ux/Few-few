@@ -5,7 +5,6 @@
  * Shares gl/helpers (composer, env, disposal). Render-on-demand; reduced-motion.
  */
 import {
-  ACESFilmicToneMapping,
   AmbientLight,
   BoxGeometry,
   Color,
@@ -18,22 +17,19 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
-  PCFSoftShadowMap,
   Raycaster,
   Scene,
   SphereGeometry,
   TorusGeometry,
   Vector2,
-  WebGLRenderer,
 } from "three";
 import {
   DICE_FACE_ORDER,
-  bakeEnvironment,
   disposeObject,
   faceUp,
-  makeComposer,
   pipFaces,
 } from "../gl/helpers.js";
+import { RenderCore } from "../gl/render.js";
 import { BASE, CENTER, HOME, N, SEAT_COLORS, TRACK, tokenCoord } from "./board.js";
 
 const SCENE_RATIO = 0.84;
@@ -49,8 +45,8 @@ export interface LudoToken {
 }
 
 export class LudoScene {
-  private renderer: WebGLRenderer;
-  private fx!: ReturnType<typeof makeComposer>;
+  private core!: RenderCore;
+  private lastFrame = 0;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private ray = new Raycaster();
@@ -60,21 +56,11 @@ export class LudoScene {
   private die: Mesh | null = null;
   private diceAnim: { start: number; from: Euler; to: Euler } | null = null;
   private prevDie = -1;
-  private raf = 0;
-  private animating = false;
   private reduceMotion = false;
 
   constructor(canvas: HTMLCanvasElement, width: number) {
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(2, globalThis.devicePixelRatio || 1));
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     this.scene.background = new Color("#0e2117");
-    this.scene.environment = bakeEnvironment(this.renderer);
     this.pegGeo = new CylinderGeometry(0.26, 0.34, 0.5, 24);
     this.headGeo = new SphereGeometry(0.26, 20, 16);
 
@@ -98,8 +84,40 @@ export class LudoScene {
 
     this.scene.add(this.tokenLayer);
     this.build();
-    this.fx = makeComposer(this.renderer, this.scene, this.camera, width, width * SCENE_RATIO);
-    this.renderOnce();
+    this.core = new RenderCore({
+      canvas,
+      scene: this.scene,
+      camera: this.camera,
+      width,
+      ratio: SCENE_RATIO,
+      exposure: 1.0,
+      onFrame: () => this.frame(),
+    });
+  }
+
+  /** Per-frame hook from RenderCore: tumble the die toward its face (no render). */
+  private frame(): void {
+    const now = performance.now();
+    const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
+    this.lastFrame = now;
+    if (this.diceAnim && this.die) {
+      const t = (now - this.diceAnim.start) / DICE_MS;
+      if (t >= 1) {
+        this.die.rotation.copy(this.diceAnim.to);
+        this.diceAnim = null;
+      } else {
+        const to = this.diceAnim.to;
+        if (t < 0.7) {
+          this.die.rotation.x += 0.5 * (dt / 16);
+          this.die.rotation.y += 0.6 * (dt / 16);
+        } else {
+          this.die.rotation.x += (to.x - this.die.rotation.x) * 0.25;
+          this.die.rotation.y += (to.y - this.die.rotation.y) * 0.25;
+          this.die.rotation.z += (to.z - this.die.rotation.z) * 0.25;
+        }
+        this.die.position.y = 0.6 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+      }
+    }
   }
 
   private build(): void {
@@ -241,7 +259,6 @@ export class LudoScene {
       }
     }
     this.syncDie(die);
-    this.startAnim();
   }
 
   private syncDie(value: number | null): void {
@@ -278,64 +295,13 @@ export class LudoScene {
   }
 
   resize(width: number): void {
-    const h = width * SCENE_RATIO;
-    this.renderer.setSize(width, h, false);
-    this.fx.setSize(width, h);
-    this.renderOnce();
-  }
-
-  private renderOnce(): void {
-    this.fx.composer.render();
-  }
-
-  private startAnim(): void {
-    if (!this.diceAnim) {
-      this.renderOnce();
-      return;
-    }
-    if (this.animating) return;
-    this.animating = true;
-    let last = performance.now();
-    const step = () => {
-      const now = performance.now();
-      const dt = Math.min(now - last, 50);
-      last = now;
-      let busy = false;
-      if (this.diceAnim && this.die) {
-        const t = (now - this.diceAnim.start) / DICE_MS;
-        if (t >= 1) {
-          this.die.rotation.copy(this.diceAnim.to);
-          this.diceAnim = null;
-        } else {
-          busy = true;
-          const to = this.diceAnim.to;
-          if (t < 0.7) {
-            this.die.rotation.x += 0.5 * (dt / 16);
-            this.die.rotation.y += 0.6 * (dt / 16);
-          } else {
-            this.die.rotation.x += (to.x - this.die.rotation.x) * 0.25;
-            this.die.rotation.y += (to.y - this.die.rotation.y) * 0.25;
-            this.die.rotation.z += (to.z - this.die.rotation.z) * 0.25;
-          }
-          this.die.position.y = 0.6 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
-        }
-      }
-      this.renderOnce();
-      if (busy) this.raf = requestAnimationFrame(step);
-      else this.animating = false;
-    };
-    this.raf = requestAnimationFrame(step);
+    this.core.setSize(width);
   }
 
   destroy(): void {
-    cancelAnimationFrame(this.raf);
-    this.fx.dispose();
+    this.core.dispose();
     disposeObject(this.scene);
-    (this.scene.environment as { dispose?: () => void } | null)?.dispose?.();
-    this.scene.environment = null;
     this.pegGeo.dispose();
     this.headGeo.dispose();
-    this.renderer.dispose();
-    this.renderer.forceContextLoss();
   }
 }

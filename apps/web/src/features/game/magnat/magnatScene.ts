@@ -9,7 +9,6 @@
  * on demand (rAF only while tokens move) so a static board costs no idle GPU.
  */
 import {
-  ACESFilmicToneMapping,
   AmbientLight,
   BoxGeometry,
   CanvasTexture,
@@ -25,25 +24,17 @@ import {
   MeshStandardMaterial,
   type Object3D,
   OrthographicCamera,
-  PCFSoftShadowMap,
   PlaneGeometry,
-  PMREMGenerator,
   RepeatWrapping,
   Scene,
   SRGBColorSpace,
   type Texture,
   Vector2,
   Vector3,
-  WebGLRenderer,
 } from "three";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { SSAOPass } from "three/examples/jsm/postprocessing/SSAOPass.js";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { BOARD, GROUP_COLORS, BOARD_SIZE, type MagnatState } from "@aso/shared";
+import { RenderCore } from "../gl/render.js";
+import { defaultGfxParams } from "../gl/gfxRegistry.js";
 
 /** Recursively free a subtree's GPU resources (geometries, materials, textures). */
 function disposeObject(root: Object3D): void {
@@ -395,9 +386,7 @@ function paperNormal(): CanvasTexture {
 }
 
 export class MagnatScene {
-  private renderer: WebGLRenderer;
-  private composer!: EffectComposer;
-  private passes: { dispose?: () => void }[] = [];
+  private core!: RenderCore;
   private scene = new Scene();
   private camera: OrthographicCamera;
   private place = placements();
@@ -417,30 +406,12 @@ export class MagnatScene {
   private ownerStuds: (Mesh | null)[] = new Array(BOARD_SIZE).fill(null);
   private dice: Mesh[] = [];
   private baseMat?: MeshStandardMaterial;
-  private raf = 0;
-  private animating = false;
 
   constructor(canvas: HTMLCanvasElement, width: number) {
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(2, globalThis.devicePixelRatio || 1));
-    this.renderer.setSize(width, width * SCENE_RATIO, false);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
-    this.maxAniso = this.renderer.capabilities.getMaxAnisotropy();
+    this.maxAniso = 8; // per-device cap is applied automatically by the renderer
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-
     // opaque felt background (post-processing doesn't carry CSS transparency)
     this.scene.background = new Color("#0e2c1c");
-
-    // soft image-based reflections for tokens / dice (dispose the generator and
-    // the throwaway room scene once the env map is baked)
-    const pmrem = new PMREMGenerator(this.renderer);
-    const room = new RoomEnvironment();
-    this.scene.environment = pmrem.fromScene(room, 0.04).texture;
-    pmrem.dispose();
-    disposeObject(room);
 
     const aspect = 1 / SCENE_RATIO;
     const d = H * 1.12;
@@ -462,22 +433,85 @@ export class MagnatScene {
 
     this.build();
 
-    // post-processing: ambient occlusion + bloom + anti-aliasing
-    const w = width;
-    const h = width * SCENE_RATIO;
-    this.composer = new EffectComposer(this.renderer);
-    const render = new RenderPass(this.scene, this.camera);
-    const ssao = new SSAOPass(this.scene, this.camera, w, h);
-    ssao.kernelRadius = 0.6;
-    ssao.minDistance = 0.002;
-    ssao.maxDistance = 0.08;
-    const bloom = new UnrealBloomPass(new Vector2(w, h), 0.06, 0.4, 1.35);
-    const output = new OutputPass();
-    const smaa = new SMAAPass();
-    for (const p of [render, ssao, bloom, output, smaa]) this.composer.addPass(p);
-    this.passes = [render, ssao, bloom, output, smaa];
+    const params = defaultGfxParams();
+    params.exposure = 1.08;
+    params.bloom = { enabled: true, strength: 0.06, radius: 0.4, threshold: 1.35 };
+    params.ao = { enabled: true, radius: 0.6, intensity: 1.0 };
+    this.core = new RenderCore({
+      canvas,
+      scene: this.scene,
+      camera: this.camera,
+      width,
+      ratio: SCENE_RATIO,
+      params,
+      onFrame: () => this.frame(),
+    });
+  }
 
-    this.renderOnce();
+  /** Per-frame hook from RenderCore: token hops, dice tumble, house pop-ins. */
+  private frame(): void {
+    const now = performance.now();
+    const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
+    this.lastFrame = now;
+
+    this.tokens.forEach((g, seat) => {
+      const w = this.walks[seat];
+      if (!w) {
+        const target = this.tokenTarget[seat];
+        if (target && g.position.distanceToSquared(target) > 1e-5) g.position.lerp(target, 0.2);
+        return;
+      }
+      w.t += dt / HOP_MS;
+      while (w.t >= 1 && w.seg < w.pts.length - 1) {
+        w.seg += 1;
+        w.t -= 1;
+      }
+      const to = w.pts[w.seg]!;
+      const from = w.seg === 0 ? w.from : w.pts[w.seg - 1]!;
+      if (w.seg >= w.pts.length - 1 && w.t >= 1) {
+        g.position.copy(to);
+        this.walks[seat] = null;
+      } else {
+        const tt = Math.min(w.t, 1);
+        g.position.lerpVectors(from, to, easeInOut(tt));
+        g.position.y = TOKEN_Y + Math.sin(Math.PI * tt) * HOP_H;
+      }
+    });
+
+    if (this.diceAnim) {
+      const t = (now - this.diceAnim.start) / DICE_MS;
+      if (t >= 1) {
+        this.dice.forEach((d, n) => d.rotation.copy(this.diceAnim!.to[n]!));
+        this.diceAnim = null;
+      } else {
+        const spin = t < 0.7;
+        this.dice.forEach((d, n) => {
+          if (spin) {
+            d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
+            d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
+          } else {
+            const k = 0.25;
+            const to = this.diceAnim!.to[n]!;
+            d.rotation.x += (to.x - d.rotation.x) * k;
+            d.rotation.y += (to.y - d.rotation.y) * k;
+            d.rotation.z += (to.z - d.rotation.z) * k;
+          }
+          d.position.y = 0.55 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.5 * (1 - t);
+        });
+      }
+    }
+
+    if (this.housePops.length > 0) {
+      this.housePops = this.housePops.filter((p) => {
+        const t = (now - p.born) / POP_MS;
+        if (t >= 1) {
+          p.g.scale.setScalar(1);
+          return false;
+        }
+        p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
+        return true;
+      });
+    }
   }
 
   private aniso(tex: CanvasTexture): CanvasTexture {
@@ -666,7 +700,6 @@ export class MagnatScene {
     }
 
     this.syncDice(state.dice);
-    this.startAnim();
   }
 
   /** Spin both dice and settle them on the rolled values. */
@@ -754,117 +787,17 @@ export class MagnatScene {
   setFelt(a: string, b: string): void {
     this.scene.background = new Color(b);
     if (this.baseMat) this.baseMat.color = new Color(a);
-    this.renderOnce();
   }
 
   resize(width: number): void {
-    const h = width * SCENE_RATIO;
-    this.renderer.setSize(width, h, false);
-    this.composer.setSize(width, h);
-    this.renderOnce();
-  }
-
-  private renderOnce(): void {
-    this.composer.render();
-  }
-
-  private startAnim(): void {
-    if (this.animating) return;
-    this.animating = true;
-    this.lastFrame = performance.now();
-    const step = () => {
-      const now = performance.now();
-      const dt = Math.min(now - this.lastFrame, 50);
-      this.lastFrame = now;
-      let busy = false;
-
-      // tokens: hop tile-by-tile along their walk path
-      this.tokens.forEach((g, seat) => {
-        const w = this.walks[seat];
-        if (!w) {
-          const target = this.tokenTarget[seat];
-          if (target && g.position.distanceToSquared(target) > 1e-5) {
-            g.position.lerp(target, 0.2);
-            busy = true;
-          }
-          return;
-        }
-        busy = true;
-        w.t += dt / HOP_MS;
-        while (w.t >= 1 && w.seg < w.pts.length - 1) {
-          w.seg += 1;
-          w.t -= 1;
-        }
-        const to = w.pts[w.seg]!;
-        const from = w.seg === 0 ? w.from : w.pts[w.seg - 1]!;
-        if (w.seg >= w.pts.length - 1 && w.t >= 1) {
-          g.position.copy(to);
-          this.walks[seat] = null;
-        } else {
-          const tt = Math.min(w.t, 1);
-          g.position.lerpVectors(from, to, easeInOut(tt));
-          g.position.y = TOKEN_Y + Math.sin(Math.PI * tt) * HOP_H; // arc
-        }
-      });
-
-      // dice: fast tumble, then settle on the rolled faces
-      if (this.diceAnim) {
-        const t = (now - this.diceAnim.start) / DICE_MS;
-        if (t >= 1) {
-          this.dice.forEach((d, n) => d.rotation.copy(this.diceAnim!.to[n]!));
-          this.diceAnim = null;
-        } else {
-          busy = true;
-          const spin = t < 0.7;
-          this.dice.forEach((d, n) => {
-            if (spin) {
-              d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
-              d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
-            } else {
-              const k = 0.25; // ease toward the resting face
-              const to = this.diceAnim!.to[n]!;
-              d.rotation.x += (to.x - d.rotation.x) * k;
-              d.rotation.y += (to.y - d.rotation.y) * k;
-              d.rotation.z += (to.z - d.rotation.z) * k;
-            }
-            d.position.y = 0.55 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.5 * (1 - t); // bounce
-          });
-        }
-      }
-
-      // houses: pop in with an overshoot
-      if (this.housePops.length > 0) {
-        busy = true;
-        this.housePops = this.housePops.filter((p) => {
-          const t = (now - p.born) / POP_MS;
-          if (t >= 1) {
-            p.g.scale.setScalar(1);
-            return false;
-          }
-          p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
-          return true;
-        });
-      }
-
-      this.renderOnce();
-      if (busy) this.raf = requestAnimationFrame(step);
-      else this.animating = false;
-    };
-    this.raf = requestAnimationFrame(step);
+    this.core.setSize(width);
   }
 
   destroy(): void {
-    cancelAnimationFrame(this.raf);
-    // Free the whole scene graph (geometries, materials, ~50 CanvasTextures),
-    // the baked environment map, the pawn geometry, and the post-processing
-    // pipeline — renderer.dispose() alone leaks all of these.
+    // RenderCore frees the renderer, env map and post pipeline; we free the
+    // scene graph (geometries, materials, ~50 CanvasTextures) + pawn geometry.
+    this.core.dispose();
     disposeObject(this.scene);
-    (this.scene.environment as Texture | null)?.dispose();
-    this.scene.environment = null;
     this.pawnGeo.dispose();
-    for (const p of this.passes) p.dispose?.();
-    this.composer.dispose();
-    this.renderer.dispose();
-    this.renderer.forceContextLoss();
   }
 }
