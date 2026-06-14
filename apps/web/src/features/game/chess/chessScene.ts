@@ -143,9 +143,10 @@ export class ChessScene {
     });
   }
 
-  /** Per-frame hook from RenderCore's loop: advance the move glide (no render). */
-  private frame(now: number): void {
-    if (!this.anim) return;
+  /** Per-frame hook from RenderCore's loop: advance the move glide. Returns true
+   *  while animating so the loop renders at full rate (else it idles to save power). */
+  private frame(now: number): boolean {
+    if (!this.anim) return false;
     const t = (now - this.anim.start) / MOVE_MS;
     if (t >= 1) {
       this.anim.mesh.position.copy(this.anim.to);
@@ -154,6 +155,7 @@ export class ChessScene {
       this.anim.mesh.position.lerpVectors(this.anim.from, this.anim.to, easeInOut(t));
       this.anim.mesh.position.y = 0.16 + Math.sin(Math.PI * t) * 0.45; // lift arc
     }
+    return true;
   }
 
   private build(): void {
@@ -273,6 +275,7 @@ export class ChessScene {
       if (highlight.selected) this.addSquareHi(highlight.selected, "#3a9bd0", 0.35);
       for (const tg of highlight.targets) this.addSquareHi(tg, "#3ad07a", 0.3);
     }
+    this.core.invalidate();
   }
 
   private addSquareHi(square: string, color: string, opacity: number): void {

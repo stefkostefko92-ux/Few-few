@@ -61,8 +61,12 @@ export interface RenderCoreOpts {
   exposure?: number;
   /** Optional equirect .hdr URL for IBL; falls back to a procedural studio. */
   hdri?: string;
-  /** Per-frame hook for scene animation (advance tweens here, no rendering). */
-  onFrame?: (nowMs: number) => void;
+  /**
+   * Per-frame hook for scene animation (advance tweens here, no rendering).
+   * Return `true` while an animation is in flight so the loop renders at full
+   * rate; return `false`/nothing when idle so the loop throttles to save power.
+   */
+  onFrame?: (nowMs: number) => boolean | void;
   /** Initial graphics params (shared so a single gui can drive several cores). */
   params?: GfxParams;
 }
@@ -88,8 +92,10 @@ export class RenderCore implements GfxControllable {
   private envTex: { dispose?: () => void } | null = null;
   private gpuMod: typeof import("three/webgpu") | null = null;
   private post!: PostHandle;
-  private onFrame?: (n: number) => void;
+  private onFrame?: (n: number) => boolean | void;
   private disposed = false;
+  private dirty = true; // force a render on the next tick (state change / resize)
+  private lastRenderAt = 0;
   private onVis = () => this.applyLoop();
 
   constructor(opts: RenderCoreOpts) {
@@ -129,10 +135,11 @@ export class RenderCore implements GfxControllable {
     }
 
     const h = this.width * this.ratio;
-    this.renderer.setPixelRatio(Math.min(2, globalThis.devicePixelRatio || 1));
+    this.renderer.setPixelRatio(Math.min(this.params.pixelRatio, globalThis.devicePixelRatio || 1));
     this.renderer.setSize(this.width, h, false);
     this.renderer.shadowMap.enabled = this.params.shadows;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
+    this.clampShadows();
     this.applyToneMapping();
 
     await this.setupEnvironment(opts.hdri);
@@ -145,6 +152,23 @@ export class RenderCore implements GfxControllable {
     registerCore(this);
     document.addEventListener("visibilitychange", this.onVis);
     this.applyLoop();
+  }
+
+  /** Clamp every scene light's shadow map to the device-tier budget (scenes
+   *  author 2048 maps; low-end devices get 1024 to halve the shadow cost). */
+  private clampShadows(): void {
+    const max = this.params.shadowSize;
+    this.scene.traverse((o) => {
+      const l = o as {
+        castShadow?: boolean;
+        shadow?: { mapSize: { x: number; y: number; set: (a: number, b: number) => void }; map?: { dispose?: () => void } | null };
+      };
+      if (l.castShadow && l.shadow && (l.shadow.mapSize.x > max || l.shadow.mapSize.y > max)) {
+        l.shadow.mapSize.set(Math.min(l.shadow.mapSize.x, max), Math.min(l.shadow.mapSize.y, max));
+        l.shadow.map?.dispose?.();
+        l.shadow.map = null;
+      }
+    });
   }
 
   private applyToneMapping(): void {
@@ -333,20 +357,40 @@ export class RenderCore implements GfxControllable {
   }
 
   // ── loop / lifecycle ───────────────────────────────────────────────────────
+  /** Idle frame rate: when nothing is animating the loop renders this slowly to
+   *  spare the battery/GPU; it snaps back to display rate the instant a scene
+   *  reports activity (onFrame → true) or something calls invalidate(). */
+  private static readonly IDLE_FPS = 15;
+
   private applyLoop(): void {
     const hidden = typeof document !== "undefined" && document.hidden;
-    this.renderer.setAnimationLoop(
-      hidden || this.disposed
-        ? null
-        : () => {
-            this.onFrame?.(performance.now());
-            this.post.render();
-          },
-    );
+    if (hidden || this.disposed) {
+      this.renderer.setAnimationLoop(null);
+      return;
+    }
+    const idleInterval = 1000 / RenderCore.IDLE_FPS;
+    this.renderer.setAnimationLoop(() => {
+      const now = performance.now();
+      // onFrame runs every display tick (it's cheap); rendering is what we gate.
+      const active = this.onFrame ? this.onFrame(now) !== false : true;
+      const force = active || this.dirty;
+      if (force || now - this.lastRenderAt >= idleInterval) {
+        this.lastRenderAt = now;
+        this.dirty = false;
+        this.post.render();
+      }
+    });
+  }
+
+  /** Mark the scene changed so the loop renders promptly (used on state updates,
+   *  resizes and gui edits). Safe to call from anywhere, anytime. */
+  invalidate(): void {
+    this.dirty = true;
   }
 
   /** Request a one-off render (the continuous loop already covers most cases). */
   render(): void {
+    this.dirty = true;
     if (!this.disposed && this.post) this.post.render();
   }
 
@@ -356,6 +400,7 @@ export class RenderCore implements GfxControllable {
     const h = width * this.ratio;
     this.renderer.setSize(width, h, false);
     this.post?.setSize(width, h);
+    this.dirty = true;
   }
 
   /** Apply gui edits: exposure/tone live; bloom live; structural changes rebuild. */
@@ -365,6 +410,7 @@ export class RenderCore implements GfxControllable {
     if (this.scene.environment) this.scene.environmentIntensity = this.params.environment;
     if (opts.rebuild) this.post?.rebuild();
     else this.post?.applyLive();
+    this.dirty = true;
   }
 
   dispose(): void {

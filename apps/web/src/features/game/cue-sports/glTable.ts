@@ -494,11 +494,13 @@ export class GLTable {
     this.fxLayer.add(mesh);
     const reduce = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     this.sinks.push({ mesh, born: performance.now(), dur: reduce ? 1 : 340, from });
+    this.core.invalidate();
   }
 
-  /** Per-frame hook from RenderCore: advance any pocket-drop animations. */
-  private frame(now: number): void {
-    if (this.sinks.length === 0) return;
+  /** Per-frame hook from RenderCore: advance any pocket-drop animations. Returns
+   *  true while a ball is dropping so the loop renders at full rate (else idles). */
+  private frame(now: number): boolean {
+    if (this.sinks.length === 0) return false;
     this.sinks = this.sinks.filter((s) => {
       const t = (now - s.born) / s.dur;
       if (t >= 1) {
@@ -512,6 +514,7 @@ export class GLTable {
       (s.mesh.material as MeshPhysicalMaterial).opacity = e;
       return true;
     });
+    return true;
   }
 
   /** Frozen pocket-drop pose (no animation) — used by the demo/screenshot harness. */

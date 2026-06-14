@@ -95,8 +95,9 @@ export class LudoScene {
     });
   }
 
-  /** Per-frame hook from RenderCore: tumble the die toward its face (no render). */
-  private frame(): void {
+  /** Per-frame hook from RenderCore: tumble the die toward its face. Returns true
+   *  while animating so the loop renders at full rate (else it idles to save power). */
+  private frame(): boolean {
     const now = performance.now();
     const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
     this.lastFrame = now;
@@ -117,7 +118,9 @@ export class LudoScene {
         }
         this.die.position.y = 0.6 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
       }
+      return true;
     }
+    return false;
   }
 
   private build(): void {
@@ -259,6 +262,7 @@ export class LudoScene {
       }
     }
     this.syncDie(die);
+    this.core.invalidate();
   }
 
   private syncDie(value: number | null): void {

@@ -449,18 +449,23 @@ export class MagnatScene {
   }
 
   /** Per-frame hook from RenderCore: token hops, dice tumble, house pop-ins. */
-  private frame(): void {
+  private frame(): boolean {
     const now = performance.now();
     const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
     this.lastFrame = now;
+    let active = false;
 
     this.tokens.forEach((g, seat) => {
       const w = this.walks[seat];
       if (!w) {
         const target = this.tokenTarget[seat];
-        if (target && g.position.distanceToSquared(target) > 1e-5) g.position.lerp(target, 0.2);
+        if (target && g.position.distanceToSquared(target) > 1e-5) {
+          g.position.lerp(target, 0.2);
+          active = true;
+        }
         return;
       }
+      active = true;
       w.t += dt / HOP_MS;
       while (w.t >= 1 && w.seg < w.pts.length - 1) {
         w.seg += 1;
@@ -479,6 +484,7 @@ export class MagnatScene {
     });
 
     if (this.diceAnim) {
+      active = true;
       const t = (now - this.diceAnim.start) / DICE_MS;
       if (t >= 1) {
         this.dice.forEach((d, n) => d.rotation.copy(this.diceAnim!.to[n]!));
@@ -502,6 +508,7 @@ export class MagnatScene {
     }
 
     if (this.housePops.length > 0) {
+      active = true;
       this.housePops = this.housePops.filter((p) => {
         const t = (now - p.born) / POP_MS;
         if (t >= 1) {
@@ -512,6 +519,7 @@ export class MagnatScene {
         return true;
       });
     }
+    return active;
   }
 
   private aniso(tex: CanvasTexture): CanvasTexture {
@@ -700,6 +708,7 @@ export class MagnatScene {
     }
 
     this.syncDice(state.dice);
+    this.core.invalidate();
   }
 
   /** Spin both dice and settle them on the rolled values. */
@@ -787,6 +796,7 @@ export class MagnatScene {
   setFelt(a: string, b: string): void {
     this.scene.background = new Color(b);
     if (this.baseMat) this.baseMat.color = new Color(a);
+    this.core.invalidate();
   }
 
   resize(width: number): void {

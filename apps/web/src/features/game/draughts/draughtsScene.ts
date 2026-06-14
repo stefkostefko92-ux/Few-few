@@ -89,9 +89,10 @@ export class DraughtsScene {
     });
   }
 
-  /** Per-frame hook from RenderCore: advance the piece pop-in (no render). */
-  private frame(): void {
-    if (this.pops.length === 0) return;
+  /** Per-frame hook from RenderCore: advance the piece pop-in. Returns true while
+   *  animating so the loop renders at full rate (else it idles to save power). */
+  private frame(): boolean {
+    if (this.pops.length === 0) return false;
     const now = performance.now();
     this.pops = this.pops.filter((p) => {
       const t = (now - p.born) / POP_MS;
@@ -102,6 +103,7 @@ export class DraughtsScene {
       p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
       return true;
     });
+    return true;
   }
 
   private build(): void {
@@ -186,7 +188,7 @@ export class DraughtsScene {
       if (highlight.selected !== null) this.addCellHi(highlight.selected, "#3a9bd0", 0.4);
       for (const t of highlight.targets) this.addCellHi(t, "#3ad07a", 0.32);
     }
-
+    this.core.invalidate();
   }
 
   private addCellHi(i: number, color: string, opacity: number): void {

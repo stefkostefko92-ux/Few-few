@@ -118,11 +118,11 @@ export class BackgammonScene {
   }
 
   /** Per-frame hook from RenderCore: tumble the dice toward their faces. */
-  private frame(): void {
+  private frame(): boolean {
     const now = performance.now();
     const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
     this.lastFrame = now;
-    if (!this.diceAnim) return;
+    if (!this.diceAnim) return false;
     const t = (now - this.diceAnim.start) / DICE_MS;
     if (t >= 1) {
       this.dice.forEach((d, n) => this.diceAnim!.to[n] && d.rotation.copy(this.diceAnim!.to[n]!));
@@ -143,6 +143,7 @@ export class BackgammonScene {
         d.position.y = 0.5 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
       });
     }
+    return true;
   }
 
   private build(): void {
@@ -267,6 +268,7 @@ export class BackgammonScene {
 
     this.syncDice(state.remaining.length ? state.remaining : state.dice);
     void mySeat;
+    this.core.invalidate();
   }
 
   private addHighlight(i: number, color: string): void {
