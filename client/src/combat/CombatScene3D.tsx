@@ -489,9 +489,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const tintHex = CLASS_TINT[cls] || CLASS_TINT.warrior;
       loader.load(url, (gltf) => {
         const model = gltf.scene;
+        // Order matters: fitToHeight must run BEFORE addOutline so the
+        // bbox isn't polluted by the back-face shells (skinned shells
+        // bound with bindMatrix carry the rig's internal scale, which
+        // inflates the bbox 30-60× and would shrink the model to a dot).
         applyToon(model, { tint: tintHex, tintStrength: 0.25 });
-        addOutline(model, 0.022);
         fitToHeight(model, 2.4);
+        addOutline(model, 0.022);
 
         model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
         // 3/4 view: rotate ~45° off camera so we see body and weapon at
