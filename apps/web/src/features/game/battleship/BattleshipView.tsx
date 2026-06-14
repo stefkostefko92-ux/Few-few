@@ -7,6 +7,7 @@ import { BoardFrame } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { FeltTable } from "../table/FeltTable";
 import "./battleship.css";
 
 interface BattleshipState {
@@ -56,7 +57,8 @@ export function BattleshipView({ title }: { title: string }) {
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       <Announcements banners={banners} fixed />
       {state ? (
-        <div className="flex flex-col items-center gap-5 lg:flex-row lg:items-start lg:justify-center">
+        <FeltTable crest="⚓" feltColor="#1c4a6e" feltDark="#0a2238">
+        <div className="flex h-full flex-col items-center justify-center gap-5 p-6 lg:flex-row lg:justify-center">
           {/* Firing grid (opponent waters). */}
           <div className="flex flex-col items-center gap-2">
             <ScorePill label={t("battleship.enemy", { name: oppName })} value="" highlight={myTurn} />
@@ -110,6 +112,7 @@ export function BattleshipView({ title }: { title: string }) {
             </BoardFrame>
           </div>
         </div>
+        </FeltTable>
       ) : null}
     </Scene>
   );

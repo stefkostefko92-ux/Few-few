@@ -4,7 +4,9 @@
   flex-wrap: wrap;
   gap: 24px;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
+  height: 100%;
+  padding: 24px 16px;
 }
 .dice-tray {
   display: flex;

@@ -6,6 +6,7 @@ import { playCue } from "../../../lib/sound";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { FeltTable } from "../table/FeltTable";
 import { DominoTile } from "./DominoTile";
 import "./domino.css";
 
@@ -72,6 +73,7 @@ export function DominoView({ title }: { title: string }) {
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       <Announcements banners={banners} fixed />
       {state ? (
+        <FeltTable crest="🁫" feltColor="#1f5a3e" feltDark="#0c2c1f">
         <div className="dom-layout">
           {/* Opponents (tile counts). */}
           <div className="flex flex-wrap justify-center gap-3">
@@ -166,6 +168,7 @@ export function DominoView({ title }: { title: string }) {
             </p>
           ) : null}
         </div>
+        </FeltTable>
       ) : null}
     </Scene>
   );

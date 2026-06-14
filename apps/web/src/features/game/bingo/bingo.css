@@ -5,6 +5,8 @@
   gap: 28px;
   justify-content: center;
   align-items: center;
+  height: 100%;
+  padding: 24px 16px;
 }
 .bingo-drum {
   display: flex;

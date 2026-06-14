@@ -5,6 +5,7 @@ import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { FeltTable } from "../table/FeltTable";
 import "./bingo.css";
 
 interface BingoState {
@@ -43,6 +44,7 @@ export function BingoView({ title }: { title: string }) {
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
+        <FeltTable crest="B" feltColor="#3a2470" feltDark="#1a103a">
         <div className="bingo-layout">
           {/* The draw display. */}
           <div className="bingo-drum">
@@ -79,6 +81,7 @@ export function BingoView({ title }: { title: string }) {
             <ScorePill label={user?.displayName ?? t("game.you")} value={t("bingo.yourCard")} highlight />
           </div>
         </div>
+        </FeltTable>
       ) : null}
     </Scene>
   );

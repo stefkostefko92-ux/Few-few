@@ -5,6 +5,7 @@ import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { FeltTable } from "../table/FeltTable";
 import "./words.css";
 
 interface WordsState {
@@ -32,6 +33,7 @@ export function WordsView({ title }: { title: string }) {
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
+        <FeltTable crest="Я" feltColor="#5a3d22" feltDark="#241509">
         <div className="words-layout">
           {/* Players + lives. */}
           <div className="words-players">
@@ -78,6 +80,7 @@ export function WordsView({ title }: { title: string }) {
             <ScorePill label={user?.displayName ?? t("game.you")} value={"♥".repeat(Math.max(0, state.lives[seat] ?? 0))} highlight={myTurn} />
           </div>
         </div>
+        </FeltTable>
       ) : null}
     </Scene>
   );

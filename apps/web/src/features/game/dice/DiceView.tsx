@@ -5,6 +5,7 @@ import { playCue } from "../../../lib/sound";
 import { Die } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { Scene } from "../scene/SceneShell";
+import { FeltTable } from "../table/FeltTable";
 import { GLDice, webglSupported } from "./GLDice";
 import "./dice.css";
 
@@ -67,6 +68,7 @@ export function DiceView({ title }: { title: string }) {
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
+        <FeltTable crest="⚄" feltColor="#1f5a3e" feltDark="#0c2c1f">
         <div className="dice-layout">
           {/* Dice tray. */}
           <div className="dice-tray">
@@ -147,6 +149,7 @@ export function DiceView({ title }: { title: string }) {
             </table>
           </div>
         </div>
+        </FeltTable>
       ) : null}
     </Scene>
   );
