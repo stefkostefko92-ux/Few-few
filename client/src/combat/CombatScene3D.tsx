@@ -1,13 +1,17 @@
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
-import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+// Photoreal pipeline — renderer + post + IBL + PBR helpers + lil-gui panel.
+// Heavy passes (GTAO/SSR/TAA) and the GUI live here behind dynamic boundaries
+// so the lite path doesn't pay for them.
+import {
+  createCombatBackend,
+  configureShadows,
+  buildPbrGround,
+  DEFAULT_TUNEABLES,
+  type RenderBackend,
+} from './CombatHD';
+import { mountHDPanel } from './CombatHDPanel';
 
 /**
  * Cinematic 3D battle stage (Three.js + post-processing).
@@ -281,39 +285,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const mount = mountRef.current;
     const pal = REGION_PALETTE[region] || REGION_PALETTE.whispering_woods;
 
-    /* ----- mobile / low-power LITE mode -----
-     * Touch devices and reduced-motion users get a stripped pipeline:
-     * no EffectComposer (bloom + RGB shift + vignette skipped),
-     * 1.0 DPR cap (instead of 2.0), 300-particle pool, no shadow casts.
-     * The 3D stage still renders — fighters, lighting, camera punch —
-     * but the GPU budget drops by ~75%, taking a 30 fps Android up to a
-     * smooth 60. Desktop users with fine pointers get the full chain. */
-    const liteMode = (typeof window !== 'undefined') && (
-      window.matchMedia('(pointer: coarse)').matches ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      window.innerWidth < 900
-    );
-
-    /* ----- renderer ----- */
-    let renderer: THREE.WebGLRenderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ antialias: !liteMode, alpha: true, powerPreference: liteMode ? 'low-power' : 'high-performance' });
-    } catch (err) {
-      const fb = document.createElement('div');
-      fb.style.cssText = `position:absolute;inset:0;background:
-        radial-gradient(ellipse at 50% 70%, ${'#' + (pal.ambient.toString(16).padStart(6,'0'))}33, transparent 60%),
-        linear-gradient(180deg, ${'#' + (pal.sky.toString(16).padStart(6,'0'))} 0%, ${'#' + (pal.fog.toString(16).padStart(6,'0'))} 100%)`;
-      mount.appendChild(fb);
-      return () => { try { mount.removeChild(fb); } catch {} };
-    }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, liteMode ? 1.0 : 2));
-    renderer.setSize(mount.clientWidth, mount.clientHeight, false);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
-    mount.appendChild(renderer.domElement);
-    renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
-
+    /* ----- scene + camera ----- */
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(pal.sky);
     scene.fog = new THREE.Fog(pal.fog, 6, 22);
@@ -323,31 +295,35 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     camera.lookAt(0, 1.4, 0);
     cameraRef.current = camera;
 
-    /* ----- post-processing stack ----- */
-    const composer = new EffectComposer(renderer);
-    composer.setPixelRatio(Math.min(window.devicePixelRatio, liteMode ? 1.0 : 2));
-    composer.setSize(mount.clientWidth, mount.clientHeight);
-    composer.addPass(new RenderPass(scene, camera));
-    // Bloom + RGB shift get hoisted to outer scope so the tick loop can
-    // pulse them on crits. In lite mode they're left null and the tick
-    // skips the pulse safely.
-    let bloom: UnrealBloomPass | null = null;
-    let rgbShift: ShaderPass | null = null;
-    if (!liteMode) {
-      bloom = new UnrealBloomPass(
-        new THREE.Vector2(mount.clientWidth, mount.clientHeight),
-        0.55, 0.40, 0.55,
-      );
-      composer.addPass(bloom);
-      rgbShift = new ShaderPass(RGBShiftShader);
-      rgbShift.uniforms['amount'].value = 0.0018;
-      composer.addPass(rgbShift);
-      const vignette = new ShaderPass(VignetteShader);
-      vignette.uniforms['offset'].value = 0.85;
-      vignette.uniforms['darkness'].value = 0.95;
-      composer.addPass(vignette);
-    }
-    composer.addPass(new OutputPass());
+    /* ----- photoreal backend (WebGPU → WebGL2 → lite) -----
+     * createCombatBackend handles renderer selection, IBL via PMREMGenerator
+     * over a RoomEnvironment (or HDRI if HDRI_OVERRIDE_URL is set), ACES
+     * + sRGB + exposure, PCFSoft 2048² shadows, and the full GTAO + SSR
+     * + Bloom + TAA post chain on WebGL2. WebGPU and lite paths get
+     * bloom-only (or none) because three's WebGPU post stack is leaner.
+     * Both surfaces are referenced via backendRef.current.
+     */
+    let backend: RenderBackend | null = null;
+    let hdPanel: { dispose: () => void } | null = null;
+    let cancelled = false;
+    const tuneables = { ...DEFAULT_TUNEABLES };
+
+    // Placeholder loading background so the user sees something while
+    // WebGPU init resolves (~50-200ms on a fresh page load).
+    const loadingBg = document.createElement('div');
+    loadingBg.style.cssText = `position:absolute;inset:0;background:
+      radial-gradient(ellipse at 50% 70%, ${'#' + (pal.ambient.toString(16).padStart(6,'0'))}33, transparent 60%),
+      linear-gradient(180deg, ${'#' + (pal.sky.toString(16).padStart(6,'0'))} 0%, ${'#' + (pal.fog.toString(16).padStart(6,'0'))} 100%)`;
+    mount.appendChild(loadingBg);
+
+    // Backend-relative locals — these get assigned after the async create
+    // resolves. Most of the existing code below references `renderer` and
+    // `composer` directly; we point them at the backend's surfaces so the
+    // rest of the file stays unchanged.
+    let renderer: THREE.WebGLRenderer | null = null;
+    let composer: import('three/examples/jsm/postprocessing/EffectComposer.js').EffectComposer | null = null;
+    let bloom: import('three/examples/jsm/postprocessing/UnrealBloomPass.js').UnrealBloomPass | null = null;
+    let rgbShift: import('three/examples/jsm/postprocessing/ShaderPass.js').ShaderPass | null = null;
 
     /* ----- sky parallax cylinder ----- */
     {
@@ -412,6 +388,8 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       );
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = 0;
+      ground.receiveShadow = true;
+      ground.userData.kind = 'ground'; // marker so HD backend can swap to PBR
       scene.add(ground);
     }
 
@@ -445,6 +423,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const foePair = addFighter(foeClass, 'foe');
     heroRef.current = heroPair.sprite;
     foeRef.current = foePair.sprite;
+    // Three.js Sprites don't participate in the shadow map by design
+    // (they're billboarded planes with their own renderer pipeline);
+    // soft contact shadows under fighters are added later as a tinted
+    // CircleGeometry blob beneath each sprite once the PBR ground is in.
     heroLightRef.current = heroPair.light;
     foeLightRef.current = foePair.light;
 
@@ -477,7 +459,16 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
      * Lite mode caps the pool at 300 — still enough for a ~70-particle
      * crit burst plus ambient embers, but one quarter of the GPU work
      * per frame compared to desktop. */
-    const MAX_P = liteMode ? 300 : 1200;
+    // Particle pool — lite criteria mirrored from CombatHD so the pool
+    // matches the renderer's capacity. (We can't read it off backend
+    // yet because the async create hasn't resolved when MAX_P is needed.)
+    const liteParticleBudget =
+      typeof window !== 'undefined' && (
+        window.matchMedia('(pointer: coarse)').matches ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        window.innerWidth < 900
+      );
+    const MAX_P = liteParticleBudget ? 300 : 1200;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(MAX_P * 3);
     const vel = new Float32Array(MAX_P * 3);
@@ -672,13 +663,57 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /* ----- resize ----- */
     function resize() {
       const w = mount.clientWidth, h = mount.clientHeight;
-      renderer.setSize(w, h, false);
-      composer.setSize(w, h);
+      if (renderer) renderer.setSize(w, h, false);
+      if (composer) composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
+
+    /* ----- async backend creation + key-light shadow + GUI panel -----
+     * Once the renderer + post chain resolve, we wire shadow on the key
+     * directional light (PCFSoft 2048²), promote the procedural ground
+     * to MeshPhysicalMaterial so SSR has something to reflect, and
+     * mount the lil-gui panel when ?debug=1 is on the URL.
+     */
+    createCombatBackend({ mount, scene, camera, tuneables }).then((b) => {
+      if (cancelled) {
+        b.dispose();
+        return;
+      }
+      backend = b;
+      renderer = b.renderer;
+      composer = b.composer;
+      bloom = b.bloomPass;
+      rgbShift = b.rgbShift;
+      try { mount.removeChild(loadingBg); } catch {}
+
+      // Configure shadow on the brightest scene light (added earlier by
+      // the lights setup block) — PCFSoft 2048² across an 8m frustum.
+      const keyLight = scene.children.find((c): c is THREE.DirectionalLight =>
+        c instanceof THREE.DirectionalLight && c.intensity >= 0.5,
+      ) || null;
+      if (keyLight && b.kind !== 'webgl1-lite') {
+        configureShadows(keyLight, tuneables.shadowMapSize);
+      }
+
+      // Replace the existing ground plane (a simple painted disc) with a
+      // physically-correct plane so SSR has something to reflect from
+      // and GTAO has surface to occlude into.
+      const oldGround = scene.children.find((c) =>
+        (c as any).userData?.kind === 'ground',
+      );
+      if (oldGround) {
+        scene.remove(oldGround);
+        try { (oldGround as any).geometry?.dispose?.(); (oldGround as any).material?.dispose?.(); } catch {}
+      }
+      const pbrGround = buildPbrGround(40, pal.ground ?? 0x2a2418);
+      pbrGround.userData.kind = 'ground';
+      scene.add(pbrGround);
+
+      hdPanel = mountHDPanel(b, scene, keyLight);
+    });
 
     /* ----- main loop ----- */
     let last = performance.now();
@@ -863,7 +898,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         }
       }
 
-      composer.render();
+      // Backend-aware render — null until createCombatBackend resolves
+      // (WebGPU init takes ~50-200ms). The first few rAFs after mount
+      // skip drawing; the loading background div stays visible.
+      if (backend) backend.render();
       rafRef.current = requestAnimationFrame(tick);
     }
 
@@ -921,10 +959,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
+      cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
-      composer.dispose();
-      renderer.dispose();
+      try { hdPanel?.dispose(); } catch {}
+      try { backend?.dispose(); } catch {}
+      try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry?.dispose();
         const mat = (obj as THREE.Mesh).material as any;
@@ -938,7 +978,11 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // releases its GPU handle on unmount.
       magicCircleCache.forEach((t) => t.dispose());
       magicCircleCache.clear();
-      try { mount.removeChild(renderer.domElement); } catch {}
+      // Renderer canvas removal is handled inside backend.dispose() now;
+      // this used to be the direct unmount call back when renderer was
+      // a non-null local. Kept as a no-op safety net for any leftover
+      // canvas that might survive the backend dispose.
+      try { renderer && mount.removeChild(renderer.domElement); } catch {}
     };
   }, [heroClass, foeClass, region]);
 
