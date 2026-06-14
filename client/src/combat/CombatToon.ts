@@ -28,9 +28,11 @@ let cachedRamp: THREE.DataTexture | null = null;
 /** Build (and cache) a 3-band cel diffuse ramp. */
 export function createCelGradient(): THREE.DataTexture {
   if (cachedRamp) return cachedRamp;
-  // 3 cel steps: shadow, midtone, lit. Pixel values picked to keep the
-  // shadow plate readable under the photoreal IBL backdrop.
-  const data = new Uint8Array([60, 60, 60, 255, 170, 170, 170, 255, 255, 255, 255, 255]);
+  // 3 cel steps: shadow, midtone, lit. Lifted brightness for a Pixar /
+  // BotW palette — pure black plate eats too much contrast on darker
+  // region BGs (Shadowfell, Voidshade) and makes the rig read as a
+  // silhouette instead of a character.
+  const data = new Uint8Array([128, 128, 128, 255, 200, 200, 200, 255, 255, 255, 255, 255]);
   const tex = new THREE.DataTexture(data, 3, 1, THREE.RGBAFormat);
   tex.magFilter = THREE.NearestFilter;
   tex.minFilter = THREE.NearestFilter;
