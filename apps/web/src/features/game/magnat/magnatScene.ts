@@ -473,7 +473,7 @@ export class MagnatScene {
     ssao.maxDistance = 0.08;
     const bloom = new UnrealBloomPass(new Vector2(w, h), 0.06, 0.4, 1.35);
     const output = new OutputPass();
-    const smaa = new SMAAPass(w, h);
+    const smaa = new SMAAPass();
     for (const p of [render, ssao, bloom, output, smaa]) this.composer.addPass(p);
     this.passes = [render, ssao, bloom, output, smaa];
 

@@ -58,7 +58,7 @@ export function makeComposer(renderer: WebGLRenderer, scene: Scene, camera: Came
   const render = new RenderPass(scene, camera);
   const bloom = new UnrealBloomPass(new Vector2(w, h), 0.14, 0.5, 1.1);
   const output = new OutputPass();
-  const smaa = new SMAAPass(w, h);
+  const smaa = new SMAAPass();
   const passes = [render, bloom, output, smaa];
   for (const p of passes) composer.addPass(p);
   return {
