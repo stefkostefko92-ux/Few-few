@@ -55,10 +55,28 @@ export default function CombatDemo(): React.ReactElement {
         <span style={{ color: '#d6a13d', fontWeight: 600 }}>Combat HD demo</span>
         <span>phase: <code>{phase}</code></span>
         <select value={region} onChange={(e) => setRegion(e.target.value)} style={{ marginLeft: 8 }}>
-          <option value="whispering_woods">Whispering Woods</option>
-          <option value="ashen_wastes">Ashen Wastes</option>
-          <option value="shadowfell">Shadowfell</option>
-          <option value="crystal_caverns">Crystal Caverns</option>
+          <optgroup label="Act 1">
+            <option value="whispering_woods">Whispering Woods</option>
+            <option value="mistmoor_hills">Mistmoor Hills</option>
+            <option value="crystal_caverns">Crystal Caverns</option>
+            <option value="ashen_wastes">Ashen Wastes</option>
+            <option value="shadowfell">Shadowfell</option>
+          </optgroup>
+          <optgroup label="Mid-tier">
+            <option value="emberreach">Emberreach</option>
+            <option value="hammerhand_pass">Hammerhand Pass</option>
+            <option value="conclave_aedric">Conclave of Aedric</option>
+            <option value="saltmarsh">Saltmarsh</option>
+            <option value="frostvale">Frostvale</option>
+            <option value="black_spire">Black Spire</option>
+          </optgroup>
+          <optgroup label="Divine">
+            <option value="stormpeaks">The Stormpeaks</option>
+            <option value="voidshade_hollow">Voidshade Hollow</option>
+            <option value="mooncradle">Mooncradle</option>
+            <option value="worldspine">The Worldspine</option>
+            <option value="eternal_throne">The Eternal Throne</option>
+          </optgroup>
         </select>
       </div>
     </div>

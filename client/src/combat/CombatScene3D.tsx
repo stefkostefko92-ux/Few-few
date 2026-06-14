@@ -12,6 +12,7 @@ import {
   type RenderBackend,
 } from './CombatHD';
 import { mountHDPanel } from './CombatHDPanel';
+import { buildRegionEnvironment, getRegionEmberSpec } from './CombatEnvironment';
 
 /**
  * Cinematic 3D battle stage (Three.js + post-processing).
@@ -239,11 +240,25 @@ function magicCircleTexture(tint: string): THREE.CanvasTexture {
 }
 
 const REGION_PALETTE: Record<string, { sky: number; fog: number; ground: number; ambient: number; }> = {
+  // Act 1 (lv 1-25)
   whispering_woods: { sky: 0x2c4a2d, fog: 0x1e2a1f, ground: 0x1c2818, ambient: 0x4a7a3d },
   mistmoor_hills:   { sky: 0x4a5567, fog: 0x2e3540, ground: 0x2c2f37, ambient: 0x6f7a8c },
   crystal_caverns:  { sky: 0x213057, fog: 0x102045, ground: 0x172240, ambient: 0x6aa7ff },
   ashen_wastes:     { sky: 0x4a261a, fog: 0x2a0e07, ground: 0x2c1813, ambient: 0xff7c4d },
   shadowfell:       { sky: 0x2a173d, fog: 0x140820, ground: 0x1c0e26, ambient: 0xc294ff },
+  // Mid-tier (lv 26-200)
+  emberreach:       { sky: 0x5a1f10, fog: 0x2a0a04, ground: 0x3a1a0c, ambient: 0xff5a2c },
+  hammerhand_pass:  { sky: 0x3a302a, fog: 0x1a1410, ground: 0x2a1f18, ambient: 0xc89060 },
+  conclave_aedric:  { sky: 0x3a2050, fog: 0x180a28, ground: 0x251638, ambient: 0xc294ff },
+  saltmarsh:        { sky: 0x2a3a3a, fog: 0x121a1f, ground: 0x1c2620, ambient: 0x6ad8a4 },
+  frostvale:        { sky: 0x405a78, fog: 0x1a2838, ground: 0xb8c8d8, ambient: 0xe0f0ff },
+  black_spire:      { sky: 0x2a0808, fog: 0x100404, ground: 0x1a0a0a, ambient: 0xff3a2a },
+  // Divine endgame (lv 201-350)
+  stormpeaks:       { sky: 0x303848, fog: 0x141822, ground: 0x2a303a, ambient: 0xa0c8ff },
+  voidshade_hollow: { sky: 0x180828, fog: 0x080414, ground: 0x140828, ambient: 0xa074ff },
+  mooncradle:       { sky: 0x303860, fog: 0x141828, ground: 0xb8b8c8, ambient: 0xd4dfff },
+  worldspine:       { sky: 0x352a20, fog: 0x14100a, ground: 0xa0958a, ambient: 0xffe4b0 },
+  eternal_throne:   { sky: 0x080814, fog: 0x040408, ground: 0x14101a, ambient: 0xffd060 },
 };
 
 const CLASS_TINT: Record<string, string> = {
@@ -284,6 +299,15 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     if (!mountRef.current) return;
     const mount = mountRef.current;
     const pal = REGION_PALETTE[region] || REGION_PALETTE.whispering_woods;
+
+    /* ----- lite mode detection (hoisted so the environment dressing
+     * and the particle pool size below can share the decision) ----- */
+    const liteParticleBudget =
+      typeof window !== 'undefined' && (
+        window.matchMedia('(pointer: coarse)').matches ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        window.innerWidth < 900
+      );
 
     /* ----- scene + camera ----- */
     const scene = new THREE.Scene();
@@ -393,6 +417,18 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       scene.add(ground);
     }
 
+    /* ----- region environment dressing -----
+     * Adds per-region 3D props (trees / rocks / crystals / obelisks /
+     * icicles / ash plumes / divine pillars / void fissures…) on a
+     * back-arc behind the fighters so they don't occlude the camera.
+     * Lite-mode halves the prop count. Per-region recipe also drives
+     * the ambient ember tint + spawn rate (fireflies in the woods,
+     * snow in Frostvale, dust in Hammerhand, lightning streaks in
+     * Stormpeaks, etc.). */
+    const environment = buildRegionEnvironment(region, liteParticleBudget);
+    scene.add(environment.group);
+    const emberSpec = getRegionEmberSpec(region);
+
     /* ----- lights ----- */
     scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.55));
     const key = new THREE.DirectionalLight(0xfff1c4, 0.95);
@@ -459,15 +495,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
      * Lite mode caps the pool at 300 — still enough for a ~70-particle
      * crit burst plus ambient embers, but one quarter of the GPU work
      * per frame compared to desktop. */
-    // Particle pool — lite criteria mirrored from CombatHD so the pool
-    // matches the renderer's capacity. (We can't read it off backend
-    // yet because the async create hasn't resolved when MAX_P is needed.)
-    const liteParticleBudget =
-      typeof window !== 'undefined' && (
-        window.matchMedia('(pointer: coarse)').matches ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-        window.innerWidth < 900
-      );
+    // Particle pool — uses the hoisted liteParticleBudget from above.
     const MAX_P = liteParticleBudget ? 300 : 1200;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(MAX_P * 3);
@@ -609,21 +637,34 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     // Hoisted scratch Color so spawn loops don't allocate ~110 fresh
     // THREE.Color instances per crit burst.
     const tmpColor = new THREE.Color();
+    // Region-aware ambient spawner — tint, rate, and direction read off
+    // the recipe so Frostvale gets falling snow, Stormpeaks gets settling
+    // mist, Emberreach gets rising embers, Conclave gets rising rune
+    // motes, Voidshade gets violet aberration sparks, etc.
     function spawnAmbient(dt: number) {
-      if (Math.random() > dt * 6) return;
+      if (Math.random() > dt * emberSpec.rate) return;
       const p = particlesRef.current!;
       const slot = (p.alive++ % MAX_P);
       const idx = slot * 3;
-      // If the slot was dead, we're growing the live count by one;
-      // if not, we're recycling and the count stays the same.
       if (p.lives[slot] >= p.maxLives[slot]) liveParticleCount++;
-      p.positions[idx] = (Math.random() - 0.5) * 9;
-      p.positions[idx + 1] = -0.5;
+      p.positions[idx] = (Math.random() - 0.5) * 12;
+      // Up-spawners start at ground; down-spawners (snow, mist) start in air.
+      p.positions[idx + 1] = emberSpec.up ? -0.5 : 6 + Math.random() * 4;
       p.positions[idx + 2] = (Math.random() - 0.5) * 4 - 1;
       p.velocities[idx] = (Math.random() - 0.5) * 0.2;
-      p.velocities[idx + 1] = 0.6 + Math.random() * 0.4;
+      p.velocities[idx + 1] = emberSpec.up
+        ? (0.6 + Math.random() * 0.4)
+        : -(0.4 + Math.random() * 0.4);
       p.velocities[idx + 2] = (Math.random() - 0.5) * 0.1;
-      tmpColor.set(Math.random() > 0.5 ? 0xffd34d : 0xff7c4d);
+      // Subtle hue jitter so the trail doesn't look monochromatic.
+      const baseColor = new THREE.Color(emberSpec.color);
+      const hsl = { h: 0, s: 0, l: 0 };
+      baseColor.getHSL(hsl);
+      tmpColor.setHSL(
+        (hsl.h + (Math.random() - 0.5) * 0.08 + 1) % 1,
+        Math.min(1, hsl.s * (0.85 + Math.random() * 0.3)),
+        Math.min(1, hsl.l * (0.85 + Math.random() * 0.3)),
+      );
       p.colors[idx] = tmpColor.r; p.colors[idx + 1] = tmpColor.g; p.colors[idx + 2] = tmpColor.b;
       p.lives[slot] = 0;
       p.maxLives[slot] = 3 + Math.random() * 2;
@@ -963,6 +1004,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       try { hdPanel?.dispose(); } catch {}
+      try { environment?.dispose(); } catch {}
       try { backend?.dispose(); } catch {}
       try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}
       scene.traverse((obj) => {
