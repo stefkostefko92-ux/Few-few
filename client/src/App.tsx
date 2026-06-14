@@ -56,6 +56,7 @@ const Events = React.lazy(() => import('./pages/Events'));
 const MythicPlus = React.lazy(() => import('./pages/MythicPlus'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
+const CombatDemo = React.lazy(() => import('./pages/CombatDemo'));
 import LevelUpOverlay from './components/LevelUpOverlay';
 import CooldownTicker from './components/CooldownTicker';
 import PageBackdrop from './components/PageBackdrop';
@@ -174,7 +175,7 @@ function Bootstrapper({ children }: { children: React.ReactNode }): React.ReactE
 
   const authed = !!token;
   const path = location.pathname;
-  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/terms' || path === '/privacy';
+  const isPublic = path === '/' || path === '/login' || path === '/register' || path === '/terms' || path === '/privacy' || path.startsWith('/demo/');
   const isCreateRoute = path === '/create';
   const isAdminRoute = path.startsWith('/admin');
 
@@ -203,6 +204,7 @@ export default function App(): React.ReactElement {
           <Route path="/create" element={<CharacterCreate />} />
           <Route path="/terms" element={<Suspense fallback={<LazyFallback />}><Terms /></Suspense>} />
           <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><Privacy /></Suspense>} />
+          <Route path="/demo/combat" element={<Suspense fallback={<LazyFallback />}><CombatDemo /></Suspense>} />
           <Route path="/admin/*" element={
             <AdminGate>
               <Navbar />
