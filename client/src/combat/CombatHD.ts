@@ -78,22 +78,25 @@ export interface HDTuneables {
 }
 
 export const DEFAULT_TUNEABLES: HDTuneables = {
-  exposure: 1.15,
-  iblIntensity: 0.85,
+  // BotW-leaning defaults: gentler tone mapping, weaker IBL (toon
+  // materials don't want strong specular), softer bloom, almost no
+  // chromatic aberration so the cel bands read as colour, not glow.
+  exposure: 1.05,
+  iblIntensity: 0.55,
   shadowMapSize: 2048,
-  bloomStrength: 0.55,
-  bloomRadius: 0.40,
-  bloomThreshold: 0.55,
+  bloomStrength: 0.32,
+  bloomRadius: 0.35,
+  bloomThreshold: 0.78,
   gtaoRadius: 0.5,
-  gtaoIntensity: 1.5,
+  gtaoIntensity: 1.1,
   gtaoSamples: 16,
   ssrThickness: 0.018,
-  ssrOpacity: 0.5,
+  ssrOpacity: 0.25,
   taaSampleLevel: 2,
-  rgbShiftAmount: 0.0018,
-  fogDensity: 0.06,
+  rgbShiftAmount: 0.0008,
+  fogDensity: 0.04,
   fogNear: 6,
-  fogFar: 22,
+  fogFar: 24,
 };
 
 // If you ship an .hdr at this URL, it overrides the procedural IBL.

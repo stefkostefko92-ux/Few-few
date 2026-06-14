@@ -13,6 +13,7 @@ import {
 } from './CombatHD';
 import { mountHDPanel } from './CombatHDPanel';
 import { buildRegionEnvironment, getRegionEmberSpec } from './CombatEnvironment';
+import { applyToon, addOutline, fitToHeight } from './CombatToon';
 
 /**
  * Cinematic 3D battle stage (Three.js + post-processing).
@@ -282,6 +283,8 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   const foeRef = useRef<THREE.Sprite | null>(null);
   const heroRigRef = useRef<THREE.Object3D | null>(null);
   const foeRigRef = useRef<THREE.Object3D | null>(null);
+  const heroMixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const foeMixerRef = useRef<THREE.AnimationMixer | null>(null);
   const heroLightRef = useRef<THREE.PointLight | null>(null);
   const foeLightRef = useRef<THREE.PointLight | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -429,14 +432,21 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     scene.add(environment.group);
     const emberSpec = getRegionEmberSpec(region);
 
-    /* ----- lights ----- */
-    scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.55));
-    const key = new THREE.DirectionalLight(0xfff1c4, 0.95);
+    /* ----- lights ----- (Zelda-leaning 3-point + sky/ground hemi)
+     * Hemi is bumped to 0.95 so toon shaded rigs read evenly across
+     * the sky / ground hemispheres. Key drops to 0.7 because cel bands
+     * blow out under stronger sun. A new back rim light at low intensity
+     * pulls the rigs off the BG without resorting to bloom. */
+    scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.95));
+    const key = new THREE.DirectionalLight(0xfff1c4, 0.70);
     key.position.set(4, 8, 5);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6aa7ff, 0.35);
+    const fill = new THREE.DirectionalLight(0x6aa7ff, 0.45);
     fill.position.set(-5, 3, 2);
     scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffe7c2, 0.40);
+    rim.position.set(0, 4, -7);
+    scene.add(rim);
 
     /* ----- fighters ----- */
     function addFighter(cls: string, side: 'hero' | 'foe'): { sprite: THREE.Sprite; light: THREE.PointLight } {
@@ -466,23 +476,45 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     heroLightRef.current = heroPair.light;
     foeLightRef.current = foePair.light;
 
-    /* ----- optional Blender GLB rig swap -----
-       Drop /public/assets/characters/<class>.glb to override the sprite.
-       The sprite stays as a fallback so the game ships without art deps. */
+    /* ----- Blender GLB rig swap (toon-shaded + cartoon outline) -----
+       Loads /public/assets/characters/<class>.glb, retargets every PBR
+       material onto MeshToonMaterial with a 3-band cel ramp, adds a
+       black back-face hull as a Zelda-BotW-style outline, fits the rig
+       to ~2.4u height, and plays the first available idle clip on loop.
+       The 2D sprite stays in the scene at opacity 0 so impact / lightning
+       targeting math (which reads sprite.position) still resolves. */
     const loader = new GLTFLoader();
     const tryLoadRig = (cls: string, side: 'hero' | 'foe') => {
       const url = `/assets/characters/${cls}.glb`;
+      const tintHex = CLASS_TINT[cls] || CLASS_TINT.warrior;
       loader.load(url, (gltf) => {
         const model = gltf.scene;
+        applyToon(model, { tint: tintHex, tintStrength: 0.55 });
+        addOutline(model, 0.022);
+        fitToHeight(model, 2.4);
+
         model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
-        model.rotation.y = side === 'hero' ? Math.PI / 6 : -Math.PI / 6;
-        model.scale.setScalar(1.0);
-        model.traverse((o) => {
-          const m = o as THREE.Mesh;
-          if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
-        });
+        // Face each other across the stage with a slight rotation toward
+        // camera so neither rig is presented in pure profile.
+        model.rotation.y = side === 'hero' ? Math.PI / 2 - 0.25 : -Math.PI / 2 + 0.25;
+
+        // Animation: prefer a literal "Idle" clip, otherwise pick the
+        // first non-TPose clip; TPose is exported but reads as a
+        // statue. Plays on loop so the rig breathes between rounds.
+        if (gltf.animations && gltf.animations.length) {
+          const mixer = new THREE.AnimationMixer(model);
+          const clips = gltf.animations;
+          const idle =
+            THREE.AnimationClip.findByName(clips, 'Idle') ||
+            THREE.AnimationClip.findByName(clips, 'idle') ||
+            THREE.AnimationClip.findByName(clips, 'Idling') ||
+            clips.find((c) => !/tpose|t-pose/i.test(c.name)) ||
+            clips[0];
+          mixer.clipAction(idle).play();
+          if (side === 'hero') heroMixerRef.current = mixer; else foeMixerRef.current = mixer;
+        }
+
         scene.add(model);
-        // Hide the procedural sprite once the rig loads
         const pair = side === 'hero' ? heroPair : foePair;
         pair.sprite.material.opacity = 0;
         if (side === 'hero') heroRigRef.current = model; else foeRigRef.current = model;
@@ -938,6 +970,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           rgbShift.uniforms['amount'].value += (0.0018 - rgbShift.uniforms['amount'].value) * Math.min(1, rawDt * 4);
         }
       }
+
+      // Tick rig animation mixers (idle/attack loops). Driven by `dt`
+      // which honours hit-stop and slow-mo, so the rig also freezes on
+      // crit hit-stops alongside the rest of the simulation.
+      if (heroMixerRef.current) heroMixerRef.current.update(dt);
+      if (foeMixerRef.current) foeMixerRef.current.update(dt);
 
       // Backend-aware render — null until createCombatBackend resolves
       // (WebGPU init takes ~50-200ms). The first few rAFs after mount
