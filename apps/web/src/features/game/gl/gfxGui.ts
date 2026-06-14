@@ -20,6 +20,7 @@ async function openPanel(): Promise<void> {
   const rebuild = () => core.applyParams({ rebuild: true });
 
   gui.add({ renderer: core.isWebGPU ? "WebGPU" : "WebGL2" }, "renderer").name("Рендерер").disable();
+  gui.add({ tier: `${p.tier} · ${p.pixelRatio}× · сенки ${p.shadowSize}` }, "tier").name("Качество").disable();
 
   const tone = gui.addFolder("Тон / Експозиция");
   tone.add(p, "toneMapping").name("ACES tone map").onChange(live);
