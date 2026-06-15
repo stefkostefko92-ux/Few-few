@@ -36,11 +36,20 @@ describe("МАГНАТ — buying & rent", () => {
     expect(state.phase).toBe("MANAGE");
   });
 
-  it("DECLINE leaves the tile unowned and moves to MANAGE", () => {
-    const s: MagnatState = { ...init(2), phase: "BUY", pendingBuy: 1, turn: 0 };
+  it("DECLINE with auctions off leaves the tile unowned and moves to MANAGE", () => {
+    const base = magnatEngine.init({ seats: 2, config: { auctions: false } }, new SeededRng("na"));
+    const s: MagnatState = { ...base, phase: "BUY", pendingBuy: 1, turn: 0 };
     const { state } = magnatEngine.reduce(s, { type: "DECLINE" }, new SeededRng("x"));
     expect(state.owner[1]).toBe(-1);
     expect(state.phase).toBe("MANAGE");
+  });
+
+  it("DECLINE with auctions on opens an auction for the tile", () => {
+    const s: MagnatState = { ...init(2), phase: "BUY", pendingBuy: 1, turn: 0 };
+    const { state, events } = magnatEngine.reduce(s, { type: "DECLINE" }, new SeededRng("x"));
+    expect(state.phase).toBe("AUCTION");
+    expect(state.auction?.tile).toBe(1);
+    expect(events.some((e) => e.type === "AUCTION_START")).toBe(true);
   });
 
   it("only offers BUY when the player can afford it", () => {
@@ -79,6 +88,103 @@ describe("МАГНАТ — building (even-build rule)", () => {
     owner[1] = 0; // only one of the two brown tiles
     const partial: MagnatState = { ...s, owner, phase: "MANAGE", turn: 0 };
     expect(magnatEngine.legalActions(partial, 0).some((a) => a.type === "BUILD")).toBe(false);
+  });
+});
+
+describe("МАГНАТ — session config", () => {
+  it("honours a custom starting cash", () => {
+    const s = magnatEngine.init({ seats: 3, config: { startingCash: 4000 } }, new SeededRng("c"));
+    expect(s.cash).toEqual([4000, 4000, 4000]);
+    expect(s.config.startingCash).toBe(4000);
+  });
+
+  it("falls back to defaults when no config is given", () => {
+    const s = init(2);
+    expect(s.config.startingCash).toBe(1500);
+    expect(s.config.auctions).toBe(true);
+  });
+
+  it("routes a tax fee into the free-parking pot", () => {
+    // Find a roll that lands seat 0 on the income-tax tile (4), then assert the
+    // 200 fee went into the pot rather than vanishing to the bank.
+    for (let k = 0; k < 300; k++) {
+      const base = magnatEngine.init({ seats: 2, config: { freeParkingPot: true } }, new SeededRng("pot"));
+      const { state } = magnatEngine.reduce(base, { type: "ROLL" }, new SeededRng(`r-${k}`));
+      if (state.pos[0] === 4) {
+        expect(state.pot).toBe(BOARD[4]!.tax);
+        return;
+      }
+    }
+    throw new Error("no income-tax landing produced in 300 seeds");
+  });
+});
+
+describe("МАГНАТ — auctions", () => {
+  function auctionState(): MagnatState {
+    const s: MagnatState = { ...init(3), phase: "BUY", pendingBuy: 5, turn: 0, cash: [1000, 1000, 1000] };
+    return magnatEngine.reduce(s, { type: "DECLINE" }, new SeededRng("a")).state;
+  }
+  it("awards the tile to the last remaining bidder and charges them", () => {
+    let s = auctionState();
+    expect(s.phase).toBe("AUCTION");
+    // current bidder bids, the others pass → bidder wins.
+    const bidder = s.turn;
+    s = magnatEngine.reduce(s, { type: "BID", amount: 120 }, new SeededRng("b")).state;
+    // remaining seats pass until resolution
+    let guard = 0;
+    while (s.phase === "AUCTION" && guard++ < 10) {
+      s = magnatEngine.reduce(s, { type: "PASS_BID" }, new SeededRng("p")).state;
+    }
+    expect(s.phase).toBe("MANAGE");
+    expect(s.owner[5]).toBe(bidder);
+    expect(s.cash[bidder]).toBe(1000 - 120);
+  });
+
+  it("leaves the tile unsold if everyone passes", () => {
+    let s = auctionState();
+    let guard = 0;
+    while (s.phase === "AUCTION" && guard++ < 10) {
+      s = magnatEngine.reduce(s, { type: "PASS_BID" }, new SeededRng("p")).state;
+    }
+    expect(s.owner[5]).toBe(-1);
+    expect(s.phase).toBe("MANAGE");
+  });
+});
+
+describe("МАГНАТ — trading", () => {
+  it("transfers tiles + cash on an accepted offer", () => {
+    const base = init(2);
+    const owner = base.owner.slice();
+    owner[1] = 0; // seat 0 owns Дупница
+    owner[6] = 1; // seat 1 owns Монтана
+    const s: MagnatState = { ...base, owner, phase: "MANAGE", turn: 0, cash: [1000, 1000] };
+    const offered = magnatEngine.reduce(
+      s,
+      { type: "TRADE_OFFER", to: 1, give: { cash: 50, tiles: [1] }, want: { cash: 0, tiles: [6] } },
+      new SeededRng("t"),
+    ).state;
+    expect(offered.phase).toBe("TRADE");
+    expect(offered.turn).toBe(1); // recipient responds
+    const done = magnatEngine.reduce(offered, { type: "TRADE_ACCEPT" }, new SeededRng("t")).state;
+    expect(done.owner[1]).toBe(1);
+    expect(done.owner[6]).toBe(0);
+    expect(done.cash[0]).toBe(950);
+    expect(done.cash[1]).toBe(1050);
+    expect(done.phase).toBe("MANAGE");
+    expect(done.turn).toBe(0); // back to the offerer
+  });
+
+  it("rejects an offer of a property with houses in its group", () => {
+    const base = init(2);
+    const owner = base.owner.slice();
+    owner[1] = 0;
+    owner[3] = 0; // full brown group
+    const houses = base.houses.slice();
+    houses[1] = 1; // a house exists in the group
+    const s: MagnatState = { ...base, owner, houses, phase: "MANAGE", turn: 0 };
+    expect(
+      magnatEngine.validate!(s, 0, { type: "TRADE_OFFER", to: 1, give: { cash: 0, tiles: [3] }, want: { cash: 0, tiles: [] } }),
+    ).toBe(false);
   });
 });
 

@@ -6,6 +6,9 @@ export type Seat = number;
 export interface InitOpts {
   /** Number of seats / players in this match. */
   seats: number;
+  /** Optional game-specific session config (e.g. Магнат house rules). Engines
+   *  that support it cast/validate this; others ignore it. */
+  config?: unknown;
 }
 
 export type GameResult = "win" | "loss" | "draw";

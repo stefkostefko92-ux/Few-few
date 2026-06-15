@@ -3,7 +3,7 @@
  * /magnat-demo.html and screenshotted by tools/magnat-shots.mjs — not a
  * production build input.
  */
-import { BOARD_SIZE, type MagnatState } from "@aso/shared";
+import { BOARD_SIZE, DEFAULT_MAGNAT_CONFIG, type MagnatState } from "@aso/shared";
 import { MagnatScene } from "./magnatScene";
 
 function sampleState(): MagnatState {
@@ -25,6 +25,10 @@ function sampleState(): MagnatState {
     seats: 4,
     turn: 0,
     phase: "ROLL",
+    config: DEFAULT_MAGNAT_CONFIG,
+    pot: 0,
+    auction: null,
+    trade: null,
     cash: [1450, 980, 1720, 610],
     pos: [5, 12, 24, 31],
     inJail: [false, false, true, false],

@@ -8,11 +8,14 @@ import {
   STATIONS,
   UTILITIES,
   isOwnable,
+  resolveMagnatConfig,
   type Card,
   type MagnatAction,
+  type MagnatConfig,
   type MagnatEvent,
   type MagnatState,
   type Tile,
+  type TradeBundle,
 } from "@aso/shared";
 import {
   IllegalActionError,
@@ -42,8 +45,6 @@ import type { SeededRng } from "../../kernel/rng.js";
 const GO_SALARY = 200;
 const JAIL_TILE = 10;
 const JAIL_FINE = 50;
-const START_CASH = 1500;
-const MAX_TURNS = 300; // hard cap → game always terminates
 
 /* ── helpers ────────────────────────────────────────────────────────────── */
 const tile = (i: number): Tile => BOARD[i]!;
@@ -192,6 +193,100 @@ function sendToJail(s: MagnatState, seat: Seat, events: MagnatEvent[]): void {
   pushLog(s, `Играч ${seat + 1} отива в затвора`);
 }
 
+/** A fee paid to the bank; under the free-parking-pot rule it feeds the pot. */
+function feeToBank(s: MagnatState, debtor: Seat, amount: number, events: MagnatEvent[]): void {
+  if (amount <= 0) return;
+  const wasBankrupt = s.bankrupt[debtor];
+  charge(s, debtor, amount, null, events);
+  if (s.config.freeParkingPot && !wasBankrupt && !s.bankrupt[debtor]) s.pot += amount;
+}
+
+/* ── auctions ───────────────────────────────────────────────────────────── */
+function nextLiveBidder(s: MagnatState, from: Seat): Seat {
+  const a = s.auction!;
+  for (let k = 1; k <= s.seats; k++) {
+    const cand = (from + k) % s.seats;
+    if (a.live[cand]) return cand;
+  }
+  return from; // only one left
+}
+
+/** Begin auctioning `tile` among all solvent seats; bidding rotates via `turn`. */
+function startAuction(s: MagnatState, tile: number, events: MagnatEvent[]): void {
+  const live = s.cash.map((_, i) => !s.bankrupt[i]);
+  s.auction = { tile, high: 0, highBidder: -1, live, resumeTurn: s.turn };
+  s.pendingBuy = null;
+  s.phase = "AUCTION";
+  events.push({ type: "AUCTION_START", tile });
+  // first bidder = the player to the left of whoever passed on the buy
+  s.turn = nextLiveBidder(s, s.auction.resumeTurn);
+  // (the player who landed also bids, so include them via the rotation start)
+  if (s.auction.live[s.auction.resumeTurn]) s.turn = s.auction.resumeTurn;
+}
+
+/** End the auction: high bidder buys (proceeds to bank), then resume MANAGE. */
+function resolveAuction(s: MagnatState, events: MagnatEvent[]): void {
+  const a = s.auction!;
+  if (a.highBidder >= 0 && a.high > 0) {
+    charge(s, a.highBidder, a.high, null, events);
+    s.owner[a.tile] = a.highBidder;
+    events.push({ type: "AUCTION_WON", seat: a.highBidder, tile: a.tile, amount: a.high });
+    pushLog(s, `Търг: играч ${a.highBidder + 1} печели ${tile(a.tile).name} за ${a.high}`);
+  } else {
+    events.push({ type: "AUCTION_PASSED", tile: a.tile });
+    pushLog(s, `Търг: ${tile(a.tile).name} остава непродаден`);
+  }
+  const resume = a.resumeTurn;
+  s.auction = null;
+  s.turn = resume;
+  s.phase = "MANAGE";
+}
+
+/* ── trades ─────────────────────────────────────────────────────────────── */
+/** A tradable property: owned by `seat`, no houses anywhere in its colour group. */
+function tradableBy(s: MagnatState, seat: Seat, i: number): boolean {
+  if (!isOwnable(i) || s.owner[i] !== seat) return false;
+  const tl = tile(i);
+  if (tl.type === "prop" && GROUP_TILES[tl.group]!.some((g) => s.houses[g]! > 0)) return false;
+  return true;
+}
+
+function validBundle(s: MagnatState, owner: Seat, b: TradeBundle): boolean {
+  if (!Number.isInteger(b.cash) || b.cash < 0 || b.cash > s.cash[owner]!) return false;
+  const seen = new Set<number>();
+  for (const i of b.tiles) {
+    if (seen.has(i) || !tradableBy(s, owner, i)) return false;
+    seen.add(i);
+  }
+  return true;
+}
+
+function canOffer(s: MagnatState, seat: Seat, to: number, give: TradeBundle, want: TradeBundle): boolean {
+  if (!s.config.trading || s.phase !== "MANAGE" || seat !== s.turn) return false;
+  if (to === seat || to < 0 || to >= s.seats || s.bankrupt[to]) return false;
+  if (give.tiles.length === 0 && want.tiles.length === 0 && give.cash === 0 && want.cash === 0) return false;
+  return validBundle(s, seat, give) && validBundle(s, to, want);
+}
+
+function applyTrade(s: MagnatState, events: MagnatEvent[]): void {
+  const t = s.trade!;
+  // re-validate at acceptance time (state may have changed since the offer)
+  if (validBundle(s, t.from, t.give) && validBundle(s, t.to, t.want)) {
+    for (const i of t.give.tiles) s.owner[i] = t.to;
+    for (const i of t.want.tiles) s.owner[i] = t.from;
+    s.cash[t.from]! += t.want.cash - t.give.cash;
+    s.cash[t.to]! += t.give.cash - t.want.cash;
+    events.push({ type: "TRADE_DONE", from: t.from, to: t.to });
+    pushLog(s, `Сделка: играч ${t.from + 1} ↔ играч ${t.to + 1}`);
+  } else {
+    events.push({ type: "TRADE_REJECTED", from: t.from, to: t.to });
+  }
+  const resume = t.resumeTurn;
+  s.trade = null;
+  s.turn = resume;
+  s.phase = "MANAGE";
+}
+
 function clone(s: MagnatState): MagnatState {
   return {
     ...s,
@@ -208,6 +303,14 @@ function clone(s: MagnatState): MagnatState {
     chance: s.chance.slice(),
     chest: s.chest.slice(),
     log: s.log.slice(),
+    auction: s.auction ? { ...s.auction, live: s.auction.live.slice() } : null,
+    trade: s.trade
+      ? {
+          ...s.trade,
+          give: { cash: s.trade.give.cash, tiles: s.trade.give.tiles.slice() },
+          want: { cash: s.trade.want.cash, tiles: s.trade.want.tiles.slice() },
+        }
+      : null,
   };
 }
 
@@ -228,7 +331,7 @@ function endTurn(s: MagnatState): void {
 /** End by last-solvent or turn cap; sets done + records the winner. */
 function checkEnd(s: MagnatState): boolean {
   const active = activeSeats(s);
-  if (active.length <= 1 || s.turns >= MAX_TURNS) {
+  if (active.length <= 1 || s.turns >= s.config.maxTurns) {
     s.done = true;
     return true;
   }
@@ -258,7 +361,7 @@ function applyCard(s: MagnatState, seat: Seat, card: Card, events: MagnatEvent[]
   switch (eff.kind) {
     case "money":
       if (eff.amount >= 0) s.cash[seat]! += eff.amount;
-      else charge(s, seat, -eff.amount, null, events);
+      else feeToBank(s, seat, -eff.amount, events);
       return { jailed: false };
     case "jail":
       sendToJail(s, seat, events);
@@ -291,7 +394,15 @@ function resolveLanding(s: MagnatState, seat: Seat, diceSum: number, events: Mag
       sendToJail(s, seat, events);
       return { jailed: true };
     case "tax":
-      charge(s, seat, tl.tax, null, events);
+      feeToBank(s, seat, tl.tax, events);
+      return { jailed: false };
+    case "free":
+      if (s.config.freeParkingPot && s.pot > 0) {
+        s.cash[seat]! += s.pot;
+        events.push({ type: "POT", seat, amount: s.pot });
+        pushLog(s, `Безплатен паркинг: играч ${seat + 1} прибира ${s.pot}`);
+        s.pot = 0;
+      }
       return { jailed: false };
     case "chance": {
       const card = CHANCE[s.chance[s.chancePtr % s.chance.length]!]!;
@@ -326,6 +437,7 @@ function advance(s: MagnatState, seat: Seat, steps: number, events: MagnatEvent[
   const before = s.pos[seat]!;
   const to = (before + steps) % BOARD_SIZE;
   if (before + steps >= BOARD_SIZE) s.cash[seat]! += GO_SALARY; // passed Старт
+  if (to === 0) s.cash[seat]! += s.config.goBonus; // landed exactly on Старт
   s.pos[seat] = to;
   events.push({ type: "MOVE", seat, to });
   return to;
@@ -344,6 +456,7 @@ function afterResolve(s: MagnatState, jailed: boolean): void {
 export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = {
   init(opts: InitOpts, rng: SeededRng): MagnatState {
     const seats = Math.min(Math.max(opts.seats, 2), 6);
+    const config = resolveMagnatConfig(opts.config as Partial<MagnatConfig> | undefined);
     const shuffle = (n: number): number[] => {
       const a = Array.from({ length: n }, (_, i) => i);
       for (let i = n - 1; i > 0; i--) {
@@ -356,7 +469,8 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       seats,
       turn: 0,
       phase: "ROLL",
-      cash: new Array<number>(seats).fill(START_CASH),
+      config,
+      cash: new Array<number>(seats).fill(config.startingCash),
       pos: new Array<number>(seats).fill(0),
       inJail: new Array<boolean>(seats).fill(false),
       jailTurns: new Array<number>(seats).fill(0),
@@ -369,6 +483,9 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       doubles: 0,
       extraRoll: false,
       pendingBuy: null,
+      pot: 0,
+      auction: null,
+      trade: null,
       chance: shuffle(CHANCE.length),
       chancePtr: 0,
       chest: shuffle(CHEST.length),
@@ -396,6 +513,18 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       if (s.pendingBuy !== null && s.cash[seat]! >= tile(s.pendingBuy).price) acts.unshift({ type: "BUY" });
       return acts;
     }
+    if (s.phase === "AUCTION" && s.auction) {
+      const acts: MagnatAction[] = [{ type: "PASS_BID" }];
+      const minBid = s.auction.high + 10;
+      if (s.cash[seat]! >= minBid) acts.unshift({ type: "BID", amount: minBid });
+      return acts;
+    }
+    if (s.phase === "TRADE" && s.trade && seat === s.trade.to) {
+      const acts: MagnatAction[] = [{ type: "TRADE_DECLINE" }];
+      if (s.cash[seat]! >= s.trade.want.cash) acts.unshift({ type: "TRADE_ACCEPT" });
+      return acts;
+    }
+    if (s.phase !== "MANAGE") return [];
     // MANAGE
     const acts: MagnatAction[] = [{ type: "END" }];
     for (let i = 0; i < BOARD_SIZE; i++) {
@@ -405,6 +534,26 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       if (canUnmortgage(s, seat, i)) acts.push({ type: "UNMORTGAGE", tile: i });
     }
     return acts;
+  },
+
+  validate(state, seat, action) {
+    if (state.done || seat !== state.turn || state.bankrupt[seat]) return false;
+    const a = action as MagnatAction;
+    if (a.type === "BID") {
+      return (
+        state.phase === "AUCTION" &&
+        !!state.auction &&
+        state.auction.live[seat] === true &&
+        Number.isInteger(a.amount) &&
+        a.amount > state.auction.high &&
+        a.amount <= state.cash[seat]!
+      );
+    }
+    if (a.type === "TRADE_OFFER") return canOffer(state, seat, a.to, a.give, a.want);
+    // everything else is enumerable — match the legal set by shape.
+    return magnatEngine
+      .legalActions(state, seat)
+      .some((l) => l.type === a.type && (l as { tile?: number }).tile === (a as { tile?: number }).tile);
   },
 
   reduce(state, action, rng: SeededRng) {
@@ -427,7 +576,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
         if (s.phase !== "ROLL" || !s.inJail[seat] || s.cash[seat]! < JAIL_FINE) {
           throw new IllegalActionError("Cannot pay bail");
         }
-        charge(s, seat, JAIL_FINE, null, events);
+        feeToBank(s, seat, JAIL_FINE, events);
         s.inJail[seat] = false;
         s.jailTurns[seat] = 0;
         return finish(); // still ROLL phase — player now rolls
@@ -457,7 +606,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
           } else {
             s.jailTurns[seat]!++;
             if (s.jailTurns[seat]! >= 3) {
-              charge(s, seat, JAIL_FINE, null, events);
+              feeToBank(s, seat, JAIL_FINE, events);
               s.inJail[seat] = false;
               s.jailTurns[seat] = 0;
             } else {
@@ -507,8 +656,64 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
         return finish();
       }
       case "DECLINE": {
-        if (s.phase !== "BUY") throw new IllegalActionError("Nothing to decline");
+        if (s.phase !== "BUY" || s.pendingBuy === null) throw new IllegalActionError("Nothing to decline");
+        const i = s.pendingBuy;
+        // House rule: a declined property goes to auction among solvent players.
+        if (s.config.auctions && activeSeats(s).length > 1) {
+          startAuction(s, i, events);
+          return finish();
+        }
         s.pendingBuy = null;
+        s.phase = "MANAGE";
+        return finish();
+      }
+      case "BID": {
+        if (s.phase !== "AUCTION" || !s.auction || !s.auction.live[seat]) throw new IllegalActionError("Not bidding");
+        const amt = action.amount;
+        if (!Number.isInteger(amt) || amt <= s.auction.high || amt > s.cash[seat]!) {
+          throw new IllegalActionError("Bad bid");
+        }
+        s.auction.high = amt;
+        s.auction.highBidder = seat;
+        events.push({ type: "AUCTION_BID", seat, amount: amt });
+        // uncontested (everyone else already passed) → they win immediately.
+        if (s.auction.live.filter(Boolean).length <= 1) resolveAuction(s, events);
+        else s.turn = nextLiveBidder(s, seat);
+        return finish();
+      }
+      case "PASS_BID": {
+        if (s.phase !== "AUCTION" || !s.auction || !s.auction.live[seat]) throw new IllegalActionError("Not bidding");
+        s.auction.live[seat] = false;
+        const live = s.auction.live.map((v, i) => (v ? i : -1)).filter((i) => i >= 0);
+        if (live.length <= 1) {
+          if (s.auction.highBidder >= 0) resolveAuction(s, events); // a bid stands → winner
+          else if (live.length === 1) s.turn = live[0]!; // nobody bid yet; lone player acts
+          else resolveAuction(s, events); // nobody bid, nobody left → unsold
+        } else {
+          s.turn = nextLiveBidder(s, seat);
+        }
+        return finish();
+      }
+      case "TRADE_OFFER": {
+        if (!canOffer(s, seat, action.to, action.give, action.want)) throw new IllegalActionError("Bad trade");
+        s.trade = { from: seat, to: action.to, give: action.give, want: action.want, resumeTurn: seat };
+        s.phase = "TRADE";
+        s.turn = action.to;
+        events.push({ type: "TRADE_OFFER", from: seat, to: action.to });
+        return finish();
+      }
+      case "TRADE_ACCEPT": {
+        if (s.phase !== "TRADE" || !s.trade || seat !== s.trade.to) throw new IllegalActionError("No trade");
+        if (s.cash[seat]! < s.trade.want.cash) throw new IllegalActionError("Can't afford trade");
+        applyTrade(s, events);
+        return finish();
+      }
+      case "TRADE_DECLINE": {
+        if (s.phase !== "TRADE" || !s.trade || seat !== s.trade.to) throw new IllegalActionError("No trade");
+        const t = s.trade;
+        events.push({ type: "TRADE_REJECTED", from: t.from, to: t.to });
+        s.trade = null;
+        s.turn = t.resumeTurn;
         s.phase = "MANAGE";
         return finish();
       }
@@ -587,6 +792,26 @@ export function magnatBot(s: MagnatState, seat: Seat, rng: SeededRng): MagnatAct
   if (s.phase === "ROLL") {
     if (s.inJail[seat] && acts.some((a) => a.type === "JAIL_CARD")) return { type: "JAIL_CARD" };
     return { type: "ROLL" };
+  }
+
+  if (s.phase === "AUCTION" && s.auction) {
+    // bid up to ~70% of the tile's price (a touch more if it completes a group).
+    const i = s.auction.tile;
+    const tl = tile(i);
+    const synergy = tl.type === "prop" && GROUP_TILES[tl.group]!.some((g) => g !== i && s.owner[g] === seat);
+    const ceiling = Math.floor(tl.price * (synergy ? 0.95 : 0.65));
+    const next = s.auction.high + 10;
+    if (s.auction.highBidder !== seat && next <= ceiling && next <= cash) return { type: "BID", amount: next };
+    return { type: "PASS_BID" };
+  }
+
+  if (s.phase === "TRADE" && s.trade && seat === s.trade.to) {
+    // accept only clearly favourable offers (value in ≥ value out + small margin).
+    const valueOf = (b: typeof s.trade.give) => b.cash + b.tiles.reduce((n, i) => n + tile(i).price, 0);
+    const incoming = valueOf(s.trade.give); // what `to` receives
+    const outgoing = valueOf(s.trade.want); // what `to` gives up
+    if (incoming >= outgoing * 1.1 && cash >= s.trade.want.cash) return { type: "TRADE_ACCEPT" };
+    return { type: "TRADE_DECLINE" };
   }
 
   if (s.phase === "BUY") {

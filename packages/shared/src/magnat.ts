@@ -138,7 +138,8 @@ export const CHEST: Card[] = [
 export interface MagnatState {
   seats: number;
   turn: number;
-  phase: "ROLL" | "BUY" | "MANAGE";
+  phase: "ROLL" | "BUY" | "MANAGE" | "AUCTION" | "TRADE";
+  config: MagnatConfig;
   cash: number[];
   pos: number[];
   inJail: boolean[];
@@ -152,6 +153,24 @@ export interface MagnatState {
   doubles: number;
   extraRoll: boolean;
   pendingBuy: number | null;
+  /** Free-parking pot (only used when config.freeParkingPot). */
+  pot: number;
+  /** Live auction (config.auctions): bidding rotates via `turn`. */
+  auction: {
+    tile: number;
+    high: number; // current high bid (0 = no bid yet)
+    highBidder: number; // seat, or -1
+    live: boolean[]; // still in the auction
+    resumeTurn: number; // seat to hand the turn back to afterwards
+  } | null;
+  /** Pending trade offer awaiting the recipient's response. */
+  trade: {
+    from: number;
+    to: number;
+    give: TradeBundle; // from → to
+    want: TradeBundle; // to → from
+    resumeTurn: number;
+  } | null;
   chance: number[];
   chancePtr: number;
   chest: number[];
@@ -171,7 +190,12 @@ export type MagnatAction =
   | { type: "UNMORTGAGE"; tile: number }
   | { type: "END" }
   | { type: "JAIL_PAY" }
-  | { type: "JAIL_CARD" };
+  | { type: "JAIL_CARD" }
+  | { type: "BID"; amount: number }
+  | { type: "PASS_BID" }
+  | { type: "TRADE_OFFER"; to: number; give: TradeBundle; want: TradeBundle }
+  | { type: "TRADE_ACCEPT" }
+  | { type: "TRADE_DECLINE" };
 
 export type MagnatEvent =
   | { type: "ROLL"; seat: number; dice: [number, number] }
@@ -181,6 +205,63 @@ export type MagnatEvent =
   | { type: "CARD"; seat: number; text: string }
   | { type: "JAIL"; seat: number }
   | { type: "BANKRUPT"; seat: number; to: number | null }
+  | { type: "AUCTION_START"; tile: number }
+  | { type: "AUCTION_BID"; seat: number; amount: number }
+  | { type: "AUCTION_WON"; seat: number; tile: number; amount: number }
+  | { type: "AUCTION_PASSED"; tile: number }
+  | { type: "POT"; seat: number; amount: number }
+  | { type: "TRADE_OFFER"; from: number; to: number }
+  | { type: "TRADE_DONE"; from: number; to: number }
+  | { type: "TRADE_REJECTED"; from: number; to: number }
   | { type: "WIN"; seat: number };
 
 export const isOwnable = (i: number): boolean => ["prop", "station", "utility"].includes(BOARD[i]!.type);
+
+/* ── session configuration (personalised rooms) ─────────────────────────── */
+
+/** Per-session rules. Defaults mirror the classic game; a room can override. */
+export interface MagnatConfig {
+  /** Starting cash per player. */
+  startingCash: number;
+  /** Auction a property when the player who landed on it declines/can't buy. */
+  auctions: boolean;
+  /** Taxes & fees feed a pot that the next player to land on Безплатен паркинг collects. */
+  freeParkingPot: boolean;
+  /** Bonus cash for landing exactly on Старт (0 = off). */
+  goBonus: number;
+  /** Allow property/cash trades between players. */
+  trading: boolean;
+  /** Hard cap on turns before the richest player wins. */
+  maxTurns: number;
+  /** Preferred seconds per turn (the realtime host may read this). */
+  turnSeconds: number;
+}
+
+export const DEFAULT_MAGNAT_CONFIG: MagnatConfig = {
+  startingCash: 1500,
+  auctions: true,
+  freeParkingPot: false,
+  goBonus: 0,
+  trading: true,
+  maxTurns: 300,
+  turnSeconds: 30,
+};
+
+/** A few curated presets a lobby can expose as one-tap "house styles". */
+export const MAGNAT_PRESETS: Record<string, Partial<MagnatConfig>> = {
+  classic: {},
+  blitz: { startingCash: 2500, goBonus: 300, maxTurns: 160, turnSeconds: 20 },
+  tycoon: { startingCash: 4000, freeParkingPot: true, goBonus: 400, maxTurns: 220 },
+  friendly: { startingCash: 2000, auctions: false, freeParkingPot: true, goBonus: 200 },
+};
+
+/** Merge a partial config (e.g. a preset or room override) onto the defaults. */
+export function resolveMagnatConfig(over?: Partial<MagnatConfig> | null): MagnatConfig {
+  return { ...DEFAULT_MAGNAT_CONFIG, ...(over ?? {}) };
+}
+
+/** Cash + properties offered or requested in a trade. */
+export interface TradeBundle {
+  cash: number;
+  tiles: number[];
+}
