@@ -28,7 +28,7 @@ const causes = [
       "Доброволци помагат безплатно — как да си направите имейл, да ползвате " +
       "Viber, да внимавате с измами и още. Потърсете ни и ще намерим начин да " +
       "помогнем на вас или ваш близък.",
-    contactEmail: "info@zabobovdol.bg",
+    contactEmail: "zabobovdol@carbonstealth.eu",
   },
   {
     slug: "darete-vreme-ili-veshti-nuzhdaeshti-se",
@@ -41,7 +41,7 @@ const causes = [
       "помощ в дома или да дарите топли дрехи, продукти или дърва за зимата — " +
       "свържете се с нас. Ще ви насочим към хора, на които това наистина ще " +
       "помогне.",
-    contactEmail: "info@zabobovdol.bg",
+    contactEmail: "zabobovdol@carbonstealth.eu",
   },
 ];
 
@@ -71,7 +71,7 @@ const volunteers = [
     about:
       "Помагаме безплатно на възрастните хора да се справят с телефона и " +
       "интернет. Пишете ни и ще намерим начин да помогнем на вас или ваш близък.",
-    email: "info@zabobovdol.bg",
+    email: "zabobovdol@carbonstealth.eu",
   },
 ];
 

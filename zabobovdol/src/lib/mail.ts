@@ -39,7 +39,7 @@ export async function sendMail(opts: {
   if (!t) return { sent: false, reason: "SMTP не е конфигуриран" };
   try {
     await t.sendMail({
-      from: process.env.SMTP_FROM || "no-reply@zabobovdol.bg",
+      from: process.env.SMTP_FROM || "no-reply@carbonstealth.eu",
       to: opts.to,
       subject: opts.subject,
       text: opts.text,

@@ -26,7 +26,7 @@ const NOTE = " [примерни данни — заменете от админ
 
 async function main() {
   // --- Администратор ---
-  const email = (process.env.ADMIN_EMAIL ?? "admin@zabobovdol.bg").toLowerCase();
+  const email = (process.env.ADMIN_EMAIL ?? "admin@carbonstealth.eu").toLowerCase();
   const password = process.env.ADMIN_PASSWORD ?? "changeme12345";
   const name = process.env.ADMIN_NAME ?? "Администратор";
   const passwordHash = await bcrypt.hash(password, 11);

@@ -6,7 +6,7 @@ const MAIL = "Имейл (Gmail)";
 const guides: Guide[] = [
   // ── Интернет и браузър ──
   { slug: "net-otvarya-sayt", question: "Как да отворя сайт, ако знам адреса му?", category: NET, order: 1010,
-    answer: "Ако знаете адреса (напр. zabobovdol.bg), въведете го в браузъра.",
+    answer: "Ако знаете адреса (напр. zabobovdol.carbonstealth.eu), въведете го в браузъра.",
     steps: ["Отворете браузъра (Chrome или Safari).","Докоснете лентата най-горе.","Напишете адреса на сайта.","Натиснете „Отиди“/„Enter“."], tags: "сайт, адрес, браузър" },
   { slug: "net-otmetka-zapazya", question: "Как да запазя любим сайт (отметка)?", category: NET, order: 1020,
     answer: "Отметката Ви позволява да отваряте любим сайт с едно докосване, без да пишете адреса.",

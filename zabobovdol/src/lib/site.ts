@@ -25,7 +25,7 @@ export const SITE = {
     longitude: 23.0008,
   },
   contact: {
-    email: "info@zabobovdol.bg",
+    email: "zabobovdol@carbonstealth.eu",
     // Заменете с реален телефон, когато стартира гишето.
     phone: "",
   },

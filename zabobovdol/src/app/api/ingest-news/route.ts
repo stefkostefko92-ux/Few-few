@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Защитен адрес за автоматично внасяне по график (cron) на VPS-а.
-// Извиква се напр.: curl "https://zabobovdol.bg/api/ingest-news?token=ТАЙНА"
+// Извиква се напр.: curl "https://zabobovdol.carbonstealth.eu/api/ingest-news?token=ТАЙНА"
 // Новините се внасят като ЧЕРНОВИ — публикуването остава ръчно.
 export async function GET(req: Request) {
   const token = process.env.INGEST_TOKEN;
