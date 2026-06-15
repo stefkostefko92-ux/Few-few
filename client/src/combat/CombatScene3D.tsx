@@ -498,33 +498,39 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // Photoreal pass: keep the original PBR materials shipped with
         // the glTF (MeshStandardMaterial with baseColor / normal / mr
         // maps), light them through the HD backend's IBL + 3-point
-        // rig. No toon override, no back-face outline shell — this is
-        // the "cinematic realistic" path the user asked for.
+        // rig.
         fitToHeight(model, 2.4);
-        // castShadow OFF on rigs: the directional shadow renders as a
-        // hard rectangle on legacy shadow paths (SwiftShader, older
-        // mobile drivers) — the soft contact blob added below grounds
-        // the figure cleanly regardless of the GPU's shadow filter.
+        // Strip the built-in display pedestal that ships with some
+        // poly.pizza meshes (Knight has a Knight_12 ~4×0.09×2 slab at
+        // y=-0.01). Anything that's <8% as tall as the rig AND sits
+        // within a 0.15u tolerance of the ground gets dropped. The
+        // ground plane underneath still receives shadow + PBR light so
+        // there's nothing missing from a render perspective.
+        const rigBox = new THREE.Box3().setFromObject(model);
+        const rigSize = rigBox.getSize(new THREE.Vector3());
+        const removals: THREE.Object3D[] = [];
+        model.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh || !m.geometry) return;
+          const local = m.geometry.boundingBox || (m.geometry.computeBoundingBox(), m.geometry.boundingBox);
+          if (!local) return;
+          const lsize = new THREE.Vector3(); local.getSize(lsize);
+          const worldScale = m.getWorldScale(new THREE.Vector3());
+          const worldThickness = lsize.y * Math.abs(worldScale.y);
+          const worldBox = new THREE.Box3().setFromObject(m);
+          if (worldThickness < rigSize.y * 0.08 && worldBox.min.y < 0.15 && worldBox.max.y < 0.25) {
+            removals.push(m);
+          }
+        });
+        for (const r of removals) r.parent?.remove(r);
+        // castShadow off on the remaining rig meshes — directional shadow
+        // renders as a hard rectangle on legacy shadow paths (SwiftShader,
+        // older mobile drivers). The HD backend's IBL + ambient occlusion
+        // grounds the figure adequately.
         model.traverse((o) => {
           const m = o as THREE.Mesh;
           if (m.isMesh) { m.castShadow = false; m.receiveShadow = true; }
         });
-        // Soft contact shadow blob — radial alpha falloff, no depth
-        // write, additive multiply against the ground.
-        const blob = new THREE.Mesh(
-          new THREE.CircleGeometry(0.6, 32),
-          new THREE.ShaderMaterial({
-            transparent: true,
-            depthWrite: false,
-            blending: THREE.MultiplyBlending,
-            uniforms: { uAlpha: { value: 0.45 } },
-            vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-            fragmentShader: 'varying vec2 vUv; uniform float uAlpha; void main(){ float d = length(vUv - 0.5) * 2.0; float a = smoothstep(1.0, 0.0, d) * uAlpha; gl_FragColor = vec4(0.0, 0.0, 0.0, a); }',
-          }),
-        );
-        blob.rotation.x = -Math.PI / 2;
-        blob.position.y = 0.005;
-        model.add(blob);
 
         model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
         // 3/4 view: rotate ~45° off camera so we see body and weapon at
