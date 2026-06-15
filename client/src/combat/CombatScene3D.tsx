@@ -288,7 +288,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   const heroLightRef = useRef<THREE.PointLight | null>(null);
   const foeLightRef = useRef<THREE.PointLight | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const camAnchorRef = useRef({ x: 0, y: 2.4, z: 8.0, lx: 0, ly: 1.4, lz: 0, fov: 42 });
+  const camAnchorRef = useRef({ x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 });
   const shakeRef = useRef({ amount: 0, t: 0 });
   const timeScaleRef = useRef(1);
   const hitStopRef = useRef(0);
@@ -502,25 +502,42 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // angle, not pure profile. Soldier.glb's default forward is -Z.
         model.rotation.y = side === 'hero' ? Math.PI / 4 : -Math.PI / 4;
 
-        // Animation: prefer a literal "Idle" clip, otherwise pick the
-        // first non-TPose clip; TPose is exported but reads as a
-        // statue. Plays on loop so the rig breathes between rounds.
+        // Animation: build a small named action map so the imperative
+        // attack()/defeat() callbacks can fade between idle / attack /
+        // death without re-walking the clip list each time. RobotExpressive
+        // ships "Idle" / "Punch" / "Death"; we also fall back to the first
+        // non-TPose clip if naming doesn't match.
         if (gltf.animations && gltf.animations.length) {
           const mixer = new THREE.AnimationMixer(model);
           const clips = gltf.animations;
-          const idle =
-            THREE.AnimationClip.findByName(clips, 'Idle') ||
-            THREE.AnimationClip.findByName(clips, 'idle') ||
-            THREE.AnimationClip.findByName(clips, 'Idling') ||
-            clips.find((c) => !/tpose|t-pose/i.test(c.name)) ||
-            clips[0];
-          mixer.clipAction(idle).play();
+          const findClip = (...names: string[]) => {
+            for (const n of names) {
+              const c = THREE.AnimationClip.findByName(clips, n);
+              if (c) return c;
+            }
+            return null;
+          };
+          const idleClip = findClip('Idle', 'idle', 'Idling') || clips.find((c) => !/tpose|t-pose/i.test(c.name)) || clips[0];
+          const attackClip = findClip('Punch', 'punch', 'Attack', 'attack', 'Wave') || idleClip;
+          const deathClip = findClip('Death', 'death', 'Defeat') || idleClip;
+          const idle = mixer.clipAction(idleClip);
+          idle.play();
+          const actions: Record<string, THREE.AnimationAction> = { idle };
+          if (attackClip !== idleClip) actions.attack = mixer.clipAction(attackClip);
+          if (deathClip !== idleClip) actions.death = mixer.clipAction(deathClip);
+          // Stash on the model so attack()/defeat() can fade actions.
+          (model as any).userData.combatActions = actions;
+          (model as any).userData.combatCurrent = idle;
           if (side === 'hero') heroMixerRef.current = mixer; else foeMixerRef.current = mixer;
         }
 
         scene.add(model);
         const pair = side === 'hero' ? heroPair : foePair;
+        // Hide the 2D fallback sprite completely — we keep it in the scene
+        // graph (visible=false) so VFX targeting that reads sprite.position
+        // still resolves, but it doesn't render through the rig.
         pair.sprite.material.opacity = 0;
+        pair.sprite.visible = false;
         if (side === 'hero') heroRigRef.current = model; else foeRigRef.current = model;
       }, undefined, () => { /* no asset → silently keep sprite */ });
     };
@@ -928,6 +945,30 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         f.position.y = 1.4 + Math.sin(now * 0.0014 + 1.6) * 0.04;
       }
 
+      // Mirror lunge / windup translations from the (invisible) sprite
+      // onto the 3D rig: the existing anim logic still drives sprite x
+      // (it's the canonical fighter anchor used by VFX, lights, target
+      // math) and we just slide the rig along with it. The rig sits at
+      // ground level so we don't track sprite y.
+      if (heroRigRef.current) heroRigRef.current.position.x = h.position.x;
+      if (foeRigRef.current) foeRigRef.current.position.x = f.position.x;
+
+      // Once the lunge animation state returns to idle, fade any
+      // attack/death clip on the rig back to its idle loop. Defeat is
+      // sticky — once a side is "defeated-*" we keep the death pose
+      // clamped (clampWhenFinished is set when triggered).
+      if (a.kind === 'idle') {
+        for (const model of [heroRigRef.current, foeRigRef.current]) {
+          if (!model) continue;
+          const actions = (model as any).userData.combatActions as Record<string, THREE.AnimationAction> | undefined;
+          const current = (model as any).userData.combatCurrent as THREE.AnimationAction | undefined;
+          if (!actions || !actions.idle || !current || current === actions.idle || current === actions.death) continue;
+          actions.idle.reset().setEffectiveWeight(1).fadeIn(0.20).play();
+          current.fadeOut(0.20);
+          (model as any).userData.combatCurrent = actions.idle;
+        }
+      }
+
       // Intro orbital sweep — overrides camera anchor for the first 1.4s.
       const intro = introRef.current;
       let camTargetX = camAnchorRef.current.x;
@@ -1031,11 +1072,11 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       if (a.crit) {
         hitStopRef.current = 0.085;          // ~5 frame freeze at 60fps
         timeScaleRef.current = 0.35;         // slow-mo until eased back to 1×
-        camAnchorRef.current.z = 6.4;        // push camera in (Hitchcock)
-        camAnchorRef.current.fov = 54;       // widen FOV → dolly-zoom feel
+        camAnchorRef.current.z = 4.6;        // push camera in (Hitchcock)
+        camAnchorRef.current.fov = 58;       // widen FOV → dolly-zoom feel
       } else {
-        camAnchorRef.current.z = 7.2;
-        camAnchorRef.current.fov = 42;
+        camAnchorRef.current.z = 5.4;
+        camAnchorRef.current.fov = 48;
       }
     }
 
@@ -1070,9 +1111,31 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     };
   }, [heroClass, foeClass, region]);
 
+  // Crossfade the named action ("attack" / "death") on a rig. Idle is
+  // owned by the tick loop so we don't fire it from the imperative call;
+  // the loop fades back to idle once the lunge state machine exits.
+  const triggerRigAction = (side: 'hero' | 'foe', name: 'attack' | 'death') => {
+    const model = side === 'hero' ? heroRigRef.current : foeRigRef.current;
+    if (!model) return;
+    const actions = (model as any).userData.combatActions as Record<string, THREE.AnimationAction> | undefined;
+    const current = (model as any).userData.combatCurrent as THREE.AnimationAction | undefined;
+    if (!actions || !actions[name]) return;
+    const next = actions[name];
+    if (current === next) return;
+    next.reset().setEffectiveWeight(1).setEffectiveTimeScale(name === 'attack' ? 1.6 : 1.0);
+    if (name === 'death') {
+      next.clampWhenFinished = true;
+      next.loop = THREE.LoopOnce;
+    }
+    if (current) current.fadeOut(0.12);
+    next.fadeIn(0.12).play();
+    (model as any).userData.combatCurrent = next;
+  };
+
   useImperativeHandle(ref, () => ({
     attack({ attacker, effect, crit, damageRatio = 0.3, missed, dodged, onImpact }) {
       const color = effect === 'magic' ? 0xc294ff : effect === 'arrow' ? 0x9ad9ff : effect === 'pierce' ? 0xffe7a8 : 0xffd34d;
+      triggerRigAction(attacker, 'attack');
       // Audit (animation CRITICAL #4): the caller used to fire its
       // SFX + canvas burst + crit overlay from a wall-clock setTimeout
       // while the 3D scene resolved impact on its own dt-driven anim
@@ -1082,18 +1145,19 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // frame as the 3D burst, eliminating the drift.
       animRef.current = { kind: attacker === 'hero' ? 'windup-hero' : 'windup-foe', t: 0, color, crit: !!crit, effect, didImpact: false, onImpact };
       // Pre-position camera for the lunge (overridden again on impact).
-      if ((damageRatio || 0) > 0.25 || crit) { camAnchorRef.current.z = 7.0; }
-      else camAnchorRef.current.z = 8.0;
-      camAnchorRef.current.fov = 42;
+      if ((damageRatio || 0) > 0.25 || crit) { camAnchorRef.current.z = 5.2; }
+      else camAnchorRef.current.z = 6.0;
+      camAnchorRef.current.fov = 48;
       if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18 };
     },
     defeat(side) {
       animRef.current = { kind: side === 'hero' ? 'defeated-hero' : 'defeated-foe', t: 0 };
-      camAnchorRef.current.z = 6.8;
-      camAnchorRef.current.fov = 38; // tight tele-lens for the death beat
+      triggerRigAction(side, 'death');
+      camAnchorRef.current.z = 5.0;
+      camAnchorRef.current.fov = 44; // tight tele-lens for the death beat
     },
     resetCamera() {
-      camAnchorRef.current = { x: 0, y: 2.4, z: 8.0, lx: 0, ly: 1.4, lz: 0, fov: 42 };
+      camAnchorRef.current = { x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 };
       introRef.current = { t: 0, dur: 1.4, active: true };
     },
   }));
