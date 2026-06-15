@@ -177,6 +177,8 @@ export interface LobbySnapshot {
   hostUserId: string;
   seats: LobbySeat[];
   maxSeats: number;
+  /** Minimum occupied seats (humans + bots) required to start. */
+  minSeats: number;
   /** Number of teams (1 = free-for-all). */
   teams: number;
   config: unknown;

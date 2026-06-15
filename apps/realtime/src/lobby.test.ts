@@ -18,7 +18,8 @@ const make = (game: GameKey = "MAGNAT"): LobbyType =>
 describe("Lobby — seating", () => {
   it("seats the host at slot 0 and fills empty slots on join", () => {
     const l = make();
-    expect(l.maxSeats).toBe(4);
+    expect(l.maxSeats).toBe(6); // Магнат custom rooms allow 2–6
+    expect(l.minSeats).toBe(2);
     expect(l.isHost("host1")).toBe(true);
     expect(l.humans()).toBe(1);
     expect(l.join("u2", "Боян")).toBe(true);
@@ -27,23 +28,33 @@ describe("Lobby — seating", () => {
   });
 
   it("rejects joining a full lobby", () => {
-    const l = make();
-    l.join("u2", "B");
-    l.join("u3", "C");
-    l.join("u4", "D");
-    expect(l.join("u5", "E")).toBe(false);
+    const l = make(); // max 6
+    for (const id of ["u2", "u3", "u4", "u5", "u6"]) expect(l.join(id, id)).toBe(true);
+    expect(l.join("u7", "E")).toBe(false);
   });
 
-  it("can only start once every slot is filled (humans + bots)", () => {
-    const l = make();
-    expect(l.canStart()).toBe(false);
+  it("can start at min seats and keeps filling up to max", () => {
+    const l = make(); // min 2, max 6
+    expect(l.canStart()).toBe(false); // only the host
     l.join("u2", "B");
-    expect(l.canStart()).toBe(false);
+    expect(l.canStart()).toBe(true); // 2 humans ≥ min
     expect(l.addBot()).toBe(true);
-    expect(l.addBot()).toBe(true);
-    expect(l.occupied()).toBe(4);
+    expect(l.occupied()).toBe(3);
     expect(l.canStart()).toBe(true);
-    expect(l.addBot()).toBe(false); // full
+    while (l.addBot()) {
+      /* fill */
+    }
+    expect(l.occupied()).toBe(6);
+    expect(l.addBot()).toBe(false); // full at max
+  });
+
+  it("a fixed-seat game requires every seat filled", () => {
+    const l = new Lobby("CHESS", "custom", "public", "h", "H", null);
+    expect(l.minSeats).toBe(2);
+    expect(l.maxSeats).toBe(2);
+    expect(l.canStart()).toBe(false);
+    l.addBot();
+    expect(l.canStart()).toBe(true);
   });
 
   it("kicks a seat and frees it", () => {
@@ -97,5 +108,13 @@ describe("Lobby — handoff to a match", () => {
     expect(seats[2]!.isBot).toBe(true);
     expect(seats[2]!.userId).toBe(null);
     expect(seats[2]!.bot).toBeDefined();
+  });
+
+  it("compacts occupied seats to a contiguous range when starting short of max", () => {
+    const l = make(); // max 6
+    l.join("u2", "B"); // 2 humans, slots 0,1; slots 2..5 empty
+    const seats = l.toRoomSeats("seed-2");
+    expect(seats).toHaveLength(2); // only occupied slots
+    expect(seats.map((s) => s.seat)).toEqual([0, 1]);
   });
 });

@@ -100,6 +100,25 @@ export const GAME_SEATS: Record<GameKey, number> = {
 export const seatsFor = (game: GameKey): number => GAME_SEATS[game];
 
 /**
+ * Allowed seat range for a *custom room* (the ranked queue always uses the
+ * canonical GAME_SEATS). Only games whose engine is verified to run correctly
+ * at multiple counts widen beyond their default; all others are fixed.
+ */
+const SEAT_RANGES: Partial<Record<GameKey, { min: number; max: number }>> = {
+  LUDO: { min: 2, max: 4 },
+  DICE: { min: 2, max: 4 },
+  GOFISH: { min: 2, max: 4 },
+  DOMINO: { min: 2, max: 4 },
+  WORDS: { min: 2, max: 4 },
+  SVARA: { min: 2, max: 6 },
+  BINGO: { min: 2, max: 6 },
+  MAGNAT: { min: 2, max: 6 },
+};
+
+export const seatRange = (game: GameKey): { min: number; max: number } =>
+  SEAT_RANGES[game] ?? { min: GAME_SEATS[game], max: GAME_SEATS[game] };
+
+/**
  * Number of teams a game is played in. 1 = free-for-all (every seat its own
  * side). Partnership games seat partners on alternating seats (0,2 vs 1,3).
  */

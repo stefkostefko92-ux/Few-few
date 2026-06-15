@@ -34,7 +34,12 @@ export function RoomView({ lobby }: { lobby: LobbySnapshot }) {
       </div>
 
       <Panel className="mb-4">
-        <h2 className="mb-3 text-lg text-ink-300">Места ({lobby.seats.filter((s) => s.userId || s.isBot).length}/{lobby.maxSeats})</h2>
+        <h2 className="mb-3 text-lg text-ink-300">
+          Места ({lobby.seats.filter((s) => s.userId || s.isBot).length}/{lobby.maxSeats})
+          {lobby.minSeats < lobby.maxSeats ? (
+            <span className="ml-2 text-sm text-ink-muted">(минимум {lobby.minSeats} за старт)</span>
+          ) : null}
+        </h2>
         <div className="flex flex-col gap-4">
           {Array.from({ length: hasTeams ? lobby.teams : 1 }).map((_, team) => (
             <div key={team}>
@@ -125,7 +130,9 @@ export function RoomView({ lobby }: { lobby: LobbySnapshot }) {
               Добави бот
             </Button>
             {!lobby.canStart ? (
-              <span className="self-center text-sm text-ink-muted">Запълни всички места, за да започнеш.</span>
+              <span className="self-center text-sm text-ink-muted">
+                Трябват поне {lobby.minSeats} играча (добави ботове), за да започнеш.
+              </span>
             ) : null}
           </div>
         ) : (

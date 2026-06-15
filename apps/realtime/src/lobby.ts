@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import {
   SOCKET_EVENTS,
-  seatsFor,
+  seatRange,
   teamsFor,
   teamOfSeat,
   type GameKey,
@@ -37,6 +37,7 @@ const emptySlot = (): Slot => ({ userId: null, displayName: "", isBot: false, co
  */
 export class Lobby {
   readonly id = randomUUID();
+  readonly minSeats: number;
   readonly maxSeats: number;
   readonly teams: number;
   readonly slots: Slot[];
@@ -50,7 +51,9 @@ export class Lobby {
     hostName: string,
     public config: unknown,
   ) {
-    this.maxSeats = seatsFor(game);
+    const range = seatRange(game);
+    this.minSeats = range.min;
+    this.maxSeats = range.max;
     this.teams = teamsFor(game);
     this.slots = Array.from({ length: this.maxSeats }, emptySlot);
     this.slots[0] = { userId: hostUserId, displayName: hostName, isBot: false, connected: true };
@@ -75,9 +78,10 @@ export class Lobby {
     return this.slots.filter((s) => s.userId !== null || s.isBot).length;
   }
 
-  /** Seating is valid to start once every slot is filled and ≥1 human is present. */
+  /** Seating is valid to start once at least `minSeats` are filled (humans or
+   *  bots), with ≥1 human present. Variable-seat games can start short of max. */
   canStart(): boolean {
-    return this.occupied() === this.maxSeats && this.humans() >= 1;
+    return this.occupied() >= this.minSeats && this.humans() >= 1;
   }
 
   join(userId: string, name: string): boolean {
@@ -156,6 +160,7 @@ export class Lobby {
       hostUserId: this.hostUserId,
       seats: this.toSeats(),
       maxSeats: this.maxSeats,
+      minSeats: this.minSeats,
       teams: this.teams,
       config: this.config,
       canStart: this.canStart(),
@@ -173,15 +178,18 @@ export class Lobby {
     };
   }
 
-  /** Build the authoritative room seating from the lobby slots. */
+  /** Build the authoritative room seating from the occupied slots, compacted to
+   *  a contiguous 0..n-1 range (variable-seat games may have left gaps). */
   toRoomSeats(seed: string): RoomSeat[] {
-    return this.slots.map((s, seat) => ({
-      seat,
-      userId: s.isBot ? null : s.userId,
-      isBot: s.isBot,
-      displayName: s.isBot ? BOT_NAME : s.displayName || "Играч",
-      bot: s.isBot ? new RandomBot(`${seed}:bot:${seat}`) : undefined,
-    }));
+    return this.slots
+      .filter((s) => s.userId !== null || s.isBot)
+      .map((s, seat) => ({
+        seat,
+        userId: s.isBot ? null : s.userId,
+        isBot: s.isBot,
+        displayName: s.isBot ? BOT_NAME : s.displayName || "Играч",
+        bot: s.isBot ? new RandomBot(`${seed}:bot:${seat}`) : undefined,
+      }));
   }
 }
 
