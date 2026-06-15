@@ -21,7 +21,11 @@
     "db:seed:internet": "tsx prisma/seed-set-internet.ts",
     "db:seed:apps": "tsx prisma/seed-set-apps.ts",
     "db:seed:daily": "tsx prisma/seed-set-daily.ts",
-    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily",
+    "db:seed:keyboard": "tsx prisma/seed-set-keyboard.ts",
+    "db:seed:health": "tsx prisma/seed-set-health.ts",
+    "db:seed:shop": "tsx prisma/seed-set-shop.ts",
+    "db:seed:more": "tsx prisma/seed-set-more.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more",
     "postinstall": "prisma generate"
   },
   "prisma": {
