@@ -90,10 +90,17 @@ export const DEFAULT_TUNEABLES: HDTuneables = {
   gtaoRadius: 0.5,
   gtaoIntensity: 1.5,
   gtaoSamples: 16,
+  // SSR off by default: on CPU rasterizers (SwiftShader headless,
+  // older mobile drivers) the screen-space reflection accumulator
+  // feeds the post-process chain a faint dark "echo" around every
+  // tall opaque object — read as a rectangular halo under the
+  // fighters. Real GPUs cope; we leave the pass instance behind the
+  // tuneable so a user with a desktop GPU can re-enable it in the
+  // /demo/combat lil-gui.
   ssrThickness: 0.018,
-  ssrOpacity: 0.5,
+  ssrOpacity: 0,
   taaSampleLevel: 2,
-  rgbShiftAmount: 0.0018,
+  rgbShiftAmount: 0.0008,
   fogDensity: 0.06,
   fogNear: 6,
   fogFar: 22,
