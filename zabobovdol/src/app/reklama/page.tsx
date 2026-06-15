@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
+import { AdRequestForm } from "@/components/AdRequestForm";
 
 export const metadata: Metadata = buildMetadata({
   title: "Рекламирайте в За Бобов дол — банер на началната страница за 20€/месец",
@@ -74,9 +74,11 @@ export default function ReklamaPage() {
 
             <h2>Как да заявите реклама</h2>
             <p>
-              Пишете ни през страницата за контакти. Ще Ви помогнем да подготвите
-              банера и ще го пуснем бързо. Подходящ размер на изображението е
-              около 600×320 пиксела.
+              Попълнете кратката форма по-долу (трите си имена и имейл или
+              телефон). Ще се свържем с Вас, ще подготвим банера и ще го пуснем
+              бързо. Таксата от {SITE.payment.monthlyPriceEur}€ на месец се плаща
+              лесно през Revolut. Подходящ размер на изображението е около
+              600×320 пиксела.
             </p>
           </div>
 
@@ -99,23 +101,35 @@ export default function ReklamaPage() {
                 <li>✔ Промяна на съдържанието при нужда</li>
                 <li>✔ Ясно обозначаване „Реклама“</li>
               </ul>
-              <Link href="/kontakti" className="btn-primary mt-6 w-full">
+              <a href="#zayavka" className="btn-primary mt-6 w-full">
                 Заявете реклама
-              </Link>
-              {SITE.contact.email && (
-                <p className="mt-3 text-xs text-slate-500">
-                  или ни пишете на{" "}
-                  <a
-                    href={`mailto:${SITE.contact.email}`}
-                    className="text-brand-700 underline"
-                  >
-                    {SITE.contact.email}
-                  </a>
-                </p>
-              )}
+              </a>
+              <a
+                href={SITE.payment.revolut}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary mt-2 w-full"
+              >
+                Платете {SITE.payment.monthlyPriceEur}€ с Revolut
+              </a>
             </div>
           </aside>
         </div>
+
+        {/* Форма-образец за заявка */}
+        <section id="zayavka" className="mt-12 scroll-mt-24">
+          <h2 className="text-2xl font-bold text-slate-900">Заявка за реклама</h2>
+          <p className="mt-1 text-slate-600">
+            Оставете трите си имена и данни за връзка. Ще се свържем с Вас и ще
+            подготвим банера.
+          </p>
+          <div className="mt-5 max-w-2xl rounded-xl border border-slate-200 bg-white p-6">
+            <AdRequestForm
+              paymentUrl={SITE.payment.revolut}
+              price={SITE.payment.monthlyPriceEur}
+            />
+          </div>
+        </section>
 
         <p className="mt-8 max-w-3xl text-sm text-slate-500">
           Запазваме си правото да не публикуваме реклами с невярно, обидно или

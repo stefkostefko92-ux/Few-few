@@ -33,6 +33,11 @@ export const SITE = {
   social: {
     facebook: "",
   },
+  // Линк за плащане на реклама (Revolut).
+  payment: {
+    revolut: "https://revolut.me/vycanismajoris",
+    monthlyPriceEur: 20,
+  },
   // Спешни телефони — винаги видими, не зависят от базата.
   emergency: [
     { label: "Единен европейски номер за спешни повиквания", phone: "112" },
