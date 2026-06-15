@@ -148,6 +148,8 @@ export default async function HomePage() {
                   description: b.description,
                   imageUrl: b.imageUrl,
                   linkUrl: b.linkUrl,
+                  bgColor: b.bgColor,
+                  accentColor: b.accentColor,
                 }}
               />
             ) : (

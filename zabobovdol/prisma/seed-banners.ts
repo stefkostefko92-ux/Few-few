@@ -54,7 +54,10 @@ async function main() {
   // Идемпотентно: махаме старите банери на този рекламодател и слагаме наново.
   await prisma.banner.deleteMany({ where: { sponsor: SPONSOR } });
   for (const b of banners) {
-    await prisma.banner.create({ data: { ...b, published: true } });
+    // Цветовете на Carbon Stealth: черен фон с циан акцент.
+    await prisma.banner.create({
+      data: { ...b, bgColor: "#000000", accentColor: "#00e5ff", published: true },
+    });
   }
   console.log(`✔ Рекламни банери (${SPONSOR}): ${banners.length}`);
   await prisma.$disconnect();

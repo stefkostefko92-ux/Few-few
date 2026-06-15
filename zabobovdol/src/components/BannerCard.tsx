@@ -7,6 +7,8 @@ export type BannerData = {
   description: string;
   imageUrl: string;
   linkUrl: string;
+  bgColor?: string;
+  accentColor?: string;
 };
 
 function isExternal(url: string): boolean {
@@ -18,6 +20,9 @@ function isExternal(url: string): boolean {
 export function BannerCard({ banner }: { banner: BannerData }) {
   const href = banner.linkUrl || "/reklama";
   const external = isExternal(href);
+
+  const hasCustom = Boolean(banner.bgColor);
+  const accent = banner.accentColor || undefined;
 
   const inner = banner.imageUrl ? (
     <div className="relative h-full">
@@ -35,13 +40,28 @@ export function BannerCard({ banner }: { banner: BannerData }) {
       )}
     </div>
   ) : (
-    <div className="flex h-40 flex-col justify-center rounded-lg bg-gradient-to-br from-brand-700 to-brand-900 p-4 text-white">
+    <div
+      className={
+        "flex h-40 flex-col justify-center rounded-lg p-4 text-white " +
+        (hasCustom ? "" : "bg-gradient-to-br from-brand-700 to-brand-900")
+      }
+      style={hasCustom ? { backgroundColor: banner.bgColor } : undefined}
+    >
       {banner.sponsor && (
-        <div className="text-xs font-medium text-brand-100">{banner.sponsor}</div>
+        <div
+          className={"text-xs font-medium " + (hasCustom ? "" : "text-brand-100")}
+          style={hasCustom ? { color: accent } : undefined}
+        >
+          {banner.sponsor}
+        </div>
       )}
-      <div className="mt-1 text-lg font-bold leading-tight">{banner.title}</div>
+      <div className="mt-1 text-lg font-bold leading-tight" style={hasCustom ? { color: accent } : undefined}>
+        {banner.title}
+      </div>
       {banner.description && (
-        <p className="mt-1 line-clamp-3 text-sm text-brand-50">{banner.description}</p>
+        <p className={"mt-1 line-clamp-3 text-sm " + (hasCustom ? "text-white/80" : "text-brand-50")}>
+          {banner.description}
+        </p>
       )}
     </div>
   );

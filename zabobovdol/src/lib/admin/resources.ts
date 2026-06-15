@@ -181,6 +181,8 @@ export const RESOURCES: Resource[] = [
       { name: "description", label: "Кратък текст", type: "textarea", fullWidth: true },
       { name: "imageUrl", label: "Изображение (URL, по избор)", type: "text", help: "Препоръчителен размер около 600×320 px. Ако е празно, се показва текстов банер." },
       { name: "linkUrl", label: "Връзка (накъде води при натискане)", type: "text", help: "Напр. https://... или вътрешен адрес като /reklama." },
+      { name: "bgColor", label: "Цвят на фона (за текстов банер)", type: "text", help: "Напр. #000000. Ако е празно, се ползва основният цвят на сайта." },
+      { name: "accentColor", label: "Акцентен цвят", type: "text", help: "Напр. #00e5ff (за рекламодателя/детайлите)." },
       { name: "order", label: "Подредба (1–4)", type: "number" },
       { name: "published", label: "Активен", type: "boolean", listVisible: true },
     ],

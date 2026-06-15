@@ -239,6 +239,8 @@ model Banner {
   description String   @default("")
   imageUrl    String   @default("")
   linkUrl     String   @default("")
+  bgColor     String   @default("") // напр. #000000 (за текстов банер)
+  accentColor String   @default("") // напр. #00e5ff
   order       Int      @default(0)
   published   Boolean  @default(true)
   createdAt   DateTime @default(now())
