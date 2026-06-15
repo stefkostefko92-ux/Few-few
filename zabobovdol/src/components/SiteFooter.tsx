@@ -100,7 +100,14 @@ export function SiteFooter() {
           </div>
           <p className="text-slate-500">
             Изработка на сайта:{" "}
-            <span className="font-semibold text-slate-700">Carbon Stealth VCC</span>
+            <a
+              href="https://carbonstealth.eu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-slate-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-700"
+            >
+              Carbon Stealth VCC
+            </a>
           </p>
         </div>
       </div>
