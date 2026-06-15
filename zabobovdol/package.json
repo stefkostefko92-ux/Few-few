@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:business": "tsx prisma/seed-business.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
