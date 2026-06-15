@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-size: 1.0625rem; /* малко по-голям шрифт за четимост за всички възрасти */
+  line-height: 1.6;
+}
+
+/* Видим фокус за достъпност (клавиатурна навигация) */
+:focus-visible {
+  outline: 3px solid theme("colors.brand.500");
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Връзка „прескочи към съдържанието“ за екранни четци */
+.skip-link {
+  @apply sr-only;
+}
+.skip-link:focus {
+  @apply not-sr-only fixed left-3 top-3 z-50 rounded bg-brand-700 px-4 py-2 text-white;
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
+  }
+  .btn-primary {
+    @apply btn bg-brand-700 text-white hover:bg-brand-800;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-300 bg-white text-slate-800 hover:bg-slate-100;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand-500;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-medium text-brand-800;
+  }
+}
+
+/* Типографско форматиране за съдържание от Markdown */
+.prose-content :where(h2) {
+  @apply mt-8 text-2xl font-bold text-slate-900;
+}
+.prose-content :where(h3) {
+  @apply mt-6 text-xl font-semibold text-slate-900;
+}
+.prose-content :where(h4) {
+  @apply mt-4 text-lg font-semibold text-slate-900;
+}
+.prose-content :where(p) {
+  @apply mt-3;
+}
+.prose-content :where(ul) {
+  @apply mt-3 list-disc space-y-1 pl-6;
+}
+.prose-content :where(ol) {
+  @apply mt-3 list-decimal space-y-1 pl-6;
+}
+.prose-content :where(a) {
+  @apply font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800;
+}
+.prose-content :where(blockquote) {
+  @apply mt-4 border-l-4 border-brand-200 bg-brand-50 py-2 pl-4 italic text-slate-700;
+}
+.prose-content :where(strong) {
+  @apply font-semibold;
+}

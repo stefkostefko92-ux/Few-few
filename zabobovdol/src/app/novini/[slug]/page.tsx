@@ -1,0 +1,64 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { PageHero, Prose } from "@/components/ui";
+import { buildMetadata } from "@/lib/seo";
+import { renderMarkdown, plainText } from "@/lib/markdown";
+
+export const dynamic = "force-dynamic";
+
+async function getPost(slug: string) {
+  return prisma.post.findFirst({ where: { slug, published: true } });
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const p = await getPost(slug);
+  if (!p) return buildMetadata({ title: "Не е намерено", noindex: true });
+  return buildMetadata({
+    title: p.seoTitle || p.title,
+    description: p.seoDescription || p.excerpt || plainText(p.content, 155),
+    path: `/novini/${p.slug}`,
+    type: "article",
+  });
+}
+
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const p = await getPost(slug);
+  if (!p) notFound();
+
+  return (
+    <>
+      <PageHero
+        title={p.title}
+        crumbs={[
+          { name: "Новини", path: "/novini" },
+          { name: p.title, path: `/novini/${p.slug}` },
+        ]}
+      />
+      <article className="container-content max-w-3xl py-10">
+        {p.publishedAt && (
+          <div className="text-sm text-slate-500">
+            {new Intl.DateTimeFormat("bg-BG", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }).format(p.publishedAt)}
+          </div>
+        )}
+        <div className="mt-4">
+          <Prose html={renderMarkdown(p.content)} />
+        </div>
+      </article>
+    </>
+  );
+}

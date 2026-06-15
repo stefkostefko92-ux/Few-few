@@ -1,0 +1,216 @@
+// Дигитален помощник на Бобов дол — схема на данните.
+// База: PostgreSQL. ORM: Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum ServiceCategory {
+  HEALTH // Здраве (лекари, аптеки, болница)
+  ADMIN // Администрация (кметство, НАП, документи)
+  UTILITY // Комунални (ток, вода, отпадъци)
+  TRANSPORT // Транспорт
+  SOCIAL // Социални услуги
+  EMERGENCY // Спешни телефони
+  EDUCATION // Образование
+  OTHER // Друго
+}
+
+enum BusinessCategory {
+  SHOP // Магазин
+  FOOD // Храна / заведение
+  SERVICE // Услуга
+  CRAFT // Занаят
+  AGRO // Земеделие
+  TOURISM // Туризъм
+  HEALTH // Здраве / красота
+  OTHER // Друго
+}
+
+enum ListingType {
+  OFFER // Продавам / предлагам
+  WANTED // Купувам / търся
+  JOB // Работа
+  REALESTATE // Имоти
+  FREE // Подарявам
+  EVENT // Обява за събитие
+  OTHER // Друго
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(EDITOR)
+  active       Boolean    @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String // CREATE | UPDATE | DELETE | LOGIN | PUBLISH | UNPUBLISH
+  entity    String // Faq | Service | Business | Event | Listing | Post | User
+  entityId  String?
+  summary   String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model Faq {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  question       String
+  answer         String // Markdown
+  category       String   @default("Общи")
+  tags           String   @default("") // запетая-разделени
+  steps          String   @default("") // допълнителни стъпки, ред на ред
+  relatedLinks   String   @default("") // "Етикет|URL" на ред
+  seoTitle       String?
+  seoDescription String?
+  order          Int      @default(0)
+  views          Int      @default(0)
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([published, category])
+}
+
+model Service {
+  id             String          @id @default(cuid())
+  slug           String          @unique
+  name           String
+  category       ServiceCategory @default(OTHER)
+  description    String          @default("")
+  address        String          @default("")
+  phone          String          @default("")
+  phone2         String          @default("")
+  email          String          @default("")
+  website        String          @default("")
+  hours          String          @default("")
+  lat            Float?
+  lng            Float?
+  isEmergency    Boolean         @default(false)
+  seoTitle       String?
+  seoDescription String?
+  order          Int             @default(0)
+  published      Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([published, category])
+}
+
+model Business {
+  id             String           @id @default(cuid())
+  slug           String           @unique
+  name           String
+  category       BusinessCategory @default(OTHER)
+  description    String           @default("")
+  address        String           @default("")
+  phone          String           @default("")
+  email          String           @default("")
+  website        String           @default("")
+  facebook       String           @default("")
+  hours          String           @default("")
+  lat            Float?
+  lng            Float?
+  featured       Boolean          @default(false)
+  seoTitle       String?
+  seoDescription String?
+  order          Int              @default(0)
+  published      Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([published, category])
+}
+
+model Event {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  description    String   @default("")
+  location       String   @default("")
+  address        String   @default("")
+  lat            Float?
+  lng            Float?
+  startAt        DateTime
+  endAt          DateTime?
+  organizer      String   @default("")
+  url            String   @default("")
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([published, startAt])
+}
+
+model Listing {
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  title        String
+  description  String      @default("")
+  type         ListingType @default(OFFER)
+  category     String      @default("Общи")
+  price        String      @default("")
+  contactName  String      @default("")
+  contactPhone String      @default("")
+  contactEmail String      @default("")
+  published    Boolean     @default(false) // обявите минават през одобрение
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([published, type])
+  @@index([expiresAt])
+}
+
+model Post {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String    @default("")
+  content        String    @default("") // Markdown
+  coverImage     String    @default("")
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean   @default(false)
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+// Свободни запитвания от чатбота/търсачката, които нямат отговор —
+// помагат да разберем какво всъщност търсят хората (валидация).
+model SearchMiss {
+  id        String   @id @default(cuid())
+  query     String
+  count     Int      @default(1)
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
