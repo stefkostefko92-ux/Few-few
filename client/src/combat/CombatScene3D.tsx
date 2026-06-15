@@ -12,7 +12,8 @@ import {
   type RenderBackend,
 } from './CombatHD';
 import { mountHDPanel } from './CombatHDPanel';
-import { buildRegionEnvironment, getRegionEmberSpec } from './CombatEnvironment';
+import { buildRegionEnvironment, getRegionEmberSpec, type RegionEnvironment } from './CombatEnvironment';
+import { ensurePropsLoaded } from './CombatProps3D';
 import { fitToHeight } from './CombatToon';
 
 /**
@@ -428,8 +429,17 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
      * the ambient ember tint + spawn rate (fireflies in the woods,
      * snow in Frostvale, dust in Hammerhand, lightning streaks in
      * Stormpeaks, etc.). */
-    const environment = buildRegionEnvironment(region, liteParticleBudget);
-    scene.add(environment.group);
+    // Authored CC prop glbs (trees / rocks / crystals / pillars / mushrooms)
+    // need a network fetch before we can clone them into the scene. Pre-load
+    // happens here; the build runs once the cache is warm. If the user
+    // un-mounts while we wait we just bail without adding anything.
+    let environment: RegionEnvironment | undefined;
+    let envCancelled = false;
+    ensurePropsLoaded().then(() => {
+      if (envCancelled) return;
+      environment = buildRegionEnvironment(region, liteParticleBudget);
+      scene.add(environment.group);
+    });
     const emberSpec = getRegionEmberSpec(region);
 
     /* ----- lights ----- (cinematic 3-point + sky/ground hemi)
@@ -539,6 +549,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // still resolves, but it doesn't render through the rig.
         pair.sprite.material.opacity = 0;
         pair.sprite.visible = false;
+        // Pop the sprite mesh out of the scene graph entirely once the
+        // rig is in. visible=false alone has been observed to still
+        // produce a faint dark halo under each fighter — three.js's
+        // sprite pipeline reserves a bbox the post-process passes pick
+        // up. Removing the sprite stops that contribution; sprite.position
+        // (still tracked on the object) is read by VFX targeting math.
+        scene.remove(pair.sprite);
         if (side === 'hero') heroRigRef.current = model; else foeRigRef.current = model;
       }, undefined, () => { /* no asset → silently keep sprite */ });
     };
@@ -1088,6 +1105,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       try { hdPanel?.dispose(); } catch {}
+      envCancelled = true;
       try { environment?.dispose(); } catch {}
       try { backend?.dispose(); } catch {}
       try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}

@@ -16,6 +16,83 @@
  */
 
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+// ============================================================================
+// CC-licensed asset registry — kinds that we ship a real authored mesh for.
+// Procedural builders below still handle the rest (effect-y props like void
+// fissures, runes, lightning where geometry primitives read fine).
+// All glb files live under /assets/props/ and are CC0 / CC-BY 3.0.
+// See public/assets/props/CREDITS.md for attribution.
+// ============================================================================
+const ASSET_URLS: Partial<Record<PropKind, { url: string; baseHeight: number }>> = {
+  'tree-fir':      { url: '/assets/props/tree-fir.glb',   baseHeight: 1.0 },
+  'tree-oak':      { url: '/assets/props/tree-oak.glb',   baseHeight: 1.0 },
+  'tree-dead':     { url: '/assets/props/tree-dead.glb',  baseHeight: 1.0 },
+  'mushroom-bell': { url: '/assets/props/mushroom.glb',   baseHeight: 0.5 },
+  'rock-jagged':   { url: '/assets/props/rock-jagged.glb',baseHeight: 0.7 },
+  'rock-round':    { url: '/assets/props/rock-round.glb', baseHeight: 0.5 },
+  'crystal-shard': { url: '/assets/props/crystal.glb',    baseHeight: 1.0 },
+  'pillar-stone':  { url: '/assets/props/pillar.glb',     baseHeight: 1.5 },
+  'pillar-divine': { url: '/assets/props/pillar.glb',     baseHeight: 1.7 },
+  'pillar-obsidian': { url: '/assets/props/pillar.glb',   baseHeight: 1.6 },
+  'moon-orb':      { url: '/assets/props/moon.glb',       baseHeight: 0.6 },
+};
+
+const assetCache = new Map<PropKind, THREE.Object3D>();
+let assetsLoading: Promise<void> | null = null;
+
+/** Pre-load every CC prop glb in parallel. Cached after first call. */
+export function ensurePropsLoaded(): Promise<void> {
+  if (assetsLoading) return assetsLoading;
+  const loader = new GLTFLoader();
+  const entries = Object.entries(ASSET_URLS) as Array<[PropKind, { url: string; baseHeight: number }]>;
+  assetsLoading = Promise.all(entries.map(([kind, spec]) =>
+    new Promise<void>((resolve) => {
+      loader.load(spec.url, (gltf) => {
+        const root = gltf.scene;
+        // Auto-fit to baseHeight so every prop is normalised before we
+        // clone-and-scale per instance. fitToHeight (copied from CombatToon)
+        // is inlined here to avoid a circular import.
+        const box = new THREE.Box3().setFromObject(root);
+        const size = new THREE.Vector3(); box.getSize(size);
+        if (size.y > 1e-6) {
+          const s = spec.baseHeight / size.y;
+          root.scale.multiplyScalar(s);
+          const rb = new THREE.Box3().setFromObject(root);
+          root.position.y -= rb.min.y;
+        }
+        // Cast/receive shadow on every mesh.
+        root.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
+        });
+        assetCache.set(kind, root);
+        resolve();
+      }, undefined, () => resolve()); // silently fall back on error
+    }),
+  )).then(() => undefined);
+  return assetsLoading;
+}
+
+/** Clone a cached asset for instancing. SkinnedMesh-free models clone cheaply. */
+function instanceAsset(kind: PropKind): THREE.Object3D | null {
+  const template = assetCache.get(kind);
+  if (!template) return null;
+  const clone = template.clone(true);
+  // Per-instance subtle tint variation so identical assets feel less repeat.
+  clone.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh && m.material) {
+      const mat = (m.material as THREE.MeshStandardMaterial).clone();
+      const jitter = 0.92 + Math.random() * 0.15;
+      mat.color.multiplyScalar(jitter);
+      m.material = mat;
+      m.castShadow = true; m.receiveShadow = true;
+    }
+  });
+  return clone;
+}
 
 export type PropKind =
   | 'tree-fir' | 'tree-oak' | 'tree-dead' | 'mushroom-bell'
@@ -61,6 +138,27 @@ function glowDisk(color: string, radius: number, opacity = 0.7): THREE.Mesh {
 }
 
 export function buildPropMesh(kind: PropKind, color: string, emissive?: string): THREE.Object3D {
+  // Prefer an authored CC glTF if one has been registered + preloaded.
+  // Falls through to the procedural builders below when none is cached
+  // (asset still loading, kind not in the registry, or load failed).
+  const authored = instanceAsset(kind);
+  if (authored) {
+    // For "themed" reskins (pillar-divine over a shared pillar.glb) we
+    // tint the cloned material toward `color` so the same asset can
+    // dress multiple regions without shipping duplicate files.
+    if (kind === 'pillar-divine' || kind === 'pillar-obsidian' || kind === 'crystal-shard') {
+      authored.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh && m.material) {
+          const mat = m.material as THREE.MeshStandardMaterial;
+          mat.color.lerp(new THREE.Color(color), 0.6);
+          if (emissive) { mat.emissive = new THREE.Color(emissive); mat.emissiveIntensity = 0.5; }
+        }
+      });
+    }
+    return authored;
+  }
+
   const g = new THREE.Group();
   g.name = kind;
 

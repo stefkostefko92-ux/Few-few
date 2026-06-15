@@ -20,7 +20,7 @@
  */
 
 import * as THREE from 'three';
-import { buildPropMesh } from './CombatProps3D';
+import { buildPropMesh, ensurePropsLoaded } from './CombatProps3D';
 
 export interface RegionEnvironment {
   group: THREE.Group;
