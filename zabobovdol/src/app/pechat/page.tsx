@@ -87,6 +87,11 @@ export default async function PrintPage() {
             </div>
             Услуги, обяви, събития и обяснения „Как да…“ на{" "}
             <strong>{SITE.domain}</strong>
+            {SITE.contact.phone && (
+              <div className="mt-1">
+                Контакт: <strong>{SITE.contact.phone}</strong>
+              </div>
+            )}
           </div>
         </div>
       </div>

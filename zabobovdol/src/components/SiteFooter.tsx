@@ -63,8 +63,19 @@ export function SiteFooter() {
                 </li>
               ))}
             </ul>
-            {SITE.contact.email && (
+            {SITE.contact.phone && (
               <p className="mt-3 text-sm text-slate-700">
+                Телефон:{" "}
+                <a
+                  href={`tel:${SITE.contact.phone.replace(/\s/g, "")}`}
+                  className="font-semibold text-brand-700 hover:underline"
+                >
+                  {SITE.contact.phone}
+                </a>
+              </p>
+            )}
+            {SITE.contact.email && (
+              <p className="mt-1 text-sm text-slate-700">
                 Имейл:{" "}
                 <a
                   href={`mailto:${SITE.contact.email}`}

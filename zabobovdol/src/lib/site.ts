@@ -26,8 +26,7 @@ export const SITE = {
   },
   contact: {
     email: "zabobovdol@carbonstealth.eu",
-    // Заменете с реален телефон, когато стартира гишето.
-    phone: "",
+    phone: "+359877414874",
   },
   social: {
     facebook: "",

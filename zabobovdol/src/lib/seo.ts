@@ -64,11 +64,12 @@ export function organizationLd() {
       postalCode: SITE.geo.postalCode,
       addressCountry: SITE.geo.countryCode,
     },
-    ...(SITE.contact.email
+    ...(SITE.contact.email || SITE.contact.phone
       ? {
           contactPoint: {
             "@type": "ContactPoint",
-            email: SITE.contact.email,
+            ...(SITE.contact.email ? { email: SITE.contact.email } : {}),
+            ...(SITE.contact.phone ? { telephone: SITE.contact.phone } : {}),
             contactType: "customer support",
             availableLanguage: ["Bulgarian"],
           },
