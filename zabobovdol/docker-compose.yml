@@ -27,7 +27,7 @@ services:
       NODE_ENV: production
       TZ: UTC
       DATABASE_URL: postgresql://${POSTGRES_USER:-zabobovdol}:${POSTGRES_PASSWORD:-zabobovdol}@db:5432/${POSTGRES_DB:-zabobovdol}?schema=public
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://zabobovdol.bg}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://zabobovdol.carbonstealth.eu}
       AUTH_SECRET: ${AUTH_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@zabobovdol.bg}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme12345}

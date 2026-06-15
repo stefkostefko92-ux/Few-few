@@ -1,4 +1,4 @@
-# Деплой на VPS (zabobovdol.bg)
+# Деплой на VPS (zabobovdol.carbonstealth.eu)
 
 Ръководство за пускане на сайта на собствен VPS с Docker.
 
@@ -6,7 +6,7 @@
 
 - VPS с Linux (Ubuntu/Debian), 1+ GB RAM.
 - Инсталирани **Docker** и **Docker Compose**.
-- Домейн `zabobovdol.bg`, чийто A-запис сочи към IP на VPS.
+- Домейн `zabobovdol.carbonstealth.eu`, чийто A-запис сочи към IP на VPS.
 
 ## 2. Качване на кода
 
@@ -25,7 +25,7 @@ cp .env.example .env
 
 - `AUTH_SECRET` — дълъг случаен низ: `openssl rand -base64 48`
 - `ADMIN_EMAIL`, `ADMIN_PASSWORD` — данни за първия администратор
-- `NEXT_PUBLIC_SITE_URL=https://zabobovdol.bg`
+- `NEXT_PUBLIC_SITE_URL=https://zabobovdol.carbonstealth.eu`
 - `POSTGRES_PASSWORD` — силна парола за базата (ползва се от docker-compose)
 
 ## 4. Стартиране
@@ -56,15 +56,15 @@ docker compose exec app npm run db:seed:business
 
 ```bash
 sudo apt install certbot
-sudo certbot certonly --standalone -d zabobovdol.bg -d www.zabobovdol.bg
+sudo certbot certonly --standalone -d zabobovdol.carbonstealth.eu
 ```
 
 Копирайте сертификатите:
 
 ```bash
 mkdir -p nginx/certs
-sudo cp /etc/letsencrypt/live/zabobovdol.bg/fullchain.pem nginx/certs/
-sudo cp /etc/letsencrypt/live/zabobovdol.bg/privkey.pem  nginx/certs/
+sudo cp /etc/letsencrypt/live/zabobovdol.carbonstealth.eu/fullchain.pem nginx/certs/
+sudo cp /etc/letsencrypt/live/zabobovdol.carbonstealth.eu/privkey.pem  nginx/certs/
 ```
 
 После:
@@ -116,7 +116,7 @@ docker compose up -d --build
 
 ```bash
 # всеки ден в 7:00 — внася чернови (публикуването остава ръчно)
-0 7 * * * curl -s "https://zabobovdol.bg/api/ingest-news?token=ТАЙНА" >/dev/null
+0 7 * * * curl -s "https://zabobovdol.carbonstealth.eu/api/ingest-news?token=ТАЙНА" >/dev/null
 ```
 
 Адресът на източника се задава с `MUNICIPALITY_NEWS_URL` (RSS канал или HTML

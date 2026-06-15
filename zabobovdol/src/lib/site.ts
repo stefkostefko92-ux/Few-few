@@ -4,11 +4,10 @@
 export const SITE = {
   name: "За Бобов дол",
   shortName: "За Бобов дол",
-  domain: "zabobovdol.bg",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://zabobovdol.bg").replace(
-    /\/$/,
-    "",
-  ),
+  domain: "zabobovdol.carbonstealth.eu",
+  url: (
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://zabobovdol.carbonstealth.eu"
+  ).replace(/\/$/, ""),
   locale: "bg_BG",
   lang: "bg",
   description:
