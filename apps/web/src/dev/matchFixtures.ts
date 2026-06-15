@@ -23,7 +23,7 @@ const MOVES: Partial<Record<GameKey, number>> = {
   SANTASE: 5, BELOTE: 9, KENT: 3, BRIDGE: 6,
   WAR: 3, GOFISH: 4, DOMINO: 6, RUMMY: 4, SVARA: 3,
   BATTLESHIP: 7, BINGO: 6, WORDS: 3,
-  EIGHTBALL: 0, NINEBALL: 0, SNOOKER: 0, MAGNAT: 55,
+  EIGHTBALL: 0, NINEBALL: 0, SNOOKER: 0, MAGNAT: 30,
 };
 
 function actingSeat(engine: ReturnType<typeof getEngine>, state: unknown, seats: number): number {
@@ -48,6 +48,19 @@ export function buildFixture(game: GameKey): Fixture {
     const pick = (engine.bot && engine.bot(state, s, rng)) || legal[0];
     state = engine.reduce(state, pick, rng).state;
     moves++;
+  }
+
+  // Showcase-only: the Магнат bot rarely completes a monopoly within the fixture
+  // window, so seed a developed skyline (owners + house levels incl. a hotel)
+  // purely so the 3D buildings are visible in screenshots. Dev harness only.
+  if (game === "MAGNAT") {
+    const st = state as { owner: number[]; houses: number[] };
+    const props = [1, 3, 6, 8, 9, 11, 13, 14, 16, 18, 19, 21, 23, 24, 26, 27];
+    const levels = [1, 2, 3, 4, 5, 2, 3, 4, 1, 5, 2, 3, 4, 5, 1, 3];
+    props.forEach((t, k) => {
+      st.owner[t] = k % 4;
+      st.houses[t] = levels[k % levels.length]!;
+    });
   }
 
   const seat = 0;

@@ -30,6 +30,7 @@ import {
   Scene,
   SRGBColorSpace,
   type Texture,
+  TextureLoader,
   Vector2,
   Vector3,
 } from "three";
@@ -51,6 +52,11 @@ function disposeObject(root: Object3D): void {
       m.dispose();
     }
   });
+}
+
+/** Free only a subtree's geometries (used when its materials are shared/reused). */
+function disposeGeoms(root: Object3D): void {
+  root.traverse((o) => (o as { geometry?: { dispose?: () => void } }).geometry?.dispose?.());
 }
 
 const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#e07a1f"];
@@ -388,96 +394,6 @@ function paperNormal(): CanvasTexture {
   return cloneTex(_paperN);
 }
 
-/** Darken/lighten a hex colour by `f` (negative darkens). */
-function shade(hex: string, f: number): string {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const cl = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
-  const r = cl(((n >> 16) & 255) * (1 + f));
-  const g = cl(((n >> 8) & 255) * (1 + f));
-  const b = cl((n & 255) * (1 + f));
-  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-}
-
-/**
- * A glass-curtain-wall facade for one tower: returns an albedo map (spandrel +
- * glass panes, some warmly lit), an emissive map (lit windows only, so just the
- * windows glow), and a normal map (panes recessed behind the mullion grid for
- * real relief under the key light). The lit pattern is deterministic per `seed`
- * so a given building looks stable across renders.
- */
-function towerFacade(
-  hex: string,
-  cols: number,
-  rows: number,
-  seed: number,
-): { albedo: CanvasTexture; emissive: CanvasTexture; normal: CanvasTexture } {
-  const cell = 28;
-  const W = cols * cell;
-  const Hc = rows * cell;
-  const mk = () => {
-    const c = document.createElement("canvas");
-    c.width = W;
-    c.height = Hc;
-    return { c, x: c.getContext("2d")! };
-  };
-  const A = mk();
-  const E = mk();
-  const Hm = mk();
-  const rnd = (i: number) => {
-    const s = Math.sin(seed * 73.13 + i * 19.73) * 43758.5453;
-    return s - Math.floor(s);
-  };
-
-  const spandrel = shade(hex, -0.26); // structural band between windows
-  const glass = "#1b2735"; // cool dark curtain glass
-  A.x.fillStyle = spandrel;
-  A.x.fillRect(0, 0, W, Hc);
-  E.x.fillStyle = "#000000";
-  E.x.fillRect(0, 0, W, Hc);
-  Hm.x.fillStyle = "#ffffff"; // mullion grid = raised (white)
-  Hm.x.fillRect(0, 0, W, Hc);
-
-  const m = 3; // mullion thickness
-  for (let r = 0; r < rows; r++) {
-    for (let col = 0; col < cols; col++) {
-      const px = col * cell;
-      const py = r * cell;
-      const gw = cell - 2 * m;
-      const gh = cell - 2 * m;
-      const lit = rnd(r * cols + col) > 0.62;
-      // albedo glass pane (lit = warm interior, else reflective dark glass)
-      if (lit) {
-        const g = A.x.createLinearGradient(px, py, px, py + gh);
-        g.addColorStop(0, "#ffe7ad");
-        g.addColorStop(1, "#f1c264");
-        A.x.fillStyle = g;
-      } else {
-        const g = A.x.createLinearGradient(px, py + m, px + gw, py + gh);
-        g.addColorStop(0, shade(glass, 0.35));
-        g.addColorStop(1, glass);
-        A.x.fillStyle = g;
-      }
-      A.x.fillRect(px + m, py + m, gw, gh);
-      // emissive: only lit windows
-      if (lit) {
-        E.x.fillStyle = "#ffdf9e";
-        E.x.fillRect(px + m, py + m, gw, gh);
-      }
-      // height field: glass recessed (dark) behind the white mullion grid
-      Hm.x.fillStyle = "#4a4a4a";
-      Hm.x.fillRect(px + m, py + m, gw, gh);
-    }
-  }
-
-  const albedo = new CanvasTexture(A.c);
-  albedo.colorSpace = SRGBColorSpace;
-  const emissive = new CanvasTexture(E.c);
-  emissive.colorSpace = SRGBColorSpace;
-  const normal = heightToNormal(Hm.c, 1.5);
-  for (const t of [albedo, emissive]) t.wrapS = t.wrapT = RepeatWrapping;
-  return { albedo, emissive, normal };
-}
-
 export class MagnatScene {
   private core!: RenderCore;
   private scene = new Scene();
@@ -499,10 +415,18 @@ export class MagnatScene {
   private ownerStuds: (Mesh | null)[] = new Array(BOARD_SIZE).fill(null);
   private dice: Mesh[] = [];
   private baseMat?: MeshStandardMaterial;
+  // Shared building materials (CC0 photo facades + structural). Created once per
+  // scene; reused across every tower so disposal only ever frees geometry.
+  private matOffice!: MeshPhysicalMaterial;
+  private matGlass!: MeshPhysicalMaterial;
+  private matConcrete = new MeshStandardMaterial({ color: new Color("#9a958c"), roughness: 0.85, metalness: 0.1 });
+  private matSteel = new MeshStandardMaterial({ color: new Color("#8a8f96"), roughness: 0.4, metalness: 0.85 });
+  private matCrown = new MeshPhysicalMaterial({ color: new Color("#ecca73"), metalness: 0.9, roughness: 0.16, clearcoat: 0.7 });
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.maxAniso = 8; // per-device cap is applied automatically by the renderer
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    this.loadFacadeMaterials();
     // opaque felt background (post-processing doesn't carry CSS transparency)
     this.scene.background = new Color("#0e2c1c");
 
@@ -837,25 +761,76 @@ export class MagnatScene {
   }
 
   /**
-   * A realistic glass tower for a developed property: a concrete podium, one or
-   * two glazed shafts (taller shafts step back for a real skyline silhouette),
-   * parapets, rooftop plant + antenna on tall ones, and a gold crown for hotels.
-   * Height grows with the development level; `seed` fixes the lit-window pattern.
+   * Load the CC0 photo facade sets (ambientCG, public-domain) into two shared
+   * physical materials: a modern concrete/glass office and a glass skyscraper
+   * with an emission map so its windows glow. Textures stream in (same-origin
+   * static assets) and a render is requested as each arrives.
    */
-  private buildTower(hex: string, count: number, hotel: boolean, seed: number): Group {
+  private loadFacadeMaterials(): void {
+    const base = `${import.meta.env.BASE_URL}textures/magnat/`;
+    const loader = new TextureLoader();
+    const tex = (file: string, srgb = false): Texture => {
+      const t = loader.load(base + file, () => this.core?.invalidate());
+      if (srgb) t.colorSpace = SRGBColorSpace;
+      t.wrapS = t.wrapT = RepeatWrapping;
+      t.anisotropy = this.maxAniso;
+      return t;
+    };
+    this.matOffice = new MeshPhysicalMaterial({
+      map: tex("office_color.jpg", true),
+      normalMap: tex("office_normal.jpg"),
+      roughnessMap: tex("office_rough.jpg"),
+      color: new Color("#cfc9bd"),
+      metalness: 0.15,
+      roughness: 1,
+      normalScale: new Vector2(0.8, 0.8),
+      envMapIntensity: 1.0,
+    });
+    this.matGlass = new MeshPhysicalMaterial({
+      map: tex("glass_color.jpg", true),
+      normalMap: tex("glass_normal.jpg"),
+      roughnessMap: tex("glass_rough.jpg"),
+      emissiveMap: tex("glass_emission.jpg", true),
+      emissive: new Color("#ffeccb"),
+      emissiveIntensity: 1.35,
+      color: new Color("#2b3440"),
+      metalness: 0.9,
+      roughness: 1,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.35,
+      normalScale: new Vector2(0.7, 0.7),
+      envMapIntensity: 1.3,
+    });
+  }
+
+  /** A box whose UVs tile the facade per floor (so windows keep real scale). */
+  private facadeBox(w: number, h: number, d: number, floors: number): BoxGeometry {
+    const geo = new BoxGeometry(w, h, d);
+    const uv = geo.attributes.uv!;
+    const repX = Math.max(1, Math.round(w / 0.95));
+    const repY = Math.max(1, Math.round(floors / 4));
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * repX, uv.getY(i) * repY);
+    uv.needsUpdate = true;
+    return geo;
+  }
+
+  /**
+   * A realistic high-rise for a developed property: a concrete podium, one or
+   * two photo-textured glazed shafts (taller ones step back for a real skyline
+   * silhouette) with parapets, a rooftop plant + antenna on tall towers, and a
+   * gold landmark crown for hotels. Height grows with the development level.
+   */
+  private buildTower(count: number, hotel: boolean): Group {
     const g = new Group();
-    const cols = 4;
     const floors = hotel ? 13 : 3 + count * 2; // 5 · 7 · 9 · 11 · (hotel 13)
     const floorH = 0.34;
-    const w = hotel ? 1.12 : 0.92;
-    const d = hotel ? 1.12 : 0.86;
-
-    const concrete = new MeshStandardMaterial({ color: new Color(shade(hex, -0.5)), roughness: 0.82, metalness: 0.1 });
-    const steel = new MeshStandardMaterial({ color: new Color("#8a8f96"), roughness: 0.4, metalness: 0.8 });
+    const w = hotel ? 1.16 : 0.98;
+    const d = hotel ? 1.16 : 0.92;
+    const facade = hotel || count >= 2 ? this.matGlass : this.matOffice;
 
     // podium / lobby
     const podH = 0.5;
-    const podium = new Mesh(new BoxGeometry(w * 1.08, podH, d * 1.08), concrete);
+    const podium = new Mesh(new BoxGeometry(w * 1.08, podH, d * 1.08), this.matConcrete);
     podium.position.y = podH / 2;
     podium.castShadow = podium.receiveShadow = true;
     g.add(podium);
@@ -864,29 +839,13 @@ export class MagnatScene {
     const lowerFloors = stepped ? Math.ceil(floors * 0.62) : floors;
     const upperFloors = floors - lowerFloors;
 
-    const shaft = (fl: number, ww: number, dd: number, y0: number, s: number): number => {
+    const shaft = (fl: number, ww: number, dd: number, y0: number): number => {
       const h = fl * floorH;
-      const { albedo, emissive, normal } = towerFacade(hotel ? "#caa23a" : hex, cols, fl, s);
-      const box = new Mesh(
-        new BoxGeometry(ww, h, dd),
-        new MeshPhysicalMaterial({
-          map: albedo,
-          emissive: new Color("#ffffff"),
-          emissiveMap: emissive,
-          emissiveIntensity: 0.9,
-          normalMap: normal,
-          normalScale: new Vector2(0.7, 0.7),
-          metalness: 0.5,
-          roughness: 0.24,
-          clearcoat: 0.6,
-          clearcoatRoughness: 0.28,
-          envMapIntensity: 1.0,
-        }),
-      );
+      const box = new Mesh(this.facadeBox(ww, h, dd, fl), facade);
       box.position.y = y0 + h / 2;
       box.castShadow = box.receiveShadow = true;
       g.add(box);
-      const cap = new Mesh(new BoxGeometry(ww * 1.05, 0.12, dd * 1.05), concrete);
+      const cap = new Mesh(new BoxGeometry(ww * 1.05, 0.12, dd * 1.05), this.matConcrete);
       cap.position.y = y0 + h + 0.06;
       cap.castShadow = true;
       g.add(cap);
@@ -894,26 +853,23 @@ export class MagnatScene {
     };
 
     let y = podH;
-    y = shaft(lowerFloors, w, d, y, seed);
-    if (upperFloors > 0) y = shaft(upperFloors, w * 0.72, d * 0.72, y, seed + 7);
+    y = shaft(lowerFloors, w, d, y);
+    if (upperFloors > 0) y = shaft(upperFloors, w * 0.72, d * 0.72, y);
 
     // rooftop plant + antenna on taller towers
     if (floors >= 7 || hotel) {
-      const mech = new Mesh(new BoxGeometry(w * 0.36, 0.3, d * 0.36), concrete);
+      const mech = new Mesh(new BoxGeometry(w * 0.36, 0.3, d * 0.36), this.matConcrete);
       mech.position.set(-w * 0.16, y + 0.15, -d * 0.1);
       mech.castShadow = true;
       g.add(mech);
-      const antenna = new Mesh(new BoxGeometry(0.05, hotel ? 1.7 : 1.0, 0.05), steel);
+      const antenna = new Mesh(new BoxGeometry(0.05, hotel ? 1.7 : 1.0, 0.05), this.matSteel);
       antenna.position.set(w * 0.16, y + (hotel ? 0.85 : 0.5), d * 0.1);
       antenna.castShadow = true;
       g.add(antenna);
     }
     // hotel landmark crown
     if (hotel) {
-      const crown = new Mesh(
-        new ConeGeometry(w * 0.4, 1.0, 4),
-        new MeshPhysicalMaterial({ color: new Color("#ecca73"), metalness: 0.9, roughness: 0.16, clearcoat: 0.7 }),
-      );
+      const crown = new Mesh(new ConeGeometry(w * 0.4, 1.0, 4), this.matCrown);
       crown.rotation.y = Math.PI / 4;
       crown.position.y = y + 0.5;
       crown.castShadow = true;
@@ -926,16 +882,16 @@ export class MagnatScene {
     if (this.houseCount[i] === count) return; // only rebuild when it changed
     this.houseCount[i] = count;
     if (this.houseGroups[i]) {
-      disposeObject(this.houseGroups[i]!); // free the old buildings' GPU resources
+      // free only the old buildings' geometry — facade/structural materials are
+      // shared across every tower and live for the scene's lifetime.
+      disposeGeoms(this.houseGroups[i]!);
       this.scene.remove(this.houseGroups[i]!);
       this.houseGroups[i] = null;
     }
     if (count <= 0) return;
     const p = this.place[i]!;
-    const tl = BOARD[i]!;
-    const group = tl.type === "prop" ? (GROUP_COLORS[tl.group] ?? "#9aa") : "#c9a23a";
     const hotel = count >= 5;
-    const g = this.buildTower(group, count, hotel, i + 1);
+    const g = this.buildTower(count, hotel);
 
     // seat the tower toward the inner edge so the tile's name/price stays visible
     const inX = p.side === 3 ? -1 : p.side === 1 ? 1 : 0;
@@ -993,5 +949,10 @@ export class MagnatScene {
     this.core.dispose();
     disposeObject(this.scene);
     this.pawnGeo.dispose();
+    // shared building materials aren't always attached to the live scene graph
+    for (const m of [this.matOffice, this.matGlass, this.matConcrete, this.matSteel, this.matCrown]) {
+      for (const v of Object.values(m ?? {})) if (v && (v as Texture).isTexture) (v as Texture).dispose();
+      m?.dispose();
+    }
   }
 }
