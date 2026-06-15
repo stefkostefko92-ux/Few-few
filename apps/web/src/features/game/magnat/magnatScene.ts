@@ -23,7 +23,7 @@ import {
   Mesh,
   MeshStandardMaterial,
   type Object3D,
-  OrthographicCamera,
+  PerspectiveCamera,
   PlaneGeometry,
   RepeatWrapping,
   Scene,
@@ -385,10 +385,49 @@ function paperNormal(): CanvasTexture {
   return cloneTex(_paperN);
 }
 
+/** Darken/lighten a hex colour by `f` (negative darkens). */
+function shade(hex: string, f: number): string {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const cl = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+  const r = cl(((n >> 16) & 255) * (1 + f));
+  const g = cl(((n >> 8) & 255) * (1 + f));
+  const b = cl((n & 255) * (1 + f));
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+}
+
+/** Skyscraper facade: group-tinted concrete with a grid of lit/dark windows. */
+function facadeTexture(hex: string): CanvasTexture {
+  const W = 128;
+  const Hc = 256;
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = Hc;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = shade(hex, -0.12);
+  ctx.fillRect(0, 0, W, Hc);
+  const cols = 4;
+  const rows = 8;
+  const mx = W * 0.16;
+  const my = Hc * 0.08;
+  const cw = (W - mx * 2) / cols;
+  const ch = (Hc - my * 2) / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let col = 0; col < cols; col++) {
+      const lit = (r * 7 + col * 3 + ((r * col) % 5)) % 3 === 0;
+      ctx.fillStyle = lit ? "#ffe6a6" : shade(hex, -0.4);
+      ctx.fillRect(mx + col * cw + cw * 0.16, my + r * ch + ch * 0.16, cw * 0.68, ch * 0.62);
+    }
+  }
+  const tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  tex.wrapS = tex.wrapT = RepeatWrapping;
+  return tex;
+}
+
 export class MagnatScene {
   private core!: RenderCore;
   private scene = new Scene();
-  private camera: OrthographicCamera;
+  private camera: PerspectiveCamera;
   private place = placements();
   private pawnGeo = pawnGeometry();
   private maxAniso = 1;
@@ -413,11 +452,11 @@ export class MagnatScene {
     // opaque felt background (post-processing doesn't carry CSS transparency)
     this.scene.background = new Color("#0e2c1c");
 
-    const aspect = 1 / SCENE_RATIO;
-    const d = H * 1.12;
-    this.camera = new OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 200);
-    this.camera.position.set(H * 1.35, H * 2.9, H * 1.6);
-    this.camera.lookAt(0, 0, 0);
+    // Business-Tour-style 3/4 view: a perspective camera elevated and pulled
+    // toward the near (Старт) edge, so developed properties rise as a skyline.
+    this.camera = new PerspectiveCamera(38, 1 / SCENE_RATIO, 0.1, 200);
+    this.camera.position.set(0, H * 2.1, H * 2.55);
+    this.camera.lookAt(0, -1.5, -0.6);
 
     this.scene.add(new AmbientLight(0xffffff, 0.32));
     this.scene.add(new HemisphereLight(0xfff3d8, 0x20180f, 0.45));
@@ -616,8 +655,25 @@ export class MagnatScene {
       label.position.set(p.x, 0.505, p.z);
       this.scene.add(label);
 
-      // special-tile colour cap
-      if (tl.type !== "prop") {
+      // raised group-colour rib along the inner edge of property tiles — the
+      // recognisable Monopoly colour strip, given real depth for the 3/4 view.
+      if (tl.type === "prop") {
+        const inX = p.side === 3 ? -1 : p.side === 1 ? 1 : 0;
+        const inZ = p.side === 0 ? -1 : p.side === 2 ? 1 : 0;
+        const ribT = 0.5; // radial thickness
+        const rw = p.side % 2 === 0 ? along * 0.97 : ribT;
+        const rd = p.side % 2 === 0 ? ribT : along * 0.97;
+        const rib = new Mesh(
+          new BoxGeometry(rw, 0.24, rd),
+          new MeshStandardMaterial({ color: new Color(GROUP_COLORS[tl.group] ?? "#999"), roughness: 0.38, metalness: 0.12 }),
+        );
+        const off = deep / 2 - ribT / 2;
+        rib.position.set(p.x + inX * off, 0.6, p.z + inZ * off);
+        rib.castShadow = true;
+        rib.receiveShadow = true;
+        this.scene.add(rib);
+      } else {
+        // special-tile colour cap
         const cap = new Mesh(
           new BoxGeometry(along * 0.4, 0.14, deep * 0.4),
           new MeshStandardMaterial({ color: new Color(specialColor(tl.type)), roughness: 0.5 }),
@@ -736,27 +792,58 @@ export class MagnatScene {
     }
     if (count <= 0) return;
     const p = this.place[i]!;
-    const g = new Group();
+    const tl = BOARD[i]!;
+    const group = tl.type === "prop" ? (GROUP_COLORS[tl.group] ?? "#9aa") : "#c9a23a";
     const hotel = count >= 5;
-    const n = hotel ? 1 : count;
-    const mat = new MeshStandardMaterial({ color: new Color(hotel ? "#d23a3a" : "#e9e3d2"), roughness: 0.55, metalness: 0.05 });
-    const roofMat = new MeshStandardMaterial({ color: new Color(hotel ? "#7a1313" : "#b6452a"), roughness: 0.6 });
-    for (let k = 0; k < n; k++) {
-      const w = hotel ? 0.78 : 0.42;
-      const bh = hotel ? 0.5 : 0.34;
-      const body = new Mesh(new BoxGeometry(w, bh, w), mat);
-      body.position.y = bh / 2;
-      // peaked pyramid roof
-      const roof = new Mesh(new ConeGeometry(w * 0.78, w * 0.6, 4), roofMat);
-      roof.rotation.y = Math.PI / 4;
-      roof.position.y = bh + w * 0.3;
-      const house = new Group();
-      house.add(body, roof);
-      house.position.set((k - (n - 1) / 2) * 0.54, 0.5, 0);
-      house.traverse((mm) => (mm.castShadow = true));
-      g.add(house);
+    const g = new Group();
+
+    // A single skyscraper that grows taller with the development level (1..4),
+    // a distinct gold tower for the hotel — a Business-Tour-style skyline.
+    const w = hotel ? 1.18 : 0.92;
+    const hgt = hotel ? 6.4 : 1.7 + count * 1.05;
+    const floors = Math.max(2, Math.round(hgt / 0.7));
+    const facade = facadeTexture(hotel ? "#caa23a" : group);
+    facade.repeat.set(2, floors);
+    const body = new Mesh(
+      new BoxGeometry(w, hgt, w),
+      new MeshStandardMaterial({
+        map: facade,
+        color: new Color(shade(hotel ? "#d8b24a" : group, 0.08)),
+        roughness: 0.32,
+        metalness: 0.18,
+        emissive: new Color("#ffd98a"),
+        emissiveMap: facade,
+        emissiveIntensity: 0.22,
+      }),
+    );
+    body.position.y = hgt / 2;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    g.add(body);
+
+    // a flat parapet roof + a small crown for the hotel
+    const roof = new Mesh(
+      new BoxGeometry(w * 1.06, 0.18, w * 1.06),
+      new MeshStandardMaterial({ color: new Color(shade(hotel ? "#7a5a16" : group, -0.45)), roughness: 0.5, metalness: 0.3 }),
+    );
+    roof.position.y = hgt + 0.06;
+    roof.castShadow = true;
+    g.add(roof);
+    if (hotel) {
+      const crown = new Mesh(
+        new ConeGeometry(w * 0.34, 1.1, 4),
+        new MeshStandardMaterial({ color: new Color("#f0d271"), roughness: 0.28, metalness: 0.7 }),
+      );
+      crown.rotation.y = Math.PI / 4;
+      crown.position.y = hgt + 0.65;
+      crown.castShadow = true;
+      g.add(crown);
     }
-    g.position.set(p.x, 0, p.z);
+
+    // seat the tower toward the inner edge so the tile's name/price stays visible
+    const inX = p.side === 3 ? -1 : p.side === 1 ? 1 : 0;
+    const inZ = p.side === 0 ? -1 : p.side === 2 ? 1 : 0;
+    g.position.set(p.x + inX * 0.45, 0.5, p.z + inZ * 0.45);
     this.scene.add(g);
     this.houseGroups[i] = g;
     if (!this.reduceMotion) {

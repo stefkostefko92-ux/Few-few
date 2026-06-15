@@ -37,9 +37,9 @@ function t(type: TileType, name: string, opts: Partial<Tile> = {}): Tile {
 /** The 40-tile board, Bulgarian-cities themed (the four big cities are stations). */
 export const BOARD: Tile[] = [
   t("go", "Старт"),
-  t("prop", "Видин", { group: 0, price: 60 }),
+  t("prop", "Дупница", { group: 0, price: 60 }),
   t("chest", "Каса"),
-  t("prop", "Враца", { group: 0, price: 60 }),
+  t("prop", "Бобов дол", { group: 0, price: 60 }),
   t("tax", "Данък общ доход", { tax: 200 }),
   t("station", "Гара София", { price: 200 }),
   t("prop", "Монтана", { group: 1, price: 100 }),
