@@ -21,6 +21,7 @@ import {
   LatheGeometry,
   LinearFilter,
   Mesh,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   type Object3D,
   PerspectiveCamera,
@@ -319,19 +320,21 @@ function heightCanvas(S: number, fn: (u: number, v: number) => number): HTMLCanv
 }
 
 function heightToNormal(src: HTMLCanvasElement, strength: number): CanvasTexture {
-  const S = src.width;
-  const sd = src.getContext("2d")!.getImageData(0, 0, S, S).data;
+  const W = src.width;
+  const Hh = src.height;
+  const sd = src.getContext("2d")!.getImageData(0, 0, W, Hh).data;
   const out = document.createElement("canvas");
-  out.width = out.height = S;
+  out.width = W;
+  out.height = Hh;
   const octx = out.getContext("2d")!;
-  const od = octx.createImageData(S, S);
-  const at = (x: number, y: number) => sd[(((y + S) % S) * S + ((x + S) % S)) * 4]! / 255;
-  for (let y = 0; y < S; y++) {
-    for (let x = 0; x < S; x++) {
+  const od = octx.createImageData(W, Hh);
+  const at = (x: number, y: number) => sd[((((y % Hh) + Hh) % Hh) * W + (((x % W) + W) % W)) * 4]! / 255;
+  for (let y = 0; y < Hh; y++) {
+    for (let x = 0; x < W; x++) {
       const dx = (at(x + 1, y) - at(x - 1, y)) * strength;
       const dy = (at(x, y + 1) - at(x, y - 1)) * strength;
       const len = Math.hypot(dx, dy, 1);
-      const i = (y * S + x) * 4;
+      const i = (y * W + x) * 4;
       od.data[i] = ((-dx / len) * 0.5 + 0.5) * 255;
       od.data[i + 1] = ((-dy / len) * 0.5 + 0.5) * 255;
       od.data[i + 2] = (1 / len) * 0.5 * 255 + 127.5;
@@ -395,33 +398,84 @@ function shade(hex: string, f: number): string {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
-/** Skyscraper facade: group-tinted concrete with a grid of lit/dark windows. */
-function facadeTexture(hex: string): CanvasTexture {
-  const W = 128;
-  const Hc = 256;
-  const c = document.createElement("canvas");
-  c.width = W;
-  c.height = Hc;
-  const ctx = c.getContext("2d")!;
-  ctx.fillStyle = shade(hex, -0.12);
-  ctx.fillRect(0, 0, W, Hc);
-  const cols = 4;
-  const rows = 8;
-  const mx = W * 0.16;
-  const my = Hc * 0.08;
-  const cw = (W - mx * 2) / cols;
-  const ch = (Hc - my * 2) / rows;
+/**
+ * A glass-curtain-wall facade for one tower: returns an albedo map (spandrel +
+ * glass panes, some warmly lit), an emissive map (lit windows only, so just the
+ * windows glow), and a normal map (panes recessed behind the mullion grid for
+ * real relief under the key light). The lit pattern is deterministic per `seed`
+ * so a given building looks stable across renders.
+ */
+function towerFacade(
+  hex: string,
+  cols: number,
+  rows: number,
+  seed: number,
+): { albedo: CanvasTexture; emissive: CanvasTexture; normal: CanvasTexture } {
+  const cell = 28;
+  const W = cols * cell;
+  const Hc = rows * cell;
+  const mk = () => {
+    const c = document.createElement("canvas");
+    c.width = W;
+    c.height = Hc;
+    return { c, x: c.getContext("2d")! };
+  };
+  const A = mk();
+  const E = mk();
+  const Hm = mk();
+  const rnd = (i: number) => {
+    const s = Math.sin(seed * 73.13 + i * 19.73) * 43758.5453;
+    return s - Math.floor(s);
+  };
+
+  const spandrel = shade(hex, -0.26); // structural band between windows
+  const glass = "#1b2735"; // cool dark curtain glass
+  A.x.fillStyle = spandrel;
+  A.x.fillRect(0, 0, W, Hc);
+  E.x.fillStyle = "#000000";
+  E.x.fillRect(0, 0, W, Hc);
+  Hm.x.fillStyle = "#ffffff"; // mullion grid = raised (white)
+  Hm.x.fillRect(0, 0, W, Hc);
+
+  const m = 3; // mullion thickness
   for (let r = 0; r < rows; r++) {
     for (let col = 0; col < cols; col++) {
-      const lit = (r * 7 + col * 3 + ((r * col) % 5)) % 3 === 0;
-      ctx.fillStyle = lit ? "#ffe6a6" : shade(hex, -0.4);
-      ctx.fillRect(mx + col * cw + cw * 0.16, my + r * ch + ch * 0.16, cw * 0.68, ch * 0.62);
+      const px = col * cell;
+      const py = r * cell;
+      const gw = cell - 2 * m;
+      const gh = cell - 2 * m;
+      const lit = rnd(r * cols + col) > 0.62;
+      // albedo glass pane (lit = warm interior, else reflective dark glass)
+      if (lit) {
+        const g = A.x.createLinearGradient(px, py, px, py + gh);
+        g.addColorStop(0, "#ffe7ad");
+        g.addColorStop(1, "#f1c264");
+        A.x.fillStyle = g;
+      } else {
+        const g = A.x.createLinearGradient(px, py + m, px + gw, py + gh);
+        g.addColorStop(0, shade(glass, 0.35));
+        g.addColorStop(1, glass);
+        A.x.fillStyle = g;
+      }
+      A.x.fillRect(px + m, py + m, gw, gh);
+      // emissive: only lit windows
+      if (lit) {
+        E.x.fillStyle = "#ffdf9e";
+        E.x.fillRect(px + m, py + m, gw, gh);
+      }
+      // height field: glass recessed (dark) behind the white mullion grid
+      Hm.x.fillStyle = "#4a4a4a";
+      Hm.x.fillRect(px + m, py + m, gw, gh);
     }
   }
-  const tex = new CanvasTexture(c);
-  tex.colorSpace = SRGBColorSpace;
-  tex.wrapS = tex.wrapT = RepeatWrapping;
-  return tex;
+
+  const albedo = new CanvasTexture(A.c);
+  albedo.colorSpace = SRGBColorSpace;
+  const emissive = new CanvasTexture(E.c);
+  emissive.colorSpace = SRGBColorSpace;
+  const normal = heightToNormal(Hm.c, 1.5);
+  for (const t of [albedo, emissive]) t.wrapS = t.wrapT = RepeatWrapping;
+  return { albedo, emissive, normal };
 }
 
 export class MagnatScene {
@@ -782,6 +836,92 @@ export class MagnatScene {
     };
   }
 
+  /**
+   * A realistic glass tower for a developed property: a concrete podium, one or
+   * two glazed shafts (taller shafts step back for a real skyline silhouette),
+   * parapets, rooftop plant + antenna on tall ones, and a gold crown for hotels.
+   * Height grows with the development level; `seed` fixes the lit-window pattern.
+   */
+  private buildTower(hex: string, count: number, hotel: boolean, seed: number): Group {
+    const g = new Group();
+    const cols = 4;
+    const floors = hotel ? 13 : 3 + count * 2; // 5 · 7 · 9 · 11 · (hotel 13)
+    const floorH = 0.34;
+    const w = hotel ? 1.12 : 0.92;
+    const d = hotel ? 1.12 : 0.86;
+
+    const concrete = new MeshStandardMaterial({ color: new Color(shade(hex, -0.5)), roughness: 0.82, metalness: 0.1 });
+    const steel = new MeshStandardMaterial({ color: new Color("#8a8f96"), roughness: 0.4, metalness: 0.8 });
+
+    // podium / lobby
+    const podH = 0.5;
+    const podium = new Mesh(new BoxGeometry(w * 1.08, podH, d * 1.08), concrete);
+    podium.position.y = podH / 2;
+    podium.castShadow = podium.receiveShadow = true;
+    g.add(podium);
+
+    const stepped = hotel || count >= 3;
+    const lowerFloors = stepped ? Math.ceil(floors * 0.62) : floors;
+    const upperFloors = floors - lowerFloors;
+
+    const shaft = (fl: number, ww: number, dd: number, y0: number, s: number): number => {
+      const h = fl * floorH;
+      const { albedo, emissive, normal } = towerFacade(hotel ? "#caa23a" : hex, cols, fl, s);
+      const box = new Mesh(
+        new BoxGeometry(ww, h, dd),
+        new MeshPhysicalMaterial({
+          map: albedo,
+          emissive: new Color("#ffffff"),
+          emissiveMap: emissive,
+          emissiveIntensity: 0.9,
+          normalMap: normal,
+          normalScale: new Vector2(0.7, 0.7),
+          metalness: 0.5,
+          roughness: 0.24,
+          clearcoat: 0.6,
+          clearcoatRoughness: 0.28,
+          envMapIntensity: 1.0,
+        }),
+      );
+      box.position.y = y0 + h / 2;
+      box.castShadow = box.receiveShadow = true;
+      g.add(box);
+      const cap = new Mesh(new BoxGeometry(ww * 1.05, 0.12, dd * 1.05), concrete);
+      cap.position.y = y0 + h + 0.06;
+      cap.castShadow = true;
+      g.add(cap);
+      return y0 + h + 0.12;
+    };
+
+    let y = podH;
+    y = shaft(lowerFloors, w, d, y, seed);
+    if (upperFloors > 0) y = shaft(upperFloors, w * 0.72, d * 0.72, y, seed + 7);
+
+    // rooftop plant + antenna on taller towers
+    if (floors >= 7 || hotel) {
+      const mech = new Mesh(new BoxGeometry(w * 0.36, 0.3, d * 0.36), concrete);
+      mech.position.set(-w * 0.16, y + 0.15, -d * 0.1);
+      mech.castShadow = true;
+      g.add(mech);
+      const antenna = new Mesh(new BoxGeometry(0.05, hotel ? 1.7 : 1.0, 0.05), steel);
+      antenna.position.set(w * 0.16, y + (hotel ? 0.85 : 0.5), d * 0.1);
+      antenna.castShadow = true;
+      g.add(antenna);
+    }
+    // hotel landmark crown
+    if (hotel) {
+      const crown = new Mesh(
+        new ConeGeometry(w * 0.4, 1.0, 4),
+        new MeshPhysicalMaterial({ color: new Color("#ecca73"), metalness: 0.9, roughness: 0.16, clearcoat: 0.7 }),
+      );
+      crown.rotation.y = Math.PI / 4;
+      crown.position.y = y + 0.5;
+      crown.castShadow = true;
+      g.add(crown);
+    }
+    return g;
+  }
+
   private syncHouses(i: number, count: number): void {
     if (this.houseCount[i] === count) return; // only rebuild when it changed
     this.houseCount[i] = count;
@@ -795,50 +935,7 @@ export class MagnatScene {
     const tl = BOARD[i]!;
     const group = tl.type === "prop" ? (GROUP_COLORS[tl.group] ?? "#9aa") : "#c9a23a";
     const hotel = count >= 5;
-    const g = new Group();
-
-    // A single skyscraper that grows taller with the development level (1..4),
-    // a distinct gold tower for the hotel — a Business-Tour-style skyline.
-    const w = hotel ? 1.18 : 0.92;
-    const hgt = hotel ? 6.4 : 1.7 + count * 1.05;
-    const floors = Math.max(2, Math.round(hgt / 0.7));
-    const facade = facadeTexture(hotel ? "#caa23a" : group);
-    facade.repeat.set(2, floors);
-    const body = new Mesh(
-      new BoxGeometry(w, hgt, w),
-      new MeshStandardMaterial({
-        map: facade,
-        color: new Color(shade(hotel ? "#d8b24a" : group, 0.08)),
-        roughness: 0.32,
-        metalness: 0.18,
-        emissive: new Color("#ffd98a"),
-        emissiveMap: facade,
-        emissiveIntensity: 0.22,
-      }),
-    );
-    body.position.y = hgt / 2;
-    body.castShadow = true;
-    body.receiveShadow = true;
-    g.add(body);
-
-    // a flat parapet roof + a small crown for the hotel
-    const roof = new Mesh(
-      new BoxGeometry(w * 1.06, 0.18, w * 1.06),
-      new MeshStandardMaterial({ color: new Color(shade(hotel ? "#7a5a16" : group, -0.45)), roughness: 0.5, metalness: 0.3 }),
-    );
-    roof.position.y = hgt + 0.06;
-    roof.castShadow = true;
-    g.add(roof);
-    if (hotel) {
-      const crown = new Mesh(
-        new ConeGeometry(w * 0.34, 1.1, 4),
-        new MeshStandardMaterial({ color: new Color("#f0d271"), roughness: 0.28, metalness: 0.7 }),
-      );
-      crown.rotation.y = Math.PI / 4;
-      crown.position.y = hgt + 0.65;
-      crown.castShadow = true;
-      g.add(crown);
-    }
+    const g = this.buildTower(group, count, hotel, i + 1);
 
     // seat the tower toward the inner edge so the tile's name/price stays visible
     const inX = p.side === 3 ? -1 : p.side === 1 ? 1 : 0;

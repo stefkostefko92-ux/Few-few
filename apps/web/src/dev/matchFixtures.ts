@@ -23,7 +23,7 @@ const MOVES: Partial<Record<GameKey, number>> = {
   SANTASE: 5, BELOTE: 9, KENT: 3, BRIDGE: 6,
   WAR: 3, GOFISH: 4, DOMINO: 6, RUMMY: 4, SVARA: 3,
   BATTLESHIP: 7, BINGO: 6, WORDS: 3,
-  EIGHTBALL: 0, NINEBALL: 0, SNOOKER: 0, MAGNAT: 30,
+  EIGHTBALL: 0, NINEBALL: 0, SNOOKER: 0, MAGNAT: 55,
 };
 
 function actingSeat(engine: ReturnType<typeof getEngine>, state: unknown, seats: number): number {
