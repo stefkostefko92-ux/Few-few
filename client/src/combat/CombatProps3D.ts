@@ -16,7 +16,6 @@
  */
 
 import * as THREE from 'three';
-import { createCelGradient } from './CombatToon';
 
 export type PropKind =
   | 'tree-fir' | 'tree-oak' | 'tree-dead' | 'mushroom-bell'
@@ -27,16 +26,22 @@ export type PropKind =
   | 'pillar-divine' | 'moon-orb' | 'lightning-strike' | 'void-fissure'
   | 'spire-jagged' | 'cliff-mist';
 
-/** Toon material factory — shares one cel ramp across the whole scene. */
-function toonMat(color: string, opts: { emissive?: string; transparent?: boolean; opacity?: number } = {}): THREE.MeshToonMaterial {
-  const m = new THREE.MeshToonMaterial({
+/** PBR material factory for procedural props — picks roughness from
+ *  the prop's intended surface (rocks rough, crystals smooth) so the
+ *  HD pipeline's IBL + GTAO + bloom can grade them properly. */
+function toonMat(color: string, opts: { emissive?: string; transparent?: boolean; opacity?: number; roughness?: number; metalness?: number } = {}): THREE.MeshStandardMaterial {
+  const m = new THREE.MeshStandardMaterial({
     color: new THREE.Color(color),
-    gradientMap: createCelGradient(),
+    roughness: opts.roughness ?? 0.85,
+    metalness: opts.metalness ?? 0,
     transparent: opts.transparent ?? false,
     opacity: opts.opacity ?? 1,
     side: opts.transparent ? THREE.DoubleSide : THREE.FrontSide,
   });
-  if (opts.emissive) m.emissive = new THREE.Color(opts.emissive);
+  if (opts.emissive) {
+    m.emissive = new THREE.Color(opts.emissive);
+    m.emissiveIntensity = 0.6;
+  }
   return m;
 }
 

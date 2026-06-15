@@ -13,7 +13,7 @@ import {
 } from './CombatHD';
 import { mountHDPanel } from './CombatHDPanel';
 import { buildRegionEnvironment, getRegionEmberSpec } from './CombatEnvironment';
-import { applyToon, addOutline, fitToHeight } from './CombatToon';
+import { fitToHeight } from './CombatToon';
 
 /**
  * Cinematic 3D battle stage (Three.js + post-processing).
@@ -432,19 +432,18 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     scene.add(environment.group);
     const emberSpec = getRegionEmberSpec(region);
 
-    /* ----- lights ----- (Zelda-leaning 3-point + sky/ground hemi)
-     * Hemi is bumped to 0.95 so toon shaded rigs read evenly across
-     * the sky / ground hemispheres. Key drops to 0.7 because cel bands
-     * blow out under stronger sun. A new back rim light at low intensity
-     * pulls the rigs off the BG without resorting to bloom. */
-    scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.95));
-    const key = new THREE.DirectionalLight(0xfff1c4, 0.70);
+    /* ----- lights ----- (cinematic 3-point + sky/ground hemi)
+     * Key sun + cool sky fill + warm back rim. Higher key intensity
+     * for crisp PBR highlights on the rigged characters; the back rim
+     * carves them off the BG for that "shot on a tripod" silhouette. */
+    scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.60));
+    const key = new THREE.DirectionalLight(0xfff1c4, 1.10);
     key.position.set(4, 8, 5);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6aa7ff, 0.45);
+    const fill = new THREE.DirectionalLight(0x6aa7ff, 0.40);
     fill.position.set(-5, 3, 2);
     scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffe7c2, 0.40);
+    const rim = new THREE.DirectionalLight(0xffe7c2, 0.55);
     rim.position.set(0, 4, -7);
     scene.add(rim);
 
@@ -486,16 +485,18 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const loader = new GLTFLoader();
     const tryLoadRig = (cls: string, side: 'hero' | 'foe') => {
       const url = `/assets/characters/${cls}.glb`;
-      const tintHex = CLASS_TINT[cls] || CLASS_TINT.warrior;
       loader.load(url, (gltf) => {
         const model = gltf.scene;
-        // Order matters: fitToHeight must run BEFORE addOutline so the
-        // bbox isn't polluted by the back-face shells (skinned shells
-        // bound with bindMatrix carry the rig's internal scale, which
-        // inflates the bbox 30-60× and would shrink the model to a dot).
-        applyToon(model, { tint: tintHex, tintStrength: 0.25 });
+        // Photoreal pass: keep the original PBR materials shipped with
+        // the glTF (MeshStandardMaterial with baseColor / normal / mr
+        // maps), light them through the HD backend's IBL + 3-point
+        // rig. No toon override, no back-face outline shell — this is
+        // the "cinematic realistic" path the user asked for.
         fitToHeight(model, 2.4);
-        addOutline(model, 0.022);
+        model.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
+        });
 
         model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
         // 3/4 view: rotate ~45° off camera so we see body and weapon at
