@@ -10,22 +10,41 @@ import {
   type AccessTokenClaims,
   type ChatMessageMsg,
   type InviteReceivedMsg,
+  type LobbyVisibility,
 } from "@aso/shared";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { pubClient, redis, subClient } from "./redis.js";
 import { verifyHandshake } from "./auth.js";
 import { Matchmaker } from "./matchmaking.js";
+import { LobbyManager } from "./lobby.js";
 import type { GameRoom } from "./room.js";
 import { sanitizeChat, chatRateOk, socketRateOk } from "./chat.js";
 
 const queueJoinSchema = z.object({ game: z.string(), mode: z.string().optional() });
 const gameActionSchema = z.object({ matchId: z.string(), action: z.unknown() });
 const resyncSchema = z.object({ matchId: z.string() });
+const reclaimSchema = z.object({ matchId: z.string() });
 // Accept a little slack over the cap; sanitizeChat truncates to CHAT_MAX_LEN.
 const chatSendSchema = z.object({ matchId: z.string(), text: z.string().min(1).max(CHAT_MAX_LEN * 4) });
 const inviteSendSchema = z.object({ toUserId: z.string().min(1).max(64), game: z.string() });
 const inviteAcceptSchema = z.object({ fromUserId: z.string().min(1).max(64), game: z.string() });
+const lobbyCreateSchema = z.object({
+  game: z.string(),
+  mode: z.string().max(32).optional(),
+  visibility: z.enum(["public", "private"]).optional(),
+  config: z.unknown().optional(),
+});
+const lobbyIdSchema = z.object({ lobbyId: z.string().min(1).max(64) });
+const lobbyListSchema = z.object({ game: z.string().optional() });
+const lobbyInviteSchema = z.object({ lobbyId: z.string().min(1).max(64), toUserId: z.string().min(1).max(64) });
+const lobbySeatSchema = z.object({ lobbyId: z.string().min(1).max(64), seat: z.number().int().min(0).max(15) });
+const lobbyTeamSchema = z.object({
+  lobbyId: z.string().min(1).max(64),
+  seat: z.number().int().min(0).max(15),
+  team: z.number().int().min(0).max(15),
+});
+const lobbyConfigSchema = z.object({ lobbyId: z.string().min(1).max(64), config: z.unknown() });
 
 // Last-resort guards: a stray async error must not take down a node holding
 // live matches (the reduce/bot paths are fire-and-forget).
@@ -44,6 +63,7 @@ const presenceKey = (userId: string): string => `presence:online:${userId}`;
 interface InterServerEvents {
   "op:action": (d: { matchId: string; userId: string; action: unknown }) => void;
   "op:resync": (d: { matchId: string; userId: string }) => void;
+  "op:reclaim": (d: { matchId: string; userId: string }) => void;
   "op:presence": (d: { userId: string; connected: boolean }) => void;
   "op:chat": (d: { matchId: string; userId: string; text: string; ts: number }) => void;
 }
@@ -121,6 +141,12 @@ async function main(): Promise<void> {
   const matchmaker = new Matchmaker(io);
   matchmaker.start();
 
+  const displayNameOf = async (uid: string): Promise<string> => {
+    const u = await prisma.user.findUnique({ where: { id: uid }, select: { displayName: true } });
+    return u?.displayName ?? "Играч";
+  };
+  const lobbies = new LobbyManager(io, matchmaker, displayNameOf);
+
   /** Broadcast a chat line to every human seat in a room (reaches clients on
    *  any node via the adapter). */
   const broadcastChat = (room: GameRoom, seatNo: number, displayName: string, text: string, ts: number) => {
@@ -133,6 +159,7 @@ async function main(): Promise<void> {
   // Apply forwarded ops only if THIS node owns the room/match; otherwise no-op.
   io.on("op:action", (d) => matchmaker.getRoom(d.matchId)?.handleAction(d.userId, d.action));
   io.on("op:resync", (d) => matchmaker.getRoom(d.matchId)?.resync(d.userId));
+  io.on("op:reclaim", (d) => matchmaker.getRoom(d.matchId)?.reclaim(d.userId));
   io.on("op:presence", (d) =>
     matchmaker.activeRoomForUser(d.userId)?.setConnected(d.userId, d.connected),
   );
@@ -204,6 +231,88 @@ async function main(): Promise<void> {
       else io.serverSideEmit("op:resync", { matchId: parsed.data.matchId, userId });
     });
 
+    socket.on(SOCKET_EVENTS.GAME_RECLAIM, (payload: unknown) => {
+      const parsed = reclaimSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const room = matchmaker.getRoom(parsed.data.matchId);
+      if (room) room.reclaim(userId);
+      else io.serverSideEmit("op:reclaim", { matchId: parsed.data.matchId, userId });
+    });
+
+    // ── Lobby (pre-game room) ────────────────────────────────────────────────
+    socket.on(SOCKET_EVENTS.LOBBY_CREATE, (payload: unknown) => {
+      if (!socketRateOk(socket, "lobbyCreate", 8, 30_000)) return;
+      if (claims.role === "GUEST") return; // guests can't host
+      const parsed = lobbyCreateSchema.safeParse(payload);
+      if (!parsed.success || !isGameKey(parsed.data.game)) return;
+      const visibility: LobbyVisibility = parsed.data.visibility ?? "public";
+      void lobbies
+        .create(userId, parsed.data.game, parsed.data.mode ?? "custom", visibility, parsed.data.config ?? null)
+        .catch((err) => logger.error({ err }, "lobby create failed"));
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_JOIN, (payload: unknown) => {
+      if (!socketRateOk(socket, "lobbyJoin", 20, 10_000)) return;
+      const parsed = lobbyIdSchema.safeParse(payload);
+      if (!parsed.success) return;
+      void lobbies.join(userId, parsed.data.lobbyId).then((l) => {
+        if (!l) socket.emit(SOCKET_EVENTS.ERROR, { code: "lobby_full", message: "Стаята е недостъпна" });
+      });
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_LEAVE, () => lobbies.leave(userId));
+
+    socket.on(SOCKET_EVENTS.LOBBY_LIST, (payload: unknown) => {
+      const parsed = lobbyListSchema.safeParse(payload);
+      const game = parsed.success && parsed.data.game && isGameKey(parsed.data.game) ? parsed.data.game : undefined;
+      void lobbies.listPublic(game).then((list) => {
+        socket.emit(SOCKET_EVENTS.LOBBY_LIST_RESULT, { lobbies: list });
+      });
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_INVITE, (payload: unknown) => {
+      if (!socketRateOk(socket, "lobbyInvite", 15, 30_000)) return;
+      const parsed = lobbyInviteSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const lobby = lobbies.get(parsed.data.lobbyId);
+      if (!lobby || !lobby.has(userId)) return;
+      void areFriends(userId, parsed.data.toUserId).then(async (ok) => {
+        if (!ok) return;
+        const me = await prisma.user.findUnique({ where: { id: userId }, select: { displayName: true } });
+        lobbies.invite(parsed.data.lobbyId, parsed.data.toUserId, me?.displayName ?? "Играч", lobby.game);
+      });
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_KICK, (payload: unknown) => {
+      const parsed = lobbySeatSchema.safeParse(payload);
+      if (parsed.success) lobbies.kick(userId, parsed.data.lobbyId, parsed.data.seat);
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_ADD_BOT, (payload: unknown) => {
+      const parsed = lobbyIdSchema.safeParse(payload);
+      if (parsed.success) lobbies.addBot(userId, parsed.data.lobbyId);
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_REMOVE_BOT, (payload: unknown) => {
+      const parsed = lobbySeatSchema.safeParse(payload);
+      if (parsed.success) lobbies.removeBot(userId, parsed.data.lobbyId, parsed.data.seat);
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_SET_TEAM, (payload: unknown) => {
+      const parsed = lobbyTeamSchema.safeParse(payload);
+      if (parsed.success) lobbies.setTeam(userId, parsed.data.lobbyId, parsed.data.seat, parsed.data.team);
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_SET_CONFIG, (payload: unknown) => {
+      const parsed = lobbyConfigSchema.safeParse(payload);
+      if (parsed.success) lobbies.setConfig(userId, parsed.data.lobbyId, parsed.data.config);
+    });
+
+    socket.on(SOCKET_EVENTS.LOBBY_START, (payload: unknown) => {
+      const parsed = lobbyIdSchema.safeParse(payload);
+      if (parsed.success) void lobbies.start(userId, parsed.data.lobbyId);
+    });
+
     socket.on(SOCKET_EVENTS.CHAT_SEND, (payload: unknown) => {
       const parsed = chatSendSchema.safeParse(payload);
       if (!parsed.success) return;
@@ -266,6 +375,7 @@ async function main(): Promise<void> {
         .then((sockets) => {
           if (sockets.some((s) => s.id !== socket.id)) return; // another live socket
           dispatchPresence(userId, false);
+          lobbies.leave(userId); // drop out of any pre-game lobby
           void redis.del(presenceKey(userId)).catch(() => undefined);
         })
         .catch(() => dispatchPresence(userId, false));

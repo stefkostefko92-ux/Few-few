@@ -255,9 +255,28 @@ export const MAGNAT_PRESETS: Record<string, Partial<MagnatConfig>> = {
   friendly: { startingCash: 2000, auctions: false, freeParkingPot: true, goBonus: 200 },
 };
 
-/** Merge a partial config (e.g. a preset or room override) onto the defaults. */
+const clamp = (n: unknown, lo: number, hi: number, fallback: number): number => {
+  const v = typeof n === "number" && Number.isFinite(n) ? Math.round(n) : fallback;
+  return Math.min(hi, Math.max(lo, v));
+};
+
+/**
+ * Merge a partial config (e.g. a preset or a client room override) onto the
+ * defaults, clamping every field to a safe range — the override can come
+ * straight from a lobby host, so it must never produce a degenerate game.
+ */
 export function resolveMagnatConfig(over?: Partial<MagnatConfig> | null): MagnatConfig {
-  return { ...DEFAULT_MAGNAT_CONFIG, ...(over ?? {}) };
+  const o = over ?? {};
+  return {
+    startingCash: clamp(o.startingCash, 500, 50000, DEFAULT_MAGNAT_CONFIG.startingCash),
+    auctions: typeof o.auctions === "boolean" ? o.auctions : DEFAULT_MAGNAT_CONFIG.auctions,
+    freeParkingPot:
+      typeof o.freeParkingPot === "boolean" ? o.freeParkingPot : DEFAULT_MAGNAT_CONFIG.freeParkingPot,
+    goBonus: clamp(o.goBonus, 0, 1000, DEFAULT_MAGNAT_CONFIG.goBonus),
+    trading: typeof o.trading === "boolean" ? o.trading : DEFAULT_MAGNAT_CONFIG.trading,
+    maxTurns: clamp(o.maxTurns, 50, 1000, DEFAULT_MAGNAT_CONFIG.maxTurns),
+    turnSeconds: clamp(o.turnSeconds, 10, 120, DEFAULT_MAGNAT_CONFIG.turnSeconds),
+  };
 }
 
 /** Cash + properties offered or requested in a trade. */

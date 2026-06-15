@@ -99,6 +99,24 @@ export const GAME_SEATS: Record<GameKey, number> = {
 
 export const seatsFor = (game: GameKey): number => GAME_SEATS[game];
 
+/**
+ * Number of teams a game is played in. 1 = free-for-all (every seat its own
+ * side). Partnership games seat partners on alternating seats (0,2 vs 1,3).
+ */
+const PARTNERED_GAMES: Partial<Record<GameKey, number>> = {
+  BELOTE: 2,
+  BRIDGE: 2,
+  KENT: 2,
+};
+
+export const teamsFor = (game: GameKey): number => PARTNERED_GAMES[game] ?? 1;
+
+/** Which team a seat belongs to. Partners alternate; FFA → seat is its own team. */
+export const teamOfSeat = (game: GameKey, seat: number): number => {
+  const t = teamsFor(game);
+  return t > 1 ? seat % t : seat;
+};
+
 export function isGameKey(value: string): value is GameKey {
   return (GAME_KEYS as readonly string[]).includes(value);
 }

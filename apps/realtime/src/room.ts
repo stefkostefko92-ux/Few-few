@@ -57,6 +57,7 @@ export class GameRoom {
   private turnTimer?: NodeJS.Timeout;
   private turnEndsAt = 0;
   private readonly disconnected = new Set<number>(); // human seats currently offline
+  private readonly substituted = new Set<number>(); // human seats a bot is covering
   private readonly graceTimers = new Map<string, NodeJS.Timeout>(); // by userId
 
   constructor(
@@ -84,6 +85,11 @@ export class GameRoom {
       if (this.engine.legalActions(this.state, s.seat).length > 0) return s;
     }
     return null;
+  }
+
+  /** A seat is driven by AI if it's a real bot or a human currently substituted. */
+  private isBotDriven(seat: RoomSeat): boolean {
+    return seat.isBot || this.substituted.has(seat.seat);
   }
 
   /** Begin: announce the match to each human, push initial state, run any bot opener. */
@@ -115,6 +121,7 @@ export class GameRoom {
       turn: current ? current.seat : null,
       terminal: this.engine.isTerminal(this.state),
       turnEndsAt: this.turnEndsAt || undefined,
+      substituted: this.substituted.size ? [...this.substituted] : undefined,
     });
   }
 
@@ -132,6 +139,11 @@ export class GameRoom {
     if (this.done) return;
     const seat = this.seatOf(userId);
     if (!seat) return;
+    // Acting on your own seat reclaims it from a bot substitute.
+    if (this.substituted.has(seat.seat)) {
+      this.substituted.delete(seat.seat);
+      this.emitPresence(seat.seat, true);
+    }
     // Free-form engines (e.g. cue sports) validate continuous actions directly;
     // everyone else matches against the enumerated legal set.
     const legal = this.engine.validate
@@ -164,7 +176,7 @@ export class GameRoom {
     this.clearTurnTimer();
     if (this.done) return;
     const seat = this.currentSeat();
-    if (!seat || seat.isBot) return; // bots are driven by runBots()
+    if (!seat || this.isBotDriven(seat)) return; // bots/substitutes are driven by runBots()
     // A session may set its own per-turn time (e.g. Магнат house rules); else env default.
     const cfgSec = (this.state as { config?: { turnSeconds?: number } }).config?.turnSeconds;
     const baseMs = typeof cfgSec === "number" && cfgSec > 0 ? cfgSec * 1000 : TURN_MS;
@@ -173,18 +185,26 @@ export class GameRoom {
     this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), delay);
   }
 
-  /** Clock expired: the server plays a legal move for the seat (anti-stall). */
+  /** Clock expired: hand the seat to a bot substitute until the player reclaims
+   *  it (by acting or an explicit reclaim). Keeps the table moving with no waits. */
   private onTurnTimeout(seat: number): void {
     if (this.done) return;
     const cur = this.currentSeat();
     if (!cur || cur.seat !== seat) return; // they already moved
-    const action = this.fallbackBot.pick(this.engine, this.state, seat);
-    if (action === null) {
-      this.armTurnTimer();
-      return;
-    }
-    this.applyReduce(action);
+    this.substituted.add(seat);
+    this.emitPresence(seat, false); // surfaces "под контрол на бот" to the table
     void this.runBots();
+  }
+
+  /** A player takes their seat back from the bot substitute. */
+  reclaim(userId: string): void {
+    const seat = this.seatOf(userId);
+    if (!seat || seat.isBot || this.done) return;
+    if (!this.substituted.has(seat.seat)) return;
+    this.substituted.delete(seat.seat);
+    this.emitPresence(seat.seat, true);
+    if (this.currentSeat()?.seat === seat.seat) this.armTurnTimer();
+    this.broadcastState();
   }
 
   private emitPresence(seat: number, connected: boolean): void {
@@ -203,21 +223,24 @@ export class GameRoom {
     if (connected) {
       if (!this.disconnected.has(seat.seat)) return;
       this.disconnected.delete(seat.seat);
+      this.substituted.delete(seat.seat); // player is back; stop the bot covering
       const g = this.graceTimers.get(userId);
       if (g) {
         clearTimeout(g);
         this.graceTimers.delete(userId);
       }
       this.emitPresence(seat.seat, true);
-      // If they dropped on their own turn, the clock was shortened to ~3s; give
-      // the returning player a full turn again before catching them up.
+      // If it's their turn again, give the returning player a fresh full turn.
       if (this.currentSeat()?.seat === seat.seat) this.armTurnTimer();
-      this.sendStateTo(seat); // catch them up
+      this.broadcastState(); // catch everyone up (bot-control flag cleared)
       return;
     }
 
     if (this.disconnected.has(seat.seat)) return;
     this.disconnected.add(seat.seat);
+    // A dropped seat is covered by a bot substitute immediately, so the table
+    // never stalls; the player reclaims it on reconnect.
+    this.substituted.add(seat.seat);
     this.emitPresence(seat.seat, false);
     // Forfeit only makes sense head-to-head; larger tables keep going with the
     // bot covering the dropped seat.
@@ -227,8 +250,11 @@ export class GameRoom {
         setTimeout(() => this.onGrace(seat.seat), DISCONNECT_GRACE_MS),
       );
     }
-    // If it's their turn, shorten the clock so the table isn't left waiting.
-    if (this.currentSeat()?.seat === seat.seat) this.armTurnTimer();
+    // If it's their turn, let the substitute pick up right away.
+    if (this.currentSeat()?.seat === seat.seat) {
+      this.clearTurnTimer();
+      void this.runBots();
+    }
   }
 
   private onGrace(seat: number): void {
@@ -294,7 +320,7 @@ export class GameRoom {
     try {
       while (!this.done && !this.engine.isTerminal(this.state)) {
         const seat = this.currentSeat();
-        if (!seat || !seat.isBot || !seat.bot) break;
+        if (!seat || !this.isBotDriven(seat)) break;
         // Cue sports: a 2–3s "aiming" pause before the AI shoots so it feels
         // human; other games get a short beat to let the move animate.
         const isCue = GAME_ENGINE[this.game] === "cue-sport";
@@ -302,10 +328,10 @@ export class GameRoom {
         await new Promise((r) => setTimeout(r, botDelay));
         if (this.done || this.engine.isTerminal(this.state)) break;
         // Recompute against the CURRENT state after the await (it may have moved
-        // on, e.g. a turn timeout), and only act if it's still this bot's turn.
+        // on, e.g. the player reclaimed), and only act if still AI-driven.
         const now = this.currentSeat();
-        if (!now || !now.isBot || !now.bot || now.seat !== seat.seat) continue;
-        const action = now.bot.pick(this.engine, this.state, now.seat);
+        if (!now || !this.isBotDriven(now) || now.seat !== seat.seat) continue;
+        const action = (now.bot ?? this.fallbackBot).pick(this.engine, this.state, now.seat);
         if (action === null) break;
         this.applyReduce(action);
       }

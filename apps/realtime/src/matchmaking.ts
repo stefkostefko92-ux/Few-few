@@ -4,6 +4,7 @@ import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
 import { MAGNAT_PRESETS, STARTING_MMR, isGameKey, seatsFor } from "@aso/shared";
 import { GameRoom, type RoomSeat } from "./room.js";
+import type { Lobby } from "./lobby.js";
 import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
 import { env } from "./env.js";
@@ -79,6 +80,29 @@ export class Matchmaker {
       if (!room.isDone && room.seats.some((s) => s.userId === userId)) return room;
     }
     return undefined;
+  }
+
+  activeMatchIdForUser(userId: string): string | undefined {
+    return this.activeRoomForUser(userId)?.matchId;
+  }
+
+  /** Launch a match from an assembled lobby (host pressed start). Returns id. */
+  async startFromLobby(lobby: Lobby): Promise<string> {
+    const seed = generateSeed();
+    const match = await prisma.match.create({
+      data: { game: lobby.game, mode: lobby.mode, seed },
+    });
+    const seats = lobby.toRoomSeats(seed);
+    // No member may be double-seated in another live match on this node.
+    for (const s of seats) if (s.userId) this.activeRoomForUser(s.userId)?.resign(s.userId);
+    const room = new GameRoom(this.io, match.id, lobby.game, seats, seed, lobby.config);
+    this.rooms.set(match.id, room);
+    room.start();
+    logger.info(
+      { matchId: match.id, game: lobby.game, lobbyId: lobby.id, seats: seats.length },
+      "match created from lobby",
+    );
+    return match.id;
   }
 
   private engineFor(game: GameKey): AnyEngine | undefined {
