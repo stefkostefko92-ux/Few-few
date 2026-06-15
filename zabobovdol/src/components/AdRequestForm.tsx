@@ -18,16 +18,20 @@ export function AdRequestForm({
     return (
       <div className="rounded-xl border border-green-200 bg-green-50 p-5">
         <p className="text-slate-800">
-          Благодарим! Получихме заявката Ви и ще се свържем с Вас. За да активираме
-          рекламата, можете да платите таксата от {price}€ на месец сега:
+          Благодарим! Получихме заявката Ви. <strong>Първо ще се свържем с Вас</strong>,
+          за да уточним текста, изображението и линка на рекламата.
+        </p>
+        <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <strong>Важно:</strong> платете таксата от {price}€ на месец{" "}
+          <strong>едва след като се свържем и се уговорим</strong>.
         </p>
         <a
           href={paymentUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-primary mt-4"
+          className="btn-secondary mt-4"
         >
-          Платете {price}€ с Revolut
+          Платете {price}€ с Revolut (след уговорка)
         </a>
       </div>
     );

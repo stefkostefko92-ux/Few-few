@@ -89,6 +89,7 @@ export function AdminShell({
             {link("/admin/reklami", "Заявки за реклама")}
             {link("/admin/search-misses", "Търсения без резултат")}
             {user.role === "ADMIN" && link("/admin/users", "Потребители")}
+            {user.role === "ADMIN" && link("/admin/nastroyki", "Настройки")}
             {link("/admin/audit", "Одит лог")}
           </nav>
         </aside>

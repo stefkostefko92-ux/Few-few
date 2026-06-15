@@ -231,6 +231,13 @@ model Complaint {
   @@index([status, createdAt])
 }
 
+// Прости настройки на сайта (ключ-стойност), редактируеми от админ панела.
+model SiteSetting {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
 enum AdRequestStatus {
   NEW // Получена
   CONTACTED // Свързахме се
