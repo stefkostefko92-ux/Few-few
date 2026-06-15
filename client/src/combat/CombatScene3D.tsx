@@ -511,14 +511,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         const removals: THREE.Object3D[] = [];
         model.traverse((o) => {
           const m = o as THREE.Mesh;
-          if (!m.isMesh || !m.geometry) return;
-          const local = m.geometry.boundingBox || (m.geometry.computeBoundingBox(), m.geometry.boundingBox);
-          if (!local) return;
-          const lsize = new THREE.Vector3(); local.getSize(lsize);
-          const worldScale = m.getWorldScale(new THREE.Vector3());
-          const worldThickness = lsize.y * Math.abs(worldScale.y);
+          if (!m.isMesh) return;
           const worldBox = new THREE.Box3().setFromObject(m);
-          if (worldThickness < rigSize.y * 0.08 && worldBox.min.y < 0.15 && worldBox.max.y < 0.25) {
+          const t = worldBox.max.y - worldBox.min.y;
+          if (t > 0 && t < rigSize.y * 0.08 && worldBox.min.y < 0.15 && worldBox.max.y < 0.25) {
             removals.push(m);
           }
         });
