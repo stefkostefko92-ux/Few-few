@@ -501,10 +501,30 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // rig. No toon override, no back-face outline shell — this is
         // the "cinematic realistic" path the user asked for.
         fitToHeight(model, 2.4);
+        // castShadow OFF on rigs: the directional shadow renders as a
+        // hard rectangle on legacy shadow paths (SwiftShader, older
+        // mobile drivers) — the soft contact blob added below grounds
+        // the figure cleanly regardless of the GPU's shadow filter.
         model.traverse((o) => {
           const m = o as THREE.Mesh;
-          if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
+          if (m.isMesh) { m.castShadow = false; m.receiveShadow = true; }
         });
+        // Soft contact shadow blob — radial alpha falloff, no depth
+        // write, additive multiply against the ground.
+        const blob = new THREE.Mesh(
+          new THREE.CircleGeometry(0.6, 32),
+          new THREE.ShaderMaterial({
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.MultiplyBlending,
+            uniforms: { uAlpha: { value: 0.45 } },
+            vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+            fragmentShader: 'varying vec2 vUv; uniform float uAlpha; void main(){ float d = length(vUv - 0.5) * 2.0; float a = smoothstep(1.0, 0.0, d) * uAlpha; gl_FragColor = vec4(0.0, 0.0, 0.0, a); }',
+          }),
+        );
+        blob.rotation.x = -Math.PI / 2;
+        blob.position.y = 0.005;
+        model.add(blob);
 
         model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
         // 3/4 view: rotate ~45° off camera so we see body and weapon at
