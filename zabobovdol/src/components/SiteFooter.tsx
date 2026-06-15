@@ -8,7 +8,17 @@ export function SiteFooter() {
       <div className="container-content py-10">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
-            <div className="text-lg font-bold">{SITE.name}</div>
+            <div className="flex items-center gap-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/brand/bobov-dol-grb.png"
+                alt="Герб на Бобов дол"
+                width={28}
+                height={40}
+                className="h-10 w-auto"
+              />
+              <span className="text-lg font-bold">{SITE.name}</span>
+            </div>
             <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
           </div>
           <div>
@@ -67,13 +77,19 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center">
-          <p>
-            © {year} {SITE.name}. Гражданска инициатива в полза на жителите на{" "}
-            {SITE.geo.city}.
-          </p>
-          <p>
-            Независим проект, който не е официален сайт на община{" "}
-            {SITE.geo.city}.
+          <div className="space-y-1">
+            <p>
+              © {year} {SITE.name}. Гражданска инициатива в полза на жителите на{" "}
+              {SITE.geo.city}.
+            </p>
+            <p>
+              Независим проект, който не е официален сайт на община{" "}
+              {SITE.geo.city}.
+            </p>
+          </div>
+          <p className="text-slate-500">
+            Изработка на сайта:{" "}
+            <span className="font-semibold text-slate-700">Carbon Stealth VCC</span>
           </p>
         </div>
       </div>

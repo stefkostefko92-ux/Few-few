@@ -17,13 +17,15 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="container-content">
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 font-bold">
-            <span
-              aria-hidden
-              className="grid h-9 w-9 place-items-center rounded-lg bg-brand-700 text-white"
-            >
-              БД
-            </span>
+          <Link href="/" className="flex items-center gap-2.5 font-bold">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/bobov-dol-grb.png"
+              alt="Герб на Бобов дол"
+              width={34}
+              height={49}
+              className="h-11 w-auto"
+            />
             <span className="text-lg leading-tight">
               {SITE.name}
               <span className="block text-xs font-normal text-slate-500">

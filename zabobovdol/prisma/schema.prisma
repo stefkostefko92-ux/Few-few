@@ -204,6 +204,33 @@ model Post {
   @@index([published, publishedAt])
 }
 
+enum ComplaintStatus {
+  NEW // Получен
+  FORWARDED // Препратен към институцията
+  RESOLVED // Решен
+  REJECTED // Отхвърлен
+}
+
+// Сигнал/оплакване от жител, което се препраща към общината/институция.
+model Complaint {
+  id          String          @id @default(cuid())
+  refCode     String          @unique // кратък код за проследяване от гражданина
+  name        String          @default("")
+  email       String          @default("")
+  phone       String          @default("")
+  category    String          @default("Общи")
+  subject     String
+  message     String
+  location    String          @default("")
+  status      ComplaintStatus @default(NEW)
+  forwardedTo String          @default("")
+  adminNote   String          @default("")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status, createdAt])
+}
+
 // Свободни запитвания от чатбота/търсачката, които нямат отговор —
 // помагат да разберем какво всъщност търсят хората (валидация).
 model SearchMiss {

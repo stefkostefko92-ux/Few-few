@@ -35,6 +35,13 @@ services:
       CHAT_PROVIDER: ${CHAT_PROVIDER:-rules}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+      MUNICIPALITY_EMAIL: ${MUNICIPALITY_EMAIL:-obshtina@bobovdol.egov.bg}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@zabobovdol.bg}
     expose:
       - "3000"
 

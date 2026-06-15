@@ -16,10 +16,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/sabitiya`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/obyavi`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${base}/novini`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${base}/signali`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/pomosht`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/za-nas`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/kontakti`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/pravila`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/poveritelnost`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/biskvitki`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   try {

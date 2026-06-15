@@ -6,6 +6,7 @@ import { organizationLd, websiteLd } from "@/lib/seo";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidget } from "@/components/ChatWidget";
+import { CookieConsent } from "@/components/CookieConsent";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -44,10 +45,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [{ url: "/icon-192.png" }],
+    shortcut: [{ url: "/icon-192.png" }],
   },
   robots: { index: true, follow: true, "max-image-preview": "large" },
   formatDetection: { telephone: true, address: true, email: true },
@@ -57,7 +59,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#1850dc",
+  themeColor: "#212f8a",
 };
 
 export default function RootLayout({
@@ -91,6 +93,7 @@ export default function RootLayout({
         </main>
         <SiteFooter />
         <ChatWidget />
+        <CookieConsent />
       </body>
     </html>
   );

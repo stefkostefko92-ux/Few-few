@@ -49,12 +49,16 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/sabitiya", label: "Събития", description: "Какво се случва в града" },
   { href: "/obyavi", label: "Обяви", description: "Безплатни местни обяви" },
   { href: "/novini", label: "Новини", description: "Актуални съобщения" },
+  { href: "/signali", label: "Сигнали до общината", description: "Подайте оплакване или сигнал" },
   { href: "/pomosht", label: "Помощ на гише", description: "Лична помощ с дигитални услуги" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
+  { href: "/signali", label: "Сигнали до общината" },
   { href: "/pomosht", label: "Помощ на гише" },
   { href: "/kontakti", label: "Контакти" },
+  { href: "/pravila", label: "Общи условия" },
   { href: "/poveritelnost", label: "Поверителност" },
+  { href: "/biskvitki", label: "Бисквитки" },
 ];
