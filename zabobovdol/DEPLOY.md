@@ -41,6 +41,13 @@ docker compose up -d --build
 docker compose exec app npm run db:seed
 ```
 
+По избор — заредете реалните обекти в Бобов дол (институции и бизнеси, събрани
+от публични източници; скрива примерните записи):
+
+```bash
+docker compose exec app npm run db:seed:business
+```
+
 Сайтът е достъпен на `http://<IP>` (порт 80). Вход в админ: `/admin/login`.
 
 ## 5. HTTPS (силно препоръчително)
