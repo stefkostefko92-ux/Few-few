@@ -99,14 +99,7 @@ export const DEFAULT_TUNEABLES: HDTuneables = {
   // /demo/combat lil-gui.
   ssrThickness: 0.018,
   ssrOpacity: 0,
-  // TAA sample level 0 — disables the temporal accumulator. On a
-  // real GPU the accumulator is fine, but the headless CPU path
-  // takes 200-400ms per frame, so the post-process pulls multi-
-  // second-old history into the present frame. The user reported a
-  // persistent black halo around each fighter; that's the sprite
-  // billboard's first-frame imprint surviving in the TAA history
-  // long after the rig has covered it up.
-  taaSampleLevel: 0,
+  taaSampleLevel: 2,
   rgbShiftAmount: 0.0008,
   fogDensity: 0.06,
   fogNear: 6,
