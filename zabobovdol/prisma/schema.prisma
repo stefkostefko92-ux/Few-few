@@ -257,6 +257,33 @@ enum HelpKind {
   OFFER // Предлага помощ или дарение
 }
 
+enum RideKind {
+  OFFER // Предлага място в колата (шофьор)
+  NEED // Търси превоз / спътници
+}
+
+// „Споделено пътуване“ — обяви за споделяне на разходите по общ маршрут.
+model Rideshare {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  kind         RideKind @default(OFFER)
+  routeFrom    String // откъде
+  routeTo      String // докъде
+  schedule     String   @default("") // кога (дни/час)
+  seats        String   @default("") // свободни места (по избор)
+  costNote     String   @default("") // дял от разходите
+  description  String   @default("")
+  contactName  String   @default("")
+  contactPhone String   @default("")
+  contactEmail String   @default("")
+  published    Boolean  @default(false) // минава през одобрение
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, kind])
+}
+
 // „Зов за помощ“ — взаимопомощ и благотворителност за възрастните хора.
 model HelpCause {
   id           String   @id @default(cuid())

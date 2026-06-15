@@ -5,6 +5,7 @@ import {
   BUSINESS_CATEGORY_LABELS,
   LISTING_TYPE_LABELS,
   HELP_KIND_LABELS,
+  RIDE_KIND_LABELS,
 } from "@/lib/categories";
 
 export type FieldType =
@@ -266,6 +267,28 @@ export const RESOURCES: Resource[] = [
       { name: "phone", label: "Телефон (само вътрешно)", type: "text" },
       { name: "email", label: "Имейл (само вътрешно)", type: "text" },
       { name: "published", label: "Публикуван (одобрен)", type: "boolean", listVisible: true },
+    ],
+  },
+  {
+    key: "patuvane",
+    model: "rideshare",
+    labelSingular: "Споделено пътуване",
+    labelPlural: "Споделено пътуване",
+    titleField: "routeFrom",
+    defaultSort: { field: "createdAt", dir: "desc" },
+    fields: [
+      { name: "kind", label: "Вид", type: "select", options: Object.entries(RIDE_KIND_LABELS).map(([value, label]) => ({ value, label })), listVisible: true },
+      { name: "routeFrom", label: "Откъде", type: "text", required: true, listVisible: true },
+      { name: "routeTo", label: "Докъде", type: "text", required: true, listVisible: true },
+      { name: "schedule", label: "Кога (дни/час)", type: "text" },
+      { name: "seats", label: "Свободни места", type: "text" },
+      { name: "costNote", label: "Дял от разхода", type: "text" },
+      { name: "description", label: "Описание", type: "textarea", fullWidth: true },
+      { name: "contactName", label: "Лице за контакт", type: "text" },
+      { name: "contactPhone", label: "Телефон", type: "text" },
+      { name: "contactEmail", label: "Имейл", type: "text" },
+      { name: "expiresAt", label: "Валидна до", type: "datetime" },
+      { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
     ],
   },
 ];

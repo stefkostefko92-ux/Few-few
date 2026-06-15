@@ -37,6 +37,11 @@ export const HELP_KIND_LABELS: Record<string, string> = {
   OFFER: "Предлага помощ / дарение",
 };
 
+export const RIDE_KIND_LABELS: Record<string, string> = {
+  OFFER: "Предлага място в колата",
+  NEED: "Търси превоз / спътници",
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Администратор",
   EDITOR: "Редактор",

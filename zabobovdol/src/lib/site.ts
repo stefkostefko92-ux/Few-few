@@ -57,6 +57,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/biznes", label: "Местен бизнес", description: "Каталог на търговци и занаятчии" },
   { href: "/sabitiya", label: "Събития", description: "Какво се случва в града" },
   { href: "/obyavi", label: "Обяви", description: "Безплатни местни обяви" },
+  { href: "/transport", label: "Транспорт", description: "Такси, влак, автобуси и споделено пътуване" },
   { href: "/novini", label: "Новини", description: "Актуални съобщения" },
   { href: "/signali", label: "Сигнали до общината", description: "Подайте оплакване или сигнал" },
   { href: "/istoriya", label: "История на града", description: "Историята на Бобов дол по етапи" },
@@ -67,6 +68,8 @@ export const PRIMARY_NAV: NavItem[] = [
 
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
+  { href: "/transport", label: "Транспорт" },
+  { href: "/spodeleno-patuvane", label: "Споделено пътуване" },
   { href: "/zov-za-pomosht", label: "Зов за помощ" },
   { href: "/dobrovolci", label: "Доброволци" },
   { href: "/spomeni", label: "Спомени от Бобов дол" },
