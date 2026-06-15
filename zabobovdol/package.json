@@ -15,7 +15,8 @@
     "db:seed:business": "tsx prisma/seed-business.ts",
     "db:seed:howto": "tsx prisma/seed-howto.ts",
     "db:seed:safety": "tsx prisma/seed-safety.ts",
-    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety",
+    "db:seed:basics": "tsx prisma/seed-basics.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics",
     "postinstall": "prisma generate"
   },
   "prisma": {
