@@ -38,6 +38,12 @@ export const SITE = {
     revolut: "https://revolut.me/vycanismajoris",
     monthlyPriceEur: 20,
   },
+  // Начален екран (splash) при влизане в сайта.
+  intro: {
+    enabled: true,
+    headline: "Заедно за Бобов дол",
+    seconds: 5,
+  },
   // Спешни телефони — винаги видими, не зависят от базата.
   emergency: [
     { label: "Единен европейски номер за спешни повиквания", phone: "112" },

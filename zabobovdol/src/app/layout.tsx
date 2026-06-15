@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidget } from "@/components/ChatWidget";
 import { CookieConsent } from "@/components/CookieConsent";
+import { IntroSplash } from "@/components/IntroSplash";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -107,6 +108,7 @@ export default function RootLayout({
         <SiteFooter />
         <ChatWidget />
         <CookieConsent />
+        <IntroSplash />
       </body>
     </html>
   );
