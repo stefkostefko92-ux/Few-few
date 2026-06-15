@@ -7,6 +7,7 @@ import { ForgotPassword } from "../features/auth/ForgotPassword";
 import { ResetPassword } from "../features/auth/ResetPassword";
 import { VerifyEmail } from "../features/auth/VerifyEmail";
 import { Lobby } from "../features/lobby/Lobby";
+import { RoomsPage } from "../features/lobby/RoomsPage";
 import { GameView } from "../features/game/GameView";
 import { Shop } from "../features/shop/Shop";
 import { Leaderboard } from "../features/leaderboard/Leaderboard";
@@ -66,6 +67,7 @@ export function App() {
         <Route element={<RequireAuth />}>
           <Route element={<Layout />}>
             <Route index element={<Lobby />} />
+            <Route path="rooms" element={<RoomsPage />} />
             <Route path="play/:game" element={<GameView />} />
             <Route path="shop" element={<Shop />} />
             <Route path="leaderboard" element={<Leaderboard />} />

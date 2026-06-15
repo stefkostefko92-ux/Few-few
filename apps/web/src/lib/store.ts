@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GameKey, MatchPlayerInfo, PublicUser } from "@aso/shared";
+import type { GameKey, LobbySnapshot, MatchPlayerInfo, PublicUser } from "@aso/shared";
 import type { MatchPhase } from "../features/game/useMatch";
 
 interface AuthState {
@@ -33,10 +33,13 @@ interface MatchState {
   turnEndsAt: number;
   /** Seats currently disconnected (bot covering). */
   disconnected: number[];
+  /** Seats currently played by a bot substitute (timed out / dropped). */
+  substituted: number[];
   setMatch: (m: { matchId: string; seat: number; players: MatchPlayerInfo[]; game: GameKey }) => void;
   setPhase: (phase: MatchPhase) => void;
   setLive: (turn: number | null, turnEndsAt: number) => void;
   setPresence: (seat: number, connected: boolean) => void;
+  setSubstituted: (seats: number[]) => void;
   clearMatch: () => void;
 }
 
@@ -49,8 +52,9 @@ export const useMatchStore = create<MatchState>((set) => ({
   turn: null,
   turnEndsAt: 0,
   disconnected: [],
+  substituted: [],
   setMatch: ({ matchId, seat, players, game }) =>
-    set({ matchId, seat, players, game, phase: "playing", disconnected: [] }),
+    set({ matchId, seat, players, game, phase: "playing", disconnected: [], substituted: [] }),
   setPhase: (phase) => set({ phase }),
   setLive: (turn, turnEndsAt) => set({ turn, turnEndsAt }),
   setPresence: (seat, connected) =>
@@ -61,8 +65,23 @@ export const useMatchStore = create<MatchState>((set) => ({
           ? s.disconnected
           : [...s.disconnected, seat],
     })),
+  setSubstituted: (seats) => set({ substituted: seats }),
   clearMatch: () =>
-    set({ matchId: null, seat: 0, players: [], game: null, phase: "searching", turn: null, turnEndsAt: 0, disconnected: [] }),
+    set({ matchId: null, seat: 0, players: [], game: null, phase: "searching", turn: null, turnEndsAt: 0, disconnected: [], substituted: [] }),
+}));
+
+/**
+ * The single lobby (pre-game room) the player is currently in, mirrored from
+ * the server's LOBBY_STATE snapshots. Null when not in a room.
+ */
+interface LobbyState {
+  lobby: LobbySnapshot | null;
+  setLobby: (lobby: LobbySnapshot | null) => void;
+}
+
+export const useLobbyStore = create<LobbyState>((set) => ({
+  lobby: null,
+  setLobby: (lobby) => set({ lobby }),
 }));
 
 /**

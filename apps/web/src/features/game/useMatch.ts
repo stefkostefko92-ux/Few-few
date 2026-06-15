@@ -23,6 +23,8 @@ export interface MatchHandle<S, A> {
   terminal: boolean;
   result: GameOverMsg | null;
   send: (action: A) => void;
+  /** Take your seat back from a bot substitute (after a timeout/drop). */
+  reclaim: () => void;
 }
 
 /**
@@ -76,6 +78,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       setTurn(s.turn);
       setTerminal(s.terminal);
       useMatchStore.getState().setLive(s.turn, s.turnEndsAt ?? 0);
+      useMatchStore.getState().setSubstituted(s.substituted ?? []);
     };
     const onOver = (o: GameOverMsg) => {
       if (o.matchId !== boundId.current) return;
@@ -138,5 +141,9 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     [matchId],
   );
 
-  return { phase, matchId, seat, players, state, legal, turn, terminal, result, send };
+  const reclaim = useCallback(() => {
+    if (matchId) getSocket().emit(SOCKET_EVENTS.GAME_RECLAIM, { matchId });
+  }, [matchId]);
+
+  return { phase, matchId, seat, players, state, legal, turn, terminal, result, send, reclaim };
 }

@@ -36,6 +36,7 @@ export function Header() {
             {(
               [
                 ["/", t("nav.lobby")],
+                ["/rooms", t("nav.rooms")],
                 ["/shop", t("nav.shop")],
                 ["/friends", t("nav.friends")],
                 ["/leaderboard", t("nav.leaderboard")],

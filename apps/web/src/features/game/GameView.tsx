@@ -7,6 +7,7 @@ import { GAME_CATALOG } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
+import { ReclaimBanner } from "./ReclaimBanner";
 import { OutOfChips } from "./OutOfChips";
 import { ChessView } from "./chess/ChessView";
 import { SantaseView } from "./santase/SantaseView";
@@ -132,6 +133,7 @@ export function GameView() {
     <CinematicStage tone={TONE[key] ?? "default"}>
       {renderGame(key, meta.title)}
       <MatchStatus />
+      <ReclaimBanner />
       <ChatDock />
     </CinematicStage>
   );
