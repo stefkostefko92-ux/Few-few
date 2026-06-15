@@ -56,13 +56,15 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/novini", label: "Новини", description: "Актуални съобщения" },
   { href: "/signali", label: "Сигнали до общината", description: "Подайте оплакване или сигнал" },
   { href: "/istoriya", label: "История на града", description: "Историята на Бобов дол по етапи" },
-  { href: "/pomosht", label: "Помощ на гише", description: "Лична помощ с дигитални услуги" },
+  { href: "/zov-za-pomosht", label: "Зов за помощ", description: "Взаимопомощ и подкрепа за възрастните" },
+  { href: "/spomeni", label: "Спомени от Бобов дол", description: "Споделете спомен или стара снимка" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
+  { href: "/zov-za-pomosht", label: "Зов за помощ" },
+  { href: "/spomeni", label: "Спомени от Бобов дол" },
   { href: "/signali", label: "Сигнали до общината" },
-  { href: "/pomosht", label: "Помощ на гише" },
   { href: "/kontakti", label: "Контакти" },
   { href: "/reklama", label: "Реклама" },
   { href: "/pravila", label: "Общи условия" },

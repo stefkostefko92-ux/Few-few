@@ -115,13 +115,13 @@ export default async function FaqPage({
         <aside className="space-y-4">
           <div className="card bg-brand-50">
             <h2 className="text-base font-semibold text-slate-900">
-              Нужна ви е помощ на живо?
+              Нужна ви е още помощ?
             </h2>
             <p className="mt-1 text-sm text-slate-700">
-              Елате на гишето — ще ви помогнем безплатно и спокойно.
+              Питайте дигиталния помощник долу вдясно или ни пишете — безплатно.
             </p>
-            <Link href="/pomosht" className="btn-primary mt-3 w-full">
-              Помощ на гише
+            <Link href="/kontakti" className="btn-primary mt-3 w-full">
+              Свържете се с нас
             </Link>
           </div>
           {faq.tags && (

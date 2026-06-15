@@ -4,6 +4,7 @@ import {
   SERVICE_CATEGORY_LABELS,
   BUSINESS_CATEGORY_LABELS,
   LISTING_TYPE_LABELS,
+  HELP_KIND_LABELS,
 } from "@/lib/categories";
 
 export type FieldType =
@@ -204,6 +205,45 @@ export const RESOURCES: Resource[] = [
       { name: "publishedAt", label: "Дата на публикуване", type: "datetime" },
       ...seoFields,
       { name: "published", label: "Публикувано", type: "boolean", listVisible: true },
+    ],
+  },
+  {
+    key: "help",
+    model: "helpCause",
+    labelSingular: "Кауза (Зов за помощ)",
+    labelPlural: "Зов за помощ",
+    titleField: "title",
+    slugFrom: "title",
+    defaultSort: { field: "createdAt", dir: "desc" },
+    fields: [
+      { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
+      { name: "slug", label: "URL адрес (slug)", type: "text" },
+      { name: "kind", label: "Вид", type: "select", options: Object.entries(HELP_KIND_LABELS).map(([value, label]) => ({ value, label })), listVisible: true },
+      { name: "beneficiary", label: "За кого е помощта", type: "text" },
+      { name: "location", label: "Място / квартал", type: "text" },
+      { name: "description", label: "Описание (Markdown)", type: "markdown", required: true, fullWidth: true },
+      { name: "contactName", label: "Лице за контакт", type: "text" },
+      { name: "contactPhone", label: "Телефон", type: "text" },
+      { name: "contactEmail", label: "Имейл", type: "text" },
+      { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
+    ],
+  },
+  {
+    key: "spomeni",
+    model: "memory",
+    labelSingular: "Спомен",
+    labelPlural: "Спомени",
+    titleField: "title",
+    slugFrom: "title",
+    defaultSort: { field: "createdAt", dir: "desc" },
+    fields: [
+      { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
+      { name: "slug", label: "URL адрес (slug)", type: "text" },
+      { name: "author", label: "Автор (по избор)", type: "text", listVisible: true },
+      { name: "period", label: "Период (напр. 1980-те)", type: "text" },
+      { name: "content", label: "Спомен (Markdown)", type: "markdown", required: true, fullWidth: true },
+      { name: "imageUrl", label: "Стара снимка (URL, по избор)", type: "text" },
+      { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
     ],
   },
 ];

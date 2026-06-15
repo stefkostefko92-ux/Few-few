@@ -265,22 +265,25 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* Помощ на гише */}
+      {/* Помощ онлайн + взаимопомощ */}
       <section className="bg-brand-50">
         <div className="container-content grid items-center gap-6 py-12 sm:grid-cols-[2fr,1fr]">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
-              Не се справяте онлайн? Помагаме на живо.
+              Не се справяте онлайн? Помагаме безплатно.
             </h2>
             <p className="mt-2 max-w-2xl text-slate-700">
-              Ако имате нужда от помощ с електронни услуги, документи или
-              плащания — елате на гишето в {SITE.geo.city}. Безплатно и спокойно,
-              на разбираем език, за хора от всички възрасти.
+              Питайте дигиталния помощник долу вдясно или вижте обясненията{" "}
+              „Как да…“ — стъпка по стъпка, на разбираем език, за всички възрасти.
+              А ако възрастен човек се нуждае от подкрепа, вижте „Зов за помощ“.
             </p>
           </div>
-          <div className="sm:text-right">
-            <Link href="/pomosht" className="btn-primary">
-              Научете повече
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Link href="/kak-da" className="btn-primary">
+              Вижте „Как да…“
+            </Link>
+            <Link href="/zov-za-pomosht" className="btn-secondary">
+              Зов за помощ
             </Link>
           </div>
         </div>

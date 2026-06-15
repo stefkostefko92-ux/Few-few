@@ -231,6 +231,46 @@ model Complaint {
   @@index([status, createdAt])
 }
 
+enum HelpKind {
+  NEED // Нужда от помощ
+  OFFER // Предлага помощ или дарение
+}
+
+// „Зов за помощ“ — взаимопомощ и благотворителност за възрастните хора.
+model HelpCause {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String
+  kind         HelpKind @default(NEED)
+  beneficiary  String   @default("") // за кого е помощта
+  location     String   @default("")
+  contactName  String   @default("")
+  contactPhone String   @default("")
+  contactEmail String   @default("")
+  published    Boolean  @default(false) // минава през одобрение
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, kind])
+}
+
+// „Спомени от Бобов дол“ — споделени от жителите спомени и стари снимки.
+model Memory {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  author      String   @default("")
+  period      String   @default("") // напр. „1980-те“
+  content     String
+  imageUrl    String   @default("")
+  published   Boolean  @default(false) // минава през одобрение
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
 // Прости настройки на сайта (ключ-стойност), редактируеми от админ панела.
 model SiteSetting {
   key       String   @id

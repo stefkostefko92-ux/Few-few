@@ -32,6 +32,11 @@ export const LISTING_TYPE_LABELS: Record<string, string> = {
   OTHER: "Друго",
 };
 
+export const HELP_KIND_LABELS: Record<string, string> = {
+  NEED: "Търси помощ",
+  OFFER: "Предлага помощ / дарение",
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Администратор",
   EDITOR: "Редактор",
