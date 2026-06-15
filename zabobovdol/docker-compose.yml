@@ -42,6 +42,8 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-no-reply@zabobovdol.bg}
+      MUNICIPALITY_NEWS_URL: ${MUNICIPALITY_NEWS_URL:-https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news}
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
     expose:
       - "3000"
 

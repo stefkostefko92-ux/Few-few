@@ -51,6 +51,9 @@ export default async function NewsPage() {
                 <p className="mt-1 text-sm text-slate-600">
                   {p.excerpt || plainText(p.content, 130)}
                 </p>
+                {p.source && (
+                  <div className="mt-2 text-xs text-slate-400">Източник: {p.source}</div>
+                )}
               </Link>
             ))}
           </div>

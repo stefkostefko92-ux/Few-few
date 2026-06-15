@@ -58,6 +58,24 @@ export default async function PostPage({
         <div className="mt-4">
           <Prose html={renderMarkdown(p.content)} />
         </div>
+        {p.source && (
+          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            Източник: <strong>{p.source}</strong>
+            {p.sourceUrl && (
+              <>
+                {" — "}
+                <a
+                  href={p.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-700 underline"
+                >
+                  прочетете оригинала
+                </a>
+              </>
+            )}
+          </div>
+        )}
       </article>
     </>
   );

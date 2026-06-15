@@ -194,6 +194,9 @@ model Post {
   excerpt        String    @default("")
   content        String    @default("") // Markdown
   coverImage     String    @default("")
+  source         String    @default("") // напр. „Община Бобов дол“ (за внесени новини)
+  sourceUrl      String    @default("") // линк към оригинала
+  sourceDate     DateTime? // дата от източника
   seoTitle       String?
   seoDescription String?
   published      Boolean   @default(false)
@@ -202,6 +205,7 @@ model Post {
   updatedAt      DateTime  @updatedAt
 
   @@index([published, publishedAt])
+  @@index([sourceUrl])
 }
 
 enum ComplaintStatus {
