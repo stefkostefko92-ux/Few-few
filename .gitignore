@@ -27,3 +27,9 @@ Thumbs.db
 # prisma generated client (regenerated on install)
 packages/db/generated/
 *.tsbuildinfo
+
+# Playwright e2e
+apps/web/e2e/.auth/
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/

@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 // АСО web shell (S1). Dev/preview on 4502 to match the S18 port plan; the API
@@ -18,4 +18,7 @@ export default defineConfig({
   },
   preview: { port: 4502 },
   build: { sourcemap: true },
+  // Playwright drives the e2e/ specs (they need the running stack); keep them
+  // out of the vitest unit run.
+  test: { exclude: [...configDefaults.exclude, "e2e/**"] },
 });
