@@ -130,15 +130,17 @@ export default async function HomePage() {
           <a href="tel:112" className="font-bold text-amber-900 hover:underline">
             Спешност 112
           </a>
-          {emergency.map((s) => (
-            <a
-              key={s.id}
-              href={`tel:${s.phone}`}
-              className="text-amber-900 hover:underline"
-            >
-              {s.name} {s.phone}
-            </a>
-          ))}
+          {emergency
+            .filter((s) => s.phone !== "112")
+            .map((s) => (
+              <a
+                key={s.id}
+                href={`tel:${s.phone}`}
+                className="text-amber-900 hover:underline"
+              >
+                {s.name.includes(s.phone) ? s.name : `${s.name} ${s.phone}`}
+              </a>
+            ))}
         </div>
       </section>
 
