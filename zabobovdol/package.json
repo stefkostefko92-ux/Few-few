@@ -17,7 +17,11 @@
     "db:seed:safety": "tsx prisma/seed-safety.ts",
     "db:seed:basics": "tsx prisma/seed-basics.ts",
     "db:seed:phone": "tsx prisma/seed-phone-basics.ts",
-    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone",
+    "db:seed:settings": "tsx prisma/seed-set-settings.ts",
+    "db:seed:internet": "tsx prisma/seed-set-internet.ts",
+    "db:seed:apps": "tsx prisma/seed-set-apps.ts",
+    "db:seed:daily": "tsx prisma/seed-set-daily.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily",
     "postinstall": "prisma generate"
   },
   "prisma": {
