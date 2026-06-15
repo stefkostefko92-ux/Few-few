@@ -209,7 +209,7 @@ export async function createCombatBackend(opts: {
           renderer.toneMapping = THREE.ACESFilmicToneMapping;
           renderer.toneMappingExposure = tuneables.exposure;
           renderer.shadowMap.enabled = true;
-          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          renderer.shadowMap.type = THREE.VSMShadowMap;
           mount.appendChild(renderer.domElement);
           renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
 
@@ -248,7 +248,7 @@ export async function createCombatBackend(opts: {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = tuneables.exposure;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.VSMShadowMap;
   mount.appendChild(renderer.domElement);
   renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
 
@@ -362,6 +362,11 @@ export function configureShadows(light: THREE.DirectionalLight, mapSize: number)
   light.shadow.camera.bottom = -2;
   light.shadow.bias = -0.0005;
   light.shadow.normalBias = 0.02;
+  // VSM softens to a gaussian; bump radius for that "render-room" look
+  // and pre-blur so the shadow edge doesn't read as a hard rectangle on
+  // CPU rasterizers (SwiftShader still uses PCF for legacy maps).
+  light.shadow.radius = 6;
+  (light.shadow as any).blurSamples = 25;
 }
 
 // --- PBR ground factory ------------------------------------------------
