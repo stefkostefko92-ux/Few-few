@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Bitter } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
@@ -7,6 +8,18 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidget } from "@/components/ChatWidget";
 import { CookieConsent } from "@/components/CookieConsent";
+
+const sans = Inter({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-sans",
+  display: "swap",
+});
+const serif = Bitter({
+  subsets: ["latin", "cyrillic"],
+  weight: ["600", "700", "800"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -68,7 +81,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="bg">
+    <html lang="bg" className={`${sans.variable} ${serif.variable}`}>
       <head>
         {/* GEO мета сигнали за локално търсене */}
         <meta name="geo.region" content={SITE.geo.regionCode} />

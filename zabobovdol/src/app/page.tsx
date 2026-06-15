@@ -71,20 +71,42 @@ export default async function HomePage() {
       )}
 
       {/* Заглавна секция */}
-      <section className="bg-gradient-to-b from-brand-700 to-brand-800 text-white">
-        <div className="container-content py-14 sm:py-20">
-          <p className="text-sm font-medium text-brand-100">
+      <section className="relative overflow-hidden bg-brand-800 text-white">
+        {/* Декоративен релеф на долината (намек за „долината с форма на боб“). */}
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 w-full text-brand-900/60"
+          viewBox="0 0 1440 200"
+          preserveAspectRatio="none"
+        >
+          <path d="M0 200 L0 120 C 180 70 320 150 520 110 C 720 70 820 160 1040 120 C 1240 84 1320 150 1440 110 L1440 200 Z" fill="currentColor" />
+          <path d="M0 200 L0 160 C 240 120 420 180 640 150 C 900 116 1060 184 1440 150 L1440 200 Z" className="text-brand-900" fill="currentColor" />
+        </svg>
+        {/* Герб като воден знак */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/bobov-dol-grb.png"
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 opacity-[0.07] md:block"
+          width={320}
+          height={460}
+        />
+
+        <div className="container-content relative py-14 sm:py-20">
+          <p className="eyebrow text-gold-300">
             {SITE.geo.city} · {SITE.geo.region}
           </p>
-          <h1 className="mt-2 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            {SITE.slogan}
+          <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-[1.1] sm:text-5xl">
+            Всичко за{" "}
+            <span className="text-gold-300">Бобов дол</span> — на едно място
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-brand-50">
-            Намерете бързо местни телефони и услуги, разберете как да свършите
-            нещо онлайн, вижте събитията и обявите в града — лесно и на едно
-            място.
+            Направено от местни хора за местни хора: важни телефони и услуги,
+            обяснения стъпка по стъпка, събития, обяви и взаимопомощ. Лесно и
+            разбираемо, за всички възрасти.
           </p>
-          <div className="mt-6 max-w-xl rounded-xl bg-white p-2 shadow-lg">
+          <div className="mt-7 max-w-xl rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/5">
             <SearchBar />
           </div>
           <div className="mt-6 flex flex-wrap gap-2">
@@ -92,7 +114,7 @@ export default async function HomePage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/20 hover:bg-white/20"
+                className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/20 transition hover:bg-white/20"
               >
                 {item.label}
               </Link>

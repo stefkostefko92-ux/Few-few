@@ -87,10 +87,13 @@ export function Section({
 }) {
   return (
     <section className="container-content py-10">
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <h2 className="section-title">{title}</h2>
         {href && (
-          <Link href={href} className="text-sm font-medium text-brand-700 hover:underline">
+          <Link
+            href={href}
+            className="shrink-0 text-sm font-semibold text-brand-700 hover:text-brand-800 hover:underline"
+          >
             {hrefLabel} →
           </Link>
         )}

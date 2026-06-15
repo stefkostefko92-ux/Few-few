@@ -37,7 +37,7 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-label="Съгласие за бисквитки"
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 backdrop-blur"
+      className="no-print fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 backdrop-blur"
     >
       <div className="container-content flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-700">

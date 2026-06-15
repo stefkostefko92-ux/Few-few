@@ -62,7 +62,27 @@ const memories = [
   },
 ];
 
+const volunteers = [
+  {
+    slug: "ekip-za-bobov-dol",
+    name: "Екип на „За Бобов дол“",
+    area: "цял Бобов дол",
+    skills: "телефон и интернет, имейл, е-услуги, безопасност онлайн",
+    about:
+      "Помагаме безплатно на възрастните хора да се справят с телефона и " +
+      "интернет. Пишете ни и ще намерим начин да помогнем на вас или ваш близък.",
+    email: "info@zabobovdol.bg",
+  },
+];
+
 async function main() {
+  for (const v of volunteers) {
+    await prisma.volunteer.upsert({
+      where: { slug: v.slug },
+      update: { ...v, published: true },
+      create: { ...v, published: true },
+    });
+  }
   for (const c of causes) {
     await prisma.helpCause.upsert({
       where: { slug: c.slug },
@@ -77,7 +97,7 @@ async function main() {
       create: { ...m, published: true },
     });
   }
-  console.log(`✔ Каузи: ${causes.length}, Спомени: ${memories.length}`);
+  console.log(`✔ Доброволци: ${volunteers.length}, Каузи: ${causes.length}, Спомени: ${memories.length}`);
   await prisma.$disconnect();
   console.log("Готово.");
 }

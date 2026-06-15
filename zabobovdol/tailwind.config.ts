@@ -49,6 +49,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
+          "var(--font-sans)",
           "system-ui",
           "-apple-system",
           "Segoe UI",
@@ -56,6 +57,7 @@ const config: Config = {
           "Arial",
           "sans-serif",
         ],
+        serif: ["var(--font-serif)", "Georgia", "Cambria", "serif"],
       },
       maxWidth: {
         content: "72rem",

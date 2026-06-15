@@ -12,19 +12,29 @@ html {
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
-  font-size: 1.0625rem; /* малко по-голям шрифт за четимост за всички възрасти */
-  line-height: 1.6;
+  /* Леко топъл, „хартиен“ фон вместо стандартно сиво — по-човешко усещане. */
+  background-color: #faf8f3;
+  @apply text-slate-900 antialiased;
+  font-size: 1.0625rem;
+  line-height: 1.65;
 }
 
-/* Видим фокус за достъпност (клавиатурна навигация) */
+/* Заглавията са със серифен шрифт — дава характер и тежест на сайта. */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-serif), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
 :focus-visible {
   outline: 3px solid theme("colors.brand.500");
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Връзка „прескочи към съдържанието“ за екранни четци */
 .skip-link {
   @apply sr-only;
 }
@@ -38,17 +48,20 @@ body {
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
   }
   .btn-primary {
-    @apply btn bg-brand-700 text-white hover:bg-brand-800;
+    @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800 hover:shadow;
   }
   .btn-secondary {
-    @apply btn border border-slate-300 bg-white text-slate-800 hover:bg-slate-100;
+    @apply btn border border-slate-300 bg-white text-slate-800 hover:border-brand-300 hover:bg-brand-50;
+  }
+  .btn-gold {
+    @apply btn bg-gold-400 text-slate-900 shadow-sm hover:bg-gold-300;
   }
 
   .card {
-    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md;
+    @apply rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md;
   }
 
   .input {
@@ -59,6 +72,21 @@ body {
   }
   .badge {
     @apply inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-medium text-brand-800;
+  }
+
+  /* Малък надпис над заглавие — „дизайнерски“ детайл. */
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.14em] text-gold-600;
+    font-family: var(--font-sans);
+  }
+
+  /* Заглавие на секция с декоративна златна чертичка отдолу. */
+  .section-title {
+    @apply relative inline-block text-2xl font-bold text-slate-900;
+  }
+  .section-title::after {
+    content: "";
+    @apply mt-2 block h-1 w-12 rounded-full bg-gold-400;
   }
 }
 
@@ -82,11 +110,37 @@ body {
   @apply mt-3 list-decimal space-y-1 pl-6;
 }
 .prose-content :where(a) {
-  @apply font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800;
+  @apply font-medium text-brand-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-800;
 }
 .prose-content :where(blockquote) {
-  @apply mt-4 border-l-4 border-brand-200 bg-brand-50 py-2 pl-4 italic text-slate-700;
+  @apply mt-4 border-l-4 border-gold-300 bg-gold-50 py-2 pl-4 italic text-slate-700;
 }
 .prose-content :where(strong) {
   @apply font-semibold;
+}
+.prose-content :where(table) {
+  @apply mt-4 w-full border-collapse text-left text-sm;
+}
+.prose-content :where(th) {
+  @apply border-b-2 border-slate-200 px-3 py-2 font-semibold;
+}
+.prose-content :where(td) {
+  @apply border-b border-slate-100 px-3 py-2 align-top;
+}
+
+/* Стилове за печат — крие хедър/футър/изскачащи елементи. */
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    font-size: 12pt;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: none !important;
+  }
 }

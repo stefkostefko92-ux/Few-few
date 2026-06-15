@@ -27,7 +27,8 @@
     "db:seed:more": "tsx prisma/seed-set-more.ts",
     "db:seed:banners": "tsx prisma/seed-banners.ts",
     "db:seed:community": "tsx prisma/seed-community.ts",
-    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more && npm run db:seed:banners && npm run db:seed:community",
+    "db:seed:extra": "tsx prisma/seed-set-extra.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more && npm run db:seed:banners && npm run db:seed:community && npm run db:seed:extra",
     "postinstall": "prisma generate"
   },
   "prisma": {

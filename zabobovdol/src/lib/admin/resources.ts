@@ -246,6 +246,25 @@ export const RESOURCES: Resource[] = [
       { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
     ],
   },
+  {
+    key: "dobrovolci",
+    model: "volunteer",
+    labelSingular: "Доброволец",
+    labelPlural: "Доброволци",
+    titleField: "name",
+    slugFrom: "name",
+    defaultSort: { field: "createdAt", dir: "desc" },
+    fields: [
+      { name: "name", label: "Име", type: "text", required: true, listVisible: true },
+      { name: "slug", label: "URL адрес (slug)", type: "text" },
+      { name: "area", label: "Квартал / район", type: "text", listVisible: true },
+      { name: "skills", label: "С какво помага", type: "text" },
+      { name: "about", label: "За доброволеца", type: "textarea", fullWidth: true },
+      { name: "phone", label: "Телефон (само вътрешно)", type: "text" },
+      { name: "email", label: "Имейл (само вътрешно)", type: "text" },
+      { name: "published", label: "Публикуван (одобрен)", type: "boolean", listVisible: true },
+    ],
+  },
 ];
 
 export function getResource(key: string): Resource | undefined {

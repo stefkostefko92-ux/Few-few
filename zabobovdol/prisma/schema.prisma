@@ -231,6 +231,23 @@ model Complaint {
   @@index([status, createdAt])
 }
 
+// Доброволци, които предлагат помощ на възрастните хора (мрежа вместо гише).
+model Volunteer {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  area      String   @default("") // квартал/район
+  skills    String   @default("") // с какво помага
+  about     String   @default("")
+  phone     String   @default("") // вижда се само в админ
+  email     String   @default("") // вижда се само в админ
+  published Boolean  @default(false) // минава през одобрение
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
 enum HelpKind {
   NEED // Нужда от помощ
   OFFER // Предлага помощ или дарение
