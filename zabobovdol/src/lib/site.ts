@@ -59,6 +59,7 @@ export const FOOTER_NAV: NavItem[] = [
   { href: "/signali", label: "Сигнали до общината" },
   { href: "/pomosht", label: "Помощ на гише" },
   { href: "/kontakti", label: "Контакти" },
+  { href: "/reklama", label: "Реклама" },
   { href: "/pravila", label: "Общи условия" },
   { href: "/poveritelnost", label: "Поверителност" },
   { href: "/biskvitki", label: "Бисквитки" },

@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
+import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ function formatDate(d: Date): string {
 }
 
 export default async function HomePage() {
-  const [topFaqs, emergency, events, listings, businesses] = await Promise.all([
+  const [topFaqs, emergency, events, listings, businesses, banners] = await Promise.all([
     prisma.faq.findMany({
       where: { published: true },
       orderBy: [{ order: "asc" }, { views: "desc" }],
@@ -46,7 +47,15 @@ export default async function HomePage() {
       orderBy: { order: "asc" },
       take: 4,
     }),
+    prisma.banner.findMany({
+      where: { published: true },
+      orderBy: { order: "asc" },
+      take: 4,
+    }),
   ]);
+
+  // Винаги показваме 4 слота: запълнените с реклами, останалите — покана.
+  const bannerSlots = Array.from({ length: 4 }, (_, i) => banners[i] ?? null);
 
   return (
     <>
@@ -122,6 +131,29 @@ export default async function HomePage() {
               <p className="mt-1 text-sm text-slate-600">{item.description}</p>
             </Link>
           ))}
+        </div>
+      </Section>
+
+      {/* Рекламни банери (4 слота) */}
+      <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {bannerSlots.map((b, i) =>
+            b ? (
+              <BannerCard
+                key={b.id}
+                banner={{
+                  id: b.id,
+                  title: b.title,
+                  sponsor: b.sponsor,
+                  description: b.description,
+                  imageUrl: b.imageUrl,
+                  linkUrl: b.linkUrl,
+                }}
+              />
+            ) : (
+              <BannerEmptySlot key={`empty-${i}`} />
+            ),
+          )}
         </div>
       </Section>
 

@@ -231,6 +231,22 @@ model Complaint {
   @@index([status, createdAt])
 }
 
+// Платени рекламни банери, показвани на началната страница (до 4 слота).
+model Banner {
+  id          String   @id @default(cuid())
+  title       String
+  sponsor     String   @default("")
+  description String   @default("")
+  imageUrl    String   @default("")
+  linkUrl     String   @default("")
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, order])
+}
+
 // Свободни запитвания от чатбота/търсачката, които нямат отговор —
 // помагат да разберем какво всъщност търсят хората (валидация).
 model SearchMiss {

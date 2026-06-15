@@ -169,6 +169,23 @@ export const RESOURCES: Resource[] = [
     ],
   },
   {
+    key: "banners",
+    model: "banner",
+    labelSingular: "Рекламен банер",
+    labelPlural: "Реклами (банери)",
+    titleField: "title",
+    defaultSort: { field: "order", dir: "asc" },
+    fields: [
+      { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
+      { name: "sponsor", label: "Рекламодател", type: "text", listVisible: true },
+      { name: "description", label: "Кратък текст", type: "textarea", fullWidth: true },
+      { name: "imageUrl", label: "Изображение (URL, по избор)", type: "text", help: "Препоръчителен размер около 600×320 px. Ако е празно, се показва текстов банер." },
+      { name: "linkUrl", label: "Връзка (накъде води при натискане)", type: "text", help: "Напр. https://... или вътрешен адрес като /reklama." },
+      { name: "order", label: "Подредба (1–4)", type: "number" },
+      { name: "published", label: "Активен", type: "boolean", listVisible: true },
+    ],
+  },
+  {
     key: "posts",
     model: "post",
     labelSingular: "Новина",
