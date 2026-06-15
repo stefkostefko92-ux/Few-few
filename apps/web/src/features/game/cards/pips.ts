@@ -12,16 +12,16 @@ export interface Pip {
 
 // Column x positions.
 const L = 0.5; // center
-const X1 = 0.28;
-const X2 = 0.72;
+const X1 = 0.26;
+const X2 = 0.74;
 
-// Row y positions (top half; mirrored automatically for symmetry).
+// Row y positions for the top half (mirrored automatically by `flip`). These are
+// the classic, evenly-spaced engraving rows so dense cards (7–10) never crowd.
 const R = {
-  t: 0.16,
-  tm: 0.305,
-  m: 0.5,
-  bm: 0.695,
-  b: 0.84,
+  t: 0.12, // top corner row
+  q: 0.385, // upper-quarter row (4-row cards)
+  m: 0.5, // dead centre
+  b: 0.88, // bottom corner row (mirror of t)
 } as const;
 
 const p = (x: number, y: number): Pip => ({ x, y, flip: y > 0.5 });
@@ -31,22 +31,24 @@ export const PIP_LAYOUTS: Record<string, Pip[]> = {
   "3": [p(L, R.t), p(L, R.m), p(L, R.b)],
   "4": [p(X1, R.t), p(X2, R.t), p(X1, R.b), p(X2, R.b)],
   "5": [p(X1, R.t), p(X2, R.t), p(L, R.m), p(X1, R.b), p(X2, R.b)],
+  // 6/7/8: three evenly-spaced rows per column, with centre pips added between.
   "6": [p(X1, R.t), p(X2, R.t), p(X1, R.m), p(X2, R.m), p(X1, R.b), p(X2, R.b)],
-  "7": [p(X1, R.t), p(X2, R.t), p(L, 0.235), p(X1, R.m), p(X2, R.m), p(X1, R.b), p(X2, R.b)],
-  "8": [p(X1, R.t), p(X2, R.t), p(L, 0.235), p(X1, R.m), p(X2, R.m), p(L, 0.765), p(X1, R.b), p(X2, R.b)],
+  "7": [p(X1, R.t), p(X2, R.t), p(L, 0.31), p(X1, R.m), p(X2, R.m), p(X1, R.b), p(X2, R.b)],
+  "8": [p(X1, R.t), p(X2, R.t), p(L, 0.31), p(X1, R.m), p(X2, R.m), p(L, 0.69), p(X1, R.b), p(X2, R.b)],
+  // 9/10: four evenly-spaced rows per column (t, q, mirror-q, b) + centre pips.
   "9": [
     p(X1, R.t), p(X2, R.t),
-    p(X1, R.tm), p(X2, R.tm),
+    p(X1, R.q), p(X2, R.q),
     p(L, R.m),
-    p(X1, R.bm), p(X2, R.bm),
+    p(X1, 1 - R.q), p(X2, 1 - R.q),
     p(X1, R.b), p(X2, R.b),
   ],
   T: [
     p(X1, R.t), p(X2, R.t),
-    p(L, 0.235),
-    p(X1, R.tm), p(X2, R.tm),
-    p(X1, R.bm), p(X2, R.bm),
-    p(L, 0.765),
+    p(L, 0.255),
+    p(X1, R.q), p(X2, R.q),
+    p(X1, 1 - R.q), p(X2, 1 - R.q),
+    p(L, 0.745),
     p(X1, R.b), p(X2, R.b),
   ],
 };

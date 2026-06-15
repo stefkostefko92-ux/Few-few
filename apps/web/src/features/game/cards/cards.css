@@ -127,8 +127,10 @@ button.aso-card:hover {
 
 .aso-card__pips {
   position: absolute;
-  /* extra top/bottom inset so the corner indices never touch the outer pips */
-  inset: 21% 17%;
+  /* Tall, narrow pip field: the wider vertical span keeps the rows of dense
+     cards (7–10) evenly spaced so the suit glyphs never overlap, while the
+     side inset keeps the outer columns clear of the corner indices. */
+  inset: 15% 18%;
 }
 .aso-card__pip {
   position: absolute;
