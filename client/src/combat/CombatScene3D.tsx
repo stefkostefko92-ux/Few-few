@@ -463,7 +463,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const sprite = new THREE.Sprite(mat);
       sprite.scale.set(2.2, 2.75, 1);
       sprite.position.set(side === 'hero' ? -2.2 : 2.2, 1.4, 0);
-      scene.add(sprite);
+      // Don't add to the scene by default — the rig load below adds
+      // its own mesh, and the sprite was leaving a TAA-history ghost
+      // on legacy renderers. If the glb load fails, the error handler
+      // adds the sprite back as a 2D fallback so the fighter still
+      // shows up.
+      sprite.visible = false;
       // distance=8 (was 4) so the rim flash actually reaches the foe
       // — the two fighters are ~4.4 units apart, the old setting cut
       // the light off just short of crossing the field (audit BUG #5).
@@ -564,20 +569,17 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
         scene.add(model);
         const pair = side === 'hero' ? heroPair : foePair;
-        // Hide the 2D fallback sprite completely — we keep it in the scene
-        // graph (visible=false) so VFX targeting that reads sprite.position
-        // still resolves, but it doesn't render through the rig.
-        pair.sprite.material.opacity = 0;
-        pair.sprite.visible = false;
-        // Pop the sprite mesh out of the scene graph entirely once the
-        // rig is in. visible=false alone has been observed to still
-        // produce a faint dark halo under each fighter — three.js's
-        // sprite pipeline reserves a bbox the post-process passes pick
-        // up. Removing the sprite stops that contribution; sprite.position
-        // (still tracked on the object) is read by VFX targeting math.
-        scene.remove(pair.sprite);
+        // Sprite is never added to the scene now (see addFighter); the
+        // rig is the canonical render. We keep the sprite object around
+        // — its position field is the canonical lunge/VFX anchor — but
+        // it stays out of the scene graph for good.
         if (side === 'hero') heroRigRef.current = model; else foeRigRef.current = model;
-      }, undefined, () => { /* no asset → silently keep sprite */ });
+      }, undefined, () => {
+        // No rig asset → bring the 2D sprite into the scene as a fallback.
+        const pair = side === 'hero' ? heroPair : foePair;
+        pair.sprite.visible = true;
+        scene.add(pair.sprite);
+      });
     };
     tryLoadRig(heroClass, 'hero');
     tryLoadRig(foeClass, 'foe');
