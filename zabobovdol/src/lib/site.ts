@@ -50,6 +50,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/obyavi", label: "Обяви", description: "Безплатни местни обяви" },
   { href: "/novini", label: "Новини", description: "Актуални съобщения" },
   { href: "/signali", label: "Сигнали до общината", description: "Подайте оплакване или сигнал" },
+  { href: "/istoriya", label: "История на града", description: "Историята на Бобов дол по етапи" },
   { href: "/pomosht", label: "Помощ на гише", description: "Лична помощ с дигитални услуги" },
 ];
 
