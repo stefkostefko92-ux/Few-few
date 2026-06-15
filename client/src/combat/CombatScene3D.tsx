@@ -401,13 +401,11 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         gctx.arc(512, 512, r, 0, Math.PI * 2);
         gctx.stroke();
       }
-      for (const cx of [340, 684]) {
-        const grd = gctx.createRadialGradient(cx, 700, 0, cx, 700, 110);
-        grd.addColorStop(0, 'rgba(0,0,0,.55)');
-        grd.addColorStop(1, 'rgba(0,0,0,0)');
-        gctx.fillStyle = grd;
-        gctx.fillRect(cx - 120, 590, 240, 220);
-      }
+      // (Removed: the ground texture used to bake two dark radial blobs
+      // under the fighter slots as a faux contact shadow. The PBR
+      // characters now produce real PCF shadows from the key light,
+      // so the baked blobs read as a flat black halo and clash with
+      // the lit shadow underneath.)
       const groundTex = new THREE.CanvasTexture(groundCanvas);
       groundTex.colorSpace = THREE.SRGBColorSpace;
       const ground = new THREE.Mesh(
