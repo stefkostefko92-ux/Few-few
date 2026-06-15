@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Server } from "socket.io";
 import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
-import { STARTING_MMR, isGameKey, seatsFor } from "@aso/shared";
+import { MAGNAT_PRESETS, STARTING_MMR, isGameKey, seatsFor } from "@aso/shared";
 import { GameRoom, type RoomSeat } from "./room.js";
 import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
@@ -12,6 +12,12 @@ import { logger } from "./logger.js";
 interface QueueDesc {
   game: GameKey;
   mode: string;
+}
+
+/** Per-session engine config derived from the queue mode (e.g. Магнат presets). */
+function configFor(q: QueueDesc): unknown {
+  if (q.game === "MAGNAT") return MAGNAT_PRESETS[q.mode] ?? MAGNAT_PRESETS.classic;
+  return undefined;
 }
 
 const queueKey = (q: QueueDesc): string => `mm:${q.game}:${q.mode}`;
@@ -240,7 +246,8 @@ export class Matchmaker {
         bot: new RandomBot(`${seed}:bot:${seat}`),
       });
     }
-    const room = new GameRoom(this.io, match.id, q.game, seats, seed);
+    const config = configFor(q);
+    const room = new GameRoom(this.io, match.id, q.game, seats, seed, config);
     this.rooms.set(match.id, room);
     room.start();
     logger.info(

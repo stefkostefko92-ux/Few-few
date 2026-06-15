@@ -65,10 +65,11 @@ export class GameRoom {
     readonly game: GameKey,
     readonly seats: RoomSeat[],
     seed: string,
+    config?: unknown,
   ) {
     this.engine = getEngine(game);
     this.rng = new SeededRng(seed);
-    this.state = this.engine.init({ seats: seats.length }, this.rng);
+    this.state = this.engine.init({ seats: seats.length, config }, this.rng);
     this.fallbackBot = new RandomBot(`${seed}:fallback`);
   }
 
@@ -164,7 +165,10 @@ export class GameRoom {
     if (this.done) return;
     const seat = this.currentSeat();
     if (!seat || seat.isBot) return; // bots are driven by runBots()
-    const delay = this.disconnected.has(seat.seat) ? DISCONNECTED_TURN_MS : TURN_MS;
+    // A session may set its own per-turn time (e.g. Магнат house rules); else env default.
+    const cfgSec = (this.state as { config?: { turnSeconds?: number } }).config?.turnSeconds;
+    const baseMs = typeof cfgSec === "number" && cfgSec > 0 ? cfgSec * 1000 : TURN_MS;
+    const delay = this.disconnected.has(seat.seat) ? DISCONNECTED_TURN_MS : baseMs;
     this.turnEndsAt = Date.now() + delay;
     this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), delay);
   }

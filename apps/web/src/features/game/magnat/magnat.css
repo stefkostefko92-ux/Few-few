@@ -148,3 +148,74 @@
 .mag-log p {
   padding: 1px 0;
 }
+
+/* ── auctions & trades ──────────────────────────────────────────────────── */
+.mag-auction,
+.mag-trade-resp,
+.mag-trade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 178, 95, 0.25);
+  background: rgba(11, 14, 13, 0.5);
+}
+.mag-bidrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mag-bidrow input[type="number"] {
+  width: 100px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  background: var(--felt-900);
+  color: var(--ink-100);
+}
+.mag-bidquick {
+  display: inline-flex;
+  gap: 4px;
+}
+.mag-bidquick button {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--felt-700);
+  color: var(--ink-200, #cdbfa3);
+  border: 1px solid rgba(217, 178, 95, 0.25);
+  cursor: pointer;
+}
+.mag-trade-line {
+  font-size: 0.85rem;
+  color: var(--ink-300);
+}
+.mag-trade-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.mag-trade-h {
+  font-weight: 700;
+  color: var(--brass-300);
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+.mag-trade-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--ink-200, #cdbfa3);
+  padding: 1px 0;
+}
+.mag-trade select,
+.mag-trade-cols input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  background: var(--felt-900);
+  color: var(--ink-100);
+}

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import { BOARD, GROUP_COLORS, isOwnable, type MagnatAction, type MagnatState } from "@aso/shared";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BOARD, GROUP_COLORS, GROUP_TILES, isOwnable, type MagnatAction, type MagnatState } from "@aso/shared";
 import type { MagnatScene } from "./magnatScene";
 import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
@@ -93,6 +93,53 @@ export function MagnatView({ title }: { title: string }) {
 
   const name = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `Играч ${s + 1}`;
 
+  // A property is tradable if owned and its whole colour group has no houses.
+  const tradableOf = (owner: number): number[] =>
+    state
+      ? BOARD.map((_, i) => i).filter(
+          (i) =>
+            isOwnable(i) &&
+            state.owner[i] === owner &&
+            (BOARD[i]!.type !== "prop" || GROUP_TILES[BOARD[i]!.group]!.every((g) => state.houses[g]! === 0)),
+        )
+      : [];
+
+  // ── auction + trade UI state ────────────────────────────────────────────
+  const auction = state?.auction ?? null;
+  const minBid = (auction?.high ?? 0) + 10;
+  const [bid, setBid] = useState(minBid);
+  useEffect(() => setBid(minBid), [minBid, auction?.tile]);
+
+  const [tradeOpen, setTradeOpen] = useState(false);
+  const [partner, setPartner] = useState<number | null>(null);
+  const [give, setGive] = useState<Set<number>>(new Set());
+  const [want, setWant] = useState<Set<number>>(new Set());
+  const [giveCash, setGiveCash] = useState(0);
+  const [wantCash, setWantCash] = useState(0);
+  const resetTrade = () => {
+    setTradeOpen(false);
+    setPartner(null);
+    setGive(new Set());
+    setWant(new Set());
+    setGiveCash(0);
+    setWantCash(0);
+  };
+  const toggle = (set: Set<number>, setSet: (s: Set<number>) => void, i: number) => {
+    const next = new Set(set);
+    if (next.has(i)) next.delete(i); else next.add(i);
+    setSet(next);
+  };
+  const sendTrade = () => {
+    if (partner === null) return;
+    send({
+      type: "TRADE_OFFER",
+      to: partner,
+      give: { cash: giveCash, tiles: [...give] },
+      want: { cash: wantCash, tiles: [...want] },
+    });
+    resetTrade();
+  };
+
   const boardSummary =
     state &&
     `Дъска Магнат. ${state.cash
@@ -156,13 +203,128 @@ export function MagnatView({ title }: { title: string }) {
                   ) : null}
                   <Button variant="felt" onClick={() => send({ type: "DECLINE" })}>Откажи</Button>
                 </div>
+              ) : state.phase === "AUCTION" && auction ? (
+                <div className="mag-auction">
+                  <p className="mag-hint">
+                    Търг: <b>{BOARD[auction.tile]!.name}</b> · текуща оферта{" "}
+                    {auction.high > 0 ? `${auction.high} (${name(auction.highBidder)})` : "няма"}
+                  </p>
+                  <div className="mag-bidrow">
+                    <input
+                      type="number"
+                      min={minBid}
+                      max={state.cash[seat]}
+                      step={10}
+                      value={bid}
+                      onChange={(e) => setBid(Number(e.target.value))}
+                    />
+                    <div className="mag-bidquick">
+                      {[10, 50, 100].map((d) => (
+                        <button key={d} type="button" onClick={() => setBid((b) => b + d)}>+{d}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mag-btns">
+                    {has("BID") ? (
+                      <Button
+                        onClick={() => send({ type: "BID", amount: bid })}
+                        disabled={bid < minBid || bid > state.cash[seat]!}
+                      >
+                        Наддай {bid}
+                      </Button>
+                    ) : null}
+                    <Button variant="felt" onClick={() => send({ type: "PASS_BID" })}>Пас</Button>
+                  </div>
+                </div>
+              ) : state.phase === "TRADE" && state.trade && state.trade.to === seat ? (
+                <div className="mag-trade-resp">
+                  <p className="mag-hint">
+                    {name(state.trade.from)} ти предлага сделка:
+                  </p>
+                  <p className="mag-trade-line">
+                    Даваш: {state.trade.want.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
+                    {state.trade.want.cash ? ` + ${state.trade.want.cash}` : ""}
+                  </p>
+                  <p className="mag-trade-line">
+                    Получаваш: {state.trade.give.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
+                    {state.trade.give.cash ? ` + ${state.trade.give.cash}` : ""}
+                  </p>
+                  <div className="mag-btns">
+                    {has("TRADE_ACCEPT") ? <Button onClick={() => send({ type: "TRADE_ACCEPT" })}>Приеми</Button> : null}
+                    <Button variant="felt" onClick={() => send({ type: "TRADE_DECLINE" })}>Откажи</Button>
+                  </div>
+                </div>
               ) : state.phase === "MANAGE" ? (
                 <div className="mag-btns">
                   <Button onClick={() => send({ type: "END" })}>Приключи хода</Button>
+                  {state.config.trading && state.seats > 1 ? (
+                    <Button variant="felt" onClick={() => setTradeOpen((o) => !o)}>
+                      {tradeOpen ? "Затвори сделка" : "Сделка"}
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
               {state.dice ? <p className="mag-dice">🎲 {state.dice[0]} + {state.dice[1]}</p> : null}
             </div>
+
+            {/* trade composer */}
+            {myTurn && state.phase === "MANAGE" && tradeOpen ? (
+              <div className="mag-trade">
+                <h4>Предложи сделка</h4>
+                <select
+                  value={partner ?? ""}
+                  onChange={(e) => {
+                    setPartner(e.target.value === "" ? null : Number(e.target.value));
+                    setWant(new Set());
+                  }}
+                >
+                  <option value="">— избери играч —</option>
+                  {state.cash.map((_, s) =>
+                    s !== seat && !state.bankrupt[s] ? (
+                      <option key={s} value={s}>{name(s)}</option>
+                    ) : null,
+                  )}
+                </select>
+                {partner !== null ? (
+                  <div className="mag-trade-cols">
+                    <div>
+                      <p className="mag-trade-h">Даваш</p>
+                      {tradableOf(seat).map((i) => (
+                        <label key={i} className="mag-trade-item">
+                          <input type="checkbox" checked={give.has(i)} onChange={() => toggle(give, setGive, i)} />
+                          {BOARD[i]!.name}
+                        </label>
+                      ))}
+                      <input
+                        type="number" min={0} max={state.cash[seat]} step={10} value={giveCash}
+                        onChange={(e) => setGiveCash(Number(e.target.value))} placeholder="пари"
+                      />
+                    </div>
+                    <div>
+                      <p className="mag-trade-h">Искаш</p>
+                      {tradableOf(partner).map((i) => (
+                        <label key={i} className="mag-trade-item">
+                          <input type="checkbox" checked={want.has(i)} onChange={() => toggle(want, setWant, i)} />
+                          {BOARD[i]!.name}
+                        </label>
+                      ))}
+                      <input
+                        type="number" min={0} max={state.cash[partner]} step={10} value={wantCash}
+                        onChange={(e) => setWantCash(Number(e.target.value))} placeholder="пари"
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                <div className="mag-btns">
+                  <Button
+                    onClick={sendTrade}
+                    disabled={partner === null || (give.size === 0 && want.size === 0 && giveCash === 0 && wantCash === 0)}
+                  >
+                    Предложи
+                  </Button>
+                </div>
+              </div>
+            ) : null}
 
             {/* my properties */}
             {myProps.length > 0 ? (
