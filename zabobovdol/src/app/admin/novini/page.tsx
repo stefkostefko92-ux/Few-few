@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RefreshCw } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { runNewsImport } from "@/lib/admin/news-actions";
@@ -32,7 +33,7 @@ export default async function AdminNewsImportPage({
           </p>
         </div>
         <form action={runNewsImport}>
-          <button className="btn-primary">⟳ Внеси новини</button>
+          <button className="btn-primary"><RefreshCw className="h-4 w-4" aria-hidden /> Внеси новини</button>
         </form>
       </div>
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
@@ -66,7 +67,7 @@ export default async function VolunteersPage() {
             {volunteers.map((v) => (
               <div key={v.id} className="card">
                 <div className="font-display text-lg font-bold text-slate-900">{v.name}</div>
-                {v.area && <div className="text-sm text-slate-500">📍 {v.area}</div>}
+                {v.area && <div className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {v.area}</div>}
                 {v.skills && <p className="mt-2 text-sm text-slate-700">Помага с: {v.skills}</p>}
                 {v.about && <p className="mt-2 text-sm text-slate-600">{v.about}</p>}
               </div>

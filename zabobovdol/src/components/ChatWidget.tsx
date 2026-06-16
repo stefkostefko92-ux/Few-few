@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { MessageCircle, X, Send } from "lucide-react";
 
 type Msg = {
   role: "user" | "bot";
@@ -70,7 +71,7 @@ export function ChatWidget() {
         className="no-print fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800"
         aria-label={open ? "Затвори помощника" : "Отвори помощника"}
       >
-        {open ? "✕" : "💬"}
+        {open ? <X className="h-6 w-6" aria-hidden /> : <MessageCircle className="h-6 w-6" aria-hidden />}
       </button>
 
       {open && (
@@ -134,7 +135,7 @@ export function ChatWidget() {
               disabled={loading}
               aria-label="Изпрати"
             >
-              →
+              <Send className="h-5 w-5" aria-hidden />
             </button>
           </form>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Inbox } from "lucide-react";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbLd } from "@/lib/seo";
 
@@ -77,8 +78,8 @@ export function Breadcrumbs({
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-12 text-center">
-      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-xl">
-        📭
+      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand-600">
+        <Inbox className="h-6 w-6" aria-hidden />
       </div>
       <p className="font-display text-lg font-bold text-slate-800">{title}</p>
       {hint && <p className="mt-1 text-sm text-slate-500">{hint}</p>}

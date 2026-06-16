@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MapPin, Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
@@ -66,11 +67,11 @@ export default async function CausePage({
         <aside>
           <div className="card space-y-3">
             <div className="text-base font-semibold text-slate-900">Контакт</div>
-            {c.location && <div className="text-sm text-slate-600">📍 {c.location}</div>}
+            {c.location && <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>}
             {c.contactName && <div className="text-slate-700">{c.contactName}</div>}
             {c.contactPhone && (
               <a href={`tel:${c.contactPhone}`} className="block text-lg font-semibold text-brand-700">
-                📞 {c.contactPhone}
+                <Phone className="inline h-5 w-5 align-text-bottom" aria-hidden /> {c.contactPhone}
               </a>
             )}
             {c.contactEmail && (

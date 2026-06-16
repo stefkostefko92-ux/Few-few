@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
@@ -77,7 +78,7 @@ export default async function HelpPage({
                   {labelFor(HELP_KIND_LABELS, c.kind)}
                 </span>
                 <h3 className="mt-2 text-lg font-semibold text-slate-900">{c.title}</h3>
-                {c.location && <div className="text-sm text-slate-500">📍 {c.location}</div>}
+                {c.location && <div className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>}
                 <p className="mt-1 text-sm text-slate-600">{plainText(c.description, 120)}</p>
               </Link>
             ))}

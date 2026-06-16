@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Clock, Coins } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
@@ -84,8 +85,8 @@ export default async function RidesPage({
                   {r.routeFrom} → {r.routeTo}
                 </h3>
                 <div className="mt-1 text-sm text-slate-600">
-                  {r.schedule && <>🕐 {r.schedule} </>}
-                  {r.costNote && <> · 💰 {r.costNote}</>}
+                  {r.schedule && <><Clock className="inline h-4 w-4 align-text-bottom" aria-hidden /> {r.schedule} </>}
+                  {r.costNote && <> · <Coins className="inline h-4 w-4 align-text-bottom" aria-hidden /> {r.costNote}</>}
                 </div>
                 {r.description && (
                   <p className="mt-1 text-sm text-slate-600">{plainText(r.description, 100)}</p>

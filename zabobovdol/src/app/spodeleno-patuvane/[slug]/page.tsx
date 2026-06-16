@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
@@ -88,7 +89,7 @@ export default async function RidePage({
             {r.contactName && <div className="text-slate-700">{r.contactName}</div>}
             {r.contactPhone && (
               <a href={`tel:${r.contactPhone}`} className="block text-lg font-semibold text-brand-700">
-                📞 {r.contactPhone}
+                <Phone className="inline h-5 w-5 align-text-bottom" aria-hidden /> {r.contactPhone}
               </a>
             )}
             {r.contactEmail && (

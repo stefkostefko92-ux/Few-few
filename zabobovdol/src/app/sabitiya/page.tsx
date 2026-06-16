@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
@@ -58,7 +59,7 @@ export default async function EventsPage() {
                 </div>
                 <h3 className="mt-1 text-lg font-semibold">{e.title}</h3>
                 {e.location && (
-                  <div className="text-sm text-slate-600">📍 {e.location}</div>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {e.location}</div>
                 )}
                 {e.description && (
                   <p className="mt-2 text-sm text-slate-600">

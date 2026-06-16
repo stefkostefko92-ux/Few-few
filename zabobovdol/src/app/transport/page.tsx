@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
+import { Phone, TrainFront, Bus, Car } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function TransportPage() {
                   </Link>
                   {s.description && <p className="mt-1 text-sm text-slate-600">{s.description}</p>}
                   {s.phone && (
-                    <a href={`tel:${s.phone}`} className="btn-secondary mt-3 w-full">📞 {s.phone}</a>
+                    <a href={`tel:${s.phone}`} className="btn-secondary mt-3 w-full"><Phone className="h-4 w-4" aria-hidden /> {s.phone}</a>
                   )}
                 </div>
               ))}
@@ -55,7 +56,7 @@ export default async function TransportPage() {
         {/* Влак и автобус */}
         <section className="grid gap-4 md:grid-cols-2">
           <div className="card">
-            <h2 className="font-display text-lg font-bold text-slate-900">🚆 Влак (БДЖ)</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900"><TrainFront className="mr-1 inline h-5 w-5 align-text-bottom text-brand-700" aria-hidden />Влак (БДЖ)</h2>
             <p className="mt-1 text-sm text-slate-700">
               Проверете разписания и купете билети онлайн от официалния сайт на
               БДЖ. Информация на телефон 0700 10 200.
@@ -65,7 +66,7 @@ export default async function TransportPage() {
             </a>
           </div>
           <div className="card">
-            <h2 className="font-display text-lg font-bold text-slate-900">🚌 Автобуси и спирки</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900"><Bus className="mr-1 inline h-5 w-5 align-text-bottom text-brand-700" aria-hidden />Автобуси и спирки</h2>
             <p className="mt-1 text-sm text-slate-700">
               Намерете най-близката спирка и маршрут с Google Карти — потърсете
               „автобусна спирка“ или изберете упътване с обществен транспорт.
@@ -81,7 +82,7 @@ export default async function TransportPage() {
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-display text-xl font-bold text-slate-900">
-                🚗 Споделено пътуване
+                <Car className="mr-1 inline h-6 w-6 align-text-bottom text-brand-700" aria-hidden />Споделено пътуване
               </h2>
               <p className="mt-1 max-w-2xl text-slate-700">
                 Пътувате редовно до Дупница, Кюстендил или София? Споделете колата

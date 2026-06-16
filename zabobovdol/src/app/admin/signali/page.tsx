@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth";
+import { Mail, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { MUNICIPALITY_EMAIL } from "@/lib/mail";
 import { setComplaintStatus, deleteComplaint } from "@/lib/admin/complaint-actions";
@@ -103,7 +104,7 @@ export default async function AdminSignaliPage({
 
                 <h2 className="mt-2 text-lg font-semibold text-slate-900">{c.subject}</h2>
                 {c.location && (
-                  <div className="text-sm text-slate-500">📍 {c.location}</div>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-500"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {c.location}</div>
                 )}
                 <p className="mt-2 whitespace-pre-line text-slate-700">{c.message}</p>
 
@@ -115,7 +116,7 @@ export default async function AdminSignaliPage({
 
                 <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3">
                   <a href={mailto} className="text-sm font-medium text-brand-700 hover:underline">
-                    ✉ Препрати по имейл
+                    <Mail className="inline h-4 w-4 align-text-bottom" aria-hidden /> Препрати по имейл
                   </a>
                   <form action={setComplaintStatus.bind(null, c.id, "FORWARDED")}>
                     <button className="text-sm text-slate-700 hover:underline">Отбележи „Препратен“</button>

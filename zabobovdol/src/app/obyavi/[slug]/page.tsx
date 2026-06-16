@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
@@ -67,7 +68,7 @@ export default async function ListingPage({
                 href={`tel:${l.contactPhone}`}
                 className="block text-lg font-semibold text-brand-700"
               >
-                📞 {l.contactPhone}
+                <Phone className="inline h-5 w-5 align-text-bottom" aria-hidden /> {l.contactPhone}
               </a>
             )}
             {l.contactEmail && (

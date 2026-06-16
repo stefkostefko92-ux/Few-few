@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Phone, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
@@ -89,14 +90,16 @@ export default async function UslugiPage({
                   <div className="mt-2 text-sm text-slate-600">{s.address}</div>
                 )}
                 {s.hours && (
-                  <div className="text-sm text-slate-500">⏰ {s.hours}</div>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                    <Clock className="h-4 w-4 shrink-0" aria-hidden /> {s.hours}
+                  </div>
                 )}
                 {s.phone && (
                   <a
                     href={`tel:${s.phone}`}
                     className="btn-secondary mt-3 w-full"
                   >
-                    📞 {s.phone}
+                    <Phone className="h-4 w-4" aria-hidden /> {s.phone}
                   </a>
                 )}
               </div>
