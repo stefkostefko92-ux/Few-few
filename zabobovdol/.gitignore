@@ -31,3 +31,10 @@ yarn-error.log*
 # prisma
 /prisma/*.db
 /prisma/*.db-journal
+
+# database backups & backup secrets (НИКОГА в Git)
+/backups/
+.backup.env
+*.age
+*.gpg
+backup-key.txt

@@ -85,11 +85,32 @@ docker compose logs -f app
 # Рестарт
 docker compose restart app
 
-# Резервно копие на базата
+# Бързо (некриптирано) резервно копие на базата
 docker compose exec db pg_dump -U zabobovdol zabobovdol > backup_$(date +%F).sql
 
-# Възстановяване
+# Възстановяване от него
 cat backup.sql | docker compose exec -T db psql -U zabobovdol zabobovdol
+```
+
+### Препоръчително: автоматичен **криптиран** бекъп (restore само от теб)
+
+За редовни, сигурни бекъпи използвай готовите скриптове в `scripts/`.
+Те криптират с твой публичен ключ — възстановяване е възможно **само** с
+частния ти ключ, който държиш офлайн. Пълни инструкции (генериране на ключ,
+cron, restore): [`scripts/README-backup.md`](scripts/README-backup.md).
+
+```bash
+# еднократно: сложи публичния си ключ в .backup.env (виж README-backup.md)
+echo 'AGE_RECIPIENT="age1...твоят_публичен_ключ..."' > .backup.env
+
+# ръчен криптиран бекъп
+./scripts/backup-db.sh
+
+# всяка нощ в 03:30 (crontab -e)
+30 3 * * * cd /path/to/zabobovdol && ./scripts/backup-db.sh >> backups/backup.log 2>&1
+
+# възстановяване (нужен е частният ти ключ)
+AGE_IDENTITY=/path/to/backup-key.txt ./scripts/restore-db.sh backups/zabobovdol-XXXX.sql.gz.age
 ```
 
 ## 7. Обновяване на кода
