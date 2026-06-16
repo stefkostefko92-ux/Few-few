@@ -8,6 +8,36 @@ import { faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
+import {
+  HelpCircle,
+  Phone,
+  Store,
+  CalendarDays,
+  Megaphone,
+  Bus,
+  Newspaper,
+  AlertTriangle,
+  Landmark,
+  HeartHandshake,
+  Users,
+  Images,
+  type LucideIcon,
+} from "lucide-react";
+
+const NAV_ICONS: Record<string, LucideIcon> = {
+  "/kak-da": HelpCircle,
+  "/uslugi": Phone,
+  "/biznes": Store,
+  "/sabitiya": CalendarDays,
+  "/obyavi": Megaphone,
+  "/transport": Bus,
+  "/novini": Newspaper,
+  "/signali": AlertTriangle,
+  "/istoriya": Landmark,
+  "/zov-za-pomosht": HeartHandshake,
+  "/dobrovolci": Users,
+  "/spomeni": Images,
+};
 
 export const dynamic = "force-dynamic";
 
@@ -147,14 +177,22 @@ export default async function HomePage() {
       {/* Бързи раздели */}
       <Section title="Какво търсите днес?">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PRIMARY_NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="card group">
-              <div className="text-lg font-semibold text-slate-900 group-hover:text-brand-700">
-                {item.label}
-              </div>
-              <p className="mt-1 text-sm text-slate-600">{item.description}</p>
-            </Link>
-          ))}
+          {PRIMARY_NAV.map((item) => {
+            const Icon = NAV_ICONS[item.href] ?? HelpCircle;
+            return (
+              <Link key={item.href} href={item.href} className="card group flex items-start gap-4">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white">
+                  <Icon className="h-6 w-6" aria-hidden />
+                </span>
+                <span>
+                  <span className="block font-display text-lg font-bold text-slate-900 group-hover:text-brand-700">
+                    {item.label}
+                  </span>
+                  <span className="mt-0.5 block text-sm text-slate-600">{item.description}</span>
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </Section>
 
