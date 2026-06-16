@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/za-nas`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/kontakti`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/pechat`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${base}/pechat/avtobus`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/reklama`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/pravila`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/poveritelnost`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
