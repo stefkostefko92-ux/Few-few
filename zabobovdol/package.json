@@ -32,7 +32,8 @@
     "db:seed:content": "tsx prisma/seed-c-health.ts && tsx prisma/seed-c-home.ts && tsx prisma/seed-c-money.ts && tsx prisma/seed-c-kitchen.ts && tsx prisma/seed-c-tech.ts && tsx prisma/seed-c-internet.ts && tsx prisma/seed-c-social.ts && tsx prisma/seed-c-leisure.ts && tsx prisma/seed-c-civic.ts && tsx prisma/seed-c-extra2.ts && tsx prisma/seed-c-elderly.ts",
     "db:seed:scams": "tsx prisma/seed-scam-alerts.ts",
     "db:seed:counter": "tsx prisma/seed-counter.ts",
-    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more && npm run db:seed:banners && npm run db:seed:community && npm run db:seed:transport && npm run db:seed:extra && npm run db:seed:content && npm run db:seed:scams && npm run db:seed:counter",
+    "db:seed:easypay": "tsx prisma/seed-easypay.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more && npm run db:seed:banners && npm run db:seed:community && npm run db:seed:transport && npm run db:seed:extra && npm run db:seed:content && npm run db:seed:scams && npm run db:seed:counter && npm run db:seed:easypay",
     "postinstall": "prisma generate"
   },
   "prisma": {
