@@ -60,6 +60,8 @@ export default async function AdminDashboard({
     pendingVolunteers,
     rideshares,
     pendingRides,
+    dumps,
+    pendingDumps,
     adRequests,
     pendingAds,
     recentAudit,
@@ -82,6 +84,8 @@ export default async function AdminDashboard({
     prisma.volunteer.count({ where: { published: false } }),
     prisma.rideshare.count(),
     prisma.rideshare.count({ where: { published: false } }),
+    prisma.dumpReport.count(),
+    prisma.dumpReport.count({ where: { published: false } }),
     prisma.adRequest.count(),
     prisma.adRequest.count({ where: { status: "NEW" } }),
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
@@ -89,7 +93,12 @@ export default async function AdminDashboard({
 
   // Подавания за одобрение (виждат ги и редакторите).
   const moderationPending =
-    pendingListings + pendingHelp + pendingMemories + pendingVolunteers + pendingRides;
+    pendingListings +
+    pendingHelp +
+    pendingMemories +
+    pendingVolunteers +
+    pendingRides +
+    pendingDumps;
   // Само за администратори (лични данни на граждани/реклама).
   const adminPending = pendingComplaints + pendingAds;
   const pendingTotal = moderationPending + (isAdmin ? adminPending : 0);
@@ -166,6 +175,12 @@ export default async function AdminDashboard({
           value={rideshares}
           href="/admin/patuvane"
           accent={pendingRides > 0}
+        />
+        <StatCard
+          label={pendingDumps > 0 ? `Сметища (чакащи: ${pendingDumps})` : "Нерегламентирани сметища"}
+          value={dumps}
+          href="/admin/smetishta"
+          accent={pendingDumps > 0}
         />
         <StatCard
           label="Търсения без резултат"

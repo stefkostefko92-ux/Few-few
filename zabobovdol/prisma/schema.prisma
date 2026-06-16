@@ -333,6 +333,34 @@ model Counter {
   updatedAt DateTime @updatedAt
 }
 
+enum DumpStatus {
+  NEW // Получен
+  CONFIRMED // Потвърден
+  FORWARDED // Препратен към общината
+  CLEANED // Почистен
+  REJECTED // Отхвърлен
+}
+
+// Сигнали за нерегламентирани (незаконни) сметища от граждани.
+// Показват се публично след одобрение, за да се вижда къде има проблем.
+model DumpReport {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  location      String // къде е сметището (улица/квартал/ориентир)
+  description   String     @default("")
+  photoUrl      String     @default("") // по избор — линк към снимка
+  reporterName  String     @default("") // само вътрешно (админ)
+  reporterPhone String     @default("") // само вътрешно (админ)
+  reporterEmail String     @default("") // само вътрешно (админ)
+  status        DumpStatus @default(NEW)
+  adminNote     String     @default("")
+  published     Boolean    @default(false) // минава през одобрение
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([published, status])
+}
+
 enum AdRequestStatus {
   NEW // Получена
   CONTACTED // Свързахме се

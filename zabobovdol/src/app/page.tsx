@@ -25,6 +25,7 @@ import {
   ShieldAlert,
   Cross,
   Coins,
+  Trash2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -40,6 +41,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/transport": Bus,
   "/novini": Newspaper,
   "/signali": AlertTriangle,
+  "/smetishta": Trash2,
   "/istoriya": Landmark,
   "/zov-za-pomosht": HeartHandshake,
   "/dobrovolci": Users,

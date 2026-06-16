@@ -328,6 +328,40 @@ export const RESOURCES: Resource[] = [
       { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
     ],
   },
+  {
+    key: "smetishta",
+    model: "dumpReport",
+    labelSingular: "Сигнал за сметище",
+    labelPlural: "Нерегламентирани сметища",
+    titleField: "location",
+    slugFrom: "location",
+    defaultSort: { field: "createdAt", dir: "desc" },
+    moderated: true,
+    fields: [
+      { name: "location", label: "Местоположение", type: "text", required: true, listVisible: true },
+      { name: "slug", label: "URL адрес (slug)", type: "text" },
+      { name: "description", label: "Описание", type: "textarea", fullWidth: true },
+      { name: "photoUrl", label: "Линк към снимка", type: "text" },
+      {
+        name: "status",
+        label: "Статус",
+        type: "select",
+        listVisible: true,
+        options: [
+          { value: "NEW", label: "Нов" },
+          { value: "CONFIRMED", label: "Потвърден" },
+          { value: "FORWARDED", label: "Препратен към общината" },
+          { value: "CLEANED", label: "Почистен" },
+          { value: "REJECTED", label: "Отхвърлен" },
+        ],
+      },
+      { name: "reporterName", label: "Подател — име (вътрешно)", type: "text" },
+      { name: "reporterPhone", label: "Подател — телефон (вътрешно)", type: "text" },
+      { name: "reporterEmail", label: "Подател — имейл (вътрешно)", type: "text" },
+      { name: "adminNote", label: "Бележка (вътрешна)", type: "textarea", fullWidth: true },
+      { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
+    ],
+  },
 ];
 
 export function getResource(key: string): Resource | undefined {
