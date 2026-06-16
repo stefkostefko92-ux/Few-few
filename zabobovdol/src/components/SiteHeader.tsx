@@ -15,6 +15,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="h-1 w-full bg-gradient-to-r from-brand-700 via-gold-400 to-crimson-500" />
       <div className="container-content">
         <div className="flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 font-bold">

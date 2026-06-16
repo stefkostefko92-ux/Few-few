@@ -6,14 +6,26 @@ export function PageHero({
   title,
   intro,
   crumbs,
+  eyebrow,
 }: {
   title: string;
   intro?: string;
   crumbs?: { name: string; path: string }[];
+  eyebrow?: string;
 }) {
   return (
-    <div className="border-b border-slate-200 bg-white">
-      <div className="container-content py-8">
+    <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
+      {/* Герб като дискретен воден знак */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/bobov-dol-grb.png"
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute -right-4 -top-6 hidden h-44 w-auto opacity-[0.06] sm:block"
+        width={140}
+        height={200}
+      />
+      <div className="container-content relative py-9 sm:py-11">
         {crumbs && crumbs.length > 0 && (
           <>
             <Breadcrumbs crumbs={[{ name: "Начало", path: "/" }, ...crumbs]} />
@@ -22,10 +34,16 @@ export function PageHero({
             />
           </>
         )}
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        {eyebrow && <p className="eyebrow mt-3">{eyebrow}</p>}
+        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
           {title}
         </h1>
-        {intro && <p className="mt-3 max-w-3xl text-lg text-slate-600">{intro}</p>}
+        <div className="mt-3 h-1 w-14 rounded-full bg-gold-400" />
+        {intro && (
+          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-slate-600">
+            {intro}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -58,8 +76,11 @@ export function Breadcrumbs({
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-      <p className="text-lg font-medium text-slate-700">{title}</p>
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-12 text-center">
+      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-xl">
+        📭
+      </div>
+      <p className="font-display text-lg font-bold text-slate-800">{title}</p>
       {hint && <p className="mt-1 text-sm text-slate-500">{hint}</p>}
     </div>
   );
