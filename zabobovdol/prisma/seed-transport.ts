@@ -42,6 +42,68 @@ async function main() {
   });
   console.log("✔ Транспортна услуга: БДЖ");
 
+  // Местни таксита в Бобов дол (реални данни).
+  const taxis = [
+    {
+      slug: "taksi-radina-nira",
+      name: "Такси Радина (НИРА-1219)",
+      description: "Таксиметров превоз. Фирма: НИРА-1219 ЕООД. Водач: Радина.",
+      phone: "0895 888 755",
+      order: 2,
+    },
+    {
+      slug: "burov-taksi",
+      name: "Буров Такси",
+      description: "Таксиметров превоз. Фирма: Буров777. Водач: Георги Буров.",
+      phone: "0897 953 095",
+      order: 3,
+    },
+    {
+      slug: "niksi-taksi",
+      name: "Никси Такси",
+      description: "Таксиметров превоз. Фирма: НИСТИ. Водач: Тихомир.",
+      phone: "0890 171 817",
+      order: 4,
+    },
+    {
+      slug: "taksi-emil",
+      name: "Такси Емил",
+      description: 'Таксиметров превоз. Фирма: ЕТ „Лиляна Георгиева". Водач: Емил.',
+      phone: "0898 693 939",
+      order: 5,
+    },
+    {
+      slug: "taksi-sandano",
+      name: "Такси Сандано",
+      description: 'Таксиметров превоз. Фирма: ЕТ „Кирил Костадинов – Сани". Водач: Кирил (Сандано).',
+      phone: "0899 181 564",
+      order: 6,
+    },
+    {
+      slug: "mitko-taksi",
+      name: "Митко Такси",
+      description: "Таксиметров превоз. Фирма: Силвия и Ивайла. Водач: Митко.",
+      phone: "0878 420 560",
+      order: 7,
+    },
+  ];
+  for (const t of taxis) {
+    const data = {
+      name: t.name,
+      category: "TRANSPORT" as const,
+      description: t.description,
+      phone: t.phone,
+      order: t.order,
+      published: true,
+    };
+    await prisma.service.upsert({
+      where: { slug: t.slug },
+      update: data,
+      create: { slug: t.slug, ...data },
+    });
+  }
+  console.log(`✔ Таксита: ${taxis.length}`);
+
   // Примерна обява за споделено пътуване (за да се вижда форматът).
   await prisma.rideshare.upsert({
     where: { slug: "bobov-dol-dupnitsa-primer" },

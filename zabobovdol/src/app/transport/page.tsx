@@ -7,6 +7,38 @@ import { Phone, TrainFront, Bus, Car } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+// Разписание на автобуса Бобов дол ⇄ Дупница (превозвач „Даци-Р").
+// При промяна се обновява тук.
+const BUS = {
+  carrier: "Даци-Р",
+  directions: [
+    {
+      title: "Дупница → Бобов дол",
+      times: [
+        "06:40", "07:30", "08:15", "09:00", "10:00", "11:00", "12:00", "13:30",
+        "14:10", "15:00", "16:00", "16:40", "17:15", "18:00", "19:00", "20:00",
+      ],
+      notes: [
+        "Часовете 07:30, 12:00, 15:00 и 18:00 минават през кв. „Христо Ботев“.",
+        "Курсът в 18:00 минава през с. Дяково.",
+        "Курсът в 06:40 пътува само в работни дни.",
+      ],
+    },
+    {
+      title: "Бобов дол → Дупница",
+      times: [
+        "06:15", "06:45", "07:30", "08:20", "09:00", "09:50", "11:00", "12:30",
+        "13:20", "14:00", "15:00", "16:00", "16:40", "17:30", "18:00", "19:00",
+      ],
+      notes: [
+        "Часовете 07:30, 09:50, 13:20, 14:00 и 18:00 минават през кв. „Христо Ботев“.",
+        "Курсът в 11:00 минава през с. Дяково.",
+        "Курсовете в 06:15 и 07:30 пътуват само в работни дни.",
+      ],
+    },
+  ],
+};
+
 export const metadata: Metadata = buildMetadata({
   title: "Транспорт в Бобов дол — такси, автобуси, влак, спирки и споделено пътуване",
   description:
@@ -51,6 +83,41 @@ export default async function TransportPage() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Разписание автобус Бобов дол ⇄ Дупница */}
+        <section>
+          <h2 className="section-title mb-1">Автобус Бобов дол ⇄ Дупница</h2>
+          <p className="mb-5 text-sm text-slate-500">Превозвач: {BUS.carrier}</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {BUS.directions.map((d) => (
+              <div key={d.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 className="flex items-center gap-2 font-display text-lg font-bold text-slate-900">
+                  <Bus className="h-5 w-5 text-brand-700" aria-hidden />
+                  {d.title}
+                </h3>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {d.times.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-lg bg-brand-50 px-2.5 py-1 text-base font-semibold text-brand-800"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <ul className="mt-4 space-y-1 text-sm text-slate-600">
+                  {d.notes.map((n, i) => (
+                    <li key={i}>• {n}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-slate-500">
+            Разписанието може да се променя. При съмнение проверете на спирката
+            или с превозвача.
+          </p>
         </section>
 
         {/* Влак и автобус */}
