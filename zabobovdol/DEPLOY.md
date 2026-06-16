@@ -94,24 +94,30 @@ cat backup.sql | docker compose exec -T db psql -U zabobovdol zabobovdol
 
 ### Препоръчително: автоматичен **криптиран** бекъп (restore само от теб)
 
-За редовни, сигурни бекъпи използвай готовите скриптове в `scripts/`.
-Те криптират с твой публичен ключ — възстановяване е възможно **само** с
-частния ти ключ, който държиш офлайн. Пълни инструкции (генериране на ключ,
-cron, restore): [`scripts/README-backup.md`](scripts/README-backup.md).
+Стекът включва услуга **`backup`**, която тръгва автоматично с
+`docker compose up -d` и прави криптиран бекъп **всеки ден в 00:00**, пазейки
+**последните 31 копия** (≈ последния месец). Криптира с твой публичен ключ —
+възстановяване е възможно **само** с частния ти ключ, който държиш офлайн.
+Пълни инструкции (генериране на ключ, restore): [`scripts/README-backup.md`](scripts/README-backup.md).
 
 ```bash
-# еднократно: сложи публичния си ключ в .backup.env (виж README-backup.md)
-echo 'AGE_RECIPIENT="age1...твоят_публичен_ключ..."' > .backup.env
+# еднократно: генерирай ключ на СВОЯ компютър и пази частния офлайн
+age-keygen -o backup-key.txt
 
-# ръчен криптиран бекъп
-./scripts/backup-db.sh
+# на сървъра: сложи САМО публичния ключ в .env
+AGE_RECIPIENT="age1...твоят_публичен_ключ..."
 
-# всяка нощ в 03:30 (crontab -e)
-30 3 * * * cd /path/to/zabobovdol && ./scripts/backup-db.sh >> backups/backup.log 2>&1
+# стартирай стека — бекъпите тръгват автоматично
+docker compose up -d
+docker compose logs -f backup          # следи кога минават
+ls -lh backups/                        # готовите криптирани копия
 
-# възстановяване (нужен е частният ти ключ)
+# възстановяване (нужен е частният ти ключ — виж README-backup.md)
 AGE_IDENTITY=/path/to/backup-key.txt ./scripts/restore-db.sh backups/zabobovdol-XXXX.sql.gz.age
 ```
+
+Настройки (в `.env`, по избор): `BACKUP_TIME` (час, по подразб. `00:00`),
+`BACKUP_TZ` (по подразб. `Europe/Sofia`), `BACKUP_RETENTION_DAYS` (по подразб. `31`).
 
 ## 7. Обновяване на кода
 

@@ -38,36 +38,48 @@ age-keygen -o backup-key.txt
 > Не го качвай в Git и не го дръж на сървъра.
 
 ### в) Кажи на сървъра САМО публичния ключ
-На VPS-а, в папката на проекта (`zabobovdol/`), създай файл `.backup.env`:
+На VPS-а, в папката на проекта (`zabobovdol/`), отвори файла `.env` и сложи
+**само публичния** ключ (реда `age1...`):
 ```bash
-# .backup.env  (на сървъра; този файл НЕ влиза в Git)
 AGE_RECIPIENT="age1qz...тук_лепиш_ПУБЛИЧНИЯ_ключ..."
-# по избор:
-# BACKUP_RETENTION_DAYS=14
-# BACKUP_DIR=/var/backups/zabobovdol
 ```
 Готово — сървърът вече може да криптира, но не и да разкриптира.
 
 ---
 
-## 2. Ръчен бекъп (тест)
-На сървъра, от папката `zabobovdol/`:
-```bash
-./scripts/backup-db.sh
-```
-Резултат: `backups/zabobovdol-YYYYMMDD-HHMMSS.sql.gz.age` (+ `.sha256`).
+## 2. Автоматичен бекъп (вече вграден в Docker) — нищо за правене
 
-## 3. Автоматичен бекъп всеки ден (cron)
-Отвори crontab на сървъра:
+В стека има отделна услуга **`backup`**, която тръгва автоматично с
+`docker compose up -d`. Тя:
+
+- прави криптиран бекъп **всеки ден в 00:00** (часът е `BACKUP_TIME`,
+  по локалното време `BACKUP_TZ`, по подразбиране `Europe/Sofia`);
+- пази **последните 31 копия** (`BACKUP_RETENTION_DAYS`, ≈ последния месец) и
+  трие по-старите автоматично;
+- прави и едно копие веднага при стартиране (`BACKUP_ON_START=true`), за да
+  се види, че работи;
+- инсталира си `age` сама — няма ръчни стъпки на сървъра.
+
+Файловете се пишат в папка `backups/` до проекта:
+`backups/zabobovdol-YYYYMMDD-HHMMSS.sql.gz.age` (+ `.sha256`).
+
+Полезни команди:
 ```bash
-crontab -e
+docker compose up -d                 # стартира и backup услугата
+docker compose logs -f backup        # следи кога и как минават бекъпите
+docker compose exec backup sh -c 'bash /scripts/backup-db.sh'   # ръчен бекъп веднага
+ls -lh backups/                      # виж готовите криптирани копия
 ```
-Добави ред за всяка нощ в 03:30 (промени пътя според твоя):
+
+> Съвет: периодично копирай съдържанието на `backups/` и на друго място
+> (друг сървър, външен диск, облак). Понеже файловете са вече криптирани,
+> можеш спокойно да ги държиш където и да е.
+
+### Алтернатива: cron на хоста (ако не ползваш Docker стека)
 ```cron
-30 3 * * * cd /path/to/zabobovdol && ./scripts/backup-db.sh >> backups/backup.log 2>&1
+0 0 * * * cd /path/to/zabobovdol && ./scripts/backup-db.sh >> backups/backup.log 2>&1
 ```
-Готово — всяка нощ се прави нов криптиран бекъп, а старите над
-`BACKUP_RETENTION_DAYS` (по подразбиране 14) се трият автоматично.
+(изисква `age` да е инсталиран на хоста и `AGE_RECIPIENT` в обкръжението/`.env`)
 
 > Съвет: периодично копирай съдържанието на `backups/` и на друго място
 > (друг сървър, външен диск, облак). Понеже файловете са вече криптирани,
@@ -77,9 +89,18 @@ crontab -e
 
 ## 4. Възстановяване (restore) — само ти, с частния ключ
 
-Това се прави, когато трябва да върнеш данните. Качи (временно) частния си
-ключ на машината, от която възстановяваш, или направи restore локално.
+Това се прави, когато трябва да върнеш данните. Нужен е **частният ти ключ**.
 
+**Вариант А — през backup контейнера (там `age` вече е наличен):**
+```bash
+# сложи временно частния си ключ до проекта (напр. backup-key.txt) и:
+docker compose exec -e AGE_IDENTITY=/backups/backup-key.txt backup \
+  bash /scripts/restore-db.sh /backups/zabobovdol-YYYYMMDD-HHMMSS.sql.gz.age
+# след това ИЗТРИЙ ключа от сървъра!
+rm -f backups/backup-key.txt
+```
+
+**Вариант Б — от твоя компютър (най-сигурно):**
 ```bash
 AGE_IDENTITY=/path/to/backup-key.txt \
   ./scripts/restore-db.sh backups/zabobovdol-YYYYMMDD-HHMMSS.sql.gz.age

@@ -37,11 +37,35 @@ load_env "$ROOT_DIR/.backup.env"   # по избор: тук дръж само A
 
 # --- Параметри (със стойности по подразбиране от docker-compose.yml) ---
 BACKUP_DIR="${BACKUP_DIR:-$ROOT_DIR/backups}"
-RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"     # колко най-нови копия да пазим
+RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-31}"     # колко най-нови копия да пазим (≈ последния месец)
 DB_SERVICE="${BACKUP_DB_SERVICE:-db}"            # име на услугата в docker compose
 POSTGRES_USER="${POSTGRES_USER:-zabobovdol}"
 POSTGRES_DB="${POSTGRES_DB:-zabobovdol}"
 COMPOSE="${BACKUP_COMPOSE_CMD:-docker compose}"
+
+# Режим на работа:
+#   BACKUP_DIRECT=1 → pg_dump се пуска ДИРЕКТНО (от backup контейнера, по мрежата).
+#   иначе          → през "docker compose exec db" (когато се пуска от хоста).
+BACKUP_DIRECT="${BACKUP_DIRECT:-}"
+DB_HOST="${DB_HOST:-db}"
+DB_PORT="${DB_PORT:-5432}"
+export PGPASSWORD="${POSTGRES_PASSWORD:-}"
+
+# Обвивки около pg_isready / pg_dump според режима.
+db_ready() {
+  if [ -n "$BACKUP_DIRECT" ]; then
+    pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" >/dev/null 2>&1
+  else
+    $COMPOSE exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" >/dev/null 2>&1
+  fi
+}
+db_dump() {
+  if [ -n "$BACKUP_DIRECT" ]; then
+    pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$POSTGRES_USER" --no-owner --clean --if-exists "$POSTGRES_DB"
+  else
+    $COMPOSE exec -T "$DB_SERVICE" pg_dump -U "$POSTGRES_USER" --no-owner --clean --if-exists "$POSTGRES_DB"
+  fi
+}
 
 ts="$(date -u +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
@@ -68,28 +92,22 @@ else
 fi
 
 # --- Проверка, че базата е достъпна ---
-log "Проверка на връзката с базата ($DB_SERVICE)…"
-$COMPOSE exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" >/dev/null 2>&1 \
-  || fail "Базата не отговаря. Стартирана ли е ($COMPOSE ps)?"
+log "Проверка на връзката с базата ($DB_HOST)…"
+db_ready || fail "Базата не отговаря. Стартирана ли е?"
 
 # --- Дъмп → gzip → криптиране (поточно, без некриптиран файл на диска) ---
 log "Създаване на криптиран бекъп с метод: $ENCRYPT_TOOL …"
 case "$ENCRYPT_TOOL" in
   age)
-    $COMPOSE exec -T "$DB_SERVICE" pg_dump -U "$POSTGRES_USER" --no-owner --clean --if-exists "$POSTGRES_DB" \
-      | gzip -9 \
-      | age -r "$AGE_RECIPIENT" -o "$tmp" \
+    db_dump | gzip -9 | age -r "$AGE_RECIPIENT" -o "$tmp" \
       || fail "Дъмпът/криптирането се провали."
     ;;
   age-file)
-    $COMPOSE exec -T "$DB_SERVICE" pg_dump -U "$POSTGRES_USER" --no-owner --clean --if-exists "$POSTGRES_DB" \
-      | gzip -9 \
-      | age -R "$AGE_RECIPIENTS_FILE" -o "$tmp" \
+    db_dump | gzip -9 | age -R "$AGE_RECIPIENTS_FILE" -o "$tmp" \
       || fail "Дъмпът/криптирането се провали."
     ;;
   gpg)
-    $COMPOSE exec -T "$DB_SERVICE" pg_dump -U "$POSTGRES_USER" --no-owner --clean --if-exists "$POSTGRES_DB" \
-      | gzip -9 \
+    db_dump | gzip -9 \
       | gpg --batch --yes --trust-model always --encrypt --recipient "$GPG_RECIPIENT" -o "$tmp" \
       || fail "Дъмпът/криптирането се провали."
     ;;

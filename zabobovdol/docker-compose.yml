@@ -47,6 +47,33 @@ services:
     expose:
       - "3000"
 
+  # Автоматичен криптиран бекъп на базата (всеки ден в BACKUP_TIME).
+  # Криптира с публичен ключ (AGE_RECIPIENT) — restore е възможен само с
+  # частния ключ, който държиш офлайн. Виж scripts/README-backup.md.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TZ: ${BACKUP_TZ:-Europe/Sofia}
+      BACKUP_DIRECT: "1"
+      DB_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-zabobovdol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zabobovdol}
+      POSTGRES_DB: ${POSTGRES_DB:-zabobovdol}
+      BACKUP_DIR: /backups
+      BACKUP_TIME: ${BACKUP_TIME:-00:00}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-31}
+      BACKUP_ON_START: ${BACKUP_ON_START:-true}
+      AGE_RECIPIENT: ${AGE_RECIPIENT:-}
+      GPG_RECIPIENT: ${GPG_RECIPIENT:-}
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    entrypoint: ["/bin/sh", "/scripts/backup-entrypoint.sh"]
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
