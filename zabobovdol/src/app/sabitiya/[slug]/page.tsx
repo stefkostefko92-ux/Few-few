@@ -5,6 +5,7 @@ import { PageHero, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, eventLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -71,6 +72,9 @@ export default async function EventPage({
       <div className="container-content grid gap-8 py-10 lg:grid-cols-[1fr,18rem]">
         <div>
           {e.description && <Prose html={renderMarkdown(e.description)} />}
+          <div className="mt-6 no-print">
+            <PrintButton variant="secondary" />
+          </div>
         </div>
         <aside className="space-y-3">
           <div className="card space-y-3">

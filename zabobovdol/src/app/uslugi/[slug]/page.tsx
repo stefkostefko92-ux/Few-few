@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, localBusinessLd } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS, labelFor } from "@/lib/categories";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,9 @@ export default async function ServicePage({
               <Prose html={renderMarkdown(s.description)} />
             </div>
           )}
+          <div className="mt-6 no-print">
+            <PrintButton variant="secondary" />
+          </div>
         </div>
         <aside className="space-y-3">
           <div className="card space-y-3">

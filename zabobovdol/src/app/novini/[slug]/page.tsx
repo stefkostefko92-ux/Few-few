@@ -5,6 +5,7 @@ import { PageHero, Prose } from "@/components/ui";
 import { buildMetadata, newsArticleLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,9 @@ export default async function PostPage({
             )}
           </div>
         )}
+        <div className="mt-8 border-t border-slate-200 pt-5">
+          <PrintButton variant="secondary" label="Принтирай новината" />
+        </div>
       </article>
     </>
   );

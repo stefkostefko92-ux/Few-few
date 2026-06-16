@@ -6,6 +6,7 @@ import { PageHero, Prose } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,9 @@ export default async function RidePage({
               <Prose html={renderMarkdown(r.description)} />
             </div>
           )}
+          <div className="mt-6 no-print">
+            <PrintButton variant="secondary" />
+          </div>
         </div>
         <aside>
           <div className="card space-y-3">

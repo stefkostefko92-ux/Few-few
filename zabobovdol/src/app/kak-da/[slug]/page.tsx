@@ -6,6 +6,7 @@ import { PageHero, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, faqPageLd, howToLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -120,9 +121,13 @@ export default async function FaqPage({
               </ul>
             </div>
           )}
+
+          <div className="mt-8 border-t border-slate-200 pt-5">
+            <PrintButton variant="secondary" label="Принтирай това обяснение" />
+          </div>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 no-print">
           <div className="card bg-brand-50">
             <h2 className="text-base font-semibold text-slate-900">
               Нужна ви е още помощ?

@@ -6,6 +6,7 @@ import { PageHero } from "@/components/ui";
 import { buildMetadata, faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -166,6 +167,10 @@ export default async function AidPage() {
             </div>
           </section>
         )}
+
+        <div className="no-print">
+          <PrintButton variant="secondary" label="Принтирай тази страница" />
+        </div>
       </div>
     </>
   );

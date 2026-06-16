@@ -7,6 +7,7 @@ import { buildMetadata, faqPageLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -211,6 +212,10 @@ export default async function ScamProtectionPage() {
             </div>
           </section>
         )}
+
+        <div className="no-print">
+          <PrintButton variant="secondary" label="Принтирай тези съвети" />
+        </div>
 
         <p className="text-sm text-slate-500">
           Имате съмнение за измама или искате да предупредите съседите? Обадете

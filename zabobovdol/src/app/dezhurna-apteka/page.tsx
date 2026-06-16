@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, itemListLd } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { getDutyInfo } from "@/lib/settings";
+import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +130,10 @@ export default async function DutyPharmacyPage() {
             <div className="grid gap-4 sm:grid-cols-2">{others.map(card)}</div>
           </section>
         )}
+
+        <div className="no-print">
+          <PrintButton variant="secondary" label="Принтирай тази страница" />
+        </div>
 
         <p className="text-sm text-slate-500">
           Виж и всички{" "}
