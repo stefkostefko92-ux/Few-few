@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
   fullName: z
@@ -29,6 +30,9 @@ export async function submitAdRequest(
   _prev: AdRequestState,
   formData: FormData,
 ): Promise<AdRequestState> {
+  if (!rateLimit(await clientKey("adreq"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email") ?? "",

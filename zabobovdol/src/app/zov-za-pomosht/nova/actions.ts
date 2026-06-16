@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
   title: z.string().trim().min(4, "Въведете кратко заглавие.").max(140),
@@ -29,6 +30,9 @@ export async function submitHelpCause(
   _prev: HelpState,
   formData: FormData,
 ): Promise<HelpState> {
+  if (!rateLimit(await clientKey("help"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
     title: formData.get("title"),
     kind: formData.get("kind"),

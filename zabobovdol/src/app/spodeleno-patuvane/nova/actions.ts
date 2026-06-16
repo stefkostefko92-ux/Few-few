@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
   kind: z.enum(["OFFER", "NEED"]),
@@ -31,6 +32,9 @@ export async function submitRideshare(
   _prev: RideState,
   formData: FormData,
 ): Promise<RideState> {
+  if (!rateLimit(await clientKey("ride"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
     kind: formData.get("kind"),
     routeFrom: formData.get("routeFrom"),

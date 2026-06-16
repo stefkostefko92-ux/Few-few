@@ -41,6 +41,18 @@ export default async function AdminDashboard() {
     pendingListings,
     posts,
     misses,
+    complaints,
+    pendingComplaints,
+    helpCauses,
+    pendingHelp,
+    memories,
+    pendingMemories,
+    volunteers,
+    pendingVolunteers,
+    rideshares,
+    pendingRides,
+    adRequests,
+    pendingAds,
     recentAudit,
   ] = await Promise.all([
     prisma.faq.count(),
@@ -51,8 +63,29 @@ export default async function AdminDashboard() {
     prisma.listing.count({ where: { published: false } }),
     prisma.post.count(),
     prisma.searchMiss.count({ where: { resolved: false } }),
+    prisma.complaint.count(),
+    prisma.complaint.count({ where: { status: "NEW" } }),
+    prisma.helpCause.count(),
+    prisma.helpCause.count({ where: { published: false } }),
+    prisma.memory.count(),
+    prisma.memory.count({ where: { published: false } }),
+    prisma.volunteer.count(),
+    prisma.volunteer.count({ where: { published: false } }),
+    prisma.rideshare.count(),
+    prisma.rideshare.count({ where: { published: false } }),
+    prisma.adRequest.count(),
+    prisma.adRequest.count({ where: { status: "NEW" } }),
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
   ]);
+
+  const pendingTotal =
+    pendingListings +
+    pendingComplaints +
+    pendingHelp +
+    pendingMemories +
+    pendingVolunteers +
+    pendingRides +
+    pendingAds;
 
   return (
     <div className="space-y-8">
@@ -61,12 +94,11 @@ export default async function AdminDashboard() {
         <p className="text-slate-600">Преглед на съдържанието и последна активност.</p>
       </div>
 
-      {pendingListings > 0 && (
+      {pendingTotal > 0 && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
-          Имате <strong>{pendingListings}</strong> обяви, които чакат одобрение.{" "}
-          <Link href="/admin/listings?filter=pending" className="font-semibold underline">
-            Прегледай сега →
-          </Link>
+          Имате <strong>{pendingTotal}</strong>{" "}
+          {pendingTotal === 1 ? "нова заявка, която чака" : "нови заявки, които чакат"}{" "}
+          вашето одобрение. Вижте подчертаните карти по-долу.
         </div>
       )}
 
@@ -76,12 +108,48 @@ export default async function AdminDashboard() {
         <StatCard label="Местен бизнес" value={business} href="/admin/business" />
         <StatCard label="Събития" value={events} href="/admin/events" />
         <StatCard
-          label={`Обяви (чакащи: ${pendingListings})`}
+          label={pendingListings > 0 ? `Обяви (чакащи: ${pendingListings})` : "Обяви"}
           value={listings}
           href="/admin/listings"
           accent={pendingListings > 0}
         />
         <StatCard label="Новини" value={posts} href="/admin/posts" />
+        <StatCard
+          label={pendingComplaints > 0 ? `Сигнали (нови: ${pendingComplaints})` : "Сигнали"}
+          value={complaints}
+          href="/admin/signali"
+          accent={pendingComplaints > 0}
+        />
+        <StatCard
+          label={pendingAds > 0 ? `Заявки за реклама (нови: ${pendingAds})` : "Заявки за реклама"}
+          value={adRequests}
+          href="/admin/reklami"
+          accent={pendingAds > 0}
+        />
+        <StatCard
+          label={pendingHelp > 0 ? `Зов за помощ (чакащи: ${pendingHelp})` : "Зов за помощ"}
+          value={helpCauses}
+          href="/admin/help"
+          accent={pendingHelp > 0}
+        />
+        <StatCard
+          label={pendingMemories > 0 ? `Спомени (чакащи: ${pendingMemories})` : "Спомени"}
+          value={memories}
+          href="/admin/spomeni"
+          accent={pendingMemories > 0}
+        />
+        <StatCard
+          label={pendingVolunteers > 0 ? `Доброволци (чакащи: ${pendingVolunteers})` : "Доброволци"}
+          value={volunteers}
+          href="/admin/dobrovolci"
+          accent={pendingVolunteers > 0}
+        />
+        <StatCard
+          label={pendingRides > 0 ? `Споделено пътуване (чакащи: ${pendingRides})` : "Споделено пътуване"}
+          value={rideshares}
+          href="/admin/patuvane"
+          accent={pendingRides > 0}
+        />
         <StatCard
           label="Търсения без резултат"
           value={misses}

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { sendMail, MUNICIPALITY_EMAIL } from "@/lib/mail";
 import { SITE } from "@/lib/site";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
   name: z.string().trim().max(120).optional().default(""),
@@ -41,6 +42,9 @@ export async function submitComplaint(
   _prev: ComplaintState,
   formData: FormData,
 ): Promise<ComplaintState> {
+  if (!rateLimit(await clientKey("signal"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
     name: formData.get("name") ?? "",
     email: formData.get("email") ?? "",
