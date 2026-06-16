@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getResource } from "@/lib/admin/resources";
 import { deleteRecord, togglePublish } from "@/lib/admin/actions";
@@ -20,21 +20,22 @@ export default async function ResourceListPage({
   params: Promise<{ resource: string }>;
   searchParams: Promise<{ filter?: string; saved?: string; deleted?: string }>;
 }) {
-  await requireUser();
   const { resource: key } = await params;
   const { filter, saved, deleted } = await searchParams;
   const resource = getResource(key);
   if (!resource) notFound();
+  // Ресурсите, маркирани adminOnly (напр. банери), са само за роля ADMIN.
+  if (resource.adminOnly) await requireAdmin();
+  else await requireUser();
 
   const delegate = (prisma as unknown as Record<string, Delegate>)[resource.model];
   const where =
-    filter === "pending" && resource.key === "listings"
-      ? { published: false }
-      : {};
+    filter === "pending" && resource.moderated ? { published: false } : {};
   const sort = resource.defaultSort ?? { field: "createdAt", dir: "desc" as const };
   const rows = await delegate.findMany({
     where,
     orderBy: { [sort.field]: sort.dir },
+    take: 300,
   });
 
   const cols = resource.fields.filter((f) => f.listVisible);
@@ -60,10 +61,10 @@ export default async function ResourceListPage({
         </div>
       )}
 
-      {resource.key === "listings" && (
+      {resource.moderated && (
         <div className="flex gap-2 text-sm">
           <Link
-            href="/admin/listings"
+            href={`/admin/${resource.key}`}
             className={
               "rounded-full px-3 py-1.5 " +
               (!filter ? "bg-brand-700 text-white" : "bg-white text-slate-600 ring-1 ring-slate-300")
@@ -72,7 +73,7 @@ export default async function ResourceListPage({
             Всички
           </Link>
           <Link
-            href="/admin/listings?filter=pending"
+            href={`/admin/${resource.key}?filter=pending`}
             className={
               "rounded-full px-3 py-1.5 " +
               (filter === "pending"

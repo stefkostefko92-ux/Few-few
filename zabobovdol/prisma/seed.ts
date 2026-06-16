@@ -27,8 +27,19 @@ const NOTE = " [примерни данни — заменете от админ
 async function main() {
   // --- Администратор ---
   const email = (process.env.ADMIN_EMAIL ?? "admin@carbonstealth.eu").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD ?? "changeme12345";
+  const password = process.env.ADMIN_PASSWORD ?? "";
   const name = process.env.ADMIN_NAME ?? "Администратор";
+
+  // Безопасност: не създаваме администратор със слаба/примерна парола.
+  const WEAK = ["", "changeme12345", "changeme", "password", "admin"];
+  if (password.length < 10 || WEAK.includes(password.toLowerCase())) {
+    console.error(
+      "\n✖ ADMIN_PASSWORD липсва или е твърде слаб/примерен.\n" +
+        "  Задайте силна парола (поне 10 знака) в .env и пуснете отново:\n" +
+        '    ADMIN_PASSWORD="ваша_силна_парола"\n',
+    );
+    process.exit(1);
+  }
   const passwordHash = await bcrypt.hash(password, 11);
 
   await prisma.user.upsert({

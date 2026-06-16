@@ -36,6 +36,8 @@ export type Resource = {
   titleField: string;
   slugFrom?: string;
   defaultSort?: { field: string; dir: "asc" | "desc" };
+  adminOnly?: boolean; // само роля ADMIN може да управлява ресурса
+  moderated?: boolean; // публични подавания, които чакат одобрение (published=false)
   fields: Field[];
 };
 
@@ -156,6 +158,7 @@ export const RESOURCES: Resource[] = [
     titleField: "title",
     slugFrom: "title",
     defaultSort: { field: "createdAt", dir: "desc" },
+    moderated: true,
     fields: [
       { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
       { name: "slug", label: "URL адрес (slug)", type: "text" },
@@ -177,6 +180,7 @@ export const RESOURCES: Resource[] = [
     labelPlural: "Реклами (банери)",
     titleField: "title",
     defaultSort: { field: "order", dir: "asc" },
+    adminOnly: true,
     fields: [
       { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
       { name: "sponsor", label: "Рекламодател", type: "text", listVisible: true },
@@ -248,6 +252,7 @@ export const RESOURCES: Resource[] = [
     titleField: "title",
     slugFrom: "title",
     defaultSort: { field: "createdAt", dir: "desc" },
+    moderated: true,
     fields: [
       { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
       { name: "slug", label: "URL адрес (slug)", type: "text" },
@@ -269,6 +274,7 @@ export const RESOURCES: Resource[] = [
     titleField: "title",
     slugFrom: "title",
     defaultSort: { field: "createdAt", dir: "desc" },
+    moderated: true,
     fields: [
       { name: "title", label: "Заглавие", type: "text", required: true, listVisible: true },
       { name: "slug", label: "URL адрес (slug)", type: "text" },
@@ -287,6 +293,7 @@ export const RESOURCES: Resource[] = [
     titleField: "name",
     slugFrom: "name",
     defaultSort: { field: "createdAt", dir: "desc" },
+    moderated: true,
     fields: [
       { name: "name", label: "Име", type: "text", required: true, listVisible: true },
       { name: "slug", label: "URL адрес (slug)", type: "text" },
@@ -305,6 +312,7 @@ export const RESOURCES: Resource[] = [
     labelPlural: "Споделено пътуване",
     titleField: "routeFrom",
     defaultSort: { field: "createdAt", dir: "desc" },
+    moderated: true,
     fields: [
       { name: "kind", label: "Вид", type: "select", options: Object.entries(RIDE_KIND_LABELS).map(([value, label]) => ({ value, label })), listVisible: true },
       { name: "routeFrom", label: "Откъде", type: "text", required: true, listVisible: true },

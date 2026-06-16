@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { search } from "@/lib/search";
+import { search, recordMiss } from "@/lib/search";
 import { PageHero, EmptyState } from "@/components/ui";
 import { SearchBar } from "@/components/SearchBar";
 import { buildMetadata } from "@/lib/seo";
@@ -36,6 +36,8 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = (q ?? "").trim();
   const results = query.length >= 2 ? await search(query, 30) : [];
+  // Записваме търсения без резултат, за да виждаме какво търсят хората.
+  if (query.length >= 2 && results.length === 0) await recordMiss(query);
 
   return (
     <>

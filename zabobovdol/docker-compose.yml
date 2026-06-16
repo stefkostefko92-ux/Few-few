@@ -30,7 +30,9 @@ services:
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://zabobovdol.carbonstealth.eu}
       AUTH_SECRET: ${AUTH_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@carbonstealth.eu}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme12345}
+      # Без стойност по подразбиране — задайте силна парола в .env.
+      # Сийдът отказва да създаде администратор със слаба/празна парола.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       ADMIN_NAME: ${ADMIN_NAME:-Администратор}
       CHAT_PROVIDER: ${CHAT_PROVIDER:-rules}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

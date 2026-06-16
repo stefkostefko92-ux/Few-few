@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
@@ -33,8 +34,9 @@ export type ComplaintState = {
 
 function makeRefCode(): string {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = randomBytes(6);
   let s = "";
-  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 6; i++) s += chars[bytes[i] % chars.length];
   return `BD-${s}`;
 }
 

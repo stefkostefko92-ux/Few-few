@@ -2,7 +2,14 @@ import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/auth";
 
 type AuditInput = {
-  action: "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "PUBLISH" | "UNPUBLISH";
+  action:
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "LOGIN"
+    | "LOGIN_FAILED"
+    | "PUBLISH"
+    | "UNPUBLISH";
   entity: string;
   entityId?: string | null;
   summary: string;

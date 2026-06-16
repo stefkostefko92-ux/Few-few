@@ -13,7 +13,9 @@ export async function middleware(req: NextRequest) {
   const secret = process.env.AUTH_SECRET;
   if (token && secret) {
     try {
-      await jwtVerify(token, new TextEncoder().encode(secret));
+      await jwtVerify(token, new TextEncoder().encode(secret), {
+        algorithms: ["HS256"],
+      });
       return NextResponse.next();
     } catch {
       // невалиден/изтекъл токен — към входа

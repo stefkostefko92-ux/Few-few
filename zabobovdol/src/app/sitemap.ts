@@ -36,28 +36,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const [faqs, services, businesses, events, posts] = await Promise.all([
-      prisma.faq.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-      }),
-      prisma.service.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-      }),
-      prisma.business.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-      }),
-      prisma.event.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-      }),
-      prisma.post.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-      }),
-    ]);
+    const now2 = new Date();
+    const notExpired = {
+      OR: [{ expiresAt: null }, { expiresAt: { gte: now2 } }],
+    };
+    const [faqs, services, businesses, events, posts, listings, rides, help, memories] =
+      await Promise.all([
+        prisma.faq.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.service.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.business.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.event.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.post.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.listing.findMany({
+          where: { published: true, ...notExpired },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.rideshare.findMany({
+          where: { published: true, ...notExpired },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.helpCause.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+        prisma.memory.findMany({
+          where: { published: true },
+          select: { slug: true, updatedAt: true },
+        }),
+      ]);
 
     const dyn: MetadataRoute.Sitemap = [
       ...faqs.map((x) => ({
@@ -86,6 +107,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
       ...posts.map((x) => ({
         url: `${base}/novini/${x.slug}`,
+        lastModified: x.updatedAt,
+        changeFrequency: "monthly" as const,
+        priority: 0.5,
+      })),
+      ...listings.map((x) => ({
+        url: `${base}/obyavi/${x.slug}`,
+        lastModified: x.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.5,
+      })),
+      ...rides.map((x) => ({
+        url: `${base}/spodeleno-patuvane/${x.slug}`,
+        lastModified: x.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.5,
+      })),
+      ...help.map((x) => ({
+        url: `${base}/zov-za-pomosht/${x.slug}`,
+        lastModified: x.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.5,
+      })),
+      ...memories.map((x) => ({
+        url: `${base}/spomeni/${x.slug}`,
         lastModified: x.updatedAt,
         changeFrequency: "monthly" as const,
         priority: 0.5,

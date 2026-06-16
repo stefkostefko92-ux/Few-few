@@ -3,10 +3,33 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireAdmin, type SessionUser } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { slugify } from "@/lib/slug";
 import { getResource, type Field, type Resource } from "@/lib/admin/resources";
+
+// Изисква ADMIN за ресурси, маркирани adminOnly; иначе всеки влязъл потребител.
+async function authorize(resource: Resource): Promise<SessionUser> {
+  return resource.adminOnly ? requireAdmin() : requireUser();
+}
+
+// Полета, които съдържат адреси — пазим се от опасни схеми (напр. javascript:).
+const URL_FIELDS = new Set([
+  "imageUrl",
+  "linkUrl",
+  "url",
+  "website",
+  "facebook",
+  "coverImage",
+  "sourceUrl",
+]);
+function isSafeUrl(value: string): boolean {
+  const v = value.trim();
+  if (v === "") return true;
+  // Разрешаваме вътрешни пътища и безопасни схеми.
+  if (v.startsWith("/")) return true;
+  return /^(https?:|mailto:|tel:)/i.test(v);
+}
 
 // Динамичен достъп до Prisma делегатите по име на модел.
 type Delegate = {
@@ -49,13 +72,15 @@ async function uniqueSlugFor(
   desired: string,
   excludeId?: string,
 ): Promise<string> {
-  const rows = await delegate(model).findMany({ select: { id: true, slug: true } });
-  const taken = new Set(
-    rows
-      .filter((r) => r.id !== excludeId)
-      .map((r) => String(r.slug)),
-  );
   const root = slugify(desired) || "elem";
+  // Зареждаме само кандидатите със същия корен — ограничена заявка.
+  const rows = await delegate(model).findMany({
+    where: { slug: { startsWith: root } },
+    select: { id: true, slug: true },
+  });
+  const taken = new Set(
+    rows.filter((r) => r.id !== excludeId).map((r) => String(r.slug)),
+  );
   if (!taken.has(root)) return root;
   let i = 2;
   while (taken.has(`${root}-${i}`)) i++;
@@ -76,9 +101,24 @@ export async function saveRecord(
   id: string | null,
   formData: FormData,
 ): Promise<void> {
-  const user = await requireUser();
   const resource = getResource(resourceKey);
   if (!resource) throw new Error("Непознат ресурс");
+  const user = await authorize(resource);
+
+  // Отхвърляме опасни URL схеми в адресните полета.
+  for (const field of resource.fields) {
+    if (URL_FIELDS.has(field.name)) {
+      const raw = formData.get(field.name);
+      if (typeof raw === "string" && !isSafeUrl(raw)) {
+        redirect(
+          `/admin/${resource.key}/${id ?? "new"}?error=` +
+            encodeURIComponent(
+              `Полето „${field.label}" има непозволен адрес. Допустими са http(s), tel:, mailto: или вътрешен път.`,
+            ),
+        );
+      }
+    }
+  }
 
   const data = buildData(resource, formData);
 
@@ -128,9 +168,9 @@ export async function deleteRecord(
   resourceKey: string,
   id: string,
 ): Promise<void> {
-  const user = await requireUser();
   const resource = getResource(resourceKey);
   if (!resource) throw new Error("Непознат ресурс");
+  const user = await authorize(resource);
 
   const row = await delegate(resource.model).findUnique({ where: { id } });
   const title = row ? String(row[resource.titleField] ?? id) : id;
@@ -152,9 +192,9 @@ export async function togglePublish(
   id: string,
   next: boolean,
 ): Promise<void> {
-  const user = await requireUser();
   const resource = getResource(resourceKey);
   if (!resource) throw new Error("Непознат ресурс");
+  const user = await authorize(resource);
 
   const data: Record<string, unknown> = { published: next };
   if (

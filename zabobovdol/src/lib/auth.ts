@@ -18,9 +18,14 @@ export type SessionUser = {
 
 function secret(): Uint8Array {
   const s = process.env.AUTH_SECRET;
-  if (!s || s.length < 16) {
+  if (!s || s.length < 32) {
     throw new Error(
-      "AUTH_SECRET липсва или е твърде кратък. Задай дълъг случаен низ в .env.",
+      "AUTH_SECRET липсва или е твърде кратък (нужни са поне 32 знака). Задай дълъг случаен низ в .env (напр. openssl rand -base64 48).",
+    );
+  }
+  if (/ПРОМЕНИ_МЕ|CHANGE_?ME|changeme/i.test(s)) {
+    throw new Error(
+      "AUTH_SECRET все още е примерната стойност. Задай истински дълъг случаен низ.",
     );
   }
   return new TextEncoder().encode(s);
@@ -53,7 +58,8 @@ export async function createSession(user: SessionUser): Promise<void> {
   store.set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    // Админ зоната е отделна — strict пази най-добре срещу CSRF.
+    sameSite: "strict",
     path: "/",
     maxAge: MAX_AGE,
   });
@@ -69,7 +75,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secret());
+    const { payload } = await jwtVerify(token, secret(), {
+      algorithms: ["HS256"],
+    });
     return {
       id: String(payload.sub),
       email: String(payload.email),

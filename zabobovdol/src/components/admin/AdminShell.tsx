@@ -79,19 +79,21 @@ export function AdminShell({
             <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-400">
               Съдържание
             </div>
-            {RESOURCES.map((r) => (
-              <div key={r.key}>{link(`/admin/${r.key}`, r.labelPlural)}</div>
-            ))}
+            {RESOURCES.filter((r) => !r.adminOnly || user.role === "ADMIN").map(
+              (r) => (
+                <div key={r.key}>{link(`/admin/${r.key}`, r.labelPlural)}</div>
+              ),
+            )}
             <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-400">
               Система
             </div>
             {link("/admin/novini", "Новини от общината")}
-            {link("/admin/signali", "Сигнали до общината")}
-            {link("/admin/reklami", "Заявки за реклама")}
+            {user.role === "ADMIN" && link("/admin/signali", "Сигнали до общината")}
+            {user.role === "ADMIN" && link("/admin/reklami", "Заявки за реклама")}
             {link("/admin/search-misses", "Търсения без резултат")}
             {user.role === "ADMIN" && link("/admin/users", "Потребители")}
             {user.role === "ADMIN" && link("/admin/nastroyki", "Настройки")}
-            {link("/admin/audit", "Одит лог")}
+            {user.role === "ADMIN" && link("/admin/audit", "Одит лог")}
           </nav>
         </aside>
 

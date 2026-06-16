@@ -75,7 +75,10 @@ export default async function HomePage() {
       take: 3,
     }),
     prisma.listing.findMany({
-      where: { published: true },
+      where: {
+        published: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+      },
       orderBy: { createdAt: "desc" },
       take: 4,
     }),

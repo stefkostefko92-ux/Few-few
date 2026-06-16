@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { setAdRequestStatus, deleteAdRequest } from "@/lib/admin/adrequest-actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -21,7 +21,7 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 export default async function AdminAdRequestsPage() {
-  await requireUser();
+  await requireAdmin();
   const items = await prisma.adRequest.findMany({
     orderBy: { createdAt: "desc" },
     take: 200,

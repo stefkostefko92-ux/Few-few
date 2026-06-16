@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Phone, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { buildMetadata, itemListLd } from "@/lib/seo";
 import { SERVICE_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,17 @@ export default async function UslugiPage({
 
   return (
     <>
+      {services.length > 0 && (
+        <JsonLd
+          data={itemListLd(
+            services.slice(0, 50).map((s) => ({
+              name: s.name,
+              path: `/uslugi/${s.slug}`,
+            })),
+            "Услуги и важни телефони в Бобов дол",
+          )}
+        />
+      )}
       <PageHero
         title="Услуги и важни телефони"
         intro="Намерете бързо телефон, адрес и работно време на важните услуги в града."

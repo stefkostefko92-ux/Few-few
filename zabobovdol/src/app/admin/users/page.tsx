@@ -99,7 +99,7 @@ export default async function UsersPage({
           </div>
           <div>
             <label className="label" htmlFor="password">Парола (мин. 8 знака)</label>
-            <input id="password" name="password" type="text" required minLength={8} className="input" />
+            <input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} className="input" />
           </div>
           <div className="sm:col-span-2">
             <button type="submit" className="btn-primary">Създай потребител</button>

@@ -119,12 +119,23 @@ function parseHtmlListing(html: string, base: string): RawItem[] {
 }
 
 async function fetchText(url: string): Promise<string> {
+  // Само http(s) — пазим се от достъп до локални услуги/файлове (SSRF).
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("Невалиден адрес на източника.");
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error("Позволени са само http(s) адреси за източника.");
+  }
   const res = await fetch(url, {
     headers: {
       "user-agent": "ZaBobovDolBot/1.0 (+https://zabobovdol.carbonstealth.eu)",
       accept: "application/rss+xml, text/html, application/xml;q=0.9, */*;q=0.8",
     },
     signal: AbortSignal.timeout(15000),
+    redirect: "follow",
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();

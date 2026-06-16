@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { buildMetadata, itemListLd } from "@/lib/seo";
 import { BUSINESS_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 import { plainText } from "@/lib/markdown";
 
@@ -33,6 +34,17 @@ export default async function BiznesPage({
 
   return (
     <>
+      {businesses.length > 0 && (
+        <JsonLd
+          data={itemListLd(
+            businesses.slice(0, 50).map((b) => ({
+              name: b.name,
+              path: `/biznes/${b.slug}`,
+            })),
+            "Местен бизнес в Бобов дол",
+          )}
+        />
+      )}
       <PageHero
         title="Местен бизнес"
         intro="Каталог на търговци, заведения, занаятчии и услуги в Бобов дол. Искате да добавите своя бизнес? Пишете ни."

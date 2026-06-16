@@ -17,7 +17,15 @@ export function buildMetadata(opts: {
   const title = opts.title;
   const description = opts.description ?? SITE.description;
   const url = canonical(opts.path ?? "/");
-  const images = opts.images?.length ? opts.images : [`${SITE.url}/og.png`];
+  const rawImages = opts.images?.length ? opts.images : [`${SITE.url}/og.png`];
+  // Структурирани изображения с размери и alt — по-добри карти в социални
+  // мрежи и AI асистенти.
+  const images = rawImages.map((u) => ({
+    url: u,
+    width: 1200,
+    height: 630,
+    alt: title ?? SITE.name,
+  }));
 
   return {
     title,
@@ -39,7 +47,7 @@ export function buildMetadata(opts: {
       card: "summary_large_image",
       title: title ? `${title} · ${SITE.name}` : SITE.name,
       description,
-      images,
+      images: rawImages,
     },
   };
 }
@@ -159,6 +167,75 @@ export function localBusinessLd(b: {
         }
       : {}),
     ...(b.hours ? { openingHours: b.hours } : {}),
+  };
+}
+
+// Новинарска статия — за Google Top stories/Discover и AI цитиране.
+export function newsArticleLd(a: {
+  title: string;
+  description?: string;
+  url: string;
+  publishedAt?: Date | null;
+  updatedAt?: Date | null;
+  image?: string;
+}) {
+  const published = (a.publishedAt ?? a.updatedAt ?? new Date()).toISOString();
+  const modified = (a.updatedAt ?? a.publishedAt ?? new Date()).toISOString();
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: a.title.slice(0, 110),
+    ...(a.description ? { description: a.description } : {}),
+    mainEntityOfPage: a.url,
+    datePublished: published,
+    dateModified: modified,
+    image: [a.image || `${SITE.url}/og.png`],
+    author: { "@type": "Organization", name: SITE.name },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      logo: { "@type": "ImageObject", url: `${SITE.url}/icon-512.png` },
+    },
+  };
+}
+
+// Списък с елементи (директория) — помага на търсачки и AI да разберат
+// категорийните страници като подреден списък.
+export function itemListLd(
+  items: { name: string; path: string }[],
+  name?: string,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    ...(name ? { name } : {}),
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      url: canonical(it.path),
+    })),
+  };
+}
+
+// Инструкция със стъпки — за HowTo богати резултати и AI извличане на стъпки.
+export function howToLd(h: {
+  name: string;
+  description?: string;
+  steps: string[];
+  url: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: h.name,
+    ...(h.description ? { description: h.description } : {}),
+    step: h.steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text: s,
+    })),
   };
 }
 

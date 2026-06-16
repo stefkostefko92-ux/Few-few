@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Cross, Phone, MapPin, Clock, Stethoscope } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, Prose } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { buildMetadata, itemListLd } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { getDutyInfo } from "@/lib/settings";
 
@@ -64,6 +65,14 @@ export default async function DutyPharmacyPage() {
 
   return (
     <>
+      {health.length > 0 && (
+        <JsonLd
+          data={itemListLd(
+            health.map((s) => ({ name: s.name, path: `/uslugi/${s.slug}` })),
+            "Аптеки и здравни услуги в Бобов дол",
+          )}
+        />
+      )}
       <PageHero
         eyebrow="Здраве"
         title="Дежурна аптека и лекар"

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const FORBIDDEN_MSG =
+  "Нямате достъп до тази част. Тя е достъпна само за администратори.";
+
 function StatCard({
   label,
   value,
@@ -29,8 +32,14 @@ function StatCard({
   );
 }
 
-export default async function AdminDashboard() {
-  await requireUser();
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const user = await requireUser();
+  const isAdmin = user.role === "ADMIN";
+  const { error } = await searchParams;
 
   const [
     faq,
@@ -78,14 +87,12 @@ export default async function AdminDashboard() {
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
   ]);
 
-  const pendingTotal =
-    pendingListings +
-    pendingComplaints +
-    pendingHelp +
-    pendingMemories +
-    pendingVolunteers +
-    pendingRides +
-    pendingAds;
+  // Подавания за одобрение (виждат ги и редакторите).
+  const moderationPending =
+    pendingListings + pendingHelp + pendingMemories + pendingVolunteers + pendingRides;
+  // Само за администратори (лични данни на граждани/реклама).
+  const adminPending = pendingComplaints + pendingAds;
+  const pendingTotal = moderationPending + (isAdmin ? adminPending : 0);
 
   return (
     <div className="space-y-8">
@@ -93,6 +100,12 @@ export default async function AdminDashboard() {
         <h1 className="text-2xl font-bold text-slate-900">Табло</h1>
         <p className="text-slate-600">Преглед на съдържанието и последна активност.</p>
       </div>
+
+      {error === "forbidden" && (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-800">
+          {FORBIDDEN_MSG}
+        </div>
+      )}
 
       {pendingTotal > 0 && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
@@ -114,18 +127,22 @@ export default async function AdminDashboard() {
           accent={pendingListings > 0}
         />
         <StatCard label="Новини" value={posts} href="/admin/posts" />
-        <StatCard
-          label={pendingComplaints > 0 ? `Сигнали (нови: ${pendingComplaints})` : "Сигнали"}
-          value={complaints}
-          href="/admin/signali"
-          accent={pendingComplaints > 0}
-        />
-        <StatCard
-          label={pendingAds > 0 ? `Заявки за реклама (нови: ${pendingAds})` : "Заявки за реклама"}
-          value={adRequests}
-          href="/admin/reklami"
-          accent={pendingAds > 0}
-        />
+        {isAdmin && (
+          <StatCard
+            label={pendingComplaints > 0 ? `Сигнали (нови: ${pendingComplaints})` : "Сигнали"}
+            value={complaints}
+            href="/admin/signali"
+            accent={pendingComplaints > 0}
+          />
+        )}
+        {isAdmin && (
+          <StatCard
+            label={pendingAds > 0 ? `Заявки за реклама (нови: ${pendingAds})` : "Заявки за реклама"}
+            value={adRequests}
+            href="/admin/reklami"
+            accent={pendingAds > 0}
+          />
+        )}
         <StatCard
           label={pendingHelp > 0 ? `Зов за помощ (чакащи: ${pendingHelp})` : "Зов за помощ"}
           value={helpCauses}
@@ -158,6 +175,7 @@ export default async function AdminDashboard() {
         />
       </div>
 
+      {isAdmin && (
       <div>
         <h2 className="mb-3 text-lg font-semibold text-slate-900">
           Последна активност
@@ -194,6 +212,7 @@ export default async function AdminDashboard() {
           </Link>
         </div>
       </div>
+      )}
     </div>
   );
 }

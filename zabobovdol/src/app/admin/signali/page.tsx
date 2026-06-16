@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { Mail, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { MUNICIPALITY_EMAIL } from "@/lib/mail";
@@ -25,7 +25,7 @@ export default async function AdminSignaliPage({
 }: {
   searchParams: Promise<{ filter?: string }>;
 }) {
-  await requireUser();
+  await requireAdmin();
   const { filter } = await searchParams;
   const where =
     filter && filter in STATUS_LABEL ? { status: filter as never } : {};

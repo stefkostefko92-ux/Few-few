@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getResource } from "@/lib/admin/resources";
 import { saveRecord } from "@/lib/admin/actions";
@@ -14,13 +14,17 @@ type Delegate = {
 
 export default async function ResourceEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ resource: string; id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
-  await requireUser();
   const { resource: key, id } = await params;
+  const { error } = await searchParams;
   const resource = getResource(key);
   if (!resource) notFound();
+  if (resource.adminOnly) await requireAdmin();
+  else await requireUser();
 
   const isNew = id === "new";
   let record: Record<string, unknown> | null = null;
@@ -34,16 +38,23 @@ export default async function ResourceEditPage({
   const action = saveRecord.bind(null, resource.key, isNew ? null : id);
 
   return (
-    <AdminForm
-      title={
-        isNew
-          ? `Нов запис: ${resource.labelSingular}`
-          : `Редакция: ${resource.labelSingular}`
-      }
-      fields={resource.fields}
-      initial={initial}
-      action={action}
-      cancelHref={`/admin/${resource.key}`}
-    />
+    <div className="space-y-4">
+      {error && (
+        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      <AdminForm
+        title={
+          isNew
+            ? `Нов запис: ${resource.labelSingular}`
+            : `Редакция: ${resource.labelSingular}`
+        }
+        fields={resource.fields}
+        initial={initial}
+        action={action}
+        cancelHref={`/admin/${resource.key}`}
+      />
+    </div>
   );
 }

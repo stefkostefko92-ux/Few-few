@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, newsArticleLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
+import { JsonLd } from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,16 @@ export default async function PostPage({
 
   return (
     <>
+      <JsonLd
+        data={newsArticleLd({
+          title: p.title,
+          description: p.excerpt || plainText(p.content, 200),
+          url: canonical(`/novini/${p.slug}`),
+          publishedAt: p.publishedAt,
+          updatedAt: p.updatedAt,
+          image: p.coverImage || undefined,
+        })}
+      />
       <PageHero
         title={p.title}
         crumbs={[

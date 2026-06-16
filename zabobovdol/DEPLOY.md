@@ -143,7 +143,7 @@ docker compose up -d --build
 
 ```bash
 # всеки ден в 7:00 — внася чернови (публикуването остава ръчно)
-0 7 * * * curl -s "https://zabobovdol.carbonstealth.eu/api/ingest-news?token=ТАЙНА" >/dev/null
+0 7 * * * curl -s -H "Authorization: Bearer ТАЙНА" https://zabobovdol.carbonstealth.eu/api/ingest-news >/dev/null
 ```
 
 Адресът на източника се задава с `MUNICIPALITY_NEWS_URL` (RSS канал или HTML

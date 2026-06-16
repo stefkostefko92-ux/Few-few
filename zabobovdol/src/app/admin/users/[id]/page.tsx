@@ -63,7 +63,8 @@ export default async function EditUserPage({
           <input
             id="password"
             name="password"
-            type="text"
+            type="password"
+            autoComplete="new-password"
             placeholder="Оставете празно, за да не сменяте"
             className="input"
           />

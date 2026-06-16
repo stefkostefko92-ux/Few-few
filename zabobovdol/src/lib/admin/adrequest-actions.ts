@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 
 type Status = "NEW" | "CONTACTED" | "PAID" | "ACTIVE" | "REJECTED";
 
 export async function setAdRequestStatus(id: string, status: Status): Promise<void> {
-  const user = await requireUser();
+  const user = await requireAdmin();
   await prisma.adRequest.update({ where: { id }, data: { status } });
   await logAudit(user, {
     action: "UPDATE",
@@ -20,7 +20,7 @@ export async function setAdRequestStatus(id: string, status: Status): Promise<vo
 }
 
 export async function deleteAdRequest(id: string): Promise<void> {
-  const user = await requireUser();
+  const user = await requireAdmin();
   await prisma.adRequest.delete({ where: { id } });
   await logAudit(user, {
     action: "DELETE",
