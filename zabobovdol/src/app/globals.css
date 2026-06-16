@@ -149,6 +149,31 @@ h4,
   .splash-text { animation: none; }
 }
 
+/* Висок контраст (достъпност) — по-черен текст, по-силни граници и връзки.
+   Включва се от лентата за достъпност (клас .hc на <html>). */
+html.hc body {
+  background-color: #ffffff;
+  color: #000000;
+}
+html.hc .text-slate-500,
+html.hc .text-slate-600,
+html.hc .text-slate-700 {
+  color: #1a1a1a !important;
+}
+html.hc a:not(.btn):not(.btn-primary):not(.btn-secondary):not(.btn-gold) {
+  text-decoration: underline;
+}
+html.hc .card,
+html.hc .input,
+html.hc input,
+html.hc textarea,
+html.hc select {
+  border-color: #000000 !important;
+}
+html.hc :focus-visible {
+  outline-width: 4px;
+}
+
 /* Стилове за печат — крие хедър/футър/изскачащи елементи. */
 @media print {
   header,

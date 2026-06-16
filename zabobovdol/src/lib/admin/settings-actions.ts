@@ -32,3 +32,19 @@ export async function saveAdSettings(formData: FormData): Promise<void> {
   revalidatePath("/", "layout");
   redirect("/admin/nastroyki?saved=1");
 }
+
+export async function saveDutyInfo(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const info = String(formData.get("dutyInfo") ?? "").trim();
+
+  await setSetting(SETTING_KEYS.dutyInfo, info);
+
+  await logAudit(admin, {
+    action: "UPDATE",
+    entity: "SiteSetting",
+    summary: "Промяна на информацията за дежурна аптека",
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/admin/nastroyki?saved=1");
+}

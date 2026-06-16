@@ -8,6 +8,7 @@ import { faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
+import { ScamBanner } from "@/components/ScamBanner";
 import {
   HelpCircle,
   Phone,
@@ -21,12 +22,18 @@ import {
   HeartHandshake,
   Users,
   Images,
+  ShieldAlert,
+  Cross,
+  Coins,
   type LucideIcon,
 } from "lucide-react";
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   "/kak-da": HelpCircle,
   "/uslugi": Phone,
+  "/izmami": ShieldAlert,
+  "/dezhurna-apteka": Cross,
+  "/pomoshti": Coins,
   "/biznes": Store,
   "/sabitiya": CalendarDays,
   "/obyavi": Megaphone,
@@ -99,6 +106,9 @@ export default async function HomePage() {
           )}
         />
       )}
+
+      {/* Лента с предупреждение за актуална измама (ако има закачена) */}
+      <ScamBanner />
 
       {/* Заглавна секция */}
       <section className="relative overflow-hidden bg-brand-800 text-white">

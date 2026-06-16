@@ -5,6 +5,7 @@ import { SITE } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationLd, websiteLd } from "@/lib/seo";
 import { SiteHeader } from "@/components/SiteHeader";
+import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidget } from "@/components/ChatWidget";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -96,11 +97,20 @@ export default function RootLayout({
           content={`${SITE.geo.latitude}, ${SITE.geo.longitude}`}
         />
         <JsonLd data={[organizationLd(), websiteLd()]} />
+        {/* Прилага запазените настройки за достъпност преди първия рендер,
+            за да няма „премигване“ на размера/контраста. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var s={'2':'112.5%','3':'125%'};var f=localStorage.getItem('a11y-font');if(f&&s[f])document.documentElement.style.fontSize=s[f];if(localStorage.getItem('a11y-contrast')==='1')document.documentElement.classList.add('hc');}catch(e){}})();",
+          }}
+        />
       </head>
       <body>
         <a href="#main" className="skip-link">
           Прескочи към съдържанието
         </a>
+        <AccessibilityBar />
         <SiteHeader />
         <main id="main" className="min-h-[60vh]">
           {children}

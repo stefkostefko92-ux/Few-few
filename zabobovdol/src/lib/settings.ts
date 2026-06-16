@@ -5,7 +5,20 @@ import { SITE } from "@/lib/site";
 export const SETTING_KEYS = {
   adPriceEur: "ad_price_eur",
   revolutUrl: "revolut_url",
+  dutyInfo: "duty_info",
 } as const;
+
+// Текст за дежурната аптека/лекар, редактиран свободно от админ панела.
+export async function getDutyInfo(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.dutyInfo },
+    });
+    return row?.value ?? "";
+  } catch {
+    return "";
+  }
+}
 
 export type AdSettings = { priceEur: number; revolutUrl: string };
 

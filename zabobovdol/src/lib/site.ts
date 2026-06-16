@@ -54,6 +54,9 @@ export type NavItem = { href: string; label: string; description?: string };
 export const PRIMARY_NAV: NavItem[] = [
   { href: "/kak-da", label: "Как да…", description: "Стъпка по стъпка за е-услуги и документи" },
   { href: "/uslugi", label: "Услуги и телефони", description: "Важни местни телефони и услуги" },
+  { href: "/izmami", label: "Пази се от измами", description: "Как да разпознаеш телефонни и онлайн измами" },
+  { href: "/dezhurna-apteka", label: "Дежурна аптека", description: "Коя аптека и лекар работят сега" },
+  { href: "/pomoshti", label: "Пенсии и помощи", description: "Пенсии, помощ за отопление, ТЕЛК и документи" },
   { href: "/biznes", label: "Местен бизнес", description: "Каталог на търговци и занаятчии" },
   { href: "/sabitiya", label: "Събития", description: "Какво се случва в града" },
   { href: "/obyavi", label: "Обяви", description: "Безплатни местни обяви" },
@@ -68,6 +71,9 @@ export const PRIMARY_NAV: NavItem[] = [
 
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
+  { href: "/izmami", label: "Пази се от измами" },
+  { href: "/dezhurna-apteka", label: "Дежурна аптека" },
+  { href: "/pomoshti", label: "Пенсии и помощи" },
   { href: "/transport", label: "Транспорт" },
   { href: "/spodeleno-patuvane", label: "Споделено пътуване" },
   { href: "/zov-za-pomosht", label: "Зов за помощ" },
