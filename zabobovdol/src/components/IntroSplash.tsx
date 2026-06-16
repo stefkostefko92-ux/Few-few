@@ -12,8 +12,42 @@ export function IntroSplash() {
   const isAdmin = pathname?.startsWith("/admin");
   const [visible, setVisible] = useState(!isAdmin);
   const [leaving, setLeaving] = useState(false);
+  const [visitorNo, setVisitorNo] = useState<number | null>(null);
 
   const seconds = SITE.intro.seconds;
+
+  // Истински брояч на посетителите: всеки браузър получава пореден номер
+  // веднъж и го запомня, за да не надува брояча при всяко зареждане.
+  useEffect(() => {
+    if (isAdmin) return;
+    const KEY = "zbd_visitor_no";
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(KEY);
+    } catch {
+      /* localStorage недостъпен */
+    }
+    if (stored && Number(stored) > 0) {
+      setVisitorNo(Number(stored));
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/visit", { method: "POST" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled || !d?.ok || typeof d.n !== "number") return;
+        setVisitorNo(d.n);
+        try {
+          localStorage.setItem(KEY, String(d.n));
+        } catch {
+          /* пренебрегваме */
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -67,6 +101,16 @@ export function IntroSplash() {
       <p className="splash-text mt-3 text-base text-brand-100">
         {SITE.name} · {SITE.geo.city}
       </p>
+
+      {/* Истински брояч на посетителите */}
+      {visitorNo !== null && (
+        <p className="splash-text mt-6 text-lg text-brand-50">
+          Вие сте посетител номер{" "}
+          <span className="font-extrabold text-gold-300">
+            {new Intl.NumberFormat("bg-BG").format(visitorNo)}
+          </span>
+        </p>
+      )}
 
       {/* Лента за прогрес (изпълва се за времето на екрана) */}
       <div className="mt-8 h-1 w-44 overflow-hidden rounded-full bg-white/20">

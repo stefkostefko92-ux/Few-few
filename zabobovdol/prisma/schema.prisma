@@ -326,6 +326,13 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
+// Атомарни броячи (напр. брояч на посетителите за началния екран).
+model Counter {
+  key       String   @id
+  value     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
 enum AdRequestStatus {
   NEW // Получена
   CONTACTED // Свързахме се
