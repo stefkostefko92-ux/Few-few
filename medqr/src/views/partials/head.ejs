@@ -3,11 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= typeof title !== 'undefined' ? title : 'MedQR' %></title>
-  <meta name="description" content="MedQR — защитен спешен медицински профил, достъпен чрез QR код.">
+  <title><%= typeof title !== 'undefined' ? title : 'MedQR — спешен медицински профил с QR код' %></title>
+  <meta name="description" content="<%= meta.description %>">
+  <meta name="robots" content="<%= meta.robots %>">
+  <link rel="canonical" href="<%= meta.canonical %>">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="<%= meta.ogType %>">
+  <meta property="og:site_name" content="<%= site.name %>">
+  <meta property="og:locale" content="<%= site.locale %>">
+  <meta property="og:title" content="<%= typeof title !== 'undefined' ? title : site.name %>">
+  <meta property="og:description" content="<%= meta.description %>">
+  <meta property="og:url" content="<%= meta.canonical %>">
+  <meta property="og:image" content="<%= meta.ogImage %>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title : site.name %>">
+  <meta name="twitter:description" content="<%= meta.description %>">
+  <meta name="twitter:image" content="<%= meta.ogImage %>">
+
+  <meta name="theme-color" content="#0b6e8c">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preload" href="/fonts/inter-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
+
+  <script type="application/ld+json" nonce="<%= cspNonce %>">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "<%= site.base %>/#organization",
+        "name": "<%= company.name %>",
+        "url": "<%= company.url %>",
+        "brand": { "@type": "Brand", "name": "MedQR" }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "<%= site.base %>/#website",
+        "url": "<%= site.base %>/",
+        "name": "MedQR",
+        "inLanguage": "bg",
+        "publisher": { "@id": "<%= site.base %>/#organization" }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <%- include('icons') %>

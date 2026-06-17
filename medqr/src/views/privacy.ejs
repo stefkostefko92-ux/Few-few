@@ -59,4 +59,15 @@
   <p><a class="btn btn-ghost" href="/">Към началото</a></p>
 </article>
 
+<script type="application/ld+json" nonce="<%= cspNonce %>">
+{
+  "@context": "https://schema.org",
+  "@type": "PrivacyPolicy",
+  "name": "Политика за поверителност",
+  "url": "<%= meta.canonical %>",
+  "inLanguage": "bg",
+  "isPartOf": { "@id": "<%= site.base %>/#website" }
+}
+</script>
+
 <%- include('partials/foot') %>
