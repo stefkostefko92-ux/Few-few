@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title : 'MedQR' %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Прескочи към съдържанието</a>
+  <header class="site-header">
+    <a class="brand" href="/">🩺 MedQR</a>
+    <nav>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/dashboard">Моят профил</a>
+        <form method="post" action="/logout" class="inline">
+          <button type="submit" class="link-btn">Изход</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Вход</a>
+        <a href="/register" class="btn-small">Регистрация</a>
+      <% } %>
+    </nav>
+  </header>
+  <main id="main" class="container">

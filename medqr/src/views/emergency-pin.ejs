@@ -1,0 +1,15 @@
+<%- include('partials/head', { title: 'Изисква се PIN', user: null }) %>
+
+<section class="form-wrap">
+  <h1>🔒 Защитен профил</h1>
+  <p>Този спешен профил е защитен с PIN. Въведете го, за да видите информацията.</p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/e/<%= token %>" class="stack">
+    <label>PIN
+      <input type="text" name="pin" inputmode="numeric" pattern="\d{4,8}" required autofocus>
+    </label>
+    <button type="submit" class="btn">Покажи информацията</button>
+  </form>
+</section>
+
+<%- include('partials/foot') %>

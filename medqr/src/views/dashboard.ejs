@@ -1,0 +1,73 @@
+<%- include('partials/head', { title: 'Моят профил — MedQR', user }) %>
+
+<h1>Моят спешен профил</h1>
+<% if (saved) { %><p class="success" role="status">Промените са запазени.</p><% } %>
+
+<div class="grid-2">
+  <section class="card">
+    <h2><%= profile.full_name %></h2>
+    <dl class="profile-view">
+      <dt>Кръвна група</dt><dd><%= profile.blood_type || '—' %></dd>
+      <dt>Алергии (лекарства)</dt><dd><%= profile.allergies || '—' %></dd>
+      <dt>Хронични заболявания</dt><dd><%= profile.chronic_conditions || '—' %></dd>
+      <dt>Текущи медикаменти</dt><dd><%= profile.current_medications || '—' %></dd>
+      <dt>Слухов статус</dt><dd><%= profile.hearing_status || '—' %></dd>
+      <dt>Комуникация</dt><dd><%= profile.communication_pref || '—' %></dd>
+      <dt>Спешен контакт</dt>
+      <dd>
+        <%= profile.emergency_contact_name || '—' %>
+        <% if (profile.emergency_contact_phone) { %>
+          · <a href="tel:<%= profile.emergency_contact_phone %>"><%= profile.emergency_contact_phone %></a>
+        <% } %>
+      </dd>
+    </dl>
+    <a class="btn" href="/profile/edit">Редактирай данните</a>
+  </section>
+
+  <section class="card center">
+    <h2>Вашият QR код</h2>
+    <img class="qr" src="/qr.png" alt="QR код за спешен достъп до профила">
+    <p class="muted small">Сочи към: <br><code><%= emergencyUrl %></code></p>
+    <div class="cta-row">
+      <a class="btn btn-small" href="/qr.png" download="medqr.png">Изтегли PNG</a>
+      <a class="btn btn-small btn-ghost" href="/card" target="_blank">Карта за печат</a>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Сигурност</h2>
+  <form method="post" action="/profile/pin" class="inline-form">
+    <label>Незадължителен PIN (4–8 цифри) за допълнителна защита
+      <input type="text" name="pin" inputmode="numeric" pattern="\d{4,8}" placeholder="напр. 1234">
+    </label>
+    <button type="submit" class="btn-small">Запази PIN</button>
+    <span class="muted small">Празно поле премахва PIN-а.</span>
+  </form>
+  <form method="post" action="/profile/rotate-token" class="inline-form"
+        onsubmit="return confirm('Това ще обезсили текущия QR код. Сигурни ли сте?')">
+    <button type="submit" class="btn-small btn-danger">Издай нов QR код (обезсили стария)</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Журнал на достъпите</h2>
+  <% if (recentAccess.length === 0) { %>
+    <p class="muted">Все още няма сканирания на вашия код.</p>
+  <% } else { %>
+    <table class="log">
+      <thead><tr><th>Кога</th><th>IP</th><th>Устройство</th></tr></thead>
+      <tbody>
+        <% recentAccess.forEach(a => { %>
+          <tr>
+            <td><%= a.accessed_at %></td>
+            <td><%= a.ip || '—' %></td>
+            <td class="small"><%= a.user_agent || '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

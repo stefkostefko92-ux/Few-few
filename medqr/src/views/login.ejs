@@ -1,0 +1,18 @@
+<%- include('partials/head', { title: 'Вход — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1>Вход</h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login" class="stack">
+    <label>Имейл
+      <input type="email" name="email" value="<%= email %>" required autocomplete="email">
+    </label>
+    <label>Парола
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn">Вход</button>
+  </form>
+  <p>Нямате профил? <a href="/register">Регистрация</a></p>
+</section>
+
+<%- include('partials/foot') %>
