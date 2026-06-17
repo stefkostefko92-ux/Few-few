@@ -1,6 +1,10 @@
 import { requireAdmin } from "@/lib/auth";
-import { getAdSettings, getDutyInfo } from "@/lib/settings";
-import { saveAdSettings, saveDutyInfo } from "@/lib/admin/settings-actions";
+import { getAdSettings, getDutyInfo, getFacebookUrl } from "@/lib/settings";
+import {
+  saveAdSettings,
+  saveDutyInfo,
+  saveContactSettings,
+} from "@/lib/admin/settings-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +15,11 @@ export default async function AdminSettingsPage({
 }) {
   await requireAdmin();
   const { saved, error } = await searchParams;
-  const [ad, dutyInfo] = await Promise.all([getAdSettings(), getDutyInfo()]);
+  const [ad, dutyInfo, facebookUrl] = await Promise.all([
+    getAdSettings(),
+    getDutyInfo(),
+    getFacebookUrl(),
+  ]);
 
   return (
     <div className="max-w-xl space-y-5">
@@ -51,6 +59,31 @@ export default async function AdminSettingsPage({
             defaultValue={ad.revolutUrl}
             className="input"
             placeholder="https://revolut.me/..."
+          />
+        </div>
+        <button type="submit" className="btn-primary">
+          Запази
+        </button>
+      </form>
+
+      <form action={saveContactSettings} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-slate-900">Социални мрежи</h2>
+        <p className="text-sm text-slate-600">
+          Връзка към Facebook страницата или групата на проекта. Ако е попълнена,
+          в долната част на сайта (footer) се показва бутон към Facebook. Оставете
+          празно, за да го скриете.
+        </p>
+        <div>
+          <label className="label" htmlFor="facebookUrl">
+            Facebook (адрес на страница/група)
+          </label>
+          <input
+            id="facebookUrl"
+            name="facebookUrl"
+            type="url"
+            defaultValue={facebookUrl}
+            className="input"
+            placeholder="https://www.facebook.com/..."
           />
         </div>
         <button type="submit" className="btn-primary">

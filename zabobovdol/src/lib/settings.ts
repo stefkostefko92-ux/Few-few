@@ -6,6 +6,7 @@ export const SETTING_KEYS = {
   adPriceEur: "ad_price_eur",
   revolutUrl: "revolut_url",
   dutyInfo: "duty_info",
+  facebookUrl: "facebook_url",
 } as const;
 
 // Текст за дежурната аптека/лекар, редактиран свободно от админ панела.
@@ -37,6 +38,19 @@ export async function getAdSettings(): Promise<AdSettings> {
     };
   } catch {
     return { priceEur: SITE.payment.monthlyPriceEur, revolutUrl: SITE.payment.revolut };
+  }
+}
+
+// Адрес на Facebook страницата/групата, редактиран от админ панела.
+// Връща празен низ, ако не е зададен (тогава иконата не се показва).
+export async function getFacebookUrl(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.facebookUrl },
+    });
+    return row?.value || SITE.social.facebook || "";
+  } catch {
+    return SITE.social.facebook || "";
   }
 }
 

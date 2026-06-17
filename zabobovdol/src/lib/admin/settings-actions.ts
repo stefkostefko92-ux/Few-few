@@ -33,6 +33,26 @@ export async function saveAdSettings(formData: FormData): Promise<void> {
   redirect("/admin/nastroyki?saved=1");
 }
 
+export async function saveContactSettings(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const facebook = String(formData.get("facebookUrl") ?? "").trim();
+
+  if (facebook && !/^https?:\/\//i.test(facebook)) {
+    redirect("/admin/nastroyki?error=" + encodeURIComponent("Линкът трябва да започва с http(s)://"));
+  }
+
+  await setSetting(SETTING_KEYS.facebookUrl, facebook);
+
+  await logAudit(admin, {
+    action: "UPDATE",
+    entity: "SiteSetting",
+    summary: "Промяна на връзка към Facebook",
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/admin/nastroyki?saved=1");
+}
+
 export async function saveDutyInfo(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const info = String(formData.get("dutyInfo") ?? "").trim();
