@@ -53,6 +53,22 @@ export async function saveContactSettings(formData: FormData): Promise<void> {
   redirect("/admin/nastroyki?saved=1");
 }
 
+export async function saveChurchServices(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const info = String(formData.get("churchServices") ?? "").trim();
+
+  await setSetting(SETTING_KEYS.churchServices, info);
+
+  await logAudit(admin, {
+    action: "UPDATE",
+    entity: "SiteSetting",
+    summary: "Промяна на часовете на църковните служби",
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/admin/nastroyki?saved=1");
+}
+
 export async function saveDutyInfo(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const info = String(formData.get("dutyInfo") ?? "").trim();

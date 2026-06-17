@@ -26,10 +26,14 @@ const nextConfig = {
     // към външни изображения.
     // В режим на разработка (next dev) Next.js ползва eval за hot-reload, затова
     // там добавяме 'unsafe-eval'. В продукция CSP остава строг (без eval).
+    // Разрешени външни услуги: статистика (Plausible) и времето (Open-Meteo).
+    const analytics = "https://plausible.io";
+    const weather = "https://api.open-meteo.com";
+
     const scriptSrc =
       process.env.NODE_ENV === "production"
-        ? "script-src 'self' 'unsafe-inline'"
-        : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+        ? `script-src 'self' 'unsafe-inline' ${analytics}`
+        : `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${analytics}`;
 
     const csp = [
       "default-src 'self'",
@@ -37,7 +41,7 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      `connect-src 'self' ${weather} ${analytics}`,
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'self'",

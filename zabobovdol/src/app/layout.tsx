@@ -97,6 +97,19 @@ export default function RootLayout({
           content={`${SITE.geo.latitude}, ${SITE.geo.longitude}`}
         />
         <JsonLd data={[organizationLd(), websiteLd()]} />
+        {/* Анонимна статистика (Plausible) — по избор, без бисквитки. Зарежда се
+            само ако е зададен NEXT_PUBLIC_PLAUSIBLE_DOMAIN. По подразбиране е
+            изключена и не се товари нищо външно. */}
+        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+          <script
+            defer
+            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+            src={
+              process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ||
+              "https://plausible.io/js/script.js"
+            }
+          />
+        )}
         {/* Прилага запазените настройки за достъпност преди първия рендер,
             за да няма „премигване“ на размера/контраста. */}
         <script

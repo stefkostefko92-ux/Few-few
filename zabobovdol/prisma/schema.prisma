@@ -447,3 +447,36 @@ model ScamAlert {
 
   @@index([published, order])
 }
+
+// Планови/аварийни прекъсвания на ток и вода — редактирани от админ.
+// Показват се на страница „Прекъсвания на ток и вода".
+model Outage {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  utility   String    @default("ELECTRICITY") // ELECTRICITY (ток) | WATER (вода)
+  area      String    @default("") // кои улици/квартали са засегнати
+  startAt   DateTime? // от кога
+  endAt     DateTime? // докога (очаквано)
+  note      String    @default("") // подробности (по избор, Markdown)
+  planned   Boolean   @default(true) // планово (true) или авария (false)
+  published Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([published, startAt])
+}
+
+// Съобщения, изпратени през формата за контакт (към проекта, не към общината).
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  subject   String   @default("")
+  message   String
+  handled   Boolean  @default(false) // отметка, че е обработено
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([handled, createdAt])
+}

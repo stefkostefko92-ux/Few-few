@@ -64,6 +64,9 @@ export default async function AdminDashboard({
     pendingDumps,
     photos,
     pendingPhotos,
+    outages,
+    contactMessages,
+    pendingContact,
     adRequests,
     pendingAds,
     recentAudit,
@@ -90,6 +93,9 @@ export default async function AdminDashboard({
     prisma.dumpReport.count({ where: { published: false } }),
     prisma.galleryPhoto.count(),
     prisma.galleryPhoto.count({ where: { published: false } }),
+    prisma.outage.count(),
+    prisma.contactMessage.count(),
+    prisma.contactMessage.count({ where: { handled: false } }),
     prisma.adRequest.count(),
     prisma.adRequest.count({ where: { status: "NEW" } }),
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
@@ -105,7 +111,7 @@ export default async function AdminDashboard({
     pendingDumps +
     pendingPhotos;
   // Само за администратори (лични данни на граждани/реклама).
-  const adminPending = pendingComplaints + pendingAds;
+  const adminPending = pendingComplaints + pendingAds + pendingContact;
   const pendingTotal = moderationPending + (isAdmin ? adminPending : 0);
 
   return (
@@ -193,6 +199,19 @@ export default async function AdminDashboard({
           href="/admin/galeriya"
           accent={pendingPhotos > 0}
         />
+        <StatCard
+          label="Прекъсвания на ток и вода"
+          value={outages}
+          href="/admin/prekysvaniya"
+        />
+        {isAdmin && (
+          <StatCard
+            label={pendingContact > 0 ? `Контактни съобщения (нови: ${pendingContact})` : "Контактни съобщения"}
+            value={contactMessages}
+            href="/admin/saobshteniya"
+            accent={pendingContact > 0}
+          />
+        )}
         <StatCard
           label="Търсения без резултат"
           value={misses}

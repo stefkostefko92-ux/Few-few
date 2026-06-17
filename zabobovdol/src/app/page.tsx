@@ -9,6 +9,7 @@ import { plainText } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 import { ScamBanner } from "@/components/ScamBanner";
+import { WeatherWidget } from "@/components/WeatherWidget";
 import {
   HelpCircle,
   Phone,
@@ -29,6 +30,7 @@ import {
   Euro,
   BookOpen,
   Camera,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +47,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/transport": Bus,
   "/novini": Newspaper,
   "/signali": AlertTriangle,
+  "/prekysvaniya": Zap,
   "/smetishta": Trash2,
   "/grada": BookOpen,
   "/istoriya": Landmark,
@@ -194,6 +197,11 @@ export default async function HomePage() {
             ))}
         </div>
       </section>
+
+      {/* Време в Бобов дол (зарежда се тихо; ако не успее, не се показва) */}
+      <div className="container-content pt-6">
+        <WeatherWidget />
+      </div>
 
       {/* Бързи раздели */}
       <Section title="Какво търсите днес?">

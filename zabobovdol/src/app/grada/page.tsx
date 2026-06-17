@@ -10,10 +10,14 @@ import {
   TreePine,
   BookOpen,
 } from "lucide-react";
-import { PageHero } from "@/components/ui";
+import { PageHero, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd } from "@/lib/seo";
 import { SITE } from "@/lib/site";
+import { getChurchServices } from "@/lib/settings";
+import { renderMarkdown } from "@/lib/markdown";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Опознай Бобов дол — география, население, икономика, забележителности",
@@ -65,7 +69,8 @@ function Section({ id, title, icon: Icon, children }: { id: string; title: strin
   );
 }
 
-export default function CityPage() {
+export default async function CityPage() {
+  const churchServices = await getChurchServices();
   const placeLd = {
     "@context": "https://schema.org",
     "@type": "Place",
@@ -189,14 +194,23 @@ export default function CityPage() {
             християнски празници (Великден, Коледа, храмови празници) службите събират
             хора от целия град.
           </p>
-          <p className="text-sm text-slate-500">
-            За точните часове на службите и предстоящите празници питайте в храма. Ако
-            имате информация, ще се радваме да я добавим — пишете ни на{" "}
-            <Link href="/kontakti" className="text-brand-700 underline">
-              Контакти
-            </Link>
-            .
-          </p>
+          {churchServices ? (
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h3 className="font-semibold text-slate-900">Часове на службите</h3>
+              <div className="mt-1">
+                <Prose html={renderMarkdown(churchServices)} />
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">
+              За точните часове на службите и предстоящите празници питайте в храма. Ако
+              имате информация, ще се радваме да я добавим — пишете ни на{" "}
+              <Link href="/kontakti" className="text-brand-700 underline">
+                Контакти
+              </Link>
+              .
+            </p>
+          )}
         </Section>
 
         <Section id="karta" title="Карта на града" icon={MapPin}>

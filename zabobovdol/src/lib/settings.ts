@@ -7,6 +7,7 @@ export const SETTING_KEYS = {
   revolutUrl: "revolut_url",
   dutyInfo: "duty_info",
   facebookUrl: "facebook_url",
+  churchServices: "church_services",
 } as const;
 
 // Текст за дежурната аптека/лекар, редактиран свободно от админ панела.
@@ -51,6 +52,19 @@ export async function getFacebookUrl(): Promise<string> {
     return row?.value || SITE.social.facebook || "";
   } catch {
     return SITE.social.facebook || "";
+  }
+}
+
+// Часове на църковните служби (и празници), редактирани свободно от админа.
+// Показват се в раздела „Религиозен живот" на страница „Опознай Бобов дол".
+export async function getChurchServices(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.churchServices },
+    });
+    return row?.value ?? "";
+  } catch {
+    return "";
   }
 }
 

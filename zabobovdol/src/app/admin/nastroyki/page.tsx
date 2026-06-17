@@ -1,9 +1,15 @@
 import { requireAdmin } from "@/lib/auth";
-import { getAdSettings, getDutyInfo, getFacebookUrl } from "@/lib/settings";
+import {
+  getAdSettings,
+  getDutyInfo,
+  getFacebookUrl,
+  getChurchServices,
+} from "@/lib/settings";
 import {
   saveAdSettings,
   saveDutyInfo,
   saveContactSettings,
+  saveChurchServices,
 } from "@/lib/admin/settings-actions";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +21,11 @@ export default async function AdminSettingsPage({
 }) {
   await requireAdmin();
   const { saved, error } = await searchParams;
-  const [ad, dutyInfo, facebookUrl] = await Promise.all([
+  const [ad, dutyInfo, facebookUrl, churchServices] = await Promise.all([
     getAdSettings(),
     getDutyInfo(),
     getFacebookUrl(),
+    getChurchServices(),
   ]);
 
   return (
@@ -109,6 +116,31 @@ export default async function AdminSettingsPage({
             defaultValue={dutyInfo}
             className="input"
             placeholder={"Напр.:\nТази седмица (10–16 юни) дежури Аптека „Здраве“, ул. Кирил и Методий 5, до 20:00 ч. Телефон: 0700 00 000."}
+          />
+        </div>
+        <button type="submit" className="btn-primary">
+          Запази
+        </button>
+      </form>
+
+      <form action={saveChurchServices} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-slate-900">Църковни служби</h2>
+        <p className="text-sm text-slate-600">
+          Този текст се показва в раздел „Религиозен живот“ на страница „Опознай
+          Бобов дол“. Попълнете часовете на службите и празниците. Оставете
+          празно, за да го скриете.
+        </p>
+        <div>
+          <label className="label" htmlFor="churchServices">
+            Часове на службите (свободен текст)
+          </label>
+          <textarea
+            id="churchServices"
+            name="churchServices"
+            rows={5}
+            defaultValue={churchServices}
+            className="input"
+            placeholder={"Напр.:\nХрам „Свети Никола“ — неделна св. литургия от 9:00 ч.\nГолеми празници — вечерня от 17:00 ч."}
           />
         </div>
         <button type="submit" className="btn-primary">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
+import { ContactForm } from "./ContactForm";
 
 export const metadata: Metadata = buildMetadata({
   title: "Контакти",
@@ -17,7 +18,7 @@ export default function ContactsPage() {
         intro="Имате въпрос, предложение или искате да добавим ваша услуга/бизнес? Пишете ни."
         crumbs={[{ name: "Контакти", path: "/kontakti" }]}
       />
-      <div className="container-content max-w-2xl py-10">
+      <div className="container-content max-w-2xl space-y-6 py-10">
         <div className="card space-y-4">
           {SITE.contact.email && (
             <div>
@@ -51,6 +52,8 @@ export default function ContactsPage() {
             Отговаряме в рамките на няколко работни дни.
           </p>
         </div>
+
+        <ContactForm />
       </div>
     </>
   );
