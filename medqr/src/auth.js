@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash } from 'node:crypto';
 import db from './db.js';
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 дни
@@ -108,4 +108,46 @@ export function userIdFromPending(token) {
 
 export function destroyPending(token) {
   if (token) db.prepare('DELETE FROM pending_logins WHERE token = ?').run(token);
+}
+
+// ---- Еднократни токени (потвърждение на имейл / нулиране на парола) ----
+const hashToken = (raw) => createHash('sha256').update(raw).digest('hex');
+
+export function createToken(userId, type, ttlMinutes) {
+  const raw = randomToken(32);
+  const expiresAt = new Date(Date.now() + ttlMinutes * 60000).toISOString();
+  // Само един активен токен от даден тип на потребител.
+  db.prepare('DELETE FROM tokens WHERE user_id = ? AND type = ?').run(userId, type);
+  db.prepare(
+    'INSERT INTO tokens (token_hash, user_id, type, expires_at) VALUES (?, ?, ?, ?)'
+  ).run(hashToken(raw), userId, type, expiresAt);
+  return raw;
+}
+
+// Проверява токена БЕЗ да го консумира (за GET страници). Връща user_id или null.
+export function peekToken(raw, type) {
+  if (!raw) return null;
+  const row = db
+    .prepare(
+      "SELECT user_id FROM tokens WHERE token_hash = ? AND type = ? AND expires_at > datetime('now')"
+    )
+    .get(hashToken(raw), type);
+  return row ? row.user_id : null;
+}
+
+// Проверява и консумира (изтрива) токена. Връща user_id или null.
+export function consumeToken(raw, type) {
+  if (!raw) return null;
+  const hash = hashToken(raw);
+  const row = db
+    .prepare(
+      "SELECT user_id FROM tokens WHERE token_hash = ? AND type = ? AND expires_at > datetime('now')"
+    )
+    .get(hash, type);
+  db.prepare('DELETE FROM tokens WHERE token_hash = ?').run(hash);
+  return row ? row.user_id : null;
+}
+
+export function destroyUserSessions(userId) {
+  db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
 }

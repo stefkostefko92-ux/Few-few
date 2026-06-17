@@ -66,7 +66,10 @@ app.use((req, res, next) => {
 app.use(csrf);
 
 // Лимити срещу брутфорс.
-app.use(['/login', '/register', '/2fa'], rateLimit({ windowMs: 15 * 60 * 1000, max: 30 }));
+app.use(
+  ['/login', '/register', '/2fa', '/forgot', '/reset'],
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 30 })
+);
 app.use('/e', rateLimit({ windowMs: 15 * 60 * 1000, max: 60 }));
 
 app.get('/', (req, res) => res.render('home', { user: req.user }));

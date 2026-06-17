@@ -1,0 +1,18 @@
+<%- include('partials/head', { title: 'Нова парола — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1>Задайте нова парола</h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/reset/<%= token %>" class="stack">
+    <%- include('partials/csrf') %>
+    <label>Нова парола (минимум 10 символа)
+      <input type="password" name="password" required minlength="10" autocomplete="new-password" autofocus>
+    </label>
+    <label>Повторете паролата
+      <input type="password" name="confirm" required minlength="10" autocomplete="new-password">
+    </label>
+    <button type="submit" class="btn">Запази новата парола</button>
+  </form>
+</section>
+
+<%- include('partials/foot') %>

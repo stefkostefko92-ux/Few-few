@@ -2,6 +2,15 @@
 
 <h1>Моят спешен профил</h1>
 <% if (saved) { %><p class="success" role="status">Промените са запазени.</p><% } %>
+<% if (!account.email_verified) { %>
+  <div class="warn-banner" role="alert">
+    ⚠️ Имейлът ви не е потвърден.
+    <form method="post" action="/verify-email/resend" class="inline">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="link-btn-dark">Изпрати нов линк за потвърждение</button>
+    </form>
+  </div>
+<% } %>
 
 <div class="grid-2">
   <section class="card">

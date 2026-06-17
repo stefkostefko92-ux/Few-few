@@ -21,6 +21,7 @@ db.exec(`
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     email           TEXT UNIQUE NOT NULL,
     password_hash   TEXT NOT NULL,
+    email_verified  INTEGER NOT NULL DEFAULT 0,
     consent_at      TEXT,
     consent_version TEXT,
     failed_attempts INTEGER NOT NULL DEFAULT 0,
@@ -28,6 +29,16 @@ db.exec(`
     totp_secret     TEXT,
     totp_enabled    INTEGER NOT NULL DEFAULT 0,
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- Еднократни токени за потвърждение на имейл и нулиране на парола.
+  -- Пази се само SHA-256 хеш на токена; суровият токен е само в имейл линка.
+  CREATE TABLE IF NOT EXISTS tokens (
+    token_hash TEXT PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type       TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE TABLE IF NOT EXISTS profiles (
@@ -83,5 +94,14 @@ db.exec(`
     at         TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
+
+// Лека миграция: добавя липсващи колони към съществуващи бази (idempotent).
+function ensureColumn(table, col, def) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === col)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`);
+  }
+}
+ensureColumn('users', 'email_verified', 'INTEGER NOT NULL DEFAULT 0');
 
 export default db;

@@ -13,6 +13,7 @@
 ## Какво прави
 
 - Регистрация и вход (имейл + парола, bcrypt) с **изрично съгласие** при регистрация.
+- **Потвърждение на имейл** и **възстановяване на забравена парола** по имейл.
 - Редакция на медицински профил: име, дата на раждане, кръвна група, алергии към
   лекарства, хронични заболявания, медикаменти, слухов статус, начин на
   комуникация, език, спешен контакт, бележки.
@@ -81,8 +82,9 @@ npm test
 src/server.js          Express, helmet, HSTS, CSP, rate limiting, маршрути
 src/db.js              SQLite схема (users, profiles, sessions, pending_logins, access_log, audit_log)
 src/crypto.js          криптиране в покой (AES-256-GCM)
-src/auth.js            пароли (bcrypt), сесии, заключване, 2FA pending
+src/auth.js            пароли (bcrypt), сесии, заключване, 2FA pending, токени
 src/csrf.js            CSRF защита (synchronizer token)
+src/mailer.js          имейл (nodemailer; SMTP в продукция, лог в dev)
 src/profiles.js        достъп до профилите с криптиране/декриптиране
 src/audit.js           одит лог
 src/routes/            auth (вкл. 2FA), profile (вкл. износ/изтриване/2FA), emergency

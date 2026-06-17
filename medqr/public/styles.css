@@ -134,6 +134,15 @@ legend { font-weight: 700; color: var(--brand-dark); padding: 0 .4rem; }
 
 .error { background: #fdecea; color: var(--danger); padding: .7rem 1rem; border-radius: 8px; }
 .success { background: #e7f6ee; color: var(--ok); padding: .7rem 1rem; border-radius: 8px; }
+.warn-banner {
+  background: #fff6df; border: 1px solid #e0a800; border-radius: 8px;
+  padding: .7rem 1rem; margin-bottom: 1rem; display: flex; gap: .8rem;
+  align-items: center; flex-wrap: wrap;
+}
+.link-btn-dark {
+  background: none; border: none; color: var(--brand-dark); cursor: pointer;
+  font-size: 1rem; text-decoration: underline; padding: 0;
+}
 
 table.log { width: 100%; border-collapse: collapse; }
 table.log th, table.log td { text-align: left; padding: .4rem; border-bottom: 1px solid var(--line); }
