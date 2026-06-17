@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, webPageLd, breadcrumbLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 import { ContactForm } from "./ContactForm";
 
@@ -13,6 +14,20 @@ export const metadata: Metadata = buildMetadata({
 export default function ContactsPage() {
   return (
     <>
+      <JsonLd
+        data={[
+          webPageLd({
+            name: "Контакти",
+            description: "Свържете се с екипа на За Бобов дол.",
+            path: "/kontakti",
+            type: "ContactPage",
+          }),
+          breadcrumbLd([
+            { name: "Начало", path: "/" },
+            { name: "Контакти", path: "/kontakti" },
+          ]),
+        ]}
+      />
       <PageHero
         title="Контакти"
         intro="Имате въпрос, предложение или искате да добавим ваша услуга/бизнес? Пишете ни."

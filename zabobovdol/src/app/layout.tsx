@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationLd, websiteLd } from "@/lib/seo";
+import { getFacebookUrl } from "@/lib/settings";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -77,11 +78,12 @@ export const viewport: Viewport = {
   themeColor: "#212f8a",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const facebookUrl = await getFacebookUrl();
   return (
     <html lang="bg" className={`${sans.variable} ${serif.variable}`}>
       <head>
@@ -96,7 +98,12 @@ export default function RootLayout({
           name="ICBM"
           content={`${SITE.geo.latitude}, ${SITE.geo.longitude}`}
         />
-        <JsonLd data={[organizationLd(), websiteLd()]} />
+        <JsonLd
+          data={[
+            organizationLd({ sameAs: facebookUrl ? [facebookUrl] : [] }),
+            websiteLd(),
+          ]}
+        />
         {/* Анонимна статистика (Plausible) — по избор, без бисквитки. Зарежда се
             само ако е зададен NEXT_PUBLIC_PLAUSIBLE_DOMAIN. По подразбиране е
             изключена и не се товари нищо външно. */}

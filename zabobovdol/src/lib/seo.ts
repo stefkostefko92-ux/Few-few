@@ -54,17 +54,34 @@ export function buildMetadata(opts: {
 
 // --- JSON-LD строители (за AEO / богати резултати) ---
 
-export function organizationLd() {
+// Устойчиви идентификатори на възлите — свързват графа (Organization ↔ WebSite ↔
+// страници), за да изградят търсачките/AI ясна „карта на знанието".
+export const ORG_ID = `${SITE.url}/#organization`;
+export const WEBSITE_ID = `${SITE.url}/#website`;
+
+export function organizationLd(opts?: { sameAs?: string[] }) {
+  const sameAs = (opts?.sameAs ?? []).filter(Boolean);
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": ORG_ID,
     name: SITE.name,
+    alternateName: SITE.shortName,
     url: SITE.url,
     description: SITE.description,
-    areaServed: {
-      "@type": "City",
-      name: SITE.geo.city,
+    slogan: SITE.slogan,
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE.url}/icon-512.png`,
+      width: 512,
+      height: 512,
     },
+    image: `${SITE.url}/og.png`,
+    knowsLanguage: "bg",
+    areaServed: [
+      { "@type": "AdministrativeArea", name: `Община ${SITE.geo.city}` },
+      { "@type": "City", name: SITE.geo.city },
+    ],
     address: {
       "@type": "PostalAddress",
       addressLocality: SITE.geo.city,
@@ -72,6 +89,7 @@ export function organizationLd() {
       postalCode: SITE.geo.postalCode,
       addressCountry: SITE.geo.countryCode,
     },
+    ...(sameAs.length ? { sameAs } : {}),
     ...(SITE.contact.email || SITE.contact.phone
       ? {
           contactPoint: {
@@ -79,6 +97,7 @@ export function organizationLd() {
             ...(SITE.contact.email ? { email: SITE.contact.email } : {}),
             ...(SITE.contact.phone ? { telephone: SITE.contact.phone } : {}),
             contactType: "customer support",
+            areaServed: SITE.geo.countryCode,
             availableLanguage: ["Bulgarian"],
           },
         }
@@ -90,9 +109,13 @@ export function websiteLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": WEBSITE_ID,
     name: SITE.name,
+    alternateName: SITE.shortName,
     url: SITE.url,
+    description: SITE.description,
     inLanguage: "bg",
+    publisher: { "@id": ORG_ID },
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -100,6 +123,33 @@ export function websiteLd() {
         urlTemplate: `${SITE.url}/tarsene?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+// Описва конкретна страница и я свързва с WebSite възела; добавя „speakable"
+// за гласови асистенти (AEO) — кои части да се четат на глас.
+export function webPageLd(opts: {
+  name: string;
+  description?: string;
+  path: string;
+  type?: "WebPage" | "AboutPage" | "ContactPage" | "CollectionPage" | "FAQPage";
+  lastReviewed?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": opts.type ?? "WebPage",
+    "@id": `${canonical(opts.path)}#webpage`,
+    url: canonical(opts.path),
+    name: opts.name,
+    ...(opts.description ? { description: opts.description } : {}),
+    inLanguage: "bg",
+    isPartOf: { "@id": WEBSITE_ID },
+    publisher: { "@id": ORG_ID },
+    ...(opts.lastReviewed ? { lastReviewed: opts.lastReviewed } : {}),
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".prose-content"],
     },
   };
 }
@@ -123,6 +173,8 @@ export function faqPageLd(
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    inLanguage: "bg",
+    isPartOf: { "@id": WEBSITE_ID },
     mainEntity: faqs.map((f) => ({
       "@type": "Question",
       name: f.question,
@@ -187,15 +239,13 @@ export function newsArticleLd(a: {
     headline: a.title.slice(0, 110),
     ...(a.description ? { description: a.description } : {}),
     mainEntityOfPage: a.url,
+    inLanguage: "bg",
+    isAccessibleForFree: true,
     datePublished: published,
     dateModified: modified,
     image: [a.image || `${SITE.url}/og.png`],
-    author: { "@type": "Organization", name: SITE.name },
-    publisher: {
-      "@type": "Organization",
-      name: SITE.name,
-      logo: { "@type": "ImageObject", url: `${SITE.url}/icon-512.png` },
-    },
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
   };
 }
 

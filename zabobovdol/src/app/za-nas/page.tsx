@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, webPageLd, breadcrumbLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = buildMetadata({
@@ -13,6 +14,21 @@ export const metadata: Metadata = buildMetadata({
 export default function AboutPage() {
   return (
     <>
+      <JsonLd
+        data={[
+          webPageLd({
+            name: "За проекта",
+            description:
+              "За Бобов дол е независима гражданска инициатива за дигитализация в полза на жителите.",
+            path: "/za-nas",
+            type: "AboutPage",
+          }),
+          breadcrumbLd([
+            { name: "Начало", path: "/" },
+            { name: "За проекта", path: "/za-nas" },
+          ]),
+        ]}
+      />
       <PageHero
         title="За проекта"
         crumbs={[{ name: "За проекта", path: "/za-nas" }]}
