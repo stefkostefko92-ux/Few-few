@@ -1,6 +1,18 @@
   </main>
   <footer class="site-footer">
-    <p>MedQR — спешен клиничен профил. Прототип. Данните са лични (чл. 9 GDPR) — не въвеждайте реални медицински данни в демо среда.</p>
+    <nav class="foot-links">
+      <a href="/privacy">Политика за поверителност</a>
+      <a href="/terms">Общи условия</a>
+    </nav>
+    <p class="foot-disclaimer">
+      MedQR не е медицинско изделие и не замества професионална медицинска оценка.
+      Данните са специална категория лични данни (чл. 9 GDPR).
+    </p>
+    <p class="foot-credit">
+      Created and designed by
+      <a href="<%= company.url %>" rel="noopener noreferrer" target="_blank"><%= company.name %></a>
+      · <a href="<%= company.url %>" rel="noopener noreferrer" target="_blank"><%= company.url %></a>
+    </p>
   </footer>
 </body>
 </html>

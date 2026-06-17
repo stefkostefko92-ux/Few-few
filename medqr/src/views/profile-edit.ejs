@@ -4,6 +4,7 @@
 <% if (typeof error !== 'undefined' && error) { %><p class="error" role="alert"><%= error %></p><% } %>
 
 <form method="post" action="/profile/edit" class="stack form-wide">
+  <%- include('partials/csrf') %>
   <fieldset>
     <legend>Самоличност</legend>
     <label>Пълно име *

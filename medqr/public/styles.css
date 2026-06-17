@@ -186,7 +186,54 @@ table.log th, table.log td { text-align: left; padding: .4rem; border-bottom: 1p
 .wc-line { font-size: 10px; margin: 1px 0; }
 .wc-hint { font-size: 8px; color: var(--muted); margin: 4px 0 0; }
 .wc-qr { width: 110px; height: 110px; }
-.site-footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 1.5rem; }
+.site-footer {
+  text-align: center; color: var(--muted); font-size: .85rem;
+  padding: 2rem 1.2rem; border-top: 1px solid var(--line); margin-top: 2rem;
+}
+.foot-links { display: flex; gap: 1.2rem; justify-content: center; margin-bottom: .6rem; }
+.foot-disclaimer { max-width: 640px; margin: 0 auto .6rem; }
+.foot-credit { font-weight: 600; color: var(--ink); }
+.foot-credit a { color: var(--brand-dark); }
+
+/* Чекбокс за съгласие */
+label.checkbox {
+  display: flex; gap: .6rem; align-items: flex-start; font-weight: 400;
+}
+label.checkbox input { width: auto; margin-top: .25rem; }
+
+/* Значки и ред за сигурност */
+.badge {
+  display: inline-block; padding: .15rem .6rem; border-radius: 999px;
+  background: #e6eaef; color: var(--muted); font-size: .85rem; font-weight: 600;
+}
+.badge-ok { background: #e7f6ee; color: var(--ok); }
+.security-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: 1rem 0; }
+
+/* Правни страници */
+.legal { max-width: 720px; margin: 0 auto; }
+.legal h2 { font-size: 1.2rem; margin-top: 1.6rem; }
+.legal ul { padding-left: 1.2rem; }
+.legal li { margin: .3rem 0; }
+
+/* Landing */
+.hero-badge {
+  display: inline-block; background: #e6f1f5; color: var(--brand-dark);
+  padding: .35rem .9rem; border-radius: 999px; font-weight: 600; font-size: .9rem;
+  margin-bottom: 1rem;
+}
+.btn-lg { padding: .9rem 1.8rem; font-size: 1.15rem; }
+.section-title { text-align: center; margin: 2.5rem 0 1.2rem; }
+.steps-list { list-style: none; padding: 0; display: grid; gap: .8rem; max-width: 640px; margin: 0 auto; }
+.steps-list li {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem 1.2rem; display: flex; align-items: center; gap: 1rem;
+}
+.step-n {
+  flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700;
+}
+.who { text-align: center; }
+.who-list { max-width: 680px; margin: 0 auto 1.2rem; font-size: 1.1rem; color: var(--muted); }
 
 @media print {
   .site-header, .site-footer, .print-controls, .skip-link { display: none; }

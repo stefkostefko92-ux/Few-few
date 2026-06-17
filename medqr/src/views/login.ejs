@@ -4,6 +4,7 @@
   <h1>Вход</h1>
   <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
   <form method="post" action="/login" class="stack">
+    <%- include('partials/csrf') %>
     <label>Имейл
       <input type="email" name="email" value="<%= email %>" required autocomplete="email">
     </label>

@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= typeof title !== 'undefined' ? title : 'MedQR' %></title>
+  <meta name="description" content="MedQR — защитен спешен медицински профил, достъпен чрез QR код.">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Прескочи към съдържанието</a>
@@ -14,11 +16,12 @@
       <% if (typeof user !== 'undefined' && user) { %>
         <a href="/dashboard">Моят профил</a>
         <form method="post" action="/logout" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="link-btn">Изход</button>
         </form>
       <% } else { %>
         <a href="/login">Вход</a>
-        <a href="/register" class="btn-small">Регистрация</a>
+        <a href="/register" class="btn-small btn">Регистрация</a>
       <% } %>
     </nav>
   </header>

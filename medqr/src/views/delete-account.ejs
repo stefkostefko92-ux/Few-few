@@ -1,0 +1,20 @@
+<%- include('partials/head', { title: 'Изтриване на профил — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1>⚠️ Изтриване на профил</h1>
+  <p>Това ще изтрие <strong>окончателно</strong> вашия акаунт, медицинския профил,
+    QR кода и журнала на достъпите. Действието е необратимо и оттегля съгласието ви
+    за обработка на данните.</p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/profile/delete" class="stack"
+        data-confirm="Сигурни ли сте? Това НЕ може да бъде отменено.">
+    <%- include('partials/csrf') %>
+    <label>Потвърдете с паролата си
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn btn-danger">Изтрий профила окончателно</button>
+    <a class="btn btn-ghost" href="/dashboard">Откажи</a>
+  </form>
+</section>
+
+<%- include('partials/foot') %>

@@ -37,17 +37,40 @@
 
 <section class="card">
   <h2>Сигурност</h2>
+
   <form method="post" action="/profile/pin" class="inline-form">
+    <%- include('partials/csrf') %>
     <label>Незадължителен PIN (4–8 цифри) за допълнителна защита
       <input type="text" name="pin" inputmode="numeric" pattern="\d{4,8}" placeholder="напр. 1234">
     </label>
-    <button type="submit" class="btn-small">Запази PIN</button>
+    <button type="submit" class="btn-small btn">Запази PIN</button>
     <span class="muted small">Празно поле премахва PIN-а.</span>
   </form>
+
+  <p class="security-row">
+    <strong>Двуфакторна автентикация (2FA):</strong>
+    <% if (account.totp_enabled) { %>
+      <span class="badge badge-ok">включена</span>
+    <% } else { %>
+      <span class="badge">изключена</span>
+    <% } %>
+    <a class="btn-small btn btn-ghost" href="/profile/2fa">Настрой 2FA</a>
+  </p>
+
   <form method="post" action="/profile/rotate-token" class="inline-form"
-        onsubmit="return confirm('Това ще обезсили текущия QR код. Сигурни ли сте?')">
+        data-confirm="Това ще обезсили текущия QR код и всички разпечатани карти. Сигурни ли сте?">
+    <%- include('partials/csrf') %>
     <button type="submit" class="btn-small btn-danger">Издай нов QR код (обезсили стария)</button>
   </form>
+</section>
+
+<section class="card">
+  <h2>Моите данни и права (GDPR)</h2>
+  <p class="muted small">Съгласие дадено на: <%= account.consent_at || '—' %></p>
+  <div class="cta-row">
+    <a class="btn btn-small btn-ghost" href="/profile/export.json">Изтегли данните ми (JSON)</a>
+    <a class="btn btn-small btn-danger" href="/profile/delete">Изтрий профила ми</a>
+  </div>
 </section>
 
 <section class="card">

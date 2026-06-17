@@ -14,14 +14,20 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 // Схема. Медицинските данни са специална категория лични данни по GDPR (чл. 9),
-// затова: одит на всеки достъп, токени за спешен достъп вместо публични идентификатори,
-// и минимизиране на това, което се показва без автентикация.
+// затова: чувствителните полета се криптират в покой (виж crypto.js), всеки достъп
+// и важно действие се записва в одит, а спешният достъп е чрез непредвидим токен.
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    email         TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    email           TEXT UNIQUE NOT NULL,
+    password_hash   TEXT NOT NULL,
+    consent_at      TEXT,
+    consent_version TEXT,
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until    TEXT,
+    totp_secret     TEXT,
+    totp_enabled    INTEGER NOT NULL DEFAULT 0,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE TABLE IF NOT EXISTS profiles (
@@ -52,12 +58,29 @@ db.exec(`
     expires_at TEXT NOT NULL
   );
 
+  -- Временно състояние между паролата и 2FA кода при вход.
+  CREATE TABLE IF NOT EXISTS pending_logins (
+    token      TEXT PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS access_log (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_id  INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     accessed_at TEXT NOT NULL DEFAULT (datetime('now')),
     ip          TEXT,
     user_agent  TEXT
+  );
+
+  -- Одит на действия по сигурността (вход, изход, промени, изтриване и т.н.).
+  CREATE TABLE IF NOT EXISTS audit_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER,
+    event      TEXT NOT NULL,
+    detail     TEXT,
+    ip         TEXT,
+    at         TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
 
