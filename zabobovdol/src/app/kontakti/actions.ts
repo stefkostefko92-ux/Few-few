@@ -15,7 +15,7 @@ const schema = z.object({
     .max(160)
     .optional()
     .default("")
-    .refine((v) => v === "" || /.+@.+\..+/.test(v), "Невалиден имейл."),
+    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Невалиден имейл."),
   phone: z.string().trim().max(40).optional().default(""),
   subject: z.string().trim().max(160).optional().default(""),
   message: z.string().trim().min(10, "Напишете малко повече за вашия въпрос.").max(5000),
