@@ -362,6 +362,26 @@ export const RESOURCES: Resource[] = [
       { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
     ],
   },
+  {
+    key: "galeriya",
+    model: "galleryPhoto",
+    labelSingular: "Снимка (галерия)",
+    labelPlural: "Галерия (снимки)",
+    titleField: "title",
+    slugFrom: "title",
+    defaultSort: { field: "order", dir: "asc" },
+    moderated: true,
+    fields: [
+      { name: "title", label: "Описание (какво е на снимката)", type: "text", required: true, listVisible: true },
+      { name: "slug", label: "URL адрес (slug)", type: "text" },
+      { name: "imageUrl", label: "Линк към снимката", type: "text", help: "Адрес на изображението (https://...)." },
+      { name: "author", label: "Автор (кредит)", type: "text", listVisible: true },
+      { name: "source", label: "Източник/линк (по избор)", type: "text" },
+      { name: "submitterContact", label: "Контакт на подателя (вътрешно)", type: "text" },
+      { name: "order", label: "Подредба", type: "number" },
+      { name: "published", label: "Публикувано (одобрено)", type: "boolean", listVisible: true },
+    ],
+  },
 ];
 
 export function getResource(key: string): Resource | undefined {

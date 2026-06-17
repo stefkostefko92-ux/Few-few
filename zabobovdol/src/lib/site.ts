@@ -70,6 +70,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/zov-za-pomosht", label: "Зов за помощ", description: "Взаимопомощ и подкрепа за възрастните" },
   { href: "/dobrovolci", label: "Доброволци", description: "Помощ от хора с добро сърце" },
   { href: "/spomeni", label: "Спомени от Бобов дол", description: "Споделете спомен или стара снимка" },
+  { href: "/galeriya", label: "Галерия", description: "Снимки на града от хората" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
@@ -84,6 +85,7 @@ export const FOOTER_NAV: NavItem[] = [
   { href: "/dobrovolci", label: "Доброволци" },
   { href: "/spomeni", label: "Спомени от Бобов дол" },
   { href: "/grada", label: "Опознай Бобов дол" },
+  { href: "/galeriya", label: "Галерия" },
   { href: "/signali", label: "Сигнали до общината" },
   { href: "/smetishta", label: "Нерегламентирани сметища" },
   { href: "/kontakti", label: "Контакти" },

@@ -10,6 +10,10 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
+  // Позволява качване на снимки до 8 MB чрез server actions.
+  experimental: {
+    serverActions: { bodySizeLimit: "8mb" },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
   },
@@ -20,9 +24,16 @@ const nextConfig = {
     // object-src/base-uri/frame-ancestors/form-action са строго затворени.
     // img-src включва https:/data:, защото банери и спомени може да сочат
     // към външни изображения.
+    // В режим на разработка (next dev) Next.js ползва eval за hot-reload, затова
+    // там добавяме 'unsafe-eval'. В продукция CSP остава строг (без eval).
+    const scriptSrc =
+      process.env.NODE_ENV === "production"
+        ? "script-src 'self' 'unsafe-inline'"
+        : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",

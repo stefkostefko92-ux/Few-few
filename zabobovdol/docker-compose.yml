@@ -46,6 +46,11 @@ services:
       SMTP_FROM: ${SMTP_FROM:-no-reply@carbonstealth.eu}
       MUNICIPALITY_NEWS_URL: ${MUNICIPALITY_NEWS_URL:-https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news}
       INGEST_TOKEN: ${INGEST_TOKEN:-}
+      # Папка за качените снимки (галерия). Пази се в постоянен том.
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      # Качените снимки оцеляват при рестарт/ребилд на контейнера.
+      - uploads:/app/uploads
     expose:
       - "3000"
 
@@ -91,3 +96,4 @@ services:
 
 volumes:
   db-data:
+  uploads:

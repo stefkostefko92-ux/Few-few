@@ -28,6 +28,7 @@ import {
   Trash2,
   Euro,
   BookOpen,
+  Camera,
   type LucideIcon,
 } from "lucide-react";
 
@@ -50,6 +51,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/zov-za-pomosht": HeartHandshake,
   "/dobrovolci": Users,
   "/spomeni": Images,
+  "/galeriya": Camera,
 };
 
 export const dynamic = "force-dynamic";

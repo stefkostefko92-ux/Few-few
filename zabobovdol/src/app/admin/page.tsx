@@ -62,6 +62,8 @@ export default async function AdminDashboard({
     pendingRides,
     dumps,
     pendingDumps,
+    photos,
+    pendingPhotos,
     adRequests,
     pendingAds,
     recentAudit,
@@ -86,6 +88,8 @@ export default async function AdminDashboard({
     prisma.rideshare.count({ where: { published: false } }),
     prisma.dumpReport.count(),
     prisma.dumpReport.count({ where: { published: false } }),
+    prisma.galleryPhoto.count(),
+    prisma.galleryPhoto.count({ where: { published: false } }),
     prisma.adRequest.count(),
     prisma.adRequest.count({ where: { status: "NEW" } }),
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
@@ -98,7 +102,8 @@ export default async function AdminDashboard({
     pendingMemories +
     pendingVolunteers +
     pendingRides +
-    pendingDumps;
+    pendingDumps +
+    pendingPhotos;
   // Само за администратори (лични данни на граждани/реклама).
   const adminPending = pendingComplaints + pendingAds;
   const pendingTotal = moderationPending + (isAdmin ? adminPending : 0);
@@ -181,6 +186,12 @@ export default async function AdminDashboard({
           value={dumps}
           href="/admin/smetishta"
           accent={pendingDumps > 0}
+        />
+        <StatCard
+          label={pendingPhotos > 0 ? `Галерия (чакащи: ${pendingPhotos})` : "Галерия (снимки)"}
+          value={photos}
+          href="/admin/galeriya"
+          accent={pendingPhotos > 0}
         />
         <StatCard
           label="Търсения без резултат"

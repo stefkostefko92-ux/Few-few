@@ -333,6 +333,23 @@ model Counter {
   updatedAt DateTime @updatedAt
 }
 
+// Галерия със снимки на града — с кредит към автора (кой я е снимал).
+model GalleryPhoto {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String   @default("") // кратко описание / къде е снимано
+  imageUrl         String   @default("") // линк към снимката
+  author           String   @default("") // кредит — кой е направил снимката
+  source           String   @default("") // източник/линк (по избор)
+  submitterContact String   @default("") // за връзка (само вътрешно)
+  published        Boolean  @default(false) // минава през одобрение
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([published, order])
+}
+
 enum DumpStatus {
   NEW // Получен
   CONFIRMED // Потвърден
