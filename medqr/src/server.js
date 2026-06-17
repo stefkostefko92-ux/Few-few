@@ -34,6 +34,7 @@ app.use(
         defaultSrc: ["'self'"],
         imgSrc: ["'self'", 'data:'],
         styleSrc: ["'self'", "'unsafe-inline'"],
+        fontSrc: ["'self'"],
         scriptSrc: ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
