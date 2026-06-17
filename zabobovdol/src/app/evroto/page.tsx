@@ -7,7 +7,7 @@ import { buildMetadata, faqPageLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
-import { EuroConverter } from "./EuroConverter";
+import { EuroConverter } from "@/components/EuroConverter";
 
 export const dynamic = "force-dynamic";
 

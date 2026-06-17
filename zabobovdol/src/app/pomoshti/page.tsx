@@ -7,6 +7,7 @@ import { buildMetadata, faqPageLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
+import { EuroConverter } from "@/components/EuroConverter";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +90,19 @@ export default async function AidPage() {
       />
 
       <div className="container-content space-y-10 py-10">
+        {/* Конвертор евро ↔ левове — пенсията се превалутира по този курс */}
+        <div>
+          <EuroConverter />
+          <p className="mt-2 text-sm text-slate-500">
+            Пенсиите и помощите се превалутират по този фиксиран курс — стойността
+            се запазва. Повече за еврото:{" "}
+            <Link href="/evroto" className="font-medium text-brand-700 hover:underline">
+              страница „Еврото"
+            </Link>
+            .
+          </p>
+        </div>
+
         <div className="grid gap-5 md:grid-cols-2">
           {TOPICS.map((t) => {
             const Icon = t.icon;

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRightLeft } from "lucide-react";
 
-// Фиксиран официален курс на превалутиране.
+// Фиксиран официален курс на превалутиране (1 евро = 1.95583 лева).
 const RATE = 1.95583;
 
 function toNum(v: string): number {
