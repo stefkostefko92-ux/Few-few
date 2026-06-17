@@ -26,6 +26,7 @@ import {
   Cross,
   Coins,
   Trash2,
+  Euro,
   type LucideIcon,
 } from "lucide-react";
 
@@ -35,6 +36,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/izmami": ShieldAlert,
   "/dezhurna-apteka": Cross,
   "/pomoshti": Coins,
+  "/evroto": Euro,
   "/biznes": Store,
   "/sabitiya": CalendarDays,
   "/obyavi": Megaphone,
