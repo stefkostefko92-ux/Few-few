@@ -7,6 +7,7 @@ import { buildMetadata, faqPageLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
+import { EuroConverter } from "./EuroConverter";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,9 @@ export default async function EuroPage() {
             );
           })}
         </section>
+
+        {/* Конвертор евро ↔ левове */}
+        <EuroConverter />
 
         {/* Предупреждение за измами */}
         <section className="rounded-2xl border border-crimson-200 bg-crimson-50 p-6">
