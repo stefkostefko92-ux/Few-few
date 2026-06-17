@@ -36,7 +36,8 @@
     "db:seed:detailed": "tsx prisma/seed-detailed.ts",
     "db:seed:detailed2": "tsx prisma/seed-detailed-2.ts",
     "db:seed:detailed3": "tsx prisma/seed-detailed-3.ts",
-    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more && npm run db:seed:banners && npm run db:seed:community && npm run db:seed:transport && npm run db:seed:extra && npm run db:seed:content && npm run db:seed:scams && npm run db:seed:counter && npm run db:seed:easypay && npm run db:seed:detailed && npm run db:seed:detailed2 && npm run db:seed:detailed3",
+    "db:seed:detailed4": "tsx prisma/seed-detailed-4.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:business && npm run db:seed:howto && npm run db:seed:safety && npm run db:seed:basics && npm run db:seed:phone && npm run db:seed:settings && npm run db:seed:internet && npm run db:seed:apps && npm run db:seed:daily && npm run db:seed:keyboard && npm run db:seed:health && npm run db:seed:shop && npm run db:seed:more && npm run db:seed:banners && npm run db:seed:community && npm run db:seed:transport && npm run db:seed:extra && npm run db:seed:content && npm run db:seed:scams && npm run db:seed:counter && npm run db:seed:easypay && npm run db:seed:detailed && npm run db:seed:detailed2 && npm run db:seed:detailed3 && npm run db:seed:detailed4",
     "postinstall": "prisma generate"
   },
   "prisma": {
