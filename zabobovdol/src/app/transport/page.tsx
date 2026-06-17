@@ -101,7 +101,7 @@ export default async function TransportPage() {
             <h2 className="font-display text-lg font-bold text-slate-900"><TrainFront className="mr-1 inline h-5 w-5 align-text-bottom text-brand-700" aria-hidden />Влак (БДЖ)</h2>
             <p className="mt-1 text-sm text-slate-700">
               Проверете разписания и купете билети онлайн от официалния сайт на
-              БДЖ. Информация на телефон 0700 10 200.
+              БДЖ. Информация на телефон 02 931 11 11.
             </p>
             <a href="https://razpisanie.bdz.bg" target="_blank" rel="noopener noreferrer" className="btn-secondary mt-3">
               Разписание на влаковете

@@ -130,8 +130,10 @@ const services: ServiceSeed[] = [
     name: "Детска градина „Дружба“ — Бобов дол",
     category: "EDUCATION",
     description: "Детска градина в град Бобов дол.",
-    phone: "0702 5101",
-    phone2: "0702 2237",
+    address: "ул. „Дружба“ 1, гр. Бобов дол",
+    phone: "0702 65101",
+    phone2: "0895 656125",
+    email: "info-1000069@edu.mon.bg",
     order: 6,
   },
   {
