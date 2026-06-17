@@ -76,6 +76,7 @@ export const PRIMARY_NAV: NavItem[] = [
 
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
+  { href: "/dostapnost", label: "Достъпност" },
   { href: "/izmami", label: "Пази се от измами" },
   { href: "/dezhurna-apteka", label: "Дежурна аптека" },
   { href: "/pomoshti", label: "Пенсии и помощи" },

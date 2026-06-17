@@ -126,6 +126,20 @@ export default async function ServicePage({
                 </a>
               </div>
             )}
+            {(s.email || s.address || s.website) && (
+              <div className="rounded-lg bg-brand-50 p-3 text-sm text-slate-700">
+                <strong>Не чувате добре по телефона?</strong> Може да{" "}
+                {s.email && <>пишете на имейла</>}
+                {s.email && (s.address || s.website) && ", "}
+                {s.website && <>използвате сайта</>}
+                {s.website && s.address && " или "}
+                {s.address && <>отидете на място (адрес и работно време по-горе)</>}.{" "}
+                <a href="/dostapnost" className="font-medium text-brand-700 underline">
+                  Вижте още начини за връзка
+                </a>
+                .
+              </div>
+            )}
           </div>
           {s.lat && s.lng && (
             <a

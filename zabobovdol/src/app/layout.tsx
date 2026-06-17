@@ -115,7 +115,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var s={'2':'112.5%','3':'125%'};var f=localStorage.getItem('a11y-font');if(f&&s[f])document.documentElement.style.fontSize=s[f];if(localStorage.getItem('a11y-contrast')==='1')document.documentElement.classList.add('hc');}catch(e){}})();",
+              "(function(){try{var s={'2':'112.5%','3':'125%'};var f=localStorage.getItem('a11y-font');if(f&&s[f])document.documentElement.style.fontSize=s[f];if(localStorage.getItem('a11y-contrast')==='1')document.documentElement.classList.add('hc');if(localStorage.getItem('a11y-bigtouch')==='1')document.documentElement.classList.add('bt');}catch(e){}})();",
           }}
         />
       </head>

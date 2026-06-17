@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { Type, Contrast, Volume2, Square } from "lucide-react";
+import Link from "next/link";
+import { Type, Contrast, Volume2, Square, Hand, Info } from "lucide-react";
 
 // Нива на уголемяване на шрифта → размер на корена (html). Понеже всичко е в
 // rem, целият сайт (текст и отстояния) се мащабира пропорционално.
@@ -15,11 +16,15 @@ function applyFont(level: string) {
 function applyContrast(on: boolean) {
   document.documentElement.classList.toggle("hc", on);
 }
+function applyBigTouch(on: boolean) {
+  document.documentElement.classList.toggle("bt", on);
+}
 
 export function AccessibilityBar() {
   const pathname = usePathname();
   const [font, setFont] = useState("1");
   const [contrast, setContrast] = useState(false);
+  const [bigTouch, setBigTouch] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
 
@@ -28,10 +33,13 @@ export function AccessibilityBar() {
     try {
       const f = localStorage.getItem("a11y-font") || "1";
       const c = localStorage.getItem("a11y-contrast") === "1";
+      const t = localStorage.getItem("a11y-bigtouch") === "1";
       setFont(f);
       setContrast(c);
+      setBigTouch(t);
       applyFont(f);
       applyContrast(c);
+      applyBigTouch(t);
     } catch {
       /* ignore */
     }
@@ -63,6 +71,19 @@ export function AccessibilityBar() {
       applyContrast(next);
       try {
         localStorage.setItem("a11y-contrast", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleBigTouch = useCallback(() => {
+    setBigTouch((prev) => {
+      const next = !prev;
+      applyBigTouch(next);
+      try {
+        localStorage.setItem("a11y-bigtouch", next ? "1" : "0");
       } catch {
         /* ignore */
       }
@@ -105,12 +126,12 @@ export function AccessibilityBar() {
       onClick={() => chooseFont(level)}
       aria-pressed={font === level}
       className={
-        "rounded px-2 py-0.5 font-bold leading-none transition " +
+        "a11y-btn rounded px-3 py-1.5 font-bold leading-none transition " +
         cls +
         " " +
         (font === level
           ? "bg-brand-700 text-white"
-          : "bg-white text-slate-700 hover:bg-slate-100")
+          : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
       }
       title={`Размер на текста: ${label}`}
     >
@@ -120,14 +141,14 @@ export function AccessibilityBar() {
 
   return (
     <div className="border-b border-slate-200 bg-slate-50 no-print">
-      <div className="container-content flex flex-wrap items-center gap-x-4 gap-y-1.5 py-1.5 text-sm">
+      <div className="container-content flex flex-wrap items-center gap-x-3 gap-y-2 py-2 text-sm">
         <span className="flex items-center gap-1.5 font-semibold text-slate-600">
           <Type className="h-4 w-4" aria-hidden />
           Достъпност:
         </span>
 
         <div
-          className="flex items-center gap-1"
+          className="flex items-center gap-1.5"
           role="group"
           aria-label="Размер на текста"
         >
@@ -142,15 +163,31 @@ export function AccessibilityBar() {
           onClick={toggleContrast}
           aria-pressed={contrast}
           className={
-            "inline-flex items-center gap-1.5 rounded px-2 py-0.5 font-medium transition " +
+            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
             (contrast
               ? "bg-brand-700 text-white"
-              : "bg-white text-slate-700 hover:bg-slate-100")
+              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
           }
           title="Висок контраст за по-добра четимост"
         >
           <Contrast className="h-4 w-4" aria-hidden />
           Контраст
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleBigTouch}
+          aria-pressed={bigTouch}
+          className={
+            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
+            (bigTouch
+              ? "bg-brand-700 text-white"
+              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
+          }
+          title="По-големи бутони и връзки за по-лесно натискане"
+        >
+          <Hand className="h-4 w-4" aria-hidden />
+          По-лесно докосване
         </button>
 
         {canSpeak && (
@@ -159,10 +196,10 @@ export function AccessibilityBar() {
             onClick={toggleSpeak}
             aria-pressed={speaking}
             className={
-              "inline-flex items-center gap-1.5 rounded px-2 py-0.5 font-medium transition " +
+              "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
               (speaking
                 ? "bg-crimson-600 text-white hover:bg-crimson-700"
-                : "bg-white text-slate-700 hover:bg-slate-100")
+                : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
             }
             title="Чете съдържанието на страницата на глас"
           >
@@ -179,6 +216,15 @@ export function AccessibilityBar() {
             )}
           </button>
         )}
+
+        <Link
+          href="/dostapnost"
+          className="a11y-btn ml-auto inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium text-brand-700 underline-offset-2 hover:underline"
+          title="Помощ за достъпността и връзка без обаждане"
+        >
+          <Info className="h-4 w-4" aria-hidden />
+          Помощ за достъпността
+        </Link>
       </div>
     </div>
   );
