@@ -27,6 +27,7 @@ import {
   Coins,
   Trash2,
   Euro,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -44,6 +45,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/novini": Newspaper,
   "/signali": AlertTriangle,
   "/smetishta": Trash2,
+  "/grada": BookOpen,
   "/istoriya": Landmark,
   "/zov-za-pomosht": HeartHandshake,
   "/dobrovolci": Users,
