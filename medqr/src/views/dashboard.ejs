@@ -4,7 +4,7 @@
 <% if (saved) { %><p class="success" role="status">Промените са запазени.</p><% } %>
 <% if (!account.email_verified) { %>
   <div class="warn-banner" role="alert">
-    ⚠️ Имейлът ви не е потвърден.
+    <%- include('partials/icon', { name: 'alert' }) %> Имейлът ви не е потвърден.
     <form method="post" action="/verify-email/resend" class="inline">
       <%- include('partials/csrf') %>
       <button type="submit" class="link-btn-dark">Изпрати нов линк за потвърждение</button>
@@ -30,7 +30,7 @@
         <% } %>
       </dd>
     </dl>
-    <a class="btn" href="/profile/edit">Редактирай данните</a>
+    <a class="btn" href="/profile/edit"><%- include('partials/icon', { name: 'edit' }) %> Редактирай данните</a>
   </section>
 
   <section class="card center">
@@ -38,8 +38,8 @@
     <img class="qr" src="/qr.png" alt="QR код за спешен достъп до профила">
     <p class="muted small">Сочи към: <br><code><%= emergencyUrl %></code></p>
     <div class="cta-row">
-      <a class="btn btn-small" href="/qr.png" download="medqr.png">Изтегли PNG</a>
-      <a class="btn btn-small btn-ghost" href="/card" target="_blank">Карта за печат</a>
+      <a class="btn btn-small" href="/qr.png" download="medqr.png"><%- include('partials/icon', { name: 'download' }) %> Изтегли PNG</a>
+      <a class="btn btn-small btn-ghost" href="/card" target="_blank"><%- include('partials/icon', { name: 'card' }) %> Карта за печат</a>
     </div>
   </section>
 </div>
@@ -63,13 +63,13 @@
     <% } else { %>
       <span class="badge">изключена</span>
     <% } %>
-    <a class="btn-small btn btn-ghost" href="/profile/2fa">Настрой 2FA</a>
+    <a class="btn-small btn btn-ghost" href="/profile/2fa"><%- include('partials/icon', { name: 'shield-check' }) %> Настрой 2FA</a>
   </p>
 
   <form method="post" action="/profile/rotate-token" class="inline-form"
         data-confirm="Това ще обезсили текущия QR код и всички разпечатани карти. Сигурни ли сте?">
     <%- include('partials/csrf') %>
-    <button type="submit" class="btn-small btn-danger">Издай нов QR код (обезсили стария)</button>
+    <button type="submit" class="btn-small btn-danger"><%- include('partials/icon', { name: 'refresh' }) %> Издай нов QR код (обезсили стария)</button>
   </form>
 </section>
 
@@ -77,8 +77,8 @@
   <h2>Моите данни и права (GDPR)</h2>
   <p class="muted small">Съгласие дадено на: <%= account.consent_at || '—' %></p>
   <div class="cta-row">
-    <a class="btn btn-small btn-ghost" href="/profile/export.json">Изтегли данните ми (JSON)</a>
-    <a class="btn btn-small btn-danger" href="/profile/delete">Изтрий профила ми</a>
+    <a class="btn btn-small btn-ghost" href="/profile/export.json"><%- include('partials/icon', { name: 'download' }) %> Изтегли данните ми (JSON)</a>
+    <a class="btn btn-small btn-danger" href="/profile/delete"><%- include('partials/icon', { name: 'trash' }) %> Изтрий профила ми</a>
   </div>
 </section>
 
@@ -87,18 +87,20 @@
   <% if (recentAccess.length === 0) { %>
     <p class="muted">Все още няма сканирания на вашия код.</p>
   <% } else { %>
-    <table class="log">
-      <thead><tr><th>Кога</th><th>IP</th><th>Устройство</th></tr></thead>
-      <tbody>
-        <% recentAccess.forEach(a => { %>
-          <tr>
-            <td><%= a.accessed_at %></td>
-            <td><%= a.ip || '—' %></td>
-            <td class="small"><%= a.user_agent || '—' %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table class="log">
+        <thead><tr><th>Кога</th><th>IP</th><th>Устройство</th></tr></thead>
+        <tbody>
+          <% recentAccess.forEach(a => { %>
+            <tr>
+              <td><%= a.accessed_at %></td>
+              <td><%= a.ip || '—' %></td>
+              <td class="small"><%= a.user_agent || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   <% } %>
 </section>
 

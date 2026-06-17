@@ -1,18 +1,18 @@
 <%- include('partials/head', { title: 'Карта за печат — MedQR', user: null }) %>
 
 <section class="print-controls">
-  <button type="button" data-print class="btn">🖨️ Печат</button>
+  <button type="button" data-print class="btn"><%- include('partials/icon', { name: 'printer' }) %> Печат</button>
   <a class="btn btn-ghost" href="/dashboard">Назад</a>
 </section>
 
 <div class="wallet-card">
   <div class="wc-left">
-    <p class="wc-title">🩺 СПЕШЕН МЕДИЦИНСКИ ПРОФИЛ</p>
+    <p class="wc-title"><%- include('partials/icon', { name: 'activity' }) %> СПЕШЕН МЕДИЦИНСКИ ПРОФИЛ</p>
     <p class="wc-name"><%= profile.full_name %></p>
     <p class="wc-line"><strong>Кръвна група:</strong> <%= profile.blood_type || '—' %></p>
     <p class="wc-line"><strong>Алергии:</strong> <%= profile.allergies || '—' %></p>
     <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
-      <p class="wc-line">👂 <%= profile.hearing_status %></p>
+      <p class="wc-line"><%- include('partials/icon', { name: 'ear' }) %> <%= profile.hearing_status %></p>
     <% } %>
     <p class="wc-hint">Сканирайте за пълна информация</p>
   </div>

@@ -1,7 +1,7 @@
 <%- include('partials/head', { title: 'Двуфакторна проверка — MedQR', user: null }) %>
 
 <section class="form-wrap">
-  <h1>🔐 Двуфакторна проверка</h1>
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> Двуфакторна проверка</h1>
   <p>Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy).</p>
   <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
   <form method="post" action="/2fa" class="stack">

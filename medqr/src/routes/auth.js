@@ -111,7 +111,8 @@ router.get('/verify-email/:token', (req, res) => {
   audit(req, 'email_verified', { userId });
   res.render('notice', {
     user: req.user,
-    title: '✅ Имейлът е потвърден',
+    icon: 'check',
+    title: 'Имейлът е потвърден',
     message: 'Благодарим! Вашият имейл е потвърден успешно.',
     link: { href: '/dashboard', label: 'Към профила' },
   });
@@ -263,7 +264,8 @@ router.post('/reset/:token', (req, res) => {
   audit(req, 'password_reset', { userId });
   res.render('notice', {
     user: null,
-    title: '✅ Паролата е сменена',
+    icon: 'check',
+    title: 'Паролата е сменена',
     message: 'Можете да влезете с новата си парола.',
     link: { href: '/login', label: 'Към вход' },
   });

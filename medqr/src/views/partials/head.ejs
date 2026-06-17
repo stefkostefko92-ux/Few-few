@@ -5,13 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= typeof title !== 'undefined' ? title : 'MedQR' %></title>
   <meta name="description" content="MedQR — защитен спешен медицински профил, достъпен чрез QR код.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
+  <%- include('icons') %>
   <a class="skip-link" href="#main">Прескочи към съдържанието</a>
   <header class="site-header">
-    <a class="brand" href="/">🩺 MedQR</a>
+    <a class="brand" href="/">
+      <span class="brand-mark"><%- include('icon', { name: 'logo' }) %></span>
+      <span class="brand-name">MedQR</span>
+    </a>
     <nav>
       <% if (typeof user !== 'undefined' && user) { %>
         <a href="/dashboard">Моят профил</a>

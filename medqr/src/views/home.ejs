@@ -1,7 +1,7 @@
 <%- include('partials/head', { title: 'MedQR — спешен профил с QR код', user }) %>
 
 <section class="hero">
-  <span class="hero-badge">🔒 Криптирано · GDPR · хостинг в ЕС</span>
+  <span class="hero-badge"><%- include('partials/icon', { name: 'shield-check' }) %> Криптирано · GDPR · хостинг в ЕС</span>
   <h1>Животоспасяваща информация<br>на едно сканиране</h1>
   <p class="lead">
     MedQR създава защитен спешен медицински профил, който носите със себе си като QR код.
@@ -24,22 +24,26 @@
 </section>
 
 <section class="features">
-  <div class="card">
-    <h2>🩸 Критична информация</h2>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'droplet' }) %></span>
+    <h2>Критична информация</h2>
     <p>Кръвна група, алергии към лекарства, хронични заболявания и текущи медикаменти.</p>
   </div>
-  <div class="card">
-    <h2>👂 Комуникационни нужди</h2>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'ear' }) %></span>
+    <h2>Комуникационни нужди</h2>
     <p>Профилът ясно отбелязва слухови затруднения и предпочитан начин за комуникация —
       така спешният екип знае да общува писмено или с жестов език.</p>
   </div>
-  <div class="card">
-    <h2>🔒 Максимална защита</h2>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'shield-check' }) %></span>
+    <h2>Максимална защита</h2>
     <p>Данните се криптират, връзката е защитена, достъпът се записва. Незадължителен PIN,
       двуфакторна автентикация и обезсилване на изгубен код.</p>
   </div>
-  <div class="card">
-    <h2>📇 Носи го навсякъде</h2>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'card' }) %></span>
+    <h2>Носи го навсякъде</h2>
     <p>Отпечатайте карта за портфейл, стикер за телефона или гривна с QR кода.</p>
   </div>
 </section>

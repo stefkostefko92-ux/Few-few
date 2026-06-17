@@ -1,17 +1,20 @@
 <%- include('partials/head', { title: 'Спешна информация', user: null }) %>
 
 <div class="emergency">
-  <p class="emergency-banner">⚠️ СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ</p>
+  <p class="emergency-banner"><%- include('partials/icon', { name: 'alert' }) %> СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ</p>
   <h1 class="big-name"><%= profile.full_name %></h1>
 
   <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
     <div class="alert-comm" role="alert">
-      👂 <strong>Слухов статус:</strong> <%= profile.hearing_status %>.
-      <% if (profile.communication_pref) { %>
-        Комуникирайте така: <strong><%= profile.communication_pref %></strong>.
-      <% } else { %>
-        Възможно е лицето да не реагира на говор — общувайте писмено.
-      <% } %>
+      <%- include('partials/icon', { name: 'ear', cls: 'icon-lg' }) %>
+      <span>
+        <strong>Слухов статус:</strong> <%= profile.hearing_status %>.
+        <% if (profile.communication_pref) { %>
+          Комуникирайте така: <strong><%= profile.communication_pref %></strong>.
+        <% } else { %>
+          Възможно е лицето да не реагира на говор — общувайте писмено.
+        <% } %>
+      </span>
     </div>
   <% } %>
 
@@ -47,7 +50,7 @@
         <% if (profile.emergency_contact_relation) { %>(<%= profile.emergency_contact_relation %>)<% } %>
       </span>
       <% if (profile.emergency_contact_phone) { %>
-        <a class="call-btn" href="tel:<%= profile.emergency_contact_phone %>">📞 Обади се: <%= profile.emergency_contact_phone %></a>
+        <a class="call-btn" href="tel:<%= profile.emergency_contact_phone %>"><%- include('partials/icon', { name: 'phone' }) %> Обади се: <%= profile.emergency_contact_phone %></a>
       <% } %>
     </div>
   <% } %>

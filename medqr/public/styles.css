@@ -15,12 +15,26 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--ink);
-  line-height: 1.5;
+  line-height: 1.55;
   font-size: 17px;
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.25; }
+
+/* Иконки (inline SVG спрайт) */
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.icon {
+  width: 1.15em; height: 1.15em;
+  fill: none; stroke: currentColor;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  vertical-align: -0.18em; flex: none;
+}
+.icon-lg { width: 1.5em; height: 1.5em; vertical-align: -0.3em; }
+.icon-xl { width: 2.75rem; height: 2.75rem; }
 
 .skip-link {
   position: absolute;
@@ -45,7 +59,14 @@ a { color: var(--brand-dark); }
   color: #fff;
 }
 .site-header a { color: #fff; text-decoration: none; }
-.brand { font-weight: 700; font-size: 1.3rem; }
+.brand { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; font-size: 1.3rem; }
+.brand-mark {
+  display: inline-grid; place-items: center;
+  width: 2rem; height: 2rem; border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.brand-mark .icon { width: 1.25rem; height: 1.25rem; stroke-width: 2.2; vertical-align: 0; }
+.brand-name { letter-spacing: -0.02em; }
 .site-header nav { display: flex; align-items: center; gap: 1rem; }
 .inline { display: inline; }
 .link-btn {
@@ -64,33 +85,57 @@ h1 { font-size: 1.8rem; }
 .cta-row { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; }
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5em;
   background: var(--brand);
   color: #fff;
-  padding: .7rem 1.4rem;
-  border-radius: var(--radius);
+  padding: .65rem 1.3rem;
+  border-radius: 10px;
   text-decoration: none;
-  border: none;
-  font-size: 1.05rem;
+  border: 1px solid transparent;
+  font-size: 1.02rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .05s ease;
 }
 .btn:hover { background: var(--brand-dark); }
-.btn-ghost { background: transparent; color: var(--brand-dark); border: 2px solid var(--brand); }
-.btn-small { padding: .45rem .9rem; font-size: .95rem; border-radius: 8px; }
-.btn-small.btn { display: inline-block; background: var(--brand); color: #fff; }
-.btn-danger { background: var(--danger); color: #fff; }
+.btn:active { transform: translateY(1px); }
+.btn-ghost { background: transparent; color: var(--brand-dark); border-color: var(--brand); }
+.btn-ghost:hover { background: rgba(11, 110, 140, 0.07); }
+.btn-small { padding: .45rem .85rem; font-size: .92rem; border-radius: 8px; }
+.btn-small.btn { background: var(--brand); color: #fff; }
+.btn-small.btn-ghost { background: transparent; color: var(--brand-dark); }
+.btn-danger { background: var(--danger); color: #fff; border-color: transparent; }
+.btn-danger:hover { background: #a5301f; }
 
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 1rem;
   margin-top: 1.5rem;
 }
+.feature {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+}
+.feature-icon {
+  display: inline-grid; place-items: center;
+  width: 2.8rem; height: 2.8rem; border-radius: 10px;
+  background: #e6f1f5; color: var(--brand);
+  margin-bottom: .8rem;
+}
+.feature-icon .icon { width: 1.4rem; height: 1.4rem; vertical-align: 0; }
+.feature h2 { margin: 0 0 .4rem; font-size: 1.12rem; }
+.feature p { margin: 0; color: var(--muted); }
 .card {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.2rem;
+  padding: 1.3rem;
   margin-bottom: 1.2rem;
 }
 .card h2 { margin-top: 0; font-size: 1.2rem; }
@@ -144,21 +189,26 @@ legend { font-weight: 700; color: var(--brand-dark); padding: 0 .4rem; }
   font-size: 1rem; text-decoration: underline; padding: 0;
 }
 
-table.log { width: 100%; border-collapse: collapse; }
-table.log th, table.log td { text-align: left; padding: .4rem; border-bottom: 1px solid var(--line); }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.log { width: 100%; border-collapse: collapse; min-width: 360px; }
+table.log th, table.log td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.log td.small { white-space: normal; max-width: 240px; }
 
 /* Спешен изглед */
 .emergency { max-width: 640px; margin: 0 auto; }
 .emergency-banner {
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
   background: var(--danger); color: #fff; text-align: center;
-  font-weight: 700; letter-spacing: .5px; padding: .6rem; border-radius: 8px;
+  font-weight: 700; letter-spacing: .5px; padding: .7rem; border-radius: 8px;
   margin-bottom: 1rem;
 }
 .big-name { font-size: 2.2rem; text-align: center; margin: .3rem 0 1rem; }
 .alert-comm {
+  display: flex; align-items: flex-start; gap: .6rem;
   background: #fff6df; border: 2px solid #e0a800; border-radius: var(--radius);
   padding: 1rem; font-size: 1.15rem; margin-bottom: 1.2rem;
 }
+.alert-comm .icon-lg { color: #b8860b; margin-top: .1rem; }
 .emergency-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 @media (max-width: 560px) { .emergency-grid { grid-template-columns: 1fr; } }
 .ebox {
@@ -177,9 +227,11 @@ table.log th, table.log td { text-align: left; padding: .4rem; border-bottom: 1p
   border-radius: var(--radius); padding: 1rem; text-align: center;
 }
 .call-btn {
-  display: inline-block; margin-top: .6rem; background: var(--ok); color: #fff;
-  padding: .7rem 1.2rem; border-radius: 8px; text-decoration: none; font-size: 1.2rem;
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin-top: .6rem; background: var(--ok); color: #fff;
+  padding: .7rem 1.3rem; border-radius: 8px; text-decoration: none; font-size: 1.2rem; font-weight: 600;
 }
+.call-btn:hover { background: #166b42; }
 
 /* Карта за печат */
 .print-controls { margin-bottom: 1rem; display: flex; gap: .6rem; }
@@ -190,7 +242,8 @@ table.log th, table.log td { text-align: left; padding: .4rem; border-bottom: 1p
   padding: 10px; background: #fff;
 }
 .wc-left { flex: 1; }
-.wc-title { font-size: 9px; font-weight: 700; color: var(--brand-dark); margin: 0 0 4px; }
+.wc-title { display: flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 700; color: var(--brand-dark); margin: 0 0 4px; }
+.wc-line .icon { width: 11px; height: 11px; vertical-align: -2px; }
 .wc-name { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
 .wc-line { font-size: 10px; margin: 1px 0; }
 .wc-hint { font-size: 8px; color: var(--muted); margin: 4px 0 0; }
@@ -226,10 +279,12 @@ label.checkbox input { width: auto; margin-top: .25rem; }
 
 /* Landing */
 .hero-badge {
-  display: inline-block; background: #e6f1f5; color: var(--brand-dark);
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: #e6f1f5; color: var(--brand-dark);
   padding: .35rem .9rem; border-radius: 999px; font-weight: 600; font-size: .9rem;
   margin-bottom: 1rem;
 }
+.notice-icon { color: var(--ok); margin-bottom: .3rem; }
 .btn-lg { padding: .9rem 1.8rem; font-size: 1.15rem; }
 .section-title { text-align: center; margin: 2.5rem 0 1.2rem; }
 .steps-list { list-style: none; padding: 0; display: grid; gap: .8rem; max-width: 640px; margin: 0 auto; }
@@ -243,6 +298,29 @@ label.checkbox input { width: auto; margin-top: .25rem; }
 }
 .who { text-align: center; }
 .who-list { max-width: 680px; margin: 0 auto 1.2rem; font-size: 1.1rem; color: var(--muted); }
+
+/* Мобилен изглед */
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .site-header { padding: .7rem 1rem; flex-wrap: wrap; gap: .5rem .8rem; }
+  .site-header nav { gap: .8rem; font-size: .95rem; }
+  .brand { font-size: 1.15rem; }
+  .container { padding: 1.2rem 1rem 2.5rem; }
+  h1 { font-size: 1.5rem; }
+  .hero { padding: .5rem 0 1.5rem; }
+  .hero h1 { font-size: 1.85rem; }
+  .lead { font-size: 1.08rem; }
+  .cta-row { flex-direction: column; }
+  .cta-row .btn { width: 100%; }
+  .btn-lg { padding: .8rem 1.4rem; font-size: 1.08rem; }
+  .big-name { font-size: 1.7rem; }
+  .evalue { font-size: 1.3rem; }
+  .section-title { margin: 1.8rem 0 1rem; }
+  .who-list { font-size: 1rem; }
+  .security-row { gap: .5rem; }
+  fieldset { padding: .9rem 1rem; }
+  .wallet-card { width: 100%; }
+}
 
 @media print {
   .site-header, .site-footer, .print-controls, .skip-link { display: none; }
