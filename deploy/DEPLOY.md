@@ -36,7 +36,7 @@ apt install -y unattended-upgrades && dpkg-reconfigure -plow unattended-upgrades
 ```bash
 # Node 22 LTS (през NodeSource или nvm)
 mkdir -p /opt/medqr && chown medqr:medqr /opt/medqr
-sudo -u medqr git clone <repo> /opt/medqr   # или копирайте само medqr/ съдържанието
+sudo -u medqr git clone <repo> /opt/medqr   # приложението е в корена на хранилището
 cd /opt/medqr
 sudo -u medqr npm ci --omit=dev
 ```

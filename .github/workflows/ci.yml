@@ -1,40 +1,59 @@
 name: CI
 
+# Статичен анализ (CodeQL): включете „Default setup" от
+# Settings → Code security → CodeQL analysis.
+
 on:
   push:
-    branches: ["**"]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install dev deps (linkedom for api tests)
-        run: npm install
-      - name: Run all tests (syntax + logic + engine + api parsing)
-        run: npm test
-      - name: Verify store package excludes server/controller/tools
-        run: |
-          bash tools/package.sh
-          if unzip -l dist/*.zip | grep -E 'controller/|server/|tools/|genkey|screenshots/'; then
-            echo "::error::store zip contains files that must not ship"; exit 1
-          fi
-          echo "package zip is clean"
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
 
-  # Loads the real unpacked extension in headed Chromium (xvfb) and checks the
-  # service worker + all pages + content script boot without errors.
-  extension:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: npm install
-      - run: npx playwright install --with-deps chromium
-      - name: Extension integration test (Chromium + xvfb)
-        run: xvfb-run -a npm run test:ext
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Проверка за уязвими зависимости (production)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Генериране на SBOM (CycloneDX)
+        run: npx --yes @cyclonedx/cyclonedx-npm --omit dev --output-file sbom.json
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+          if-no-files-found: ignore

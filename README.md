@@ -1,111 +1,144 @@
-# Tanoth Master Bot
+# MedQR — спешен клиничен профил с QR код
 
-Chrome extension (Manifest V3) that automates the daily grind in the browser RPG
-[Tanoth](https://gameforge.com/play/tanoth). It talks to the game over its own
-XML-RPC API and adds a scheduler, an in-game control panel, statistics and a few
-languages.
+Прототип на система, която помага на хора със слухови проблеми и на всеки с
+хронично заболяване: създава защитен **спешен медицински профил**, достъпен чрез
+сканиране на **QR код**. При злополука или влошаване спешен екип сканира кода и
+вижда кръвна група, алергии, заболявания, медикаменти и контакт на близък — а
+профилът **изрично отбелязва слухов статус и предпочитан начин на комуникация**,
+така че екипът да знае, че лицето може да не реагира на говор.
 
-Automating a game can break Gameforge's Terms of Service and get accounts
-banned. Use it on accounts you don't mind losing.
+Подробното проучване (контекст, архитектура, GDPR, достъпност, пътна карта) е в
+[`docs/ПРОУЧВАНЕ.md`](docs/ПРОУЧВАНЕ.md).
 
-## What it does
+## Какво прави
 
-Runs the repeatable daily content on a loop:
+- Регистрация и вход (имейл + парола, bcrypt) с **изрично съгласие** при регистрация.
+- **Потвърждение на имейл** и **възстановяване на забравена парола** по имейл.
+- Редакция на медицински профил: име, дата на раждане, кръвна група, алергии към
+  лекарства, хронични заболявания, медикаменти, слухов статус, начин на
+  комуникация, език, спешен контакт, бележки.
+- Личен **QR код** (PNG за изтегляне) + **карта за портфейл** за печат.
+- **Спешен изглед** само за четене, достъпен публично чрез дълъг непредвидим токен.
 
-- Adventures (gold / xp / shortest / longest / smart)
-- Dungeon (normal and Shadow), Mission quest
-- Map encounters (Liberation), Cave of Illusions, Dragon
-- Arena duels, Work shifts
-- Evocation Circle and attribute training (gold sinks)
-- Optional guild gold donation, auto-sell, auto-login
+### Сигурност (максимална защита)
 
-Plus a draggable panel inside the game, a toolbar popup, a full settings page, a
-stats page and Telegram/Discord alerts. See `FEATURES.md` for the full map of
-which game actions are covered and which are left out on purpose.
+- **Криптиране в покой** (AES-256-GCM) на всички чувствителни медицински полета.
+- **HTTPS пренасочване, HSTS и Secure бисквитки** в продукция; строга **CSP** (helmet).
+- **CSRF защита** на всички форми (synchronizer token).
+- **Двуфакторна автентикация (TOTP)** — съвместима с Google Authenticator/Authy,
+  с еднократни **резервни кодове**.
+- **Паскейове (WebAuthn/passkeys)** — вход без парола, устойчив на фишинг (пръстов
+  отпечатък, лице, хардуерен ключ), включително discoverable вход.
+- **Argon2id** хеширане на пароли/PIN (с прозрачна миграция от стари bcrypt хешове).
+- **Активни сесии** с „изход от всички устройства" и tamper-evident одит лог.
+- **Заключване след неуспешни опити** (brute-force защита) + rate limiting.
+- Незадължителен **PIN** за спешния изглед, **обезсилване на изгубен код**.
+- **Одит** на достъпите и на действията по сигурността.
 
-## Install (unpacked)
+### SEO / GEO / AEO
 
-1. `chrome://extensions` -> enable Developer mode -> Load unpacked -> pick this
-   folder.
-2. Log into a Tanoth world. The panel shows up on the right; the footer says
-   "Protocol ready" once the session is detected. Hit Start.
+- Per-page `<title>`, meta description, canonical и `robots` (частните страници
+  и спешните профили са `noindex` по подразбиране — без изтичане към търсачки).
+- Open Graph + Twitter Card + генерирано OG изображение (`/og-image.png`).
+- Structured data (JSON-LD): Organization, WebSite, SoftwareApplication и
+  FAQPage — поднесени с CSP nonce (без `unsafe-inline`).
+- `robots.txt`, `sitemap.xml`, `manifest.webmanifest` и `llms.txt` (за AI/answer
+  engines), генерирани спрямо `PUBLIC_BASE_URL`.
+- Видима FAQ секция, която дублира FAQPage схемата (за answer engines).
 
-## How it works
+### GDPR / права на потребителя
 
-The gateway URL and session aren't hard-coded. `src/content/inject.js` runs in
-the page, reads `window.flashvars.sessionID`, and posts XML-RPC `<methodCall>`s
-to `<world>/xmlrpc` with the page's own cookies. `src/core/api.js` wraps that
-with typed calls and parses the responses into a shared state object. The
-scheduler (`src/core/scheduler.js`) asks each enabled module for one action per
-cycle, in priority order, then waits a humanized delay (or spams, if humanize is
-off). Method names live in `api.js`, so a server revision that renames one is a
-one-line change.
+- Екран за **изрично съгласие** (чл. 9 GDPR), със запис на момента и версията.
+- **Износ на данните** (JSON) и **изтриване на профила** (право на забравяне) от приложението.
+- Страници **Политика за поверителност**, **Политика за бисквитки** и **Общи условия**
+  (администратор: CarbonStealth VCC). Само строго необходими бисквитки — без банер.
 
-## Subscription
+## Архитектура
 
-Paid via Revolut, two plans: €4/month (31-day key) or €20 lifetime (one-off,
-locks to the first machine it's activated on). New installs get a 3-day trial
-with everything unlocked; after that, Start needs a key. The popup, options page
-and panel paywall all have pay buttons (they open the Revolut link; you enter
-the amount) and an Activate field for the key.
+Node.js (Express) + SQLite (better-sqlite3) + EJS. QR кодът сочи към хостван адрес
+(`/e/<token>`), а данните стоят в базата — така профилът се обновява без нов код,
+а достъпът може да се контролира и одитира. Обосновката е в проучването.
 
-Issuing keys (seller side): set your own `REVOLUT_PAYMENT_URL` and
-`LICENSE_SECRET` in `src/shared/payment.js`, then:
+## Стартиране
 
-```
-node tools/genkey.mjs 31        # monthly
-node tools/genkey.mjs 365000    # lifetime
-```
+```bash
+npm install
 
-Offline keys are signed with `LICENSE_SECRET`. Because that secret ships in the
-extension, offline checks are a deterrent, not real DRM. For cross-machine
-enforcement run the license server (`server/`) and set `LICENSE_SERVER_URL`.
+# Генерирайте ключ за криптиране (32 байта hex):
+export ENCRYPTION_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 
-## Build for the Web Store
-
-```
-bash tools/package.sh
-```
-
-Produces `dist/tanoth-master-bot-<version>.zip` with only the extension files
-(manifest, icons, _locales, popup, options, stats, src). It leaves out
-`controller/`, `server/`, `tools/` (including the key generator) and screenshots.
-Change `LICENSE_SECRET` before publishing.
-
-## Tests
-
-`npm install` then `npm test` (also runs in CI):
-
-- `tools/selftest.mjs` - presets, notification payloads, smart scoring, settings
-  merge, license signing, license-server device binding.
-- `tools/engine-test.mjs` - the scheduler and modules in Node with a fake clock:
-  licence gate, adventure loop, humanize, breaks, manual pause, pvp cooldown,
-  dungeon, mission, shadow, guild.
-- `tools/api-test.mjs` - `api.js` against crafted XML-RPC responses (linkedom):
-  field parsing, attribute costs, circle/map parsing, fault handling.
-- `tools/ext-test.mjs` (`npm run test:ext`) - loads the unpacked extension in
-  headed Chromium (Playwright + xvfb) and checks the service worker, every page
-  and the content-script panel boot without errors.
-
-The live in-game data flow needs a real account, so it isn't covered by the
-automated tests.
-
-## Layout
-
-```
-manifest.json, icons/, _locales/      extension shell
-popup/ options/ stats/                UI pages
-src/shared/                           settings schema, payment, presets, notify, smart
-src/background/service-worker.js      install, messaging, licensing, webhooks
-src/content/                          inject.js (page) + content-script.js (boot)
-src/core/                             bridge, api, scheduler, state, storage, ...
-src/ui/                               in-game panel
-src/modules/                          one file per activity
-controller/                           self-hosted multi-account runner (Playwright)
-server/                               optional license server (Docker/systemd)
-tools/                                tests, key generator, packaging
+npm start            # http://localhost:3000
 ```
 
-The multi-account controller (`controller/CONTROLLER.md`) runs several accounts
-on one machine, each in its own browser profile. The license server
-(`server/DEPLOY.md`) enforces the one-machine lifetime lock across computers.
+За разработка: `npm run dev` (auto-reload). Без `ENCRYPTION_KEY` извън продукция се
+ползва дев ключ (с предупреждение). За продукция вижте `.env.example` — задължителни
+са `NODE_ENV=production`, `ENCRYPTION_KEY`, `PUBLIC_BASE_URL` (HTTPS).
+
+## Разгръщане (Hetzner, Германия / ЕС)
+
+Препоръчителна схема: процесът зад **reverse proxy** (nginx/Caddy) с TLS сертификат.
+`trust proxy` е включен, за да се вижда реалният IP и протокол. Пазете `ENCRYPTION_KEY`
+извън хранилището (напр. в systemd `EnvironmentFile` с права 600). Правете криптирани
+архиви на `data/` и съхранявайте ключа отделно.
+
+## Тестове
+
+```bash
+npm test
+```
+
+За паскейовете има отделен end-to-end тест с виртуален authenticator (Chromium):
+
+```bash
+npm i -D playwright && npx playwright install chromium
+npm run test:webauthn
+```
+
+`test/smoke.test.js` (20 проверки) минава през целия поток end-to-end: CSRF токен,
+регистрация със съгласие, криптиране в покой, въвеждане на данни, dashboard, QR,
+износ на данни, спешен достъп през токена, журнал, включване и вход с 2FA, защита
+на маршрутите.
+
+## Качество на кода
+
+Форматирането се налага от **Prettier**, а статичните правила — от **ESLint**
+(flat config). И двете се проверяват в CI заедно с тестовете и `npm audit`.
+
+```bash
+npm run lint          # ESLint
+npm run format        # Prettier (записва)
+npm run format:check  # Prettier (само проверка)
+```
+
+Виж също [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md) и
+[`CHANGELOG.md`](CHANGELOG.md).
+
+## Структура
+
+```
+src/server.js          Express, helmet, HSTS, CSP, rate limiting, маршрути
+src/db.js              SQLite схема (users, profiles, sessions, pending_logins, access_log, audit_log)
+src/crypto.js          криптиране в покой (AES-256-GCM)
+src/hashing.js         Argon2id хеширане (+ legacy bcrypt verify)
+src/auth.js            сесии, заключване, 2FA pending, токени, резервни кодове
+src/csrf.js            CSRF защита (synchronizer token + header)
+src/mailer.js          имейл (nodemailer; SMTP в продукция, лог в dev)
+src/webauthn.js        passkeys: RP конфигурация, challenge и credential достъп
+src/profiles.js        достъп до профилите с криптиране/декриптиране
+src/audit.js           tamper-evident одит лог (hash-верига)
+src/seo.js             robots.txt, sitemap.xml, llms.txt, manifest
+src/routes/            auth, profile, webauthn, emergency
+src/views/             EJS шаблони (вкл. privacy, cookies, terms, 2fa, passkeys)
+public/styles.css      стилове (висок контраст, едър шрифт, печат)
+public/app.js          CSP-съвместими помощници (без inline скриптове)
+public/webauthn.js     клиентска логика за passkeys
+deploy/                продукционни конфигурации и ръководство (DEPLOY.md)
+docs/ПРОУЧВАНЕ.md       детайлното проучване
+test/smoke.test.js     end-to-end smoke тест
+```
+
+## Статус и важна бележка
+
+Това е **прототип за демонстрация**, не медицинско изделие. Преди реална употреба
+са нужни правен преглед и оценка на въздействието върху защитата на данните (DPIA).
+Не въвеждайте реални медицински данни в демо среда.
