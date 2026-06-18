@@ -1,0 +1,19 @@
+<article class="card">
+  <a class="card__media" href="/statia/<%= article.slug %>" tabindex="-1" aria-hidden="true">
+    <% if (article.cover_image) { %>
+      <img src="<%= article.cover_image %>" alt="<%= article.cover_alt || '' %>" loading="lazy" width="400" height="240">
+    <% } else { %>
+      <span class="card__placeholder"><%= site.short %></span>
+    <% } %>
+  </a>
+  <div class="card__body">
+    <% if (article.category_name) { %>
+      <a class="card__cat" href="/category/<%= article.category_slug %>"><%= article.category_name %></a>
+    <% } %>
+    <h3 class="card__title"><a href="/statia/<%= article.slug %>"><%= article.title %></a></h3>
+    <% if (article.excerpt) { %><p class="card__excerpt"><%= h.truncate(article.excerpt, 130) %></p><% } %>
+    <div class="card__meta">
+      <time datetime="<%= h.isoDate(article.published_at) %>"><%= formatDate(article.published_at) %></time>
+    </div>
+  </div>
+</article>

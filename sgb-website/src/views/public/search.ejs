@@ -1,0 +1,26 @@
+<section class="section">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="page-head__title">Търсене</h1>
+      <form class="search-form" action="/tarsene" method="get" role="search">
+        <input type="search" name="q" value="<%= q %>" placeholder="Въведете дума за търсене…" autofocus>
+        <button type="submit" class="btn btn--primary">Търси</button>
+      </form>
+    </header>
+
+    <% if (q && q.length >= 2) { %>
+      <p class="search-summary">Намерени резултати за „<strong><%= q %></strong>“: <%= results.length %></p>
+      <% if (results.length === 0) { %>
+        <div class="empty-state"><p>Няма намерени публикации. Опитайте с друга ключова дума.</p></div>
+      <% } else { %>
+        <div class="grid grid--cards">
+          <% results.forEach(function(article){ %>
+            <%- include('../partials/article-card', { article: article }) %>
+          <% }); %>
+        </div>
+      <% } %>
+    <% } else if (q) { %>
+      <p class="search-summary">Въведете поне 2 символа за търсене.</p>
+    <% } %>
+  </div>
+</section>

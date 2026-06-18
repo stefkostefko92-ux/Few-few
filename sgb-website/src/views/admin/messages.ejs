@@ -1,0 +1,28 @@
+<section class="panel">
+  <% if (messages.length === 0) { %>
+    <p class="muted" style="padding:1.25rem">Няма получени съобщения.</p>
+  <% } else { %>
+    <div class="msg-list">
+      <% messages.forEach(function(m){ %>
+        <article class="msg <%= m.is_read ? '' : 'msg--unread' %>">
+          <div class="msg__head">
+            <div>
+              <strong><%= m.name %></strong>
+              <a class="link" href="mailto:<%= m.email %>"><%= m.email %></a>
+            </div>
+            <time class="muted"><%= formatDate(m.created_at) %></time>
+          </div>
+          <% if (m.subject) { %><p class="msg__subject"><%= m.subject %></p><% } %>
+          <p class="msg__body"><%= m.message %></p>
+          <div class="msg__actions">
+            <% if (!m.is_read) { %>
+              <form action="/admin/messages/<%= m.id %>/read" method="post" class="inline-form"><button class="link" type="submit">Маркирай като прочетено</button></form>
+            <% } %>
+            <a class="link" href="mailto:<%= m.email %>?subject=Re: <%= encodeURIComponent(m.subject || 'Вашето запитване') %>">Отговори</a>
+            <form action="/admin/messages/<%= m.id %>/delete" method="post" class="inline-form" data-confirm="Да изтрия ли съобщението?"><button class="link link--danger" type="submit">Изтрий</button></form>
+          </div>
+        </article>
+      <% }); %>
+    </div>
+  <% } %>
+</section>

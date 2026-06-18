@@ -1,0 +1,34 @@
+<% if (saved) { %><div class="alert alert--success">Настройките са запазени.</div><% } %>
+<form class="form form--admin" action="/admin/settings" method="post">
+  <div class="settings-grid">
+    <section class="panel">
+      <div class="panel__head"><h2>Организация</h2></div>
+      <div style="padding:1.25rem">
+        <div class="form__row"><label for="org_name">Пълно име</label><input type="text" id="org_name" name="org_name" value="<%= settings.org_name || '' %>"></div>
+        <div class="form__row"><label for="org_short">Съкращение</label><input type="text" id="org_short" name="org_short" value="<%= settings.org_short || '' %>"></div>
+        <div class="form__row"><label for="newspaper_name">Име на вестника</label><input type="text" id="newspaper_name" name="newspaper_name" value="<%= settings.newspaper_name || '' %>"></div>
+        <div class="form__row"><label for="site_description">Описание на сайта (SEO)</label><textarea id="site_description" name="site_description" rows="3"><%= settings.site_description || '' %></textarea></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2>Контакти</h2></div>
+      <div style="padding:1.25rem">
+        <div class="form__row"><label for="contact_email">Имейл</label><input type="email" id="contact_email" name="contact_email" value="<%= settings.contact_email || '' %>"></div>
+        <div class="form__row"><label for="contact_phone">Телефон</label><input type="text" id="contact_phone" name="contact_phone" value="<%= settings.contact_phone || '' %>"></div>
+        <div class="form__row"><label for="contact_address">Адрес</label><input type="text" id="contact_address" name="contact_address" value="<%= settings.contact_address || '' %>"></div>
+        <div class="form__row"><label for="contact_city">Град</label><input type="text" id="contact_city" name="contact_city" value="<%= settings.contact_city || '' %>"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__head"><h2>Социални мрежи</h2></div>
+      <div style="padding:1.25rem">
+        <div class="form__row"><label for="social_facebook">Facebook URL</label><input type="url" id="social_facebook" name="social_facebook" value="<%= settings.social_facebook || '' %>"></div>
+        <div class="form__row"><label for="social_youtube">YouTube URL</label><input type="url" id="social_youtube" name="social_youtube" value="<%= settings.social_youtube || '' %>"></div>
+        <div class="form__row"><label for="social_instagram">Instagram URL</label><input type="url" id="social_instagram" name="social_instagram" value="<%= settings.social_instagram || '' %>"></div>
+      </div>
+    </section>
+  </div>
+  <div class="admin-actions"><button type="submit" class="btn btn--primary">Запази настройките</button></div>
+</form>

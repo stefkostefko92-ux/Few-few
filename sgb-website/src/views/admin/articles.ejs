@@ -1,0 +1,40 @@
+<div class="admin-actions admin-actions--between">
+  <a class="btn btn--primary" href="/admin/articles/new">+ Нова статия</a>
+  <div class="filters">
+    <a href="/admin/articles" class="<%= !filter ? 'is-active' : '' %>">Всички</a>
+    <a href="/admin/articles?status=published" class="<%= filter === 'published' ? 'is-active' : '' %>">Публикувани</a>
+    <a href="/admin/articles?status=draft" class="<%= filter === 'draft' ? 'is-active' : '' %>">Чернови</a>
+  </div>
+</div>
+
+<section class="panel">
+  <% const list = filter ? articles.filter(a => a.status === filter) : articles; %>
+  <% if (list.length === 0) { %>
+    <p class="muted" style="padding:1.25rem">Няма статии за показване.</p>
+  <% } else { %>
+  <table class="table">
+    <thead><tr><th>Заглавие</th><th>Категория</th><th>Статус</th><th>Преглеждания</th><th>Дата</th><th>Действия</th></tr></thead>
+    <tbody>
+      <% list.forEach(function(a){ %>
+        <tr>
+          <td>
+            <a class="cell-title" href="/admin/articles/<%= a.id %>/edit"><%= a.title %></a>
+            <% if (a.featured) { %><span class="pill pill--accent">Акцент</span><% } %>
+          </td>
+          <td><%= a.category_name || '—' %></td>
+          <td><span class="pill pill--<%= a.status %>"><%= a.status === 'published' ? 'Публикувана' : 'Чернова' %></span></td>
+          <td class="muted"><%= a.views %></td>
+          <td class="muted"><%= formatDate(a.published_at || a.created_at) %></td>
+          <td class="cell-actions">
+            <a class="link" href="/statia/<%= a.slug %>" target="_blank" rel="noopener">Виж</a>
+            <a class="link" href="/admin/articles/<%= a.id %>/edit">Редакция</a>
+            <form action="/admin/articles/<%= a.id %>/delete" method="post" class="inline-form" data-confirm="Сигурни ли сте, че искате да изтриете тази статия?">
+              <button type="submit" class="link link--danger">Изтрий</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <% } %>
+</section>

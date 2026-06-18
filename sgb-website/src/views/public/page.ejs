@@ -1,0 +1,14 @@
+<%- include('../partials/breadcrumbs', { items: [
+  { name: 'Начало', url: '/' }, { name: page.title, url: '/stranica/' + page.slug }
+] }) %>
+
+<section class="section">
+  <div class="container container--narrow">
+    <header class="page-head">
+      <h1 class="page-head__title"><%= page.title %></h1>
+    </header>
+    <div class="prose legal">
+      <%- page.body %>
+    </div>
+  </div>
+</section>

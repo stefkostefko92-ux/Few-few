@@ -1,0 +1,42 @@
+<%- include('../partials/breadcrumbs', { items: [
+  { name: 'Начало', url: '/' },
+  ...(category ? [{ name: category.name, url: '/category/' + category.slug }] : [{ name: 'Новини', url: '/novini' }])
+] }) %>
+
+<section class="section">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="page-head__title"><%= heading %></h1>
+      <% if (intro) { %><p class="page-head__intro"><%= intro %></p><% } %>
+    </header>
+
+    <% if (typeof children !== 'undefined' && children && children.length) { %>
+      <div class="chips">
+        <% children.forEach(function(ch){ %>
+          <a class="chip" href="/category/<%= ch.slug %>"><%= ch.name %></a>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <% if (articles.length === 0) { %>
+      <div class="empty-state">
+        <p>В този раздел все още няма публикации.</p>
+        <a class="btn btn--ghost" href="/novini">Към всички новини</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid--cards">
+        <% articles.forEach(function(article){ %>
+          <%- include('../partials/article-card', { article: article }) %>
+        <% }); %>
+      </div>
+
+      <% if (pagination.pages > 1) { %>
+        <nav class="pagination" aria-label="Страници">
+          <% if (pagination.hasPrev) { %><a class="pagination__btn" href="<%= baseUrl %>?page=<%= pagination.prev %>" rel="prev">← Назад</a><% } %>
+          <span class="pagination__info">Страница <%= pagination.page %> от <%= pagination.pages %></span>
+          <% if (pagination.hasNext) { %><a class="pagination__btn" href="<%= baseUrl %>?page=<%= pagination.next %>" rel="next">Напред →</a><% } %>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+</section>

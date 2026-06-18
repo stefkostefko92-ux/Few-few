@@ -1,0 +1,54 @@
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div class="footer-col footer-col--about">
+      <div class="footer-brand">
+        <img src="/img/logo.svg" width="44" height="44" alt="" aria-hidden="true">
+        <strong><%= site.name %></strong>
+      </div>
+      <p><%= site.description %></p>
+      <div class="footer-social">
+        <% if (site.facebook) { %><a href="<%= site.facebook %>" target="_blank" rel="noopener">Facebook</a><% } %>
+        <% if (site.youtube) { %><a href="<%= site.youtube %>" target="_blank" rel="noopener">YouTube</a><% } %>
+        <% if (site.instagram) { %><a href="<%= site.instagram %>" target="_blank" rel="noopener">Instagram</a><% } %>
+        <a href="/rss.xml">RSS</a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h2 class="footer-col__title">Навигация</h2>
+      <ul class="footer-links">
+        <li><a href="/novini">Новини и съобщения</a></li>
+        <li><a href="/vestnik">Вестник „<%= site.newspaperName %>“</a></li>
+        <% menuTree.slice(0,4).forEach(function(c){ %><li><a href="/category/<%= c.slug %>"><%= c.name %></a></li><% }); %>
+        <li><a href="/kontakti">Контакти</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h2 class="footer-col__title">Правна информация</h2>
+      <ul class="footer-links">
+        <li><a href="/stranica/politika-za-poveritelnost">Политика за поверителност</a></li>
+        <li><a href="/stranica/politika-za-biskvitki">Бисквитки</a></li>
+        <li><a href="/stranica/obshti-usloviya">Общи условия</a></li>
+        <li><a href="/stranica/gdpr">Защита на данните (GDPR)</a></li>
+        <li><a href="/stranica/dostapnost">Достъпност</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h2 class="footer-col__title">Контакти</h2>
+      <address class="footer-contact">
+        <% if (site.address) { %><div><%= site.address %><% if (site.city) { %>, <%= site.city %><% } %></div><% } %>
+        <% if (site.phone) { %><div><a href="tel:<%= site.phone.replace(/\s/g,'') %>"><%= site.phone %></a></div><% } %>
+        <% if (site.email) { %><div><a href="mailto:<%= site.email %>"><%= site.email %></a></div><% } %>
+      </address>
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <div class="container site-footer__bottom-inner">
+      <p>© <%= year %> <%= site.name %>. Всички права запазени.</p>
+      <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+    </div>
+  </div>
+</footer>

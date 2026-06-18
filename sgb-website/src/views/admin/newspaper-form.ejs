@@ -1,0 +1,79 @@
+<div class="save-toast" id="save-toast" hidden>Промените са запазени ✓</div>
+<form class="form form--admin" action="<%= action %>" method="post" enctype="multipart/form-data">
+  <div class="editor-grid">
+    <div class="editor-main">
+      <div class="form__row">
+        <label for="title">Заглавие на броя <span class="req">*</span></label>
+        <input type="text" id="title" name="title" required value="<%= issue.title || '' %>" placeholder="напр. Вестник „Тишина“ — брой 5, 2025">
+      </div>
+      <div class="form__grid-3">
+        <div class="form__row">
+          <label for="issue_number">Брой №</label>
+          <input type="number" id="issue_number" name="issue_number" value="<%= issue.issue_number || '' %>" min="1">
+        </div>
+        <div class="form__row">
+          <label for="year">Година</label>
+          <input type="number" id="year" name="year" value="<%= issue.year || '' %>" min="1950" max="2100">
+        </div>
+        <div class="form__row">
+          <label for="month">Месец</label>
+          <select id="month" name="month">
+            <option value="">—</option>
+            <% for (let m=1; m<=12; m++){ %><option value="<%= m %>" <%= issue.month === m ? 'selected' : '' %>><%= h.monthName(m) %></option><% } %>
+          </select>
+        </div>
+      </div>
+      <div class="form__row">
+        <label for="description">Описание / съдържание на броя</label>
+        <textarea id="description" name="description" rows="5" placeholder="Кратко описание на основните теми в броя."><%= issue.description || '' %></textarea>
+      </div>
+    </div>
+
+    <aside class="editor-side">
+      <div class="side-box">
+        <h2>Публикуване</h2>
+        <div class="form__row">
+          <label for="status">Статус</label>
+          <select id="status" name="status">
+            <option value="published" <%= issue.status !== 'draft' ? 'selected' : '' %>>Публикуван</option>
+            <option value="draft" <%= issue.status === 'draft' ? 'selected' : '' %>>Чернова</option>
+          </select>
+        </div>
+        <div class="side-box__actions">
+          <button type="submit" class="btn btn--primary btn--block">Запази</button>
+          <% if (!isNew && issue.slug) { %><a class="btn btn--ghost btn--block" href="/vestnik/<%= issue.slug %>" target="_blank" rel="noopener">Преглед ↗</a><% } %>
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>PDF файл на броя</h2>
+        <% if (issue.pdf_file) { %><p class="muted"><a class="link" href="<%= issue.pdf_file %>" target="_blank" rel="noopener">Текущ файл ↗</a></p><% } %>
+        <div class="form__row">
+          <input type="file" name="pdf_file" accept="application/pdf">
+          <small class="hint">До 50 MB. Качването на нов файл заменя стария.</small>
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>Корица</h2>
+        <% if (issue.cover_image) { %><div class="cover-preview cover-preview--paper"><img src="<%= issue.cover_image %>" alt=""></div><% } %>
+        <div class="form__row">
+          <input type="file" name="cover_image" accept="image/*">
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>URL адрес</h2>
+        <div class="form__row">
+          <input type="text" name="slug" value="<%= issue.slug || '' %>" placeholder="генерира се автоматично">
+        </div>
+      </div>
+    </aside>
+  </div>
+</form>
+
+<% if (!isNew) { %>
+<form action="/admin/newspapers/<%= issue.id %>/delete" method="post" class="danger-zone inline-form" data-confirm="Да изтрия ли този брой безвъзвратно?">
+  <button type="submit" class="link link--danger">Изтрий броя</button>
+</form>
+<% } %>

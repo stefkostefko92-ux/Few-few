@@ -1,0 +1,38 @@
+<form class="form cat-edit" action="/admin/categories/<%= c.id %>/edit" method="post">
+  <div class="form__grid-2">
+    <div class="form__row">
+      <label>Име</label>
+      <input type="text" name="name" value="<%= c.name %>" required>
+    </div>
+    <div class="form__row">
+      <label>URL (slug)</label>
+      <input type="text" name="slug" value="<%= c.slug %>">
+    </div>
+  </div>
+  <div class="form__grid-2">
+    <div class="form__row">
+      <label>Родител</label>
+      <select name="parent_id">
+        <option value="">— основна —</option>
+        <% tree.forEach(function(r){ if (r.id !== c.id) { %>
+          <option value="<%= r.id %>" <%= c.parent_id === r.id ? 'selected' : '' %>><%= r.name %></option>
+        <% } }); %>
+      </select>
+    </div>
+    <div class="form__row">
+      <label>Подредба</label>
+      <input type="number" name="sort_order" value="<%= c.sort_order %>">
+    </div>
+  </div>
+  <div class="form__row">
+    <label>Описание</label>
+    <textarea name="description" rows="2"><%= c.description || '' %></textarea>
+  </div>
+  <label class="check"><input type="checkbox" name="in_menu" value="1" <%= c.in_menu ? 'checked' : '' %>> В менюто</label>
+  <div class="cat-edit__actions">
+    <button type="submit" class="btn btn--secondary btn--sm">Запази</button>
+  </div>
+</form>
+<form action="/admin/categories/<%= c.id %>/delete" method="post" class="inline-form" data-confirm="Да изтрия ли категорията? Статиите в нея остават без категория.">
+  <button type="submit" class="link link--danger link--sm">Изтрий категорията</button>
+</form>

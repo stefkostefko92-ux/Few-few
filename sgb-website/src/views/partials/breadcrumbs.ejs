@@ -1,0 +1,15 @@
+<nav class="breadcrumbs" aria-label="Навигационна пътека">
+  <div class="container">
+    <ol>
+      <% items.forEach(function(it, i){ %>
+        <li>
+          <% if (i < items.length - 1) { %>
+            <a href="<%= it.url %>"><%= it.name %></a>
+          <% } else { %>
+            <span aria-current="page"><%= it.name %></span>
+          <% } %>
+        </li>
+      <% }); %>
+    </ol>
+  </div>
+</nav>

@@ -1,0 +1,118 @@
+<div class="save-toast" id="save-toast" hidden>Промените са запазени ✓</div>
+<form class="form form--admin" action="<%= action %>" method="post" enctype="multipart/form-data">
+  <div class="editor-grid">
+    <div class="editor-main">
+      <div class="form__row">
+        <label for="title">Заглавие <span class="req">*</span></label>
+        <input type="text" id="title" name="title" required value="<%= article.title || '' %>" placeholder="Въведете заглавие на статията">
+      </div>
+
+      <div class="form__row">
+        <label for="excerpt">Кратко описание (резюме)</label>
+        <textarea id="excerpt" name="excerpt" rows="2" placeholder="Кратко въведение, което се показва в списъците. Ако е празно, се генерира автоматично."><%= article.excerpt || '' %></textarea>
+      </div>
+
+      <div class="form__row">
+        <label>Съдържание <span class="req">*</span></label>
+        <div class="rte">
+          <div class="rte__toolbar" role="toolbar" aria-label="Форматиране">
+            <button type="button" data-cmd="formatBlock" data-val="h2" title="Заглавие 2">H2</button>
+            <button type="button" data-cmd="formatBlock" data-val="h3" title="Заглавие 3">H3</button>
+            <button type="button" data-cmd="formatBlock" data-val="p" title="Параграф">P</button>
+            <span class="rte__sep"></span>
+            <button type="button" data-cmd="bold" title="Удебелен"><b>Б</b></button>
+            <button type="button" data-cmd="italic" title="Курсив"><i>К</i></button>
+            <button type="button" data-cmd="underline" title="Подчертан"><u>П</u></button>
+            <span class="rte__sep"></span>
+            <button type="button" data-cmd="insertUnorderedList" title="Списък">• Списък</button>
+            <button type="button" data-cmd="insertOrderedList" title="Номериран списък">1. Списък</button>
+            <button type="button" data-cmd="formatBlock" data-val="blockquote" title="Цитат">„ “</button>
+            <span class="rte__sep"></span>
+            <button type="button" data-cmd="createLink" title="Връзка">🔗 Връзка</button>
+            <button type="button" data-cmd="unlink" title="Премахни връзка">Без връзка</button>
+            <button type="button" data-cmd="removeFormat" title="Изчисти форматирането">Изчисти</button>
+            <span class="rte__sep"></span>
+            <button type="button" data-toggle-html title="HTML код">&lt;/&gt;</button>
+          </div>
+          <div class="rte__editor prose" id="rte-editor" contenteditable="true"><%- article.body || '<p></p>' %></div>
+          <textarea class="rte__source" id="rte-source" name="body" hidden><%= article.body || '' %></textarea>
+        </div>
+      </div>
+    </div>
+
+    <aside class="editor-side">
+      <div class="side-box">
+        <h2>Публикуване</h2>
+        <div class="form__row">
+          <label for="status">Статус</label>
+          <select id="status" name="status">
+            <option value="draft" <%= article.status !== 'published' ? 'selected' : '' %>>Чернова</option>
+            <option value="published" <%= article.status === 'published' ? 'selected' : '' %>>Публикувана</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" name="featured" value="1" <%= article.featured ? 'checked' : '' %>> Акцент (на началната страница)</label>
+        <div class="side-box__actions">
+          <button type="submit" class="btn btn--primary btn--block">Запази</button>
+          <% if (!isNew) { %><a class="btn btn--ghost btn--block" href="/statia/<%= article.slug %>" target="_blank" rel="noopener">Преглед ↗</a><% } %>
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>Категория</h2>
+        <div class="form__row">
+          <select name="category_id">
+            <option value="">— без категория —</option>
+            <% categories.forEach(function(c){ %>
+              <option value="<%= c.id %>" <%= article.category_id === c.id ? 'selected' : '' %>><%= c.parent_id ? '— ' : '' %><%= c.name %></option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>Корица</h2>
+        <% if (article.cover_image) { %>
+          <div class="cover-preview"><img src="<%= article.cover_image %>" alt=""></div>
+          <label class="check"><input type="checkbox" name="remove_cover" value="1"> Премахни текущата корица</label>
+        <% } %>
+        <div class="form__row">
+          <input type="file" name="cover_image" accept="image/*">
+        </div>
+        <div class="form__row">
+          <label for="cover_alt">Алтернативен текст</label>
+          <input type="text" id="cover_alt" name="cover_alt" value="<%= article.cover_alt || '' %>" placeholder="Описание на изображението">
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>Видео (по избор)</h2>
+        <div class="form__row">
+          <input type="url" name="video_url" value="<%= article.video_url || '' %>" placeholder="https://www.youtube.com/embed/…">
+          <small class="hint">Embed връзка от YouTube/Vimeo за видео на жестов език.</small>
+        </div>
+      </div>
+
+      <div class="side-box">
+        <h2>SEO</h2>
+        <div class="form__row">
+          <label for="slug">URL адрес (slug)</label>
+          <input type="text" id="slug" name="slug" value="<%= article.slug || '' %>" placeholder="генерира се автоматично">
+        </div>
+        <div class="form__row">
+          <label for="meta_title">SEO заглавие</label>
+          <input type="text" id="meta_title" name="meta_title" value="<%= article.meta_title || '' %>">
+        </div>
+        <div class="form__row">
+          <label for="meta_description">SEO описание</label>
+          <textarea id="meta_description" name="meta_description" rows="3" maxlength="200"><%= article.meta_description || '' %></textarea>
+        </div>
+      </div>
+    </aside>
+  </div>
+</form>
+
+<% if (!isNew) { %>
+<form action="/admin/articles/<%= article.id %>/delete" method="post" class="danger-zone inline-form" data-confirm="Да изтрия ли тази статия безвъзвратно?">
+  <button type="submit" class="link link--danger">Изтрий статията</button>
+</form>
+<% } %>

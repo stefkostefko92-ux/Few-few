@@ -1,0 +1,35 @@
+{
+  "name": "sgb-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Официален уебсайт на Съюза на глухите в България — новини, вестник „Тишина“, документи и дейности.",
+  "author": "Carbon Stealth VCC (https://carbonstealth.eu)",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "setup": "node src/setup.js",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "compression": "^1.7.4",
+    "connect-sqlite3": "^0.9.15",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "multer": "^2.0.1",
+    "sanitize-html": "^2.13.0",
+    "slugify": "^1.6.6"
+  }
+}

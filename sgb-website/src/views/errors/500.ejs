@@ -1,0 +1,9 @@
+<section class="section error-page">
+  <div class="container container--narrow" style="text-align:center">
+    <p class="error-code">500</p>
+    <h1>Възникна грешка</h1>
+    <p>Нещо се обърка от наша страна. Моля, опитайте отново след малко.</p>
+    <% if (typeof message !== 'undefined' && message) { %><pre class="error-detail"><%= message %></pre><% } %>
+    <div class="error-actions"><a class="btn btn--primary" href="/">Към началото</a></div>
+  </div>
+</section>

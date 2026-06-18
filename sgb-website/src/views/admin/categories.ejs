@@ -1,0 +1,70 @@
+<% if (saved) { %><div class="alert alert--success">Промените са запазени.</div><% } %>
+<div class="two-col">
+  <section class="panel">
+    <div class="panel__head"><h2>Категории</h2></div>
+    <% if (tree.length === 0) { %>
+      <p class="muted" style="padding:1rem">Няма категории.</p>
+    <% } else { %>
+    <ul class="cat-tree">
+      <% tree.forEach(function(root){ %>
+        <li>
+          <details>
+            <summary>
+              <span class="cat-tree__name"><%= root.name %></span>
+              <span class="cat-tree__meta"><%= root.in_menu ? 'в меню' : 'скрита' %> · /<%= root.slug %></span>
+            </summary>
+            <%- include('cat-edit', { c: root, tree: tree }) %>
+            <% if (root.children && root.children.length) { %>
+              <ul class="cat-tree cat-tree--sub">
+                <% root.children.forEach(function(ch){ %>
+                  <li>
+                    <details>
+                      <summary><span class="cat-tree__name"><%= ch.name %></span><span class="cat-tree__meta">/<%= ch.slug %></span></summary>
+                      <%- include('cat-edit', { c: ch, tree: tree }) %>
+                    </details>
+                  </li>
+                <% }); %>
+              </ul>
+            <% } %>
+          </details>
+        </li>
+      <% }); %>
+    </ul>
+    <% } %>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head"><h2>Нова категория</h2></div>
+    <form class="form" action="/admin/categories/new" method="post" style="padding:1.25rem">
+      <div class="form__row">
+        <label for="name">Име <span class="req">*</span></label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form__row">
+        <label for="parent_id">Родителска категория</label>
+        <select id="parent_id" name="parent_id">
+          <option value="">— основна —</option>
+          <% categories.filter(c => !c.parent_id).forEach(function(c){ %>
+            <option value="<%= c.id %>"><%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="form__grid-2">
+        <div class="form__row">
+          <label for="sort_order">Подредба</label>
+          <input type="number" id="sort_order" name="sort_order" value="0">
+        </div>
+        <div class="form__row">
+          <label for="slug">URL (по избор)</label>
+          <input type="text" id="slug" name="slug">
+        </div>
+      </div>
+      <div class="form__row">
+        <label for="description">Описание</label>
+        <textarea id="description" name="description" rows="2"></textarea>
+      </div>
+      <label class="check"><input type="checkbox" name="in_menu" value="1" checked> Показвай в навигационното меню</label>
+      <button type="submit" class="btn btn--primary">Добави категория</button>
+    </form>
+  </section>
+</div>

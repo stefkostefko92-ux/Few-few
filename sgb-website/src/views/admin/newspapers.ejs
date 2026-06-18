@@ -1,0 +1,31 @@
+<div class="admin-actions">
+  <a class="btn btn--primary" href="/admin/newspapers/new">+ Нов брой</a>
+</div>
+
+<section class="panel">
+  <% if (issues.length === 0) { %>
+    <p class="muted" style="padding:1.25rem">Все още няма добавени броеве на вестника. <a href="/admin/newspapers/new">Добавете първия</a>.</p>
+  <% } else { %>
+  <table class="table">
+    <thead><tr><th>Брой</th><th>Заглавие</th><th>Период</th><th>PDF</th><th>Статус</th><th>Действия</th></tr></thead>
+    <tbody>
+      <% issues.forEach(function(n){ %>
+        <tr>
+          <td class="muted"><%= n.issue_number || '—' %></td>
+          <td><a class="cell-title" href="/admin/newspapers/<%= n.id %>/edit"><%= n.title %></a></td>
+          <td class="muted"><% if (n.month) { %><%= h.monthName(n.month) %> <% } %><%= n.year || '' %></td>
+          <td><% if (n.pdf_file) { %><a class="link" href="<%= n.pdf_file %>" target="_blank" rel="noopener">PDF</a><% } else { %><span class="muted">—</span><% } %></td>
+          <td><span class="pill pill--<%= n.status %>"><%= n.status === 'published' ? 'Публикуван' : 'Чернова' %></span></td>
+          <td class="cell-actions">
+            <a class="link" href="/vestnik/<%= n.slug %>" target="_blank" rel="noopener">Виж</a>
+            <a class="link" href="/admin/newspapers/<%= n.id %>/edit">Редакция</a>
+            <form action="/admin/newspapers/<%= n.id %>/delete" method="post" class="inline-form" data-confirm="Да изтрия ли този брой?">
+              <button type="submit" class="link link--danger">Изтрий</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <% } %>
+</section>

@@ -1,0 +1,55 @@
+<div class="save-toast" id="save-toast" hidden>Промените са запазени ✓</div>
+<form class="form form--admin" action="<%= action %>" method="post">
+  <div class="editor-grid">
+    <div class="editor-main">
+      <div class="form__row">
+        <label for="title">Заглавие <span class="req">*</span></label>
+        <input type="text" id="title" name="title" required value="<%= page.title || '' %>">
+      </div>
+      <div class="form__row">
+        <label>Съдържание <span class="req">*</span></label>
+        <div class="rte">
+          <div class="rte__toolbar" role="toolbar">
+            <button type="button" data-cmd="formatBlock" data-val="h2">H2</button>
+            <button type="button" data-cmd="formatBlock" data-val="h3">H3</button>
+            <button type="button" data-cmd="formatBlock" data-val="p">P</button>
+            <span class="rte__sep"></span>
+            <button type="button" data-cmd="bold"><b>Б</b></button>
+            <button type="button" data-cmd="italic"><i>К</i></button>
+            <span class="rte__sep"></span>
+            <button type="button" data-cmd="insertUnorderedList">• Списък</button>
+            <button type="button" data-cmd="insertOrderedList">1. Списък</button>
+            <button type="button" data-cmd="createLink">🔗 Връзка</button>
+            <button type="button" data-cmd="unlink">Без връзка</button>
+            <span class="rte__sep"></span>
+            <button type="button" data-toggle-html>&lt;/&gt;</button>
+          </div>
+          <div class="rte__editor prose" id="rte-editor" contenteditable="true"><%- page.body || '<p></p>' %></div>
+          <textarea class="rte__source" id="rte-source" name="body" hidden><%= page.body || '' %></textarea>
+        </div>
+      </div>
+    </div>
+    <aside class="editor-side">
+      <div class="side-box">
+        <h2>Публикуване</h2>
+        <div class="side-box__actions">
+          <button type="submit" class="btn btn--primary btn--block">Запази</button>
+          <% if (!isNew) { %><a class="btn btn--ghost btn--block" href="/stranica/<%= page.slug %>" target="_blank" rel="noopener">Преглед ↗</a><% } %>
+        </div>
+      </div>
+      <div class="side-box">
+        <h2>SEO</h2>
+        <% if (page.is_system) { %><p class="hint">Системна страница — URL адресът е фиксиран.</p><% } else { %>
+        <div class="form__row">
+          <label for="slug">URL (slug)</label>
+          <input type="text" id="slug" name="slug" value="<%= page.slug || '' %>">
+        </div>
+        <% } %>
+        <div class="form__row">
+          <label for="meta_description">SEO описание</label>
+          <textarea id="meta_description" name="meta_description" rows="3"><%= page.meta_description || '' %></textarea>
+        </div>
+      </div>
+    </aside>
+  </div>
+</form>

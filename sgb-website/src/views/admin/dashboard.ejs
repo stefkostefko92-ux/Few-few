@@ -1,0 +1,46 @@
+<div class="stat-grid">
+  <a class="stat-card" href="/admin/articles">
+    <span class="stat-card__num"><%= stats.articles %></span>
+    <span class="stat-card__label">Статии</span>
+    <span class="stat-card__sub"><%= stats.published %> публикувани · <%= stats.drafts %> чернови</span>
+  </a>
+  <a class="stat-card" href="/admin/newspapers">
+    <span class="stat-card__num"><%= stats.newspapers %></span>
+    <span class="stat-card__label">Броеве на вестника</span>
+  </a>
+  <a class="stat-card" href="/admin/categories">
+    <span class="stat-card__num"><%= stats.categories %></span>
+    <span class="stat-card__label">Категории</span>
+  </a>
+  <a class="stat-card <%= stats.messages ? 'stat-card--alert' : '' %>" href="/admin/messages">
+    <span class="stat-card__num"><%= stats.messages %></span>
+    <span class="stat-card__label">Нови съобщения</span>
+  </a>
+</div>
+
+<div class="admin-actions">
+  <a class="btn btn--primary" href="/admin/articles/new">+ Нова статия</a>
+  <a class="btn btn--secondary" href="/admin/newspapers/new">+ Нов брой на вестника</a>
+</div>
+
+<section class="panel">
+  <div class="panel__head"><h2>Последни статии</h2><a href="/admin/articles">Всички →</a></div>
+  <% if (recent.length === 0) { %>
+    <p class="muted" style="padding:1rem">Все още няма статии. <a href="/admin/articles/new">Създайте първата</a>.</p>
+  <% } else { %>
+  <table class="table">
+    <thead><tr><th>Заглавие</th><th>Категория</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+    <tbody>
+      <% recent.forEach(function(a){ %>
+        <tr>
+          <td><a href="/admin/articles/<%= a.id %>/edit"><%= a.title %></a></td>
+          <td><%= a.category_name || '—' %></td>
+          <td><span class="pill pill--<%= a.status %>"><%= a.status === 'published' ? 'Публикувана' : 'Чернова' %></span></td>
+          <td class="muted"><%= formatDate(a.published_at || a.created_at) %></td>
+          <td><a class="link" href="/admin/articles/<%= a.id %>/edit">Редакция</a></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <% } %>
+</section>
