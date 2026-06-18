@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Zap, Droplets, CalendarClock, CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose, EmptyState } from "@/components/ui";
@@ -129,9 +130,9 @@ export default async function OutagesPage() {
           <p className="mt-2 text-slate-700">
             Ако токът или водата спре неочаквано (без да е обявено тук), подайте
             сигнал на аварийната служба. Телефоните са в раздел{" "}
-            <a href="/uslugi?cat=UTILITY" className="font-medium text-brand-700 hover:underline">
+            <Link href="/uslugi?cat=UTILITY" className="font-medium text-brand-700 hover:underline">
               Комунални услуги
-            </a>
+            </Link>
             . При опасност за живота — спешен телефон{" "}
             <a href="tel:112" className="font-bold text-crimson-700">
               112

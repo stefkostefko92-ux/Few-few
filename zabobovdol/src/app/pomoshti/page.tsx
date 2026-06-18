@@ -97,7 +97,7 @@ export default async function AidPage() {
             Пенсиите и помощите се превалутират по този фиксиран курс — стойността
             се запазва. Повече за еврото:{" "}
             <Link href="/evroto" className="font-medium text-brand-700 hover:underline">
-              страница „Еврото"
+              страница „Еврото“
             </Link>
             .
           </p>

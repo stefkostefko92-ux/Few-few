@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { Mail, MapPin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -46,7 +47,7 @@ export default async function AdminSignaliPage({
       </div>
 
       <div className="flex flex-wrap gap-2 text-sm">
-        <a
+        <Link
           href="/admin/signali"
           className={
             "rounded-full px-3 py-1.5 " +
@@ -54,9 +55,9 @@ export default async function AdminSignaliPage({
           }
         >
           Всички
-        </a>
+        </Link>
         {Object.entries(STATUS_LABEL).map(([k, v]) => (
-          <a
+          <Link
             key={k}
             href={`/admin/signali?filter=${k}`}
             className={
@@ -65,7 +66,7 @@ export default async function AdminSignaliPage({
             }
           >
             {v}
-          </a>
+          </Link>
         ))}
       </div>
 
