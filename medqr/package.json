@@ -2,20 +2,35 @@
   "name": "medqr",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
-  "description": "MedQR - спешен клиничен профил с QR код и достъпност за хора със слухови проблеми",
+  "description": "MedQR — защитен спешен медицински профил с QR код и достъпност за хора със слухови проблеми",
+  "author": "CarbonStealth VCC (https://carbonstealth.eu)",
+  "homepage": "https://medqr.carbonstealth.eu",
+  "keywords": [
+    "emergency",
+    "medical-id",
+    "qr-code",
+    "healthcare",
+    "accessibility",
+    "gdpr",
+    "webauthn"
+  ],
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node test/smoke.test.js",
-    "test:webauthn": "node test/webauthn.e2e.mjs"
+    "test:webauthn": "node test/webauthn.e2e.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,mjs,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,json,css,md}\""
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
-    "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.1",
     "argon2": "^0.41.1",
     "bcryptjs": "^2.4.3",
@@ -28,5 +43,12 @@
     "nodemailer": "^9.0.0",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@simplewebauthn/browser": "^13.3.0",
+    "eslint": "^9.39.4",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.4"
   }
 }

@@ -5,7 +5,6 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
-import db from '../db.js';
 import { requireAuth, createSession } from '../auth.js';
 import { audit } from '../audit.js';
 import {

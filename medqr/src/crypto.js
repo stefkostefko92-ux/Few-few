@@ -17,9 +17,7 @@ function loadKey() {
     throw new Error('ENCRYPTION_KEY е задължителен в продукция.');
   }
   // Само за разработка/тест: детерминиран ключ, за да тръгне приложението.
-  console.warn(
-    '[ВНИМАНИЕ] ENCRYPTION_KEY не е зададен — ползва се ДЕВ ключ. НЕ за продукция!'
-  );
+  console.warn('[ВНИМАНИЕ] ENCRYPTION_KEY не е зададен — ползва се ДЕВ ключ. НЕ за продукция!');
   return crypto.createHash('sha256').update('medqr-dev-key-do-not-use-in-prod').digest();
 }
 

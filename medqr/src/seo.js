@@ -67,8 +67,10 @@ export function sitemapXml(base, lastmod = new Date().toISOString().slice(0, 10)
       `  <url>\n    <loc>${base}${p.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n` +
       `    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
   ).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n` +
-    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+  return (
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+  );
 }
 
 // llms.txt — конвенция (llmstxt.org) за насочване на LLM/answer engines
@@ -97,7 +99,17 @@ export function llmsTxt(base) {
 `;
 }
 
-export function webManifest(base) {
+// security.txt (RFC 9116) — насочва изследователите към канал за докладване.
+export function securityTxt(base) {
+  const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  return `Contact: mailto:security@carbonstealth.eu
+Expires: ${expires}
+Preferred-Languages: bg, en
+Canonical: ${base}/.well-known/security.txt
+`;
+}
+
+export function webManifest() {
   return {
     name: 'MedQR — спешен медицински профил',
     short_name: 'MedQR',
@@ -108,8 +120,6 @@ export function webManifest(base) {
     background_color: '#f5f7fa',
     theme_color: '#0b6e8c',
     lang: 'bg',
-    icons: [
-      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-    ],
+    icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
   };
 }

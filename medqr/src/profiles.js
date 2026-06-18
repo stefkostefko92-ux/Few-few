@@ -31,21 +31,19 @@ function decryptRow(row) {
 }
 
 export function createForUser(userId, fullName) {
-  db.prepare(
-    'INSERT INTO profiles (user_id, emergency_token, full_name) VALUES (?, ?, ?)'
-  ).run(userId, randomToken(24), encrypt(fullName));
+  db.prepare('INSERT INTO profiles (user_id, emergency_token, full_name) VALUES (?, ?, ?)').run(
+    userId,
+    randomToken(24),
+    encrypt(fullName)
+  );
 }
 
 export function getByUserId(userId) {
-  return decryptRow(
-    db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(userId)
-  );
+  return decryptRow(db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(userId));
 }
 
 export function getByToken(token) {
-  return decryptRow(
-    db.prepare('SELECT * FROM profiles WHERE emergency_token = ?').get(token)
-  );
+  return decryptRow(db.prepare('SELECT * FROM profiles WHERE emergency_token = ?').get(token));
 }
 
 export function updateFields(profileId, data) {
@@ -53,9 +51,10 @@ export function updateFields(profileId, data) {
   if (cols.length === 0) return;
   const setClause = cols.map((f) => `${f} = ?`).join(', ');
   const values = cols.map((f) => encrypt(String(data[f] ?? '').trim()));
-  db.prepare(
-    `UPDATE profiles SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
-  ).run(...values, profileId);
+  db.prepare(`UPDATE profiles SET ${setClause}, updated_at = datetime('now') WHERE id = ?`).run(
+    ...values,
+    profileId
+  );
 }
 
 export function rotateToken(profileId) {

@@ -21,12 +21,17 @@ const BASE = `http://localhost:${port}`;
 const EMAIL = 'wa@test.bg';
 const PASS = 'silnaParola2026';
 let passed = 0;
-const ok = (m) => { console.log(`  ✓ ${m}`); passed++; };
+const ok = (m) => {
+  console.log(`  ✓ ${m}`);
+  passed++;
+};
 
 const browser = await chromium.launch();
 const context = await browser.newContext({ baseURL: BASE });
 const page = await context.newPage();
-page.on('console', (m) => { if (m.type() === 'error') console.log('  [console.error]', m.text()); });
+page.on('console', (m) => {
+  if (m.type() === 'error') console.log('  [console.error]', m.text());
+});
 page.on('pageerror', (e) => console.log('  [pageerror]', e.message));
 
 // Виртуален authenticator (internal, с resident key и user verification).

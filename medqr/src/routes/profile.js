@@ -3,12 +3,7 @@ import QRCode from 'qrcode';
 import { authenticator } from 'otplib';
 import db from '../db.js';
 import { encrypt, decrypt } from '../crypto.js';
-import {
-  getByUserId,
-  updateFields,
-  rotateToken,
-  EDITABLE_FIELDS,
-} from '../profiles.js';
+import { getByUserId, updateFields, rotateToken, EDITABLE_FIELDS } from '../profiles.js';
 import {
   requireAuth,
   hashPassword,
@@ -81,11 +76,15 @@ router.post('/profile/pin', requireAuth, async (req, res) => {
   const profile = getByUserId(req.user.id);
   const pin = String(req.body.pin || '').trim();
   if (pin === '') {
-    db.prepare('UPDATE profiles SET pin_hash = NULL, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?').run(profile.id);
+    db.prepare(
+      'UPDATE profiles SET pin_hash = NULL, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?'
+    ).run(profile.id);
     audit(req, 'pin_removed');
   } else if (/^\d{4,8}$/.test(pin)) {
     const pinHash = await hashPassword(pin);
-    db.prepare('UPDATE profiles SET pin_hash = ?, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?').run(pinHash, profile.id);
+    db.prepare(
+      'UPDATE profiles SET pin_hash = ?, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?'
+    ).run(pinHash, profile.id);
     audit(req, 'pin_set');
   }
   res.redirect('/dashboard?saved=1');

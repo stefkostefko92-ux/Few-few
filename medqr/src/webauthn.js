@@ -32,7 +32,9 @@ export function takeChallenge(id) {
 // ---- Удостоверения (credentials) ----
 export function listCredentials(userId) {
   return db
-    .prepare('SELECT id, credential_id, label, transports, created_at FROM webauthn_credentials WHERE user_id = ? ORDER BY id')
+    .prepare(
+      'SELECT id, credential_id, label, transports, created_at FROM webauthn_credentials WHERE user_id = ? ORDER BY id'
+    )
     .all(userId);
 }
 

@@ -2,8 +2,8 @@
 
 Когато използвате Hetzner като хостинг за лични (и още повече — здравни) данни,
 по GDPR (чл. 28) сте длъжни да сключите **Договор за обработка на данни** с тях
-(на немски: *Auftragsverarbeitungsvertrag, AVV*; на английски: *Data Processing
-Agreement, DPA*).
+(на немски: _Auftragsverarbeitungsvertrag, AVV_; на английски: _Data Processing
+Agreement, DPA_).
 
 > Бележка: Hetzner обикновено предоставя DPA-то и за **електронно сключване**
 > директно през акаунта ви (Hetzner Cloud Console / Robot → раздел за защита на
@@ -40,6 +40,7 @@ Could you please:
    legal basis (e.g. Standard Contractual Clauses).
 
 Company / controller details for the agreement:
+
 - Controller: CarbonStealth VCC
 - Website: https://carbonstealth.eu
 - Contact e-mail: <your contact e-mail>
@@ -73,6 +74,7 @@ organisatorischen Maßnahmen (TOM) nach Art. 32 DSGVO und etwaiger Zertifizierun
 (z. B. ISO/IEC 27001).
 
 Daten des Verantwortlichen für den Vertrag:
+
 - Verantwortlicher: CarbonStealth VCC
 - Website: https://carbonstealth.eu
 - E-Mail: <Ihre E-Mail>

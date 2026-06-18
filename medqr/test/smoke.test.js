@@ -20,7 +20,10 @@ const server = app.listen(0);
 const base = `http://localhost:${server.address().port}`;
 
 let pass = 0;
-const ok = (name) => { console.log(`  ✓ ${name}`); pass++; };
+const ok = (name) => {
+  console.log(`  ✓ ${name}`);
+  pass++;
+};
 
 const jar = new Map();
 function storeCookies(res) {
@@ -29,7 +32,8 @@ function storeCookies(res) {
     const idx = pair.indexOf('=');
     const k = pair.slice(0, idx).trim();
     const v = pair.slice(idx + 1).trim();
-    if (v === '') jar.delete(k); else jar.set(k, v);
+    if (v === '') jar.delete(k);
+    else jar.set(k, v);
   }
 }
 const cookieHeader = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
@@ -97,11 +101,18 @@ try {
   assert.ok(verifyToken, 'имейл за потвърждение е изпратен');
   r = await req(`/verify-email/${verifyToken}`);
   assert.equal(r.status, 200);
-  assert.equal(db.prepare('SELECT email_verified FROM users WHERE id = ?').get(user.id).email_verified, 1);
+  assert.equal(
+    db.prepare('SELECT email_verified FROM users WHERE id = ?').get(user.id).email_verified,
+    1
+  );
   ok('имейлът се потвърждава през линка');
 
   // 6. CSRF: грешен токен -> 403
-  r = await req('/profile/edit', { method: 'POST', body: { full_name: 'Хакер' }, csrfToken: 'грешен' });
+  r = await req('/profile/edit', {
+    method: 'POST',
+    body: { full_name: 'Хакер' },
+    csrfToken: 'грешен',
+  });
   assert.equal(r.status, 403);
   ok('заявка с грешен CSRF токен се отхвърля (403)');
 
@@ -109,9 +120,14 @@ try {
   r = await req('/profile/edit', {
     method: 'POST',
     body: {
-      full_name: 'Иван Тестов', blood_type: 'A Rh+', allergies: 'пеницилин',
-      chronic_conditions: 'диабет', hearing_status: 'Глух/а', communication_pref: 'писмено',
-      emergency_contact_name: 'Мария', emergency_contact_phone: '+359888123456',
+      full_name: 'Иван Тестов',
+      blood_type: 'A Rh+',
+      allergies: 'пеницилин',
+      chronic_conditions: 'диабет',
+      hearing_status: 'Глух/а',
+      communication_pref: 'писмено',
+      emergency_contact_name: 'Мария',
+      emergency_contact_phone: '+359888123456',
     },
   });
   assert.equal(r.status, 302);
@@ -131,11 +147,15 @@ try {
 
   // 11. Спешен достъп
   const emerg = await (await req(`/e/${rawProfile.emergency_token}`)).text();
-  assert.ok(emerg.includes('пеницилин') && emerg.includes('Глух/а') && emerg.includes('+359888123456'));
+  assert.ok(
+    emerg.includes('пеницилин') && emerg.includes('Глух/а') && emerg.includes('+359888123456')
+  );
   ok('спешният изглед показва декриптираните критични данни');
 
   // 12. Журнал
-  assert.ok(db.prepare('SELECT COUNT(*) c FROM access_log WHERE profile_id = ?').get(rawProfile.id).c >= 1);
+  assert.ok(
+    db.prepare('SELECT COUNT(*) c FROM access_log WHERE profile_id = ?').get(rawProfile.id).c >= 1
+  );
   ok('достъпът се записва в журнала');
 
   // 13. Невалиден токен -> 404
@@ -157,13 +177,23 @@ try {
   ok('паролата се нулира и входът с новата парола работи');
 
   // 15. Argon2id: паролата вече е с argon2 хеш след регистрация/нулиране
-  assert.ok(db.prepare('SELECT password_hash p FROM users WHERE id = ?').get(user.id).p.startsWith('$argon2'));
+  assert.ok(
+    db
+      .prepare('SELECT password_hash p FROM users WHERE id = ?')
+      .get(user.id)
+      .p.startsWith('$argon2')
+  );
   ok('паролите се хешират с Argon2id');
 
   // 16. 2FA включване -> показва резервни кодове
   await req('/profile/2fa/init', { method: 'POST', body: {} });
-  const secret = decrypt(db.prepare('SELECT totp_secret FROM users WHERE id = ?').get(user.id).totp_secret);
-  r = await req('/profile/2fa/enable', { method: 'POST', body: { code: authenticator.generate(secret) } });
+  const secret = decrypt(
+    db.prepare('SELECT totp_secret FROM users WHERE id = ?').get(user.id).totp_secret
+  );
+  r = await req('/profile/2fa/enable', {
+    method: 'POST',
+    body: { code: authenticator.generate(secret) },
+  });
   assert.equal(r.status, 200);
   const html16 = await r.text();
   const codes = [...html16.matchAll(/<code>([0-9a-f]{5}-[0-9a-f]{5})<\/code>/g)].map((m) => m[1]);

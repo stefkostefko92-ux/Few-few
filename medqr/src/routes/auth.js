@@ -63,19 +63,19 @@ router.get('/register', (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  const email = String(req.body.email || '').trim().toLowerCase();
+  const email = String(req.body.email || '')
+    .trim()
+    .toLowerCase();
   const password = String(req.body.password || '');
   const fullName = String(req.body.full_name || '').trim();
   const consent = req.body.consent === 'on' || req.body.consent === 'true';
 
-  const fail = (msg, code = 400) =>
-    res.status(code).render('register', { error: msg, email });
+  const fail = (msg, code = 400) => res.status(code).render('register', { error: msg, email });
 
   if (!email || !password || !fullName) return fail('Имейл, парола и име са задължителни.');
   if (password.length < MIN_PASSWORD)
     return fail(`Паролата трябва да е поне ${MIN_PASSWORD} символа.`);
-  if (!consent)
-    return fail('Трябва да се съгласите с обработката на данните, за да продължите.');
+  if (!consent) return fail('Трябва да се съгласите с обработката на данните, за да продължите.');
   if (db.prepare('SELECT id FROM users WHERE email = ?').get(email))
     return fail('Вече има регистрация с този имейл.', 409);
 
@@ -140,13 +140,14 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const email = String(req.body.email || '').trim().toLowerCase();
+  const email = String(req.body.email || '')
+    .trim()
+    .toLowerCase();
   const password = String(req.body.password || '');
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 
   // Еднакво съобщение при липсващ потребител и грешна парола (без разкриване).
-  const bad = () =>
-    res.status(401).render('login', { error: 'Грешен имейл или парола.', email });
+  const bad = () => res.status(401).render('login', { error: 'Грешен имейл или парола.', email });
 
   if (!user) return bad();
   if (isLocked(user)) {
@@ -169,7 +170,9 @@ router.post('/login', async (req, res) => {
     try {
       const fresh = await hashPassword(password);
       db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(fresh, user.id);
-    } catch { /* без значение за входа */ }
+    } catch {
+      /* без значение за входа */
+    }
   }
 
   if (user.totp_enabled) {
@@ -220,7 +223,9 @@ router.get('/forgot', (req, res) => {
 });
 
 router.post('/forgot', async (req, res) => {
-  const email = String(req.body.email || '').trim().toLowerCase();
+  const email = String(req.body.email || '')
+    .trim()
+    .toLowerCase();
   const user = db.prepare('SELECT id, email FROM users WHERE email = ?').get(email);
   // Винаги едно и също съобщение — не разкриваме дали имейлът съществува.
   if (user) {

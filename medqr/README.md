@@ -100,6 +100,20 @@ npm run test:webauthn
 износ на данни, спешен достъп през токена, журнал, включване и вход с 2FA, защита
 на маршрутите.
 
+## Качество на кода
+
+Форматирането се налага от **Prettier**, а статичните правила — от **ESLint**
+(flat config). И двете се проверяват в CI заедно с тестовете и `npm audit`.
+
+```bash
+npm run lint          # ESLint
+npm run format        # Prettier (записва)
+npm run format:check  # Prettier (само проверка)
+```
+
+Виж също [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md) и
+[`CHANGELOG.md`](CHANGELOG.md).
+
 ## Структура
 
 ```

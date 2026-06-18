@@ -22,6 +22,7 @@ import {
   sitemapXml,
   llmsTxt,
   webManifest,
+  securityTxt,
 } from './seo.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -86,7 +87,8 @@ app.use((req, res, next) => {
 app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 0 }));
 
 // Чувствителните (автентикирани и спешни) страници не се кешират никъде.
-const NO_STORE = /^\/(dashboard|profile|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/;
+const NO_STORE =
+  /^\/(dashboard|profile|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/;
 app.use((req, res, next) => {
   if (NO_STORE.test(req.path)) res.setHeader('Cache-Control', 'no-store');
   next();
@@ -117,9 +119,14 @@ app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(siteB
 app.get('/sitemap.xml', (req, res) =>
   res.type('application/xml').send(sitemapXml(siteBaseUrl(req)))
 );
-app.get('/llms.txt', (req, res) => res.type('text/plain; charset=utf-8').send(llmsTxt(siteBaseUrl(req))));
+app.get('/llms.txt', (req, res) =>
+  res.type('text/plain; charset=utf-8').send(llmsTxt(siteBaseUrl(req)))
+);
+app.get('/.well-known/security.txt', (req, res) =>
+  res.type('text/plain').send(securityTxt(siteBaseUrl(req)))
+);
 app.get('/manifest.webmanifest', (req, res) =>
-  res.type('application/manifest+json').send(JSON.stringify(webManifest(siteBaseUrl(req))))
+  res.type('application/manifest+json').send(JSON.stringify(webManifest()))
 );
 
 // Лимити срещу брутфорс.
@@ -143,15 +150,24 @@ app.get('/', (req, res) => {
   res.render('home', { user: req.user });
 });
 app.get('/privacy', (req, res) => {
-  publicPage(res, 'Политика за поверителност на MedQR: какви лични и здравни данни обработваме, на какво основание (GDPR, чл. 9), как ги защитаваме и вашите права.');
+  publicPage(
+    res,
+    'Политика за поверителност на MedQR: какви лични и здравни данни обработваме, на какво основание (GDPR, чл. 9), как ги защитаваме и вашите права.'
+  );
   res.render('privacy', { user: req.user });
 });
 app.get('/cookies', (req, res) => {
-  publicPage(res, 'Политика за бисквитки на MedQR: използваме само строго необходими бисквитки за вход и сигурност. Без проследяване, реклами или трети страни.');
+  publicPage(
+    res,
+    'Политика за бисквитки на MedQR: използваме само строго необходими бисквитки за вход и сигурност. Без проследяване, реклами или трети страни.'
+  );
   res.render('cookies', { user: req.user });
 });
 app.get('/terms', (req, res) => {
-  publicPage(res, 'Общи условия за ползване на MedQR — информационна услуга за спешен медицински профил. Не е медицинско изделие.');
+  publicPage(
+    res,
+    'Общи условия за ползване на MedQR — информационна услуга за спешен медицински профил. Не е медицинско изделие.'
+  );
   res.render('terms', { user: req.user });
 });
 
@@ -161,7 +177,9 @@ app.use(webauthnRoutes);
 app.use(emergencyRoutes);
 
 app.use((req, res) =>
-  res.status(404).render('emergency-error', { message: 'Страницата не е намерена.', user: req.user })
+  res
+    .status(404)
+    .render('emergency-error', { message: 'Страницата не е намерена.', user: req.user })
 );
 
 // Production error handler — без следи от стек към потребителя.

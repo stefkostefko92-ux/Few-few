@@ -18,9 +18,7 @@ function logAccess(profileId, req) {
 }
 
 function pinLocked(profile) {
-  return !!(
-    profile.pin_locked_until && new Date(profile.pin_locked_until).getTime() > Date.now()
-  );
+  return !!(profile.pin_locked_until && new Date(profile.pin_locked_until).getTime() > Date.now());
 }
 
 // Публичен спешен изглед. Достъпен само със знание на дългия токен (от QR кода).

@@ -76,19 +76,17 @@ export function requireAuth(req, res, next) {
 
 // ---- Заключване след неуспешни опити (brute-force защита) ----
 export function isLocked(user) {
-  return !!(
-    user.locked_until &&
-    new Date(user.locked_until).getTime() > Date.now()
-  );
+  return !!(user.locked_until && new Date(user.locked_until).getTime() > Date.now());
 }
 
 export function registerFailedAttempt(user) {
   const attempts = (user.failed_attempts || 0) + 1;
   if (attempts >= MAX_FAILED) {
     const until = new Date(Date.now() + LOCK_MINUTES * 60000).toISOString();
-    db.prepare(
-      'UPDATE users SET failed_attempts = 0, locked_until = ? WHERE id = ?'
-    ).run(until, user.id);
+    db.prepare('UPDATE users SET failed_attempts = 0, locked_until = ? WHERE id = ?').run(
+      until,
+      user.id
+    );
     return true; // заключен
   }
   db.prepare('UPDATE users SET failed_attempts = ? WHERE id = ?').run(attempts, user.id);
@@ -96,27 +94,25 @@ export function registerFailedAttempt(user) {
 }
 
 export function resetAttempts(userId) {
-  db.prepare(
-    'UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?'
-  ).run(userId);
+  db.prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?').run(userId);
 }
 
 // ---- Временно състояние между паролата и 2FA кода ----
 export function createPendingLogin(userId) {
   const token = randomToken(24);
   const expiresAt = new Date(Date.now() + PENDING_TTL_MS).toISOString();
-  db.prepare(
-    'INSERT INTO pending_logins (token, user_id, expires_at) VALUES (?, ?, ?)'
-  ).run(token, userId, expiresAt);
+  db.prepare('INSERT INTO pending_logins (token, user_id, expires_at) VALUES (?, ?, ?)').run(
+    token,
+    userId,
+    expiresAt
+  );
   return token;
 }
 
 export function userIdFromPending(token) {
   if (!token) return null;
   const row = db
-    .prepare(
-      "SELECT user_id FROM pending_logins WHERE token = ? AND expires_at > datetime('now')"
-    )
+    .prepare("SELECT user_id FROM pending_logins WHERE token = ? AND expires_at > datetime('now')")
     .get(token);
   return row ? row.user_id : null;
 }
@@ -133,9 +129,12 @@ export function createToken(userId, type, ttlMinutes) {
   const expiresAt = new Date(Date.now() + ttlMinutes * 60000).toISOString();
   // Само един активен токен от даден тип на потребител.
   db.prepare('DELETE FROM tokens WHERE user_id = ? AND type = ?').run(userId, type);
-  db.prepare(
-    'INSERT INTO tokens (token_hash, user_id, type, expires_at) VALUES (?, ?, ?, ?)'
-  ).run(hashToken(raw), userId, type, expiresAt);
+  db.prepare('INSERT INTO tokens (token_hash, user_id, type, expires_at) VALUES (?, ?, ?, ?)').run(
+    hashToken(raw),
+    userId,
+    type,
+    expiresAt
+  );
   return raw;
 }
 
@@ -191,7 +190,9 @@ export function countRecoveryCodes(userId) {
 
 // Проверява и консумира резервен код. Връща true при успех.
 export async function consumeRecoveryCode(userId, code) {
-  const norm = String(code || '').trim().toLowerCase();
+  const norm = String(code || '')
+    .trim()
+    .toLowerCase();
   if (!norm) return false;
   const rows = db
     .prepare('SELECT id, code_hash FROM recovery_codes WHERE user_id = ? AND used_at IS NULL')

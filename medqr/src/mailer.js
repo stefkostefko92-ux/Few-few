@@ -25,9 +25,7 @@ if (process.env.SMTP_HOST) {
 export const outbox = [];
 
 export function baseUrl(req) {
-  return (
-    process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`
-  );
+  return process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
 }
 
 export async function sendMail({ to, subject, text, html }) {
