@@ -1,5 +1,9 @@
 name: MedQR CI
 
+# Статичен анализ (CodeQL): включете „Default setup" от
+# Settings → Code security → CodeQL analysis. (Не ползваме отделен workflow,
+# за да избегнем конфликт с default setup.)
+
 on:
   push:
     paths:
