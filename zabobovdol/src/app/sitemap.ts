@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/spodeleno-patuvane`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${base}/novini`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/signali`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${base}/prozrachnost`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/smetishta`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
     { url: `${base}/grada`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/istoriya`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },

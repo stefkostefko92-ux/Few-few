@@ -31,6 +31,7 @@ import {
   BookOpen,
   Camera,
   Zap,
+  Banknote,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,6 +48,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/transport": Bus,
   "/novini": Newspaper,
   "/signali": AlertTriangle,
+  "/prozrachnost": Banknote,
   "/prekysvaniya": Zap,
   "/smetishta": Trash2,
   "/grada": BookOpen,
