@@ -67,6 +67,12 @@
     <a class="btn-small btn btn-ghost" href="/profile/2fa"><%- include('partials/icon', { name: 'shield-check' }) %> Настрой 2FA</a>
   </p>
 
+  <p class="security-row">
+    <strong>Паскейове (passkeys):</strong>
+    <span class="muted small">вход без парола, устойчив на фишинг</span>
+    <a class="btn-small btn btn-ghost" href="/profile/passkeys"><%- include('partials/icon', { name: 'shield-check' }) %> Управление</a>
+  </p>
+
   <form method="post" action="/profile/rotate-token" class="inline-form"
         data-confirm="Това ще обезсили текущия QR код и всички разпечатани карти. Сигурни ли сте?">
     <%- include('partials/csrf') %>

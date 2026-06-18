@@ -1,0 +1,40 @@
+<%- include('partials/head', { title: 'Паскейове — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> Паскейове (passkeys)</h1>
+  <p>Паскейовете позволяват вход с пръстов отпечатък, лице или хардуерен ключ —
+    без парола и устойчиво на фишинг.</p>
+
+  <p class="error" role="alert" data-webauthn-error hidden></p>
+
+  <% if (credentials.length === 0) { %>
+    <p class="muted">Все още нямате регистрирани паскейове.</p>
+  <% } else { %>
+    <ul class="passkey-list">
+      <% credentials.forEach(c => { %>
+        <li>
+          <span><%= c.label || 'Паскей' %> <span class="muted small">· <%= c.created_at %></span></span>
+          <form method="post" action="/profile/passkeys/<%= c.id %>/delete" class="inline"
+                data-confirm="Да премахна ли този паскей?">
+            <%- include('partials/csrf') %>
+            <button type="submit" class="link-btn-dark">Премахни</button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form data-webauthn="register" class="stack">
+    <label>Име на устройството
+      <input type="text" name="label" placeholder="напр. Телефонът ми" maxlength="40">
+    </label>
+    <button type="submit" class="btn">Добави паскей</button>
+  </form>
+
+  <p><a href="/dashboard">Назад към профила</a></p>
+</section>
+
+<script src="/vendor/simplewebauthn-browser.umd.min.js" defer></script>
+<script src="/webauthn.js" defer></script>
+
+<%- include('partials/foot') %>

@@ -366,6 +366,17 @@ label.checkbox input { width: auto; margin-top: .25rem; }
   margin-bottom: 1rem;
 }
 .notice-icon { color: var(--ok); margin-bottom: .3rem; }
+
+/* Passkeys */
+.btn-block { width: 100%; }
+.or-sep { text-align: center; color: var(--muted); margin: 1rem 0; }
+.passkey-list { list-style: none; padding: 0; margin: 0 0 1.2rem; }
+.passkey-list li {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: .7rem 0; border-bottom: 1px solid var(--line);
+}
+.recovery-codes { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin: 1rem 0; }
+.recovery-codes code { font-size: 1.05rem; }
 .btn-lg { padding: .9rem 1.8rem; font-size: 1.15rem; }
 .section-title { text-align: center; margin: 2.5rem 0 1.2rem; }
 .steps-list { list-style: none; padding: 0; display: grid; gap: .8rem; max-width: 640px; margin: 0 auto; }

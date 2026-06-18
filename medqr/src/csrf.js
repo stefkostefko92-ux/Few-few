@@ -18,7 +18,8 @@ export function csrf(req, res, next) {
   res.locals.csrfToken = token;
 
   if (!SAFE.has(req.method)) {
-    const sent = req.body?._csrf;
+    // Токенът идва от скрито поле (форми) или от заглавие (fetch/JSON, напр. passkeys).
+    const sent = req.body?._csrf || req.get('x-csrf-token');
     if (!sent || sent !== token) {
       return res.status(403).render('emergency-error', {
         message: 'Невалидна или изтекла заявка (CSRF). Презаредете страницата и опитайте пак.',

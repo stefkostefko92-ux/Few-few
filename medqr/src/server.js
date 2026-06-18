@@ -12,6 +12,7 @@ import { csrf } from './csrf.js';
 import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
 import emergencyRoutes from './routes/emergency.js';
+import webauthnRoutes from './routes/webauthn.js';
 import {
   SITE_NAME,
   SITE_LOCALE,
@@ -70,6 +71,7 @@ if (prod) {
 }
 
 app.use(express.urlencoded({ extended: false, limit: '32kb', parameterLimit: 100 }));
+app.use(express.json({ limit: '64kb' })); // за WebAuthn JSON заявките
 app.use(cookieParser());
 
 // Permissions-Policy: изключваме сензори/устройства, които приложението не ползва.
@@ -155,6 +157,7 @@ app.get('/terms', (req, res) => {
 
 app.use(authRoutes);
 app.use(profileRoutes);
+app.use(webauthnRoutes);
 app.use(emergencyRoutes);
 
 app.use((req, res) =>

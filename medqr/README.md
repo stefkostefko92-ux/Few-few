@@ -25,7 +25,12 @@
 - **Криптиране в покой** (AES-256-GCM) на всички чувствителни медицински полета.
 - **HTTPS пренасочване, HSTS и Secure бисквитки** в продукция; строга **CSP** (helmet).
 - **CSRF защита** на всички форми (synchronizer token).
-- **Двуфакторна автентикация (TOTP)** — съвместима с Google Authenticator/Authy.
+- **Двуфакторна автентикация (TOTP)** — съвместима с Google Authenticator/Authy,
+  с еднократни **резервни кодове**.
+- **Паскейове (WebAuthn/passkeys)** — вход без парола, устойчив на фишинг (пръстов
+  отпечатък, лице, хардуерен ключ), включително discoverable вход.
+- **Argon2id** хеширане на пароли/PIN (с прозрачна миграция от стари bcrypt хешове).
+- **Активни сесии** с „изход от всички устройства" и tamper-evident одит лог.
 - **Заключване след неуспешни опити** (brute-force защита) + rate limiting.
 - Незадължителен **PIN** за спешния изглед, **обезсилване на изгубен код**.
 - **Одит** на достъпите и на действията по сигурността.
@@ -83,7 +88,14 @@ npm start            # http://localhost:3000
 npm test
 ```
 
-`test/smoke.test.js` (15 проверки) минава през целия поток end-to-end: CSRF токен,
+За паскейовете има отделен end-to-end тест с виртуален authenticator (Chromium):
+
+```bash
+npm i -D playwright && npx playwright install chromium
+npm run test:webauthn
+```
+
+`test/smoke.test.js` (20 проверки) минава през целия поток end-to-end: CSRF токен,
 регистрация със съгласие, криптиране в покой, въвеждане на данни, dashboard, QR,
 износ на данни, спешен достъп през токена, журнал, включване и вход с 2FA, защита
 на маршрутите.
@@ -94,15 +106,20 @@ npm test
 src/server.js          Express, helmet, HSTS, CSP, rate limiting, маршрути
 src/db.js              SQLite схема (users, profiles, sessions, pending_logins, access_log, audit_log)
 src/crypto.js          криптиране в покой (AES-256-GCM)
-src/auth.js            пароли (bcrypt), сесии, заключване, 2FA pending, токени
-src/csrf.js            CSRF защита (synchronizer token)
+src/hashing.js         Argon2id хеширане (+ legacy bcrypt verify)
+src/auth.js            сесии, заключване, 2FA pending, токени, резервни кодове
+src/csrf.js            CSRF защита (synchronizer token + header)
 src/mailer.js          имейл (nodemailer; SMTP в продукция, лог в dev)
+src/webauthn.js        passkeys: RP конфигурация, challenge и credential достъп
 src/profiles.js        достъп до профилите с криптиране/декриптиране
-src/audit.js           одит лог
-src/routes/            auth (вкл. 2FA), profile (вкл. износ/изтриване/2FA), emergency
-src/views/             EJS шаблони (вкл. privacy, terms, 2fa, delete-account)
+src/audit.js           tamper-evident одит лог (hash-верига)
+src/seo.js             robots.txt, sitemap.xml, llms.txt, manifest
+src/routes/            auth, profile, webauthn, emergency
+src/views/             EJS шаблони (вкл. privacy, cookies, terms, 2fa, passkeys)
 public/styles.css      стилове (висок контраст, едър шрифт, печат)
 public/app.js          CSP-съвместими помощници (без inline скриптове)
+public/webauthn.js     клиентска логика за passkeys
+deploy/                продукционни конфигурации и ръководство (DEPLOY.md)
 docs/ПРОУЧВАНЕ.md       детайлното проучване
 test/smoke.test.js     end-to-end smoke тест
 ```
