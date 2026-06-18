@@ -1,0 +1,28 @@
+# systemd услуга за уебсайта на СГБ (алтернатива на PM2)
+# 1. Копирайте: sudo cp deploy/sgb-website.service /etc/systemd/system/
+# 2. Редактирайте пътя WorkingDirectory и потребителя при нужда.
+# 3. sudo systemctl daemon-reload && sudo systemctl enable --now sgb-website
+
+[Unit]
+Description=SGB Website (Съюз на глухите в България)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/sgb-website
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+EnvironmentFile=/var/www/sgb-website/.env
+
+# Сигурност
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/www/sgb-website/data /var/www/sgb-website/public/uploads
+
+[Install]
+WantedBy=multi-user.target

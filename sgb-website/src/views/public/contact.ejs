@@ -1,0 +1,47 @@
+<%- include('../partials/breadcrumbs', { items: [
+  { name: 'Начало', url: '/' }, { name: 'Контакти', url: '/kontakti' }
+] }) %>
+
+<section class="section">
+  <div class="container contact">
+    <div class="contact__info">
+      <h1>Свържете се с нас</h1>
+      <p>Съюзът на глухите в България е на разположение за Вашите въпроси и предложения. Използвайте формата или посочените данни за контакт.</p>
+      <ul class="contact__list">
+        <% if (site.address) { %><li><strong>Адрес</strong><span><%= site.address %><% if (site.city) { %>, <%= site.city %><% } %></span></li><% } %>
+        <% if (site.phone) { %><li><strong>Телефон</strong><a href="tel:<%= site.phone.replace(/\s/g,'') %>"><%= site.phone %></a></li><% } %>
+        <% if (site.email) { %><li><strong>Имейл</strong><a href="mailto:<%= site.email %>"><%= site.email %></a></li><% } %>
+      </ul>
+    </div>
+
+    <div class="contact__form-wrap">
+      <% if (sent) { %>
+        <div class="alert alert--success">Благодарим Ви! Съобщението е изпратено успешно. Ще се свържем с Вас при необходимост.</div>
+      <% } %>
+      <% if (error) { %><div class="alert alert--error"><%= error %></div><% } %>
+      <form class="form" action="/kontakti" method="post" novalidate>
+        <div class="form__row">
+          <label for="name">Име <span aria-hidden="true">*</span></label>
+          <input type="text" id="name" name="name" required value="<%= form.name || '' %>" autocomplete="name">
+        </div>
+        <div class="form__row">
+          <label for="email">Имейл <span aria-hidden="true">*</span></label>
+          <input type="email" id="email" name="email" required value="<%= form.email || '' %>" autocomplete="email">
+        </div>
+        <div class="form__row">
+          <label for="subject">Тема</label>
+          <input type="text" id="subject" name="subject" value="<%= form.subject || '' %>">
+        </div>
+        <div class="form__row">
+          <label for="message">Съобщение <span aria-hidden="true">*</span></label>
+          <textarea id="message" name="message" rows="6" required><%= form.message || '' %></textarea>
+        </div>
+        <div class="form__hp" aria-hidden="true">
+          <label>Оставете това поле празно<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <button type="submit" class="btn btn--primary">Изпрати съобщение</button>
+        <p class="form__note">С изпращането приемате нашата <a href="/stranica/politika-za-poveritelnost">Политика за поверителност</a>.</p>
+      </form>
+    </div>
+  </div>
+</section>

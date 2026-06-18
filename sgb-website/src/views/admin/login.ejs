@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Вход — Админ панел</title>
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin admin--login">
+<div class="login-card">
+  <div class="login-card__head">
+    <img src="/img/logo.svg" width="48" height="48" alt="">
+    <h1>Администраторски панел</h1>
+    <p>Съюз на глухите в България</p>
+  </div>
+  <% if (error) { %><div class="alert alert--error"><%= error %></div><% } %>
+  <form class="form" action="/admin/login" method="post">
+    <div class="form__row">
+      <label for="username">Потребител или имейл</label>
+      <input type="text" id="username" name="username" value="<%= username %>" required autofocus autocomplete="username">
+    </div>
+    <div class="form__row">
+      <label for="password">Парола</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn btn--primary btn--block">Вход</button>
+  </form>
+  <a class="login-card__back" href="/">← Към сайта</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<%- include('../partials/breadcrumbs', { items: [
+  { name: 'Начало', url: '/' },
+  { name: 'Вестник „' + name + '“', url: '/vestnik' },
+  { name: h.truncate(issue.title, 50), url: '/vestnik/' + issue.slug }
+] }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="paper-detail">
+      <div class="paper-detail__cover">
+        <% if (issue.cover_image) { %>
+          <img src="<%= issue.cover_image %>" alt="Корица: <%= issue.title %>" width="360" height="506">
+        <% } else { %>
+          <div class="paper-card__placeholder paper-card__placeholder--lg"><em>вестник</em><strong><%= name %></strong><% if (issue.issue_number) { %><span>брой <%= issue.issue_number %></span><% } %></div>
+        <% } %>
+      </div>
+      <div class="paper-detail__body">
+        <span class="badge">Вестник „<%= name %>“</span>
+        <h1><%= issue.title %></h1>
+        <p class="paper-detail__meta">
+          <% if (issue.issue_number) { %>Брой <%= issue.issue_number %><% } %>
+          <% if (issue.year) { %><% if (issue.issue_number) { %> · <% } %><% if (issue.month) { %><%= h.monthName(issue.month) %> <% } %><%= issue.year %> г.<% } %>
+        </p>
+        <% if (issue.description) { %><p class="paper-detail__desc"><%= issue.description %></p><% } %>
+        <div class="paper-detail__actions">
+          <% if (issue.pdf_file) { %>
+            <a class="btn btn--primary" href="<%= issue.pdf_file %>" target="_blank" rel="noopener">Отвори PDF</a>
+            <a class="btn btn--ghost" href="<%= issue.pdf_file %>" download>Изтегли</a>
+          <% } else { %>
+            <p class="muted">PDF файлът за този брой все още не е качен.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <% if (issue.pdf_file) { %>
+      <div class="pdf-viewer">
+        <object data="<%= issue.pdf_file %>#view=FitH" type="application/pdf" aria-label="Преглед на броя">
+          <p>Браузърът Ви не поддържа вграден преглед на PDF. <a href="<%= issue.pdf_file %>" target="_blank" rel="noopener">Отворете файла в нов раздел</a>.</p>
+        </object>
+      </div>
+    <% } %>
+
+    <% if (others && others.length) { %>
+      <div class="section__head" style="margin-top:2.5rem"><h2 class="section__title">Други броеве</h2></div>
+      <div class="grid grid--papers">
+        <% others.forEach(function(o){ %>
+          <article class="paper-card">
+            <a class="paper-card__cover" href="/vestnik/<%= o.slug %>">
+              <% if (o.cover_image) { %><img src="<%= o.cover_image %>" alt="<%= o.title %>" loading="lazy" width="280" height="394">
+              <% } else { %><span class="paper-card__placeholder"><em>вестник</em><strong><%= name %></strong></span><% } %>
+            </a>
+            <div class="paper-card__body"><h3 class="paper-card__title"><a href="/vestnik/<%= o.slug %>"><%= o.title %></a></h3></div>
+          </article>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</section>

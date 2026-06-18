@@ -1,0 +1,55 @@
+<%- include('../partials/breadcrumbs', { items: [
+  { name: 'Начало', url: '/' },
+  ...(article.category_name ? [{ name: article.category_name, url: '/category/' + article.category_slug }] : [{ name: 'Новини', url: '/novini' }]),
+  { name: h.truncate(article.title, 60), url: '/statia/' + article.slug }
+] }) %>
+
+<article class="article">
+  <div class="container container--narrow">
+    <header class="article__head">
+      <% if (article.category_name) { %><a class="article__cat" href="/category/<%= article.category_slug %>"><%= article.category_name %></a><% } %>
+      <h1 class="article__title"><%= article.title %></h1>
+      <div class="article__meta">
+        <time datetime="<%= h.isoDate(article.published_at) %>"><%= formatDate(article.published_at) %></time>
+        <% if (article.author_name) { %><span>· <%= article.author_name %></span><% } %>
+      </div>
+    </header>
+
+    <% if (article.cover_image) { %>
+      <figure class="article__cover">
+        <img src="<%= article.cover_image %>" alt="<%= article.cover_alt || article.title %>" width="900" height="500">
+        <% if (article.cover_alt) { %><figcaption><%= article.cover_alt %></figcaption><% } %>
+      </figure>
+    <% } %>
+
+    <% if (article.video_url) { %>
+      <div class="article__video">
+        <iframe src="<%= article.video_url %>" title="Видео към статията" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    <% } %>
+
+    <div class="article__body prose">
+      <%- article.body %>
+    </div>
+
+    <div class="article__share">
+      <span>Сподели:</span>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(seo.canonical) %>" target="_blank" rel="noopener">Facebook</a>
+      <a href="https://t.me/share/url?url=<%= encodeURIComponent(seo.canonical) %>&text=<%= encodeURIComponent(article.title) %>" target="_blank" rel="noopener">Telegram</a>
+      <a href="mailto:?subject=<%= encodeURIComponent(article.title) %>&body=<%= encodeURIComponent(seo.canonical) %>">Имейл</a>
+    </div>
+  </div>
+</article>
+
+<% if (related && related.length) { %>
+<section class="section section--muted">
+  <div class="container">
+    <div class="section__head"><h2 class="section__title">Свързани публикации</h2></div>
+    <div class="grid grid--cards">
+      <% related.forEach(function(article){ %>
+        <%- include('../partials/article-card', { article: article }) %>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><%= typeof title !== 'undefined' ? title : 'Админ' %> · Админ панел — <%= site.short %></title>
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin">
+<a class="skip-link" href="#admin-main">Към съдържанието</a>
+<button class="admin-burger" id="admin-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
+
+<aside class="admin-sidebar" id="admin-sidebar">
+  <a class="admin-brand" href="/admin">
+    <img src="/img/logo.svg" width="34" height="34" alt="">
+    <span><strong><%= site.short %></strong><small>Админ панел</small></span>
+  </a>
+  <nav class="admin-nav" aria-label="Админ навигация">
+    <% function nav(href, label, badge){ const active = adminPath === href || (href !== '/' && adminPath.indexOf(href) === 0); %>
+      <a href="/admin<%= href === '/' ? '' : href %>" class="<%= active ? 'is-active' : '' %>"><%= label %><% if (badge) { %> <span class="nav-badge"><%= badge %></span><% } %></a>
+    <% } %>
+    <%- nav('/', 'Табло') %>
+    <%- nav('/articles', 'Статии') %>
+    <%- nav('/newspapers', 'Вестник „' + site.newspaperName + '“') %>
+    <%- nav('/categories', 'Категории') %>
+    <%- nav('/pages', 'Страници') %>
+    <%- nav('/messages', 'Съобщения', unreadMessages || '') %>
+    <%- nav('/settings', 'Настройки') %>
+    <%- nav('/users', 'Потребители') %>
+  </nav>
+  <div class="admin-sidebar__foot">
+    <a href="/" target="_blank" rel="noopener">↗ Виж сайта</a>
+    <form action="/admin/logout" method="post"><button type="submit">Изход</button></form>
+  </div>
+</aside>
+
+<main class="admin-content" id="admin-main">
+  <header class="admin-topbar">
+    <h1><%= typeof title !== 'undefined' ? title : '' %></h1>
+    <div class="admin-topbar__user">
+      <span><%= currentUser ? (currentUser.name || currentUser.username) : '' %></span>
+      <% if (currentUser && currentUser.role === 'admin') { %><span class="role-tag">администратор</span><% } %>
+    </div>
+  </header>
+  <div class="admin-body">
+    <%- body %>
+  </div>
+</main>
+<script src="/js/admin.js" defer></script>
+</body>
+</html>

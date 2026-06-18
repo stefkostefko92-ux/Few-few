@@ -1,0 +1,50 @@
+<% if (saved) { %><div class="alert alert--success">Промените са запазени.</div><% } %>
+<% if (error) { %><div class="alert alert--error"><%= error %></div><% } %>
+
+<div class="two-col">
+  <section class="panel">
+    <div class="panel__head"><h2>Потребители</h2></div>
+    <table class="table">
+      <thead><tr><th>Потребител</th><th>Имейл</th><th>Роля</th><th>Последен вход</th><th></th></tr></thead>
+      <tbody>
+        <% users.forEach(function(u){ %>
+          <tr>
+            <td><strong><%= u.display_name || u.username %></strong><br><span class="muted"><%= u.username %></span></td>
+            <td class="muted"><%= u.email %></td>
+            <td><span class="pill <%= u.role === 'admin' ? 'pill--accent' : '' %>"><%= u.role === 'admin' ? 'администратор' : 'редактор' %></span></td>
+            <td class="muted"><%= u.last_login_at ? formatDate(u.last_login_at) : '—' %></td>
+            <td>
+              <% if (currentUser.role === 'admin' && u.id !== currentUser.id) { %>
+                <form action="/admin/users/<%= u.id %>/delete" method="post" class="inline-form" data-confirm="Да изтрия ли този потребител?"><button class="link link--danger" type="submit">Изтрий</button></form>
+              <% } else if (u.id === currentUser.id) { %><span class="muted">— Вие —</span><% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="side-stack">
+    <% if (currentUser.role === 'admin') { %>
+    <section class="panel">
+      <div class="panel__head"><h2>Нов потребител</h2></div>
+      <form class="form" action="/admin/users/new" method="post" style="padding:1.25rem">
+        <div class="form__row"><label for="display_name">Име за показване</label><input type="text" id="display_name" name="display_name"></div>
+        <div class="form__row"><label for="nu">Потребителско име <span class="req">*</span></label><input type="text" id="nu" name="username" required autocomplete="off"></div>
+        <div class="form__row"><label for="ne">Имейл <span class="req">*</span></label><input type="email" id="ne" name="email" required autocomplete="off"></div>
+        <div class="form__row"><label for="np">Парола <span class="req">*</span></label><input type="password" id="np" name="password" required minlength="8" autocomplete="new-password"></div>
+        <div class="form__row"><label for="nr">Роля</label><select id="nr" name="role"><option value="editor">Редактор</option><option value="admin">Администратор</option></select></div>
+        <button type="submit" class="btn btn--primary">Създай потребител</button>
+      </form>
+    </section>
+    <% } %>
+
+    <section class="panel">
+      <div class="panel__head"><h2>Смяна на моята парола</h2></div>
+      <form class="form" action="/admin/users/password" method="post" style="padding:1.25rem">
+        <div class="form__row"><label for="pw">Нова парола</label><input type="password" id="pw" name="password" required minlength="8" autocomplete="new-password"></div>
+        <button type="submit" class="btn btn--secondary">Промени паролата</button>
+      </form>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+{
+  "name": "Съюз на глухите в България",
+  "short_name": "СГБ",
+  "description": "Официален уебсайт на Съюза на глухите в България — новини, вестник „Тишина“, документи и дейности.",
+  "lang": "bg",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2f3fb",
+  "theme_color": "#180fa8",
+  "icons": [
+    { "src": "/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/img/icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

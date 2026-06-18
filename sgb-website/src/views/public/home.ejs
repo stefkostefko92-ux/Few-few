@@ -1,0 +1,130 @@
+<section class="slideshow" aria-label="Из живота на Съюза на глухите в България" aria-roledescription="галерия">
+  <div class="slideshow__track" id="slideshow">
+    <% const slides = [1,2,3,4,5,6,7,8,9,10,11]; %>
+    <% slides.forEach(function(n, i){ %>
+      <figure class="slide <%= i === 0 ? 'is-active' : '' %>" data-slide="<%= i %>">
+        <img src="/img/site/banner-<%= n %>.jpg" alt="Снимка от дейността на СГБ" <%= i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' %> width="1280" height="451">
+      </figure>
+    <% }); %>
+    <div class="slideshow__overlay">
+      <span class="badge badge--violet">Съюз на глухите в България</span>
+      <p class="slideshow__caption">Заедно за правата, достъпността и общността на хората с увреден слух</p>
+    </div>
+    <button class="slideshow__nav slideshow__nav--prev" id="slide-prev" aria-label="Предишна снимка">‹</button>
+    <button class="slideshow__nav slideshow__nav--next" id="slide-next" aria-label="Следваща снимка">›</button>
+    <div class="slideshow__dots" id="slide-dots" role="tablist"></div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="container hero__grid">
+    <% if (featured) { %>
+    <article class="hero__feature">
+      <a class="hero__feature-media" href="/statia/<%= featured.slug %>">
+        <% if (featured.cover_image) { %>
+          <img src="<%= featured.cover_image %>" alt="<%= featured.cover_alt || '' %>" width="760" height="440" fetchpriority="high">
+        <% } else { %><span class="card__placeholder card__placeholder--lg"><%= site.short %></span><% } %>
+      </a>
+      <div class="hero__feature-body">
+        <span class="badge badge--accent">Акцент</span>
+        <% if (featured.category_name) { %><a class="hero__cat" href="/category/<%= featured.category_slug %>"><%= featured.category_name %></a><% } %>
+        <h1 class="hero__title"><a href="/statia/<%= featured.slug %>"><%= featured.title %></a></h1>
+        <p class="hero__excerpt"><%= h.truncate(featured.excerpt, 200) %></p>
+        <div class="hero__meta">
+          <time datetime="<%= h.isoDate(featured.published_at) %>"><%= formatDate(featured.published_at) %></time>
+          <a class="readmore" href="/statia/<%= featured.slug %>">Прочети повече →</a>
+        </div>
+      </div>
+    </article>
+    <% } else { %>
+    <div class="hero__feature hero__feature--empty">
+      <h1 class="hero__title"><%= site.name %></h1>
+      <p class="hero__excerpt"><%= site.description %></p>
+    </div>
+    <% } %>
+
+    <aside class="hero__side" aria-label="Последни новини">
+      <h2 class="hero__side-title">Последни новини</h2>
+      <ul class="hero__side-list">
+        <% latest.slice(0,5).forEach(function(a){ %>
+        <li>
+          <a href="/statia/<%= a.slug %>"><%= a.title %></a>
+          <time datetime="<%= h.isoDate(a.published_at) %>"><%= formatDate(a.published_at) %></time>
+        </li>
+        <% }); %>
+      </ul>
+      <a class="hero__side-all" href="/novini">Всички новини →</a>
+    </aside>
+  </div>
+</section>
+
+<% if (latest.length > 1) { %>
+<section class="section">
+  <div class="container">
+    <div class="section__head">
+      <h2 class="section__title">Актуално</h2>
+      <a class="section__more" href="/novini">Виж всички</a>
+    </div>
+    <div class="grid grid--cards">
+      <% latest.slice(0,6).forEach(function(article){ %>
+        <%- include('../partials/article-card', { article: article }) %>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section section--paper">
+  <div class="container paper-promo">
+    <div class="paper-promo__cover">
+      <% if (newspaper && newspaper.cover_image) { %>
+        <img src="<%= newspaper.cover_image %>" alt="Корица на вестник „<%= site.newspaperName %>“" width="300" height="420">
+      <% } else { %>
+        <div class="paper-promo__placeholder">
+          <span>вестник</span><strong><%= site.newspaperName %></strong>
+        </div>
+      <% } %>
+    </div>
+    <div class="paper-promo__body">
+      <span class="badge">Печатно издание</span>
+      <h2>Вестник „<%= site.newspaperName %>“</h2>
+      <p>Официалното издание на Съюза на глухите в България. Четете последния брой и разгледайте електронния архив с всички издания в PDF формат.</p>
+      <% if (newspaper) { %>
+        <p class="paper-promo__latest">Последен брой: <strong><%= newspaper.title %></strong></p>
+        <div class="paper-promo__actions">
+          <a class="btn btn--primary" href="/vestnik/<%= newspaper.slug %>">Към броя</a>
+          <a class="btn btn--ghost" href="/vestnik">Целият архив</a>
+        </div>
+      <% } else { %>
+        <a class="btn btn--primary" href="/vestnik">Към архива</a>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section__head"><h2 class="section__title">Раздели</h2></div>
+    <div class="topics">
+      <% menuTree.forEach(function(cat){ %>
+        <a class="topic" href="/category/<%= cat.slug %>">
+          <span class="topic__name"><%= cat.name %></span>
+          <% if (cat.children && cat.children.length) { %><span class="topic__count"><%= cat.children.length %> подраздела</span><% } %>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted">
+  <div class="container">
+    <div class="section__head"><h2 class="section__title">Из живота на СГБ</h2></div>
+    <div class="gallery">
+      <% [1,2,3,4,5,6,7,8,9,10,11].forEach(function(n){ %>
+        <a class="gallery__item" href="/img/site/banner-<%= n %>.jpg" target="_blank" rel="noopener" aria-label="Снимка <%= n %> от дейността на СГБ">
+          <img src="/img/site/photo-<%= n %>.jpg" alt="Снимка от дейността на Съюза на глухите в България" loading="lazy" width="200" height="140">
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>

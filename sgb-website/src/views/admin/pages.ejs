@@ -1,0 +1,24 @@
+<div class="admin-actions"><a class="btn btn--primary" href="/admin/pages/new">+ Нова страница</a></div>
+<section class="panel">
+  <table class="table">
+    <thead><tr><th>Заглавие</th><th>URL</th><th>Тип</th><th>Действия</th></tr></thead>
+    <tbody>
+      <% pages.forEach(function(p){ %>
+        <tr>
+          <td><a class="cell-title" href="/admin/pages/<%= p.id %>/edit"><%= p.title %></a></td>
+          <td class="muted">/stranica/<%= p.slug %></td>
+          <td><% if (p.is_system) { %><span class="pill">системна</span><% } else { %><span class="pill pill--draft">персонална</span><% } %></td>
+          <td class="cell-actions">
+            <a class="link" href="/stranica/<%= p.slug %>" target="_blank" rel="noopener">Виж</a>
+            <a class="link" href="/admin/pages/<%= p.id %>/edit">Редакция</a>
+            <% if (!p.is_system) { %>
+              <form action="/admin/pages/<%= p.id %>/delete" method="post" class="inline-form" data-confirm="Да изтрия ли страницата?">
+                <button type="submit" class="link link--danger">Изтрий</button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</section>

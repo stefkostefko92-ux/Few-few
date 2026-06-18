@@ -1,0 +1,46 @@
+<%- include('../partials/breadcrumbs', { items: [
+  { name: 'Начало', url: '/' }, { name: 'Вестник „' + name + '“', url: '/vestnik' }
+] }) %>
+
+<section class="section">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="page-head__title">Вестник „<%= name %>“</h1>
+      <p class="page-head__intro">Електронен архив на изданието на Съюза на глухите в България. Разгледайте и изтеглете броевете в PDF формат.</p>
+    </header>
+
+    <% if (issues.length === 0) { %>
+      <div class="empty-state"><p>Все още няма публикувани броеве.</p></div>
+    <% } else { %>
+      <div class="grid grid--papers">
+        <% issues.forEach(function(issue){ %>
+          <article class="paper-card">
+            <a class="paper-card__cover" href="/vestnik/<%= issue.slug %>">
+              <% if (issue.cover_image) { %>
+                <img src="<%= issue.cover_image %>" alt="Корица: <%= issue.title %>" loading="lazy" width="280" height="394">
+              <% } else { %>
+                <span class="paper-card__placeholder"><em>вестник</em><strong><%= name %></strong><% if (issue.issue_number) { %><span>брой <%= issue.issue_number %></span><% } %></span>
+              <% } %>
+            </a>
+            <div class="paper-card__body">
+              <h2 class="paper-card__title"><a href="/vestnik/<%= issue.slug %>"><%= issue.title %></a></h2>
+              <p class="paper-card__meta">
+                <% if (issue.issue_number) { %>Брой <%= issue.issue_number %><% } %>
+                <% if (issue.year) { %><% if (issue.issue_number) { %> · <% } %><% if (issue.month) { %><%= h.monthName(issue.month) %> <% } %><%= issue.year %><% } %>
+              </p>
+              <% if (issue.pdf_file) { %><a class="paper-card__pdf" href="<%= issue.pdf_file %>" target="_blank" rel="noopener">PDF ↓</a><% } %>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+
+      <% if (pagination.pages > 1) { %>
+        <nav class="pagination" aria-label="Страници">
+          <% if (pagination.hasPrev) { %><a class="pagination__btn" href="/vestnik?page=<%= pagination.prev %>" rel="prev">← Назад</a><% } %>
+          <span class="pagination__info">Страница <%= pagination.page %> от <%= pagination.pages %></span>
+          <% if (pagination.hasNext) { %><a class="pagination__btn" href="/vestnik?page=<%= pagination.next %>" rel="next">Напред →</a><% } %>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+</section>
