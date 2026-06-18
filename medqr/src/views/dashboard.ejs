@@ -60,6 +60,7 @@
     <strong>Двуфакторна автентикация (2FA):</strong>
     <% if (account.totp_enabled) { %>
       <span class="badge badge-ok">включена</span>
+      <span class="muted small">· резервни кодове: <%= recoveryCount %></span>
     <% } else { %>
       <span class="badge">изключена</span>
     <% } %>
@@ -80,6 +81,34 @@
     <a class="btn btn-small btn-ghost" href="/profile/export.json"><%- include('partials/icon', { name: 'download' }) %> Изтегли данните ми (JSON)</a>
     <a class="btn btn-small btn-danger" href="/profile/delete"><%- include('partials/icon', { name: 'trash' }) %> Изтрий профила ми</a>
   </div>
+</section>
+
+<section class="card">
+  <h2>Активни устройства</h2>
+  <div class="table-wrap">
+    <table class="log">
+      <thead><tr><th>Устройство</th><th>IP</th><th>Последна активност</th></tr></thead>
+      <tbody>
+        <% sessions.forEach(s => { %>
+          <tr>
+            <td class="small">
+              <%= s.user_agent || '—' %>
+              <% if (s.current) { %><span class="badge badge-ok">текущо</span><% } %>
+            </td>
+            <td><%= s.ip || '—' %></td>
+            <td><%= s.last_seen %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (sessions.length > 1) { %>
+    <form method="post" action="/profile/sessions/revoke-others" class="inline-form"
+          data-confirm="Това ще прекрати всички сесии освен текущата. Продължавате ли?">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn-small btn-danger">Изход от всички други устройства</button>
+    </form>
+  <% } %>
 </section>
 
 <section class="card">

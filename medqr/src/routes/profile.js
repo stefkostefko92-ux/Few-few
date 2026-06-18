@@ -9,7 +9,16 @@ import {
   rotateToken,
   EDITABLE_FIELDS,
 } from '../profiles.js';
-import { requireAuth, hashPassword, verifyPassword, destroySession } from '../auth.js';
+import {
+  requireAuth,
+  hashPassword,
+  verifyPassword,
+  destroySession,
+  listSessions,
+  destroyOtherSessions,
+  countRecoveryCodes,
+  generateRecoveryCodes,
+} from '../auth.js';
 import { audit } from '../audit.js';
 
 const router = Router();
@@ -30,12 +39,18 @@ router.get('/dashboard', requireAuth, (req, res) => {
       'SELECT accessed_at, ip, user_agent FROM access_log WHERE profile_id = ? ORDER BY id DESC LIMIT 10'
     )
     .all(profile.id);
+  const sessions = listSessions(req.user.id).map((s) => ({
+    ...s,
+    current: s.token === req.cookies?.sid,
+  }));
   res.render('dashboard', {
     user: req.user,
     account,
     profile,
     emergencyUrl: emergencyUrl(req, profile.emergency_token),
     recentAccess,
+    sessions,
+    recoveryCount: account.totp_enabled ? countRecoveryCodes(req.user.id) : 0,
     saved: req.query.saved === '1',
   });
 });
@@ -62,14 +77,15 @@ router.post('/profile/edit', requireAuth, (req, res) => {
 });
 
 // ---------- PIN ----------
-router.post('/profile/pin', requireAuth, (req, res) => {
+router.post('/profile/pin', requireAuth, async (req, res) => {
   const profile = getByUserId(req.user.id);
   const pin = String(req.body.pin || '').trim();
   if (pin === '') {
-    db.prepare('UPDATE profiles SET pin_hash = NULL WHERE id = ?').run(profile.id);
+    db.prepare('UPDATE profiles SET pin_hash = NULL, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?').run(profile.id);
     audit(req, 'pin_removed');
   } else if (/^\d{4,8}$/.test(pin)) {
-    db.prepare('UPDATE profiles SET pin_hash = ? WHERE id = ?').run(hashPassword(pin), profile.id);
+    const pinHash = await hashPassword(pin);
+    db.prepare('UPDATE profiles SET pin_hash = ?, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?').run(pinHash, profile.id);
     audit(req, 'pin_set');
   }
   res.redirect('/dashboard?saved=1');
@@ -138,9 +154,9 @@ router.get('/profile/delete', requireAuth, (req, res) => {
   res.render('delete-account', { user: req.user, error: null });
 });
 
-router.post('/profile/delete', requireAuth, (req, res) => {
+router.post('/profile/delete', requireAuth, async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-  if (!verifyPassword(String(req.body.password || ''), user.password_hash)) {
+  if (!(await verifyPassword(String(req.body.password || ''), user.password_hash))) {
     return res.status(401).render('delete-account', {
       user: req.user,
       error: 'Грешна парола.',
@@ -160,7 +176,13 @@ router.post('/profile/delete', requireAuth, (req, res) => {
 router.get('/profile/2fa', requireAuth, async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
   if (user.totp_enabled) {
-    return res.render('2fa-setup', { user: req.user, state: 'enabled', qr: null, error: null });
+    return res.render('2fa-setup', {
+      user: req.user,
+      state: 'enabled',
+      qr: null,
+      error: null,
+      recoveryCount: countRecoveryCodes(req.user.id),
+    });
   }
   if (user.totp_secret) {
     const secret = decrypt(user.totp_secret);
@@ -196,21 +218,41 @@ router.post('/profile/2fa/enable', requireAuth, async (req, res) => {
   }
   db.prepare('UPDATE users SET totp_enabled = 1 WHERE id = ?').run(req.user.id);
   audit(req, 'twofactor_enabled');
-  res.redirect('/dashboard?saved=1');
+  // Генерираме резервни кодове и ги показваме веднъж.
+  const codes = await generateRecoveryCodes(req.user.id);
+  res.render('recovery-codes', { user: req.user, codes, regenerated: false });
 });
 
-router.post('/profile/2fa/disable', requireAuth, (req, res) => {
+router.post('/profile/2fa/disable', requireAuth, async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-  if (!verifyPassword(String(req.body.password || ''), user.password_hash)) {
+  if (!(await verifyPassword(String(req.body.password || ''), user.password_hash))) {
     return res.status(401).render('2fa-setup', {
       user: req.user,
       state: 'enabled',
       qr: null,
       error: 'Грешна парола.',
+      recoveryCount: countRecoveryCodes(req.user.id),
     });
   }
   db.prepare('UPDATE users SET totp_secret = NULL, totp_enabled = 0 WHERE id = ?').run(req.user.id);
+  db.prepare('DELETE FROM recovery_codes WHERE user_id = ?').run(req.user.id);
   audit(req, 'twofactor_disabled');
+  res.redirect('/dashboard?saved=1');
+});
+
+// Прегенериране на резервни кодове (изисква включена 2FA).
+router.post('/profile/2fa/recovery', requireAuth, async (req, res) => {
+  const user = db.prepare('SELECT totp_enabled FROM users WHERE id = ?').get(req.user.id);
+  if (!user.totp_enabled) return res.redirect('/profile/2fa');
+  const codes = await generateRecoveryCodes(req.user.id);
+  audit(req, 'recovery_codes_regenerated');
+  res.render('recovery-codes', { user: req.user, codes, regenerated: true });
+});
+
+// ---------- Активни сесии: изход от всички други устройства ----------
+router.post('/profile/sessions/revoke-others', requireAuth, (req, res) => {
+  destroyOtherSessions(req.user.id, req.cookies?.sid);
+  audit(req, 'sessions_revoked_others');
   res.redirect('/dashboard?saved=1');
 });
 

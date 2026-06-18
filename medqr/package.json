@@ -14,6 +14,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "argon2": "^0.41.1",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.8.1",
     "cookie-parser": "^1.4.7",

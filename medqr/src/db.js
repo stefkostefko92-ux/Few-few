@@ -59,6 +59,8 @@ db.exec(`
     emergency_contact_relation TEXT,
     additional_notes         TEXT,
     pin_hash                 TEXT,
+    pin_attempts             INTEGER NOT NULL DEFAULT 0,
+    pin_locked_until         TEXT,
     updated_at               TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -66,7 +68,18 @@ db.exec(`
     token      TEXT PRIMARY KEY,
     user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_seen  TEXT NOT NULL DEFAULT (datetime('now')),
+    ip         TEXT,
+    user_agent TEXT,
     expires_at TEXT NOT NULL
+  );
+
+  -- Еднократни резервни кодове за 2FA (пазят се само като хеш).
+  CREATE TABLE IF NOT EXISTS recovery_codes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash  TEXT NOT NULL,
+    used_at    TEXT
   );
 
   -- Временно състояние между паролата и 2FA кода при вход.
@@ -85,13 +98,36 @@ db.exec(`
   );
 
   -- Одит на действия по сигурността (вход, изход, промени, изтриване и т.н.).
+  -- Tamper-evident: всеки запис носи hash на (предишен hash + съдържание).
   CREATE TABLE IF NOT EXISTS audit_log (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER,
     event      TEXT NOT NULL,
     detail     TEXT,
     ip         TEXT,
-    at         TEXT NOT NULL DEFAULT (datetime('now'))
+    at         TEXT NOT NULL DEFAULT (datetime('now')),
+    prev_hash  TEXT,
+    hash       TEXT
+  );
+
+  -- WebAuthn / passkeys удостоверения.
+  CREATE TABLE IF NOT EXISTS webauthn_credentials (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    credential_id TEXT UNIQUE NOT NULL,
+    public_key    TEXT NOT NULL,
+    counter       INTEGER NOT NULL DEFAULT 0,
+    transports    TEXT,
+    label         TEXT,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- Временни WebAuthn предизвикателства (challenge) по време на ceremony.
+  CREATE TABLE IF NOT EXISTS webauthn_challenges (
+    id         TEXT PRIMARY KEY,
+    user_id    INTEGER,
+    challenge  TEXT NOT NULL,
+    expires_at TEXT NOT NULL
   );
 `);
 
@@ -103,5 +139,12 @@ function ensureColumn(table, col, def) {
   }
 }
 ensureColumn('users', 'email_verified', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('profiles', 'pin_attempts', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('profiles', 'pin_locked_until', 'TEXT');
+ensureColumn('sessions', 'last_seen', 'TEXT');
+ensureColumn('sessions', 'ip', 'TEXT');
+ensureColumn('sessions', 'user_agent', 'TEXT');
+ensureColumn('audit_log', 'prev_hash', 'TEXT');
+ensureColumn('audit_log', 'hash', 'TEXT');
 
 export default db;

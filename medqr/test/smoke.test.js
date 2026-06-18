@@ -14,6 +14,7 @@ const { db } = await import('../src/db.js');
 const { decrypt } = await import('../src/crypto.js');
 const { getByUserId } = await import('../src/profiles.js');
 const { outbox } = await import('../src/mailer.js');
+const { verifyAuditChain } = await import('../src/audit.js');
 
 const server = app.listen(0);
 const base = `http://localhost:${server.address().port}`;
@@ -155,22 +156,45 @@ try {
   assert.equal(r.headers.get('location'), '/dashboard');
   ok('паролата се нулира и входът с новата парола работи');
 
-  // 15. 2FA включване
+  // 15. Argon2id: паролата вече е с argon2 хеш след регистрация/нулиране
+  assert.ok(db.prepare('SELECT password_hash p FROM users WHERE id = ?').get(user.id).p.startsWith('$argon2'));
+  ok('паролите се хешират с Argon2id');
+
+  // 16. 2FA включване -> показва резервни кодове
   await req('/profile/2fa/init', { method: 'POST', body: {} });
   const secret = decrypt(db.prepare('SELECT totp_secret FROM users WHERE id = ?').get(user.id).totp_secret);
   r = await req('/profile/2fa/enable', { method: 'POST', body: { code: authenticator.generate(secret) } });
-  assert.equal(r.status, 302);
-  ok('2FA се включва с валиден код');
+  assert.equal(r.status, 200);
+  const html16 = await r.text();
+  const codes = [...html16.matchAll(/<code>([0-9a-f]{5}-[0-9a-f]{5})<\/code>/g)].map((m) => m[1]);
+  assert.ok(codes.length === 10, 'показани са 10 резервни кода');
+  ok('2FA се включва и генерира резервни кодове');
 
-  // 16. Вход с 2FA
+  // 17. Вход с 2FA (TOTP)
   await req('/logout', { method: 'POST', body: {} });
   r = await req('/login', { method: 'POST', body: { email: 'ivan@test.bg', password } });
   assert.equal(r.headers.get('location'), '/2fa');
   r = await req('/2fa', { method: 'POST', body: { code: authenticator.generate(secret) } });
   assert.equal(r.headers.get('location'), '/dashboard');
-  ok('входът изисква и приема 2FA код');
+  ok('входът изисква и приема TOTP код');
 
-  // 17. Защитен маршрут изисква вход
+  // 18. Вход с резервен код (еднократен)
+  await req('/logout', { method: 'POST', body: {} });
+  await req('/login', { method: 'POST', body: { email: 'ivan@test.bg', password } });
+  r = await req('/2fa', { method: 'POST', body: { code: codes[0] } });
+  assert.equal(r.headers.get('location'), '/dashboard');
+  // същият код втори път не работи
+  await req('/logout', { method: 'POST', body: {} });
+  await req('/login', { method: 'POST', body: { email: 'ivan@test.bg', password } });
+  r = await req('/2fa', { method: 'POST', body: { code: codes[0] } });
+  assert.equal(r.status, 401);
+  ok('резервен код работи еднократно');
+
+  // 19. Целостта на одит веригата
+  assert.equal(verifyAuditChain().ok, true);
+  ok('одит веригата е с ненарушена цялост');
+
+  // 20. Защитен маршрут изисква вход
   jar.clear();
   await req('/');
   assert.equal((await req('/dashboard')).status, 302);

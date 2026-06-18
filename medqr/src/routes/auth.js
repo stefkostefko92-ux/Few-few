@@ -8,6 +8,7 @@ import { sendMail, baseUrl } from '../mailer.js';
 import {
   hashPassword,
   verifyPassword,
+  needsRehash,
   createSession,
   destroySession,
   isLocked,
@@ -21,6 +22,7 @@ import {
   peekToken,
   destroyUserSessions,
   requireAuth,
+  consumeRecoveryCode,
 } from '../auth.js';
 
 const router = Router();
@@ -50,8 +52,8 @@ const sessionCookie = {
 };
 const pendingCookie = { httpOnly: true, sameSite: 'lax', secure: prod, maxAge: 1000 * 60 * 5 };
 
-function startSession(res, userId) {
-  res.cookie('sid', createSession(userId), sessionCookie);
+function startSession(req, res, userId) {
+  res.cookie('sid', createSession(userId, req), sessionCookie);
 }
 
 // ---------- Регистрация ----------
@@ -77,12 +79,13 @@ router.post('/register', async (req, res) => {
   if (db.prepare('SELECT id FROM users WHERE email = ?').get(email))
     return fail('Вече има регистрация с този имейл.', 409);
 
+  const pwHash = await hashPassword(password);
   const info = db
     .prepare(
       `INSERT INTO users (email, password_hash, consent_at, consent_version)
        VALUES (?, ?, datetime('now'), ?)`
     )
-    .run(email, hashPassword(password), CONSENT_VERSION);
+    .run(email, pwHash, CONSENT_VERSION);
 
   createForUser(info.lastInsertRowid, fullName);
   audit(req, 'register', { userId: info.lastInsertRowid });
@@ -92,7 +95,7 @@ router.post('/register', async (req, res) => {
   });
   await sendVerification(req, info.lastInsertRowid, email);
 
-  startSession(res, info.lastInsertRowid);
+  startSession(req, res, info.lastInsertRowid);
   res.redirect('/dashboard');
 });
 
@@ -136,7 +139,7 @@ router.get('/login', (req, res) => {
   res.render('login', { error: null, email: '' });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
@@ -153,7 +156,7 @@ router.post('/login', (req, res) => {
       email,
     });
   }
-  if (!verifyPassword(password, user.password_hash)) {
+  if (!(await verifyPassword(password, user.password_hash))) {
     const locked = registerFailedAttempt(user);
     audit(req, locked ? 'login_lockout' : 'login_fail', { userId: user.id });
     return bad();
@@ -161,13 +164,21 @@ router.post('/login', (req, res) => {
 
   resetAttempts(user.id);
 
+  // Прозрачна миграция на стари (bcrypt) хешове към Argon2id.
+  if (needsRehash(user.password_hash)) {
+    try {
+      const fresh = await hashPassword(password);
+      db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(fresh, user.id);
+    } catch { /* без значение за входа */ }
+  }
+
   if (user.totp_enabled) {
     const pending = createPendingLogin(user.id);
     res.cookie('p2fa', pending, pendingCookie);
     return res.redirect('/2fa');
   }
 
-  startSession(res, user.id);
+  startSession(req, res, user.id);
   audit(req, 'login_success', { userId: user.id });
   res.redirect('/dashboard');
 });
@@ -178,7 +189,7 @@ router.get('/2fa', (req, res) => {
   res.render('2fa-verify', { error: null });
 });
 
-router.post('/2fa', (req, res) => {
+router.post('/2fa', async (req, res) => {
   const userId = userIdFromPending(req.cookies?.p2fa);
   if (!userId) return res.redirect('/login');
 
@@ -186,15 +197,19 @@ router.post('/2fa', (req, res) => {
   const code = String(req.body.code || '').replace(/\s+/g, '');
   const secret = decrypt(user.totp_secret);
 
-  if (!secret || !authenticator.check(code, secret)) {
+  // Приема валиден TOTP код ИЛИ еднократен резервен код.
+  const totpOk = secret && authenticator.check(code, secret);
+  const recoveryOk = !totpOk && (await consumeRecoveryCode(userId, code));
+
+  if (!totpOk && !recoveryOk) {
     audit(req, 'twofactor_fail', { userId });
     return res.status(401).render('2fa-verify', { error: 'Грешен код.' });
   }
 
   destroyPending(req.cookies.p2fa);
   res.clearCookie('p2fa');
-  startSession(res, userId);
-  audit(req, 'login_success', { userId, detail: '2fa' });
+  startSession(req, res, userId);
+  audit(req, 'login_success', { userId, detail: recoveryOk ? '2fa-recovery' : '2fa' });
   res.redirect('/dashboard');
 });
 
@@ -237,7 +252,7 @@ router.get('/reset/:token', (req, res) => {
   res.render('reset', { token: req.params.token, error: null });
 });
 
-router.post('/reset/:token', (req, res) => {
+router.post('/reset/:token', async (req, res) => {
   const password = String(req.body.password || '');
   const confirm = String(req.body.confirm || '');
   const reRender = (msg) =>
@@ -256,10 +271,8 @@ router.post('/reset/:token', (req, res) => {
   if (password !== confirm) return reRender('Паролите не съвпадат.');
 
   const userId = consumeToken(req.params.token, 'reset');
-  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
-    hashPassword(password),
-    userId
-  );
+  const newHash = await hashPassword(password);
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(newHash, userId);
   destroyUserSessions(userId); // обезсилва всички стари сесии
   audit(req, 'password_reset', { userId });
   res.render('notice', {

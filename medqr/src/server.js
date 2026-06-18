@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
+import db from './db.js';
 import { attachUser } from './auth.js';
 import { csrf } from './csrf.js';
 import authRoutes from './routes/auth.js';
@@ -68,9 +69,27 @@ if (prod) {
   });
 }
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: '32kb', parameterLimit: 100 }));
 app.use(cookieParser());
+
+// Permissions-Policy: изключваме сензори/устройства, които приложението не ползва.
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()'
+  );
+  next();
+});
+
 app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 0 }));
+
+// Чувствителните (автентикирани и спешни) страници не се кешират никъде.
+const NO_STORE = /^\/(dashboard|profile|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/;
+app.use((req, res, next) => {
+  if (NO_STORE.test(req.path)) res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 app.use(attachUser);
 
 // Общи locals за изгледите: компания, потребител и SEO meta (noindex по подразбиране).
@@ -142,8 +161,34 @@ app.use((req, res) =>
   res.status(404).render('emergency-error', { message: 'Страницата не е намерена.', user: req.user })
 );
 
+// Production error handler — без следи от стек към потребителя.
+app.use((err, req, res, _next) => {
+  console.error('Необработена грешка:', err);
+  if (res.headersSent) return;
+  res.status(500).render('emergency-error', {
+    message: 'Възникна неочаквана грешка. Опитайте отново.',
+    user: req.user || null,
+  });
+});
+
+// Периодично чистене: изтекли токени/чакащи входове и стари записи (задържане).
+function retentionCleanup() {
+  try {
+    db.prepare("DELETE FROM tokens WHERE expires_at <= datetime('now')").run();
+    db.prepare("DELETE FROM pending_logins WHERE expires_at <= datetime('now')").run();
+    db.prepare("DELETE FROM webauthn_challenges WHERE expires_at <= datetime('now')").run();
+    db.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')").run();
+    db.prepare("DELETE FROM access_log WHERE accessed_at < datetime('now','-365 days')").run();
+    db.prepare("DELETE FROM audit_log WHERE at < datetime('now','-730 days')").run();
+  } catch (e) {
+    console.error('Грешка при почистване:', e.message);
+  }
+}
+
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'test') {
+  retentionCleanup();
+  setInterval(retentionCleanup, 24 * 60 * 60 * 1000).unref();
   app.listen(PORT, () => console.log(`MedQR слуша на http://localhost:${PORT}`));
 }
 

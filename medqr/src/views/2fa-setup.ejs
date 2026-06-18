@@ -6,7 +6,16 @@
 
   <% if (state === 'enabled') { %>
     <p class="success">2FA е <strong>включена</strong> за вашия профил.</p>
-    <p>За да я изключите, потвърдете с паролата си.</p>
+
+    <p>Налични резервни кодове: <strong><%= recoveryCount %></strong>. Те се ползват
+      еднократно, ако нямате достъп до приложението за автентикация.</p>
+    <form method="post" action="/profile/2fa/recovery" class="inline-form"
+          data-confirm="Това ще генерира нови кодове и ще обезсили старите. Продължавате ли?">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn-small btn btn-ghost">Генерирай нови резервни кодове</button>
+    </form>
+
+    <p>За да изключите 2FA, потвърдете с паролата си.</p>
     <form method="post" action="/profile/2fa/disable" class="stack"
           data-confirm="Сигурни ли сте, че искате да изключите 2FA?">
       <%- include('partials/csrf') %>

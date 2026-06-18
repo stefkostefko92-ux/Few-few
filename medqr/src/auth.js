@@ -1,19 +1,16 @@
-import bcrypt from 'bcryptjs';
 import { randomBytes, createHash } from 'node:crypto';
 import db from './db.js';
+import { hashSecret, verifySecret, needsRehash } from './hashing.js';
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 дни
 const PENDING_TTL_MS = 1000 * 60 * 5; // 5 минути за въвеждане на 2FA код
 const MAX_FAILED = 5;
 const LOCK_MINUTES = 15;
 
-export function hashPassword(plain) {
-  return bcrypt.hashSync(plain, 12);
-}
-
-export function verifyPassword(plain, hash) {
-  return bcrypt.compareSync(plain, hash);
-}
+// Argon2id хеширане (async). Приема и стари bcrypt хешове при проверка.
+export const hashPassword = (plain) => hashSecret(plain);
+export const verifyPassword = (plain, hash) => verifySecret(plain, hash);
+export { needsRehash };
 
 // Криптографски силен, URL-безопасен токен (сесии и спешен достъп).
 export function randomToken(bytes = 24) {
@@ -21,14 +18,14 @@ export function randomToken(bytes = 24) {
 }
 
 // ---- Сесии ----
-export function createSession(userId) {
+export function createSession(userId, req) {
   const token = randomToken(32);
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').run(
-    token,
-    userId,
-    expiresAt
-  );
+  const ip = req ? (req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '').trim() : null;
+  const ua = req ? String(req.get?.('user-agent') || '').slice(0, 300) : null;
+  db.prepare(
+    'INSERT INTO sessions (token, user_id, ip, user_agent, expires_at) VALUES (?, ?, ?, ?, ?)'
+  ).run(token, userId, ip, ua, expiresAt);
   return token;
 }
 
@@ -38,15 +35,33 @@ export function destroySession(token) {
 
 export function userFromSession(token) {
   if (!token) return null;
-  return (
-    db
-      .prepare(
-        `SELECT u.id, u.email FROM sessions s
-         JOIN users u ON u.id = s.user_id
-         WHERE s.token = ? AND s.expires_at > datetime('now')`
-      )
-      .get(token) || null
-  );
+  const row = db
+    .prepare(
+      `SELECT u.id, u.email FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       WHERE s.token = ? AND s.expires_at > datetime('now')`
+    )
+    .get(token);
+  if (row) {
+    db.prepare("UPDATE sessions SET last_seen = datetime('now') WHERE token = ?").run(token);
+  }
+  return row || null;
+}
+
+// Списък с активни сесии на потребител (за „активни устройства").
+export function listSessions(userId) {
+  return db
+    .prepare(
+      `SELECT token, ip, user_agent, created_at, last_seen
+       FROM sessions WHERE user_id = ? AND expires_at > datetime('now')
+       ORDER BY last_seen DESC`
+    )
+    .all(userId);
+}
+
+// Изход от всички устройства, освен текущото (или всички, ако keepToken е празно).
+export function destroyOtherSessions(userId, keepToken) {
+  db.prepare('DELETE FROM sessions WHERE user_id = ? AND token != ?').run(userId, keepToken || '');
 }
 
 export function attachUser(req, _res, next) {
@@ -150,4 +165,42 @@ export function consumeToken(raw, type) {
 
 export function destroyUserSessions(userId) {
   db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+}
+
+// ---- Резервни кодове за 2FA ----
+// Генерира нов комплект (изтрива старите), връща суровите кодове за еднократно показване.
+export async function generateRecoveryCodes(userId, count = 10) {
+  db.prepare('DELETE FROM recovery_codes WHERE user_id = ?').run(userId);
+  const codes = [];
+  const insert = db.prepare('INSERT INTO recovery_codes (user_id, code_hash) VALUES (?, ?)');
+  for (let i = 0; i < count; i++) {
+    // 10 hex знака, групирани (напр. "a1b2c-3d4e5") — лесни за въвеждане.
+    const raw = randomBytes(5).toString('hex');
+    const pretty = `${raw.slice(0, 5)}-${raw.slice(5)}`;
+    codes.push(pretty);
+    insert.run(userId, await hashSecret(pretty));
+  }
+  return codes;
+}
+
+export function countRecoveryCodes(userId) {
+  return db
+    .prepare('SELECT COUNT(*) c FROM recovery_codes WHERE user_id = ? AND used_at IS NULL')
+    .get(userId).c;
+}
+
+// Проверява и консумира резервен код. Връща true при успех.
+export async function consumeRecoveryCode(userId, code) {
+  const norm = String(code || '').trim().toLowerCase();
+  if (!norm) return false;
+  const rows = db
+    .prepare('SELECT id, code_hash FROM recovery_codes WHERE user_id = ? AND used_at IS NULL')
+    .all(userId);
+  for (const row of rows) {
+    if (await verifySecret(norm, row.code_hash)) {
+      db.prepare("UPDATE recovery_codes SET used_at = datetime('now') WHERE id = ?").run(row.id);
+      return true;
+    }
+  }
+  return false;
 }
