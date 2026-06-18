@@ -91,8 +91,8 @@ function seedSampleContent() {
   const admin = db.prepare('SELECT id FROM users LIMIT 1').get();
   const cat = db.prepare("SELECT id FROM categories WHERE slug='posledna-informaciya'").get();
   const insert = db.prepare(
-    `INSERT INTO articles (category_id, author_id, slug, title, excerpt, body, status, featured, meta_description, published_at)
-     VALUES (?,?,?,?,?,?, 'published', ?, ?, ?)`
+    `INSERT INTO articles (category_id, author_id, slug, title, excerpt, body, cover_image, cover_alt, status, featured, meta_description, published_at)
+     VALUES (?,?,?,?,?,?,?,?, 'published', ?, ?, ?)`
   );
   const samples = [
     {
@@ -131,9 +131,11 @@ function seedSampleContent() {
       meta: 'Информация за правата на хората с увреден слух и дейността на Съюза на глухите в България.',
     },
   ];
-  for (const s of samples) {
-    insert.run(cat?.id || null, admin?.id || null, s.slug, s.title, s.excerpt, s.body, s.featured, s.meta, nowIso());
-  }
+  const covers = ['/img/site/banner-1.jpg', '/img/site/banner-5.jpg', '/img/site/banner-9.jpg'];
+  samples.forEach((s, i) => {
+    insert.run(cat?.id || null, admin?.id || null, s.slug, s.title, s.excerpt, s.body,
+      covers[i] || null, 'Снимка от дейността на Съюза на глухите в България', s.featured, s.meta, nowIso());
+  });
 
   // Примерен брой на вестника
   db.prepare(

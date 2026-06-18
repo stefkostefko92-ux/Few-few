@@ -1,8 +1,8 @@
 /* Админ панел — Съюз на глухите в България */
 :root {
-  --c-ink: #383838; --c-ink-2: #222; --c-brand: #a52a2a; --c-brand-dark: #8a2222;
-  --c-accent: #0099ff; --c-leaf: #d3e8b2; --c-surface: #f5f6f4; --c-line: #e4e7e2;
-  --c-text: #34383a; --c-muted: #79827f; --sidebar-w: 252px;
+  --c-ink: #1c1c44; --c-ink-2: #16163a; --c-brand: #1e1ab0; --c-brand-dark: #14107e;
+  --c-accent: #0c0ad6; --c-leaf: #e3e2fb; --c-surface: #f5f6fc; --c-line: #e4e5f1;
+  --c-text: #34384a; --c-muted: #767a92; --c-violet: #472876; --sidebar-w: 252px;
   --font-head: 'Inter', system-ui, sans-serif; --font: 'Inter', system-ui, sans-serif;
   --radius: 10px; --shadow: 0 1px 3px rgba(0,0,0,.08); --shadow-lg: 0 8px 28px rgba(0,0,0,.12);
 }
@@ -15,7 +15,7 @@ h1, h2, h3 { font-family: var(--font-head); margin: 0; }
 :focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 
 /* ---------- Login ---------- */
-.admin--login { display: grid; place-items: center; min-height: 100vh; background: linear-gradient(135deg, #383838, #222); padding: 1rem; }
+.admin--login { display: grid; place-items: center; min-height: 100vh; background: linear-gradient(135deg, #1e1ab0, #14107e); padding: 1rem; }
 .login-card { background: #fff; border-radius: 16px; box-shadow: var(--shadow-lg); padding: 2.5rem; width: 100%; max-width: 400px; }
 .login-card__head { text-align: center; margin-bottom: 1.8rem; }
 .login-card__head img { margin: 0 auto 1rem; }
@@ -45,7 +45,7 @@ h1, h2, h3 { font-family: var(--font-head); margin: 0; }
 .admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.2rem 2rem; background: #fff; border-bottom: 1px solid var(--c-line); position: sticky; top: 0; z-index: 20; }
 .admin-topbar h1 { font-size: 1.3rem; }
 .admin-topbar__user { display: flex; align-items: center; gap: .6rem; font-size: .9rem; color: var(--c-muted); }
-.role-tag { background: var(--c-leaf); color: #3a5320; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; }
+.role-tag { background: var(--c-leaf); color: #472876; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; }
 .admin-body { padding: 2rem; max-width: 1280px; }
 .admin-burger { display: none; position: fixed; top: .9rem; left: .9rem; z-index: 60; flex-direction: column; gap: 5px; background: var(--c-ink-2); border: 0; padding: 10px; border-radius: 8px; }
 .admin-burger span { width: 22px; height: 2px; background: #fff; }
@@ -86,7 +86,7 @@ h1, h2, h3 { font-family: var(--font-head); margin: 0; }
 .pill { display: inline-block; font-size: .74rem; font-weight: 700; padding: .22rem .6rem; border-radius: 999px; background: #eef0ed; color: #5a635f; }
 .pill--published { background: #e3f3df; color: #2f7a2f; }
 .pill--draft { background: #fbf0d8; color: #9a6a13; }
-.pill--accent { background: #f7e0e0; color: var(--c-brand); }
+.pill--accent { background: #e6e4fb; color: var(--c-violet); }
 
 /* ---------- Editor layout ---------- */
 .editor-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }

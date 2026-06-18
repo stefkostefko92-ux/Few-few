@@ -11,8 +11,8 @@ const imgDir = path.join(__dirname, '..', 'public', 'img');
 fs.mkdirSync(imgDir, { recursive: true });
 
 const C = {
-  maroon: [165, 42, 42], maroonDark: [126, 31, 31], ink: [34, 34, 34],
-  leaf: [211, 232, 178], white: [255, 255, 255], cream: [244, 246, 240],
+  maroon: [30, 26, 176], maroonDark: [20, 16, 126], ink: [22, 22, 58],
+  leaf: [71, 40, 118], white: [255, 255, 255], cream: [242, 243, 251],
 };
 
 function canvas(w, h, bg) {

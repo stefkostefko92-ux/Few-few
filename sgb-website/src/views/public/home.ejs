@@ -1,3 +1,21 @@
+<section class="slideshow" aria-label="Из живота на Съюза на глухите в България" aria-roledescription="галерия">
+  <div class="slideshow__track" id="slideshow">
+    <% const slides = [1,2,3,4,5,6,7,8,9,10,11]; %>
+    <% slides.forEach(function(n, i){ %>
+      <figure class="slide <%= i === 0 ? 'is-active' : '' %>" data-slide="<%= i %>">
+        <img src="/img/site/banner-<%= n %>.jpg" alt="Снимка от дейността на СГБ" <%= i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' %> width="1280" height="451">
+      </figure>
+    <% }); %>
+    <div class="slideshow__overlay">
+      <span class="badge badge--violet">Съюз на глухите в България</span>
+      <p class="slideshow__caption">Заедно за правата, достъпността и общността на хората с увреден слух</p>
+    </div>
+    <button class="slideshow__nav slideshow__nav--prev" id="slide-prev" aria-label="Предишна снимка">‹</button>
+    <button class="slideshow__nav slideshow__nav--next" id="slide-next" aria-label="Следваща снимка">›</button>
+    <div class="slideshow__dots" id="slide-dots" role="tablist"></div>
+  </div>
+</section>
+
 <section class="hero">
   <div class="container hero__grid">
     <% if (featured) { %>
@@ -92,6 +110,19 @@
         <a class="topic" href="/category/<%= cat.slug %>">
           <span class="topic__name"><%= cat.name %></span>
           <% if (cat.children && cat.children.length) { %><span class="topic__count"><%= cat.children.length %> подраздела</span><% } %>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted">
+  <div class="container">
+    <div class="section__head"><h2 class="section__title">Из живота на СГБ</h2></div>
+    <div class="gallery">
+      <% [1,2,3,4,5,6,7,8,9,10,11].forEach(function(n){ %>
+        <a class="gallery__item" href="/img/site/banner-<%= n %>.jpg" target="_blank" rel="noopener" aria-label="Снимка <%= n %> от дейността на СГБ">
+          <img src="/img/site/photo-<%= n %>.jpg" alt="Снимка от дейността на Съюза на глухите в България" loading="lazy" width="200" height="140">
         </a>
       <% }); %>
     </div>
