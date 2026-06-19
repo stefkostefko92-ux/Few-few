@@ -30,6 +30,49 @@ else
   exit 1
 fi
 
+# --- Проверка за конфликт на портове (други сайтове на същия сървър) ---
+read_env() { grep -E "^$1=" .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"' | sed 's/[[:space:]].*$//'; }
+HTTP_PORT="$(read_env HTTP_PORT)"; HTTP_PORT="${HTTP_PORT:-80}"
+
+port_in_use() {
+  local p="$1"
+  # Проверяваме и с ss, и с lsof — ако някой от двата види слушащ порт, е зает.
+  if command -v ss >/dev/null 2>&1 &&
+     ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$p\$"; then
+    return 0
+  fi
+  if command -v lsof >/dev/null 2>&1 &&
+     lsof -nP -iTCP:"$p" -sTCP:LISTEN >/dev/null 2>&1; then
+    return 0
+  fi
+  return 1
+}
+
+# Нашият стек вече ли държи порта (при повторен деплой)?
+OURS_UP=0
+$DC ps 2>/dev/null | grep -i nginx | grep -qiE 'up|running' && OURS_UP=1
+
+if [ "$OURS_UP" = "0" ] && port_in_use "$HTTP_PORT"; then
+  warn "Порт $HTTP_PORT вече е ЗАЕТ от друга услуга на този сървър — спирам, за да не счупя нищо."
+  echo
+  echo "Какво слуша на 80 и 443:"
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltnp 2>/dev/null | grep -E "[:.](80|443)\b" || true
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -nP -iTCP:80 -iTCP:443 -sTCP:LISTEN 2>/dev/null || true
+  fi
+  echo
+  bold "Изберете едно от двете:"
+  echo "  1) Ако нищо друго не е уебсайт — спрете услугата на порт $HTTP_PORT и пуснете пак."
+  echo "  2) Ако има друг сайт/панел (напр. Minecraft панел) на 80/443 — НЕ го пипайте."
+  echo "     Сложете в .env:   HTTP_PORT=8080"
+  echo "     и в съществуващото reverse proxy насочете zabobovdol.carbonstealth.eu"
+  echo "     към http://127.0.0.1:8080 (HTTPS се поема от него; пропуснете init-letsencrypt)."
+  echo "     После пуснете отново: ./scripts/deploy.sh"
+  exit 1
+fi
+ok "Порт $HTTP_PORT е свободен."
+
 bold "1/3 Строя и вдигам стека (приложение, база, бекъп, nginx)…"
 $DC up -d --build
 
@@ -61,7 +104,7 @@ else
 fi
 
 echo
-ok "✅ Готово! Сайтът работи на порт 80 (http://<IP на сървъра>)."
+ok "Готово! Сайтът работи на порт $HTTP_PORT (http://<IP на сървъра>:$HTTP_PORT)."
 echo
 bold "Остава за HTTPS (когато домейнът сочи към сървъра):"
 echo "   ./scripts/init-letsencrypt.sh"
