@@ -8,7 +8,9 @@ WORKDIR /app
 # --- Зависимости ---
 FROM base AS deps
 COPY package.json package-lock.json* ./
-RUN npm ci
+# --ignore-scripts: пропускаме postinstall (prisma generate) тук, защото на този
+# етап още няма prisma/schema.prisma. Клиентът се генерира в етапа „build".
+RUN npm ci --ignore-scripts
 
 # --- Билд ---
 FROM base AS build
