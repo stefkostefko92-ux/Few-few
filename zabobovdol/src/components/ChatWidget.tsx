@@ -32,9 +32,7 @@ export function ChatWidget() {
 
   if (pathname?.startsWith("/admin")) return null;
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    const q = input.trim();
+  async function ask(q: string) {
     if (q.length < 2 || loading) return;
     setMessages((m) => [...m, { role: "user", text: q }]);
     setInput("");
@@ -62,6 +60,18 @@ export function ChatWidget() {
       setLoading(false);
     }
   }
+
+  function send(e: React.FormEvent) {
+    e.preventDefault();
+    ask(input.trim());
+  }
+
+  const SUGGESTIONS = [
+    "Телефон на общината",
+    "Дежурна аптека",
+    "Как да платя данък онлайн",
+    "Кога идва еврото",
+  ];
 
   return (
     <>
@@ -115,6 +125,20 @@ export function ChatWidget() {
                 )}
               </div>
             ))}
+            {messages.length === 1 && !loading && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => ask(s)}
+                    className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
             {loading && (
               <div className="text-left text-sm text-slate-400">пише…</div>
             )}

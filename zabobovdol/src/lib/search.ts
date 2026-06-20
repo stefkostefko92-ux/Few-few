@@ -36,15 +36,18 @@ function variants(term: string): string[] {
   return [...v];
 }
 
-// Колко от думите (терминатите) се срещат в текста. Сравнението е изцяло в
-// кода (toLowerCase в JS сгъва правилно кирилицата — независимо от базата).
+// Оценка на съвпаденията. Сравнението е изцяло в кода (toLowerCase в JS сгъва
+// правилно кирилицата — независимо от базата). По-дългите думи носят повече
+// тежест (по-специфични са), за да не доминират къси общи думи.
 function matchedCount(haystack: string, termVariants: string[][]): number {
   const lc = haystack.toLowerCase();
-  let n = 0;
+  let s = 0;
   for (const vs of termVariants) {
-    if (vs.some((v) => lc.includes(v))) n += 1;
+    if (vs.some((v) => lc.includes(v))) {
+      s += 1 + Math.max(0, vs[0].length - 3) * 0.4;
+    }
   }
-  return n;
+  return s;
 }
 
 // Лек кеш на индекса в паметта (за да не сканираме базата при всяко търсене).
