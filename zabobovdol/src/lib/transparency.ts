@@ -18,11 +18,47 @@ export type { Supplier, Category, Transparency } from "@/lib/sigma-parse";
 
 const SETTING_KEY = "transparency_sigma";
 
+// Напълно автоматично обновяване: щом кешираната снимка остарее (или липсва),
+// сами я обновяваме във фонов режим — без cron и без ръчна намеса. Посетителят
+// получава кешираното веднага, а свежите данни се теглят за следващия преглед.
+const STALE_MS = 7 * 24 * 60 * 60 * 1000; // снимка над 7 дни се смята за остаряла
+const MIN_RETRY_MS = 60 * 60 * 1000; // ако СИГМА не отговаря, не пробваме по-често от веднъж на час
+let refreshing = false;
+let lastAttempt = 0;
+
+function snapshotAgeMs(snap: Transparency | null): number {
+  if (!snap?.updatedAt) return Infinity;
+  const t = Date.parse(snap.updatedAt);
+  return Number.isNaN(t) ? Infinity : Date.now() - t;
+}
+
+// Стартира неблокиращо обновяване във фонов режим, ако е нужно.
+function maybeRefresh(snap: Transparency | null): void {
+  const stale = snapshotAgeMs(snap) > STALE_MS;
+  if (!stale) return;
+  if (refreshing) return;
+  if (Date.now() - lastAttempt < MIN_RETRY_MS) return;
+  refreshing = true;
+  lastAttempt = Date.now();
+  void (async () => {
+    try {
+      const fresh = await fetchSigmaSnapshot();
+      if (fresh) await saveTransparency(fresh);
+    } catch {
+      /* мълчаливо — пробваме пак при следващо посещение след MIN_RETRY_MS */
+    } finally {
+      refreshing = false;
+    }
+  })();
+}
+
 export async function getTransparency(): Promise<Transparency | null> {
   try {
     const row = await prisma.siteSetting.findUnique({ where: { key: SETTING_KEY } });
-    if (!row?.value) return null;
-    return JSON.parse(row.value) as Transparency;
+    const snap = row?.value ? (JSON.parse(row.value) as Transparency) : null;
+    // Обновяваме във фонов режим при остаряла/липсваща снимка (не блокира страницата).
+    maybeRefresh(snap);
+    return snap;
   } catch {
     return null;
   }
