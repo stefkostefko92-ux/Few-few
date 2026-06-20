@@ -67,6 +67,29 @@ localizzate nella fascia superiore (z ≈ −290 … −255), dove la scansione 
 buchi/occlusioni intorno alle borchie e il bordo superiore inclinato fa
 ritirare rapidamente le sezioni: è la prima zona da rifinire in GUI.
 
+## Vedere la deviazione dentro FreeCAD
+
+FreeCAD **non ha un comando nativo** di deviazione a colori (la mappa
+`preview_deviazione.png` è stata generata con Python/matplotlib). Per vederla
+nella vista 3D di FreeCAD usa la macro inclusa:
+
+1. Apri `Aletta_RE.FCStd`
+2. **Macro ▸ Macro… ▸** seleziona `deviation_macro.py` ▸ **Esegui**
+   (oppure incolla il file nella *Console Python*: Vista ▸ Pannelli ▸ Console Python)
+
+La macro lavora in ambiente **Mesh Design**: tassella ogni superficie, calcola
+la distanza dei vertici dalla scansione e colora la mesh
+(**verde** = dentro tolleranza, **rosso** = fuori, fondo scala 1 mm regolabile
+con `TOL_MM`). Usa la scansione piena se trova `/tmp/aletta.stl`, altrimenti la
+mesh decimata salvata nel documento.
+
+In alternativa, senza macro, il confronto visivo nativo è: rendere le
+superfici semi-trasparenti sopra la mesh della scansione e controllare gli
+scostamenti con le curve di sezione del gruppo *Sezioni* (ambiente Mesh ▸
+*Sezioni trasversali*). Per una vera mappa metrologica resta comunque
+consigliato **CloudCompare** (gratuito): *Cloud-to-Mesh distance* tra la
+scansione STL e lo STEP tassellato.
+
 ## Rifinitura consigliata in GUI
 
 Le curve del gruppo *Sezioni* sono già pronte per essere modificate: in GUI
