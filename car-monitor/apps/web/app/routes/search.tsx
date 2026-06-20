@@ -12,7 +12,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 const HREF: Record<string, (ref: string) => string> = {
   vehicle: (ref) => `/vehicles/${ref}`,
-  seller: (ref) => `/vehicles?seller=${ref}`,
+  seller: (ref) => `/sellers/${ref}`,
   owner: (ref) => `/vehicles?owner=${ref}`,
   listing: (ref) => `/vehicles/${ref}`,
 };

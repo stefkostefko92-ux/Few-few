@@ -263,3 +263,5 @@ export interface SourceAdapter {
   /** Връща сурови обяви за даден времеви прозорец. */
   fetch(window: { since: string; until: string }): Promise<RawListing[]>;
 }
+
+export { parseListingsHtml, DEFAULT_SELECTORS, type ListingSelectors } from "./parse.ts";

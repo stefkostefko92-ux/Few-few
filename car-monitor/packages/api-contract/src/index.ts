@@ -82,6 +82,52 @@ export interface SearchHit {
   amount: string | null;
 }
 
+export interface ModelFlow {
+  modelKey: string;
+  make: string | null;
+  model: string | null;
+  listings: number;
+  medianPriceEur: number | null;
+}
+
+export interface SellerDetail {
+  id: string;
+  name: string;
+  kind: string | null;
+  settlement: string | null;
+  region: string | null;
+  listings: number;
+  vehicles: number;
+  medianPriceEur: number | null;
+  redListings: number;
+  suspectShare: number;
+  models: ModelFlow[];
+  inventory: VehicleListItem[];
+}
+
+export interface PricePoint {
+  period: string; // YYYY-MM
+  medianPriceEur: number | null;
+  listings: number;
+  avgMileageKm: number | null;
+}
+
+export interface ModelDetail {
+  modelKey: string;
+  make: string | null;
+  model: string | null;
+  segment: string | null;
+  listings: number;
+  vehicles: number;
+  medianPriceEur: number | null;
+  minPriceEur: number | null;
+  maxPriceEur: number | null;
+  avgMileageKm: number | null;
+  suspect: number;
+  priceHistory: PricePoint[];
+  inventory: VehicleListItem[];
+}
+
 export type ListingsQuery = {
   q?: string;
   make?: string;

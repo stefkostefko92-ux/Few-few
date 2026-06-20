@@ -9,6 +9,8 @@ import type {
   VehicleEvent,
   VehicleListItem,
   ListingsQuery,
+  SellerDetail,
+  ModelDetail,
 } from "@car-monitor/api-contract";
 import type { RiskLevel, QualityFlag } from "@car-monitor/shared";
 
@@ -262,7 +264,172 @@ export async function search(db: D1Database, q: string, limit = 30): Promise<Sea
   return rows.results;
 }
 
+// --- Профил на продавач --------------------------------------------------
+
+export async function getSeller(db: D1Database, id: string): Promise<SellerDetail | null> {
+  const t = await db
+    .prepare(
+      `SELECT seller_id, name, kind, settlement, region, listings, vehicles,
+              median_price_eur, red_listings, suspect_share
+       FROM seller_totals WHERE seller_id = ?`,
+    )
+    .bind(id)
+    .first<{
+      seller_id: string;
+      name: string;
+      kind: string | null;
+      settlement: string | null;
+      region: string | null;
+      listings: number;
+      vehicles: number;
+      median_price_eur: number | null;
+      red_listings: number;
+      suspect_share: number;
+    }>();
+  if (!t) return null;
+
+  const flows = await db
+    .prepare(
+      `SELECT model_key, make, model, listings, median_price_eur
+       FROM seller_model_flows WHERE seller_id = ? ORDER BY listings DESC`,
+    )
+    .bind(id)
+    .all<{
+      model_key: string;
+      make: string | null;
+      model: string | null;
+      listings: number;
+      median_price_eur: number | null;
+    }>();
+
+  const inventory = await db
+    .prepare(
+      `SELECT v.id, v.make, v.model, v.model_year, v.latest_mileage_km,
+              v.latest_price_eur, s.settlement AS settlement, v.risk_level
+       FROM vehicles v LEFT JOIN sellers s ON s.id = v.current_seller_id
+       WHERE v.current_seller_id = ? ORDER BY v.latest_price_eur DESC LIMIT 100`,
+    )
+    .bind(id)
+    .all<VehicleRow>();
+
+  return {
+    id: t.seller_id,
+    name: t.name,
+    kind: t.kind,
+    settlement: t.settlement,
+    region: t.region,
+    listings: t.listings,
+    vehicles: t.vehicles,
+    medianPriceEur: t.median_price_eur,
+    redListings: t.red_listings,
+    suspectShare: t.suspect_share,
+    models: flows.results.map((f) => ({
+      modelKey: f.model_key,
+      make: f.make,
+      model: f.model,
+      listings: f.listings,
+      medianPriceEur: f.median_price_eur,
+    })),
+    inventory: inventory.results.map(toVehicleListItem),
+  };
+}
+
+// --- Профил на модел (с история на цените) -------------------------------
+
+export async function getModel(db: D1Database, make: string, model: string): Promise<ModelDetail | null> {
+  const key = `${make.trim().toLowerCase()}|${model.trim().toLowerCase()}`;
+  const t = await db
+    .prepare(
+      `SELECT model_key, make, model, segment, listings, vehicles, median_price_eur,
+              min_price_eur, max_price_eur, avg_mileage_km, suspect
+       FROM model_totals WHERE model_key = ?`,
+    )
+    .bind(key)
+    .first<{
+      model_key: string;
+      make: string | null;
+      model: string | null;
+      segment: string | null;
+      listings: number;
+      vehicles: number;
+      median_price_eur: number | null;
+      min_price_eur: number | null;
+      max_price_eur: number | null;
+      avg_mileage_km: number | null;
+      suspect: number;
+    }>();
+  if (!t) return null;
+
+  const history = await db
+    .prepare(
+      `SELECT period, median_price_eur, listings, avg_mileage_km
+       FROM price_history WHERE model_key = ? ORDER BY period ASC`,
+    )
+    .bind(key)
+    .all<{
+      period: string;
+      median_price_eur: number | null;
+      listings: number;
+      avg_mileage_km: number | null;
+    }>();
+
+  const inventory = await db
+    .prepare(
+      `SELECT v.id, v.make, v.model, v.model_year, v.latest_mileage_km,
+              v.latest_price_eur, s.settlement AS settlement, v.risk_level
+       FROM vehicles v LEFT JOIN sellers s ON s.id = v.current_seller_id
+       WHERE v.model_key = ? ORDER BY v.latest_price_eur DESC LIMIT 100`,
+    )
+    .bind(key)
+    .all<VehicleRow>();
+
+  return {
+    modelKey: t.model_key,
+    make: t.make,
+    model: t.model,
+    segment: t.segment,
+    listings: t.listings,
+    vehicles: t.vehicles,
+    medianPriceEur: t.median_price_eur,
+    minPriceEur: t.min_price_eur,
+    maxPriceEur: t.max_price_eur,
+    avgMileageKm: t.avg_mileage_km,
+    suspect: t.suspect,
+    priceHistory: history.results.map((h) => ({
+      period: h.period,
+      medianPriceEur: h.median_price_eur,
+      listings: h.listings,
+      avgMileageKm: h.avg_mileage_km,
+    })),
+    inventory: inventory.results.map(toVehicleListItem),
+  };
+}
+
 // --- Помощни -------------------------------------------------------------
+
+interface VehicleRow {
+  id: string;
+  make: string | null;
+  model: string | null;
+  model_year: number | null;
+  latest_mileage_km: number | null;
+  latest_price_eur: number | null;
+  settlement: string | null;
+  risk_level: RiskLevel;
+}
+
+function toVehicleListItem(r: VehicleRow): VehicleListItem {
+  return {
+    id: r.id,
+    make: r.make,
+    model: r.model,
+    modelYear: r.model_year,
+    mileageKm: r.latest_mileage_km,
+    priceEur: r.latest_price_eur,
+    settlement: r.settlement,
+    riskLevel: r.risk_level,
+  };
+}
 
 function parseJsonArray(v: unknown): string[] {
   if (typeof v !== "string" || !v) return [];

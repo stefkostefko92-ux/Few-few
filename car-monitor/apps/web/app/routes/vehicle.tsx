@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, Link } from "react-router";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { getVehicle } from "@car-monitor/db";
 import { formatEur } from "@car-monitor/shared";
@@ -43,7 +43,30 @@ export default function Vehicle() {
           <tr><th>Скоростна кутия</th><td>{v.gearbox ?? "—"}</td></tr>
           <tr><th>Мощност</th><td>{v.powerHp != null ? `${v.powerHp} к.с.` : "—"}</td></tr>
           <tr><th>Внос от</th><td>{v.originCountry ?? "—"}</td></tr>
-          <tr><th>Продавач</th><td>{v.seller ? `${v.seller.name} (${v.seller.kind ?? "—"})` : "—"}</td></tr>
+          <tr>
+            <th>Модел</th>
+            <td>
+              {v.make && v.model ? (
+                <Link to={`/models/${encodeURIComponent(v.make)}/${encodeURIComponent(v.model)}`}>
+                  {v.make} {v.model} — цени и обяви
+                </Link>
+              ) : (
+                "—"
+              )}
+            </td>
+          </tr>
+          <tr>
+            <th>Продавач</th>
+            <td>
+              {v.seller ? (
+                <Link to={`/sellers/${v.seller.id}`}>
+                  {v.seller.name} ({v.seller.kind ?? "—"})
+                </Link>
+              ) : (
+                "—"
+              )}
+            </td>
+          </tr>
         </tbody>
       </table>
 
