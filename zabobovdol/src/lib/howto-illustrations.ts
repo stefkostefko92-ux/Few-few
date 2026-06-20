@@ -378,10 +378,10 @@ const MAP: Record<string, Illustration[]> = {
 
   // ── Измами (примерни екрани с подчертани червени флагове) ──
   "iz-sms-s-link": [{ src: "/kak-da/scam-parcel-sms.png", alt: "Фалшив SMS за пратка с искане да платите по линк" }],
-  "s-falshив-kurier-sms": [{ src: "/kak-da/scam-parcel-sms.png", alt: "Фалшив куриерски SMS — измама" }],
+  "s-falshiv-kurier-sms": [{ src: "/kak-da/scam-parcel-sms.png", alt: "Фалшив куриерски SMS — измама" }],
   "falshivi-sms-primeri": [{ src: "/kak-da/scam-fake-sms.png", alt: "Фалшив SMS, че сметката е блокирана — измама" }],
   "iz-falshivo-obazhdane-banka": [{ src: "/kak-da/scam-bank-call.png", alt: "Фалшиво обаждане „от банката“, което иска кодове" }],
-  "s-falshив-zvun-banka": [{ src: "/kak-da/scam-bank-call.png", alt: "Фалшиво обаждане от името на банка — измама" }],
+  "s-falshiv-zvun-banka": [{ src: "/kak-da/scam-bank-call.png", alt: "Фалшиво обаждане от името на банка — измама" }],
   "telefonni-izmami-falshiv-policay": [{ src: "/kak-da/scam-police-call.png", alt: "Фалшиво обаждане „от полицай/прокурор“ — измама" }],
   "iz-telefonna-izmama-vnuche": [{ src: "/kak-da/scam-grandchild.png", alt: "Измама „внук в беда“, който иска пари спешно" }],
   "izmama-vnuk-rodnina-v-beda": [{ src: "/kak-da/scam-grandchild.png", alt: "Съобщение от уж близък в беда, който иска пари — измама" }],
@@ -430,7 +430,7 @@ const MAP: Record<string, Illustration[]> = {
   "kak-da-izpratya-link": [{ src: "/kak-da/share-link.png", alt: "Копиране и изпращане на линк на сайт" }],
   "kak-da-kopiram-link": [{ src: "/kak-da/share-link.png", alt: "Копиране на линк на сайт" }],
   "kak-da-postavya-link": [{ src: "/kak-da/share-link.png", alt: "Поставяне на копиран линк" }],
-  "e2-bързо-nabirane": [{ src: "/kak-da/speed-dial.png", alt: "Любими контакти за бързо обаждане" }],
+  "e2-barzo-nabirane": [{ src: "/kak-da/speed-dial.png", alt: "Любими контакти за бързо обаждане" }],
   "e2-snimka-na-kontakt": [{ src: "/kak-da/contact-photo.png", alt: "Слагане на снимка на контакт" }],
   "e2-pryak-pat-sayt": [{ src: "/kak-da/home-shortcut.png", alt: "Пряк път към сайт на началния екран" }],
   "e2-glasova-belezhka": [{ src: "/kak-da/voice-memo.png", alt: "Запис на гласова бележка" }],
@@ -443,7 +443,7 @@ const MAP: Record<string, Illustration[]> = {
   // ── Е-услуги и документи ──
   "c-proverya-globi-kat": [{ src: "/kak-da/check-fines.png", alt: "Проверка на глоби от КАТ онлайн" }],
   "c-proveria-izbiratelna-sekciya2": [{ src: "/kak-da/polling-station.png", alt: "Проверка на избирателната секция по ЕГН" }],
-  "c-kopия-dokumenti": [{ src: "/kak-da/scan-document.png", alt: "Сканиране на документ с камерата" }],
+  "c-kopiya-dokumenti": [{ src: "/kak-da/scan-document.png", alt: "Сканиране на документ с камерата" }],
   "c-udostoverenie-online": [{ src: "/kak-da/egov.png", alt: "Издаване на удостоверение онлайн през e-услуги" }],
   "c-proveria-zadalzheniya-nap": [{ src: "/kak-da/pik-nap.png", alt: "Проверка на данъчни задължения в НАП" }],
   "c-zdravno-dosie2": [{ src: "/kak-da/health-record.png", alt: "Електронно здравно досие" }],
