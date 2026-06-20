@@ -11,6 +11,7 @@ const config = [
       "node_modules/**",
       "next-env.d.ts",
       "prisma/**",
+      "scripts/**",
       "src/lib/__tests__/**",
     ],
   },
