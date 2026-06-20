@@ -1,0 +1,61 @@
+<%- include('partials/head', { title: 'Спешна информация', user: null }) %>
+
+<div class="emergency">
+  <p class="emergency-banner"><%- include('partials/icon', { name: 'alert' }) %> СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ</p>
+  <h1 class="big-name"><%= profile.full_name %></h1>
+
+  <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
+    <div class="alert-comm" role="alert">
+      <%- include('partials/icon', { name: 'ear', cls: 'icon-lg' }) %>
+      <span>
+        <strong>Слухов статус:</strong> <%= profile.hearing_status %>.
+        <% if (profile.communication_pref) { %>
+          Комуникирайте така: <strong><%= profile.communication_pref %></strong>.
+        <% } else { %>
+          Възможно е лицето да не реагира на говор — общувайте писмено.
+        <% } %>
+      </span>
+    </div>
+  <% } %>
+
+  <div class="emergency-grid">
+    <div class="ebox blood">
+      <span class="elabel">Кръвна група</span>
+      <span class="evalue"><%= profile.blood_type || 'Неизвестна' %></span>
+    </div>
+    <div class="ebox allergy">
+      <span class="elabel">Алергии към лекарства</span>
+      <span class="evalue"><%= profile.allergies || 'Не са посочени' %></span>
+    </div>
+  </div>
+
+  <dl class="emergency-list">
+    <dt>Хронични заболявания</dt><dd><%= profile.chronic_conditions || '—' %></dd>
+    <dt>Текущи медикаменти</dt><dd><%= profile.current_medications || '—' %></dd>
+    <% if (profile.additional_notes) { %>
+      <dt>Друга важна информация</dt><dd><%= profile.additional_notes %></dd>
+    <% } %>
+    <% if (profile.date_of_birth) { %>
+      <dt>Дата на раждане</dt><dd><%= profile.date_of_birth %></dd>
+    <% } %>
+    <% if (profile.preferred_language) { %>
+      <dt>Език</dt><dd><%= profile.preferred_language %></dd>
+    <% } %>
+  </dl>
+
+  <% if (profile.emergency_contact_phone || profile.emergency_contact_name) { %>
+    <div class="contact-box">
+      <span class="elabel">Спешен контакт</span>
+      <span class="evalue"><%= profile.emergency_contact_name || '' %>
+        <% if (profile.emergency_contact_relation) { %>(<%= profile.emergency_contact_relation %>)<% } %>
+      </span>
+      <% if (profile.emergency_contact_phone) { %>
+        <a class="call-btn" href="tel:<%= profile.emergency_contact_phone %>"><%- include('partials/icon', { name: 'phone' }) %> Обади се: <%= profile.emergency_contact_phone %></a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <p class="muted small">Актуализирано: <%= profile.updated_at %>. Достъпът е регистриран.</p>
+</div>
+
+<%- include('partials/foot') %>

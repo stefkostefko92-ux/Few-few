@@ -1,0 +1,20 @@
+<%- include('partials/head', { title: 'Изисква се PIN', user: null }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'lock', cls: 'icon-lg' }) %> Защитен профил</h1>
+  <p>Този спешен профил е защитен с PIN. Въведете го, за да видите информацията.</p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <% if (typeof locked !== 'undefined' && locked) { %>
+    <p class="muted">Достъпът е временно блокиран след твърде много опити. Опитайте по-късно.</p>
+  <% } else { %>
+    <form method="post" action="/e/<%= token %>" class="stack">
+      <%- include('partials/csrf') %>
+      <label>PIN
+        <input type="text" name="pin" inputmode="numeric" pattern="\d{4,8}" required autofocus>
+      </label>
+      <button type="submit" class="btn">Покажи информацията</button>
+    </form>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

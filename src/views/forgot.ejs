@@ -1,0 +1,24 @@
+<%- include('partials/head', { title: 'Забравена парола — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1>Забравена парола</h1>
+  <% if (sent) { %>
+    <p class="success" role="status">
+      Ако този имейл съществува в системата, изпратихме линк за нулиране на паролата.
+      Проверете пощата си (валиден 60 минути).
+    </p>
+    <p><a href="/login">Към вход</a></p>
+  <% } else { %>
+    <p>Въведете имейла си и ще ви изпратим линк за задаване на нова парола.</p>
+    <form method="post" action="/forgot" class="stack">
+      <%- include('partials/csrf') %>
+      <label>Имейл
+        <input type="email" name="email" required autocomplete="email" autofocus>
+      </label>
+      <button type="submit" class="btn">Изпрати линк</button>
+    </form>
+    <p><a href="/login">Назад към вход</a></p>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

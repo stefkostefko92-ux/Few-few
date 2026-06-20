@@ -1,0 +1,28 @@
+<%- include('partials/head', { title: 'Регистрация — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1>Регистрация</h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/register" class="stack">
+    <%- include('partials/csrf') %>
+    <label>Пълно име
+      <input type="text" name="full_name" required autocomplete="name">
+    </label>
+    <label>Имейл
+      <input type="email" name="email" value="<%= email %>" required autocomplete="email">
+    </label>
+    <label>Парола (минимум 10 символа)
+      <input type="password" name="password" required minlength="10" autocomplete="new-password">
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="consent" required>
+      <span>Съгласявам се здравните ми данни да се обработват и да са достъпни чрез
+        моя QR код в спешна ситуация, съгласно
+        <a href="/privacy" target="_blank">Политиката за поверителност</a>.</span>
+    </label>
+    <button type="submit" class="btn">Създай профил</button>
+  </form>
+  <p>Вече имате профил? <a href="/login">Вход</a></p>
+</section>
+
+<%- include('partials/foot') %>

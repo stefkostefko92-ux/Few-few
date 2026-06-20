@@ -1,0 +1,77 @@
+<%- include('partials/head', { title: 'Редакция на профил — MedQR', user }) %>
+
+<h1>Редакция на медицински профил</h1>
+<% if (typeof error !== 'undefined' && error) { %><p class="error" role="alert"><%= error %></p><% } %>
+
+<form method="post" action="/profile/edit" class="stack form-wide">
+  <%- include('partials/csrf') %>
+  <fieldset>
+    <legend>Самоличност</legend>
+    <label>Пълно име *
+      <input type="text" name="full_name" value="<%= profile.full_name || '' %>" required>
+    </label>
+    <label>Дата на раждане
+      <input type="date" name="date_of_birth" value="<%= profile.date_of_birth || '' %>">
+    </label>
+    <label>Предпочитан език за комуникация
+      <input type="text" name="preferred_language" value="<%= profile.preferred_language || '' %>" placeholder="напр. български">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Медицинска информация</legend>
+    <label>Кръвна група
+      <select name="blood_type">
+        <% ['','0 Rh+','0 Rh-','A Rh+','A Rh-','B Rh+','B Rh-','AB Rh+','AB Rh-','Не знам'].forEach(b => { %>
+          <option value="<%= b %>" <%= profile.blood_type === b ? 'selected' : '' %>><%= b || '— изберете —' %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Алергии към лекарства
+      <textarea name="allergies" rows="2" placeholder="напр. пеницилин, аспирин"><%= profile.allergies || '' %></textarea>
+    </label>
+    <label>Хронични заболявания / състояния
+      <textarea name="chronic_conditions" rows="2" placeholder="напр. диабет тип 1, епилепсия, астма"><%= profile.chronic_conditions || '' %></textarea>
+    </label>
+    <label>Текущи медикаменти
+      <textarea name="current_medications" rows="2" placeholder="напр. инсулин, антикоагуланти"><%= profile.current_medications || '' %></textarea>
+    </label>
+    <label>Друга важна информация
+      <textarea name="additional_notes" rows="2" placeholder="напр. пейсмейкър, бременност, донор на органи"><%= profile.additional_notes || '' %></textarea>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Слух и комуникация</legend>
+    <label>Слухов статус
+      <select name="hearing_status">
+        <% ['','Без слухови проблеми','Намален слух','Ползва слухов апарат','Кохлеарен имплант','Глух/а'].forEach(h => { %>
+          <option value="<%= h %>" <%= profile.hearing_status === h ? 'selected' : '' %>><%= h || '— изберете —' %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Предпочитан начин на комуникация
+      <input type="text" name="communication_pref" value="<%= profile.communication_pref || '' %>" placeholder="напр. писмено, жестов език, четене по устни">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Спешен контакт</legend>
+    <label>Име на близък
+      <input type="text" name="emergency_contact_name" value="<%= profile.emergency_contact_name || '' %>">
+    </label>
+    <label>Телефон за връзка
+      <input type="tel" name="emergency_contact_phone" value="<%= profile.emergency_contact_phone || '' %>" placeholder="+359...">
+    </label>
+    <label>Роднинска връзка
+      <input type="text" name="emergency_contact_relation" value="<%= profile.emergency_contact_relation || '' %>" placeholder="напр. съпруг, дъщеря">
+    </label>
+  </fieldset>
+
+  <div class="cta-row">
+    <button type="submit" class="btn">Запази</button>
+    <a class="btn btn-ghost" href="/dashboard">Откажи</a>
+  </div>
+</form>
+
+<%- include('partials/foot') %>

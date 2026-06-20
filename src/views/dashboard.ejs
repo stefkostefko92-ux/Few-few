@@ -1,0 +1,171 @@
+<%- include('partials/head', { title: 'Моят профил — MedQR', user }) %>
+
+<h1>Моят спешен профил</h1>
+<% if (saved) { %><p class="success" role="status">Промените са запазени.</p><% } %>
+<% if (!account.email_verified) { %>
+  <div class="warn-banner" role="alert">
+    <%- include('partials/icon', { name: 'alert' }) %> Имейлът ви не е потвърден.
+    <form method="post" action="/verify-email/resend" class="inline">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="link-btn-dark">Изпрати нов линк за потвърждение</button>
+    </form>
+  </div>
+<% } %>
+
+<div class="grid-2">
+  <section class="card">
+    <h2><%= profile.full_name %></h2>
+    <dl class="profile-view">
+      <dt>Кръвна група</dt><dd><%= profile.blood_type || '—' %></dd>
+      <dt>Алергии (лекарства)</dt><dd><%= profile.allergies || '—' %></dd>
+      <dt>Хронични заболявания</dt><dd><%= profile.chronic_conditions || '—' %></dd>
+      <dt>Текущи медикаменти</dt><dd><%= profile.current_medications || '—' %></dd>
+      <dt>Слухов статус</dt><dd><%= profile.hearing_status || '—' %></dd>
+      <dt>Комуникация</dt><dd><%= profile.communication_pref || '—' %></dd>
+      <dt>Спешен контакт</dt>
+      <dd>
+        <%= profile.emergency_contact_name || '—' %>
+        <% if (profile.emergency_contact_phone) { %>
+          · <a href="tel:<%= profile.emergency_contact_phone %>"><%= profile.emergency_contact_phone %></a>
+        <% } %>
+      </dd>
+    </dl>
+    <a class="btn" href="/profile/edit"><%- include('partials/icon', { name: 'edit' }) %> Редактирай данните</a>
+  </section>
+
+  <section class="card center">
+    <h2>Вашият QR етикет</h2>
+    <div class="qr-frame">
+      <img
+        class="qr-label"
+        id="qr-preview"
+        src="/label.svg?size=medium"
+        alt="Спешен медицински етикет с QR код"
+      />
+    </div>
+    <p class="muted small">Етикетът винаги показва, че това са спешни медицински данни.</p>
+
+    <fieldset class="qr-sizes" id="qr-sizes">
+      <legend>Размер</legend>
+      <% Object.entries(qrSizes).forEach(([key, s], i) => { %>
+        <button
+          type="button"
+          class="size-btn<%= key === 'medium' ? ' is-active' : '' %>"
+          data-qr-size="<%= key %>"
+        >
+          <%= s.label %>
+        </button>
+      <% }) %>
+    </fieldset>
+
+    <div class="cta-row">
+      <a class="btn btn-small" id="dl-label" href="/label.svg?size=medium" download="medqr-етикет.svg">
+        <%- include('partials/icon', { name: 'download' }) %> Изтегли етикет (SVG)
+      </a>
+      <a class="btn btn-small btn-ghost" id="dl-qr" href="/qr.png?size=medium" download="medqr-qr.png">
+        <%- include('partials/icon', { name: 'download' }) %> Само QR (PNG)
+      </a>
+      <a class="btn btn-small btn-ghost" href="/card" target="_blank">
+        <%- include('partials/icon', { name: 'card' }) %> Карта за портфейл
+      </a>
+    </div>
+    <p class="muted small">Адрес на профила: <br /><code><%= emergencyUrl %></code></p>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Сигурност</h2>
+
+  <form method="post" action="/profile/pin" class="inline-form">
+    <%- include('partials/csrf') %>
+    <label>Незадължителен PIN (4–8 цифри) за допълнителна защита
+      <input type="text" name="pin" inputmode="numeric" pattern="\d{4,8}" placeholder="напр. 1234">
+    </label>
+    <button type="submit" class="btn-small btn">Запази PIN</button>
+    <span class="muted small">Празно поле премахва PIN-а.</span>
+  </form>
+
+  <p class="security-row">
+    <strong>Двуфакторна автентикация (2FA):</strong>
+    <% if (account.totp_enabled) { %>
+      <span class="badge badge-ok">включена</span>
+      <span class="muted small">· резервни кодове: <%= recoveryCount %></span>
+    <% } else { %>
+      <span class="badge">изключена</span>
+    <% } %>
+    <a class="btn-small btn btn-ghost" href="/profile/2fa"><%- include('partials/icon', { name: 'shield-check' }) %> Настрой 2FA</a>
+  </p>
+
+  <p class="security-row">
+    <strong>Паскейове (passkeys):</strong>
+    <span class="muted small">вход без парола, устойчив на фишинг</span>
+    <a class="btn-small btn btn-ghost" href="/profile/passkeys"><%- include('partials/icon', { name: 'shield-check' }) %> Управление</a>
+  </p>
+
+  <form method="post" action="/profile/rotate-token" class="inline-form"
+        data-confirm="Това ще обезсили текущия QR код и всички разпечатани карти. Сигурни ли сте?">
+    <%- include('partials/csrf') %>
+    <button type="submit" class="btn-small btn-danger"><%- include('partials/icon', { name: 'refresh' }) %> Издай нов QR код (обезсили стария)</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Моите данни и права (GDPR)</h2>
+  <p class="muted small">Съгласие дадено на: <%= account.consent_at || '—' %></p>
+  <div class="cta-row">
+    <a class="btn btn-small btn-ghost" href="/profile/export.json"><%- include('partials/icon', { name: 'download' }) %> Изтегли данните ми (JSON)</a>
+    <a class="btn btn-small btn-danger" href="/profile/delete"><%- include('partials/icon', { name: 'trash' }) %> Изтрий профила ми</a>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Активни устройства</h2>
+  <div class="table-wrap">
+    <table class="log">
+      <thead><tr><th>Устройство</th><th>IP</th><th>Последна активност</th></tr></thead>
+      <tbody>
+        <% sessions.forEach(s => { %>
+          <tr>
+            <td class="small">
+              <%= s.user_agent || '—' %>
+              <% if (s.current) { %><span class="badge badge-ok">текущо</span><% } %>
+            </td>
+            <td><%= s.ip || '—' %></td>
+            <td><%= s.last_seen %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (sessions.length > 1) { %>
+    <form method="post" action="/profile/sessions/revoke-others" class="inline-form"
+          data-confirm="Това ще прекрати всички сесии освен текущата. Продължавате ли?">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn-small btn-danger">Изход от всички други устройства</button>
+    </form>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2>Журнал на достъпите</h2>
+  <% if (recentAccess.length === 0) { %>
+    <p class="muted">Все още няма сканирания на вашия код.</p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="log">
+        <thead><tr><th>Кога</th><th>IP</th><th>Устройство</th></tr></thead>
+        <tbody>
+          <% recentAccess.forEach(a => { %>
+            <tr>
+              <td><%= a.accessed_at %></td>
+              <td><%= a.ip || '—' %></td>
+              <td class="small"><%= a.user_agent || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

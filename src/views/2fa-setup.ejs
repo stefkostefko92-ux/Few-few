@@ -1,0 +1,52 @@
+<%- include('partials/head', { title: 'Настройка на 2FA — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1>Двуфакторна автентикация (2FA)</h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+
+  <% if (state === 'enabled') { %>
+    <p class="success">2FA е <strong>включена</strong> за вашия профил.</p>
+
+    <p>Налични резервни кодове: <strong><%= recoveryCount %></strong>. Те се ползват
+      еднократно, ако нямате достъп до приложението за автентикация.</p>
+    <form method="post" action="/profile/2fa/recovery" class="inline-form"
+          data-confirm="Това ще генерира нови кодове и ще обезсили старите. Продължавате ли?">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn-small btn btn-ghost">Генерирай нови резервни кодове</button>
+    </form>
+
+    <p>За да изключите 2FA, потвърдете с паролата си.</p>
+    <form method="post" action="/profile/2fa/disable" class="stack"
+          data-confirm="Сигурни ли сте, че искате да изключите 2FA?">
+      <%- include('partials/csrf') %>
+      <label>Парола
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-danger">Изключи 2FA</button>
+    </form>
+
+  <% } else if (state === 'pending') { %>
+    <p>1. Сканирайте кода с приложение за автентикация или въведете ключа ръчно.</p>
+    <p class="center"><img src="<%= qr %>" alt="QR код за настройка на 2FA" class="qr"></p>
+    <p>2. Въведете генерирания 6-цифрен код, за да потвърдите.</p>
+    <form method="post" action="/profile/2fa/enable" class="stack">
+      <%- include('partials/csrf') %>
+      <label>Код
+        <input type="text" name="code" inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" required autofocus>
+      </label>
+      <button type="submit" class="btn">Включи 2FA</button>
+    </form>
+
+  <% } else { %>
+    <p>Добавете втори фактор при вход — еднократен код от приложение за автентикация.
+      Това силно затруднява достъпа дори при изтекла парола.</p>
+    <form method="post" action="/profile/2fa/init" class="stack">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn">Започни настройка</button>
+    </form>
+  <% } %>
+
+  <p><a href="/dashboard">Назад към профила</a></p>
+</section>
+
+<%- include('partials/foot') %>

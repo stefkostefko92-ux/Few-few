@@ -1,0 +1,17 @@
+<%- include('partials/head', { title: 'Двуфакторна проверка — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> Двуфакторна проверка</h1>
+  <p>Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy).</p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/2fa" class="stack">
+    <%- include('partials/csrf') %>
+    <label>Код
+      <input type="text" name="code" inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" required autofocus>
+    </label>
+    <button type="submit" class="btn">Потвърди</button>
+  </form>
+  <p><a href="/login">Назад към вход</a></p>
+</section>
+
+<%- include('partials/foot') %>

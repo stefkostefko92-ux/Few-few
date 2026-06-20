@@ -1,0 +1,15 @@
+Copyright (c) 2026 CarbonStealth VCC. All rights reserved.
+
+This software and its source code are proprietary and confidential.
+
+No part of this software may be copied, modified, distributed, sublicensed,
+published, or used to create derivative works, in whole or in part, without the
+prior written permission of CarbonStealth VCC.
+
+The software is provided "as is", without warranty of any kind, express or
+implied. It is not a medical device and does not provide medical advice,
+diagnosis, or treatment.
+
+Third-party components are distributed under their own licenses (see the
+respective packages in node_modules). The bundled Inter font is licensed under
+the SIL Open Font License — see public/fonts/OFL.txt.

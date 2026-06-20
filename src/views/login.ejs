@@ -1,0 +1,30 @@
+<%- include('partials/head', { title: 'Вход — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1>Вход</h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login" class="stack">
+    <%- include('partials/csrf') %>
+    <label>Имейл
+      <input type="email" name="email" value="<%= email %>" required autocomplete="email">
+    </label>
+    <label>Парола
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn">Вход</button>
+  </form>
+
+  <p class="or-sep">или</p>
+  <p class="error" role="alert" data-webauthn-error hidden></p>
+  <button type="button" class="btn btn-ghost btn-block" data-webauthn="login">
+    <%- include('partials/icon', { name: 'shield-check' }) %> Вход с паскей
+  </button>
+
+  <p><a href="/forgot">Забравена парола?</a></p>
+  <p>Нямате профил? <a href="/register">Регистрация</a></p>
+</section>
+
+<script src="/vendor/simplewebauthn-browser.umd.min.js" defer></script>
+<script src="/webauthn.js" defer></script>
+
+<%- include('partials/foot') %>
