@@ -122,7 +122,7 @@ export async function SiteFooter() {
             </p>
           </div>
           <p className="text-slate-500">
-            Изработка на сайта:{" "}
+            Изработка и поддръжка на сайта:{" "}
             <a
               href="https://carbonstealth.eu"
               target="_blank"

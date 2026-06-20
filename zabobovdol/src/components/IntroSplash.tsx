@@ -10,7 +10,10 @@ import { SITE } from "@/lib/site";
 export function IntroSplash() {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
-  const [visible, setVisible] = useState(!isAdmin);
+  // Започва скрит; показва се само при ПЪРВО влизане в сайта за сесията
+  // (решава се в useEffect долу — за да няма разлика сървър/клиент и да НЕ
+  // изскача пак при навигация, търсене или презареждане).
+  const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [visitorNo, setVisitorNo] = useState<number | null>(null);
 
@@ -50,10 +53,16 @@ export function IntroSplash() {
   }, [isAdmin]);
 
   useEffect(() => {
-    if (isAdmin) {
-      setVisible(false);
-      return;
+    if (isAdmin || !SITE.intro.enabled) return;
+    // Показваме началния екран само веднъж за сесията на браузъра. Така при
+    // навигация, търсене или презареждане (вкл. пълно) той не изскача отново.
+    try {
+      if (sessionStorage.getItem("zbd_splash_seen")) return;
+      sessionStorage.setItem("zbd_splash_seen", "1");
+    } catch {
+      /* sessionStorage недостъпен — показваме веднъж нормално */
     }
+    setVisible(true);
     document.body.style.overflow = "hidden";
     const t1 = setTimeout(() => setLeaving(true), seconds * 1000 - 500);
     const t2 = setTimeout(() => {
