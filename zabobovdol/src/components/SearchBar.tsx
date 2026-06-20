@@ -70,12 +70,12 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
         e.preventDefault();
         go(q);
       }}
-      className="flex items-center gap-2"
+      className="flex w-full items-center gap-2"
     >
       <label htmlFor="site-search" className="sr-only">
         Търсене в сайта
       </label>
-      <div className="relative flex-1">
+      <div className="relative min-w-0 flex-1">
         <input
           id="site-search"
           type="search"

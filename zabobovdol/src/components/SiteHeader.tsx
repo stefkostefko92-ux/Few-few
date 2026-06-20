@@ -35,14 +35,14 @@ export function SiteHeader() {
             </span>
           </Link>
 
-          <div className="hidden flex-1 justify-center px-4 lg:flex">
+          <div className="hidden min-w-0 flex-1 px-4 lg:flex">
             <div className="w-full max-w-md">
               <SearchBar compact />
             </div>
           </div>
 
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Основно меню">
-            {PRIMARY_NAV.slice(0, 5).map((item) => (
+          <nav className="hidden shrink-0 items-center gap-1 lg:flex" aria-label="Основно меню">
+            {PRIMARY_NAV.slice(0, 3).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
