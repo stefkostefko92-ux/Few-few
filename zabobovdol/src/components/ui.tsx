@@ -15,7 +15,7 @@ export function PageHero({
   eyebrow?: string;
 }) {
   return (
-    <div className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
+    <div className="page-hero relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
       {/* Герб като дискретен воден знак */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
