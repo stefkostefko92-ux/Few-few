@@ -46,7 +46,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="rounded-md px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100"
               >
                 {item.label}
               </Link>
@@ -91,7 +91,7 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-base font-medium text-slate-800 hover:bg-slate-100"
+                  className="rounded-md px-3 py-2.5 text-base font-semibold text-slate-900 hover:bg-slate-100"
                 >
                   {item.label}
                   {item.description && (
