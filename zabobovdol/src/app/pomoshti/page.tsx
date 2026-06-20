@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Coins, Flame, HeartPulse, FileText, Phone, Soup, ArrowRight } from "lucide-react";
+import { Coins, Flame, HeartPulse, FileText, Phone, Soup, ArrowRight } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/ui";
 import { buildMetadata, faqPageLd } from "@/lib/seo";

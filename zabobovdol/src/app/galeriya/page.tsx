@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Camera, Plus } from "lucide-react";
+import { Camera, Plus } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Zap, Droplets, CalendarClock, CheckCircle2 } from "lucide-react";
+import { Zap, Droplets, CalendarClock, CheckCircle2 } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";

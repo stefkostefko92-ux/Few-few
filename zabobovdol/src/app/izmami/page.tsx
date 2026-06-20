@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ShieldCheck, AlertTriangle, PhoneOff, Ban, Lock, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, AlertTriangle, PhoneOff, Ban, Lock, CheckCircle2 } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
 import { buildMetadata, faqPageLd } from "@/lib/seo";

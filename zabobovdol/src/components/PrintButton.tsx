@@ -1,6 +1,6 @@
 "use client";
 
-import { Printer } from "lucide-react";
+import { Printer } from "@/components/icons";
 
 // Браузърите вградени във Facebook/Instagram/Messenger често НЕ могат да
 // отварят прозорец за печат — затова ги разпознаваме и даваме ясна инструкция.

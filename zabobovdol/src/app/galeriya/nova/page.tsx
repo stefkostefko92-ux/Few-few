@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "@/components/icons";
 import { PageHero } from "@/components/ui";
 import { submitPhoto, type PhotoState } from "./actions";
 import { SITE } from "@/lib/site";

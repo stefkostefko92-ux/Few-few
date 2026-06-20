@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Cloud, CloudRain, CloudSnow, Sun, CloudSun, CloudFog, Zap } from "lucide-react";
+import { Cloud, CloudRain, CloudSnow, Sun, CloudSun, CloudFog, Zap } from "@/components/icons";
 import { SITE } from "@/lib/site";
 
 type Now = { temp: number; code: number; max: number; min: number };

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Phone, Clock } from "lucide-react";
+import { Phone, Clock } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";

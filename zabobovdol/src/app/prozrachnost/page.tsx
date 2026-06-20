@@ -7,7 +7,7 @@ import {
   ExternalLink,
   Info,
   ListChecks,
-} from "lucide-react";
+} from "@/components/icons";
 import { PageHero, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, webPageLd, breadcrumbLd, canonical } from "@/lib/seo";

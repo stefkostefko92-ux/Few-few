@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Cross, Phone, MapPin, Clock, Stethoscope } from "lucide-react";
+import { Cross, Phone, MapPin, Clock, Stethoscope } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";

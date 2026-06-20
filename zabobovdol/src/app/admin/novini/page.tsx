@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw } from "@/components/icons";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { runNewsImport } from "@/lib/admin/news-actions";

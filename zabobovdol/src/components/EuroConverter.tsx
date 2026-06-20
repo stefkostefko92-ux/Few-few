@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft } from "@/components/icons";
 
 // Фиксиран официален курс на превалутиране (1 евро = 1.95583 лева).
 const RATE = 1.95583;

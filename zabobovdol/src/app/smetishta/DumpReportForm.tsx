@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "@/components/icons";
 import { submitDumpReport, type DumpState } from "./actions";
 
 const initial: DumpState = { ok: false };

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Type, Contrast, Volume2, Square, Hand, Info } from "lucide-react";
+import { Type, Contrast, Volume2, Square, Hand, Info } from "@/components/icons";
 
 // Нива на уголемяване на шрифта → размер на корена (html). Понеже всичко е в
 // rem, целият сайт (текст и отстояния) се мащабира пропорционално.

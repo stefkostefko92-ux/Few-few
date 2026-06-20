@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 
 // Показва закачено предупреждение за измама като видна лента (ако има активно).

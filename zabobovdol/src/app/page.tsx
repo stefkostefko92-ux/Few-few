@@ -33,7 +33,7 @@ import {
   Zap,
   Banknote,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/icons";
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   "/kak-da": HelpCircle,

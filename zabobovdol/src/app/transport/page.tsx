@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
-import { Phone, TrainFront, Bus, Car } from "lucide-react";
+import { Phone, TrainFront, Bus, Car } from "@/components/icons";
 
 import { BUS } from "@/lib/bus-schedule";
 

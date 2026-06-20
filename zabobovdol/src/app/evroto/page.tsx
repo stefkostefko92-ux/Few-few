@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Euro, AlertTriangle, CalendarClock, Coins, Landmark } from "lucide-react";
+import { Euro, AlertTriangle, CalendarClock, Coins, Landmark } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose, EmptyState } from "@/components/ui";
 import { buildMetadata, faqPageLd } from "@/lib/seo";

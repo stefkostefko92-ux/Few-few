@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send } from "@/components/icons";
 
 type Msg = {
   role: "user" | "bot";

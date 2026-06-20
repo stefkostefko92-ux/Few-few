@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Phone } from "lucide-react";
+import { Phone } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";

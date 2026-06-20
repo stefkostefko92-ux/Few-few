@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, Coins } from "lucide-react";
+import { Clock, Coins } from "@/components/icons";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";

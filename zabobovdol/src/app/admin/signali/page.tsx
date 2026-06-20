@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { Mail, MapPin } from "lucide-react";
+import { Mail, MapPin } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { MUNICIPALITY_EMAIL } from "@/lib/mail";
 import { setComplaintStatus, deleteComplaint } from "@/lib/admin/complaint-actions";

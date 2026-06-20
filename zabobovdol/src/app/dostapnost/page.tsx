@@ -11,7 +11,7 @@ import {
   MapPin,
   Phone,
   Keyboard,
-} from "lucide-react";
+} from "@/components/icons";
 import { PageHero } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd, faqPageLd } from "@/lib/seo";

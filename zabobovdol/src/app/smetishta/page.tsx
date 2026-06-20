@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Trash2, MapPin } from "lucide-react";
+import { Trash2, MapPin } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";

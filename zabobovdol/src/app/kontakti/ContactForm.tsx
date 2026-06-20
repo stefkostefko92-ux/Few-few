@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "@/components/icons";
 import { submitContact, type ContactState } from "./actions";
 
 const initial: ContactState = { ok: false };

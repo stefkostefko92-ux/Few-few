@@ -9,7 +9,7 @@ import {
   Church,
   TreePine,
   BookOpen,
-} from "lucide-react";
+} from "@/components/icons";
 import { PageHero, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, breadcrumbLd } from "@/lib/seo";
