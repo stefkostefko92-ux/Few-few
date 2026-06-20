@@ -81,7 +81,7 @@ export function SiteHeader() {
         </div>
 
         {open && (
-          <div className="border-t border-slate-200 py-3 lg:hidden">
+          <div className="animate-fade-in border-t border-slate-200 py-3 lg:hidden">
             <div className="mb-3">
               <SearchBar />
             </div>

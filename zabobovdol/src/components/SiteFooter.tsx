@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Phone, Mail } from "@/components/icons";
 import { SITE, PRIMARY_NAV, FOOTER_NAV } from "@/lib/site";
 import { getFacebookUrl } from "@/lib/settings";
 
@@ -75,8 +76,8 @@ export async function SiteFooter() {
               ))}
             </ul>
             {SITE.contact.phone && (
-              <p className="mt-3 text-sm text-slate-700">
-                Телефон:{" "}
+              <p className="mt-3 flex items-center gap-2 text-sm text-slate-700">
+                <Phone className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
                 <a
                   href={`tel:${SITE.contact.phone.replace(/\s/g, "")}`}
                   className="font-semibold text-brand-700 hover:underline"
@@ -86,11 +87,11 @@ export async function SiteFooter() {
               </p>
             )}
             {SITE.contact.email && (
-              <p className="mt-1 text-sm text-slate-700">
-                Имейл:{" "}
+              <p className="mt-1.5 flex items-center gap-2 text-sm text-slate-700">
+                <Mail className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
                 <a
                   href={`mailto:${SITE.contact.email}`}
-                  className="text-brand-700 hover:underline"
+                  className="break-all text-brand-700 hover:underline"
                 >
                   {SITE.contact.email}
                 </a>

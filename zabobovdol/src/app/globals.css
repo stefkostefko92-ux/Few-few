@@ -15,8 +15,8 @@ body {
   /* Леко топъл, „хартиен“ фон вместо стандартно сиво — по-човешко усещане. */
   background-color: #faf8f3;
   @apply text-slate-900 antialiased;
-  font-size: 1.0625rem;
-  line-height: 1.65;
+  font-size: 1.125rem; /* по-едър базов текст за по-добра четимост (възрастни) */
+  line-height: 1.7;
 }
 
 /* Заглавията са със серифен шрифт — дава характер и тежест на сайта. */
@@ -147,6 +147,18 @@ h4,
 @media (prefers-reduced-motion: reduce) {
   .splash-crest,
   .splash-text { animation: none; }
+}
+
+/* Меко появяване (мобилно меню, изскачащи панели) */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeInDown 0.18s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in { animation: none; }
 }
 
 /* Висок контраст (достъпност) — по-черен текст, по-силни граници и връзки.

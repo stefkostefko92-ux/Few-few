@@ -59,6 +59,30 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/galeriya": Camera,
 };
 
+// Цветова тема за всяка категория — за по-лесно разпознаване и по-жив вид.
+// Ползваме нюанси -100/-700, които НЕ се променят в тъмен режим (остават
+// като цветни „значки" на тъмните карти).
+const NAV_COLOR: Record<string, string> = {
+  "/kak-da": "blue", "/uslugi": "sky", "/novini": "blue",
+  "/izmami": "rose", "/signali": "rose", "/zov-za-pomosht": "rose", "/sabitiya": "rose",
+  "/dezhurna-apteka": "green", "/smetishta": "green",
+  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber",
+  "/biznes": "purple", "/spomeni": "purple", "/galeriya": "purple",
+  "/obyavi": "orange",
+  "/transport": "sky",
+  "/prozrachnost": "teal", "/grada": "teal", "/dobrovolci": "teal",
+};
+const COLOR: Record<string, { chip: string; title: string }> = {
+  blue: { chip: "bg-blue-100 text-blue-700 group-hover:bg-blue-600 group-hover:text-white", title: "group-hover:text-blue-700" },
+  sky: { chip: "bg-sky-100 text-sky-700 group-hover:bg-sky-600 group-hover:text-white", title: "group-hover:text-sky-700" },
+  green: { chip: "bg-green-100 text-green-700 group-hover:bg-green-600 group-hover:text-white", title: "group-hover:text-green-700" },
+  amber: { chip: "bg-amber-100 text-amber-700 group-hover:bg-amber-600 group-hover:text-white", title: "group-hover:text-amber-700" },
+  rose: { chip: "bg-rose-100 text-rose-700 group-hover:bg-rose-600 group-hover:text-white", title: "group-hover:text-rose-700" },
+  purple: { chip: "bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white", title: "group-hover:text-purple-700" },
+  orange: { chip: "bg-orange-100 text-orange-700 group-hover:bg-orange-600 group-hover:text-white", title: "group-hover:text-orange-700" },
+  teal: { chip: "bg-teal-100 text-teal-700 group-hover:bg-teal-600 group-hover:text-white", title: "group-hover:text-teal-700" },
+};
+
 export const dynamic = "force-dynamic";
 
 function formatDate(d: Date): string {
@@ -210,13 +234,14 @@ export default async function HomePage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PRIMARY_NAV.map((item) => {
             const Icon = NAV_ICONS[item.href] ?? HelpCircle;
+            const c = COLOR[NAV_COLOR[item.href] ?? "blue"];
             return (
               <Link key={item.href} href={item.href} className="card group flex items-start gap-4">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-700 group-hover:text-white">
-                  <Icon className="h-6 w-6" aria-hidden />
+                <span className={"grid h-12 w-12 shrink-0 place-items-center rounded-xl transition duration-200 group-hover:scale-110 " + c.chip}>
+                  <Icon className="h-7 w-7" aria-hidden />
                 </span>
                 <span>
-                  <span className="block font-display text-lg font-bold text-slate-900 group-hover:text-brand-700">
+                  <span className={"block font-display text-lg font-bold text-slate-900 " + c.title}>
                     {item.label}
                   </span>
                   <span className="mt-0.5 block text-sm text-slate-600">{item.description}</span>
