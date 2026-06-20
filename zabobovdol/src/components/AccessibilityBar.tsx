@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Type, Contrast, Volume2, Square, Hand, Info, Moon } from "@/components/icons";
@@ -30,7 +30,9 @@ export function AccessibilityBar() {
   const [bigTouch, setBigTouch] = useState(false);
   const [dark, setDark] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Зареждане на запазените предпочитания.
   useEffect(() => {
@@ -53,14 +55,27 @@ export function AccessibilityBar() {
     setCanSpeak(typeof window !== "undefined" && "speechSynthesis" in window);
   }, []);
 
-  // Спира четенето при смяна на страницата.
+  // Спира четенето (глас и аудио) при смяна на страницата.
   useEffect(() => {
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+      try {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      } catch {
+        /* ignore */
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
     };
   }, [pathname]);
+
+  // Зарежда списъка с гласове рано (на някои браузъри е празен при старт).
+  useEffect(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+    }
+  }, []);
 
   const chooseFont = useCallback((level: string) => {
     setFont(level);
@@ -122,31 +137,88 @@ export function AccessibilityBar() {
     });
   }, []);
 
-  const toggleSpeak = useCallback(() => {
+  const stopAll = useCallback(() => {
+    try {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    } catch {
+      /* ignore */
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    setSpeaking(false);
+    setPreparing(false);
+  }, []);
+
+  // Резервен глас на браузъра — избира ЖЕНСКИ български глас и по-топла интонация.
+  const speakWithBrowser = useCallback((text: string) => {
     if (!("speechSynthesis" in window)) return;
     const synth = window.speechSynthesis;
-    if (synth.speaking || speaking) {
-      synth.cancel();
-      setSpeaking(false);
+    const voices = synth.getVoices();
+    const bg = voices.filter((v) => v.lang?.toLowerCase().startsWith("bg"));
+    const female =
+      bg.find((v) => /female|жена|daria|kalina|elena|silvia|google/i.test(v.name)) ||
+      bg.find((v) => !/ivan|male|мъж/i.test(v.name)) ||
+      bg[0];
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "bg-BG";
+    if (female) u.voice = female;
+    u.rate = 0.9; // по-бавно и по-ясно
+    u.pitch = 1.1; // малко по-висок, по-топъл тон
+    u.onend = () => setSpeaking(false);
+    u.onerror = () => setSpeaking(false);
+    synth.cancel();
+    synth.speak(u);
+    setSpeaking(true);
+  }, []);
+
+  const toggleSpeak = useCallback(async () => {
+    if (speaking || preparing) {
+      stopAll();
       return;
     }
     const main = document.getElementById("main");
     const text = (main?.innerText || document.body.innerText || "")
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 8000); // разумна горна граница
+      .slice(0, 8000);
     if (!text) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "bg-BG";
-    const bg = synth.getVoices().find((v) => v.lang?.toLowerCase().startsWith("bg"));
-    if (bg) u.voice = bg;
-    u.rate = 0.95;
-    u.onend = () => setSpeaking(false);
-    u.onerror = () => setSpeaking(false);
-    synth.cancel();
-    synth.speak(u);
-    setSpeaking(true);
-  }, [speaking]);
+
+    setPreparing(true);
+    // 1) Опит за топъл невронен глас (ако е настроен на сървъра).
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (res.ok && (res.headers.get("content-type") || "").includes("audio")) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          setSpeaking(false);
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          setSpeaking(false);
+        };
+        setPreparing(false);
+        setSpeaking(true);
+        await audio.play();
+        return;
+      }
+    } catch {
+      /* пада към браузърния глас */
+    }
+    // 2) Резервен вариант — гласът на браузъра.
+    setPreparing(false);
+    speakWithBrowser(text);
+  }, [speaking, preparing, stopAll, speakWithBrowser]);
 
   // Скрий лентата в админ зоната.
   if (pathname?.startsWith("/admin")) return null;
@@ -240,17 +312,22 @@ export function AccessibilityBar() {
         {canSpeak && (
           <button
             type="button"
-            onClick={toggleSpeak}
+            onClick={() => void toggleSpeak()}
             aria-pressed={speaking}
             className={
               "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
-              (speaking
+              (speaking || preparing
                 ? "bg-crimson-600 text-white hover:bg-crimson-700"
                 : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
             }
-            title="Чете съдържанието на страницата на глас"
+            title="Чете съдържанието на страницата на глас с топъл женски глас"
           >
-            {speaking ? (
+            {preparing ? (
+              <>
+                <Volume2 className="h-4 w-4 animate-pulse" aria-hidden />
+                Подготвям…
+              </>
+            ) : speaking ? (
               <>
                 <Square className="h-4 w-4" aria-hidden />
                 Спри четенето

@@ -40,6 +40,7 @@ const nextConfig = {
       scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
+      "media-src 'self' blob: data:",
       "font-src 'self' data:",
       `connect-src 'self' ${weather} ${analytics}`,
       "object-src 'none'",
