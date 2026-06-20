@@ -1,0 +1,16 @@
+// Вгражда структурирани данни (JSON-LD) в страницата.
+// Стойностите идват от собствените ни строители, не от потребителски вход.
+export function JsonLd({ data }: { data: unknown | unknown[] }) {
+  const items = Array.isArray(data) ? data : [data];
+  return (
+    <>
+      {items.map((item, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+        />
+      ))}
+    </>
+  );
+}

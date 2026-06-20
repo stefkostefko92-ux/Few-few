@@ -1,0 +1,482 @@
+// Дигитален помощник на Бобов дол — схема на данните.
+// База: PostgreSQL. ORM: Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum ServiceCategory {
+  HEALTH // Здраве (лекари, аптеки, болница)
+  ADMIN // Администрация (кметство, НАП, документи)
+  UTILITY // Комунални (ток, вода, отпадъци)
+  TRANSPORT // Транспорт
+  SOCIAL // Социални услуги
+  EMERGENCY // Спешни телефони
+  EDUCATION // Образование
+  OTHER // Друго
+}
+
+enum BusinessCategory {
+  SHOP // Магазин
+  FOOD // Храна / заведение
+  SERVICE // Услуга
+  CRAFT // Занаят
+  AGRO // Земеделие
+  TOURISM // Туризъм
+  HEALTH // Здраве / красота
+  OTHER // Друго
+}
+
+enum ListingType {
+  OFFER // Продавам / предлагам
+  WANTED // Купувам / търся
+  JOB // Работа
+  REALESTATE // Имоти
+  FREE // Подарявам
+  EVENT // Обява за събитие
+  OTHER // Друго
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(EDITOR)
+  active       Boolean    @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String // CREATE | UPDATE | DELETE | LOGIN | PUBLISH | UNPUBLISH
+  entity    String // Faq | Service | Business | Event | Listing | Post | User
+  entityId  String?
+  summary   String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model Faq {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  question       String
+  answer         String // Markdown
+  category       String   @default("Общи")
+  tags           String   @default("") // запетая-разделени
+  steps          String   @default("") // допълнителни стъпки, ред на ред
+  relatedLinks   String   @default("") // "Етикет|URL" на ред
+  seoTitle       String?
+  seoDescription String?
+  order          Int      @default(0)
+  views          Int      @default(0)
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([published, category])
+}
+
+model Service {
+  id             String          @id @default(cuid())
+  slug           String          @unique
+  name           String
+  category       ServiceCategory @default(OTHER)
+  description    String          @default("")
+  address        String          @default("")
+  phone          String          @default("")
+  phone2         String          @default("")
+  email          String          @default("")
+  website        String          @default("")
+  hours          String          @default("")
+  lat            Float?
+  lng            Float?
+  isEmergency    Boolean         @default(false)
+  seoTitle       String?
+  seoDescription String?
+  order          Int             @default(0)
+  published      Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([published, category])
+}
+
+model Business {
+  id             String           @id @default(cuid())
+  slug           String           @unique
+  name           String
+  category       BusinessCategory @default(OTHER)
+  description    String           @default("")
+  address        String           @default("")
+  phone          String           @default("")
+  email          String           @default("")
+  website        String           @default("")
+  facebook       String           @default("")
+  hours          String           @default("")
+  lat            Float?
+  lng            Float?
+  featured       Boolean          @default(false)
+  seoTitle       String?
+  seoDescription String?
+  order          Int              @default(0)
+  published      Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([published, category])
+}
+
+model Event {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  description    String   @default("")
+  location       String   @default("")
+  address        String   @default("")
+  lat            Float?
+  lng            Float?
+  startAt        DateTime
+  endAt          DateTime?
+  organizer      String   @default("")
+  url            String   @default("")
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([published, startAt])
+}
+
+model Listing {
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  title        String
+  description  String      @default("")
+  type         ListingType @default(OFFER)
+  category     String      @default("Общи")
+  price        String      @default("")
+  contactName  String      @default("")
+  contactPhone String      @default("")
+  contactEmail String      @default("")
+  published    Boolean     @default(false) // обявите минават през одобрение
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([published, type])
+  @@index([expiresAt])
+}
+
+model Post {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String    @default("")
+  content        String    @default("") // Markdown
+  coverImage     String    @default("")
+  source         String    @default("") // напр. „Община Бобов дол“ (за внесени новини)
+  sourceUrl      String    @default("") // линк към оригинала
+  sourceDate     DateTime? // дата от източника
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean   @default(false)
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+  @@index([sourceUrl])
+}
+
+enum ComplaintStatus {
+  NEW // Получен
+  FORWARDED // Препратен към институцията
+  RESOLVED // Решен
+  REJECTED // Отхвърлен
+}
+
+// Сигнал/оплакване от жител, което се препраща към общината/институция.
+model Complaint {
+  id          String          @id @default(cuid())
+  refCode     String          @unique // кратък код за проследяване от гражданина
+  name        String          @default("")
+  email       String          @default("")
+  phone       String          @default("")
+  category    String          @default("Общи")
+  subject     String
+  message     String
+  location    String          @default("")
+  status      ComplaintStatus @default(NEW)
+  forwardedTo String          @default("")
+  adminNote   String          @default("")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// Доброволци, които предлагат помощ на възрастните хора (мрежа вместо гише).
+model Volunteer {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  area      String   @default("") // квартал/район
+  skills    String   @default("") // с какво помага
+  about     String   @default("")
+  phone     String   @default("") // вижда се само в админ
+  email     String   @default("") // вижда се само в админ
+  published Boolean  @default(false) // минава през одобрение
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
+enum HelpKind {
+  NEED // Нужда от помощ
+  OFFER // Предлага помощ или дарение
+}
+
+enum RideKind {
+  OFFER // Предлага място в колата (шофьор)
+  NEED // Търси превоз / спътници
+}
+
+// „Споделено пътуване“ — обяви за споделяне на разходите по общ маршрут.
+model Rideshare {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  kind         RideKind @default(OFFER)
+  routeFrom    String // откъде
+  routeTo      String // докъде
+  schedule     String   @default("") // кога (дни/час)
+  seats        String   @default("") // свободни места (по избор)
+  costNote     String   @default("") // дял от разходите
+  description  String   @default("")
+  contactName  String   @default("")
+  contactPhone String   @default("")
+  contactEmail String   @default("")
+  published    Boolean  @default(false) // минава през одобрение
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, kind])
+}
+
+// „Зов за помощ“ — взаимопомощ и благотворителност за възрастните хора.
+model HelpCause {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String
+  kind         HelpKind @default(NEED)
+  beneficiary  String   @default("") // за кого е помощта
+  location     String   @default("")
+  contactName  String   @default("")
+  contactPhone String   @default("")
+  contactEmail String   @default("")
+  published    Boolean  @default(false) // минава през одобрение
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, kind])
+}
+
+// „Спомени от Бобов дол“ — споделени от жителите спомени и стари снимки.
+model Memory {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  author      String   @default("")
+  period      String   @default("") // напр. „1980-те“
+  content     String
+  imageUrl    String   @default("")
+  published   Boolean  @default(false) // минава през одобрение
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
+// Прости настройки на сайта (ключ-стойност), редактируеми от админ панела.
+model SiteSetting {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+// Атомарни броячи (напр. брояч на посетителите за началния екран).
+model Counter {
+  key       String   @id
+  value     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+// Галерия със снимки на града — с кредит към автора (кой я е снимал).
+model GalleryPhoto {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String   @default("") // кратко описание / къде е снимано
+  imageUrl         String   @default("") // линк към снимката
+  author           String   @default("") // кредит — кой е направил снимката
+  source           String   @default("") // източник/линк (по избор)
+  submitterContact String   @default("") // за връзка (само вътрешно)
+  published        Boolean  @default(false) // минава през одобрение
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([published, order])
+}
+
+enum DumpStatus {
+  NEW // Получен
+  CONFIRMED // Потвърден
+  FORWARDED // Препратен към общината
+  CLEANED // Почистен
+  REJECTED // Отхвърлен
+}
+
+// Сигнали за нерегламентирани (незаконни) сметища от граждани.
+// Показват се публично след одобрение, за да се вижда къде има проблем.
+model DumpReport {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  location      String // къде е сметището (улица/квартал/ориентир)
+  description   String     @default("")
+  photoUrl      String     @default("") // по избор — линк към снимка
+  reporterName  String     @default("") // само вътрешно (админ)
+  reporterPhone String     @default("") // само вътрешно (админ)
+  reporterEmail String     @default("") // само вътрешно (админ)
+  status        DumpStatus @default(NEW)
+  adminNote     String     @default("")
+  published     Boolean    @default(false) // минава през одобрение
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([published, status])
+}
+
+enum AdRequestStatus {
+  NEW // Получена
+  CONTACTED // Свързахме се
+  PAID // Платена
+  ACTIVE // Активна реклама
+  REJECTED // Отказана
+}
+
+// Заявка за реклама от потенциален рекламодател.
+model AdRequest {
+  id        String          @id @default(cuid())
+  fullName  String
+  email     String          @default("")
+  phone     String          @default("")
+  message   String          @default("")
+  status    AdRequestStatus @default(NEW)
+  adminNote String          @default("")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// Платени рекламни банери, показвани на началната страница (до 4 слота).
+model Banner {
+  id          String   @id @default(cuid())
+  title       String
+  sponsor     String   @default("")
+  description String   @default("")
+  imageUrl    String   @default("")
+  linkUrl     String   @default("")
+  bgColor     String   @default("") // напр. #000000 (за текстов банер)
+  accentColor String   @default("") // напр. #00e5ff
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, order])
+}
+
+// Свободни запитвания от чатбота/търсачката, които нямат отговор —
+// помагат да разберем какво всъщност търсят хората (валидация).
+model SearchMiss {
+  id        String   @id @default(cuid())
+  query     String
+  count     Int      @default(1)
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Предупреждения за актуални измами (телефонни/онлайн), редактирани от админ.
+// Помагат да пазим възрастните хора от схеми, които текат в момента.
+model ScamAlert {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  summary   String   @default("") // кратко описание (показва се в картата/лентата)
+  body      String   @default("") // Markdown — подробности и съвети
+  severity  String   @default("warning") // info | warning | danger
+  pinned    Boolean  @default(false) // показва се като лента на началната страница
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, order])
+}
+
+// Планови/аварийни прекъсвания на ток и вода — редактирани от админ.
+// Показват се на страница „Прекъсвания на ток и вода".
+model Outage {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  utility   String    @default("ELECTRICITY") // ELECTRICITY (ток) | WATER (вода)
+  area      String    @default("") // кои улици/квартали са засегнати
+  startAt   DateTime? // от кога
+  endAt     DateTime? // докога (очаквано)
+  note      String    @default("") // подробности (по избор, Markdown)
+  planned   Boolean   @default(true) // планово (true) или авария (false)
+  published Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([published, startAt])
+}
+
+// Съобщения, изпратени през формата за контакт (към проекта, не към общината).
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  subject   String   @default("")
+  message   String
+  handled   Boolean  @default(false) // отметка, че е обработено
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([handled, createdAt])
+}

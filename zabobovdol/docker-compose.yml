@@ -1,0 +1,109 @@
+# Продукционен стек за zabobovdol.carbonstealth.eu на VPS: приложение + база + reverse proxy.
+# Стартиране: docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-zabobovdol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zabobovdol}
+      POSTGRES_DB: ${POSTGRES_DB:-zabobovdol}
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zabobovdol}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      TZ: UTC
+      DATABASE_URL: postgresql://${POSTGRES_USER:-zabobovdol}:${POSTGRES_PASSWORD:-zabobovdol}@db:5432/${POSTGRES_DB:-zabobovdol}?schema=public
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://zabobovdol.carbonstealth.eu}
+      AUTH_SECRET: ${AUTH_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@carbonstealth.eu}
+      # Без стойност по подразбиране — задайте силна парола в .env.
+      # Сийдът отказва да създаде администратор със слаба/празна парола.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-Администратор}
+      CHAT_PROVIDER: ${CHAT_PROVIDER:-rules}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+      TTS_PROVIDER: ${TTS_PROVIDER:-}
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY:-}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-}
+      TTS_VOICE: ${TTS_VOICE:-bg-BG-KalinaNeural}
+      MUNICIPALITY_EMAIL: ${MUNICIPALITY_EMAIL:-obshtina@bobovdol.egov.bg}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@carbonstealth.eu}
+      MUNICIPALITY_NEWS_URL: ${MUNICIPALITY_NEWS_URL:-https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news}
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
+      # Папка за качените снимки (галерия). Пази се в постоянен том.
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      # Качените снимки оцеляват при рестарт/ребилд на контейнера.
+      - uploads:/app/uploads
+    expose:
+      - "3000"
+
+  # Автоматичен криптиран бекъп на базата (всеки ден в BACKUP_TIME).
+  # Криптира с публичен ключ (AGE_RECIPIENT) — restore е възможен само с
+  # частния ключ, който държиш офлайн. Виж scripts/README-backup.md.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TZ: ${BACKUP_TZ:-Europe/Sofia}
+      BACKUP_DIRECT: "1"
+      DB_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-zabobovdol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zabobovdol}
+      POSTGRES_DB: ${POSTGRES_DB:-zabobovdol}
+      BACKUP_DIR: /backups
+      BACKUP_TIME: ${BACKUP_TIME:-00:00}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-31}
+      BACKUP_ON_START: ${BACKUP_ON_START:-true}
+      AGE_RECIPIENT: ${AGE_RECIPIENT:-}
+      GPG_RECIPIENT: ${GPG_RECIPIENT:-}
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    entrypoint: ["/bin/sh", "/scripts/backup-entrypoint.sh"]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      # Портовете на хоста са сменяеми. На споделен сървър (където 80/443 вече
+      # са заети от друг nginx/панел) задайте в .env:
+      #   HTTP_BIND=127.0.0.1   HTTP_PORT=8080
+      # и проксирайте домейна от съществуващото reverse proxy към 127.0.0.1:8080.
+      - "${HTTP_BIND:-0.0.0.0}:${HTTP_PORT:-80}:80"
+      # За HTTPS на собствен сървър разкоментирайте (виж DEPLOY.md):
+      # - "${HTTP_BIND:-0.0.0.0}:${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/zabobovdol.conf:/etc/nginx/conf.d/default.conf:ro
+      # Уеб-коренът за ACME (Let's Encrypt) — ползва се от scripts/init-letsencrypt.sh.
+      - ./nginx/certbot:/var/www/certbot
+      # - ./nginx/certs:/etc/nginx/certs:ro
+
+volumes:
+  db-data:
+  uploads:

@@ -1,9 +1,0 @@
-{
-  "adventures": { "enabled": true, "strategy": "smart", "difficulty": "medium" },
-  "circle": { "enabled": true },
-  "dungeon": { "enabled": true },
-  "map": { "enabled": true, "encounters": true },
-  "training": { "enabled": false },
-  "pvp": { "enabled": false, "opponents": "" },
-  "webhooks": { "discordEnabled": false, "discordWebhook": "" }
-}

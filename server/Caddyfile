@@ -1,7 +1,0 @@
-# Replace license.example.com with your domain. Caddy fetches + renews TLS
-# certificates automatically (Let's Encrypt). It proxies HTTPS -> the license
-# service on the internal Docker network.
-license.example.com {
-	encode zstd gzip
-	reverse_proxy license:8787
-}
