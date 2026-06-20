@@ -1,9 +1,2 @@
 node_modules/
-*.zip
-dist/
-server/bindings.json
-controller/profiles/
-controller/accounts.json
-controller/settings/*.json
-!controller/settings/*.example.json
 .DS_Store
