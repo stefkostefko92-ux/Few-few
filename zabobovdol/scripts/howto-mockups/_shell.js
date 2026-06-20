@@ -65,7 +65,9 @@ async function render(screens) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 2 });
   for (const [name, html] of Object.entries(screens)) {
-    await page.setContent(html, { waitUntil: "networkidle" });
+    // Фрагментите (без <!doctype>) се увиват автоматично в рамката на телефон.
+    const full = html.trimStart().startsWith("<!doctype") ? html : phone(html);
+    await page.setContent(full, { waitUntil: "networkidle" });
     const el = await page.$(".phone");
     await el.screenshot({ path: path.join(OUT, `${name}.png`) });
     console.log("✔", name);

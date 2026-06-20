@@ -268,6 +268,113 @@ const MAP: Record<string, Illustration[]> = {
   "ph-mnogo-snimki": [
     { src: "/kak-da/photo-multi.png", alt: "Избор и изпращане на няколко снимки наведнъж" },
   ],
+
+  // ── Телефонни основи ──
+  "kak-da-vklyucha-izklyucha-telefona": [{ src: "/kak-da/power.png", alt: "Изключване на телефона чрез задържане на бутона" }],
+  "kak-da-zaklyucha-otklyucha-ekrana": [{ src: "/kak-da/lock-screen.png", alt: "Заключен екран — плъзнете нагоре за отключване" }],
+  "kak-da-promenya-zvuka-na-zvunene": [{ src: "/kak-da/ringer-volume.png", alt: "Плъзгач за силата на звънене" }],
+  "kak-da-uvelicha-yarkostta": [{ src: "/kak-da/brightness.png", alt: "Плъзгач за яркост на екрана в бързия панел" }],
+  "kak-da-polzvam-glasovo-tarsene": [{ src: "/kak-da/voice-search.png", alt: "Гласово търсене с микрофон" }],
+  "kak-da-vklyucha-fenercheto": [{ src: "/kak-da/flashlight.png", alt: "Включване на фенерчето от бързия панел" }],
+  "kak-da-zaredya-bateriyata": [{ src: "/kak-da/battery.png", alt: "Батерия и пестене на заряд" }],
+
+  // ── Настройки на телефона ──
+  "set-samoleten-rezhim": [{ src: "/kak-da/airplane.png", alt: "Самолетен режим в бързия панел" }],
+  "set-mobilni-danni": [{ src: "/kak-da/mobile-data.png", alt: "Включване на мобилните данни" }],
+  "set-bluetooth": [{ src: "/kak-da/bluetooth.png", alt: "Свързване на слушалки или колона по Bluetooth" }],
+  "set-premestya-ikona": [{ src: "/kak-da/move-icon.png", alt: "Преместване на икона на началния екран" }],
+  "set-papka-prilozheniya": [{ src: "/kak-da/app-folder.png", alt: "Папка с приложения" }],
+  "set-iztriya-prilozhenie": [{ src: "/kak-da/uninstall.png", alt: "Деинсталиране на приложение" }],
+  "set-obnovya-prilozhenie": [{ src: "/kak-da/update-app.png", alt: "Обновяване на приложение в Google Play" }],
+  "set-tarsya-prilozhenie": [{ src: "/kak-da/find-app.png", alt: "Намиране на приложение чрез търсене" }],
+  "set-avto-zavartane": [{ src: "/kak-da/auto-rotate.png", alt: "Автоматично завъртане на екрана" }],
+  "set-smenya-tapeta": [{ src: "/kak-da/wallpaper.png", alt: "Смяна на фона (тапета)" }],
+  "set-data-chas": [{ src: "/kak-da/date-time.png", alt: "Настройка на дата и час" }],
+  "set-smenya-ezik": [{ src: "/kak-da/phone-language.png", alt: "Смяна на езика на телефона" }],
+  "set-prastov-otpechatak": [{ src: "/kak-da/fingerprint.png", alt: "Отключване с пръстов отпечатък" }],
+  "set-otklyuchvane-lice": [{ src: "/kak-da/face-unlock.png", alt: "Отключване с лице" }],
+  "set-smenya-pin": [{ src: "/kak-da/change-pin.png", alt: "Смяна на ПИН код за отключване" }],
+  "set-izkl-izvestiya": [{ src: "/kak-da/app-notifications.png", alt: "Изключване на известията от приложение" }],
+  "set-vibraciya": [{ src: "/kak-da/vibration.png", alt: "Включване и изключване на вибрацията" }],
+  "set-blokiram-nomer": [{ src: "/kak-da/block-number.png", alt: "Блокиране на нежелан телефонен номер" }],
+  "set-nasilstven-restart": [{ src: "/kak-da/force-restart.png", alt: "Рестартиране на заседнал телефон с двата бутона" }],
+  "set-usilya-slushalka": [{ src: "/kak-da/call-volume.png", alt: "Усилване на звука по време на разговор" }],
+  "set-data-usage": [{ src: "/kak-da/data-usage.png", alt: "Проверка на изхарчените мобилни данни" }],
+
+  // ── Клавиатура и достъпност ──
+  "kb-iztriya-duma": [{ src: "/kak-da/kb-backspace.png", alt: "Триене на буква с бутона backspace" }],
+  "kb-golemi-bukvi": [{ src: "/kak-da/kb-caps.png", alt: "Писане с главни букви чрез стрелката Shift" }],
+  "kb-avtokorekciya": [{ src: "/kak-da/kb-autocorrect.png", alt: "Включване и изключване на автоматичната корекция" }],
+  "kb-po-golyama-klaviatura": [{ src: "/kak-da/kb-bigger.png", alt: "По-големи клавиши на клавиатурата" }],
+  "kb-redaktiram-izprateno": [{ src: "/kak-da/kb-edit.png", alt: "Поправяне на текст чрез поставяне на курсора" }],
+  "acc-ednoruchen": [{ src: "/kak-da/one-hand.png", alt: "Режим за ползване с една ръка" }],
+  "acc-namali-yarkost-avto": [{ src: "/kak-da/auto-brightness.png", alt: "Автоматична яркост на екрана" }],
+
+  // ── Интернет и браузър ──
+  "net-otmetka-zapazya": [{ src: "/kak-da/bookmark-add.png", alt: "Запазване на сайт в любими със звездичката" }],
+  "net-otvarya-otmetki": [{ src: "/kak-da/bookmarks-list.png", alt: "Списък със запазени отметки (любими сайтове)" }],
+  "net-nov-tab": [{ src: "/kak-da/new-tab.png", alt: "Отваряне на нов раздел (таб) в браузъра" }],
+  "net-zatvarya-tab": [{ src: "/kak-da/close-tab.png", alt: "Затваряне на раздел с хиксчето" }],
+  "net-osvezha": [{ src: "/kak-da/refresh.png", alt: "Презареждане на страницата" }],
+  "net-uvelicha-tekst": [{ src: "/kak-da/zoom-page.png", alt: "Уголемяване на текста на уеб страница с два пръста" }],
+  "net-prevod-stranica": [{ src: "/kak-da/translate-page.png", alt: "Превод на чужда страница на български" }],
+  "net-izteglya-snimka": [{ src: "/kak-da/save-image.png", alt: "Запазване на снимка от интернет" }],
+  "net-iztriya-istoriya": [{ src: "/kak-da/clear-history.png", alt: "Изчистване на историята на браузъра" }],
+  "net-svali-fayl": [{ src: "/kak-da/downloads.png", alt: "Списък с изтеглени файлове и снимки" }],
+
+  // ── Имейл (Gmail) ──
+  "mail-iztriya": [{ src: "/kak-da/mail-delete.png", alt: "Изтриване на имейл с кошчето" }],
+  "mail-izprateni": [{ src: "/kak-da/mail-sent.png", alt: "Папка с изпратени имейли" }],
+  "mail-tarsya": [{ src: "/kak-da/mail-search.png", alt: "Търсене на стар имейл" }],
+  "mail-prepratya": [{ src: "/kak-da/mail-forward.png", alt: "Препращане на имейл на друг човек" }],
+  "mail-kontakt": [{ src: "/kak-da/mail-add-contact.png", alt: "Добавяне на човек в контактите на имейла" }],
+
+  // ── Карти и навигация ──
+  "map-moya-lokaciya": [{ src: "/kak-da/my-location.png", alt: "Показване къде се намирате сега (синя точка)" }],
+  "map-share": [{ src: "/kak-da/share-location.png", alt: "Споделяне на местоположението с близък" }],
+  "map-transport": [{ src: "/kak-da/transit.png", alt: "Разписание на автобус до съседен град" }],
+
+  // ── Всекидневни помощници ──
+  "day-belezhka": [{ src: "/kak-da/notes.png", alt: "Записване на бележка" }],
+  "day-kalendar": [{ src: "/kak-da/calendar-event.png", alt: "Добавяне на събитие в календара" }],
+  "day-taymer": [{ src: "/kak-da/timer.png", alt: "Таймер за готвене" }],
+  "day-hronometar": [{ src: "/kak-da/stopwatch.png", alt: "Хронометър за измерване на време" }],
+  "day-prevod-duma": [{ src: "/kak-da/translate-word.png", alt: "Превод на дума или изречение" }],
+  "day-namerya-telefon-doma": [{ src: "/kak-da/ring-phone.png", alt: "Звънване на телефона, за да го намерите вкъщи" }],
+  "day-nosht-rezhim": [{ src: "/kak-da/night-mode.png", alt: "Нощен режим — по-щадящ за очите екран" }],
+  "day-spisak-pazar": [{ src: "/kak-da/shopping-list.png", alt: "Списък за пазаруване с чек-боксове" }],
+
+  // ── Безопасност и пари ──
+  "safe-namerya-izguben-telefon": [{ src: "/kak-da/find-device.png", alt: "Намиране на изгубен телефон отдалеч" }],
+  "safe-otkradnat-telefon": [{ src: "/kak-da/find-device.png", alt: "Заключване на изгубен или откраднат телефон" }],
+  "safe-dvufaktorna": [{ src: "/kak-da/2fa.png", alt: "Двуфакторна защита — код по SMS освен паролата" }],
+  "safe-falshiva-pechalba": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба/лотария — измама, която да затворите" }],
+  "money-smetka-barcode": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка на каса с баркод" }],
+  "money-balans-prilozhenie": [{ src: "/kak-da/bank-balance.png", alt: "Проверка на баланса в банковото приложение" }],
+  "money-prevod-blizak": [{ src: "/kak-da/bank-transfer.png", alt: "Превод на пари на близък през банковото приложение" }],
+
+  // ── Онлайн пазаруване и забавление ──
+  "shop-varna-stoka": [{ src: "/kak-da/return-item.png", alt: "Връщане на поръчана стока" }],
+  "shop-sravnya-ceni": [{ src: "/kak-da/compare-prices.png", alt: "Сравняване на цени на един продукт" }],
+  "shop-garanciya": [{ src: "/kak-da/receipt-warranty.png", alt: "Снимане и пазене на касова бележка за гаранция" }],
+  "fun-radio-online": [{ src: "/kak-da/radio.png", alt: "Слушане на радио онлайн" }],
+  "fun-audiokniga": [{ src: "/kak-da/audiobook.png", alt: "Слушане на аудиокнига или подкаст" }],
+  "fun-tv-online": [{ src: "/kak-da/tv-online.png", alt: "Гледане на български телевизии онлайн" }],
+  "fun-recepti": [{ src: "/kak-da/recipes.png", alt: "Намиране на рецепти за готвене" }],
+  "fun-pasians": [{ src: "/kak-da/solitaire.png", alt: "Игра на пасианс" }],
+  "fun-kniga-telefon": [{ src: "/kak-da/ebook.png", alt: "Четене на книга на телефона" }],
+  "fun-stari-filmi": [{ src: "/kak-da/movies.png", alt: "Гледане на стари филми онлайн" }],
+  "fun-snimki-vnuci": [{ src: "/kak-da/photo-timer.png", alt: "Обща снимка с таймер на камерата" }],
+  "fun-grupov-video": [{ src: "/kak-da/group-video.png", alt: "Видео разговор с няколко души едновременно" }],
+
+  // ── Снимки и галерия ──
+  "ph-iztriya-snimka": [{ src: "/kak-da/photo-delete.png", alt: "Изтриване на снимка" }],
+  "ph-fon": [{ src: "/kak-da/set-wallpaper.png", alt: "Задаване на снимка за фон на телефона" }],
+  "ph-album": [{ src: "/kak-da/create-album.png", alt: "Създаване на албум със снимки" }],
+  "ph-vazstanovya": [{ src: "/kak-da/photo-restore.png", alt: "Връщане на изтрита по грешка снимка от кошчето" }],
+  "ph-slideshow": [{ src: "/kak-da/slideshow.png", alt: "Гледане на снимките като слайдшоу" }],
+  "ph-spodelya": [{ src: "/kak-da/photo-share.png", alt: "Споделяне на снимка към приложение" }],
+  "ph-uvelicha": [{ src: "/kak-da/photo-zoom.png", alt: "Приближаване (увеличаване) на снимка с два пръста" }],
 };
 
 export function getIllustrations(slug: string): Illustration[] {
