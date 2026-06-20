@@ -1,6 +1,6 @@
-# @carsigma/db
+# @car-monitor/db
 
-D1 (Cloudflare SQLite) схема за **CARSIGMA** — платформа за прозрачност и
+D1 (Cloudflare SQLite) схема за **Car Monitor** — платформа за прозрачност и
 интелигентност на пазара на автомобили. Моделирана по патерна на
 [СИГМА](https://github.com/midt-bg/sigma): отворени данни → нормализиран граф →
 прекалкулирани rollups → FTS5 търсене → SSR explorer.
@@ -21,6 +21,7 @@ D1 (Cloudflare SQLite) схема за **CARSIGMA** — платформа за 
 |------|----------------|
 | `migrations/0000_init.sql` | Пълна схема: домейн таблици, rollups, reference, индекси, FTS5 |
 | `seed.sql` | Примерен свързан граф за локална разработка |
+| `src/index.ts` | Типове и заявки, които explorer-ът ползва |
 
 ## Таблици
 
@@ -59,9 +60,9 @@ print(con.execute("SELECT title FROM search_index WHERE search_index MATCH 'golf
 PY
 ```
 
-С Wrangler/D1 (когато се добави `apps/web`):
+С Wrangler/D1 (от `apps/web`):
 
 ```bash
-wrangler d1 migrations apply carsigma            # прилага migrations/
-wrangler d1 execute carsigma --file=seed.sql     # зарежда примерните данни
+wrangler d1 migrations apply car-monitor            # прилага migrations/
+wrangler d1 execute car-monitor --file=seed.sql     # зарежда примерните данни
 ```

@@ -1,0 +1,19 @@
+name = "car-monitor-etl"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Cron-only worker: освежава данните на малък скорошен прозорец (както СИГМА).
+[triggers]
+crons = ["0 */6 * * *"]
+
+# Споделена D1 база с web приложението (една база на среда).
+[[d1_databases]]
+binding = "DB"
+database_name = "car-monitor"
+database_id = "REPLACE_WITH_D1_ID"
+
+# Позволява import на .sql файлове като текст (за rollups).
+[[rules]]
+type = "Text"
+globs = ["**/*.sql"]

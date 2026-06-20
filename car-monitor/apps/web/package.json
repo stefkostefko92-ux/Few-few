@@ -1,0 +1,34 @@
+{
+  "name": "@car-monitor/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "start": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "typecheck": "react-router typegen && tsc --noEmit",
+    "db:setup": "wrangler d1 migrations apply car-monitor --local && wrangler d1 execute car-monitor --local --file=../../packages/db/seed.sql"
+  },
+  "dependencies": {
+    "@car-monitor/api-contract": "workspace:*",
+    "@car-monitor/config": "workspace:*",
+    "@car-monitor/db": "workspace:*",
+    "@car-monitor/shared": "workspace:*",
+    "isbot": "^5.1.17",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.0.0",
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "@react-router/dev": "^7.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.6.2",
+    "vite": "^6.0.0",
+    "wrangler": "^4.40.0"
+  }
+}

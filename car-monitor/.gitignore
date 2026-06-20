@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.turbo/
+.wrangler/
+.react-router/
+.dev.vars
+*.local
+.DS_Store
+data/
+*.sqlite
+*.sqlite3
