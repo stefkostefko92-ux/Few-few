@@ -42,6 +42,35 @@ async function main() {
   });
   console.log("✔ Транспортна услуга: БДЖ");
 
+  // Автогара Бобов дол — реална услуга (адрес и телефони от разписание.org).
+  await prisma.service.upsert({
+    where: { slug: "avtogara-bobov-dol" },
+    update: {
+      name: "Автогара Бобов дол",
+      category: "TRANSPORT",
+      description: "Автобусни разписания и билети.",
+      address: "ул. „Стубело“ 33, гр. Бобов дол",
+      phone: "0888 748 972",
+      phone2: "0702 2526",
+      hours: "08:00–18:00",
+      order: 2,
+      published: true,
+    },
+    create: {
+      slug: "avtogara-bobov-dol",
+      name: "Автогара Бобов дол",
+      category: "TRANSPORT",
+      description: "Автобусни разписания и билети.",
+      address: "ул. „Стубело“ 33, гр. Бобов дол",
+      phone: "0888 748 972",
+      phone2: "0702 2526",
+      hours: "08:00–18:00",
+      order: 2,
+      published: true,
+    },
+  });
+  console.log("✔ Транспортна услуга: Автогара");
+
   // Местни таксита в Бобов дол (реални данни).
   const taxis = [
     {
