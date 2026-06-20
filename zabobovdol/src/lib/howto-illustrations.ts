@@ -418,6 +418,61 @@ const MAP: Record<string, Illustration[]> = {
   "e-leva-do-koga": [{ src: "/kak-da/euro-dual-period.png", alt: "До кога може да се плаща с левове в брой" }],
   "e-leva-vkashti": [{ src: "/kak-da/euro-dual-period.png", alt: "Какво да правя с левовете вкъщи — има време за обмяна" }],
   "e-falshivo-evro": [{ src: "/kak-da/fake-banknote.png", alt: "Как да позная фалшиво евро по защитните белези" }],
+
+  // ── Още телефонни действия и приложения ──
+  "kak-da-namerya-snimkite": [{ src: "/kak-da/gallery.png", alt: "Галерия със снимките, подредени по дата" }],
+  "kak-da-zasnema-video": [{ src: "/kak-da/video-record.png", alt: "Заснемане на видео с червения бутон" }],
+  "kak-da-napravya-snimka": [{ src: "/kak-da/camera.png", alt: "Правене на снимка с бутона на камерата" }],
+  "e2-selfi-po-dobro": [{ src: "/kak-da/camera.png", alt: "Селфи с предната камера" }],
+  "kak-da-se-obadya-viber-messenger": [{ src: "/kak-da/viber-call.png", alt: "Безплатно обаждане по Viber през интернет" }],
+  "kak-da-se-video-obadya-viber-messenger": [{ src: "/kak-da/video-call.png", alt: "Видео обаждане с превключване на камерата" }],
+  "kak-da-izpratya-snimka-klip-viber-messenger": [{ src: "/kak-da/viber-prikachi.png", alt: "Изпращане на снимка или клип от менюто за прикачване" }],
+  "kak-da-izpratya-link": [{ src: "/kak-da/share-link.png", alt: "Копиране и изпращане на линк на сайт" }],
+  "kak-da-kopiram-link": [{ src: "/kak-da/share-link.png", alt: "Копиране на линк на сайт" }],
+  "kak-da-postavya-link": [{ src: "/kak-da/share-link.png", alt: "Поставяне на копиран линк" }],
+  "e2-bързо-nabirane": [{ src: "/kak-da/speed-dial.png", alt: "Любими контакти за бързо обаждане" }],
+  "e2-snimka-na-kontakt": [{ src: "/kak-da/contact-photo.png", alt: "Слагане на снимка на контакт" }],
+  "e2-pryak-pat-sayt": [{ src: "/kak-da/home-shortcut.png", alt: "Пряк път към сайт на началния екран" }],
+  "e2-glasova-belezhka": [{ src: "/kak-da/voice-memo.png", alt: "Запис на гласова бележка" }],
+  "e2-chete-sms-na-glas": [{ src: "/kak-da/screen-reader.png", alt: "Четене на съобщенията на глас" }],
+  "e2-avtomatichno-zakliuchvane": [{ src: "/kak-da/auto-lock.png", alt: "Автоматично заключване на екрана" }],
+  "e2-spri-izskachashti-reklami": [{ src: "/kak-da/block-popups.png", alt: "Спиране на изскачащите реклами в браузъра" }],
+  "e2-namali-danni-youtube": [{ src: "/kak-da/data-saver.png", alt: "Намаляване на разхода на данни при видео" }],
+  "kak-da-zaredya-telefon-vaucher": [{ src: "/kak-da/recharge-voucher.png", alt: "Зареждане на предплатен телефон с ваучер" }],
+
+  // ── Е-услуги и документи ──
+  "c-proverya-globi-kat": [{ src: "/kak-da/check-fines.png", alt: "Проверка на глоби от КАТ онлайн" }],
+  "c-proveria-izbiratelna-sekciya2": [{ src: "/kak-da/polling-station.png", alt: "Проверка на избирателната секция по ЕГН" }],
+  "c-kopия-dokumenti": [{ src: "/kak-da/scan-document.png", alt: "Сканиране на документ с камерата" }],
+  "c-udostoverenie-online": [{ src: "/kak-da/egov.png", alt: "Издаване на удостоверение онлайн през e-услуги" }],
+  "c-proveria-zadalzheniya-nap": [{ src: "/kak-da/pik-nap.png", alt: "Проверка на данъчни задължения в НАП" }],
+  "c-zdravno-dosie2": [{ src: "/kak-da/health-record.png", alt: "Електронно здравно досие" }],
+  "pn-proveri-pensiya": [{ src: "/kak-da/noi-pension.png", alt: "Проверка на размера на пенсията (НОИ)" }],
+  "x-povtorna-recepta": [{ src: "/kak-da/health-record.png", alt: "Повторна електронна рецепта от здравното досие" }],
+  "x-plati-smetka-prilozhenie": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка през приложение/баркод" }],
+  "iz-bezopasno-teglene-pari": [{ src: "/kak-da/atm.png", alt: "Безопасно теглене на пари от банкомат" }],
+
+  // ── Транспорт ──
+  "c-bilet-gradski": [{ src: "/kak-da/transit-ticket.png", alt: "Билет за градски транспорт в телефона" }],
+  "c-bilet-avtobus-mezhdugradski": [{ src: "/kak-da/transit-ticket.png", alt: "Билет за междуградски автобус" }],
+  "c-taksi-bezopasno": [{ src: "/kak-da/taxi.png", alt: "Поръчка на такси през приложение" }],
+
+  // ── Интернет безопасност ──
+  "i-namerya-oficialen-sayt": [{ src: "/kak-da/browser-secure.png", alt: "Разпознаване на официален сайт по адреса и катинарчето" }],
+  "i-chete-adres-url": [{ src: "/kak-da/browser-secure.png", alt: "Разчитане на адреса (URL) на сайт" }],
+  "i-recognize-secure-payment": [{ src: "/kak-da/browser-secure.png", alt: "Сигурна страница за плащане (катинарче)" }],
+  "i-izlizam-chuzhdo-ustroistvo": [{ src: "/kak-da/logout-device.png", alt: "Изход от акаунта на чуждо устройство" }],
+
+  // ── Здраве, спешност и безопасност ──
+  "x-telemedicina": [{ src: "/kak-da/telemedicine.png", alt: "Видео преглед при лекар (телемедицина)" }],
+  "x-sos-buton": [{ src: "/kak-da/sos-button.png", alt: "SOS бутон за спешна помощ" }],
+  "x-speshen-kontakt-zaklyuchen": [{ src: "/kak-da/emergency-contact-lock.png", alt: "Спешен контакт на заключения екран" }],
+
+  // ── Поддръжка на телефона ──
+  "x-zaklyuchi-prilozhenie": [{ src: "/kak-da/lock-app.png", alt: "Заключване на приложение с пръст/ПИН" }],
+  "x-osvobodi-myasto-snimki": [{ src: "/kak-da/free-space.png", alt: "Освобождаване на място в паметта" }],
+  "t2-osvobodi-myasto2": [{ src: "/kak-da/free-space.png", alt: "Освобождаване на място на телефона" }],
+  "x-prehvarli-nov-telefon": [{ src: "/kak-da/transfer-phone.png", alt: "Прехвърляне на данни към нов телефон" }],
 };
 
 export function getIllustrations(slug: string): Illustration[] {
