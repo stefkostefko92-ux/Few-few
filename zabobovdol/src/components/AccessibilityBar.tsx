@@ -140,9 +140,9 @@ export function AccessibilityBar() {
   );
 
   return (
-    <div className="border-b border-slate-200 bg-slate-50 no-print">
+    <div className="border-b-2 border-red-300 bg-red-100 no-print">
       <div className="container-content flex flex-wrap items-center gap-x-3 gap-y-2 py-2 text-sm">
-        <span className="flex items-center gap-1.5 font-semibold text-slate-600">
+        <span className="flex items-center gap-1.5 font-bold text-red-700">
           <Type className="h-4 w-4" aria-hidden />
           Достъпност:
         </span>
