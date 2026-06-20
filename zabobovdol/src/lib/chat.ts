@@ -3,21 +3,46 @@ import { search, recordMiss } from "@/lib/search";
 import { plainText } from "@/lib/markdown";
 import { SITE } from "@/lib/site";
 
+export type ChatSource = { title: string; url: string };
+export type ChatTurn = { role: "user" | "bot"; text: string };
+
 export type ChatAnswer = {
   answer: string;
-  sources: { title: string; url: string }[];
+  sources: ChatSource[];
   provider: "rules" | "anthropic";
 };
 
+// Поточни събития към интерфейса (NDJSON). Текстът пристига на части (delta),
+// после идват източниците и накрая „done".
+export type ChatChunk =
+  | { type: "delta"; text: string }
+  | { type: "sources"; sources: ChatSource[] }
+  | { type: "done"; provider: "rules" | "anthropic" }
+  | { type: "error"; message: string };
+
 type Hit = Awaited<ReturnType<typeof search>>[number];
 type Ctx = { title: string; url: string; body: string };
+
+const MAX_HISTORY_TURNS = 8; // колко предишни реплики помним при заявка към AI
 
 // ───────────────────────── Помощни функции ─────────────────────────
 
 const norm = (s: string) => s.toLowerCase().trim();
 
+// Днешната дата в София, изписана на български — за отговори, зависещи от деня
+// (срокове, „кой празнува днес", „кога идва еврото").
+function todayInSofia(): string {
+  return new Intl.DateTimeFormat("bg-BG", {
+    timeZone: "Europe/Sofia",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+}
+
 // Чист откъс, който НЕ реже по средата на дума/изречение.
-function cleanExcerpt(src: string, max = 340): string {
+function cleanExcerpt(src: string, max = 360): string {
   const t = plainText(src, 100000);
   if (t.length <= max) return t;
   const cut = t.slice(0, max);
@@ -44,13 +69,22 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
         select: { question: true, answer: true, steps: true },
       });
       if (f) {
-        const steps = f.steps ? `\nСтъпки: ${f.steps.split("\n").filter(Boolean).join("; ")}` : "";
-        out.push({ title: f.question, url: h.url, body: `${plainText(f.answer, 1400)}${steps}` });
+        const steps = f.steps
+          ? `\nСтъпки: ${f.steps.split("\n").filter(Boolean).join("; ")}`
+          : "";
+        out.push({
+          title: f.question,
+          url: h.url,
+          body: `${plainText(f.answer, 1400)}${steps}`,
+        });
       }
     } else if (h.type === "service") {
       const s = await prisma.service.findUnique({
         where: { slug },
-        select: { name: true, phone: true, phone2: true, address: true, hours: true, description: true },
+        select: {
+          name: true, phone: true, phone2: true, address: true,
+          hours: true, description: true,
+        },
       });
       if (s) {
         const tel = [s.phone, s.phone2].filter(Boolean).join(" / ") || "—";
@@ -78,8 +112,14 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
         select: { title: true, description: true, location: true, startAt: true },
       });
       if (e) {
-        const when = new Intl.DateTimeFormat("bg-BG", { dateStyle: "long", timeStyle: "short" }).format(e.startAt);
-        out.push({ title: e.title, url: h.url, body: `Кога: ${when}. Място: ${e.location || "—"}. ${plainText(e.description, 300)}`.trim() });
+        const when = new Intl.DateTimeFormat("bg-BG", {
+          dateStyle: "long", timeStyle: "short",
+        }).format(e.startAt);
+        out.push({
+          title: e.title,
+          url: h.url,
+          body: `Кога: ${when}. Място: ${e.location || "—"}. ${plainText(e.description, 300)}`.trim(),
+        });
       }
     }
   }
@@ -92,7 +132,7 @@ function quickIntent(q: string): ChatAnswer | null {
   const n = norm(q);
 
   // Спешен случай — винаги извеждаме 112 на първо място.
-  if (/(пожар|линейк|спешен случай|спешно|опасност за живот|кръв тече|задушав|инфаркт|обади.*линейк)/.test(n)) {
+  if (/(пожар|линейк|спешен случай|спешно|опасност за живот|кръв тече|задушав|инфаркт|обади.*линейк|умира|припадна)/.test(n)) {
     return {
       answer:
         "При спешен случай се обадете веднага на единен европейски номер 112 — " +
@@ -107,8 +147,10 @@ function quickIntent(q: string): ChatAnswer | null {
   }
 
   // Поздрав / какво можеш.
-  if (/^(здравей|здрасти|здравейте|добър ден|добро утро|добър вечер|ало|хей|привет|здр)/.test(n) ||
-      /(какво можеш|с какво.*помагаш|кой си|как работиш|що за помощник)/.test(n)) {
+  if (
+    /^(здравей|здрасти|здравейте|добър ден|добро утро|добър вечер|ало|хей|привет|здр)/.test(n) ||
+    /(какво можеш|с какво.*помагаш|кой си|как работиш|що за помощник)/.test(n)
+  ) {
     return {
       answer:
         `Здравейте! Аз съм дигиталният помощник на ${SITE.name}. Мога да помогна с:\n` +
@@ -125,7 +167,7 @@ function quickIntent(q: string): ChatAnswer | null {
   }
 
   // Благодарност.
-  if (/^(благодаря|мерси|благодаря ви|много благодаря|мерси много|тенкю)/.test(n)) {
+  if (/^(благодаря|мерси|благодаря ви|много благодаря|мерси много|тенкю|супер, благодаря)/.test(n)) {
     return {
       answer: "Моля, винаги съм насреща. Ако имате друг въпрос — пишете.",
       sources: [],
@@ -136,37 +178,79 @@ function quickIntent(q: string): ChatAnswer | null {
   return null;
 }
 
-// ───────────────────────── Главна функция ─────────────────────────
+// ───────────────────────── Поточен отговор ─────────────────────────
 
-export async function answerQuestion(question: string): Promise<ChatAnswer> {
+function providerEnabled(): boolean {
+  return (
+    process.env.CHAT_PROVIDER === "anthropic" && !!process.env.ANTHROPIC_API_KEY
+  );
+}
+
+// Главната функция: връща поток от събития. Интерфейсът ги показва на части.
+export async function* streamAnswer(
+  question: string,
+  history: ChatTurn[] = [],
+): AsyncGenerator<ChatChunk> {
   const q = question.trim();
   if (q.length < 2) {
-    return { answer: "Напишете въпрос с поне няколко букви.", sources: [], provider: "rules" };
+    yield { type: "delta", text: "Напишете въпрос с поне няколко букви." };
+    yield { type: "done", provider: "rules" };
+    return;
   }
 
   const quick = quickIntent(q);
-  if (quick) return quick;
+  if (quick) {
+    yield { type: "delta", text: quick.answer };
+    if (quick.sources.length) yield { type: "sources", sources: quick.sources };
+    yield { type: "done", provider: "rules" };
+    return;
+  }
 
-  const hits = await search(q, 6);
+  const hits = await search(q, 8);
 
-  if (process.env.CHAT_PROVIDER === "anthropic" && process.env.ANTHROPIC_API_KEY) {
+  if (providerEnabled()) {
     try {
-      return await answerWithClaude(q, hits);
+      yield* streamWithClaude(q, history, hits);
+      return;
     } catch (err) {
       console.error("Грешка при заявка към Claude, връщам се към правила:", err);
+      // Падаме обратно към правилата само ако още нищо не е изпратено
+      // (грешката се хвърля от streamWithClaude преди първата delta).
     }
   }
-  return await answerWithRules(q, hits);
+
+  const rules = await answerWithRules(q, hits);
+  yield { type: "delta", text: rules.answer };
+  if (rules.sources.length) yield { type: "sources", sources: rules.sources };
+  yield { type: "done", provider: "rules" };
 }
 
-// Правила (без AI): грундиран отговор от най-подходящото съдържание.
+// Удобен непоточен вариант (за тестове и за други извиквачи).
+export async function answerQuestion(
+  question: string,
+  history: ChatTurn[] = [],
+): Promise<ChatAnswer> {
+  let answer = "";
+  let sources: ChatSource[] = [];
+  let provider: "rules" | "anthropic" = "rules";
+  for await (const chunk of streamAnswer(question, history)) {
+    if (chunk.type === "delta") answer += chunk.text;
+    else if (chunk.type === "sources") sources = chunk.sources;
+    else if (chunk.type === "done") provider = chunk.provider;
+  }
+  return { answer: answer.trim(), sources, provider };
+}
+
+// ───────────────────────── Правила (без AI) ─────────────────────────
+
 async function answerWithRules(q: string, hits: Hit[]): Promise<ChatAnswer> {
   if (hits.length === 0) {
     await recordMiss(q);
     return {
       answer:
-        "Все още нямам готов отговор на този въпрос. Записах го и ще добавим информация. " +
-        `Междувременно опитайте с друга дума, разгледайте „Услуги и телефони“, или ни пишете на ${SITE.contact.email}.`,
+        "Все още нямам готов отговор на този въпрос. Записах го и ще добавим информация.\n\n" +
+        "Междувременно опитайте с друга дума, разгледайте „Услуги и телефони“, " +
+        `или ни пишете на ${SITE.contact.email}.`,
       sources: [
         { title: "Услуги и телефони", url: "/uslugi" },
         { title: "Как да… (ръководства)", url: "/kak-da" },
@@ -207,28 +291,75 @@ async function answerWithRules(q: string, hits: Hit[]): Promise<ChatAnswer> {
   };
 }
 
-// Claude (RAG): отговаря само от извлечения релевантен локален контекст.
-async function answerWithClaude(q: string, hits: Hit[]): Promise<ChatAnswer> {
-  const ctx = await hydrate(hits, 6);
+// ───────────────────────── Claude (RAG, поточно) ─────────────────────────
 
+function buildSystemPrompt(context: string): string {
+  const today = todayInSofia();
+  return [
+    `Ти си „Дигиталният помощник“ на ${SITE.name} — официално-любезен, търпелив и`,
+    `изключително точен консултант за жителите на град ${SITE.geo.city}.`,
+    "Голяма част от хората, на които помагаш, са възрастни и не са свикнали с",
+    "технологиите. Затова пишеш просто, спокойно и насърчаващо.",
+    "",
+    `Днес е ${today} (часова зона Европа/София).`,
+    "",
+    "ПРАВИЛА:",
+    "1. Отговаряй ВИНАГИ на български, с кратки изречения и без чужди думи и жаргон.",
+    "2. Използвай САМО фактите от ИЗТОЧНИЦИТЕ по-долу. НИКОГА не измисляй телефони,",
+    "   адреси, цени, срокове или имена. Ако нещо го няма в източниците, кажи честно:",
+    `   „Не разполагам с тази информация“ и насочи към „Услуги и телефони“ или към`,
+    `   имейла ${SITE.contact.email}.`,
+    "3. Телефонните номера изписвай точно както са в източниците, всеки на отделен ред.",
+    "4. Когато има стъпки, изброй ги ясно — една стъпка на ред, започната с тире.",
+    "5. Дръж отговора кратък (обикновено 2–6 изречения). Първо най-важното.",
+    "6. При спешност (живот в опасност, пожар, тежко нараняване) винаги напомняй за 112.",
+    "7. Бъди внимателен към измами: никога не съветвай човек да дава пароли, ПИН,",
+    "   кодове или пари по телефона; при съмнение насочи към раздела за измами.",
+    "8. Отговаряй само по темите на сайта (местни услуги, документи, помощ за жителите).",
+    "   Учтиво откажи въпроси извън тях.",
+    "9. Не повтаряй буквално целия източник — обобщи го с думи, разбираеми за всеки.",
+    "",
+    "ИЗТОЧНИЦИ (само това знаеш със сигурност):",
+    context,
+  ].join("\n");
+}
+
+function toApiMessages(history: ChatTurn[], q: string) {
+  const trimmed = history
+    .filter((t) => t && typeof t.text === "string" && t.text.trim())
+    .slice(-MAX_HISTORY_TURNS)
+    .map((t) => ({
+      role: t.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: t.text.slice(0, 1500),
+    }));
+  // Гарантираме, че разговорът завършва с текущия въпрос на потребителя.
+  const msgs = [...trimmed];
+  if (msgs.length === 0 || msgs[msgs.length - 1].role !== "user") {
+    msgs.push({ role: "user", content: q });
+  } else {
+    msgs[msgs.length - 1] = { role: "user", content: q };
+  }
+  return msgs;
+}
+
+async function* streamWithClaude(
+  q: string,
+  history: ChatTurn[],
+  hits: Hit[],
+): AsyncGenerator<ChatChunk> {
+  const ctx = await hydrate(hits, 6);
   if (ctx.length === 0) {
-    return answerWithRules(q, hits);
+    const rules = await answerWithRules(q, hits);
+    yield { type: "delta", text: rules.answer };
+    if (rules.sources.length) yield { type: "sources", sources: rules.sources };
+    yield { type: "done", provider: "rules" };
+    return;
   }
 
   const context = ctx
     .map((c, i) => `[${i + 1}] ${c.title}\n${c.body}\nИзточник: ${SITE.url}${c.url}`)
     .join("\n\n");
-
-  const system =
-    `Ти си любезен и точен помощник на жителите на град ${SITE.geo.city}. ` +
-    "Отговаряй кратко, ясно и на български, подходящо за хора от всички възрасти. " +
-    "Използвай САМО фактите от ИЗТОЧНИЦИТЕ по-долу. НИКОГА не измисляй телефони, " +
-    "адреси, цени или срокове — ако ги няма в източниците, кажи честно, че не " +
-    "разполагаш с информацията, и насочи към страница „Услуги и телефони“ или към " +
-    `имейла ${SITE.contact.email}. При спешност винаги напомняй за номер 112. ` +
-    "Когато ползваш факт, посочвай накратко от коя страница е. Не отговаряй на " +
-    "въпроси извън темите на сайта (местни услуги, документи, помощ на жителите).\n\n" +
-    `ИЗТОЧНИЦИ:\n${context}`;
+  const sources = ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url }));
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -238,26 +369,84 @@ async function answerWithClaude(q: string, hits: Hit[]): Promise<ChatAnswer> {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
-      max_tokens: 600,
+      model: process.env.ANTHROPIC_MODEL || "claude-opus-4-8",
+      max_tokens: 800,
       temperature: 0.2,
-      system,
-      messages: [{ role: "user", content: q }],
+      system: buildSystemPrompt(context),
+      messages: toApiMessages(history, q),
+      stream: true,
     }),
   });
 
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}`);
-  const data = (await res.json()) as { content?: { type: string; text?: string }[] };
-  const answer =
-    data.content
-      ?.filter((c) => c.type === "text")
-      .map((c) => c.text)
-      .join("\n")
-      .trim() || "Извинявам се, не успях да отговоря в момента.";
+  // Хвърляме ПРЕДИ да сме пуснали първа delta → горният слой пада към правилата.
+  if (!res.ok || !res.body) throw new Error(`Anthropic API ${res.status}`);
 
-  return {
-    answer,
-    sources: ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url })),
-    provider: "anthropic",
-  };
+  let produced = false;
+  try {
+    for await (const text of readSseText(res.body)) {
+      produced = true;
+      yield { type: "delta", text };
+    }
+  } catch (err) {
+    if (!produced) throw err; // нищо не е казано → падаме към правилата
+    console.error("Прекъсване по средата на потока от Claude:", err);
+    yield {
+      type: "delta",
+      text: "\n\n(Връзката прекъсна. Ако отговорът е непълен, опитайте пак.)",
+    };
+  }
+
+  if (!produced) {
+    // Празен отговор от модела — даваме поне нещо полезно.
+    const rules = await answerWithRules(q, hits);
+    yield { type: "delta", text: rules.answer };
+    yield { type: "sources", sources: rules.sources };
+    yield { type: "done", provider: "rules" };
+    return;
+  }
+
+  yield { type: "sources", sources };
+  yield { type: "done", provider: "anthropic" };
+}
+
+// Чете Server-Sent Events потока на Anthropic и връща само текстовите парчета.
+async function* readSseText(
+  body: ReadableStream<Uint8Array>,
+): AsyncGenerator<string> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buf = "";
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        let evt: {
+          type?: string;
+          delta?: { type?: string; text?: string };
+          error?: { message?: string };
+        };
+        try {
+          evt = JSON.parse(payload);
+        } catch {
+          continue;
+        }
+        if (evt.type === "error") {
+          throw new Error(evt.error?.message || "stream error");
+        }
+        if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+          if (evt.delta.text) yield evt.delta.text;
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }
