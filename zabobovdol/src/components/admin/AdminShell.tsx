@@ -10,28 +10,42 @@ import type { SessionUser } from "@/lib/auth";
 
 export function AdminShell({
   user,
+  pending = {},
   children,
 }: {
   user: SessionUser;
+  pending?: Record<string, number>;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const link = (href: string, label: string) => {
+  const link = (href: string, label: string, key?: string) => {
     const active = pathname === href || pathname.startsWith(href + "/");
+    const count = key ? pending[key] ?? 0 : 0;
+    const hasPending = count > 0;
+    const cls = hasPending
+      ? active
+        ? "bg-red-50"
+        : "hover:bg-red-50"
+      : active
+        ? "bg-brand-700 text-white"
+        : "text-slate-700 hover:bg-slate-100";
     return (
       <Link
         href={href}
         onClick={() => setOpen(false)}
         className={
-          "block rounded-md px-3 py-2 text-sm font-medium " +
-          (active
-            ? "bg-brand-700 text-white"
-            : "text-slate-700 hover:bg-slate-100")
+          "flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium " +
+          cls
         }
       >
-        {label}
+        <span className={hasPending ? "admin-pending" : ""}>{label}</span>
+        {hasPending && (
+          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white admin-pending-badge">
+            {count}
+          </span>
+        )}
       </Link>
     );
   };
@@ -81,15 +95,15 @@ export function AdminShell({
             </div>
             {RESOURCES.filter((r) => !r.adminOnly || user.role === "ADMIN").map(
               (r) => (
-                <div key={r.key}>{link(`/admin/${r.key}`, r.labelPlural)}</div>
+                <div key={r.key}>{link(`/admin/${r.key}`, r.labelPlural, r.key)}</div>
               ),
             )}
             <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-400">
               Система
             </div>
             {link("/admin/novini", "Новини от общината")}
-            {user.role === "ADMIN" && link("/admin/signali", "Сигнали до общината")}
-            {user.role === "ADMIN" && link("/admin/reklami", "Заявки за реклама")}
+            {user.role === "ADMIN" && link("/admin/signali", "Сигнали до общината", "signali")}
+            {user.role === "ADMIN" && link("/admin/reklami", "Заявки за реклама", "reklami")}
             {link("/admin/search-misses", "Търсения без резултат")}
             {user.role === "ADMIN" && link("/admin/users", "Потребители")}
             {user.role === "ADMIN" && link("/admin/nastroyki", "Настройки")}

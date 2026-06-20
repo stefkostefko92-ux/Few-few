@@ -211,6 +211,38 @@ html.bt li {
   line-height: 1.9;
 }
 
+/* Индикатор в админ менюто за чакащи одобрение — текстът свети и мига в червено. */
+@keyframes adminPendingBlink {
+  0%, 100% {
+    color: #dc2626;
+    text-shadow: 0 0 8px rgba(220, 38, 38, 0.55);
+  }
+  50% {
+    color: #fb7185;
+    text-shadow: 0 0 2px rgba(220, 38, 38, 0.15);
+  }
+}
+@keyframes adminPendingPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.55); }
+  50% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0); }
+}
+.admin-pending {
+  animation: adminPendingBlink 1s ease-in-out infinite;
+  font-weight: 700;
+}
+.admin-pending-badge {
+  animation: adminPendingPulse 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-pending,
+  .admin-pending-badge {
+    animation: none;
+  }
+  .admin-pending {
+    color: #dc2626;
+  }
+}
+
 /* Стилове за печат — крие хедър/футър/изскачащи елементи. */
 @media print {
   header,
