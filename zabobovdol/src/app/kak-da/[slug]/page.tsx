@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, faqPageLd, howToLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { PrintButton } from "@/components/PrintButton";
+import { getIllustrations } from "@/lib/howto-illustrations";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,8 @@ export default async function FaqPage({
     })
     .filter((l) => l.url);
 
+  const illustrations = getIllustrations(faq.slug);
+
   return (
     <>
       <JsonLd
@@ -85,6 +88,32 @@ export default async function FaqPage({
       <article className="container-content grid gap-8 py-10 lg:grid-cols-[1fr,18rem]">
         <div>
           <Prose html={renderMarkdown(faq.answer)} />
+
+          {illustrations.length > 0 && (
+            <figure className="mt-8">
+              <figcaption className="text-xl font-bold text-slate-900">
+                Как изглежда на телефона
+              </figcaption>
+              <div className="mt-3 flex flex-wrap gap-5">
+                {illustrations.map((img) => (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    key={img.src}
+                    src={img.src}
+                    alt={img.alt}
+                    width={390}
+                    height={720}
+                    loading="lazy"
+                    className="w-full max-w-[300px] rounded-2xl border border-slate-200 shadow-sm"
+                  />
+                ))}
+              </div>
+              <p className="mt-2 text-sm text-slate-500">
+                Примерна снимка за онагледяване. Реалният екран може да изглежда
+                малко по-различно според телефона и версията на приложението.
+              </p>
+            </figure>
+          )}
 
           {steps.length > 0 && (
             <div className="mt-8">
