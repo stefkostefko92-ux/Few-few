@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { plainText } from "@/lib/markdown";
+import { SERVICE_CATEGORY_LABELS, BUSINESS_CATEGORY_LABELS } from "@/lib/categories";
 
 export type SearchResult = {
   type: "faq" | "service" | "business" | "event";
@@ -12,7 +13,7 @@ export type SearchResult = {
 // Често срещани думи, които не помагат за търсене.
 const STOP = new Set([
   "как", "да", "за", "на", "в", "и", "или", "се", "си", "ми", "е",
-  "ли", "кой", "коя", "кое", "кога", "къде", "що", "що-то", "the", "to",
+  "ли", "кой", "коя", "кое", "кога", "къде", "що", "the", "to", "от",
 ]);
 
 function tokenize(q: string): string[] {
@@ -26,83 +27,138 @@ function tokenize(q: string): string[] {
   ).slice(0, 6);
 }
 
-// Построява OR условие: всеки токен срещу всяко от полетата.
-function orFor(fields: string[], tokens: string[]) {
-  const conds: Record<string, unknown>[] = [];
-  for (const t of tokens) {
-    for (const f of fields) {
-      conds.push({ [f]: { contains: t, mode: "insensitive" } });
-    }
+// Леко „стемване" за български — за да намира и при членуване и множествено
+// число (напр. „аптеки" → намира „аптека"; „зъболекари" → „зъболекар").
+function variants(term: string): string[] {
+  const v = new Set([term]);
+  if (term.length >= 5) v.add(term.slice(0, -1));
+  if (term.length >= 6) v.add(term.slice(0, -2));
+  return [...v];
+}
+
+// Колко от думите (терминатите) се срещат в текста. Сравнението е изцяло в
+// кода (toLowerCase в JS сгъва правилно кирилицата — независимо от базата).
+function matchedCount(haystack: string, termVariants: string[][]): number {
+  const lc = haystack.toLowerCase();
+  let n = 0;
+  for (const vs of termVariants) {
+    if (vs.some((v) => lc.includes(v))) n += 1;
   }
-  return conds;
+  return n;
 }
 
-function countMatches(text: string, tokens: string[]): number {
-  const lc = text.toLowerCase();
-  return tokens.reduce((n, t) => (lc.includes(t) ? n + 1 : n), 0);
-}
+// Лек кеш на индекса в паметта (за да не сканираме базата при всяко търсене).
+type Index = {
+  faqs: { slug: string; question: string; answer: string; tags: string; category: string }[];
+  services: {
+    slug: string; name: string; description: string; address: string;
+    phone: string; phone2: string; category: string;
+  }[];
+  businesses: { slug: string; name: string; description: string; category: string }[];
+  events: { slug: string; title: string; description: string; location: string }[];
+};
+let cache: { at: number; idx: Index } | null = null;
+const TTL_MS = 60_000;
 
-// Обединено търсене по думи в основните типове съдържание.
-export async function search(query: string, limit = 12): Promise<SearchResult[]> {
-  const tokens = tokenize(query);
-  // Резервен вариант: ако всичко е изчистено (напр. само стоп-думи),
-  // ползваме оригиналната заявка като един токен.
-  const terms = tokens.length ? tokens : [query.trim().toLowerCase()].filter((t) => t.length >= 2);
-  if (terms.length === 0) return [];
-
+async function loadIndex(): Promise<Index> {
+  if (cache && Date.now() - cache.at < TTL_MS) return cache.idx;
   const [faqs, services, businesses, events] = await Promise.all([
     prisma.faq.findMany({
-      where: { published: true, OR: orFor(["question", "answer", "tags", "category"], terms) },
-      take: limit * 2,
+      where: { published: true },
+      select: { slug: true, question: true, answer: true, tags: true, category: true },
     }),
     prisma.service.findMany({
-      where: { published: true, OR: orFor(["name", "description", "address"], terms) },
-      take: limit * 2,
+      where: { published: true },
+      select: {
+        slug: true, name: true, description: true, address: true,
+        phone: true, phone2: true, category: true,
+      },
     }),
     prisma.business.findMany({
-      where: { published: true, OR: orFor(["name", "description"], terms) },
-      take: limit * 2,
+      where: { published: true },
+      select: { slug: true, name: true, description: true, category: true },
     }),
     prisma.event.findMany({
       where: {
         published: true,
         startAt: { gte: new Date(Date.now() - 1000 * 60 * 60 * 24) },
-        OR: orFor(["title", "description"], terms),
       },
-      take: limit * 2,
+      select: { slug: true, title: true, description: true, location: true },
     }),
   ]);
+  cache = { at: Date.now(), idx: { faqs, services, businesses, events } };
+  return cache.idx;
+}
 
-  const results: SearchResult[] = [
-    ...faqs.map((f) => ({
-      type: "faq" as const,
-      title: f.question,
-      snippet: plainText(f.answer, 140),
-      url: `/kak-da/${f.slug}`,
-      score: countMatches(f.question, terms) * 2 + countMatches(f.answer, terms) + 0.5,
-    })),
-    ...services.map((s) => ({
-      type: "service" as const,
-      title: s.name,
-      snippet: plainText(s.description || s.address, 140),
-      url: `/uslugi/${s.slug}`,
-      score: countMatches(s.name, terms) * 2 + countMatches(s.description, terms),
-    })),
-    ...businesses.map((b) => ({
-      type: "business" as const,
-      title: b.name,
-      snippet: plainText(b.description, 140),
-      url: `/biznes/${b.slug}`,
-      score: countMatches(b.name, terms) * 2 + countMatches(b.description, terms),
-    })),
-    ...events.map((e) => ({
-      type: "event" as const,
-      title: e.title,
-      snippet: plainText(e.description, 140),
-      url: `/sabitiya/${e.slug}`,
-      score: countMatches(e.title, terms) * 2 + countMatches(e.description, terms),
-    })),
-  ];
+// Обединено търсене по думи в основните типове съдържание.
+export async function search(query: string, limit = 12): Promise<SearchResult[]> {
+  const tokens = tokenize(query);
+  const terms = tokens.length
+    ? tokens
+    : [query.trim().toLowerCase()].filter((t) => t.length >= 2);
+  if (terms.length === 0) return [];
+  const T = terms.map(variants);
+
+  const idx = await loadIndex();
+  const results: SearchResult[] = [];
+
+  for (const f of idx.faqs) {
+    const head = `${f.question} ${f.tags} ${f.category}`;
+    const score = matchedCount(head, T) * 3 + matchedCount(f.answer, T);
+    if (score > 0) {
+      results.push({
+        type: "faq",
+        title: f.question,
+        snippet: plainText(f.answer, 140),
+        url: `/kak-da/${f.slug}`,
+        score,
+      });
+    }
+  }
+
+  for (const s of idx.services) {
+    const catLabel = SERVICE_CATEGORY_LABELS[s.category] ?? "";
+    const head = `${s.name} ${catLabel} ${s.phone} ${s.phone2}`;
+    const score = matchedCount(head, T) * 3 + matchedCount(`${s.description} ${s.address}`, T);
+    if (score > 0) {
+      results.push({
+        type: "service",
+        title: s.name,
+        snippet: plainText(s.description || s.address, 140),
+        url: `/uslugi/${s.slug}`,
+        score,
+      });
+    }
+  }
+
+  for (const b of idx.businesses) {
+    const catLabel = BUSINESS_CATEGORY_LABELS[b.category] ?? "";
+    const head = `${b.name} ${catLabel}`;
+    const score = matchedCount(head, T) * 3 + matchedCount(b.description, T);
+    if (score > 0) {
+      results.push({
+        type: "business",
+        title: b.name,
+        snippet: plainText(b.description, 140),
+        url: `/biznes/${b.slug}`,
+        score,
+      });
+    }
+  }
+
+  for (const e of idx.events) {
+    const head = `${e.title} ${e.location}`;
+    const score = matchedCount(head, T) * 3 + matchedCount(e.description, T);
+    if (score > 0) {
+      results.push({
+        type: "event",
+        title: e.title,
+        snippet: plainText(e.description, 140),
+        url: `/sabitiya/${e.slug}`,
+        score,
+      });
+    }
+  }
 
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
