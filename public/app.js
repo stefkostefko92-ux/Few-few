@@ -10,4 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-print]').forEach((btn) => {
     btn.addEventListener('click', () => window.print());
   });
+
+  // Избор на размер на QR етикета: обновява преглед и връзките за сваляне.
+  const sizeButtons = document.querySelectorAll('[data-qr-size]');
+  if (sizeButtons.length) {
+    const preview = document.getElementById('qr-preview');
+    const dlLabel = document.getElementById('dl-label');
+    const dlQr = document.getElementById('dl-qr');
+    sizeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const size = btn.getAttribute('data-qr-size');
+        sizeButtons.forEach((b) => b.classList.toggle('is-active', b === btn));
+        if (preview) preview.src = `/label.svg?size=${size}`;
+        if (dlLabel) dlLabel.href = `/label.svg?size=${size}`;
+        if (dlQr) dlQr.href = `/qr.png?size=${size}`;
+      });
+    });
+  }
 });

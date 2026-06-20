@@ -15,6 +15,7 @@ import {
   generateRecoveryCodes,
 } from '../auth.js';
 import { audit } from '../audit.js';
+import { QR_SIZES, resolveSize, buildLabelSvg } from '../label.js';
 
 const router = Router();
 
@@ -46,6 +47,7 @@ router.get('/dashboard', requireAuth, (req, res) => {
     recentAccess,
     sessions,
     recoveryCount: account.totp_enabled ? countRecoveryCodes(req.user.id) : 0,
+    qrSizes: QR_SIZES,
     saved: req.query.saved === '1',
   });
 });
@@ -98,15 +100,32 @@ router.post('/profile/rotate-token', requireAuth, (req, res) => {
   res.redirect('/dashboard?saved=1');
 });
 
-// ---------- QR код (PNG) ----------
+// ---------- QR код (PNG, с избираем размер) ----------
 router.get('/qr.png', requireAuth, async (req, res) => {
   const profile = getByUserId(req.user.id);
+  const width = QR_SIZES[resolveSize(req.query.size)].px;
   const png = await QRCode.toBuffer(emergencyUrl(req, profile.emergency_token), {
     errorCorrectionLevel: 'M',
     margin: 2,
-    width: 600,
+    width,
   });
   res.type('png').send(png);
+});
+
+// ---------- Самообяснителен медицински етикет (SVG, с избираем размер) ----------
+// Винаги съдържа ясен надпис, че това са спешни медицински данни.
+router.get('/label.svg', requireAuth, async (req, res) => {
+  const profile = getByUserId(req.user.id);
+  const url = emergencyUrl(req, profile.emergency_token);
+  const qrDataUrl = await QRCode.toDataURL(url, {
+    errorCorrectionLevel: 'M',
+    margin: 0,
+    width: 1024,
+  });
+  res
+    .type('image/svg+xml')
+    .setHeader('Cache-Control', 'no-store')
+    .send(buildLabelSvg(qrDataUrl, resolveSize(req.query.size)));
 });
 
 // ---------- Карта за печат ----------

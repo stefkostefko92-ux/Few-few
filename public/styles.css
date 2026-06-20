@@ -409,6 +409,63 @@ h1 {
   height: 240px;
   image-rendering: pixelated;
 }
+
+/* QR етикет — преглед и избор на размер */
+.qr-frame {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 0.75rem;
+}
+.qr-label {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+.qr-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+.qr-sizes legend {
+  float: left;
+  width: 100%;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+  padding: 0;
+}
+.size-btn {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.size-btn:hover {
+  border-color: var(--brand);
+}
+.size-btn.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
 .muted {
   color: var(--muted);
 }
@@ -680,11 +737,38 @@ table.log td.small {
 .wc-title {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 9px;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #c0392b;
+  margin: 0;
+  text-transform: uppercase;
+}
+.wc-cross {
+  display: inline-grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+.wc-sub {
+  font-size: 7px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 1px 0 5px;
+}
+.wc-scan {
+  font-size: 7px;
   font-weight: 700;
-  color: var(--brand-dark);
-  margin: 0 0 4px;
+  letter-spacing: 1px;
+  color: #c0392b;
+  text-align: center;
+  margin: 3px 0 0;
 }
 .wc-line .icon {
   width: 11px;

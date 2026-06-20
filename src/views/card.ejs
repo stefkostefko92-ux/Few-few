@@ -7,17 +7,21 @@
 
 <div class="wallet-card">
   <div class="wc-left">
-    <p class="wc-title"><%- include('partials/icon', { name: 'activity' }) %> СПЕШЕН МЕДИЦИНСКИ ПРОФИЛ</p>
+    <p class="wc-title">
+      <span class="wc-cross" aria-hidden="true">+</span> СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ
+    </p>
+    <p class="wc-sub">EMERGENCY MEDICAL INFORMATION</p>
     <p class="wc-name"><%= profile.full_name %></p>
-    <p class="wc-line"><strong>Кръвна група:</strong> <%= profile.blood_type || '—' %></p>
-    <p class="wc-line"><strong>Алергии:</strong> <%= profile.allergies || '—' %></p>
+    <p class="wc-line"><strong>Кръвна група / Blood:</strong> <%= profile.blood_type || '—' %></p>
+    <p class="wc-line"><strong>Алергии / Allergies:</strong> <%= profile.allergies || '—' %></p>
     <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
       <p class="wc-line"><%- include('partials/icon', { name: 'ear' }) %> <%= profile.hearing_status %></p>
     <% } %>
-    <p class="wc-hint">Сканирайте за пълна информация</p>
+    <p class="wc-hint">Сканирайте за пълна информация · Scan for full details</p>
   </div>
   <div class="wc-right">
-    <img src="<%= dataUrl %>" alt="QR код" class="wc-qr">
+    <img src="<%= dataUrl %>" alt="QR код за спешна медицинска информация" class="wc-qr" />
+    <p class="wc-scan">СКАНИРАЙ · SCAN</p>
   </div>
 </div>
 

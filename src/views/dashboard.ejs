@@ -34,13 +34,42 @@
   </section>
 
   <section class="card center">
-    <h2>Вашият QR код</h2>
-    <img class="qr" src="/qr.png" alt="QR код за спешен достъп до профила">
-    <p class="muted small">Сочи към: <br><code><%= emergencyUrl %></code></p>
-    <div class="cta-row">
-      <a class="btn btn-small" href="/qr.png" download="medqr.png"><%- include('partials/icon', { name: 'download' }) %> Изтегли PNG</a>
-      <a class="btn btn-small btn-ghost" href="/card" target="_blank"><%- include('partials/icon', { name: 'card' }) %> Карта за печат</a>
+    <h2>Вашият QR етикет</h2>
+    <div class="qr-frame">
+      <img
+        class="qr-label"
+        id="qr-preview"
+        src="/label.svg?size=medium"
+        alt="Спешен медицински етикет с QR код"
+      />
     </div>
+    <p class="muted small">Етикетът винаги показва, че това са спешни медицински данни.</p>
+
+    <fieldset class="qr-sizes" id="qr-sizes">
+      <legend>Размер</legend>
+      <% Object.entries(qrSizes).forEach(([key, s], i) => { %>
+        <button
+          type="button"
+          class="size-btn<%= key === 'medium' ? ' is-active' : '' %>"
+          data-qr-size="<%= key %>"
+        >
+          <%= s.label %>
+        </button>
+      <% }) %>
+    </fieldset>
+
+    <div class="cta-row">
+      <a class="btn btn-small" id="dl-label" href="/label.svg?size=medium" download="medqr-етикет.svg">
+        <%- include('partials/icon', { name: 'download' }) %> Изтегли етикет (SVG)
+      </a>
+      <a class="btn btn-small btn-ghost" id="dl-qr" href="/qr.png?size=medium" download="medqr-qr.png">
+        <%- include('partials/icon', { name: 'download' }) %> Само QR (PNG)
+      </a>
+      <a class="btn btn-small btn-ghost" href="/card" target="_blank">
+        <%- include('partials/icon', { name: 'card' }) %> Карта за портфейл
+      </a>
+    </div>
+    <p class="muted small">Адрес на профила: <br /><code><%= emergencyUrl %></code></p>
   </section>
 </div>
 
