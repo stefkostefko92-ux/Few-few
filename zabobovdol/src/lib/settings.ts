@@ -8,7 +8,27 @@ export const SETTING_KEYS = {
   dutyInfo: "duty_info",
   facebookUrl: "facebook_url",
   churchServices: "church_services",
+  googleVerification: "google_site_verification",
+  bingVerification: "bing_site_verification",
+  indexnowKey: "indexnow_key",
 } as const;
+
+// Кодове за потвърждаване на собствеността в Google Search Console и Bing
+// Webmaster Tools (вмъкват се като meta тагове в <head>).
+export async function getSeoVerification(): Promise<{ google: string; bing: string }> {
+  try {
+    const rows = await prisma.siteSetting.findMany({
+      where: { key: { in: [SETTING_KEYS.googleVerification, SETTING_KEYS.bingVerification] } },
+    });
+    const m = new Map(rows.map((r) => [r.key, r.value]));
+    return {
+      google: m.get(SETTING_KEYS.googleVerification) || "",
+      bing: m.get(SETTING_KEYS.bingVerification) || "",
+    };
+  } catch {
+    return { google: "", bing: "" };
+  }
+}
 
 // Текст за дежурната аптека/лекар, редактиран свободно от админ панела.
 export async function getDutyInfo(): Promise<string> {

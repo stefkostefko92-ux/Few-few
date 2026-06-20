@@ -4,7 +4,7 @@ import "./globals.css";
 import { SITE } from "@/lib/site";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationLd, websiteLd } from "@/lib/seo";
-import { getFacebookUrl } from "@/lib/settings";
+import { getFacebookUrl, getSeoVerification } from "@/lib/settings";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -83,10 +83,17 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const facebookUrl = await getFacebookUrl();
+  const [facebookUrl, seoVer] = await Promise.all([
+    getFacebookUrl(),
+    getSeoVerification(),
+  ]);
   return (
     <html lang="bg" className={`${sans.variable} ${serif.variable}`}>
       <head>
+        {seoVer.google && (
+          <meta name="google-site-verification" content={seoVer.google} />
+        )}
+        {seoVer.bing && <meta name="msvalidate.01" content={seoVer.bing} />}
         {/* GEO мета сигнали за локално търсене */}
         <meta name="geo.region" content={SITE.geo.regionCode} />
         <meta name="geo.placename" content={SITE.geo.city} />

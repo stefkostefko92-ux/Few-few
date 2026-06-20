@@ -105,6 +105,7 @@ export function AdminShell({
             {user.role === "ADMIN" && link("/admin/signali", "Сигнали до общината", "signali")}
             {user.role === "ADMIN" && link("/admin/reklami", "Заявки за реклама", "reklami")}
             {link("/admin/search-misses", "Търсения без резултат")}
+            {user.role === "ADMIN" && link("/admin/indeksirane", "Търсачки (индексиране)")}
             {user.role === "ADMIN" && link("/admin/users", "Потребители")}
             {user.role === "ADMIN" && link("/admin/nastroyki", "Настройки")}
             {user.role === "ADMIN" && link("/admin/audit", "Одит лог")}
