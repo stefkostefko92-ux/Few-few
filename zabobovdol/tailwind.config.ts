@@ -3,6 +3,7 @@ import type { Config } from "tailwindcss";
 // Цветовете са изведени от герба на Бобов дол:
 // тъмносиньо (основен), златисто/амбър и червено (акценти), бяло.
 const config: Config = {
+  darkMode: "class",
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {

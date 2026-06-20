@@ -51,6 +51,7 @@ import {
   MapPin as PhMapPin,
   Megaphone as PhMegaphone,
   Money as PhMoney,
+  Moon as PhMoon,
   Mountains as PhMountains,
   Newspaper as PhNewspaper,
   PaperPlaneTilt as PhPaperPlaneTilt,
@@ -131,6 +132,7 @@ export const Lock = fill(PhLock);
 export const Mail = fill(PhEnvelope);
 export const MapPin = fill(PhMapPin);
 export const Megaphone = fill(PhMegaphone);
+export const Moon = fill(PhMoon);
 export const MessageCircle = fill(PhChatCircle);
 export const MessageSquare = fill(PhChatText);
 export const Mountain = fill(PhMountains);

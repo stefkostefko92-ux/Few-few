@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Type, Contrast, Volume2, Square, Hand, Info } from "@/components/icons";
+import { Type, Contrast, Volume2, Square, Hand, Info, Moon } from "@/components/icons";
 
 // Нива на уголемяване на шрифта → размер на корена (html). Понеже всичко е в
 // rem, целият сайт (текст и отстояния) се мащабира пропорционално.
@@ -19,12 +19,16 @@ function applyContrast(on: boolean) {
 function applyBigTouch(on: boolean) {
   document.documentElement.classList.toggle("bt", on);
 }
+function applyDark(on: boolean) {
+  document.documentElement.classList.toggle("dark", on);
+}
 
 export function AccessibilityBar() {
   const pathname = usePathname();
   const [font, setFont] = useState("1");
   const [contrast, setContrast] = useState(false);
   const [bigTouch, setBigTouch] = useState(false);
+  const [dark, setDark] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
 
@@ -34,12 +38,15 @@ export function AccessibilityBar() {
       const f = localStorage.getItem("a11y-font") || "1";
       const c = localStorage.getItem("a11y-contrast") === "1";
       const t = localStorage.getItem("a11y-bigtouch") === "1";
+      const d = localStorage.getItem("a11y-dark") === "1";
       setFont(f);
       setContrast(c);
       setBigTouch(t);
+      setDark(d);
       applyFont(f);
       applyContrast(c);
       applyBigTouch(t);
+      applyDark(d);
     } catch {
       /* ignore */
     }
@@ -73,6 +80,30 @@ export function AccessibilityBar() {
         localStorage.setItem("a11y-contrast", next ? "1" : "0");
       } catch {
         /* ignore */
+      }
+      // Контрастът и тъмният режим са взаимно изключващи се.
+      if (next) {
+        setDark(false);
+        applyDark(false);
+        try { localStorage.setItem("a11y-dark", "0"); } catch { /* ignore */ }
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleDark = useCallback(() => {
+    setDark((prev) => {
+      const next = !prev;
+      applyDark(next);
+      try {
+        localStorage.setItem("a11y-dark", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      if (next) {
+        setContrast(false);
+        applyContrast(false);
+        try { localStorage.setItem("a11y-contrast", "0"); } catch { /* ignore */ }
       }
       return next;
     });
@@ -172,6 +203,22 @@ export function AccessibilityBar() {
         >
           <Contrast className="h-4 w-4" aria-hidden />
           Контраст
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleDark}
+          aria-pressed={dark}
+          className={
+            "a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium transition " +
+            (dark
+              ? "bg-brand-700 text-white"
+              : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
+          }
+          title="Тъмен режим (по-щадящ за очите на тъмно)"
+        >
+          <Moon className="h-4 w-4" aria-hidden />
+          {dark ? "Светъл режим" : "Тъмен режим"}
         </button>
 
         <button
