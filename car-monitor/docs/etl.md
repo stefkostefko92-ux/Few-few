@@ -6,9 +6,25 @@
 адаптер (източник) → RawListing → normalizeListing() → upsert в D1 → rollups.sql
 ```
 
-- **Адаптери** (`apps/etl/src/adapters.ts`) — по един на източник. Сменя се само
-  parser-ът; нормализацията нататък е обща. Демонстрационният `fixturesAdapter`
-  се заменя с HTTP клиент към mobile.bg / cars.bg / OLX.
+- **Адаптери** (`apps/etl/src/adapters.ts`, `apps/etl/src/sources/*`) — по един на
+  източник. Сменя се само parser-ът; нормализацията нататък е обща.
+  `fixturesAdapter` е за dev без мрежа; `mobileBgAdapter` и `carsBgAdapter` са
+  реални HTTP адаптери (върху `httpListingsAdapter`).
+
+### Feature flag-ове за източниците
+
+Реалните scrape адаптери са изключени по подразбиране и се включват през env
+променлива `SOURCE_<ID>` (виж `@car-monitor/config`):
+
+```bash
+SOURCE_MOBILE_BG=1 pnpm --filter @car-monitor/etl run load   # CLI
+# или в apps/etl/wrangler.toml [vars]: SOURCE_MOBILE_BG = "1"
+```
+
+> Селекторите в `sources/mobile-bg.ts` и `sources/cars-bg.ts` са best-effort и
+> трябва да се сверят срещу текущия DOM на сайта. `mobile.bg` ползва кодировка
+> `windows-1251` (адаптерът я декодира). Спазвайте `robots.txt` и условията за
+> ползване на източниците.
 - **Нормализация** (`@car-monitor/ingest`) — стабилни идентификатори (VIN →
   `v_<vin>`, ЕИК → `s_eik_<eik>`), каноничен EUR, рисково индексиране.
 - **Upsert** (`apps/etl/src/refresh.ts`) — D1 prepared statements с `ON CONFLICT`.

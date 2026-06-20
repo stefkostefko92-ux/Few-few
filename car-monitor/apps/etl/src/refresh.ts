@@ -32,10 +32,11 @@ export async function runRefresh(env: Env, window: RefreshWindow): Promise<Refre
     vinActiveElsewhere: () => false, // изисква cross-check заявка; извън скоупа на демото
   };
 
-  // 2) Събиране от всички активни адаптери за прозореца.
+  // 2) Събиране от всички активни адаптери за прозореца (feature flag-ове от env).
   let fetched = 0;
   let upserted = 0;
-  for (const adapter of enabledAdapters()) {
+  const adapters = enabledAdapters(env as unknown as Record<string, string | undefined>);
+  for (const adapter of adapters) {
     const raws = await adapter.fetch(window);
     fetched += raws.length;
     for (const raw of raws) {

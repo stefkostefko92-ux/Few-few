@@ -1,16 +1,14 @@
-// Адаптери към източниците. По един на източник; сменя се само parser-ът,
+// Регистър на адаптерите. По един на източник; сменя се само parser-ът,
 // а нататък нормализацията е обща (@car-monitor/ingest).
 
-import {
-  parseListingsHtml,
-  type ListingSelectors,
-  type RawListing,
-  type SourceAdapter,
-} from "@car-monitor/ingest";
+import type { RawListing, SourceAdapter } from "@car-monitor/ingest";
+import { config, sourceEnabled } from "@car-monitor/config";
+import { mobileBgAdapter } from "./sources/mobile-bg.ts";
+import { carsBgAdapter } from "./sources/cars-bg.ts";
 
-/**
- * Демонстрационен адаптер с фикстури. Полезен за `pnpm dev` без мрежа.
- */
+export { httpListingsAdapter } from "./sources/http.ts";
+
+/** Демонстрационен адаптер с фикстури. Полезен за `pnpm dev` без мрежа. */
 export const fixturesAdapter: SourceAdapter = {
   id: "fixtures",
   async fetch(): Promise<RawListing[]> {
@@ -65,58 +63,15 @@ export const fixturesAdapter: SourceAdapter = {
   },
 };
 
-export interface HttpAdapterOptions {
-  id: string;
-  source: string;
-  /** Шаблон за URL на страница; {page} се заменя с номера. */
-  pageUrl: (page: number) => string;
-  selectors?: ListingSelectors;
-  maxPages?: number;
-  /** Учтива пауза между заявките (ms). */
-  delayMs?: number;
-  userAgent?: string;
-}
-
 /**
- * Generic HTTP адаптер: сваля страници с обяви и ги парсва към RawListing.
- * Спира при празна страница или достигнат maxPages. Реалните селектори за
- * конкретния сайт се подават през `selectors`.
+ * Връща активните адаптери според feature flag-овете (env `SOURCE_<ID>`,
+ * напр. SOURCE_MOBILE_BG=1). Без активиран реален източник пада към фикстури
+ * (за `pnpm dev` без мрежа).
  */
-export function httpListingsAdapter(opts: HttpAdapterOptions): SourceAdapter {
-  const { id, source, pageUrl, selectors, maxPages = 5, delayMs = 1000 } = opts;
-  const ua = opts.userAgent ?? "CarMonitorBot/0.1 (+https://car-monitor.example)";
-
-  return {
-    id,
-    async fetch(): Promise<RawListing[]> {
-      const all: RawListing[] = [];
-      for (let page = 1; page <= maxPages; page++) {
-        const res = await fetch(pageUrl(page), { headers: { "user-agent": ua } });
-        if (!res.ok) break;
-        const html = await res.text();
-        const batch = parseListingsHtml(html, source, selectors);
-        if (batch.length === 0) break;
-        all.push(...batch);
-        if (page < maxPages && delayMs > 0) {
-          await new Promise((r) => setTimeout(r, delayMs));
-        }
-      }
-      return all;
-    },
-  };
-}
-
-/**
- * Връща активните адаптери. По подразбиране фикстури (за dev). За продукция
- * заменете с httpListingsAdapter с реалните URL-и и селектори на източника,
- * напр.:
- *
- *   httpListingsAdapter({
- *     id: "mobile_bg", source: "mobile_bg",
- *     pageUrl: (p) => `https://www.mobile.bg/obiavi/avtomobili?p=${p}`,
- *     selectors: { item: ".item", title: ".title", price: ".price", ... },
- *   })
- */
-export function enabledAdapters(): SourceAdapter[] {
-  return [fixturesAdapter];
+export function enabledAdapters(vars: Record<string, string | undefined> = {}): SourceAdapter[] {
+  const adapters: SourceAdapter[] = [];
+  const common = { maxPages: config.maxPagesPerRun, delayMs: config.requestDelayMs };
+  if (sourceEnabled("mobile_bg", vars)) adapters.push(mobileBgAdapter(common));
+  if (sourceEnabled("cars_bg", vars)) adapters.push(carsBgAdapter(common));
+  return adapters.length > 0 ? adapters : [fixturesAdapter];
 }

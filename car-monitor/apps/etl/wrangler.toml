@@ -7,6 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 [triggers]
 crons = ["0 */6 * * *"]
 
+# Feature flag-ове за източниците (по подразбиране изключени).
+# Сменете на "1" за да активирате реален scrape (сверете селекторите първо!).
+[vars]
+SOURCE_MOBILE_BG = "0"
+SOURCE_CARS_BG = "0"
+
 # Споделена D1 база с web приложението (една база на среда).
 [[d1_databases]]
 binding = "DB"

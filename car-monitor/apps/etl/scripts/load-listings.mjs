@@ -43,7 +43,7 @@ const ctx = {
 const lines = ["-- Генерирано от load-listings.mjs", "PRAGMA foreign_keys = OFF;"];
 let count = 0;
 
-for (const adapter of enabledAdapters()) {
+for (const adapter of enabledAdapters(process.env)) {
   const raws = await adapter.fetch({ since: "2020-01-01", until: new Date().toISOString().slice(0, 10) });
   for (const raw of raws) {
     const { seller, vehicle, listing, events } = normalizeListing(raw, ctx);
