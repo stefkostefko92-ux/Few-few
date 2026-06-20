@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/spomeni`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/galeriya`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/za-nas`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/kak-da-polzvam-sayta`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/dostapnost`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/kontakti`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/pechat`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },

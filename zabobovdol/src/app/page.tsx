@@ -193,6 +193,12 @@ export default async function HomePage() {
           <div className="mt-7 max-w-xl rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/5">
             <SearchBar />
           </div>
+          <Link
+            href="/kak-da-polzvam-sayta"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-gold-200 underline-offset-2 hover:underline"
+          >
+            Нов тук? Вижте как да ползвате сайта →
+          </Link>
           <div className="mt-6 flex flex-wrap gap-2">
             {PRIMARY_NAV.slice(0, 5).map((item) => (
               <Link
