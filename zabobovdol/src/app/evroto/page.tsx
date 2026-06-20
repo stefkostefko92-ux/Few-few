@@ -8,6 +8,17 @@ import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
 import { EuroConverter } from "@/components/EuroConverter";
+import { getIllustrations } from "@/lib/howto-illustrations";
+
+// Нагледни помагала за еврото (стилизирани примерни изображения).
+const EURO_VISUALS: { src: string; alt: string; caption: string }[] = [
+  { src: "/kak-da/euro-dual-price.png", alt: "Ценоразпис с цена в лева и в евро", caption: "Двойни цени в магазина" },
+  { src: "/kak-da/euro-rate.png", alt: "Фиксиран курс 1 евро = 1,95583 лева", caption: "Фиксиран курс" },
+  { src: "/kak-da/euro-banknotes.png", alt: "Евробанкноти по цвят и номинал", caption: "Банкнотите (примерни)" },
+  { src: "/kak-da/euro-coins.png", alt: "Евромонети от 1 цент до 2 евро", caption: "Монетите" },
+  { src: "/kak-da/euro-atm.png", alt: "Банкомат, който дава евро", caption: "Банкоматът дава евро" },
+  { src: "/kak-da/euro-dual-period.png", alt: "Период на двойно обращение — левове и евро", caption: "Първите седмици" },
+];
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +80,33 @@ export default async function EuroPage() {
         {/* Конвертор евро ↔ левове */}
         <EuroConverter />
 
+        {/* Нагледни помагала — как изглеждат еврото и цените */}
+        <section>
+          <h2 className="section-title mb-5">Как изглеждат еврото и цените</h2>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+            {EURO_VISUALS.map((v) => (
+              <figure key={v.src} className="text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={v.src}
+                  alt={v.alt}
+                  width={390}
+                  height={720}
+                  loading="lazy"
+                  className="mx-auto w-full max-w-[220px] rounded-2xl border border-slate-200 shadow-sm"
+                />
+                <figcaption className="mt-2 text-sm font-medium text-slate-700">
+                  {v.caption}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-slate-500">
+            Изображенията са примерни, за онагледяване. Банкнотите са показани по
+            цвят и номинал, не като точни копия.
+          </p>
+        </section>
+
         {/* Предупреждение за измами */}
         <section className="rounded-2xl border border-crimson-200 bg-crimson-50 p-6">
           <div className="flex items-start gap-3">
@@ -109,6 +147,18 @@ export default async function EuroPage() {
                   <div className="mt-2">
                     <Prose html={renderMarkdown(i.answer)} />
                   </div>
+                  {getIllustrations(i.slug).map((img) => (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      key={img.src}
+                      src={img.src}
+                      alt={img.alt}
+                      width={390}
+                      height={720}
+                      loading="lazy"
+                      className="mt-3 w-full max-w-[240px] rounded-2xl border border-slate-200 shadow-sm"
+                    />
+                  ))}
                   {i.steps && (
                     <ol className="mt-3 space-y-1.5">
                       {i.steps.split("\n").filter(Boolean).map((s, k) => (
