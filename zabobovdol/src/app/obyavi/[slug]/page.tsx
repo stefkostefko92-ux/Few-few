@@ -3,7 +3,8 @@ import { Phone } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, canonical } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { LISTING_TYPE_LABELS, labelFor } from "@/lib/categories";
 import { PrintButton } from "@/components/PrintButton";
@@ -39,8 +40,30 @@ export default async function ListingPage({
   const l = await getListing(slug);
   if (!l) notFound();
 
+  // Структурирани данни за обявата (Product/Offer) — за богати резултати.
+  const priceNum = parseFloat((l.price || "").replace(/[^\d.,]/g, "").replace(",", "."));
+  const currency = /€|евро|eur/i.test(l.price || "") ? "EUR" : "BGN";
+  const productLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: l.title,
+    ...(l.description ? { description: plainText(l.description, 300) } : {}),
+    ...(Number.isFinite(priceNum) && priceNum > 0
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: priceNum,
+            priceCurrency: currency,
+            availability: "https://schema.org/InStock",
+            url: canonical(`/obyavi/${l.slug}`),
+          },
+        }
+      : {}),
+  };
+
   return (
     <>
+      <JsonLd data={productLd} />
       <PageHero
         title={l.title}
         crumbs={[

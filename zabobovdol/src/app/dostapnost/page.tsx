@@ -80,7 +80,7 @@ export default function AccessibilityPage() {
             { name: "Начало", path: "/" },
             { name: "Достъпност", path: "/dostapnost" },
           ]),
-          faqPageLd(FAQ),
+          faqPageLd(FAQ, "/dostapnost"),
         ]}
       />
 

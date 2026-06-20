@@ -38,7 +38,8 @@ export default async function EuroPage() {
       {items.length > 0 && (
         <JsonLd
           data={faqPageLd(
-            items.map((i) => ({ question: i.question, answerText: plainText(i.answer, 300) })),
+            items.map((i) => ({ question: i.question, answerText: plainText(i.answer, 1500) })),
+            "/evroto",
           )}
         />
       )}

@@ -120,6 +120,21 @@ export async function saveRecord(
     }
   }
 
+  // Сървърна проверка на задължителните полета — чисто съобщение вместо суров
+  // грешен запис в базата (ако някой заобиколи HTML валидацията).
+  for (const field of resource.fields) {
+    if (field.required) {
+      const raw = formData.get(field.name);
+      const val = typeof raw === "string" ? raw.trim() : raw;
+      if (!val) {
+        redirect(
+          `/admin/${resource.key}/${id ?? "new"}?error=` +
+            encodeURIComponent(`Полето „${field.label}" е задължително.`),
+        );
+      }
+    }
+  }
+
   const data = buildData(resource, formData);
 
   // Slug: ползвай зададения или генерирай от изходното поле.

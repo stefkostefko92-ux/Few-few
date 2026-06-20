@@ -169,12 +169,17 @@ export function breadcrumbLd(items: { name: string; path: string }[]) {
 
 export function faqPageLd(
   faqs: { question: string; answerText: string }[],
+  url?: string,
 ) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    ...(url
+      ? { "@id": `${canonical(url)}#faq`, url: canonical(url), mainEntityOfPage: canonical(url) }
+      : {}),
     inLanguage: "bg",
     isPartOf: { "@id": WEBSITE_ID },
+    publisher: { "@id": ORG_ID },
     mainEntity: faqs.map((f) => ({
       "@type": "Question",
       name: f.question,
@@ -193,10 +198,13 @@ export function localBusinessLd(b: {
   lat?: number | null;
   lng?: number | null;
   hours?: string;
+  // Правилен schema.org тип (напр. GovernmentOffice за администрация,
+  // MedicalClinic за здраве, School за образование) — по подразбиране LocalBusiness.
+  schemaType?: string;
 }) {
   return {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": b.schemaType || "LocalBusiness",
     name: b.name,
     ...(b.description ? { description: b.description } : {}),
     ...(b.website ? { url: b.website } : b.url ? { url: b.url } : {}),

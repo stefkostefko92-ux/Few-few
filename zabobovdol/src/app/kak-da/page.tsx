@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { buildMetadata, faqPageLd } from "@/lib/seo";
+import { buildMetadata, webPageLd, itemListLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 
@@ -30,16 +30,28 @@ export default async function KakDaPage() {
 
   return (
     <>
-      {faqs.length > 0 && (
-        <JsonLd
-          data={faqPageLd(
-            faqs.slice(0, 12).map((f) => ({
-              question: f.question,
-              answerText: plainText(f.answer, 280),
-            })),
-          )}
-        />
-      )}
+      <JsonLd
+        data={[
+          webPageLd({
+            name: "Как да… — практични стъпки за е-услуги и документи",
+            description:
+              "Обяснения стъпка по стъпка за е-услуги, документи и ежедневни задачи онлайн в Бобов дол.",
+            path: "/kak-da",
+            type: "CollectionPage",
+          }),
+          ...(faqs.length > 0
+            ? [
+                itemListLd(
+                  faqs.slice(0, 60).map((f) => ({
+                    name: f.question,
+                    path: `/kak-da/${f.slug}`,
+                  })),
+                  "Ръководства „Как да…“",
+                ),
+              ]
+            : []),
+        ]}
+      />
       <PageHero
         title="Как да…"
         intro="Кратки и разбираеми обяснения как да свършите ежедневни неща онлайн — без сложни думи."

@@ -10,6 +10,19 @@ import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
+// Правилен schema.org тип според категорията на услугата (за GEO/богати
+// резултати). Държавните/общинските служби НЕ са „бизнес".
+const SERVICE_SCHEMA_TYPE: Record<string, string> = {
+  ADMIN: "GovernmentOffice",
+  SOCIAL: "GovernmentOffice",
+  EMERGENCY: "GovernmentOffice",
+  HEALTH: "MedicalClinic",
+  EDUCATION: "School",
+  UTILITY: "Organization",
+  TRANSPORT: "Organization",
+  OTHER: "LocalBusiness",
+};
+
 async function getService(slug: string) {
   return prisma.service.findFirst({ where: { slug, published: true } });
 }
@@ -52,6 +65,7 @@ export default async function ServicePage({
           lat: s.lat,
           lng: s.lng,
           hours: s.hours,
+          schemaType: SERVICE_SCHEMA_TYPE[s.category] ?? "Organization",
         })}
       />
       <PageHero

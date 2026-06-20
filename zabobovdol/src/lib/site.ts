@@ -46,7 +46,6 @@ export const SITE = {
   emergency: [
     { label: "Единен европейски номер за спешни повиквания", phone: "112" },
   ],
-  organizationType: "GovernmentOrganization", // за JSON-LD по подразбиране ползваме Organization
 } as const;
 
 export type NavItem = { href: string; label: string; description?: string };
