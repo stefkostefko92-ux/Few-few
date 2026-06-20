@@ -300,6 +300,37 @@ html.dark .prose-content :where(td) {
   border-color: #243044;
 }
 
+/* Хедърът остава като в светъл режим и при тъмен режим (по изрично желание).
+   Фонът му е светъл (bg-white/95), затова връщаме тъмния текст и светлите
+   поле/бутон/граници, за да е четим. По-високата специфичност (с „header")
+   надделява над общите тъмни правила по-горе. */
+html.dark header {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+html.dark header .text-slate-900 { color: #0f172a; }
+html.dark header .text-slate-800 { color: #1e293b; }
+html.dark header .text-slate-700 { color: #334155; }
+html.dark header .text-slate-500 { color: #64748b; }
+html.dark header .text-slate-400 { color: #94a3b8; }
+html.dark header .text-brand-700,
+html.dark header .text-brand-800,
+html.dark header .text-brand-600 { color: #212f8a; }
+html.dark header .border-slate-200,
+html.dark header .border-slate-300 { border-color: #cbd5e1; }
+html.dark header .input {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+html.dark header .input::placeholder { color: #94a3b8; }
+html.dark header .btn-secondary {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
 /* По-лесно докосване (достъпност) — по-големи бутони, връзки и полета за хора
    с тремор/затруднена моторика. Включва се от лентата за достъпност (.bt). */
 html.bt .btn,
