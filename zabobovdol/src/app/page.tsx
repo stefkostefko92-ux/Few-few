@@ -10,6 +10,7 @@ import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 import { ScamBanner } from "@/components/ScamBanner";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import { TodayCalendar } from "@/components/TodayCalendar";
 import {
   HelpCircle,
   Phone,
@@ -44,6 +45,9 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/evroto": Euro,
   "/biznes": Store,
   "/sabitiya": CalendarDays,
+  "/imen-den": CalendarDays,
+  "/danaci-srokove": Coins,
+  "/grafik-smetosabirane": Trash2,
   "/obyavi": Megaphone,
   "/transport": Bus,
   "/novini": Newspaper,
@@ -65,9 +69,9 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 const NAV_COLOR: Record<string, string> = {
   "/kak-da": "blue", "/uslugi": "sky", "/novini": "blue",
   "/izmami": "rose", "/signali": "rose", "/zov-za-pomosht": "rose", "/sabitiya": "rose",
-  "/dezhurna-apteka": "green", "/smetishta": "green",
-  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber",
-  "/biznes": "purple", "/spomeni": "purple", "/galeriya": "purple",
+  "/dezhurna-apteka": "green", "/smetishta": "green", "/grafik-smetosabirane": "green",
+  "/pomoshti": "amber", "/evroto": "amber", "/prekysvaniya": "amber", "/istoriya": "amber", "/danaci-srokove": "amber",
+  "/biznes": "purple", "/spomeni": "purple", "/galeriya": "purple", "/imen-den": "purple",
   "/obyavi": "orange",
   "/transport": "sky",
   "/prozrachnost": "teal", "/grada": "teal", "/dobrovolci": "teal",
@@ -224,9 +228,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Време в Бобов дол (зарежда се тихо; ако не успее, не се показва) */}
-      <div className="container-content pt-6">
+      {/* Време и календар (днешен имен ден/празник) */}
+      <div className="container-content grid gap-4 pt-6 md:grid-cols-2">
         <WeatherWidget />
+        <TodayCalendar />
       </div>
 
       {/* Бързи раздели */}

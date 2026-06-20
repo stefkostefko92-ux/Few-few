@@ -8,6 +8,7 @@ export const SETTING_KEYS = {
   dutyInfo: "duty_info",
   facebookUrl: "facebook_url",
   churchServices: "church_services",
+  wasteSchedule: "waste_schedule",
   googleVerification: "google_site_verification",
   bingVerification: "bing_site_verification",
   indexnowKey: "indexnow_key",
@@ -81,6 +82,19 @@ export async function getChurchServices(): Promise<string> {
   try {
     const row = await prisma.siteSetting.findUnique({
       where: { key: SETTING_KEYS.churchServices },
+    });
+    return row?.value ?? "";
+  } catch {
+    return "";
+  }
+}
+
+// График за сметосъбирането (по квартали/дни), редактиран свободно от админа
+// като текст/Markdown. Показва се на страница „График за сметосъбиране".
+export async function getWasteSchedule(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.wasteSchedule },
     });
     return row?.value ?? "";
   } catch {

@@ -8,6 +8,7 @@ import { buildMetadata, itemListLd } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { getDutyInfo } from "@/lib/settings";
 import { PrintButton } from "@/components/PrintButton";
+import { OpenNowBadge } from "@/components/OpenNowBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +43,10 @@ export default async function DutyPharmacyPage() {
           </div>
         )}
         {s.hours && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Clock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
             <span>{s.hours}</span>
+            <OpenNowBadge hours={s.hours} />
           </div>
         )}
         {s.phone && (

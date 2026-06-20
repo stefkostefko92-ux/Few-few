@@ -4,12 +4,14 @@ import {
   getDutyInfo,
   getFacebookUrl,
   getChurchServices,
+  getWasteSchedule,
 } from "@/lib/settings";
 import {
   saveAdSettings,
   saveDutyInfo,
   saveContactSettings,
   saveChurchServices,
+  saveWasteSchedule,
 } from "@/lib/admin/settings-actions";
 
 export const dynamic = "force-dynamic";
@@ -21,11 +23,12 @@ export default async function AdminSettingsPage({
 }) {
   await requireAdmin();
   const { saved, error } = await searchParams;
-  const [ad, dutyInfo, facebookUrl, churchServices] = await Promise.all([
+  const [ad, dutyInfo, facebookUrl, churchServices, wasteSchedule] = await Promise.all([
     getAdSettings(),
     getDutyInfo(),
     getFacebookUrl(),
     getChurchServices(),
+    getWasteSchedule(),
   ]);
 
   return (
@@ -141,6 +144,30 @@ export default async function AdminSettingsPage({
             defaultValue={churchServices}
             className="input"
             placeholder={"Напр.:\nХрам „Свети Никола“ — неделна св. литургия от 9:00 ч.\nГолеми празници — вечерня от 17:00 ч."}
+          />
+        </div>
+        <button type="submit" className="btn-primary">
+          Запази
+        </button>
+      </form>
+
+      <form action={saveWasteSchedule} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-slate-900">График за сметосъбиране</h2>
+        <p className="text-sm text-slate-600">
+          Показва се на страница „График за сметосъбиране“. Попълнете дните на
+          извозване по квартали. Оставете празно, за да го скриете.
+        </p>
+        <div>
+          <label className="label" htmlFor="wasteSchedule">
+            Дни на извозване (свободен текст)
+          </label>
+          <textarea
+            id="wasteSchedule"
+            name="wasteSchedule"
+            rows={6}
+            defaultValue={wasteSchedule}
+            className="input"
+            placeholder={"Напр.:\n**Център** — понеделник и четвъртък\n**Миньор** — вторник и петък\n**Разделно (жълти/зелени контейнери)** — първата сряда от месеца"}
           />
         </div>
         <button type="submit" className="btn-primary">

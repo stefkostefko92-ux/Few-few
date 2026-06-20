@@ -108,6 +108,22 @@ export async function saveChurchServices(formData: FormData): Promise<void> {
   redirect("/admin/nastroyki?saved=1");
 }
 
+export async function saveWasteSchedule(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const info = String(formData.get("wasteSchedule") ?? "").trim();
+
+  await setSetting(SETTING_KEYS.wasteSchedule, info);
+
+  await logAudit(admin, {
+    action: "UPDATE",
+    entity: "SiteSetting",
+    summary: "Промяна на графика за сметосъбиране",
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/admin/nastroyki?saved=1");
+}
+
 export async function saveDutyInfo(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const info = String(formData.get("dutyInfo") ?? "").trim();

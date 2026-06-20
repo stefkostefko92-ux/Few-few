@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Phone, Clock } from "@/components/icons";
+import { OpenNowBadge } from "@/components/OpenNowBadge";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
@@ -102,10 +103,11 @@ export default async function UslugiPage({
                   <div className="mt-2 text-sm text-slate-600">{s.address}</div>
                 )}
                 {s.hours && (
-                  <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-slate-500">
                     <Clock className="h-4 w-4 shrink-0" aria-hidden /> {s.hours}
                   </div>
                 )}
+                <OpenNowBadge hours={s.hours} className="mt-1.5" />
                 {s.phone && (
                   <a
                     href={`tel:${s.phone}`}
