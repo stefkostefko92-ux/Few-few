@@ -49,32 +49,83 @@ export type IndexNowResult = {
 };
 
 // Уведомява търсачките (през IndexNow) за всички страници на сайта.
+// При неуспех проверява ЗАЩО — най-честата причина за 403 е, че търсачката не
+// може да прочете/потвърди ключовия файл на keyLocation (грешен домейн в
+// NEXT_PUBLIC_SITE_URL, сайтът не е публично достъпен по HTTPS, или прокси
+// връща друго съдържание). Добавяме и отговора на търсачката за яснота.
+async function diagnoseFailure(
+  res: Response,
+  key: string,
+  keyLocation: string,
+): Promise<string> {
+  let respBody = "";
+  try {
+    respBody = (await res.text()).replace(/\s+/g, " ").trim().slice(0, 200);
+  } catch {
+    /* без тяло */
+  }
+
+  let fileNote = "";
+  try {
+    const f = await fetch(keyLocation, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!f.ok) {
+      fileNote =
+        ` Ключовият файл (${keyLocation}) върна код ${f.status} — трябва да е` +
+        ` публично достъпен и да връща само ключа.`;
+    } else {
+      const txt = (await f.text()).trim();
+      fileNote =
+        txt === key
+          ? ` Ключовият файл е достъпен и съвпада.`
+          : ` Ключовият файл не съвпада с ключа — вероятно NEXT_PUBLIC_SITE_URL` +
+            ` сочи към друг адрес от реалния домейн на сайта.`;
+    }
+  } catch {
+    fileNote =
+      ` Ключовият файл (${keyLocation}) е недостъпен — провери, че сайтът работи` +
+      ` публично по HTTPS и че NEXT_PUBLIC_SITE_URL сочи към реалния домейн.`;
+  }
+
+  const base =
+    res.status === 403
+      ? "Търсачката отхвърли ключа (403)."
+      : `Търсачката върна код ${res.status}.`;
+  return `${base}${fileNote}${respBody ? ` Отговор: ${respBody}` : ""}`;
+}
+
 export async function submitToIndexNow(): Promise<IndexNowResult> {
   const key = await getIndexNowKey();
   if (!key) return { ok: false, submitted: 0, error: "Липсва IndexNow ключ." };
 
   const host = new URL(SITE.url).host;
+  const keyLocation = `${SITE.url}${INDEXNOW_KEY_PATH}`;
   const urlList = await collectUrls();
-  const body = {
-    host,
-    key,
-    keyLocation: `${SITE.url}${INDEXNOW_KEY_PATH}`,
-    urlList,
-  };
+  const body = { host, key, keyLocation, urlList };
 
   try {
     const res = await fetch("https://api.indexnow.org/indexnow", {
       method: "POST",
-      headers: { "content-type": "application/json; charset=utf-8" },
+      headers: {
+        "content-type": "application/json; charset=utf-8",
+        // Някои IndexNow крайни точки (вкл. Bing) връщат 403 на заявки без
+        // User-Agent. Node fetch не слага по подразбиране — задаваме изрично.
+        "user-agent": `${host} IndexNow client (+${SITE.url})`,
+      },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(20000),
     });
     // IndexNow връща 200 (приет) или 202 (приет, обработва се).
+    if (res.status === 200 || res.status === 202) {
+      return { ok: true, submitted: urlList.length, status: res.status };
+    }
     return {
-      ok: res.status === 200 || res.status === 202,
+      ok: false,
       submitted: urlList.length,
       status: res.status,
-      ...(res.ok ? {} : { error: `Търсачката върна код ${res.status}.` }),
+      error: await diagnoseFailure(res, key, keyLocation),
     };
   } catch (e) {
     return {
