@@ -87,12 +87,14 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
         },
       });
       if (s) {
-        const tel = [s.phone, s.phone2].filter(Boolean).join(" / ") || "—";
-        out.push({
-          title: s.name,
-          url: h.url,
-          body: `Телефон: ${tel}. Адрес: ${s.address || "—"}. Работно време: ${s.hours || "—"}. ${plainText(s.description, 300)}`.trim(),
-        });
+        const lines = [
+          s.phone ? `Телефон: ${s.phone}` : "",
+          s.phone2 ? `Втори телефон: ${s.phone2}` : "",
+          s.address ? `Адрес: ${s.address}` : "",
+          s.hours ? `Работно време: ${s.hours}` : "",
+          plainText(s.description, 300),
+        ].filter(Boolean);
+        out.push({ title: s.name, url: h.url, body: lines.join("\n") });
       }
     } else if (h.type === "business") {
       const b = await prisma.business.findUnique({
@@ -100,11 +102,13 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
         select: { name: true, phone: true, address: true, hours: true, description: true },
       });
       if (b) {
-        out.push({
-          title: b.name,
-          url: h.url,
-          body: `Телефон: ${b.phone || "—"}. Адрес: ${b.address || "—"}. Работно време: ${b.hours || "—"}. ${plainText(b.description, 300)}`.trim(),
-        });
+        const lines = [
+          b.phone ? `Телефон: ${b.phone}` : "",
+          b.address ? `Адрес: ${b.address}` : "",
+          b.hours ? `Работно време: ${b.hours}` : "",
+          plainText(b.description, 300),
+        ].filter(Boolean);
+        out.push({ title: b.name, url: h.url, body: lines.join("\n") });
       }
     } else if (h.type === "event") {
       const e = await prisma.event.findUnique({
