@@ -175,11 +175,143 @@
     };
   }
 
+  // ---- Вероятностен модел за следващия тираж ----
+  //
+  // За честна игра всяко число има базова вероятност p0 = теглени / кош да
+  // излезе в следващия тираж. Логиката тук коригира тази база с три сигнала и
+  // нормализира така, че сборът от вероятностите да е равен на броя теглени
+  // числа (толкова излизат всеки тираж). Резултатът е оценка „колко вероятно
+  // е числото да се падне следващия път" на база реалните данни.
+  function nextDrawProbabilities(analysis, weights) {
+    const w = Object.assign(
+      { overdue: 0.5, frequency: 0.25, momentum: 0.25 },
+      weights || {}
+    );
+    const total = w.overdue + w.frequency + w.momentum || 1;
+    const g = analysis.game;
+    const p0 = g.picks / g.pool;
+    const draws = analysis.drawCount || 1;
+
+    // Bayesian оценка на честотата: свива наблюдаваната честота към базовата,
+    // за да не надценяваме числа при малко данни (Beta-Binomial, сила k0).
+    const k0 = 20;
+    const alpha = p0 * k0;
+
+    const expGap = analysis.expectedGap || 1;
+    const recentExp = (g.picks * analysis.recentWindow) / g.pool || 1;
+
+    const items = analysis.numbers.map((it) => {
+      const postRate = (it.freq + alpha) / (draws + k0); // апостериорна честота/тираж
+      const fRel = postRate / p0; // ~1; >1 = исторически по-често
+      const oRel = Math.min((it.gap + 1) / (expGap + 1), 3); // >1 = закъсняло
+      const rRel = Math.min(it.recent / recentExp, 3); // >1 = гореща форма
+      const blend = (w.overdue * oRel + w.frequency * fRel + w.momentum * rRel) / total;
+      return {
+        n: it.n,
+        gap: it.gap,
+        freq: it.freq,
+        recent: it.recent,
+        gapIndex: it.gapIndex,
+        freqIndex: it.freqIndex,
+        fRel,
+        oRel,
+        rRel,
+        blend,
+      };
+    });
+
+    // Нормализираме: средният коефициент = 1 → сборът от вероятностите = теглени.
+    const meanBlend = items.reduce((s, x) => s + x.blend, 0) / items.length || 1;
+    for (const it of items) {
+      it.prob = Math.max(0, Math.min(1, p0 * (it.blend / meanBlend)));
+      it.reason = reasonFor(it, w, analysis);
+    }
+    items.sort((a, b) => b.prob - a.prob);
+    return { items, baseline: p0 };
+  }
+
+  // Кратка обосновка: кой сигнал тежи най-много за това число.
+  function reasonFor(it, w, analysis) {
+    const parts = [
+      {
+        v: w.overdue * it.oRel,
+        txt: `не е излизало ${it.gap} тиража (×${it.gapIndex.toFixed(1)} от средното изчакване)`,
+      },
+      {
+        v: w.frequency * it.fRel,
+        txt: `излиза ${it.freqIndex >= 1 ? "по-често" : "по-рядко"} от средното (индекс ${it.freqIndex.toFixed(2)})`,
+      },
+      {
+        v: w.momentum * it.rRel,
+        txt: `в добра форма — ${it.recent} пъти в последните ${analysis.recentWindow} тиража`,
+      },
+    ].sort((a, b) => b.v - a.v);
+    return parts[0].txt;
+  }
+
+  // Тест за честност (chi-square goodness-of-fit спрямо равномерно разпределение).
+  // Показва дали изобщо има статистически отклонения в данните — важно за
+  // честна преценка доколко „логиката" има основание.
+  function fairnessTest(analysis) {
+    const exp = analysis.expectedFreq;
+    if (!exp || analysis.drawCount < 30) return null;
+    let chi2 = 0;
+    for (const it of analysis.numbers) {
+      chi2 += Math.pow(it.freq - exp, 2) / exp;
+    }
+    const df = analysis.game.pool - 1;
+    const z = (chi2 - df) / Math.sqrt(2 * df); // приближение колко СД встрани
+    let verdict;
+    if (z < 2) verdict = "uniform";
+    else if (z < 3.5) verdict = "slight";
+    else verdict = "biased";
+    return { chi2, df, z, verdict };
+  }
+
+  // Препоръчителна комбинация = най-вероятните числа, изравнена по
+  // четни/нечетни и ниски/високи спрямо историческото средно.
+  function likelyTicket(analysis, weights) {
+    const game = analysis.game;
+    const k = game.picks;
+    const half = game.pool / 2;
+    const ranked = nextDrawProbabilities(analysis, weights).items; // подредени по вероятност
+    const targetLow = Math.round(analysis.combo.avgLow || k / 2);
+    const targetEven = Math.round(analysis.combo.avgEven || k / 2);
+
+    const pick = [];
+    let low = 0,
+      even = 0;
+    for (const cand of ranked) {
+      if (pick.length >= k) break;
+      const isLow = cand.n <= half;
+      const isEven = cand.n % 2 === 0;
+      const needLow = low < targetLow;
+      const needHigh = pick.length - low < k - targetLow;
+      const needEven = even < targetEven;
+      const needOdd = pick.length - even < k - targetEven;
+      if (isLow && !needLow && needHigh) continue;
+      if (!isLow && !needHigh && needLow) continue;
+      if (isEven && !needEven && needOdd) continue;
+      if (!isEven && !needOdd && needEven) continue;
+      pick.push(cand.n);
+      if (isLow) low += 1;
+      if (isEven) even += 1;
+    }
+    for (const cand of ranked) {
+      if (pick.length >= k) break;
+      if (!pick.includes(cand.n)) pick.push(cand.n);
+    }
+    return pick.sort((a, b) => a - b);
+  }
+
   window.TotoPredictor = {
     scoreNumbers,
     topBy,
     balancedTicket,
     companionsOf,
     suggestions,
+    nextDrawProbabilities,
+    fairnessTest,
+    likelyTicket,
   };
 })();

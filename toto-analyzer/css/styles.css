@@ -171,6 +171,41 @@ h3 { font-size: 1.05rem; margin: 26px 0 10px; color: var(--ink); }
 .weights label { display: grid; grid-template-columns: 220px 1fr 40px; align-items: center; gap: 10px; color: var(--muted); }
 .weights input[type="range"] { width: 100%; }
 
+/* Likely next draw (probability model) */
+.likely-box {
+  background: linear-gradient(135deg, #18223a, #1d1733);
+  border: 1px solid #3a3360;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 22px;
+}
+.likely-box h3 { margin: 0 0 8px; }
+.fairness { font-size: 0.86rem; margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; }
+.fairness.ok { background: #0f2a20; color: #9fe7c4; border: 1px solid #1f5540; }
+.fairness.warn { background: #2a2410; color: #ffe7a3; border: 1px solid #5a4a16; }
+.likely-combo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.likely-combo .lbl { color: var(--muted); font-size: 0.9rem; }
+.likely-combo .balls { display: flex; gap: 6px; flex-wrap: wrap; }
+.likely-combo .ball {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #15203a; font-size: 1.05rem;
+  background: radial-gradient(circle at 30% 25%, #ffe9a8, var(--accent));
+}
+
+.prob-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.prob-row { display: grid; grid-template-columns: 40px 1fr 56px; align-items: center; gap: 12px; }
+.prob-row .bnum {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; background: var(--panel-2);
+}
+.prob-body { min-width: 0; }
+.prob-track { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; height: 14px; overflow: hidden; }
+.prob-fill { height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+.prob-reason { color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+.prob-val { text-align: right; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+
 /* Tickets */
 .tickets { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 10px; }
 .ticket {

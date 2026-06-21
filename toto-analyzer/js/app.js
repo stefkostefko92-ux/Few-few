@@ -133,7 +133,59 @@
 
   function renderPredict() {
     const a = state.analysis;
-    const sug = window.TotoPredictor.suggestions(a, state.weights);
+    const P = window.TotoPredictor;
+
+    // Вероятностен модел за следващия тираж.
+    const probs = P.nextDrawProbabilities(a, state.weights);
+    $("#baseProb").textContent = (probs.baseline * 100).toFixed(1) + "%";
+
+    const combo = P.likelyTicket(a, state.weights);
+    $("#likelyCombo").innerHTML = combo.map(ball).join("");
+
+    // Честен тест дали данните се отклоняват от равномерни.
+    const fair = P.fairnessTest(a);
+    const fairEl = $("#fairnessNote");
+    if (!fair) {
+      fairEl.textContent =
+        "Малко данни за статистически тест — заредете повече тиражи за надеждна преценка.";
+      fairEl.className = "fairness warn";
+    } else if (fair.verdict === "uniform") {
+      fairEl.innerHTML =
+        `📊 Тестът (χ²=${fair.chi2.toFixed(0)}, df=${fair.df}) показва, че тегленията` +
+        ` <strong>не се отклоняват от случайни</strong> — реално всички числа са` +
+        ` практически равновероятни. Подредбата по-долу е логична хипотеза, не предимство.`;
+      fairEl.className = "fairness ok";
+    } else if (fair.verdict === "slight") {
+      fairEl.innerHTML =
+        `📊 Тестът (χ²=${fair.chi2.toFixed(0)}, df=${fair.df}) показва <strong>леки` +
+        ` отклонения</strong> от равномерното. Може да са случайни, но моделът ги отчита.`;
+      fairEl.className = "fairness warn";
+    } else {
+      fairEl.innerHTML =
+        `📊 Тестът (χ²=${fair.chi2.toFixed(0)}, df=${fair.df}) показва <strong>значими` +
+        ` отклонения</strong> от равномерното разпределение в тези данни.`;
+      fairEl.className = "fairness warn";
+    }
+
+    // Списък с най-вероятните числа + обосновка.
+    const maxProb = Math.max(0.0001, ...probs.items.map((x) => x.prob));
+    const top = probs.items.slice(0, 14);
+    $("#probList").innerHTML = top
+      .map((it) => {
+        const pct = Math.round((it.prob / maxProb) * 100);
+        return `
+        <div class="prob-row">
+          <span class="bnum">${it.n}</span>
+          <div class="prob-body">
+            <div class="prob-track"><div class="prob-fill" style="width:${pct}%"></div></div>
+            <div class="prob-reason">${it.reason}</div>
+          </div>
+          <span class="prob-val">${(it.prob * 100).toFixed(1)}%</span>
+        </div>`;
+      })
+      .join("");
+
+    const sug = P.suggestions(a, state.weights);
 
     const cont = $("#tickets");
     cont.innerHTML = "";

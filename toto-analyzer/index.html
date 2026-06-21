@@ -82,6 +82,23 @@
           <label>Честота <input type="range" id="wFrequency" min="0" max="100" value="25" /><span id="wFrequencyV">25</span></label>
           <label>Форма (последни тиражи) <input type="range" id="wMomentum" min="0" max="100" value="25" /><span id="wMomentumV">25</span></label>
         </div>
+
+        <div class="likely-box">
+          <h3>🔮 Най-вероятен следващ тираж</h3>
+          <p class="fairness" id="fairnessNote"></p>
+          <div class="likely-combo">
+            <span class="lbl">Препоръчана комбинация:</span>
+            <span class="balls" id="likelyCombo"></span>
+          </div>
+          <p class="hint">
+            Оценена вероятност всяко число да излезе в следващия тираж (базова
+            вероятност за честна игра е <strong id="baseProb">—</strong>). Числата
+            са подредени от най-вероятното, с логиката зад всяко.
+          </p>
+          <div class="prob-list" id="probList"></div>
+        </div>
+
+        <h3>Готови фишове по стратегия</h3>
         <div class="tickets" id="tickets"></div>
         <h3>Класиране на всички числа по съставен резултат</h3>
         <div class="bars" id="scoreBars"></div>
