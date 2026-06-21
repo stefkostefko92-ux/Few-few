@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Type, Contrast, Hand, Info, Moon } from "@/components/icons";
+import { Type, Contrast, Hand, Info, Moon, ChevronDown } from "@/components/icons";
 
 // Нива на уголемяване на шрифта → размер на корена (html). Понеже всичко е в
 // rem, целият сайт (текст и отстояния) се мащабира пропорционално.
@@ -29,6 +29,7 @@ export function AccessibilityBar() {
   const [contrast, setContrast] = useState(false);
   const [bigTouch, setBigTouch] = useState(false);
   const [dark, setDark] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Зареждане на запазените предпочитания.
   useEffect(() => {
@@ -37,10 +38,12 @@ export function AccessibilityBar() {
       const c = localStorage.getItem("a11y-contrast") === "1";
       const t = localStorage.getItem("a11y-bigtouch") === "1";
       const d = localStorage.getItem("a11y-dark") === "1";
+      const hidden = localStorage.getItem("a11y-collapsed") === "1";
       setFont(f);
       setContrast(c);
       setBigTouch(t);
       setDark(d);
+      setCollapsed(hidden);
       applyFont(f);
       applyContrast(c);
       applyBigTouch(t);
@@ -48,6 +51,18 @@ export function AccessibilityBar() {
     } catch {
       /* ignore */
     }
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("a11y-collapsed", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
   }, []);
 
   const chooseFont = useCallback((level: string) => {
@@ -140,7 +155,25 @@ export function AccessibilityBar() {
           Достъпност:
         </span>
 
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-expanded={!collapsed}
+          aria-controls="a11y-controls"
+          className="a11y-btn inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium text-red-700 ring-1 ring-red-300 transition hover:bg-red-200"
+          title={collapsed ? "Покажи настройките за достъпност" : "Скрий настройките за достъпност"}
+        >
+          <ChevronDown
+            className={"h-4 w-4 transition-transform " + (collapsed ? "" : "rotate-180")}
+            aria-hidden
+          />
+          {collapsed ? "Покажи" : "Скрий"}
+        </button>
+
+        {!collapsed && (
+        <>
         <div
+          id="a11y-controls"
           className="flex items-center gap-1.5"
           role="group"
           aria-label="Размер на текста"
@@ -207,6 +240,8 @@ export function AccessibilityBar() {
           <Info className="h-4 w-4" aria-hidden />
           Помощ за достъпността
         </Link>
+        </>
+        )}
       </div>
     </div>
   );
