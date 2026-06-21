@@ -92,12 +92,54 @@ function expandConcept(group: string[]): string[] {
   return [...out];
 }
 
+// Думи, които изразяват КАКВО иска човекът (контакт), а не ЗА КОГО. „телефон“,
+// „номер“, „контакт“ не бива да участват в самото съвпадение — иначе „телефон
+// на общината“ напасва всяка статия, в която се мярка думата „телефон“. Те само
+// насочват, че трябва да предпочетем услуга/бизнес (които имат телефон/адрес).
+function isContactWord(t: string): boolean {
+  return (
+    t === "тел" || t === "номер" ||
+    t.startsWith("телефон") || t.startsWith("контакт") ||
+    t.startsWith("номер") || t.startsWith("имейл") || t === "мейл"
+  );
+}
+
+export type QueryIntent = { contact: boolean; howto: boolean };
+
+// Разпознава намерението: иска ли човекът контакт (телефон/адрес) или обяснение
+// „как да…“. Така подреждаме правилния ТИП съдържание най-отгоре.
+export function classifyIntent(query: string): QueryIntent {
+  const lc = query.toLowerCase();
+  const tokens = tokenize(query);
+  const contact =
+    tokens.some(isContactWord) ||
+    lc.includes("обади") ||
+    lc.includes("позвън") ||
+    lc.includes("свържа се") ||
+    lc.includes("работно време") ||
+    lc.includes("кога работи") ||
+    lc.includes("отворено ли");
+  const howto =
+    lc.includes("как да") ||
+    lc.includes("как се") ||
+    lc.includes("как мога") ||
+    lc.includes("къде да") ||
+    lc.includes("откъде") ||
+    lc.includes("мога ли");
+  return { contact, howto };
+}
+
 // Изгражда групите термини за оценяване: засечените понятия (по цялата заявка,
 // вкл. изрази от няколко думи) + останалите думи със собствените им варианти.
+// Думите за намерение (телефон/номер/контакт) се махат от съвпадението.
 // Експортирана за тестове.
 export function buildTermGroups(query: string): string[][] {
   const lcq = query.toLowerCase();
-  const tokens = tokenize(query);
+  const all = tokenize(query);
+  // Махаме контактните думи, освен ако така не остане нищо за търсене.
+  const stripped = all.filter((t) => !isContactWord(t));
+  const tokens = stripped.length ? stripped : all;
+
   const groups: string[][] = [];
   const used = new Set<number>();
 
@@ -138,8 +180,27 @@ function matchedCount(haystack: string, termVariants: string[][]): number {
   return s;
 }
 
+// Тежест според типа спрямо намерението. При въпрос за телефон/контакт
+// предпочитаме услуги и бизнеси (те имат телефон/адрес/работно време), а не
+// статии „как да…“; при въпрос „как да…“ — обратното.
+function typeMultiplier(
+  type: SearchResult["type"],
+  intent: QueryIntent,
+): number {
+  if (intent.contact) {
+    if (type === "service" || type === "business") return 1.6;
+    if (type === "faq") return 0.4;
+    return 0.6; // event
+  }
+  if (intent.howto) {
+    if (type === "faq") return 1.4;
+    return 0.9;
+  }
+  return 1;
+}
+
 // Лек кеш на индекса в паметта (за да не сканираме базата при всяко търсене).
-type Index = {
+export type SearchIndex = {
   faqs: { slug: string; question: string; answer: string; tags: string; category: string }[];
   services: {
     slug: string; name: string; description: string; address: string;
@@ -148,10 +209,10 @@ type Index = {
   businesses: { slug: string; name: string; description: string; category: string }[];
   events: { slug: string; title: string; description: string; location: string }[];
 };
-let cache: { at: number; idx: Index } | null = null;
+let cache: { at: number; idx: SearchIndex } | null = null;
 const TTL_MS = 60_000;
 
-async function loadIndex(): Promise<Index> {
+async function loadIndex(): Promise<SearchIndex> {
   if (cache && Date.now() - cache.at < TTL_MS) return cache.idx;
   const [faqs, services, businesses, events] = await Promise.all([
     prisma.faq.findMany({
@@ -181,24 +242,27 @@ async function loadIndex(): Promise<Index> {
   return cache.idx;
 }
 
-// Обединено търсене по думи в основните типове съдържание.
-export async function search(query: string, limit = 12): Promise<SearchResult[]> {
+// Чисто класиране върху подаден индекс (без база) — за да е лесно за тестване.
+export function rankIndex(
+  idx: SearchIndex,
+  query: string,
+  limit = 12,
+): SearchResult[] {
   const T = buildTermGroups(query);
   if (T.length === 0) return [];
-
-  const idx = await loadIndex();
+  const intent = classifyIntent(query);
   const results: SearchResult[] = [];
 
   for (const f of idx.faqs) {
     const head = `${f.question} ${f.tags} ${f.category}`;
-    const score = matchedCount(head, T) * 3 + matchedCount(f.answer, T);
-    if (score > 0) {
+    const base = matchedCount(head, T) * 3 + matchedCount(f.answer, T);
+    if (base > 0) {
       results.push({
         type: "faq",
         title: f.question,
         snippet: plainText(f.answer, 140),
         url: `/kak-da/${f.slug}`,
-        score,
+        score: base * typeMultiplier("faq", intent),
       });
     }
   }
@@ -206,14 +270,14 @@ export async function search(query: string, limit = 12): Promise<SearchResult[]>
   for (const s of idx.services) {
     const catLabel = SERVICE_CATEGORY_LABELS[s.category] ?? "";
     const head = `${s.name} ${catLabel} ${s.phone} ${s.phone2}`;
-    const score = matchedCount(head, T) * 3 + matchedCount(`${s.description} ${s.address}`, T);
-    if (score > 0) {
+    const base = matchedCount(head, T) * 3 + matchedCount(`${s.description} ${s.address}`, T);
+    if (base > 0) {
       results.push({
         type: "service",
         title: s.name,
         snippet: plainText(s.description || s.address, 140),
         url: `/uslugi/${s.slug}`,
-        score,
+        score: base * typeMultiplier("service", intent),
       });
     }
   }
@@ -221,34 +285,44 @@ export async function search(query: string, limit = 12): Promise<SearchResult[]>
   for (const b of idx.businesses) {
     const catLabel = BUSINESS_CATEGORY_LABELS[b.category] ?? "";
     const head = `${b.name} ${catLabel}`;
-    const score = matchedCount(head, T) * 3 + matchedCount(b.description, T);
-    if (score > 0) {
+    const base = matchedCount(head, T) * 3 + matchedCount(b.description, T);
+    if (base > 0) {
       results.push({
         type: "business",
         title: b.name,
         snippet: plainText(b.description, 140),
         url: `/biznes/${b.slug}`,
-        score,
+        score: base * typeMultiplier("business", intent),
       });
     }
   }
 
   for (const e of idx.events) {
     const head = `${e.title} ${e.location}`;
-    const score = matchedCount(head, T) * 3 + matchedCount(e.description, T);
-    if (score > 0) {
+    const base = matchedCount(head, T) * 3 + matchedCount(e.description, T);
+    if (base > 0) {
       results.push({
         type: "event",
         title: e.title,
         snippet: plainText(e.description, 140),
         url: `/sabitiya/${e.slug}`,
-        score,
+        score: base * typeMultiplier("event", intent),
       });
     }
   }
 
-  results.sort((a, b) => b.score - a.score);
+  // По резултат, после по-късото име напред (по-общ/каноничен запис).
+  results.sort((a, b) =>
+    b.score !== a.score ? b.score - a.score : a.title.length - b.title.length,
+  );
   return results.slice(0, limit);
+}
+
+// Обединено търсене по думи в основните типове съдържание.
+export async function search(query: string, limit = 12): Promise<SearchResult[]> {
+  if (buildTermGroups(query).length === 0) return [];
+  const idx = await loadIndex();
+  return rankIndex(idx, query, limit);
 }
 
 // Записва запитване без резултат, за да виждаме какво търсят хората.
