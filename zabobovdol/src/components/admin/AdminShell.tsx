@@ -101,6 +101,7 @@ export function AdminShell({
             <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-400">
               Система
             </div>
+            {user.role === "ADMIN" && link("/admin/pomoshtnik", "Дигитален помощник")}
             {link("/admin/novini", "Новини от общината")}
             {user.role === "ADMIN" && link("/admin/signali", "Сигнали до общината", "signali")}
             {user.role === "ADMIN" && link("/admin/reklami", "Заявки за реклама", "reklami")}

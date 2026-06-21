@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { search, recordMiss } from "@/lib/search";
 import { plainText } from "@/lib/markdown";
 import { SITE } from "@/lib/site";
+import { getAiConfig, type AiConfig } from "@/lib/ai-config";
 
 export type ChatSource = { title: string; url: string };
 export type ChatTurn = { role: "user" | "bot"; text: string };
@@ -185,14 +186,6 @@ function quickIntent(q: string): ChatAnswer | null {
 
 // ───────────────────────── Поточен отговор ─────────────────────────
 
-// Кой AI доставчик е включен (ако има). Gemini Flash е безплатен; Claude е
-// платен. Без ключ/без CHAT_PROVIDER → работим само на правила (от съдържанието).
-function selectedProvider(): "gemini" | "anthropic" | null {
-  const p = process.env.CHAT_PROVIDER;
-  if (p === "gemini" && process.env.GEMINI_API_KEY) return "gemini";
-  if (p === "anthropic" && process.env.ANTHROPIC_API_KEY) return "anthropic";
-  return null;
-}
 
 // Главната функция: връща поток от събития. Интерфейсът ги показва на части.
 export async function* streamAnswer(
@@ -216,11 +209,11 @@ export async function* streamAnswer(
 
   const hits = await search(q, 8);
 
-  const provider = selectedProvider();
-  if (provider) {
+  const ai = await getAiConfig();
+  if (ai.effective !== "rules") {
     try {
-      if (provider === "gemini") yield* streamWithGemini(q, history, hits);
-      else yield* streamWithClaude(q, history, hits);
+      if (ai.effective === "gemini") yield* streamWithGemini(q, history, hits, ai);
+      else yield* streamWithClaude(q, history, hits, ai);
       return;
     } catch (err) {
       console.error("AI доставчикът отказа, връщам се към правила:", err);
@@ -356,6 +349,7 @@ async function* streamWithClaude(
   q: string,
   history: ChatTurn[],
   hits: Hit[],
+  ai: AiConfig,
 ): AsyncGenerator<ChatChunk> {
   const ctx = await hydrate(hits, 6);
   if (ctx.length === 0) {
@@ -375,11 +369,11 @@ async function* streamWithClaude(
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY as string,
+      "x-api-key": ai.anthropicKey,
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-opus-4-8",
+      model: ai.anthropicModel,
       max_tokens: 800,
       temperature: 0.2,
       system: buildSystemPrompt(context),
@@ -418,6 +412,7 @@ async function* streamWithGemini(
   q: string,
   history: ChatTurn[],
   hits: Hit[],
+  ai: AiConfig,
 ): AsyncGenerator<ChatChunk> {
   const ctx = await hydrate(hits, 6);
   if (ctx.length === 0) {
@@ -433,11 +428,9 @@ async function* streamWithGemini(
     .join("\n\n");
   const sources = ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url }));
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const key = process.env.GEMINI_API_KEY as string;
   const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}` +
-    `:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/${ai.geminiModel}` +
+    `:streamGenerateContent?alt=sse&key=${encodeURIComponent(ai.geminiKey)}`;
 
   const res = await fetch(url, {
     method: "POST",
