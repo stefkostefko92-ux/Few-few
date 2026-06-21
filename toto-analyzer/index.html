@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ТОТО Анализатор — закъснели числа и статистика (5/35, 6/42, 6/48)</title>
+    <meta
+      name="description"
+      content="Анализ на официалните тото тегления: кои числа отдавна не са излизали, честотна статистика и претеглени предложения за следващия тираж."
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <h1>🎱 ТОТО Анализатор</h1>
+        <p class="tagline">
+          Статистика на официалните тегления — закъснели числа, честота и
+          претеглени предложения за следващия тираж.
+        </p>
+        <nav class="games" id="gameTabs" aria-label="Избор на игра"></nav>
+      </div>
+    </header>
+
+    <div class="disclaimer" role="note">
+      ⚠️ Тегленията на тото са случайни и независими. Никой метод не може да
+      предскаже резултата или да повиши реалния шанс за печалба. Анализите тук са
+      само за информация и забавление. Играйте отговорно.
+    </div>
+
+    <main class="wrap">
+      <section class="status-bar" id="statusBar"></section>
+
+      <nav class="view-tabs" id="viewTabs" aria-label="Изгледи">
+        <button data-view="overdue" class="active">⏳ Закъснели</button>
+        <button data-view="frequency">📊 Честота</button>
+        <button data-view="predict">🎯 Предложения</button>
+        <button data-view="stats">🧮 Статистика</button>
+        <button data-view="data">📥 Данни</button>
+      </nav>
+
+      <!-- Закъснели числа -->
+      <section class="view" id="view-overdue">
+        <h2>Числа, които отдавна не са излизали</h2>
+        <p class="hint">
+          „Закъснение" = на колко тиража назад числото е било изтеглено за
+          последно. Средното очаквано изчакване за тази игра е
+          <strong id="expGap">—</strong> тиража. Стълбчето показва закъснението
+          спрямо този рекорд за периода.
+        </p>
+        <div class="grid" id="overdueGrid"></div>
+      </section>
+
+      <!-- Честота -->
+      <section class="view hidden" id="view-frequency">
+        <h2>Честотна статистика (горещи и студени числа)</h2>
+        <p class="hint">
+          Колко пъти всяко число е било изтеглено. „Индекс" 1.00 означава точно
+          толкова, колкото статистически се очаква; над 1 = по-често от средното.
+        </p>
+        <div class="freq-controls">
+          <label>Подреди по:
+            <select id="freqSort">
+              <option value="freqDesc">Най-чести</option>
+              <option value="freqAsc">Най-редки</option>
+              <option value="numAsc">Пореден номер</option>
+            </select>
+          </label>
+        </div>
+        <div class="bars" id="freqBars"></div>
+      </section>
+
+      <!-- Предложения -->
+      <section class="view hidden" id="view-predict">
+        <h2>Предложения за следващия тираж</h2>
+        <p class="hint">
+          Всяко число получава съставен резултат от три сигнала. Настрой теглата
+          според стратегията си — повече към „закъснели" или към „чести".
+        </p>
+        <div class="weights" id="weights">
+          <label>Закъснение <input type="range" id="wOverdue" min="0" max="100" value="50" /><span id="wOverdueV">50</span></label>
+          <label>Честота <input type="range" id="wFrequency" min="0" max="100" value="25" /><span id="wFrequencyV">25</span></label>
+          <label>Форма (последни тиражи) <input type="range" id="wMomentum" min="0" max="100" value="25" /><span id="wMomentumV">25</span></label>
+        </div>
+        <div class="tickets" id="tickets"></div>
+        <h3>Класиране на всички числа по съставен резултат</h3>
+        <div class="bars" id="scoreBars"></div>
+      </section>
+
+      <!-- Статистика на комбинациите -->
+      <section class="view hidden" id="view-stats">
+        <h2>Статистика на изтеглените комбинации</h2>
+        <p class="hint">Полезно при съставяне на собствен фиш.</p>
+        <div class="stat-cards" id="statCards"></div>
+        <h3>Най-чести двойки числа</h3>
+        <div class="pairs" id="pairsList"></div>
+      </section>
+
+      <!-- Данни -->
+      <section class="view hidden" id="view-data">
+        <h2>Управление на данните</h2>
+        <p class="hint">
+          За реален анализ зареди официалния архив на тегленията. Поддържат се
+          CSV и JSON. Данните се пазят само в твоя браузър (localStorage).
+        </p>
+
+        <div class="data-actions">
+          <button id="btnExport" class="btn">⬇️ Изтегли текущите данни (CSV)</button>
+          <button id="btnDemo" class="btn">🎲 Зареди демо данни</button>
+          <button id="btnClear" class="btn btn-danger">🗑️ Изчисти данните за тази игра</button>
+        </div>
+
+        <h3>Добави единичен тираж</h3>
+        <div class="add-draw">
+          <input type="date" id="addDate" />
+          <input type="text" id="addNumbers" placeholder="напр. 3 12 18 27 31" />
+          <button id="btnAddDraw" class="btn">➕ Добави</button>
+        </div>
+        <p class="msg" id="addMsg"></p>
+
+        <h3>Импорт на много тиражи</h3>
+        <details class="format-help">
+          <summary>Поддържани формати ⓘ</summary>
+          <p><strong>CSV</strong> (по един тираж на ред, датата е по желание):</p>
+          <pre>2026-06-18, 3, 12, 18, 27, 31
+2026-06-15, 5, 9, 14, 22, 30</pre>
+          <p><strong>JSON</strong>:</p>
+          <pre>[
+  { "date": "2026-06-18", "numbers": [3, 12, 18, 27, 31] }
+]</pre>
+          <p>
+            Архивът се намира на официалния сайт на Български спортен
+            тотализатор (toto.bg) → резултати/архив. Копирай числата в горния
+            формат и ги постави тук.
+          </p>
+        </details>
+        <textarea id="importText" rows="8" placeholder="Постави CSV или JSON тук..."></textarea>
+        <div class="data-actions">
+          <input type="file" id="importFile" accept=".csv,.json,.txt" />
+          <label class="checkbox"><input type="checkbox" id="importReplace" /> Замени съществуващите (иначе се добавят)</label>
+          <button id="btnImport" class="btn btn-primary">📥 Импортирай</button>
+        </div>
+        <p class="msg" id="importMsg"></p>
+      </section>
+
+      <p class="recent-list" id="recentDraws"></p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          ТОТО Анализатор · Изчисленията се извършват изцяло в браузъра ти ·
+          Играй отговорно (Хазартът може да създаде зависимост).
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/analysis.js"></script>
+    <script src="js/predictor.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
