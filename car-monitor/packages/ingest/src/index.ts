@@ -39,6 +39,16 @@ export interface RawListing {
   sellerName?: string;
   sellerKind?: string;
   sellerEik?: string;
+  sellerPhone?: string;
+  /** Допълнителни полета от детайлната страница на обявата. */
+  variant?: string; // комплектация (напр. "COMPETITION")
+  engineCc?: number;
+  color?: string;
+  euroStandard?: string;
+  description?: string;
+  photos?: string[];
+  views?: number;
+  editedAt?: string; // ISO дата на последна редакция
   /** Известни отчети за пробег от външни източници (ГТП/обяви). */
   mileageHistory?: Array<{ date: string; km: number }>;
 }
@@ -265,3 +275,4 @@ export interface SourceAdapter {
 }
 
 export { parseListingsHtml, DEFAULT_SELECTORS, type ListingSelectors } from "./parse.ts";
+export { parseMobileBgDetail } from "./parse-mobile-detail.ts";
