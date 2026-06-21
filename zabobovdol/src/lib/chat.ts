@@ -5,11 +5,12 @@ import { SITE } from "@/lib/site";
 
 export type ChatSource = { title: string; url: string };
 export type ChatTurn = { role: "user" | "bot"; text: string };
+export type ChatProvider = "rules" | "anthropic" | "gemini";
 
 export type ChatAnswer = {
   answer: string;
   sources: ChatSource[];
-  provider: "rules" | "anthropic";
+  provider: ChatProvider;
 };
 
 // Поточни събития към интерфейса (NDJSON). Текстът пристига на части (delta),
@@ -17,7 +18,7 @@ export type ChatAnswer = {
 export type ChatChunk =
   | { type: "delta"; text: string }
   | { type: "sources"; sources: ChatSource[] }
-  | { type: "done"; provider: "rules" | "anthropic" }
+  | { type: "done"; provider: ChatProvider }
   | { type: "error"; message: string };
 
 type Hit = Awaited<ReturnType<typeof search>>[number];
@@ -184,10 +185,13 @@ function quickIntent(q: string): ChatAnswer | null {
 
 // ───────────────────────── Поточен отговор ─────────────────────────
 
-function providerEnabled(): boolean {
-  return (
-    process.env.CHAT_PROVIDER === "anthropic" && !!process.env.ANTHROPIC_API_KEY
-  );
+// Кой AI доставчик е включен (ако има). Gemini Flash е безплатен; Claude е
+// платен. Без ключ/без CHAT_PROVIDER → работим само на правила (от съдържанието).
+function selectedProvider(): "gemini" | "anthropic" | null {
+  const p = process.env.CHAT_PROVIDER;
+  if (p === "gemini" && process.env.GEMINI_API_KEY) return "gemini";
+  if (p === "anthropic" && process.env.ANTHROPIC_API_KEY) return "anthropic";
+  return null;
 }
 
 // Главната функция: връща поток от събития. Интерфейсът ги показва на части.
@@ -212,14 +216,16 @@ export async function* streamAnswer(
 
   const hits = await search(q, 8);
 
-  if (providerEnabled()) {
+  const provider = selectedProvider();
+  if (provider) {
     try {
-      yield* streamWithClaude(q, history, hits);
+      if (provider === "gemini") yield* streamWithGemini(q, history, hits);
+      else yield* streamWithClaude(q, history, hits);
       return;
     } catch (err) {
-      console.error("Грешка при заявка към Claude, връщам се към правила:", err);
+      console.error("AI доставчикът отказа, връщам се към правила:", err);
       // Падаме обратно към правилата само ако още нищо не е изпратено
-      // (грешката се хвърля от streamWithClaude преди първата delta).
+      // (грешката се хвърля преди първата delta).
     }
   }
 
@@ -236,7 +242,7 @@ export async function answerQuestion(
 ): Promise<ChatAnswer> {
   let answer = "";
   let sources: ChatSource[] = [];
-  let provider: "rules" | "anthropic" = "rules";
+  let provider: ChatProvider = "rules";
   for await (const chunk of streamAnswer(question, history)) {
     if (chunk.type === "delta") answer += chunk.text;
     else if (chunk.type === "sources") sources = chunk.sources;
@@ -385,15 +391,90 @@ async function* streamWithClaude(
   // Хвърляме ПРЕДИ да сме пуснали първа delta → горният слой пада към правилата.
   if (!res.ok || !res.body) throw new Error(`Anthropic API ${res.status}`);
 
+  yield* drain(anthropicDeltas(res.body), q, hits, sources, "anthropic");
+}
+
+// ───────────────────────── Gemini (RAG, поточно, безплатно) ─────────────────────────
+
+// Историята във формата на Gemini: роли „user" и „model", завършва с въпроса.
+function toGeminiContents(history: ChatTurn[], q: string) {
+  const turns = history
+    .filter((t) => t && typeof t.text === "string" && t.text.trim())
+    .slice(-MAX_HISTORY_TURNS)
+    .map((t) => ({
+      role: t.role === "user" ? "user" : "model",
+      parts: [{ text: t.text.slice(0, 1500) }],
+    }));
+  const contents = [...turns];
+  if (contents.length === 0 || contents[contents.length - 1].role !== "user") {
+    contents.push({ role: "user", parts: [{ text: q }] });
+  } else {
+    contents[contents.length - 1] = { role: "user", parts: [{ text: q }] };
+  }
+  return contents;
+}
+
+async function* streamWithGemini(
+  q: string,
+  history: ChatTurn[],
+  hits: Hit[],
+): AsyncGenerator<ChatChunk> {
+  const ctx = await hydrate(hits, 6);
+  if (ctx.length === 0) {
+    const rules = await answerWithRules(q, hits);
+    yield { type: "delta", text: rules.answer };
+    if (rules.sources.length) yield { type: "sources", sources: rules.sources };
+    yield { type: "done", provider: "rules" };
+    return;
+  }
+
+  const context = ctx
+    .map((c, i) => `[${i + 1}] ${c.title}\n${c.body}\nИзточник: ${SITE.url}${c.url}`)
+    .join("\n\n");
+  const sources = ctx.slice(0, 4).map((c) => ({ title: c.title, url: c.url }));
+
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const key = process.env.GEMINI_API_KEY as string;
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}` +
+    `:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: buildSystemPrompt(context) }] },
+      contents: toGeminiContents(history, q),
+      generationConfig: { temperature: 0.2, maxOutputTokens: 800 },
+    }),
+  });
+
+  // Хвърляме ПРЕДИ първа delta → горният слой пада към правилата.
+  if (!res.ok || !res.body) throw new Error(`Gemini API ${res.status}`);
+
+  yield* drain(geminiDeltas(res.body), q, hits, sources, "gemini");
+}
+
+// ───────────────────────── Общ поток / SSE ─────────────────────────
+
+// Пуска текстовите парчета от доставчика; ако нищо не дойде — пада към правилата;
+// ако прекъсне след вече казано — добавя кратка бележка. Накрая дава източници.
+async function* drain(
+  deltas: AsyncGenerator<string>,
+  q: string,
+  hits: Hit[],
+  sources: ChatSource[],
+  provider: ChatProvider,
+): AsyncGenerator<ChatChunk> {
   let produced = false;
   try {
-    for await (const text of readSseText(res.body)) {
+    for await (const text of deltas) {
       produced = true;
       yield { type: "delta", text };
     }
   } catch (err) {
     if (!produced) throw err; // нищо не е казано → падаме към правилата
-    console.error("Прекъсване по средата на потока от Claude:", err);
+    console.error("Прекъсване по средата на потока:", err);
     yield {
       type: "delta",
       text: "\n\n(Връзката прекъсна. Ако отговорът е непълен, опитайте пак.)",
@@ -401,7 +482,6 @@ async function* streamWithClaude(
   }
 
   if (!produced) {
-    // Празен отговор от модела — даваме поне нещо полезно.
     const rules = await answerWithRules(q, hits);
     yield { type: "delta", text: rules.answer };
     yield { type: "sources", sources: rules.sources };
@@ -410,11 +490,11 @@ async function* streamWithClaude(
   }
 
   yield { type: "sources", sources };
-  yield { type: "done", provider: "anthropic" };
+  yield { type: "done", provider };
 }
 
-// Чете Server-Sent Events потока на Anthropic и връща само текстовите парчета.
-async function* readSseText(
+// Чете SSE поток ред по ред и връща съдържанието на „data:" редовете.
+async function* sseDataLines(
   body: ReadableStream<Uint8Array>,
 ): AsyncGenerator<string> {
   const reader = body.getReader();
@@ -431,26 +511,54 @@ async function* readSseText(
         buf = buf.slice(nl + 1);
         if (!line.startsWith("data:")) continue;
         const payload = line.slice(5).trim();
-        if (!payload || payload === "[DONE]") continue;
-        let evt: {
-          type?: string;
-          delta?: { type?: string; text?: string };
-          error?: { message?: string };
-        };
-        try {
-          evt = JSON.parse(payload);
-        } catch {
-          continue;
-        }
-        if (evt.type === "error") {
-          throw new Error(evt.error?.message || "stream error");
-        }
-        if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
-          if (evt.delta.text) yield evt.delta.text;
-        }
+        if (payload && payload !== "[DONE]") yield payload;
       }
     }
   } finally {
     reader.releaseLock();
+  }
+}
+
+// Текстовите парчета от потока на Anthropic.
+async function* anthropicDeltas(
+  body: ReadableStream<Uint8Array>,
+): AsyncGenerator<string> {
+  for await (const payload of sseDataLines(body)) {
+    let evt: {
+      type?: string;
+      delta?: { type?: string; text?: string };
+      error?: { message?: string };
+    };
+    try {
+      evt = JSON.parse(payload);
+    } catch {
+      continue;
+    }
+    if (evt.type === "error") throw new Error(evt.error?.message || "stream error");
+    if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta" && evt.delta.text) {
+      yield evt.delta.text;
+    }
+  }
+}
+
+// Текстовите парчета от потока на Gemini.
+async function* geminiDeltas(
+  body: ReadableStream<Uint8Array>,
+): AsyncGenerator<string> {
+  for await (const payload of sseDataLines(body)) {
+    let evt: {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+      error?: { message?: string };
+    };
+    try {
+      evt = JSON.parse(payload);
+    } catch {
+      continue;
+    }
+    if (evt.error?.message) throw new Error(evt.error.message);
+    const parts = evt.candidates?.[0]?.content?.parts;
+    if (Array.isArray(parts)) {
+      for (const p of parts) if (p.text) yield p.text;
+    }
   }
 }
