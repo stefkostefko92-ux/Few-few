@@ -4,6 +4,7 @@ build/
 .turbo/
 .wrangler/
 .react-router/
+.preview/
 .dev.vars
 *.local
 .DS_Store

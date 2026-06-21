@@ -9,6 +9,7 @@
     "start": "wrangler dev",
     "deploy": "npm run build && wrangler deploy",
     "typecheck": "react-router typegen && tsc --noEmit",
+    "preview:static": "node scripts/preview.mjs",
     "db:setup": "wrangler d1 migrations apply car-monitor --local && wrangler d1 execute car-monitor --local --file=../../packages/db/seed.sql"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.0.0",
+    "esbuild": "^0.24.0",
     "@cloudflare/workers-types": "^4.20240909.0",
     "@react-router/dev": "^7.1.0",
     "@types/react": "^19.0.0",

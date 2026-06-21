@@ -66,6 +66,7 @@ pnpm dev      # ежедневно: web на :5173 + ETL worker на :8789 (mini
 | `pnpm lint` / `format` | Prettier |
 | `pnpm bootstrap` | Пробно създаване на Cloudflare ресурси |
 | `pnpm import [--catchup] [--remote]` | Зареждане на данни + rollups |
+| `pnpm --filter @car-monitor/web run preview:static` | SSR рендира страниците върху SQLite в `apps/web/.preview/*.html` (за визуален преглед) |
 
 ## Източници на данни
 
