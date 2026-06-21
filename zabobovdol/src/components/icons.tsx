@@ -19,6 +19,7 @@ import {
   CalendarDots as PhCalendarDots,
   Camera as PhCamera,
   Car as PhCar,
+  CaretDown as PhCaretDown,
   ChatCircle as PhChatCircle,
   ChatText as PhChatText,
   CheckCircle as PhCheckCircle,
@@ -100,6 +101,7 @@ export const CalendarDays = fill(PhCalendarDots);
 export const CalendarRange = fill(PhCalendarBlank);
 export const Camera = fill(PhCamera);
 export const Car = fill(PhCar);
+export const ChevronDown = fill(PhCaretDown);
 export const CheckCircle2 = fill(PhCheckCircle);
 export const Church = fill(PhChurch);
 export const Clock = fill(PhClock);
