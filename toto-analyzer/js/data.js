@@ -198,30 +198,52 @@
     return draws;
   }
 
-  // Връща тегленията за играта; ако няма, опитва seed файл, после демо.
-  async function ensure(game) {
-    let draws = load(game.id);
-    if (draws && draws.length) return { draws, source: getMeta(game.id).source || "stored" };
-
-    // Опит за стартов файл (ако присъства реален архив).
+  // Тегли официалния авто-обновяван архив от data/<игра>.json.
+  async function fetchOfficial(game) {
     try {
       const res = await fetch("data/" + game.id + ".json", { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length) {
-          const out = parseObjects(data, game);
-          if (out.draws.length) {
-            save(game.id, out.draws);
-            setMeta(game.id, { source: "seed" });
-            return { draws: out.draws, source: "seed" };
-          }
-        }
-      }
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data) || !data.length) return null;
+      const out = parseObjects(data, game);
+      return out.draws.length ? out.draws : null;
     } catch (e) {
-      /* няма seed файл — продължаваме към демо */
+      return null;
+    }
+  }
+
+  /*
+   * Връща тегленията за играта по приоритет:
+   *   1. Ако потребителят сам е импортирал данни — те имат предимство.
+   *   2. Иначе официалният архив (data/<игра>.json), който се обновява
+   *      автоматично от GitHub Action — това е целта: без ръчно нанасяне.
+   *   3. Запазени данни, ако има.
+   *   4. Демо данни (случайни) — само за да е сайтът използваем без архив.
+   */
+  async function ensure(game) {
+    const meta = getMeta(game.id);
+    const stored = load(game.id);
+
+    // 1. Ръчно импортираните данни на потребителя са с приоритет.
+    if (meta.source === "imported" && stored && stored.length) {
+      return { draws: stored, source: "imported" };
     }
 
-    draws = generateDemo(game);
+    // 2. Официалният архив (авто-обновяван).
+    const official = await fetchOfficial(game);
+    if (official) {
+      save(game.id, official);
+      setMeta(game.id, { source: "official" });
+      return { draws: official, source: "official" };
+    }
+
+    // 3. Каквото е запазено в браузъра.
+    if (stored && stored.length) {
+      return { draws: stored, source: meta.source || "stored" };
+    }
+
+    // 4. Демо.
+    const draws = generateDemo(game);
     save(game.id, draws);
     setMeta(game.id, { source: "demo" });
     return { draws, source: "demo" };
@@ -238,6 +260,7 @@
     toCsv,
     generateDemo,
     ensure,
+    fetchOfficial,
     sortDraws,
   };
 })();

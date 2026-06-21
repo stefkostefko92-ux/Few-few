@@ -60,12 +60,15 @@
     let srcLabel = "Запазени данни";
     let srcClass = "";
     if (state.source === "demo") {
-      srcLabel = 'ДЕМО данни (случайни) — зареди реалния архив от таб „Данни"';
+      srcLabel = 'ДЕМО данни (случайни) — реалният архив още не е зареден';
       srcClass = "badge-demo";
+    } else if (state.source === "official") {
+      srcLabel = "Официален архив (toto.bg, авто-обновяван)";
+      srcClass = "badge-imported";
     } else if (state.source === "seed") {
       srcLabel = "Стартов архив";
     } else if (state.source === "imported") {
-      srcLabel = "Импортирани данни";
+      srcLabel = "Импортирани данни (ръчно)";
       srcClass = "badge-imported";
     }
     $("#statusBar").innerHTML = `
@@ -245,6 +248,21 @@
   }
 
   function setupDataActions() {
+    $("#btnSync").addEventListener("click", async () => {
+      const official = await window.TotoData.fetchOfficial(game());
+      if (!official) {
+        msg($("#importMsg"), "Официалният архив не е достъпен в момента.", false);
+        return;
+      }
+      state.draws = official;
+      state.source = "official";
+      window.TotoData.save(state.gameId, state.draws);
+      window.TotoData.setMeta(state.gameId, { source: "official" });
+      recompute();
+      renderAll();
+      msg($("#importMsg"), `Заредени ${official.length} тиража от официалния архив.`, true);
+    });
+
     $("#btnExport").addEventListener("click", () => {
       const csv = window.TotoData.toCsv(state.draws);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });

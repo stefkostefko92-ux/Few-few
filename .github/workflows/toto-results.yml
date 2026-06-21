@@ -1,0 +1,56 @@
+name: Обнови тото резултати
+
+# Автоматично тегли последните тото тегления от toto.bg и ги комитва в
+# toto-analyzer/data/*.json, така че сайтът да има актуални данни без ръчно
+# нанасяне. Тото 2 тегли няколко пъти седмично (вт/чет/пет/нед вечер), затова
+# пускаме ежедневно — дедупликацията не допуска повторни записи.
+
+on:
+  schedule:
+    - cron: "0 20 * * *" # 20:00 UTC (~23:00 EET) — след вечерните тегления
+    - cron: "30 22 * * *" # резервно пускане по-късно
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Запълни история от Wayback (true/false)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: toto-results
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: toto-analyzer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Извличане на последните тегления
+        run: node scripts/fetch-results.mjs
+
+      - name: Запълване от Wayback (по избор)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill == 'true' }}
+        run: node scripts/backfill-wayback.mjs --max=600
+
+      - name: Комит при промяна
+        run: |
+          if [ -n "$(git status --porcelain data)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data
+            git commit -m "chore(toto): обнови резултати $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "Няма нови тегления."
+          fi

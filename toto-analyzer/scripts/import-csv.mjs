@@ -4,7 +4,7 @@
  *
  * Употреба:
  *   node scripts/import-csv.mjs <game> <input.csv>
- *   game ∈ { 5x35, 6x42, 6x48 }
+ *   game ∈ { 5x35, 6x42, 6x49 }
  *
  * CSV ред: ДАТА, n1, n2, ...   (датата е по желание; разделител , ; таб или интервал)
  */
@@ -15,12 +15,12 @@ import { dirname, join } from "node:path";
 const GAMES = {
   "5x35": { pool: 35, picks: 5 },
   "6x42": { pool: 42, picks: 6 },
-  "6x48": { pool: 48, picks: 6 },
+  "6x49": { pool: 49, picks: 6 },
 };
 
 const [, , gameId, inputPath] = process.argv;
 if (!gameId || !inputPath || !GAMES[gameId]) {
-  console.error("Употреба: node scripts/import-csv.mjs <5x35|6x42|6x48> <input.csv>");
+  console.error("Употреба: node scripts/import-csv.mjs <5x35|6x42|6x49> <input.csv>");
   process.exit(1);
 }
 
