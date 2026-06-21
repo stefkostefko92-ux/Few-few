@@ -12,6 +12,12 @@ export const SETTING_KEYS = {
   googleVerification: "google_site_verification",
   bingVerification: "bing_site_verification",
   indexnowKey: "indexnow_key",
+  // Дигитален помощник (AI) — управляем от админ панела, с резервни env стойности.
+  chatProvider: "chat_provider",
+  geminiApiKey: "gemini_api_key",
+  geminiModel: "gemini_model",
+  anthropicApiKey: "anthropic_api_key",
+  anthropicModel: "anthropic_model",
 } as const;
 
 // Кодове за потвърждаване на собствеността в Google Search Console и Bing

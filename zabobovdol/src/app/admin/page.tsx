@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAiConfig, PROVIDER_LABELS } from "@/lib/ai-config";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +102,8 @@ export default async function AdminDashboard({
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
   ]);
 
+  const ai = isAdmin ? await getAiConfig() : null;
+
   // Подавания за одобрение (виждат ги и редакторите).
   const moderationPending =
     pendingListings +
@@ -120,6 +123,46 @@ export default async function AdminDashboard({
         <h1 className="text-2xl font-bold text-slate-900">Табло</h1>
         <p className="text-slate-600">Преглед на съдържанието и последна активност.</p>
       </div>
+
+      {/* Кратка помощ за новите редактори. */}
+      <details className="rounded-xl border border-brand-200 bg-brand-50/60 p-4 text-sm text-slate-700">
+        <summary className="cursor-pointer font-semibold text-brand-800">
+          Първи стъпки — как се управлява сайтът (за нови редактори)
+        </summary>
+        <ul className="mt-3 list-disc space-y-1 pl-5">
+          <li>Натиснете някоя <strong>карта</strong> по-долу, за да отворите раздела ѝ.</li>
+          <li>В раздела има списък — бутон <strong>„Добави“</strong> за нов запис и <strong>„Промени“</strong> до всеки ред.</li>
+          <li><strong>„Публикувано“</strong> значи видимо в сайта. Махнете отметката, за да го скриете, без да го триете.</li>
+          <li><span className="rounded bg-amber-100 px-1 font-medium text-amber-900">Жълтите</span> карти и числата в менюто са <strong>чакащи одобрение</strong> подавания от граждани.</li>
+          <li>Не сте сигурни? Промяната може да се върне — нищо не се губи безвъзвратно.</li>
+        </ul>
+      </details>
+
+      {ai && (
+        <Link
+          href="/admin/pomoshtnik"
+          className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex items-center gap-2">
+            <span
+              className={
+                "inline-block h-2.5 w-2.5 rounded-full " +
+                (ai.effective !== "rules" ? "bg-green-500" : "bg-slate-400")
+              }
+              aria-hidden
+            />
+            <span className="text-slate-700">
+              Дигитален помощник:{" "}
+              <strong>
+                {ai.effective !== "rules"
+                  ? PROVIDER_LABELS[ai.effective]
+                  : "без AI (само от съдържанието)"}
+              </strong>
+            </span>
+          </span>
+          <span className="shrink-0 text-brand-700">Управление →</span>
+        </Link>
+      )}
 
       {error === "forbidden" && (
         <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-800">
