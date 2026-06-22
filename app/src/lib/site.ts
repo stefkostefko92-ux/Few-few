@@ -63,8 +63,12 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/biznes", label: "Местен бизнес", description: "Каталог на търговци и услуги" },
   { href: "/signali", label: "Сигнали", description: "Подайте сигнал или оплакване" },
   { href: "/prozrachnost", label: "Прозрачност", description: "Къде отиват парите на общината" },
+  { href: "/grafik-smetosabirane", label: "График за смет", description: "Кога се извозва отпадъкът" },
+  { href: "/smetishta", label: "Нерегламентирани сметища", description: "Сигнал за незаконно сметище" },
+  { href: "/imen-den", label: "Именни дни", description: "Кой празнува днес" },
   { href: "/grada", label: "Опознай Дупница", description: "География, забележителности и природа" },
   { href: "/istoriya", label: "История", description: "Историята на Дупница накратко" },
+  { href: "/kontakti", label: "Контакти", description: "Пишете ни предложение или поправка" },
   { href: "/tarsene", label: "Търсене", description: "Намери бързо из целия сайт" },
 ];
 
