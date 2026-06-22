@@ -3,6 +3,7 @@ import { buildMetadata, webPageLd, itemListLd, localBusinessLd } from "@/lib/seo
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/ui";
 import { Phone, Globe, MapPin, AlertTriangle } from "@/components/icons";
+import { PrintButton } from "@/components/PrintButton";
 import {
   SERVICES,
   CATEGORY_LABELS,
@@ -128,6 +129,10 @@ export default function UslugiPage() {
       />
 
       <div className="container-content py-10">
+        <div className="mb-6">
+          <PrintButton label="Разпечатай телефоните" />
+        </div>
+
         {/* Бърз скок по категории. */}
         <nav aria-label="Категории" className="mb-8 flex flex-wrap gap-2">
           {grouped.map(({ cat }) => (

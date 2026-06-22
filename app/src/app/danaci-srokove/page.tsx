@@ -3,6 +3,7 @@ import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/ui";
 import { ResourceCard, Callout, Sources } from "@/components/content";
+import { TaxInstallments } from "@/components/TaxInstallments";
 
 export const metadata: Metadata = buildMetadata({
   title: "Местни данъци и срокове",
@@ -74,6 +75,11 @@ export default function DanaciPage() {
             от общината — проверявайте ги на сайта на Община Дупница, преди да
             платите.
           </Callout>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="section-title mb-4">Калкулатор на вноските</h2>
+          <TaxInstallments />
         </section>
 
         <Sources

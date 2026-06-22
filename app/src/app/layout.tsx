@@ -8,6 +8,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChromeGate } from "@/components/ChromeGate";
+import { CookieConsent } from "@/components/CookieConsent";
+import { IntroSplash } from "@/components/IntroSplash";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -100,6 +102,8 @@ export default function RootLayout({
         </main>
         <ChromeGate>
           <SiteFooter />
+          <CookieConsent />
+          <IntroSplash />
         </ChromeGate>
       </body>
     </html>

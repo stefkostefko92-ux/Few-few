@@ -3,6 +3,7 @@ import { buildMetadata, webPageLd, faqPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/ui";
 import { FaqList, Callout, Sources } from "@/components/content";
+import { EuroConverter } from "@/components/EuroConverter";
 
 export const metadata: Metadata = buildMetadata({
   title: "Всичко за еврото",
@@ -64,6 +65,9 @@ export default function EvrotoPage() {
             {FIXED_RATE}
           </p>
         </div>
+
+        <h2 className="section-title mb-5 mt-10">Калкулатор лев ⇄ евро</h2>
+        <EuroConverter />
 
         <h2 className="section-title mb-5 mt-10">Често задавани въпроси</h2>
         <FaqList items={FAQS.map((f) => ({ q: f.q, a: f.a }))} />

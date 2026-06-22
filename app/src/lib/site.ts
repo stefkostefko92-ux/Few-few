@@ -34,7 +34,7 @@ export const SITE = {
   },
   // Начален екран (splash) при влизане в сайта.
   intro: {
-    enabled: false,
+    enabled: true,
     headline: "Заедно за Дупница",
     seconds: 4,
   },

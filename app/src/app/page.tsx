@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
 import { Phone, Pill, Info, ArrowRight, AlertTriangle } from "@/components/icons";
+import { WeatherWidget } from "@/components/WeatherWidget";
 
 export const metadata: Metadata = buildMetadata({
   title: undefined,
@@ -36,6 +37,9 @@ export default function HomePage() {
     <>
       <section className="page-hero border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
         <div className="container-content py-14 sm:py-20">
+          <div className="mb-3">
+            <WeatherWidget />
+          </div>
           <p className="eyebrow">Граждански портал за Дупница</p>
           <h1 className="mt-2 max-w-3xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
             {SITE.slogan}

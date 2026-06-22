@@ -18,6 +18,7 @@ const nextConfig = {
     // вградения скрипт за достъпност и JSON-LD; в режим разработка Next ползва
     // eval за hot-reload, затова там добавяме 'unsafe-eval'.
     const analytics = "https://plausible.io";
+    const weather = "https://api.open-meteo.com";
     const scriptSrc =
       process.env.NODE_ENV === "production"
         ? `script-src 'self' 'unsafe-inline' ${analytics}`
@@ -29,10 +30,11 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      `connect-src 'self' ${analytics}`,
+      `connect-src 'self' ${analytics} ${weather}`,
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'self'",
+      "frame-src 'self' https://www.openstreetmap.org",
       "form-action 'self'",
       "upgrade-insecure-requests",
     ].join("; ");
