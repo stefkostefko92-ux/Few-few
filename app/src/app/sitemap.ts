@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
-import { HOWTOS } from "@/data/howto";
+import { GUIDES } from "@/data/guides";
 
 // Статичните страници на портала.
 const PATHS = [
@@ -53,11 +53,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "weekly" as const,
     priority: path === "/" ? 1 : 0.7,
   }));
-  const howtoEntries = HOWTOS.map((h) => ({
-    url: `${SITE.url}/kak-da/${h.slug}`,
+  const guideEntries = GUIDES.map((g) => ({
+    url: `${SITE.url}/kak-da/${g.slug}`,
     lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
-  return [...staticEntries, ...howtoEntries];
+  return [...staticEntries, ...guideEntries];
 }

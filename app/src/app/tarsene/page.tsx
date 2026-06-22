@@ -5,7 +5,7 @@ import { PageHero } from "@/components/ui";
 import { SearchClient, type SearchItem } from "./SearchClient";
 import { PRIMARY_NAV } from "@/lib/site";
 import { SERVICES, CATEGORY_LABELS } from "@/data/services";
-import { HOWTOS } from "@/data/howto";
+import { GUIDES, guideSummary } from "@/data/guides";
 
 export const metadata: Metadata = buildMetadata({
   title: "Търсене",
@@ -32,12 +32,12 @@ function buildIndex(): SearchItem[] {
       keywords: `${s.description ?? ""} ${s.phones.map((p) => p.number).join(" ")} ${s.address ?? ""}`,
     });
   }
-  for (const h of HOWTOS) {
+  for (const g of GUIDES) {
     items.push({
-      title: h.title,
-      href: `/kak-da/${h.slug}`,
-      section: `Как да · ${h.category}`,
-      keywords: h.intro,
+      title: g.question,
+      href: `/kak-da/${g.slug}`,
+      section: `Как да · ${g.category}`,
+      keywords: `${g.tags} ${guideSummary(g, 120)}`,
     });
   }
   return items;

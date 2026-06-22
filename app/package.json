@@ -23,6 +23,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/lib/__tests__/*.test.ts",
+    "import:guides": "tsx scripts/import-guides.mts",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "postinstall": "prisma generate"
