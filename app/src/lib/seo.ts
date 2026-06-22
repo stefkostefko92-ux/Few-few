@@ -171,6 +171,47 @@ export function itemListLd(
   };
 }
 
+export function faqPageLd(
+  faqs: { question: string; answerText: string }[],
+  url?: string,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    ...(url
+      ? { "@id": `${canonical(url)}#faq`, url: canonical(url), mainEntityOfPage: canonical(url) }
+      : {}),
+    inLanguage: "bg",
+    isPartOf: { "@id": WEBSITE_ID },
+    publisher: { "@id": ORG_ID },
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answerText },
+    })),
+  };
+}
+
+export function howToLd(h: {
+  name: string;
+  description?: string;
+  steps: string[];
+  url: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: h.name,
+    ...(h.description ? { description: h.description } : {}),
+    "@id": `${canonical(h.url)}#howto`,
+    step: h.steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text: s,
+    })),
+  };
+}
+
 export function localBusinessLd(b: {
   name: string;
   description?: string;

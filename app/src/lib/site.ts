@@ -46,34 +46,62 @@ export const SITE = {
 
 export type NavItem = { href: string; label: string; description?: string };
 
-// Първична навигация. Към момента активни са MVP страниците; останалите се
-// добавят, докато проектът расте (виж research/dupnitsa-digital-gaps.md).
+// Първична навигация — основните полезни секции за гражданина.
 export const PRIMARY_NAV: NavItem[] = [
-  {
-    href: "/uslugi",
-    label: "Услуги и телефони",
-    description: "Важни местни телефони и услуги на едно място",
-  },
-  {
-    href: "/dezhurna-apteka",
-    label: "Дежурна аптека",
-    description: "Коя аптека работи денонощно в Дупница",
-  },
-  {
-    href: "/dostapnost",
-    label: "Достъпност",
-    description: "Настройки за по-лесно четене и ползване",
-  },
-  {
-    href: "/za-nas",
-    label: "За проекта",
-    description: "Какво е това и кой стои зад него",
-  },
+  { href: "/uslugi", label: "Услуги и телефони", description: "Важни местни телефони и услуги на едно място" },
+  { href: "/kak-da", label: "Как да…", description: "Стъпка по стъпка за е-услуги и документи" },
+  { href: "/dezhurna-apteka", label: "Дежурна аптека", description: "Коя аптека работи денонощно в Дупница" },
+  { href: "/izmami", label: "Пази се от измами", description: "Как да разпознаеш телефонни и онлайн измами" },
+  { href: "/pomoshti", label: "Пенсии и помощи", description: "Пенсии, помощ за отопление, ТЕЛК и документи" },
+  { href: "/danaci-srokove", label: "Данъци и срокове", description: "Кога и как да платя местните данъци и такси" },
+  { href: "/evroto", label: "Еврото", description: "Всичко за еврото — въпроси и отговори" },
+  { href: "/prekysvaniya", label: "Ток и вода", description: "Планови и аварийни прекъсвания на ток и вода" },
+  { href: "/transport", label: "Транспорт", description: "Автобуси, влак, такси и споделено пътуване" },
+  { href: "/sabitiya", label: "Събития", description: "Какво се случва в Дупница" },
+  { href: "/novini", label: "Новини", description: "Актуални местни съобщения" },
+  { href: "/obyavi", label: "Обяви", description: "Безплатни местни обяви" },
+  { href: "/biznes", label: "Местен бизнес", description: "Каталог на търговци и услуги" },
+  { href: "/signali", label: "Сигнали", description: "Подайте сигнал или оплакване" },
+  { href: "/prozrachnost", label: "Прозрачност", description: "Къде отиват парите на общината" },
+  { href: "/grada", label: "Опознай Дупница", description: "География, забележителности и природа" },
+  { href: "/istoriya", label: "История", description: "Историята на Дупница накратко" },
+  { href: "/tarsene", label: "Търсене", description: "Намери бързо из целия сайт" },
+];
+
+// Кратък подбор за горната лента (десктоп). Пълният списък е в „Всички раздели".
+export const HEADER_NAV: NavItem[] = [
+  { href: "/uslugi", label: "Услуги и телефони" },
+  { href: "/kak-da", label: "Как да…" },
+  { href: "/dezhurna-apteka", label: "Дежурна аптека" },
+  { href: "/prekysvaniya", label: "Ток и вода" },
+  { href: "/transport", label: "Транспорт" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [
   { href: "/uslugi", label: "Услуги и телефони" },
+  { href: "/kak-da", label: "Как да…" },
   { href: "/dezhurna-apteka", label: "Дежурна аптека" },
+  { href: "/izmami", label: "Пази се от измами" },
+  { href: "/pomoshti", label: "Пенсии и помощи" },
+  { href: "/danaci-srokove", label: "Данъци и срокове" },
+  { href: "/evroto", label: "Еврото" },
+  { href: "/prekysvaniya", label: "Ток и вода" },
+  { href: "/transport", label: "Транспорт" },
+  { href: "/sabitiya", label: "Събития" },
+  { href: "/novini", label: "Новини" },
+  { href: "/obyavi", label: "Обяви" },
+  { href: "/biznes", label: "Местен бизнес" },
+  { href: "/signali", label: "Сигнали" },
+  { href: "/prozrachnost", label: "Прозрачност" },
+  { href: "/grafik-smetosabirane", label: "График за смет" },
+  { href: "/grada", label: "Опознай Дупница" },
+  { href: "/istoriya", label: "История" },
+  { href: "/tarsene", label: "Търсене" },
+  { href: "/kontakti", label: "Контакти" },
+  { href: "/kak-da-polzvam-sayta", label: "Как да ползвам сайта" },
   { href: "/dostapnost", label: "Достъпност" },
   { href: "/za-nas", label: "За проекта" },
+  { href: "/pravila", label: "Общи условия" },
+  { href: "/poveritelnost", label: "Поверителност" },
+  { href: "/biskvitki", label: "Бисквитки" },
 ];

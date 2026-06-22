@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { SITE, PRIMARY_NAV } from "@/lib/site";
+import { SITE, HEADER_NAV } from "@/lib/site";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export function SiteHeader() {
   return (
@@ -16,13 +17,15 @@ export function SiteHeader() {
             <span className="block font-display text-lg font-extrabold text-slate-900">
               {SITE.name}
             </span>
-            <span className="block text-xs text-slate-500">{SITE.slogan}</span>
+            <span className="hidden text-xs text-slate-500 sm:block">
+              {SITE.slogan}
+            </span>
           </span>
         </Link>
 
-        <nav aria-label="Главно меню" className="hidden md:block">
+        <nav aria-label="Главно меню" className="hidden lg:block">
           <ul className="flex items-center gap-1">
-            {PRIMARY_NAV.map((item) => (
+            {HEADER_NAV.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -32,28 +35,22 @@ export function SiteHeader() {
                 </Link>
               </li>
             ))}
-          </ul>
-        </nav>
-      </div>
-
-      {/* Мобилна навигация — проста, винаги видима лента с връзки. */}
-      <nav
-        aria-label="Меню за телефон"
-        className="border-t border-slate-100 md:hidden"
-      >
-        <ul className="container-content flex flex-wrap gap-x-4 gap-y-1 py-2 text-base">
-          {PRIMARY_NAV.map((item) => (
-            <li key={item.href}>
+            <li>
               <Link
-                href={item.href}
-                className="inline-flex min-h-[40px] items-center font-medium text-brand-700 hover:underline"
+                href="/razdeli"
+                className="rounded-lg px-3 py-2 text-base font-semibold text-brand-700 hover:bg-brand-50"
               >
-                {item.label}
+                Всички раздели
               </Link>
             </li>
-          ))}
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+
+        {/* Мобилно/таблет меню — пълен списък в изскачащ панел. */}
+        <div className="lg:hidden">
+          <MobileMenu />
+        </div>
+      </div>
     </header>
   );
 }
