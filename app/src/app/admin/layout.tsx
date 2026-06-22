@@ -13,6 +13,7 @@ const ADMIN_NAV = [
   { href: "/admin/sabitiya", label: "Събития" },
   { href: "/admin/novini", label: "Новини" },
   { href: "/admin/biznes", label: "Бизнес" },
+  { href: "/admin/obshtnost", label: "Общност" },
 ];
 
 export default async function AdminLayout({

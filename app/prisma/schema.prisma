@@ -244,6 +244,78 @@ model Event {
   @@index([published, startAt])
 }
 
+enum HelpKind {
+  NEED // Нужда от помощ
+  OFFER // Предлага помощ или дарение
+}
+
+// „Зов за помощ" — взаимопомощ и благотворителност за възрастните хора.
+model HelpCause {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  description  String
+  kind         HelpKind @default(NEED)
+  location     String   @default("")
+  contactName  String   @default("")
+  contactPhone String   @default("")
+  contactEmail String   @default("")
+  published    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, kind])
+}
+
+// Доброволци, които предлагат помощ (мрежа вместо гише).
+model Volunteer {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  area      String   @default("")
+  skills    String   @default("")
+  about     String   @default("")
+  phone     String   @default("") // вижда се само в админ
+  email     String   @default("") // вижда се само в админ
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
+// Споделени спомени и стари снимки от жителите.
+model Memory {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  author    String   @default("")
+  period    String   @default("")
+  content   String
+  imageUrl  String   @default("")
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, createdAt])
+}
+
+// Галерия със снимки на града — с кредит към автора.
+model GalleryPhoto {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String   @default("")
+  imageUrl         String   @default("")
+  author           String   @default("")
+  submitterContact String   @default("")
+  published        Boolean  @default(false)
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([published, order])
+}
+
 // Новини / актуални съобщения.
 model Post {
   id          String    @id @default(cuid())

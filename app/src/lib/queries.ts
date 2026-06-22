@@ -51,6 +51,46 @@ export function getPublishedBusinesses() {
   );
 }
 
+export function getPublishedHelpCauses() {
+  return safeList(() =>
+    prisma.helpCause.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+  );
+}
+
+export function getPublishedVolunteers() {
+  return safeList(() =>
+    prisma.volunteer.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+  );
+}
+
+export function getPublishedMemories() {
+  return safeList(() =>
+    prisma.memory.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+  );
+}
+
+export function getPublishedGallery() {
+  return safeList(() =>
+    prisma.galleryPhoto.findMany({
+      where: { published: true },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      take: 200,
+    }),
+  );
+}
+
 function startOfToday(): Date {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
