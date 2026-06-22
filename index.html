@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ТОТО Анализатор</title>
+    <!-- Сайтът се хоства в подпапка toto-analyzer/. Пренасочваме коренния
+         адрес натам, за да работи и при отваряне на основния URL. -->
+    <meta http-equiv="refresh" content="0; url=./toto-analyzer/" />
+    <link rel="canonical" href="./toto-analyzer/" />
+    <script>
+      location.replace("./toto-analyzer/" + location.search + location.hash);
+    </script>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #0f1420;
+        color: #e8edf6;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+      }
+      a { color: #ffcf33; }
+    </style>
+  </head>
+  <body>
+    <p>Зареждане на ТОТО Анализатор… ако не стане автоматично,
+      <a href="./toto-analyzer/">натисни тук</a>.</p>
+  </body>
+</html>

@@ -89,6 +89,27 @@ main.wrap { padding-top: 18px; padding-bottom: 40px; }
 .badge-demo { color: #1a1300; background: var(--accent) !important; }
 .badge-imported { color: #04241a; background: var(--good) !important; }
 
+/* Data notice */
+.data-notice {
+  background: #2a2410;
+  color: #ffe7a3;
+  border: 1px solid #5a4a16;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+.data-notice.hidden { display: none; }
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
 /* View tabs */
 .view-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
 .view-tabs button {

@@ -253,8 +253,44 @@
     $("#recentDraws").textContent = "Последни тиражи → " + lines;
   }
 
+  // Минимален брой тиражи за смислен статистически анализ.
+  const MIN_DRAWS = 25;
+
+  function renderDataNotice() {
+    const el = $("#dataNotice");
+    const n = state.analysis.drawCount;
+    if (state.source === "demo") {
+      el.className = "data-notice warn";
+      el.innerHTML =
+        "🎲 Това са <strong>демонстрационни</strong> (случайни) данни. Реалните " +
+        "тегления се зареждат автоматично от официалния архив (таб Данни).";
+    } else if (n < MIN_DRAWS) {
+      el.className = "data-notice warn";
+      el.innerHTML =
+        `ℹ️ Засега има само <strong>${n}</strong> ${n === 1 ? "тираж" : "тиража"} реални данни. ` +
+        "Архивът се пълни автоматично след всеки тираж — статистиката и " +
+        "предложенията стават надеждни при поне " + MIN_DRAWS + " тиража. " +
+        'Натисни <button class="link-btn" id="noticeDemo">тук</button>, за да разгледаш как работи с демо данни.';
+      const b = el.querySelector("#noticeDemo");
+      if (b) b.addEventListener("click", loadDemo);
+    } else {
+      el.className = "data-notice hidden";
+      el.innerHTML = "";
+    }
+  }
+
+  function loadDemo() {
+    state.draws = window.TotoData.generateDemo(game());
+    state.source = "demo";
+    window.TotoData.save(state.gameId, state.draws);
+    window.TotoData.setMeta(state.gameId, { source: "demo" });
+    recompute();
+    renderAll();
+  }
+
   function renderAll() {
     renderStatus();
+    renderDataNotice();
     renderOverdue();
     renderFrequency();
     renderPredict();
