@@ -4,6 +4,7 @@ import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
 import { Phone, Pill, Info, ArrowRight, AlertTriangle } from "@/components/icons";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import { ScamBanner } from "@/components/ScamBanner";
 
 export const metadata: Metadata = buildMetadata({
   title: undefined,
@@ -35,6 +36,7 @@ const QUICK_LINKS = [
 export default function HomePage() {
   return (
     <>
+      <ScamBanner />
       <section className="page-hero border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
         <div className="container-content py-14 sm:py-20">
           <div className="mb-3">

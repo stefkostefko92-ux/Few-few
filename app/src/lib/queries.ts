@@ -91,6 +91,36 @@ export function getPublishedGallery() {
   );
 }
 
+export function getPublishedRideshares() {
+  return safeList(() =>
+    prisma.rideshare.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+  );
+}
+
+export function getPublishedScamAlerts() {
+  return safeList(() =>
+    prisma.scamAlert.findMany({
+      where: { published: true },
+      orderBy: [{ pinned: "desc" }, { order: "asc" }, { createdAt: "desc" }],
+      take: 50,
+    }),
+  );
+}
+
+export function getPinnedScamAlert() {
+  return safeList(() =>
+    prisma.scamAlert.findMany({
+      where: { published: true, pinned: true },
+      orderBy: { order: "asc" },
+      take: 1,
+    }),
+  ).then((rows) => rows[0] ?? null);
+}
+
 function startOfToday(): Date {
   const d = new Date();
   d.setHours(0, 0, 0, 0);

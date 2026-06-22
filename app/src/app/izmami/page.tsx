@@ -3,6 +3,9 @@ import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/ui";
 import { Callout, Sources } from "@/components/content";
+import { getPublishedScamAlerts } from "@/lib/queries";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Пази се от измами",
@@ -11,7 +14,8 @@ export const metadata: Metadata = buildMetadata({
   path: "/izmami",
 });
 
-export default function IzmamiPage() {
+export default async function IzmamiPage() {
+  const alerts = await getPublishedScamAlerts();
   return (
     <>
       <JsonLd data={webPageLd({ name: "Пази се от измами", path: "/izmami" })} />
@@ -23,6 +27,31 @@ export default function IzmamiPage() {
       />
 
       <div className="container-content py-10">
+        {alerts.length > 0 && (
+          <section className="mb-8">
+            <h2 className="section-title mb-4">Актуални предупреждения</h2>
+            <ul className="space-y-3">
+              {alerts.map((a) => (
+                <li
+                  key={a.id}
+                  className={
+                    "rounded-xl border p-4 " +
+                    (a.severity === "danger"
+                      ? "border-red-300 bg-red-50"
+                      : "border-gold-300 bg-gold-50")
+                  }
+                >
+                  <p className="font-display text-lg font-bold text-slate-900">
+                    {a.title}
+                  </p>
+                  {a.summary && <p className="mt-1 text-base text-slate-700">{a.summary}</p>}
+                  {a.body && <p className="mt-2 whitespace-pre-line text-base text-slate-600">{a.body}</p>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <Callout tone="danger">
           Едно просто правило пази най-много: <strong>никога</strong> не давайте
           пари, банкови данни или кодове на човек, който ви се е обадил. Затворете и
