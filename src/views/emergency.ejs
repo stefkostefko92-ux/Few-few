@@ -4,18 +4,35 @@
   <p class="emergency-banner"><%- include('partials/icon', { name: 'alert' }) %> СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ</p>
   <h1 class="big-name"><%= profile.full_name %></h1>
 
-  <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
+  <%
+    const hearing = profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми';
+    const noSpeak = profile.can_speak === 'Не мога да говоря' || profile.can_speak === 'Говоря ограничено';
+    const usesSign = profile.sign_language && profile.sign_language !== 'Не ползвам жестов език';
+    const commNeeded = hearing || noSpeak || usesSign;
+  %>
+  <% if (commNeeded) { %>
     <div class="alert-comm" role="alert">
       <%- include('partials/icon', { name: 'ear', cls: 'icon-lg' }) %>
       <span>
-        <strong>Слухов статус:</strong> <%= profile.hearing_status %>.
-        <% if (profile.communication_pref) { %>
-          Комуникирайте така: <strong><%= profile.communication_pref %></strong>.
-        <% } else { %>
-          Възможно е лицето да не реагира на говор — общувайте писмено.
-        <% } %>
+        <strong>Това лице може да не чува и/или да не говори — общувайте писмено.</strong>
+        <% if (hearing) { %> Слух: <%= profile.hearing_status %>.<% } %>
+        <% if (profile.can_speak) { %> Говор: <%= profile.can_speak %>.<% } %>
+        <% if (usesSign) { %> Жестов език: <%= profile.sign_language %>.<% } %>
+        <% if (profile.communication_pref) { %> Предпочита: <strong><%= profile.communication_pref %></strong>.<% } %>
       </span>
     </div>
+
+    <details class="comm-aid" open>
+      <summary><%- include('partials/icon', { name: 'message' }) %> Помощ за общуване — покажете тези изречения на екрана</summary>
+      <div class="phrases">
+        <p>Тук съм, за да помогна. Ще пиша, за да общуваме.</p>
+        <p>Боли ли ви някъде? Покажете къде.</p>
+        <p>Приемате ли лекарства? Имате ли алергии?</p>
+        <p>Да се обадя ли на ваш близък?</p>
+        <p>Линейката идва. Останете спокойни.</p>
+        <p>Може да пишете тук, за да ми отговорите.</p>
+      </div>
+    </details>
   <% } %>
 
   <div class="emergency-grid">

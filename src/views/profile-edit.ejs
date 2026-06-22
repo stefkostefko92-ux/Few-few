@@ -50,8 +50,22 @@
         <% }) %>
       </select>
     </label>
+    <label>Мога ли да говоря
+      <select name="can_speak">
+        <% ['','Мога да говоря','Говоря ограничено','Не мога да говоря'].forEach(c => { %>
+          <option value="<%= c %>" <%= profile.can_speak === c ? 'selected' : '' %>><%= c || '— изберете —' %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Жестов език
+      <select name="sign_language">
+        <% ['','Български жестов език','Международен жестов език','Не ползвам жестов език'].forEach(s => { %>
+          <option value="<%= s %>" <%= profile.sign_language === s ? 'selected' : '' %>><%= s || '— изберете —' %></option>
+        <% }) %>
+      </select>
+    </label>
     <label>Предпочитан начин на комуникация
-      <input type="text" name="communication_pref" value="<%= profile.communication_pref || '' %>" placeholder="напр. писмено, жестов език, четене по устни">
+      <input type="text" name="communication_pref" value="<%= profile.communication_pref || '' %>" placeholder="напр. писмено, четене по устни, жестов език">
     </label>
   </fieldset>
 

@@ -69,9 +69,31 @@
         <%- include('partials/icon', { name: 'card' }) %> Карта за портфейл
       </a>
     </div>
-    <p class="muted small">Адрес на профила: <br /><code><%= emergencyUrl %></code></p>
+    <p class="muted small">Адрес на профила: <br /><code id="emergency-url"><%= emergencyUrl %></code></p>
   </section>
 </div>
+
+<section class="card">
+  <h2><%- include('partials/icon', { name: 'nfc' }) %> NFC таг</h2>
+  <p class="muted small">
+    Освен QR код можете да запишете профила и на NFC таг (стикер, карта или гривна).
+    При допиране с телефон профилът се отваря автоматично — без камера и без приложение.
+  </p>
+  <div class="cta-row" style="justify-content:flex-start">
+    <button type="button" class="btn btn-small" id="nfc-write" hidden>
+      <%- include('partials/icon', { name: 'nfc' }) %> Запиши на NFC таг
+    </button>
+    <button type="button" class="btn btn-small btn-ghost" id="copy-url" data-copy="#emergency-url">
+      <%- include('partials/icon', { name: 'copy' }) %> Копирай адреса
+    </button>
+  </div>
+  <p class="muted small" id="nfc-status" role="status"></p>
+  <p class="muted small" id="nfc-hint">
+    Записът директно от браузъра работи на Android (Chrome). На други устройства
+    копирайте адреса по-горе и го запишете с приложение за NFC, или поръчайте
+    предварително програмиран таг.
+  </p>
+</section>
 
 <section class="card">
   <h2>Сигурност</h2>

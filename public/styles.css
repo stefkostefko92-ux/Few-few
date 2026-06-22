@@ -639,6 +639,35 @@ table.log td.small {
   color: #b8860b;
   margin-top: 0.1rem;
 }
+.comm-aid {
+  border: 2px solid #b6dae6;
+  background: #eef6f9;
+  border-radius: var(--radius);
+  padding: 0.6rem 1rem;
+  margin-bottom: 1.2rem;
+}
+.comm-aid summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--brand-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.comm-aid .phrases {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.comm-aid .phrases p {
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
 .emergency-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

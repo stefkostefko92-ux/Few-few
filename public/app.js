@@ -27,4 +27,41 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  // Копиране в клипборда: <button data-copy="#селектор">.
+  document.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const el = document.querySelector(btn.getAttribute('data-copy'));
+      if (!el) return;
+      try {
+        await navigator.clipboard.writeText(el.textContent.trim());
+        const old = btn.textContent;
+        btn.textContent = 'Копирано ✓';
+        setTimeout(() => (btn.textContent = old), 1500);
+      } catch {
+        /* без клипборд достъп */
+      }
+    });
+  });
+
+  // Запис на NFC таг (Web NFC — Android/Chrome). Прогресивно подобрение.
+  const nfcBtn = document.getElementById('nfc-write');
+  const urlEl = document.getElementById('emergency-url');
+  if (nfcBtn && urlEl && 'NDEFReader' in window) {
+    nfcBtn.hidden = false;
+    const status = document.getElementById('nfc-status');
+    const hint = document.getElementById('nfc-hint');
+    if (hint) hint.hidden = true;
+    nfcBtn.addEventListener('click', async () => {
+      if (status) status.textContent = 'Допрете таг до телефона…';
+      try {
+        const ndef = new window.NDEFReader();
+        await ndef.write({ records: [{ recordType: 'url', data: urlEl.textContent.trim() }] });
+        if (status) status.textContent = 'Готово! Профилът е записан на тага.';
+      } catch (e) {
+        if (status)
+          status.textContent = 'Записът не успя: ' + (e && e.message ? e.message : 'опитайте пак');
+      }
+    });
+  }
 });

@@ -13,6 +13,8 @@ export const ENCRYPTED_FIELDS = [
   'current_medications',
   'hearing_status',
   'communication_pref',
+  'can_speak',
+  'sign_language',
   'preferred_language',
   'emergency_contact_name',
   'emergency_contact_phone',
