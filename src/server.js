@@ -79,7 +79,7 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   res.setHeader(
     'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), nfc=(self)'
+    'camera=(), microphone=(), geolocation=(self), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), nfc=(self)'
   );
   next();
 });

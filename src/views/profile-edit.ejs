@@ -80,6 +80,14 @@
     <label>Роднинска връзка
       <input type="text" name="emergency_contact_relation" value="<%= profile.emergency_contact_relation || '' %>" placeholder="напр. съпруг, дъщеря">
     </label>
+    <label>Имейл на близък (за известия)
+      <input type="email" name="emergency_contact_email" value="<%= profile.emergency_contact_email || '' %>" placeholder="name@example.com" autocomplete="off">
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="notify_on_scan" <%= profile.notify_on_scan ? 'checked' : '' %>>
+      <span>Уведоми близкия по имейл, когато някой отвори спешния ми профил
+        (без медицински данни в имейла).</span>
+    </label>
   </fieldset>
 
   <div class="cta-row">

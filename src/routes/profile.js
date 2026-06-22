@@ -69,6 +69,8 @@ router.post('/profile/edit', requireAuth, (req, res) => {
     });
   }
   updateFields(profile.id, data);
+  const notify = req.body.notify_on_scan === 'on' ? 1 : 0;
+  db.prepare('UPDATE profiles SET notify_on_scan = ? WHERE id = ?').run(notify, profile.id);
   audit(req, 'profile_update');
   res.redirect('/dashboard?saved=1');
 });
@@ -161,6 +163,8 @@ router.get('/profile/export.json', requireAuth, (req, res) => {
       emergency_contact_name: profile.emergency_contact_name,
       emergency_contact_phone: profile.emergency_contact_phone,
       emergency_contact_relation: profile.emergency_contact_relation,
+      emergency_contact_email: profile.emergency_contact_email,
+      notify_on_scan: !!profile.notify_on_scan,
       additional_notes: profile.additional_notes,
       updated_at: profile.updated_at,
     },

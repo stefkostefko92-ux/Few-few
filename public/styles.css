@@ -742,6 +742,21 @@ table.log td.small {
 .call-btn:hover {
   background: #166b42;
 }
+.notify-box {
+  margin-top: 1.2rem;
+  background: #eef6f9;
+  border: 1px solid #b6dae6;
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+}
+.notify-box p {
+  margin: 0 0 0.6rem;
+}
+.btn-locate {
+  background: var(--brand);
+  color: #fff;
+}
 
 /* Карта за печат */
 .print-controls {

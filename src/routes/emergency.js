@@ -3,6 +3,7 @@ import db from '../db.js';
 import { getByToken } from '../profiles.js';
 import { verifyPassword } from '../auth.js';
 import { clientIp } from '../audit.js';
+import { notifyScan, notifyActive, notifyLocation } from '../notify.js';
 
 const router = Router();
 const PIN_MAX_ATTEMPTS = 5;
@@ -36,7 +37,8 @@ router.get('/e/:token', (req, res) => {
     });
   }
   logAccess(profile.id, req);
-  res.render('emergency', { profile });
+  notifyScan(profile);
+  res.render('emergency', { profile, notifyActive: notifyActive(profile) });
 });
 
 router.post('/e/:token', async (req, res) => {
@@ -77,7 +79,21 @@ router.post('/e/:token', async (req, res) => {
     profile.id
   );
   logAccess(profile.id, req);
-  res.render('emergency', { profile });
+  notifyScan(profile);
+  res.render('emergency', { profile, notifyActive: notifyActive(profile) });
+});
+
+// Намерилият споделя местоположението си с близкия контакт.
+router.post('/e/:token/locate', (req, res) => {
+  const profile = getByToken(req.params.token);
+  if (!profile) return res.status(404).json({ error: 'Невалиден код.' });
+  const lat = Number(req.body.lat);
+  const lng = Number(req.body.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return res.status(400).json({ error: 'Невалидни координати.' });
+  }
+  const sent = notifyLocation(profile, lat.toFixed(5), lng.toFixed(5));
+  res.json({ ok: sent });
 });
 
 export default router;

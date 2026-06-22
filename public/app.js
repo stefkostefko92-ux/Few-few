@@ -44,6 +44,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Споделяне на местоположението с близкия (от спешния изглед).
+  const locateBtn = document.querySelector('[data-locate]');
+  if (locateBtn && 'geolocation' in navigator) {
+    const status = document.getElementById('locate-status');
+    locateBtn.addEventListener('click', () => {
+      if (status) status.textContent = 'Определяне на местоположението…';
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const meta = document.querySelector('meta[name="csrf-token"]');
+          try {
+            const res = await fetch(`${location.pathname}/locate`, {
+              method: 'POST',
+              headers: {
+                'content-type': 'application/json',
+                'x-csrf-token': meta ? meta.content : '',
+              },
+              body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            });
+            if (status)
+              status.textContent = res.ok
+                ? 'Местоположението е изпратено на близкия.'
+                : 'Изпращането не успя.';
+          } catch {
+            if (status) status.textContent = 'Изпращането не успя.';
+          }
+        },
+        () => {
+          if (status) status.textContent = 'Не успяхме да определим местоположението.';
+        }
+      );
+    });
+  }
+
   // Запис на NFC таг (Web NFC — Android/Chrome). Прогресивно подобрение.
   const nfcBtn = document.getElementById('nfc-write');
   const urlEl = document.getElementById('emergency-url');

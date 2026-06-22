@@ -72,6 +72,16 @@
     </div>
   <% } %>
 
+  <% if (typeof notifyActive !== 'undefined' && notifyActive) { %>
+    <div class="notify-box">
+      <p><%- include('partials/icon', { name: 'message' }) %> Близък контакт е автоматично уведомен, че този профил е отворен.</p>
+      <button type="button" class="btn btn-locate" data-locate>
+        <%- include('partials/icon', { name: 'phone' }) %> Сподели местоположението с близкия
+      </button>
+      <p class="muted small" id="locate-status" role="status"></p>
+    </div>
+  <% } %>
+
   <p class="muted small">Актуализирано: <%= profile.updated_at %>. Достъпът е регистриран.</p>
 </div>
 

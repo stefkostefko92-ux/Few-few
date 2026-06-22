@@ -59,6 +59,9 @@ db.exec(`
     emergency_contact_name   TEXT,
     emergency_contact_phone  TEXT,
     emergency_contact_relation TEXT,
+    emergency_contact_email  TEXT,
+    notify_on_scan           INTEGER NOT NULL DEFAULT 1,
+    last_notified_at         TEXT,
     additional_notes         TEXT,
     pin_hash                 TEXT,
     pin_attempts             INTEGER NOT NULL DEFAULT 0,
@@ -143,6 +146,9 @@ function ensureColumn(table, col, def) {
 ensureColumn('users', 'email_verified', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'can_speak', 'TEXT');
 ensureColumn('profiles', 'sign_language', 'TEXT');
+ensureColumn('profiles', 'emergency_contact_email', 'TEXT');
+ensureColumn('profiles', 'notify_on_scan', 'INTEGER NOT NULL DEFAULT 1');
+ensureColumn('profiles', 'last_notified_at', 'TEXT');
 ensureColumn('profiles', 'pin_attempts', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'pin_locked_until', 'TEXT');
 ensureColumn('sessions', 'last_seen', 'TEXT');

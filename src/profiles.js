@@ -19,6 +19,7 @@ export const ENCRYPTED_FIELDS = [
   'emergency_contact_name',
   'emergency_contact_phone',
   'emergency_contact_relation',
+  'emergency_contact_email',
   'additional_notes',
 ];
 

@@ -126,8 +126,12 @@ try {
       chronic_conditions: 'диабет',
       hearing_status: 'Глух/а',
       communication_pref: 'писмено',
+      can_speak: 'Не мога да говоря',
+      sign_language: 'Български жестов език',
       emergency_contact_name: 'Мария',
       emergency_contact_phone: '+359888123456',
+      emergency_contact_email: 'maria@test.bg',
+      notify_on_scan: 'on',
     },
   });
   assert.equal(r.status, 302);
@@ -151,6 +155,17 @@ try {
     emerg.includes('пеницилин') && emerg.includes('Глух/а') && emerg.includes('+359888123456')
   );
   ok('спешният изглед показва декриптираните критични данни');
+
+  // 11б. Близкият е автоматично уведомен (без дублиране в рамките на прозореца)
+  const settle = () => new Promise((r) => setTimeout(r, 100)); // известието се праща неблокиращо
+  const notif = () =>
+    outbox.filter((m) => m.subject.includes('профилът на') && m.to === 'maria@test.bg').length;
+  await settle();
+  assert.equal(notif(), 1, 'изпратено е едно известие до близкия');
+  await req(`/e/${rawProfile.emergency_token}`); // повторно отваряне
+  await settle();
+  assert.equal(notif(), 1, 'повторното отваряне не дублира известието');
+  ok('близкият се уведомява при отваряне (с анти-спам прозорец)');
 
   // 12. Журнал
   assert.ok(
