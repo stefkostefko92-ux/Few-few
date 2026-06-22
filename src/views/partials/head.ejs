@@ -6,8 +6,18 @@
   <title><%= typeof title !== 'undefined' ? title : 'MedQR — спешен медицински профил с QR код' %></title>
   <meta name="description" content="<%= meta.description %>">
   <meta name="robots" content="<%= meta.robots %>">
+  <meta name="googlebot" content="<%= meta.robots %>, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="csrf-token" content="<%= csrfToken %>">
+  <meta name="author" content="<%= company.name %>">
+  <meta name="publisher" content="<%= company.name %>">
+  <meta name="rating" content="general">
   <link rel="canonical" href="<%= meta.canonical %>">
+
+  <!-- GEO: държава/регион на услугата -->
+  <meta name="geo.region" content="<%= geo.region %>">
+  <meta name="geo.placename" content="<%= geo.placename %>">
+  <meta name="geo.position" content="<%= geo.position %>">
+  <meta name="ICBM" content="<%= geo.icbm %>">
 
   <!-- Open Graph -->
   <meta property="og:type" content="<%= meta.ogType %>">
@@ -19,6 +29,7 @@
   <meta property="og:image" content="<%= meta.ogImage %>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MedQR — спешен медицински профил с QR код">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -45,13 +56,24 @@
         "@id": "<%= site.base %>/#organization",
         "name": "<%= company.name %>",
         "url": "<%= company.url %>",
-        "brand": { "@type": "Brand", "name": "MedQR" }
+        "logo": { "@type": "ImageObject", "url": "<%= site.base %>/favicon.svg" },
+        "brand": { "@type": "Brand", "name": "MedQR" },
+        "areaServed": { "@type": "Country", "name": "Bulgaria" },
+        "address": { "@type": "PostalAddress", "addressCountry": "BG" },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "email": "support@carbonstealth.eu",
+          "availableLanguage": ["bg", "en"]
+        },
+        "sameAs": ["<%= company.url %>"]
       },
       {
         "@type": "WebSite",
         "@id": "<%= site.base %>/#website",
         "url": "<%= site.base %>/",
         "name": "MedQR",
+        "description": "<%= meta.description %>",
         "inLanguage": "bg",
         "publisher": { "@id": "<%= site.base %>/#organization" }
       }

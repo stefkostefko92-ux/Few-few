@@ -8,12 +8,25 @@ export const DEFAULT_DESCRIPTION =
   'алергии към лекарства, заболявания и спешен контакт, достъпни при злополука. ' +
   'Криптирано, GDPR-съвместимо, с хостинг в ЕС.';
 
-// Само публичните (индексируеми) страници.
+// Версия и дата на правните документи (поверителност, бисквитки, общи условия).
+// Едно място — за да съвпадат страниците и структурираните данни.
+export const LEGAL = { version: '1.1', effective: '2026-06-22' };
+
+// Класически GEO сигнали (държава/регион на услугата) за търсачки и карти.
+export const GEO = {
+  region: 'BG',
+  placename: 'България',
+  position: '42.6977;23.3219',
+  icbm: '42.6977, 23.3219',
+};
+
+// Само публичните (индексируеми) страници. Правните страници носят датата на
+// влизане в сила като lastmod.
 export const PUBLIC_PAGES = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
-  { path: '/privacy', changefreq: 'yearly', priority: '0.5' },
-  { path: '/cookies', changefreq: 'yearly', priority: '0.5' },
-  { path: '/terms', changefreq: 'yearly', priority: '0.5' },
+  { path: '/privacy', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
+  { path: '/cookies', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
+  { path: '/terms', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
 ];
 
 export function siteBaseUrl(req) {
@@ -23,11 +36,18 @@ export function siteBaseUrl(req) {
 
 export function robotsTxt(base) {
   return `# robots.txt — MedQR
+# Публично за индексиране е само маркетинговото и правното съдържание.
+# Всички акаунт, спешни и генерирани (QR/карта) страници са забранени.
 User-agent: *
 Allow: /$
 Allow: /privacy
 Allow: /cookies
 Allow: /terms
+Allow: /llms.txt
+Allow: /manifest.webmanifest
+Allow: /og-image.png
+Allow: /favicon.svg
+Allow: /.well-known/security.txt
 Disallow: /dashboard
 Disallow: /profile
 Disallow: /login
@@ -39,23 +59,37 @@ Disallow: /verify-email
 Disallow: /e/
 Disallow: /card
 Disallow: /qr.png
+Disallow: /label.svg
 
-# AI / answer engines са добре дошли по публичното съдържание.
+# AI / answer engines (GEO/AEO): достъп само до публичното съдържание,
+# без акаунт и спешни данни.
 User-agent: GPTBot
 User-agent: OAI-SearchBot
 User-agent: ChatGPT-User
 User-agent: ClaudeBot
 User-agent: Claude-Web
+User-agent: anthropic-ai
 User-agent: PerplexityBot
+User-agent: Perplexity-User
 User-agent: Google-Extended
 User-agent: Applebot-Extended
+User-agent: Amazonbot
+User-agent: Bytespider
+User-agent: CCBot
+User-agent: Meta-ExternalAgent
+User-agent: cohere-ai
+User-agent: Bingbot
 Allow: /$
 Allow: /privacy
 Allow: /cookies
 Allow: /terms
+Allow: /llms.txt
 Disallow: /dashboard
 Disallow: /profile
 Disallow: /e/
+Disallow: /card
+Disallow: /qr.png
+Disallow: /label.svg
 
 Sitemap: ${base}/sitemap.xml
 `;
@@ -64,7 +98,7 @@ Sitemap: ${base}/sitemap.xml
 export function sitemapXml(base, lastmod = new Date().toISOString().slice(0, 10)) {
   const urls = PUBLIC_PAGES.map(
     (p) =>
-      `  <url>\n    <loc>${base}${p.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n` +
+      `  <url>\n    <loc>${base}${p.path}</loc>\n    <lastmod>${p.lastmod || lastmod}</lastmod>\n` +
       `    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
   ).join('\n');
   return (

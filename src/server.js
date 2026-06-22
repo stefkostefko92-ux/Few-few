@@ -17,6 +17,8 @@ import {
   SITE_NAME,
   SITE_LOCALE,
   DEFAULT_DESCRIPTION,
+  LEGAL,
+  GEO,
   siteBaseUrl,
   robotsTxt,
   sitemapXml,
@@ -101,6 +103,8 @@ app.use((req, res, next) => {
   const base = siteBaseUrl(req);
   res.locals.company = COMPANY;
   res.locals.user = req.user;
+  res.locals.legal = LEGAL;
+  res.locals.geo = GEO;
   res.locals.site = { name: SITE_NAME, locale: SITE_LOCALE, base };
   res.locals.meta = {
     description: DEFAULT_DESCRIPTION,
