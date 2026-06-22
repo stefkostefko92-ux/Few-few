@@ -10,6 +10,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ChromeGate } from "@/components/ChromeGate";
 import { CookieConsent } from "@/components/CookieConsent";
 import { IntroSplash } from "@/components/IntroSplash";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -104,6 +105,7 @@ export default function RootLayout({
           <SiteFooter />
           <CookieConsent />
           <IntroSplash />
+          <ChatWidget />
         </ChromeGate>
       </body>
     </html>
