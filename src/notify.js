@@ -36,15 +36,16 @@ export function notifyScan(profile, when = new Date()) {
 }
 
 // Споделяне на местоположението на намерилия с близкия.
-export function notifyLocation(profile, lat, lng) {
+export function notifyLocation(profile, lat, lng, accuracy = null) {
   if (!profile.emergency_contact_email) return false;
   const maps = `https://www.google.com/maps?q=${lat},${lng}`;
+  const accLine = accuracy != null ? `Приблизителна точност: ±${accuracy} м\n` : '';
   sendMail({
     to: profile.emergency_contact_email,
     subject: `Местоположение — ${profile.full_name}`,
     text:
       `Някой сподели местоположение от спешния профил на ${profile.full_name}:\n${maps}\n\n` +
-      `Координати: ${lat}, ${lng}\n\nАвтоматично съобщение от MedQR.`,
+      `Координати: ${lat}, ${lng}\n${accLine}\nАвтоматично съобщение от MedQR.`,
   }).catch((e) => console.error('notifyLocation:', e.message));
   return true;
 }

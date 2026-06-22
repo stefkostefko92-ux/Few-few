@@ -89,10 +89,20 @@ router.post('/e/:token/locate', (req, res) => {
   if (!profile) return res.status(404).json({ error: 'Невалиден код.' });
   const lat = Number(req.body.lat);
   const lng = Number(req.body.lng);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
     return res.status(400).json({ error: 'Невалидни координати.' });
   }
-  const sent = notifyLocation(profile, lat.toFixed(5), lng.toFixed(5));
+  // Радиус на грешката в метри (по избор); закръгляме до цяло число.
+  const acc = Number(req.body.accuracy);
+  const accuracy = Number.isFinite(acc) && acc >= 0 ? Math.round(acc) : null;
+  const sent = notifyLocation(profile, lat.toFixed(5), lng.toFixed(5), accuracy);
   res.json({ ok: sent });
 });
 

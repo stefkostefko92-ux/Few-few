@@ -167,6 +167,31 @@ try {
   assert.equal(notif(), 1, 'повторното отваряне не дублира известието');
   ok('близкият се уведомява при отваряне (с анти-спам прозорец)');
 
+  // 11в. Споделяне на местоположение (JSON + CSRF заглавие), с радиус на точност
+  const locRes = await fetch(`${base}/e/${rawProfile.emergency_token}/locate`, {
+    method: 'POST',
+    headers: {
+      cookie: cookieHeader(),
+      'content-type': 'application/json',
+      'x-csrf-token': csrf(),
+    },
+    body: JSON.stringify({ lat: 42.6977, lng: 23.3219, accuracy: 12.4 }),
+  });
+  assert.equal(locRes.status, 200);
+  await settle();
+  const locMail = [...outbox].reverse().find((m) => m.subject.startsWith('Местоположение'));
+  assert.ok(locMail && locMail.to === 'maria@test.bg', 'имейл с локация е изпратен');
+  assert.ok(locMail.text.includes('42.69770') && locMail.text.includes('23.32190'));
+  assert.ok(locMail.text.includes('±12 м'), 'точността е включена в имейла');
+  // невалидни координати се отхвърлят
+  const badLoc = await fetch(`${base}/e/${rawProfile.emergency_token}/locate`, {
+    method: 'POST',
+    headers: { cookie: cookieHeader(), 'content-type': 'application/json', 'x-csrf-token': csrf() },
+    body: JSON.stringify({ lat: 999, lng: 0 }),
+  });
+  assert.equal(badLoc.status, 400);
+  ok('споделянето на местоположение праща координати + точност и валидира входа');
+
   // 12. Журнал
   assert.ok(
     db.prepare('SELECT COUNT(*) c FROM access_log WHERE profile_id = ?').get(rawProfile.id).c >= 1

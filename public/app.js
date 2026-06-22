@@ -60,7 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 'content-type': 'application/json',
                 'x-csrf-token': meta ? meta.content : '',
               },
-              body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+              body: JSON.stringify({
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy: pos.coords.accuracy,
+              }),
             });
             if (status)
               status.textContent = res.ok
@@ -72,7 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         () => {
           if (status) status.textContent = 'Не успяхме да определим местоположението.';
-        }
+        },
+        // Принуждаваме GPS вместо по-неточен Wi-Fi/клетка и избягваме стара кеширана позиция.
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     });
   }
