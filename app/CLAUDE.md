@@ -15,6 +15,26 @@ The point of this file is to keep sessions short and cheap.
 - Run a build/lint/test gate once when relevant, not "just to be sure," and only the gate the change can affect.
 - Replies: lead with the outcome, prose, minimal formatting. Skip preamble/postamble. No headers/bullets for simple answers.
 
-## This workspace
+## This workspace — „За Дупница" civic portal
 
-(Empty so far — populate as the project takes shape, and document the stack, layout, and commands here as they're decided so future sessions don't have to rediscover them.)
+A Next.js 15 / React 19 / TypeScript / Prisma / PostgreSQL / Tailwind civic portal
+for the town of Dupnitsa, modeled on the read-only `zabobovdol/` reference and
+grounded in `research/dupnitsa-digital-gaps.md`. Bulgarian UI, elderly-focused
+accessibility. The app root IS this `app/` folder.
+
+- Run commands from `app/`: `npm run dev`, `npm run build`, `npm run lint`,
+  `npm run typecheck`, `npm test`. Build/lint/typecheck/test all pass; keep them green.
+- MVP pages render from typed, **verified** data in `src/data/*` (each fact has a
+  source; unverified phone numbers are flagged). The site builds with **no database**.
+  Don't wire pages to Prisma until the admin phase — `prisma/schema.prisma` and
+  `prisma/seed.ts` exist for that next step.
+- Bulgarian strings use guillemets „…" — the **closing** quote must be the curly
+  `“` (U+201D), not a straight `"`, or both `tsc` and the `react/no-unescaped-entities`
+  lint rule will break.
+- Layout: `src/app/` pages (`/uslugi`, `/dezhurna-apteka`, `/dostapnost`, `/za-nas`)
+  + robots/sitemap/manifest; `src/components/` (header, footer, AccessibilityBar,
+  inline `icons.tsx`, `ui.tsx`); `src/lib/` (site config, seo, slug, prisma);
+  `src/data/` verified content. Accessibility classes (`hc`/`dark`/`bt`) live in
+  `src/app/globals.css` and are toggled by `AccessibilityBar`.
+- Add new pages to `PRIMARY_NAV`/`FOOTER_NAV` in `src/lib/site.ts` and to the
+  `sitemap.ts` PATHS list.

@@ -1,0 +1,102 @@
+// „За Дупница" — схема на данните. База: PostgreSQL. ORM: Prisma.
+//
+// Бележка: MVP страниците засега рендерират от типизирани данни в src/data/*.
+// Тази схема е основата за следващата фаза — администрация (CRUD) и редактиране
+// на съдържанието от база данни, по модела на проекта „За Бобов дол".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum ServiceCategory {
+  EMERGENCY // Спешни
+  HEALTH // Здраве
+  UTILITY // Ток, вода, отпадъци
+  TRANSPORT // Транспорт
+  ADMIN // Администрация
+  OTHER // Друго
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(EDITOR)
+  active       Boolean    @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String // CREATE | UPDATE | DELETE | LOGIN
+  entity    String // Service | Pharmacy | User
+  entityId  String?
+  summary   String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// Важна услуга / телефон в указателя.
+model Service {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  category    ServiceCategory @default(OTHER)
+  description String          @default("")
+  address     String          @default("")
+  website     String          @default("")
+  hours       String          @default("")
+  // Телефоните се пазят като JSON: [{ number, label?, verified }].
+  phones      Json?
+  sources     String[]
+  order       Int             @default(0)
+  published   Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([published, category])
+}
+
+// Аптека (вкл. денонощна). Дежурният график за Дупница не е публичен онлайн,
+// затова моделът пази потвърдените денонощни аптеки и бележки.
+model Pharmacy {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  is24h     Boolean  @default(false)
+  address   String   @default("")
+  phone     String   @default("")
+  note      String   @default("")
+  verified  Boolean  @default(false)
+  sources   String[]
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Прости настройки на сайта (ключ-стойност), редактируеми от админ панела.
+model SiteSetting {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
