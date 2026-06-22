@@ -38,3 +38,12 @@ accessibility. The app root IS this `app/` folder.
   `src/app/globals.css` and are toggled by `AccessibilityBar`.
 - Add new pages to `PRIMARY_NAV`/`FOOTER_NAV` in `src/lib/site.ts` and to the
   `sitemap.ts` PATHS list.
+- Forms (signali, kontakti, obyavi/nova, smetishta) use server actions with Zod +
+  honeypot, persisting via Prisma; they degrade gracefully without a DB.
+- Admin (`/admin/*`) is protected by `src/middleware.ts` (edge-safe session verify
+  in `src/lib/session.ts`, Web Crypto HMAC). Login is env-configured —
+  `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET` (no DB user). Server actions
+  call `requireSession()` and write an `audit()` log. Public chrome is hidden under
+  `/admin` via `ChromeGate`.
+- Admin moderates citizen submissions (complaints, dumps, listings, contacts) and
+  manages content (events, posts, businesses), which feed the public DB-backed lists.

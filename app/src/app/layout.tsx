@@ -7,6 +7,7 @@ import { organizationLd, websiteLd } from "@/lib/seo";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ChromeGate } from "@/components/ChromeGate";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -90,12 +91,16 @@ export default function RootLayout({
         <a href="#main" className="skip-link">
           Прескочи към съдържанието
         </a>
-        <AccessibilityBar />
-        <SiteHeader />
+        <ChromeGate>
+          <AccessibilityBar />
+          <SiteHeader />
+        </ChromeGate>
         <main id="main" className="min-h-[60vh]">
           {children}
         </main>
-        <SiteFooter />
+        <ChromeGate>
+          <SiteFooter />
+        </ChromeGate>
       </body>
     </html>
   );
