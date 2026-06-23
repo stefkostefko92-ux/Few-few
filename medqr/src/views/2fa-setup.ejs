@@ -1,0 +1,50 @@
+<%- include('partials/head', { title: t('tfa.title') + ' — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1><%= t('tfa.title') %></h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+
+  <% if (state === 'enabled') { %>
+    <p class="success"><%= t('tfa.enabled') %></p>
+
+    <p><%= t('tfa.recovery_avail') %> <strong><%= recoveryCount %></strong>. <%= t('tfa.recovery_note') %></p>
+    <form method="post" action="/profile/2fa/recovery" class="inline-form"
+          data-confirm="<%= t('tfa.regen_confirm') %>">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn-small btn btn-ghost"><%= t('tfa.regen') %></button>
+    </form>
+
+    <p><%= t('tfa.disable_prompt') %></p>
+    <form method="post" action="/profile/2fa/disable" class="stack"
+          data-confirm="<%= t('tfa.disable_confirm') %>">
+      <%- include('partials/csrf') %>
+      <label><%= t('auth.password') %>
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-danger"><%= t('tfa.disable') %></button>
+    </form>
+
+  <% } else if (state === 'pending') { %>
+    <p><%= t('tfa.pending1') %></p>
+    <p class="center"><img src="<%= qr %>" alt="<%= t('tfa.qr_alt') %>" class="qr"></p>
+    <p><%= t('tfa.pending2') %></p>
+    <form method="post" action="/profile/2fa/enable" class="stack">
+      <%- include('partials/csrf') %>
+      <label><%= t('tfa.code') %>
+        <input type="text" name="code" inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" required autofocus>
+      </label>
+      <button type="submit" class="btn"><%= t('tfa.enable') %></button>
+    </form>
+
+  <% } else { %>
+    <p><%= t('tfa.intro') %></p>
+    <form method="post" action="/profile/2fa/init" class="stack">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn"><%= t('tfa.start') %></button>
+    </form>
+  <% } %>
+
+  <p><a href="/dashboard"><%= t('nav.back_profile') %></a></p>
+</section>
+
+<%- include('partials/foot') %>

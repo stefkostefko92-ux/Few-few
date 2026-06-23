@@ -1,0 +1,182 @@
+<%- include('partials/head', { title: (lang === 'en' ? 'Terms of Use' : 'Общи условия') + ' — MedQR', user }) %>
+
+<article class="legal">
+<% if (lang === 'en') { %>
+  <h1>Terms of Use</h1>
+  <p class="muted">Version <%= legal.version %> · effective from <%= legal.effective %></p>
+
+  <p>These terms govern the relationship between <strong><%= company.name %></strong>
+    (“we”, the “Provider”) and each user (“you”, the “User”) regarding the use of the MedQR service.
+    By registering or using the service you accept these terms.</p>
+
+  <h2>1. Definitions</h2>
+  <ul>
+    <li><strong>Service</strong> — the MedQR web application for creating and displaying an emergency
+      medical profile via a QR/NFC code.</li>
+    <li><strong>Profile</strong> — the emergency medical information you enter.</li>
+    <li><strong>Emergency view</strong> — the public read-only page accessible via your code.</li>
+  </ul>
+
+  <h2>2. Nature of the service</h2>
+  <p>The service is <strong>informational</strong> and <strong>not a medical device</strong> within the
+    meaning of Regulation (EU) 2017/745. It does not provide medical advice, diagnosis or treatment and
+    does not replace professional medical assessment or emergency medical assistance (call 112).</p>
+
+  <h2>3. Eligibility</h2>
+  <p>The service is available to persons at least 16 years old. A profile for a child or a person under
+    guardianship may be created only by a person with parental responsibility or a legal representative.</p>
+
+  <h2>4. Registration and account security</h2>
+  <ul>
+    <li>You provide accurate data and keep your email up to date.</li>
+    <li>You safeguard your password and second factor/passkey; you are responsible for actions taken
+      through your account.</li>
+    <li>You decide whether to protect the profile with a PIN and where to place the QR/NFC code.</li>
+  </ul>
+
+  <h2>5. Responsibility for content</h2>
+  <p>You are responsible for the truthfulness, accuracy and currency of the medical information and the
+    emergency-contact details you enter. Before listing a person as a notification contact, you ensure
+    you have a basis to process their email/phone for that purpose.</p>
+
+  <h2>6. Acceptable use</h2>
+  <p>You must not: enter another person’s data without a basis; infringe others’ rights; attempt
+    unauthorised access, circumvent security measures, or overload the service (e.g. automated
+    requests/scraping beyond what robots.txt permits); use the service for unlawful purposes.</p>
+
+  <h2>7. Intellectual property</h2>
+  <p>The MedQR software, design, trademarks and content are owned by <strong><%= company.name %></strong>
+    and protected by law. All rights not expressly granted are reserved. Your personal data remains yours.</p>
+
+  <h2>8. Availability and support</h2>
+  <p>We aim for high availability, but the service is provided “as is” and “as available”. Scanning
+    requires an internet connection on the scanning device; during outages or maintenance the emergency
+    view may be temporarily unavailable.</p>
+
+  <h2>9. Limitation of liability</h2>
+  <p>To the maximum extent permitted by law, we are not liable for indirect or consequential damages, or
+    for medical decisions made on the basis of the displayed information. This does not limit liability
+    for intent, gross negligence, or under mandatory consumer-protection rules.</p>
+
+  <h2>10. Termination</h2>
+  <p>You can delete your account at any time from the app, which ends the processing of your data. We may
+    suspend access for a material breach of these terms.</p>
+
+  <h2>11. Changes to the terms</h2>
+  <p>We may update these terms. For material changes we will notify you by appropriate means. Continued
+    use after they take effect means acceptance.</p>
+
+  <h2>12. Governing law and disputes</h2>
+  <p>The law of the Republic of Bulgaria and of the European Union, including GDPR, applies. Disputes are
+    resolved by the competent Bulgarian court. As a consumer you may also use the
+    <a href="https://kzp.bg" target="_blank" rel="noopener noreferrer">Commission for Consumer
+    Protection (CCP)</a> and the EU online dispute resolution (ODR) platform:
+    <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a>.</p>
+
+  <h2>13. Severability</h2>
+  <p>If a clause is found invalid, the remaining clauses stay in force.</p>
+
+  <h2>14. Contact</h2>
+  <p>Questions about these terms: <a href="mailto:legal@carbonstealth.eu">legal@carbonstealth.eu</a>.</p>
+
+  <p><a class="btn btn-ghost" href="/">Back to home</a></p>
+<% } else { %>
+  <h1>Общи условия за ползване</h1>
+  <p class="muted">Версия <%= legal.version %> · в сила от <%= legal.effective %></p>
+
+  <p>Тези общи условия уреждат отношенията между <strong><%= company.name %></strong>
+    („ние", „Доставчик") и всеки потребител („вие", „Потребител") във връзка с ползването на
+    услугата MedQR. С регистрацията или ползването на услугата вие приемате тези условия.</p>
+
+  <h2>1. Определения</h2>
+  <ul>
+    <li><strong>Услуга</strong> — уеб приложението MedQR за създаване и показване на спешен
+      медицински профил чрез QR/NFC код.</li>
+    <li><strong>Профил</strong> — въведената от вас спешна медицинска информация.</li>
+    <li><strong>Спешен изглед</strong> — публичната страница само за четене, достъпна чрез вашия код.</li>
+  </ul>
+
+  <h2>2. Естество на услугата</h2>
+  <p>Услугата е <strong>информационна</strong> и <strong>не е медицинско изделие</strong> по смисъла
+    на Регламент (ЕС) 2017/745. Тя не предоставя медицински съвети, диагноза или лечение и не
+    замества професионална медицинска оценка или спешна медицинска помощ (тел. 112).</p>
+
+  <h2>3. Право на ползване</h2>
+  <p>Услугата е достъпна за лица на възраст поне 16 години. Профил на дете или на лице под запрещение
+    може да се създава само от лице с родителска отговорност или законен представител.</p>
+
+  <h2>4. Регистрация и сигурност на акаунта</h2>
+  <ul>
+    <li>Предоставяте верни данни и поддържате имейла си актуален.</li>
+    <li>Пазите паролата и втория фактор/паскей; вие отговаряте за действията през вашия акаунт.</li>
+    <li>Сами решавате дали да защитите профила с PIN и къде да поставите QR/NFC кода.</li>
+  </ul>
+
+  <h2>5. Отговорност за съдържанието</h2>
+  <p>Вие отговаряте за верността, точността и актуалността на въведената медицинска информация и на
+    данните за спешен контакт. Преди да посочите близък като контакт за известия, се уверявате, че
+    разполагате с основание да обработвате неговия имейл/телефон за тази цел.</p>
+
+  <h2>6. Допустимо ползване</h2>
+  <p>Забранено е да: въвеждате чужди данни без основание; нарушавате чужди права; опитвате да
+    получите неоторизиран достъп, да заобикаляте мерките за сигурност или да натоварвате услугата
+    (напр. автоматизирани заявки/скрейпинг извън позволеното в robots.txt); използвате услугата за
+    незаконни цели.</p>
+
+  <h2>7. Интелектуална собственост</h2>
+  <p>Софтуерът, дизайнът, марките и съдържанието на MedQR са собственост на
+    <strong><%= company.name %></strong> и са защитени от закона. Запазват се всички права, които не
+    са изрично предоставени. Вашите лични данни остават ваши.</p>
+
+  <h2>8. Наличност и поддръжка</h2>
+  <p>Стремим се към висока наличност, но услугата се предоставя „както е" и „според наличността".
+    Сканирането изисква интернет връзка на сканиращото устройство; при липса на свързаност или
+    профилактика спешният изглед може временно да е недостъпен.</p>
+
+  <h2>9. Ограничение на отговорността</h2>
+  <p>В максималната степен, позволена от закона, не носим отговорност за непреки или последващи вреди,
+    нито за медицински решения, взети въз основа на показаната информация. Това не ограничава
+    отговорността при умисъл, груба небрежност или съгласно императивни норми за защита на
+    потребителите.</p>
+
+  <h2>10. Прекратяване</h2>
+  <p>Можете да изтриете профила си по всяко време от приложението, което прекратява обработката на
+    данните ви. Може да спрем достъп при съществено нарушение на тези условия.</p>
+
+  <h2>11. Промени в условията</h2>
+  <p>Може да актуализираме тези условия. При съществени промени ще ви уведомим по подходящ начин.
+    Продължаването на ползването след влизането им в сила означава приемане.</p>
+
+  <h2>12. Приложимо право и спорове</h2>
+  <p>Прилага се правото на Република България и на Европейския съюз, включително GDPR. Споровете се
+    решават от компетентния български съд. Като потребител можете да ползвате и
+    <a href="https://kzp.bg" target="_blank" rel="noopener noreferrer">Комисията за защита на
+    потребителите (КЗП)</a>, както и платформата на ЕС за онлайн решаване на спорове (ОРС):
+    <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a>.</p>
+
+  <h2>13. Недействителност</h2>
+  <p>Ако отделна клауза бъде призната за недействителна, останалите остават в сила.</p>
+
+  <h2>14. Контакт</h2>
+  <p>Въпроси по тези условия: <a href="mailto:legal@carbonstealth.eu">legal@carbonstealth.eu</a>.</p>
+
+  <p><a class="btn btn-ghost" href="/">Към началото</a></p>
+<% } %>
+</article>
+
+<script type="application/ld+json" nonce="<%= cspNonce %>">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "<%= lang === 'en' ? 'Terms of Use' : 'Общи условия' %>",
+  "url": "<%= meta.canonical %>",
+  "inLanguage": "<%= lang %>",
+  "datePublished": "<%= legal.effective %>",
+  "dateModified": "<%= legal.effective %>",
+  "publisher": { "@id": "<%= site.base %>/#organization" },
+  "isPartOf": { "@id": "<%= site.base %>/#website" }
+}
+</script>
+<%- include('partials/breadcrumb', { crumb: lang === 'en' ? 'Terms of Use' : 'Общи условия' }) %>
+
+<%- include('partials/foot') %>

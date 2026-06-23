@@ -1,0 +1,33 @@
+# Render Blueprint за демо на MedQR.
+# Пуска приложението като Node уеб услуга (Express + better-sqlite3).
+#
+# Как се пуска:
+#   1. В Render: New → Blueprint → избери това хранилище.
+#   2. Render ще прочете този файл и ще създаде услугата.
+#   3. При подкана въведи ENCRYPTION_KEY (виж docs/render-deploy.md).
+#   4. След първия деплой копирай адреса (https://<име>.onrender.com).
+#
+# Бележки:
+#   - Безплатният план „заспива" при бездействие; първото отваряне след това
+#     отнема ~50 секунди (студен старт).
+#   - Базата е върху ефемерен диск — данните се нулират при нов деплой.
+#     За демо това е напълно достатъчно.
+services:
+  - type: web
+    name: medqr-demo
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: claude/hearing-aid-clinical-profiles-32d49t
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Тайна — въвежда се ръчно в Render (не се пази в кода).
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: MAIL_FROM
+        value: "MedQR <no-reply@medqr.demo>"

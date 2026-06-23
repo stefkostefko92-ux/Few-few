@@ -1,0 +1,14 @@
+<%- include('partials/head', { title: title + ' — MedQR', user }) %>
+
+<section class="form-wrap center">
+  <% if (typeof icon !== 'undefined' && icon) { %>
+    <p class="notice-icon"><%- include('partials/icon', { name: icon, cls: 'icon-xl' }) %></p>
+  <% } %>
+  <h1><%= title %></h1>
+  <p><%= message %></p>
+  <% if (typeof link !== 'undefined' && link) { %>
+    <p><a class="btn" href="<%= link.href %>"><%= link.label %></a></p>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

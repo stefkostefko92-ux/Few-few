@@ -1,0 +1,96 @@
+<%- include('partials/head', { title: 'MedQR — ' + t('og.image_alt').replace('MedQR — ', ''), user }) %>
+
+<section class="hero">
+  <span class="hero-badge"><%- include('partials/icon', { name: 'shield-check' }) %> <%= t('home.badge') %></span>
+  <h1><%= t('home.h1a') %><br><%= t('home.h1b') %></h1>
+  <p class="lead"><%= t('home.lead') %></p>
+  <div class="cta-row">
+    <a class="btn btn-lg" href="/register"><%= t('home.cta_register') %></a>
+    <a class="btn btn-lg btn-ghost" href="/login"><%= t('home.cta_login') %></a>
+  </div>
+</section>
+
+<section class="steps">
+  <h2 class="section-title"><%= t('home.how') %></h2>
+  <ol class="steps-list">
+    <li><span class="step-n">1</span> <%= t('home.step1') %></li>
+    <li><span class="step-n">2</span> <%= t('home.step2') %></li>
+    <li><span class="step-n">3</span> <%= t('home.step3') %></li>
+  </ol>
+</section>
+
+<section class="features">
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'droplet' }) %></span>
+    <h2><%= t('home.f1_h') %></h2>
+    <p><%= t('home.f1_p') %></p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'ear' }) %></span>
+    <h2><%= t('home.f2_h') %></h2>
+    <p><%= t('home.f2_p') %></p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'shield-check' }) %></span>
+    <h2><%= t('home.f3_h') %></h2>
+    <p><%= t('home.f3_p') %></p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon"><%- include('partials/icon', { name: 'card' }) %></span>
+    <h2><%= t('home.f4_h') %></h2>
+    <p><%= t('home.f4_p') %></p>
+  </div>
+</section>
+
+<section class="who">
+  <h2 class="section-title"><%= t('home.who_h') %></h2>
+  <p class="who-list"><%= t('home.who_p') %></p>
+  <div class="cta-row">
+    <a class="btn" href="/register"><%= t('home.start') %></a>
+  </div>
+</section>
+
+<section class="faq">
+  <h2 class="section-title"><%= t('home.faq_h') %></h2>
+  <div class="faq-list">
+    <% for (let i = 1; i <= 6; i++) { %>
+      <details>
+        <summary><%= t('faq.q' + i) %></summary>
+        <p><%= t('faq.a' + i) %></p>
+      </details>
+    <% } %>
+  </div>
+</section>
+
+<script type="application/ld+json" nonce="<%= cspNonce %>">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MedQR",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "Web",
+  "url": "<%= site.base %>/",
+  "inLanguage": "<%= lang %>",
+  "description": "<%= meta.description %>",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "publisher": { "@type": "Organization", "name": "<%= company.name %>", "url": "<%= company.url %>" }
+}
+</script>
+<script type="application/ld+json" nonce="<%= cspNonce %>">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "<%= lang %>",
+  "mainEntity": [
+    <% for (let i = 1; i <= 6; i++) { %>
+    {
+      "@type": "Question",
+      "name": <%- JSON.stringify(t('faq.q' + i)) %>,
+      "acceptedAnswer": { "@type": "Answer", "text": <%- JSON.stringify(t('faq.a' + i)) %> }
+    }<%= i < 6 ? ',' : '' %>
+    <% } %>
+  ]
+}
+</script>
+
+<%- include('partials/foot') %>

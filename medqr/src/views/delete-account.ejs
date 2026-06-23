@@ -1,0 +1,18 @@
+<%- include('partials/head', { title: t('auth.delete_title') + ' — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> <%= t('auth.delete_title') %></h1>
+  <p><%= t('auth.delete_warn') %></p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/profile/delete" class="stack"
+        data-confirm="<%= t('auth.delete_confirm_js') %>">
+    <%- include('partials/csrf') %>
+    <label><%= t('auth.delete_confirm_pw') %>
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn btn-danger"><%= t('auth.delete_btn') %></button>
+    <a class="btn btn-ghost" href="/dashboard"><%= t('auth.cancel') %></a>
+  </form>
+</section>
+
+<%- include('partials/foot') %>

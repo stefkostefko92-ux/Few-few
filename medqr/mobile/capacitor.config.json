@@ -1,0 +1,18 @@
+{
+  "appId": "eu.carbonstealth.medqr",
+  "appName": "MedQR",
+  "webDir": "www",
+  "server": {
+    "url": "https://medqr.carbonstealth.eu",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0b6e8c"
+  },
+  "ios": {
+    "backgroundColor": "#0b6e8c",
+    "contentInset": "always",
+    "limitsNavigationsToAppBoundDomains": false
+  }
+}
