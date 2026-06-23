@@ -1,0 +1,16 @@
+# Bubblewrap / Android генерирани файлове и тайни — не се качват в Git.
+android.keystore
+*.keystore
+*.jks
+app/
+*.apk
+*.aab
+*.idsig
+node_modules/
+.gradle/
+build/
+local.properties
+store_icon.png
+twa-icon*.png
+twa-splash*.png
+assetlinks.json

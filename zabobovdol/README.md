@@ -37,10 +37,21 @@
 
 ---
 
+## Мобилно приложение (Android)
+
+Има и Android приложение — **обвивка** на сайта (Trusted Web Activity). Показва
+живия сайт на цял екран, така че съдържанието винаги е в синхрон със сървъра.
+Конфигурацията и стъпките за построяване (с Bubblewrap) и публикуване в Google
+Play са в папка **[`android/`](./android/README.md)**. Свързването със сайта
+(Digital Asset Links) се управлява от админ панела → **Мобилно приложение**;
+сайтът сервира `/.well-known/assetlinks.json` автоматично.
+
+---
+
 ## Технологии
 
 Next.js 15 (App Router) · React 19 · TypeScript · Prisma · PostgreSQL ·
-Tailwind CSS · Docker · Nginx.
+Tailwind CSS · Docker · Nginx · Bubblewrap (Android TWA).
 
 ---
 

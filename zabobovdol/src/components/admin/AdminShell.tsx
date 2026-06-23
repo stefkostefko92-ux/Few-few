@@ -102,6 +102,7 @@ export function AdminShell({
               Система
             </div>
             {user.role === "ADMIN" && link("/admin/pomoshtnik", "Дигитален помощник")}
+            {user.role === "ADMIN" && link("/admin/mobilno", "Мобилно приложение")}
             {link("/admin/novini", "Новини от общината")}
             {user.role === "ADMIN" && link("/admin/signali", "Сигнали до общината", "signali")}
             {user.role === "ADMIN" && link("/admin/reklami", "Заявки за реклама", "reklami")}

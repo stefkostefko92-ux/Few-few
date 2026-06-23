@@ -17,6 +17,13 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  async rewrites() {
+    return [
+      // Digital Asset Links за Android приложението (TWA). Пренасочваме към
+      // динамичен route (папки, започващи с точка, са капризни в рутера).
+      { source: "/.well-known/assetlinks.json", destination: "/api/assetlinks" },
+    ];
+  },
   async headers() {
     // Content-Security-Policy: ограничава откъде се зареждат ресурси.
     // Позволяваме 'unsafe-inline' за скриптове/стилове, защото Next и нашият
