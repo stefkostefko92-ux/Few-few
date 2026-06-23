@@ -277,6 +277,23 @@ try {
   assert.equal(verifyAuditChain().ok, true);
   ok('одит веригата е с ненарушена цялост');
 
+  // 19б. „Остани вписан“ преминава и през 2FA → дълготрайна сесия
+  await req('/logout', { method: 'POST', body: {} });
+  await req('/login', {
+    method: 'POST',
+    body: { email: 'ivan@test.bg', password, remember: 'on' },
+  });
+  await req('/2fa', { method: 'POST', body: { code: authenticator.generate(secret) } });
+  const sess = db
+    .prepare(
+      'SELECT long_lived, expires_at FROM sessions WHERE user_id = ? ORDER BY rowid DESC LIMIT 1'
+    )
+    .get(user.id);
+  assert.equal(sess.long_lived, 1, 'сесията е маркирана като дълготрайна');
+  const days = (new Date(sess.expires_at).getTime() - Date.now()) / 86400000;
+  assert.ok(days > 300, 'дълготрайната сесия е с дълъг срок на валидност');
+  ok('„остани вписан“ създава дълготрайна сесия (и през 2FA)');
+
   // 20. Защитен маршрут изисква вход
   jar.clear();
   await req('/');

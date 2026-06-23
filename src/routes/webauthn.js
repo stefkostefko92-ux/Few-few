@@ -5,7 +5,7 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
-import { requireAuth, createSession } from '../auth.js';
+import { requireAuth, createSession, sessionCookieOptions } from '../auth.js';
 import { audit } from '../audit.js';
 import {
   rp,
@@ -22,12 +22,6 @@ import {
 const router = Router();
 const prod = process.env.NODE_ENV === 'production';
 const challengeCookie = { httpOnly: true, sameSite: 'strict', secure: prod, maxAge: 1000 * 60 * 5 };
-const sessionCookie = {
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: prod,
-  maxAge: 1000 * 60 * 60 * 24 * 7,
-};
 
 // ---------- Регистрация на passkey (изисква вход) ----------
 router.post('/webauthn/register/options', requireAuth, async (req, res) => {
@@ -106,7 +100,8 @@ router.post('/webauthn/login/verify', async (req, res) => {
     });
     if (!verification.verified) return res.status(401).json({ error: 'Неуспешна проверка.' });
     updateCounter(cred.credential_id, verification.authenticationInfo.newCounter);
-    res.cookie('sid', createSession(cred.user_id, req), sessionCookie);
+    const { token, maxAge } = createSession(cred.user_id, req, true); // паскей → остани вписан
+    res.cookie('sid', token, sessionCookieOptions(maxAge));
     audit(req, 'login_success', { userId: cred.user_id, detail: 'passkey' });
     res.json({ ok: true, redirect: '/dashboard' });
   } catch (e) {

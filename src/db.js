@@ -77,6 +77,7 @@ db.exec(`
     last_seen  TEXT NOT NULL DEFAULT (datetime('now')),
     ip         TEXT,
     user_agent TEXT,
+    long_lived INTEGER NOT NULL DEFAULT 0,
     expires_at TEXT NOT NULL
   );
 
@@ -154,6 +155,7 @@ ensureColumn('profiles', 'last_notified_at', 'TEXT');
 ensureColumn('profiles', 'pin_attempts', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'pin_locked_until', 'TEXT');
 ensureColumn('sessions', 'last_seen', 'TEXT');
+ensureColumn('sessions', 'long_lived', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('sessions', 'ip', 'TEXT');
 ensureColumn('sessions', 'user_agent', 'TEXT');
 ensureColumn('audit_log', 'prev_hash', 'TEXT');

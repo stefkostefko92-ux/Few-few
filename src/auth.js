@@ -2,10 +2,23 @@ import { randomBytes, createHash } from 'node:crypto';
 import db from './db.js';
 import { hashSecret, verifySecret, needsRehash } from './hashing.js';
 
-const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 дни
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 дни (обикновена сесия)
+const REMEMBER_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 година („остани вписан“ / приложение)
 const PENDING_TTL_MS = 1000 * 60 * 5; // 5 минути за въвеждане на 2FA код
 const MAX_FAILED = 5;
 const LOCK_MINUTES = 15;
+
+const ttlFor = (longLived) => (longLived ? REMEMBER_TTL_MS : SESSION_TTL_MS);
+
+// Опции за бисквитката на сесията (sid). maxAge = срок на валидност.
+export function sessionCookieOptions(maxAge) {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge,
+  };
+}
 
 // Argon2id хеширане (async). Приема и стари bcrypt хешове при проверка.
 export const hashPassword = (plain) => hashSecret(plain);
@@ -18,15 +31,18 @@ export function randomToken(bytes = 24) {
 }
 
 // ---- Сесии ----
-export function createSession(userId, req) {
+// remember=true прави сесията дълготрайна (за приложението/„остани вписан“).
+// Връща токена и maxAge за бисквитката.
+export function createSession(userId, req, remember = false) {
   const token = randomToken(32);
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+  const ttl = ttlFor(remember);
+  const expiresAt = new Date(Date.now() + ttl).toISOString();
   const ip = req ? (req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '').trim() : null;
   const ua = req ? String(req.get?.('user-agent') || '').slice(0, 300) : null;
   db.prepare(
-    'INSERT INTO sessions (token, user_id, ip, user_agent, expires_at) VALUES (?, ?, ?, ?, ?)'
-  ).run(token, userId, ip, ua, expiresAt);
-  return token;
+    'INSERT INTO sessions (token, user_id, ip, user_agent, long_lived, expires_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(token, userId, ip, ua, remember ? 1 : 0, expiresAt);
+  return { token, maxAge: ttl };
 }
 
 export function destroySession(token) {
@@ -37,15 +53,20 @@ export function userFromSession(token) {
   if (!token) return null;
   const row = db
     .prepare(
-      `SELECT u.id, u.email FROM sessions s
+      `SELECT u.id, u.email, s.long_lived FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.token = ? AND s.expires_at > datetime('now')`
     )
     .get(token);
-  if (row) {
-    db.prepare("UPDATE sessions SET last_seen = datetime('now') WHERE token = ?").run(token);
-  }
-  return row || null;
+  if (!row) return null;
+  // Плъзгащо подновяване: активният потребител не бива изхвърлян (вход веднъж).
+  const ttl = ttlFor(row.long_lived);
+  const expiresAt = new Date(Date.now() + ttl).toISOString();
+  db.prepare("UPDATE sessions SET last_seen = datetime('now'), expires_at = ? WHERE token = ?").run(
+    expiresAt,
+    token
+  );
+  return { id: row.id, email: row.email, _ttlMs: ttl };
 }
 
 // Списък с активни сесии на потребител (за „активни устройства").
@@ -64,8 +85,13 @@ export function destroyOtherSessions(userId, keepToken) {
   db.prepare('DELETE FROM sessions WHERE user_id = ? AND token != ?').run(userId, keepToken || '');
 }
 
-export function attachUser(req, _res, next) {
-  req.user = userFromSession(req.cookies?.sid);
+export function attachUser(req, res, next) {
+  const user = userFromSession(req.cookies?.sid);
+  req.user = user;
+  // Плъзгащо подновяване и на бисквитката, за да не изтича при активен достъп.
+  if (user && res && req.cookies?.sid) {
+    res.cookie('sid', req.cookies.sid, sessionCookieOptions(user._ttlMs));
+  }
   next();
 }
 

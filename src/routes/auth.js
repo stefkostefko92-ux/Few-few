@@ -10,6 +10,7 @@ import {
   verifyPassword,
   needsRehash,
   createSession,
+  sessionCookieOptions,
   destroySession,
   isLocked,
   registerFailedAttempt,
@@ -44,16 +45,12 @@ async function sendVerification(req, userId, email) {
   }
 }
 
-const sessionCookie = {
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: prod,
-  maxAge: 1000 * 60 * 60 * 24 * 7,
-};
 const pendingCookie = { httpOnly: true, sameSite: 'lax', secure: prod, maxAge: 1000 * 60 * 5 };
 
-function startSession(req, res, userId) {
-  res.cookie('sid', createSession(userId, req), sessionCookie);
+// remember=true → дълготрайна сесия (за приложението / „остани вписан“).
+function startSession(req, res, userId, remember = false) {
+  const { token, maxAge } = createSession(userId, req, remember);
+  res.cookie('sid', token, sessionCookieOptions(maxAge));
 }
 
 // ---------- Регистрация ----------
@@ -95,7 +92,7 @@ router.post('/register', async (req, res) => {
   });
   await sendVerification(req, info.lastInsertRowid, email);
 
-  startSession(req, res, info.lastInsertRowid);
+  startSession(req, res, info.lastInsertRowid, true); // новорегистрираният остава вписан
   res.redirect('/dashboard');
 });
 
@@ -144,6 +141,7 @@ router.post('/login', async (req, res) => {
     .trim()
     .toLowerCase();
   const password = String(req.body.password || '');
+  const remember = req.body.remember === 'on' || req.body.remember === 'true';
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 
   // Еднакво съобщение при липсващ потребител и грешна парола (без разкриване).
@@ -178,10 +176,11 @@ router.post('/login', async (req, res) => {
   if (user.totp_enabled) {
     const pending = createPendingLogin(user.id);
     res.cookie('p2fa', pending, pendingCookie);
+    res.cookie('rmb', remember ? '1' : '0', pendingCookie); // пренасяме избора през 2FA
     return res.redirect('/2fa');
   }
 
-  startSession(req, res, user.id);
+  startSession(req, res, user.id, remember);
   audit(req, 'login_success', { userId: user.id });
   res.redirect('/dashboard');
 });
@@ -211,7 +210,9 @@ router.post('/2fa', async (req, res) => {
 
   destroyPending(req.cookies.p2fa);
   res.clearCookie('p2fa');
-  startSession(req, res, userId);
+  const remember = req.cookies?.rmb === '1';
+  res.clearCookie('rmb');
+  startSession(req, res, userId, remember);
   audit(req, 'login_success', { userId, detail: recoveryOk ? '2fa-recovery' : '2fa' });
   res.redirect('/dashboard');
 });
