@@ -7,9 +7,39 @@
 Тук има само конфигурацията (`twa-manifest.json`). Самият Android проект се
 генерира и строи с **Bubblewrap** — официалния инструмент на Google.
 
+Има **два начина** да го построите:
+- **А) Автоматично през GitHub Actions** (най-лесно — без нищо инсталирано);
+- **Б) Ръчно на компютър** с Bubblewrap (по-надолу).
+
 ---
 
-## Какво е нужно (еднократно)
+## А) Автоматично построяване (GitHub Actions)
+
+Без Android Studio и без Java на вашия компютър.
+
+1. В GitHub отворете раздел **Actions** → **„Android (TWA) build"** → **Run workflow**.
+2. Изчакайте да завърши. От страницата на пуска свалете **Artifacts →
+   `zabobovdol-android`** — вътре са `app-release-signed.apk` (за инсталация на
+   телефон) и `app-release-bundle.aab` (за Google Play).
+3. В **Summary** на пуска ще видите **SHA‑256 отпечатъка** — поставете го в
+   админ панела → **Мобилно приложение**.
+
+Без допълнителни настройки билдът ползва **временен ключ** (става за тест на
+телефон, но **не** за Google Play). За стабилен ключ за Play задайте тези
+**secrets** (Settings → Secrets and variables → Actions):
+
+| Secret | Какво е |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | keystore файлът: `base64 -w0 android.keystore` |
+| `ANDROID_KEYSTORE_PASSWORD` | паролата на keystore |
+| `ANDROID_KEY_PASSWORD` | паролата на ключа (alias „android") |
+
+> Ключът се създава веднъж (виж стъпка 1 по-долу) и се пази на сигурно. Със
+> зададени secrets всеки следващ билд ползва същия ключ — както изисква Google Play.
+
+---
+
+## Б) Ръчно построяване — какво е нужно (еднократно)
 
 - **Node.js 18+** и **Java JDK 17** (Temurin/Adoptium).
 - Bubblewrap CLI:

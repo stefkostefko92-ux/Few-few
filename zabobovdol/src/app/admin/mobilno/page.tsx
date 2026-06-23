@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { getAndroidApp } from "@/lib/settings";
+import { getAndroidApp, getPlayStoreUrl } from "@/lib/settings";
 import { saveAndroidApp } from "@/lib/admin/settings-actions";
 import { SITE } from "@/lib/site";
 
@@ -12,7 +12,10 @@ export default async function AdminMobileAppPage({
 }) {
   await requireAdmin();
   const { saved, error } = await searchParams;
-  const { packageName, fingerprints } = await getAndroidApp();
+  const [{ packageName, fingerprints }, playStoreUrl] = await Promise.all([
+    getAndroidApp(),
+    getPlayStoreUrl(),
+  ]);
   const linked = fingerprints.length > 0;
   const assetlinksUrl = `${SITE.url}/.well-known/assetlinks.json`;
 
@@ -103,6 +106,23 @@ export default async function AdminMobileAppPage({
           <p className="mt-1 text-xs text-slate-500">
             Поставете го от Google Play Console. Може да добавите няколко (напр.
             ключа за качване и ключа на Play) — всеки на нов ред.
+          </p>
+        </div>
+        <div>
+          <label className="label" htmlFor="playStoreUrl">
+            Връзка към Google Play (по избор)
+          </label>
+          <input
+            id="playStoreUrl"
+            name="playStoreUrl"
+            type="url"
+            className="input"
+            defaultValue={playStoreUrl}
+            placeholder="https://play.google.com/store/apps/details?id=eu.carbonstealth.zabobovdol"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            След като приложението е публикувано, поставете адреса му. Тогава в
+            долната част на сайта се показва бутон „Изтегли от Google Play“.
           </p>
         </div>
         <button type="submit" className="btn-primary">Запази</button>

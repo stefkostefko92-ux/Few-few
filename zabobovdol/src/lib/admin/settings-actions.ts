@@ -169,6 +169,7 @@ export async function saveAndroidApp(formData: FormData): Promise<void> {
 
   const pkg = String(formData.get("packageName") ?? "").trim() || DEFAULT_ANDROID_PACKAGE;
   const fpRaw = String(formData.get("fingerprints") ?? "");
+  const playUrl = String(formData.get("playStoreUrl") ?? "").trim();
   // Запазваме само валидни SHA-256 отпечатъци (нормализирани).
   const fingerprints = parseFingerprints(fpRaw);
 
@@ -178,9 +179,16 @@ export async function saveAndroidApp(formData: FormData): Promise<void> {
         encodeURIComponent("Невалидно име на пакет (напр. eu.carbonstealth.zabobovdol)."),
     );
   }
+  if (playUrl && !/^https:\/\//i.test(playUrl)) {
+    redirect(
+      "/admin/mobilno?error=" +
+        encodeURIComponent("Връзката към Google Play трябва да започва с https://"),
+    );
+  }
 
   await setSetting(SETTING_KEYS.androidPackage, pkg);
   await setSetting(SETTING_KEYS.androidFingerprints, fingerprints.join("\n"));
+  await setSetting(SETTING_KEYS.playStoreUrl, playUrl);
 
   await logAudit(admin, {
     action: "UPDATE",

@@ -25,7 +25,20 @@ export const SETTING_KEYS = {
   // Android приложение (TWA) — за Digital Asset Links.
   androidPackage: "android_package",
   androidFingerprints: "android_fingerprints",
+  playStoreUrl: "play_store_url",
 } as const;
+
+// Връзка към приложението в Google Play (показва се в сайта, ако е зададена).
+export async function getPlayStoreUrl(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.playStoreUrl },
+    });
+    return row?.value?.trim() || "";
+  } catch {
+    return "";
+  }
+}
 
 export type AndroidApp = { packageName: string; fingerprints: string[] };
 
