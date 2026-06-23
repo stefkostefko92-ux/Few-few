@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const express      = require('express');
 const cors         = require('cors');
+const compression  = require('compression');
 const path         = require('path');
 const cookieParser = require('cookie-parser');
 const stripe       = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy');
@@ -136,6 +137,7 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use(compression()); // gzip/deflate text assets (CSS ~200KB → ~30KB)
 app.use(securityHeaders);
 app.use(cookieParser());
 

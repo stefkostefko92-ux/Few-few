@@ -42,7 +42,6 @@
   <link rel="alternate" hreflang="it"      href="https://www.panevascensori.it/prodotti">
   <link rel="alternate" hreflang="it-IT"   href="https://www.panevascensori.it/prodotti">
   <link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/prodotti">
-  <link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/prodotti">
 
   <!-- ═══ PERFORMANCE / RESOURCE HINTS ═══ -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1289,6 +1288,7 @@
   </script>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Salta al contenuto</a>
 <header id="navbar"></header>
 <div id="mobile-nav">
   <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Chiudi menu">
@@ -1341,6 +1341,7 @@
 </div>
 
 <!-- Shop Section -->
+<main id="main-content" tabindex="-1">
 <section class="section">
   <div class="container">
 
@@ -1405,6 +1406,7 @@
 </div>
 
 <!-- Footer -->
+</main>
 <footer id="footer" class="footer"></footer>
 <div id="cart-sidebar"></div>
 <div id="cart-overlay"></div>
@@ -1504,10 +1506,11 @@
             <div class="product-footer">
               ${p.price > 0 ? `<div class="product-price"><span style="color:var(--cyan);font-weight:700">${p.priceLabel || ('€' + p.price.toLocaleString('it-IT', {minimumFractionDigits:2}))}</span> <small style="color:var(--gray-400)">IVA escl.</small></div>` : '<div class="product-price" style="color:var(--gray-400);font-size:.82rem">Su richiesta</div>'}
               ${p.price > 0
-                ? `<button class="btn-cart" onclick="event.stopPropagation(); addToCartQuick('${p.id}')" title="Aggiungi al carrello" style="background:rgba(0,200,224,.12);border:1px solid rgba(0,200,224,.4);color:var(--cyan);font-size:.75rem;padding:.3rem .6rem;border-radius:4px">🛒 Aggiungi</button>`
-                : `<button class="btn-cart" onclick="event.stopPropagation(); openModal('${p.id}')" title="Informazioni" style="background:transparent;border:1px solid rgba(0,200,224,.3);color:var(--cyan);font-size:.75rem;padding:.3rem .6rem;border-radius:4px">Info →</button>`
+                ? `<button class="btn-cart" onclick="event.stopPropagation(); addToCartQuick('${p.id}')" title="Aggiungi al carrello" aria-label="Aggiungi ${escHtml(p.name)} al carrello" style="background:var(--panev-blue-10,rgba(22,40,97,.10));border:1px solid rgba(22,40,97,.35);color:var(--panev-blue);font-size:.75rem;padding:.3rem .6rem;border-radius:4px">Aggiungi</button>`
+                : `<button class="btn-cart" onclick="event.stopPropagation(); openModal('${p.id}')" title="Informazioni" aria-label="Dettagli ${escHtml(p.name)}" style="background:transparent;border:1px solid rgba(22,40,97,.30);color:var(--panev-blue);font-size:.75rem;padding:.3rem .6rem;border-radius:4px">Info →</button>`
               }
             </div>
+            <a href="/prodotti/${encodeURIComponent(p.id)}.html" class="product-scheda" onclick="event.stopPropagation()">Scheda tecnica →</a>
           </div>
         </div>`).join('');
     }
