@@ -1,49 +1,45 @@
-<%- include('partials/head', { title: 'Спешна помощ (SOS) — MedQR', user }) %>
+<%- include('partials/head', { title: t('sos.title') + ' — MedQR', user }) %>
 
 <div class="sos" id="sos"
      data-contact-phone="<%= profile.emergency_contact_phone || '' %>"
      data-name="<%= profile.full_name %>">
   <div class="sos-flash" id="sos-flash" aria-hidden="true"></div>
 
-  <h1 class="sos-title"><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> Спешна помощ</h1>
+  <h1 class="sos-title"><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> <%= t('sos.title') %></h1>
 
   <!-- Това се показва на минувач/случаен човек -->
   <div class="sos-bystander">
     <p class="sos-big">
-      Аз съм <strong><%= profile.full_name %></strong>.<br>
-      Имам спешен медицински проблем и <strong>не чувам/не говоря</strong>.<br>
-      Моля, обадете се на <strong>112</strong> за мен.
+      <%= t('sos.i_am') %> <strong><%= profile.full_name %></strong>.<br>
+      <%= t('sos.bystander') %>
     </p>
     <a class="btn sos-call" href="tel:112">
-      <%- include('partials/icon', { name: 'phone' }) %> Обадете се на 112
+      <%- include('partials/icon', { name: 'phone' }) %> <%= t('sos.call112') %>
     </a>
 
     <dl class="sos-info">
-      <% if (profile.blood_type) { %><dt>Кръвна група</dt><dd><%= profile.blood_type %></dd><% } %>
-      <% if (profile.allergies) { %><dt>Алергии</dt><dd><%= profile.allergies %></dd><% } %>
-      <% if (profile.chronic_conditions) { %><dt>Заболявания</dt><dd><%= profile.chronic_conditions %></dd><% } %>
-      <% if (profile.current_medications) { %><dt>Медикаменти</dt><dd><%= profile.current_medications %></dd><% } %>
+      <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type %></dd><% } %>
+      <% if (profile.allergies) { %><dt><%= t('emerg.allergies') %></dt><dd><%= profile.allergies %></dd><% } %>
+      <% if (profile.chronic_conditions) { %><dt><%= t('emerg.conditions') %></dt><dd><%= profile.chronic_conditions %></dd><% } %>
+      <% if (profile.current_medications) { %><dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications %></dd><% } %>
     </dl>
     <p class="sos-loc" id="sos-loc"></p>
   </div>
 
   <div class="sos-actions">
     <button type="button" class="btn sos-alarm" data-sos-alarm>
-      <%- include('partials/icon', { name: 'volume' }) %> Сирена + мигане (привлечи внимание)
+      <%- include('partials/icon', { name: 'volume' }) %> <%= t('sos.alarm') %>
     </button>
     <% if (profile.emergency_contact_phone || profile.emergency_contact_email) { %>
       <button type="button" class="btn sos-people" data-sos-people>
-        <%- include('partials/icon', { name: 'phone' }) %> SOS до близките ми (SMS + локация)
+        <%- include('partials/icon', { name: 'phone' }) %> <%= t('sos.people') %>
       </button>
     <% } %>
     <p class="muted small" id="sos-status" role="status"></p>
   </div>
 
-  <p class="muted small sos-note">
-    MedQR не е заместител на 112 — това е помощно средство. Съвет: добави тази
-    страница на началния екран на телефона за достъп с едно докосване.
-  </p>
-  <p><a class="btn btn-ghost btn-small" href="/dashboard">Назад към профила</a></p>
+  <p class="muted small sos-note"><%= t('sos.note') %></p>
+  <p><a class="btn btn-ghost btn-small" href="/dashboard"><%= t('sos.back') %></a></p>
 </div>
 
 <%- include('partials/foot') %>

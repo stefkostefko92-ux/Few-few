@@ -1523,3 +1523,22 @@ body.comm-open {
   font-size: 0.95rem;
   padding: 0.5rem 1rem;
 }
+
+/* ---------- Превключвател на език ---------- */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-right: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.lang-switch a {
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  opacity: 0.75;
+}
+.lang-switch a.is-active {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}

@@ -1,16 +1,12 @@
 <%- include('partials/head', { title: 'MedQR — спешен профил с QR код', user }) %>
 
 <section class="hero">
-  <span class="hero-badge"><%- include('partials/icon', { name: 'shield-check' }) %> Криптирано · GDPR · хостинг в ЕС</span>
-  <h1>Животоспасяваща информация<br>на едно сканиране</h1>
-  <p class="lead">
-    MedQR създава защитен спешен медицински профил, който носите със себе си като QR код.
-    При злополука или влошаване спешен екип сканира кода и веднага вижда кръвна група,
-    алергии, заболявания и контакт на близък — <strong>дори ако не можете да говорите</strong>.
-  </p>
+  <span class="hero-badge"><%- include('partials/icon', { name: 'shield-check' }) %> <%= t('home.badge') %></span>
+  <h1><%= t('home.h1a') %><br><%= t('home.h1b') %></h1>
+  <p class="lead"><%= t('home.lead') %></p>
   <div class="cta-row">
-    <a class="btn btn-lg" href="/register">Създай профил безплатно</a>
-    <a class="btn btn-lg btn-ghost" href="/login">Вход</a>
+    <a class="btn btn-lg" href="/register"><%= t('home.cta_register') %></a>
+    <a class="btn btn-lg btn-ghost" href="/login"><%= t('home.cta_login') %></a>
   </div>
 </section>
 

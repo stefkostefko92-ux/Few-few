@@ -1,5 +1,31 @@
 // Малки помощници без inline скриптове (за да работи строгата Content-Security-Policy).
 document.addEventListener('DOMContentLoaded', () => {
+  // Език за динамичните съобщения и за синтеза на реч.
+  const docLang = document.documentElement.lang === 'en' ? 'en' : 'bg';
+  const speechLang = docLang === 'en' ? 'en-US' : 'bg-BG';
+  const STR = {
+    bg: {
+      offline: 'Офлайн режим — показва се запазено копие.',
+      copied: 'Копирано ✓',
+      locating: 'Определяне на местоположението…',
+      loc_sent: 'Местоположението е изпратено на близкия.',
+      send_fail: 'Изпращането не успя.',
+      loc_fail: 'Не успяхме да определим местоположението.',
+      loc_label: 'Местоположение',
+      sos_sent: 'Сигналът е изпратен до близките ти.',
+    },
+    en: {
+      offline: 'Offline — showing a saved copy.',
+      copied: 'Copied ✓',
+      locating: 'Locating…',
+      loc_sent: 'Location was sent to the contact.',
+      send_fail: 'Sending failed.',
+      loc_fail: 'Could not determine the location.',
+      loc_label: 'Location',
+      sos_sent: 'The alert was sent to your contacts.',
+    },
+  }[docLang];
+
   // Офлайн достъп: регистрираме service worker и показваме индикатор за връзка.
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {
@@ -9,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const offlineBanner = document.createElement('div');
   offlineBanner.className = 'offline-banner';
   offlineBanner.setAttribute('role', 'status');
-  offlineBanner.textContent = 'Офлайн режим — показва се запазено копие.';
+  offlineBanner.textContent = STR.offline;
   offlineBanner.hidden = true;
   document.body.appendChild(offlineBanner);
   const syncOnline = () => {
@@ -67,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await navigator.clipboard.writeText(el.textContent.trim());
         const old = btn.textContent;
-        btn.textContent = 'Копирано ✓';
+        btn.textContent = STR.copied;
         setTimeout(() => (btn.textContent = old), 1500);
       } catch {
         /* без клипборд достъп */
@@ -80,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (locateBtn && 'geolocation' in navigator) {
     const status = document.getElementById('locate-status');
     locateBtn.addEventListener('click', () => {
-      if (status) status.textContent = 'Определяне на местоположението…';
+      if (status) status.textContent = STR.locating;
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const meta = document.querySelector('meta[name="csrf-token"]');
@@ -97,16 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 accuracy: pos.coords.accuracy,
               }),
             });
-            if (status)
-              status.textContent = res.ok
-                ? 'Местоположението е изпратено на близкия.'
-                : 'Изпращането не успя.';
+            if (status) status.textContent = res.ok ? STR.loc_sent : STR.send_fail;
           } catch {
-            if (status) status.textContent = 'Изпращането не успя.';
+            if (status) status.textContent = STR.send_fail;
           }
         },
         () => {
-          if (status) status.textContent = 'Не успяхме да определим местоположението.';
+          if (status) status.textContent = STR.loc_fail;
         },
         // Принуждаваме GPS вместо по-неточен Wi-Fi/клетка и избягваме стара кеширана позиция.
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -133,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'bg-BG';
+        u.lang = speechLang;
         u.rate = 0.95;
         window.speechSynthesis.speak(u);
       } catch {
@@ -296,21 +319,23 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'content-type': 'application/json', 'x-csrf-token': csrf() },
             body: JSON.stringify({ lat, lng }),
           }).catch(() => {});
-          setStatus('Сигналът е изпратен до близките ти.');
+          setStatus(STR.sos_sent);
           if (phone) {
-            const body = encodeURIComponent(
-              `Спешно! Нуждая се от помощ. Аз съм глух/а.${maps ? ' Локация: ' + maps : ''}`
-            );
+            const smsText =
+              docLang === 'en'
+                ? `Emergency! I need help. I am deaf.${maps ? ' Location: ' + maps : ''}`
+                : `Спешно! Нуждая се от помощ. Аз съм глух/а.${maps ? ' Локация: ' + maps : ''}`;
+            const body = encodeURIComponent(smsText);
             window.location.href = `sms:${phone}?body=${body}`;
           }
         };
         if ('geolocation' in navigator) {
-          setStatus('Определяне на местоположението…');
+          setStatus(STR.locating);
           navigator.geolocation.getCurrentPosition(
             (p) => {
               const lat = Number(p.coords.latitude.toFixed(5));
               const lng = Number(p.coords.longitude.toFixed(5));
-              if (locEl) locEl.textContent = `Местоположение: ${lat}, ${lng}`;
+              if (locEl) locEl.textContent = `${STR.loc_label}: ${lat}, ${lng}`;
               send(lat, lng);
             },
             () => send(null, null),

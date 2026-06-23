@@ -26,6 +26,7 @@ import {
   webManifest,
   securityTxt,
 } from './seo.js';
+import { LANGS, pickLang, makeT } from './i18n.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === 'production';
@@ -102,6 +103,17 @@ app.use(attachUser);
 // Общи locals за изгледите: компания, потребител и SEO meta (noindex по подразбиране).
 app.use((req, res, next) => {
   const base = siteBaseUrl(req);
+  // Език (BG/EN): ?lang= го сменя и запазва в бисквитка; иначе по бисквитка/браузър.
+  if (req.query.lang && LANGS.includes(req.query.lang)) {
+    res.cookie('lang', req.query.lang, {
+      maxAge: 1000 * 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+      secure: prod,
+    });
+  }
+  const lang = pickLang(req);
+  res.locals.lang = lang;
+  res.locals.t = makeT(lang);
   res.locals.company = COMPANY;
   res.locals.user = req.user;
   res.locals.legal = LEGAL;

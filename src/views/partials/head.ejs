@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="<%= typeof lang !== 'undefined' ? lang : 'bg' %>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -90,15 +90,19 @@
       <span class="brand-name">MedQR</span>
     </a>
     <nav>
+      <span class="lang-switch" aria-label="<%= t('lang.switch') %>">
+        <a href="?lang=bg" class="<%= lang === 'bg' ? 'is-active' : '' %>" hreflang="bg"><%= t('lang.bg') %></a>
+        <a href="?lang=en" class="<%= lang === 'en' ? 'is-active' : '' %>" hreflang="en"><%= t('lang.en') %></a>
+      </span>
       <% if (typeof user !== 'undefined' && user) { %>
-        <a href="/dashboard">Моят профил</a>
+        <a href="/dashboard"><%= t('nav.profile') %></a>
         <form method="post" action="/logout" class="inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit" class="link-btn">Изход</button>
+          <button type="submit" class="link-btn"><%= t('nav.logout') %></button>
         </form>
       <% } else { %>
-        <a href="/login">Вход</a>
-        <a href="/register" class="btn-small btn">Регистрация</a>
+        <a href="/login"><%= t('nav.login') %></a>
+        <a href="/register" class="btn-small btn"><%= t('nav.register') %></a>
       <% } %>
     </nav>
   </header>
