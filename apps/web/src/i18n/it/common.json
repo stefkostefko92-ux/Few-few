@@ -268,7 +268,12 @@
   },
   "footer": {
     "attribution": "Created and Designed by Carbon Stealth VCC",
-    "notGambling": "Gioco sociale — non è gioco d'azzardo con denaro reale."
+    "notGambling": "Gioco sociale — non è gioco d'azzardo con denaro reale.",
+    "legal": "Legale",
+    "privacy": "Privacy",
+    "terms": "Termini",
+    "cookies": "Cookie",
+    "responsible": "Gioco responsabile"
   },
   "cosmetics": {
     "title": "Personalizza",

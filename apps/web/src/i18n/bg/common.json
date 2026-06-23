@@ -268,7 +268,12 @@
   },
   "footer": {
     "attribution": "Created and Designed by Carbon Stealth VCC",
-    "notGambling": "Социална игра — не е хазарт за реални пари."
+    "notGambling": "Социална игра — не е хазарт за реални пари.",
+    "legal": "Правни",
+    "privacy": "Поверителност",
+    "terms": "Условия",
+    "cookies": "Бисквитки",
+    "responsible": "Отговорна игра"
   },
   "cosmetics": {
     "title": "Облик",
