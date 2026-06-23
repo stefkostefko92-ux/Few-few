@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ComponentType } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { isGameKey, type GameKey } from "@aso/shared";
@@ -9,26 +10,35 @@ import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
 import { ReclaimBanner } from "./ReclaimBanner";
 import { OutOfChips } from "./OutOfChips";
-import { ChessView } from "./chess/ChessView";
-import { SantaseView } from "./santase/SantaseView";
-import { BeloteView } from "./belote/BeloteView";
-import { SvaraView } from "./svara/SvaraView";
-import { KentView } from "./kent/KentView";
-import { BridgeView } from "./bridge/BridgeView";
-import { WarView } from "./war/WarView";
-import { RummyView } from "./rummy/RummyView";
-import { GoFishView } from "./gofish/GoFishView";
-import { DraughtsView } from "./draughts/DraughtsView";
-import { BackgammonView } from "./backgammon/BackgammonView";
-import { LudoView } from "./ludo/LudoView";
-import { BattleshipView } from "./battleship/BattleshipView";
-import { DiceView } from "./dice/DiceView";
-import { BingoView } from "./bingo/BingoView";
-import { WordsView } from "./words/WordsView";
-import { DominoView } from "./domino/DominoView";
-import { CueView } from "./cue-sports/CueView";
-import { MagnatView } from "./magnat/MagnatView";
-import { GenericGameView } from "./generic/GenericGameView";
+
+// Game views pull in heavy WebGL/3D scene code (three.js). Lazy-load them so the
+// lobby/shell bundle stays small; each game's chunk loads only when entered.
+type ViewProps = { title: string };
+const titled = (p: Promise<Record<string, ComponentType<ViewProps>>>, name: string) =>
+  lazy(() => p.then((m) => ({ default: m[name]! })));
+
+const ChessView = titled(import("./chess/ChessView"), "ChessView");
+const SantaseView = titled(import("./santase/SantaseView"), "SantaseView");
+const BeloteView = titled(import("./belote/BeloteView"), "BeloteView");
+const SvaraView = titled(import("./svara/SvaraView"), "SvaraView");
+const KentView = titled(import("./kent/KentView"), "KentView");
+const BridgeView = titled(import("./bridge/BridgeView"), "BridgeView");
+const WarView = titled(import("./war/WarView"), "WarView");
+const RummyView = titled(import("./rummy/RummyView"), "RummyView");
+const GoFishView = titled(import("./gofish/GoFishView"), "GoFishView");
+const DraughtsView = titled(import("./draughts/DraughtsView"), "DraughtsView");
+const BackgammonView = titled(import("./backgammon/BackgammonView"), "BackgammonView");
+const LudoView = titled(import("./ludo/LudoView"), "LudoView");
+const BattleshipView = titled(import("./battleship/BattleshipView"), "BattleshipView");
+const DiceView = titled(import("./dice/DiceView"), "DiceView");
+const BingoView = titled(import("./bingo/BingoView"), "BingoView");
+const WordsView = titled(import("./words/WordsView"), "WordsView");
+const DominoView = titled(import("./domino/DominoView"), "DominoView");
+const MagnatView = titled(import("./magnat/MagnatView"), "MagnatView");
+const GenericGameView = lazy(() =>
+  import("./generic/GenericGameView").then((m) => ({ default: m.GenericGameView })),
+);
+const CueView = lazy(() => import("./cue-sports/CueView").then((m) => ({ default: m.CueView })));
 
 type Tone = "warm" | "midnight" | "cool" | "default";
 
@@ -131,7 +141,15 @@ export function GameView() {
 
   return (
     <CinematicStage tone={TONE[key] ?? "default"}>
-      {renderGame(key, meta.title)}
+      <Suspense
+        fallback={
+          <p className="py-16 text-center text-ink-muted" aria-live="polite">
+            {t("common.loading")}
+          </p>
+        }
+      >
+        {renderGame(key, meta.title)}
+      </Suspense>
       <MatchStatus />
       <ReclaimBanner />
       <ChatDock />
