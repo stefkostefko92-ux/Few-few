@@ -33,7 +33,7 @@ export function DumpReportForm() {
   return (
     <form action={action} className="max-w-2xl space-y-4">
       {state.error && (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.error}
         </div>
       )}

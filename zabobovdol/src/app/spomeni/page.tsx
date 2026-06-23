@@ -46,7 +46,7 @@ export default async function MemoriesPage() {
                 {m.period && <div className="badge">{m.period}</div>}
                 <h3 className="mt-2 text-lg font-semibold text-slate-900">{m.title}</h3>
                 <p className="mt-1 text-sm text-slate-600">{plainText(m.content, 130)}</p>
-                {m.author && <div className="mt-2 text-xs text-slate-400">— {m.author}</div>}
+                {m.author && <div className="mt-2 text-xs text-slate-600">— {m.author}</div>}
               </Link>
             ))}
           </div>

@@ -287,7 +287,7 @@ export default async function AdminDashboard({
                       }).format(a.createdAt)}
                     </td>
                     <td className="p-3 text-slate-700">{a.summary}</td>
-                    <td className="p-3 text-right text-slate-400">{a.userEmail}</td>
+                    <td className="p-3 text-right text-slate-600">{a.userEmail}</td>
                   </tr>
                 ))
               )}

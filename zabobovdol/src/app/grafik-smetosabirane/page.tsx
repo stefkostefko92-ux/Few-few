@@ -45,7 +45,7 @@ export default async function WasteSchedulePage() {
             </p>
           )}
           <p className="mt-4 flex items-start gap-2 text-sm text-slate-500">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-600" aria-hidden />
             <span>Изнасяйте кофите вечерта преди деня на извозване или рано сутринта.</span>
           </p>
         </section>

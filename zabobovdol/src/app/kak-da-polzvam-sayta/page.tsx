@@ -106,7 +106,7 @@ export default function HowToUsePage() {
                 <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-100 text-brand-700">
                   <s.icon className="h-6 w-6" aria-hidden />
                 </span>
-                <span className="mt-2 text-sm font-bold text-slate-400">{i + 1}</span>
+                <span className="mt-2 text-sm font-bold text-slate-600">{i + 1}</span>
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-900">{s.title}</h2>

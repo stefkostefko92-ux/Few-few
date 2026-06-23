@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SITE } from "@/lib/site";
 
@@ -16,6 +16,7 @@ export function IntroSplash() {
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [visitorNo, setVisitorNo] = useState<number | null>(null);
+  const skipRef = useRef<HTMLButtonElement>(null);
 
   const seconds = SITE.intro.seconds;
 
@@ -77,6 +78,24 @@ export function IntroSplash() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Достъпност: при поява фокусираме бутона „Прескочи" и позволяваме затваряне
+  // с клавиша Escape (за хора, които ползват клавиатура).
+  useEffect(() => {
+    if (!visible) return;
+    skipRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setLeaving(true);
+        setTimeout(() => {
+          setVisible(false);
+          document.body.style.overflow = "";
+        }, 350);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [visible]);
+
   if (isAdmin || !visible || !SITE.intro.enabled) return null;
 
   const skip = () => {
@@ -90,6 +109,7 @@ export function IntroSplash() {
   return (
     <div
       role="dialog"
+      aria-modal="true"
       aria-label="Добре дошли"
       className={
         "no-print fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-b from-brand-800 to-brand-900 px-6 text-center text-white transition-opacity duration-500 " +
@@ -104,9 +124,11 @@ export function IntroSplash() {
         height={216}
         className="splash-crest h-36 w-auto rounded-2xl bg-white p-3 shadow-2xl sm:h-44"
       />
-      <h1 className="splash-text mt-7 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
+      {/* Не е <h1> нарочно: това е временен надпис, а истинският <h1> е на
+          страницата отдолу — иначе на началната страница биха станали два. */}
+      <p className="splash-text mt-7 max-w-2xl text-4xl font-extrabold leading-tight sm:text-5xl">
         {SITE.intro.headline}
-      </h1>
+      </p>
       <p className="splash-text mt-3 text-base text-brand-100">
         {SITE.name} · {SITE.geo.city}
       </p>
@@ -130,6 +152,7 @@ export function IntroSplash() {
       </div>
 
       <button
+        ref={skipRef}
         type="button"
         onClick={skip}
         className="mt-6 rounded-full border border-white/30 px-4 py-1.5 text-sm font-medium text-white/90 transition hover:bg-white/10"

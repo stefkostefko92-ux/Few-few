@@ -86,7 +86,7 @@ export default function PosterPage() {
           )}
         </div>
 
-        <p className="mt-6 text-xs text-slate-400">
+        <p className="mt-6 text-xs text-slate-600">
           Независим граждански проект в полза на жителите на {SITE.geo.city}.
         </p>
       </div>

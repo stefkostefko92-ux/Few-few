@@ -37,7 +37,7 @@ export default function ContactsPage() {
         <div className="card space-y-4">
           {SITE.contact.email && (
             <div>
-              <div className="text-xs uppercase text-slate-400">Имейл</div>
+              <div className="text-xs uppercase text-slate-600">Имейл</div>
               <a
                 href={`mailto:${SITE.contact.email}`}
                 className="text-lg font-semibold text-brand-700"
@@ -48,7 +48,7 @@ export default function ContactsPage() {
           )}
           {SITE.contact.phone && (
             <div>
-              <div className="text-xs uppercase text-slate-400">Телефон</div>
+              <div className="text-xs uppercase text-slate-600">Телефон</div>
               <a
                 href={`tel:${SITE.contact.phone}`}
                 className="text-lg font-semibold text-brand-700"
@@ -58,7 +58,7 @@ export default function ContactsPage() {
             </div>
           )}
           <div>
-            <div className="text-xs uppercase text-slate-400">Населено място</div>
+            <div className="text-xs uppercase text-slate-600">Населено място</div>
             <div className="text-slate-700">
               {SITE.geo.city}, {SITE.geo.region}, {SITE.geo.country}
             </div>

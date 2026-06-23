@@ -96,7 +96,7 @@ export default async function UslugiPage({
                     </span>
                   )}
                 </div>
-                <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">
+                <div className="mt-1 text-xs uppercase tracking-wide text-slate-600">
                   {labelFor(SERVICE_CATEGORY_LABELS, s.category)}
                 </div>
                 {s.address && (

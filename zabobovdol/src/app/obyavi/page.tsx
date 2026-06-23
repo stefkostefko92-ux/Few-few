@@ -82,7 +82,7 @@ export default async function ListingsPage({
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {listings.map((l) => (
               <Link key={l.id} href={`/obyavi/${l.slug}`} className="card">
-                <div className="text-xs uppercase tracking-wide text-slate-400">
+                <div className="text-xs uppercase tracking-wide text-slate-600">
                   {labelFor(LISTING_TYPE_LABELS, l.type)}
                 </div>
                 <h3 className="mt-1 text-lg font-semibold text-slate-900">
