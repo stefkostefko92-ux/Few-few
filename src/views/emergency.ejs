@@ -96,6 +96,26 @@
         </section>
 
         <section class="comm-sec">
+          <h3>Къде боли? Докоснете върху тялото</h3>
+          <div class="bodymap">
+            <svg viewBox="0 0 200 380" role="group" aria-label="Карта на тялото">
+              <rect class="bm-neck" x="90" y="62" width="20" height="22" rx="6"/>
+              <circle class="bm" cx="100" cy="38" r="30" data-phrase="Боли ме главата." role="button" tabindex="0" aria-label="Глава"/>
+              <rect class="bm" x="60" y="80" width="80" height="72" rx="18" data-phrase="Боли ме в гърдите." role="button" tabindex="0" aria-label="Гърди"/>
+              <rect class="bm" x="64" y="152" width="72" height="66" rx="16" data-phrase="Боли ме коремът." role="button" tabindex="0" aria-label="Корем"/>
+              <rect class="bm" x="34" y="86" width="26" height="112" rx="13" data-phrase="Боли ме ръката." role="button" tabindex="0" aria-label="Лява ръка"/>
+              <rect class="bm" x="140" y="86" width="26" height="112" rx="13" data-phrase="Боли ме ръката." role="button" tabindex="0" aria-label="Дясна ръка"/>
+              <rect class="bm" x="70" y="220" width="28" height="134" rx="14" data-phrase="Боли ме кракът." role="button" tabindex="0" aria-label="Ляв крак"/>
+              <rect class="bm" x="102" y="220" width="28" height="134" rx="14" data-phrase="Боли ме кракът." role="button" tabindex="0" aria-label="Десен крак"/>
+            </svg>
+          </div>
+          <div class="comm-cards">
+            <button type="button" class="cc" data-phrase="Боли ме гърбът.">Гръб</button>
+            <button type="button" class="cc" data-phrase="Боли ме навсякъде.">Навсякъде</button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
           <h3>Колко силна е болката? (0–10)</h3>
           <div class="pain-scale">
             <% for (let n = 0; n <= 10; n++) { %>

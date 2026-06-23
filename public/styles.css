@@ -1479,3 +1479,47 @@ body.comm-open {
     opacity: 0.3;
   }
 }
+
+/* ---------- Карта на тялото (къде боли) ---------- */
+.bodymap {
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.6rem;
+}
+.bodymap svg {
+  width: 100%;
+  max-width: 210px;
+  height: auto;
+}
+.bm-neck {
+  fill: #cfe0e8;
+}
+.bm {
+  fill: #cfe0e8;
+  stroke: #9fc3d2;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: fill 0.12s ease;
+}
+.bm:hover,
+.bm:focus {
+  fill: var(--brand);
+  outline: none;
+}
+.bm:active {
+  fill: var(--brand-dark);
+}
+
+/* ---------- Индикатор за офлайн режим ---------- */
+.offline-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  background: #8a5a00;
+  color: #fff;
+  text-align: center;
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+}

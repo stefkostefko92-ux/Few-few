@@ -1,5 +1,36 @@
 // Малки помощници без inline скриптове (за да работи строгата Content-Security-Policy).
 document.addEventListener('DOMContentLoaded', () => {
+  // Офлайн достъп: регистрираме service worker и показваме индикатор за връзка.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* офлайн поддръжката е по избор */
+    });
+  }
+  const offlineBanner = document.createElement('div');
+  offlineBanner.className = 'offline-banner';
+  offlineBanner.setAttribute('role', 'status');
+  offlineBanner.textContent = 'Офлайн режим — показва се запазено копие.';
+  offlineBanner.hidden = true;
+  document.body.appendChild(offlineBanner);
+  const syncOnline = () => {
+    offlineBanner.hidden = navigator.onLine;
+  };
+  window.addEventListener('online', syncOnline);
+  window.addEventListener('offline', syncOnline);
+  syncOnline();
+
+  // При изход изчистваме личния кеш (SOS/табло/спешен изглед) за поверителност.
+  document.querySelectorAll('form[action="/logout"]').forEach((f) =>
+    f.addEventListener('submit', () => {
+      try {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller)
+          navigator.serviceWorker.controller.postMessage({ type: 'clear-private' });
+      } catch {
+        /* без service worker */
+      }
+    })
+  );
+
   // Потвърждение преди рискови действия: <form data-confirm="текст">.
   document.querySelectorAll('[data-confirm]').forEach((form) => {
     form.addEventListener('submit', (e) => {
@@ -131,11 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     commOverlay.querySelectorAll('[data-phrase]').forEach((b) => {
-      b.addEventListener('click', () => {
+      const fire = () => {
         const t = b.getAttribute('data-phrase');
         show(t);
         speak(t);
         buzz(15);
+      };
+      b.addEventListener('click', fire);
+      b.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          fire();
+        }
       });
     });
 

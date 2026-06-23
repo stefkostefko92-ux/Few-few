@@ -53,6 +53,7 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'"],
         fontSrc: ["'self'"],
         scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
+        workerSrc: ["'self'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
         frameAncestors: ["'none'"],
