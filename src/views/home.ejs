@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: 'MedQR — спешен профил с QR код', user }) %>
+<%- include('partials/head', { title: 'MedQR — ' + t('og.image_alt').replace('MedQR — ', ''), user }) %>
 
 <section class="hero">
   <span class="hero-badge"><%- include('partials/icon', { name: 'shield-check' }) %> <%= t('home.badge') %></span>
@@ -11,87 +11,54 @@
 </section>
 
 <section class="steps">
-  <h2 class="section-title">Как работи</h2>
+  <h2 class="section-title"><%= t('home.how') %></h2>
   <ol class="steps-list">
-    <li><span class="step-n">1</span> Попълвате медицинския си профил за минути.</li>
-    <li><span class="step-n">2</span> Получавате личен QR код — карта за портфейл, стикер или гривна.</li>
-    <li><span class="step-n">3</span> При спешност всеки телефон сканира кода и показва информацията.</li>
+    <li><span class="step-n">1</span> <%= t('home.step1') %></li>
+    <li><span class="step-n">2</span> <%= t('home.step2') %></li>
+    <li><span class="step-n">3</span> <%= t('home.step3') %></li>
   </ol>
 </section>
 
 <section class="features">
   <div class="feature">
     <span class="feature-icon"><%- include('partials/icon', { name: 'droplet' }) %></span>
-    <h2>Критична информация</h2>
-    <p>Кръвна група, алергии към лекарства, хронични заболявания и текущи медикаменти.</p>
+    <h2><%= t('home.f1_h') %></h2>
+    <p><%= t('home.f1_p') %></p>
   </div>
   <div class="feature">
     <span class="feature-icon"><%- include('partials/icon', { name: 'ear' }) %></span>
-    <h2>Комуникационни нужди</h2>
-    <p>Профилът ясно отбелязва слухови затруднения и предпочитан начин за комуникация —
-      така спешният екип знае да общува писмено или с жестов език.</p>
+    <h2><%= t('home.f2_h') %></h2>
+    <p><%= t('home.f2_p') %></p>
   </div>
   <div class="feature">
     <span class="feature-icon"><%- include('partials/icon', { name: 'shield-check' }) %></span>
-    <h2>Максимална защита</h2>
-    <p>Данните се криптират, връзката е защитена, достъпът се записва. Незадължителен PIN,
-      двуфакторна автентикация и обезсилване на изгубен код.</p>
+    <h2><%= t('home.f3_h') %></h2>
+    <p><%= t('home.f3_p') %></p>
   </div>
   <div class="feature">
     <span class="feature-icon"><%- include('partials/icon', { name: 'card' }) %></span>
-    <h2>Носи го навсякъде</h2>
-    <p>Отпечатайте карта за портфейл, стикер за телефона или гривна с QR кода.</p>
+    <h2><%= t('home.f4_h') %></h2>
+    <p><%= t('home.f4_p') %></p>
   </div>
 </section>
 
 <section class="who">
-  <h2 class="section-title">За кого е полезно</h2>
-  <p class="who-list">
-    Хора със слухови затруднения · диабет, епилепсия, сърдечни и алергични състояния ·
-    възрастни хора · мотористи, спортисти и туристи · родители, които правят профил на дете.
-  </p>
+  <h2 class="section-title"><%= t('home.who_h') %></h2>
+  <p class="who-list"><%= t('home.who_p') %></p>
   <div class="cta-row">
-    <a class="btn" href="/register">Започни сега</a>
+    <a class="btn" href="/register"><%= t('home.start') %></a>
   </div>
 </section>
 
 <section class="faq">
-  <h2 class="section-title">Често задавани въпроси</h2>
+  <h2 class="section-title"><%= t('home.faq_h') %></h2>
   <div class="faq-list">
-    <details>
-      <summary>Какво е MedQR?</summary>
-      <p>MedQR е защитен спешен медицински профил, който носите със себе си като QR код.
-        При злополука спешен екип сканира кода и веднага вижда кръвната ви група, алергии
-        към лекарства, хронични заболявания, медикаменти и контакт на близък.</p>
-    </details>
-    <details>
-      <summary>Как работи QR кодът при спешност?</summary>
-      <p>QR кодът сочи към защитена страница с вашата спешна информация. Всеки телефон може
-        да го сканира — не е нужно специално приложение. Профилът се показва само за четене,
-        а всеки достъп се записва.</p>
-    </details>
-    <details>
-      <summary>Сигурни ли са медицинските ми данни?</summary>
-      <p>Да. Чувствителните данни се криптират в покой (AES-256-GCM), връзката е по HTTPS,
-        достъпът е чрез дълъг непредвидим токен, по избор защитен с PIN. Поддържа се и
-        двуфакторна автентикация. Можете да обезсилите изгубен код с един бутон.</p>
-    </details>
-    <details>
-      <summary>Кой може да види данните ми?</summary>
-      <p>Само човек, който сканира вашия QR код (например спешен екип). За по-чувствителни
-        профили можете да добавите PIN. Не продаваме данни и не ги споделяме с трети страни.</p>
-    </details>
-    <details>
-      <summary>Спазва ли MedQR GDPR?</summary>
-      <p>Да. Обработката се основава на вашето изрично съгласие, а в спешност — на жизненоважни
-        интереси (чл. 9 GDPR). Можете да изтеглите данните си и да изтриете профила си по всяко
-        време. Хостингът е в ЕС (Hetzner, Германия).</p>
-    </details>
-    <details>
-      <summary>MedQR медицинско изделие ли е?</summary>
-      <p>Не. MedQR е информационна услуга и не замества професионална медицинска оценка,
-        диагноза или лечение.</p>
-    </details>
+    <% for (let i = 1; i <= 6; i++) { %>
+      <details>
+        <summary><%= t('faq.q' + i) %></summary>
+        <p><%= t('faq.a' + i) %></p>
+      </details>
+    <% } %>
   </div>
 </section>
 
@@ -103,7 +70,7 @@
   "applicationCategory": "HealthApplication",
   "operatingSystem": "Web",
   "url": "<%= site.base %>/",
-  "inLanguage": "bg",
+  "inLanguage": "<%= lang %>",
   "description": "<%= meta.description %>",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
   "publisher": { "@type": "Organization", "name": "<%= company.name %>", "url": "<%= company.url %>" }
@@ -113,19 +80,15 @@
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
+  "inLanguage": "<%= lang %>",
   "mainEntity": [
-    { "@type": "Question", "name": "Какво е MedQR?",
-      "acceptedAnswer": { "@type": "Answer", "text": "MedQR е защитен спешен медицински профил, който носите със себе си като QR код. При злополука спешен екип сканира кода и веднага вижда кръвната ви група, алергии към лекарства, хронични заболявания, медикаменти и контакт на близък." } },
-    { "@type": "Question", "name": "Как работи QR кодът при спешност?",
-      "acceptedAnswer": { "@type": "Answer", "text": "QR кодът сочи към защитена страница с вашата спешна информация. Всеки телефон може да го сканира — не е нужно специално приложение. Профилът се показва само за четене, а всеки достъп се записва." } },
-    { "@type": "Question", "name": "Сигурни ли са медицинските ми данни?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Да. Чувствителните данни се криптират в покой (AES-256-GCM), връзката е по HTTPS, достъпът е чрез дълъг непредвидим токен, по избор защитен с PIN. Поддържа се двуфакторна автентикация и обезсилване на изгубен код." } },
-    { "@type": "Question", "name": "Кой може да види данните ми?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Само човек, който сканира вашия QR код, например спешен екип. За по-чувствителни профили можете да добавите PIN. Не продаваме данни и не ги споделяме с трети страни." } },
-    { "@type": "Question", "name": "Спазва ли MedQR GDPR?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Да. Обработката се основава на изрично съгласие, а в спешност — на жизненоважни интереси (чл. 9 GDPR). Можете да изтеглите данните си и да изтриете профила си по всяко време. Хостингът е в ЕС (Hetzner, Германия)." } },
-    { "@type": "Question", "name": "MedQR медицинско изделие ли е?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Не. MedQR е информационна услуга и не замества професионална медицинска оценка, диагноза или лечение." } }
+    <% for (let i = 1; i <= 6; i++) { %>
+    {
+      "@type": "Question",
+      "name": <%- JSON.stringify(t('faq.q' + i)) %>,
+      "acceptedAnswer": { "@type": "Answer", "text": <%- JSON.stringify(t('faq.a' + i)) %> }
+    }<%= i < 6 ? ',' : '' %>
+    <% } %>
   ]
 }
 </script>

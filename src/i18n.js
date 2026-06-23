@@ -29,6 +29,79 @@ const DICT = {
   },
   'home.cta_register': { bg: 'Създай профил безплатно', en: 'Create a free profile' },
   'home.cta_login': { bg: 'Вход', en: 'Log in' },
+  'home.how': { bg: 'Как работи', en: 'How it works' },
+  'home.step1': {
+    bg: 'Попълвате медицинския си профил за минути.',
+    en: 'Fill in your medical profile in minutes.',
+  },
+  'home.step2': {
+    bg: 'Получавате личен QR код — карта за портфейл, стикер или гривна.',
+    en: 'Get a personal QR code — wallet card, sticker or bracelet.',
+  },
+  'home.step3': {
+    bg: 'При спешност всеки телефон сканира кода и показва информацията.',
+    en: 'In an emergency any phone scans the code and shows the information.',
+  },
+  'home.f1_h': { bg: 'Критична информация', en: 'Critical information' },
+  'home.f1_p': {
+    bg: 'Кръвна група, алергии към лекарства, хронични заболявания и текущи медикаменти.',
+    en: 'Blood type, drug allergies, chronic conditions and current medications.',
+  },
+  'home.f2_h': { bg: 'Комуникационни нужди', en: 'Communication needs' },
+  'home.f2_p': {
+    bg: 'Профилът ясно отбелязва слухови затруднения и предпочитан начин за комуникация — така спешният екип знае да общува писмено или с жестов език.',
+    en: 'The profile clearly flags hearing difficulties and the preferred way to communicate — so responders know to use writing or sign language.',
+  },
+  'home.f3_h': { bg: 'Максимална защита', en: 'Maximum protection' },
+  'home.f3_p': {
+    bg: 'Данните се криптират, връзката е защитена, достъпът се записва. Незадължителен PIN, двуфакторна автентикация и обезсилване на изгубен код.',
+    en: 'Data is encrypted, the connection is secure, access is logged. Optional PIN, two-factor authentication and invalidation of a lost code.',
+  },
+  'home.f4_h': { bg: 'Носи го навсякъде', en: 'Carry it anywhere' },
+  'home.f4_p': {
+    bg: 'Отпечатайте карта за портфейл, стикер за телефона или гривна с QR кода.',
+    en: 'Print a wallet card, a phone sticker or a bracelet with the QR code.',
+  },
+  'home.who_h': { bg: 'За кого е полезно', en: 'Who it helps' },
+  'home.who_p': {
+    bg: 'Хора със слухови затруднения · диабет, епилепсия, сърдечни и алергични състояния · възрастни хора · мотористи, спортисти и туристи · родители, които правят профил на дете.',
+    en: 'People with hearing difficulties · diabetes, epilepsy, heart and allergic conditions · older adults · riders, athletes and travellers · parents creating a profile for a child.',
+  },
+  'home.start': { bg: 'Започни сега', en: 'Get started' },
+  'home.faq_h': { bg: 'Често задавани въпроси', en: 'Frequently asked questions' },
+  'faq.q1': { bg: 'Какво е MedQR?', en: 'What is MedQR?' },
+  'faq.a1': {
+    bg: 'MedQR е защитен спешен медицински профил, който носите със себе си като QR код. При злополука спешен екип сканира кода и веднага вижда кръвната ви група, алергии към лекарства, хронични заболявания, медикаменти и контакт на близък.',
+    en: 'MedQR is a secure emergency medical profile you carry as a QR code. In an emergency, responders scan it and immediately see your blood type, drug allergies, chronic conditions, medications and a next-of-kin contact.',
+  },
+  'faq.q2': {
+    bg: 'Как работи QR кодът при спешност?',
+    en: 'How does the QR code work in an emergency?',
+  },
+  'faq.a2': {
+    bg: 'QR кодът сочи към защитена страница с вашата спешна информация. Всеки телефон може да го сканира — не е нужно специално приложение. Профилът се показва само за четене, а всеки достъп се записва.',
+    en: 'The QR code points to a secure page with your emergency information. Any phone can scan it — no special app needed. The profile is shown read-only and every access is logged.',
+  },
+  'faq.q3': { bg: 'Сигурни ли са медицинските ми данни?', en: 'Is my medical data secure?' },
+  'faq.a3': {
+    bg: 'Да. Чувствителните данни се криптират в покой (AES-256-GCM), връзката е по HTTPS, достъпът е чрез дълъг непредвидим токен, по избор защитен с PIN. Поддържа се и двуфакторна автентикация. Можете да обезсилите изгубен код с един бутон.',
+    en: 'Yes. Sensitive data is encrypted at rest (AES-256-GCM), the connection is over HTTPS, access is via a long unpredictable token, optionally protected by a PIN. Two-factor authentication is supported. You can invalidate a lost code with one button.',
+  },
+  'faq.q4': { bg: 'Кой може да види данните ми?', en: 'Who can see my data?' },
+  'faq.a4': {
+    bg: 'Само човек, който сканира вашия QR код (например спешен екип). За по-чувствителни профили можете да добавите PIN. Не продаваме данни и не ги споделяме с трети страни.',
+    en: 'Only someone who scans your QR code (e.g. a responder). For more sensitive profiles you can add a PIN. We do not sell data or share it with third parties.',
+  },
+  'faq.q5': { bg: 'Спазва ли MedQR GDPR?', en: 'Is MedQR GDPR-compliant?' },
+  'faq.a5': {
+    bg: 'Да. Обработката се основава на вашето изрично съгласие, а в спешност — на жизненоважни интереси (чл. 9 GDPR). Можете да изтеглите данните си и да изтриете профила си по всяко време. Хостингът е в ЕС (Hetzner, Германия).',
+    en: 'Yes. Processing is based on your explicit consent and, in an emergency, on vital interests (GDPR Art. 9). You can download your data and delete your account at any time. Hosting is in the EU (Hetzner, Germany).',
+  },
+  'faq.q6': { bg: 'MedQR медицинско изделие ли е?', en: 'Is MedQR a medical device?' },
+  'faq.a6': {
+    bg: 'Не. MedQR е информационна услуга и не замества професионална медицинска оценка, диагноза или лечение.',
+    en: 'No. MedQR is an informational service and does not replace professional medical assessment, diagnosis or treatment.',
+  },
 
   // Спешен изглед
   'emerg.banner': { bg: 'СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ', en: 'EMERGENCY MEDICAL INFORMATION' },
