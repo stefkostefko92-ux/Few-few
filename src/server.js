@@ -27,6 +27,7 @@ import {
   securityTxt,
 } from './seo.js';
 import { LANGS, pickLang, makeT, clinicalLabel } from './i18n.js';
+import { ALLERGIES, CONDITIONS, COUNTRIES, medLabels } from './medical.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === 'production';
@@ -115,6 +116,12 @@ app.use((req, res, next) => {
   res.locals.lang = lang;
   res.locals.t = makeT(lang);
   res.locals.clin = (value) => clinicalLabel(value, lang);
+  res.locals.ALLERGIES = ALLERGIES;
+  res.locals.CONDITIONS = CONDITIONS;
+  res.locals.COUNTRIES = COUNTRIES;
+  // CSV от ключове → масив преведени етикети (структурирани алергии/състояния).
+  res.locals.allergyLabels = (csv) => medLabels(ALLERGIES, csv, lang);
+  res.locals.conditionLabels = (csv) => medLabels(CONDITIONS, csv, lang);
   res.locals.company = COMPANY;
   res.locals.user = req.user;
   res.locals.legal = LEGAL;

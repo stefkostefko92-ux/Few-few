@@ -453,6 +453,21 @@ const DICT = {
   'edit.dont_know': { bg: 'Не знам', en: 'Unknown' },
   'edit.allergies': { bg: 'Алергии към лекарства', en: 'Drug allergies' },
   'edit.allergies_ph': { bg: 'напр. пеницилин, аспирин', en: 'e.g. penicillin, aspirin' },
+  'edit.allergies_common': { bg: 'Чести алергии (изберете)', en: 'Common allergies (select)' },
+  'edit.allergies_other': {
+    bg: 'Други алергии (свободен текст)',
+    en: 'Other allergies (free text)',
+  },
+  'edit.conditions_common': { bg: 'Чести състояния (изберете)', en: 'Common conditions (select)' },
+  'edit.conditions_other': {
+    bg: 'Други състояния (свободен текст)',
+    en: 'Other conditions (free text)',
+  },
+  'edit.meds_hint': {
+    bg: 'Съвет: пишете международни/генерични имена, за да се разчитат и в чужбина.',
+    en: 'Tip: use international/generic names so responders abroad can read them.',
+  },
+  'edit.country': { bg: 'Държава на номера', en: 'Phone country' },
   'edit.conditions': { bg: 'Хронични заболявания / състояния', en: 'Chronic conditions' },
   'edit.conditions_ph': {
     bg: 'напр. диабет тип 1, епилепсия, астма',

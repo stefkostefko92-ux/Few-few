@@ -1561,3 +1561,43 @@ body.comm-open {
   font-weight: 700;
   margin-bottom: 1rem;
 }
+
+/* ---------- Структуриран избор (алергии/състояния) ---------- */
+.field {
+  margin-bottom: 0.9rem;
+}
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  background: #fff;
+}
+.chip input {
+  accent-color: var(--brand);
+  margin: 0;
+}
+.chip:has(input:checked) {
+  border-color: var(--brand);
+  background: #eef6f9;
+  color: var(--brand-dark);
+  font-weight: 600;
+}
+.hint {
+  display: block;
+  margin-top: 0.3rem;
+}

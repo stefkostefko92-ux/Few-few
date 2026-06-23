@@ -19,8 +19,10 @@
 
     <dl class="sos-info">
       <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type %></dd><% } %>
-      <% if (profile.allergies) { %><dt><%= t('emerg.allergies') %></dt><dd><%= profile.allergies %></dd><% } %>
-      <% if (profile.chronic_conditions) { %><dt><%= t('emerg.conditions') %></dt><dd><%= profile.chronic_conditions %></dd><% } %>
+      <% const sosAllergy = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
+      <% if (sosAllergy) { %><dt><%= t('emerg.allergies') %></dt><dd><%= sosAllergy %></dd><% } %>
+      <% const sosCond = [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · '); %>
+      <% if (sosCond) { %><dt><%= t('emerg.conditions') %></dt><dd><%= sosCond %></dd><% } %>
       <% if (profile.current_medications) { %><dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications %></dd><% } %>
     </dl>
     <p class="sos-loc" id="sos-loc"></p>

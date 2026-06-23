@@ -109,6 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Държавен код за спешния телефон: изборът на държава поставя кода пред номера.
+  const ccSelect = document.querySelector('select[data-country-for]');
+  if (ccSelect) {
+    const phone = document.getElementById(ccSelect.getAttribute('data-country-for'));
+    ccSelect.addEventListener('change', () => {
+      if (!phone) return;
+      const opt = ccSelect.selectedOptions[0];
+      const dial = opt ? opt.getAttribute('data-dial') : '';
+      const rest = phone.value.replace(/^\s*\+\d{1,4}\s*/, '').trim();
+      phone.value = (dial ? dial + ' ' : '') + rest;
+      phone.focus();
+    });
+  }
+
   // Споделяне на местоположението с близкия (от спешния изглед).
   const locateBtn = document.querySelector('[data-locate]');
   if (locateBtn && 'geolocation' in navigator) {

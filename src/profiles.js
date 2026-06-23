@@ -9,7 +9,9 @@ export const ENCRYPTED_FIELDS = [
   'date_of_birth',
   'blood_type',
   'allergies',
+  'allergy_keys',
   'chronic_conditions',
+  'condition_keys',
   'current_medications',
   'hearing_status',
   'communication_pref',
@@ -20,6 +22,7 @@ export const ENCRYPTED_FIELDS = [
   'emergency_contact_name',
   'emergency_contact_phone',
   'emergency_contact_relation',
+  'emergency_contact_country',
   'emergency_contact_email',
   'additional_notes',
 ];

@@ -39,14 +39,40 @@
         <% }) %>
       </select>
     </label>
-    <label><%= t('edit.allergies') %>
+    <% const aset = new Set((profile.allergy_keys || '').split(',').map((s) => s.trim())); %>
+    <div class="field">
+      <span class="field-label"><%= t('edit.allergies_common') %></span>
+      <div class="chips">
+        <% ALLERGIES.forEach(a => { %>
+          <label class="chip">
+            <input type="checkbox" name="allergy_keys" value="<%= a.key %>" <%= aset.has(a.key) ? 'checked' : '' %>>
+            <span><%= lang === 'en' ? a.en : a.bg %></span>
+          </label>
+        <% }) %>
+      </div>
+    </div>
+    <label><%= t('edit.allergies_other') %>
       <textarea name="allergies" rows="2" placeholder="<%= t('edit.allergies_ph') %>"><%= profile.allergies || '' %></textarea>
     </label>
-    <label><%= t('edit.conditions') %>
+
+    <% const cset = new Set((profile.condition_keys || '').split(',').map((s) => s.trim())); %>
+    <div class="field">
+      <span class="field-label"><%= t('edit.conditions_common') %></span>
+      <div class="chips">
+        <% CONDITIONS.forEach(c => { %>
+          <label class="chip">
+            <input type="checkbox" name="condition_keys" value="<%= c.key %>" <%= cset.has(c.key) ? 'checked' : '' %>>
+            <span><%= lang === 'en' ? c.en : c.bg %></span>
+          </label>
+        <% }) %>
+      </div>
+    </div>
+    <label><%= t('edit.conditions_other') %>
       <textarea name="chronic_conditions" rows="2" placeholder="<%= t('edit.conditions_ph') %>"><%= profile.chronic_conditions || '' %></textarea>
     </label>
     <label><%= t('edit.meds') %>
       <textarea name="current_medications" rows="2" placeholder="<%= t('edit.meds_ph') %>"><%= profile.current_medications || '' %></textarea>
+      <span class="hint muted small"><%= t('edit.meds_hint') %></span>
     </label>
     <label><%= t('edit.notes') %>
       <textarea name="additional_notes" rows="2" placeholder="<%= t('edit.notes_ph') %>"><%= profile.additional_notes || '' %></textarea>
@@ -89,8 +115,15 @@
     <label><%= t('edit.contact_name') %>
       <input type="text" name="emergency_contact_name" value="<%= profile.emergency_contact_name || '' %>">
     </label>
+    <label><%= t('edit.country') %>
+      <select id="ec-country" name="emergency_contact_country" data-country-for="ec-phone">
+        <% COUNTRIES.forEach(c => { %>
+          <option value="<%= c.iso %>" data-dial="<%= c.dial %>" <%= (profile.emergency_contact_country || 'BG') === c.iso ? 'selected' : '' %>><%= (lang === 'en' ? c.en : c.bg) %> (<%= c.dial %>)</option>
+        <% }) %>
+      </select>
+    </label>
     <label><%= t('edit.contact_phone') %>
-      <input type="tel" name="emergency_contact_phone" value="<%= profile.emergency_contact_phone || '' %>" placeholder="+359...">
+      <input type="tel" id="ec-phone" name="emergency_contact_phone" value="<%= profile.emergency_contact_phone || '' %>" placeholder="+359...">
     </label>
     <label><%= t('edit.contact_relation') %>
       <input type="text" name="emergency_contact_relation" value="<%= profile.emergency_contact_relation || '' %>" placeholder="<%= t('edit.contact_relation_ph') %>">

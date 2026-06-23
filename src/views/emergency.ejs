@@ -133,12 +133,14 @@
     </div>
     <div class="ebox allergy">
       <span class="elabel"><%= t('emerg.allergies') %></span>
-      <span class="evalue"><%= profile.allergies || t('emerg.allergies_none') %></span>
+      <% const allergyAll = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
+      <span class="evalue"><%= allergyAll || t('emerg.allergies_none') %></span>
     </div>
   </div>
 
   <dl class="emergency-list">
-    <dt><%= t('emerg.conditions') %></dt><dd><%= profile.chronic_conditions || '—' %></dd>
+    <% const condAll = [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · '); %>
+    <dt><%= t('emerg.conditions') %></dt><dd><%= condAll || '—' %></dd>
     <dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications || '—' %></dd>
     <% if (profile.additional_notes) { %>
       <dt><%= t('emerg.notes') %></dt><dd><%= profile.additional_notes %></dd>

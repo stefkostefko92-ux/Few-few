@@ -49,7 +49,9 @@ db.exec(`
     date_of_birth            TEXT,
     blood_type               TEXT,
     allergies                TEXT,
+    allergy_keys             TEXT,
     chronic_conditions       TEXT,
+    condition_keys           TEXT,
     current_medications      TEXT,
     hearing_status           TEXT,
     communication_pref       TEXT,
@@ -60,6 +62,7 @@ db.exec(`
     emergency_contact_name   TEXT,
     emergency_contact_phone  TEXT,
     emergency_contact_relation TEXT,
+    emergency_contact_country TEXT,
     emergency_contact_email  TEXT,
     notify_on_scan           INTEGER NOT NULL DEFAULT 1,
     last_notified_at         TEXT,
@@ -149,6 +152,9 @@ ensureColumn('users', 'email_verified', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'can_speak', 'TEXT');
 ensureColumn('profiles', 'sign_language', 'TEXT');
 ensureColumn('profiles', 'interpreter_contact', 'TEXT');
+ensureColumn('profiles', 'allergy_keys', 'TEXT');
+ensureColumn('profiles', 'condition_keys', 'TEXT');
+ensureColumn('profiles', 'emergency_contact_country', 'TEXT');
 ensureColumn('profiles', 'emergency_contact_email', 'TEXT');
 ensureColumn('profiles', 'notify_on_scan', 'INTEGER NOT NULL DEFAULT 1');
 ensureColumn('profiles', 'last_notified_at', 'TEXT');
