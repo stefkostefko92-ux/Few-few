@@ -1427,7 +1427,6 @@ function ScrollSpeed() {
 // ═══════════════════════════════════════════════════
 // 7. LIVE WAVEFORM — Audio-reactive visualization from mic
 // ═══════════════════════════════════════════════════
-function LiveWaveform(){return null}
 
 // ═══════════════════════════════════════════════════
 // SHOCKWAVE — Expanding rings on click anywhere on hero
@@ -1885,7 +1884,10 @@ function Scene3D(){
     var formProgress=0; // 0=scattered, 1=formed
     var t=0;
 
+    var rafId;
     function loop(){
+      if(!mounted)return;            // stop after unmount — don't render a disposed context
+      if(document.hidden){rafId=requestAnimationFrame(loop);return;} // pause work in background tabs
       t+=.005;
 
       // Gradually form text (over 3 seconds after load)
@@ -1945,13 +1947,13 @@ function Scene3D(){
       cam.lookAt(0,0,0);
 
       renderer.render(scene,cam);
-      requestAnimationFrame(loop);
+      rafId=requestAnimationFrame(loop);
     }
     loop();
 
     function onR(){cam.aspect=el.clientWidth/el.clientHeight;cam.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight)}
     window.addEventListener("resize",onR);
-    cleanup=function(){window.removeEventListener("resize",onR);if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);renderer.dispose()};
+    cleanup=function(){cancelAnimationFrame(rafId);window.removeEventListener("resize",onR);if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);renderer.dispose()};
     });
     return function(){mounted=false;if(cleanup)cleanup()};
   },[]);
@@ -2293,8 +2295,8 @@ export default function App(){
       { delay: 2200, text: "\u2500".repeat(52), color: "#ccc" },
       { delay: 2400, text: "INITIALIZING SUBSYSTEMS...", color: "#f5f5f0" },
       { delay: 2600, text: "  [OK] THREE.JS 3D ENGINE", color: "#00ff88" },
-      { delay: 2750, text: "  [OK] WEB AUDIO SYNTHESIZER", color: "#00ff88" },
-      { delay: 2900, text: "  [OK] SPEECH SYNTHESIS CORE", color: "#00ff88" },
+      { delay: 2750, text: "  [OK] WEBGL RENDER PIPELINE", color: "#00ff88" },
+      { delay: 2900, text: "  [OK] CANVAS COMPOSITOR", color: "#00ff88" },
       { delay: 3050, text: "  [OK] REVERSE LAB / 3D PRINT PIPELINE", color: "#00ff88" },
       { delay: 3200, text: "  [OK] CANVAS PARTICLE ENGINE", color: "#00ff88" },
       { delay: 3350, text: "  [OK] GENERATIVE ART MODULE", color: "#00ff88" },
@@ -2389,7 +2391,9 @@ export default function App(){
     var exploded = false;
     var explodeTime = 0;
 
+    var bootRaf;
     function loop() {
+      if (!bootMounted) return;     // boot screen unmounted — stop rendering the disposed scene
       t += 0.008;
 
       // Rotation
@@ -2440,7 +2444,7 @@ export default function App(){
       pts.material.opacity = 0.3 + (pct / 100) * 0.4;
 
       renderer.render(scene, cam);
-      requestAnimationFrame(loop);
+      bootRaf = requestAnimationFrame(loop);
     }
     loop();
 
@@ -2457,7 +2461,7 @@ export default function App(){
 
     function onResize() { cam.aspect = el.clientWidth / el.clientHeight; cam.updateProjectionMatrix(); renderer.setSize(el.clientWidth, el.clientHeight); }
     window.addEventListener("resize", onResize);
-    bootCleanup = function() { window.removeEventListener("resize", onResize); clearInterval(observer); if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement); renderer.dispose(); };
+    bootCleanup = function() { cancelAnimationFrame(bootRaf); window.removeEventListener("resize", onResize); clearInterval(observer); if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement); renderer.dispose(); };
     });
     return function() { bootMounted = false; if (bootCleanup) bootCleanup(); };
   }, [loaded]);
