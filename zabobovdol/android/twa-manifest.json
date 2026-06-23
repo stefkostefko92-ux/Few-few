@@ -11,7 +11,7 @@
   "navigationColorDark": "#0f172a",
   "navigationDividerColor": "#212f8a",
   "navigationDividerColorDark": "#0f172a",
-  "backgroundColor": "#f8fafc",
+  "backgroundColor": "#1a2575",
   "enableNotifications": false,
   "startUrl": "/",
   "iconUrl": "https://zabobovdol.carbonstealth.eu/icon-512.png",
@@ -23,7 +23,32 @@
   },
   "appVersionName": "1.0.0",
   "appVersionCode": 1,
-  "shortcuts": [],
+  "shortcuts": [
+    {
+      "name": "Дежурна аптека",
+      "shortName": "Аптека",
+      "url": "/dezhurna-apteka",
+      "chosenIconUrl": "https://zabobovdol.carbonstealth.eu/icon-192.png"
+    },
+    {
+      "name": "Услуги и телефони",
+      "shortName": "Телефони",
+      "url": "/uslugi",
+      "chosenIconUrl": "https://zabobovdol.carbonstealth.eu/icon-192.png"
+    },
+    {
+      "name": "Как да… (ръководства)",
+      "shortName": "Как да…",
+      "url": "/kak-da",
+      "chosenIconUrl": "https://zabobovdol.carbonstealth.eu/icon-192.png"
+    },
+    {
+      "name": "Данъци и срокове",
+      "shortName": "Данъци",
+      "url": "/danaci-srokove",
+      "chosenIconUrl": "https://zabobovdol.carbonstealth.eu/icon-192.png"
+    }
+  ],
   "generatorApp": "zabobovdol",
   "webManifestUrl": "https://zabobovdol.carbonstealth.eu/manifest.webmanifest",
   "fallbackType": "customtabs",
