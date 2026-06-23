@@ -10,6 +10,7 @@ const DICT = {
   'nav.register': { bg: 'Регистрация', en: 'Sign up' },
   'nav.logout': { bg: 'Изход', en: 'Log out' },
   'common.back_home': { bg: 'Към началото', en: 'Back to home' },
+  'common.skip': { bg: 'Прескочи към съдържанието', en: 'Skip to content' },
   'lang.bg': { bg: 'БГ', en: 'BG' },
   'lang.en': { bg: 'EN', en: 'EN' },
   'lang.switch': { bg: 'Език', en: 'Language' },
