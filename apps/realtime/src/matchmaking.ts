@@ -70,6 +70,11 @@ export class Matchmaker {
     if (this.timer) clearInterval(this.timer);
   }
 
+  /** Finalize every in-flight match this node owns (graceful shutdown). */
+  async drain(): Promise<void> {
+    await Promise.allSettled([...this.rooms.values()].map((r) => r.abortForShutdown()));
+  }
+
   getRoom(matchId: string): GameRoom | undefined {
     return this.rooms.get(matchId);
   }

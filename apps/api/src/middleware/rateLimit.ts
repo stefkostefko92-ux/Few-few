@@ -53,3 +53,28 @@ export const authLimiter: RequestHandler = failOpen(
     store: store("rl:auth:"),
   }),
 );
+
+/**
+ * Per-account login throttle (credential-stuffing defence). The IP-keyed
+ * `authLimiter` doesn't stop a distributed attack against ONE account from many
+ * IPs; this caps attempts per email. Keyed on the submitted email (falls back
+ * to IP when absent). Sits in front of the IP limiter on `/login`.
+ */
+export const loginAccountLimiter: RequestHandler = failOpen(
+  rateLimit({
+    windowMs: 15 * 60_000,
+    max: env.isProd ? 10 : 2000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      const email = (req.body as { email?: unknown } | undefined)?.email;
+      return typeof email === "string" && email.length > 0
+        ? `email:${email.toLowerCase().trim()}`
+        : `ip:${req.ip}`;
+    },
+    message: {
+      error: { code: "rate_limited", message: "Too many attempts for this account, try again later" },
+    },
+    store: store("rl:login-acct:"),
+  }),
+);

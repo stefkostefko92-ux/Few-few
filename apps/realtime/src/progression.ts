@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 
@@ -20,6 +21,8 @@ export async function notifyMatchResult(input: {
       headers: {
         "content-type": "application/json",
         "x-internal-secret": env.INTERNAL_API_SECRET,
+        // Correlate this match's progression with the API's request log.
+        "x-request-id": `match-${input.matchId}-${randomUUID().slice(0, 8)}`,
       },
       body: JSON.stringify(input),
       signal: AbortSignal.timeout(3000),

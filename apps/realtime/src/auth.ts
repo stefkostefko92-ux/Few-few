@@ -29,7 +29,7 @@ export function verifyHandshake(cookieHeader: string | undefined): AccessTokenCl
   const token = parseCookies(cookieHeader)[ACCESS_COOKIE];
   if (!token) return null;
   try {
-    return jwt.verify(token, env.JWT_SECRET) as AccessTokenClaims;
+    return jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] }) as AccessTokenClaims;
   } catch {
     return null;
   }

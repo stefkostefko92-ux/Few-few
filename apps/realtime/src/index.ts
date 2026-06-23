@@ -49,7 +49,10 @@ const lobbyConfigSchema = z.object({ lobbyId: z.string().min(1).max(64), config:
 // Last-resort guards: a stray async error must not take down a node holding
 // live matches (the reduce/bot paths are fire-and-forget).
 process.on("unhandledRejection", (reason) => logger.error({ reason }, "unhandledRejection"));
-process.on("uncaughtException", (err) => logger.error({ err }, "uncaughtException"));
+process.on("uncaughtException", (err) => {
+  logger.fatal({ err }, "uncaughtException — exiting");
+  setTimeout(() => process.exit(1), 100).unref();
+});
 
 const userRoom = (userId: string): string => `u:${userId}`;
 const presenceKey = (userId: string): string => `presence:online:${userId}`;
@@ -98,7 +101,14 @@ async function main(): Promise<void> {
   // generics skew between @types/node and socket.io's bundled http types.
   const io = new Server<DefaultEventsMap, DefaultEventsMap, InterServerEvents>(
     httpServer as unknown as ConstructorParameters<typeof Server>[0],
-    { cors: { origin: env.corsOrigins, credentials: true } },
+    {
+      cors: { origin: env.corsOrigins, credentials: true },
+      // Game actions are tiny; cap the per-message buffer to blunt memory-flood
+      // vectors, and detect dead sockets promptly (disconnect-grace relies on it).
+      maxHttpBufferSize: 16_384,
+      pingInterval: 25_000,
+      pingTimeout: 20_000,
+    },
   );
   io.adapter(createAdapter(pubClient, subClient));
 
@@ -389,13 +399,17 @@ async function main(): Promise<void> {
   const shutdown = (signal: string) => {
     logger.info({ signal }, "shutting down realtime");
     matchmaker.stop();
-    io.close(() => {
-      void Promise.allSettled([
-        prisma.$disconnect(),
-        redis.quit(),
-        pubClient.quit(),
-        subClient.quit(),
-      ]).then(() => process.exit(0));
+    // Finalize live matches (write results + notify players) before closing, so
+    // a rolling deploy doesn't silently drop in-progress tables.
+    void matchmaker.drain().finally(() => {
+      io.close(() => {
+        void Promise.allSettled([
+          prisma.$disconnect(),
+          redis.quit(),
+          pubClient.quit(),
+          subClient.quit(),
+        ]).then(() => process.exit(0));
+      });
     });
     setTimeout(() => process.exit(1), 10_000).unref();
   };

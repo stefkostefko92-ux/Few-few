@@ -32,7 +32,7 @@ import { notifyRegistration } from "../integrations/discord.js";
 import { asyncHandler, badRequest, conflict, forbidden, unauthorized } from "../http.js";
 import { env } from "../env.js";
 import { logger } from "../logger.js";
-import { authLimiter } from "../middleware/rateLimit.js";
+import { authLimiter, loginAccountLimiter } from "../middleware/rateLimit.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { toPublicUser } from "./users.js";
 
@@ -99,6 +99,7 @@ authRouter.post(
 /** POST /api/auth/login */
 authRouter.post(
   "/login",
+  loginAccountLimiter,
   authLimiter,
   asyncHandler(async (req, res) => {
     const input = loginSchema.parse(req.body);

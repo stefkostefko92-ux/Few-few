@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import express, { type Express } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -6,6 +7,7 @@ import { pinoHttp } from "pino-http";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
+import { csrfOriginGuard } from "./middleware/csrf.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
@@ -32,7 +34,20 @@ export function createApp(): Express {
       credentials: true,
     }),
   );
-  app.use(pinoHttp({ logger }));
+  // Correlation IDs: honour an inbound x-request-id (from nginx or the realtime
+  // service) else mint one, attach it to every log line and echo it back so a
+  // request can be traced across services.
+  app.use(
+    pinoHttp({
+      logger,
+      genReqId: (req, res) => {
+        const incoming = req.headers["x-request-id"];
+        const id = (Array.isArray(incoming) ? incoming[0] : incoming) ?? randomUUID();
+        res.setHeader("x-request-id", id);
+        return id;
+      },
+    }),
+  );
 
   // Stripe webhook MUST receive the raw body for signature verification, so it
   // is mounted before cookieParser/json (§11.3). It is also not rate limited.
@@ -45,6 +60,8 @@ export function createApp(): Express {
   app.use("/", healthRouter);
 
   app.use(globalLimiter);
+  // CSRF defence-in-depth for cookie auth: reject cross-origin state changes.
+  app.use("/api", csrfOriginGuard);
   app.use("/api/auth", authRouter);
   app.use("/api/account", accountRouter);
   app.use("/api/friends", friendsRouter);

@@ -25,6 +25,10 @@ function getTransport(): Transporter {
     port: env.SMTP_PORT,
     secure: env.SMTP_SECURE,
     auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } : undefined,
+    // Never let a hung SMTP server stall the awaiting request indefinitely.
+    connectionTimeout: 5_000,
+    greetingTimeout: 5_000,
+    socketTimeout: 10_000,
   });
   return transporter;
 }
@@ -32,7 +36,12 @@ function getTransport(): Transporter {
 export async function sendEmail(msg: OutgoingEmail): Promise<void> {
   if (!env.emailEnabled) {
     // No SMTP configured: surface the link so dev/test can complete the flow.
-    logger.info({ to: msg.to, subject: msg.subject, body: msg.text }, "email (smtp disabled)");
+    // The body carries verification/reset tokens, so never log it in production.
+    if (env.isProd) {
+      logger.warn({ to: msg.to, subject: msg.subject }, "email dropped (smtp disabled in prod)");
+    } else {
+      logger.info({ to: msg.to, subject: msg.subject, body: msg.text }, "email (smtp disabled)");
+    }
     return;
   }
 

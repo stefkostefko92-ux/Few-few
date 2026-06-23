@@ -14,21 +14,24 @@ interface RefreshClaims {
 }
 
 export function signAccessToken(claims: AccessTokenClaims): string {
-  return jwt.sign(claims, env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL_SEC });
+  return jwt.sign(claims, env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL_SEC, algorithm: "HS256" });
 }
 
 export function signRefreshToken(userId: string): string {
   return jwt.sign({ sub: userId } satisfies RefreshClaims, env.JWT_REFRESH_SECRET, {
     expiresIn: REFRESH_TOKEN_TTL_SEC,
+    algorithm: "HS256",
   });
 }
 
 export function verifyAccessToken(token: string): AccessTokenClaims {
-  return jwt.verify(token, env.JWT_SECRET) as AccessTokenClaims;
+  // Pin the algorithm so a forged token can't downgrade to `alg:none` or trigger
+  // an HS/RS algorithm-confusion attack.
+  return jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] }) as AccessTokenClaims;
 }
 
 export function verifyRefreshToken(token: string): RefreshClaims {
-  return jwt.verify(token, env.JWT_REFRESH_SECRET) as RefreshClaims;
+  return jwt.verify(token, env.JWT_REFRESH_SECRET, { algorithms: ["HS256"] }) as RefreshClaims;
 }
 
 /** Cookie options: httpOnly + Secure (prod) + SameSite (S14). Never localStorage. */

@@ -17,6 +17,8 @@ export function getStripe(): Stripe {
   }
   // Use the SDK's bundled pinned API version (account default) — avoids a
   // brittle version literal that drifts with the stripe package.
-  client ??= new Stripe(env.STRIPE_SECRET_KEY, { typescript: true });
+  // Bound network calls (webhook handlers call Stripe inline) and retry transient
+  // failures so a slow Stripe API can't hang a request or the webhook.
+  client ??= new Stripe(env.STRIPE_SECRET_KEY, { typescript: true, timeout: 8_000, maxNetworkRetries: 2 });
   return client;
 }

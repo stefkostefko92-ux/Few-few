@@ -393,4 +393,13 @@ export class GameRoom {
   get isDone(): boolean {
     return this.done;
   }
+
+  /** Cleanly end an in-flight match on server shutdown (rolling deploy): finalize
+   *  as a draw so MatchPlayer rows are written and clients get GAME_OVER instead
+   *  of a silently dropped table. */
+  async abortForShutdown(): Promise<void> {
+    if (this.done) return;
+    const score: SeatScore[] = this.seats.map((s) => ({ seat: s.seat, result: "draw" }));
+    await this.finish(score);
+  }
 }

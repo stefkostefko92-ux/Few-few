@@ -6,9 +6,14 @@ import { redis } from "./redis.js";
 import { seedProducts } from "./economy/seed.js";
 import { initSentry } from "./integrations/sentry.js";
 
-// Last-resort guards: a stray async error must not silently kill the process.
+// Last-resort guards. An unhandled rejection is logged; an uncaught exception
+// leaves the process in an undefined state, so we log and exit non-zero and let
+// the orchestrator restart a clean instance (crash-only design).
 process.on("unhandledRejection", (reason) => logger.error({ reason }, "unhandledRejection"));
-process.on("uncaughtException", (err) => logger.error({ err }, "uncaughtException"));
+process.on("uncaughtException", (err) => {
+  logger.fatal({ err }, "uncaughtException — exiting");
+  setTimeout(() => process.exit(1), 100).unref();
+});
 
 async function main(): Promise<void> {
   initSentry();
@@ -23,6 +28,11 @@ async function main(): Promise<void> {
   const server = app.listen(env.API_PORT, () => {
     logger.info(`🂡 АСО api listening on :${env.API_PORT} (${env.NODE_ENV})`);
   });
+  // Bound idle/slow sockets so an abandoned or slowloris client can't hold a
+  // connection open indefinitely (keepAlive must exceed any upstream LB idle).
+  server.requestTimeout = 30_000;
+  server.headersTimeout = 35_000;
+  server.keepAliveTimeout = 65_000;
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, "shutting down");
