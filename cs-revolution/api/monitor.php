@@ -13,6 +13,9 @@ if (in_array($origin, $allowed)) {
     header("Access-Control-Allow-Origin: $origin");
 }
 
+require_once __DIR__.'/_auth.php';
+cs_require_admin();
+
 $data = ['ok' => true];
 
 // 1. Active connections

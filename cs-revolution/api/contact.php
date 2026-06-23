@@ -10,6 +10,7 @@ header('Content-Type: application/json; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Cache-Control: no-store');
+require_once __DIR__.'/_auth.php';
 
 $allowed = ['https://carbonstealth.eu','https://www.carbonstealth.eu'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -22,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 // ── READ CONTACT LOG (GET ?action=log) ──
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'log') {
-    $logDir = __DIR__.'/logs';
+    cs_require_admin();
+    $logDir = cs_log_dir();
     $entries = [];
     $files = glob($logDir.'/contacts_*.log');
     if ($files) {
@@ -46,11 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_
 require_once __DIR__.'/config.php';
 
 // ── Rate limiting (IP-based, 5 requests/hour) ──
-$rlDir = __DIR__.'/logs';
-if (!is_dir($rlDir)) @mkdir($rlDir, 0750, true);
-$ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-$ip = explode(',', $ip)[0];
-$rlFile = $rlDir.'/rl_'.md5($ip).'.json';
+$rlDir = cs_log_dir();
+$ip = cs_client_ip();
+$rlFile = $rlDir.'/rl_'.cs_ip_key($ip).'.json';
 $rlData = file_exists($rlFile) ? json_decode(file_get_contents($rlFile), true) : ['count'=>0,'reset'=>time()+3600];
 if (time() > ($rlData['reset'] ?? 0)) $rlData = ['count'=>0,'reset'=>time()+3600];
 if (($rlData['count'] ?? 0) >= 5) {
@@ -101,6 +101,7 @@ if (defined('RECAPTCHA_SECRET') && RECAPTCHA_SECRET !== '') {
 $ts = date('Y-m-d H:i:s T');
 $ua = substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200);
 $langFlag = match($lang) { 'it'=>'IT', 'bg'=>'BG', default=>'EN' };
+$nameH=cs_h($name); $emailH=cs_h($email); $phoneH=cs_h($phone); $messageH=cs_h($message); $uaH=cs_h($ua); $ipH=cs_h($ip);
 
 $html = <<<H
 <table style="width:100%;max-width:600px;font-family:monospace;background:#0a0a0a;color:#f5f5f0;padding:24px">
@@ -109,17 +110,17 @@ $html = <<<H
     <strong style="color:#00e5ff;font-size:14px">CARBON STEALTH VCC — NEW CONTACT</strong>
   </div>
   <table style="width:100%;font-size:13px;line-height:2">
-    <tr><td style="color:#999;width:90px">Name:</td><td><strong>$name</strong></td></tr>
-    <tr><td style="color:#999">Email:</td><td><a href="mailto:$email" style="color:#00e5ff">$email</a></td></tr>
-    <tr><td style="color:#999">Phone:</td><td>$phone</td></tr>
+    <tr><td style="color:#999;width:90px">Name:</td><td><strong>$nameH</strong></td></tr>
+    <tr><td style="color:#999">Email:</td><td><a href="mailto:$emailH" style="color:#00e5ff">$emailH</a></td></tr>
+    <tr><td style="color:#999">Phone:</td><td>$phoneH</td></tr>
     <tr><td style="color:#999">Language:</td><td>$langFlag</td></tr>
   </table>
   <div style="margin-top:16px;padding:16px;background:#111;border-left:3px solid #00e5ff">
     <div style="color:#999;font-size:10px;margin-bottom:8px">MESSAGE:</div>
-    <div style="white-space:pre-wrap">$message</div>
+    <div style="white-space:pre-wrap">$messageH</div>
   </div>
   <div style="margin-top:16px;font-size:10px;color:#666">
-    $ts · IP: $ip · $ua
+    $ts · IP: $ipH · $uaH
   </div>
 </td></tr></table>
 H;
@@ -188,14 +189,15 @@ if ($hasPM) {
 
 // Attempt 2: PHP native mail()
 if (!$sent) {
-    $hd = "From: ".SMTP_FROM_NAME." <".SMTP_FROM.">\r\nReply-To: $name <$email>\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n";
+    $hdName = cs_hdr_safe($name); $hdEmail = cs_hdr_safe($email);
+    $hd = "From: ".SMTP_FROM_NAME." <".SMTP_FROM.">\r\nReply-To: $hdName <$hdEmail>\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n";
     $sent = @mail(SMTP_TO, $subj, $html, $hd);
     if ($sent) @mail($email, $ar['sub'], $ar['body'], "From: ".SMTP_FROM_NAME." <".SMTP_FROM.">\r\nContent-Type: text/plain; charset=UTF-8\r\n");
 }
 
 // Attempt 3: Log to file (never lose a message)
 $logEntry = date('c')." | $name | $email | $phone | $langFlag | ".substr($message,0,200)."\n";
-@file_put_contents($rlDir.'/contacts_'.date('Y-m').'.log', $logEntry, FILE_APPEND|LOCK_EX);
+@file_put_contents(cs_log_dir().'/contacts_'.date('Y-m').'.log', $logEntry, FILE_APPEND|LOCK_EX);
 
 if ($sent) {
     echo json_encode(['ok'=>true,'message'=>'sent']);

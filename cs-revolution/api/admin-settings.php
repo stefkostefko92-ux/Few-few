@@ -14,6 +14,8 @@ if (in_array($origin, $allowed)) {
     header('Access-Control-Allow-Headers: Content-Type');
 }
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
+require_once __DIR__.'/_auth.php';
+cs_require_admin();
 
 $configFile = __DIR__.'/config.php';
 
@@ -27,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $port = intval($smtp['port'] ?? 587);
         $user = filter_var($smtp['user'] ?? '', FILTER_SANITIZE_EMAIL);
         $pass = $smtp['pass'] ?? '';
+        // Reject control/quote/backslash chars that could break out of the PHP string
+        if (preg_match('/[\\x00-\\x1f\\x27\\x5c]/', (string)$pass)) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid characters in password']); exit; }
+        $host = preg_replace('/[^a-zA-Z0-9.\-]/','',$host); $user = preg_replace('/[^a-zA-Z0-9.@_\-+]/','',(string)$user); $to = preg_replace('/[^a-zA-Z0-9.@_\-+]/','',(string)$to);
         $to   = filter_var($smtp['to'] ?? '', FILTER_SANITIZE_EMAIL);
         
         if ($pass === '' || $pass === '********') {

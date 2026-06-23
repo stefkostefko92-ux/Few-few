@@ -12,7 +12,8 @@
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
-$dataFile = __DIR__ . '/logs/monument.dat';
+require_once __DIR__.'/_auth.php';
+$dataFile = cs_log_dir() . '/monument.dat';
 $dir = dirname($dataFile);
 if (!is_dir($dir)) @mkdir($dir, 0755, true);
 
@@ -53,8 +54,7 @@ if (!preg_match('/^[0-9a-f]{12}$/', $seed)) {
 }
 
 // One shard per IP per 12 hours — the monument grows by real visits, not reloads
-$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$gate = $dir . '/monument-ip-' . md5($ip);
+$gate = $dir . '/monument-ip-' . cs_ip_key();
 if (is_file($gate) && (time() - (int)filemtime($gate)) < 43200) {
     echo json_encode(['ok' => true, 'count' => countLines($dataFile), 'index' => -1, 'dedup' => true]);
     exit;

@@ -255,7 +255,11 @@ function AdminPanel(props) {
   var [countries, setCountries] = useState({});
   var [tick, setTick] = useState(0);
   var C="#00e5ff",CR="0,229,255",HEAD="Inter Tight,sans-serif";
-  var PASS_HASH = "6036cd6b23f0ff65b5b4fee410c759154fd01132af37f564faba97071ca4ead4";
+  // Admin auth: the typed password IS the server token (CS_ADMIN_TOKEN in the
+  // PHP-FPM env). It is NEVER hardcoded in the bundle — it only exists in the
+  // admin's session after they type it, and every API call sends it as a header.
+  function csTok(){ try{return sessionStorage.getItem("cs_admin_token")||""}catch(e){return ""} }
+  function csAuthFetch(url, opts){ opts=opts||{}; opts.headers=Object.assign({}, opts.headers||{}, {"X-CS-Token":csTok()}); return fetch(url, opts); }
   var F=1.35;
 
   var sites = [
@@ -268,16 +272,23 @@ function AdminPanel(props) {
   ];
 
   async function checkPwd() {
-    var enc = new TextEncoder().encode(pwd);
-    var buf = await crypto.subtle.digest("SHA-256", enc);
-    var hash = Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0")}).join("");
-    if (hash === PASS_HASH) { setAuth(true); setPwdErr(false); try{sessionStorage.setItem("cs_admin","1")}catch(e){} }
-    else { setPwdErr(true); setPwd(""); }
+    if (!pwd || pwd.length < 4) { setPwdErr(true); setPwd(""); return; }
+    // Store the typed password as the session token, then verify it against the
+    // server (a 401 means wrong password). No secret ships in the bundle.
+    try{ sessionStorage.setItem("cs_admin_token", pwd); }catch(e){}
+    try {
+      var r = await fetch("/api/monitor.php", { headers: { "X-CS-Token": pwd } });
+      if (r.status === 401) { try{sessionStorage.removeItem("cs_admin_token")}catch(e){} setPwdErr(true); setPwd(""); return; }
+      setAuth(true); setPwdErr(false); setPwd("");
+    } catch(e) {
+      // Network/endpoint unreachable — allow entry (data tabs will show empty states)
+      setAuth(true); setPwdErr(false); setPwd("");
+    }
   }
 
   function doPing() {
     var r={},done=0;
-    fetch("/api/monitor.php").then(function(res){return res.json()}).then(function(d){if(d.ok){setServerStats(d);
+    csAuthFetch("/api/monitor.php").then(function(res){return res.json()}).then(function(d){if(d.ok){setServerStats(d);
       if(d.top_ips&&d.top_ips.length&&Object.keys(countries).length===0){
         d.top_ips.slice(0,5).forEach(function(entry){
           // HTTPS endpoint — ip-api.com free tier is HTTP-only and gets blocked as mixed content
@@ -303,7 +314,7 @@ function AdminPanel(props) {
     });
   }
 
-  useEffect(function(){try{if(sessionStorage.getItem("cs_admin")==="1")setAuth(true)}catch(e){}},[]);
+  useEffect(function(){try{if(sessionStorage.getItem("cs_admin_token"))setAuth(true)}catch(e){}},[]);
 
   useEffect(function(){
     if(!auth)return;
@@ -313,14 +324,14 @@ function AdminPanel(props) {
     try{setTasks(JSON.parse(localStorage.getItem("cs_tasks")||"[]"))}catch(e){}
     try{setClients(JSON.parse(localStorage.getItem("cs_clients")||"[]"))}catch(e){}
     try{var sc=JSON.parse(localStorage.getItem("cs_smtp")||"{}");if(sc.host)setCfgSmtp(sc)}catch(e){}
-    fetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){});
-    fetch("/api/analyze.php?action=stats&key=" + encodeURIComponent("CS@dmin2026!")).then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}}).catch(function(){});
-    fetch("/api/indexnow.php?action=status&key=" + encodeURIComponent("CS@dmin2026!")).then(function(r){return r.json()}).then(function(d){if(d.ok)setIndexNowLog(d.submissions||[])}).catch(function(){});
+    csAuthFetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){});
+    csAuthFetch("/api/analyze.php?action=stats").then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}}).catch(function(){});
+    csAuthFetch("/api/indexnow.php?action=status").then(function(r){return r.json()}).then(function(d){if(d.ok)setIndexNowLog(d.submissions||[])}).catch(function(){});
     setActLog([{t:new Date().toLocaleTimeString(),a:"Admin session started — all systems nominal",c:"SYSTEM"}]);
     // SSE real-time lead notifications
     var sse=null;
     try{
-      sse=new EventSource("/api/sse-leads.php?key="+encodeURIComponent("CS@dmin2026!"));
+      sse=new EventSource("/api/sse-leads.php?token="+encodeURIComponent(csTok()));
       sse.addEventListener("new_lead",function(e){
         try{
           var lead=JSON.parse(e.data);
@@ -357,14 +368,7 @@ function AdminPanel(props) {
     a.download=name+"_"+new Date().toISOString().slice(0,10)+".csv";
     a.click();URL.revokeObjectURL(a.href);
   }
-  var [newPwd,setNewPwd]=useState("");var [newHash,setNewHash]=useState("");
-  function genHash(){
-    if(!newPwd)return;
-    crypto.subtle.digest("SHA-256",new TextEncoder().encode(newPwd)).then(function(buf){
-      setNewHash(Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0")}).join(""));
-    });
-  }
-  function saveSMTP(){save("cs_smtp",cfgSmtp);setCfgSaved(true);setTimeout(function(){setCfgSaved(false)},3000);fetch("/api/admin-settings.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save_smtp",data:cfgSmtp})}).catch(function(){})}
+  function saveSMTP(){save("cs_smtp",cfgSmtp);setCfgSaved(true);setTimeout(function(){setCfgSaved(false)},3000);csAuthFetch("/api/admin-settings.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save_smtp",data:cfgSmtp})}).catch(function(){})}
 
   var onN=Object.values(stats).filter(function(s){return s.status==="ONLINE"}).length;
   var totalRev=0;clients.forEach(function(c){totalRev+=parseFloat(c.budget)||0});
@@ -590,7 +594,7 @@ function AdminPanel(props) {
           React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
             React.createElement("span",{style:{fontSize:Math.round(9*F),color:"#555"}},new Date().toLocaleString()),
             React.createElement("div",{onClick:function(){doPing()},style:btn("#00ff88")},"REFRESH"),
-            React.createElement("div",{onClick:function(){try{sessionStorage.removeItem("cs_admin")}catch(e){}setAuth(false)},style:btn("#ff3366")},"LOGOUT"),
+            React.createElement("div",{onClick:function(){try{sessionStorage.removeItem("cs_admin_token")}catch(e){}setAuth(false)},style:btn("#ff3366")},"LOGOUT"),
             React.createElement("div",{onClick:props.onClose,style:btn()},"ESC")
           )
         ),
@@ -614,7 +618,7 @@ function AdminPanel(props) {
           React.createElement("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:Math.round(20*F)}},
             React.createElement("div",{onClick:function(){
               if(indexNowBusy)return;setIndexNowBusy(true);
-              fetch("/api/indexnow.php?action=bulk&key="+encodeURIComponent("CS@dmin2026!"),{method:"POST"}).then(function(r){return r.json()}).then(function(d){
+              csAuthFetch("/api/indexnow.php?action=bulk",{method:"POST"}).then(function(r){return r.json()}).then(function(d){
                 setIndexNowBusy(false);
                 if(d.ok)alert("IndexNow: submitted "+d.submitted+" URLs");else alert("IndexNow error: "+(d.error||"?"));
               }).catch(function(){setIndexNowBusy(false);alert("IndexNow request failed")});
@@ -672,7 +676,7 @@ function AdminPanel(props) {
             React.createElement("div",{style:lb},"FORM SUBMISSIONS (",contacts.length,")"),
             React.createElement("div",{style:{display:"flex",gap:6}},
               React.createElement("div",{onClick:function(){exportCSV(contacts,"cs_leads")},style:btn("#00ff88")},"\u2913 EXPORT CSV"),
-              React.createElement("div",{onClick:function(){fetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){})},style:btn()},"\u21bb REFRESH")
+              React.createElement("div",{onClick:function(){csAuthFetch("/api/contact.php?action=log").then(function(r){return r.json()}).then(function(d){if(d.entries)setContacts(d.entries)}).catch(function(){})},style:btn()},"\u21bb REFRESH")
             )
           ),
           contacts.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(245,245,240,.04)",color:"#555"}},"No submissions yet"),
@@ -695,7 +699,7 @@ function AdminPanel(props) {
           ),
           React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:Math.round(14*F)}},
             React.createElement("div",{style:lb},"RECENT LEADS ("+analyzerLeads.length+")"),
-            React.createElement("div",{onClick:function(){fetch("/api/analyze.php?action=stats&key="+encodeURIComponent("CS@dmin2026!")).then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}})},style:btn()},"\u21bb REFRESH")
+            React.createElement("div",{onClick:function(){csAuthFetch("/api/analyze.php?action=stats").then(function(r){return r.json()}).then(function(d){if(d.ok){setAnalyzerScans(d.recent_scans||[]);setAnalyzerLeads(d.recent_leads||[])}})},style:btn()},"\u21bb REFRESH")
           ),
           analyzerLeads.length===0&&React.createElement("div",{style:{padding:Math.round(32*F),textAlign:"center",border:"1px solid rgba(245,245,240,.04)",color:"#555"}},"No leads from /test/ yet"),
           analyzerLeads.map(function(l,i){return React.createElement("div",{key:i,style:{padding:Math.round(14*F),borderBottom:"1px solid rgba(245,245,240,.04)",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
@@ -734,9 +738,9 @@ function AdminPanel(props) {
               React.createElement("div",{onClick:function(){
                 if(indexNowBusy)return;
                 setIndexNowBusy(true);
-                fetch("/api/indexnow.php?action=bulk&key="+encodeURIComponent("CS@dmin2026!"),{method:"POST"}).then(function(r){return r.json()}).then(function(d){
+                csAuthFetch("/api/indexnow.php?action=bulk",{method:"POST"}).then(function(r){return r.json()}).then(function(d){
                   setIndexNowBusy(false);
-                  if(d.ok){alert("Submitted "+d.submitted+" URLs to "+Object.keys(d.endpoints||{}).length+" engines");fetch("/api/indexnow.php?action=status&key="+encodeURIComponent("CS@dmin2026!")).then(function(r){return r.json()}).then(function(dd){if(dd.ok)setIndexNowLog(dd.submissions||[])})}
+                  if(d.ok){alert("Submitted "+d.submitted+" URLs to "+Object.keys(d.endpoints||{}).length+" engines");csAuthFetch("/api/indexnow.php?action=status").then(function(r){return r.json()}).then(function(dd){if(dd.ok)setIndexNowLog(dd.submissions||[])})}
                   else alert("Error: "+(d.error||"unknown"))
                 }).catch(function(e){setIndexNowBusy(false);alert("Network error")});
               },style:Object.assign({},btn(),{background:indexNowBusy?"rgba(255,170,0,.1)":"rgba(0,229,255,.06)"})},indexNowBusy?"\u25CF SUBMITTING...":"\u25B6 SUBMIT ALL SITEMAPS"),
@@ -870,17 +874,14 @@ function AdminPanel(props) {
           ),
           React.createElement("div",{style:card()},
             React.createElement("div",{style:cardGlow("255,51,102")}),
-            React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"ADMIN PASSWORD"),
-            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#666",lineHeight:1.8,marginBottom:10}},
-              "Current hash: ",React.createElement("code",{style:{color:C,fontSize:Math.round(9*F),wordBreak:"break-all"}},PASS_HASH)
-            ),
-            React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 140px",gap:8,marginBottom:8}},
-              React.createElement("input",{type:"password",value:newPwd,onChange:function(e){setNewPwd(e.target.value)},placeholder:"New password...",style:ip,onKeyDown:function(e){if(e.key==="Enter")genHash()}}),
-              React.createElement("div",{onClick:genHash,style:Object.assign({},btn(),{textAlign:"center"})},"GENERATE HASH")
-            ),
-            newHash&&React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#999",lineHeight:1.8}},
-              "New hash (paste into PASS_HASH in src/App.jsx, then rebuild):",React.createElement("br",null),
-              React.createElement("code",{onClick:function(){try{navigator.clipboard.writeText(newHash)}catch(e){}},title:"Click to copy",style:{color:"#00ff88",fontSize:Math.round(9*F),wordBreak:"break-all",cursor:"copy"}},newHash)
+            React.createElement("div",{style:Object.assign({},lb,{marginBottom:10})},"ADMIN ACCESS"),
+            React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999",lineHeight:1.9}},
+              "Access is controlled server-side. The admin password is the ",
+              React.createElement("code",{style:{color:C}},"CS_ADMIN_TOKEN")," value in the PHP-FPM pool config:",
+              React.createElement("br",null),
+              React.createElement("code",{style:{color:"#00ff88",fontSize:Math.round(9*F),wordBreak:"break-all"}},"env[CS_ADMIN_TOKEN] = your-long-random-password"),
+              React.createElement("br",null),
+              "To change it: edit that line, run ",React.createElement("code",{style:{color:C}},"systemctl restart php8.5-fpm"),", then log in again. No rebuild needed and no secret ships in the browser."
             )
           )
         )
@@ -1053,6 +1054,25 @@ function SEOInjector() {
       @supports(padding: env(safe-area-inset-top)) {
         nav { padding-top:max(12px, env(safe-area-inset-top)) !important; }
         footer { padding-bottom:max(20px, env(safe-area-inset-bottom)) !important; }
+      }
+
+      /* ── Accessibility (WCAG 2.2 AA) ── */
+      /* Visible keyboard focus on every interactive element */
+      a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible,
+      select:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
+        outline: 2px solid #00e5ff !important; outline-offset: 2px !important;
+        border-radius: 2px;
+      }
+      /* Skip-to-content link, visible only when focused */
+      .cs-skip { position:fixed; top:-60px; left:8px; z-index:100000; background:#00e5ff; color:#000;
+        padding:10px 18px; font-weight:700; letter-spacing:.1em; transition:top .15s; }
+      .cs-skip:focus { top:8px; }
+      /* Respect reduced-motion: stop the heavy animation for users who ask for it */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+        }
       }
     `;
     document.head.appendChild(respStyle);
@@ -2601,6 +2621,7 @@ export default function App(){
 
   return(
     <div style={{background:"#000",color:"#f5f5f0",fontFamily:"'Space Mono',monospace",fontSize:12,cursor:"crosshair",letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
+      <a href="#main" className="cs-skip">{lang==="it"?"Salta al contenuto":lang==="bg"?"Към съдържанието":"Skip to content"}</a>
       {showAdmin && <AdminPanel onClose={function(){setShowAdmin(false)}} />}
       {/* Post-boot circuit trace reveal (one-shot, removes itself) */}
       <CircuitSweep />
@@ -2644,12 +2665,18 @@ export default function App(){
         <div style={{display:"flex",gap:6,marginTop:12}}>{["it","en","bg"].map(function(l){return <span key={l} onClick={function(){setLang(l);setMobileMenu(false);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:10,padding:"6px 12px",border:"1px solid "+(lang===l?"rgba("+CR+",.4)":"rgba(245,245,240,.08)"),background:lang===l?"rgba("+CR+",.12)":"transparent",color:lang===l?C:"#ccc"}}>{l.toUpperCase()}</span>})}</div>
       </div>
 
+      <main id="main">
+      {/* Accessible document heading (visually hidden; ProximityText below is decorative) */}
+      <h1 style={{position:"absolute",width:1,height:1,padding:0,margin:-1,overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>
+        Carbon Stealth VCC — {t("hero_title")}
+      </h1>
+
       {/* ═══════════════════════════════════════════
           HERO — Viewport-spanning typography + 3D
           ═══════════════════════════════════════════ */}
-      <section id="hero" style={{position:"relative",height:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:20}}>
+      <section id="hero" aria-label={t("hero_eyebrow")} style={{position:"relative",height:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:20}}>
         <LiquidFilter />
-        <div style={{position:"absolute",inset:0,filter:"url(#liquid-distort)",zIndex:1}}><Scene3D /></div>
+        <div style={{position:"absolute",inset:0,filter:"url(#liquid-distort)",zIndex:1}} aria-hidden="true"><Scene3D /></div>
         <Shockwave />
         <CursorLight />
 
@@ -2879,16 +2906,17 @@ export default function App(){
               <p style={{fontSize:11,color:"#ccc"}}>{t("form_sent")}</p>
             </div>
           ) : (
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <form onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/>
-                <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} type="email" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/>
+                <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} aria-label={t("form_name")} required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+                <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} aria-label={t("form_email")} type="email" required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
               </div>
-              <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none"}}/>
-              <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",outline:"none",resize:"vertical"}}/>
+              <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} aria-label={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+              <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
               <p style={{fontSize:9,color:"#999",lineHeight:1.6}}>{t("form_gdpr")} <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} style={{color:C,textDecoration:"none"}}>{lang==="it"?"Informativa Privacy":lang==="bg"?"\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy Policy"}</a>.</p>
-              <div onClick={handleFormSubmit} style={{display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"crosshair",color:C,textAlign:"center",marginTop:8}}>{t("form_send")}</div>
-            </div>
+              {formSent==="error" && <div role="alert" style={{padding:"12px 16px",border:"1px solid rgba(255,51,102,.4)",background:"rgba(255,51,102,.06)",color:"#ff6688",fontSize:11,lineHeight:1.6}}>{lang==="it"?"Invio non riuscito. Riprova o scrivici direttamente a info@carbonstealth.eu":lang==="bg"?"\u0418\u0437\u043F\u0440\u0430\u0449\u0430\u043D\u0435\u0442\u043E \u0435 \u043D\u0435\u0443\u0441\u043F\u0435\u0448\u043D\u043E. \u041E\u043F\u0438\u0442\u0430\u0439\u0442\u0435 \u043E\u0442\u043D\u043E\u0432\u043E \u0438\u043B\u0438 \u043D\u0438 \u043F\u0438\u0448\u0435\u0442\u0435 \u043D\u0430 info@carbonstealth.eu":"Send failed. Please try again or email us at info@carbonstealth.eu"}</div>}
+              <button type="submit" style={{display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"pointer",color:C,background:"transparent",textAlign:"center",marginTop:8,fontFamily:"'Space Mono',monospace"}}>{t("form_send")}</button>
+            </form>
           )}
 
           {/* Direct contacts */}
@@ -2942,6 +2970,7 @@ export default function App(){
         })}
       </section>
 
+      </main>
       {/* ═══════════════════════════════════════════════════
           FULL FOOTER — from carbonstealth.eu
           ═══════════════════════════════════════════════════ */}

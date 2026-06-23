@@ -6,12 +6,8 @@
  * Usage: new EventSource('/api/sse-leads.php?key=CS@dmin2026!')
  */
 
-$key = $_GET['key'] ?? '';
-if ($key !== 'CS@dmin2026!') {
-    http_response_code(401);
-    echo "Unauthorized";
-    exit;
-}
+require_once __DIR__.'/_auth.php';
+cs_require_admin();
 
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
@@ -24,7 +20,7 @@ echo str_repeat(' ', 2048) . "\n";
 ob_flush();
 flush();
 
-$logPath = __DIR__ . '/logs/leads.log';
+$logPath = cs_log_dir() . '/leads.log';
 $lastSize = file_exists($logPath) ? filesize($logPath) : 0;
 $lastCheck = time();
 $keepAliveInterval = 15; // seconds

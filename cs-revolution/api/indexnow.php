@@ -18,7 +18,7 @@ header('Access-Control-Allow-Origin: https://carbonstealth.eu');
 define('INDEXNOW_KEY', 'cs26a9f3b7d1e4c8592f0a7b3d8e5c1f64');
 define('HOST', 'carbonstealth.eu');
 define('KEY_LOCATION', 'https://carbonstealth.eu/' . INDEXNOW_KEY . '.txt');
-define('ADMIN_KEY', 'CS@dmin2026!');
+require_once __DIR__.'/_auth.php';
 
 function jsonOut($data, $code = 200) {
     http_response_code($code);
@@ -102,8 +102,7 @@ if ($action === 'submit') {
 
 // === BULK: submit all sitemap URLs ===
 if ($action === 'bulk') {
-    $key = $_GET['key'] ?? $input['key'] ?? '';
-    if ($key !== ADMIN_KEY) jsonOut(['ok' => false, 'error' => 'Unauthorized'], 401);
+    cs_require_admin();
 
     // Fetch sitemaps
     $sitemapUrls = [
@@ -136,8 +135,7 @@ if ($action === 'bulk') {
 
 // === STATUS: get submission history ===
 if ($action === 'status') {
-    $key = $_GET['key'] ?? $input['key'] ?? '';
-    if ($key !== ADMIN_KEY) jsonOut(['ok' => false, 'error' => 'Unauthorized'], 401);
+    cs_require_admin();
 
     $logPath = __DIR__ . '/logs/indexnow.log';
     if (!file_exists($logPath)) jsonOut(['ok' => true, 'submissions' => []]);

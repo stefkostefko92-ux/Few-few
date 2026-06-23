@@ -12,6 +12,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('X-Content-Type-Options: nosniff');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit(0);
+require_once __DIR__.'/_auth.php';
 
 // ═══ UTILS ═══
 function jsonOut($data, $code = 200) {
@@ -26,9 +27,8 @@ function sanitizeUrl($raw) {
     if (!filter_var($raw, FILTER_VALIDATE_URL)) return false;
     $host = parse_url($raw, PHP_URL_HOST);
     if (!$host) return false;
-    // Block localhost / private IPs to prevent SSRF
-    if (preg_match('/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|169\.254\.|0\.0\.0\.0)/i', $host)) return false;
-    if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false && filter_var($host, FILTER_VALIDATE_IP)) return false;
+    // SSRF guard: every resolved A/AAAA record must be a public unicast IP
+    if (!cs_resolve_public($host)) return false;
     return $raw;
 }
 
@@ -37,8 +37,8 @@ function fetchUrl($url, $timeout = 15) {
     curl_setopt_array($ch, [
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 5,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
         CURLOPT_TIMEOUT => $timeout,
         CURLOPT_CONNECTTIMEOUT => 5,
         CURLOPT_SSL_VERIFYPEER => true,
@@ -359,7 +359,7 @@ if ($action === 'analyze') {
             'host' => $host,
             'perf_mobile' => $result['psi_mobile']['performance'] ?? null,
             'seo_mobile' => $result['psi_mobile']['seo'] ?? null,
-            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'ip' => cs_client_ip(),
             'ua' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200),
             'consent' => true,
             'ab_variant' => $input['ab_variant'] ?? null,
@@ -375,14 +375,13 @@ if ($action === 'lead') {
     $email = trim($input['email'] ?? '');
     $phone = trim($input['phone'] ?? '');
     $testedUrl = trim($input['tested_url'] ?? '');
-    $name = trim($input['name'] ?? '');
-    $message = trim($input['message'] ?? '');
+    $name = trim(strip_tags($input['name'] ?? ''));
+    $message = trim(strip_tags($input['message'] ?? ''));
 
     if (!$email && !$phone) jsonOut(['ok' => false, 'error' => 'Email or phone required'], 400);
     if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) jsonOut(['ok' => false, 'error' => 'Invalid email'], 400);
 
-    $leadsPath = __DIR__ . '/logs/leads.log';
-    if (!file_exists(dirname($leadsPath))) @mkdir(dirname($leadsPath), 0755, true);
+    $leadsPath = cs_log_dir() . '/leads.log';
 
     $leadEntry = [
         'ts' => date('c'),
@@ -391,7 +390,7 @@ if ($action === 'lead') {
         'phone' => $phone,
         'tested_url' => $testedUrl,
         'message' => substr($message, 0, 500),
-        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+        'ip' => cs_client_ip(),
         'ua' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 200),
     ];
     @file_put_contents($leadsPath, json_encode($leadEntry) . "\n", FILE_APPEND | LOCK_EX);
@@ -420,11 +419,10 @@ if ($action === 'lead') {
 
 // ═══ STATS (admin only) ═══
 if ($action === 'stats') {
-    $auth = $_GET['key'] ?? $input['key'] ?? '';
-    if ($auth !== 'CS@dmin2026!') jsonOut(['ok' => false, 'error' => 'Unauthorized'], 401);
+    cs_require_admin();
 
-    $scansPath = __DIR__ . '/logs/scans.log';
-    $leadsPath = __DIR__ . '/logs/leads.log';
+    $scansPath = cs_log_dir() . '/scans.log';
+    $leadsPath = cs_log_dir() . '/leads.log';
     $scans = file_exists($scansPath) ? count(file($scansPath)) : 0;
     $leads = file_exists($leadsPath) ? count(file($leadsPath)) : 0;
 

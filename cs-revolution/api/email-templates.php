@@ -103,17 +103,19 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
     return $templates[$lang] ?? $templates['en'];
 }
 
+function cs_eh($s){return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8');}
 function getAdminNotification($lead) {
-    $subject = "🔔 New Lead from /test/ — " . ($lead['name'] ?: $lead['email']);
+    $subject = str_replace(["\r","\n"],'', "New Lead from site analyzer — " . ($lead['name'] ?: $lead['email']));
+    $u = filter_var($lead['tested_url'] ?? '', FILTER_VALIDATE_URL) ? $lead['tested_url'] : '#';
     $body = "
 <div style=\"font-family:monospace;max-width:600px;margin:0 auto;background:#0a0a0c;color:#f0f0eb;padding:32px\">
 <h1 style=\"color:#00e5ff;font-size:20px;margin:0 0 20px\">NEW LEAD FROM SITE ANALYZER</h1>
 <table style=\"width:100%;border-collapse:collapse\">
-<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Name</td><td style=\"padding:8px;color:#fff;font-weight:700;border-bottom:1px solid #1a1a22\">{$lead['name']}</td></tr>
-<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Email</td><td style=\"padding:8px;color:#00e5ff;border-bottom:1px solid #1a1a22\">{$lead['email']}</td></tr>
-<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Phone</td><td style=\"padding:8px;color:#fff;border-bottom:1px solid #1a1a22\">{$lead['phone']}</td></tr>
-<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Tested URL</td><td style=\"padding:8px;border-bottom:1px solid #1a1a22\"><a href=\"{$lead['tested_url']}\" style=\"color:#00e5ff\">{$lead['tested_url']}</a></td></tr>
-<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Message</td><td style=\"padding:8px;color:#ccc;border-bottom:1px solid #1a1a22\">{$lead['message']}</td></tr>
+<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Name</td><td style=\"padding:8px;color:#fff;font-weight:700;border-bottom:1px solid #1a1a22\">".cs_eh($lead['name'])."</td></tr>
+<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Email</td><td style=\"padding:8px;color:#00e5ff;border-bottom:1px solid #1a1a22\">".cs_eh($lead['email'])."</td></tr>
+<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Phone</td><td style=\"padding:8px;color:#fff;border-bottom:1px solid #1a1a22\">".cs_eh($lead['phone'])."</td></tr>
+<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Tested URL</td><td style=\"padding:8px;border-bottom:1px solid #1a1a22\"><a href=\"".cs_eh($u)."\" style=\"color:#00e5ff\">".cs_eh($lead['tested_url'])."</a></td></tr>
+<tr><td style=\"padding:8px;color:#666;border-bottom:1px solid #1a1a22\">Message</td><td style=\"padding:8px;color:#ccc;border-bottom:1px solid #1a1a22\">".cs_eh($lead['message'])."</td></tr>
 <tr><td style=\"padding:8px;color:#666\">Time</td><td style=\"padding:8px;color:#666\">" . date('Y-m-d H:i:s') . "</td></tr>
 </table>
 <div style=\"margin-top:24px\">
@@ -124,6 +126,7 @@ function getAdminNotification($lead) {
 }
 
 function sendHtmlEmail($to, $subject, $body, $from = 'Carbon Stealth VCC <no-reply@carbonstealth.eu>') {
+    $subject = str_replace(["\r","\n"], '', (string)$subject);
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
     $headers .= "From: {$from}\r\n";
