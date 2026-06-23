@@ -22,7 +22,7 @@
 
 <div class="grid-2">
   <section class="card">
-    <h2><%= profile.full_name %></h2>
+    <h2><%= name(profile.full_name) %></h2>
     <dl class="profile-view">
       <dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type || '—' %></dd>
       <dt><%= t('dash.allergies') %></dt><dd><%= [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · ') || '—' %></dd>
@@ -32,7 +32,7 @@
       <dt><%= t('dash.communication') %></dt><dd><%= profile.communication_pref || '—' %></dd>
       <dt><%= t('emerg.contact') %></dt>
       <dd>
-        <%= profile.emergency_contact_name || '—' %>
+        <%= name(profile.emergency_contact_name) || '—' %>
         <% if (profile.emergency_contact_phone) { %>
           · <a href="tel:<%= profile.emergency_contact_phone %>"><%= profile.emergency_contact_phone %></a>
         <% } %>

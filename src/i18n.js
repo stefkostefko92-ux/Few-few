@@ -26,6 +26,61 @@ export function clinicalLabel(value, lang) {
   return value;
 }
 
+// Официална транслитерация на кирилица → латиница (за имена в английски режим),
+// за да може чужд спешен екип да прочете името на пациента и близкия.
+const TRANSLIT = {
+  а: 'a',
+  б: 'b',
+  в: 'v',
+  г: 'g',
+  д: 'd',
+  е: 'e',
+  ж: 'zh',
+  з: 'z',
+  и: 'i',
+  й: 'y',
+  к: 'k',
+  л: 'l',
+  м: 'm',
+  н: 'n',
+  о: 'o',
+  п: 'p',
+  р: 'r',
+  с: 's',
+  т: 't',
+  у: 'u',
+  ф: 'f',
+  х: 'h',
+  ц: 'ts',
+  ч: 'ch',
+  ш: 'sh',
+  щ: 'sht',
+  ъ: 'a',
+  ь: 'y',
+  ю: 'yu',
+  я: 'ya',
+};
+export function transliterate(str) {
+  if (!str) return str;
+  let out = '';
+  for (const ch of String(str)) {
+    const low = ch.toLowerCase();
+    const t = TRANSLIT[low];
+    if (t === undefined) {
+      out += ch;
+    } else if (ch === low) {
+      out += t;
+    } else {
+      out += t.charAt(0).toUpperCase() + t.slice(1);
+    }
+  }
+  return out;
+}
+// Име за показване: транслитерирано на латиница при английски режим.
+export function displayName(value, lang) {
+  return lang === 'en' ? transliterate(value) : value;
+}
+
 const DICT = {
   // Навигация / общи
   'nav.profile': { bg: 'Моят профил', en: 'My profile' },
@@ -454,6 +509,10 @@ const DICT = {
   'edit.allergies': { bg: 'Алергии към лекарства', en: 'Drug allergies' },
   'edit.allergies_ph': { bg: 'напр. пеницилин, аспирин', en: 'e.g. penicillin, aspirin' },
   'edit.allergies_common': { bg: 'Чести алергии (изберете)', en: 'Common allergies (select)' },
+  'edit.multi_hint': {
+    bg: 'Можете да изберете повече от едно.',
+    en: 'You can select more than one.',
+  },
   'edit.allergies_other': {
     bg: 'Други алергии (свободен текст)',
     en: 'Other allergies (free text)',

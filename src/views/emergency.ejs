@@ -2,7 +2,7 @@
 
 <div class="emergency">
   <p class="emergency-banner"><%- include('partials/icon', { name: 'alert' }) %> <%= t('emerg.banner') %></p>
-  <h1 class="big-name"><%= profile.full_name %></h1>
+  <h1 class="big-name"><%= name(profile.full_name) %></h1>
 
   <%
     const hearing = profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми';
@@ -156,7 +156,7 @@
   <% if (profile.emergency_contact_phone || profile.emergency_contact_name) { %>
     <div class="contact-box">
       <span class="elabel"><%= t('emerg.contact') %></span>
-      <span class="evalue"><%= profile.emergency_contact_name || '' %>
+      <span class="evalue"><%= name(profile.emergency_contact_name) || '' %>
         <% if (profile.emergency_contact_relation) { %>(<%= profile.emergency_contact_relation %>)<% } %>
       </span>
       <% if (profile.emergency_contact_phone) { %>

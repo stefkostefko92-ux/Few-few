@@ -123,7 +123,7 @@ try {
       full_name: 'Иван Тестов',
       blood_type: 'A Rh+',
       allergies: 'пеницилин',
-      allergy_keys: 'penicillin',
+      allergy_keys: 'penicillin,peanuts',
       chronic_conditions: 'диабет',
       condition_keys: 'diabetes_t1',
       hearing_status: 'Глух/а',
@@ -175,11 +175,13 @@ try {
   const emergEn = await (await req(`/e/${rawProfile.emergency_token}?lang=en`)).text();
   assert.ok(
     emergEn.includes('Penicillin') &&
+      emergEn.includes('Peanuts') && // няколко алергии се показват
       emergEn.includes('Type 1 diabetes') &&
       emergEn.includes('Deaf') &&
+      emergEn.includes('Ivan Testov') && // транслитерирано име (Иван Тестов)
       emergEn.includes('EMERGENCY MEDICAL INFORMATION')
   );
-  ok('английският спешен изглед превежда структурираните клинични данни');
+  ok('английският изглед превежда клиничните данни и транслитерира името');
 
   // 11б. Близкият е автоматично уведомен (без дублиране в рамките на прозореца)
   const settle = () => new Promise((r) => setTimeout(r, 100)); // известието се праща неблокиращо
