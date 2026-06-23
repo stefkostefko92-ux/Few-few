@@ -140,27 +140,53 @@ app.use((req, res, next) => {
 
 app.use(csrf);
 
-// ---- SEO / GEO / AEO ресурси ----
-app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(siteBaseUrl(req))));
-app.get('/sitemap.xml', (req, res) =>
-  res.type('application/xml').send(sitemapXml(siteBaseUrl(req)))
-);
-app.get('/llms.txt', (req, res) =>
-  res.type('text/plain; charset=utf-8').send(llmsTxt(siteBaseUrl(req)))
-);
-app.get('/.well-known/security.txt', (req, res) =>
-  res.type('text/plain').send(securityTxt(siteBaseUrl(req)))
-);
-app.get('/manifest.webmanifest', (req, res) =>
-  res.type('application/manifest+json').send(JSON.stringify(webManifest()))
+// Здравна проверка за оркестратора (Render/Docker) — без кеширане, без данни.
+app.get(['/health', '/healthz'], (req, res) =>
+  res.type('text/plain').setHeader('Cache-Control', 'no-store').send('ok')
 );
 
-// Лимити срещу брутфорс.
+// ---- SEO / GEO / AEO ресурси ----
+// Публичните, нечувствителни ресурси се кешират за по-добра производителност.
+const PUBLIC_CACHE = prod ? 'public, max-age=3600' : 'no-cache';
+app.get('/robots.txt', (req, res) =>
+  res
+    .type('text/plain')
+    .setHeader('Cache-Control', PUBLIC_CACHE)
+    .send(robotsTxt(siteBaseUrl(req)))
+);
+app.get('/sitemap.xml', (req, res) =>
+  res
+    .type('application/xml')
+    .setHeader('Cache-Control', PUBLIC_CACHE)
+    .send(sitemapXml(siteBaseUrl(req)))
+);
+app.get('/llms.txt', (req, res) =>
+  res
+    .type('text/plain; charset=utf-8')
+    .setHeader('Cache-Control', PUBLIC_CACHE)
+    .send(llmsTxt(siteBaseUrl(req)))
+);
+app.get('/.well-known/security.txt', (req, res) =>
+  res
+    .type('text/plain')
+    .setHeader('Cache-Control', PUBLIC_CACHE)
+    .send(securityTxt(siteBaseUrl(req)))
+);
+app.get('/manifest.webmanifest', (req, res) =>
+  res
+    .type('application/manifest+json')
+    .setHeader('Cache-Control', PUBLIC_CACHE)
+    .send(JSON.stringify(webManifest()))
+);
+
+// Лимити срещу брутфорс и злоупотреба.
 app.use(
   ['/login', '/register', '/2fa', '/forgot', '/reset'],
   rateLimit({ windowMs: 15 * 60 * 1000, max: 30 })
 );
 app.use('/e', rateLimit({ windowMs: 15 * 60 * 1000, max: 60 }));
+app.use('/webauthn', rateLimit({ windowMs: 15 * 60 * 1000, max: 60 }));
+app.use('/sos/alert', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }));
 
 // Помощник: маркира страница като публична/индексируема. Описанието е двуезично.
 function publicPage(res, descBg, descEn) {
@@ -238,11 +264,47 @@ function retentionCleanup() {
   }
 }
 
+// Проверка на конфигурацията при старт в продукция: спираме рано при липсващи
+// критични настройки, вместо да тръгнем в несигурно състояние.
+function validateEnv() {
+  const problems = [];
+  if (!process.env.PUBLIC_BASE_URL) {
+    problems.push(
+      'PUBLIC_BASE_URL не е зададен — задължителен в продукция (предотвратява Host header атаки и грешни абсолютни URL).'
+    );
+  }
+  if (!process.env.ENCRYPTION_KEY) {
+    problems.push('Липсва ENCRYPTION_KEY — ключ за криптиране на данните в покой.');
+  }
+  if (problems.length) {
+    console.error('Грешка в конфигурацията:\n - ' + problems.join('\n - '));
+    process.exit(1);
+  }
+}
+
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'test') {
+  if (prod) validateEnv();
   retentionCleanup();
   setInterval(retentionCleanup, 24 * 60 * 60 * 1000).unref();
-  app.listen(PORT, () => console.log(`MedQR слуша на http://localhost:${PORT}`));
+  const server = app.listen(PORT, () => console.log(`MedQR слуша на http://localhost:${PORT}`));
+
+  // Плавно спиране: спираме приема на нови заявки и затваряме базата.
+  const shutdown = (signal) => {
+    console.log(`Получен ${signal} — плавно спиране…`);
+    server.close(() => {
+      try {
+        db.close();
+      } catch {
+        /* базата вече е затворена */
+      }
+      process.exit(0);
+    });
+    // Предпазна мрежа, ако връзките не се затворят навреме.
+    setTimeout(() => process.exit(0), 10000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 export default app;

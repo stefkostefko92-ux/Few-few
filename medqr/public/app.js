@@ -188,14 +188,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const show = (text) => {
       if (stage) stage.textContent = text;
     };
+    // Достъпен диалог: фокус-капан, връщане на фокуса и Esc за затваряне.
+    let prevFocus = null;
+    const focusables = () =>
+      Array.from(
+        commOverlay.querySelectorAll(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null);
     const open = () => {
+      prevFocus = document.activeElement;
       commOverlay.hidden = false;
       document.body.classList.add('comm-open');
+      const closeBtn = commOverlay.querySelector('[data-comm-close]');
+      if (closeBtn) closeBtn.focus();
     };
     const close = () => {
       commOverlay.hidden = true;
       document.body.classList.remove('comm-open');
       if (supportsTTS) window.speechSynthesis.cancel();
+      if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
     };
 
     document.querySelectorAll('[data-comm-open]').forEach((b) => b.addEventListener('click', open));
@@ -203,7 +215,24 @@ document.addEventListener('DOMContentLoaded', () => {
       .querySelectorAll('[data-comm-close]')
       .forEach((b) => b.addEventListener('click', close));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !commOverlay.hidden) close();
+      if (commOverlay.hidden) return;
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const items = focusables();
+        if (!items.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     });
 
     commOverlay.querySelectorAll('[data-phrase]').forEach((b) => {
@@ -265,17 +294,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statusEl) statusEl.textContent = t;
     };
 
+    // Уважаваме предпочитанието за намалено движение (риск от припадъци).
+    const reduceMotion =
+      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let alarmOn = false;
     let audioCtx;
     let osc;
     let gain;
     let beatTimer;
+    let flashTimer;
     let vibTimer;
     const stopAlarm = () => {
       alarmOn = false;
       document.body.classList.remove('sos-active');
       if (flash) flash.classList.remove('on');
       clearInterval(beatTimer);
+      clearInterval(flashTimer);
       clearInterval(vibTimer);
       try {
         if (osc) osc.stop();
@@ -311,10 +345,22 @@ document.addEventListener('DOMContentLoaded', () => {
           hi = !hi;
           osc.frequency.value = hi ? 988 : 622;
           gain.gain.value = hi ? 0.35 : 0.0001;
-          if (flash) flash.classList.toggle('on', hi);
         }, 430);
       } catch {
         /* без звук — оставаме само с мигане/вибрация */
+      }
+      // Мигането е отделно от звука и под 3 проблясъка/сек (WCAG 2.3.1).
+      // При „намалено движение“ показваме постоянен слой, без мигане.
+      if (flash) {
+        if (reduceMotion) {
+          flash.classList.add('on');
+        } else {
+          let lit = false;
+          flashTimer = setInterval(() => {
+            lit = !lit;
+            flash.classList.toggle('on', lit);
+          }, 700);
+        }
       }
       try {
         if (navigator.vibrate) vibTimer = setInterval(() => navigator.vibrate([300, 150]), 900);

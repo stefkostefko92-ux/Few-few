@@ -1501,10 +1501,13 @@ body.comm-open {
   cursor: pointer;
   transition: fill 0.12s ease;
 }
-.bm:hover,
-.bm:focus {
+.bm:hover {
   fill: var(--brand);
-  outline: none;
+}
+.bm:focus-visible {
+  fill: var(--brand);
+  outline: 3px solid var(--brand-dark);
+  outline-offset: 2px;
 }
 .bm:active {
   fill: var(--brand-dark);
