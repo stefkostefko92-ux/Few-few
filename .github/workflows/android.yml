@@ -69,10 +69,11 @@ jobs:
 
       - name: Build TWA
         run: |
-          # Bubblewrap генерира Android проекта от twa-manifest.json и го строи.
-          # Подаваме паролите и през stdin, и през env (за всеки случай).
-          printf '%s\n%s\n' "$BUBBLEWRAP_KEYSTORE_PASSWORD" "$BUBBLEWRAP_KEY_PASSWORD" \
-            | bubblewrap build --skipPwaValidation
+          # При първо пускане няма генериран Android проект (gradlew/app), затова
+          # Bubblewrap пита дали да го регенерира от twa-manifest.json —
+          # отговаряме „да" на всички подкани (yes). Паролите за подписване
+          # идват от BUBBLEWRAP_KEYSTORE_PASSWORD / BUBBLEWRAP_KEY_PASSWORD.
+          yes | bubblewrap build --skipPwaValidation
 
       - name: Покажи SHA-256 отпечатъка
         if: always()
