@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
       loc_fail: 'Не успяхме да определим местоположението.',
       loc_label: 'Местоположение',
       sos_sent: 'Сигналът е изпратен до близките ти.',
+      nfc_tap: 'Допрете таг до телефона…',
+      nfc_done: 'Готово! Профилът е записан на тага.',
+      nfc_fail: 'Записът не успя: ',
+      nfc_retry: 'опитайте пак',
     },
     en: {
       offline: 'Offline — showing a saved copy.',
@@ -23,6 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
       loc_fail: 'Could not determine the location.',
       loc_label: 'Location',
       sos_sent: 'The alert was sent to your contacts.',
+      nfc_tap: 'Tap a tag to your phone…',
+      nfc_done: 'Done! The profile was written to the tag.',
+      nfc_fail: 'Write failed: ',
+      nfc_retry: 'please try again',
     },
   }[docLang];
 
@@ -356,14 +364,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const hint = document.getElementById('nfc-hint');
     if (hint) hint.hidden = true;
     nfcBtn.addEventListener('click', async () => {
-      if (status) status.textContent = 'Допрете таг до телефона…';
+      if (status) status.textContent = STR.nfc_tap;
       try {
         const ndef = new window.NDEFReader();
         await ndef.write({ records: [{ recordType: 'url', data: urlEl.textContent.trim() }] });
-        if (status) status.textContent = 'Готово! Профилът е записан на тага.';
+        if (status) status.textContent = STR.nfc_done;
       } catch (e) {
         if (status)
-          status.textContent = 'Записът не успя: ' + (e && e.message ? e.message : 'опитайте пак');
+          status.textContent = STR.nfc_fail + (e && e.message ? e.message : STR.nfc_retry);
       }
     });
   }

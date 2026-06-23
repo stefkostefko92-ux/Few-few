@@ -48,7 +48,7 @@ router.post('/webauthn/register/verify', requireAuth, async (req, res) => {
   const chal = takeChallenge(req.cookies?.wachal);
   res.clearCookie('wachal');
   if (!chal || chal.user_id !== req.user.id) {
-    return res.status(400).json({ error: 'Изтекло предизвикателство.' });
+    return res.status(400).json({ error: res.locals.t('err.challenge_expired') });
   }
   const { origin, rpID } = rp(req);
   try {
@@ -58,7 +58,8 @@ router.post('/webauthn/register/verify', requireAuth, async (req, res) => {
       expectedOrigin: origin,
       expectedRPID: rpID,
     });
-    if (!verification.verified) return res.status(400).json({ error: 'Неуспешна проверка.' });
+    if (!verification.verified)
+      return res.status(400).json({ error: res.locals.t('err.webauthn_failed') });
     saveCredential(req.user.id, verification.registrationInfo.credential, req.body.label);
     audit(req, 'passkey_added');
     res.json({ ok: true });
@@ -79,10 +80,10 @@ router.post('/webauthn/login/options', async (req, res) => {
 router.post('/webauthn/login/verify', async (req, res) => {
   const chal = takeChallenge(req.cookies?.wachal);
   res.clearCookie('wachal');
-  if (!chal) return res.status(400).json({ error: 'Изтекло предизвикателство.' });
+  if (!chal) return res.status(400).json({ error: res.locals.t('err.challenge_expired') });
 
   const cred = findCredential(req.body.cred?.id);
-  if (!cred) return res.status(400).json({ error: 'Непознат passkey.' });
+  if (!cred) return res.status(400).json({ error: res.locals.t('err.unknown_passkey') });
 
   const { origin, rpID } = rp(req);
   try {
@@ -98,7 +99,8 @@ router.post('/webauthn/login/verify', async (req, res) => {
         transports: JSON.parse(cred.transports || '[]'),
       },
     });
-    if (!verification.verified) return res.status(401).json({ error: 'Неуспешна проверка.' });
+    if (!verification.verified)
+      return res.status(401).json({ error: res.locals.t('err.webauthn_failed') });
     updateCounter(cred.credential_id, verification.authenticationInfo.newCounter);
     const { token, maxAge } = createSession(cred.user_id, req, true); // паскей → остани вписан
     res.cookie('sid', token, sessionCookieOptions(maxAge));

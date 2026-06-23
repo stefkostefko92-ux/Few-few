@@ -656,6 +656,19 @@ const DICT = {
   'err.passwords_mismatch': { bg: 'Паролите не съвпадат.', en: 'The passwords do not match.' },
   'err.wrong_password': { bg: 'Грешна парола.', en: 'Wrong password.' },
   'err.name_required': { bg: 'Името е задължително.', en: 'Name is required.' },
+  'err.bad_coords': { bg: 'Невалидни координати.', en: 'Invalid coordinates.' },
+  'err.challenge_expired': { bg: 'Изтекло предизвикателство.', en: 'Challenge expired.' },
+  'err.webauthn_failed': { bg: 'Неуспешна проверка.', en: 'Verification failed.' },
+  'err.unknown_passkey': { bg: 'Непознат passkey.', en: 'Unknown passkey.' },
+
+  // Общи / карта за печат
+  'common.home': { bg: 'Начало', en: 'Home' },
+  'common.back': { bg: 'Назад', en: 'Back' },
+  'card.title': { bg: 'Карта за печат', en: 'Print card' },
+  'card.qr_alt': {
+    bg: 'QR код за спешна медицинска информация',
+    en: 'QR code for emergency medical information',
+  },
 
   // Спешен PIN / страница за грешка
   'pin.title': { bg: 'Изисква се PIN', en: 'PIN required' },

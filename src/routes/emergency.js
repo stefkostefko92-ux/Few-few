@@ -90,7 +90,7 @@ router.post('/e/:token', async (req, res) => {
 // Намерилият споделя местоположението си с близкия контакт.
 router.post('/e/:token/locate', (req, res) => {
   const profile = getByToken(req.params.token);
-  if (!profile) return res.status(404).json({ error: 'Невалиден код.' });
+  if (!profile) return res.status(404).json({ error: res.locals.t('msg.emerg_invalid') });
   const lat = Number(req.body.lat);
   const lng = Number(req.body.lng);
   if (
@@ -101,7 +101,7 @@ router.post('/e/:token/locate', (req, res) => {
     lng < -180 ||
     lng > 180
   ) {
-    return res.status(400).json({ error: 'Невалидни координати.' });
+    return res.status(400).json({ error: res.locals.t('err.bad_coords') });
   }
   // Радиус на грешката в метри (по избор); закръгляме до цяло число.
   const acc = Number(req.body.accuracy);

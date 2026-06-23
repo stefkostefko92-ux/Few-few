@@ -4,6 +4,11 @@
 (function () {
   const meta = document.querySelector('meta[name="csrf-token"]');
   const CSRF = meta ? meta.content : '';
+  const EN = document.documentElement.lang === 'en';
+  const T = {
+    request_failed: EN ? 'Request failed.' : 'Грешка при заявката.',
+    default_label: EN ? 'Passkey' : 'Паскей',
+  };
 
   async function post(url, body) {
     const res = await fetch(url, {
@@ -13,7 +18,7 @@
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Грешка при заявката.');
+      throw new Error(data.error || T.request_failed);
     }
     return res.json();
   }
@@ -49,7 +54,7 @@
     if (regForm) {
       regForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const label = (regForm.querySelector('[name="label"]') || {}).value || 'Паскей';
+        const label = (regForm.querySelector('[name="label"]') || {}).value || T.default_label;
         registerPasskey(label).catch((err) => showError(err.message));
       });
     }
