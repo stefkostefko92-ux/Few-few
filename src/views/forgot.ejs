@@ -1,23 +1,20 @@
-<%- include('partials/head', { title: 'Забравена парола — MedQR', user: null }) %>
+<%- include('partials/head', { title: t('auth.forgot_title') + ' — MedQR', user: null }) %>
 
 <section class="form-wrap">
-  <h1>Забравена парола</h1>
+  <h1><%= t('auth.forgot_title') %></h1>
   <% if (sent) { %>
-    <p class="success" role="status">
-      Ако този имейл съществува в системата, изпратихме линк за нулиране на паролата.
-      Проверете пощата си (валиден 60 минути).
-    </p>
-    <p><a href="/login">Към вход</a></p>
+    <p class="success" role="status"><%= t('auth.forgot_sent') %></p>
+    <p><a href="/login"><%= t('auth.to_login') %></a></p>
   <% } else { %>
-    <p>Въведете имейла си и ще ви изпратим линк за задаване на нова парола.</p>
+    <p><%= t('auth.forgot_intro') %></p>
     <form method="post" action="/forgot" class="stack">
       <%- include('partials/csrf') %>
-      <label>Имейл
+      <label><%= t('auth.email') %>
         <input type="email" name="email" required autocomplete="email" autofocus>
       </label>
-      <button type="submit" class="btn">Изпрати линк</button>
+      <button type="submit" class="btn"><%= t('auth.send_link') %></button>
     </form>
-    <p><a href="/login">Назад към вход</a></p>
+    <p><a href="/login"><%= t('auth.back_login') %></a></p>
   <% } %>
 </section>
 

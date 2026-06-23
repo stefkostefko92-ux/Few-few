@@ -185,6 +185,61 @@ const DICT = {
     en: 'Offline — showing a saved copy.',
   },
 
+  // Вход / регистрация / акаунт
+  'auth.login_title': { bg: 'Вход', en: 'Log in' },
+  'auth.email': { bg: 'Имейл', en: 'Email' },
+  'auth.password': { bg: 'Парола', en: 'Password' },
+  'auth.password_min': { bg: 'Парола (минимум 10 символа)', en: 'Password (min 10 characters)' },
+  'auth.remember': {
+    bg: 'Остани вписан на това устройство (не искай парола следващия път)',
+    en: 'Stay signed in on this device (don’t ask for a password next time)',
+  },
+  'auth.or': { bg: 'или', en: 'or' },
+  'auth.passkey_login': { bg: 'Вход с паскей', en: 'Sign in with a passkey' },
+  'auth.forgot_q': { bg: 'Забравена парола?', en: 'Forgot password?' },
+  'auth.no_account': { bg: 'Нямате профил?', en: 'No account?' },
+  'auth.register_link': { bg: 'Регистрация', en: 'Sign up' },
+  'auth.register_title': { bg: 'Регистрация', en: 'Sign up' },
+  'auth.full_name': { bg: 'Пълно име', en: 'Full name' },
+  'auth.consent': {
+    bg: 'Съгласявам се здравните ми данни да се обработват и да са достъпни чрез моя QR код в спешна ситуация, съгласно',
+    en: 'I consent to my health data being processed and made accessible via my QR code in an emergency, in accordance with the',
+  },
+  'auth.consent_link': { bg: 'Политиката за поверителност', en: 'Privacy Policy' },
+  'auth.create_btn': { bg: 'Създай профил', en: 'Create profile' },
+  'auth.have_account': { bg: 'Вече имате профил?', en: 'Already have an account?' },
+  'auth.forgot_title': { bg: 'Забравена парола', en: 'Forgot password' },
+  'auth.forgot_sent': {
+    bg: 'Ако този имейл съществува в системата, изпратихме линк за нулиране на паролата. Проверете пощата си (валиден 60 минути).',
+    en: 'If this email exists in the system, we have sent a password reset link. Check your inbox (valid for 60 minutes).',
+  },
+  'auth.to_login': { bg: 'Към вход', en: 'To log in' },
+  'auth.forgot_intro': {
+    bg: 'Въведете имейла си и ще ви изпратим линк за задаване на нова парола.',
+    en: 'Enter your email and we will send you a link to set a new password.',
+  },
+  'auth.send_link': { bg: 'Изпрати линк', en: 'Send link' },
+  'auth.back_login': { bg: 'Назад към вход', en: 'Back to log in' },
+  'auth.reset_title': { bg: 'Задайте нова парола', en: 'Set a new password' },
+  'auth.new_password': {
+    bg: 'Нова парола (минимум 10 символа)',
+    en: 'New password (min 10 characters)',
+  },
+  'auth.repeat_password': { bg: 'Повторете паролата', en: 'Repeat password' },
+  'auth.save_password': { bg: 'Запази новата парола', en: 'Save new password' },
+  'auth.delete_title': { bg: 'Изтриване на профил', en: 'Delete account' },
+  'auth.delete_warn': {
+    bg: 'Това ще изтрие окончателно вашия акаунт, медицинския профил, QR кода и журнала на достъпите. Действието е необратимо и оттегля съгласието ви за обработка на данните.',
+    en: 'This will permanently delete your account, medical profile, QR code and access log. The action is irreversible and withdraws your consent to data processing.',
+  },
+  'auth.delete_confirm_js': {
+    bg: 'Сигурни ли сте? Това НЕ може да бъде отменено.',
+    en: 'Are you sure? This CANNOT be undone.',
+  },
+  'auth.delete_confirm_pw': { bg: 'Потвърдете с паролата си', en: 'Confirm with your password' },
+  'auth.delete_btn': { bg: 'Изтрий профила окончателно', en: 'Delete account permanently' },
+  'auth.cancel': { bg: 'Откажи', en: 'Cancel' },
+
   // Footer
   'foot.privacy': { bg: 'Политика за поверителност', en: 'Privacy policy' },
   'foot.cookies': { bg: 'Бисквитки', en: 'Cookies' },

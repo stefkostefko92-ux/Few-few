@@ -1,19 +1,17 @@
-<%- include('partials/head', { title: 'Изтриване на профил — MedQR', user }) %>
+<%- include('partials/head', { title: t('auth.delete_title') + ' — MedQR', user }) %>
 
 <section class="form-wrap">
-  <h1><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> Изтриване на профил</h1>
-  <p>Това ще изтрие <strong>окончателно</strong> вашия акаунт, медицинския профил,
-    QR кода и журнала на достъпите. Действието е необратимо и оттегля съгласието ви
-    за обработка на данните.</p>
+  <h1><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> <%= t('auth.delete_title') %></h1>
+  <p><%= t('auth.delete_warn') %></p>
   <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
   <form method="post" action="/profile/delete" class="stack"
-        data-confirm="Сигурни ли сте? Това НЕ може да бъде отменено.">
+        data-confirm="<%= t('auth.delete_confirm_js') %>">
     <%- include('partials/csrf') %>
-    <label>Потвърдете с паролата си
+    <label><%= t('auth.delete_confirm_pw') %>
       <input type="password" name="password" required autocomplete="current-password">
     </label>
-    <button type="submit" class="btn btn-danger">Изтрий профила окончателно</button>
-    <a class="btn btn-ghost" href="/dashboard">Откажи</a>
+    <button type="submit" class="btn btn-danger"><%= t('auth.delete_btn') %></button>
+    <a class="btn btn-ghost" href="/dashboard"><%= t('auth.cancel') %></a>
   </form>
 </section>
 
