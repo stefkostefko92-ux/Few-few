@@ -159,6 +159,7 @@ router.get('/profile/export.json', requireAuth, (req, res) => {
       communication_pref: profile.communication_pref,
       can_speak: profile.can_speak,
       sign_language: profile.sign_language,
+      interpreter_contact: profile.interpreter_contact,
       preferred_language: profile.preferred_language,
       emergency_contact_name: profile.emergency_contact_name,
       emergency_contact_phone: profile.emergency_contact_phone,

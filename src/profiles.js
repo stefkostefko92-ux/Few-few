@@ -15,6 +15,7 @@ export const ENCRYPTED_FIELDS = [
   'communication_pref',
   'can_speak',
   'sign_language',
+  'interpreter_contact',
   'preferred_language',
   'emergency_contact_name',
   'emergency_contact_phone',

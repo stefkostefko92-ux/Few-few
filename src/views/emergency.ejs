@@ -22,8 +22,20 @@
       </span>
     </div>
 
-    <details class="comm-aid" open>
-      <summary><%- include('partials/icon', { name: 'message' }) %> Помощ за общуване — покажете тези изречения на екрана</summary>
+    <% if (profile.interpreter_contact) { %>
+      <div class="interp-box">
+        <%- include('partials/icon', { name: 'hand' }) %>
+        <span>Жестов преводач / релейна услуга: <strong><%= profile.interpreter_contact %></strong></span>
+      </div>
+    <% } %>
+
+    <button type="button" class="btn btn-comm" data-comm-open>
+      <%- include('partials/icon', { name: 'message' }) %> Отвори общуване (за нечуващ/неговорещ човек)
+    </button>
+
+    <!-- Резерва без JavaScript: винаги има готови изречения за показване. -->
+    <details class="comm-aid">
+      <summary><%- include('partials/icon', { name: 'message' }) %> Готови изречения (работят и без интернет)</summary>
       <div class="phrases">
         <p>Тук съм, за да помогна. Ще пиша, за да общуваме.</p>
         <p>Боли ли ви някъде? Покажете къде.</p>
@@ -33,6 +45,66 @@
         <p>Може да пишете тук, за да ми отговорите.</p>
       </div>
     </details>
+
+    <!-- Интерактивен помощник за двупосочно общуване (показва се с бутона горе). -->
+    <div class="comm-overlay" id="comm-overlay" hidden role="dialog" aria-modal="true" aria-label="Помощник за общуване">
+      <div class="comm-head">
+        <strong><%- include('partials/icon', { name: 'message' }) %> Общуване</strong>
+        <button type="button" class="comm-x" data-comm-close aria-label="Затвори">
+          <%- include('partials/icon', { name: 'close' }) %>
+        </button>
+      </div>
+
+      <div class="comm-stage" id="comm-stage" aria-live="polite" data-default="Докоснете изречение или напишете съобщение. Натиснете „Прочети на глас“, за да го озвучите.">
+        Докоснете изречение или напишете съобщение. Натиснете „Прочети на глас“, за да го озвучите.
+      </div>
+
+      <div class="comm-body">
+        <section class="comm-sec">
+          <h3><%- include('partials/icon', { name: 'keyboard' }) %> Напишете — и прочетете на глас</h3>
+          <textarea id="comm-type" rows="2" placeholder="Напишете тук. Това дава „глас“ на човек, който не може да говори."></textarea>
+          <div class="comm-row">
+            <button type="button" class="btn btn-say" data-say><%- include('partials/icon', { name: 'volume' }) %> Прочети на глас</button>
+            <button type="button" class="btn btn-ghost" data-show>Покажи едро</button>
+            <button type="button" class="btn btn-ghost" data-clear>Изчисти</button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h3>Бързи отговори (от пациента)</h3>
+          <div class="comm-cards">
+            <button type="button" class="cc cc-yes" data-phrase="ДА">ДА</button>
+            <button type="button" class="cc cc-no" data-phrase="НЕ">НЕ</button>
+            <button type="button" class="cc" data-phrase="Не разбирам.">Не разбирам</button>
+            <button type="button" class="cc" data-phrase="Боли ме.">Боли ме</button>
+            <button type="button" class="cc" data-phrase="Имам нужда от лекарството си.">Нужно ми е лекарството</button>
+            <button type="button" class="cc" data-phrase="Моля, обадете се на моя близък.">Обадете се на близкия ми</button>
+            <button type="button" class="cc" data-phrase="Моля, извикайте жестов преводач.">Извикайте преводач</button>
+            <button type="button" class="cc" data-phrase="Не чувам. Моля, пишете ми.">Не чувам — пишете</button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h3>Въпроси (от екипа)</h3>
+          <div class="comm-cards">
+            <button type="button" class="cc" data-phrase="Тук съм, за да помогна. Ще пиша, за да общуваме.">Тук съм да помогна</button>
+            <button type="button" class="cc" data-phrase="Боли ли ви някъде? Покажете къде.">Боли ли ви?</button>
+            <button type="button" class="cc" data-phrase="Приемате ли лекарства? Имате ли алергии?">Лекарства? Алергии?</button>
+            <button type="button" class="cc" data-phrase="Да се обадя ли на ваш близък?">Да звънна ли на близък?</button>
+            <button type="button" class="cc" data-phrase="Линейката идва. Останете спокойни.">Линейката идва</button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h3>Колко силна е болката? (0–10)</h3>
+          <div class="pain-scale">
+            <% for (let n = 0; n <= 10; n++) { %>
+              <button type="button" class="ps ps-<%= n <= 3 ? 'low' : (n <= 6 ? 'mid' : 'high') %>" data-phrase="Болка: <%= n %> от 10."><%= n %></button>
+            <% } %>
+          </div>
+        </section>
+      </div>
+    </div>
   <% } %>
 
   <div class="emergency-grid">

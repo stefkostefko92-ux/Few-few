@@ -55,6 +55,7 @@ db.exec(`
     communication_pref       TEXT,
     can_speak                TEXT,
     sign_language            TEXT,
+    interpreter_contact      TEXT,
     preferred_language       TEXT,
     emergency_contact_name   TEXT,
     emergency_contact_phone  TEXT,
@@ -146,6 +147,7 @@ function ensureColumn(table, col, def) {
 ensureColumn('users', 'email_verified', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'can_speak', 'TEXT');
 ensureColumn('profiles', 'sign_language', 'TEXT');
+ensureColumn('profiles', 'interpreter_contact', 'TEXT');
 ensureColumn('profiles', 'emergency_contact_email', 'TEXT');
 ensureColumn('profiles', 'notify_on_scan', 'INTEGER NOT NULL DEFAULT 1');
 ensureColumn('profiles', 'last_notified_at', 'TEXT');

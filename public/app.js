@@ -83,6 +83,88 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Помощник за общуване (спешен изглед): двупосочни карти, скала на болка и
+  // четене на глас — дава „глас“ на нечуващ/неговорещ човек.
+  const commOverlay = document.getElementById('comm-overlay');
+  if (commOverlay) {
+    const stage = document.getElementById('comm-stage');
+    const typeBox = document.getElementById('comm-type');
+    const supportsTTS = 'speechSynthesis' in window;
+    const buzz = (ms) => {
+      try {
+        if (navigator.vibrate) navigator.vibrate(ms);
+      } catch {
+        /* без вибрация */
+      }
+    };
+    const speak = (text) => {
+      if (!text || !supportsTTS) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'bg-BG';
+        u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+      } catch {
+        /* без синтез на реч */
+      }
+    };
+    const show = (text) => {
+      if (stage) stage.textContent = text;
+    };
+    const open = () => {
+      commOverlay.hidden = false;
+      document.body.classList.add('comm-open');
+    };
+    const close = () => {
+      commOverlay.hidden = true;
+      document.body.classList.remove('comm-open');
+      if (supportsTTS) window.speechSynthesis.cancel();
+    };
+
+    document.querySelectorAll('[data-comm-open]').forEach((b) => b.addEventListener('click', open));
+    commOverlay
+      .querySelectorAll('[data-comm-close]')
+      .forEach((b) => b.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !commOverlay.hidden) close();
+    });
+
+    commOverlay.querySelectorAll('[data-phrase]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const t = b.getAttribute('data-phrase');
+        show(t);
+        speak(t);
+        buzz(15);
+      });
+    });
+
+    const sayBtn = commOverlay.querySelector('[data-say]');
+    if (sayBtn)
+      sayBtn.addEventListener('click', () => {
+        const t = ((typeBox && typeBox.value) || '').trim();
+        if (!t) return;
+        show(t);
+        speak(t);
+        buzz(15);
+      });
+    if (!supportsTTS && sayBtn) sayBtn.hidden = true;
+
+    const showBtn = commOverlay.querySelector('[data-show]');
+    if (showBtn)
+      showBtn.addEventListener('click', () => {
+        const t = ((typeBox && typeBox.value) || '').trim();
+        if (t) show(t);
+      });
+
+    const clearBtn = commOverlay.querySelector('[data-clear]');
+    if (clearBtn)
+      clearBtn.addEventListener('click', () => {
+        if (typeBox) typeBox.value = '';
+        if (stage) stage.textContent = stage.getAttribute('data-default') || '';
+      });
+  }
+
   // Запис на NFC таг (Web NFC — Android/Chrome). Прогресивно подобрение.
   const nfcBtn = document.getElementById('nfc-write');
   const urlEl = document.getElementById('emergency-url');

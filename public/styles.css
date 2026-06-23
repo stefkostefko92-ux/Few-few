@@ -1151,3 +1151,190 @@ label.checkbox input {
     background: #fff;
   }
 }
+
+/* ---------- Помощник за общуване (спешен изглед) ---------- */
+.interp-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #eef6f9;
+  border: 1px solid #cfe6ee;
+  border-radius: var(--radius);
+  padding: 0.7rem 0.9rem;
+  margin: 0.6rem 0;
+  color: var(--brand-dark);
+}
+.interp-box .icon {
+  flex: none;
+  color: var(--brand);
+}
+.btn-comm {
+  width: 100%;
+  justify-content: center;
+  font-size: 1.15rem;
+  padding: 0.95rem 1rem;
+  margin: 0.4rem 0 0.6rem;
+  background: var(--brand-dark);
+}
+.btn-comm:hover {
+  background: #064256;
+}
+
+body.comm-open {
+  overflow: hidden;
+}
+.comm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+}
+.comm-overlay[hidden] {
+  display: none;
+}
+.comm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  background: var(--brand);
+  color: #fff;
+  font-size: 1.15rem;
+}
+.comm-head .icon {
+  vertical-align: -0.2em;
+  margin-right: 0.3rem;
+}
+.comm-x {
+  background: rgba(255, 255, 255, 0.18);
+  border: 0;
+  color: #fff;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.comm-x .icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.comm-stage {
+  margin: 0;
+  padding: 1.1rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(1.4rem, 5.5vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+  min-height: 3.4em;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+.comm-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.9rem 1rem 2rem;
+  -webkit-overflow-scrolling: touch;
+}
+.comm-sec {
+  margin-bottom: 1.1rem;
+}
+.comm-sec h3 {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+.comm-sec h3 .icon {
+  vertical-align: -0.2em;
+  margin-right: 0.25rem;
+  color: var(--brand);
+}
+#comm-type {
+  width: 100%;
+  font-size: 1.25rem;
+  padding: 0.7rem;
+  border: 2px solid var(--brand);
+  border-radius: 10px;
+  resize: vertical;
+}
+.comm-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.btn-say {
+  background: var(--ok);
+  flex: 1;
+  justify-content: center;
+  min-width: 12rem;
+}
+.btn-say:hover {
+  background: #176b43;
+}
+.comm-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.55rem;
+}
+.cc {
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 0.95rem 0.6rem;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 3.4rem;
+  text-align: center;
+}
+.cc:active {
+  transform: scale(0.97);
+}
+.cc-yes {
+  border-color: var(--ok);
+  color: #176b43;
+}
+.cc-no {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.pain-scale {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  gap: 0.4rem;
+}
+.ps {
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 0.7rem 0;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  min-height: 3.2rem;
+}
+.ps:active {
+  transform: scale(0.95);
+}
+.ps-low {
+  border-color: #7fc6a3;
+  color: #176b43;
+}
+.ps-mid {
+  border-color: #e8b06a;
+  color: #9a5a12;
+}
+.ps-high {
+  border-color: #e09a92;
+  color: var(--danger);
+}
