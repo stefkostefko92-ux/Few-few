@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { Phone, Mail } from "@/components/icons";
 import { SITE, PRIMARY_NAV, FOOTER_NAV } from "@/lib/site";
-import { getFacebookUrl } from "@/lib/settings";
+import { getFacebookUrl, getPlayStoreUrl } from "@/lib/settings";
+
+// Вградена иконка на Google Play.
+function GooglePlayIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="#00d2ff" d="M3.6 1.8a1.9 1.9 0 0 0-.5 1.3v17.8c0 .5.2 1 .5 1.3l12-10.1z" />
+      <path fill="#4fd55d" d="M3.6 1.8 15.6 12l3.4-2.9-13-7.5a2 2 0 0 0-2.4.2z" />
+      <path fill="#ffd400" d="M19 9.1 15.6 12l3.4 2.9 3.1-1.8c1-.6 1-2.1 0-2.7z" />
+      <path fill="#ff3333" d="M3.6 22.2 15.6 12l3.4 2.9-13 7.5a2 2 0 0 1-2.4-.2z" />
+    </svg>
+  );
+}
 
 // Вградена иконка на Facebook (lucide премахна брандовите икони).
 function FacebookIcon({ className }: { className?: string }) {
@@ -14,7 +26,10 @@ function FacebookIcon({ className }: { className?: string }) {
 
 export async function SiteFooter() {
   const year = new Date().getFullYear();
-  const facebookUrl = await getFacebookUrl();
+  const [facebookUrl, playStoreUrl] = await Promise.all([
+    getFacebookUrl(),
+    getPlayStoreUrl(),
+  ]);
   return (
     <footer className="mt-16 border-t border-slate-200 bg-white">
       <div className="container-content py-10">
@@ -106,6 +121,17 @@ export async function SiteFooter() {
               >
                 <FacebookIcon className="h-4 w-4" />
                 Последвайте ни във Facebook
+              </a>
+            )}
+            {playStoreUrl && (
+              <a
+                href={playStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                <GooglePlayIcon className="h-5 w-5" />
+                Изтегли приложението от Google Play
               </a>
             )}
           </div>

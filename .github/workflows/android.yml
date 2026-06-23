@@ -1,0 +1,98 @@
+name: Android (TWA) build
+
+# Построява Android приложението (обвивка на сайта) и качва готовите файлове
+# като artifact — за да не е нужен Android Studio на нечий компютър.
+#
+# Пуска се РЪЧНО: раздел Actions → „Android (TWA) build" → Run workflow.
+# (Или с push на таг android-v* напр. android-v1.0.0.)
+#
+# Без тайни: прави ТЕСТОВ .apk с временен ключ (за инсталация на телефон).
+# За Google Play задайте тези secrets (за стабилен ключ за подписване):
+#   ANDROID_KEYSTORE_BASE64   — keystore файлът, кодиран: base64 -w0 android.keystore
+#   ANDROID_KEYSTORE_PASSWORD — паролата на keystore
+#   ANDROID_KEY_PASSWORD      — паролата на ключа (alias „android")
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["android-v*"]
+
+jobs:
+  build:
+    name: Build TWA (.apk + .aab)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: zabobovdol/android
+    env:
+      MANIFEST_URL: https://zabobovdol.carbonstealth.eu/manifest.webmanifest
+      BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'zabobovdol-test' }}
+      BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'zabobovdol-test' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Configure Bubblewrap (use preinstalled JDK + Android SDK)
+        run: |
+          mkdir -p "$HOME/.bubblewrap"
+          cat > "$HOME/.bubblewrap/config.json" <<EOF
+          { "jdkPath": "$JAVA_HOME", "androidSdkPath": "$ANDROID_SDK_ROOT" }
+          EOF
+
+      - name: Prepare signing keystore
+        run: |
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Използвам keystore от secrets (стабилен ключ за Google Play)."
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+          else
+            echo "::warning::Няма ANDROID_KEYSTORE_BASE64 — генерирам ВРЕМЕНЕН ключ (само за тестов .apk, не за Google Play)."
+            keytool -genkeypair -v \
+              -keystore android.keystore -alias android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$BUBBLEWRAP_KEYSTORE_PASSWORD" \
+              -keypass "$BUBBLEWRAP_KEY_PASSWORD" \
+              -dname "CN=Za Bobov dol, O=Carbon Stealth, L=Bobov dol, C=BG"
+          fi
+
+      - name: Build TWA
+        run: |
+          # Bubblewrap генерира Android проекта от twa-manifest.json и го строи.
+          # Подаваме паролите и през stdin, и през env (за всеки случай).
+          printf '%s\n%s\n' "$BUBBLEWRAP_KEYSTORE_PASSWORD" "$BUBBLEWRAP_KEY_PASSWORD" \
+            | bubblewrap build --skipPwaValidation
+
+      - name: Покажи SHA-256 отпечатъка
+        if: always()
+        run: |
+          {
+            echo "### SHA-256 отпечатък"
+            echo "Поставете го в админ панела → **Мобилно приложение**:"
+            echo '```'
+            keytool -list -v -keystore android.keystore -alias android \
+              -storepass "$BUBBLEWRAP_KEYSTORE_PASSWORD" 2>/dev/null \
+              | grep -i "SHA256:" || echo "(неуспешно — вижте лога)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Качи готовите файлове
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zabobovdol-android
+          path: |
+            zabobovdol/android/app-release-signed.apk
+            zabobovdol/android/app-release-bundle.aab
+          if-no-files-found: warn
