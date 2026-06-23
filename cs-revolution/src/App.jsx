@@ -159,6 +159,17 @@ function scrollToId(id){var el=document.getElementById(id);if(el){var y=el.getBo
 // Make an onClick <div>/<span> keyboard-operable (WCAG 2.1.1 / 4.1.2):
 // returns props that add button role, focusability and Enter/Space activation.
 function kb(fn,label){return {role:"button",tabIndex:0,"aria-label":label,onClick:fn,onKeyDown:function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();fn()}}}}
+// Load the 680KB Three.js WebGL bundle only where it pays off: skip it on small
+// screens, reduced-motion and data-saver, where it just hurts mobile LCP. The
+// site keeps its many 2D canvas effects in those cases.
+function should3D(){
+  try{
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
+    if(window.innerWidth<768)return false;
+    var c=navigator.connection;if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||"")))return false;
+    return true;
+  }catch(e){return true;}
+}
 // IP-based country detection — DEFINITIVE, overrides timezone (HTTPS endpoint: ip-api.com free tier is HTTP-only and gets blocked as mixed content)
 function detectLangByIP(callback) {
   fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(4000) })
@@ -454,7 +465,7 @@ function AdminPanel(props) {
   if (!auth) {
     return (
       React.createElement("div",{style:{position:"fixed",inset:0,background:"#000",zIndex:100000,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Mono',monospace"}},
-        React.createElement("div",{style:{width:420,padding:48,border:"1px solid rgba("+CR+",.12)",background:"rgba(0,0,0,.95)",position:"relative",overflow:"hidden"}},
+        React.createElement("div",{style:{width:"min(420px,92vw)",padding:"clamp(28px,6vw,48px)",border:"1px solid rgba("+CR+",.12)",background:"rgba(0,0,0,.95)",position:"relative",overflow:"hidden"}},
           React.createElement("div",{style:{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+CR+",.5),transparent)"}}),
           React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:36,marginBottom:24,display:"block",filter:"drop-shadow(0 0 12px rgba(0,229,255,.3))"}}),
           React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(22*F),color:"#f5f5f0",marginBottom:4}},"CS COMMAND CENTER"),
@@ -581,7 +592,8 @@ function AdminPanel(props) {
 
   // ═══ MAIN DASHBOARD ═══
   return (
-    React.createElement("div",{style:{position:"fixed",inset:0,background:"#060608",zIndex:100000,overflow:"auto",fontFamily:"'Space Mono',monospace",color:"#f5f5f0",fontSize:Math.round(12*F)}},
+    React.createElement("div",{className:"cs-admin",style:{position:"fixed",inset:0,background:"#060608",zIndex:100000,overflowY:"auto",overflowX:"hidden",fontFamily:"'Space Mono',monospace",color:"#f5f5f0",fontSize:Math.round(12*F)}},
+      React.createElement("style",null,"@media(max-width:760px){.cs-admin [style*='grid-template-columns']{grid-template-columns:1fr !important;gap:8px !important}.cs-admin [style*='display: flex']{flex-wrap:wrap !important;gap:6px !important}.cs-admin [style*='max-width: 1300']{padding:12px !important}.cs-admin{font-size:11px !important}.cs-admin *{max-width:100%;word-break:break-word;overflow-wrap:anywhere}}"),
       React.createElement("div",{style:{maxWidth:1300,margin:"0 auto",padding:Math.round(20*F)+"px"}},
 
         // HEADER
@@ -1734,6 +1746,7 @@ function Scene3D(){
   var ref=useRef(null);var mouse=useRef({x:0,y:0,px:0,py:0});
   useEffect(function(){
     if(!ref.current)return;
+    if(!should3D())return;   // skip WebGL on mobile / reduced-motion / data-saver
     var cleanup=null;
     var mounted=true;
     // Lazy load Three.js only when Scene3D mounts — saves 465KB from initial bundle
@@ -2337,6 +2350,7 @@ export default function App(){
   var bootSceneRef = useRef(null);
   useEffect(function() {
     if (loaded || !bootSceneRef.current) return;
+    if (!should3D()) return;   // boot keeps its 2D particle canvas on mobile; skip the 680KB WebGL on the critical path
     var el = bootSceneRef.current;
     var bootCleanup = null;
     var bootMounted = true;
