@@ -1,0 +1,97 @@
+<%- include('partials/head', { title: (lang === 'en' ? 'Cookie Policy' : 'Политика за бисквитки') + ' — MedQR', user }) %>
+
+<article class="legal">
+<% if (lang === 'en') { %>
+  <h1>Cookie Policy</h1>
+  <p class="muted">Version <%= legal.version %> · effective from <%= legal.effective %></p>
+
+  <h2>1. What cookies are</h2>
+  <p>Cookies are small text files a site stores on your device. MedQR uses
+    <strong>strictly necessary</strong> cookies only, for the operation of the service.
+    We do not use cookies for advertising, tracking or analytics, and we do not share data with third parties.</p>
+
+  <h2>2. Which cookies we use</h2>
+  <table class="cookie-table">
+    <thead>
+      <tr><th>Cookie</th><th>Purpose</th><th>Lifetime</th><th>Type</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sid</code></td><td>Keeps your session after sign-in</td><td>up to 1 year</td><td>Strictly necessary</td></tr>
+      <tr><td><code>csrf</code></td><td>Protects forms against CSRF attacks</td><td>7 days</td><td>Strictly necessary</td></tr>
+      <tr><td><code>p2fa</code></td><td>Temporary state during two-factor authentication</td><td>5 minutes</td><td>Strictly necessary</td></tr>
+      <tr><td><code>lang</code></td><td>Remembers your language choice</td><td>1 year</td><td>Strictly necessary</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. Consent and legal basis</h2>
+  <p>We use only strictly necessary cookies, without which the service cannot function and be secure
+    (sign-in, CSRF protection, two-factor state). They do not require prior consent under Art. 5(3)
+    of Directive 2002/58/EC (ePrivacy), reflected in Art. 4a of the Bulgarian Electronic Communications
+    Act. That is why we do not show a cookie banner and do not use cookies for analytics, ads or tracking.</p>
+
+  <h2>4. Managing cookies</h2>
+  <p>You can delete or block cookies from your browser settings. Note that blocking the strictly
+    necessary cookies will prevent sign-in and the secure operation of the service.</p>
+
+  <h2>5. Links</h2>
+  <p>See also the <a href="/privacy">Privacy Policy</a> and the <a href="/terms">Terms of Use</a>.</p>
+
+  <p><a class="btn btn-ghost" href="/">Back to home</a></p>
+<% } else { %>
+  <h1>Политика за бисквитки</h1>
+  <p class="muted">Версия <%= legal.version %> · в сила от <%= legal.effective %></p>
+
+  <h2>1. Какво са бисквитките</h2>
+  <p>Бисквитките са малки текстови файлове, които сайтът съхранява на вашето устройство.
+    MedQR използва <strong>само строго необходими</strong> бисквитки за работата на услугата.
+    Не използваме бисквитки за реклама, проследяване или анализ и не споделяме данни с трети страни.</p>
+
+  <h2>2. Какви бисквитки използваме</h2>
+  <table class="cookie-table">
+    <thead>
+      <tr><th>Бисквитка</th><th>Цел</th><th>Срок</th><th>Вид</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sid</code></td><td>Поддържа вашата сесия след вход</td><td>до 1 година</td><td>Строго необходима</td></tr>
+      <tr><td><code>csrf</code></td><td>Защита срещу CSRF атаки във формите</td><td>7 дни</td><td>Строго необходима</td></tr>
+      <tr><td><code>p2fa</code></td><td>Временно състояние при двуфакторна автентикация</td><td>5 минути</td><td>Строго необходима</td></tr>
+      <tr><td><code>lang</code></td><td>Помни избора ви на език</td><td>1 година</td><td>Строго необходима</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. Съгласие и правно основание</h2>
+  <p>Използваме само строго необходими бисквитки, без които услугата не може да функционира и да
+    бъде сигурна (вход, защита от CSRF, състояние при двуфакторна автентикация). За тях не се изисква
+    предварително съгласие съгласно чл. 5, ал. 3 от Директива 2002/58/ЕО (ePrivacy), отразена в
+    чл. 4а от Закона за електронните съобщения (ЗЕС). Затова не показваме банер за бисквитки и не
+    използваме бисквитки за аналитика, реклама или проследяване.</p>
+
+  <h2>4. Управление</h2>
+  <p>Можете да изтриете или блокирате бисквитките от настройките на браузъра си. Имайте
+    предвид, че блокирането на строго необходимите бисквитки ще попречи на вход и на
+    сигурната работа на услугата.</p>
+
+  <h2>5. Връзки</h2>
+  <p>Вижте също <a href="/privacy">Политиката за поверителност</a> и
+    <a href="/terms">Общите условия</a>.</p>
+
+  <p><a class="btn btn-ghost" href="/">Към началото</a></p>
+<% } %>
+</article>
+
+<script type="application/ld+json" nonce="<%= cspNonce %>">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "<%= lang === 'en' ? 'Cookie Policy' : 'Политика за бисквитки' %>",
+  "url": "<%= meta.canonical %>",
+  "inLanguage": "<%= lang %>",
+  "datePublished": "<%= legal.effective %>",
+  "dateModified": "<%= legal.effective %>",
+  "publisher": { "@id": "<%= site.base %>/#organization" },
+  "isPartOf": { "@id": "<%= site.base %>/#website" }
+}
+</script>
+<%- include('partials/breadcrumb', { crumb: lang === 'en' ? 'Cookie Policy' : 'Политика за бисквитки' }) %>
+
+<%- include('partials/foot') %>

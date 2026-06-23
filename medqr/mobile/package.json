@@ -1,0 +1,24 @@
+{
+  "name": "medqr-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MedQR като нативно приложение за Android и iOS (чрез Capacitor). android/ и ios/ са отделните проекти за всяка платформа.",
+  "scripts": {
+    "add:android": "cap add android",
+    "add:ios": "cap add ios",
+    "assets": "capacitor-assets generate --iconBackgroundColor '#0b6e8c' --iconBackgroundColorDark '#08566d' --splashBackgroundColor '#f5f7fa' --splashBackgroundColorDark '#08566d'",
+    "sync": "cap sync",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^9.0.0",
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.0"
+  }
+}

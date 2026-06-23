@@ -1,0 +1,22 @@
+<%- include('partials/head', { title: t('rc.title') + ' — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> <%= t('rc.title') %></h1>
+  <% if (regenerated) { %>
+    <p class="success" role="status"><%= t('rc.regenerated') %></p>
+  <% } else { %>
+    <p class="success" role="status"><%= t('rc.enabled') %></p>
+  <% } %>
+  <p><%= t('rc.note') %></p>
+
+  <ul class="recovery-codes">
+    <% codes.forEach(function(c){ %><li><code><%= c %></code></li><% }) %>
+  </ul>
+
+  <div class="cta-row">
+    <button type="button" data-print class="btn btn-ghost"><%- include('partials/icon', { name: 'printer' }) %> <%= t('rc.print') %></button>
+    <a class="btn" href="/dashboard"><%= t('rc.saved') %></a>
+  </div>
+</section>
+
+<%- include('partials/foot') %>

@@ -1,0 +1,20 @@
+<%- include('partials/head', { title: t('pin.title'), user: null }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'lock', cls: 'icon-lg' }) %> <%= t('pin.heading') %></h1>
+  <p><%= t('pin.intro') %></p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <% if (typeof locked !== 'undefined' && locked) { %>
+    <p class="muted"><%= t('pin.locked') %></p>
+  <% } else { %>
+    <form method="post" action="/e/<%= token %>" class="stack">
+      <%- include('partials/csrf') %>
+      <label>PIN
+        <input type="text" name="pin" inputmode="numeric" pattern="\d{4,8}" required autofocus>
+      </label>
+      <button type="submit" class="btn"><%= t('pin.show') %></button>
+    </form>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

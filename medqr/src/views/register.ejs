@@ -1,0 +1,27 @@
+<%- include('partials/head', { title: t('auth.register_title') + ' — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1><%= t('auth.register_title') %></h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/register" class="stack">
+    <%- include('partials/csrf') %>
+    <label><%= t('auth.full_name') %>
+      <input type="text" name="full_name" required autocomplete="name">
+    </label>
+    <label><%= t('auth.email') %>
+      <input type="email" name="email" value="<%= email %>" required autocomplete="email">
+    </label>
+    <label><%= t('auth.password_min') %>
+      <input type="password" name="password" required minlength="10" autocomplete="new-password">
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="consent" required>
+      <span><%= t('auth.consent') %>
+        <a href="/privacy" target="_blank"><%= t('auth.consent_link') %></a>.</span>
+    </label>
+    <button type="submit" class="btn"><%= t('auth.create_btn') %></button>
+  </form>
+  <p><%= t('auth.have_account') %> <a href="/login"><%= t('auth.login_title') %></a></p>
+</section>
+
+<%- include('partials/foot') %>

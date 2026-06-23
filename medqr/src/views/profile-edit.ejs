@@ -1,0 +1,146 @@
+<%- include('partials/head', { title: t('edit.title') + ' — MedQR', user }) %>
+
+<%
+  // Превод на показвания текст на клиничните опции; стойността остава канонична (BG).
+  const en = {
+    'Без слухови проблеми': 'No hearing problems', 'Намален слух': 'Reduced hearing',
+    'Ползва слухов апарат': 'Uses a hearing aid', 'Кохлеарен имплант': 'Cochlear implant', 'Глух/а': 'Deaf',
+    'Мога да говоря': 'I can speak', 'Говоря ограничено': 'I speak with difficulty', 'Не мога да говоря': 'I cannot speak',
+    'Български жестов език': 'Bulgarian Sign Language', 'Международен жестов език': 'International Sign',
+    'Не ползвам жестов език': 'I do not use sign language', 'Не знам': 'Unknown',
+  };
+  const opt = (v) => (v === '' ? t('edit.choose') : (lang === 'en' && en[v] ? en[v] : v));
+%>
+
+<h1><%= t('edit.title') %></h1>
+<% if (typeof error !== 'undefined' && error) { %><p class="error" role="alert"><%= error %></p><% } %>
+
+<form method="post" action="/profile/edit" class="stack form-wide">
+  <%- include('partials/csrf') %>
+  <fieldset>
+    <legend><%= t('edit.identity') %></legend>
+    <label><%= t('edit.full_name_req') %>
+      <input type="text" name="full_name" value="<%= profile.full_name || '' %>" required>
+    </label>
+    <label><%= t('edit.dob') %>
+      <input type="date" name="date_of_birth" value="<%= profile.date_of_birth || '' %>">
+    </label>
+    <label><%= t('edit.pref_lang') %>
+      <input type="text" name="preferred_language" value="<%= profile.preferred_language || '' %>" placeholder="<%= t('edit.pref_lang_ph') %>">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('edit.medical') %></legend>
+    <label><%= t('edit.blood') %>
+      <select name="blood_type">
+        <% ['','0 Rh+','0 Rh-','A Rh+','A Rh-','B Rh+','B Rh-','AB Rh+','AB Rh-','Не знам'].forEach(b => { %>
+          <option value="<%= b %>" <%= profile.blood_type === b ? 'selected' : '' %>><%= opt(b) %></option>
+        <% }) %>
+      </select>
+    </label>
+    <% const aset = new Set((profile.allergy_keys || '').split(',').map((s) => s.trim())); %>
+    <div class="field">
+      <span class="field-label"><%= t('edit.allergies_common') %> <span class="muted small">— <%= t('edit.multi_hint') %></span></span>
+      <div class="chips">
+        <% ALLERGIES.forEach(a => { %>
+          <label class="chip">
+            <input type="checkbox" name="allergy_keys" value="<%= a.key %>" <%= aset.has(a.key) ? 'checked' : '' %>>
+            <span><%= lang === 'en' ? a.en : a.bg %></span>
+          </label>
+        <% }) %>
+      </div>
+    </div>
+    <label><%= t('edit.allergies_other') %>
+      <textarea name="allergies" rows="2" placeholder="<%= t('edit.allergies_ph') %>"><%= profile.allergies || '' %></textarea>
+    </label>
+
+    <% const cset = new Set((profile.condition_keys || '').split(',').map((s) => s.trim())); %>
+    <div class="field">
+      <span class="field-label"><%= t('edit.conditions_common') %> <span class="muted small">— <%= t('edit.multi_hint') %></span></span>
+      <div class="chips">
+        <% CONDITIONS.forEach(c => { %>
+          <label class="chip">
+            <input type="checkbox" name="condition_keys" value="<%= c.key %>" <%= cset.has(c.key) ? 'checked' : '' %>>
+            <span><%= lang === 'en' ? c.en : c.bg %></span>
+          </label>
+        <% }) %>
+      </div>
+    </div>
+    <label><%= t('edit.conditions_other') %>
+      <textarea name="chronic_conditions" rows="2" placeholder="<%= t('edit.conditions_ph') %>"><%= profile.chronic_conditions || '' %></textarea>
+    </label>
+    <label><%= t('edit.meds') %>
+      <textarea name="current_medications" rows="2" placeholder="<%= t('edit.meds_ph') %>"><%= profile.current_medications || '' %></textarea>
+      <span class="hint muted small"><%= t('edit.meds_hint') %></span>
+    </label>
+    <label><%= t('edit.notes') %>
+      <textarea name="additional_notes" rows="2" placeholder="<%= t('edit.notes_ph') %>"><%= profile.additional_notes || '' %></textarea>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('edit.hearing_comm') %></legend>
+    <label><%= t('edit.hearing') %>
+      <select name="hearing_status">
+        <% ['','Без слухови проблеми','Намален слух','Ползва слухов апарат','Кохлеарен имплант','Глух/а'].forEach(h => { %>
+          <option value="<%= h %>" <%= profile.hearing_status === h ? 'selected' : '' %>><%= opt(h) %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label><%= t('edit.can_speak') %>
+      <select name="can_speak">
+        <% ['','Мога да говоря','Говоря ограничено','Не мога да говоря'].forEach(c => { %>
+          <option value="<%= c %>" <%= profile.can_speak === c ? 'selected' : '' %>><%= opt(c) %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label><%= t('edit.sign') %>
+      <select name="sign_language">
+        <% ['','Български жестов език','Международен жестов език','Не ползвам жестов език'].forEach(s => { %>
+          <option value="<%= s %>" <%= profile.sign_language === s ? 'selected' : '' %>><%= opt(s) %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label><%= t('edit.comm_pref') %>
+      <input type="text" name="communication_pref" value="<%= profile.communication_pref || '' %>" placeholder="<%= t('edit.comm_pref_ph') %>">
+    </label>
+    <label><%= t('edit.interpreter') %>
+      <input type="text" name="interpreter_contact" value="<%= profile.interpreter_contact || '' %>" placeholder="<%= t('edit.interpreter_ph') %>">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= t('edit.contact') %></legend>
+    <label><%= t('edit.contact_name') %>
+      <input type="text" name="emergency_contact_name" value="<%= profile.emergency_contact_name || '' %>">
+    </label>
+    <label><%= t('edit.country') %>
+      <select id="ec-country" name="emergency_contact_country" data-country-for="ec-phone">
+        <% COUNTRIES.forEach(c => { %>
+          <option value="<%= c.iso %>" data-dial="<%= c.dial %>" <%= (profile.emergency_contact_country || 'BG') === c.iso ? 'selected' : '' %>><%= (lang === 'en' ? c.en : c.bg) %> (<%= c.dial %>)</option>
+        <% }) %>
+      </select>
+    </label>
+    <label><%= t('edit.contact_phone') %>
+      <input type="tel" id="ec-phone" name="emergency_contact_phone" value="<%= profile.emergency_contact_phone || '' %>" placeholder="+359...">
+    </label>
+    <label><%= t('edit.contact_relation') %>
+      <input type="text" name="emergency_contact_relation" value="<%= profile.emergency_contact_relation || '' %>" placeholder="<%= t('edit.contact_relation_ph') %>">
+    </label>
+    <label><%= t('edit.contact_email') %>
+      <input type="email" name="emergency_contact_email" value="<%= profile.emergency_contact_email || '' %>" placeholder="name@example.com" autocomplete="off">
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="notify_on_scan" <%= profile.notify_on_scan ? 'checked' : '' %>>
+      <span><%= t('edit.notify') %></span>
+    </label>
+  </fieldset>
+
+  <div class="cta-row">
+    <button type="submit" class="btn"><%= t('edit.save') %></button>
+    <a class="btn btn-ghost" href="/dashboard"><%= t('auth.cancel') %></a>
+  </div>
+</form>
+
+<%- include('partials/foot') %>

@@ -1,0 +1,8 @@
+<%- include('partials/head', { title: t('err.page_title'), user: typeof user !== 'undefined' ? user : null }) %>
+
+<section class="form-wrap center">
+  <h1><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> <%= message %></h1>
+  <p><a class="btn btn-ghost" href="/"><%= t('common.back_home') %></a></p>
+</section>
+
+<%- include('partials/foot') %>

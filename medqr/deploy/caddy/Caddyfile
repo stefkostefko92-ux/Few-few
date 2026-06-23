@@ -1,0 +1,28 @@
+# Caddy — автоматичен TLS (Let's Encrypt) и reverse proxy към MedQR.
+# Приложението слуша на 127.0.0.1:3000 и НЕ е изложено директно.
+
+medqr.carbonstealth.eu {
+	encode zstd gzip
+
+	# Приложението задава HSTS/CSP/и т.н.; тук добавяме само базови предпазни мерки.
+	header {
+		-Server
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Content-Type-Options "nosniff"
+	}
+
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-For {remote_host}
+	}
+
+	# Ограничаваме размера на заявките (защита срещу злоупотреба).
+	request_body {
+		max_size 1MB
+	}
+
+	log {
+		output file /var/log/caddy/medqr.log
+		format json
+	}
+}
