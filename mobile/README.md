@@ -50,10 +50,27 @@ npm run open:android     # Android Studio → Build APK/AAB
 npm run open:ios         # Xcode → Archive → App Store Connect
 ```
 
+## Икони и splash
+
+Готовите изходни изображения са в `mobile/assets/` (генерирани от логото):
+`icon-only.png` (1024×1024), `splash.png` и `splash-dark.png` (2732×2732).
+След `npm run add:android`/`add:ios` изпълни:
+
+```bash
+npm run assets        # генерира всички размери за двете платформи
+```
+
+## Биометрично заключване (Face ID / пръстов отпечатък)
+
+Плъгинът `@aparajita/capacitor-biometric-auth` вече е в зависимостите. Заключването
+е **по избор** — включва се от потребителя в „Моят профил → Сигурност" (опцията се
+показва само в приложението). Логиката е в `public/app.js`, пазена така, че на уеб
+и в тестовете е без ефект. При включено заключване приложението иска биометрия при
+отваряне; сесията остава трайна (паролата не се иска).
+
 ## Преди публикуване
 
-1. **Икони и splash:** генерирай от логото (`public/logo-mark.svg`) с
-   `@capacitor/assets` или ръчно в Android Studio/Xcode.
+1. **Икони и splash:** виж секцията по-горе (`npm run assets`).
 2. **App ID:** `eu.carbonstealth.medqr` (сменяем в `capacitor.config.json`).
 3. **Разрешения:**
    - Геолокация (за споделяне на локация / SOS) — Android `ACCESS_FINE_LOCATION`,

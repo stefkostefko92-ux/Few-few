@@ -367,4 +367,52 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Биометрично заключване — само в нативното приложение (Capacitor) и само ако
+  // е включено. На уеб и в тестовете е напълно без ефект (пазено от проверките).
+  const cap = window.Capacitor;
+  const isNative = !!(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform());
+
+  const bioRow = document.getElementById('biometric-row');
+  if (bioRow && isNative) {
+    bioRow.hidden = false;
+    const cb = document.getElementById('biometric-toggle');
+    if (cb) {
+      cb.checked = localStorage.getItem('medqr-biometric') === 'on';
+      cb.addEventListener('change', () =>
+        localStorage.setItem('medqr-biometric', cb.checked ? 'on' : 'off')
+      );
+    }
+  }
+
+  if (isNative && localStorage.getItem('medqr-biometric') === 'on') {
+    const bio = cap.Plugins && cap.Plugins.BiometricAuth;
+    if (bio && typeof bio.authenticate === 'function') {
+      const msg = docLang === 'en' ? 'MedQR is locked' : 'MedQR е заключено';
+      const unlock = docLang === 'en' ? 'Unlock' : 'Отключи';
+      const lock = document.createElement('div');
+      lock.className = 'bio-lock';
+      const box = document.createElement('div');
+      box.className = 'bio-lock-box';
+      const para = document.createElement('p');
+      para.textContent = msg;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn';
+      btn.textContent = unlock;
+      box.append(para, btn);
+      lock.appendChild(box);
+      document.body.appendChild(lock);
+      const tryAuth = async () => {
+        try {
+          await bio.authenticate({ reason: msg, allowDeviceCredential: true });
+          lock.remove();
+        } catch {
+          /* остава заключено — потребителят натиска „Отключи“ */
+        }
+      };
+      btn.addEventListener('click', tryAuth);
+      tryAuth();
+    }
+  }
 });

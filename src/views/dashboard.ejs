@@ -132,6 +132,12 @@
     <a class="btn-small btn btn-ghost" href="/profile/passkeys"><%- include('partials/icon', { name: 'shield-check' }) %> Управление</a>
   </p>
 
+  <p class="security-row" id="biometric-row" hidden>
+    <strong>Биометрично заключване:</strong>
+    <span class="muted small">Face ID / пръстов отпечатък при отваряне на приложението</span>
+    <label class="checkbox"><input type="checkbox" id="biometric-toggle"> Включи</label>
+  </p>
+
   <form method="post" action="/profile/rotate-token" class="inline-form"
         data-confirm="Това ще обезсили текущия QR код и всички разпечатани карти. Сигурни ли сте?">
     <%- include('partials/csrf') %>
