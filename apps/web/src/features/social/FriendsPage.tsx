@@ -95,10 +95,14 @@ export function FriendsPage() {
 
       {/* Friends */}
       <Section title={t("friends.yourFriends")}>
-        {data && data.friends.length === 0 ? (
+        {data === null ? (
+          <p aria-live="polite" className="text-ink-muted">
+            {t("common.loading")}
+          </p>
+        ) : data.friends.length === 0 ? (
           <p className="text-ink-muted">{t("friends.empty")}</p>
         ) : (
-          data?.friends.map((f) => <FriendRow key={f.friendshipId} f={f} act={act} t={t} />)
+          data.friends.map((f) => <FriendRow key={f.friendshipId} f={f} act={act} t={t} />)
         )}
       </Section>
 
