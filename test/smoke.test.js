@@ -143,6 +143,23 @@ try {
   assert.ok((await (await req('/dashboard')).text()).includes('A Rh+'));
   ok('dashboard показва записаните данни');
 
+  // 8a. Здравна проверка (за оркестратора) — публична, без кеширане
+  const health = await req('/health');
+  assert.equal(health.status, 200);
+  assert.equal(health.headers.get('cache-control'), 'no-store');
+  ok('/health връща 200 без кеширане');
+
+  // 8б. Невалиден имейл за спешен контакт се отхвърля (защита от header injection)
+  const badEmail = await req('/profile/edit', {
+    method: 'POST',
+    body: {
+      full_name: 'Иван Тестов',
+      emergency_contact_email: 'loš@\nbcc: spam@evil.bg',
+    },
+  });
+  assert.equal(badEmail.status, 400);
+  ok('невалиден имейл за спешен контакт се отхвърля');
+
   // 8б. SOS страница и сигнал до близък (задействан от потребителя)
   assert.ok((await (await req('/sos')).text()).includes('Обадете се на 112'));
   const sosRes = await fetch(`${base}/sos/alert`, {

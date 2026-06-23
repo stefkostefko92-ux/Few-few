@@ -20,6 +20,14 @@ import { QR_SIZES, resolveSize, buildLabelSvg } from '../label.js';
 
 const router = Router();
 
+// Консервативна проверка на имейл: единствен @, разумни символи, дължина ≤254 и
+// без нови редове (срещу инжектиране на имейл хедъри).
+function isValidEmail(value) {
+  if (value.length > 254) return false;
+  if (/[\r\n]/.test(value)) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 function emergencyUrl(req, token) {
   const base = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
   return `${base}/e/${token}`;
@@ -88,6 +96,15 @@ router.post('/profile/edit', requireAuth, (req, res) => {
       user: req.user,
       profile: { ...profile, ...data },
       error: res.locals.t('err.name_required'),
+    });
+  }
+  // Имейлът на спешния контакт се ползва за изпращане на известия — валидираме го
+  // строго (формат, дължина, без CRLF) за защита от header injection.
+  if (data.emergency_contact_email && !isValidEmail(data.emergency_contact_email)) {
+    return res.status(400).render('profile-edit', {
+      user: req.user,
+      profile: { ...profile, ...data },
+      error: res.locals.t('err.bad_email'),
     });
   }
   updateFields(profile.id, data);
