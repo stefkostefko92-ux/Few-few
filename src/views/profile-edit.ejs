@@ -1,101 +1,112 @@
-<%- include('partials/head', { title: 'Редакция на профил — MedQR', user }) %>
+<%- include('partials/head', { title: t('edit.title') + ' — MedQR', user }) %>
 
-<h1>Редакция на медицински профил</h1>
+<%
+  // Превод на показвания текст на клиничните опции; стойността остава канонична (BG).
+  const en = {
+    'Без слухови проблеми': 'No hearing problems', 'Намален слух': 'Reduced hearing',
+    'Ползва слухов апарат': 'Uses a hearing aid', 'Кохлеарен имплант': 'Cochlear implant', 'Глух/а': 'Deaf',
+    'Мога да говоря': 'I can speak', 'Говоря ограничено': 'I speak with difficulty', 'Не мога да говоря': 'I cannot speak',
+    'Български жестов език': 'Bulgarian Sign Language', 'Международен жестов език': 'International Sign',
+    'Не ползвам жестов език': 'I do not use sign language', 'Не знам': 'Unknown',
+  };
+  const opt = (v) => (v === '' ? t('edit.choose') : (lang === 'en' && en[v] ? en[v] : v));
+%>
+
+<h1><%= t('edit.title') %></h1>
 <% if (typeof error !== 'undefined' && error) { %><p class="error" role="alert"><%= error %></p><% } %>
 
 <form method="post" action="/profile/edit" class="stack form-wide">
   <%- include('partials/csrf') %>
   <fieldset>
-    <legend>Самоличност</legend>
-    <label>Пълно име *
+    <legend><%= t('edit.identity') %></legend>
+    <label><%= t('edit.full_name_req') %>
       <input type="text" name="full_name" value="<%= profile.full_name || '' %>" required>
     </label>
-    <label>Дата на раждане
+    <label><%= t('edit.dob') %>
       <input type="date" name="date_of_birth" value="<%= profile.date_of_birth || '' %>">
     </label>
-    <label>Предпочитан език за комуникация
-      <input type="text" name="preferred_language" value="<%= profile.preferred_language || '' %>" placeholder="напр. български">
+    <label><%= t('edit.pref_lang') %>
+      <input type="text" name="preferred_language" value="<%= profile.preferred_language || '' %>" placeholder="<%= t('edit.pref_lang_ph') %>">
     </label>
   </fieldset>
 
   <fieldset>
-    <legend>Медицинска информация</legend>
-    <label>Кръвна група
+    <legend><%= t('edit.medical') %></legend>
+    <label><%= t('edit.blood') %>
       <select name="blood_type">
         <% ['','0 Rh+','0 Rh-','A Rh+','A Rh-','B Rh+','B Rh-','AB Rh+','AB Rh-','Не знам'].forEach(b => { %>
-          <option value="<%= b %>" <%= profile.blood_type === b ? 'selected' : '' %>><%= b || '— изберете —' %></option>
+          <option value="<%= b %>" <%= profile.blood_type === b ? 'selected' : '' %>><%= opt(b) %></option>
         <% }) %>
       </select>
     </label>
-    <label>Алергии към лекарства
-      <textarea name="allergies" rows="2" placeholder="напр. пеницилин, аспирин"><%= profile.allergies || '' %></textarea>
+    <label><%= t('edit.allergies') %>
+      <textarea name="allergies" rows="2" placeholder="<%= t('edit.allergies_ph') %>"><%= profile.allergies || '' %></textarea>
     </label>
-    <label>Хронични заболявания / състояния
-      <textarea name="chronic_conditions" rows="2" placeholder="напр. диабет тип 1, епилепсия, астма"><%= profile.chronic_conditions || '' %></textarea>
+    <label><%= t('edit.conditions') %>
+      <textarea name="chronic_conditions" rows="2" placeholder="<%= t('edit.conditions_ph') %>"><%= profile.chronic_conditions || '' %></textarea>
     </label>
-    <label>Текущи медикаменти
-      <textarea name="current_medications" rows="2" placeholder="напр. инсулин, антикоагуланти"><%= profile.current_medications || '' %></textarea>
+    <label><%= t('edit.meds') %>
+      <textarea name="current_medications" rows="2" placeholder="<%= t('edit.meds_ph') %>"><%= profile.current_medications || '' %></textarea>
     </label>
-    <label>Друга важна информация
-      <textarea name="additional_notes" rows="2" placeholder="напр. пейсмейкър, бременност, донор на органи"><%= profile.additional_notes || '' %></textarea>
+    <label><%= t('edit.notes') %>
+      <textarea name="additional_notes" rows="2" placeholder="<%= t('edit.notes_ph') %>"><%= profile.additional_notes || '' %></textarea>
     </label>
   </fieldset>
 
   <fieldset>
-    <legend>Слух и комуникация</legend>
-    <label>Слухов статус
+    <legend><%= t('edit.hearing_comm') %></legend>
+    <label><%= t('edit.hearing') %>
       <select name="hearing_status">
         <% ['','Без слухови проблеми','Намален слух','Ползва слухов апарат','Кохлеарен имплант','Глух/а'].forEach(h => { %>
-          <option value="<%= h %>" <%= profile.hearing_status === h ? 'selected' : '' %>><%= h || '— изберете —' %></option>
+          <option value="<%= h %>" <%= profile.hearing_status === h ? 'selected' : '' %>><%= opt(h) %></option>
         <% }) %>
       </select>
     </label>
-    <label>Мога ли да говоря
+    <label><%= t('edit.can_speak') %>
       <select name="can_speak">
         <% ['','Мога да говоря','Говоря ограничено','Не мога да говоря'].forEach(c => { %>
-          <option value="<%= c %>" <%= profile.can_speak === c ? 'selected' : '' %>><%= c || '— изберете —' %></option>
+          <option value="<%= c %>" <%= profile.can_speak === c ? 'selected' : '' %>><%= opt(c) %></option>
         <% }) %>
       </select>
     </label>
-    <label>Жестов език
+    <label><%= t('edit.sign') %>
       <select name="sign_language">
         <% ['','Български жестов език','Международен жестов език','Не ползвам жестов език'].forEach(s => { %>
-          <option value="<%= s %>" <%= profile.sign_language === s ? 'selected' : '' %>><%= s || '— изберете —' %></option>
+          <option value="<%= s %>" <%= profile.sign_language === s ? 'selected' : '' %>><%= opt(s) %></option>
         <% }) %>
       </select>
     </label>
-    <label>Предпочитан начин на комуникация
-      <input type="text" name="communication_pref" value="<%= profile.communication_pref || '' %>" placeholder="напр. писмено, четене по устни, жестов език">
+    <label><%= t('edit.comm_pref') %>
+      <input type="text" name="communication_pref" value="<%= profile.communication_pref || '' %>" placeholder="<%= t('edit.comm_pref_ph') %>">
     </label>
-    <label>Контакт на жестов преводач / релейна услуга (по избор)
-      <input type="text" name="interpreter_contact" value="<%= profile.interpreter_contact || '' %>" placeholder="напр. име и телефон на личен преводач">
+    <label><%= t('edit.interpreter') %>
+      <input type="text" name="interpreter_contact" value="<%= profile.interpreter_contact || '' %>" placeholder="<%= t('edit.interpreter_ph') %>">
     </label>
   </fieldset>
 
   <fieldset>
-    <legend>Спешен контакт</legend>
-    <label>Име на близък
+    <legend><%= t('edit.contact') %></legend>
+    <label><%= t('edit.contact_name') %>
       <input type="text" name="emergency_contact_name" value="<%= profile.emergency_contact_name || '' %>">
     </label>
-    <label>Телефон за връзка
+    <label><%= t('edit.contact_phone') %>
       <input type="tel" name="emergency_contact_phone" value="<%= profile.emergency_contact_phone || '' %>" placeholder="+359...">
     </label>
-    <label>Роднинска връзка
-      <input type="text" name="emergency_contact_relation" value="<%= profile.emergency_contact_relation || '' %>" placeholder="напр. съпруг, дъщеря">
+    <label><%= t('edit.contact_relation') %>
+      <input type="text" name="emergency_contact_relation" value="<%= profile.emergency_contact_relation || '' %>" placeholder="<%= t('edit.contact_relation_ph') %>">
     </label>
-    <label>Имейл на близък (за известия)
+    <label><%= t('edit.contact_email') %>
       <input type="email" name="emergency_contact_email" value="<%= profile.emergency_contact_email || '' %>" placeholder="name@example.com" autocomplete="off">
     </label>
     <label class="checkbox">
       <input type="checkbox" name="notify_on_scan" <%= profile.notify_on_scan ? 'checked' : '' %>>
-      <span>Уведоми близкия по имейл, когато някой отвори спешния ми профил
-        (без медицински данни в имейла).</span>
+      <span><%= t('edit.notify') %></span>
     </label>
   </fieldset>
 
   <div class="cta-row">
-    <button type="submit" class="btn">Запази</button>
-    <a class="btn btn-ghost" href="/dashboard">Откажи</a>
+    <button type="submit" class="btn"><%= t('edit.save') %></button>
+    <a class="btn btn-ghost" href="/dashboard"><%= t('auth.cancel') %></a>
   </div>
 </form>
 
