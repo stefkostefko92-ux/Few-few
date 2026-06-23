@@ -15,7 +15,7 @@
 
   <!-- GEO: държава/регион на услугата -->
   <meta name="geo.region" content="<%= geo.region %>">
-  <meta name="geo.placename" content="<%= geo.placename %>">
+  <meta name="geo.placename" content="<%= lang === 'en' ? 'Bulgaria' : geo.placename %>">
   <meta name="geo.position" content="<%= geo.position %>">
   <meta name="ICBM" content="<%= geo.icbm %>">
 
@@ -29,7 +29,7 @@
   <meta property="og:image" content="<%= meta.ogImage %>">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="MedQR — спешен медицински профил с QR код">
+  <meta property="og:image:alt" content="<%= t('og.image_alt') %>">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">

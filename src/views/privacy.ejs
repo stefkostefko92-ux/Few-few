@@ -1,6 +1,112 @@
-<%- include('partials/head', { title: 'Политика за поверителност — MedQR', user }) %>
+<%- include('partials/head', { title: (lang === 'en' ? 'Privacy Policy' : 'Политика за поверителност') + ' — MedQR', user }) %>
 
 <article class="legal">
+<% if (lang === 'en') { %>
+  <h1>Privacy Policy</h1>
+  <p class="muted">Version <%= legal.version %> · effective from <%= legal.effective %></p>
+
+  <p>This policy explains how <strong><%= company.name %></strong> processes the personal data of
+    MedQR users in accordance with Regulation (EU) 2016/679 (GDPR), the Bulgarian Personal Data
+    Protection Act and the Electronic Communications Act.</p>
+
+  <h2>1. Data controller</h2>
+  <p>The controller is <strong><%= company.name %></strong>
+    (<a href="<%= company.url %>" target="_blank" rel="noopener noreferrer"><%= company.url %></a>).
+    Data-protection questions and exercising your rights:
+    <a href="mailto:privacy@carbonstealth.eu">privacy@carbonstealth.eu</a>.</p>
+
+  <h2>2. What data we process</h2>
+  <ul>
+    <li><strong>Account data:</strong> email, hashed password, email-verification status,
+      registration date, consent record (time and version).</li>
+    <li><strong>Medical profile (special category, GDPR Art. 9):</strong> name, date of birth,
+      blood type, drug allergies, chronic conditions, medications, hearing status, ability to speak,
+      sign language and preferred way to communicate, emergency contact (name, phone, email,
+      relationship) and other notes.</li>
+    <li><strong>Technical/audit data:</strong> emergency-profile access records (time, IP address,
+      device type), a security action log and active-session metadata.</li>
+  </ul>
+
+  <h2>3. Purposes and legal bases</h2>
+  <ul>
+    <li><strong>Explicit consent</strong> (GDPR Art. 6(1)(a) and Art. 9(2)(a)) — to store and display
+      the medical profile. You can withdraw it at any time without affecting the lawfulness of
+      processing before withdrawal.</li>
+    <li><strong>Vital interests</strong> (GDPR Art. 9(2)(c)) — for responders to access the data when
+      the person is physically unable to give consent (e.g. unconscious).</li>
+    <li><strong>Performance of the service</strong> (Art. 6(1)(b)) — creating and maintaining the
+      account and profile.</li>
+    <li><strong>Legitimate interest</strong> (Art. 6(1)(f)) — security, abuse prevention and auditing.</li>
+  </ul>
+
+  <h2>4. Data protection</h2>
+  <ul>
+    <li>Sensitive medical fields are <strong>encrypted at rest</strong> (AES-256-GCM).</li>
+    <li>The connection is <strong>encrypted with TLS/HTTPS</strong>; passwords and PINs are stored
+      only hashed with <strong>Argon2id</strong>.</li>
+    <li>Emergency access is via a <strong>long unpredictable token</strong>, optionally protected by a
+      PIN; every access is logged and a lost code can be invalidated.</li>
+    <li><strong>Two-factor authentication</strong> and <strong>passkeys (WebAuthn)</strong>,
+      brute-force lockout and a tamper-evident audit log are supported.</li>
+    <li>For offline use the app may <strong>store a copy of key screens (incl. SOS) on your
+      device</strong>; therefore keep your device locked. This copy is cleared when you log out.</li>
+  </ul>
+
+  <h2>5. Retention periods</h2>
+  <ul>
+    <li><strong>Account and medical profile:</strong> while the account exists. On deletion all data
+      is permanently removed (cascading).</li>
+    <li><strong>Emergency-profile access records:</strong> up to 365 days.</li>
+    <li><strong>Security audit log:</strong> up to 730 days.</li>
+    <li><strong>Temporary tokens and pending logins:</strong> until they expire (minutes to hours).</li>
+  </ul>
+
+  <h2>6. Storage and location (transfers)</h2>
+  <p>Data is hosted in <strong>Hetzner data centres in Germany (EU)</strong>. We do not transfer
+    personal data outside the European Economic Area. Should this change, appropriate safeguards
+    under GDPR Chapter V (e.g. standard contractual clauses) will apply.</p>
+
+  <h2>7. Recipients and processors</h2>
+  <p>We do not sell data or use it for advertising. The emergency profile is accessible to anyone who
+    scans your QR/NFC code (hence we recommend a PIN for more sensitive profiles). The hosting
+    provider (Hetzner Online GmbH) acts as a data processor under a Data Processing Agreement (GDPR
+    Art. 28). When notifications are enabled we send an email to the contact you specify — without
+    medical data.</p>
+
+  <h2>8. Automated decision-making</h2>
+  <p>We do not carry out automated decision-making with legal or similarly significant effects, nor
+    profiling within the meaning of GDPR Art. 22.</p>
+
+  <h2>9. Children’s data</h2>
+  <p>The service is intended for persons at least 16 years old. A child’s profile may be created and
+    maintained only by a person with parental responsibility, who is responsible for the accuracy and
+    lawfulness of the data entered.</p>
+
+  <h2>10. Your rights</h2>
+  <p>You have the right of access, rectification, erasure (“right to be forgotten”), restriction of
+    processing, objection, data portability and withdrawal of consent at any time. In the app you can
+    <strong>download your data</strong> (machine-readable JSON) and <strong>delete your account</strong>.
+    For the other rights write to <a href="mailto:privacy@carbonstealth.eu">privacy@carbonstealth.eu</a>;
+    we respond within one month.</p>
+
+  <h2>11. Security breaches</h2>
+  <p>In the event of a breach posing a risk to your rights, we will notify the competent supervisory
+    authority within 72 hours and, where applicable, notify you without undue delay (GDPR Art. 33–34).</p>
+
+  <h2>12. Complaints to a supervisory authority</h2>
+  <p>You have the right to lodge a complaint with the <strong>Commission for Personal Data Protection
+    (CPDP)</strong>: Sofia 1592, 2 “Prof. Tsvetan Lazarov” Blvd.,
+    <a href="https://www.cpdp.bg" target="_blank" rel="noopener noreferrer">www.cpdp.bg</a>,
+    <a href="mailto:kzld@cpdp.bg">kzld@cpdp.bg</a>.</p>
+
+  <h2>13. Changes</h2>
+  <p>We may update this policy. The current version and effective date are shown at the top.</p>
+
+  <h2>14. Important note</h2>
+  <p>MedQR is not a medical device and does not replace professional medical assessment.</p>
+
+  <p><a class="btn btn-ghost" href="/">Back to home</a></p>
+<% } else { %>
   <h1>Политика за поверителност</h1>
   <p class="muted">Версия <%= legal.version %> · в сила от <%= legal.effective %></p>
 
@@ -108,15 +214,16 @@
   <p>MedQR не е медицинско изделие и не замества професионална медицинска оценка.</p>
 
   <p><a class="btn btn-ghost" href="/">Към началото</a></p>
+<% } %>
 </article>
 
 <script type="application/ld+json" nonce="<%= cspNonce %>">
 {
   "@context": "https://schema.org",
   "@type": "PrivacyPolicy",
-  "name": "Политика за поверителност",
+  "name": "<%= lang === 'en' ? 'Privacy Policy' : 'Политика за поверителност' %>",
   "url": "<%= meta.canonical %>",
-  "inLanguage": "bg",
+  "inLanguage": "<%= lang %>",
   "version": "<%= legal.version %>",
   "datePublished": "<%= legal.effective %>",
   "dateModified": "<%= legal.effective %>",
@@ -124,6 +231,6 @@
   "isPartOf": { "@id": "<%= site.base %>/#website" }
 }
 </script>
-<%- include('partials/breadcrumb', { crumb: 'Политика за поверителност' }) %>
+<%- include('partials/breadcrumb', { crumb: lang === 'en' ? 'Privacy Policy' : 'Политика за поверителност' }) %>
 
 <%- include('partials/foot') %>

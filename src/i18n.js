@@ -14,6 +14,10 @@ const DICT = {
   'lang.bg': { bg: 'БГ', en: 'BG' },
   'lang.en': { bg: 'EN', en: 'EN' },
   'lang.switch': { bg: 'Език', en: 'Language' },
+  'og.image_alt': {
+    bg: 'MedQR — спешен медицински профил с QR код',
+    en: 'MedQR — emergency medical profile with a QR code',
+  },
 
   // Начало (hero)
   'home.badge': { bg: 'Криптирано · GDPR · хостинг в ЕС', en: 'Encrypted · GDPR · EU hosting' },

@@ -153,37 +153,42 @@ app.use(
 );
 app.use('/e', rateLimit({ windowMs: 15 * 60 * 1000, max: 60 }));
 
-// Помощник: маркира страница като публична/индексируема.
-function publicPage(res, description) {
+// Помощник: маркира страница като публична/индексируема. Описанието е двуезично.
+function publicPage(res, descBg, descEn) {
   res.locals.meta.robots = 'index, follow';
+  const description = res.locals.lang === 'en' ? descEn || descBg : descBg;
   if (description) res.locals.meta.description = description;
 }
 
 app.get('/', (req, res) => {
   publicPage(
     res,
-    'Защитен спешен медицински профил с QR код: кръвна група, алергии, заболявания и спешен контакт — достъпни при злополука, дори ако не можете да говорите.'
+    'Защитен спешен медицински профил с QR код: кръвна група, алергии, заболявания и спешен контакт — достъпни при злополука, дори ако не можете да говорите.',
+    'Secure emergency medical profile with a QR code: blood type, allergies, conditions and an emergency contact — available in an accident, even if you cannot speak.'
   );
   res.render('home', { user: req.user });
 });
 app.get('/privacy', (req, res) => {
   publicPage(
     res,
-    'Политика за поверителност на MedQR: какви лични и здравни данни обработваме, на какво основание (GDPR, чл. 9), как ги защитаваме и вашите права.'
+    'Политика за поверителност на MedQR: какви лични и здравни данни обработваме, на какво основание (GDPR, чл. 9), как ги защитаваме и вашите права.',
+    'MedQR privacy policy: what personal and health data we process, on what basis (GDPR Art. 9), how we protect it and your rights.'
   );
   res.render('privacy', { user: req.user });
 });
 app.get('/cookies', (req, res) => {
   publicPage(
     res,
-    'Политика за бисквитки на MedQR: използваме само строго необходими бисквитки за вход и сигурност. Без проследяване, реклами или трети страни.'
+    'Политика за бисквитки на MedQR: използваме само строго необходими бисквитки за вход и сигурност. Без проследяване, реклами или трети страни.',
+    'MedQR cookie policy: we use only strictly necessary cookies for sign-in and security. No tracking, ads or third parties.'
   );
   res.render('cookies', { user: req.user });
 });
 app.get('/terms', (req, res) => {
   publicPage(
     res,
-    'Общи условия за ползване на MedQR — информационна услуга за спешен медицински профил. Не е медицинско изделие.'
+    'Общи условия за ползване на MedQR — информационна услуга за спешен медицински профил. Не е медицинско изделие.',
+    'MedQR terms of use — an informational emergency medical profile service. Not a medical device.'
   );
   res.render('terms', { user: req.user });
 });
