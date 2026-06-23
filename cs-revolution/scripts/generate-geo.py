@@ -357,18 +357,16 @@ def city_page(city, lang):
         (onsite[0].format(name=name), onsite[1]),
         (s["faq_invoice"][0], s["faq_invoice"][1]),
     ]
+    # NOTE: no per-city LocalBusiness node — the company has one physical HQ
+    # (Bobov Dol). Claiming a LocalBusiness "in Milano" with no street address
+    # is a doorway/NAP-inconsistency pattern Google penalizes. We model the
+    # city pages honestly as a Service with areaServed = the city.
     graph = {"@context": "https://schema.org", "@graph": [
-        {"@type": "LocalBusiness", "@id": f"{canon}#local",
-         "name": f"Carbon Stealth VCC — {name}",
-         "image": f"{BASE}/{s['og']}", "url": canon, "telephone": phone, "priceRange": "€€",
-         "address": {"@type": "PostalAddress", "addressLocality": name, "addressCountry": city["country"]},
-         "geo": {"@type": "GeoCoordinates", "latitude": city["lat"], "longitude": city["lon"]},
-         "areaServed": {"@type": "City", "name": city["name"]["en"]},
-         "parentOrganization": {"@id": f"{BASE}/#organization"}},
-        {"@type": "Service", "name": s["svc_name"].format(name=name),
+        {"@type": "Service", "@id": f"{canon}#service", "name": s["svc_name"].format(name=name),
          "serviceType": "Web development, e-commerce, custom software, SEO",
          "provider": {"@id": f"{BASE}/#organization"},
          "areaServed": {"@type": "City", "name": city["name"]["en"]},
+         "url": canon, "image": f"{BASE}/{s['og']}",
          "availableChannel": {"@type": "ServiceChannel", "serviceUrl": BASE + s["contact"]}},
         {"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "Home", "item": BASE + (s["prefix"] or "/")},
