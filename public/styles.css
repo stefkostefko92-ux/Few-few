@@ -1338,3 +1338,144 @@ body.comm-open {
   border-color: #e09a92;
   color: var(--danger);
 }
+
+/* ---------- SOS: спешна помощ ---------- */
+.sos-launch {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: linear-gradient(180deg, #d6433a, var(--danger));
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.1rem;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+}
+.sos-launch:hover {
+  filter: brightness(1.05);
+}
+.sos-launch-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  flex: none;
+}
+.sos-launch-icon .icon {
+  color: #fff;
+}
+.sos-launch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.sos-launch-text strong {
+  font-size: 1.2rem;
+}
+.sos-launch-text .muted {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sos {
+  position: relative;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.sos-title {
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.sos-bystander {
+  background: #fff;
+  border: 3px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 1.2rem 1rem;
+  margin-bottom: 1rem;
+}
+.sos-big {
+  font-size: clamp(1.3rem, 5vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 1rem;
+}
+.sos-call {
+  display: inline-flex;
+  font-size: 1.4rem;
+  padding: 1rem 1.6rem;
+  background: var(--danger);
+  width: 100%;
+  justify-content: center;
+}
+.sos-call:hover {
+  background: #a52f23;
+}
+.sos-info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.8rem;
+  text-align: left;
+  margin: 1.1rem 0 0;
+  font-size: 1.05rem;
+}
+.sos-info dt {
+  font-weight: 700;
+  color: var(--muted);
+}
+.sos-info dd {
+  margin: 0;
+}
+.sos-loc {
+  margin: 0.8rem 0 0;
+  font-weight: 600;
+}
+.sos-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.sos-alarm,
+.sos-people {
+  width: 100%;
+  justify-content: center;
+  font-size: 1.15rem;
+  padding: 0.95rem 1rem;
+}
+.sos-alarm {
+  background: #8a5a00;
+}
+.sos-alarm.is-on {
+  background: #b97400;
+}
+.sos-people {
+  background: var(--brand-dark);
+}
+.sos-note {
+  margin-top: 0.5rem;
+}
+
+/* Мигащ слой за привличане на внимание */
+.sos-flash {
+  position: fixed;
+  inset: 0;
+  background: var(--danger);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 900;
+  transition: opacity 0.12s linear;
+}
+.sos-flash.on {
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sos-flash.on {
+    opacity: 0.3;
+  }
+}

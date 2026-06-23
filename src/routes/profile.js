@@ -15,6 +15,7 @@ import {
   generateRecoveryCodes,
 } from '../auth.js';
 import { audit } from '../audit.js';
+import { notifySos } from '../notify.js';
 import { QR_SIZES, resolveSize, buildLabelSvg } from '../label.js';
 
 const router = Router();
@@ -50,6 +51,27 @@ router.get('/dashboard', requireAuth, (req, res) => {
     qrSizes: QR_SIZES,
     saved: req.query.saved === '1',
   });
+});
+
+// ---------- SOS: спешна помощ, задействана от самия потребител ----------
+router.get('/sos', requireAuth, (req, res) => {
+  res.render('sos', { user: req.user, profile: getByUserId(req.user.id) });
+});
+
+router.post('/sos/alert', requireAuth, (req, res) => {
+  const profile = getByUserId(req.user.id);
+  const lat = Number(req.body.lat);
+  const lng = Number(req.body.lng);
+  const hasLoc =
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180;
+  const sent = notifySos(profile, hasLoc ? lat.toFixed(5) : null, hasLoc ? lng.toFixed(5) : null);
+  audit(req, 'sos_triggered');
+  res.json({ ok: true, notified: sent });
 });
 
 // ---------- Редакция ----------

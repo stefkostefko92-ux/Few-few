@@ -35,6 +35,26 @@ export function notifyScan(profile, when = new Date()) {
   return true;
 }
 
+// SOS: самият притежател на профила натиска бутон за спешна помощ. Уведомяваме
+// близкия по имейл (без медицински данни), по избор с местоположение.
+export function notifySos(profile, lat = null, lng = null) {
+  if (!profile.emergency_contact_email) return false;
+  const loc =
+    lat != null && lng != null
+      ? `\nМестоположение: https://www.google.com/maps?q=${lat},${lng}\nКоординати: ${lat}, ${lng}`
+      : '\n(Местоположението не е налично.)';
+  sendMail({
+    to: profile.emergency_contact_email,
+    subject: `SOS — ${profile.full_name} се нуждае от спешна помощ`,
+    text:
+      `Това е SOS сигнал от ${profile.full_name} през MedQR.\n\n` +
+      `${profile.full_name} натисна бутона за спешна помощ. Моля, опитайте веднага да се ` +
+      `свържете. Ако не успеете, обадете се на 112.${loc}\n\n` +
+      `Автоматично съобщение от MedQR. Не съдържа медицински данни.`,
+  }).catch((e) => console.error('notifySos:', e.message));
+  return true;
+}
+
 // Споделяне на местоположението на намерилия с близкия.
 export function notifyLocation(profile, lat, lng, accuracy = null) {
   if (!profile.emergency_contact_email) return false;

@@ -90,7 +90,7 @@ app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 
 
 // Чувствителните (автентикирани и спешни) страници не се кешират никъде.
 const NO_STORE =
-  /^\/(dashboard|profile|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/;
+  /^\/(dashboard|profile|sos|login|register|2fa|forgot|reset|verify-email|e\/|card|qr\.png|logout)/;
 app.use((req, res, next) => {
   if (NO_STORE.test(req.path)) res.setHeader('Cache-Control', 'no-store');
   next();

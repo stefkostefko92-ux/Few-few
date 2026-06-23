@@ -12,6 +12,14 @@
   </div>
 <% } %>
 
+<a class="sos-launch" href="/sos">
+  <span class="sos-launch-icon"><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %></span>
+  <span class="sos-launch-text">
+    <strong>Спешна помощ (SOS)</strong>
+    <span class="muted small">Екран за минувач с обаждане до 112, сирена за внимание и сигнал до близките с локация.</span>
+  </span>
+</a>
+
 <div class="grid-2">
   <section class="card">
     <h2><%= profile.full_name %></h2>

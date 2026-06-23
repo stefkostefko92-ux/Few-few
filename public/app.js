@@ -165,6 +165,125 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  // Екран за спешна помощ (SOS): сирена + мигане + вибрация за внимание и
+  // сигнал до близките с местоположение.
+  const sos = document.getElementById('sos');
+  if (sos) {
+    const statusEl = document.getElementById('sos-status');
+    const locEl = document.getElementById('sos-loc');
+    const flash = document.getElementById('sos-flash');
+    const alarmBtn = sos.querySelector('[data-sos-alarm]');
+    const peopleBtn = sos.querySelector('[data-sos-people]');
+    const csrf = () => {
+      const m = document.querySelector('meta[name="csrf-token"]');
+      return m ? m.content : '';
+    };
+    const setStatus = (t) => {
+      if (statusEl) statusEl.textContent = t;
+    };
+
+    let alarmOn = false;
+    let audioCtx;
+    let osc;
+    let gain;
+    let beatTimer;
+    let vibTimer;
+    const stopAlarm = () => {
+      alarmOn = false;
+      document.body.classList.remove('sos-active');
+      if (flash) flash.classList.remove('on');
+      clearInterval(beatTimer);
+      clearInterval(vibTimer);
+      try {
+        if (osc) osc.stop();
+        if (audioCtx) audioCtx.close();
+      } catch {
+        /* аудио вече спряно */
+      }
+      osc = null;
+      audioCtx = null;
+      try {
+        if (navigator.vibrate) navigator.vibrate(0);
+      } catch {
+        /* без вибрация */
+      }
+      if (alarmBtn) alarmBtn.classList.remove('is-on');
+    };
+    const startAlarm = () => {
+      alarmOn = true;
+      document.body.classList.add('sos-active');
+      if (alarmBtn) alarmBtn.classList.add('is-on');
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AC();
+        osc = audioCtx.createOscillator();
+        gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.value = 0.0001;
+        osc.start();
+        let hi = false;
+        beatTimer = setInterval(() => {
+          hi = !hi;
+          osc.frequency.value = hi ? 988 : 622;
+          gain.gain.value = hi ? 0.35 : 0.0001;
+          if (flash) flash.classList.toggle('on', hi);
+        }, 430);
+      } catch {
+        /* без звук — оставаме само с мигане/вибрация */
+      }
+      try {
+        if (navigator.vibrate) vibTimer = setInterval(() => navigator.vibrate([300, 150]), 900);
+      } catch {
+        /* без вибрация */
+      }
+    };
+    if (alarmBtn)
+      alarmBtn.addEventListener('click', () => {
+        if (alarmOn) {
+          stopAlarm();
+        } else {
+          startAlarm();
+        }
+      });
+
+    if (peopleBtn)
+      peopleBtn.addEventListener('click', () => {
+        const phone = sos.getAttribute('data-contact-phone');
+        const send = (lat, lng) => {
+          const maps = lat != null ? `https://www.google.com/maps?q=${lat},${lng}` : '';
+          fetch('/sos/alert', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-csrf-token': csrf() },
+            body: JSON.stringify({ lat, lng }),
+          }).catch(() => {});
+          setStatus('Сигналът е изпратен до близките ти.');
+          if (phone) {
+            const body = encodeURIComponent(
+              `Спешно! Нуждая се от помощ. Аз съм глух/а.${maps ? ' Локация: ' + maps : ''}`
+            );
+            window.location.href = `sms:${phone}?body=${body}`;
+          }
+        };
+        if ('geolocation' in navigator) {
+          setStatus('Определяне на местоположението…');
+          navigator.geolocation.getCurrentPosition(
+            (p) => {
+              const lat = Number(p.coords.latitude.toFixed(5));
+              const lng = Number(p.coords.longitude.toFixed(5));
+              if (locEl) locEl.textContent = `Местоположение: ${lat}, ${lng}`;
+              send(lat, lng);
+            },
+            () => send(null, null),
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
+        } else {
+          send(null, null);
+        }
+      });
+  }
+
   // Запис на NFC таг (Web NFC — Android/Chrome). Прогресивно подобрение.
   const nfcBtn = document.getElementById('nfc-write');
   const urlEl = document.getElementById('emergency-url');

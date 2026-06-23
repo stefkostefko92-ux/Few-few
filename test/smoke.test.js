@@ -141,6 +141,19 @@ try {
   assert.ok((await (await req('/dashboard')).text()).includes('A Rh+'));
   ok('dashboard показва записаните данни');
 
+  // 8б. SOS страница и сигнал до близък (задействан от потребителя)
+  assert.ok((await (await req('/sos')).text()).includes('Обадете се на 112'));
+  const sosRes = await fetch(`${base}/sos/alert`, {
+    method: 'POST',
+    headers: { cookie: cookieHeader(), 'content-type': 'application/json', 'x-csrf-token': csrf() },
+    body: JSON.stringify({ lat: 42.7, lng: 23.32 }),
+  });
+  assert.equal(sosRes.status, 200);
+  await new Promise((r) => setTimeout(r, 100)); // имейлът се праща неблокиращо
+  const sosMail = [...outbox].reverse().find((m) => m.subject.startsWith('SOS'));
+  assert.ok(sosMail && sosMail.to === 'maria@test.bg', 'SOS имейл до близкия е изпратен');
+  ok('SOS страницата работи и уведомява близкия с местоположение');
+
   // 9. QR PNG
   assert.equal((await req('/qr.png')).headers.get('content-type'), 'image/png');
   ok('QR кодът се генерира като PNG');

@@ -155,5 +155,13 @@ export function webManifest() {
     theme_color: '#0b6e8c',
     lang: 'bg',
     icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+    shortcuts: [
+      {
+        name: 'Спешна помощ (SOS)',
+        short_name: 'SOS',
+        description: 'Отвори екрана за спешна помощ',
+        url: '/sos',
+      },
+    ],
   };
 }
