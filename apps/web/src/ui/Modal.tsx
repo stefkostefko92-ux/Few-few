@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Panel } from "./Panel";
 
 interface ModalProps {
@@ -16,6 +16,7 @@ const FOCUSABLE =
 export function Modal({ open, onClose, title, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
+  const titleId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -70,11 +71,16 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : "Диалог"}
         className="w-full max-w-md focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
-        {title ? <h2 className="mb-4 text-2xl text-brass-300">{title}</h2> : null}
+        {title ? (
+          <h2 id={titleId} className="mb-4 text-2xl text-brass-300">
+            {title}
+          </h2>
+        ) : null}
         {children}
       </Panel>
     </div>

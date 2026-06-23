@@ -12,6 +12,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
 ) {
   const reactId = useId();
   const inputId = id ?? reactId;
+  const errorId = `${inputId}-error`;
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={inputId} className="text-sm font-medium text-ink-300">
@@ -21,6 +22,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
         ref={ref}
         id={inputId}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         className={cn(
           "rounded-card border bg-felt-900/60 px-4 py-2.5 text-ink-100 placeholder:text-ink-muted",
           "transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-brass-300",
@@ -29,7 +31,11 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
         )}
         {...rest}
       />
-      {error ? <p className="text-sm text-loss">{error}</p> : null}
+      {error ? (
+        <p id={errorId} className="text-sm text-loss">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 });

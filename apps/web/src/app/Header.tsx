@@ -76,6 +76,7 @@ export function Header() {
               type="button"
               onClick={() => openStore(lowChips ? "chips" : "default")}
               title={t("store.topUp")}
+              aria-label={t("store.topUp")}
               className={cn(
                 "group flex items-center gap-2 rounded-full border bg-felt-800/80 py-1 pl-3 pr-1 transition-colors",
                 lowChips ? "border-loss/50" : "border-brass-400/20 hover:border-brass-300",

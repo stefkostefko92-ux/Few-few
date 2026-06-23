@@ -29,4 +29,12 @@ void i18n
     },
   });
 
+// Keep <html lang> in sync with the active language (WCAG 3.1.1) — screen
+// readers pick the right voice when the user switches locale.
+const syncHtmlLang = (lng: string) => {
+  if (typeof document !== "undefined") document.documentElement.lang = lng;
+};
+syncHtmlLang(i18n.language || DEFAULT_LOCALE);
+i18n.on("languageChanged", syncHtmlLang);
+
 export default i18n;

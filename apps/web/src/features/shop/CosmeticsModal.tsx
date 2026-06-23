@@ -86,9 +86,10 @@ export function CosmeticsModal() {
         <button
           type="button"
           onClick={() => openStore("gems")}
+          aria-label={t("cosmetics.buyGems")}
           className="flex items-center gap-1 rounded-full border border-brass-400/25 px-2.5 py-1 text-sm text-ink-100 hover:border-brass-300"
         >
-          💎 {gems} <span className="text-brass-300">+</span>
+          💎 {gems} <span className="text-brass-300" aria-hidden>+</span>
         </button>
       </div>
 

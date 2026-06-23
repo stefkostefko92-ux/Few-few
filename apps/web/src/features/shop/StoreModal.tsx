@@ -77,7 +77,9 @@ export function StoreModal() {
       ) : null}
 
       {loading && products.length === 0 ? (
-        <p className="py-6 text-center text-sm text-ink-muted">{t("common.loading")}</p>
+        <p aria-live="polite" className="py-6 text-center text-sm text-ink-muted">
+          {t("common.loading")}
+        </p>
       ) : null}
 
       <Section label={`🪙 ${t("shop.kind.CHIP_PACK")}`} items={chips} busy={busy} onBuy={buy} t={t} />

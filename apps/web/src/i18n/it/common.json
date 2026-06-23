@@ -284,7 +284,8 @@
       "BOARD": "Scacchiera",
       "CUE": "Panno biliardo",
       "ESTATE": "Panno del tabellone"
-    }
+    },
+    "buyGems": "Compra gemme"
   },
   "outOfChips": {
     "title": "Gettoni esauriti",

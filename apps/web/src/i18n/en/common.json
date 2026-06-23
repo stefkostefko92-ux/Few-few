@@ -284,7 +284,8 @@
       "BOARD": "Board",
       "CUE": "Cue cloth",
       "ESTATE": "Board felt"
-    }
+    },
+    "buyGems": "Buy gems"
   },
   "outOfChips": {
     "title": "Out of chips",
