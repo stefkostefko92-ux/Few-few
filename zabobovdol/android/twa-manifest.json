@@ -1,0 +1,43 @@
+{
+  "packageId": "eu.carbonstealth.zabobovdol",
+  "host": "zabobovdol.carbonstealth.eu",
+  "name": "За Бобов дол",
+  "launcherName": "За Бобов дол",
+  "display": "standalone",
+  "orientation": "default",
+  "themeColor": "#212f8a",
+  "themeColorDark": "#0f172a",
+  "navigationColor": "#212f8a",
+  "navigationColorDark": "#0f172a",
+  "navigationDividerColor": "#212f8a",
+  "navigationDividerColorDark": "#0f172a",
+  "backgroundColor": "#f8fafc",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://zabobovdol.carbonstealth.eu/icon-512.png",
+  "maskableIconUrl": "https://zabobovdol.carbonstealth.eu/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "zabobovdol",
+  "webManifestUrl": "https://zabobovdol.carbonstealth.eu/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://zabobovdol.carbonstealth.eu/",
+  "minSdkVersion": 23,
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0"
+}

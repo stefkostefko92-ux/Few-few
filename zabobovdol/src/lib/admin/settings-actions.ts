@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { setSetting, SETTING_KEYS } from "@/lib/settings";
 import { submitToIndexNow } from "@/lib/indexnow";
 import { clearAiConfigCache } from "@/lib/ai-config";
+import { parseFingerprints, DEFAULT_ANDROID_PACKAGE } from "@/lib/assetlinks";
 
 // Кодове за потвърждаване на собствеността в Google Search Console / Bing.
 export async function saveSeoVerification(formData: FormData): Promise<void> {
@@ -160,6 +161,35 @@ export async function saveAiSettings(formData: FormData): Promise<void> {
 
   revalidatePath("/", "layout");
   redirect("/admin/pomoshtnik?saved=1");
+}
+
+// Свързване на Android приложението (TWA) със сайта (Digital Asset Links).
+export async function saveAndroidApp(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+
+  const pkg = String(formData.get("packageName") ?? "").trim() || DEFAULT_ANDROID_PACKAGE;
+  const fpRaw = String(formData.get("fingerprints") ?? "");
+  // Запазваме само валидни SHA-256 отпечатъци (нормализирани).
+  const fingerprints = parseFingerprints(fpRaw);
+
+  if (!/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$/i.test(pkg)) {
+    redirect(
+      "/admin/mobilno?error=" +
+        encodeURIComponent("Невалидно име на пакет (напр. eu.carbonstealth.zabobovdol)."),
+    );
+  }
+
+  await setSetting(SETTING_KEYS.androidPackage, pkg);
+  await setSetting(SETTING_KEYS.androidFingerprints, fingerprints.join("\n"));
+
+  await logAudit(admin, {
+    action: "UPDATE",
+    entity: "SiteSetting",
+    summary: `Промяна на връзката с Android приложението (${fingerprints.length} отпечатъка)`,
+  });
+
+  revalidatePath("/", "layout");
+  redirect("/admin/mobilno?saved=1");
 }
 
 export async function saveDutyInfo(formData: FormData): Promise<void> {

@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
+import {
+  parseFingerprints,
+  DEFAULT_ANDROID_PACKAGE,
+} from "@/lib/assetlinks";
 
 // Ключове на редактируемите настройки.
 export const SETTING_KEYS = {
@@ -18,7 +22,32 @@ export const SETTING_KEYS = {
   geminiModel: "gemini_model",
   anthropicApiKey: "anthropic_api_key",
   anthropicModel: "anthropic_model",
+  // Android приложение (TWA) — за Digital Asset Links.
+  androidPackage: "android_package",
+  androidFingerprints: "android_fingerprints",
 } as const;
+
+export type AndroidApp = { packageName: string; fingerprints: string[] };
+
+// Данни за свързване на Android приложението (TWA) със сайта. Идват от админ
+// панела, с резервни env стойности и разумни стойности по подразбиране.
+export async function getAndroidApp(): Promise<AndroidApp> {
+  const envPkg = process.env.ANDROID_PACKAGE_NAME || DEFAULT_ANDROID_PACKAGE;
+  const envFp = process.env.ANDROID_CERT_FINGERPRINTS || "";
+  try {
+    const rows = await prisma.siteSetting.findMany({
+      where: {
+        key: { in: [SETTING_KEYS.androidPackage, SETTING_KEYS.androidFingerprints] },
+      },
+    });
+    const m = new Map(rows.map((r) => [r.key, r.value]));
+    const pkg = (m.get(SETTING_KEYS.androidPackage) || envPkg).trim();
+    const fpRaw = m.get(SETTING_KEYS.androidFingerprints) || envFp;
+    return { packageName: pkg, fingerprints: parseFingerprints(fpRaw) };
+  } catch {
+    return { packageName: envPkg.trim(), fingerprints: parseFingerprints(envFp) };
+  }
+}
 
 // Кодове за потвърждаване на собствеността в Google Search Console и Bing
 // Webmaster Tools (вмъкват се като meta тагове в <head>).
