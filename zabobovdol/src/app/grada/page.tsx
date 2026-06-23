@@ -117,7 +117,7 @@ export default async function CityPage() {
             return (
               <div key={f.label} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <Icon className="h-6 w-6 text-brand-700" aria-hidden />
-                <div className="mt-2 text-xs uppercase tracking-wide text-slate-400">{f.label}</div>
+                <div className="mt-2 text-xs uppercase tracking-wide text-slate-600">{f.label}</div>
                 <div className="mt-0.5 font-semibold text-slate-900">{f.value}</div>
               </div>
             );

@@ -100,7 +100,7 @@ export default async function DumpReportsPage() {
                         Виж снимка
                       </a>
                     )}
-                    <p className="mt-3 text-xs text-slate-400">
+                    <p className="mt-3 text-xs text-slate-600">
                       Подаден на {formatDate(r.createdAt)}
                     </p>
                   </article>

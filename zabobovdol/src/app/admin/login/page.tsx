@@ -23,7 +23,7 @@ export default function LoginPage({
         </div>
         <form action={action} className="card space-y-4">
           {state.error && (
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
               {state.error}
             </div>
           )}

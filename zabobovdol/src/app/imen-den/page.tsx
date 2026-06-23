@@ -103,7 +103,7 @@ export default async function NameDayPage({
                 </p>
               ) : (
                 <p className="flex items-start gap-2 text-slate-600">
-                  <Info className="mt-1 h-5 w-5 shrink-0 text-slate-400" aria-hidden />
+                  <Info className="mt-1 h-5 w-5 shrink-0 text-slate-600" aria-hidden />
                   <span>
                     Името „{query}“ не е в списъка ни. Той покрива най-разпространените имена —
                     някои по-редки може да липсват.

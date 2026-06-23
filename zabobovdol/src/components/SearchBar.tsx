@@ -91,7 +91,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             type="button"
             onClick={startVoice}
             className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1.5 ${
-              listening ? "animate-pulse text-crimson-600" : "text-slate-400 hover:text-brand-700"
+              listening ? "animate-pulse text-crimson-600" : "text-slate-600 hover:text-brand-700"
             }`}
             aria-label={listening ? "Слушам…" : "Търсене с глас"}
             title={listening ? "Слушам…" : "Търсене с глас"}

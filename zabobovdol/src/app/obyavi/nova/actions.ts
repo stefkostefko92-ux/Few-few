@@ -72,34 +72,42 @@ export async function submitListing(
     return { ok: false, error: "Посочете телефон или имейл за контакт." };
   }
 
-  const existing = await prisma.listing.findMany({ select: { slug: true } });
-  const slug = uniqueSlug(
-    slugify(data.title),
-    new Set(existing.map((e) => e.slug)),
-  );
+  try {
+    const existing = await prisma.listing.findMany({ select: { slug: true } });
+    const slug = uniqueSlug(
+      slugify(data.title),
+      new Set(existing.map((e) => e.slug)),
+    );
 
-  const created = await prisma.listing.create({
-    data: {
-      slug,
-      title: data.title,
-      type: data.type,
-      category: data.category || "Общи",
-      price: data.price,
-      description: data.description,
-      contactName: data.contactName,
-      contactPhone: data.contactPhone,
-      contactEmail: data.contactEmail,
-      published: false, // изчаква одобрение
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60), // 60 дни
-    },
-  });
+    const created = await prisma.listing.create({
+      data: {
+        slug,
+        title: data.title,
+        type: data.type,
+        category: data.category || "Общи",
+        price: data.price,
+        description: data.description,
+        contactName: data.contactName,
+        contactPhone: data.contactPhone,
+        contactEmail: data.contactEmail,
+        published: false, // изчаква одобрение
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60), // 60 дни
+      },
+    });
 
-  await logAudit(null, {
-    action: "CREATE",
-    entity: "Listing",
-    entityId: created.id,
-    summary: `Нова обява от посетител: „${data.title}" (чака одобрение)`,
-  });
+    await logAudit(null, {
+      action: "CREATE",
+      entity: "Listing",
+      entityId: created.id,
+      summary: `Нова обява от посетител: „${data.title}" (чака одобрение)`,
+    });
 
-  return { ok: true };
+    return { ok: true };
+  } catch (err) {
+    console.error("Грешка при запис на обява:", err);
+    return {
+      ok: false,
+      error: "Възникна грешка при записа. Опитайте отново след малко.",
+    };
+  }
 }

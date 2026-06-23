@@ -52,7 +52,7 @@ export function EuroConverter() {
           />
         </div>
 
-        <div className="hidden pb-3 text-center text-2xl text-slate-400 sm:block" aria-hidden>
+        <div className="hidden pb-3 text-center text-2xl text-slate-600 sm:block" aria-hidden>
           =
         </div>
 

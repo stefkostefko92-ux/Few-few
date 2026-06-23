@@ -92,7 +92,7 @@ export default async function BiznesPage({
                   <span className="badge mb-2">Препоръчано</span>
                 )}
                 <div className="text-lg font-semibold text-slate-900">{b.name}</div>
-                <div className="text-xs uppercase tracking-wide text-slate-400">
+                <div className="text-xs uppercase tracking-wide text-slate-600">
                   {labelFor(BUSINESS_CATEGORY_LABELS, b.category)}
                 </div>
                 {b.description && (

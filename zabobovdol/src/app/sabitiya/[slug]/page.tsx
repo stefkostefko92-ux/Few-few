@@ -79,24 +79,24 @@ export default async function EventPage({
         <aside className="space-y-3">
           <div className="card space-y-3">
             <div>
-              <div className="text-xs uppercase text-slate-400">Начало</div>
+              <div className="text-xs uppercase text-slate-600">Начало</div>
               <div className="font-semibold text-slate-800">{fmt(e.startAt)}</div>
             </div>
             {e.endAt && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Край</div>
+                <div className="text-xs uppercase text-slate-600">Край</div>
                 <div className="text-slate-700">{fmt(e.endAt)}</div>
               </div>
             )}
             {e.location && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Място</div>
+                <div className="text-xs uppercase text-slate-600">Място</div>
                 <div className="text-slate-700">{e.location}</div>
               </div>
             )}
             {e.organizer && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Организатор</div>
+                <div className="text-xs uppercase text-slate-600">Организатор</div>
                 <div className="text-slate-700">{e.organizer}</div>
               </div>
             )}

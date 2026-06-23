@@ -44,7 +44,7 @@ function todayInSofia(): string {
 }
 
 // Чист откъс, който НЕ реже по средата на дума/изречение.
-function cleanExcerpt(src: string, max = 360): string {
+export function cleanExcerpt(src: string, max = 360): string {
   const t = plainText(src, 100000);
   if (t.length <= max) return t;
   const cut = t.slice(0, max);
@@ -134,7 +134,7 @@ async function hydrate(hits: Hit[], n = 6): Promise<Ctx[]> {
 
 // ───────────────────────── Бързи намерения ─────────────────────────
 
-function quickIntent(q: string): ChatAnswer | null {
+export function quickIntent(q: string): ChatAnswer | null {
   const n = norm(q);
 
   // Спешен случай — винаги извеждаме 112 на първо място.
@@ -327,7 +327,7 @@ function buildSystemPrompt(context: string): string {
   ].join("\n");
 }
 
-function toApiMessages(history: ChatTurn[], q: string) {
+export function toApiMessages(history: ChatTurn[], q: string) {
   const trimmed = history
     .filter((t) => t && typeof t.text === "string" && t.text.trim())
     .slice(-MAX_HISTORY_TURNS)
@@ -380,6 +380,7 @@ async function* streamWithClaude(
       messages: toApiMessages(history, q),
       stream: true,
     }),
+    signal: AbortSignal.timeout(30000),
   });
 
   // Хвърляме ПРЕДИ да сме пуснали първа delta → горният слой пада към правилата.
@@ -391,7 +392,7 @@ async function* streamWithClaude(
 // ───────────────────────── Gemini (RAG, поточно, безплатно) ─────────────────────────
 
 // Историята във формата на Gemini: роли „user" и „model", завършва с въпроса.
-function toGeminiContents(history: ChatTurn[], q: string) {
+export function toGeminiContents(history: ChatTurn[], q: string) {
   const turns = history
     .filter((t) => t && typeof t.text === "string" && t.text.trim())
     .slice(-MAX_HISTORY_TURNS)
@@ -440,6 +441,7 @@ async function* streamWithGemini(
       contents: toGeminiContents(history, q),
       generationConfig: { temperature: 0.2, maxOutputTokens: 800 },
     }),
+    signal: AbortSignal.timeout(30000),
   });
 
   // Хвърляме ПРЕДИ първа delta → горният слой пада към правилата.

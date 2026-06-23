@@ -28,7 +28,7 @@ export function ContactForm() {
     <form action={action} className="card space-y-4">
       <h2 className="text-lg font-bold text-slate-900">Изпратете ни съобщение</h2>
       {state.error && (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</div>
+        <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">

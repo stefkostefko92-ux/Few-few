@@ -11,6 +11,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidget } from "@/components/ChatWidget";
 import { CookieConsent } from "@/components/CookieConsent";
 import { IntroSplash } from "@/components/IntroSplash";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -146,6 +147,7 @@ export default async function RootLayout({
         <ChatWidget />
         <CookieConsent />
         <IntroSplash />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

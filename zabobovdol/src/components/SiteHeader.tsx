@@ -58,6 +58,7 @@ export function SiteHeader() {
             className="rounded-md border border-slate-300 p-2 lg:hidden"
             aria-label="Меню"
             aria-expanded={open}
+            aria-controls="mobile-nav"
             onClick={() => setOpen((v) => !v)}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -81,7 +82,7 @@ export function SiteHeader() {
         </div>
 
         {open && (
-          <div className="animate-fade-in border-t border-slate-200 py-3 lg:hidden">
+          <div id="mobile-nav" className="animate-fade-in border-t border-slate-200 py-3 lg:hidden">
             <div className="mb-3">
               <SearchBar />
             </div>

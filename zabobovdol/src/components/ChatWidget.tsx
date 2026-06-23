@@ -85,6 +85,18 @@ export function ChatWidget() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open, loading]);
 
+  // Достъпност: при отваряне фокусираме полето за писане и позволяваме затваряне
+  // с Escape.
+  useEffect(() => {
+    if (!open) return;
+    inputRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   const ask = useCallback(
     async (q: string) => {
       if (q.length < 2 || loading) return;
@@ -222,6 +234,7 @@ export function ChatWidget() {
         <div
           className="no-print fixed bottom-20 right-4 z-50 flex h-[32rem] max-h-[calc(100vh-6rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
           role="dialog"
+          aria-modal="true"
           aria-label="Дигитален помощник"
         >
           <div className="flex items-center justify-between gap-2 bg-brand-700 px-4 py-3 text-white">
@@ -240,11 +253,14 @@ export function ChatWidget() {
             </button>
           </div>
 
-          <div
-            className="flex-1 space-y-3 overflow-y-auto p-3"
-            aria-live="polite"
-            aria-atomic="false"
-          >
+          {/* Отделна, скрита зона за екранни четци: обявява ГОТОВИЯ отговор
+              веднъж, вместо да чете потока буква по буква. */}
+          <p className="sr-only" aria-live="polite">
+            {!loading && messages[messages.length - 1]?.role === "bot"
+              ? messages[messages.length - 1].text
+              : ""}
+          </p>
+          <div className="flex-1 space-y-3 overflow-y-auto p-3">
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "text-right" : "text-left"}>
                 <div
@@ -257,7 +273,7 @@ export function ChatWidget() {
                 >
                   {m.role === "bot" ? <BotText text={m.text} /> : m.text}
                   {m.role === "bot" && m.text === "" && loading && (
-                    <span className="text-slate-400">пише…</span>
+                    <span className="text-slate-600">пише…</span>
                   )}
                 </div>
                 {m.sources && m.sources.length > 0 && (
@@ -313,6 +329,13 @@ export function ChatWidget() {
               <Send className="h-5 w-5" aria-hidden />
             </button>
           </form>
+          <p className="px-2 pb-2 text-[11px] leading-snug text-slate-500">
+            Не пишете пароли или лични данни. Понякога отговорите се съставят от
+            външен AI.{" "}
+            <Link href="/poveritelnost" className="underline hover:text-brand-700">
+              Поверителност
+            </Link>
+          </p>
         </div>
       )}
     </>

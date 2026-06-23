@@ -16,7 +16,8 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "portrait",
     dir: "ltr",
-    background_color: "#f8fafc",
+    // Тъмносиньо като началния екран на приложението (splash) — без премигване.
+    background_color: "#1a2575",
     theme_color: "#212f8a",
     lang: "bg",
     categories: ["government", "education", "lifestyle"],
