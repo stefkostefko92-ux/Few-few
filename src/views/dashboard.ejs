@@ -28,7 +28,7 @@
       <dt><%= t('dash.allergies') %></dt><dd><%= profile.allergies || '—' %></dd>
       <dt><%= t('emerg.conditions') %></dt><dd><%= profile.chronic_conditions || '—' %></dd>
       <dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications || '—' %></dd>
-      <dt><%= t('dash.hearing') %></dt><dd><%= profile.hearing_status || '—' %></dd>
+      <dt><%= t('dash.hearing') %></dt><dd><%= clin(profile.hearing_status) || '—' %></dd>
       <dt><%= t('dash.communication') %></dt><dd><%= profile.communication_pref || '—' %></dd>
       <dt><%= t('emerg.contact') %></dt>
       <dd>

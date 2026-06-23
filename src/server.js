@@ -26,7 +26,7 @@ import {
   webManifest,
   securityTxt,
 } from './seo.js';
-import { LANGS, pickLang, makeT } from './i18n.js';
+import { LANGS, pickLang, makeT, clinicalLabel } from './i18n.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === 'production';
@@ -114,6 +114,7 @@ app.use((req, res, next) => {
   const lang = pickLang(req);
   res.locals.lang = lang;
   res.locals.t = makeT(lang);
+  res.locals.clin = (value) => clinicalLabel(value, lang);
   res.locals.company = COMPANY;
   res.locals.user = req.user;
   res.locals.legal = LEGAL;

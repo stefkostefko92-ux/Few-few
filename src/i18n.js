@@ -3,6 +3,29 @@
 export const LANGS = ['bg', 'en'];
 export const DEFAULT_LANG = 'bg';
 
+// Превод на контролираните (избираеми) клинични стойности за показване на EN.
+// Свободният текст (алергии, заболявания и т.н.) се оставя както е въведен.
+const CLINICAL_EN = {
+  'Без слухови проблеми': 'No hearing problems',
+  'Намален слух': 'Reduced hearing',
+  'Ползва слухов апарат': 'Uses a hearing aid',
+  'Кохлеарен имплант': 'Cochlear implant',
+  'Глух/а': 'Deaf',
+  'Мога да говоря': 'Can speak',
+  'Говоря ограничено': 'Speaks with difficulty',
+  'Не мога да говоря': 'Cannot speak',
+  'Български жестов език': 'Bulgarian Sign Language',
+  'Международен жестов език': 'International Sign',
+  'Не ползвам жестов език': 'Does not use sign language',
+  'Не знам': 'Unknown',
+};
+
+// Връща EN етикет за известна клинична стойност; иначе оригинала (свободен текст).
+export function clinicalLabel(value, lang) {
+  if (lang === 'en' && value && CLINICAL_EN[value]) return CLINICAL_EN[value];
+  return value;
+}
+
 const DICT = {
   // Навигация / общи
   'nav.profile': { bg: 'Моят профил', en: 'My profile' },

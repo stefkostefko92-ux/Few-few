@@ -15,9 +15,9 @@
       <%- include('partials/icon', { name: 'ear', cls: 'icon-lg' }) %>
       <span>
         <strong><%= t('emerg.comm_warn') %></strong>
-        <% if (hearing) { %> <%= t('emerg.hearing') %>: <%= profile.hearing_status %>.<% } %>
-        <% if (profile.can_speak) { %> <%= t('emerg.speech') %>: <%= profile.can_speak %>.<% } %>
-        <% if (usesSign) { %> <%= t('emerg.sign') %>: <%= profile.sign_language %>.<% } %>
+        <% if (hearing) { %> <%= t('emerg.hearing') %>: <%= clin(profile.hearing_status) %>.<% } %>
+        <% if (profile.can_speak) { %> <%= t('emerg.speech') %>: <%= clin(profile.can_speak) %>.<% } %>
+        <% if (usesSign) { %> <%= t('emerg.sign') %>: <%= clin(profile.sign_language) %>.<% } %>
         <% if (profile.communication_pref) { %> <%= t('emerg.prefers') %>: <strong><%= profile.communication_pref %></strong>.<% } %>
       </span>
     </div>
