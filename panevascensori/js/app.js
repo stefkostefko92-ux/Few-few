@@ -83,12 +83,12 @@ const Cart = {
             <div class="cart-item-name">${escHtml(item.name)}</div>
             <div class="cart-item-price">${item.price > 0 ? '€' + (item.price * item.qty).toFixed(2) : escHtml(item.priceLabel || 'Su richiesta')}</div>
             <div class="cart-qty-ctrl">
-              <button class="qty-b" data-id="${escHtml(item.id)}" data-delta="-1">−</button>
+              <button class="qty-b" data-id="${escHtml(item.id)}" data-delta="-1" aria-label="Diminuisci quantità ${escHtml(item.name)}">−</button>
               <span class="qty-val">${item.qty}</span>
-              <button class="qty-b" data-id="${escHtml(item.id)}" data-delta="1">+</button>
+              <button class="qty-b" data-id="${escHtml(item.id)}" data-delta="1" aria-label="Aumenta quantità ${escHtml(item.name)}">+</button>
             </div>
           </div>
-          <button class="cart-item-rm" data-id="${escHtml(item.id)}" title="Rimuovi">✕</button>
+          <button class="cart-item-rm" data-id="${escHtml(item.id)}" title="Rimuovi" aria-label="Rimuovi ${escHtml(item.name)} dal carrello">✕</button>
         </div>`).join('');
       list.querySelectorAll('.qty-b').forEach(btn =>
         btn.addEventListener('click', () => Cart.changeQty(btn.dataset.id, parseInt(btn.dataset.delta, 10)))
@@ -463,7 +463,7 @@ function renderCartSidebar() {
   s.innerHTML = `
     <div class="cart-sid-head">
       <h3>Carrello</h3>
-      <button class="cart-close" onclick="closeCart()">✕</button>
+      <button class="cart-close" onclick="closeCart()" aria-label="Chiudi carrello">✕</button>
     </div>
     <div class="cart-items-list" id="cart-items-list"></div>
     <div class="cart-sid-foot">
@@ -486,8 +486,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initReveal();
   Cart.updateCounters();
 
-  // Start loading products in background for pages that need them
-  Products.load().catch(() => {});
+  // Start loading products only on pages that render them (index / prodotti),
+  // not on the other ~13 pages — avoids a wasted API call on every load.
+  if (document.getElementById('products-grid') ||
+      document.getElementById('featured-products-grid') ||
+      document.querySelector('[data-needs-products]')) {
+    Products.load().catch(() => {});
+  }
 
   document.getElementById('cart-overlay')?.addEventListener('click', closeCart);
 });

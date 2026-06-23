@@ -3,7 +3,7 @@
 # Formato: https://llmstxt.org
 # Aggiornato: 2026-04-20
 
-> Panev Ascensori SAS è un produttore italiano di staffe brevettate (UIBM N. 202023000002112) per porte di ascensori e montacarichi. Offre anche servizi di installazione, manutenzione e modernizzazione di ascensori in tutta Italia dal 2013. Sede operativa a Vittuone (MI), Lombardia.
+> Panev Ascensori SAS è un produttore italiano di staffe brevettate (UIBM N. 202023000002112) per porte di ascensori e montacarichi. Offre anche servizi di installazione, manutenzione e modernizzazione di ascensori in tutta Italia dal 2013. Sede legale a Vittuone (MI) e sede operativa a Cornaredo (MI), Lombardia.
 
 ## Azienda
 
@@ -64,7 +64,7 @@ Tipo B (dritte inferiori, si abbinano alle Tipo A, regolazione ±7-8°):
 - B 37 320 — 37×320mm, sp.4mm — **10,79 €**
 - B 37 220 — 37×220mm (ridotta), sp.4mm — **9,52 €**
 
-### Staffe Contrapeso — NON brevettate (17 codici)
+### Staffe Contrappeso — NON brevettate (17 codici)
 
 Supporti SU (estensione alta, 220mm, Ferro sp.5mm):
 - SU 220 160 — range 45-155mm — **10,40 €**

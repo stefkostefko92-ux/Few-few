@@ -26,7 +26,7 @@
   --admin-border:     rgba(0,200,224,0.15);
   --admin-gold:       #00c8e0;
   --admin-text:       #e8f4f8;
-  --admin-text-muted: #4a6878;
+  --admin-text-muted: #7d97a6;
 
   --font-d: 'Rajdhani', 'DM Sans', sans-serif;
   --font:   'DM Sans', system-ui, sans-serif;
@@ -965,3 +965,24 @@ img { max-width: 100%; display: block; }
   .topbar-user-email { display: none; }
 }
 
+
+/* ============================================================
+   ACCESSIBILITY (WCAG 2.2 AA) — admin panel
+   ============================================================ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

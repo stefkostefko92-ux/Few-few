@@ -7116,3 +7116,68 @@ section[style*="dark"] .cat-type-block p,
 .lang-switch:hover .active {
   color: var(--ivory);
 }
+
+/* ============================================================
+   ACCESSIBILITY & PROFESSIONAL POLISH (WCAG 2.2 AA)
+   ============================================================ */
+
+/* Visible keyboard focus for all interactive elements (SC 2.4.7 / 2.4.11 / 2.4.13).
+   Uses :focus-visible so mouse users don't see the ring. */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--panev-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* On dark sections, use a light ring for contrast */
+section[style*="--dark"] a:focus-visible,
+.section-dark a:focus-visible,
+footer a:focus-visible,
+#navbar a:focus-visible,
+#navbar button:focus-visible {
+  outline-color: #ffffff;
+}
+/* Keep focused targets clear of the fixed navbar (SC 2.4.11 Focus Not Obscured) */
+:target,
+[id] {
+  scroll-margin-top: calc(var(--nav-total-h, 120px) + 16px);
+}
+
+/* Disabled controls must look disabled */
+.btn:disabled,
+.btn[disabled],
+button:disabled,
+button[disabled],
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Skip-to-content link (SC 2.4.1 Bypass Blocks) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100000;
+  background: var(--panev-blue);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 6px 0;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 0;
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+}
