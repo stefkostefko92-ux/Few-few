@@ -67,14 +67,14 @@ router.post('/register', async (req, res) => {
   const fullName = String(req.body.full_name || '').trim();
   const consent = req.body.consent === 'on' || req.body.consent === 'true';
 
+  const t = res.locals.t;
   const fail = (msg, code = 400) => res.status(code).render('register', { error: msg, email });
 
-  if (!email || !password || !fullName) return fail('Имейл, парола и име са задължителни.');
-  if (password.length < MIN_PASSWORD)
-    return fail(`Паролата трябва да е поне ${MIN_PASSWORD} символа.`);
-  if (!consent) return fail('Трябва да се съгласите с обработката на данните, за да продължите.');
+  if (!email || !password || !fullName) return fail(t('err.required_all'));
+  if (password.length < MIN_PASSWORD) return fail(t('err.password_min', { n: MIN_PASSWORD }));
+  if (!consent) return fail(t('err.consent_needed'));
   if (db.prepare('SELECT id FROM users WHERE email = ?').get(email))
-    return fail('Вече има регистрация с този имейл.', 409);
+    return fail(t('err.email_taken'), 409);
 
   const pwHash = await hashPassword(password);
   const info = db
@@ -98,13 +98,14 @@ router.post('/register', async (req, res) => {
 
 // ---------- Потвърждение на имейл ----------
 router.get('/verify-email/:token', (req, res) => {
+  const t = res.locals.t;
   const userId = consumeToken(req.params.token, 'verify');
   if (!userId) {
     return res.status(400).render('notice', {
       user: req.user,
-      title: 'Невалиден или изтекъл линк',
-      message: 'Линкът за потвърждение е невалиден или е изтекъл. Влезте и поискайте нов.',
-      link: { href: '/login', label: 'Към вход' },
+      title: t('msg.link_invalid_title'),
+      message: t('msg.verify_invalid'),
+      link: { href: '/login', label: t('msg.to_login') },
     });
   }
   db.prepare('UPDATE users SET email_verified = 1 WHERE id = ?').run(userId);
@@ -112,9 +113,9 @@ router.get('/verify-email/:token', (req, res) => {
   res.render('notice', {
     user: req.user,
     icon: 'check',
-    title: 'Имейлът е потвърден',
-    message: 'Благодарим! Вашият имейл е потвърден успешно.',
-    link: { href: '/dashboard', label: 'Към профила' },
+    title: t('msg.email_verified_title'),
+    message: t('msg.email_verified'),
+    link: { href: '/dashboard', label: t('msg.to_profile') },
   });
 });
 
@@ -122,11 +123,12 @@ router.post('/verify-email/resend', requireAuth, async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
   if (user.email_verified) return res.redirect('/dashboard');
   await sendVerification(req, user.id, user.email);
+  const t = res.locals.t;
   res.render('notice', {
     user: req.user,
-    title: 'Изпратихме нов линк',
-    message: `Изпратихме линк за потвърждение на ${user.email}. Проверете пощата си.`,
-    link: { href: '/dashboard', label: 'Към профила' },
+    title: t('msg.resend_title'),
+    message: t('msg.resend_body', { email: user.email }),
+    link: { href: '/dashboard', label: t('msg.to_profile') },
   });
 });
 
@@ -142,18 +144,16 @@ router.post('/login', async (req, res) => {
     .toLowerCase();
   const password = String(req.body.password || '');
   const remember = req.body.remember === 'on' || req.body.remember === 'true';
+  const t = res.locals.t;
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 
   // Еднакво съобщение при липсващ потребител и грешна парола (без разкриване).
-  const bad = () => res.status(401).render('login', { error: 'Грешен имейл или парола.', email });
+  const bad = () => res.status(401).render('login', { error: t('err.bad_login'), email });
 
   if (!user) return bad();
   if (isLocked(user)) {
     audit(req, 'login_locked', { userId: user.id });
-    return res.status(429).render('login', {
-      error: 'Профилът е временно заключен след твърде много опити. Опитайте по-късно.',
-      email,
-    });
+    return res.status(429).render('login', { error: t('err.locked'), email });
   }
   if (!(await verifyPassword(password, user.password_hash))) {
     const locked = registerFailedAttempt(user);
@@ -205,7 +205,7 @@ router.post('/2fa', async (req, res) => {
 
   if (!totpOk && !recoveryOk) {
     audit(req, 'twofactor_fail', { userId });
-    return res.status(401).render('2fa-verify', { error: 'Грешен код.' });
+    return res.status(401).render('2fa-verify', { error: res.locals.t('err.bad_code') });
   }
 
   destroyPending(req.cookies.p2fa);
@@ -247,18 +247,20 @@ router.post('/forgot', async (req, res) => {
 });
 
 router.get('/reset/:token', (req, res) => {
+  const t = res.locals.t;
   if (!peekToken(req.params.token, 'reset')) {
     return res.status(400).render('notice', {
       user: null,
-      title: 'Невалиден или изтекъл линк',
-      message: 'Линкът за нулиране е невалиден или изтекъл. Поискайте нов.',
-      link: { href: '/forgot', label: 'Поискай нов линк' },
+      title: t('msg.link_invalid_title'),
+      message: t('msg.reset_invalid'),
+      link: { href: '/forgot', label: t('msg.request_new') },
     });
   }
   res.render('reset', { token: req.params.token, error: null });
 });
 
 router.post('/reset/:token', async (req, res) => {
+  const t = res.locals.t;
   const password = String(req.body.password || '');
   const confirm = String(req.body.confirm || '');
   const reRender = (msg) =>
@@ -267,14 +269,13 @@ router.post('/reset/:token', async (req, res) => {
   if (!peekToken(req.params.token, 'reset')) {
     return res.status(400).render('notice', {
       user: null,
-      title: 'Невалиден или изтекъл линк',
-      message: 'Линкът за нулиране е невалиден или изтекъл. Поискайте нов.',
-      link: { href: '/forgot', label: 'Поискай нов линк' },
+      title: t('msg.link_invalid_title'),
+      message: t('msg.reset_invalid'),
+      link: { href: '/forgot', label: t('msg.request_new') },
     });
   }
-  if (password.length < MIN_PASSWORD)
-    return reRender(`Паролата трябва да е поне ${MIN_PASSWORD} символа.`);
-  if (password !== confirm) return reRender('Паролите не съвпадат.');
+  if (password.length < MIN_PASSWORD) return reRender(t('err.password_min', { n: MIN_PASSWORD }));
+  if (password !== confirm) return reRender(t('err.passwords_mismatch'));
 
   const userId = consumeToken(req.params.token, 'reset');
   const newHash = await hashPassword(password);
@@ -284,9 +285,9 @@ router.post('/reset/:token', async (req, res) => {
   res.render('notice', {
     user: null,
     icon: 'check',
-    title: 'Паролата е сменена',
-    message: 'Можете да влезете с новата си парола.',
-    link: { href: '/login', label: 'Към вход' },
+    title: t('msg.password_changed_title'),
+    message: t('msg.password_changed'),
+    link: { href: '/login', label: t('msg.to_login') },
   });
 });
 

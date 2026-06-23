@@ -194,9 +194,10 @@ app.use(webauthnRoutes);
 app.use(emergencyRoutes);
 
 app.use((req, res) =>
-  res
-    .status(404)
-    .render('emergency-error', { message: 'Страницата не е намерена.', user: req.user })
+  res.status(404).render('emergency-error', {
+    message: (res.locals.t || ((k) => k))('msg.not_found'),
+    user: req.user,
+  })
 );
 
 // Production error handler — без следи от стек към потребителя.
@@ -204,7 +205,7 @@ app.use((err, req, res, _next) => {
   console.error('Необработена грешка:', err);
   if (res.headersSent) return;
   res.status(500).render('emergency-error', {
-    message: 'Възникна неочаквана грешка. Опитайте отново.',
+    message: (res.locals.t || ((k) => k))('msg.unexpected'),
     user: req.user || null,
   });
 });

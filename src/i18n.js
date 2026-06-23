@@ -405,6 +405,176 @@ const DICT = {
     bg: 'MedQR не е медицинско изделие и не замества професионална медицинска оценка. Данните са специална категория лични данни (чл. 9 GDPR).',
     en: 'MedQR is not a medical device and does not replace professional medical assessment. The data is a special category of personal data (GDPR Art. 9).',
   },
+
+  // Двуфакторна автентикация
+  'tfa.title': { bg: 'Двуфакторна автентикация (2FA)', en: 'Two-factor authentication (2FA)' },
+  'tfa.enabled': { bg: '2FA е включена за вашия профил.', en: '2FA is enabled for your account.' },
+  'tfa.recovery_avail': { bg: 'Налични резервни кодове:', en: 'Available recovery codes:' },
+  'tfa.recovery_note': {
+    bg: 'Те се ползват еднократно, ако нямате достъп до приложението за автентикация.',
+    en: 'Each is single-use, for when you don’t have access to your authenticator app.',
+  },
+  'tfa.regen': { bg: 'Генерирай нови резервни кодове', en: 'Generate new recovery codes' },
+  'tfa.regen_confirm': {
+    bg: 'Това ще генерира нови кодове и ще обезсили старите. Продължавате ли?',
+    en: 'This will generate new codes and invalidate the old ones. Continue?',
+  },
+  'tfa.disable_prompt': {
+    bg: 'За да изключите 2FA, потвърдете с паролата си.',
+    en: 'To disable 2FA, confirm with your password.',
+  },
+  'tfa.disable': { bg: 'Изключи 2FA', en: 'Disable 2FA' },
+  'tfa.disable_confirm': {
+    bg: 'Сигурни ли сте, че искате да изключите 2FA?',
+    en: 'Are you sure you want to disable 2FA?',
+  },
+  'tfa.pending1': {
+    bg: '1. Сканирайте кода с приложение за автентикация или въведете ключа ръчно.',
+    en: '1. Scan the code with an authenticator app, or enter the key manually.',
+  },
+  'tfa.qr_alt': { bg: 'QR код за настройка на 2FA', en: 'QR code for 2FA setup' },
+  'tfa.pending2': {
+    bg: '2. Въведете генерирания 6-цифрен код, за да потвърдите.',
+    en: '2. Enter the generated 6-digit code to confirm.',
+  },
+  'tfa.code': { bg: 'Код', en: 'Code' },
+  'tfa.enable': { bg: 'Включи 2FA', en: 'Enable 2FA' },
+  'tfa.intro': {
+    bg: 'Добавете втори фактор при вход — еднократен код от приложение за автентикация. Това силно затруднява достъпа дори при изтекла парола.',
+    en: 'Add a second factor at sign-in — a one-time code from an authenticator app. This makes access much harder even if your password leaks.',
+  },
+  'tfa.start': { bg: 'Започни настройка', en: 'Start setup' },
+  'tfa.verify_title': { bg: 'Двуфакторна проверка', en: 'Two-factor verification' },
+  'tfa.verify_intro': {
+    bg: 'Въведете 6-цифрения код от приложението ви за автентикация (напр. Google Authenticator, Authy).',
+    en: 'Enter the 6-digit code from your authenticator app (e.g. Google Authenticator, Authy).',
+  },
+  'tfa.confirm': { bg: 'Потвърди', en: 'Confirm' },
+
+  // Резервни кодове
+  'rc.title': { bg: 'Резервни кодове за 2FA', en: '2FA recovery codes' },
+  'rc.regenerated': {
+    bg: 'Генерирани са нови кодове. Старите вече не важат.',
+    en: 'New codes generated. The old ones no longer work.',
+  },
+  'rc.enabled': {
+    bg: 'Двуфакторната автентикация е включена.',
+    en: 'Two-factor authentication is enabled.',
+  },
+  'rc.note': {
+    bg: 'Запазете тези кодове на сигурно място. Всеки код може да се използва еднократно, ако нямате достъп до приложението за автентикация. Това е единственият момент, в който ще ги видите.',
+    en: 'Store these codes somewhere safe. Each code can be used once if you don’t have access to your authenticator app. This is the only time you will see them.',
+  },
+  'rc.print': { bg: 'Печат', en: 'Print' },
+  'rc.saved': { bg: 'Запазих ги — продължи', en: 'I saved them — continue' },
+
+  // Паскейове
+  'pk.title': { bg: 'Паскейове (passkeys)', en: 'Passkeys' },
+  'pk.intro': {
+    bg: 'Паскейовете позволяват вход с пръстов отпечатък, лице или хардуерен ключ — без парола и устойчиво на фишинг.',
+    en: 'Passkeys let you sign in with a fingerprint, face or hardware key — passwordless and phishing-resistant.',
+  },
+  'pk.none': {
+    bg: 'Все още нямате регистрирани паскейове.',
+    en: 'You have no registered passkeys yet.',
+  },
+  'pk.default_label': { bg: 'Паскей', en: 'Passkey' },
+  'pk.remove': { bg: 'Премахни', en: 'Remove' },
+  'pk.remove_confirm': { bg: 'Да премахна ли този паскей?', en: 'Remove this passkey?' },
+  'pk.device_name': { bg: 'Име на устройството', en: 'Device name' },
+  'pk.device_ph': { bg: 'напр. Телефонът ми', en: 'e.g. My phone' },
+  'pk.add': { bg: 'Добави паскей', en: 'Add passkey' },
+
+  // Общи навигационни/връзки
+  'nav.back_profile': { bg: 'Назад към профила', en: 'Back to profile' },
+
+  // Системни съобщения (от сървъра)
+  'msg.link_invalid_title': { bg: 'Невалиден или изтекъл линк', en: 'Invalid or expired link' },
+  'msg.verify_invalid': {
+    bg: 'Линкът за потвърждение е невалиден или е изтекъл. Влезте и поискайте нов.',
+    en: 'The verification link is invalid or has expired. Log in and request a new one.',
+  },
+  'msg.to_login': { bg: 'Към вход', en: 'To log in' },
+  'msg.email_verified_title': { bg: 'Имейлът е потвърден', en: 'Email verified' },
+  'msg.email_verified': {
+    bg: 'Благодарим! Вашият имейл е потвърден успешно.',
+    en: 'Thank you! Your email has been verified successfully.',
+  },
+  'msg.to_profile': { bg: 'Към профила', en: 'To profile' },
+  'msg.resend_title': { bg: 'Изпратихме нов линк', en: 'We sent a new link' },
+  'msg.resend_body': {
+    bg: 'Изпратихме линк за потвърждение на {email}. Проверете пощата си.',
+    en: 'We sent a verification link to {email}. Check your inbox.',
+  },
+  'msg.reset_invalid': {
+    bg: 'Линкът за нулиране е невалиден или изтекъл. Поискайте нов.',
+    en: 'The reset link is invalid or has expired. Request a new one.',
+  },
+  'msg.request_new': { bg: 'Поискай нов линк', en: 'Request a new link' },
+  'msg.password_changed_title': { bg: 'Паролата е сменена', en: 'Password changed' },
+  'msg.password_changed': {
+    bg: 'Можете да влезете с новата си парола.',
+    en: 'You can now log in with your new password.',
+  },
+  'msg.account_deleted': {
+    bg: 'Профилът и всички данни са изтрити окончателно.',
+    en: 'Your account and all data have been permanently deleted.',
+  },
+  'msg.not_found': { bg: 'Страницата не е намерена.', en: 'Page not found.' },
+  'msg.unexpected': {
+    bg: 'Възникна неочаквана грешка. Опитайте отново.',
+    en: 'An unexpected error occurred. Please try again.',
+  },
+  'msg.csrf': {
+    bg: 'Невалидна или изтекла заявка (CSRF). Презаредете страницата и опитайте пак.',
+    en: 'Invalid or expired request (CSRF). Reload the page and try again.',
+  },
+  'msg.emerg_invalid': { bg: 'Невалиден или изтекъл код.', en: 'Invalid or expired code.' },
+  // Грешки при вход/регистрация/2FA
+  'err.bad_login': { bg: 'Грешен имейл или парола.', en: 'Wrong email or password.' },
+  'err.locked': {
+    bg: 'Профилът е временно заключен след твърде много опити. Опитайте по-късно.',
+    en: 'Account temporarily locked after too many attempts. Try again later.',
+  },
+  'err.required_all': {
+    bg: 'Имейл, парола и име са задължителни.',
+    en: 'Email, password and name are required.',
+  },
+  'err.password_min': {
+    bg: 'Паролата трябва да е поне {n} символа.',
+    en: 'The password must be at least {n} characters.',
+  },
+  'err.consent_needed': {
+    bg: 'Трябва да се съгласите с обработката на данните, за да продължите.',
+    en: 'You must agree to the processing of your data to continue.',
+  },
+  'err.email_taken': {
+    bg: 'Вече има регистрация с този имейл.',
+    en: 'This email is already registered.',
+  },
+  'err.bad_code': { bg: 'Грешен код.', en: 'Wrong code.' },
+  'err.passwords_mismatch': { bg: 'Паролите не съвпадат.', en: 'The passwords do not match.' },
+  'err.wrong_password': { bg: 'Грешна парола.', en: 'Wrong password.' },
+  'err.name_required': { bg: 'Името е задължително.', en: 'Name is required.' },
+
+  // Спешен PIN / страница за грешка
+  'pin.title': { bg: 'Изисква се PIN', en: 'PIN required' },
+  'pin.heading': { bg: 'Защитен профил', en: 'Protected profile' },
+  'pin.intro': {
+    bg: 'Този спешен профил е защитен с PIN. Въведете го, за да видите информацията.',
+    en: 'This emergency profile is protected with a PIN. Enter it to view the information.',
+  },
+  'pin.locked': {
+    bg: 'Достъпът е временно блокиран след твърде много опити. Опитайте по-късно.',
+    en: 'Access is temporarily blocked after too many attempts. Try again later.',
+  },
+  'pin.show': { bg: 'Покажи информацията', en: 'Show information' },
+  'pin.too_many': {
+    bg: 'Твърде много опити. Опитайте отново по-късно.',
+    en: 'Too many attempts. Try again later.',
+  },
+  'pin.wrong': { bg: 'Грешен PIN.', en: 'Wrong PIN.' },
+  'err.page_title': { bg: 'Грешка', en: 'Error' },
 };
 
 export function pickLang(req) {

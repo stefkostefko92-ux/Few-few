@@ -27,7 +27,9 @@ function pinLocked(profile) {
 router.get('/e/:token', (req, res) => {
   const profile = getByToken(req.params.token);
   if (!profile) {
-    return res.status(404).render('emergency-error', { message: 'Невалиден или изтекъл код.' });
+    return res
+      .status(404)
+      .render('emergency-error', { message: res.locals.t('msg.emerg_invalid') });
   }
   if (profile.pin_hash) {
     return res.render('emergency-pin', {
@@ -44,14 +46,16 @@ router.get('/e/:token', (req, res) => {
 router.post('/e/:token', async (req, res) => {
   const profile = getByToken(req.params.token);
   if (!profile) {
-    return res.status(404).render('emergency-error', { message: 'Невалиден или изтекъл код.' });
+    return res
+      .status(404)
+      .render('emergency-error', { message: res.locals.t('msg.emerg_invalid') });
   }
   if (!profile.pin_hash) return res.redirect(`/e/${req.params.token}`);
 
   if (pinLocked(profile)) {
     return res.status(429).render('emergency-pin', {
       token: req.params.token,
-      error: 'Твърде много опити. Опитайте отново по-късно.',
+      error: res.locals.t('pin.too_many'),
       locked: true,
     });
   }
@@ -70,7 +74,7 @@ router.post('/e/:token', async (req, res) => {
     }
     return res.status(401).render('emergency-pin', {
       token: req.params.token,
-      error: 'Грешен PIN.',
+      error: res.locals.t('pin.wrong'),
       locked: false,
     });
   }

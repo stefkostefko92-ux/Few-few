@@ -1,23 +1,22 @@
-<%- include('partials/head', { title: 'Паскейове — MedQR', user }) %>
+<%- include('partials/head', { title: t('pk.title') + ' — MedQR', user }) %>
 
 <section class="form-wrap">
-  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> Паскейове (passkeys)</h1>
-  <p>Паскейовете позволяват вход с пръстов отпечатък, лице или хардуерен ключ —
-    без парола и устойчиво на фишинг.</p>
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> <%= t('pk.title') %></h1>
+  <p><%= t('pk.intro') %></p>
 
   <p class="error" role="alert" data-webauthn-error hidden></p>
 
   <% if (credentials.length === 0) { %>
-    <p class="muted">Все още нямате регистрирани паскейове.</p>
+    <p class="muted"><%= t('pk.none') %></p>
   <% } else { %>
     <ul class="passkey-list">
       <% credentials.forEach(c => { %>
         <li>
-          <span><%= c.label || 'Паскей' %> <span class="muted small">· <%= c.created_at %></span></span>
+          <span><%= c.label || t('pk.default_label') %> <span class="muted small">· <%= c.created_at %></span></span>
           <form method="post" action="/profile/passkeys/<%= c.id %>/delete" class="inline"
-                data-confirm="Да премахна ли този паскей?">
+                data-confirm="<%= t('pk.remove_confirm') %>">
             <%- include('partials/csrf') %>
-            <button type="submit" class="link-btn-dark">Премахни</button>
+            <button type="submit" class="link-btn-dark"><%= t('pk.remove') %></button>
           </form>
         </li>
       <% }) %>
@@ -25,13 +24,13 @@
   <% } %>
 
   <form data-webauthn="register" class="stack">
-    <label>Име на устройството
-      <input type="text" name="label" placeholder="напр. Телефонът ми" maxlength="40">
+    <label><%= t('pk.device_name') %>
+      <input type="text" name="label" placeholder="<%= t('pk.device_ph') %>" maxlength="40">
     </label>
-    <button type="submit" class="btn">Добави паскей</button>
+    <button type="submit" class="btn"><%= t('pk.add') %></button>
   </form>
 
-  <p><a href="/dashboard">Назад към профила</a></p>
+  <p><a href="/dashboard"><%= t('nav.back_profile') %></a></p>
 </section>
 
 <script src="/vendor/simplewebauthn-browser.umd.min.js" defer></script>

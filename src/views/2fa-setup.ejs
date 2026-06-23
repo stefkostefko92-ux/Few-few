@@ -1,52 +1,50 @@
-<%- include('partials/head', { title: 'Настройка на 2FA — MedQR', user }) %>
+<%- include('partials/head', { title: t('tfa.title') + ' — MedQR', user }) %>
 
 <section class="form-wrap">
-  <h1>Двуфакторна автентикация (2FA)</h1>
+  <h1><%= t('tfa.title') %></h1>
   <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
 
   <% if (state === 'enabled') { %>
-    <p class="success">2FA е <strong>включена</strong> за вашия профил.</p>
+    <p class="success"><%= t('tfa.enabled') %></p>
 
-    <p>Налични резервни кодове: <strong><%= recoveryCount %></strong>. Те се ползват
-      еднократно, ако нямате достъп до приложението за автентикация.</p>
+    <p><%= t('tfa.recovery_avail') %> <strong><%= recoveryCount %></strong>. <%= t('tfa.recovery_note') %></p>
     <form method="post" action="/profile/2fa/recovery" class="inline-form"
-          data-confirm="Това ще генерира нови кодове и ще обезсили старите. Продължавате ли?">
+          data-confirm="<%= t('tfa.regen_confirm') %>">
       <%- include('partials/csrf') %>
-      <button type="submit" class="btn-small btn btn-ghost">Генерирай нови резервни кодове</button>
+      <button type="submit" class="btn-small btn btn-ghost"><%= t('tfa.regen') %></button>
     </form>
 
-    <p>За да изключите 2FA, потвърдете с паролата си.</p>
+    <p><%= t('tfa.disable_prompt') %></p>
     <form method="post" action="/profile/2fa/disable" class="stack"
-          data-confirm="Сигурни ли сте, че искате да изключите 2FA?">
+          data-confirm="<%= t('tfa.disable_confirm') %>">
       <%- include('partials/csrf') %>
-      <label>Парола
+      <label><%= t('auth.password') %>
         <input type="password" name="password" required autocomplete="current-password">
       </label>
-      <button type="submit" class="btn btn-danger">Изключи 2FA</button>
+      <button type="submit" class="btn btn-danger"><%= t('tfa.disable') %></button>
     </form>
 
   <% } else if (state === 'pending') { %>
-    <p>1. Сканирайте кода с приложение за автентикация или въведете ключа ръчно.</p>
-    <p class="center"><img src="<%= qr %>" alt="QR код за настройка на 2FA" class="qr"></p>
-    <p>2. Въведете генерирания 6-цифрен код, за да потвърдите.</p>
+    <p><%= t('tfa.pending1') %></p>
+    <p class="center"><img src="<%= qr %>" alt="<%= t('tfa.qr_alt') %>" class="qr"></p>
+    <p><%= t('tfa.pending2') %></p>
     <form method="post" action="/profile/2fa/enable" class="stack">
       <%- include('partials/csrf') %>
-      <label>Код
+      <label><%= t('tfa.code') %>
         <input type="text" name="code" inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" required autofocus>
       </label>
-      <button type="submit" class="btn">Включи 2FA</button>
+      <button type="submit" class="btn"><%= t('tfa.enable') %></button>
     </form>
 
   <% } else { %>
-    <p>Добавете втори фактор при вход — еднократен код от приложение за автентикация.
-      Това силно затруднява достъпа дори при изтекла парола.</p>
+    <p><%= t('tfa.intro') %></p>
     <form method="post" action="/profile/2fa/init" class="stack">
       <%- include('partials/csrf') %>
-      <button type="submit" class="btn">Започни настройка</button>
+      <button type="submit" class="btn"><%= t('tfa.start') %></button>
     </form>
   <% } %>
 
-  <p><a href="/dashboard">Назад към профила</a></p>
+  <p><a href="/dashboard"><%= t('nav.back_profile') %></a></p>
 </section>
 
 <%- include('partials/foot') %>

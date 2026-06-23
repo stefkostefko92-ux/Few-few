@@ -1,23 +1,21 @@
-<%- include('partials/head', { title: 'Резервни кодове — MedQR', user }) %>
+<%- include('partials/head', { title: t('rc.title') + ' — MedQR', user }) %>
 
 <section class="form-wrap">
-  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> Резервни кодове за 2FA</h1>
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> <%= t('rc.title') %></h1>
   <% if (regenerated) { %>
-    <p class="success" role="status">Генерирани са нови кодове. Старите вече не важат.</p>
+    <p class="success" role="status"><%= t('rc.regenerated') %></p>
   <% } else { %>
-    <p class="success" role="status">Двуфакторната автентикация е включена.</p>
+    <p class="success" role="status"><%= t('rc.enabled') %></p>
   <% } %>
-  <p>Запазете тези кодове на сигурно място. Всеки код може да се използва
-    <strong>еднократно</strong>, ако нямате достъп до приложението за автентикация.
-    Това е единственият момент, в който ще ги видите.</p>
+  <p><%= t('rc.note') %></p>
 
   <ul class="recovery-codes">
     <% codes.forEach(function(c){ %><li><code><%= c %></code></li><% }) %>
   </ul>
 
   <div class="cta-row">
-    <button type="button" data-print class="btn btn-ghost"><%- include('partials/icon', { name: 'printer' }) %> Печат</button>
-    <a class="btn" href="/dashboard">Запазих ги — продължи</a>
+    <button type="button" data-print class="btn btn-ghost"><%- include('partials/icon', { name: 'printer' }) %> <%= t('rc.print') %></button>
+    <a class="btn" href="/dashboard"><%= t('rc.saved') %></a>
   </div>
 </section>
 

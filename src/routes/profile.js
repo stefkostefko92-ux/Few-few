@@ -87,7 +87,7 @@ router.post('/profile/edit', requireAuth, (req, res) => {
     return res.status(400).render('profile-edit', {
       user: req.user,
       profile: { ...profile, ...data },
-      error: 'Името е задължително.',
+      error: res.locals.t('err.name_required'),
     });
   }
   updateFields(profile.id, data);
@@ -206,7 +206,7 @@ router.post('/profile/delete', requireAuth, async (req, res) => {
   if (!(await verifyPassword(String(req.body.password || ''), user.password_hash))) {
     return res.status(401).render('delete-account', {
       user: req.user,
-      error: 'Грешна парола.',
+      error: res.locals.t('err.wrong_password'),
     });
   }
   audit(req, 'account_delete', { userId: user.id });
@@ -214,7 +214,7 @@ router.post('/profile/delete', requireAuth, async (req, res) => {
   destroySession(req.cookies?.sid);
   res.clearCookie('sid');
   res.render('emergency-error', {
-    message: 'Профилът и всички данни са изтрити окончателно.',
+    message: res.locals.t('msg.account_deleted'),
     user: null,
   });
 });
@@ -260,7 +260,7 @@ router.post('/profile/2fa/enable', requireAuth, async (req, res) => {
       user: req.user,
       state: 'pending',
       qr,
-      error: 'Грешен код. Опитайте отново.',
+      error: res.locals.t('err.bad_code'),
     });
   }
   db.prepare('UPDATE users SET totp_enabled = 1 WHERE id = ?').run(req.user.id);
@@ -277,7 +277,7 @@ router.post('/profile/2fa/disable', requireAuth, async (req, res) => {
       user: req.user,
       state: 'enabled',
       qr: null,
-      error: 'Грешна парола.',
+      error: res.locals.t('err.wrong_password'),
       recoveryCount: countRecoveryCodes(req.user.id),
     });
   }
