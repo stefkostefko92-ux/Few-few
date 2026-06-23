@@ -7,7 +7,7 @@ Each city gets unique local copy to avoid thin/doorway pages.
 import os, html
 
 BASE = "https://carbonstealth.eu"
-LASTMOD = "2026-06-10"
+LASTMOD = "2026-06-15"
 
 CITIES = [
  # slug, country, region, lat, lon, names{it,en,bg}
@@ -219,21 +219,28 @@ L = {
   prefix="", urlbase="/geo/", og="og-image.png", locale="it_IT",
   nav=[("/", "HOME"), ("/chi-siamo/", "CHI SIAMO"), ("/servizi/sviluppo-siti-web/", "SERVIZI"), ("/portfolio/", "PORTFOLIO"), ("/contatti/", "CONTATTI")],
   home="/", contact="/contatti/", hub_name="Dove Lavoriamo",
-  h1="Sviluppo Web {name}",
-  title="Sviluppo Web {name} — Siti, E-commerce, SEO | Carbon Stealth",
+  h1="Siti Web {name}",
+  title="Siti Web {name} — Sviluppo Siti, E-commerce e SEO | Carbon Stealth",
   desc="Sviluppo siti web, e-commerce e software per aziende di {name}. Da €800, preventivo gratuito in 24 ore. Parliamo italiano.",
   tag="// GEO — {NAME}", cta="RICHIEDI PREVENTIVO GRATUITO",
   h2_services="Servizi per le aziende di {name}",
   h2_local="Perché sceglierci a {name}",
   h2_faq="Domande frequenti",
   h2_nearby="Serviamo anche",
+  intro2="Realizziamo siti web a {name} che caricano in meno di 2 secondi, ottimizzati per Google e per i motori AI (ChatGPT, Perplexity, Gemini). Ogni progetto è su misura: niente template preconfezionati, codice pulito, prestazioni reali e design che converte i visitatori in clienti.",
+  h2_process="Come lavoriamo con le aziende di {name}",
+  process=["Analisi e preventivo gratuito entro 24 ore — definiamo obiettivi, target e budget.","Design e prototipo interattivo che approvi prima di scrivere codice.","Sviluppo con React, Next.js o WordPress, con test su dispositivi reali.","Lancio, SEO on-page completo e 3 mesi di supporto gratuito."],
+  h2_tech="Tecnologie e risultati",
+  tech="Costruiamo con React, Next.js, Node.js e PostgreSQL, hosting su infrastruttura europea (Hetzner) con SSL, CDN e uptime 99,9%. Punteggio Google PageSpeed 90+ e dati strutturati Schema.org per la massima visibilità su Google.",
   services=[("/servizi/sviluppo-siti-web/", "Sviluppo Siti Web", "da €800"), ("/servizi/ecommerce/", "E-Commerce", "da €1.200"), ("/servizi/sviluppo-software/", "Software su Misura", "da €2.000"), ("/servizi/erp/", "Sistemi ERP", "da €5.000"), ("/servizi/app-mobile/", "App Mobile", "da €3.000"), ("/servizi/seo/", "SEO / GEO / AEO", "da €500/mese"), ("/servizi/hosting/", "Hosting Cloud", "da €29/mese")],
   bullets=["Team full-stack con oltre 50 progetti consegnati", "Prezzi competitivi senza compromessi sulla qualità", "Supporto in italiano, inglese e bulgaro", "Consegna puntuale con 3 mesi di supporto gratuito"],
-  svc_name="Sviluppo Web {name}",
+  svc_name="Siti Web {name}",
   faq_cost=("Quanto costa un sito web a {name}?", "Un sito vetrina professionale parte da €800, un e-commerce da €1.200, software su misura da €2.000. Preventivo gratuito e dettagliato entro 24 ore."),
   faq_onsite_IT=("Lavorate anche in presenza a {name}?", "Lavoriamo da remoto in tutta Italia con call in italiano in orario italiano (+39 379 296 9699); incontri in presenza organizzabili per progetti su misura."),
   faq_onsite_BG=("Lavorate anche in presenza a {name}?", "Sì: la nostra sede è a Bobov Dol, Bulgaria, e organizziamo incontri in presenza in tutto il paese. Supporto remoto quotidiano via call e chat."),
   faq_invoice=("Come funziona la fatturazione?", "Emettiamo regolare fattura UE con partita IVA bulgara (BG208725180): per le aziende italiane si applica il reverse charge. Pagamenti via bonifico, carta o Stripe."),
+  faq_timeline=("Quanto tempo serve per un sito web a {name}?", "Un sito vetrina richiede 1-2 settimane, un e-commerce 3-6 settimane, software ed ERP 2-6 mesi. Concordiamo una timeline precisa nel preventivo gratuito."),
+  faq_lang=("In che lingua lavorate con i clienti di {name}?", "Italiano, inglese e bulgaro. Tutta la comunicazione, la documentazione e l'assistenza sono nella lingua che preferisci."),
   ft_links=[("/privacy/", "Privacy"), ("/cookie/", "Cookie"), ("/termini/", "Termini")],
   hub_title="Dove Lavoriamo — Sviluppo Web in Italia e Bulgaria | Carbon Stealth",
   hub_desc="Sviluppo web, e-commerce e software in tutta Italia e Bulgaria: Milano, Roma, Torino, Napoli, Sofia, Plovdiv, Varna e altre città. Preventivo in 24 ore.",
@@ -252,6 +259,11 @@ L = {
   h2_local="Why choose us in {name}",
   h2_faq="Frequently asked questions",
   h2_nearby="We also serve",
+  intro2="We build websites in {name} that load in under 2 seconds, optimized for Google and AI search engines (ChatGPT, Perplexity, Gemini). Every project is bespoke: no off-the-shelf templates, clean code, real performance and design that turns visitors into customers.",
+  h2_process="How we work with {name} businesses",
+  process=["Free analysis and quote within 24 hours — we define goals, audience and budget.","Design and an interactive prototype you approve before any code is written.","Development in React, Next.js or WordPress, tested on real devices.","Launch, full on-page SEO and 3 months of free support."],
+  h2_tech="Technology and results",
+  tech="We build with React, Next.js, Node.js and PostgreSQL, hosted on European infrastructure (Hetzner) with SSL, CDN and 99.9% uptime. Google PageSpeed 90+ and Schema.org structured data for maximum visibility on Google.",
   services=[("/en/services/web-development/", "Web Development", "from €800"), ("/en/services/ecommerce/", "E-Commerce", "from €1,200"), ("/en/services/software-development/", "Custom Software", "from €2,000"), ("/en/services/erp/", "ERP Systems", "from €5,000"), ("/en/services/mobile-apps/", "Mobile Apps", "from €3,000"), ("/en/services/seo/", "SEO / GEO / AEO", "from €500/mo"), ("/en/services/hosting/", "Cloud Hosting", "from €29/mo")],
   bullets=["Full-stack team with 50+ delivered projects", "Competitive pricing without quality compromise", "Support in Italian, English and Bulgarian", "On-time delivery with 3 months of free support"],
   svc_name="Web Development {name}",
@@ -259,6 +271,8 @@ L = {
   faq_onsite_IT=("Do you work on-site in {name}?", "We work remotely across Italy with calls in Italian during Italian business hours (+39 379 296 9699); on-site meetings can be arranged for larger projects."),
   faq_onsite_BG=("Do you work on-site in {name}?", "Yes — we are headquartered in Bobov Dol, Bulgaria, and arrange on-site meetings across the country. Day-to-day support is remote via calls and chat."),
   faq_invoice=("How does invoicing work?", "We issue standard EU invoices with our Bulgarian VAT number (BG208725180) — reverse charge applies for EU businesses. Payment by bank transfer, card or Stripe."),
+  faq_timeline=("How long does a website in {name} take?", "A company website takes 1-2 weeks, e-commerce 3-6 weeks, software and ERP 2-6 months. We agree a precise timeline in the free quote."),
+  faq_lang=("What language do you work in with {name} clients?", "Italian, English and Bulgarian. All communication, documentation and support is in the language you prefer."),
   ft_links=[("/en/privacy/", "Privacy"), ("/en/cookie/", "Cookie"), ("/en/terms/", "Terms")],
   hub_title="Where We Work — Web Development in Italy and Bulgaria | Carbon Stealth",
   hub_desc="Web development, e-commerce and software across Italy and Bulgaria: Milan, Rome, Turin, Naples, Sofia, Plovdiv, Varna and more. Quote within 24 hours.",
@@ -277,6 +291,11 @@ L = {
   h2_local="Защо да изберете нас в {name}",
   h2_faq="Често задавани въпроси",
   h2_nearby="Работим също в",
+  intro2="Изработваме сайтове в {name}, които зареждат под 2 секунди и са оптимизирани за Google и за AI търсачки (ChatGPT, Perplexity, Gemini). Всеки проект е по поръчка: без готови шаблони, чист код, реална производителност и дизайн, който превръща посетителите в клиенти.",
+  h2_process="Как работим с бизнеса в {name}",
+  process=["Безплатен анализ и оферта до 24 часа — дефинираме цели, аудитория и бюджет.","Дизайн и интерактивен прототип, който одобрявате преди да напишем код.","Разработка с React, Next.js или WordPress, тествана на реални устройства.","Пускане, пълно on-page SEO и 3 месеца безплатна поддръжка."],
+  h2_tech="Технологии и резултати",
+  tech="Изграждаме с React, Next.js, Node.js и PostgreSQL, хостинг на европейска инфраструктура (Hetzner) със SSL, CDN и 99.9% uptime. Google PageSpeed 90+ и Schema.org структурирани данни за максимална видимост в Google.",
   services=[("/bg/uslugi/web-razrabotka/", "Уеб Разработка", "от €800"), ("/bg/uslugi/ecommerce/", "Онлайн Магазини", "от €1200"), ("/bg/uslugi/softuer/", "Софтуер по Поръчка", "от €2000"), ("/bg/uslugi/erp/", "ERP Системи", "от €5000"), ("/bg/uslugi/mobilni-prilozheniya/", "Мобилни Приложения", "от €3000"), ("/bg/uslugi/seo/", "SEO / GEO / AEO", "от €500/мес"), ("/bg/uslugi/hosting/", "Облачен Хостинг", "от €29/мес")],
   bullets=["Full-stack екип с над 50 завършени проекта", "Конкурентни цени без компромис с качеството", "Поддръжка на италиански, английски и български", "Навременна доставка с 3 месеца безплатна поддръжка"],
   svc_name="Уеб Разработка {name}",
@@ -284,6 +303,8 @@ L = {
   faq_onsite_IT=("Работите ли на място в {name}?", "Работим дистанционно в цяла Италия с разговори на италиански (+39 379 296 9699); срещи на място се организират за по-големи проекти."),
   faq_onsite_BG=("Работите ли на място в {name}?", "Да — седалището ни е в Бобов дол и организираме срещи на място в цялата страна. Ежедневната поддръжка е дистанционна по телефон и чат."),
   faq_invoice=("Как се издава фактура?", "Издаваме редовна фактура с български ДДС номер (BG208725180). Плащане по банков път, с карта или Stripe."),
+  faq_timeline=("За колко време се изработва сайт в {name}?", "Фирмен сайт отнема 1-2 седмици, онлайн магазин 3-6 седмици, софтуер и ERP 2-6 месеца. Договаряме точен срок в безплатната оферта."),
+  faq_lang=("На какъв език работите с клиенти от {name}?", "Италиански, английски и български. Цялата комуникация, документация и поддръжка са на езика, който предпочитате."),
   ft_links=[("/bg/privacy/", "Поверителност"), ("/bg/cookie/", "Бисквитки"), ("/bg/usloviya/", "Условия")],
   hub_title="Къде Работим — Уеб Разработка в България и Италия | Carbon Stealth",
   hub_desc="Изработка на сайтове, онлайн магазини и софтуер в цяла България и Италия: София, Пловдив, Варна, Бургас, Милано, Рим и още. Оферта до 24 часа.",
@@ -354,7 +375,9 @@ def city_page(city, lang):
     onsite = s["faq_onsite_IT"] if city["country"] == "IT" else s["faq_onsite_BG"]
     faqs = [
         (s["faq_cost"][0].format(name=name), s["faq_cost"][1]),
+        (s["faq_timeline"][0].format(name=name), s["faq_timeline"][1]),
         (onsite[0].format(name=name), onsite[1]),
+        (s["faq_lang"][0].format(name=name), s["faq_lang"][1]),
         (s["faq_invoice"][0], s["faq_invoice"][1]),
     ]
     # NOTE: no per-city LocalBusiness node — the company has one physical HQ
@@ -377,6 +400,7 @@ def city_page(city, lang):
     ]}
     services = "".join(f'<li><a href="{u}">{t}</a><span class="price">{p}</span></li>' for u, t, p in s["services"])
     bullets = "".join(f"<li>{b}</li>" for b in s["bullets"])
+    process = "".join(f'<li><strong>{i+1}.</strong> {html.escape(step)}</li>' for i, step in enumerate(s["process"]))
     faq_html = "".join(f'<div class="faq-item"><div class="faq-q">{html.escape(q)}</div><div class="faq-a">{html.escape(a)}</div></div>' for q, a in faqs)
     same = [c for c in CITIES if c["country"] == city["country"] and c["slug"] != city["slug"]]
     other = [c for c in CITIES if c["country"] != city["country"]][:4]
@@ -385,8 +409,11 @@ def city_page(city, lang):
     return (head_common(lang, title, desc, canon, slugpath, s["og"], s["locale"], city["region"], city["name"]["en"])
         + jld(graph) + "\n</head><body>\n" + nav_html(lang)
         + f'<div class="hero-s"><div class="w"><div class="tag">{s["tag"].format(NAME=name.upper())}</div><h1>{s["h1"].format(name=name)}</h1><p>{city["hook"][lang]}</p><a href="{s["contact"]}" class="cta">{s["cta"]}</a></div></div>'
-        + f'<div class="w"><h2>{s["h2_services"].format(name=name)}</h2><ul>{services}</ul>'
+        + f'<div class="w"><p style="font-size:14px;color:#ddd;line-height:1.9">{s["intro2"].format(name=name)}</p>'
+        + f'<h2>{s["h2_services"].format(name=name)}</h2><ul>{services}</ul>'
         + f'<h2>{s["h2_local"].format(name=name)}</h2><p>{city["local"][lang]}</p><ul>{bullets}</ul>'
+        + f'<h2>{s["h2_process"].format(name=name)}</h2><ul class="proc">{process}</ul>'
+        + f'<h2>{s["h2_tech"]}</h2><p>{s["tech"]}</p>'
         + f'<h2>{s["h2_faq"]}</h2>{faq_html}'
         + f'<h2>{s["h2_nearby"]}</h2><div class="cities">{nearby}</div><p>{hub_link}</p>'
         + f'<a href="{s["contact"]}" class="cta">{s["cta"]}</a></div>'
