@@ -1,8 +1,9 @@
 # Medical Info – NFC Tag (pronto da stampare)
 
-Portachiavi tondo per **tag NFC** con scritta **MEDICAL INFO** in rilievo e
-**croce rossa** centrale. Pensato per stampanti **Creality** (Ender 3 / K1 /
-serie CR), in singolo estrusore con un solo **cambio colore**.
+Portachiavi tondo per **tag NFC** con scritta **MEDICAL INFO** in rilievo,
+**croce rossa** centrale e **"NFC" inciso dentro la croce**. Pensato per
+stampanti **Creality** (Ender 3 / K1 / serie CR), in singolo estrusore con
+un solo **cambio colore**.
 
 ![Fronte](preview/01-front.png)
 ![Vista 3/4](preview/03-angled.png)
@@ -73,6 +74,7 @@ modifica i parametri in alto, poi *Esporta → STL*:
 ```scad
 top_text     = "MEDICAL";   // scritta arco superiore
 bottom_text  = "INFO";      // scritta arco inferiore
+center_text  = "NFC";       // inciso dentro la croce ("" per toglierlo)
 disc_d       = 40;          // diametro
 nfc_d        = 26;          // diametro tasca NFC
 relief_h     = 1.0;         // altezza rilievo = quota del cambio colore

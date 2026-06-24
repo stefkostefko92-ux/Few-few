@@ -41,6 +41,11 @@ bottom_spacing= 22;    // degrees between letters (bottom arc)
 cross_arm     = 15;    // full length of each cross bar
 cross_w       = 5.2;   // thickness of the cross bars
 
+/* [ "NFC" mark engraved into the cross ] */
+center_text   = "NFC"; // engraved into the cross ("" to hide)
+center_size   = 3.0;
+center_y      = -1.0;  // vertical position inside the cross
+
 /* [ Quality ] */
 $fn           = 160;
 
@@ -102,16 +107,27 @@ module loop() {
 // Modelled FRONT-UP: face/relief on +Z, NFC pocket on -Z.
 // For printing, flip text-down (see README).
 
-// All the raised lettering + cross + border (the "red" colour).
+// All the raised lettering + cross + border (the "red" colour),
+// with "NFC" engraved straight through the cross so the body colour
+// shows inside it.
 module tag_relief() {
-    translate([0, 0, base_h - eps]) {
-        curved_text(top_text,    text_radius, top_size,
-                    top_spacing,    90);                    // top arc
-        curved_text(bottom_text, text_radius, bottom_size,
-                    bottom_spacing, 270, inward = true);    // bottom arc
-        cross();
-        if (edge_border) border();
-    }
+    translate([0, 0, base_h - eps])
+        difference() {
+            union() {
+                curved_text(top_text,    text_radius, top_size,
+                            top_spacing,    90);                    // top arc
+                curved_text(bottom_text, text_radius, bottom_size,
+                            bottom_spacing, 270, inward = true);    // bottom arc
+                cross();
+                if (edge_border) border();
+            }
+            // engrave NFC through the full relief thickness
+            if (center_text != "")
+                translate([0, center_y, -eps])
+                    linear_extrude(height = relief_h + 3 * eps)
+                        text(center_text, size = center_size, font = font,
+                             halign = "center", valign = "center");
+        }
 }
 
 // Disc + keyring loop with the loop hole and NFC pocket removed.
