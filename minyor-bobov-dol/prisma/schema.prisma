@@ -1,0 +1,231 @@
+// Схема на базата данни за уебсайта на ФК „Миньор“ Бобов дол.
+// Цялото съдържание се управлява от административния панел.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Достъп и одит ─────────────────────────
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         Role      @default(EDITOR)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String
+  entity    String
+  entityId  String?
+  summary   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity])
+}
+
+// Ключ-стойност настройки (Facebook адрес, потвърждения пред търсачки и др.).
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ───────────────────────── Съдържание ─────────────────────────
+
+// Новини / съобщения.
+model Post {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String?
+  body           String // Markdown
+  coverUrl       String?
+  publishedAt    DateTime?
+  published      Boolean   @default(true)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+enum PlayerPosition {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  FORWARD
+}
+
+// Състав — футболисти.
+model Player {
+  id          String         @id @default(cuid())
+  name        String
+  number      Int?
+  position    PlayerPosition @default(MIDFIELDER)
+  birthDate   DateTime?
+  heightCm    Int?
+  nationality String?        @default("България")
+  photoUrl    String?
+  bio         String? // Markdown
+  active      Boolean        @default(true)
+  order       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([active, position, order])
+}
+
+// Треньорски и ръководен щаб.
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  role      String // напр. „Старши треньор“, „Президент“
+  photoUrl  String?
+  bio       String?
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, order])
+}
+
+enum MatchStatus {
+  SCHEDULED
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+// Мач — програма и резултати.
+model Match {
+  id          String      @id @default(cuid())
+  opponent    String
+  isHome      Boolean     @default(true)
+  competition String?     @default("Областна група Кюстендил")
+  season      String?     @default("2025/2026")
+  round       String?
+  kickoff     DateTime
+  venue       String?     @default("Стадион „Николай Кръстев – Шулц“")
+  status      MatchStatus @default(SCHEDULED)
+  homeGoals   Int?
+  awayGoals   Int?
+  ticketUrl   String?
+  notes       String? // Markdown — кратък репортаж/коментар
+  published   Boolean     @default(true)
+  // Произход на записа: null = ръчно въведен; "bgclubs" = автоматична синхронизация.
+  source      String?
+  externalRef String?     @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([published, kickoff])
+  @@index([source, kickoff])
+}
+
+// Ред от таблицата на класирането (поддържа се ръчно от админа).
+model StandingRow {
+  id            String   @id @default(cuid())
+  season        String   @default("2025/2026")
+  position      Int
+  teamName      String
+  played        Int      @default(0)
+  won           Int      @default(0)
+  drawn         Int      @default(0)
+  lost          Int      @default(0)
+  goalsFor      Int      @default(0)
+  goalsAgainst  Int      @default(0)
+  points        Int      @default(0)
+  isOwnTeam     Boolean  @default(false)
+  published     Boolean  @default(true)
+  // Произход: null = ръчно въведен; "bgclubs" = автоматична синхронизация.
+  source        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([published, season, position])
+  @@index([source])
+}
+
+// Постижение / етап от историята.
+model HonourItem {
+  id          String   @id @default(cuid())
+  year        String // напр. „2004/05“ или „1985“
+  title       String
+  description String?
+  order       Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, order])
+}
+
+// Снимка от галерията.
+model GalleryPhoto {
+  id        String   @id @default(cuid())
+  url       String
+  caption   String?
+  album     String?  @default("Общи")
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, album, order])
+}
+
+enum SponsorTier {
+  MAIN
+  PARTNER
+  SUPPORTER
+}
+
+// Спонсор / партньор.
+model Sponsor {
+  id        String      @id @default(cuid())
+  name      String
+  logoUrl   String?
+  url       String?
+  tier      SponsorTier @default(PARTNER)
+  order     Int         @default(0)
+  published Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([published, tier, order])
+}
+
+// Съобщение от формата за контакти (модерира се в админа).
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  body      String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([handled, createdAt])
+}
