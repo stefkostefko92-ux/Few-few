@@ -9,7 +9,7 @@
 //   * Линковете към обявите са относителни — резолюват се спрямо baseUrl.
 //   * Цените са в EUR/BGN; валутата се чете от текста (виж priceCurrencyAttr/markup).
 
-import type { SourceAdapter } from "@car-monitor/ingest";
+import { parseMobileBgList, type SourceAdapter } from "@car-monitor/ingest";
 import { httpListingsAdapter, type CommonAdapterOptions } from "./http.ts";
 
 const BASE = "https://www.mobile.bg";
@@ -21,25 +21,10 @@ export function mobileBgAdapter(common: CommonAdapterOptions = {}): SourceAdapte
     baseUrl: BASE,
     charset: "windows-1251",
     pageUrl: (page) => `${BASE}/obiavi/avtomobili-dzhipove/p-${page}`,
-    selectors: {
-      // TODO: сверете с реалния DOM на mobile.bg.
-      item: ".item, .mmm",
-      idAttr: "data-id",
-      title: "a.title, .text a",
-      link: "a.title, .text a",
-      make: ".make",
-      model: ".model",
-      year: ".year, .godina",
-      price: ".price, .cena",
-      priceCurrencyAttr: "data-currency",
-      mileage: ".mileage, .probeg",
-      fuel: ".fuel, .gorivo",
-      gearbox: ".gearbox, .skorosti",
-      location: ".location, .grad",
-      seller: ".seller, .dealer",
-      sellerKindAttr: "data-kind",
-      sellerEikAttr: "data-eik",
-    },
+    // Специфичен парсер, сверен срещу реалните карти на mobile.bg
+    // (.item > a > .ime/.cena/.km/.grad). За детайлите по обява —
+    // parseMobileBgDetail (VIN липсва; id-то на обявата е идентификаторът).
+    parse: parseMobileBgList,
     maxPages: common.maxPages,
     delayMs: common.delayMs,
   });

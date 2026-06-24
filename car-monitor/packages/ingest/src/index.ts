@@ -276,3 +276,4 @@ export interface SourceAdapter {
 
 export { parseListingsHtml, DEFAULT_SELECTORS, type ListingSelectors } from "./parse.ts";
 export { parseMobileBgDetail } from "./parse-mobile-detail.ts";
+export { parseMobileBgList } from "./parse-mobile-list.ts";

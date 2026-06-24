@@ -17,6 +17,8 @@ export interface HttpAdapterOptions {
   charset?: string;
   /** Базов адрес за резолюция на относителни линкове. */
   baseUrl?: string;
+  /** Свой парсер за източника (вместо generic-а по селектори). */
+  parse?: (html: string, source: string, baseUrl?: string) => RawListing[];
 }
 
 /** Параметри, общи за всички адаптери (от @car-monitor/config). */
@@ -26,7 +28,7 @@ export interface CommonAdapterOptions {
 }
 
 export function httpListingsAdapter(opts: HttpAdapterOptions): SourceAdapter {
-  const { id, source, pageUrl, selectors, maxPages = 5, delayMs = 1500, charset, baseUrl } = opts;
+  const { id, source, pageUrl, selectors, maxPages = 5, delayMs = 1500, charset, baseUrl, parse } = opts;
   const ua = opts.userAgent ?? "CarMonitorBot/0.1 (+https://car-monitor.example)";
 
   return {
@@ -37,7 +39,7 @@ export function httpListingsAdapter(opts: HttpAdapterOptions): SourceAdapter {
         const res = await fetch(pageUrl(page), { headers: { "user-agent": ua } });
         if (!res.ok) break;
         const html = await decodeBody(res, charset);
-        const batch = parseListingsHtml(html, source, selectors).map((r) => ({
+        const batch = (parse ? parse(html, source, baseUrl) : parseListingsHtml(html, source, selectors)).map((r) => ({
           ...r,
           url: resolveUrl(r.url, baseUrl),
         }));
