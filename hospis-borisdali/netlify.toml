@@ -1,0 +1,31 @@
+# Конфигурация за деплой в Netlify — статичен сайт
+[build]
+  publish = "."
+
+# Пренасочване на грешния/непрефиксиран домейн към www (по избор — активирайте при реален домейн)
+# [[redirects]]
+#   from = "https://hospisborisdali.bg/*"
+#   to = "https://www.hospisborisdali.bg/:splat"
+#   status = 301
+#   force = true
+
+# SPA/404 — отдаване на 404 страница
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
+
+# Заглавки за сигурност и кеширане (дублира _headers за съвместимост)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

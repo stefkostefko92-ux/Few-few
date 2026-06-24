@@ -1,0 +1,19 @@
+{
+  "name": "Хоспис „Борис Дали”",
+  "short_name": "Борис Дали",
+  "description": "Палиативна грижа и настаняване на възрастни хора в гр. Бобов дол.",
+  "lang": "bg",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFAF5",
+  "theme_color": "#E09030",
+  "icons": [
+    {
+      "src": "/assets/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
