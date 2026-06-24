@@ -78,7 +78,7 @@ export default async function BusinessPage({
           <div className="card space-y-3">
             {b.phone && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Телефон</div>
+                <div className="text-xs uppercase text-slate-600">Телефон</div>
                 <a href={`tel:${b.phone}`} className="text-lg font-semibold text-brand-700">
                   {b.phone}
                 </a>
@@ -86,19 +86,19 @@ export default async function BusinessPage({
             )}
             {b.address && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Адрес</div>
+                <div className="text-xs uppercase text-slate-600">Адрес</div>
                 <div className="text-slate-700">{b.address}</div>
               </div>
             )}
             {b.hours && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Работно време</div>
+                <div className="text-xs uppercase text-slate-600">Работно време</div>
                 <div className="text-slate-700">{b.hours}</div>
               </div>
             )}
             {b.email && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Имейл</div>
+                <div className="text-xs uppercase text-slate-600">Имейл</div>
                 <a href={`mailto:${b.email}`} className="text-brand-700 hover:underline">
                   {b.email}
                 </a>
@@ -106,7 +106,7 @@ export default async function BusinessPage({
             )}
             {b.website && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Уебсайт</div>
+                <div className="text-xs uppercase text-slate-600">Уебсайт</div>
                 <a
                   href={b.website}
                   target="_blank"
@@ -119,7 +119,7 @@ export default async function BusinessPage({
             )}
             {b.facebook && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Facebook</div>
+                <div className="text-xs uppercase text-slate-600">Facebook</div>
                 <a
                   href={b.facebook}
                   target="_blank"

@@ -18,7 +18,15 @@ export function IntroSplash() {
     }
     setShow(true);
     const t = setTimeout(() => setShow(false), SITE.intro.seconds * 1000);
-    return () => clearTimeout(t);
+    // Достъпност: затваряне с клавиша Escape (за хора с клавиатура).
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShow(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   if (!show) return null;

@@ -148,6 +148,7 @@ export function AccessibilityBar() {
           : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100")
       }
       title={`Размер на текста: ${label}`}
+      aria-label={`Размер на текста: ${label}`}
     >
       А
     </button>

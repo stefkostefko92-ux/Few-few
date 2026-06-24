@@ -61,19 +61,19 @@ export default async function RidePage({
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:max-w-md">
             {r.schedule && (
               <div>
-                <dt className="text-slate-400">Кога</dt>
+                <dt className="text-slate-600">Кога</dt>
                 <dd className="font-medium text-slate-800">{r.schedule}</dd>
               </div>
             )}
             {r.seats && (
               <div>
-                <dt className="text-slate-400">Свободни места</dt>
+                <dt className="text-slate-600">Свободни места</dt>
                 <dd className="font-medium text-slate-800">{r.seats}</dd>
               </div>
             )}
             {r.costNote && (
               <div>
-                <dt className="text-slate-400">Дял от разхода</dt>
+                <dt className="text-slate-600">Дял от разхода</dt>
                 <dd className="font-medium text-slate-800">{r.costNote}</dd>
               </div>
             )}

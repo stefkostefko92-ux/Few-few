@@ -33,7 +33,7 @@ export function EuroConverter() {
             className="input text-lg"
           />
         </div>
-        <div className="pb-3 text-center text-2xl text-slate-400" aria-hidden>
+        <div className="pb-3 text-center text-2xl text-slate-600" aria-hidden>
           ⇄
         </div>
         <div>

@@ -35,7 +35,7 @@ export default async function IndexingPage({
         </div>
       )}
       {inx === "err" && (
-        <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div role="alert" className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">
           Възникна проблем: {msg}. Опитайте отново след малко.
         </div>
       )}

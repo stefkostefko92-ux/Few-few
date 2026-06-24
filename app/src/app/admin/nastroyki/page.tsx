@@ -39,7 +39,7 @@ export default async function AdminSettingsPage({
         <div className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700">Запазено.</div>
       )}
       {error && (
-        <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
+        <div role="alert" className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
       )}
 
       <form action={saveAdSettings} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">

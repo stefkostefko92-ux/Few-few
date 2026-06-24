@@ -90,7 +90,7 @@ export function AdminShell({
         >
           <nav className="space-y-1">
             {link("/admin", "Табло")}
-            <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-400">
+            <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-600">
               Съдържание
             </div>
             {RESOURCES.filter((r) => !r.adminOnly || user.role === "ADMIN").map(
@@ -98,7 +98,7 @@ export function AdminShell({
                 <div key={r.key}>{link(`/admin/${r.key}`, r.labelPlural, r.key)}</div>
               ),
             )}
-            <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-400">
+            <div className="px-3 pb-1 pt-4 text-xs font-semibold uppercase text-slate-600">
               Система
             </div>
             {user.role === "ADMIN" && link("/admin/pomoshtnik", "Дигитален помощник")}

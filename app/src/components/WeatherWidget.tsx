@@ -48,7 +48,7 @@ export function WeatherWidget() {
           {w.temp}°C · {describe(w.code)}
         </span>
       ) : (
-        <span className="text-slate-400">зареждане…</span>
+        <span className="text-slate-600">зареждане…</span>
       )}
     </div>
   );

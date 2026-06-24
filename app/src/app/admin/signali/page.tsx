@@ -92,7 +92,7 @@ export default async function AdminSignaliPage({
                     </span>
                     <span className="badge">{c.category}</span>
                   </div>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-600">
                     {new Intl.DateTimeFormat("bg-BG", {
                       day: "2-digit",
                       month: "2-digit",

@@ -11,6 +11,7 @@ import { ChromeGate } from "@/components/ChromeGate";
 import { CookieConsent } from "@/components/CookieConsent";
 import { IntroSplash } from "@/components/IntroSplash";
 import { ChatWidget } from "@/components/ChatWidget";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -106,6 +107,7 @@ export default function RootLayout({
           <CookieConsent />
           <IntroSplash />
           <ChatWidget />
+          <ServiceWorkerRegister />
         </ChromeGate>
       </body>
     </html>

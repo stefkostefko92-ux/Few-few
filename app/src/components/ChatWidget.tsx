@@ -257,7 +257,7 @@ export function ChatWidget() {
                 >
                   {m.role === "bot" ? <BotText text={m.text} /> : m.text}
                   {m.role === "bot" && m.text === "" && loading && (
-                    <span className="text-slate-400">пише…</span>
+                    <span className="text-slate-600">пише…</span>
                   )}
                 </div>
                 {m.sources && m.sources.length > 0 && (

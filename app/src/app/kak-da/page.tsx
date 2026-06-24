@@ -51,7 +51,7 @@ export default function KakDaPage() {
                   className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-brand-300 hover:text-brand-700"
                 >
                   {grp.category}
-                  <span className="text-slate-400">({grp.guides.length})</span>
+                  <span className="text-slate-600">({grp.guides.length})</span>
                 </a>
               </li>
             ))}

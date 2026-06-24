@@ -93,7 +93,7 @@ export default async function ServicePage({
           <div className="card space-y-3">
             {s.phone && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Телефон</div>
+                <div className="text-xs uppercase text-slate-600">Телефон</div>
                 <a href={`tel:${s.phone}`} className="text-lg font-semibold text-brand-700">
                   {s.phone}
                 </a>
@@ -101,7 +101,7 @@ export default async function ServicePage({
             )}
             {s.phone2 && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Втори телефон</div>
+                <div className="text-xs uppercase text-slate-600">Втори телефон</div>
                 <a href={`tel:${s.phone2}`} className="font-semibold text-brand-700">
                   {s.phone2}
                 </a>
@@ -109,19 +109,19 @@ export default async function ServicePage({
             )}
             {s.address && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Адрес</div>
+                <div className="text-xs uppercase text-slate-600">Адрес</div>
                 <div className="text-slate-700">{s.address}</div>
               </div>
             )}
             {s.hours && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Работно време</div>
+                <div className="text-xs uppercase text-slate-600">Работно време</div>
                 <div className="text-slate-700">{s.hours}</div>
               </div>
             )}
             {s.email && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Имейл</div>
+                <div className="text-xs uppercase text-slate-600">Имейл</div>
                 <a href={`mailto:${s.email}`} className="text-brand-700 hover:underline">
                   {s.email}
                 </a>
@@ -129,7 +129,7 @@ export default async function ServicePage({
             )}
             {s.website && (
               <div>
-                <div className="text-xs uppercase text-slate-400">Уебсайт</div>
+                <div className="text-xs uppercase text-slate-600">Уебсайт</div>
                 <a
                   href={s.website}
                   target="_blank"
