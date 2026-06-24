@@ -13,7 +13,7 @@ function newsUrl(): string {
   // TODO: потвърди URL за новини на Община Дупница (раздел „Новини" на
   // официалния сайт https://www.dupnitsa.bg/). Стойността по подразбиране
   // сочи към официалния домейн; задай MUNICIPALITY_NEWS_URL за точния адрес.
-  return process.env.MUNICIPALITY_NEWS_URL || "https://www.dupnitsa.bg/";
+  return process.env.MUNICIPALITY_NEWS_URL || "https://dupnitsa.bg/section-120-content.html";
 }
 
 export type RawItem = { title: string; link: string; summary: string; date?: Date };

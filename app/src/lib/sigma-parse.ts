@@ -5,7 +5,7 @@
 // Кодът на институцията в СИГМА може да се различава от ЕИК/БУЛСТАТ; затова
 // го правим заменяем през обкръжението. Стойността по подразбиране е
 // ЕИК/БУЛСТАТ на Община Дупница (за потвърждение срещу sigma.midt.bg).
-export const SIGMA_AUTHORITY_ID = process.env.SIGMA_AUTHORITY_ID || "000261369"; // ОБЩИНА ДУПНИЦА
+export const SIGMA_AUTHORITY_ID = process.env.SIGMA_AUTHORITY_ID || "000261630"; // ОБЩИНА ДУПНИЦА
 export const SIGMA_AUTHORITY_URL = `https://sigma.midt.bg/authorities/${SIGMA_AUTHORITY_ID}`;
 
 export type Supplier = {

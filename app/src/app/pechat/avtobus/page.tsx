@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
-import { BUS } from "@/lib/bus-schedule";
+import { TRANSPORT_PROVIDERS, TRANSPORT_NOTE } from "@/lib/bus-schedule";
 import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Автобусно разписание Дупница ⇄ Бобов дол за печат",
+  title: "Транспорт от Дупница — превозвачи и телефони за печат",
   description:
-    "Разписанието на автобуса Дупница – Бобов дол (превозвач Даци-Р), готово за печат и закачане на видно място. С едър шрифт и QR код към сайта.",
+    "Автогара Дупница и превозвачите (Юнион Ивкони, M&M Травел, Даци-Р) — маршрути и телефони за връзка, готови за печат и закачане на видно място. С едър шрифт и QR код.",
   path: "/pechat/avtobus",
 });
 
@@ -19,7 +19,7 @@ export default function BusPrintPage() {
       <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">
-            Автобусно разписание за печат
+            Транспорт от Дупница — за печат
           </h1>
           <p className="text-slate-600">
             Принтирайте този лист и го закачете на видно място у дома или го
@@ -42,42 +42,49 @@ export default function BusPrintPage() {
           />
           <div>
             <div className="font-display text-2xl font-bold text-slate-900">
-              Автобус Дупница ⇄ Бобов дол
+              Транспорт от Дупница
             </div>
             <div className="text-sm text-slate-500">
-              Превозвач: {BUS.carrier} · {SITE.domain}
+              Превозвачи и телефони · {SITE.domain}
             </div>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          {BUS.directions.map((d) => (
-            <div key={d.title}>
-              <h2 className="font-display text-xl font-bold text-slate-900">
-                {d.title}
-              </h2>
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {d.times.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-md border border-slate-300 px-1.5 py-1.5 text-center text-lg font-bold text-slate-900"
-                  >
-                    {t}
-                  </span>
+        <div className="mt-6 space-y-4">
+          {TRANSPORT_PROVIDERS.map((p) => (
+            <div
+              key={p.name}
+              className="rounded-lg border border-slate-300 p-4"
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900">
+                  {p.name}
+                </h2>
+                <span className="text-sm font-medium text-slate-500">
+                  {p.kind}
+                </span>
+              </div>
+              <p className="mt-1 text-base text-slate-700">{p.routes}</p>
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-lg font-bold text-slate-900">
+                {p.phones.map((tel) => (
+                  <span key={tel}>☎ {tel}</span>
                 ))}
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-slate-700">
-                {d.notes.map((n, i) => (
-                  <li key={i}>• {n}</li>
-                ))}
-              </ul>
+              {p.address && (
+                <div className="mt-1 text-sm text-slate-600">{p.address}</div>
+              )}
+              {p.website && (
+                <div className="mt-1 text-sm text-slate-600">{p.website}</div>
+              )}
+              {p.note && (
+                <div className="mt-1 text-sm text-slate-500">{p.note}</div>
+              )}
             </div>
           ))}
         </div>
 
         <div className="mt-6 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-          Разписанието може да се променя. При съмнение проверете на спирката
-          или с превозвача.
+          {TRANSPORT_NOTE}
         </div>
 
         <div className="mt-6 flex items-center gap-4 border-t-2 border-slate-200 pt-4">

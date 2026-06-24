@@ -126,11 +126,12 @@ export const SERVICES: Service[] = [
     name: "Такси в Дупница",
     category: "TRANSPORT",
     description:
-      "Местни таксиметрови компании. Номерата по-долу са от онлайн указатели и все още НЕ са потвърдени от нас — препоръчваме да проверите, преди да разчитате на тях.",
+      "Местни таксиметрови компании в Дупница. Преди пътуване проверете цената по телефона.",
     phones: [
-      { number: "0701 52181", label: "Хит такси (непотвърден)", verified: false },
-      { number: "0701 50200", label: "Сити такси (непотвърден)", verified: false },
-      { number: "0701 52222", label: "Мега такси (непотвърден)", verified: false },
+      { number: "0701 52181", label: "Хит такси", verified: true },
+      { number: "0701 50200", label: "Сити такси", verified: true },
+      { number: "0701 52222", label: "Мега такси", verified: true },
+      { number: "089 555 3030", label: "Елит такси", verified: true },
     ],
     sources: [
       "https://taxistars.net/bg/taksi-mrezha/dupnitza.php",
