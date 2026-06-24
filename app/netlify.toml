@@ -1,0 +1,24 @@
+# Конфигурация за деплой на „За Дупница" в Netlify.
+#
+# Проектът е Next.js приложение със сървърна част (server actions, middleware,
+# API route за чата), затова НЕ се сервира като статични файлове и няма
+# index.html — тръгва през официалния Next runtime на Netlify, който вдига
+# сървърни функции и сервира пре-рендираните страници.
+#
+# ВАЖНО: в настройките на сайта в Netlify „Base directory" трябва да е `app`,
+# за да се чете този файл и да се билдва този проект (repo-то съдържа и втори
+# проект в `zabobovdol/`). Тогава командите по-долу се изпълняват в `app/`.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Публичен адрес за canonical/SEO. Сменете с реалния домейн при нужда.
+  NEXT_PUBLIC_SITE_URL = "https://zadupnitsa.eu"
+
+# Официалният runtime за Next.js — създава сървърните функции и обслужва
+# страниците. Без него Netlify не знае как да пусне приложението.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
