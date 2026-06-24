@@ -316,3 +316,69 @@ p  { margin: 0 0 1rem; }
 .muted { color: var(--ink-500); }
 .tag { display:inline-block; background: var(--green-50); color: var(--green-800); font-weight:600; font-size:.8rem; padding:.3rem .7rem; border-radius: 999px; }
 .visually-hidden { position:absolute!important; width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0); white-space:nowrap; }
+
+/* =========================================================================
+   Ефекти (леки, само CSS; деактивират се при prefers-reduced-motion)
+   ========================================================================= */
+
+/* анкери да не се крият под лепкавия header */
+[id] { scroll-margin-top: 92px; }
+
+/* по-плавно вдигане на хедъра при скрол */
+.site-header { transition: box-shadow .3s ease, background .3s ease; }
+.site-header.is-scrolled { box-shadow: 0 6px 24px rgba(58,46,36,.10); background: rgba(255,250,245,.97); }
+
+/* лек „float" на сиянието в hero */
+.hero::after { animation: floaty 9s ease-in-out infinite; }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+
+/* медийни рамки — зум и топъл оверлей при посочване */
+.media-frame { position: relative; }
+.media-frame img { transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+.media-frame::after {
+  content:""; position:absolute; inset:0; border-radius: inherit; pointer-events:none;
+  background: linear-gradient(180deg, transparent 55%, rgba(58,46,36,.18));
+  opacity: 0; transition: opacity .4s ease;
+}
+.media-frame:hover img { transform: scale(1.05); }
+.media-frame:hover::after { opacity: 1; }
+
+/* карти — по-жив hover с топъл кант */
+.card { position: relative; }
+.card--hover { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.card--hover:hover { border-color: var(--sand-500); }
+.card__icon { transition: transform .25s ease, background .25s ease; }
+.card--hover:hover .card__icon { transform: translateY(-2px) scale(1.06); background: var(--sand-100); }
+
+/* бутони — фин блясък */
+.btn { position: relative; overflow: hidden; }
+.btn::after {
+  content:""; position:absolute; top:0; left:-130%; width:60%; height:100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: skewX(-18deg); transition: left .6s ease;
+}
+.btn:hover::after { left: 140%; }
+
+/* галерия — оверлей с икона „увеличи" */
+.gallery figure { position: relative; }
+.gallery figure::after {
+  content:""; position:absolute; inset:0; background: rgba(58,46,36,.0); transition: background .35s ease;
+  pointer-events: none;
+}
+.gallery figure:hover::after { background: rgba(58,46,36,.18); }
+.gallery figure::before {
+  content:""; position:absolute; z-index:2; top:50%; left:50%; width:46px; height:46px;
+  transform: translate(-50%,-50%) scale(.6); opacity:0; transition: opacity .3s ease, transform .3s ease;
+  border-radius: 50%; background: rgba(255,250,245,.95);
+  /* икона лупа */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23C87820' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3M11 8v6M8 11h6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center; box-shadow: var(--shadow);
+}
+.gallery figure:hover::before { opacity:1; transform: translate(-50%,-50%) scale(1); }
+
+/* плавни вътрешни котви */
+.faq summary, .nav__links a, .footer-links a, .info-list a { transition: color .2s ease, background .2s ease; }
+
+/* фино подчертаване на връзки в текста */
+.doc a, .lead a { text-decoration: underline; text-decoration-color: rgba(200,120,32,.35); transition: text-decoration-color .2s; }
+.doc a:hover, .lead a:hover { text-decoration-color: var(--sand-600); }

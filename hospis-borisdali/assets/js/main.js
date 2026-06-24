@@ -20,6 +20,17 @@
     });
   }
 
+  // --- Сянка на хедъра при скрол ---
+  var header = document.querySelector(".site-header");
+  if (header) {
+    var onScroll = function () {
+      if (window.scrollY > 8) header.classList.add("is-scrolled");
+      else header.classList.remove("is-scrolled");
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
   // --- Текуща година във футъра ---
   var y = document.querySelector("[data-year]");
   if (y) y.textContent = String(new Date().getFullYear());
