@@ -1,6 +1,70 @@
-# Aletta v1 — mesh pulita per FreeCAD 1.1
+# Aletta — da scansione a solido CAD per FreeCAD 1.1
 
 Mesh originale: `Aletta v1 (1).stl` (scansione 3D, 92 MB, 1.842.602 triangoli) scaricata da WeTransfer ("Aletta scannerizzata").
+
+---
+
+# ⭐ v3 — solid professionale 100% NURBS/analitico (ZERO triangoli)
+
+**Questo è il deliverable consigliato per la modellazione.** È un vero solido
+B-Rep fatto solo di superfici matematiche lisce — **nessuna sfaccettatura
+triangolare** — come producono i professionisti con Geomagic Design X /
+Rhino / Fusion (filosofia *parametric re-modeling*, vedi `METODOLOGIA` sotto).
+
+| File | Contenuto | Dimensione |
+|---|---|---|
+| `Aletta_v3.step` | Solido STEP AP214 con superfici NURBS/analitiche native | **637 KB** |
+| `Aletta_v3.FCStd` | Documento FreeCAD 1.1 (corpo NURBS + perni parametrici + sketch sezioni) | 0,3 MB |
+| `Aletta_v3.brep` | Solido nativo OpenCascade | 0,6 MB |
+| `genera_cad_v3.py` | Script di generazione | — |
+
+### Composizione del solido (28 facce, tutte analitiche/NURBS)
+
+| Tipo di superficie | N. facce | Cosa rappresenta |
+|---|---|---|
+| BSplineSurface (NURBS) | 8 | Corpo della vela — un'unica superficie freeform C2 |
+| Cilindro | 7 | Gambi M8, collari Ø13,8/Ø12, tratti dei perni |
+| Cono | 4 | Transizioni coniche dei perni |
+| **Toroide** | **3** | **Raccordi (fillet) alla base dei perni** |
+| Piano | 6 | Cappelli/estremità |
+
+**0 facce planari triangolari.** Confronto: la v2 (mesh-fusa) aveva 60.000
+triangoli; la v3 ne ha **zero**. STEP 637 KB contro 124 MB del solido sfaccettato.
+
+### Perché è anche più *corretto*, non solo più pulito
+
+Misurando la scansione, i perni risultano **perfettamente assialsimmetrici**
+(deviazione del raggio < 0,2 mm). Quindi modellarli come cilindri/coni
+analitici esatti (Ø13,8 collare → Ø8 = M8 → Ø4 punta) non è solo "pulito":
+**ricostruisce il design intent reale** eliminando il rumore di scansione —
+esattamente il motivo per cui i professionisti preferiscono le primitive
+analitiche dove la geometria lo consente.
+
+### Fedeltà alla scansione (`deviation_map_v3.png`)
+
+Mediana 0,22 mm · corpo principale < 0,3 mm · solido valido e watertight,
+volume 240,2 cm³. Le superfici sono editabili (NURBS + feature parametriche).
+
+### METODOLOGIA (come lo fanno i professionisti — ricerca)
+
+Lo standard scan-to-CAD prevede 2 filosofie:
+1. **Auto-surface / patch network** (Geomagic): avvolge la scansione con
+   centinaia di patch NURBS — alta fedeltà, bassa editabilità.
+2. **Parametric re-modeling** (qui usato): si ricostruisce con superfici
+   ideali (NURBS freeform + primitive analitiche esatte + raccordi), usando
+   la scansione come riferimento — **massima editabilità + zero triangoli**.
+
+Pipeline applicata: segmentazione corpo↔perni → corpo come singola superficie
+**B-spline bicubica C2** (skinning di 24 sezioni) → perni come **rivoluzioni
+analitiche** del profilo misurato → **raccordi toroidali** alla base →
+**cucitura** in solido unico → verifica deviazione. Tolleranza di fitting
+tenuta ~0,1 mm (≈ rumore dello scanner: fittare più stretto significa
+inseguire il rumore). Fonti: Geomagic Design X (oqton.com/geomagic-designx),
+McNeel Rhino (continuità G0/G1/G2), OpenCascade (cucitura/sewing).
+
+---
+
+# v1 — mesh pulita + solidi tassellati
 
 ## File
 
