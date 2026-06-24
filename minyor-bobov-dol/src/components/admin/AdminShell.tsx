@@ -97,6 +97,7 @@ export function AdminShell({
             </div>
             {user.role === "ADMIN" &&
               link("/admin/saobshteniya", "Съобщения от контакти", "saobshteniya")}
+            {user.role === "ADMIN" && link("/admin/sinhronizatsiya", "Синхронизация на данни")}
             {user.role === "ADMIN" && link("/admin/users", "Потребители")}
             {user.role === "ADMIN" && link("/admin/audit", "Одит лог")}
           </nav>

@@ -11,6 +11,18 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
+// Когато има автоматично синхронизирани (source = "bgclubs") записи, показваме
+// само тях; иначе се връщаме към ръчно въведените. Така автоматичните данни са
+// водещи, без да дублират или изтриват ръчното съдържание.
+async function matchSourceFilter() {
+  const synced = await prisma.match.count({ where: { source: "bgclubs" } });
+  return synced > 0 ? { source: "bgclubs" } : {};
+}
+async function standingSourceFilter() {
+  const synced = await prisma.standingRow.count({ where: { source: "bgclubs" } });
+  return synced > 0 ? { source: "bgclubs" } : {};
+}
+
 // ── Новини ──
 export function getLatestPosts(take = 3) {
   return safe(
@@ -55,61 +67,56 @@ export function getPostSlugs() {
 
 // ── Мачове ──
 export function getNextMatch() {
-  return safe(
-    () =>
-      prisma.match.findFirst({
-        where: { published: true, status: "SCHEDULED", kickoff: { gte: startOfToday() } },
-        orderBy: { kickoff: "asc" },
-      }),
-    null,
-  );
+  return safe(async () => {
+    const src = await matchSourceFilter();
+    return prisma.match.findFirst({
+      where: { published: true, status: "SCHEDULED", kickoff: { gte: startOfToday() }, ...src },
+      orderBy: { kickoff: "asc" },
+    });
+  }, null);
 }
 
 export function getUpcomingMatches(take = 20) {
-  return safe(
-    () =>
-      prisma.match.findMany({
-        where: { published: true, status: { in: ["SCHEDULED", "POSTPONED"] } },
-        orderBy: { kickoff: "asc" },
-        take,
-      }),
-    [],
-  );
+  return safe(async () => {
+    const src = await matchSourceFilter();
+    return prisma.match.findMany({
+      where: { published: true, status: { in: ["SCHEDULED", "POSTPONED"] }, ...src },
+      orderBy: { kickoff: "asc" },
+      take,
+    });
+  }, []);
 }
 
 export function getRecentResults(take = 5) {
-  return safe(
-    () =>
-      prisma.match.findMany({
-        where: { published: true, status: "FINISHED" },
-        orderBy: { kickoff: "desc" },
-        take,
-      }),
-    [],
-  );
+  return safe(async () => {
+    const src = await matchSourceFilter();
+    return prisma.match.findMany({
+      where: { published: true, status: "FINISHED", ...src },
+      orderBy: { kickoff: "desc" },
+      take,
+    });
+  }, []);
 }
 
 export function getAllMatches() {
-  return safe(
-    () =>
-      prisma.match.findMany({
-        where: { published: true },
-        orderBy: { kickoff: "desc" },
-      }),
-    [],
-  );
+  return safe(async () => {
+    const src = await matchSourceFilter();
+    return prisma.match.findMany({
+      where: { published: true, ...src },
+      orderBy: { kickoff: "desc" },
+    });
+  }, []);
 }
 
 // ── Класиране ──
 export function getStandings(season?: string) {
-  return safe(
-    () =>
-      prisma.standingRow.findMany({
-        where: { published: true, ...(season ? { season } : {}) },
-        orderBy: { position: "asc" },
-      }),
-    [],
-  );
+  return safe(async () => {
+    const src = await standingSourceFilter();
+    return prisma.standingRow.findMany({
+      where: { published: true, ...(season ? { season } : {}), ...src },
+      orderBy: { position: "asc" },
+    });
+  }, []);
 }
 
 // ── Състав и щаб ──

@@ -134,10 +134,14 @@ model Match {
   ticketUrl   String?
   notes       String? // Markdown — кратък репортаж/коментар
   published   Boolean     @default(true)
+  // Произход на записа: null = ръчно въведен; "bgclubs" = автоматична синхронизация.
+  source      String?
+  externalRef String?     @unique
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
   @@index([published, kickoff])
+  @@index([source, kickoff])
 }
 
 // Ред от таблицата на класирането (поддържа се ръчно от админа).
@@ -155,10 +159,13 @@ model StandingRow {
   points        Int      @default(0)
   isOwnTeam     Boolean  @default(false)
   published     Boolean  @default(true)
+  // Произход: null = ръчно въведен; "bgclubs" = автоматична синхронизация.
+  source        String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([published, season, position])
+  @@index([source])
 }
 
 // Постижение / етап от историята.
