@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Хоспис Борис Дали — Най-добрата грижа за Вашите близки">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#15392f"/>
+      <stop offset="1" stop-color="#266a55"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="80%" cy="20%" r="60%">
+      <stop offset="0" stop-color="#cda873" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#cda873" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(96,150)">
+    <rect width="96" height="96" rx="24" fill="#fbf8f2"/>
+    <path d="M48 78c-11-6.5-21-14.5-21-26a11 11 0 0 1 21-5 11 11 0 0 1 21 5c0 11.5-10 19.5-21 26z" fill="#1d5141"/>
+  </g>
+  <text x="96" y="330" font-family="Georgia, serif" font-size="76" fill="#ffffff" font-weight="700">Хоспис „Борис Дали“</text>
+  <text x="96" y="402" font-family="Georgia, serif" font-size="40" fill="#cda873">Най-добрата грижа за Вашите близки</text>
+  <text x="96" y="486" font-family="system-ui, Arial, sans-serif" font-size="30" fill="#cfe1d9">Палиативна грижа · Постоянно и временно настаняване · гр. Бобов дол</text>
+  <text x="96" y="548" font-family="system-ui, Arial, sans-serif" font-size="28" fill="#9ec3b6">0876 007 786 · hospis.borisdali@gmail.com</text>
+</svg>
