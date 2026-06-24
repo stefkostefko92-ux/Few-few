@@ -3,6 +3,7 @@ import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/ui";
 import { ResourceCard, Sources, Callout } from "@/components/content";
+import { TRANSPORT_PROVIDERS } from "@/lib/bus-schedule";
 
 export const metadata: Metadata = buildMetadata({
   title: "Транспорт от и до Дупница",
@@ -56,6 +57,26 @@ export default function TransportPage() {
               hrefLabel="obilet.com"
             />
           </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="section-title mb-4">Превозвачи и телефони</h2>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {TRANSPORT_PROVIDERS.map((p) => (
+              <ResourceCard
+                key={p.name}
+                title={p.name}
+                text={p.routes}
+                phone={p.phones[0]}
+                href={p.website}
+                hrefLabel={p.website?.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              />
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-slate-500">
+            Часовете се променят сезонно. За точно разписание звъннете на
+            автогарата (0701 40854) или на превозвача.
+          </p>
         </section>
 
         <section className="mt-12">

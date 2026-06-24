@@ -7,12 +7,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="container-content flex items-center justify-between gap-4 py-3">
         <Link href="/" className="group flex items-center gap-3">
-          <span
-            aria-hidden
-            className="grid h-10 w-10 place-items-center rounded-lg bg-brand-700 font-display text-lg font-extrabold text-white shadow-sm"
-          >
-            Д
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/dupnitsa-grb.svg"
+            alt="Герб на Дупница"
+            width={40}
+            height={40}
+            className="h-10 w-auto shrink-0"
+          />
           <span className="leading-tight">
             <span className="block font-display text-lg font-extrabold text-slate-900">
               {SITE.name}

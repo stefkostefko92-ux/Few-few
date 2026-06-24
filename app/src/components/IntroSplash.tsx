@@ -32,9 +32,14 @@ export function IntroSplash() {
       aria-label="Затвори началния екран"
     >
       <div className="splash-text text-center">
-        <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-2xl bg-white/10 font-display text-4xl font-extrabold">
-          Д
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/dupnitsa-grb.svg"
+          alt="Герб на Дупница"
+          width={80}
+          height={80}
+          className="mx-auto mb-4 h-24 w-auto drop-shadow-lg"
+        />
         <p className="font-display text-3xl font-extrabold">{SITE.intro.headline}</p>
         <p className="mt-2 text-white/80">{SITE.slogan}</p>
         <p className="mt-6 text-sm text-white/60">(натиснете, за да продължите)</p>

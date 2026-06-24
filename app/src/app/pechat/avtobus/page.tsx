@@ -34,7 +34,7 @@ export default function BusPrintPage() {
         <div className="flex items-center gap-3 border-b-2 border-slate-200 pb-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/dupnitsa-grb.png"
+            src="/brand/dupnitsa-grb.svg"
             alt="Герб на Дупница"
             width={40}
             height={58}
