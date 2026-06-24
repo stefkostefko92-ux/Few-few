@@ -131,7 +131,7 @@ async function fetchText(url: string): Promise<string> {
   }
   const res = await fetch(url, {
     headers: {
-      "user-agent": "ZaDupnitsaBot/1.0 (+https://zadupnitsa.carbonstealth.eu)",
+      "user-agent": "ZaDupnitsaBot/1.0 (+https://zadupnitsa.eu)",
       accept: "application/rss+xml, text/html, application/xml;q=0.9, */*;q=0.8",
     },
     signal: AbortSignal.timeout(15000),

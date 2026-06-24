@@ -1,5 +1,5 @@
 // АВТОМАТИЧНО ГЕНЕРИРАН ФАЙЛ — не редактирайте на ръка.
-// Източник: ../../zabobovdol/prisma/seed-*.ts (read-only reference).
+// Източник: вътрешен набор reference seed скриптове.
 // Регенериране: npm run import:guides
 // Брой ръководства: 570.
 

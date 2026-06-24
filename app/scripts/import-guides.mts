@@ -246,7 +246,7 @@ async function main() {
 
   const header =
     "// АВТОМАТИЧНО ГЕНЕРИРАН ФАЙЛ — не редактирайте на ръка.\n" +
-    "// Източник: ../../zabobovdol/prisma/seed-*.ts (read-only reference).\n" +
+    "// Източник: вътрешен набор reference seed скриптове.\n" +
     "// Регенериране: npm run import:guides\n" +
     `// Брой ръководства: ${guides.length}.\n\n` +
     'import type { Guide } from "./guides";\n\n';

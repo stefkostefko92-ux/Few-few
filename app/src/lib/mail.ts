@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 
 // Имейл по подразбиране на получателя на сигнали (Община Дупница).
 export const MUNICIPALITY_EMAIL =
-  process.env.MUNICIPALITY_EMAIL || "obshtina@bobovdol.egov.bg";
+  process.env.MUNICIPALITY_EMAIL || "admin_dupnitsa@dupnitsa.bg";
 
 function isConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT);

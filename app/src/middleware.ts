@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
   if (!pathname.startsWith("/admin")) return NextResponse.next();
   if (pathname === "/admin/login") return NextResponse.next();
 
-  const token = req.cookies.get("zbd_session")?.value;
+  const token = req.cookies.get("zd_session")?.value;
   const secret = process.env.AUTH_SECRET;
   if (token && secret) {
     try {

@@ -12,7 +12,7 @@ type Msg = {
   sources?: { title: string; url: string }[];
 };
 
-const STORAGE_KEY = "zbd_chat_v2";
+const STORAGE_KEY = "zd_chat_v2";
 
 const GREETING: Msg = {
   role: "bot",

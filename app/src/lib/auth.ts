@@ -5,7 +5,7 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-const COOKIE = "zbd_session";
+const COOKIE = "zd_session";
 const MAX_AGE = 60 * 60 * 8; // 8 часа
 
 export type Role = "ADMIN" | "EDITOR";

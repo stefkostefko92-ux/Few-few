@@ -23,9 +23,9 @@ test("краткият спешен номер 112 става кликаем", (
 });
 
 test("имейлът става mailto:", () => {
-  const segs = linkifySegments("Пишете на zabobovdol@carbonstealth.eu по всяко време.");
+  const segs = linkifySegments("Пишете на kontakt@zadupnitsa.eu по всяко време.");
   const mail = segs.find((s) => s.kind === "mailto");
-  assert.equal(mail!.href, "mailto:zabobovdol@carbonstealth.eu");
+  assert.equal(mail!.href, "mailto:kontakt@zadupnitsa.eu");
 });
 
 test("не вкарва връзки в обикновен текст (вкл. години)", () => {
