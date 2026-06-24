@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Хоспис Борис Дали">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2f8268"/>
-      <stop offset="1" stop-color="#1d5141"/>
+      <stop offset="0" stop-color="#F0B050"/>
+      <stop offset="1" stop-color="#E07048"/>
     </linearGradient>
   </defs>
   <rect width="64" height="64" rx="16" fill="url(#g)"/>
-  <!-- грижовни ръце, държащи сърце/листо -->
-  <path d="M32 46c-7-4-13-9-13-16a7 7 0 0 1 13-3 7 7 0 0 1 13 3c0 7-6 12-13 16z" fill="#fbf8f2"/>
-  <path d="M32 23c2.4 1.8 4 4.4 4 7.6 0 3.1-1.6 5.7-4 7.6-2.4-1.9-4-4.5-4-7.6 0-3.2 1.6-5.8 4-7.6z" fill="#cda873"/>
+  <!-- грижовни ръце, държащи сърце -->
+  <path d="M32 46c-7-4-13-9-13-16a7 7 0 0 1 13-3 7 7 0 0 1 13 3c0 7-6 12-13 16z" fill="#FFFAF5"/>
+  <path d="M32 23c2.4 1.8 4 4.4 4 7.6 0 3.1-1.6 5.7-4 7.6-2.4-1.9-4-4.5-4-7.6 0-3.2 1.6-5.8 4-7.6z" fill="#E09030"/>
 </svg>
