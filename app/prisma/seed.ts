@@ -18,8 +18,8 @@ async function main() {
         address: s.address ?? "",
         website: s.website ?? "",
         hours: s.hours ?? "",
-        phones: s.phones,
-        sources: s.sources,
+        phone: s.phones[0]?.number ?? "",
+        phone2: s.phones[1]?.number ?? "",
         order: i,
       },
       create: {
@@ -30,8 +30,8 @@ async function main() {
         address: s.address ?? "",
         website: s.website ?? "",
         hours: s.hours ?? "",
-        phones: s.phones,
-        sources: s.sources,
+        phone: s.phones[0]?.number ?? "",
+        phone2: s.phones[1]?.number ?? "",
         order: i,
       },
     });

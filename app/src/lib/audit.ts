@@ -1,25 +1,38 @@
 import { prisma } from "@/lib/prisma";
+import type { SessionUser } from "@/lib/auth";
 
-// Записва действие в одит лога. Никога не хвърля грешка — одитът не бива да
-// проваля основното действие.
-export async function audit(opts: {
-  userEmail: string;
-  action: string; // CREATE | UPDATE | DELETE | PUBLISH | RESOLVE | LOGIN
+type AuditInput = {
+  action:
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "LOGIN"
+    | "LOGIN_FAILED"
+    | "PUBLISH"
+    | "UNPUBLISH";
   entity: string;
-  entityId?: string;
+  entityId?: string | null;
   summary: string;
-}): Promise<void> {
+};
+
+// Записва кой какво е променил. Никога не хвърля грешка нагоре —
+// одитът не трябва да чупи основното действие.
+export async function logAudit(
+  user: Pick<SessionUser, "id" | "email"> | null,
+  input: AuditInput,
+): Promise<void> {
   try {
     await prisma.auditLog.create({
       data: {
-        userEmail: opts.userEmail,
-        action: opts.action,
-        entity: opts.entity,
-        entityId: opts.entityId,
-        summary: opts.summary,
+        userId: user?.id ?? null,
+        userEmail: user?.email ?? "system",
+        action: input.action,
+        entity: input.entity,
+        entityId: input.entityId ?? null,
+        summary: input.summary,
       },
     });
-  } catch {
-    /* без значение — продължаваме */
+  } catch (err) {
+    console.error("Грешка при запис в одит лога:", err);
   }
 }

@@ -26,11 +26,15 @@ export const SITE = {
     longitude: 23.1167,
   },
   contact: {
-    email: "",
+    email: "kontakt@zadupnitsa.eu",
     phone: "",
   },
   social: {
     facebook: "",
+  },
+  payment: {
+    revolut: "",
+    monthlyPriceEur: 20,
   },
   // Начален екран (splash) при влизане в сайта.
   intro: {

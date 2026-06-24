@@ -2,42 +2,68 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isBot, field, type FormState } from "@/lib/forms";
+import { logAudit } from "@/lib/audit";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
-  fullName: z.string().min(2, "Посочете име."),
-  message: z.string().optional().default(""),
-  email: z.string().email("Невалиден имейл.").optional().or(z.literal("")),
-  phone: z.string().optional().default(""),
+  fullName: z
+    .string()
+    .trim()
+    .min(5, "Въведете трите си имена.")
+    .max(120)
+    .refine((v) => v.split(/\s+/).filter(Boolean).length >= 2, "Въведете трите си имена."),
+  email: z
+    .string()
+    .trim()
+    .max(160)
+    .optional()
+    .default("")
+    .refine((v) => v === "" || /.+@.+\..+/.test(v), "Невалиден имейл."),
+  phone: z.string().trim().max(40).optional().default(""),
+  message: z.string().trim().max(2000).optional().default(""),
+  website: z.string().max(0).optional().default(""), // honeypot
 });
 
-export async function submitAdRequest(
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  if (isBot(formData)) return { ok: true, message: "Благодарим! Ще се свържем с вас." };
+export type AdRequestState = { ok: boolean; error?: string };
 
+export async function submitAdRequest(
+  _prev: AdRequestState,
+  formData: FormData,
+): Promise<AdRequestState> {
+  if (!rateLimit(await clientKey("adreq"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
-    fullName: field(formData, "fullName", 160),
-    message: field(formData, "message", 3000),
-    email: field(formData, "email", 160),
-    phone: field(formData, "phone", 60),
+    fullName: formData.get("fullName"),
+    email: formData.get("email") ?? "",
+    phone: formData.get("phone") ?? "",
+    message: formData.get("message") ?? "",
+    website: formData.get("website") ?? "",
   });
   if (!parsed.success) {
-    return { ok: false, message: parsed.error.issues[0]?.message ?? "Грешка." };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+  }
+  const d = parsed.data;
+  if (!d.email && !d.phone) {
+    return { ok: false, error: "Посочете имейл или телефон за връзка." };
   }
 
-  try {
-    await prisma.adRequest.create({
-      data: {
-        fullName: parsed.data.fullName,
-        message: parsed.data.message,
-        email: parsed.data.email ?? "",
-        phone: parsed.data.phone,
-      },
-    });
-  } catch {
-    return { ok: false, message: "В момента не можем да запишем заявката. Опитайте по-късно." };
-  }
-  return { ok: true, message: "Благодарим! Получихме заявката и ще се свържем с вас." };
+  const created = await prisma.adRequest.create({
+    data: {
+      fullName: d.fullName,
+      email: d.email,
+      phone: d.phone,
+      message: d.message,
+      status: "NEW",
+    },
+  });
+
+  await logAudit(null, {
+    action: "CREATE",
+    entity: "AdRequest",
+    entityId: created.id,
+    summary: `Нова заявка за реклама от ${d.fullName}`,
+  });
+
+  return { ok: true };
 }

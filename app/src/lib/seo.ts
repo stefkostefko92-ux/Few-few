@@ -18,6 +18,8 @@ export function buildMetadata(opts: {
   const description = opts.description ?? SITE.description;
   const url = canonical(opts.path ?? "/");
   const rawImages = opts.images?.length ? opts.images : [`${SITE.url}/og.png`];
+  // Структурирани изображения с размери и alt — по-добри карти в социални
+  // мрежи и AI асистенти.
   const images = rawImages.map((u) => ({
     url: u,
     width: 1200,
@@ -52,6 +54,8 @@ export function buildMetadata(opts: {
 
 // --- JSON-LD строители (за AEO / богати резултати) ---
 
+// Устойчиви идентификатори на възлите — свързват графа (Organization ↔ WebSite ↔
+// страници), за да изградят търсачките/AI ясна „карта на знанието".
 export const ORG_ID = `${SITE.url}/#organization`;
 export const WEBSITE_ID = `${SITE.url}/#website`;
 
@@ -112,9 +116,19 @@ export function websiteLd() {
     description: SITE.description,
     inLanguage: "bg",
     publisher: { "@id": ORG_ID },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE.url}/tarsene?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 }
 
+// Описва конкретна страница и я свързва с WebSite възела; добавя „speakable"
+// за гласови асистенти (AEO) — кои части да се четат на глас.
 export function webPageLd(opts: {
   name: string;
   description?: string;
@@ -153,24 +167,6 @@ export function breadcrumbLd(items: { name: string; path: string }[]) {
   };
 }
 
-export function itemListLd(
-  items: { name: string; path: string }[],
-  name?: string,
-) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    ...(name ? { name } : {}),
-    numberOfItems: items.length,
-    itemListElement: items.map((it, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: it.name,
-      url: canonical(it.path),
-    })),
-  };
-}
-
 export function faqPageLd(
   faqs: { question: string; answerText: string }[],
   url?: string,
@@ -192,26 +188,6 @@ export function faqPageLd(
   };
 }
 
-export function howToLd(h: {
-  name: string;
-  description?: string;
-  steps: string[];
-  url: string;
-}) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "HowTo",
-    name: h.name,
-    ...(h.description ? { description: h.description } : {}),
-    "@id": `${canonical(h.url)}#howto`,
-    step: h.steps.map((s, i) => ({
-      "@type": "HowToStep",
-      position: i + 1,
-      text: s,
-    })),
-  };
-}
-
 export function localBusinessLd(b: {
   name: string;
   description?: string;
@@ -222,6 +198,8 @@ export function localBusinessLd(b: {
   lat?: number | null;
   lng?: number | null;
   hours?: string;
+  // Правилен schema.org тип (напр. GovernmentOffice за администрация,
+  // MedicalClinic за здраве, School за образование) — по подразбиране LocalBusiness.
   schemaType?: string;
 }) {
   return {
@@ -240,8 +218,115 @@ export function localBusinessLd(b: {
       addressCountry: SITE.geo.countryCode,
     },
     ...(b.lat && b.lng
-      ? { geo: { "@type": "GeoCoordinates", latitude: b.lat, longitude: b.lng } }
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: b.lat,
+            longitude: b.lng,
+          },
+        }
       : {}),
     ...(b.hours ? { openingHours: b.hours } : {}),
+  };
+}
+
+// Новинарска статия — за Google Top stories/Discover и AI цитиране.
+export function newsArticleLd(a: {
+  title: string;
+  description?: string;
+  url: string;
+  publishedAt?: Date | null;
+  updatedAt?: Date | null;
+  image?: string;
+}) {
+  const published = (a.publishedAt ?? a.updatedAt ?? new Date()).toISOString();
+  const modified = (a.updatedAt ?? a.publishedAt ?? new Date()).toISOString();
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: a.title.slice(0, 110),
+    ...(a.description ? { description: a.description } : {}),
+    mainEntityOfPage: a.url,
+    inLanguage: "bg",
+    isAccessibleForFree: true,
+    datePublished: published,
+    dateModified: modified,
+    image: [a.image || `${SITE.url}/og.png`],
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+  };
+}
+
+// Списък с елементи (директория) — помага на търсачки и AI да разберат
+// категорийните страници като подреден списък.
+export function itemListLd(
+  items: { name: string; path: string }[],
+  name?: string,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    ...(name ? { name } : {}),
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      url: canonical(it.path),
+    })),
+  };
+}
+
+// Инструкция със стъпки — за HowTo богати резултати и AI извличане на стъпки.
+export function howToLd(h: {
+  name: string;
+  description?: string;
+  steps: string[];
+  url: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: h.name,
+    ...(h.description ? { description: h.description } : {}),
+    step: h.steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text: s,
+    })),
+  };
+}
+
+export function eventLd(e: {
+  name: string;
+  description?: string;
+  startAt: Date;
+  endAt?: Date | null;
+  location?: string;
+  address?: string;
+  url?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: e.name,
+    ...(e.description ? { description: e.description } : {}),
+    startDate: e.startAt.toISOString(),
+    ...(e.endAt ? { endDate: e.endAt.toISOString() } : {}),
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    location: {
+      "@type": "Place",
+      name: e.location || SITE.geo.city,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: e.address || undefined,
+        addressLocality: SITE.geo.city,
+        addressRegion: SITE.geo.region,
+        postalCode: SITE.geo.postalCode,
+        addressCountry: SITE.geo.countryCode,
+      },
+    },
+    ...(e.url ? { url: e.url } : {}),
   };
 }

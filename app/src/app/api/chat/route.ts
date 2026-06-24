@@ -1,61 +1,86 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { getClient, CHAT_MODEL, SYSTEM_PROMPT } from "@/lib/ai";
+import { streamAnswer, type ChatTurn } from "@/lib/chat";
+import { rateLimit, clientKey } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const schema = z.object({
-  messages: z
-    .array(
-      z.object({
-        role: z.enum(["user", "assistant"]),
-        content: z.string().min(1).max(2000),
-      }),
-    )
-    .min(1)
-    .max(20),
-});
-
-const FALLBACK =
-  "Чат асистентът не е настроен в момента. Опитайте търсачката горе или вижте „Услуги и телефони“. При спешност се обадете на 112.";
+// Изчиства историята, подадена от браузъра, преди да я подадем към модела.
+function parseHistory(raw: unknown): ChatTurn[] {
+  if (!Array.isArray(raw)) return [];
+  const out: ChatTurn[] = [];
+  for (const item of raw.slice(-16)) {
+    if (!item || typeof item !== "object") continue;
+    const role = (item as { role?: unknown }).role;
+    const text = (item as { text?: unknown }).text;
+    if ((role === "user" || role === "bot") && typeof text === "string" && text.trim()) {
+      out.push({ role, text: text.slice(0, 1500) });
+    }
+  }
+  return out;
+}
 
 export async function POST(req: Request) {
-  let raw: unknown;
   try {
-    raw = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Невалидна заявка." }, { status: 400 });
-  }
+    // Ограничава злоупотреба/разход (особено когато е включен платен AI доставчик).
+    if (!rateLimit(await clientKey("chat"), 20, 5 * 60 * 1000)) {
+      return NextResponse.json(
+        {
+          answer:
+            "Получихме много въпроси от вас за кратко време. Моля, изчакайте малко.",
+          sources: [],
+        },
+        { status: 429 },
+      );
+    }
 
-  const parsed = schema.safeParse(raw);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Невалидни данни." }, { status: 400 });
-  }
+    const body = (await req.json()) as { question?: unknown; history?: unknown };
+    const question = typeof body.question === "string" ? body.question : "";
+    if (question.trim().length < 2) {
+      return NextResponse.json(
+        { answer: "Моля, напишете по-дълъг въпрос.", sources: [] },
+        { status: 400 },
+      );
+    }
+    if (question.length > 500) {
+      return NextResponse.json(
+        { answer: "Въпросът е твърде дълъг.", sources: [] },
+        { status: 400 },
+      );
+    }
+    const history = parseHistory(body.history);
 
-  const client = getClient();
-  if (!client) {
-    return NextResponse.json({ reply: FALLBACK });
-  }
+    // Поточен NDJSON отговор: всеки ред е едно събитие ({type:"delta"|...}).
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        const send = (obj: unknown) =>
+          controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+        try {
+          for await (const chunk of streamAnswer(question, history)) {
+            send(chunk);
+          }
+        } catch (err) {
+          console.error("chat stream error", err);
+          send({ type: "error", message: "Възникна грешка. Опитайте отново." });
+        } finally {
+          controller.close();
+        }
+      },
+    });
 
-  try {
-    const response = await client.messages.create({
-      model: CHAT_MODEL,
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: parsed.data.messages,
+    return new Response(stream, {
+      headers: {
+        "content-type": "application/x-ndjson; charset=utf-8",
+        "cache-control": "no-store, no-transform",
+        "x-accel-buffering": "no",
+      },
     });
-    const text = response.content
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("")
-      .trim();
-    return NextResponse.json({
-      reply: text || "Извинявайте, в момента не мога да отговоря.",
-    });
-  } catch {
-    return NextResponse.json({
-      reply:
-        "В момента има проблем с асистента. Опитайте по-късно или ползвайте търсачката горе.",
-    });
+  } catch (err) {
+    console.error("chat error", err);
+    return NextResponse.json(
+      { answer: "Възникна грешка. Опитайте отново.", sources: [] },
+      { status: 500 },
+    );
   }
 }

@@ -16,6 +16,16 @@ export function PageHero({
 }) {
   return (
     <div className="page-hero relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
+      {/* Герб като дискретен воден знак */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/brand/bobov-dol-grb.png"
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute -right-4 -top-6 hidden h-44 w-auto opacity-[0.06] sm:block"
+        width={140}
+        height={200}
+      />
       <div className="container-content relative py-9 sm:py-11">
         {crumbs && crumbs.length > 0 && (
           <>
@@ -72,9 +82,7 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
         <Inbox className="h-10 w-10" aria-hidden />
       </div>
       <p className="font-display text-xl font-bold text-slate-800">{title}</p>
-      {hint && (
-        <p className="mx-auto mt-2 max-w-md text-base text-slate-600">{hint}</p>
-      )}
+      {hint && <p className="mx-auto mt-2 max-w-md text-base text-slate-600">{hint}</p>}
     </div>
   );
 }

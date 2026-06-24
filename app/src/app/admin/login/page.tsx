@@ -1,32 +1,63 @@
-import type { Metadata } from "next";
-import { buildMetadata } from "@/lib/seo";
-import { LoginForm } from "./LoginForm";
-import { isAdminConfigured } from "@/lib/auth";
+"use client";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Вход в администрацията",
-  path: "/admin/login",
-  noindex: true,
-});
+import { useActionState, use } from "react";
+import { loginAction, type LoginState } from "@/lib/admin/auth-actions";
+import { SITE } from "@/lib/site";
 
-export default function AdminLoginPage() {
+const initial: LoginState = {};
+
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = use(searchParams);
+  const [state, action, pending] = useActionState(loginAction, initial);
+
   return (
-    <div className="container-content py-12">
-      <h1 className="font-display text-2xl font-extrabold text-slate-900">
-        Администрация
-      </h1>
-      <p className="mt-2 text-base text-slate-600">
-        Вход само за редактори на „За Дупница“.
-      </p>
-      <div className="mt-6">
-        {isAdminConfigured() ? (
-          <LoginForm />
-        ) : (
-          <p className="max-w-md rounded-lg border border-amber-300 bg-amber-50 p-4 text-base text-slate-700">
-            Администраторският достъп не е конфигуриран. Задайте променливите
-            ADMIN_EMAIL, ADMIN_PASSWORD и SESSION_SECRET в средата.
-          </p>
-        )}
+    <div className="grid min-h-screen place-items-center bg-slate-100 px-4">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 text-center">
+          <div className="text-xl font-bold">{SITE.name}</div>
+          <div className="text-sm text-slate-500">Вход в администрацията</div>
+        </div>
+        <form action={action} className="card space-y-4">
+          {state.error && (
+            <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {state.error}
+            </div>
+          )}
+          <input type="hidden" name="next" value={next ?? "/admin"} />
+          <div>
+            <label className="label" htmlFor="email">
+              Имейл
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="username"
+              className="input"
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="password">
+              Парола
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className="input"
+            />
+          </div>
+          <button type="submit" className="btn-primary w-full" disabled={pending}>
+            {pending ? "Влизане…" : "Вход"}
+          </button>
+        </form>
       </div>
     </div>
   );

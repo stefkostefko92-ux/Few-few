@@ -1,64 +1,126 @@
-// Сървърни помощници за вход в администрацията. Идентификацията е чрез
-// конфигурация в средата (ADMIN_EMAIL/ADMIN_PASSWORD) — не изисква база данни.
+import "server-only";
 import { cookies } from "next/headers";
-import { timingSafeEqual } from "node:crypto";
-import {
-  SESSION_COOKIE,
-  signSession,
-  verifySession,
-  type SessionPayload,
-} from "@/lib/session";
+import { redirect } from "next/navigation";
+import { SignJWT, jwtVerify } from "jose";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
-function adminEmail(): string {
-  return process.env.ADMIN_EMAIL || "admin@zadupnitsa.eu";
-}
-function adminPassword(): string {
-  return process.env.ADMIN_PASSWORD || "";
+const COOKIE = "zbd_session";
+const MAX_AGE = 60 * 60 * 8; // 8 часа
+
+export type Role = "ADMIN" | "EDITOR";
+export type SessionUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+};
+
+function secret(): Uint8Array {
+  const s = process.env.AUTH_SECRET;
+  if (!s || s.length < 32) {
+    throw new Error(
+      "AUTH_SECRET липсва или е твърде кратък (нужни са поне 32 знака). Задай дълъг случаен низ в .env (напр. openssl rand -base64 48).",
+    );
+  }
+  if (/ПРОМЕНИ_МЕ|CHANGE_?ME|changeme/i.test(s)) {
+    throw new Error(
+      "AUTH_SECRET все още е примерната стойност. Задай истински дълъг случаен низ.",
+    );
+  }
+  return new TextEncoder().encode(s);
 }
 
-function safeEqual(a: string, b: string): boolean {
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return timingSafeEqual(ab, bb);
+export async function hashPassword(plain: string): Promise<string> {
+  return bcrypt.hash(plain, 11);
 }
 
-// Проверява подадените данни за вход. Връща true при успех.
-export function checkCredentials(email: string, password: string): boolean {
-  const pw = adminPassword();
-  if (!pw) return false; // ако не е конфигуриран администратор, входът е изключен
-  return safeEqual(email.trim().toLowerCase(), adminEmail().toLowerCase()) &&
-    safeEqual(password, pw);
+export async function verifyPassword(
+  plain: string,
+  hash: string,
+): Promise<boolean> {
+  return bcrypt.compare(plain, hash);
 }
 
-export async function createSessionCookie(email: string): Promise<void> {
-  const token = await signSession({ sub: email, role: "ADMIN" });
+export async function createSession(user: SessionUser): Promise<void> {
+  const token = await new SignJWT({
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(user.id)
+    .setIssuedAt()
+    .setExpirationTime(`${MAX_AGE}s`)
+    .sign(secret());
+
   const store = await cookies();
-  store.set(SESSION_COOKIE, token, {
+  store.set(COOKIE, token, {
     httpOnly: true,
-    sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
+    // Админ зоната е отделна — strict пази най-добре срещу CSRF.
+    sameSite: "strict",
     path: "/",
-    maxAge: 60 * 60 * 12,
+    maxAge: MAX_AGE,
   });
 }
 
-export async function destroySessionCookie(): Promise<void> {
+export async function destroySession(): Promise<void> {
   const store = await cookies();
-  store.delete(SESSION_COOKIE);
+  store.delete(COOKIE);
 }
 
-export async function getSession(): Promise<SessionPayload | null> {
+export async function getSessionUser(): Promise<SessionUser | null> {
   const store = await cookies();
-  return verifySession(store.get(SESSION_COOKIE)?.value);
+  const token = store.get(COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secret(), {
+      algorithms: ["HS256"],
+    });
+    return {
+      id: String(payload.sub),
+      email: String(payload.email),
+      name: String(payload.name),
+      role: payload.role === "ADMIN" ? "ADMIN" : "EDITOR",
+    };
+  } catch {
+    return null;
+  }
 }
 
-export async function requireSession(): Promise<SessionPayload> {
-  const s = await getSession();
-  if (!s) throw new Error("Неоторизиран достъп");
-  return s;
+// За използване в admin server компоненти/действия.
+export async function requireUser(): Promise<SessionUser> {
+  const user = await getSessionUser();
+  if (!user) redirect("/admin/login");
+  return user;
 }
 
-export function isAdminConfigured(): boolean {
-  return Boolean(adminPassword());
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role !== "ADMIN") redirect("/admin?error=forbidden");
+  return user;
+}
+
+// Проверка на идентификационни данни при вход.
+export async function authenticate(
+  email: string,
+  password: string,
+): Promise<SessionUser | null> {
+  const user = await prisma.user.findUnique({
+    where: { email: email.trim().toLowerCase() },
+  });
+  if (!user || !user.active) return null;
+  const ok = await verifyPassword(password, user.passwordHash);
+  if (!ok) return null;
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  });
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role as Role,
+  };
 }

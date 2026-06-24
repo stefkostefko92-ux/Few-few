@@ -1,156 +1,168 @@
-// Малък набор от инлайн SVG икони (без външна зависимост). Всички приемат
-// стандартни SVG props, така че className/aria-hidden работят директно.
-import type { SVGProps } from "react";
+"use client";
 
-type IconProps = SVGProps<SVGSVGElement>;
 
-function base(props: IconProps) {
-  return {
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    ...props,
-  };
+// Централен иконен модул: всички икони са Phosphor (weight="fill"),
+// изнесени под старите (Lucide) имена, за да не променяме JSX-а никъде.
+import type { ComponentType } from "react";
+import type { IconProps } from "@phosphor-icons/react";
+import {
+  ArrowRight as PhArrowRight,
+  ArrowSquareOut as PhArrowSquareOut,
+  ArrowsClockwise as PhArrowsClockwise,
+  ArrowsLeftRight as PhArrowsLeftRight,
+  Bank as PhBank,
+  BookOpen as PhBookOpen,
+  BowlSteam as PhBowlSteam,
+  Buildings as PhBuildings,
+  Bus as PhBus,
+  CalendarBlank as PhCalendarBlank,
+  CalendarDots as PhCalendarDots,
+  Camera as PhCamera,
+  Car as PhCar,
+  CaretDown as PhCaretDown,
+  ChatCircle as PhChatCircle,
+  ChatText as PhChatText,
+  CheckCircle as PhCheckCircle,
+  Church as PhChurch,
+  CircleHalf as PhCircleHalf,
+  Clock as PhClock,
+  Cloud as PhCloud,
+  CloudFog as PhCloudFog,
+  CloudRain as PhCloudRain,
+  CloudSnow as PhCloudSnow,
+  CloudSun as PhCloudSun,
+  Coins as PhCoins,
+  Cross as PhCross,
+  CurrencyEur as PhCurrencyEur,
+  Drop as PhDrop,
+  Ear as PhEar,
+  Envelope as PhEnvelope,
+  Factory as PhFactory,
+  FileText as PhFileText,
+  Fire as PhFire,
+  Hand as PhHand,
+  Handshake as PhHandshake,
+  Heartbeat as PhHeartbeat,
+  Images as PhImages,
+  Info as PhInfo,
+  Keyboard as PhKeyboard,
+  Lightning as PhLightning,
+  ListChecks as PhListChecks,
+  Lock as PhLock,
+  MapPin as PhMapPin,
+  Megaphone as PhMegaphone,
+  Money as PhMoney,
+  Moon as PhMoon,
+  Mountains as PhMountains,
+  Newspaper as PhNewspaper,
+  PaperPlaneTilt as PhPaperPlaneTilt,
+  Phone as PhPhone,
+  PhoneX as PhPhoneX,
+  Plus as PhPlus,
+  Printer as PhPrinter,
+  Prohibit as PhProhibit,
+  Question as PhQuestion,
+  ShieldCheck as PhShieldCheck,
+  ShieldWarning as PhShieldWarning,
+  SpeakerHigh as PhSpeakerHigh,
+  Square as PhSquare,
+  Stethoscope as PhStethoscope,
+  Storefront as PhStorefront,
+  Sun as PhSun,
+  TextT as PhTextT,
+  Train as PhTrain,
+  Trash as PhTrash,
+  Tray as PhTray,
+  Tree as PhTree,
+  Users as PhUsers,
+  Warning as PhWarning,
+  X as PhX,
+} from "@phosphor-icons/react";
+
+export type LucideIcon = ComponentType<IconProps>;
+
+function fill(Cmp: ComponentType<IconProps>): LucideIcon {
+  function Icon(props: IconProps) {
+    return <Cmp weight="fill" {...props} />;
+  }
+  return Icon;
 }
 
-export function Type(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <polyline points="4 7 4 4 20 4 20 7" />
-      <line x1="9" y1="20" x2="15" y2="20" />
-      <line x1="12" y1="4" x2="12" y2="20" />
-    </svg>
-  );
-}
+export const AlertTriangle = fill(PhWarning);
+export const ArrowRight = fill(PhArrowRight);
+export const ArrowRightLeft = fill(PhArrowsLeftRight);
+export const Ban = fill(PhProhibit);
+export const Banknote = fill(PhMoney);
+export const BookOpen = fill(PhBookOpen);
+export const Building2 = fill(PhBuildings);
+export const Bus = fill(PhBus);
+export const CalendarClock = fill(PhCalendarDots);
+export const CalendarDays = fill(PhCalendarDots);
+export const CalendarRange = fill(PhCalendarBlank);
+export const Camera = fill(PhCamera);
+export const Car = fill(PhCar);
+export const ChevronDown = fill(PhCaretDown);
+export const CheckCircle2 = fill(PhCheckCircle);
+export const Church = fill(PhChurch);
+export const Clock = fill(PhClock);
+export const Cloud = fill(PhCloud);
+export const CloudFog = fill(PhCloudFog);
+export const CloudRain = fill(PhCloudRain);
+export const CloudSnow = fill(PhCloudSnow);
+export const CloudSun = fill(PhCloudSun);
+export const Coins = fill(PhCoins);
+export const Contrast = fill(PhCircleHalf);
+export const Cross = fill(PhCross);
+export const Droplets = fill(PhDrop);
+export const Ear = fill(PhEar);
+export const Euro = fill(PhCurrencyEur);
+export const ExternalLink = fill(PhArrowSquareOut);
+export const Factory = fill(PhFactory);
+export const FileText = fill(PhFileText);
+export const Flame = fill(PhFire);
+export const Hand = fill(PhHand);
+export const HeartHandshake = fill(PhHandshake);
+export const HeartPulse = fill(PhHeartbeat);
+export const HelpCircle = fill(PhQuestion);
+export const Images = fill(PhImages);
+export const Inbox = fill(PhTray);
+export const Info = fill(PhInfo);
+export const Keyboard = fill(PhKeyboard);
+export const Landmark = fill(PhBank);
+export const ListChecks = fill(PhListChecks);
+export const Lock = fill(PhLock);
+export const Mail = fill(PhEnvelope);
+export const MapPin = fill(PhMapPin);
+export const Megaphone = fill(PhMegaphone);
+export const Moon = fill(PhMoon);
+export const MessageCircle = fill(PhChatCircle);
+export const MessageSquare = fill(PhChatText);
+export const Mountain = fill(PhMountains);
+export const Newspaper = fill(PhNewspaper);
+export const Phone = fill(PhPhone);
+export const PhoneOff = fill(PhPhoneX);
+export const Plus = fill(PhPlus);
+export const Printer = fill(PhPrinter);
+export const RefreshCw = fill(PhArrowsClockwise);
+export const Send = fill(PhPaperPlaneTilt);
+export const ShieldAlert = fill(PhShieldWarning);
+export const ShieldCheck = fill(PhShieldCheck);
+export const Soup = fill(PhBowlSteam);
+export const Square = fill(PhSquare);
+export const Stethoscope = fill(PhStethoscope);
+export const Store = fill(PhStorefront);
+export const Sun = fill(PhSun);
+export const TrainFront = fill(PhTrain);
+export const Trash2 = fill(PhTrash);
+export const TreePine = fill(PhTree);
+export const Type = fill(PhTextT);
+export const Users = fill(PhUsers);
+export const Volume2 = fill(PhSpeakerHigh);
+export const X = fill(PhX);
+export const Zap = fill(PhLightning);
 
-export function Contrast(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" />
-    </svg>
-  );
-}
-
-export function Hand(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M18 11V6a2 2 0 0 0-4 0v5" />
-      <path d="M14 10V4a2 2 0 0 0-4 0v6" />
-      <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
-      <path d="M18 8a2 2 0 0 1 4 0v6a8 8 0 0 1-8 8h-2a8 8 0 0 1-7-4l-1.5-2.5a2 2 0 0 1 3.4-2L9 14" />
-    </svg>
-  );
-}
-
-export function Moon(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-    </svg>
-  );
-}
-
-export function Info(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <circle cx="12" cy="12" r="9" />
-      <line x1="12" y1="11" x2="12" y2="16" />
-      <line x1="12" y1="8" x2="12" y2="8" />
-    </svg>
-  );
-}
-
-export function ChevronDown(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-export function Phone(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" />
-    </svg>
-  );
-}
-
-export function MapPin(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-
-export function Clock(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <circle cx="12" cy="12" r="9" />
-      <polyline points="12 7 12 12 15 14" />
-    </svg>
-  );
-}
-
-export function Globe(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <circle cx="12" cy="12" r="9" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z" />
-    </svg>
-  );
-}
-
-export function Inbox(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-      <path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z" />
-    </svg>
-  );
-}
-
-export function AlertTriangle(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" />
-      <line x1="12" y1="17" x2="12" y2="17" />
-    </svg>
-  );
-}
-
-export function Menu(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  );
-}
-
-export function ArrowRight(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  );
-}
-
-export function Pill(props: IconProps) {
-  return (
-    <svg {...base(props)}>
-      <path d="M10.5 20.5a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 7z" />
-      <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" />
-    </svg>
-  );
-}
+// Псевдоними за имена, използвани в по-стари части на приложението.
+import { Globe as PhGlobe, List as PhList, Pill as PhPill } from "@phosphor-icons/react";
+export const Globe = fill(PhGlobe);
+export const Menu = fill(PhList);
+export const Pill = fill(PhPill);

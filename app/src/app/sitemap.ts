@@ -18,6 +18,7 @@ const PATHS = [
   "/reklama",
   "/pechat",
   "/pechat/plakat",
+  "/pechat/avtobus",
   "/sabitiya",
   "/novini",
   "/obyavi",
