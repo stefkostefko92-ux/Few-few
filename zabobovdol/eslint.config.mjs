@@ -12,6 +12,7 @@ const config = [
       "next-env.d.ts",
       "prisma/**",
       "scripts/**",
+      "print/**",
       "src/lib/__tests__/**",
     ],
   },
