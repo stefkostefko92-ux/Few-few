@@ -83,15 +83,18 @@ async function upsert(db: D1Database, rec: NormalizedRecord): Promise<void> {
       .bind(seller.id, seller.name, seller.kind, seller.eik, seller.eik_normalized, seller.eik_valid, seller.settlement),
     db
       .prepare(
-        `INSERT INTO vehicles (id, vin, vin_normalized, plate, make, model, model_key,
-           model_year, fuel_type, gearbox, body_type, power_hp, current_seller_id,
-           latest_mileage_km, latest_price_eur, status, mileage_flag, price_flag,
-           vin_flag, risk_level, risk_reasons, last_seen, updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+        `INSERT INTO vehicles (id, vin, vin_normalized, plate, make, model, variant, model_key,
+           model_year, fuel_type, gearbox, body_type, power_hp, engine_cc, color,
+           current_seller_id, latest_mileage_km, latest_price_eur, status, mileage_flag,
+           price_flag, vin_flag, risk_level, risk_reasons, last_seen, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
          ON CONFLICT(id) DO UPDATE SET
            latest_mileage_km=excluded.latest_mileage_km,
            latest_price_eur=excluded.latest_price_eur,
            current_seller_id=excluded.current_seller_id,
+           color=COALESCE(excluded.color, vehicles.color),
+           engine_cc=COALESCE(excluded.engine_cc, vehicles.engine_cc),
+           variant=COALESCE(excluded.variant, vehicles.variant),
            mileage_flag=excluded.mileage_flag, price_flag=excluded.price_flag,
            vin_flag=excluded.vin_flag, risk_level=excluded.risk_level,
            risk_reasons=excluded.risk_reasons, last_seen=excluded.last_seen,
@@ -99,11 +102,11 @@ async function upsert(db: D1Database, rec: NormalizedRecord): Promise<void> {
       )
       .bind(
         vehicle.id, vehicle.vin, vehicle.vin_normalized, vehicle.plate, vehicle.make,
-        vehicle.model, vehicle.model_key, vehicle.model_year, vehicle.fuel_type,
-        vehicle.gearbox, vehicle.body_type, vehicle.power_hp, vehicle.current_seller_id,
-        vehicle.latest_mileage_km, vehicle.latest_price_eur, vehicle.status,
-        vehicle.mileage_flag, vehicle.price_flag, vehicle.vin_flag, vehicle.risk_level,
-        vehicle.risk_reasons, vehicle.last_seen,
+        vehicle.model, vehicle.variant, vehicle.model_key, vehicle.model_year, vehicle.fuel_type,
+        vehicle.gearbox, vehicle.body_type, vehicle.power_hp, vehicle.engine_cc, vehicle.color,
+        vehicle.current_seller_id, vehicle.latest_mileage_km, vehicle.latest_price_eur,
+        vehicle.status, vehicle.mileage_flag, vehicle.price_flag, vehicle.vin_flag,
+        vehicle.risk_level, vehicle.risk_reasons, vehicle.last_seen,
       ),
     db
       .prepare(

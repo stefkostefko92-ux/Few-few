@@ -23,10 +23,13 @@ export interface VehicleListItem {
 export interface VehicleDetail extends VehicleListItem {
   vin: string | null;
   plate: string | null;
+  variant: string | null;
   fuelType: string | null;
   gearbox: string | null;
   bodyType: string | null;
   powerHp: number | null;
+  engineCc: number | null;
+  color: string | null;
   originCountry: string | null;
   mileageFlag: QualityFlag;
   priceFlag: QualityFlag;

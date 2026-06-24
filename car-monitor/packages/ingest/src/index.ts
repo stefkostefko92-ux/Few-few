@@ -71,12 +71,15 @@ export interface NormalizedVehicle {
   plate: string | null;
   make: string | null;
   model: string | null;
+  variant: string | null;
   model_key: string | null;
   model_year: number | null;
   fuel_type: string | null;
   gearbox: string | null;
   body_type: string | null;
   power_hp: number | null;
+  engine_cc: number | null;
+  color: string | null;
   current_seller_id: string;
   latest_mileage_km: number | null;
   latest_price_eur: number | null;
@@ -181,12 +184,15 @@ export function normalizeListing(raw: RawListing, ctx: NormalizeContext): Normal
     plate: normalizePlate(raw.plate),
     make: raw.make ?? null,
     model: raw.model ?? null,
+    variant: raw.variant ?? null,
     model_key: mk,
     model_year: raw.modelYear ?? null,
     fuel_type: raw.fuelType ?? null,
     gearbox: raw.gearbox ?? null,
     body_type: raw.bodyType ?? null,
     power_hp: raw.powerHp ?? null,
+    engine_cc: raw.engineCc ?? null,
+    color: raw.color ?? null,
     current_seller_id: sellerId,
     latest_mileage_km: raw.mileageKm ?? null,
     latest_price_eur: risk.priceFlag === "suspect" ? null : priceEur,

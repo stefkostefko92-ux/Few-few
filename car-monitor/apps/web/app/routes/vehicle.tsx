@@ -39,9 +39,12 @@ export default function Vehicle() {
           <tr><th>Рег. номер</th><td>{v.plate ?? "—"}</td></tr>
           <tr><th>Цена</th><td>{formatEur(v.priceEur)}</td></tr>
           <tr><th>Пробег</th><td>{v.mileageKm != null ? `${v.mileageKm.toLocaleString("bg-BG")} км` : "—"}</td></tr>
+          <tr><th>Версия</th><td>{v.variant ?? "—"}</td></tr>
           <tr><th>Гориво</th><td>{v.fuelType ?? "—"}</td></tr>
           <tr><th>Скоростна кутия</th><td>{v.gearbox ?? "—"}</td></tr>
           <tr><th>Мощност</th><td>{v.powerHp != null ? `${v.powerHp} к.с.` : "—"}</td></tr>
+          <tr><th>Кубатура</th><td>{v.engineCc != null ? `${v.engineCc} см³` : "—"}</td></tr>
+          <tr><th>Цвят</th><td>{v.color ?? "—"}</td></tr>
           <tr><th>Внос от</th><td>{v.originCountry ?? "—"}</td></tr>
           <tr>
             <th>Модел</th>

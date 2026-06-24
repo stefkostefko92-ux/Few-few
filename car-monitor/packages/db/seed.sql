@@ -22,14 +22,14 @@ INSERT INTO owners (id, name, kind, settlement) VALUES
   ('o_dealer', 'Авто София ЕООД', 'company', 'София');
 
 -- Автомобили.
-INSERT INTO vehicles (id, vin, vin_normalized, make, model, model_key, model_year,
-  fuel_type, gearbox, body_type, power_hp, current_seller_id, latest_mileage_km,
+INSERT INTO vehicles (id, vin, vin_normalized, make, model, variant, model_key, model_year,
+  fuel_type, gearbox, body_type, power_hp, engine_cc, color, current_seller_id, latest_mileage_km,
   latest_price_eur, status, mileage_flag, risk_level, risk_reasons, first_seen, last_seen) VALUES
-  ('v_golf_01', 'WVWZZZ1KZAW000001', 'WVWZZZ1KZAW000001', 'VW', 'Golf', 'vw|golf', 2015,
-   'diesel', 'manual', 'hatch', 105, 's_auto_sofia', 168000,
+  ('v_golf_01', 'WVWZZZ1KZAW000001', 'WVWZZZ1KZAW000001', 'VW', 'Golf', '1.6 TDI', 'vw|golf', 2015,
+   'diesel', 'manual', 'hatch', 105, 1598, 'Сив', 's_auto_sofia', 168000,
    9500, 'active', 'suspect', 'red', '["mileage_rollback"]', '2026-05-01', '2026-06-15'),
-  ('v_rav4_01', 'JTMBFREVXJD000002', 'JTMBFREVXJD000002', 'Toyota', 'RAV4', 'toyota|rav4', 2019,
-   'hybrid', 'automatic', 'suv', 218, 's_private_01', 72000,
+  ('v_rav4_01', 'JTMBFREVXJD000002', 'JTMBFREVXJD000002', 'Toyota', 'RAV4', 'Hybrid AWD', 'toyota|rav4', 2019,
+   'hybrid', 'automatic', 'suv', 218, 2487, 'Бял', 's_private_01', 72000,
    28500, 'active', 'ok', 'green', NULL, '2026-06-10', '2026-06-18');
 
 -- Обяви (с каноничен EUR).
