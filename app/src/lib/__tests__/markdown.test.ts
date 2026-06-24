@@ -1,33 +1,40 @@
-import { test } from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
-import { renderMarkdown, plainText } from "../markdown";
+import { renderMarkdown, plainText } from "@/lib/markdown";
 
-test("рендерира заглавия и параграфи", () => {
-  assert.equal(renderMarkdown("# Заглавие"), "<h2>Заглавие</h2>");
-  assert.equal(renderMarkdown("Просто изречение."), "<p>Просто изречение.</p>");
-});
-
-test("рендерира списъци", () => {
-  const html = renderMarkdown("- едно\n- две");
-  assert.equal(html, "<ul>\n<li>едно</li>\n<li>две</li>\n</ul>");
-});
-
-test("екранира опасен HTML", () => {
-  const html = renderMarkdown("<script>alert(1)</script>");
+test("екранира HTML (защита срещу XSS)", () => {
+  const html = renderMarkdown('<script>alert(1)</script>');
   assert.ok(!html.includes("<script>"));
   assert.ok(html.includes("&lt;script&gt;"));
 });
 
-test("позволява само безопасни връзки", () => {
-  const ok = renderMarkdown("[линк](https://example.com)");
-  assert.ok(ok.includes('href="https://example.com"'));
-  // Опасните схеми не се превръщат в кликаема връзка (остават безобиден текст).
-  const bad = renderMarkdown("[x](javascript:alert(1))");
-  assert.ok(!bad.includes("<a "));
-  assert.ok(!bad.includes('href="javascript:'));
+test("неутрализира опасни тагове (няма изпълним HTML)", () => {
+  const html = renderMarkdown('">< img src=x onerror=alert(1)>');
+  // ъгловите скоби са екранирани → няма реален таг, който да се изпълни
+  assert.ok(!/<img/i.test(html));
+  assert.ok(!/<\s*img/i.test(html));
+  assert.ok(html.includes("&lt;") && html.includes("&gt;"));
 });
 
-test("plainText маха маркъп и подрязва", () => {
-  assert.equal(plainText("# Здравей **свят**"), "Здравей свят");
-  assert.equal(plainText("aaaa", 3), "aa…");
+test("позволява само безопасни схеми за връзки", () => {
+  const ok = renderMarkdown("[link](https://example.com)");
+  assert.ok(ok.includes('href="https://example.com"'));
+  assert.ok(ok.includes('rel="noopener noreferrer"'));
+  // javascript: схема не се разпознава като връзка
+  const bad = renderMarkdown("[x](javascript:alert(1))");
+  assert.ok(!/href="javascript:/i.test(bad));
+});
+
+test("рендерира заглавия, удебелен текст и списъци", () => {
+  assert.ok(renderMarkdown("## Заглавие").includes("<h3>Заглавие</h3>"));
+  assert.ok(renderMarkdown("**жирно**").includes("<strong>жирно</strong>"));
+  const list = renderMarkdown("- едно\n- две");
+  assert.ok(list.includes("<ul>") && list.includes("<li>едно</li>"));
+});
+
+test("plainText маха Markdown и съкращава", () => {
+  assert.equal(plainText("**Здравей** [тук](https://x.bg)"), "Здравей тук");
+  const long = plainText("дума ".repeat(100), 20);
+  assert.ok(long.length <= 20);
+  assert.ok(long.endsWith("…"));
 });

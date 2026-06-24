@@ -1,44 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
+const KEY = "zd_cookie_consent_v1";
 
 export function CookieConsent() {
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     try {
-      if (localStorage.getItem("cookie-ok") !== "1") setShow(true);
+      if (!localStorage.getItem(KEY)) setShow(true);
     } catch {
-      /* ignore */
+      /* localStorage недостъпен */
     }
   }, []);
 
+  if (pathname?.startsWith("/admin")) return null;
   if (!show) return null;
 
-  function accept() {
+  const decide = (value: "all" | "essential") => {
     try {
-      localStorage.setItem("cookie-ok", "1");
+      localStorage.setItem(
+        KEY,
+        JSON.stringify({ value, at: new Date().toISOString() }),
+      );
     } catch {
-      /* ignore */
+      /* игнорираме */
     }
     setShow(false);
-  }
+  };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white p-4 shadow-lg no-print">
-      <div className="container-content flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-base text-slate-700">
-          Ползваме само минимум локално съхранение (за настройките за достъпност). Без
-          реклами и проследяване.{" "}
+    <div
+      role="dialog"
+      aria-label="Съгласие за бисквитки"
+      className="no-print fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 backdrop-blur"
+    >
+      <div className="container-content flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-700">
+          Този сайт използва само технически необходими бисквитки за основната си
+          работа. Не използваме рекламно проследяване. Вижте{" "}
           <Link href="/biskvitki" className="font-medium text-brand-700 underline">
-            Научи повече
+            Политиката за бисквитки
           </Link>
           .
         </p>
-        <button type="button" onClick={accept} className="btn-primary shrink-0">
-          Разбрах
-        </button>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={() => decide("essential")}
+            className="btn-secondary whitespace-nowrap"
+          >
+            Само необходими
+          </button>
+          <button
+            type="button"
+            onClick={() => decide("all")}
+            className="btn-primary whitespace-nowrap"
+          >
+            Разбрах
+          </button>
+        </div>
       </div>
     </div>
   );

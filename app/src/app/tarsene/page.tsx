@@ -1,67 +1,81 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
-import { JsonLd } from "@/components/JsonLd";
-import { PageHero } from "@/components/ui";
-import { SearchClient, type SearchItem } from "./SearchClient";
-import { PRIMARY_NAV } from "@/lib/site";
-import { SERVICES, CATEGORY_LABELS } from "@/data/services";
-import { GUIDES, guideSummary } from "@/data/guides";
+import { search, recordMiss } from "@/lib/search";
+import { PageHero, EmptyState } from "@/components/ui";
+import { SearchBar } from "@/components/SearchBar";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Търсене",
-  description: "Намерете бързо услуга, телефон или ръководство из целия портал.",
-  path: "/tarsene",
-});
+export const dynamic = "force-dynamic";
 
-function buildIndex(): SearchItem[] {
-  const items: SearchItem[] = [];
+const TYPE_LABEL: Record<string, string> = {
+  faq: "Как да…",
+  service: "Услуга",
+  business: "Бизнес",
+  event: "Събитие",
+};
 
-  for (const n of PRIMARY_NAV) {
-    items.push({
-      title: n.label,
-      href: n.href,
-      section: "Раздел",
-      keywords: n.description ?? "",
-    });
-  }
-  for (const s of SERVICES) {
-    items.push({
-      title: s.name,
-      href: `/uslugi#${s.slug}`,
-      section: `Услуги · ${CATEGORY_LABELS[s.category]}`,
-      keywords: `${s.description ?? ""} ${s.phones.map((p) => p.number).join(" ")} ${s.address ?? ""}`,
-    });
-  }
-  for (const g of GUIDES) {
-    items.push({
-      title: g.question,
-      href: `/kak-da/${g.slug}`,
-      section: `Как да · ${g.category}`,
-      keywords: `${g.tags} ${guideSummary(g, 120)}`,
-    });
-  }
-  return items;
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  return buildMetadata({
+    title: q ? `Търсене: ${q}` : "Търсене",
+    description: "Търсене в услугите, телефоните, обявите и съдържанието на сайта.",
+    path: "/tarsene",
+    noindex: true,
+  });
 }
 
-export default async function TarsenePage({
+export default async function SearchPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const items = buildIndex();
+  const query = (q ?? "").trim();
+  const results = query.length >= 2 ? await search(query, 30) : [];
+  // Записваме търсения без резултат, за да виждаме какво търсят хората.
+  if (query.length >= 2 && results.length === 0) await recordMiss(query);
 
   return (
     <>
-      <JsonLd data={webPageLd({ name: "Търсене", path: "/tarsene" })} />
       <PageHero
-        eyebrow="Намери бързо"
-        title="Търсене"
-        intro="Напишете дума и стигнете направо до услугата, телефона или ръководството."
+        title={query ? `Резултати за „${query}"` : "Търсене"}
         crumbs={[{ name: "Търсене", path: "/tarsene" }]}
       />
       <div className="container-content py-10">
-        <SearchClient items={items} initialQuery={q ?? ""} />
+        <div className="mb-8 max-w-xl">
+          <SearchBar />
+        </div>
+
+        {query.length < 2 ? (
+          <EmptyState title="Напишете дума за търсене (поне 2 букви)." />
+        ) : results.length === 0 ? (
+          <EmptyState
+            title={`Нищо не е намерено за „${query}".`}
+            hint="Опитайте с друга дума или попитайте дигиталния помощник долу вдясно."
+          />
+        ) : (
+          <ul className="space-y-3">
+            {results.map((r, i) => (
+              <li key={i}>
+                <Link href={r.url} className="card block">
+                  <div className="text-xs uppercase tracking-wide text-brand-600">
+                    {TYPE_LABEL[r.type]}
+                  </div>
+                  <div className="text-lg font-semibold text-slate-900">
+                    {r.title}
+                  </div>
+                  {r.snippet && (
+                    <p className="text-sm text-slate-600">{r.snippet}</p>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </>
   );

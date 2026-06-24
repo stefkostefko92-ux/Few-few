@@ -1,56 +1,99 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
-import { JsonLd } from "@/components/JsonLd";
+import { Camera, Plus } from "@/components/icons";
+import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { Callout } from "@/components/content";
-import { getPublishedGallery } from "@/lib/queries";
-import { GalleryForm } from "./GalleryForm";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Галерия",
-  description: "Снимки на Дупница от хората — с кредит към авторите.",
+  title: "Галерия — снимки на Дупница",
+  description:
+    "Снимки на град Дупница — стари и нови, споделени от жителите. Всяка снимка е с кредит към автора. Споделете и вашата снимка на града.",
   path: "/galeriya",
 });
 
-export default async function GaleriyaPage() {
-  const photos = await getPublishedGallery();
+export default async function GalleryPage() {
+  const photos = await prisma.galleryPhoto.findMany({
+    where: { published: true, imageUrl: { not: "" } },
+    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    take: 200,
+  });
+
   return (
     <>
-      <JsonLd data={webPageLd({ name: "Галерия", path: "/galeriya", type: "CollectionPage" })} />
       <PageHero
-        eyebrow="Снимки"
-        title="Галерия"
-        intro="Дупница през обектива на хората. Изпратете и вашата снимка."
+        eyebrow="Галерия"
+        title="Снимки на Дупница"
+        intro="Градът през очите на хората — стари и нови снимки, споделени от жителите. Всяка снимка е с кредит към автора ѝ."
         crumbs={[{ name: "Галерия", path: "/galeriya" }]}
       />
-      <div className="container-content py-10">
+
+      <div className="container-content space-y-8 py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-slate-600">
+            Имате хубава снимка на града? Споделете я — ще я покажем с вашето име.
+          </p>
+          <Link href="/galeriya/nova" className="btn-primary">
+            <Plus className="h-5 w-5" aria-hidden /> Добави снимка
+          </Link>
+        </div>
+
         {photos.length === 0 ? (
-          <EmptyState title="Все още няма снимки" hint="Изпратете първата снимка по-долу." />
+          <EmptyState
+            title="Галерията тепърва се пълни."
+            hint="Бъдете първите — споделете ваша снимка на Дупница (стара или нова)."
+          />
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {photos.map((p) => (
-              <li key={p.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <figure
+                key={p.id}
+                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.imageUrl} alt={p.title || "Снимка от Дупница"} className="h-48 w-full object-cover" loading="lazy" />
-                <div className="p-3">
-                  {p.title && <p className="font-medium text-slate-800">{p.title}</p>}
-                  {p.author && <p className="text-sm text-slate-500">Автор: {p.author}</p>}
-                </div>
-              </li>
+                <img
+                  src={p.imageUrl}
+                  alt={p.title || "Снимка на Дупница"}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <figcaption className="p-4">
+                  {p.title && (
+                    <div className="font-medium text-slate-900">{p.title}</div>
+                  )}
+                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                    <Camera className="h-4 w-4 shrink-0" aria-hidden />
+                    Снимка: {p.author || "неизвестен автор"}
+                    {p.source && (
+                      <>
+                        {" · "}
+                        <a
+                          href={p.source}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-brand-700 underline"
+                        >
+                          източник
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </figcaption>
+              </figure>
             ))}
-          </ul>
+          </div>
         )}
 
-        <div className="mt-12">
-          <h2 className="section-title mb-4">Изпратете снимка</h2>
-          <Callout tone="info">
-            Изпращайте само снимки, които сте направили или имате право да
-            споделите. Снимките се преглеждат преди публикуване.
-          </Callout>
-          <GalleryForm />
-        </div>
+        <p className="text-sm text-slate-500">
+          Снимките са собственост на своите автори и се публикуват с тяхно съгласие.
+          Ако смятате, че снимка нарушава права, пишете ни в{" "}
+          <Link href="/kontakti" className="text-brand-700 underline">
+            Контакти
+          </Link>
+          .
+        </p>
       </div>
     </>
   );

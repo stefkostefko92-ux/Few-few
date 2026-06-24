@@ -1,21 +1,23 @@
+import Link from "next/link";
+import { MapPin } from "@/components/icons";
 import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
-import { JsonLd } from "@/components/JsonLd";
+import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { Callout } from "@/components/content";
-import { getPublishedEvents } from "@/lib/queries";
+import { buildMetadata } from "@/lib/seo";
+import { plainText } from "@/lib/markdown";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Събития в Дупница",
+  title: "Събития в Дупница — какво се случва в града",
   description:
-    "Културни и обществени събития в Дупница — кога и къде. Афишът се попълва постепенно.",
+    "Календар на предстоящите събития в Дупница: културни прояви, празници, срещи и инициативи.",
   path: "/sabitiya",
 });
 
-function fmtDate(d: Date): string {
+function fmt(d: Date): string {
   return new Intl.DateTimeFormat("bg-BG", {
+    weekday: "short",
     day: "numeric",
     month: "long",
     hour: "2-digit",
@@ -23,50 +25,70 @@ function fmtDate(d: Date): string {
   }).format(d);
 }
 
-export default async function SabitiyaPage() {
-  const events = await getPublishedEvents();
+export default async function EventsPage() {
+  const now = new Date();
+  const [upcoming, past] = await Promise.all([
+    prisma.event.findMany({
+      where: { published: true, startAt: { gte: now } },
+      orderBy: { startAt: "asc" },
+    }),
+    prisma.event.findMany({
+      where: { published: true, startAt: { lt: now } },
+      orderBy: { startAt: "desc" },
+      take: 6,
+    }),
+  ]);
 
   return (
     <>
-      <JsonLd data={webPageLd({ name: "Събития в Дупница", path: "/sabitiya", type: "CollectionPage" })} />
       <PageHero
-        eyebrow="Календар"
         title="Събития"
-        intro="Какво се случва в Дупница — концерти, изложби, празници и обществени събития."
+        intro="Какво предстои в Дупница."
         crumbs={[{ name: "Събития", path: "/sabitiya" }]}
       />
-
       <div className="container-content py-10">
-        <Callout tone="info">
-          Към момента в Дупница няма единен работещ онлайн афиш — програмата често
-          се обявява във Facebook на общината и читалищата. Тук събираме събитията
-          постепенно. Знаете за събитие? Пишете ни през „Контакти“.
-        </Callout>
-
-        {events.length === 0 ? (
-          <EmptyState
-            title="Все още няма добавени събития"
-            hint="Очаквайте скоро. Междувременно следете официалните страници на общината и читалище „Зора 1858“."
-          />
+        <h2 className="mb-4 text-xl font-bold">Предстоящи</h2>
+        {upcoming.length === 0 ? (
+          <EmptyState title="Няма обявени предстоящи събития." />
         ) : (
-          <ul className="space-y-4">
-            {events.map((e) => (
-              <li key={e.id} className="card">
-                <p className="text-sm font-semibold text-brand-700">
-                  {fmtDate(e.startAt)}
-                </p>
-                <h2 className="mt-1 font-display text-xl font-bold text-slate-900">
-                  {e.title}
-                </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {upcoming.map((e) => (
+              <Link key={e.id} href={`/sabitiya/${e.slug}`} className="card">
+                <div className="text-sm font-medium text-brand-700">
+                  {fmt(e.startAt)}
+                </div>
+                <h3 className="mt-1 text-lg font-semibold">{e.title}</h3>
                 {e.location && (
-                  <p className="mt-1 text-base text-slate-600">{e.location}</p>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {e.location}</div>
                 )}
                 {e.description && (
-                  <p className="mt-2 text-base text-slate-700">{e.description}</p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {plainText(e.description, 120)}
+                  </p>
                 )}
-              </li>
+              </Link>
             ))}
-          </ul>
+          </div>
+        )}
+
+        {past.length > 0 && (
+          <>
+            <h2 className="mb-4 mt-10 text-xl font-bold text-slate-500">
+              Отминали
+            </h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              {past.map((e) => (
+                <Link
+                  key={e.id}
+                  href={`/sabitiya/${e.slug}`}
+                  className="card opacity-75"
+                >
+                  <div className="text-sm text-slate-500">{fmt(e.startAt)}</div>
+                  <h3 className="mt-1 font-semibold">{e.title}</h3>
+                </Link>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </>

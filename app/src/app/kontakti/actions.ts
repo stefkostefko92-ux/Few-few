@@ -2,55 +2,85 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isBot, field, type FormState } from "@/lib/forms";
+import { logAudit } from "@/lib/audit";
+import { sendMail } from "@/lib/mail";
+import { SITE } from "@/lib/site";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
-  message: z.string().min(10, "Моля, напишете малко повече."),
-  name: z.string().optional().default(""),
-  email: z.string().email("Невалиден имейл.").optional().or(z.literal("")),
-  phone: z.string().optional().default(""),
-  subject: z.string().optional().default(""),
+  name: z.string().trim().max(120).optional().default(""),
+  email: z
+    .string()
+    .trim()
+    .max(160)
+    .optional()
+    .default("")
+    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Невалиден имейл."),
+  phone: z.string().trim().max(40).optional().default(""),
+  subject: z.string().trim().max(160).optional().default(""),
+  message: z.string().trim().min(10, "Напишете малко повече за вашия въпрос.").max(5000),
+  website: z.string().max(0).optional().default(""), // honeypot
 });
 
-export async function submitContact(
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  if (isBot(formData)) {
-    return { ok: true, message: "Благодарим! Съобщението е получено." };
-  }
+export type ContactState = { ok: boolean; error?: string };
 
+export async function submitContact(
+  _prev: ContactState,
+  formData: FormData,
+): Promise<ContactState> {
+  if (!rateLimit(await clientKey("contact"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
-    message: field(formData, "message", 4000),
-    name: field(formData, "name", 120),
-    email: field(formData, "email", 160),
-    phone: field(formData, "phone", 60),
-    subject: field(formData, "subject", 200),
+    name: formData.get("name") ?? "",
+    email: formData.get("email") ?? "",
+    phone: formData.get("phone") ?? "",
+    subject: formData.get("subject") ?? "",
+    message: formData.get("message") ?? "",
+    website: formData.get("website") ?? "",
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+  }
+  const d = parsed.data;
+
+  const created = await prisma.contactMessage.create({
+    data: {
+      name: d.name,
+      email: d.email,
+      phone: d.phone,
+      subject: d.subject,
+      message: d.message,
+    },
   });
 
-  if (!parsed.success) {
-    return {
-      ok: false,
-      message: parsed.error.issues[0]?.message ?? "Моля, проверете полетата.",
-    };
-  }
+  // Известие по имейл към екипа (ако SMTP е настроен). Без SMTP съобщението
+  // просто се пази в админ панела (Контактни съобщения).
+  await sendMail({
+    to: SITE.contact.email,
+    subject: `Ново съобщение от сайта${d.subject ? `: ${d.subject}` : ""}`,
+    text: [
+      "Ново съобщение през формата за контакт.",
+      "",
+      `Име: ${d.name || "—"}`,
+      `Имейл: ${d.email || "—"}`,
+      `Телефон: ${d.phone || "—"}`,
+      d.subject ? `Тема: ${d.subject}` : "",
+      "",
+      "Съобщение:",
+      d.message,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    replyTo: d.email || undefined,
+  });
 
-  try {
-    await prisma.contactMessage.create({
-      data: {
-        message: parsed.data.message,
-        name: parsed.data.name,
-        email: parsed.data.email ?? "",
-        phone: parsed.data.phone,
-        subject: parsed.data.subject,
-      },
-    });
-  } catch {
-    return {
-      ok: false,
-      message: "В момента не можем да запишем съобщението. Опитайте по-късно.",
-    };
-  }
+  await logAudit(null, {
+    action: "CREATE",
+    entity: "ContactMessage",
+    entityId: created.id,
+    summary: `Ново контактно съобщение${d.subject ? ` — ${d.subject}` : ""}`,
+  });
 
-  return { ok: true, message: "Благодарим! Съобщението е получено." };
+  return { ok: true };
 }

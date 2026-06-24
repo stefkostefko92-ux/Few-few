@@ -1,38 +1,140 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
-import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/ui";
-import { ListingForm } from "./ListingForm";
+import { LISTING_TYPE_LABELS } from "@/lib/categories";
+import { submitListing, type SubmitState } from "./actions";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Подай обява",
-  description: "Подайте безплатна местна обява за Дупница.",
-  path: "/obyavi/nova",
-  noindex: true,
-});
+const initial: SubmitState = { ok: false };
 
-export default function NovaObyavaPage() {
+export default function NewListingPage() {
+  const [state, action, pending] = useActionState(submitListing, initial);
+
+  if (state.ok) {
+    return (
+      <>
+        <PageHero
+          title="Благодарим!"
+          crumbs={[
+            { name: "Обяви", path: "/obyavi" },
+            { name: "Нова обява", path: "/obyavi/nova" },
+          ]}
+        />
+        <div className="container-content py-10">
+          <div className="card max-w-xl bg-green-50">
+            <p className="text-lg text-slate-800">
+              Обявата ви е получена и ще бъде публикувана след кратък преглед.
+            </p>
+            <Link href="/obyavi" className="btn-primary mt-4">
+              Към обявите
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      <JsonLd data={webPageLd({ name: "Подай обява", path: "/obyavi/nova" })} />
       <PageHero
-        eyebrow="Обяви"
-        title="Подай обява"
-        intro="Попълнете формата. Преглеждаме обявите, преди да ги публикуваме, за да няма спам."
+        title="Подай безплатна обява"
+        intro="Попълнете формата. Обявата се публикува след кратък преглед, за да няма спам."
         crumbs={[
           { name: "Обяви", path: "/obyavi" },
-          { name: "Подай обява", path: "/obyavi/nova" },
+          { name: "Нова обява", path: "/obyavi/nova" },
         ]}
       />
-
       <div className="container-content py-10">
-        <ListingForm />
-        <p className="mt-6">
-          <Link href="/obyavi" className="btn-secondary">
-            ← Към обявите
-          </Link>
-        </p>
+        <form action={action} className="max-w-2xl space-y-4">
+          {state.error && (
+            <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+              {state.error}
+            </div>
+          )}
+
+          <div>
+            <label className="label" htmlFor="title">
+              Заглавие *
+            </label>
+            <input id="title" name="title" required className="input" maxLength={120} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="type">
+                Вид *
+              </label>
+              <select id="type" name="type" required className="input">
+                {Object.entries(LISTING_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="price">
+                Цена (по избор)
+              </label>
+              <input id="price" name="price" className="input" placeholder="напр. 50 лв." />
+            </div>
+          </div>
+
+          <div>
+            <label className="label" htmlFor="description">
+              Описание *
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              required
+              rows={6}
+              className="input"
+              maxLength={4000}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="label" htmlFor="contactName">
+                Име
+              </label>
+              <input id="contactName" name="contactName" className="input" />
+            </div>
+            <div>
+              <label className="label" htmlFor="contactPhone">
+                Телефон
+              </label>
+              <input id="contactPhone" name="contactPhone" className="input" inputMode="tel" />
+            </div>
+            <div>
+              <label className="label" htmlFor="contactEmail">
+                Имейл
+              </label>
+              <input id="contactEmail" name="contactEmail" className="input" inputMode="email" />
+            </div>
+          </div>
+
+          {/* Honeypot — скрито поле за ботове */}
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            className="hidden"
+            aria-hidden
+          />
+
+          <p className="text-xs text-slate-500">
+            Посочете поне телефон или имейл за контакт. С подаването приемате
+            обявата да бъде видима публично.
+          </p>
+
+          <button type="submit" className="btn-primary" disabled={pending}>
+            {pending ? "Изпращане…" : "Изпрати обявата"}
+          </button>
+        </form>
       </div>
     </>
   );

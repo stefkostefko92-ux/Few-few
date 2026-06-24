@@ -13,7 +13,7 @@ export default function Error({
       <div className="mx-auto max-w-lg">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/dupnitsa-grb.svg"
+          src="/brand/bobov-dol-grb.png"
           alt=""
           aria-hidden
           className="mx-auto h-20 w-auto opacity-80"

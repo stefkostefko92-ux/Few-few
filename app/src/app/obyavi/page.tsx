@@ -1,79 +1,103 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
-import { JsonLd } from "@/components/JsonLd";
+import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { getPublishedListings } from "@/lib/queries";
+import { buildMetadata } from "@/lib/seo";
+import { LISTING_TYPE_LABELS, labelFor } from "@/lib/categories";
+import { plainText } from "@/lib/markdown";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Обяви",
+  title: "Обяви в Дупница — безплатни местни обяви",
   description:
-    "Безплатни местни обяви за Дупница — продава се, купува се, работа, имоти, подаръци.",
+    "Безплатни местни обяви в Дупница: продажби, търсене, работа, имоти и подаръци. Подайте своя обява безплатно.",
   path: "/obyavi",
 });
 
-const TYPE_LABELS: Record<string, string> = {
-  OFFER: "Предлага се",
-  WANTED: "Търси се",
-  JOB: "Работа",
-  REALESTATE: "Имоти",
-  FREE: "Подарява се",
-  OTHER: "Друго",
-};
+export default async function ListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
+  const { type } = await searchParams;
+  const validType = type && type in LISTING_TYPE_LABELS ? type : undefined;
 
-export default async function ObyaviPage() {
-  const listings = await getPublishedListings();
+  const listings = await prisma.listing.findMany({
+    where: {
+      published: true,
+      OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+      ...(validType ? { type: validType as never } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <>
-      <JsonLd data={webPageLd({ name: "Обяви", path: "/obyavi", type: "CollectionPage" })} />
       <PageHero
-        eyebrow="Пазар"
         title="Обяви"
-        intro="Безплатни местни обяви. Подайте своя — преглеждаме я и я публикуваме."
+        intro="Безплатни местни обяви. Всяка обява се преглежда преди публикуване."
         crumbs={[{ name: "Обяви", path: "/obyavi" }]}
       />
-
       <div className="container-content py-10">
-        <Link href="/obyavi/nova" className="btn-primary">
-          Подай обява
-        </Link>
-
-        <div className="mt-8">
-          {listings.length === 0 ? (
-            <EmptyState
-              title="Все още няма публикувани обяви"
-              hint="Бъдете първи — подайте обява и тя ще се появи тук след преглед."
-            />
-          ) : (
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {listings.map((l) => (
-                <li key={l.id} className="card">
-                  <span className="badge">{TYPE_LABELS[l.type] ?? "Обява"}</span>
-                  <h2 className="mt-2 font-display text-lg font-bold text-slate-900">
-                    {l.title}
-                  </h2>
-                  {l.price && (
-                    <p className="mt-1 font-semibold text-brand-700">{l.price}</p>
-                  )}
-                  {l.description && (
-                    <p className="mt-2 text-base text-slate-700">{l.description}</p>
-                  )}
-                  {l.contactPhone && (
-                    <a
-                      href={"tel:" + l.contactPhone.replace(/\s+/g, "")}
-                      className="mt-2 inline-block font-semibold text-brand-700 hover:underline"
-                    >
-                      {l.contactPhone}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/obyavi"
+              className={
+                "rounded-full px-4 py-2 text-sm font-medium " +
+                (!validType
+                  ? "bg-brand-700 text-white"
+                  : "border border-slate-300 bg-white text-slate-700 hover:border-brand-400")
+              }
+            >
+              Всички
+            </Link>
+            {Object.entries(LISTING_TYPE_LABELS).map(([key, label]) => (
+              <Link
+                key={key}
+                href={`/obyavi?type=${key}`}
+                className={
+                  "rounded-full px-4 py-2 text-sm font-medium " +
+                  (validType === key
+                    ? "bg-brand-700 text-white"
+                    : "border border-slate-300 bg-white text-slate-700 hover:border-brand-400")
+                }
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+          <Link href="/obyavi/nova" className="btn-primary">
+            + Подай обява
+          </Link>
         </div>
+
+        {listings.length === 0 ? (
+          <EmptyState
+            title="Още няма обяви."
+            hint="Бъдете първите — подайте безплатна обява."
+          />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {listings.map((l) => (
+              <Link key={l.id} href={`/obyavi/${l.slug}`} className="card">
+                <div className="text-xs uppercase tracking-wide text-slate-600">
+                  {labelFor(LISTING_TYPE_LABELS, l.type)}
+                </div>
+                <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                  {l.title}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {plainText(l.description, 110)}
+                </p>
+                {l.price && (
+                  <div className="mt-2 font-semibold text-brand-700">{l.price}</div>
+                )}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

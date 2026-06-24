@@ -68,7 +68,7 @@ export default function NewRidePage() {
             </div>
             <div>
               <label className="label" htmlFor="routeTo">Докъде *</label>
-              <input id="routeTo" name="routeTo" required maxLength={80} className="input" placeholder="напр. София" />
+              <input id="routeTo" name="routeTo" required maxLength={80} className="input" placeholder="напр. Дупница" />
             </div>
           </div>
 

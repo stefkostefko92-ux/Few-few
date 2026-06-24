@@ -1,5 +1,5 @@
 // Компактна карта с днешния имен ден/празник за началната страница.
-// Сървърен компонент — изчислява „днес” в зоната на София.
+// Сървърен компонент — изчислява „днес" в зоната на София.
 import Link from "next/link";
 import { CalendarDays } from "@/components/icons";
 import { sofiaToday, dayInfo, formatDateBg } from "@/lib/calendar";

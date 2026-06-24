@@ -1,66 +1,62 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
-import { JsonLd } from "@/components/JsonLd";
+import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { Callout } from "@/components/content";
-import { getPublishedPosts } from "@/lib/queries";
+import { buildMetadata } from "@/lib/seo";
+import { plainText } from "@/lib/markdown";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Новини от Дупница",
-  description: "Актуални местни съобщения и новини за Дупница.",
+  title: "Новини и съобщения за Дупница",
+  description: "Актуални съобщения, новини и обявления, важни за жителите на Дупница.",
   path: "/novini",
 });
 
-export default async function NoviniPage() {
-  const posts = await getPublishedPosts();
+function fmt(d: Date | null): string {
+  if (!d) return "";
+  return new Intl.DateTimeFormat("bg-BG", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(d);
+}
+
+export default async function NewsPage() {
+  const posts = await prisma.post.findMany({
+    where: { published: true },
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+  });
 
   return (
     <>
-      <JsonLd data={webPageLd({ name: "Новини от Дупница", path: "/novini", type: "CollectionPage" })} />
       <PageHero
-        eyebrow="Актуално"
         title="Новини"
-        intro="Местни съобщения и новини за Дупница, събрани на едно място."
+        intro="Актуални съобщения за града."
         crumbs={[{ name: "Новини", path: "/novini" }]}
       />
-
       <div className="container-content py-10">
-        <Callout tone="info">
-          Засега местните новини са разпръснати по различни сайтове и медии. Тук ще
-          събираме най-важното. Полезни източници: dupnicanews.eu, struma.bg и
-          официалният сайт на общината.
-        </Callout>
-
         {posts.length === 0 ? (
-          <EmptyState
-            title="Все още няма публикувани новини"
-            hint="Очаквайте скоро."
-          />
+          <EmptyState title="Все още няма публикувани новини." />
         ) : (
-          <ul className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {posts.map((p) => (
-              <li key={p.id} className="card">
-                <h2 className="font-display text-xl font-bold text-slate-900">
+              <Link key={p.id} href={`/novini/${p.slug}`} className="card">
+                <div className="text-sm text-slate-500">
+                  {fmt(p.publishedAt ?? p.createdAt)}
+                </div>
+                <h2 className="mt-1 text-lg font-semibold text-slate-900">
                   {p.title}
                 </h2>
-                {p.excerpt && (
-                  <p className="mt-2 text-base text-slate-700">{p.excerpt}</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  {p.excerpt || plainText(p.content, 130)}
+                </p>
+                {p.source && (
+                  <div className="mt-2 text-xs text-slate-600">Източник: {p.source}</div>
                 )}
-                {p.sourceUrl && (
-                  <a
-                    href={p.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-block text-base font-medium text-brand-700 hover:underline"
-                  >
-                    Източник{p.source ? `: ${p.source}` : ""}
-                  </a>
-                )}
-              </li>
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </>

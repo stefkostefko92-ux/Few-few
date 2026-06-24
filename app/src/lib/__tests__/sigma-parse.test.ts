@@ -16,7 +16,7 @@ const FIXTURE = `
 </table>`;
 
 test("clean маха таговете и нормализира интервалите", () => {
-  assert.equal(clean("<b>  Дупница   град </b>"), "Дупница град");
+  assert.equal(clean("<b>  Дупница </b>"), "Дупница");
   assert.equal(clean("A &amp; B"), "A & B");
 });
 

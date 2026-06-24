@@ -1,23 +1,37 @@
 import Link from "next/link";
-import { getPinnedScamAlert } from "@/lib/queries";
 import { AlertTriangle } from "@/components/icons";
+import { prisma } from "@/lib/prisma";
 
-// Показва закачено предупреждение за измама (ако има такова). Безопасно е без
-// база данни — тогава просто не показва нищо.
+// Показва закачено предупреждение за измама като видна лента (ако има активно).
 export async function ScamBanner() {
-  const alert = await getPinnedScamAlert();
+  let alert: { title: string; summary: string } | null = null;
+  try {
+    alert = await prisma.scamAlert.findFirst({
+      where: { published: true, pinned: true },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      select: { title: true, summary: true },
+    });
+  } catch {
+    alert = null;
+  }
   if (!alert) return null;
 
   return (
-    <div className="border-b border-crimson-200 bg-crimson-50">
-      <div className="container-content flex flex-wrap items-center gap-x-3 gap-y-1 py-3 text-base">
-        <AlertTriangle className="h-5 w-5 text-crimson-700" aria-hidden />
-        <span className="font-semibold text-crimson-700">Внимание, измама:</span>
-        <span className="text-slate-700">{alert.summary || alert.title}</span>
-        <Link href="/izmami" className="font-semibold text-crimson-700 underline">
-          Как да се пазя
-        </Link>
+    <Link
+      href="/izmami"
+      className="block border-b border-crimson-700 bg-crimson-600 text-white transition hover:bg-crimson-700"
+    >
+      <div className="container-content flex items-center gap-3 py-2.5 text-sm">
+        <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden />
+        <span className="min-w-0">
+          <strong className="font-bold">Внимание, измама: </strong>
+          {alert.title}
+          {alert.summary ? ` — ${alert.summary}` : ""}
+          <span className="ml-1 whitespace-nowrap font-semibold underline">
+            Виж как да се пазите →
+          </span>
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -39,7 +39,7 @@ export default function NewMemoryPage() {
     <>
       <PageHero
         title="Споделете спомен"
-        intro="Разкажете спомен от стария Дупница — за фабриките, училището, празниците, хората. Публикува се след кратък преглед."
+        intro="Разкажете спомен от стария Дупница — за мините, училището, празниците, хората. Публикува се след кратък преглед."
         crumbs={[
           { name: "Спомени", path: "/spomeni" },
           { name: "Нов спомен", path: "/spomeni/nov" },
@@ -57,7 +57,7 @@ export default function NewMemoryPage() {
             <label className="label" htmlFor="title">
               Заглавие *
             </label>
-            <input id="title" name="title" required maxLength={140} className="input" placeholder="напр. Празникът на града през 80-те" />
+            <input id="title" name="title" required maxLength={140} className="input" placeholder="напр. Празникът на миньора през 80-те" />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

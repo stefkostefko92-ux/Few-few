@@ -3,71 +3,111 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { slugify, uniqueSlug } from "@/lib/slug";
-import { isBot, field, type FormState } from "@/lib/forms";
+import { logAudit } from "@/lib/audit";
+import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
 
 const schema = z.object({
-  title: z.string().min(3, "Заглавието е твърде кратко."),
-  description: z.string().min(5, "Опишете обявата с няколко думи."),
-  type: z.enum(["OFFER", "WANTED", "JOB", "REALESTATE", "FREE", "OTHER"]),
-  price: z.string().optional().default(""),
-  contactName: z.string().optional().default(""),
-  contactPhone: z.string().optional().default(""),
-  contactEmail: z.string().email("Невалиден имейл.").optional().or(z.literal("")),
+  title: z.string().trim().min(3, "Заглавието е твърде кратко.").max(120),
+  type: z.enum([
+    "OFFER",
+    "WANTED",
+    "JOB",
+    "REALESTATE",
+    "FREE",
+    "EVENT",
+    "OTHER",
+  ]),
+  category: z.string().trim().max(60).optional().default(""),
+  price: z.string().trim().max(60).optional().default(""),
+  description: z
+    .string()
+    .trim()
+    .min(10, "Описанието е твърде кратко.")
+    .max(4000),
+  contactName: z.string().trim().max(80).optional().default(""),
+  contactPhone: z.string().trim().max(40).optional().default(""),
+  contactEmail: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .default("")
+    .refine((v) => v === "" || /.+@.+\..+/.test(v), "Невалиден имейл."),
+  // Скрито поле против ботове (honeypot).
+  website: z.string().max(0).optional().default(""),
 });
 
-export async function submitListing(
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  if (isBot(formData)) {
-    return { ok: true, message: "Благодарим! Обявата е получена за преглед." };
-  }
+export type SubmitState = {
+  ok: boolean;
+  error?: string;
+};
 
-  const typeRaw = field(formData, "type", 20) || "OFFER";
+export async function submitListing(
+  _prev: SubmitState,
+  formData: FormData,
+): Promise<SubmitState> {
+  if (!rateLimit(await clientKey("listing"))) {
+    return { ok: false, error: RATE_LIMIT_MESSAGE };
+  }
   const parsed = schema.safeParse({
-    title: field(formData, "title", 200),
-    description: field(formData, "description", 3000),
-    type: typeRaw,
-    price: field(formData, "price", 60),
-    contactName: field(formData, "contactName", 120),
-    contactPhone: field(formData, "contactPhone", 60),
-    contactEmail: field(formData, "contactEmail", 160),
+    title: formData.get("title"),
+    type: formData.get("type"),
+    category: formData.get("category") ?? "",
+    price: formData.get("price") ?? "",
+    description: formData.get("description"),
+    contactName: formData.get("contactName") ?? "",
+    contactPhone: formData.get("contactPhone") ?? "",
+    contactEmail: formData.get("contactEmail") ?? "",
+    website: formData.get("website") ?? "",
   });
 
   if (!parsed.success) {
-    return {
-      ok: false,
-      message: parsed.error.issues[0]?.message ?? "Моля, проверете полетата.",
-    };
+    const first = parsed.error.issues[0]?.message ?? "Невалидни данни.";
+    return { ok: false, error: first };
+  }
+  const data = parsed.data;
+
+  // Изисква поне един начин за контакт.
+  if (!data.contactPhone && !data.contactEmail) {
+    return { ok: false, error: "Посочете телефон или имейл за контакт." };
   }
 
   try {
     const existing = await prisma.listing.findMany({ select: { slug: true } });
-    const taken = new Set(existing.map((x) => x.slug));
-    const slug = uniqueSlug(slugify(parsed.data.title), taken);
-    await prisma.listing.create({
+    const slug = uniqueSlug(
+      slugify(data.title),
+      new Set(existing.map((e) => e.slug)),
+    );
+
+    const created = await prisma.listing.create({
       data: {
         slug,
-        title: parsed.data.title,
-        description: parsed.data.description,
-        type: parsed.data.type,
-        price: parsed.data.price,
-        contactName: parsed.data.contactName,
-        contactPhone: parsed.data.contactPhone,
-        contactEmail: parsed.data.contactEmail ?? "",
-        published: false,
+        title: data.title,
+        type: data.type,
+        category: data.category || "Общи",
+        price: data.price,
+        description: data.description,
+        contactName: data.contactName,
+        contactPhone: data.contactPhone,
+        contactEmail: data.contactEmail,
+        published: false, // изчаква одобрение
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60), // 60 дни
       },
     });
-  } catch {
+
+    await logAudit(null, {
+      action: "CREATE",
+      entity: "Listing",
+      entityId: created.id,
+      summary: `Нова обява от посетител: „${data.title}" (чака одобрение)`,
+    });
+
+    return { ok: true };
+  } catch (err) {
+    console.error("Грешка при запис на обява:", err);
     return {
       ok: false,
-      message: "В момента не можем да запишем обявата. Опитайте по-късно.",
+      error: "Възникна грешка при записа. Опитайте отново след малко.",
     };
   }
-
-  return {
-    ok: true,
-    message:
-      "Благодарим! Обявата е получена и ще се появи след кратък преглед.",
-  };
 }

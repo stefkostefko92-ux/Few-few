@@ -15,12 +15,10 @@ export function slugify(input: string): string {
     else if (/\s|[-_./]/.test(ch)) out += "-";
     // всичко друго се пропуска
   }
-  return (
-    out
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 80) || "elem"
-  );
+  return out
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) || "elem";
 }
 
 // Гарантира уникалност чрез проверка на вече съществуващи slug-ове.
