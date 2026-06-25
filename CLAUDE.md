@@ -213,6 +213,7 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 | **Преводач** `prevodach.md`               | Localization across **BG → EN → IT**: keeps UI strings & content in sync, per-language typography/register, safety-critical medical wording. Bulgarian is the source of truth. |
 | **Сийдъра** `siydara.md`                  | zabobovdol Prisma seed scripts (`prisma/seed-*.ts`): idempotent `upsert`-keyed content (how-to guides, services, scams…), registers them in `package.json` + `db:seed:all`. Verified Bulgarian facts. |
 | **VPS-аджията** `vps-adjiyata.md`         | The rented server (Hetzner/EU, Ubuntu) & deploy: owns `deploy/autodeploy.sh` (archive in `/root` → live), Docker Compose / systemd, Nginx/Caddy, TLS, backups, hardening, diagnostics. |
+| **3D Maniac** `3d-maniac.md`              | 3D reverse engineering & Mesh→Solid CAD for **carbon-fiber motorcycle parts**; QuickSurface Pro power user: scan→CAD, class-A NURBS (G2), deviation analysis, design-intent capture, composite tooling (ply offset, draft, parting lines), automation via CadQuery/build123d/FreeCAD/PyMeshLab/Open3D. |
 
 Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
 scope `tools` to least privilege (auditors are read-only; only Геймъра writes files); give
