@@ -1,0 +1,1425 @@
+{
+  "meta": {
+    "title": "Лаборатория на агентите · Carbon Stealth",
+    "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
+    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него. Към v1.1: всеки агент има worked-пример, граница на компетентност и (където пасва) реален скрипт в tools/. v2.0: всеки агент пуска реални инструменти (tools/<area>/) и проверява с данни; пътна карта в .claude/agents/_proposals/v2.0.md. v2.1: слой за надеждност (детерминистични грейдъри tools/evals/run.sh, CoVe/Reflexion, калибриран съдия; виж _evals/reliability.md). v3.0–5.0: екипна оркестрация (_orchestration.md), файлова памет (_memory/) и автономен самоодит.",
+    "repo": "stefkostefko92-ux/Few-few",
+    "updated": "2026-06-25",
+    "definitionsDir": ".claude/agents/"
+  },
+  "agents": [
+    {
+      "id": "pravniyat-razbirach",
+      "name": "Правният Разбирач",
+      "title": "Одитор за правна изрядност (ЕС)",
+      "emoji": "⚖️",
+      "accent": "#c9a227",
+      "tagline": "Прави сайта законен по правото на ЕС — и видим за AI търсачките.",
+      "file": ".claude/agents/pravniyat-razbirach.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Одитира уебсайтове спрямо правото на ЕС: GDPR, ePrivacy/бисквитки, DSA, достъпност (EAA / EN 301 549 / WCAG 2.1 AA), импресум, плюс свързаните технически артефакти (политики, банер за съгласие, robots.txt, sitemap.xml, llms.txt, JSON-LD) и SEO/GEO/AEO.",
+      "capabilities": [
+        "GDPR чл. 13/14 разкрития и правни основания",
+        "Съгласие за бисквитки преди тракинг + откриване на тъмни модели",
+        "DSA задължения при потребителско съдържание",
+        "Достъпност WCAG 2.1 AA / EAA",
+        "Импресум (Дир. 2000/31)",
+        "robots.txt / sitemap.xml / llms.txt / JSON-LD",
+        "SEO / GEO / AEO за AI цитирания",
+        "Runtime consent + a11y гейтове (tools/legal/)",
+        "RoPA/DPIA генератор (tools/legal/ropa-gen.mjs)",
+        "Памет + екипна оркестрация (lead: преди продукция)"
+      ],
+      "knowledge": {
+        "sources": 34,
+        "researchToolUses": 28,
+        "priorArt": [
+          "VoltAgent/awesome-claude-code-subagents — read-only одиторски tool профил",
+          "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
+          "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на правото на ЕС + GitHub prior art (22 източника, 17 търсения)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран за 2026: AI Act чл. 50, оттеглен ePrivacy Регламент, Digital Omnibus (проект), прилагане на EAA, WCAG 2.2, CRA, DSA глоби."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: български слой (КЗЛД/ЗЗЛД/ЗЕС/ЗЗП), граница за runtime cookie одит (headless), worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: runtime consent скенер + a11y гейт (Playwright/axe); планирани RoPA/DPIA генератори."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Chain-of-Verification + RoPA/DPIA генератор от Prisma схемата."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +12 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 22 източника за GDPR/ePrivacy/DSA/EAA/SEO-GEO-AEO."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/pravniyat-razbirach.md."
+        }
+      ]
+    },
+    {
+      "id": "kodadjiyata",
+      "name": "Кодаджията",
+      "title": "Ревюър на код и ловец на бъгове",
+      "emoji": "🛠️",
+      "accent": "#2f9e6f",
+      "tagline": "Хваща бъгове и уязвимости — с нула шум, всяка находка самопроверена.",
+      "file": ".claude/agents/kodadjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash"
+      ],
+      "mission": "Преглежда код и търси бъгове в уеб приложения (Next.js/React/TypeScript/Prisma и Express/EJS/SQLite): коректност, инжекции, автентикация/оторизация, XSS/CSRF, изтичане на данни, валидация, race conditions, производителност и зависимости.",
+      "capabilities": [
+        "Diff-фокусиран преглед спрямо правилата в CLAUDE.md",
+        "OWASP-ориентирана сигурност (инжекции, IDOR, XSS, CSRF)",
+        "Откриване на изтекли тайни и данни по GDPR чл. 9",
+        "Стеково-специфични капани (force-dynamic, Prisma singleton, CSP nonce)",
+        "Самопроверка преди доклад — изхвърля неекплоатируемите находки",
+        "Доклад по тежест × увереност с file:line и минимална поправка",
+        "SAST/SCA оркестратор (tools/code/scan.sh)",
+        "Mutation testing (tools/code/scan.sh mutation)",
+        "Памет + reviewer в почти всеки поток"
+      ],
+      "knowledge": {
+        "sources": 26,
+        "researchToolUses": 25,
+        "priorArt": [
+          "anthropics/claude-code code-review plugin — паралелен quad-review + validator агенти",
+          "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
+          "VoltAgent + wshobson/agents — измерения и severity нива"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Моделиран по собствения pipeline на Anthropic — diff-фокусиран, адверсариално самопроверяващ (14 източника)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: React2Shell RCE (CVE-2025-55182/66478), DoS CVE-2026-23864, OWASP 2025 (supply chain + exceptional conditions), Shai-Hulud, Prisma 7/TS 7 предупреждения."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: пуска реалните гейтове като доказателство (lint/test/audit), worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: SAST/SCA оркестратор (Semgrep+osv+gitleaks+SBOM) с адъюдикация на FP."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу реални гейтове + mutation testing (scan.sh mutation)."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +12 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 14 източника за AI код-ревю, OWASP и стеково-специфични бъгове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/kodadjiyata.md."
+        }
+      ]
+    },
+    {
+      "id": "geymara",
+      "name": "Геймъра",
+      "title": "Разработчик на FiveM скриптове",
+      "emoji": "🎮",
+      "accent": "#6f7bf7",
+      "tagline": "Пише сигурни, оптимизирани FiveM ресурси — сървърът е авторитетът.",
+      "file": ".claude/agents/geymara.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Пише, преглежда и оптимизира FiveM ресурси (CFX/FXServer) на Lua: client/server/shared контексти, събития, fxmanifest.lua, рамки (ESX, QBCore, Qbox/ox_core), ox_lib и oxmysql — със server-authoritative валидация и дисциплина с natives/Wait.",
+      "capabilities": [
+        "fxmanifest.lua и структура на ресурс (fx_version 'cerulean')",
+        "Събития и lib.callback (client/server split)",
+        "Рамки: Qbox/ox_core (препоръчан), ESX, QBCore",
+        "ox_lib + oxmysql (параметризирани заявки)",
+        "Server-authoritative сигурност (никога не вярвай на клиента)",
+        "Оптимизация: кеширане на natives, Wait дисциплина, state bags",
+        "FiveM lint + CI (tools/fivem/)",
+        "Busted spec + event-fuzz (tools/fivem/)",
+        "Памет + самостоятелен FiveM поток"
+      ],
+      "knowledge": {
+        "sources": 26,
+        "researchToolUses": 25,
+        "priorArt": [
+          "usefiveai — декомпозиция на FiveM скилове (security/framework split)",
+          "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
+          "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от проучване на CFX docs, рамки и GitHub референции (17 източника)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Lua 5.3 премахнат (само 5.4), CommunityOx архивиран → overextended, Qbox qbx_core 1.21, артефакт 25770+, state bags/OneSync."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: ясна граница (тест на реален сървър), worked-пример за event-валидация, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: lint (luacheck+selene с FiveM std) + CI + busted тест-поток с мокнати natives."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу lint/busted + busted spec с мокнати natives + event-fuzz."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +9 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 17 източника за FiveM/CFX, рамки и оптимизация."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/geymara.md."
+        }
+      ]
+    },
+    {
+      "id": "seo",
+      "name": "SEO",
+      "title": "Откриваемост и класиране (SEO/GEO/AEO)",
+      "emoji": "🔎",
+      "accent": "#e0663b",
+      "tagline": "Прави сайта видим за хора и за AI отговор-машините.",
+      "file": ".claude/agents/seo.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Максимизира откриваемостта и класирането: класическо SEO + GEO (Generative Engine Optimization) + AEO (Answer Engine Optimization). Core Web Vitals, JSON-LD покритие, многоезичен hreflang (bg/en/it), sitemap/robots/llms, съдържание „отговор отпред“ за AI цитирания.",
+      "capabilities": [
+        "Техническо SEO (индексируемост, канон, CWV: INP/LCP/CLS)",
+        "JSON-LD покритие и валидност (@/lib/seo)",
+        "GEO/AEO — отговор отпред, E-E-A-T, AI обхождачи",
+        "Многоезичен hreflang bg/en/it + x-default",
+        "robots.txt / sitemap.xml / llms.txt стратегия",
+        "Приоритизиране по ефект × усилие (бързи победи)",
+        "CWV/JSON-LD/AI-bot скриптове (tools/seo/)",
+        "GSC ingest (tools/seo/gsc.mjs)",
+        "Памет + handoff с Преводач/Правен"
+      ],
+      "knowledge": {
+        "sources": 21,
+        "researchToolUses": 17,
+        "priorArt": [
+          "VoltAgent/awesome-claude-code-subagents — SEO/marketing субагенти",
+          "wshobson/agents — структура и trigger-rich описания",
+          "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от проучване на техническо SEO + GEO/AEO 2026 и многоезичен hreflang."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Google AI Mode (query fan-out), премахнати FAQ/HowTo rich results, entity-схема, llms.txt реалност, E-E-A-T за всичко, INP методика 2026."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: граница за CWV (Lighthouse), разделена отговорност с Правния Разбирач, worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: реални CWV (PSI/CrUX), JSON-LD валидатор, AI-bot лог анализ."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Chain-of-Verification + Search Console ingest (реални заявки/CTR)."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +9 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел ~12 източника за CWV, JSON-LD, GEO/AEO и hreflang."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/seo.md."
+        }
+      ]
+    },
+    {
+      "id": "prevodach",
+      "name": "Преводач",
+      "title": "Локализация BG → EN → IT",
+      "emoji": "🌍",
+      "accent": "#b057c9",
+      "tagline": "Държи трите езика в синхрон — без да рискува медицинската точност.",
+      "file": ".claude/agents/prevodach.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep",
+        "Glob"
+      ],
+      "mission": "Локализация през български (източник на истината), английски и италиански: поддържа UI низовете и съдържанието в синхрон, спазва типографията и регистъра на всеки език и пази безопасно-критичните медицински формулировки.",
+      "capabilities": [
+        "BG „…“ · EN \"…\" · IT « » caporali",
+        "Италиански: малки букви за дни/месеци/езици, регистър Lei",
+        "Формати по език (дата, десетична запетая, € след сумата)",
+        "Паритет на i18n ключовете през трите езика",
+        "Безопасни клинични термини (без сляп машинен превод)",
+        "Речник за последователност + транслитерация на имена",
+        "Скрипт за паритет на ключове (tools/i18n/check-parity.mjs)",
+        "Псевдолокализация (tools/i18n/pseudo.mjs)",
+        "Глосар enforcement (tools/i18n/glossary-check.mjs)",
+        "Памет + owner на глосара (получава от Сийдъра)"
+      ],
+      "knowledge": {
+        "sources": 15,
+        "researchToolUses": 13,
+        "priorArt": [
+          "medqr src/i18n.js — контролирани клинични преводи (CLINICAL_EN)",
+          "Италиански типографски конвенции (caporali, Lei, формати)",
+          "i18n паритет на ключове — best practice"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от проучване на италианска локализация и i18n паритет; разширява BG/EN към IT."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: ICU 78/CLDR 48, MessageFormat 2.0, италианска gender-инфлексия, трите режима на халюцинация при превод, медицинска безопасност."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: +WebFetch/WebSearch за термини, споделен глосар BG·EN·IT, parity-чекер, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: паритет + псевдолокализация + проверка на клинични термини; планиран COMET adequacy гейт."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: CoVe + cross-family съдия за клинична безопасност + глосар enforcement."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +7 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел ~8 източника за италианска типография/регистър и i18n паритет."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/prevodach.md."
+        }
+      ]
+    },
+    {
+      "id": "siydara",
+      "name": "Сийдъра",
+      "title": "Prisma seed скриптове (zabobovdol)",
+      "emoji": "🌱",
+      "accent": "#3aa0c9",
+      "tagline": "Идемпотентно съдържание в базата — upsert, проверени факти.",
+      "file": ".claude/agents/siydara.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "mission": "Пише и поправя Prisma seed скриптовете на zabobovdol (prisma/seed-*.ts): идемпотентни upsert-данни за съдържание (ръководства „Как да…“, услуги, телефони, измами, прозрачност), регистрира ги в package.json и в db:seed:all.",
+      "capabilities": [
+        "Идемпотентен upsert по стабилен slug (без дублиране)",
+        "TypeScript + tsx, шаблонът на _seedlib.ts",
+        "Формат на „Как да…“ (Faq): answer/steps/relatedLinks",
+        "Енуми за категории от @/lib/categories",
+        "Регистрация в package.json + db:seed:all",
+        "Проверени български факти (телефони, институции)",
+        "Детектор за дублирани slug-ове (tools/seed/check-dups.mjs)",
+        "Zod seed factory + provenance (tools/seed/)",
+        "Integrity check (tools/seed/check-integrity.mjs)",
+        "Памет + handoff към Преводач/Кодаджията"
+      ],
+      "knowledge": {
+        "sources": 11,
+        "researchToolUses": 6,
+        "priorArt": [
+          "prisma/_seedlib.ts — upsert шаблон (seedGuides)",
+          "съседни seed-*.ts — стил, тон и коментари за източник",
+          "schema.prisma + package.json db:seed:* вериги"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Заземен в съществуващите seed шаблони на репото (upsert, идемпотентност, регистрация)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Prisma 7 (ESM-only, prisma.config.ts seed, driver adapters, без авто-seed); пази съвместимост с текущия Prisma 6 на zabobovdol."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: +WebFetch/WebSearch за факти, детектор за дублирани slug-ове (намери 536), eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: Zod-валидиран сийд с provenance + open-data pipeline; integrity гейт."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу tsc/check-dups + integrity проверка (slug/задължителни)."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +7 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Проучи 4 репо-артефакта (seedlib, схема, съседни сийдове, скриптове)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/siydara.md."
+        }
+      ]
+    },
+    {
+      "id": "vps-adjiyata",
+      "name": "VPS-аджията",
+      "title": "Сървър под наем и деплой",
+      "emoji": "🖥️",
+      "accent": "#8a9bb0",
+      "tagline": "Архив в /root → жив сървър. Идемпотентно, с бекъп и rollback.",
+      "file": ".claude/agents/vps-adjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "mission": "Отговаря за сървъра под наем (Hetzner/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
+      "capabilities": [
+        "Автодеплой: архив в /root → разопаковане → билд → миграции → live",
+        "zabobovdol (Docker Compose + Nginx + Let's Encrypt)",
+        "medqr (systemd, sandbox, reverse proxy)",
+        "Health check + автоматичен rollback при провал",
+        "Бекъпи преди миграция; releases за връщане назад",
+        "Втвърдяване: ufw, SSH с ключ, fail2ban, TLS",
+        "Харднат autodeploy.sh (sha256 + авто-порт)",
+        "IaC + backup-verify + мониторинг (tools/vps/)",
+        "Blue/green деплой (tools/vps/blue-green.sh)",
+        "Памет + lead на деплой потока"
+      ],
+      "knowledge": {
+        "sources": 16,
+        "researchToolUses": 10,
+        "priorArt": [
+          "zabobovdol/scripts/deploy.sh + docker-compose.yml",
+          "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
+          "deploy/autodeploy.sh — собственият автоматизиран поток"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Заземен в двата модела на деплой; добавен е deploy/autodeploy.sh за потока „архив в /root → live“."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Let's Encrypt 6/45-дн. сертификати + ARI, Docker 29.x (containerd, docker cp CVE), OpenSSH 10.3, CrowdSec, Ubuntu USG CIS, zero-downtime деплой."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: хардънингът вкаран в autodeploy.sh (sha256 + авто-засичане на порт), worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: IaC (Ansible) + backup/test-restore (restic) + лек мониторинг (Beszel/Uptime Kuma)."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу health + blue/green деплой без прекъсване."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +11 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Проучи 5 деплой-артефакта (compose, deploy.sh, systemd, DEPLOY.md)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/vps-adjiyata.md + deploy/autodeploy.sh."
+        }
+      ]
+    },
+    {
+      "id": "3d-maniac",
+      "name": "3D Maniac",
+      "title": "Reverse engineering · Mesh→Solid CAD · карбон",
+      "emoji": "🧩",
+      "accent": "#d64f7a",
+      "tagline": "Безпощадно точна трансформация скан → параметричен solid за карбон части.",
+      "file": ".claude/agents/3d-maniac.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "3D reverse engineering и трансформацията Mesh→Solid CAD за карбонови мото компоненти, power user на QuickSurface Pro: scan-to-CAD pipeline, NURBS/class-A повърхнини, deviation анализ, design intent, форми/калъпи за композити, плюс автоматизация (PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD).",
+      "capabilities": [
+        "RE pipeline: скан → mesh → подравняване → повърхнини → solid → STEP/IGES",
+        "Хибрид: призматични features + freeform NURBS (class-A, G2)",
+        "QuickSurface Pro работен поток + deviation анализ на живо",
+        "Карбон форми: ply offset, draft ≥3°, parting lines, фланци, spring-in",
+        "Качество: watertight, design intent (не шум), ±0.1–0.2 mm",
+        "Автоматизация: PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD",
+        "Скриптуем prep/verify (tools/3d/clean_and_validate.py)",
+        "RANSAC + mold генератор (tools/3d/)",
+        "Deviation heatmap (clean_and_validate --heatmap)",
+        "Памет + самостоятелен карбон поток"
+      ],
+      "knowledge": {
+        "sources": 32,
+        "researchToolUses": 31,
+        "priorArt": [
+          "filaPro/cad-recode + CADReasoner — скан → изпълним CadQuery, цикъл deviation→рафиниране",
+          "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
+          "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на RE/QuickSurface/композити + GitHub prior art (20 източника). Няма заварен 3D/CAD субагент — запълва реална празнина."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: QuickSurface 2026 (Parasolid, G2 lofts, surface flattening), Geomagic DX 2026, FreeCAD 1.1, build123d 0.11, CAD-Recode/cadrille (AI scan→CadQuery), 0.02mm скенери."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: реален prep/verify скрипт (почистване, watertight, deviation) + requirements, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: RANSAC сегментация + параметрична форма (CadQuery) + deviation; планиран cadrille scan→CAD."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: само детерминистичен грейдър за геометрия + deviation heatmap."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +12 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 20 източника за QuickSurface, scan-to-CAD, class-A и карбон форми."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/3d-maniac.md."
+        }
+      ]
+    },
+    {
+      "id": "socialdjiyata",
+      "name": "Социалджията",
+      "title": "Social Media Manager · видимост и клипчета",
+      "emoji": "🎬",
+      "accent": "#ff3d71",
+      "tagline": "Максимален обхват + произвежда клипчета (ffmpeg/WhisperX) — не само съветва.",
+      "file": ".claude/agents/socialdjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Social Media Manager с цел №1 максимална видимост/обхват на постове и кратки видеа (2026): алгоритми и сигнали на TikTok/Reels/Shorts/X/LinkedIn/FB, hook science, retention, social SEO, каданс/repurpose — и УНИКАЛНО добър в генерирането на клипчета през скриптуем pipeline (ffmpeg/WhisperX/auto-editor/yt-dlp).",
+      "capabilities": [
+        "Видимост-лостове: completion, sends/shares, loops, golden hour",
+        "Per-platform тактики (TikTok/Reels/Shorts/X/LinkedIn/FB)",
+        "Hook science + retention + loop архитектура",
+        "Генериране на клипчета: reframe 9:16, karaoke captions, cut-on-silence, music duck",
+        "AI инструменти (Veo/Runway/HeyGen/ElevenLabs/OpusClip) + WhisperX",
+        "Loudness −14 LUFS, export спецификации, C2PA/AI-разкриване (AI Act чл. 50)",
+        "Скриптуем клип pipeline (tools/social/clip.sh)",
+        "Trends + C2PA + publish (tools/social/)",
+        "Repurpose (tools/social/repurpose.sh)",
+        "Памет + контент по заявка от всеки продукт"
+      ],
+      "knowledge": {
+        "sources": 26,
+        "researchToolUses": 24,
+        "priorArt": [
+          "Изследване на алгоритмите 2026 (TikTok/Reels/Shorts/X/LinkedIn/FB)",
+          "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
+          "Caveman стил — телеграфен изход с точни технически токени"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на видимостта в социалните мрежи + генериране на клипчета (2026)."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "Снабден с pipeline за реално произвеждане на клипчета (изпълними ffmpeg/WhisperX рецепти) и операционен договор за безгрешност + Definition of Done."
+        },
+        {
+          "version": "1.1.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд v1.1",
+          "detail": "v1.1: реален clip pipeline (9:16/captions/-14 LUFS/thumbnail), граница (не публикува), eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: trend-sensing + C2PA подпис + публикуващ поток; планирани официални API."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: итерация срещу реални метрики + repurpose 1 дълго→много shorts."
+        },
+        {
+          "version": "3.0.0",
+          "date": "2026-06-25",
+          "event": "v3.0 — екипна оркестрация",
+          "detail": "v3.0: дефинирани handoff-и между агентите (виж _orchestration.md) — екип с гейтове, не солови."
+        },
+        {
+          "version": "4.0.0",
+          "date": "2026-06-25",
+          "event": "v4.0 — файлова памет",
+          "detail": "v4.0: трайна файлова памет (.claude/agents/_memory/<id>.md) — чете в началото, дописка проверени поуки. Честният еквивалент на „учене“."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — автономия и самоодит",
+          "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първа проверена поука в паметта си (_memory/)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — автономия: самоодит + майсторство + самопредложено подобрение."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v4.0 — файлова памет: трайни проверени поуки между извикванията."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v3.0 — екипна оркестрация: подава/получава работа по дефинирани потоци."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.1 — затворени дупки инструмент↔обещание, реален скрипт/инструмент, worked-пример и golden eval."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.0 — clip pipeline + операционен договор + анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 26 източника за алгоритми, hook science и генериране на клипчета."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/socialdjiyata.md."
+        }
+      ]
+    }
+  ]
+}

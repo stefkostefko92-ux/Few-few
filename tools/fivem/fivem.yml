@@ -1,0 +1,36 @@
+# selene std разширение за FiveM/CfxLua (зареди се чрез `std = "lua53+fivem"`).
+# Декларира CitizenFX глобалите, за да не ги маркира selene като непознати.
+base: lua53
+name: fivem
+globals:
+  Citizen: { property: read-only }
+  CreateThread: { args: [{ type: function }] }
+  Wait: { args: [{ type: number }] }
+  SetTimeout: { args: [{ type: number }, { type: function }] }
+  RegisterNetEvent: { args: [{ type: string }, { type: function, required: false }] }
+  AddEventHandler: { args: [{ type: string }, { type: function }] }
+  RemoveEventHandler: { args: [{ type: any }] }
+  TriggerEvent: { args: [{ type: string }, { type: "..." }] }
+  TriggerServerEvent: { args: [{ type: string }, { type: "..." }] }
+  TriggerClientEvent: { args: [{ type: string }, { type: any }, { type: "..." }] }
+  RegisterCommand: { args: [{ type: string }, { type: function }, { type: bool, required: false }] }
+  RegisterKeyMapping: { args: [{ type: string }, { type: string }, { type: string }, { type: string }] }
+  AddStateBagChangeHandler: { args: [{ type: any }, { type: any }, { type: function }] }
+  exports: { property: read-only }
+  GetCurrentResourceName: { args: [] }
+  GetHashKey: { args: [{ type: string }] }
+  Entity: { args: [{ type: any }] }
+  Player: { args: [{ type: any }] }
+  GlobalState: { property: read-only }
+  source: { property: read-only }
+  PlayerPedId: { args: [] }
+  GetEntityCoords: { args: [{ type: any }, { type: bool, required: false }] }
+  CreateVehicle: { args: [{ type: "..." }] }
+  vector2: { args: [{ type: "..." }] }
+  vector3: { args: [{ type: "..." }] }
+  vector4: { args: [{ type: "..." }] }
+  quat: { args: [{ type: "..." }] }
+  lib: { property: read-only }
+  cache: { property: read-only }
+  ESX: { property: read-only }
+  QBCore: { property: read-only }

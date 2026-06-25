@@ -1,0 +1,13 @@
+# Инструменти за tools/social/clip.sh
+# ffmpeg е ЗАДЪЛЖИТЕЛЕН (системен пакет):
+#   Debian/Ubuntu:  sudo apt-get install -y ffmpeg
+#   macOS:          brew install ffmpeg
+#
+# По избор (Python, най-добре през pipx, за да не цапат глобалната среда):
+#   pipx install whisperx        # транскрипция дума по дума → SRT (captions)
+#   pipx install auto-editor      # автоматично изрязване на паузи/тишина
+#
+# По избор за сваляне на собствено/лицензирано видео:
+#   pipx install yt-dlp
+#
+# Проверка: bash tools/social/clip.sh check
