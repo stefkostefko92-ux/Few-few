@@ -356,6 +356,43 @@ const FALLBACK = {
         { "date": "2026-06-25", "type": "research", "summary": "Проучи 5 деплой-артефакта (compose, deploy.sh, systemd, DEPLOY.md)." },
         { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/vps-adjiyata.md + deploy/autodeploy.sh." }
       ]
+    },
+    {
+      "id": "3d-maniac",
+      "name": "3D Maniac",
+      "title": "Reverse engineering · Mesh→Solid CAD · карбон",
+      "emoji": "🧩",
+      "accent": "#d64f7a",
+      "tagline": "Безпощадно точна трансформация скан → параметричен solid за карбон части.",
+      "file": ".claude/agents/3d-maniac.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "mission": "3D reverse engineering и трансформацията Mesh→Solid CAD за карбонови мото компоненти, power user на QuickSurface Pro: scan-to-CAD pipeline, NURBS/class-A повърхнини, deviation анализ, design intent, форми/калъпи за композити, плюс автоматизация (PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD).",
+      "capabilities": [
+        "RE pipeline: скан → mesh → подравняване → повърхнини → solid → STEP/IGES",
+        "Хибрид: призматични features + freeform NURBS (class-A, G2)",
+        "QuickSurface Pro работен поток + deviation анализ на живо",
+        "Карбон форми: ply offset, draft ≥3°, parting lines, фланци, spring-in",
+        "Качество: watertight, design intent (не шум), ±0.1–0.2 mm",
+        "Автоматизация: PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD"
+      ],
+      "knowledge": {
+        "sources": 20,
+        "researchToolUses": 20,
+        "priorArt": [
+          "filaPro/cad-recode + CADReasoner — скан → изпълним CadQuery, цикъл deviation→рафиниране",
+          "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
+          "QuickSurface Pro docs + easycomposites — числа за draft/offset/фланци"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от дълбоко проучване на RE/QuickSurface/композити + GitHub prior art (20 източника). Няма заварен 3D/CAD субагент — запълва реална празнина." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 20 източника за QuickSurface, scan-to-CAD, class-A и карбон форми." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/3d-maniac.md." }
+      ]
     }
   ]
 };
