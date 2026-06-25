@@ -206,9 +206,13 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 
 | Agent (file)                              | Викай го за…                                                                 |
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
-| **Правният Разбирач** `pravniyat-razbirach.md` | EU-law audit: GDPR, ePrivacy/cookies, DSA, accessibility (EAA/WCAG 2.1 AA), imprint, robots/sitemap/llms/JSON-LD, SEO/GEO/AEO. Read-only auditor; ends every legal output with a „not legal advice“ disclaimer. |
+| **Правният Разбирач** `pravniyat-razbirach.md` | EU-law audit: GDPR, ePrivacy/cookies, DSA, accessibility (EAA/WCAG 2.1 AA), imprint, robots/sitemap/llms/JSON-LD. Read-only auditor; ends every legal output with a „not legal advice“ disclaimer. |
 | **Кодаджията** `kodadjiyata.md`           | Code review & bug hunting (Next.js/Prisma + Express/SQLite): correctness, OWASP, auth, XSS/CSRF, data leaks, perf. Diff-focused; **adversarially self-verifies** every finding before reporting; severity × confidence with `file:line`. |
 | **Геймъра** `geymara.md`                  | Writing/reviewing FiveM (CFX) Lua resources: fxmanifest, client/server/shared, events, ESX/QBCore/Qbox-ox, ox_lib/oxmysql. **Server-authoritative validation** and native/Wait discipline are non-negotiable. |
+| **SEO** `seo.md`                          | Discoverability & ranking: classic SEO + GEO/AEO (answer-engine optimization), Core Web Vitals, JSON-LD coverage, multilingual hreflang (bg/en/it), sitemap/robots/llms. Findings ranked by impact × effort. |
+| **Преводач** `prevodach.md`               | Localization across **BG → EN → IT**: keeps UI strings & content in sync, per-language typography/register, safety-critical medical wording. Bulgarian is the source of truth. |
+| **Сийдъра** `siydara.md`                  | zabobovdol Prisma seed scripts (`prisma/seed-*.ts`): idempotent `upsert`-keyed content (how-to guides, services, scams…), registers them in `package.json` + `db:seed:all`. Verified Bulgarian facts. |
+| **VPS-аджията** `vps-adjiyata.md`         | The rented server (Hetzner/EU, Ubuntu) & deploy: owns `deploy/autodeploy.sh` (archive in `/root` → live), Docker Compose / systemd, Nginx/Caddy, TLS, backups, hardening, diagnostics. |
 
 Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
 scope `tools` to least privilege (auditors are read-only; only Геймъра writes files); give
@@ -232,5 +236,32 @@ token when few token do trick"): in agent output and reviews, prefer terse, frag
 prose that keeps every technical token (code, commands, `file:line`, error strings) exact and
 drops filler. Compress the prose, never the substance — and never the Bulgarian user-facing
 UI strings, which stay full and natural.
-</content>
-</invoke>
+
+---
+
+## Deployment workflow — `deploy/`
+
+**Owner preference (the canonical flow):** the GitHub archive is uploaded to the VPS
+**manually**, into the **root folder (`/root`)**. From there everything is **automated**,
+from unzip to a live server — there is no `git pull` on the box and no CI/CD push.
+
+The automation is `deploy/autodeploy.sh` (lives at the repo root, so it ships inside the
+archive). Run once after uploading the archive:
+
+```bash
+# 1) (manual) GitHub → Download ZIP → scp Few-few.zip root@SERVER:/root/
+# 2) (automated) on the server:
+cd /root && unzip -o Few-few.zip >/dev/null
+sudo bash /root/few-few-*/deploy/autodeploy.sh
+```
+
+It is **idempotent** and **monorepo-aware**: it unpacks into a timestamped release under
+`/opt/few-few/releases/`, normalizes the GitHub top folder, then deploys each configured
+project — **zabobovdol** via `scripts/deploy.sh` (Docker Compose build + up + migrate,
+seed only on first run) and **medqr** via rsync to `/opt/medqr` + `npm ci --omit=dev` +
+`systemctl restart medqr` (auto-rollback on health-check failure). Secrets never live in
+the archive: `zabobovdol/.env` and `/etc/medqr/medqr.env` stay on the server (mode 600)
+and are carried over on each deploy. Config (which projects, paths, health URLs) is the
+block at the top of `deploy/autodeploy.sh`. One-time server hardening (users, `ufw`,
+systemd unit, Nginx/Caddy, TLS) is in `zabobovdol/DEPLOY.md` and `medqr/deploy/DEPLOY.md`.
+The **VPS-аджията** agent owns this pipeline. See `deploy/README.md`.

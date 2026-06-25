@@ -208,6 +208,154 @@ const FALLBACK = {
         { "date": "2026-06-25", "type": "research", "summary": "Поел 17 източника за FiveM/CFX, рамки и оптимизация." },
         { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/geymara.md." }
       ]
+    },
+    {
+      "id": "seo",
+      "name": "SEO",
+      "title": "Откриваемост и класиране (SEO/GEO/AEO)",
+      "emoji": "🔎",
+      "accent": "#e0663b",
+      "tagline": "Прави сайта видим за хора и за AI отговор-машините.",
+      "file": ".claude/agents/seo.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "mission": "Максимизира откриваемостта и класирането: класическо SEO + GEO (Generative Engine Optimization) + AEO (Answer Engine Optimization). Core Web Vitals, JSON-LD покритие, многоезичен hreflang (bg/en/it), sitemap/robots/llms, съдържание „отговор отпред“ за AI цитирания.",
+      "capabilities": [
+        "Техническо SEO (индексируемост, канон, CWV: INP/LCP/CLS)",
+        "JSON-LD покритие и валидност (@/lib/seo)",
+        "GEO/AEO — отговор отпред, E-E-A-T, AI обхождачи",
+        "Многоезичен hreflang bg/en/it + x-default",
+        "robots.txt / sitemap.xml / llms.txt стратегия",
+        "Приоритизиране по ефект × усилие (бързи победи)"
+      ],
+      "knowledge": {
+        "sources": 12,
+        "researchToolUses": 9,
+        "priorArt": [
+          "VoltAgent/awesome-claude-code-subagents — SEO/marketing субагенти",
+          "wshobson/agents — структура и trigger-rich описания",
+          "Наследява SEO/GEO/AEO проучването на Правния Разбирач"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на техническо SEO + GEO/AEO 2026 и многоезичен hreflang." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел ~12 източника за CWV, JSON-LD, GEO/AEO и hreflang." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/seo.md." }
+      ]
+    },
+    {
+      "id": "prevodach",
+      "name": "Преводач",
+      "title": "Локализация BG → EN → IT",
+      "emoji": "🌍",
+      "accent": "#b057c9",
+      "tagline": "Държи трите езика в синхрон — без да рискува медицинската точност.",
+      "file": ".claude/agents/prevodach.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Write", "Edit", "Grep", "Glob"],
+      "mission": "Локализация през български (източник на истината), английски и италиански: поддържа UI низовете и съдържанието в синхрон, спазва типографията и регистъра на всеки език и пази безопасно-критичните медицински формулировки.",
+      "capabilities": [
+        "BG „…“ · EN \"…\" · IT « » caporali",
+        "Италиански: малки букви за дни/месеци/езици, регистър Lei",
+        "Формати по език (дата, десетична запетая, € след сумата)",
+        "Паритет на i18n ключовете през трите езика",
+        "Безопасни клинични термини (без сляп машинен превод)",
+        "Речник за последователност + транслитерация на имена"
+      ],
+      "knowledge": {
+        "sources": 8,
+        "researchToolUses": 7,
+        "priorArt": [
+          "medqr src/i18n.js — контролирани клинични преводи (CLINICAL_EN)",
+          "Италиански типографски конвенции (caporali, Lei, формати)",
+          "i18n паритет на ключове — best practice"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на италианска локализация и i18n паритет; разширява BG/EN към IT." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел ~8 източника за италианска типография/регистър и i18n паритет." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/prevodach.md." }
+      ]
+    },
+    {
+      "id": "siydara",
+      "name": "Сийдъра",
+      "title": "Prisma seed скриптове (zabobovdol)",
+      "emoji": "🌱",
+      "accent": "#3aa0c9",
+      "tagline": "Идемпотентно съдържание в базата — upsert, проверени факти.",
+      "file": ".claude/agents/siydara.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
+      "mission": "Пише и поправя Prisma seed скриптовете на zabobovdol (prisma/seed-*.ts): идемпотентни upsert-данни за съдържание (ръководства „Как да…“, услуги, телефони, измами, прозрачност), регистрира ги в package.json и в db:seed:all.",
+      "capabilities": [
+        "Идемпотентен upsert по стабилен slug (без дублиране)",
+        "TypeScript + tsx, шаблонът на _seedlib.ts",
+        "Формат на „Как да…“ (Faq): answer/steps/relatedLinks",
+        "Енуми за категории от @/lib/categories",
+        "Регистрация в package.json + db:seed:all",
+        "Проверени български факти (телефони, институции)"
+      ],
+      "knowledge": {
+        "sources": 4,
+        "researchToolUses": 0,
+        "priorArt": [
+          "prisma/_seedlib.ts — upsert шаблон (seedGuides)",
+          "съседни seed-*.ts — стил, тон и коментари за източник",
+          "schema.prisma + package.json db:seed:* вериги"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Заземен в съществуващите seed шаблони на репото (upsert, идемпотентност, регистрация)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Проучи 4 репо-артефакта (seedlib, схема, съседни сийдове, скриптове)." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/siydara.md." }
+      ]
+    },
+    {
+      "id": "vps-adjiyata",
+      "name": "VPS-аджията",
+      "title": "Сървър под наем и деплой",
+      "emoji": "🖥️",
+      "accent": "#8a9bb0",
+      "tagline": "Архив в /root → жив сървър. Идемпотентно, с бекъп и rollback.",
+      "file": ".claude/agents/vps-adjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
+      "mission": "Отговаря за сървъра под наем (Hetzner/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
+      "capabilities": [
+        "Автодеплой: архив в /root → разопаковане → билд → миграции → live",
+        "zabobovdol (Docker Compose + Nginx + Let's Encrypt)",
+        "medqr (systemd, sandbox, reverse proxy)",
+        "Health check + автоматичен rollback при провал",
+        "Бекъпи преди миграция; releases за връщане назад",
+        "Втвърдяване: ufw, SSH с ключ, fail2ban, TLS"
+      ],
+      "knowledge": {
+        "sources": 5,
+        "researchToolUses": 0,
+        "priorArt": [
+          "zabobovdol/scripts/deploy.sh + docker-compose.yml",
+          "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
+          "deploy/autodeploy.sh — собственият автоматизиран поток"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Заземен в двата модела на деплой; добавен е deploy/autodeploy.sh за потока „архив в /root → live“." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Проучи 5 деплой-артефакта (compose, deploy.sh, systemd, DEPLOY.md)." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/vps-adjiyata.md + deploy/autodeploy.sh." }
+      ]
     }
   ]
 };
