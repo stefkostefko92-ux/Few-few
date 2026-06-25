@@ -1,42 +1,13 @@
-import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import { SESSION_COOKIE, verifySession, type Session } from "./session";
 
-export const SESSION_COOKIE = "qb_admin";
-const ALG = "HS256";
-const MAX_AGE = 60 * 60 * 8; // 8 hours
+export { SESSION_COOKIE, createSession, verifySession, sessionCookieOptions } from "./session";
+export type { Session } from "./session";
 
-function secret(): Uint8Array {
-  const s = process.env.AUTH_SECRET || process.env.ADMIN_PASSWORD_HASH || "";
-  if (!s || s.length < 16) {
-    // Fail loudly in production; allow a clearly-marked dev fallback otherwise.
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("AUTH_SECRET is not set or too short (min 16 chars).");
-    }
-    return new TextEncoder().encode("dev-insecure-secret-change-me-please");
-  }
-  return new TextEncoder().encode(s);
-}
-
-export type Session = { email: string; iat?: number; exp?: number };
-
-export async function createSession(email: string): Promise<string> {
-  return new SignJWT({ email })
-    .setProtectedHeader({ alg: ALG })
-    .setIssuedAt()
-    .setExpirationTime(`${MAX_AGE}s`)
-    .sign(secret());
-}
-
-export async function verifySession(token: string | undefined): Promise<Session | null> {
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, secret());
-    return payload as Session;
-  } catch {
-    return null;
-  }
-}
+// A fixed bcrypt hash used to equalise timing when the email doesn't match,
+// so an attacker can't distinguish a wrong email from a wrong password.
+const DUMMY_HASH = "$2a$12$C6UzMDM.H6dfI/f/IKcEeO3Wy8x5b6sJ9q1mY3oqJrU2X1nqNpC7G";
 
 // Read the current admin session from the request cookies (server components).
 export async function getSession(): Promise<Session | null> {
@@ -44,35 +15,26 @@ export async function getSession(): Promise<Session | null> {
   return verifySession(token);
 }
 
-export function sessionCookieOptions() {
-  return {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: MAX_AGE,
-  };
-}
-
 // Validate the submitted credentials against the configured admin account.
 // ADMIN_PASSWORD_HASH (bcrypt) is preferred; ADMIN_PASSWORD (plaintext) is a
-// convenience for first run and logged as a warning.
+// convenience for first run (the entrypoint hashes it at boot in production).
 export async function verifyCredentials(email: string, password: string): Promise<boolean> {
   const adminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-  if (!adminEmail || email.trim().toLowerCase() !== adminEmail) return false;
-
+  const emailMatches = !!adminEmail && email.trim().toLowerCase() === adminEmail;
   const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (hash) {
-    try {
-      return await bcrypt.compare(password, hash);
-    } catch {
-      return false;
-    }
-  }
   const plain = process.env.ADMIN_PASSWORD;
+
+  // Always do comparable work to avoid leaking which field was wrong.
+  if (!emailMatches) {
+    try { await bcrypt.compare(password, hash || DUMMY_HASH); } catch {}
+    return false;
+  }
+  if (hash) {
+    try { return await bcrypt.compare(password, hash); } catch { return false; }
+  }
   if (plain) {
     if (process.env.NODE_ENV === "production") {
-      console.warn("[auth] Using ADMIN_PASSWORD plaintext. Set ADMIN_PASSWORD_HASH instead.");
+      console.warn("[auth] Using ADMIN_PASSWORD plaintext. Prefer ADMIN_PASSWORD_HASH.");
     }
     return password === plain;
   }

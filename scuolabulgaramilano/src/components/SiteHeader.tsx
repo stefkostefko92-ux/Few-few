@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LOCALE_META, LOCALES, t, type Locale } from "@/lib/i18n";
+import { usePathname } from "next/navigation";
+import { LOCALE_META, LOCALES, isLocale, t, type Locale } from "@/lib/i18n";
 
 type NavItem = { id: string; label: string };
 
@@ -22,6 +23,15 @@ export default function SiteHeader({
   const [active, setActive] = useState<string>("");
   const [progress, setProgress] = useState(0);
   const langRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
+
+  // Keep the current path when switching language (e.g. /it/privacy → /bg/privacy).
+  const localeHref = (l: Locale) => {
+    const seg = (pathname || "/").split("/");
+    if (isLocale(seg[1])) { seg[1] = l; return seg.join("/") || `/${l}`; }
+    return `/${l}`;
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -37,6 +47,14 @@ export default function SiteHeader({
 
   useEffect(() => {
     document.body.classList.toggle("menu-open", menuOpen);
+    // Move focus into the drawer on open; restore it to the toggle on close.
+    if (menuOpen) {
+      const first = document.querySelector<HTMLElement>(".nav__menu a");
+      first?.focus();
+    } else if (toggleRef.current && document.body.classList.contains("had-menu")) {
+      toggleRef.current.focus();
+    }
+    document.body.classList.toggle("had-menu", menuOpen);
     return () => document.body.classList.remove("menu-open");
   }, [menuOpen]);
 
@@ -84,7 +102,7 @@ export default function SiteHeader({
       </button>
       <div className="langsw__menu" role="menu">
         {LOCALES.map((l) => (
-          <a key={l} className={`langsw__item ${l === locale ? "is-active" : ""}`} href={`/${l}`} role="menuitem" hrefLang={LOCALE_META[l].htmlLang}>
+          <a key={l} className={`langsw__item ${l === locale ? "is-active" : ""}`} href={localeHref(l)} role="menuitem" hrefLang={LOCALE_META[l].htmlLang}>
             <span className="flag" aria-hidden="true">{LOCALE_META[l].flag}</span>
             {LOCALE_META[l].label}
             {l === locale && (
@@ -133,6 +151,7 @@ export default function SiteHeader({
             {LangSwitcher}
             <a className="btn btn--primary" href={`/${locale}#contatti`}>{t(locale, "nav.enroll")}</a>
             <button
+              ref={toggleRef}
               className="nav__toggle"
               aria-label="Menu"
               aria-expanded={menuOpen}

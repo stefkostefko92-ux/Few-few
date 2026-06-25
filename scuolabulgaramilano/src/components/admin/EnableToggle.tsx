@@ -19,8 +19,8 @@ export default function EnableToggle({ contentKey, enabled }: { contentKey: stri
   }
 
   return (
-    <button type="button" onClick={toggle} disabled={busy} className={`ad-badge ${on ? "on" : "off"}`} style={{ border: 0, cursor: "pointer" }} title="Mostra/Nascondi nel sito">
-      {on ? "Visibile" : "Nascosta"}
+    <button type="button" onClick={toggle} disabled={busy} className={`ad-badge ${on ? "on" : "off"}`} style={{ border: 0, cursor: "pointer" }} title="Покажи/Скрий в сайта">
+      {on ? "Видима" : "Скрита"}
     </button>
   );
 }

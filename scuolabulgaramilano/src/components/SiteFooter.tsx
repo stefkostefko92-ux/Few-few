@@ -46,7 +46,7 @@ export default function SiteFooter({
             <ul>
               <li><a href={`tel:${phoneHref}`}>{phone}</a></li>
               <li><a href={`mailto:${email}`}>{email}</a></li>
-              <li><a href={facebookUrl} target="_blank" rel="noopener">Facebook</a></li>
+              <li><a href={facebookUrl} target="_blank" rel="noopener noreferrer">Facebook</a></li>
             </ul>
           </div>
           <div>
@@ -65,7 +65,7 @@ export default function SiteFooter({
           <span>© {year} Centro linguistico e culturale Qui Bulgaria. {t(locale, "rights")}</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap" }}>
             <span className="footer__flag" aria-hidden="true"><i style={{ background: "#fff" }} /><i style={{ background: "#00966e" }} /><i style={{ background: "#d62612" }} /></span>
-            {t(locale, "credit")} <a href="https://carbonstealth.eu" target="_blank" rel="noopener" style={{ color: "var(--lime-400)", fontWeight: 600 }}>Carbon Stealth VCC</a>
+            {t(locale, "credit")} <a href="https://carbonstealth.eu" target="_blank" rel="noopener noreferrer" style={{ color: "var(--lime-400)", fontWeight: 600 }}>Carbon Stealth VCC</a>
           </span>
         </div>
         <p className="footer__credit-photo">

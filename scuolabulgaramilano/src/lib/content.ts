@@ -25,16 +25,23 @@ export async function getOne(locale: Locale, key: string): Promise<Record<string
 export async function ensureSeeded(): Promise<void> {
   if (seedChecked) return;
   try {
-    const existing = await prisma.content.findMany({ select: { key: true } });
-    const have = new Set(existing.map((r) => r.key));
-    const missing = DEFAULT_CONTENT.filter((r) => !have.has(r.key));
-    for (const row of missing) {
-      await prisma.content.create({
-        data: {
-          key: row.key, group: row.group, label: row.label, order: row.order, enabled: true,
-          it: JSON.stringify(row.it), bg: JSON.stringify(row.bg), en: JSON.stringify(row.en),
-        },
-      });
+    const existing = (await prisma.content.findMany({
+      select: { key: true, label: true, order: true },
+    })) as { key: string; label: string; order: number }[];
+    const byKey = new Map(existing.map((r) => [r.key, r] as const));
+    for (const row of DEFAULT_CONTENT) {
+      const cur = byKey.get(row.key);
+      if (!cur) {
+        await prisma.content.create({
+          data: {
+            key: row.key, group: row.group, label: row.label, order: row.order, enabled: true,
+            it: JSON.stringify(row.it), bg: JSON.stringify(row.bg), en: JSON.stringify(row.en),
+          },
+        });
+      } else if (cur.label !== row.label || cur.order !== row.order) {
+        // Keep system metadata (label/order) in sync without touching editable content.
+        await prisma.content.update({ where: { key: row.key }, data: { label: row.label, order: row.order, group: row.group } });
+      }
     }
     seedChecked = true;
   } catch {
@@ -112,35 +119,3 @@ export type ContentMap = {
 };
 
 export type ContentKey = keyof ContentMap;
-
-function parse<T>(raw: string, fallback: T): T {
-  try {
-    const v = JSON.parse(raw);
-    return v && typeof v === "object" ? (v as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-// Fetch every section for one locale, ordered, as a typed map. Disabled
-// sections are still returned (the page decides what to render) together with
-// their enabled flag and order.
-export async function getSiteContent(locale: Locale) {
-  const rows = await prisma.content.findMany({ orderBy: { order: "asc" } });
-  const map: Record<string, unknown> = {};
-  const meta: Record<string, { enabled: boolean; order: number }> = {};
-  for (const row of rows) {
-    const raw = (row as Record<Locale, string>)[locale] || row.en || "{}";
-    map[row.key] = parse(raw, {});
-    meta[row.key] = { enabled: row.enabled, order: row.order };
-  }
-  return { content: map as Partial<ContentMap>, meta };
-}
-
-export async function getContentRow(key: string) {
-  return prisma.content.findUnique({ where: { key } });
-}
-
-export async function getAllContentRows() {
-  return prisma.content.findMany({ orderBy: { order: "asc" } });
-}

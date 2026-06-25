@@ -20,14 +20,14 @@ export default function LoginForm({ next }: { next?: string }) {
         body: JSON.stringify({ email: data.get("email"), password: data.get("password") }),
       });
       if (!res.ok) {
-        setError("Email o password non corretti.");
+        setError("Грешен имейл или парола.");
         setBusy(false);
         return;
       }
       router.push(next || "/admin");
       router.refresh();
     } catch {
-      setError("Errore di rete. Riprova.");
+      setError("Мрежова грешка. Опитайте отново.");
       setBusy(false);
     }
   }
@@ -36,15 +36,15 @@ export default function LoginForm({ next }: { next?: string }) {
     <form onSubmit={onSubmit}>
       {error && <div className="ad-err">{error}</div>}
       <div className="ad-field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Имейл</label>
         <input id="email" name="email" type="email" autoComplete="username" required autoFocus />
       </div>
       <div className="ad-field">
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">Парола</label>
         <input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
       <button className="ad-btn ad-btn--primary" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: ".4rem" }}>
-        {busy ? "Accesso…" : "Accedi"}
+        {busy ? "Влизане…" : "Вход"}
       </button>
     </form>
   );

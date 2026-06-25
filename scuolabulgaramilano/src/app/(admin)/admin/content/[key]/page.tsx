@@ -32,11 +32,11 @@ export default async function ContentEditPage({ params }: { params: Promise<{ ke
     <AdminShell
       active="content"
       title={row.label || row.key}
-      subtitle="Modifica i contenuti nelle tre lingue. Le modifiche sono immediate dopo il salvataggio."
+      subtitle="Редактирайте съдържанието на трите езика. Промените влизат в сила веднага след запазване."
       actions={
         <div style={{ display: "flex", gap: ".5rem" }}>
-          <a className="ad-btn ad-btn--ghost" href={previewUrl(row.key)} target="_blank" rel="noopener">Anteprima ↗</a>
-          <Link className="ad-btn ad-btn--ghost" href="/admin/content">← Tutte le sezioni</Link>
+          <a className="ad-btn ad-btn--ghost" href={previewUrl(row.key)} target="_blank" rel="noopener">Преглед ↗</a>
+          <Link className="ad-btn ad-btn--ghost" href="/admin/content">← Всички секции</Link>
         </div>
       }
     >

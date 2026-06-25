@@ -149,15 +149,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(org) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <a className="skip-link btn btn--primary" href="#main" style={{ position: "absolute", left: "-9999px", top: 0, zIndex: 200 }}>
+      <a className="skip-link btn btn--primary" href="#main">
         {t(locale, "skip")}
       </a>
 
       <SiteHeader locale={locale} brandName={settings.brandName} brandSub={settings.brandSub} nav={nav} />
 
       <main id="main">
-        <span id="top" />
-
         {/* Hero */}
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero__bg" aria-hidden="true" />
@@ -352,7 +350,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                     <div className="fb__point" key={i}><Check /> {p}</div>
                   ))}
                 </div>
-                <a className="btn btn--primary btn--lg" href={settings.facebookPageHref} target="_blank" rel="noopener" style={{ marginTop: "1.8rem" }}>
+                <a className="btn btn--primary btn--lg" href={settings.facebookPageHref} target="_blank" rel="noopener noreferrer" style={{ marginTop: "1.8rem" }}>
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6h3v-6H16l.5-3H13.5V9.8c0-.5.3-.8.8-.8Z" /></svg>
                   {t(locale, "fb.open")}
                 </a>
@@ -420,7 +418,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   </div>
                 </div>
                 <div className="socials">
-                  <a href={settings.facebookUrl} target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6h3v-6H16l.5-3H13.5V9.8c0-.5.3-.8.8-.8Z" /></svg></a>
+                  <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V12H8v3h2.5v6h3v-6H16l.5-3H13.5V9.8c0-.5.3-.8.8-.8Z" /></svg></a>
                   <a href={`mailto:${settings.email}`} aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" strokeLinejoin="round" /></svg></a>
                   <a href={`tel:${settings.phoneHref}`} aria-label="Phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" strokeLinejoin="round" /></svg></a>
                 </div>

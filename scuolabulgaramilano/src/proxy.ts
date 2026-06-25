@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { LOCALES, isLocale, type Locale } from "@/lib/i18n";
 import { detectLocale } from "@/lib/geo";
-import { SESSION_COOKIE, verifySession } from "@/lib/auth";
+import { SESSION_COOKIE, verifySession } from "@/lib/session";
 
 const LANG_COOKIE = "qb_lang";
 

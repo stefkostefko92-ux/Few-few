@@ -11,26 +11,26 @@ export default async function ContentList() {
   await ensureSeeded();
   const sections = await prisma.content.findMany({ orderBy: { order: "asc" } });
   return (
-    <AdminShell active="content" title="Contenuti" subtitle="Tutti i testi e le immagini del sito, in italiano, bulgaro e inglese.">
+    <AdminShell active="content" title="Съдържание" subtitle="Всички текстове и снимки на сайта — на италиански, български и английски.">
       <div className="ad-help">
-        <b>Suggerimento.</b> Apri una sezione, modifica i testi nelle tre lingue e premi <em>Salva</em>. Usa <em>Anteprima</em> per vederla nel sito.
+        <b>Съвет.</b> Отворете секция, редактирайте текстовете на трите езика и натиснете <em>Запази</em>. Използвайте <em>Преглед</em>, за да я видите в сайта.
       </div>
       <div className="ad-grid">
         {sections.map((s) => (
           <div className="ad-card" key={s.key}>
             <div>
               <h3>{s.label || s.key}</h3>
-              <p>Chiave: <code>{s.key}</code></p>
+              <p>Ключ: <code>{s.key}</code></p>
             </div>
             <div className="meta">
               {s.group !== "settings" && <EnableToggle contentKey={s.key} enabled={s.enabled} />}
-              <a className="ad-btn ad-btn--ghost" href={previewUrl(s.key)} target="_blank" rel="noopener">Anteprima</a>
-              <Link className="ad-btn ad-btn--primary" href={`/admin/content/${s.key}`}>Modifica</Link>
+              <a className="ad-btn ad-btn--ghost" href={previewUrl(s.key)} target="_blank" rel="noopener">Преглед</a>
+              <Link className="ad-btn ad-btn--primary" href={`/admin/content/${s.key}`}>Редактирай</Link>
             </div>
           </div>
         ))}
         {sections.length === 0 && (
-          <div className="ad-empty">Nessun contenuto trovato. Esegui <code>npm run setup</code>.</div>
+          <div className="ad-empty">Няма намерено съдържание. Изпълнете <code>npm run setup</code>.</div>
         )}
       </div>
     </AdminShell>

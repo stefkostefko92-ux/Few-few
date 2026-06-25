@@ -18,7 +18,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "settings",
     group: "settings",
-    label: "Impostazioni & contatti",
+    label: "Настройки и контакти",
     order: 0,
     it: {
       brandName: "Qui Bulgaria",
@@ -57,7 +57,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "hero",
     group: "section",
-    label: "Hero (intro)",
+    label: "Начална секция (интро)",
     order: 1,
     it: {
       badge: "Centro linguistico e culturale dal 2014",
@@ -93,7 +93,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "about",
     group: "section",
-    label: "Chi siamo",
+    label: "За нас",
     order: 2,
     it: {
       eyebrow: "Chi siamo",
@@ -132,7 +132,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "school",
     group: "section",
-    label: "La scuola “P. Yavorov”",
+    label: "Училище „П. Яворов“",
     order: 3,
     it: {
       eyebrow: "La scuola “P. Yavorov”",
@@ -174,7 +174,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "stats",
     group: "section",
-    label: "Numeri",
+    label: "Числа",
     order: 4,
     it: { items: [
       { num: "2014", label: "Fondazione della scuola “P. Yavorov”" },
@@ -198,7 +198,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "courses",
     group: "section",
-    label: "Corsi di bulgaro",
+    label: "Курсове по български",
     order: 5,
     it: {
       eyebrow: "Corsi di bulgaro",
@@ -234,7 +234,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "dance",
     group: "section",
-    label: "Danza tradizionale",
+    label: "Народни танци",
     order: 6,
     it: {
       eyebrow: "Danza tradizionale",
@@ -285,7 +285,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "facebook",
     group: "section",
-    label: "Sezione Facebook",
+    label: "Секция Facebook",
     order: 7,
     it: {
       eyebrow: "Sui social",
@@ -309,7 +309,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "gallery",
     group: "section",
-    label: "Galleria",
+    label: "Галерия",
     order: 8,
     it: {
       eyebrow: "La nostra comunità",
@@ -348,7 +348,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "contact",
     group: "section",
-    label: "Contatti",
+    label: "Контакти",
     order: 9,
     it: {
       eyebrow: "Contatti",
@@ -372,7 +372,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
   {
     key: "cta",
     group: "section",
-    label: "Invito finale",
+    label: "Финален призив",
     order: 10,
     it: {
       title: "Добре дошли! Benvenuti nella nostra comunità",

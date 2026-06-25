@@ -12,8 +12,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <div className="ad-login">
       <div className="ad-login__card">
         <img src="/assets/img/brand/logo.webp" alt="Qui Bulgaria" />
-        <h1>Pannello di amministrazione</h1>
-        <p>Accedi per gestire contenuti, immagini e richieste del sito.</p>
+        <h1>Административен панел</h1>
+        <p>Влезте, за да управлявате съдържанието, снимките и запитванията на сайта.</p>
         <LoginForm next={next} />
       </div>
     </div>

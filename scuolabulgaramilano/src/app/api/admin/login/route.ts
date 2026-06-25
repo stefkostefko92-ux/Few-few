@@ -4,7 +4,35 @@ import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 
+// Simple in-memory rate limit (per IP): blocks after too many failed attempts.
+// Sufficient for a single-instance self-hosted deployment.
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_FAILS = 8;
+const attempts = new Map<string, { count: number; first: number }>();
+
+function clientIp(req: NextRequest): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+function isBlocked(ip: string): boolean {
+  const a = attempts.get(ip);
+  if (!a) return false;
+  if (Date.now() - a.first > WINDOW_MS) { attempts.delete(ip); return false; }
+  return a.count >= MAX_FAILS;
+}
+
+function recordFail(ip: string) {
+  const a = attempts.get(ip);
+  if (!a || Date.now() - a.first > WINDOW_MS) attempts.set(ip, { count: 1, first: Date.now() });
+  else a.count += 1;
+}
+
 export async function POST(req: NextRequest) {
+  const ip = clientIp(req);
+  if (isBlocked(ip)) {
+    return NextResponse.json({ ok: false, error: "too_many_attempts" }, { status: 429 });
+  }
+
   let email = "";
   try {
     const body = await req.json();
@@ -14,12 +42,15 @@ export async function POST(req: NextRequest) {
 
     // Best-effort audit log; never block login on logging errors.
     try {
-      const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "";
       await prisma.loginEvent.create({ data: { email: email.slice(0, 160), ok, ip } });
     } catch {}
 
-    if (!ok) return NextResponse.json({ ok: false }, { status: 401 });
+    if (!ok) {
+      recordFail(ip);
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
 
+    attempts.delete(ip);
     const token = await createSession(email.toLowerCase());
     const res = NextResponse.json({ ok: true });
     res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions());

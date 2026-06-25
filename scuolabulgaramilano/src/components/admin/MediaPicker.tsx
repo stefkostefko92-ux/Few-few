@@ -31,16 +31,16 @@ export default function MediaPicker({ onPick, onClose }: { onPick: (url: string)
     <div role="dialog" aria-modal="true" style={overlay} onClick={onClose}>
       <div style={modal} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <b>Scegli un'immagine</b>
+          <b>Изберете снимка</b>
           <label className="ad-btn ad-btn--primary" style={{ cursor: "pointer" }}>
-            {uploading ? "Caricamento…" : "Carica nuova"}
+            {uploading ? "Качване…" : "Качи нова"}
             <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
           </label>
         </div>
         {loading ? (
-          <p style={{ color: "var(--ad-muted)" }}>Caricamento…</p>
+          <p style={{ color: "var(--ad-muted)" }}>Зареждане…</p>
         ) : media.length === 0 ? (
-          <p style={{ color: "var(--ad-muted)" }}>Nessuna immagine. Carica la prima qui sopra.</p>
+          <p style={{ color: "var(--ad-muted)" }}>Няма снимки. Качете първата по-горе.</p>
         ) : (
           <div className="ad-media-grid">
             {media.map((m) => (
@@ -52,7 +52,7 @@ export default function MediaPicker({ onPick, onClose }: { onPick: (url: string)
           </div>
         )}
         <div style={{ marginTop: "1rem", textAlign: "right" }}>
-          <button className="ad-btn ad-btn--ghost" onClick={onClose} type="button">Chiudi</button>
+          <button className="ad-btn ad-btn--ghost" onClick={onClose} type="button">Затвори</button>
         </div>
       </div>
     </div>

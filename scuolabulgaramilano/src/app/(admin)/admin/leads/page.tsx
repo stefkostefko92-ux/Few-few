@@ -8,7 +8,7 @@ export default async function LeadsPage() {
   const rows = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } });
   const leads = rows.map((l) => ({ ...l, createdAt: l.createdAt.toISOString() }));
   return (
-    <AdminShell active="leads" title="Richieste" subtitle="Messaggi inviati dal modulo di contatto del sito.">
+    <AdminShell active="leads" title="Запитвания" subtitle="Съобщения, изпратени през формата за контакт на сайта.">
       <LeadsTable initial={leads} />
     </AdminShell>
   );

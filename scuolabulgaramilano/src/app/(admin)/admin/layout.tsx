@@ -3,7 +3,7 @@ import "../../globals.css";
 import "./admin.css";
 
 export const metadata: Metadata = {
-  title: "Admin · Qui Bulgaria",
+  title: "Админ панел · Qui Bulgaria",
   robots: { index: false, follow: false },
 };
 

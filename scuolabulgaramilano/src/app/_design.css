@@ -365,7 +365,7 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 /* ---------- Footer ---------- */
 .footer { background: var(--ink); color: rgba(251,248,241,.72); padding-block: clamp(3rem, 6vw, 4.5rem) 2rem; }
 .footer__grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 2.5rem; }
-.footer__brand img { height: 54px; filter: brightness(0) invert(1); opacity: .95; margin-bottom: 1rem; }
+.footer__brand img { height: 54px; margin-bottom: 1rem; } /* full-colour logo on a light chip — see globals.css */
 .footer__brand p { color: rgba(251,248,241,.6); font-size: .92rem; max-width: 32ch; }
 .footer h4 { color: #fff; font-family: var(--font-body); font-size: .82rem; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 1.1rem; }
 .footer ul { display: grid; gap: .65rem; }

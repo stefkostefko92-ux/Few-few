@@ -20,6 +20,7 @@
 .ad-nav a svg { width: 18px; height: 18px; }
 .ad-side__foot { margin-top: auto; display: grid; gap: .4rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.08); }
 .ad-side__foot a, .ad-side__foot button { display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem; border-radius: 10px; color: #c9cdd6; font-size: .9rem; background: none; border: 0; cursor: pointer; width: 100%; text-align: left; }
+.ad-side__foot a svg, .ad-side__foot button svg { width: 18px; height: 18px; flex-shrink: 0; }
 .ad-side__foot a:hover, .ad-side__foot button:hover { background: rgba(255,255,255,.06); color: #fff; }
 
 /* Main */

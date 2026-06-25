@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function MediaPage() {
   return (
-    <AdminShell active="media" title="Media" subtitle="Carica e gestisci le immagini usate nel sito.">
+    <AdminShell active="media" title="Медия" subtitle="Качвайте и управлявайте снимките, използвани в сайта.">
       <MediaManager />
     </AdminShell>
   );

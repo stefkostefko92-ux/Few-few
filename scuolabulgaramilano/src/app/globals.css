@@ -16,9 +16,19 @@
   position: relative; z-index: 101;
 }
 
+/* Skip link — hidden until focused (keyboard accessibility) */
+.skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; }
+.skip-link:focus { left: 12px; top: 12px; }
+
+/* Lock background scroll while the mobile drawer is open */
+body.menu-open { overflow: hidden; }
+
+/* National flag colours differ from the brand palette on purpose. */
+
 /* Scroll progress bar (sits under the tricolour) */
 .scrollprogress { position: sticky; top: 0; height: 3px; z-index: 100; background: transparent; pointer-events: none; }
 .scrollprogress i { display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--lime-500), var(--green-700), var(--red-600)); transition: width .12s linear; }
+@media (prefers-reduced-motion: reduce) { .scrollprogress { display: none; } }
 
 /* Gentle micro-animations (disabled when reduced motion is requested) */
 @media (prefers-reduced-motion: no-preference) {

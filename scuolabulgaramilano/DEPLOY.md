@@ -11,45 +11,46 @@ apt update && apt install -y docker.io docker-compose-plugin nginx
 systemctl enable --now docker
 ```
 
-## 2. Codice + variabili d'ambiente
+## 2. Deploy in un comando (consigliato)
 
 ```bash
 git clone <repo> /opt/scuolabulgaramilano
 cd /opt/scuolabulgaramilano/scuolabulgaramilano
-cp .env.example .env
+./deploy.sh
 ```
 
-Modifica `.env`:
+Lo script:
 
-```ini
-ADMIN_EMAIL="tu@esempio.it"
-ADMIN_PASSWORD_HASH="<output di:  docker run --rm node:20 npx -y bcryptjs ...>"
-AUTH_SECRET="<openssl rand -base64 32>"
-SITE_URL="https://www.scuolabulgaramilano.it"
-```
+- chiede **email** e **password** dell'amministratore (solo la prima volta),
+- genera e salva automaticamente `AUTH_SECRET` (e converte la password in hash bcrypt all'avvio),
+- crea il file `.env` (permessi 600), poi esegue `docker compose up -d --build`,
+- applica lo schema del DB; i contenuti iniziali nelle 3 lingue sono creati alla prima visita.
 
-Per l'hash della password (in locale dove hai le dipendenze):
+Database e immagini sono salvati nel volume `qb-data` e persistono fra i deploy.
+
+**Modalità non interattiva** (es. in uno script):
 
 ```bash
-npm run hash -- "la-tua-password-robusta"
+ADMIN_EMAIL="tu@esempio.it" ADMIN_PASSWORD="password-robusta" \
+SITE_URL="https://www.scuolabulgaramilano.it" ./deploy.sh
 ```
-
-## 3. Build & run con Docker
-
-```bash
-docker compose up -d --build
-```
-
-- L'app gira su `127.0.0.1:3000`.
-- Lo schema del DB viene applicato all'avvio; i contenuti iniziali nelle 3
-  lingue vengono creati automaticamente alla prima visita.
-- Database e immagini sono salvati nel volume `qb-data` (persistono fra i deploy).
 
 Aggiornamenti futuri:
 
 ```bash
-git pull && docker compose up -d --build
+git pull && ./deploy.sh
 ```
+
+## 3. Build & run manuale (alternativa)
+
+```bash
+cp .env.example .env   # imposta ADMIN_EMAIL e ADMIN_PASSWORD
+docker compose up -d --build
+```
+
+> Suggerimento sicurezza: se preferisci non tenere la password in chiaro nel
+> file `.env`, genera un hash con `npm run hash -- "password"` e impostalo in
+> `ADMIN_PASSWORD_HASH` (lasciando vuoto `ADMIN_PASSWORD`).
 
 ## 4. nginx + lingua per IP (importante)
 

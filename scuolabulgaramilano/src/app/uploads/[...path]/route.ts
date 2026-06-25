@@ -15,6 +15,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pat
     headers: {
       "Content-Type": file.mime,
       "Cache-Control": "public, max-age=31536000, immutable",
+      // Defense in depth: never let an upload execute as active content.
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; sandbox; style-src 'unsafe-inline'",
     },
   });
 }
