@@ -279,9 +279,9 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 .gallery .span-2 { grid-column: span 2; }
 .gallery .row-2 { grid-row: span 2; }
 .gallery .tile { display: grid; place-content: center; text-align: center; padding: 1.4rem; color: #fff; }
-.tile--green { background: linear-gradient(150deg, var(--green-600), var(--green-900)); }
-.tile--red { background: linear-gradient(150deg, var(--red-600), var(--red-700)); }
-.tile--ink { background: var(--ink); }
+.gallery .tile--green { background: linear-gradient(150deg, var(--green-600), var(--green-900)); }
+.gallery .tile--red { background: linear-gradient(150deg, var(--red-600), var(--red-700)); }
+.gallery .tile--ink { background: var(--ink); }
 .tile .big { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; }
 .tile .small { font-size: .85rem; opacity: .85; margin-top: .4rem; }
 .tile .script { font-family: var(--font-script); font-size: 2.4rem; line-height: 1; }
