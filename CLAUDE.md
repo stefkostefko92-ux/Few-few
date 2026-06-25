@@ -214,6 +214,12 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 | **Сийдъра** `siydara.md`                  | zabobovdol Prisma seed scripts (`prisma/seed-*.ts`): idempotent `upsert`-keyed content (how-to guides, services, scams…), registers them in `package.json` + `db:seed:all`. Verified Bulgarian facts. |
 | **VPS-аджията** `vps-adjiyata.md`         | The rented server (Hetzner/EU, Ubuntu) & deploy: owns `deploy/autodeploy.sh` (archive in `/root` → live), Docker Compose / systemd, Nginx/Caddy, TLS, backups, hardening, diagnostics. |
 | **3D Maniac** `3d-maniac.md`              | 3D reverse engineering & Mesh→Solid CAD for **carbon-fiber motorcycle parts**; QuickSurface Pro power user: scan→CAD, class-A NURBS (G2), deviation analysis, design-intent capture, composite tooling (ply offset, draft, parting lines), automation via CadQuery/build123d/FreeCAD/PyMeshLab/Open3D. |
+| **Социалджията** `socialdjiyata.md`       | Social Media Manager for max **reach/visibility** (TikTok/Reels/Shorts/X/LinkedIn/FB): hook science, retention, social SEO, cadence/repurpose. Uniquely **produces clips** via a scriptable pipeline (ffmpeg reframe 9:16, WhisperX karaoke captions, cut-on-silence, music duck, −14 LUFS, C2PA/AI disclosure). |
+
+All nine agents are at **v1.0** — each ends with an **operating contract** (source-or-silence,
+verify-before-asserting, confidence labels, adversarial self-check, stop-and-ask on irreversible
+actions, and a per-agent Definition of Done). When upgrading an agent, append an `evolution`
+entry + bump the version in `agents-dashboard/agents.json`.
 
 Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
 scope `tools` to least privilege (auditors are read-only; only Геймъра writes files); give

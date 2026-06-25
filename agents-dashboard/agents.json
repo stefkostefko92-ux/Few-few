@@ -56,9 +56,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран за 2026: AI Act чл. 50, оттеглен ePrivacy Регламент, Digital Omnibus (проект), прилагане на EAA, WCAG 2.2, CRA, DSA глоби."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -127,9 +138,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: React2Shell RCE (CVE-2025-55182/66478), DoS CVE-2026-23864, OWASP 2025 (supply chain + exceptional conditions), Shai-Hulud, Prisma 7/TS 7 предупреждения."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -202,9 +224,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: Lua 5.3 премахнат (само 5.4), CommunityOx архивиран → overextended, Qbox qbx_core 1.21, артефакт 25770+, state bags/OneSync."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -274,9 +307,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: Google AI Mode (query fan-out), премахнати FAQ/HowTo rich results, entity-схема, llms.txt реалност, E-E-A-T за всичко, INP методика 2026."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -346,9 +390,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: ICU 78/CLDR 48, MessageFormat 2.0, италианска gender-инфлексия, трите режима на халюцинация при превод, медицинска безопасност."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -419,9 +474,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: Prisma 7 (ESM-only, prisma.config.ts seed, driver adapters, без авто-seed); пази съвместимост с текущия Prisma 6 на zabobovdol."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -492,9 +558,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: Let's Encrypt 6/45-дн. сертификати + ARI, Docker 29.x (containerd, docker cp CVE), OpenSSH 10.3, CrowdSec, Ubuntu USG CIS, zero-downtime деплой."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -567,9 +644,20 @@
           "date": "2026-06-25",
           "event": "Ъпгрейд 2026",
           "detail": "Актуализиран: QuickSurface 2026 (Parasolid, G2 lofts, surface flattening), Geomagic DX 2026, FreeCAD 1.1, build123d 0.11, CAD-Recode/cadrille (AI scan→CadQuery), 0.02mm скенери."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "v1.0 — операционен договор за безгрешност: източник-или-мълчание, проверка преди твърдение, етикет на увереност, самопроверка преди доклад, спри-и-питай, + конкретен Definition of Done."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v1.0 — операционен договор за безгрешност + Definition of Done."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -589,6 +677,76 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/3d-maniac.md."
+        }
+      ]
+    },
+    {
+      "id": "socialdjiyata",
+      "name": "Социалджията",
+      "title": "Social Media Manager · видимост и клипчета",
+      "emoji": "🎬",
+      "accent": "#ff3d71",
+      "tagline": "Максимален обхват + произвежда клипчета (ffmpeg/WhisperX) — не само съветва.",
+      "file": ".claude/agents/socialdjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Social Media Manager с цел №1 максимална видимост/обхват на постове и кратки видеа (2026): алгоритми и сигнали на TikTok/Reels/Shorts/X/LinkedIn/FB, hook science, retention, social SEO, каданс/repurpose — и УНИКАЛНО добър в генерирането на клипчета през скриптуем pipeline (ffmpeg/WhisperX/auto-editor/yt-dlp).",
+      "capabilities": [
+        "Видимост-лостове: completion, sends/shares, loops, golden hour",
+        "Per-platform тактики (TikTok/Reels/Shorts/X/LinkedIn/FB)",
+        "Hook science + retention + loop архитектура",
+        "Генериране на клипчета: reframe 9:16, karaoke captions, cut-on-silence, music duck",
+        "AI инструменти (Veo/Runway/HeyGen/ElevenLabs/OpusClip) + WhisperX",
+        "Loudness −14 LUFS, export спецификации, C2PA/AI-разкриване (AI Act чл. 50)"
+      ],
+      "knowledge": {
+        "sources": 26,
+        "researchToolUses": 24,
+        "priorArt": [
+          "Изследване на алгоритмите 2026 (TikTok/Reels/Shorts/X/LinkedIn/FB)",
+          "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
+          "Caveman стил — телеграфен изход с точни технически токени"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на видимостта в социалните мрежи + генериране на клипчета (2026)."
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-06-25",
+          "event": "v1.0 — операционен договор",
+          "detail": "Снабден с pipeline за реално произвеждане на клипчета (изпълними ffmpeg/WhisperX рецепти) и операционен договор за безгрешност + Definition of Done."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v1.0 — clip pipeline + операционен договор + анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 26 източника за алгоритми, hook science и генериране на клипчета."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/socialdjiyata.md."
         }
       ]
     }
