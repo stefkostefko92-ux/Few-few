@@ -7,9 +7,11 @@ import type {
   About, Cards, Contact as ContactT, Cta, Dance, Facebook, Gallery, Hero, Settings, Stats,
 } from "@/lib/content";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import Enhancements from "@/components/Enhancements";
 import ContactForm from "@/components/ContactForm";
 import FacebookEmbed from "@/components/FacebookEmbed";
+import CookieBanner from "@/components/CookieBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -79,28 +81,77 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     { id: "contatti", label: t(locale, "nav.contact") },
   ];
 
-  const jsonLd = {
+  const base = process.env.SITE_URL || "https://www.scuolabulgaramilano.it";
+  const org = {
     "@context": "https://schema.org",
     "@type": "EducationalOrganization",
+    "@id": `${base}/#organization`,
     name: "Associazione Qui Bulgaria — Scuola bulgara di Milano",
-    url: process.env.SITE_URL || "https://www.scuolabulgaramilano.it",
-    logo: "/assets/img/brand/logo.webp",
+    alternateName: "Scuola bulgara “P. Yavorov”",
+    url: `${base}/${locale}`,
+    logo: `${base}/assets/img/brand/logo.webp`,
+    image: `${base}/assets/img/photos/community.png`,
+    description:
+      "Centro linguistico e culturale a Milano (Lombardia): lingua e cultura bulgara, scuola “P. Yavorov”, corsi per bambini e adulti e danza tradizionale.",
     foundingDate: "2014-01-12",
     email: settings.email,
-    telephone: settings.phoneHref,
+    telephone: `+${settings.phoneHref.replace(/\D/g, "")}`,
     sameAs: [settings.facebookUrl],
-    address: { "@type": "PostalAddress", streetAddress: settings.address, addressLocality: "Milano", addressCountry: "IT" },
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Via Giovanni Battista Piazzetta",
+      addressLocality: "Milano",
+      addressRegion: "Lombardia",
+      postalCode: "20138",
+      addressCountry: "IT",
+    },
+    geo: { "@type": "GeoCoordinates", latitude: 45.4642, longitude: 9.19 },
+    areaServed: [
+      { "@type": "City", name: "Milano" },
+      { "@type": "AdministrativeArea", name: "Lombardia" },
+      { "@type": "Country", name: "Italia" },
+    ],
+    knowsLanguage: ["bg", "it"],
+  };
+
+  // AEO — concise question/answer pairs for answer engines.
+  const faqByLocale: Record<Locale, { q: string; a: string }[]> = {
+    it: [
+      { q: "Dove si trova la scuola bulgara di Milano?", a: "Siamo a Milano, in Lombardia (Via Giovanni Battista Piazzetta, 20138 Milano). Le prove di danza si tengono vicino a Piazzale Corvetto e in zona Rho." },
+      { q: "A chi sono rivolti i corsi di bulgaro?", a: "A bambini delle famiglie bulgare e miste e ad adulti di ogni livello, dai principianti agli avanzati, in presenza, online o in formato ibrido." },
+      { q: "I diplomi sono riconosciuti?", a: "Sì. Operiamo secondo i programmi del Ministero dell’Istruzione e della Scienza bulgaro e i diplomi sono riconosciuti nel sistema educativo bulgaro." },
+      { q: "Offrite anche danza tradizionale bulgara?", a: "Sì, con il gruppo “Veselie”: due appuntamenti settimanali a Milano per bambini e adulti, italiani inclusi." },
+    ],
+    bg: [
+      { q: "Къде се намира българското училище в Милано?", a: "Намираме се в Милано, Ломбардия (Via Giovanni Battista Piazzetta, 20138 Милано). Репетициите по танци са до Пиазале Корвето и в зона Rho." },
+      { q: "За кого са курсовете по български?", a: "За деца от български и смесени семейства и за възрастни от всички нива — присъствено, онлайн или хибридно." },
+      { q: "Признати ли са дипломите?", a: "Да. Работим по програмите на българското Министерство на образованието и науката и дипломите се признават в българската образователна система." },
+      { q: "Предлагате ли и народни танци?", a: "Да, с групата „Веселие“: две седмични занятия в Милано за деца и възрастни." },
+    ],
+    en: [
+      { q: "Where is the Bulgarian school in Milan located?", a: "We are in Milan, Lombardy (Via Giovanni Battista Piazzetta, 20138 Milan). Dance rehearsals are held near Piazzale Corvetto and in the Rho area." },
+      { q: "Who are the Bulgarian courses for?", a: "For children of Bulgarian and mixed families and for adults of all levels, in person, online or hybrid." },
+      { q: "Are the diplomas recognised?", a: "Yes. We follow the programmes of the Bulgarian Ministry of Education and Science, and diplomas are recognised in the Bulgarian education system." },
+      { q: "Do you also offer Bulgarian folk dance?", a: "Yes, with the “Veselie” group: two weekly sessions in Milan for children and adults." },
+    ],
+  };
+  const faq = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqByLocale[locale].map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
   };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(org) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <a className="skip-link btn btn--primary" href="#main" style={{ position: "absolute", left: "-9999px", top: 0, zIndex: 200 }}>
         {t(locale, "skip")}
       </a>
-
-      {/* Bulgarian national tricolour */}
-      <div className="topflag" role="presentation" aria-hidden="true" />
 
       <SiteHeader locale={locale} brandName={settings.brandName} brandSub={settings.brandSub} nav={nav} />
 
@@ -378,7 +429,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
 
             <div className="cta-band reveal" style={{ marginTop: "4rem" }}>
-              <div className="rose-ornament" aria-hidden="true"><img src="/assets/img/brand/rose.svg" alt="" /></div>
+              <div className="rose-ornament" aria-hidden="true"><span className="rose-photo"><img src="/assets/img/photos/rose-damascena.jpg" alt="" loading="lazy" /></span></div>
               <h2>{cta.title}</h2>
               <p>{cta.body}</p>
               <div className="hero__cta">
@@ -390,44 +441,19 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="ribbon ribbon--lg" role="presentation" aria-hidden="true" style={{ marginBottom: "clamp(2rem,5vw,3.5rem)" }} />
-        <div className="container">
-          <div className="footer__grid">
-            <div className="footer__brand">
-              <img src="/assets/img/brand/logo.webp" alt={settings.brandName} />
-              <p>{about.lead}</p>
-            </div>
-            <div>
-              <h4>{t(locale, "nav.about")}</h4>
-              <ul>
-                {nav.slice(0, 4).map((n) => (<li key={n.id}><a href={`#${n.id}`}>{n.label}</a></li>))}
-              </ul>
-            </div>
-            <div>
-              <h4>{t(locale, "nav.contact")}</h4>
-              <ul>
-                <li><a href={`tel:${settings.phoneHref}`}>{settings.phone}</a></li>
-                <li><a href={`mailto:${settings.email}`}>{settings.email}</a></li>
-                <li><a href={settings.facebookUrl} target="_blank" rel="noopener">Facebook</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4>{t(locale, "addr")}</h4>
-              <ul><li>{settings.address}</li></ul>
-            </div>
-          </div>
-          <div className="footer__bottom">
-            <span>© {new Date().getFullYear()} Centro linguistico e culturale Qui Bulgaria. {t(locale, "credit") === "Created and designed by" ? "All rights reserved." : ""}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap" }}>
-              <span className="footer__flag" aria-hidden="true"><i style={{ background: "#fff" }} /><i style={{ background: "#00966e" }} /><i style={{ background: "#d62612" }} /></span>
-              {t(locale, "credit")} <a href="https://carbonstealth.eu" target="_blank" rel="noopener" style={{ color: "var(--lime-400)", fontWeight: 600 }}>Carbon Stealth VCC</a>
-            </span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        locale={locale}
+        brandName={settings.brandName}
+        description={about.lead || ""}
+        phone={settings.phone}
+        phoneHref={settings.phoneHref}
+        email={settings.email}
+        address={settings.address}
+        facebookUrl={settings.facebookUrl}
+        nav={nav}
+      />
 
+      <CookieBanner locale={locale} />
       <Enhancements />
     </>
   );

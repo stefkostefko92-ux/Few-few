@@ -34,11 +34,30 @@ export async function generateMetadata({
     alternates: { canonical: `${base}/${locale}`, languages: alt },
     icons: { icon: "/assets/img/brand/favicon.svg", apple: "/assets/img/brand/favicon.svg" },
     manifest: "/site.webmanifest",
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
+    formatDetection: { telephone: true, address: true, email: true },
     openGraph: {
       type: "website",
       url: `${base}/${locale}`,
+      siteName: "Qui Bulgaria — Scuola bulgara di Milano",
+      locale: LOCALE_META[locale].htmlLang,
       title: "Qui Bulgaria — Scuola bulgara di Milano",
+      description:
+        "Lingua e cultura bulgara a Milano (Lombardia): scuola “P. Yavorov”, corsi per bambini e adulti, danza tradizionale.",
+      images: [{ url: "/assets/img/photos/community.png", width: 526, height: 452 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Qui Bulgaria — Scuola bulgara di Milano",
+      description: "Lingua e cultura bulgara a Milano: scuola, corsi e danza tradizionale.",
       images: ["/assets/img/photos/community.png"],
+    },
+    // Local / geo SEO signals (Milano, Lombardia)
+    other: {
+      "geo.region": "IT-25",
+      "geo.placename": "Milano, Lombardia",
+      "geo.position": "45.4642;9.1900",
+      ICBM: "45.4642, 9.1900",
     },
   };
 }

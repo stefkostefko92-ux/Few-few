@@ -4,8 +4,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  // Production builds should not be blocked by lint warnings; CI/dev still lint.
-  eslint: { ignoreDuringBuilds: true },
   images: {
     // Uploaded media is served from the local /uploads route handler.
     remotePatterns: [{ protocol: "https", hostname: "**" }],

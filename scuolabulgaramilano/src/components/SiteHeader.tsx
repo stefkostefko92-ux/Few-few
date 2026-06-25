@@ -92,6 +92,8 @@ export default function SiteHeader({
 
   return (
     <>
+    {/* Bulgarian national tricolour */}
+    <div className="topflag" role="presentation" aria-hidden="true" />
     <div className="menu-backdrop" aria-hidden="true" onClick={close} />
     <header className={`header ${scrolled ? "is-scrolled" : ""}`}>
       <div className="container">

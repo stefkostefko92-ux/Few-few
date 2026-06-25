@@ -1,8 +1,24 @@
 import { prisma } from "./db";
 import type { Locale } from "./i18n";
-import { DEFAULT_CONTENT } from "./defaults";
+import { DEFAULT_CONTENT, defaultFor } from "./defaults";
 
 let seedChecked = false;
+
+// Fetch a single section (merged with bundled defaults) for one locale.
+// Used by lightweight pages (legal, sitemap) that only need a couple of keys.
+export async function getOne(locale: Locale, key: string): Promise<Record<string, unknown>> {
+  await ensureSeeded();
+  try {
+    const row = await prisma.content.findUnique({ where: { key } });
+    if (row) {
+      const parsed = JSON.parse((row as Record<string, string>)[locale] || row.en || "{}");
+      if (parsed && Object.keys(parsed).length) return parsed;
+    }
+  } catch {
+    // fall through to defaults
+  }
+  return defaultFor(key, locale);
+}
 
 // Idempotently ensure the content table is populated. Runs once per process
 // (so production self-seeds on first hit without needing the tsx dev tool).
