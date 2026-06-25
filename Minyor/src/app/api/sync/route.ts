@@ -1,6 +1,15 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { runSync } from "@/lib/sync/bgclubs";
+
+// Константно по време сравнение на тайни (без timing oracle за SYNC_TOKEN).
+function tokensMatch(provided: string | null, expected: string): boolean {
+  if (!provided) return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -19,7 +28,7 @@ async function handle(req: NextRequest) {
   }
   const provided =
     req.nextUrl.searchParams.get("token") ?? req.headers.get("x-sync-token");
-  if (provided !== expected) {
+  if (!tokensMatch(provided, expected)) {
     return NextResponse.json({ ok: false, error: "Неоторизиран" }, { status: 401 });
   }
 

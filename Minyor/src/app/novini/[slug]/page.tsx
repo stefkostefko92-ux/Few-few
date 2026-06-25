@@ -74,7 +74,11 @@ export default async function NewsArticlePage({
         {post.coverUrl && (
           <div className="mt-4 overflow-hidden rounded-xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={post.coverUrl} alt="" className="w-full object-cover" />
+            <img
+              src={post.coverUrl}
+              alt={post.title}
+              className="w-full object-cover"
+            />
           </div>
         )}
         {post.excerpt && (

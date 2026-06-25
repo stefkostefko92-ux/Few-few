@@ -28,12 +28,16 @@ export function rateLimit(
 }
 
 // Ключ по IP на посетителя (за server actions).
+// Зад обратен прокси (Nginx задава `X-Real-IP` = реалния отдалечен адрес)
+// предпочитаме него; иначе вземаме НАЙ-ДЕСНИЯ запис от `X-Forwarded-For`
+// (добавен от доверения прокси), а не най-левия, който клиентът може да подмени.
 export async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    (h.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
-    h.get("x-real-ip") ||
-    "unknown";
+  const xff = (h.get("x-forwarded-for") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const ip = h.get("x-real-ip")?.trim() || xff[xff.length - 1] || "unknown";
   return `${prefix}:${ip}`;
 }
 

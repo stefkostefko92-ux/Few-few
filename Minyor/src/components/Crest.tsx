@@ -9,11 +9,14 @@ export function Crest({
   className,
   title = "Герб на ФК „Миньор“ Бобов дол",
   decorative = false,
+  priority = false,
 }: {
   className?: string;
   title?: string;
   // Декоративен (воден знак) — скрит за екранни четци.
   decorative?: boolean;
+  // За LCP елемента (голямото лого в героя) — зарежда се с приоритет.
+  priority?: boolean;
 }) {
   return (
     <img
@@ -24,6 +27,8 @@ export function Crest({
       alt={decorative ? "" : title}
       aria-hidden={decorative || undefined}
       draggable={false}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : undefined}
     />
   );
 }

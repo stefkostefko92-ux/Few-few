@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, webPageLd } from "@/lib/seo";
+import { buildMetadata, webPageLd, stadiumLd } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import { PageHero } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
@@ -25,11 +25,14 @@ export default function StadiumPage() {
         crumbs={[{ name: "Стадион", path: "/stadion" }]}
       />
       <JsonLd
-        data={webPageLd({
-          name: SITE.stadium.name,
-          description: `Домакински стадион на ${SITE.name}.`,
-          path: "/stadion",
-        })}
+        data={[
+          webPageLd({
+            name: SITE.stadium.name,
+            description: `Домакински стадион на ${SITE.name}.`,
+            path: "/stadion",
+          }),
+          stadiumLd(),
+        ]}
       />
       <div className="container-content grid gap-8 py-10 lg:grid-cols-2">
         <div>

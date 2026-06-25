@@ -21,11 +21,11 @@ export function CookieConsent() {
   if (pathname?.startsWith("/admin")) return null;
   if (!show) return null;
 
-  const decide = (value: "all" | "essential") => {
+  const dismiss = () => {
     try {
       localStorage.setItem(
         KEY,
-        JSON.stringify({ value, at: new Date().toISOString() }),
+        JSON.stringify({ value: "ack", at: new Date().toISOString() }),
       );
     } catch {
       /* игнорираме */
@@ -33,10 +33,12 @@ export function CookieConsent() {
     setShow(false);
   };
 
+  // Информативно известие, не „съгласие“: сайтът не използва нетехнически
+  // бисквитки или проследяване, затова няма какво да се избира — само потвърждение.
   return (
     <div
-      role="dialog"
-      aria-label="Съгласие за бисквитки"
+      role="region"
+      aria-label="Известие за бисквитки"
       className="no-print fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 backdrop-blur"
     >
       <div className="container-content flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -51,14 +53,7 @@ export function CookieConsent() {
         <div className="flex shrink-0 gap-2">
           <button
             type="button"
-            onClick={() => decide("essential")}
-            className="btn-secondary whitespace-nowrap"
-          >
-            Само необходими
-          </button>
-          <button
-            type="button"
-            onClick={() => decide("all")}
+            onClick={dismiss}
             className="btn-primary whitespace-nowrap"
           >
             Разбрах
