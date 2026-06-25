@@ -7,7 +7,7 @@ export type LegalKind = "privacy" | "cookie" | "termini";
 export const LEGAL_UPDATED = "25/06/2026";
 
 const CONTROLLER = {
-  name: "Associazione “Qui Bulgaria”",
+  name: "Associazione Qui Bulgaria",
   address: "Via Giovanni Battista Piazzetta, 20138 Milano (MI), Italia",
   email: "centroquibulgaria@gmail.com",
 };
@@ -17,7 +17,7 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
     it: {
       title: "Informativa sulla privacy",
       intro:
-        "La presente informativa descrive come l’Associazione “Qui Bulgaria” tratta i dati personali degli utenti del sito, ai sensi del Regolamento (UE) 2016/679 (GDPR) e del D.Lgs. 196/2003.",
+        "La presente informativa descrive come l’Associazione «Qui Bulgaria» tratta i dati personali degli utenti del sito, ai sensi del Regolamento (UE) 2016/679 (GDPR) e del D.Lgs. 196/2003.",
       sections: [
         { h: "Titolare del trattamento", p: [`${CONTROLLER.name}, ${CONTROLLER.address}. Email: ${CONTROLLER.email}.`] },
         { h: "Dati che raccogliamo", list: [
@@ -25,11 +25,11 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
           "Dati tecnici di navigazione (es. indirizzo IP, data e ora, pagine visitate) raccolti dai sistemi e dal provider di hosting per finalità di sicurezza e funzionamento.",
         ] },
         { h: "Finalità e base giuridica", list: [
-          "Rispondere alle richieste e fornire informazioni su corsi e attività — esecuzione di misure precontrattuali e consenso (art. 6.1.a e 6.1.b GDPR).",
+          "Rispondere alle richieste e fornire informazioni su corsi e attività — esecuzione di misure precontrattuali su richiesta dell’interessato e legittimo interesse a riscontrare i messaggi (art. 6.1.b e 6.1.f GDPR).",
           "Garantire sicurezza, integrità e corretto funzionamento del sito — legittimo interesse (art. 6.1.f GDPR).",
         ] },
         { h: "Conservazione dei dati", p: ["I dati del modulo sono conservati per il tempo necessario a gestire la richiesta e gli eventuali adempimenti conseguenti. I log tecnici sono conservati per periodi limitati e proporzionati alle finalità di sicurezza."] },
-        { h: "Comunicazione dei dati", p: ["I dati non sono venduti né diffusi. Possono essere trattati, per nostro conto, da fornitori tecnici (es. hosting) nominati responsabili del trattamento. Il plugin di Facebook viene caricato solo previo consenso e comporta un trattamento da parte di Meta secondo la sua informativa."] },
+        { h: "Comunicazione dei dati", p: ["I dati non sono venduti né diffusi. Possono essere trattati, per nostro conto, da fornitori tecnici nominati responsabili del trattamento: il provider di hosting (server in UE) e il servizio di posta elettronica/SMTP usato per inoltrare i messaggi del modulo. Il plugin di Facebook viene caricato solo previo consenso e comporta un trattamento da parte di Meta secondo la sua informativa."] },
         { h: "Diritti dell’interessato", p: ["Puoi esercitare i diritti di accesso, rettifica, cancellazione, limitazione, opposizione e portabilità scrivendo a " + CONTROLLER.email + ". Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali."] },
         { h: "Minori", p: ["I corsi rivolti ai bambini sono gestiti con il coinvolgimento e il consenso dei genitori o di chi ne esercita la responsabilità genitoriale."] },
         { h: "Modifiche", p: ["Ci riserviamo di aggiornare la presente informativa. Le modifiche saranno pubblicate su questa pagina con la relativa data."] },
@@ -46,11 +46,11 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
           "Технически данни за навигацията (напр. IP адрес, дата и час, посетени страници), събирани от системите и хостинг доставчика за целите на сигурността и функционирането.",
         ] },
         { h: "Цели и правно основание", list: [
-          "Да отговаряме на запитвания и да предоставяме информация за курсове и дейности — преддоговорни мерки и съгласие (чл. 6.1.a и 6.1.b GDPR).",
+          "Да отговаряме на запитвания и да предоставяме информация за курсове и дейности — преддоговорни мерки по искане на субекта и легитимен интерес да отговорим на съобщенията (чл. 6.1.b и 6.1.f GDPR).",
           "Да гарантираме сигурността и правилното функциониране на сайта — легитимен интерес (чл. 6.1.f GDPR).",
         ] },
         { h: "Срок на съхранение", p: ["Данните от формата се съхраняват за времето, необходимо за обработка на запитването и свързаните задължения. Техническите логове се пазят за ограничени периоди, пропорционални на целите за сигурност."] },
-        { h: "Предоставяне на данни", p: ["Данните не се продават и не се разпространяват. Могат да се обработват от наша страна от технически доставчици (напр. хостинг) в качеството им на обработващи. Плъгинът на Facebook се зарежда само след съгласие и води до обработка от страна на Meta съгласно нейната политика."] },
+        { h: "Предоставяне на данни", p: ["Данните не се продават и не се разпространяват. Могат да се обработват от наше име от технически доставчици в качеството им на обработващи: хостинг доставчикът (сървъри в ЕС) и услугата за електронна поща/SMTP, чрез която препращаме съобщенията от формата. Плъгинът на Facebook се зарежда само след съгласие и води до обработка от страна на Meta съгласно нейната политика."] },
         { h: "Права на субекта на данни", p: ["Можете да упражните правата си на достъп, коригиране, изтриване, ограничаване, възражение и преносимост, като пишете на " + CONTROLLER.email + ". Имате право и да подадете жалба до надзорния орган за защита на личните данни."] },
         { h: "Непълнолетни", p: ["Курсовете за деца се организират с участието и съгласието на родителите или настойниците."] },
         { h: "Промени", p: ["Запазваме си правото да актуализираме тази политика. Промените се публикуват на тази страница с посочена дата."] },
@@ -67,11 +67,11 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
           "Technical browsing data (e.g. IP address, date and time, pages visited) collected by our systems and hosting provider for security and operational purposes.",
         ] },
         { h: "Purposes and legal basis", list: [
-          "To answer enquiries and provide information about courses and activities — pre-contractual measures and consent (Art. 6.1.a and 6.1.b GDPR).",
+          "To answer enquiries and provide information about courses and activities — pre-contractual measures at your request and our legitimate interest in replying to messages (Art. 6.1.b and 6.1.f GDPR).",
           "To ensure the security and proper functioning of the site — legitimate interest (Art. 6.1.f GDPR).",
         ] },
         { h: "Data retention", p: ["Form data is kept for as long as necessary to handle the request and any related obligations. Technical logs are kept for limited periods proportionate to security purposes."] },
-        { h: "Disclosure of data", p: ["Data is never sold or disclosed. It may be processed on our behalf by technical providers (e.g. hosting) acting as processors. The Facebook plugin loads only after consent and entails processing by Meta under its own policy."] },
+        { h: "Disclosure of data", p: ["Data is never sold or disclosed. It may be processed on our behalf by technical providers acting as processors: the hosting provider (servers in the EU) and the email/SMTP service used to forward contact-form messages. The Facebook plugin loads only after consent and entails processing by Meta under its own policy."] },
         { h: "Your rights", p: ["You may exercise your rights of access, rectification, erasure, restriction, objection and portability by writing to " + CONTROLLER.email + ". You also have the right to lodge a complaint with the competent data protection authority."] },
         { h: "Minors", p: ["Courses for children are managed with the involvement and consent of parents or legal guardians."] },
         { h: "Changes", p: ["We may update this policy. Changes will be published on this page with the relevant date."] },
@@ -131,11 +131,11 @@ export const LEGAL: Record<LegalKind, Record<Locale, LegalDoc>> = {
   termini: {
     it: {
       title: "Termini e condizioni",
-      intro: "Le presenti condizioni regolano l’uso del sito dell’Associazione “Qui Bulgaria”.",
+      intro: "Le presenti condizioni regolano l’uso del sito dell’Associazione «Qui Bulgaria».",
       sections: [
         { h: "Titolare", p: [`${CONTROLLER.name}, ${CONTROLLER.address}. Email: ${CONTROLLER.email}.`] },
         { h: "Oggetto del sito", p: ["Il sito ha finalità informativa e culturale. Le iscrizioni a corsi e attività si perfezionano solo con conferma da parte dell’Associazione e secondo le modalità comunicate."] },
-        { h: "Proprietà intellettuale", p: ["I testi, il logo e il nome “Qui Bulgaria” sono di proprietà dell’Associazione e non possono essere riprodotti senza autorizzazione. La fotografia della rosa bulgara è di Edal Anton Lefterov, distribuita con licenza CC BY-SA 3.0 tramite Wikimedia Commons."] },
+        { h: "Proprietà intellettuale", p: ["I testi, il logo e il nome «Qui Bulgaria» sono di proprietà dell’Associazione e non possono essere riprodotti senza autorizzazione. La fotografia della rosa bulgara è di Edal Anton Lefterov, distribuita con licenza CC BY-SA 3.0 tramite Wikimedia Commons."] },
         { h: "Uso del sito", p: ["L’utente si impegna a un uso lecito e corretto del sito, astenendosi da attività che ne pregiudichino il funzionamento o la sicurezza."] },
         { h: "Link esterni", p: ["Il sito può contenere collegamenti a risorse di terzi (es. Facebook). Non siamo responsabili dei contenuti e delle pratiche di tali siti."] },
         { h: "Limitazione di responsabilità", p: ["Le informazioni sono fornite con la massima cura ma “così come sono”. Non garantiamo l’assenza di errori o l’ininterrotta disponibilità del servizio."] },

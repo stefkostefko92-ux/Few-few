@@ -111,7 +111,25 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       { "@type": "AdministrativeArea", name: "Lombardia" },
       { "@type": "Country", name: "Italia" },
     ],
-    knowsLanguage: ["bg", "it"],
+    knowsLanguage: ["bg", "it", "en"],
+  };
+
+  // Course catalogue for search/answer engines (built from the editable cards).
+  const courseLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: courses.title,
+    itemListElement: (courses.items || []).map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Course",
+        name: c.title,
+        description: c.text,
+        inLanguage: "bg",
+        provider: { "@id": `${base}/#organization` },
+      },
+    })),
   };
 
   // AEO — concise question/answer pairs for answer engines.
@@ -145,10 +163,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     })),
   };
 
+  // Escape so admin-editable values can never break out of the <script> tag.
+  const ld = (o: unknown) =>
+    JSON.stringify(o).replace(/[<>\u2028\u2029]/g, (c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"));
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(org) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(org) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(faq) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(courseLd) }} />
       <a className="skip-link btn btn--primary" href="#main">
         {t(locale, "skip")}
       </a>
@@ -394,6 +417,24 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
         </section>
         )}
+
+        {/* FAQ — visible Q&A mirroring the FAQ JSON-LD (AEO). */}
+        <section className="section" id="faq" aria-labelledby="faq-title">
+          <div className="container">
+            <div className="section-head center reveal">
+              <span className="eyebrow eyebrow--center">{t(locale, "faq.eyebrow")}</span>
+              <h2 id="faq-title">{t(locale, "faq.title")}</h2>
+            </div>
+            <div className="faq reveal" style={{ marginTop: "2.5rem" }}>
+              {faqByLocale[locale].map((f, i) => (
+                <details className="faq__item" key={i}>
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Contact */}
         <section className="section" id="contatti" aria-labelledby="contact-title" style={{ background: "var(--paper-2)" }}>

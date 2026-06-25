@@ -14,6 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const doc = LEGAL[KIND][locale];
   const languages: Record<string, string> = {};
   for (const l of LOCALES) languages[LOCALE_META[l].htmlLang] = `${base}/${l}/${KIND}`;
+  languages["x-default"] = `${base}/it/${KIND}`;
   return {
     title: doc.title,
     description: doc.intro,

@@ -11,7 +11,7 @@ export async function getOne(locale: Locale, key: string): Promise<Record<string
   try {
     const row = await prisma.content.findUnique({ where: { key } });
     if (row) {
-      const parsed = JSON.parse((row as Record<string, string>)[locale] || row.en || "{}");
+      const parsed = JSON.parse(row[locale] || row.en || "{}");
       if (parsed && Object.keys(parsed).length) return parsed;
     }
   } catch {

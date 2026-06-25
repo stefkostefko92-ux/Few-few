@@ -6,8 +6,9 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
   const session = await getSession();
-  if (session) redirect(next || "/admin");
+  if (session) redirect(safeNext);
   return (
     <div className="ad-login">
       <div className="ad-login__card">

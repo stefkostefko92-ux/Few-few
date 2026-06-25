@@ -1,4 +1,5 @@
 import { t, type Locale } from "@/lib/i18n";
+import CookieSettingsLink from "./CookieSettingsLink";
 
 type NavItem = { id: string; label: string };
 
@@ -55,6 +56,7 @@ export default function SiteFooter({
               <li><a href={`/${locale}/privacy`}>{t(locale, "legal.privacy")}</a></li>
               <li><a href={`/${locale}/cookie`}>{t(locale, "legal.cookie")}</a></li>
               <li><a href={`/${locale}/termini`}>{t(locale, "legal.terms")}</a></li>
+              <CookieSettingsLink locale={locale} />
             </ul>
             <h4 style={{ marginTop: "1.4rem" }}>{t(locale, "addr")}</h4>
             <ul><li>{address}</li></ul>

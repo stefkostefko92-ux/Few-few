@@ -24,10 +24,21 @@ if [ -n "$ADMIN_PASSWORD" ] && [ -z "$ADMIN_PASSWORD_HASH" ]; then
   [ -n "$ADMIN_PASSWORD_HASH" ] && export ADMIN_PASSWORD_HASH
 fi
 
+# Back up the existing database before touching the schema, so a bad migration
+# can never silently destroy data (keeps the last few timestamped copies).
+if [ -f /app/data/app.db ]; then
+  ts="$(date +%Y%m%d-%H%M%S)"
+  cp /app/data/app.db "/app/data/app.db.bak-$ts" 2>/dev/null || true
+  # Prune to the 5 most recent backups.
+  ls -1t /app/data/app.db.bak-* 2>/dev/null | tail -n +6 | while read -r f; do rm -f "$f"; done
+fi
+
 # Apply the schema to the SQLite database. Initial content is seeded
 # automatically by the app on first request (idempotent), so no tsx needed.
+# No --accept-data-loss: a schema change that would drop data fails loudly
+# (and we already backed up above) instead of destroying it silently.
 echo "→ Applying database schema…"
-node node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss || true
+node node_modules/prisma/build/index.js db push --skip-generate
 
 echo "→ Starting server…"
 exec "$@"

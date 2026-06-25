@@ -18,6 +18,8 @@ export async function generateMetadata({
   const locale = isLocale(raw) ? raw : "en";
   const alt: Record<string, string> = {};
   for (const l of LOCALES) alt[LOCALE_META[l].htmlLang] = `${base}/${l}`;
+  // x-default points to the root, which geo-detects and redirects to the best locale.
+  alt["x-default"] = base;
   return {
     metadataBase: new URL(base),
     title: { default: "Qui Bulgaria — Scuola bulgara di Milano", template: "%s · Qui Bulgaria" },
@@ -45,13 +47,13 @@ export async function generateMetadata({
       title: "Qui Bulgaria — Scuola bulgara di Milano",
       description:
         "Lingua e cultura bulgara a Milano (Lombardia): scuola “P. Yavorov”, corsi per bambini e adulti, danza tradizionale.",
-      images: [{ url: "/assets/img/photos/community.png", width: 526, height: 452 }],
+      // OG image (1200×630) is provided by opengraph-image.tsx in this segment.
     },
     twitter: {
       card: "summary_large_image",
       title: "Qui Bulgaria — Scuola bulgara di Milano",
       description: "Lingua e cultura bulgara a Milano: scuola, corsi e danza tradizionale.",
-      images: ["/assets/img/photos/community.png"],
+      // Twitter image is derived from the same opengraph-image.tsx.
     },
     // Local / geo SEO signals (Milano, Lombardia)
     other: {

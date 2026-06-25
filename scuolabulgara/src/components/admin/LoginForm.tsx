@@ -24,7 +24,9 @@ export default function LoginForm({ next }: { next?: string }) {
         setBusy(false);
         return;
       }
-      router.push(next || "/admin");
+      // Only allow same-origin relative redirects (prevents open redirect).
+      const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Мрежова грешка. Опитайте отново.");

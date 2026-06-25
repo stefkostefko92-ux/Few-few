@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const locale of LOCALES) {
       const languages: Record<string, string> = {};
       for (const l of LOCALES) languages[LOCALE_META[l].htmlLang] = `${base}/${l}${path}`;
+      languages["x-default"] = `${base}${path === "" ? "" : "/it" + path}`;
       entries.push({
         url: `${base}/${locale}${path}`,
         changeFrequency: path === "" ? "weekly" : "yearly",

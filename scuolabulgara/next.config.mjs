@@ -4,10 +4,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  images: {
-    // Uploaded media is served from the local /uploads route handler.
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
-  },
+  // No remote images: media is local (/uploads), brand assets are in /public.
   async headers() {
     return [
       {
@@ -17,7 +14,8 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          // No "preload" until TLS is confirmed stable — preload is hard to reverse.
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
         ],
       },
     ];

@@ -34,6 +34,11 @@ COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh && mkdir -p /app/data/uploads
 
+# Run as an unprivileged user; own the writable data dir + app tree.
+RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs -m nextjs \
+ && chown -R nextjs:nodejs /app/data /app
+USER nextjs
+
 EXPOSE 3000
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]

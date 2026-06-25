@@ -14,6 +14,10 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
     } catch {
       setShow(true);
     }
+    // Re-open the banner when the user clicks "Cookie preferences" in the footer.
+    const reopen = () => setShow(true);
+    window.addEventListener("qb:cookie-settings", reopen);
+    return () => window.removeEventListener("qb:cookie-settings", reopen);
   }, []);
 
   if (!show) return null;

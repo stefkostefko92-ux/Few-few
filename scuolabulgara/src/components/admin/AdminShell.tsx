@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
 import LogoutButton from "./LogoutButton";
 
 const NAV = [
@@ -8,7 +10,7 @@ const NAV = [
   { href: "/admin/leads", key: "leads", label: "Запитвания", icon: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 5h16v14H4z" /><path d="m4 7 8 6 8-6" strokeLinejoin="round" /></svg>) },
 ];
 
-export default function AdminShell({
+export default async function AdminShell({
   active,
   title,
   subtitle,
@@ -21,6 +23,8 @@ export default function AdminShell({
   actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  // Defense-in-depth: every admin screen re-checks the session, not just the proxy.
+  if (!(await getSession())) redirect("/admin/login");
   return (
     <div className="admin">
       <aside className="ad-side">

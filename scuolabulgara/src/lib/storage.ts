@@ -88,7 +88,7 @@ export async function readUpload(rel: string): Promise<{ data: Buffer; mime: str
   try {
     const data = await fs.readFile(full);
     const ext = path.extname(safe).slice(1).toLowerCase();
-    const mimeByExt: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif", svg: "image/svg+xml" };
+    const mimeByExt: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" };
     return { data, mime: mimeByExt[ext] || "application/octet-stream" };
   } catch {
     return null;

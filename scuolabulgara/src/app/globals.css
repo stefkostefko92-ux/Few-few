@@ -162,3 +162,24 @@ body.menu-open { overflow: hidden; }
 .legal__body ul.legal-list li { color: var(--ink-soft); }
 .legal__body a { color: var(--green-700); text-decoration: underline; }
 .legal__back { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1rem; font-weight: 600; color: var(--green-700); }
+
+/* FAQ (visible Q&A — AEO) */
+.faq { max-width: 820px; margin-inline: auto; display: grid; gap: .8rem; }
+.faq__item {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 14px; padding: 0 1.3rem; box-shadow: var(--shadow-sm);
+  transition: border-color .2s ease;
+}
+.faq__item[open] { border-color: var(--green-700); }
+.faq__item summary {
+  cursor: pointer; list-style: none; padding: 1.1rem 0;
+  font-family: var(--font-display, inherit); font-weight: 600; font-size: 1.05rem;
+  color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.faq__item summary::-webkit-details-marker { display: none; }
+.faq__item summary::after {
+  content: "+"; font-size: 1.5rem; line-height: 1; color: var(--green-700); flex-shrink: 0;
+  transition: transform .2s ease;
+}
+.faq__item[open] summary::after { content: "−"; }
+.faq__item p { margin: 0; padding: 0 0 1.2rem; color: var(--ink-soft); line-height: 1.6; }

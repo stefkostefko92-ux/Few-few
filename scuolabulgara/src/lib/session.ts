@@ -9,9 +9,9 @@ export const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours
 
 function secret(): Uint8Array {
   const s = process.env.AUTH_SECRET || "";
-  if (!s || s.length < 16) {
+  if (!s || s.length < 32) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("AUTH_SECRET is not set or too short (min 16 chars).");
+      throw new Error("AUTH_SECRET is not set or too short (min 32 chars).");
     }
     return new TextEncoder().encode("dev-insecure-secret-change-me-please");
   }
