@@ -1,0 +1,38 @@
+name: minyor CI
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["Minyor/**", ".github/workflows/minyor.yml"]
+  pull_request:
+    paths: ["Minyor/**", ".github/workflows/minyor.yml"]
+
+defaults:
+  run:
+    working-directory: Minyor
+
+jobs:
+  quality:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      AUTH_SECRET: ci_secret_at_least_32_characters_long_xxxxx
+      NEXT_PUBLIC_SITE_URL: https://minyor.carbonstealth.eu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Minyor/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
