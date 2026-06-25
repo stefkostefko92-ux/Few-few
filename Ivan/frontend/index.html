@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f1419">
+  <title>Склад Авточасти</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <style>html,body,#root{margin:0;padding:0;min-height:100vh;background:#0f1419}body{overflow-y:scroll;-webkit-overflow-scrolling:touch}</style>
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+// ─── Hook: responsive ───
+function useW() {
+  const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  useEffect(() => { const h = () => setW(window.innerWidth); window.addEventListener("resize", h); return () => window.removeEventListener("resize", h); }, []);
+  return w;
+}
+
+const DEFAULT_ROLES = {
+  SUPER_ADMIN: { label: "Супер Админ", canEdit: true, canDelete: true, canCreate: true, canOrder: true, canSeePrice: true, canManageUsers: true, canAudit: true, canSettings: true },
+  ADMIN: { label: "Админ", canEdit: true, canDelete: true, canCreate: true, canOrder: true, canSeePrice: true, canManageUsers: false, canAudit: false, canSettings: false },
+  VIEWER_PRICE: { label: "Преглед (с цена)", canEdit: false, canDelete: false, canCreate: false, canOrder: false, canSeePrice: true, canManageUsers: false, canAudit: false, canSettings: false },
+  VIEWER: { label: "Преглед", canEdit: false, canDelete: false, canCreate: false, canOrder: false, canSeePrice: false, canManageUsers: false, canAudit: false, canSettings: false },
+};
+const PERM_LABELS = {
+  canEdit: "Редакция", canDelete: "Изтриване", canCreate: "Създаване", canOrder: "Поръчки",
+  canSeePrice: "Виж цена", canManageUsers: "Потребители", canAudit: "Одит лог", canSettings: "Настройки",
+};
+const PERM_KEYS = Object.keys(PERM_LABELS);
+const ACTION_TYPES = {
+  PART_ADDED: { label: "Добавен артикул", icon: "plus", color: "#22c55e" },
+  PART_EDITED: { label: "Редактиран артикул", icon: "edit", color: "#60a5fa" },
+  PART_DELETED: { label: "Изтрит артикул", icon: "trash", color: "#ef4444" },
+  ORDER_PLACED: { label: "Нова поръчка", icon: "order", color: "#a78bfa" },
+  USER_CREATED: { label: "Създаден потребител", icon: "users", color: "#22c55e" },
+  USER_EDITED: { label: "Редактиран потребител", icon: "edit", color: "#60a5fa" },
+  USER_DELETED: { label: "Изтрит потребител", icon: "trash", color: "#ef4444" },
+  LOGIN: { label: "Вход в системата", icon: "lock", color: "#667788" },
+};
+const DYUZA_BRANDS = ["Делфи", "Сименс", "Бош", "Пиезо", "Комън Рейл"];
+const CAR_BRANDS = ["Audi","BMW","Citroen","Dacia","Fiat","Ford","Honda","Hyundai","Iveco","Jaguar","Jeep","Kia","Land Rover","Mazda","Mercedes","Mini","Mitsubishi","Nissan","Opel","Peugeot","Porsche","Renault","Seat","Skoda","Ssangyong","Subaru","Suzuki","Toyota","Volkswagen","Volvo"];
+const DEMO_PARTS = [
+  { id: "P001", codice: "BRK-PAD-001", marchio: "Brembo", tipo: "", tipoValue: "", riferimento: "P 85 020", quantita: 48, prezzo: 42.50 },
+  { id: "P002", codice: "FLT-OIL-003", marchio: "Mann Filter", tipo: "", tipoValue: "", riferimento: "HU 721/5 x", quantita: 120, prezzo: 8.90 },
+  { id: "P003", codice: "BRK-DSC-007", marchio: "Brembo", tipo: "", tipoValue: "", riferimento: "09.A259.11", quantita: 24, prezzo: 67.80 },
+  { id: "P004", codice: "SPK-PLG-012", marchio: "NGK", tipo: "", tipoValue: "", riferimento: "BKR6EIX-11", quantita: 200, prezzo: 6.50 },
+  { id: "P005", codice: "CLT-KIT-002", marchio: "Valeo", tipo: "", tipoValue: "", riferimento: "826 803", quantita: 8, prezzo: 189.00 },
+  { id: "P006", codice: "SUS-AMR-005", marchio: "Monroe", tipo: "", tipoValue: "", riferimento: "G8102", quantita: 32, prezzo: 78.40 },
+  { id: "P007", codice: "BLT-TIM-009", marchio: "Gates", tipo: "", tipoValue: "", riferimento: "K015603XS", quantita: 15, prezzo: 112.00 },
+  { id: "P008", codice: "WPR-BLD-004", marchio: "Bosch", tipo: "", tipoValue: "", riferimento: "3 397 007 462", quantita: 60, prezzo: 22.30 },
+  { id: "P009", codice: "BAT-STR-001", marchio: "Varta", tipo: "", tipoValue: "", riferimento: "E11 Blue Dynamic", quantita: 18, prezzo: 95.00 },
+  { id: "P010", codice: "LAM-H7-006", marchio: "Philips", tipo: "", tipoValue: "", riferimento: "12972XV+S2", quantita: 150, prezzo: 18.90 },
+  { id: "P011", codice: "FLT-AIR-008", marchio: "Mann Filter", tipo: "", tipoValue: "", riferimento: "C 25 114/1", quantita: 85, prezzo: 14.20 },
+  { id: "P012", codice: "OIL-5W30-002", marchio: "Castrol", tipo: "", tipoValue: "", riferimento: "Edge 5W-30 LL", quantita: 40, prezzo: 38.50 },
+];
+const DEMO_USERS = [
+  { id: "U1", nome: "Стефко", email: "admin@carbonstealth.eu", ruolo: "SUPER_ADMIN", pin: "1234" },
+  { id: "U2", nome: "Марко", email: "marco@magazzino.it", ruolo: "ADMIN", pin: "5678" },
+  { id: "U3", nome: "Лука", email: "luca@magazzino.it", ruolo: "VIEWER_PRICE", pin: "9012" },
+  { id: "U4", nome: "Джовани", email: "giovanni@magazzino.it", ruolo: "VIEWER", pin: "3456" },
+];
+const DEFAULT_SETTINGS = { notifyEmail: "", emailEnabled: false, notifyOnPartChange: true, notifyOnOrder: true, notifyOnUserChange: true, lowStockEnabled: true, lowStockThreshold: 10 };
+
+const I = {
+  Dashboard: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
+  Inventory: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
+  Order: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
+  Users: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  Plus: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+  Edit: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  Search: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  Minus: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  X: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Lock: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  Logout: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  Warning: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  History: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Bell: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  Audit: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+  Settings: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  Mail: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  Filter: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+  Clear: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>,
+  Printer: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>,
+  Menu: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+  Cart: () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
+};
+
+let JWT = localStorage.getItem("sklad-jwt") || "";
+const apiCall = async (path, opts = {}) => {
+  const res = await fetch("/api" + path, {
+    method: opts.method || "GET",
+    headers: { "Content-Type": "application/json", ...(JWT ? { Authorization: "Bearer " + JWT } : {}) },
+    ...(opts.body ? { body: JSON.stringify(opts.body) } : {}),
+  });
+  if (res.status === 401) { JWT = ""; localStorage.removeItem("sklad-jwt"); throw new Error("AUTH"); }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Грешка");
+  return data;
+};
+const fmt = (n) => new Intl.NumberFormat("bg-BG", { style: "currency", currency: "EUR" }).format(n);
+const fmtN = (n) => new Intl.NumberFormat("bg-BG").format(n);
+const genId = () => "P" + Date.now().toString(36).toUpperCase();
+const fmtDate = (iso) => new Date(iso).toLocaleString("bg-BG", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const fmtDateShort = (iso) => new Date(iso).toLocaleString("bg-BG", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+
+
+// ─── Print ───
+function openPrintWindow(title, content) {
+  const w = window.open("", "_blank", "width=900,height=700");
+  if (!w) return;
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>@media print{@page{margin:12mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;padding:20px;font-size:13px}.header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #e8a032;padding-bottom:14px;margin-bottom:20px}.header h1{font-size:20px;color:#1a1a2e}.header .sub{color:#667;font-size:12px}.meta{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}.meta span{font-size:12px;color:#555}.meta strong{color:#1a1a2e}table{width:100%;border-collapse:collapse;margin-bottom:16px}th{background:#f5f0e8;color:#1a1a2e;font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:2px solid #e8a032}td{padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:12px}tr:nth-child(even){background:#fafaf8}.mono{font-family:'Courier New',monospace}.right{text-align:right}.total-row{font-weight:700;background:#f5f0e8!important;border-top:2px solid #e8a032}.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}.low{color:#dc2626;background:#fef2f2}.mid{color:#d97706;background:#fffbeb}.ok{color:#16a34a;background:#f0fdf4}.notes{margin-top:10px;padding:10px 14px;background:#f9f9f6;border-left:3px solid #e8a032;font-style:italic;color:#555;font-size:12px}.footer{margin-top:20px;padding-top:12px;border-top:1px solid #ddd;text-align:center;color:#999;font-size:10px}</style></head><body><div class="no-print" style="margin-bottom:16px"><button onclick="window.print()" style="background:#e8a032;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:8px">Принтирай</button><button onclick="window.close()" style="background:#667;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer">Затвори</button></div>${content}<div class="footer">СКЛАД АВТОЧАСТИ — ${new Date().toLocaleString("bg-BG")}</div></body></html>`);
+  w.document.close();
+}
+function printInventory(parts, sp) {
+  const rows = parts.map(p => `<tr><td class="mono">${p.codice}</td><td>${p.marchio}</td><td>${p.tipo==="DYUZA"?"Дюза":p.tipo==="GNP"?"ГНП":"—"}${p.tipoValue?" "+p.tipoValue:""}</td><td class="mono">${p.riferimento}</td><td><span class="badge ${p.quantita<=10?"low":p.quantita<=30?"mid":"ok"}">${p.quantita}</span></td>${sp?`<td class="right mono">${fmt(p.prezzo)}</td><td class="right mono">${fmt(p.quantita*p.prezzo)}</td>`:""}</tr>`).join("");
+  const tq=parts.reduce((s,p)=>s+p.quantita,0), tv=parts.reduce((s,p)=>s+p.quantita*p.prezzo,0);
+  openPrintWindow("Инвентар",`<div class="header"><div><h1>ИНВЕНТАР</h1><div class="sub">Пълен списък</div></div><div style="text-align:right"><div class="sub">Дата</div><strong>${new Date().toLocaleDateString("bg-BG")}</strong></div></div><div class="meta"><span>Артикули: <strong>${parts.length}</strong></span><span>Бройки: <strong>${fmtN(tq)}</strong></span>${sp?`<span>Стойност: <strong>${fmt(tv)}</strong></span>`:""}</div><table><thead><tr><th>Код</th><th>Марка</th><th>Д/Г</th><th>К/Т</th><th>Кол.</th>${sp?"<th class='right'>Цена</th><th class='right'>Стойност</th>":""}</tr></thead><tbody>${rows}<tr class="total-row"><td colspan="4"><strong>ОБЩО</strong></td><td><strong>${fmtN(tq)}</strong></td>${sp?`<td></td><td class="right"><strong>${fmt(tv)}</strong></td>`:""}</tr></tbody></table>`);
+}
+function printOrder(o, sp) {
+  const rows = o.items.map(it => `<tr><td class="mono">${it.codice}</td><td>${it.marchio}</td><td>${it.tipo==="DYUZA"?"Дюза":it.tipo==="GNP"?"ГНП":"—"}${it.tipoValue?" "+it.tipoValue:""}</td><td class="mono">${it.riferimento}</td><td class="right">${it.qty}</td>${sp?`<td class="right mono">${fmt(it.prezzo)}</td><td class="right mono">${fmt(it.qty*it.prezzo)}</td>`:""}</tr>`).join("");
+  const clientBlock = (o.clientName||o.clientPhone) ? `<div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f6;border:1px solid #e8e8e8;border-radius:8px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#888;margin-bottom:6px;font-weight:600">Клиент</div>${o.clientName?`<div style="font-size:14px;font-weight:600;color:#1a1a2e">${o.clientName}</div>`:""} ${o.clientPhone?`<div style="font-size:13px;color:#555;margin-top:2px">Тел: ${o.clientPhone}</div>`:""}</div>` : "";
+  openPrintWindow(`Поръчка ${o.id}`,`<div class="header"><div><h1>ПОРЪЧКА ${o.id}</h1></div><div style="text-align:right"><div class="sub">Дата</div><strong>${new Date(o.data).toLocaleString("bg-BG")}</strong></div></div>${clientBlock}<div class="meta"><span>Оператор: <strong>${o.operatore}</strong></span><span>Бройки: <strong>${o.items.reduce((s,i)=>s+i.qty,0)}</strong></span>${sp?`<span>Сума: <strong>${fmt(o.totale)}</strong></span>`:""}</div><table><thead><tr><th>Код</th><th>Марка</th><th>Д/Г</th><th>К/Т</th><th class="right">Кол.</th>${sp?"<th class='right'>Цена</th><th class='right'>Стойност</th>":""}</tr></thead><tbody>${rows}<tr class="total-row"><td colspan="4"><strong>ОБЩО</strong></td><td class="right"><strong>${o.items.reduce((s,i)=>s+i.qty,0)}</strong></td>${sp?`<td></td><td class="right"><strong>${fmt(o.totale)}</strong></td>`:""}</tr></tbody></table>${o.note?`<div class="notes"><strong>Бележка:</strong> ${o.note}</div>`:""}`);
+}
+
+// ─── Shared CSS ───
+const CSS = `
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(232,160,50,0.2);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+input:focus,select:focus,textarea:focus{border-color:rgba(232,160,50,0.4)!important;outline:none}
+select option{color:#000;background:#fff}
+button{cursor:pointer;font-family:inherit;transition:opacity 0.15s}button:active{transform:scale(0.97)}
+`;
+
+const inp = (m) => ({ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "12px 14px", color: "#e0e8f0", fontSize: 15, outline: "none", fontFamily: m ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif", width: "100%", boxSizing: "border-box" });
+
+// ─── Shared Components ───
+function Modal({ title, onClose, children }) {
+  return (<div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(4px)" }} onClick={onClose}>
+    <div onClick={e=>e.stopPropagation()} style={{ background: "#1a1f2e", border: "1px solid rgba(232,160,50,0.2)", borderRadius: "20px 20px 0 0", padding: "20px 20px 28px", width: "100%", maxWidth: 520, maxHeight: "92vh", overflow: "auto", animation: "slideUp 0.25s ease" }}>
+      <div style={{ width: 40, height: 4, background: "rgba(255,255,255,0.15)", borderRadius: 2, margin: "0 auto 16px" }}/>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+        <h3 style={{ color: "#e8a032", fontSize: 17, fontWeight: 700, margin: 0 }}>{title}</h3>
+        <button onClick={onClose} style={{ background: "rgba(255,255,255,0.06)", border: "none", borderRadius: 10, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", color: "#8899aa" }}><I.X /></button>
+      </div>
+      {children}
+    </div>
+  </div>);
+}
+function Field({ label, children }) {
+  return (<div style={{ display: "flex", flexDirection: "column", gap: 6 }}><label style={{ color: "#8899aa", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>{label}</label>{children}</div>);
+}
+function Toast({ message, type }) {
+  if (!message) return null;
+  const c = type==="success"?"#22c55e":type==="error"?"#ef4444":"#e8a032";
+  return (<div style={{ position: "fixed", top: 12, left: "50%", transform: "translateX(-50%)", background: `${c}18`, border: `1px solid ${c}40`, color: c, padding: "10px 20px", borderRadius: 12, fontSize: 14, fontWeight: 600, zIndex: 2000, boxShadow: "0 8px 30px rgba(0,0,0,0.4)", animation: "fadeIn 0.2s ease", maxWidth: "90vw", textAlign: "center" }}>{message}</div>);
+}
+function Btn({ children, onClick, disabled, variant = "primary", style: sx = {} }) {
+  const base = { border: "none", borderRadius: 10, padding: "12px 20px", fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, minHeight: 44, opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? "none" : "auto", ...sx };
+  const v = { primary: { background: "linear-gradient(135deg, #e8a032, #d4880a)", color: "#0f1419" }, danger: { background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }, ghost: { background: "rgba(255,255,255,0.05)", color: "#8899aa", border: "1px solid rgba(255,255,255,0.08)" }, blue: { background: "rgba(96,165,250,0.12)", color: "#60a5fa", border: "1px solid rgba(96,165,250,0.2)" }, green: { background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#fff" }, purple: { background: "rgba(167,139,250,0.12)", color: "#a78bfa", border: "1px solid rgba(167,139,250,0.2)" } };
+  return <button onClick={onClick} disabled={disabled} style={{ ...base, ...v[variant] }}>{children}</button>;
+}
+function QtyBadge({ n }) {
+  const c = n<=10?"#ef4444":n<=30?"#f59e0b":"#22c55e";
+  return <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14, fontWeight: 700, color: c, background: `${c}15`, padding: "3px 10px", borderRadius: 8 }}>{n}</span>;
+}
+function TipoCell({ p, short }) {
+  if (!p.tipo) return <span style={{ color:"#334" }}>—</span>;
+  const label = p.tipo === "DYUZA" ? "Дюза" : "ГНП";
+  const color = p.tipo === "DYUZA" ? "#60a5fa" : "#a78bfa";
+  const val = p.tipoValue || "";
+  if (short) return <span style={{ fontSize:11, color }}>{label}{val ? ": " + val : ""}</span>;
+  return (<div>
+    <span style={{ fontSize:12, fontWeight:600, color, background: color+"15", padding:"2px 8px", borderRadius:6 }}>{label}</span>
+    {val && <div style={{ fontSize:11, color:"#8899aa", marginTop:3 }}>{val}</div>}
+  </div>);
+}
+function TipoFilterBar({ parts, tipoFilter, setTipoFilter, tipoSub, setTipoSub, mob }) {
+  // Get available sub-values from actual data
+  const dyuzaBrands = useMemo(()=>[...new Set(parts.filter(p=>p.tipo==="DYUZA"&&p.tipoValue).map(p=>p.tipoValue))].sort(),[parts]);
+  const gnpBrands = useMemo(()=>{
+    const all=[];
+    parts.filter(p=>p.tipo==="GNP"&&p.tipoValue).forEach(p=>p.tipoValue.split(",").filter(Boolean).forEach(b=>{if(!all.includes(b.trim()))all.push(b.trim())}));
+    return all.sort();
+  },[parts]);
+  const hasDyuza = parts.some(p=>p.tipo==="DYUZA");
+  const hasGnp = parts.some(p=>p.tipo==="GNP");
+  if(!hasDyuza && !hasGnp) return null;
+  const toggleSub=(v)=>setTipoSub(prev=>prev.includes(v)?prev.filter(x=>x!==v):[...prev,v]);
+  const subList = tipoFilter==="DYUZA"?dyuzaBrands:tipoFilter==="GNP"?gnpBrands:[];
+  return (
+    <div style={{ marginBottom:mob?10:14 }}>
+      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+        {[{v:"",l:"Всички"},{v:"DYUZA",l:"Дюза"},{v:"GNP",l:"ГНП"}].filter(t=>t.v===""||t.v==="DYUZA"&&hasDyuza||t.v==="GNP"&&hasGnp).map(t=>(
+          <button key={t.v} onClick={()=>{setTipoFilter(t.v);setTipoSub([])}} style={{ padding:"7px 16px", borderRadius:10, border:tipoFilter===t.v?"2px solid "+(t.v==="DYUZA"?"#60a5fa":t.v==="GNP"?"#a78bfa":"#e8a032"):"1px solid rgba(255,255,255,0.08)", background:tipoFilter===t.v?(t.v==="DYUZA"?"rgba(96,165,250,0.12)":t.v==="GNP"?"rgba(167,139,250,0.12)":"rgba(232,160,50,0.1)"):"rgba(255,255,255,0.03)", color:tipoFilter===t.v?"#e0e8f0":"#667788", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+            {t.l}
+            {t.v==="DYUZA"&&hasDyuza&&<span style={{ marginLeft:6, fontSize:11, opacity:0.6 }}>({parts.filter(p=>p.tipo==="DYUZA").length})</span>}
+            {t.v==="GNP"&&hasGnp&&<span style={{ marginLeft:6, fontSize:11, opacity:0.6 }}>({parts.filter(p=>p.tipo==="GNP").length})</span>}
+          </button>
+        ))}
+      </div>
+      {tipoFilter && subList.length>0 && (
+        <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginTop:8, paddingLeft:4 }}>
+          <span style={{ fontSize:11, color:"#556677", alignSelf:"center", marginRight:4 }}>{tipoFilter==="DYUZA"?"Марка:":"Кола:"}</span>
+          {subList.map(b=>{
+            const on=tipoSub.includes(b);
+            const col=tipoFilter==="DYUZA"?"#60a5fa":"#a78bfa";
+            return <button key={b} onClick={()=>toggleSub(b)} style={{ padding:"4px 10px", borderRadius:7, border:on?`1px solid ${col}40`:"1px solid rgba(255,255,255,0.06)", background:on?`${col}18`:"rgba(255,255,255,0.02)", color:on?col:"#667788", fontSize:12, fontWeight:on?600:400, cursor:"pointer" }}>{b}</button>;
+          })}
+          {tipoSub.length>0 && <button onClick={()=>setTipoSub([])} style={{ padding:"4px 8px", borderRadius:7, border:"none", background:"rgba(239,68,68,0.1)", color:"#ef4444", fontSize:11, cursor:"pointer" }}>✕</button>}
+        </div>
+      )}
+    </div>
+  );
+}
+// Clickable inline element
+function Tap({ children, onClick, mono, color }) {
+  return <span onClick={onClick} style={{ cursor:"pointer", color: color||"inherit", fontFamily: mono?"'JetBrains Mono',monospace":"inherit", fontWeight:"inherit", fontSize:"inherit", borderBottom:"1px dashed "+(color||"rgba(232,160,50,0.4)"), paddingBottom:1, transition:"opacity 0.15s" }}>{children}</span>;
+}
+// Part detail modal
+function PartDetailModal({ part, onClose, canSeePrice, sameBrandParts, onSelect }) {
+  if (!part) return null;
+  const qc = part.quantita<=10?"#ef4444":part.quantita<=30?"#f59e0b":"#22c55e";
+  return (
+    <Modal title="Детайли за артикул" onClose={onClose}>
+      <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+        {/* Hero */}
+        <div style={{ background:"rgba(232,160,50,0.06)", border:"1px solid rgba(232,160,50,0.15)", borderRadius:14, padding:20, textAlign:"center" }}>
+          <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:22, color:"#e8a032", fontWeight:700, letterSpacing:1 }}>{part.codice}</div>
+          <div style={{ fontSize:18, fontWeight:600, color:"#e0e8f0", marginTop:6 }}>{part.marchio}</div>
+        </div>
+        {/* Details grid */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:10, padding:14 }}>
+            <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Кутия/Тубе</div>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:15, color:"#ccd6e0" }}>{part.riferimento}</div>
+          </div>
+          <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:10, padding:14, gridColumn:"1/-1" }}>
+            <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Дюза / ГНП</div>
+            {part.tipo ? <TipoCell p={part} /> : <span style={{ color:"#445" }}>Не е зададено</span>}
+          </div>
+          <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:10, padding:14 }}>
+            <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Наличност</div>
+            <div style={{ fontSize:24, fontWeight:700, color:qc, fontFamily:"'JetBrains Mono',monospace" }}>{part.quantita} <span style={{ fontSize:13, fontWeight:400, color:"#667788" }}>бр.</span></div>
+          </div>
+          {canSeePrice && <>
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:10, padding:14 }}>
+              <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Единична цена</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, color:"#e0e8f0", fontWeight:600 }}>{fmt(part.prezzo)}</div>
+            </div>
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:10, padding:14 }}>
+              <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Обща стойност</div>
+              <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:18, color:"#22c55e", fontWeight:700 }}>{fmt(part.quantita * part.prezzo)}</div>
+            </div>
+          </>}
+        </div>
+        {/* Status bar */}
+        <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:10, padding:14 }}>
+          <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Ниво на запас</div>
+          <div style={{ height:10, background:"rgba(255,255,255,0.06)", borderRadius:5, overflow:"hidden" }}>
+            <div style={{ width:`${Math.min(part.quantita/200*100,100)}%`, height:"100%", background:qc, borderRadius:5, transition:"width 0.3s" }}/>
+          </div>
+          <div style={{ display:"flex", justifyContent:"space-between", marginTop:6 }}>
+            <span style={{ fontSize:11, color:qc, fontWeight:600 }}>{part.quantita<=10?"Критично ниско":part.quantita<=30?"Ниско":"Нормално"}</span>
+            <span style={{ fontSize:11, color:"#556677" }}>{part.quantita} / 200</span>
+          </div>
+        </div>
+        {/* Same brand */}
+        {part.note && (
+          <div style={{ background:"rgba(232,160,50,0.05)", border:"1px solid rgba(232,160,50,0.12)", borderRadius:10, padding:14 }}>
+            <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Бележки</div>
+            <div style={{ fontSize:14, color:"#ccd6e0", lineHeight:1.5 }}>{part.note}</div>
+          </div>
+        )}
+        {sameBrandParts.length > 1 && (
+          <div>
+            <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Други артикули от {part.marchio} ({sameBrandParts.length - 1})</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {sameBrandParts.filter(p=>p.id!==part.id).map(p=>(
+                <span key={p.id} onClick={()=>onSelect&&onSelect(p)} style={{ background:"rgba(232,160,50,0.06)", border:"1px solid rgba(232,160,50,0.12)", borderRadius:8, padding:"5px 10px", fontSize:12, color:"#ccd6e0", cursor:"pointer", transition:"all 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(232,160,50,0.15)";e.currentTarget.style.borderColor="rgba(232,160,50,0.3)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(232,160,50,0.06)";e.currentTarget.style.borderColor="rgba(232,160,50,0.12)"}}>
+                  <span style={{ color:"#e8a032", fontFamily:"'JetBrains Mono',monospace", borderBottom:"1px dashed rgba(232,160,50,0.4)" }}>{p.codice}</span>
+                  <span style={{ color:"#556677", marginLeft:6 }}>{p.quantita} бр.</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// ═══════════════════════════════════════════
+function App() {
+  const vw = useW();
+  const mob = vw < 768;
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [users, setUsers] = useState(DEMO_USERS);
+  const [parts, setParts] = useState(DEMO_PARTS);
+  const [orders, setOrders] = useState([]);
+  const [auditLog, setAuditLog] = useState([]);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [roles, setRoles] = useState(DEFAULT_ROLES);
+  const [notifications, setNotifications] = useState([]);
+  const [tab, setTab] = useState("dashboard");
+  const [toast, setToast] = useState({ message: "", type: "" });
+  const [search, setSearch] = useState("");
+  const [dashSearch, setDashSearch] = useState("");
+  const [tipoFilter, setTipoFilter] = useState("");
+  const [tipoSub, setTipoSub] = useState([]);
+  const [editModal, setEditModal] = useState(null);
+  const [addModal, setAddModal] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [orderNote, setOrderNote] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
+  const [ordersSearch, setOrdersSearch] = useState("");
+  const [orderHistory, setOrderHistory] = useState(false);
+  const [userModal, setUserModal] = useState(null);
+  const [addUserModal, setAddUserModal] = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
+  const [auditFilter, setAuditFilter] = useState("ALL");
+  const [moreMenu, setMoreMenu] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [detailPart, setDetailPart] = useState(null);
+  const [showRoleEditor, setShowRoleEditor] = useState(false);
+  const [newRoleModal, setNewRoleModal] = useState(false);
+  const builtinRoles = ["SUPER_ADMIN","ADMIN","VIEWER_PRICE","VIEWER"];
+  const perms = user ? (roles[user.ruolo] || {}) : {};
+
+  const showToast = useCallback((m, t="success") => { setToast({message:m,type:t}); setTimeout(()=>setToast({message:"",type:""}),2500); }, []);
+
+  const fetchAll = useCallback(async () => {
+    try {
+      const [p, o, r, au, s, n] = await Promise.all([
+        apiCall("/parts"), apiCall("/orders"), apiCall("/roles"),
+        apiCall("/audit").catch(()=>[]), apiCall("/settings").catch(()=>DEFAULT_SETTINGS),
+        apiCall("/notifications").catch(()=>[]),
+      ]);
+      setParts(p); setOrders(o); setRoles(r); setAuditLog(au); setSettings(s); setNotifications(n);
+      try { setUsers(await apiCall("/users")); } catch(e) {}
+    } catch (e) { if (e.message === "AUTH") { setUser(null); return; } }
+    setLoading(false);
+  }, []);
+  useEffect(() => { if (user) fetchAll(); }, [user, fetchAll]);
+
+  const refreshAudit = useCallback(async () => {
+    try { const [au,n] = await Promise.all([apiCall("/audit").catch(()=>[]),apiCall("/notifications").catch(()=>[])]); setAuditLog(au); setNotifications(n); } catch(e) {}
+  }, []);
+
+  const unread = useMemo(()=>notifications.filter(n=>!n.read).length,[notifications]);
+  const dashData = useMemo(() => {
+    const tp=parts.reduce((s,p)=>s+p.quantita,0), tv=parts.reduce((s,p)=>s+p.quantita*p.prezzo,0);
+    const brands=[...new Set(parts.map(p=>p.marchio))], lowTh=settings.lowStockThreshold||10, low=parts.filter(p=>p.quantita<=lowTh);
+    const bb=brands.map(b=>{const bp=parts.filter(p=>p.marchio===b);return{m:b,pz:bp.reduce((s,p)=>s+p.quantita,0),a:bp.length,v:bp.reduce((s,p)=>s+p.quantita*p.prezzo,0)}}).sort((a,b)=>b.pz-a.pz);
+    // Group by code — sum across different К/Т
+    const codes=[...new Set(parts.map(p=>p.codice))];
+    const bc=codes.map(c=>{const cp=parts.filter(p=>p.codice===c);return{code:c,marchio:cp[0].marchio,rawTipo:cp[0].tipo||"",rawTipoValue:cp[0].tipoValue||"",tipo:cp[0].tipo?(cp[0].tipo==="DYUZA"?"Дюза":"ГНП")+(cp[0].tipoValue?": "+cp[0].tipoValue:""):"",tubes:cp.map(p=>p.riferimento),totalQty:cp.reduce((s,p)=>s+p.quantita,0),totalVal:cp.reduce((s,p)=>s+p.quantita*p.prezzo,0),avgPrice:cp.length?cp.reduce((s,p)=>s+p.prezzo,0)/cp.length:0,count:cp.length}}).sort((a,b)=>a.code.localeCompare(b.code));
+    return{tp,tv,bc:brands.length,low,bb,ta:parts.length,byCode:bc};
+  }, [parts,settings]);
+  const applyTipo = useCallback((list) => {
+    if (!tipoFilter) return list;
+    let r = list.filter(p => p.tipo === tipoFilter);
+    if (tipoSub.length > 0) {
+      if (tipoFilter === "DYUZA") r = r.filter(p => tipoSub.includes(p.tipoValue));
+      else r = r.filter(p => tipoSub.some(b => (p.tipoValue||"").split(",").map(x=>x.trim()).includes(b)));
+    }
+    return r;
+  }, [tipoFilter, tipoSub]);
+  const filtered = useMemo(()=>{let r=parts;if(search){const s=search.toLowerCase();r=r.filter(p=>p.codice.toLowerCase().includes(s)||p.marchio.toLowerCase().includes(s)||p.riferimento.toLowerCase().includes(s)||(p.note||"").toLowerCase().includes(s)||(p.tipoValue||"").toLowerCase().includes(s))}return applyTipo(r)},[parts,search,applyTipo]);
+  const oFiltered = useMemo(()=>{if(!orderSearch)return parts;const s=orderSearch.toLowerCase();return parts.filter(p=>p.codice.toLowerCase().includes(s)||p.marchio.toLowerCase().includes(s)||p.riferimento.toLowerCase().includes(s)||(p.note||"").toLowerCase().includes(s)||(p.tipoValue||"").toLowerCase().includes(s))},[parts,orderSearch]);
+  const fAudit = useMemo(()=>auditFilter==="ALL"?auditLog:auditLog.filter(l=>l.action===auditFilter),[auditLog,auditFilter]);
+  const cartTot = useMemo(()=>cart.reduce((s,c)=>s+c.qty*c.prezzo,0),[cart]);
+  const filteredOrders = useMemo(()=>{
+    if(!ordersSearch) return orders;
+    const s=ordersSearch.toLowerCase();
+    return orders.filter(o=>
+      (o.orderId||o.id||"").toLowerCase().includes(s)||
+      (o.operatore||"").toLowerCase().includes(s)||
+      (o.clientName||"").toLowerCase().includes(s)||
+      (o.clientPhone||"").toLowerCase().includes(s)||
+      (o.note||"").toLowerCase().includes(s)||
+      (o.items||[]).some(it=>it.codice.toLowerCase().includes(s)||it.marchio.toLowerCase().includes(s))
+    );
+  },[orders,ordersSearch]);
+  const dashFiltered = useMemo(()=>{
+    let bc = dashData.byCode, lo = dashData.low;
+    // Tipo filter
+    if (tipoFilter) {
+      bc = bc.filter(c=>c.rawTipo===tipoFilter);
+      lo = lo.filter(p=>p.tipo===tipoFilter);
+      if (tipoSub.length>0) {
+        if (tipoFilter==="DYUZA") {
+          bc = bc.filter(c=>tipoSub.includes(c.rawTipoValue));
+          lo = lo.filter(p=>tipoSub.includes(p.tipoValue));
+        } else {
+          bc = bc.filter(c=>tipoSub.some(b=>(c.rawTipoValue||"").split(",").map(x=>x.trim()).includes(b)));
+          lo = lo.filter(p=>tipoSub.some(b=>(p.tipoValue||"").split(",").map(x=>x.trim()).includes(b)));
+        }
+      }
+    }
+    // Text search
+    if (dashSearch) {
+      const s=dashSearch.toLowerCase();
+      bc = bc.filter(c=>c.code.toLowerCase().includes(s)||c.marchio.toLowerCase().includes(s)||c.tubes.some(t=>t.toLowerCase().includes(s)));
+      lo = lo.filter(p=>p.codice.toLowerCase().includes(s)||p.marchio.toLowerCase().includes(s)||p.riferimento.toLowerCase().includes(s)||(p.note||"").toLowerCase().includes(s));
+    }
+    return { byCode: bc, low: lo };
+  },[dashSearch,dashData,tipoFilter,tipoSub]);
+
+  const addToCart=(p)=>{const ic=cart.find(c=>c.id===p.id);if((ic?ic.qty:0)>=p.quantita){showToast("Максимално количество","error");return}ic?setCart(cart.map(c=>c.id===p.id?{...c,qty:c.qty+1}:c)):setCart([...cart,{...p,qty:1}])};
+  const updCart=(id,d)=>{const p=parts.find(x=>x.id===id);setCart(pr=>pr.map(c=>{if(c.id!==id)return c;const n=c.qty+d;if(n<=0)return null;if(n>p.quantita){showToast("Недостатъчна наличност","error");return c}return{...c,qty:n}}).filter(Boolean))};
+  const rmCart=(id)=>setCart(p=>p.filter(c=>c.id!==id));
+
+  const submitOrder=async()=>{if(!cart.length){showToast("Количката е празна","error");return}if(!clientName.trim()){showToast("Въведи име на клиент","error");return}try{await apiCall("/orders",{method:"POST",body:{clientName:clientName.trim(),clientPhone:clientPhone.trim(),note:orderNote,items:cart.map(c=>({partId:c.id,qty:c.qty}))}});setCart([]);setOrderNote("");setClientName("");setClientPhone("");setCartOpen(false);showToast("Поръчка потвърдена!");const[np,no]=await Promise.all([apiCall("/parts"),apiCall("/orders")]);setParts(np);setOrders(no);refreshAudit()}catch(e){showToast(e.message,"error")}};
+
+  const savePart=async(p)=>{try{if(editModal){await apiCall("/parts/"+p.id,{method:"PUT",body:p});showToast("Обновен")}else{await apiCall("/parts",{method:"POST",body:p});showToast("Добавен")}setEditModal(null);setAddModal(false);setParts(await apiCall("/parts"));refreshAudit()}catch(e){showToast(e.message,"error")}};
+  const delPart=async(id)=>{try{await apiCall("/parts/"+id,{method:"DELETE"});showToast("Изтрит","error");setParts(await apiCall("/parts"));refreshAudit()}catch(e){showToast(e.message,"error")}};
+  const saveUser=async(u)=>{try{if(userModal){await apiCall("/users/"+u.id,{method:"PUT",body:u});showToast("Обновен")}else{await apiCall("/users",{method:"POST",body:u});showToast("Създаден")}setUserModal(null);setAddUserModal(false);setUsers(await apiCall("/users"));refreshAudit()}catch(e){showToast(e.message,"error")}};
+  const delUser=async(id)=>{if(id===user.id){showToast("Не можеш себе си","error");return}try{await apiCall("/users/"+id,{method:"DELETE"});showToast("Изтрит","error");setUsers(await apiCall("/users"));refreshAudit()}catch(e){showToast(e.message,"error")}};
+
+  const showDetail = (partOrId) => {
+    const p = typeof partOrId === "string" ? parts.find(x=>x.id===partOrId) : partOrId;
+    if (p) setDetailPart(p);
+  };
+  const showBrand = (brand) => {
+    const bp = parts.filter(p=>p.marchio===brand);
+    if (bp.length) setDetailPart(bp[0]);
+  };
+
+  useEffect(() => {
+    if (JWT && !user) { apiCall("/auth/me").then(u=>setUser(u)).catch(()=>{JWT="";localStorage.removeItem("sklad-jwt");setLoading(false)}); }
+    else if (!JWT) setLoading(false);
+  }, []);
+
+  if (!user) {
+    if (loading) return <div style={{ minHeight:"100vh",background:"#0f1419",display:"flex",alignItems:"center",justifyContent:"center",color:"#e8a032",fontFamily:"'DM Sans',sans-serif",fontSize:18 }}>Зареждане...</div>;
+    return <LoginScreen onLogin={(u,token)=>{JWT=token;localStorage.setItem("sklad-jwt",token);setUser(u)}} />;
+  }
+
+  // Tabs config
+  const mainTabs = [
+    { id:"dashboard", label:"Табло", icon:<I.Dashboard/> },
+    { id:"inventario", label:"Инвентар", icon:<I.Inventory/> },
+    ...(perms.canOrder?[{ id:"ordine", label:"Поръчка", icon:<I.Order/>, badge:cart.length }]:[]),
+    { id:"poruchki", label:"Поръчки", icon:<I.History/> },
+  ];
+  const extraTabs = [
+    ...(perms.canManageUsers?[{ id:"utenti", label:"Потребители", icon:<I.Users/> }]:[]),
+    ...(perms.canAudit?[{ id:"audit", label:"Одит лог", icon:<I.Audit/> }]:[]),
+    ...(perms.canSettings?[{ id:"settings", label:"Настройки", icon:<I.Settings/> }]:[]),
+  ];
+  const allTabs = [...mainTabs,...extraTabs];
+
+  // ─── Card component for mobile inventory ───
+  const PartCard = ({ p }) => (
+    <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding:16, display:"flex", flexDirection:"column", gap:10 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+        <div>
+          <Tap mono color="#e8a032" onClick={()=>showDetail(p)}><span style={{ fontSize:14, fontWeight:600 }}>{p.codice}</span></Tap>
+          <div style={{ marginTop:2 }}><Tap color="#e0e8f0" onClick={()=>showDetail(p)}><span style={{ fontSize:15, fontWeight:500 }}>{p.marchio}</span></Tap></div>
+          {p.tipo && <div style={{ marginTop:3 }}><TipoCell p={p} short /></div>}
+          <div style={{ fontSize:12, color:"#667788", fontFamily:"'JetBrains Mono',monospace", marginTop:2 }}>{p.riferimento}</div>
+        </div>
+        <QtyBadge n={p.quantita} />
+      </div>
+      {perms.canSeePrice && (
+        <div style={{ display:"flex", justifyContent:"space-between", borderTop:"1px solid rgba(255,255,255,0.04)", paddingTop:8 }}>
+          <span style={{ fontSize:13, color:"#667788" }}>Цена: <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#ccd6e0" }}>{fmt(p.prezzo)}</span></span>
+          <span style={{ fontSize:13, color:"#60a5fa", fontFamily:"'JetBrains Mono',monospace", fontWeight:600 }}>{fmt(p.quantita*p.prezzo)}</span>
+        </div>
+      )}
+      {(perms.canEdit||perms.canDelete) && (
+        <div style={{ display:"flex", gap:8 }}>
+          {perms.canEdit && <Btn variant="blue" onClick={()=>setEditModal(p)} style={{ flex:1, padding:"10px" }}><I.Edit /> Редакция</Btn>}
+          {perms.canDelete && <Btn variant="danger" onClick={()=>{if(confirm("Изтриване на "+p.codice+"?"))delPart(p.id)}} style={{ padding:"10px 16px" }}><I.Trash /></Btn>}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#0f1419", fontFamily:"'DM Sans',sans-serif", color:"#e0e8f0", paddingBottom: mob ? 72 : 0 }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+      <style>{CSS}</style>
+      <Toast message={toast.message} type={toast.type} />
+
+      {/* ─── TOP BAR ─── */}
+      <div style={{ background:"rgba(26,31,46,0.95)", borderBottom:"1px solid rgba(232,160,50,0.15)", padding: mob?"0 12px":"0 24px", display:"flex", alignItems:"center", justifyContent:"space-between", height: mob?52:60, position:"sticky", top:0, zIndex:100, backdropFilter:"blur(12px)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap: mob?8:14 }}>
+          <div style={{ width:30, height:30, background:"linear-gradient(135deg,#e8a032,#d4880a)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:"#0f1419" }}>С</div>
+          {!mob && <span style={{ color:"#e8a032", fontWeight:700, fontSize:15 }}>СКЛАД</span>}
+          {!mob && <div style={{ display:"flex", gap:2, marginLeft:12 }}>
+            {allTabs.map(t => (
+              <button key={t.id} onClick={()=>setTab(t.id)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:8, border:"none", fontSize:13, fontWeight:600, background:tab===t.id?"rgba(232,160,50,0.15)":"transparent", color:tab===t.id?"#e8a032":"#667788", position:"relative" }}>
+                {t.icon}<span>{t.label}</span>
+                {t.badge>0 && <span style={{ position:"absolute", top:1, right:2, background:"#e8a032", color:"#0f1419", fontSize:10, fontWeight:700, width:18, height:18, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center" }}>{t.badge}</span>}
+              </button>
+            ))}
+          </div>}
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          {perms.canAudit && (
+            <div style={{ position:"relative" }}>
+              <button onClick={()=>setShowNotif(!showNotif)} style={{ background:unread>0?"rgba(232,160,50,0.15)":"rgba(255,255,255,0.05)", border:"1px solid "+(unread>0?"rgba(232,160,50,0.3)":"rgba(255,255,255,0.06)"), borderRadius:10, width:40, height:40, display:"flex", alignItems:"center", justifyContent:"center", color:unread>0?"#e8a032":"#667788", position:"relative" }}>
+                <I.Bell />
+                {unread>0 && <span style={{ position:"absolute", top:-5, right:-5, background:"#ef4444", color:"#fff", fontSize:10, fontWeight:700, minWidth:20, height:20, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", padding:"0 4px", border:"2px solid #1a1f2e", animation:"pulse 2s infinite" }}>{unread>99?"99+":unread}</span>}
+              </button>
+              {showNotif && <div style={{ position:"fixed", inset:0, zIndex:199 }} onClick={()=>setShowNotif(false)}/>}
+              {showNotif && (
+                <div style={{ position:"absolute", top:48, right:0, width:mob?"calc(100vw - 24px)":380, maxHeight:440, background:"#1a1f2e", border:"1px solid rgba(232,160,50,0.25)", borderRadius:14, boxShadow:"0 20px 60px rgba(0,0,0,0.5)", zIndex:200, overflow:"hidden", animation:"fadeIn 0.2s" }}>
+                  <div style={{ padding:"12px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ color:"#e8a032", fontWeight:700, fontSize:14 }}>Известия</span>
+                    <div style={{ display:"flex", gap:6 }}>
+                      {notifications.length>0 && <button onClick={()=>{apiCall("/notifications/read",{method:"PUT"}).then(()=>setNotifications(p=>p.map(n=>({...n,read:true}))))}} style={{ background:"rgba(96,165,250,0.1)", border:"1px solid rgba(96,165,250,0.2)", borderRadius:6, padding:"4px 10px", color:"#60a5fa", fontSize:11, fontWeight:600 }}>Прочетени</button>}
+                      {notifications.length>0 && <button onClick={()=>{apiCall("/notifications",{method:"DELETE"}).then(()=>{setNotifications([]);setShowNotif(false)})}} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:6, padding:"4px 10px", color:"#ef4444", fontSize:11, fontWeight:600 }}>Изчисти</button>}
+                    </div>
+                  </div>
+                  <div style={{ maxHeight:370, overflowY:"auto" }}>
+                    {notifications.length===0?<div style={{ padding:30, textAlign:"center", color:"#445566", fontSize:13 }}>Няма известия</div>:
+                    notifications.slice(0,30).map((n,i)=>{const at=ACTION_TYPES[n.action]||{label:n.action,color:"#667"};return(
+                      <div key={n.id||i} style={{ padding:"11px 16px", borderBottom:"1px solid rgba(255,255,255,0.03)", background:n.read?"transparent":"rgba(232,160,50,0.04)" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}><span style={{ fontSize:12, fontWeight:600, color:at.color }}>{at.label}</span><span style={{ fontSize:10, color:"#556677", fontFamily:"'JetBrains Mono',monospace" }}>{fmtDateShort(n.timestamp)}</span></div>
+                        <div style={{ fontSize:12, color:"#99aabb" }}><strong style={{ color:"#ccd6e0" }}>{n.userName}</strong> — {n.description}</div>
+                      </div>
+                    )})}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {!mob && <div style={{ textAlign:"right", marginLeft:4 }}><div style={{ color:"#ccd6e0", fontSize:13, fontWeight:600 }}>{user.nome}</div><div style={{ color:"#556677", fontSize:11 }}>{roles[user.ruolo]?.label||user.ruolo}</div></div>}
+          <button onClick={()=>{JWT="";localStorage.removeItem("sklad-jwt");setUser(null);setCart([]);setTab("dashboard");setShowNotif(false);setMoreMenu(false)}} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:10, width:40, height:40, display:"flex", alignItems:"center", justifyContent:"center", color:"#ef4444" }}><I.Logout /></button>
+        </div>
+      </div>
+
+      {/* ─── BOTTOM NAV (mobile) ─── */}
+      {mob && (
+        <div style={{ position:"fixed", bottom:0, left:0, right:0, height:68, background:"rgba(26,31,46,0.98)", borderTop:"1px solid rgba(232,160,50,0.15)", display:"flex", zIndex:100, backdropFilter:"blur(12px)", paddingBottom:"env(safe-area-inset-bottom)" }}>
+          {mainTabs.map(t => (
+            <button key={t.id} onClick={()=>{setTab(t.id);setMoreMenu(false)}} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, border:"none", background:"transparent", color:tab===t.id?"#e8a032":"#556677", fontSize:10, fontWeight:600, position:"relative", padding:0 }}>
+              {t.icon}<span>{t.label}</span>
+              {t.badge>0 && <span style={{ position:"absolute", top:6, right:"calc(50% - 18px)", background:"#e8a032", color:"#0f1419", fontSize:9, fontWeight:700, width:16, height:16, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center" }}>{t.badge}</span>}
+            </button>
+          ))}
+          {extraTabs.length>0 && (
+            <button onClick={()=>setMoreMenu(!moreMenu)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, border:"none", background:"transparent", color:moreMenu||extraTabs.some(t=>t.id===tab)?"#e8a032":"#556677", fontSize:10, fontWeight:600, position:"relative" }}>
+              <I.Menu /><span>Още</span>
+            </button>
+          )}
+          {moreMenu && (<>
+            <div style={{ position:"fixed", inset:0, zIndex:149 }} onClick={()=>setMoreMenu(false)} />
+            <div style={{ position:"absolute", bottom:72, right:8, background:"#1a1f2e", border:"1px solid rgba(232,160,50,0.2)", borderRadius:14, padding:8, boxShadow:"0 -10px 40px rgba(0,0,0,0.5)", zIndex:150, minWidth:180, animation:"fadeIn 0.15s" }}>
+              {extraTabs.map(t => (
+                <button key={t.id} onClick={()=>{setTab(t.id);setMoreMenu(false)}} style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", border:"none", borderRadius:10, background:tab===t.id?"rgba(232,160,50,0.12)":"transparent", color:tab===t.id?"#e8a032":"#ccd6e0", fontSize:14, fontWeight:500, textAlign:"left" }}>
+                  {t.icon}{t.label}
+                </button>
+              ))}
+            </div>
+          </>)}
+        </div>
+      )}
+
+      {/* ─── CONTENT ─── */}
+      <div style={{ padding: mob?"16px 12px":"24px", maxWidth:1400, margin:"0 auto" }}>
+
+        {/* ═══ ТАБЛО ═══ */}
+        {tab==="dashboard" && (
+          <div style={{ animation:"fadeIn 0.3s" }}>
+            {/* Search */}
+            <div style={{ position:"relative", marginBottom: mob?10:14 }}>
+              <div style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"#667788" }}><I.Search /></div>
+              <input value={dashSearch} onChange={e=>setDashSearch(e.target.value)} placeholder="Търси по код, марка, К/Т..." style={{ ...inp(), paddingLeft:42 }} />
+              {dashSearch && <button onClick={()=>setDashSearch("")} style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"rgba(255,255,255,0.08)", border:"none", borderRadius:8, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", color:"#8899aa" }}><I.X /></button>}
+            </div>
+            <TipoFilterBar parts={parts} tipoFilter={tipoFilter} setTipoFilter={setTipoFilter} tipoSub={tipoSub} setTipoSub={setTipoSub} mob={mob} />
+            <div style={{ display:"grid", gridTemplateColumns: mob?"1fr 1fr":`repeat(${perms.canSeePrice?4:3},1fr)`, gap: mob?10:16, marginBottom: mob?16:24 }}>
+              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?"14px":"20px 22px" }}>
+                <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Общо бройки</div>
+                <div style={{ color:"#e8a032", fontSize: mob?22:28, fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{fmtN(dashFiltered.byCode.reduce((s,c)=>s+c.totalQty,0))}</div>
+              </div>
+              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?"14px":"20px 22px" }}>
+                <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Артикули</div>
+                <div style={{ color:"#60a5fa", fontSize: mob?22:28, fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{dashFiltered.byCode.length}</div>
+              </div>
+              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?"14px":"20px 22px" }}>
+                <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Марки</div>
+                <div style={{ color:"#a78bfa", fontSize: mob?22:28, fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{[...new Set(dashFiltered.byCode.map(c=>c.marchio))].length}</div>
+              </div>
+              {perms.canSeePrice && <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?"14px":"20px 22px", gridColumn: mob?"1/-1":"auto" }}>
+                <div style={{ color:"#667788", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Стойност</div>
+                <div style={{ color:"#22c55e", fontSize: mob?20:28, fontWeight:700, fontFamily:"'JetBrains Mono',monospace" }}>{fmt(dashFiltered.byCode.reduce((s,c)=>s+c.totalVal,0))}</div>
+              </div>}
+            </div>
+            {settings.lowStockEnabled!==false && dashFiltered.low.length>0 && (
+              <div style={{ background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:14, padding:"14px 16px", marginBottom: mob?16:24 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10, color:"#ef4444", fontWeight:600, fontSize:13 }}><I.Warning /> Ниска наличност ({dashFiltered.low.length})</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>{dashFiltered.low.map(p=>(<span key={p.id} onClick={()=>showDetail(p)} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:8, padding:"5px 10px", fontSize:12, color:"#f87171", cursor:"pointer" }}><strong>{p.codice}</strong> — {p.quantita} бр.</span>))}</div>
+              </div>
+            )}
+            {/* Code table */}
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, overflow:"hidden" }}>
+              <div style={{ padding:"14px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <h3 style={{ color:"#ccd6e0", fontSize:14, fontWeight:600, margin:0 }}>По код (сумирано)</h3>
+                {dashSearch && <span style={{ color:"#e8a032", fontSize:12 }}>{dashFiltered.byCode.length} резултата</span>}
+              </div>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                  <thead><tr style={{ background:"rgba(232,160,50,0.05)" }}>{["Код","Марка","Д/Г","К/Т","Общо бр.",...(perms.canSeePrice?["Стойност"]:[])].map(h=>(<th key={h} style={{ padding: mob?"10px 12px":"12px 16px", textAlign:"left", color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:0.5, borderBottom:"1px solid rgba(255,255,255,0.06)", whiteSpace:"nowrap" }}>{h}</th>))}</tr></thead>
+                  <tbody>{dashFiltered.byCode.length===0?<tr><td colSpan={99} style={{ padding:40, textAlign:"center", color:"#556677" }}>Няма резултати</td></tr>:dashFiltered.byCode.map((c,i)=>{
+                    const qc=c.totalQty<=10?"#ef4444":c.totalQty<=30?"#f59e0b":"#22c55e";
+                    return(<tr key={c.code} style={{ borderBottom:"1px solid rgba(255,255,255,0.03)", background:i%2===0?"transparent":"rgba(255,255,255,0.01)" }}>
+                    <td style={{ padding: mob?"10px 12px":"12px 16px" }}><Tap mono color="#e8a032" onClick={()=>{const p=parts.find(x=>x.codice===c.code);if(p)showDetail(p)}}><span style={{ fontWeight:600, fontSize:13 }}>{c.code}</span></Tap></td>
+                    <td style={{ padding: mob?"10px 12px":"12px 16px" }}><Tap color="#e0e8f0" onClick={()=>showBrand(c.marchio)}><span style={{ fontSize:13, fontWeight:500 }}>{c.marchio}</span></Tap></td>
+                    <td style={{ padding: mob?"10px 12px":"12px 16px", fontSize:11, color:"#8899aa" }}>{c.tipo||"—"}</td>
+                    <td style={{ padding: mob?"10px 12px":"12px 16px", fontSize:12, color:"#667788", fontFamily:"'JetBrains Mono',monospace" }}>{c.count>1?c.tubes.join(", "):c.tubes[0]}</td>
+                    <td style={{ padding: mob?"10px 12px":"12px 16px" }}><span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14, fontWeight:700, color:qc }}>{c.totalQty}</span></td>
+                    {perms.canSeePrice && <td style={{ padding: mob?"10px 12px":"12px 16px", fontFamily:"'JetBrains Mono',monospace", color:"#22c55e" }}>{fmt(c.totalVal)}</td>}
+                  </tr>)})}</tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══ ИНВЕНТАР ═══ */}
+        {tab==="inventario" && (
+          <div style={{ animation:"fadeIn 0.3s" }}>
+            <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
+              <div style={{ position:"relative", flex:1, minWidth: mob?0:200 }}>
+                <div style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#667788" }}><I.Search /></div>
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Търси..." style={{ ...inp(), paddingLeft:40 }} />
+              </div>
+              <div style={{ display:"flex", gap:8 }}>
+                {perms.canCreate && <Btn onClick={()=>setAddModal(true)}><I.Plus />{!mob&&" Нов"}</Btn>}
+                <Btn variant="blue" onClick={()=>printInventory(filtered,perms.canSeePrice)}><I.Printer />{!mob&&" Печат"}</Btn>
+              </div>
+            </div>
+            <TipoFilterBar parts={parts} tipoFilter={tipoFilter} setTipoFilter={setTipoFilter} tipoSub={tipoSub} setTipoSub={setTipoSub} mob={mob} />
+            {/* Mobile: cards / Desktop: table */}
+            {mob ? (
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {filtered.map(p => <PartCard key={p.id} p={p} />)}
+                {filtered.length===0 && <div style={{ padding:40, textAlign:"center", color:"#556677" }}>Няма артикули</div>}
+              </div>
+            ) : (
+              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, overflow:"hidden" }}>
+                <div style={{ overflowX:"auto" }}><table style={{ width:"100%", borderCollapse:"collapse" }}>
+                  <thead><tr style={{ background:"rgba(232,160,50,0.05)" }}>{["Код","Марка","Дюза/ГНП","Кутия/Тубе","Кол.",...(perms.canSeePrice?["Цена","Стойност"]:[]),...(perms.canEdit||perms.canDelete?[""]:[])].map((h,i)=>(<th key={i} style={{ padding:"12px 16px", textAlign:"left", color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.06)", whiteSpace:"nowrap" }}>{h}</th>))}</tr></thead>
+                  <tbody>{filtered.map((p,i)=>(
+                    <tr key={p.id} style={{ borderBottom:"1px solid rgba(255,255,255,0.03)", background:i%2===0?"transparent":"rgba(255,255,255,0.01)" }}>
+                      <td style={{ padding:"12px 16px" }}><Tap mono color="#e8a032" onClick={()=>showDetail(p)}><span style={{ fontSize:13, fontWeight:500 }}>{p.codice}</span></Tap></td>
+                      <td style={{ padding:"12px 16px" }}><Tap color="#e0e8f0" onClick={()=>showDetail(p)}><span style={{ fontSize:14, fontWeight:500 }}>{p.marchio}</span></Tap></td>
+                      <td style={{ padding:"12px 16px" }}><TipoCell p={p} /></td>
+                      <td style={{ padding:"12px 16px", fontSize:13, color:"#8899aa", fontFamily:"'JetBrains Mono',monospace" }}>{p.riferimento}</td>
+                      <td style={{ padding:"12px 16px" }}><QtyBadge n={p.quantita}/></td>
+                      {perms.canSeePrice && <><td style={{ padding:"12px 16px", fontFamily:"'JetBrains Mono',monospace", fontSize:13 }}>{fmt(p.prezzo)}</td><td style={{ padding:"12px 16px", fontFamily:"'JetBrains Mono',monospace", fontSize:13, color:"#60a5fa" }}>{fmt(p.quantita*p.prezzo)}</td></>}
+                      {(perms.canEdit||perms.canDelete) && <td style={{ padding:"12px 16px" }}><div style={{ display:"flex", gap:6 }}>
+                        {perms.canEdit && <button onClick={()=>setEditModal(p)} style={{ background:"rgba(96,165,250,0.1)", border:"1px solid rgba(96,165,250,0.2)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"#60a5fa" }}><I.Edit /></button>}
+                        {perms.canDelete && <button onClick={()=>{if(confirm("Изтриване?"))delPart(p.id)}} style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:8, width:34, height:34, display:"flex", alignItems:"center", justifyContent:"center", color:"#ef4444" }}><I.Trash /></button>}
+                      </div></td>}
+                    </tr>
+                  ))}{filtered.length===0 && <tr><td colSpan={99} style={{ padding:40, textAlign:"center", color:"#556677" }}>Няма артикули</td></tr>}</tbody>
+                </table></div>
+                <div style={{ padding:"12px 16px", borderTop:"1px solid rgba(255,255,255,0.06)", color:"#667788", fontSize:12, display:"flex", justifyContent:"space-between" }}><span>{filtered.length} арт.</span>{perms.canSeePrice && <span>{fmt(filtered.reduce((s,p)=>s+p.quantita*p.prezzo,0))}</span>}</div>
+              </div>
+            )}
+            {mob && <div style={{ color:"#556677", fontSize:12, textAlign:"center", marginTop:10 }}>{filtered.length} артикула{perms.canSeePrice?` — ${fmt(filtered.reduce((s,p)=>s+p.quantita*p.prezzo,0))}`:""}</div>}
+          </div>
+        )}
+
+        {/* ═══ ПОРЪЧКА ═══ */}
+        {tab==="ordine" && perms.canOrder && (
+          <div style={{ animation:"fadeIn 0.3s" }}>
+              <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+                <div style={{ position:"relative", flex:1 }}>
+                  <div style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#667788" }}><I.Search /></div>
+                  <input value={orderSearch} onChange={e=>setOrderSearch(e.target.value)} placeholder="Търси..." style={{ ...inp(), paddingLeft:40 }} />
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:20, flexDirection: mob?"column":"row" }}>
+                <div style={{ flex:2 }}>
+                  {mob ? (
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {oFiltered.map(p => {
+                        const ic=cart.find(c=>c.id===p.id), av=p.quantita-(ic?ic.qty:0);
+                        return (<div key={p.id} style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:12, padding:14, display:"flex", alignItems:"center", gap:12 }}>
+                          <div style={{ flex:1 }}>
+                            <Tap mono color="#e8a032" onClick={()=>showDetail(p)}><span style={{ fontSize:13 }}>{p.codice}</span></Tap>
+                            <div style={{ marginTop:1 }}><Tap color="#e0e8f0" onClick={()=>showDetail(p)}><span style={{ fontSize:14, fontWeight:500 }}>{p.marchio}</span></Tap></div>
+                            {p.tipo && <div style={{ marginTop:2 }}><TipoCell p={p} short /></div>}
+                            <div style={{ fontSize:11, color:"#556677", fontFamily:"'JetBrains Mono',monospace", marginTop:2 }}>{p.riferimento}</div>
+                            {perms.canSeePrice && <div style={{ fontSize:12, color:"#667788", fontFamily:"'JetBrains Mono',monospace", marginTop:2 }}>{fmt(p.prezzo)}</div>}
+                          </div>
+                          <QtyBadge n={av} />
+                          <button onClick={()=>addToCart(p)} disabled={av<=0} style={{ width:44, height:44, borderRadius:12, border:"none", background:av<=0?"rgba(255,255,255,0.03)":"rgba(232,160,50,0.12)", color:av<=0?"#445":"#e8a032", display:"flex", alignItems:"center", justifyContent:"center", opacity:av<=0?0.4:1 }}><I.Plus /></button>
+                        </div>);
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, overflow:"hidden" }}>
+                      <div style={{ overflowX:"auto", maxHeight:500, overflowY:"auto" }}><table style={{ width:"100%", borderCollapse:"collapse" }}>
+                        <thead style={{ position:"sticky", top:0, zIndex:1 }}><tr style={{ background:"rgba(26,31,46,0.98)" }}>{["Код","Марка","Д/Г","К/Т","Нал.",...(perms.canSeePrice?["Цена"]:[]),""].map(h=>(<th key={h} style={{ padding:"10px 14px", textAlign:"left", color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>{h}</th>))}</tr></thead>
+                        <tbody>{oFiltered.map((p,i)=>{const ic=cart.find(c=>c.id===p.id),av=p.quantita-(ic?ic.qty:0);return(
+                          <tr key={p.id} style={{ borderBottom:"1px solid rgba(255,255,255,0.03)", background:i%2===0?"transparent":"rgba(255,255,255,0.01)" }}>
+                            <td style={{ padding:"10px 14px" }}><Tap mono color="#e8a032" onClick={()=>showDetail(p)}><span style={{ fontSize:12 }}>{p.codice}</span></Tap></td>
+                            <td style={{ padding:"10px 14px" }}><Tap color="#e0e8f0" onClick={()=>showDetail(p)}><span style={{ fontSize:13 }}>{p.marchio}</span></Tap></td>
+                            <td style={{ padding:"10px 14px" }}><TipoCell p={p} short /></td>
+                            <td style={{ padding:"10px 14px", fontSize:12, color:"#8899aa", fontFamily:"'JetBrains Mono',monospace" }}>{p.riferimento}</td>
+                            <td style={{ padding:"10px 14px" }}><QtyBadge n={av}/></td>
+                            {perms.canSeePrice && <td style={{ padding:"10px 14px", fontFamily:"'JetBrains Mono',monospace", fontSize:12 }}>{fmt(p.prezzo)}</td>}
+                            <td style={{ padding:"10px 14px" }}><button onClick={()=>addToCart(p)} disabled={av<=0} style={{ width:34, height:34, borderRadius:8, border:"none", background:av<=0?"rgba(255,255,255,0.03)":"rgba(232,160,50,0.1)", color:av<=0?"#445":"#e8a032", display:"flex", alignItems:"center", justifyContent:"center", opacity:av<=0?0.4:1 }}><I.Plus /></button></td>
+                          </tr>)})}</tbody>
+                      </table></div>
+                    </div>
+                  )}
+                </div>
+                {!mob && (
+                  <div style={{ flex:1, minWidth:320 }}>
+                    <CartPanel cart={cart} cartTot={cartTot} orderNote={orderNote} setOrderNote={setOrderNote} clientName={clientName} setClientName={setClientName} clientPhone={clientPhone} setClientPhone={setClientPhone} updCart={updCart} rmCart={rmCart} submitOrder={submitOrder} sp={perms.canSeePrice} onDetail={showDetail} />
+                  </div>
+                )}
+              </div>
+              {mob && cart.length>0 && !cartOpen && (
+                <button onClick={()=>setCartOpen(true)} style={{ position:"fixed", bottom:80, right:16, width:60, height:60, borderRadius:30, background:"linear-gradient(135deg,#e8a032,#d4880a)", border:"none", boxShadow:"0 6px 24px rgba(232,160,50,0.4)", display:"flex", alignItems:"center", justifyContent:"center", color:"#0f1419", zIndex:90, animation:"fadeIn 0.2s" }}>
+                  <I.Cart />
+                  <span style={{ position:"absolute", top:-4, right:-4, background:"#ef4444", color:"#fff", fontSize:11, fontWeight:700, width:22, height:22, borderRadius:11, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #0f1419" }}>{cart.length}</span>
+                </button>
+              )}
+              {mob && cartOpen && (
+                <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.7)", zIndex:200, display:"flex", alignItems:"flex-end" }} onClick={()=>setCartOpen(false)}>
+                  <div onClick={e=>e.stopPropagation()} style={{ background:"#1a1f2e", borderRadius:"20px 20px 0 0", width:"100%", maxHeight:"85vh", overflow:"auto", animation:"slideUp 0.25s", paddingBottom:"env(safe-area-inset-bottom)" }}>
+                    <div style={{ width:40, height:4, background:"rgba(255,255,255,0.15)", borderRadius:2, margin:"12px auto 8px" }}/>
+                    <CartPanel cart={cart} cartTot={cartTot} orderNote={orderNote} setOrderNote={setOrderNote} clientName={clientName} setClientName={setClientName} clientPhone={clientPhone} setClientPhone={setClientPhone} updCart={updCart} rmCart={rmCart} submitOrder={submitOrder} sp={perms.canSeePrice} onClose={()=>setCartOpen(false)} onDetail={showDetail} />
+                  </div>
+                </div>
+              )}
+          </div>
+        )}
+
+        {/* ═══ ПОРЪЧКИ (история — за всички потребители) ═══ */}
+        {tab==="poruchki" && (
+          <div style={{ animation:"fadeIn 0.3s" }}>
+            {/* Search + count */}
+            <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
+              <div style={{ position:"relative", flex:1, minWidth: mob?0:200 }}>
+                <div style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:"#667788" }}><I.Search /></div>
+                <input value={ordersSearch} onChange={e=>setOrdersSearch(e.target.value)} placeholder="Търси по номер, клиент, оператор, код..." style={{ ...inp(), paddingLeft:40 }} />
+                {ordersSearch && <button onClick={()=>setOrdersSearch("")} style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"rgba(255,255,255,0.08)", border:"none", borderRadius:8, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", color:"#8899aa" }}><I.X /></button>}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <span style={{ color:"#556677", fontSize:12, fontFamily:"'JetBrains Mono',monospace", whiteSpace:"nowrap" }}>{filteredOrders.length}{ordersSearch?` / ${orders.length}`:""} поръчки</span>
+              </div>
+            </div>
+            {filteredOrders.length===0?<div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding:50, textAlign:"center", color:"#556677" }}>{orders.length===0?"Няма извършени поръчки":"Няма резултати"}</div>:
+            filteredOrders.map(o=>(
+              <div key={o.id} style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?14:20, marginBottom:10 }}>
+                {/* Header row */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10, flexWrap:"wrap", gap:8 }}>
+                  <div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#e8a032", fontWeight:600, fontSize:14 }}>{o.id}</span>
+                      <span style={{ color:"#667788", fontSize:12 }}>{fmtDateShort(o.data)}</span>
+                    </div>
+                    <div style={{ fontSize:12, color:"#556677", marginTop:3 }}>Оператор: {o.operatore}</div>
+                  </div>
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    {perms.canSeePrice && <span style={{ fontFamily:"'JetBrains Mono',monospace", color:"#22c55e", fontWeight:700, fontSize:15 }}>{fmt(o.totale)}</span>}
+                    <Btn variant="blue" onClick={()=>printOrder(o,perms.canSeePrice)} style={{ padding:"8px 12px", fontSize:12, minHeight:34 }}><I.Printer /> Печат</Btn>
+                  </div>
+                </div>
+                {/* Client info */}
+                {(o.clientName||o.clientPhone) && (
+                  <div style={{ background:"rgba(167,139,250,0.06)", border:"1px solid rgba(167,139,250,0.12)", borderRadius:10, padding:"10px 14px", marginBottom:10, display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    {o.clientName && <span style={{ fontSize:14, fontWeight:600, color:"#ccd6e0" }}>{o.clientName}</span>}
+                    {o.clientPhone && <span style={{ fontSize:13, color:"#8899aa", fontFamily:"'JetBrains Mono',monospace" }}>{o.clientPhone}</span>}
+                  </div>
+                )}
+                {/* Note */}
+                {o.note && <div style={{ color:"#8899aa", fontSize:12, marginBottom:8, fontStyle:"italic" }}>{o.note}</div>}
+                {/* Items */}
+                <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>{o.items.map((it,idx)=>(<span key={idx} style={{ background:"rgba(232,160,50,0.08)", border:"1px solid rgba(232,160,50,0.15)", borderRadius:8, padding:"5px 10px", fontSize:12, color:"#ccd6e0", cursor:"pointer" }} onClick={()=>showDetail(it.id)}><span style={{ color:"#e8a032", fontFamily:"'JetBrains Mono',monospace", borderBottom:"1px dashed rgba(232,160,50,0.4)" }}>{it.codice}</span> ×{it.qty}{perms.canSeePrice && <span style={{ color:"#667" }}> ({fmt(it.qty*it.prezzo)})</span>}</span>))}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ═══ ПОТРЕБИТЕЛИ ═══ */}
+        {tab==="utenti" && perms.canManageUsers && (
+          <div style={{ animation:"fadeIn 0.3s" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, flexWrap:"wrap", gap:8 }}>
+              <h2 style={{ color:"#ccd6e0", fontSize: mob?16:18, fontWeight:600, margin:0 }}>Потребители</h2>
+              <div style={{ display:"flex", gap:8 }}>
+                {perms.canSettings && <Btn variant={showRoleEditor?"primary":"purple"} onClick={()=>setShowRoleEditor(!showRoleEditor)} style={{ padding:"10px 14px", fontSize:13 }}><I.Settings />{!mob&&(showRoleEditor?" Затвори":" Роли")}</Btn>}
+                <Btn onClick={()=>setAddUserModal(true)}><I.Plus />{!mob&&" Нов"}</Btn>
+              </div>
+            </div>
+
+            {/* ─── Permissions Legend ─── */}
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, overflow:"hidden", marginBottom:16 }}>
+              <div style={{ padding:"12px 16px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+                <h3 style={{ color:"#ccd6e0", fontSize:13, fontWeight:600, margin:0 }}>Легенда на правата</h3>
+              </div>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", minWidth:mob?600:"auto" }}>
+                  <thead><tr style={{ background:"rgba(232,160,50,0.05)" }}>
+                    <th style={{ padding:"10px 14px", textAlign:"left", color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.06)", position:"sticky", left:0, background:"rgba(26,31,46,0.98)", zIndex:1, minWidth:110 }}>Роля</th>
+                    {PERM_KEYS.map(k=><th key={k} style={{ padding:"10px 8px", textAlign:"center", color:"#8899aa", fontSize:10, fontWeight:600, textTransform:"uppercase", borderBottom:"1px solid rgba(255,255,255,0.06)", whiteSpace:"nowrap" }}>{PERM_LABELS[k]}</th>)}
+                    {showRoleEditor && <th style={{ padding:"10px 8px", borderBottom:"1px solid rgba(255,255,255,0.06)", width:40 }}/>}
+                  </tr></thead>
+                  <tbody>
+                    {Object.entries(roles).map(([rk,rv],ri)=>(
+                      <tr key={rk} style={{ borderBottom:"1px solid rgba(255,255,255,0.03)", background:ri%2===0?"transparent":"rgba(255,255,255,0.01)" }}>
+                        <td style={{ padding:"10px 14px", fontWeight:600, color:"#e8a032", fontSize:13, position:"sticky", left:0, background:ri%2===0?"#0f1419":"rgba(26,31,46,0.95)", zIndex:1 }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                            {rv.label}
+                            {!builtinRoles.includes(rk) && <span style={{ fontSize:9, color:"#667788", background:"rgba(255,255,255,0.06)", padding:"1px 5px", borderRadius:4 }}>custom</span>}
+                          </div>
+                        </td>
+                        {PERM_KEYS.map(pk=>{
+                          const on = rv[pk];
+                          const isSuperAdmin = rk === "SUPER_ADMIN";
+                          return <td key={pk} style={{ padding:"8px", textAlign:"center" }}>
+                            {showRoleEditor && !isSuperAdmin ? (
+                              <button onClick={()=>{
+                                setRoles(prev=>({...prev,[rk]:{...prev[rk],[pk]:!prev[rk][pk]}}));
+                              }} style={{ width:36, height:28, borderRadius:8, border:"none", cursor:"pointer", background:on?"rgba(34,197,94,0.15)":"rgba(239,68,68,0.1)", color:on?"#22c55e":"#ef4444", fontSize:14, fontWeight:700, display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+                                {on?"✓":"✗"}
+                              </button>
+                            ) : (
+                              <span style={{ fontSize:15, color:on?"#22c55e":"rgba(239,68,68,0.4)" }}>{on?"✓":"✗"}</span>
+                            )}
+                          </td>;
+                        })}
+                        {showRoleEditor && <td style={{ padding:"8px", textAlign:"center" }}>
+                          {!builtinRoles.includes(rk) ? (
+                            <button onClick={()=>{
+                              const usedBy = users.filter(u=>u.ruolo===rk);
+                              if(usedBy.length>0){showToast(`Ролята се използва от ${usedBy.length} потребител(и). Първо ги прехвърли.`,"error");return}
+                              if(confirm("Изтриване на роля "+rv.label+"?")){apiCall("/roles/"+rk,{method:"DELETE"}).then(()=>setRoles(prev=>{const n={...prev};delete n[rk];return n})).catch(e=>showToast(e.message,"error"))}
+                            }} style={{ width:28, height:28, borderRadius:7, border:"none", cursor:"pointer", background:"rgba(239,68,68,0.1)", color:"#ef4444", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:12 }}>
+                              <I.Trash />
+                            </button>
+                          ) : <span style={{ fontSize:10, color:"#334" }}>—</span>}
+                        </td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {showRoleEditor && (
+                <div style={{ padding:"12px 16px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8 }}>
+                  <span style={{ color:"#667788", fontSize:12 }}>Супер Админ не може да се ограничава. Вградените роли не могат да се трият.</span>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <Btn variant="primary" onClick={()=>setNewRoleModal(true)} style={{ padding:"8px 14px", fontSize:12, minHeight:34 }}><I.Plus /> Нова роля</Btn>
+                    <Btn variant="danger" onClick={()=>{if(confirm("Възстанови правата по подразбиране?")){apiCall("/roles/reset",{method:"POST"}).then(()=>apiCall("/roles")).then(r=>setRoles(r)).catch(e=>showToast(e.message,"error"))}}} style={{ padding:"8px 14px", fontSize:12, minHeight:34 }}><I.Clear /> Нулирай</Btn>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ─── User List ─── */}
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {users.map(u=>(
+                <div key={u.id} style={{ background:"rgba(255,255,255,0.03)", border:u.id===user.id?"1px solid rgba(232,160,50,0.3)":"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?"14px":"16px 20px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
+                    <div>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}><span style={{ fontSize:15, fontWeight:600 }}>{u.nome}</span>{u.id===user.id && <span style={{ fontSize:10, background:"rgba(232,160,50,0.15)", color:"#e8a032", padding:"2px 8px", borderRadius:6 }}>Ти</span>}</div>
+                      <div style={{ fontSize:12, color:"#667788", marginTop:3 }}>{u.email}</div>
+                      {/* Inline permission badges */}
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginTop:6 }}>
+                        {roles[u.ruolo] && PERM_KEYS.filter(k=>roles[u.ruolo][k]).map(k=>(
+                          <span key={k} style={{ fontSize:10, padding:"2px 7px", borderRadius:5, background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.15)", color:"#22c55e" }}>{PERM_LABELS[k]}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:12, fontWeight:600, color:"#a78bfa", background:"rgba(167,139,250,0.1)", padding:"4px 12px", borderRadius:8 }}>{roles[u.ruolo]?.label||u.ruolo}</span>
+                      <button onClick={()=>setUserModal(u)} style={{ background:"rgba(96,165,250,0.1)", border:"1px solid rgba(96,165,250,0.2)", borderRadius:8, width:36, height:36, display:"flex", alignItems:"center", justifyContent:"center", color:"#60a5fa" }}><I.Edit /></button>
+                      <button onClick={()=>{if(confirm("Изтриване?"))delUser(u.id)}} disabled={u.id===user.id} style={{ background:u.id===user.id?"rgba(255,255,255,0.02)":"rgba(239,68,68,0.1)", border:u.id===user.id?"1px solid rgba(255,255,255,0.04)":"1px solid rgba(239,68,68,0.2)", borderRadius:8, width:36, height:36, display:"flex", alignItems:"center", justifyContent:"center", color:u.id===user.id?"#334":"#ef4444", opacity:u.id===user.id?0.3:1 }}><I.Trash /></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ ОДИТ ═══ */}
+        {tab==="audit" && perms.canAudit && (
+          <div style={{ animation:"fadeIn 0.3s" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, flexWrap:"wrap", gap:10 }}>
+              <h2 style={{ color:"#ccd6e0", fontSize: mob?16:18, fontWeight:600, margin:0 }}>Одит лог</h2>
+              <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+                <select value={auditFilter} onChange={e=>setAuditFilter(e.target.value)} style={{ ...inp(), width:"auto", padding:"8px 12px", fontSize:12 }}>
+                  <option value="ALL">Всички</option>
+                  {Object.entries(ACTION_TYPES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+                </select>
+                <span style={{ color:"#556677", fontSize:12, fontFamily:"'JetBrains Mono',monospace" }}>{fAudit.length}</span>
+                {auditLog.length>0 && <Btn variant="danger" onClick={()=>{if(confirm("Изчисти лога?")){apiCall("/audit",{method:"DELETE"}).then(()=>setAuditLog([]))}}} style={{ padding:"8px 12px", fontSize:12, minHeight:36 }}><I.Clear /></Btn>}
+              </div>
+            </div>
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, overflow:"hidden" }}>
+              {fAudit.length===0?<div style={{ padding:50, textAlign:"center", color:"#445566" }}>Няма записи</div>:
+              <div style={{ maxHeight:600, overflowY:"auto" }}>{fAudit.map((e,i)=>{
+                const at=ACTION_TYPES[e.action]||{label:e.action,color:"#667"};
+                return(<div key={e.id} style={{ padding: mob?"12px 14px":"14px 20px", borderBottom:"1px solid rgba(255,255,255,0.03)", background:i%2===0?"transparent":"rgba(255,255,255,0.01)" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:4, marginBottom:4 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:12, fontWeight:600, color:at.color }}>{at.label}</span>
+                      <span style={{ fontSize:12, color:"#ccd6e0", fontWeight:500 }}>{e.userName}</span>
+                      <span style={{ fontSize:10, color:"#556677", background:"rgba(255,255,255,0.04)", padding:"1px 6px", borderRadius:4 }}>{roles[e.userRole]?.label||e.userRole}</span>
+                    </div>
+                    <span style={{ fontSize:11, color:"#556677", fontFamily:"'JetBrains Mono',monospace" }}>{mob?fmtDateShort(e.timestamp):fmtDate(e.timestamp)}</span>
+                  </div>
+                  <div style={{ fontSize:13, color:"#99aabb" }}>{e.description}</div>
+                  {e.details && <div style={{ fontSize:12, color:"#667788", marginTop:4, fontFamily:"'JetBrains Mono',monospace", background:"rgba(255,255,255,0.02)", padding:"5px 8px", borderRadius:6, wordBreak:"break-all" }}>{e.details}</div>}
+                </div>)
+              })}</div>}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ НАСТРОЙКИ ═══ */}
+        {tab==="settings" && perms.canSettings && (
+          <div style={{ animation:"fadeIn 0.3s", maxWidth:640 }}>
+            <h2 style={{ color:"#ccd6e0", fontSize: mob?16:18, fontWeight:600, margin:"0 0 20px" }}>Настройки</h2>
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?18:24, marginBottom:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:18 }}><I.Mail /><h3 style={{ color:"#e8a032", fontSize:15, fontWeight:600, margin:0 }}>Имейл известия</h3></div>
+              <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+                <ToggleRow label="Активирай имейл известия" on={settings.emailEnabled} toggle={()=>{const ns={...settings,emailEnabled:!settings.emailEnabled};setSettings(ns);apiCall("/settings",{method:"PUT",body:ns})}} />
+                {settings.emailEnabled && (<>
+                  <Field label="Имейл"><input value={settings.notifyEmail} onChange={e=>setSettings(s=>({...s,notifyEmail:e.target.value}))} style={inp()} placeholder="admin@firma.bg" type="email" onBlur={()=>apiCall("/settings",{method:"PUT",body:settings}).catch(()=>{})} /></Field>
+                  <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", paddingTop:14 }}>
+                    <div style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Известия при:</div>
+                    <ToggleRow label="Промяна на артикул" on={settings.notifyOnPartChange} toggle={()=>{const ns={...settings,notifyOnPartChange:!settings.notifyOnPartChange};setSettings(ns);apiCall("/settings",{method:"PUT",body:ns})}} />
+                    <ToggleRow label="Нова поръчка" on={settings.notifyOnOrder} toggle={()=>{const ns={...settings,notifyOnOrder:!settings.notifyOnOrder};setSettings(ns);apiCall("/settings",{method:"PUT",body:ns})}} />
+                    <ToggleRow label="Промяна на потребител" on={settings.notifyOnUserChange} toggle={()=>{const ns={...settings,notifyOnUserChange:!settings.notifyOnUserChange};setSettings(ns);apiCall("/settings",{method:"PUT",body:ns})}} />
+                  </div>
+                  {settings.notifyEmail && <div style={{ background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.2)", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#22c55e", display:"flex", alignItems:"center", gap:8 }}><I.Check /> Известия на: <strong>{settings.notifyEmail}</strong></div>}
+                </>)}
+              </div>
+            </div>
+            {/* Low stock settings */}
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?18:24, marginBottom:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:18 }}><I.Warning /><h3 style={{ color:"#ef4444", fontSize:15, fontWeight:600, margin:0 }}>Ниска наличност</h3></div>
+              <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+                <ToggleRow label="Показвай предупреждение за ниска наличност" on={settings.lowStockEnabled!==false} toggle={()=>{const ns={...settings,lowStockEnabled:!settings.lowStockEnabled};setSettings(ns);apiCall("/settings",{method:"PUT",body:ns})}} />
+                {settings.lowStockEnabled!==false && (
+                  <div>
+                    <label style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:6, display:"block" }}>Праг (бройки ≤)</label>
+                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <input type="number" min={1} max={999} value={settings.lowStockThreshold||10} onChange={e=>{const ns={...settings,lowStockThreshold:parseInt(e.target.value)||10};setSettings(ns);apiCall("/settings",{method:"PUT",body:ns}).catch(()=>{})}} style={{ ...inp(true), width:100, textAlign:"center", fontSize:18 }} />
+                      <span style={{ color:"#667788", fontSize:13 }}>Артикули с ≤ <strong style={{ color:"#ef4444" }}>{settings.lowStockThreshold||10}</strong> бр. ще се маркират</span>
+                    </div>
+                    <div style={{ marginTop:12, fontSize:12, color:"#556677" }}>Засегнати артикули: <strong style={{ color:"#f87171" }}>{parts.filter(p=>p.quantita<=(settings.lowStockThreshold||10)).length}</strong> от {parts.length}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding: mob?18:24 }}>
+              <h3 style={{ color:"#ccd6e0", fontSize:14, fontWeight:600, margin:"0 0 14px" }}>Система</h3>
+              {[["Артикули",parts.length],["Бройки",fmtN(dashData.tp)],["Поръчки",orders.length],["Одит записи",auditLog.length],["Потребители",users.length]].map(([l,v])=>(<div key={l} style={{ display:"flex", justifyContent:"space-between", padding:"7px 0", borderBottom:"1px solid rgba(255,255,255,0.03)" }}><span style={{ color:"#8899aa", fontSize:13 }}>{l}</span><span style={{ color:"#e0e8f0", fontSize:13, fontWeight:600, fontFamily:"'JetBrains Mono',monospace" }}>{v}</span></div>))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      {(addModal||editModal) && <PartForm part={editModal} onSave={savePart} onClose={()=>{setEditModal(null);setAddModal(false)}} sp={perms.canSeePrice} />}
+      {(addUserModal||userModal) && <UserForm usr={userModal} onSave={saveUser} onClose={()=>{setUserModal(null);setAddUserModal(false)}} roles={roles} />}
+      {detailPart && <PartDetailModal part={detailPart} onClose={()=>setDetailPart(null)} canSeePrice={perms.canSeePrice} sameBrandParts={parts.filter(p=>p.marchio===detailPart.marchio)} onSelect={showDetail} />}
+      {newRoleModal && <NewRoleModal onClose={()=>setNewRoleModal(false)} existingKeys={Object.keys(roles)} onSave={async(key,role)=>{try{await apiCall("/roles",{method:"POST",body:{id:key,...role}});setRoles(await apiCall("/roles"));setNewRoleModal(false);showToast("Роля "+role.label+" създадена")}catch(e){showToast(e.message,"error")}}} />}
+    </div>
+  );
+}
+
+// ─── Toggle ───
+function ToggleRow({ label, on, toggle }) {
+  return (<div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"6px 0" }}>
+    <span style={{ color:"#ccd6e0", fontSize:14 }}>{label}</span>
+    <button onClick={toggle} style={{ width:48, height:28, borderRadius:14, border:"none", background:on?"#22c55e":"rgba(255,255,255,0.1)", position:"relative", transition:"background 0.2s", flexShrink:0 }}>
+      <div style={{ width:22, height:22, borderRadius:11, background:"#fff", position:"absolute", top:3, left:on?23:3, transition:"left 0.2s", boxShadow:"0 2px 4px rgba(0,0,0,0.3)" }}/>
+    </button>
+  </div>);
+}
+
+// ─── Cart Panel ───
+function CartPanel({ cart, cartTot, orderNote, setOrderNote, clientName, setClientName, clientPhone, setClientPhone, updCart, rmCart, submitOrder, sp, onClose, onDetail }) {
+  return (
+    <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, overflow:"hidden" }}>
+      <div style={{ padding:"14px 18px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <h3 style={{ color:"#e8a032", fontSize:15, fontWeight:700, margin:0 }}>Количка <span style={{ color:"#667788", fontWeight:400, fontSize:13 }}>({cart.length})</span></h3>
+        {onClose && <button onClick={onClose} style={{ background:"rgba(255,255,255,0.06)", border:"none", borderRadius:10, width:36, height:36, display:"flex", alignItems:"center", justifyContent:"center", color:"#8899aa" }}><I.X /></button>}
+      </div>
+      <div style={{ maxHeight:260, overflowY:"auto" }}>
+        {cart.length===0?<div style={{ padding:30, textAlign:"center", color:"#445566", fontSize:13 }}>Празна</div>:
+        cart.map(c=>(
+          <div key={c.id} style={{ padding:"12px 18px", borderBottom:"1px solid rgba(255,255,255,0.03)", display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:12, fontFamily:"'JetBrains Mono',monospace", color:"#e8a032", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", cursor: onDetail?"pointer":"default", borderBottom: onDetail?"1px dashed rgba(232,160,50,0.4)":"none" }} onClick={()=>onDetail&&onDetail(c.id)}>{c.codice}</div>
+              <div style={{ fontSize:12, color:"#667788", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.marchio}</div>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+              <button onClick={()=>updCart(c.id,-1)} style={{ width:32, height:32, borderRadius:8, border:"none", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center", color:"#8899aa" }}><I.Minus /></button>
+              <span style={{ width:32, textAlign:"center", fontFamily:"'JetBrains Mono',monospace", fontSize:15, fontWeight:700, color:"#e0e8f0" }}>{c.qty}</span>
+              <button onClick={()=>updCart(c.id,1)} style={{ width:32, height:32, borderRadius:8, border:"none", background:"rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center", color:"#8899aa" }}><I.Plus /></button>
+            </div>
+            {sp && <div style={{ width:65, textAlign:"right", fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:"#60a5fa" }}>{fmt(c.qty*c.prezzo)}</div>}
+            <button onClick={()=>rmCart(c.id)} style={{ width:32, height:32, borderRadius:8, border:"none", background:"rgba(239,68,68,0.08)", display:"flex", alignItems:"center", justifyContent:"center", color:"#ef4444" }}><I.X /></button>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding:"14px 18px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", gap:10 }}>
+        {/* Client info */}
+        <div style={{ background:"rgba(167,139,250,0.05)", border:"1px solid rgba(167,139,250,0.12)", borderRadius:10, padding:12, display:"flex", flexDirection:"column", gap:8 }}>
+          <div style={{ color:"#a78bfa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Данни на клиент</div>
+          <input value={clientName} onChange={e=>setClientName(e.target.value)} placeholder="Име на клиент *" style={{ ...inp(), padding:"10px 12px", fontSize:14 }} />
+          <input value={clientPhone} onChange={e=>setClientPhone(e.target.value)} placeholder="Телефон" type="tel" style={{ ...inp(true), padding:"10px 12px", fontSize:14 }} />
+        </div>
+        <textarea value={orderNote} onChange={e=>setOrderNote(e.target.value)} placeholder="Бележки..." style={{ ...inp(), resize:"vertical", minHeight:40, fontSize:13 }} />
+        {sp && <div style={{ display:"flex", justifyContent:"space-between", fontSize:16 }}><span style={{ color:"#8899aa", fontWeight:600 }}>Общо</span><span style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:"#22c55e" }}>{fmt(cartTot)}</span></div>}
+        <Btn variant="green" disabled={cart.length===0} onClick={submitOrder} style={{ width:"100%" }}>Потвърди поръчка</Btn>
+      </div>
+    </div>
+  );
+}
+
+// ─── New Role Modal ───
+function NewRoleModal({ onClose, existingKeys, onSave }) {
+  const [label, setLabel] = useState("");
+  const [permsState, setPermsState] = useState(
+    Object.fromEntries(PERM_KEYS.map(k => [k, false]))
+  );
+  const togglePerm = (k) => setPermsState(prev => ({ ...prev, [k]: !prev[k] }));
+  const save = () => {
+    if (!label.trim()) return;
+    const key = "CUSTOM_" + label.trim().toUpperCase().replace(/[^A-ZА-Я0-9]/gi, "_").replace(/_+/g, "_") + "_" + Date.now().toString(36);
+    if (existingKeys.includes(key)) return;
+    onSave(key, { label: label.trim(), ...permsState });
+  };
+  const allOn = PERM_KEYS.every(k => permsState[k]);
+  const allOff = PERM_KEYS.every(k => !permsState[k]);
+  return (
+    <Modal title="Нова роля" onClose={onClose}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <Field label="Име на ролята">
+          <input value={label} onChange={e => setLabel(e.target.value)} style={inp()} placeholder="Напр. Складов работник" autoFocus />
+        </Field>
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <label style={{ color: "#8899aa", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Права</label>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setPermsState(Object.fromEntries(PERM_KEYS.map(k => [k, true])))} style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: 6, padding: "3px 8px", color: "#22c55e", fontSize: 11, fontWeight: 600, cursor: "pointer", opacity: allOn ? 0.4 : 1 }}>Всички</button>
+              <button onClick={() => setPermsState(Object.fromEntries(PERM_KEYS.map(k => [k, false])))} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 6, padding: "3px 8px", color: "#ef4444", fontSize: 11, fontWeight: 600, cursor: "pointer", opacity: allOff ? 0.4 : 1 }}>Нищо</button>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {PERM_KEYS.map(k => (
+              <button key={k} onClick={() => togglePerm(k)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: permsState[k] ? "rgba(34,197,94,0.06)" : "rgba(255,255,255,0.02)", border: permsState[k] ? "1px solid rgba(34,197,94,0.15)" : "1px solid rgba(255,255,255,0.06)", borderRadius: 10, cursor: "pointer", transition: "all 0.15s" }}>
+                <span style={{ fontSize: 14, color: permsState[k] ? "#e0e8f0" : "#667788", fontWeight: 500 }}>{PERM_LABELS[k]}</span>
+                <span style={{ fontSize: 18, color: permsState[k] ? "#22c55e" : "rgba(239,68,68,0.3)", fontWeight: 700 }}>{permsState[k] ? "✓" : "✗"}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <Btn onClick={save} disabled={!label.trim()} style={{ marginTop: 4 }}><I.Plus /> Създай роля</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+// ─── Forms ───
+function PartForm({ part, onSave, onClose, sp }) {
+  const [f, setF] = useState({codice:"",marchio:"",riferimento:"",quantita:0,prezzo:0,note:"",tipo:"",tipoValue:"",...(part||{})});
+  const u = (k,v) => setF(p=>({...p,[k]:v}));
+  return (<Modal title={part?"Редакция":"Нов артикул"} onClose={onClose}>
+    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+      <Field label="Код"><input value={f.codice} onChange={e=>u("codice",e.target.value)} style={inp(true)} placeholder="BRK-PAD-001" /></Field>
+      <Field label="Марка"><input value={f.marchio} onChange={e=>u("marchio",e.target.value)} style={inp()} placeholder="Brembo" /></Field>
+      {/* Дюза / ГНП */}
+      <div>
+        <label style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Дюза / ГНП</label>
+        <div style={{ display:"flex", gap:8, marginTop:8 }}>
+          {["","DYUZA","GNP"].map(t=>(
+            <button key={t} onClick={()=>{u("tipo",t);if(t!==f.tipo)u("tipoValue","")}} style={{ flex:1, padding:"10px 0", borderRadius:10, border:f.tipo===t?"2px solid "+(t==="DYUZA"?"#60a5fa":t==="GNP"?"#a78bfa":"#e8a032"):"1px solid rgba(255,255,255,0.08)", background:f.tipo===t?(t==="DYUZA"?"rgba(96,165,250,0.12)":t==="GNP"?"rgba(167,139,250,0.12)":"rgba(232,160,50,0.1)"):"rgba(255,255,255,0.03)", color:f.tipo===t?"#e0e8f0":"#667788", fontSize:13, fontWeight:600, cursor:"pointer", textAlign:"center" }} type="button">
+              {t===""?"Няма":t==="DYUZA"?"Дюза":"ГНП"}
+            </button>
+          ))}
+        </div>
+        {f.tipo==="DYUZA" && (
+          <div style={{ marginTop:10 }}>
+            <label style={{ color:"#3d6a99", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:4, display:"block" }}>Марка дюза</label>
+            <select value={f.tipoValue||""} onChange={e=>u("tipoValue",e.target.value)} style={{...inp(),color:"#e0e8f0"}}>
+              <option value="" style={{color:"#000"}}>— Избери —</option>
+              {DYUZA_BRANDS.map(b=><option key={b} value={b} style={{color:"#000"}}>{b}</option>)}
+            </select>
+          </div>
+        )}
+        {f.tipo==="GNP" && (
+          <div style={{ marginTop:10 }}>
+            <label style={{ color:"#a78bfa", fontSize:10, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:4, display:"block" }}>Марки коли (може повече от 1)</label>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:6 }}>
+              {CAR_BRANDS.map(b=>{
+                const sel=(f.tipoValue||"").split(",").filter(Boolean);
+                const on=sel.includes(b);
+                return <button key={b} type="button" onClick={()=>{const nv=on?sel.filter(x=>x!==b):[...sel,b];u("tipoValue",nv.join(","))}} style={{ padding:"6px 12px", borderRadius:8, border:on?"1px solid rgba(167,139,250,0.5)":"1px solid rgba(255,255,255,0.08)", background:on?"rgba(167,139,250,0.15)":"rgba(255,255,255,0.03)", color:on?"#a78bfa":"#667788", fontSize:12, fontWeight:on?600:400, cursor:"pointer" }}>{b}</button>;
+              })}
+            </div>
+            {(f.tipoValue||"").split(",").filter(Boolean).length>0 && <div style={{ marginTop:8, fontSize:12, color:"#a78bfa" }}>Избрани: {(f.tipoValue||"").split(",").filter(Boolean).join(", ")}</div>}
+          </div>
+        )}
+      </div>
+      <Field label="Кутия/Тубе"><input value={f.riferimento} onChange={e=>u("riferimento",e.target.value)} style={inp(true)} placeholder="P 85 020" /></Field>
+      <div style={{ display:"flex", gap:10 }}>
+        <div style={{ flex:1 }}><Field label="Количество"><input type="number" min={0} value={f.quantita} onChange={e=>u("quantita",parseInt(e.target.value)||0)} style={inp(true)} /></Field></div>
+        {sp && <div style={{ flex:1 }}><Field label="Цена (€)"><input type="number" min={0} step={0.01} value={f.prezzo} onChange={e=>u("prezzo",parseFloat(e.target.value)||0)} style={inp(true)} /></Field></div>}
+      </div>
+      <Field label="Бележки"><textarea value={f.note||""} onChange={e=>u("note",e.target.value)} style={{ ...inp(), resize:"vertical", minHeight:60, fontSize:14 }} placeholder="Допълнителна информация за артикула..." /></Field>
+      <Btn onClick={()=>{if(f.codice&&f.marchio)onSave(f)}} style={{ marginTop:4 }}>{part?"Запази":"Добави"}</Btn>
+    </div>
+  </Modal>);
+}
+function UserForm({ usr, onSave, onClose, roles }) {
+  const [f, setF] = useState(usr || { nome:"", email:"", ruolo:"VIEWER", pin:"" });
+  const u = (k,v) => setF(p=>({...p,[k]:v}));
+  return (<Modal title={usr?"Редакция":"Нов потребител"} onClose={onClose}>
+    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+      <Field label="Име"><input value={f.nome} onChange={e=>u("nome",e.target.value)} style={inp()} placeholder="Иван Иванов" /></Field>
+      <Field label="Имейл"><input value={f.email} onChange={e=>u("email",e.target.value)} style={inp()} placeholder="ivan@firma.bg" /></Field>
+      <Field label="Роля"><select value={f.ruolo} onChange={e=>u("ruolo",e.target.value)} style={inp()}>{Object.entries(roles).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
+      <Field label="ПИН (4 цифри)"><input value={f.pin} maxLength={4} onChange={e=>u("pin",e.target.value.replace(/\D/g,""))} style={{ ...inp(true), letterSpacing:10, textAlign:"center", fontSize:22 }} placeholder="••••" /></Field>
+      <Btn onClick={()=>{if(f.nome&&f.pin.length===4)onSave(f)}} style={{ marginTop:4 }}>{usr?"Запази":"Създай"}</Btn>
+    </div>
+  </Modal>);
+}
+
+// ─── Login ───
+function LoginScreen({ onLogin }) {
+  const [users, setUsers] = useState([]);
+  const [sel, setSel] = useState(null);
+  const [pin, setPin] = useState("");
+  const [err, setErr] = useState("");
+  useEffect(() => { fetch("/api/auth/users").then(r=>r.json()).then(setUsers).catch(()=>{}); }, []);
+  const go = async () => { if(!sel)return; const u=users.find(x=>x.id===sel); if(!u)return; try{const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:u.email,pin})});const d=await r.json();if(!r.ok){setErr(d.error||"Грешка");setTimeout(()=>setErr(""),2000);return}onLogin(d.user,d.token)}catch(e){setErr("Грешка");setTimeout(()=>setErr(""),2000)} };
+  return (
+    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0f1419 0%,#1a1f2e 50%,#0f1419 100%)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'DM Sans',sans-serif", padding:16 }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+      <style>{CSS}</style>
+      <div style={{ background:"rgba(26,31,46,0.95)", border:"1px solid rgba(232,160,50,0.2)", borderRadius:20, padding:"32px 28px", width:"100%", maxWidth:380, boxShadow:"0 25px 80px rgba(0,0,0,0.6)" }}>
+        <div style={{ textAlign:"center", marginBottom:28 }}>
+          <div style={{ width:60, height:60, background:"linear-gradient(135deg,#e8a032,#d4880a)", borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}><I.Lock /></div>
+          <h1 style={{ color:"#e8a032", fontSize:20, fontWeight:700, margin:0, letterSpacing:1 }}>СКЛАД АВТОЧАСТИ</h1>
+          <p style={{ color:"#8899aa", fontSize:13, marginTop:5 }}>Система за управление</p>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <label style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1 }}>Потребител</label>
+          {users.map(u=>(
+            <button key={u.id} onClick={()=>{setSel(u.id);setErr("")}} style={{ background:sel===u.id?"rgba(232,160,50,0.15)":"rgba(255,255,255,0.03)", border:sel===u.id?"1px solid rgba(232,160,50,0.5)":"1px solid rgba(255,255,255,0.06)", borderRadius:12, padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <span style={{ color:sel===u.id?"#e8a032":"#ccd6e0", fontWeight:500, fontSize:14 }}>{u.nome}</span>
+              <span style={{ color:"#667788", fontSize:11, fontFamily:"'JetBrains Mono',monospace", background:"rgba(255,255,255,0.04)", padding:"2px 8px", borderRadius:6 }}>{DEFAULT_ROLES[u.ruolo]?.label||u.ruolo}</span>
+            </button>
+          ))}
+          {sel && (<>
+            <label style={{ color:"#8899aa", fontSize:11, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginTop:6 }}>ПИН код</label>
+            <input type="password" value={pin} maxLength={4} onChange={e=>{setPin(e.target.value.replace(/\D/g,""));setErr("")}} onKeyDown={e=>e.key==="Enter"&&go()} placeholder="••••" style={{ ...inp(true), textAlign:"center", fontSize:22, letterSpacing:14, padding:"14px" }} />
+            {err && <div style={{ color:"#ef4444", fontSize:13, textAlign:"center" }}>{err}</div>}
+            <Btn onClick={go} style={{ marginTop:6 }}>Вход</Btn>
+          </>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(App));
+  </script>
+</body>
+</html>
