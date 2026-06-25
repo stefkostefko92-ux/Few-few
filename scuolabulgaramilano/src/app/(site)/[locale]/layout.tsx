@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import "../../globals.css";
+import { fontVars } from "@/lib/fonts";
 import { LOCALES, LOCALE_META, isLocale, type Locale } from "@/lib/i18n";
 
 // Always server-render: language is chosen per request (geo/cookie) and
@@ -75,14 +76,8 @@ export default async function LocaleLayout({
   if (!isLocale(raw)) notFound();
   const locale = raw as Locale;
   return (
-    <html lang={LOCALE_META[locale].htmlLang}>
+    <html lang={LOCALE_META[locale].htmlLang} className={fontVars}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap"
-          rel="stylesheet"
-        />
         {/* Ensure scroll-reveal content is visible if JavaScript is unavailable. */}
         <noscript>
           <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>

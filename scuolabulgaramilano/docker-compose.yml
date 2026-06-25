@@ -17,6 +17,13 @@ services:
       # Optional — generated and persisted automatically if left empty.
       AUTH_SECRET: "${AUTH_SECRET:-}"
       SITE_URL: "${SITE_URL:-https://www.scuolabulgaramilano.it}"
+      # Optional email notifications for contact-form submissions.
+      SMTP_HOST: "${SMTP_HOST:-}"
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_USER: "${SMTP_USER:-}"
+      SMTP_PASS: "${SMTP_PASS:-}"
+      SMTP_FROM: "${SMTP_FROM:-}"
+      LEADS_NOTIFY_TO: "${LEADS_NOTIFY_TO:-}"
     volumes:
       # Persists the SQLite database and uploaded images across deploys.
       - qb-data:/app/data

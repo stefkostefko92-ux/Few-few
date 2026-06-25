@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { notifyNewLead } from "@/lib/mailer";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "invalid" }, { status: 400 });
     }
     await prisma.lead.create({ data: { name, email, message, topic, locale } });
+    // Best-effort email notification; never block the response on it.
+    notifyNewLead({ name, email, topic, message, locale }).catch(() => {});
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false, error: "server" }, { status: 500 });

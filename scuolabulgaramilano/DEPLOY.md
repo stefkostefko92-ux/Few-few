@@ -93,6 +93,24 @@ apt install -y certbot python3-certbot-nginx
 certbot --nginx -d scuolabulgaramilano.it -d www.scuolabulgaramilano.it
 ```
 
+## 5b. Notifiche email (facoltativo)
+
+Per ricevere un'email a ogni richiesta dal modulo di contatto, imposta le
+variabili SMTP nel file `.env` (es. con un account dedicato o un servizio come
+Brevo/Mailgun):
+
+```ini
+SMTP_HOST="smtp.tuoprovider.it"
+SMTP_PORT="587"
+SMTP_USER="..."
+SMTP_PASS="..."
+SMTP_FROM="sito@scuolabulgaramilano.it"
+LEADS_NOTIFY_TO="centroquibulgaria@gmail.com"
+```
+
+Se le lasci vuote, le richieste restano comunque consultabili nel pannello
+admin (sezione “Запитвания”).
+
 ## 6. Accesso all'amministrazione
 
 `https://il-tuo-dominio/admin` → login con `ADMIN_EMAIL` e la password scelta.

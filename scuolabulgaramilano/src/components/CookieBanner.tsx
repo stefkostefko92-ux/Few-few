@@ -10,7 +10,7 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(KEY) !== "1") setShow(true);
+      if (!localStorage.getItem(KEY)) setShow(true);
     } catch {
       setShow(true);
     }
@@ -18,8 +18,12 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
 
   if (!show) return null;
 
-  const accept = () => {
-    try { localStorage.setItem(KEY, "1"); } catch {}
+  const decide = (choice: "accepted" | "rejected") => {
+    try {
+      localStorage.setItem(KEY, choice);
+      // On reject, also clear any prior Facebook-embed consent.
+      if (choice === "rejected") localStorage.removeItem("qb-fb-consent");
+    } catch {}
     setShow(false);
   };
 
@@ -29,9 +33,14 @@ export default function CookieBanner({ locale }: { locale: Locale }) {
         {t(locale, "cookie.text")}{" "}
         <a href={`/${locale}/cookie`}>{t(locale, "cookie.more")}</a>
       </p>
-      <button type="button" className="btn btn--primary" onClick={accept}>
-        {t(locale, "cookie.accept")}
-      </button>
+      <div className="cookiebar__actions">
+        <button type="button" className="btn btn--ghost" onClick={() => decide("rejected")}>
+          {t(locale, "cookie.reject")}
+        </button>
+        <button type="button" className="btn btn--primary" onClick={() => decide("accepted")}>
+          {t(locale, "cookie.accept")}
+        </button>
+      </div>
     </div>
   );
 }
