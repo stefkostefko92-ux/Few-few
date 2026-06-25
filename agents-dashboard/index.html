@@ -699,7 +699,8 @@ function avatarSVG(a){
     'prevodach':{skin:'#f4cda8',hair:'#3b2a3f',style:'translator'},
     'siydara':{skin:'#f3c9a6',hair:'#6b4a2a',style:'gardener'},
     'vps-adjiyata':{skin:'#e9bf98',hair:'#2c2c2c',style:'sysadmin'},
-    '3d-maniac':{skin:'#f5cba6',hair:'#1f1a17',style:'maker'}
+    '3d-maniac':{skin:'#f5cba6',hair:'#1f1a17',style:'maker'},
+    'socialdjiyata':{skin:'#f1c49a',hair:'#2a2320',style:'creator'}
   };
   const f=F[a.id]||{skin:'#f0c8a0',hair:'#2c2c2c',style:''};
   const sk=f.skin, hr=f.hair, st=f.style;
@@ -748,6 +749,12 @@ function avatarSVG(a){
     hair='<path d="M12 28 l3 -13 4 9 5 -14 5 14 4 -9 4 13 z" fill="'+hr+'"/>';
     gear='<g><rect x="14" y="29" width="36" height="11" rx="5" fill="'+ac+'" opacity=".88"/><rect x="14" y="29" width="36" height="4" rx="2" fill="#fff" opacity=".18"/><circle cx="24" cy="34.5" r="2" fill="#fff" opacity=".95"/><circle cx="40" cy="34.5" r="2" fill="#fff" opacity=".95"/></g>'
       +'<path d="M14 33 h-4 M50 33 h4" stroke="'+ac+'" stroke-width="3"/>';
+  } else if(st==='creator'){
+    back='<circle cx="32" cy="34" r="24" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".45"/>';
+    hair='<path d="M14 31 q4 -20 18 -20 q14 0 18 20 q-6 -10 -18 -10 q-12 0 -18 10z" fill="'+hr+'"/>'
+      +'<path d="M40 16 q6 6 4 16" stroke="'+ac+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+    gear='<g transform="rotate(-16 50 47)"><rect x="46" y="40" width="9" height="16" rx="2" fill="#1e1e1e"/><rect x="47.4" y="42" width="6.2" height="11" rx="1" fill="'+ac+'" opacity=".55"/></g>'
+      +'<g fill="'+ac+'"><circle cx="13" cy="20" r="1.2"/><circle cx="51" cy="15" r="1"/><path d="M11 29 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1z"/></g>';
   } else { hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>'; }
   const showEyes = (st!=='maker');
   return '<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true">'
