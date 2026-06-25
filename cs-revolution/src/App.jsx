@@ -25,14 +25,14 @@ var LANGS = {
     bg: "\u0414\u0418\u0413\u0418\u0422\u0410\u041B\u041D\u0418 \u0420\u0415\u0428\u0415\u041D\u0418\u042F \u041E\u0422\u0412\u042A\u0414 \u0412\u0421\u042F\u041A\u0410 \u0413\u0420\u0410\u041D\u0418\u0426\u0410"
   },
   hero_sub: {
-    it: "AVVICINA IL CURSORE \u2014 LE LETTERE TI SFUGGONO",
-    en: "HOVER HERE \u2014 LETTERS FLEE FROM YOUR CURSOR",
-    bg: "\u041C\u0418\u041D\u0418 \u041E\u0422\u0422\u0423\u041A \u2014 \u0411\u0423\u041A\u0412\u0418\u0422\u0415 \u0411\u042F\u0413\u0410\u0422"
+    it: "REVERSE ENGINEERING \u00B7 SOFTWARE \u00B7 ERP \u00B7 STAMPA 3D \u00B7 \u00B10.02MM",
+    en: "REVERSE ENGINEERING \u00B7 SOFTWARE \u00B7 ERP \u00B7 3D PRINTING \u00B7 \u00B10.02MM",
+    bg: "REVERSE ENGINEERING \u00B7 \u0421\u041E\u0424\u0422\u0423\u0415\u0420 \u00B7 ERP \u00B7 3D \u041F\u0415\u0427\u0410\u0422 \u00B7 \u00B10.02MM"
   },
   hero_desc: {
-    it: "Muovi il cursore sul testo \u2014 reagisce al tuo tocco. Ogni pixel di questo sito \u00e8 vivo: 3D, fisica, arte generativa in tempo reale.",
-    en: "Move your cursor over the text \u2014 it reacts to your touch. Every pixel of this site is alive: 3D, physics, generative art in real time.",
-    bg: "\u041F\u0440\u0435\u043C\u0435\u0441\u0442\u0438 \u043A\u0443\u0440\u0441\u043E\u0440\u0430 \u043D\u0430\u0434 \u0442\u0435\u043A\u0441\u0442\u0430 \u2014 \u0442\u043E\u0439 \u0440\u0435\u0430\u0433\u0438\u0440\u0430 \u043D\u0430 \u0434\u043E\u043A\u043E\u0441\u0432\u0430\u043D\u0435\u0442\u043E \u0442\u0438. \u0412\u0441\u0435\u043A\u0438 \u043F\u0438\u043A\u0441\u0435\u043B \u043D\u0430 \u0442\u043E\u0437\u0438 \u0441\u0430\u0439\u0442 \u0435 \u0436\u0438\u0432: 3D, \u0444\u0438\u0437\u0438\u043A\u0430, \u0433\u0435\u043D\u0435\u0440\u0430\u0442\u0438\u0432\u043D\u043E \u0438\u0437\u043A\u0443\u0441\u0442\u0432\u043E \u0432 \u0440\u0435\u0430\u043B\u043D\u043E \u0432\u0440\u0435\u043C\u0435."
+    it: "Misuriamo il fisico nel digitale \u2014 e ritorno. Reverse engineering, software, ERP e stampa 3D, eseguiti con la precisione di un'officina meccanica. A tolleranza.",
+    en: "We measure the physical into the digital \u2014 and back. Reverse engineering, software, ERP and 3D printing, executed with the precision of a machine shop. To tolerance.",
+    bg: "\u0418\u0437\u043C\u0435\u0440\u0432\u0430\u043C\u0435 \u0444\u0438\u0437\u0438\u0447\u043D\u043E\u0442\u043E \u0432 \u0434\u0438\u0433\u0438\u0442\u0430\u043B\u043D\u043E\u0442\u043E \u2014 \u0438 \u043E\u0431\u0440\u0430\u0442\u043D\u043E. Reverse engineering, \u0441\u043E\u0444\u0442\u0443\u0435\u0440, ERP \u0438 3D \u043F\u0435\u0447\u0430\u0442, \u0438\u0437\u043F\u044A\u043B\u043D\u0435\u043D\u0438 \u0441 \u043F\u0440\u0435\u0446\u0438\u0437\u043D\u043E\u0441\u0442\u0442\u0430 \u043D\u0430 \u043C\u0430\u0448\u0438\u043D\u0435\u043D \u0446\u0435\u0445. \u0414\u043E \u0434\u043E\u043F\u0443\u0441\u043A."
   },
   // ── ABOUT ──
   about_tag: { it: "// CHI SIAMO", en: "// ABOUT US", bg: "// \u0417\u0410 \u041D\u0410\u0421" },
@@ -82,9 +82,9 @@ var LANGS = {
   // ── CTA ──
   cta_title: { it: "HAI UN PROGETTO?", en: "GOT A PROJECT?", bg: "\u0418\u041C\u0410\u0428 \u041F\u0420\u041E\u0415\u041A\u0422?" },
   cta_sub: {
-    it: "CARBONSTEALTH.EU \u2014 AVVICINA IL CURSORE E GUARDA LE LETTERE FUGGIRE",
-    en: "CARBONSTEALTH.EU \u2014 HOVER AND WATCH THE LETTERS FLEE",
-    bg: "CARBONSTEALTH.EU \u2014 \u041C\u0418\u041D\u0418 \u041E\u0422\u0422\u0423\u041A \u0418 \u0413\u041B\u0415\u0414\u0410\u0419 \u041A\u0410\u041A \u0411\u0423\u041A\u0412\u0418\u0422\u0415 \u0411\u042F\u0413\u0410\u0422"
+    it: "CARBONSTEALTH.EU \u2014 DAL PEZZO FISICO AL FILE, E RITORNO. A TOLLERANZA.",
+    en: "CARBONSTEALTH.EU \u2014 FROM PHYSICAL PART TO FILE, AND BACK. TO TOLERANCE.",
+    bg: "CARBONSTEALTH.EU \u2014 \u041E\u0422 \u0424\u0418\u0417\u0418\u0427\u0415\u0421\u041A\u0410\u0422\u0410 \u0427\u0410\u0421\u0422 \u0414\u041E \u0424\u0410\u0419\u041B\u0410 \u0418 \u041E\u0411\u0420\u0410\u0422\u041D\u041E. \u0414\u041E \u0414\u041E\u041F\u0423\u0421\u041A."
   },
   cta_btn: { it: "CONTATTACI", en: "CONTACT US", bg: "\u0421\u0412\u042A\u0420\u0416\u0418 \u0421\u0415 \u0421 \u041D\u0410\u0421" },
   // ── FAQ ──
@@ -432,7 +432,7 @@ function AdminPanel(props) {
         ctx.fillStyle=isHover?"rgba(0,229,255,.9)":"rgba(0,229,255,.5)";
         ctx.fillRect(x,y,bw,bh);
         if(isHover){ctx.fillStyle="rgba(0,229,255,.15)";ctx.fillRect(x,0,bw,h)}
-        ctx.fillStyle=isHover?"#f5f5f0":"#666";ctx.font=(isHover?"bold ":"")+"7px monospace";ctx.textAlign="center";ctx.fillText(d.l||"",x+bw/2,h-2);
+        ctx.fillStyle=isHover?"#C9D1D6":"#666";ctx.font=(isHover?"bold ":"")+"7px monospace";ctx.textAlign="center";ctx.fillText(d.l||"",x+bw/2,h-2);
       });
       barPositions.current=positions;
       if(hover>=0&&hover<data.length){
@@ -449,17 +449,17 @@ function AdminPanel(props) {
     useEffect(draw,[p.data,hover]);
     function onMove(e){var cv=ref.current;if(!cv)return;var rect=cv.getBoundingClientRect();var mx=(e.clientX-rect.left)*(cv.width/rect.width);var found=-1;barPositions.current.forEach(function(bp,i){if(mx>=bp.x&&mx<=bp.x+bp.w)found=i});setHover(found)}
     function onLeave(){setHover(-1)}
-    return React.createElement("canvas",{ref:ref,width:p.w||200,height:p.h||80,onMouseMove:onMove,onMouseLeave:onLeave,style:{display:"block",cursor:"crosshair"}});
+    return React.createElement("canvas",{ref:ref,width:p.w||200,height:p.h||80,onMouseMove:onMove,onMouseLeave:onLeave,style:{display:"block",cursor:"none"}});
   }
 
   // ═══ STYLES ═══
   var card=function(glow){return{background:"rgba(245,245,240,.02)",border:"1px solid rgba("+(glow||CR)+",.1)",padding:Math.round(16*F),position:"relative",overflow:"hidden"}};
   var cardGlow=function(color){return{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+(color||CR)+",.4),transparent)"}};
   var lb={fontSize:Math.round(8*F),color:"#666",letterSpacing:".2em",marginBottom:4,textTransform:"uppercase"};
-  var vl=function(color){return{fontSize:Math.round(28*F),fontFamily:HEAD,fontWeight:900,color:color||"#f5f5f0",lineHeight:1}};
-  var ip={width:"100%",background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.08)",color:"#f5f5f0",padding:Math.round(10*F)+"px",fontSize:Math.round(11*F),fontFamily:"'Space Mono',monospace",outline:"none",marginBottom:Math.round(6*F)};
-  var btn=function(color){return{display:"inline-block",padding:Math.round(7*F)+"px "+Math.round(16*F)+"px",border:"1px solid "+(color||C)+"44",color:color||C,fontSize:Math.round(9*F),letterSpacing:".1em",cursor:"crosshair",marginRight:6}};
-  var ts=function(t){return{padding:Math.round(8*F)+"px "+Math.round(14*F)+"px",fontSize:Math.round(9*F),letterSpacing:".1em",cursor:"crosshair",border:"1px solid "+(tab===t?"rgba("+CR+",.3)":"rgba(245,245,240,.04)"),background:tab===t?"rgba("+CR+",.06)":"transparent",color:tab===t?C:"#999",transition:"all .2s"}};
+  var vl=function(color){return{fontSize:Math.round(28*F),fontFamily:HEAD,fontWeight:900,color:color||"#C9D1D6",lineHeight:1}};
+  var ip={width:"100%",background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.08)",color:"#C9D1D6",padding:Math.round(10*F)+"px",fontSize:Math.round(11*F),fontFamily:"'Space Mono',monospace",outline:"none",marginBottom:Math.round(6*F)};
+  var btn=function(color){return{display:"inline-block",padding:Math.round(7*F)+"px "+Math.round(16*F)+"px",border:"1px solid "+(color||C)+"44",color:color||C,fontSize:Math.round(9*F),letterSpacing:".1em",cursor:"none",marginRight:6}};
+  var ts=function(t){return{padding:Math.round(8*F)+"px "+Math.round(14*F)+"px",fontSize:Math.round(9*F),letterSpacing:".1em",cursor:"none",border:"1px solid "+(tab===t?"rgba("+CR+",.3)":"rgba(245,245,240,.04)"),background:tab===t?"rgba("+CR+",.06)":"transparent",color:tab===t?C:"#999",transition:"all .2s"}};
 
   // ═══ LOGIN GATE ═══
   if (!auth) {
@@ -468,13 +468,13 @@ function AdminPanel(props) {
         React.createElement("div",{style:{width:"min(420px,92vw)",padding:"clamp(28px,6vw,48px)",border:"1px solid rgba("+CR+",.12)",background:"rgba(0,0,0,.95)",position:"relative",overflow:"hidden"}},
           React.createElement("div",{style:{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,rgba("+CR+",.5),transparent)"}}),
           React.createElement("img",{src:"/logo.png",alt:"CS",style:{height:36,marginBottom:24,display:"block",filter:"drop-shadow(0 0 12px rgba(0,229,255,.3))"}}),
-          React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(22*F),color:"#f5f5f0",marginBottom:4}},"CS COMMAND CENTER"),
+          React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(22*F),color:"#C9D1D6",marginBottom:4}},"CS COMMAND CENTER"),
           React.createElement("div",{style:{fontSize:Math.round(9*F),color:"#555",letterSpacing:".25em",marginBottom:32}},"SECURE ACCESS REQUIRED"),
           pwdErr && React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#ff3366",marginBottom:14,padding:"10px 14px",border:"1px solid rgba(255,51,102,.2)",background:"rgba(255,51,102,.05)"}},"ACCESS DENIED"),
           React.createElement("input",{type:"password",autoComplete:"current-password",value:pwd,onChange:function(e){setPwd(e.target.value)},onKeyDown:function(e){if(e.key==="Enter")checkPwd()},placeholder:"Enter password...",style:Object.assign({},ip,{marginBottom:16,fontSize:Math.round(13*F),padding:"14px 16px"})}),
           React.createElement("div",{style:{display:"flex",gap:10}},
-            React.createElement("div",{onClick:checkPwd,style:{flex:1,padding:"14px",border:"1px solid rgba("+CR+",.3)",background:"rgba("+CR+",.06)",color:C,fontSize:Math.round(11*F),letterSpacing:".2em",cursor:"crosshair",textAlign:"center"}},"LOGIN"),
-            React.createElement("div",{onClick:props.onClose,style:{padding:"14px 24px",border:"1px solid rgba(245,245,240,.08)",color:"#666",fontSize:Math.round(11*F),letterSpacing:".2em",cursor:"crosshair",textAlign:"center"}},"ESC")
+            React.createElement("div",{onClick:checkPwd,style:{flex:1,padding:"14px",border:"1px solid rgba("+CR+",.3)",background:"rgba("+CR+",.06)",color:C,fontSize:Math.round(11*F),letterSpacing:".2em",cursor:"none",textAlign:"center"}},"LOGIN"),
+            React.createElement("div",{onClick:props.onClose,style:{padding:"14px 24px",border:"1px solid rgba(245,245,240,.08)",color:"#666",fontSize:Math.round(11*F),letterSpacing:".2em",cursor:"none",textAlign:"center"}},"ESC")
           )
         )
       )
@@ -497,11 +497,11 @@ function AdminPanel(props) {
     var uptime=on?(serverStats.uptime||"loading..."):"DOWN";
 
     return React.createElement("div",null,
-      React.createElement("div",{onClick:function(){setSelSite(null)},style:{fontSize:Math.round(10*F),color:C,cursor:"crosshair",marginBottom:Math.round(16*F)}},"\u2190 BACK TO ALL SITES"),
+      React.createElement("div",{onClick:function(){setSelSite(null)},style:{fontSize:Math.round(10*F),color:C,cursor:"none",marginBottom:Math.round(16*F)}},"\u2190 BACK TO ALL SITES"),
       // Header
       React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:Math.round(20*F)}},
         React.createElement("div",null,
-          React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(28*F),color:"#f5f5f0",marginBottom:4}},site.label),
+          React.createElement("div",{style:{fontFamily:HEAD,fontWeight:900,fontSize:Math.round(28*F),color:"#C9D1D6",marginBottom:4}},site.label),
           React.createElement("div",{style:{fontSize:Math.round(10*F),color:"#999"}},site.name," \u00b7 ",site.tech)
         ),
         React.createElement("div",{style:{padding:"8px 20px",border:"1px solid "+(on?"rgba(0,255,136,.3)":"rgba(255,51,102,.3)"),color:on?"#00ff88":"#ff3366",fontSize:Math.round(11*F),fontFamily:HEAD,fontWeight:700}},on?"ONLINE":"OFFLINE")
@@ -531,7 +531,7 @@ function AdminPanel(props) {
           [["Protocol","HTTPS/2"],["Port","443"],["SSL Issuer",serverStats.ssl_issuer||"checking..."],["SSL Expires",(serverStats.ssl_expires||"...")+" ("+(serverStats.ssl_days||"?")+"d)"],["Server","Nginx "+(serverStats.nginx_version||"...")+" / "+(serverStats.os||"...")],["IP",serverStats.server_ip||"..."],["TLS",(serverStats.tls_version||"...")+" / "+(serverStats.tls_cipher||"...")],["Load",serverStats.load||"0"],["Memory",(serverStats.memory_used||0)+"/"+(serverStats.memory_total||0)+"MB ("+(serverStats.memory_pct||0)+"%)"],["Disk",(serverStats.disk_used||0)+"/"+(serverStats.disk_total||0)+"GB ("+(serverStats.disk_pct||0)+"%)"]].map(function(row){
             return React.createElement("div",{key:row[0],style:{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid rgba(245,245,240,.03)",fontSize:Math.round(11*F)}},
               React.createElement("span",{style:{color:"#666"}},row[0]),
-              React.createElement("span",{style:{color:row[0]==="SSL Expires"&&sslDays<30?"#ff3366":"#f5f5f0",fontFamily:HEAD,fontWeight:600}},row[1])
+              React.createElement("span",{style:{color:row[0]==="SSL Expires"&&sslDays<30?"#ff3366":"#C9D1D6",fontFamily:HEAD,fontWeight:600}},row[1])
             )
           })
         ),
@@ -592,7 +592,7 @@ function AdminPanel(props) {
 
   // ═══ MAIN DASHBOARD ═══
   return (
-    React.createElement("div",{className:"cs-admin",style:{position:"fixed",inset:0,background:"#060608",zIndex:100000,overflowY:"auto",overflowX:"hidden",fontFamily:"'Space Mono',monospace",color:"#f5f5f0",fontSize:Math.round(12*F)}},
+    React.createElement("div",{className:"cs-admin",style:{position:"fixed",inset:0,background:"#060608",zIndex:100000,overflowY:"auto",overflowX:"hidden",fontFamily:"'Space Mono',monospace",color:"#C9D1D6",fontSize:Math.round(12*F)}},
       React.createElement("style",null,"@media(max-width:760px){.cs-admin [style*='grid-template-columns']{grid-template-columns:1fr !important;gap:8px !important}.cs-admin [style*='display: flex']{flex-wrap:wrap !important;gap:6px !important}.cs-admin [style*='max-width: 1300']{padding:12px !important}.cs-admin{font-size:11px !important}.cs-admin *{max-width:100%;word-break:break-word;overflow-wrap:anywhere}}"),
       React.createElement("div",{style:{maxWidth:1300,margin:"0 auto",padding:Math.round(20*F)+"px"}},
 
@@ -648,7 +648,7 @@ function AdminPanel(props) {
           sites.map(function(site){
             var s=stats[site.name]||{};var on=s.status==="ONLINE";var lat=s.latency||0;
             var history=pingHistory[site.name]||[];
-            return React.createElement("div",{key:site.name,onClick:function(){setTab("sites");setSelSite(site)},style:{display:"grid",gridTemplateColumns:"12px 1fr 100px 120px 80px 60px",gap:10,alignItems:"center",padding:Math.round(10*F)+"px 8px",borderBottom:"1px solid rgba(245,245,240,.03)",cursor:"crosshair",transition:"background .2s"}},
+            return React.createElement("div",{key:site.name,onClick:function(){setTab("sites");setSelSite(site)},style:{display:"grid",gridTemplateColumns:"12px 1fr 100px 120px 80px 60px",gap:10,alignItems:"center",padding:Math.round(10*F)+"px 8px",borderBottom:"1px solid rgba(245,245,240,.03)",cursor:"none",transition:"background .2s"}},
               React.createElement("div",{style:{width:8,height:8,borderRadius:"50%",background:on?"#00ff88":loading?"#ffaa00":"#ff3366",boxShadow:"0 0 6px "+(on?"rgba(0,255,136,.4)":"rgba(255,51,102,.4)")}}),
               React.createElement("div",null,
                 React.createElement("span",{style:{fontFamily:HEAD,fontWeight:700,fontSize:Math.round(12*F)}},site.label),
@@ -668,7 +668,7 @@ function AdminPanel(props) {
             sites.map(function(site){
               var s=stats[site.name]||{};var on=s.status==="ONLINE";var history=pingHistory[site.name]||[];
               var sslD=serverStats.ssl_days||0;
-              return React.createElement("div",{key:site.name,onClick:function(){setSelSite(site)},style:Object.assign({},card(on?CR:"255,51,102"),{cursor:"crosshair"})},
+              return React.createElement("div",{key:site.name,onClick:function(){setSelSite(site)},style:Object.assign({},card(on?CR:"255,51,102"),{cursor:"none"})},
                 React.createElement("div",{style:cardGlow(on?CR:"255,51,102")}),
                 React.createElement("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:12}},
                   React.createElement("span",{style:{fontFamily:HEAD,fontWeight:800,fontSize:Math.round(13*F)}},site.label),
@@ -818,7 +818,7 @@ function AdminPanel(props) {
             React.createElement("span",{style:{color:"#ccc"}},c.project),
             React.createElement("span",{style:{color:C,fontFamily:HEAD,fontWeight:900}},"\u20ac",c.budget),
             React.createElement("span",{style:{fontSize:Math.round(8*F),color:"#00ff88"}},c.status),
-            React.createElement("span",{onClick:function(){delClient(c.id)},style:{color:"#ff3366",cursor:"crosshair",fontSize:Math.round(9*F)}},"\u2715")
+            React.createElement("span",{onClick:function(){delClient(c.id)},style:{color:"#ff3366",cursor:"none",fontSize:Math.round(9*F)}},"\u2715")
           )})
         ),
 
@@ -841,10 +841,10 @@ function AdminPanel(props) {
             React.createElement("div",{onClick:addTask,style:Object.assign({},btn(),{textAlign:"center",padding:"10px 0"})},"ADD")
           ),
           tasks.map(function(t){var pc={HIGH:"#ff3366",MEDIUM:"#ffaa00",LOW:"#00ff88"}[t.pri];return React.createElement("div",{key:t.id,style:{display:"grid",gridTemplateColumns:"24px 1fr 50px 30px",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(245,245,240,.03)",alignItems:"center",opacity:t.done?.35:1}},
-            React.createElement("div",{onClick:function(){togTask(t.id)},style:{width:16,height:16,border:"1px solid "+(t.done?"#00ff88":"#555"),display:"flex",alignItems:"center",justifyContent:"center",cursor:"crosshair",color:"#00ff88",fontSize:11}},t.done?"\u2713":""),
+            React.createElement("div",{onClick:function(){togTask(t.id)},style:{width:16,height:16,border:"1px solid "+(t.done?"#00ff88":"#555"),display:"flex",alignItems:"center",justifyContent:"center",cursor:"none",color:"#00ff88",fontSize:11}},t.done?"\u2713":""),
             React.createElement("span",{style:{textDecoration:t.done?"line-through":"none"}},t.text),
             React.createElement("span",{style:{fontSize:Math.round(8*F),color:pc}},t.pri),
-            React.createElement("span",{onClick:function(){delTask(t.id)},style:{color:"#ff3366",cursor:"crosshair"}},"\u2715")
+            React.createElement("span",{onClick:function(){delTask(t.id)},style:{color:"#ff3366",cursor:"none"}},"\u2715")
           )})
         ),
 
@@ -864,7 +864,7 @@ function AdminPanel(props) {
               return React.createElement("div",{key:it[0],style:card()},
                 React.createElement("div",{style:cardGlow(it[2]?it[2].replace("#","").match(/.{2}/g).map(function(h){return parseInt(h,16)}).join(","):CR)}),
                 React.createElement("div",{style:{fontSize:Math.round(8*F),color:"#555",letterSpacing:".15em",marginBottom:4}},it[0]),
-                React.createElement("div",{style:{fontSize:Math.round(13*F),fontFamily:HEAD,fontWeight:700,color:it[2]||"#f5f5f0"}},it[1])
+                React.createElement("div",{style:{fontSize:Math.round(13*F),fontFamily:HEAD,fontWeight:700,color:it[2]||"#C9D1D6"}},it[1])
               )
             })
           )
@@ -1213,8 +1213,19 @@ function Constellation() {
   return <canvas ref={ref} style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }} />;
 }
 
-const C = "#00e5ff";
+const C = "#00e5ff";       // cyan — reserved as the "active measurement" accent (<5% of any view)
 const CR = "0,229,255";
+// ── Tolerance design tokens ──
+const BASE = "#0A0C0E";    // carbon-tinted near-black (never #000)
+const S1 = "#111417";      // surface 1 — layered depth, not flat
+const S2 = "#181C20";      // surface 2
+const INK = "#C9D1D6";     // primary text — off-white, never #FFF on dark
+const INK2 = "#7C868D";    // muted label/meta
+const WARN = "#FF6A3D";    // single warm "out-of-tolerance" signal, used rarely
+const LINE = "rgba(201,209,214,.08)"; // hairline furniture
+const EASE = "cubic-bezier(.22,1,.36,1)"; // one decisive ease-out, sitewide
+const DISP = "'Space Grotesk','Inter Tight',-apple-system,sans-serif"; // neo-grotesque display voice
+const MONO = "'Space Mono',ui-monospace,monospace"; // the instruments — dimensions, tolerances
 
 // ══════════ SYNTH ══════════
 // Audio removed
@@ -1387,28 +1398,18 @@ function ASCIISculpture() {
 // ═══════════════════════════════════════════════════
 // 5. ECHO TEXT — Text that leaves ghost trails
 // ═══════════════════════════════════════════════════
+// Display heading. Was a 5-layer cyan "echo/glow" (gratuitous decoration).
+// Reduced to a single confident neo-grotesque heading — restraint as the flex.
 function EchoText(props) {
-  var layers = 5;
-  var items = [];
-  for (var i = layers; i >= 0; i--) {
-    items.push(
-      <div key={i} style={{
-        position: i === 0 ? "relative" : "absolute",
-        top: i * -3 + "px",
-        left: i * 2 + "px",
-        opacity: i === 0 ? 1 : 0.04 * (layers - i),
-        color: i === 0 ? (props.color || "#f5f5f0") : C,
-        fontFamily: props.fontFamily || "Inter Tight, sans-serif",
-        fontWeight: props.fontWeight || 900,
-        fontSize: props.fontSize || "clamp(2rem,5vw,4rem)",
-        lineHeight: props.lineHeight || 0.95,
-        letterSpacing: props.letterSpacing || "-.04em",
-        textTransform: "uppercase",
-        pointerEvents: i === 0 ? "auto" : "none",
-      }}>{props.children}</div>
-    );
-  }
-  return <div style={{ position: "relative" }}>{items}</div>;
+  return <div style={{
+    position: "relative",
+    color: props.color || INK,
+    fontFamily: DISP,
+    fontWeight: props.fontWeight || 600,
+    fontSize: props.fontSize || "clamp(2rem,5vw,4rem)",
+    lineHeight: props.lineHeight || 0.95,
+    letterSpacing: props.letterSpacing || "-.035em",
+  }}>{props.children}</div>;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1665,77 +1666,24 @@ function GenerativeCanvas() {
 // ═══════════════════════════════════════════════════
 // VARIABLE WEIGHT TEXT — Font weight changes by mouse proximity
 // ═══════════════════════════════════════════════════
+// Section heading. Was a per-mouse-move variable-weight reflow storm (6
+// instances each running querySelectorAll + getBoundingClientRect + setState on
+// every pointer move). Now a static, confident neo-grotesque heading — type as
+// the main character, no decorative motion.
 function ProximityText(props) {
-  const ref = useRef(null);
-  const [weights, setWeights] = useState([]);
-  var text = props.text || "";
-  var words = text.split(" ");
-
-  useEffect(function() {
-    setWeights(words.map(function() { return 700; }));
-    function handleMouse(e) {
-      if (!ref.current) return;
-      var spans = ref.current.querySelectorAll(".prox-word");
-      var newW = [];
-      for (var i = 0; i < spans.length; i++) {
-        var rect = spans[i].getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        var dist = Math.sqrt(Math.pow(e.clientX - cx, 2) + Math.pow(e.clientY - cy, 2));
-        var w = Math.max(400, Math.min(900, 900 - dist * 1.5));
-        newW.push(Math.round(w / 100) * 100);
-      }
-      setWeights(newW);
-    }
-    window.addEventListener("mousemove", handleMouse);
-    return function() { window.removeEventListener("mousemove", handleMouse); };
-  }, [text]);
-
   return (
-    <div ref={ref} style={props.style}>
-      {words.map(function(w, i) {
-        return <span key={i} className="prox-word" style={{
-          fontWeight: weights[i] || 700,
-          color: "#f5f5f0",
-          transition: "font-weight 0.15s",
-          display: "inline-block",
-          marginRight: "0.2em",
-          textShadow: "0 2px 20px rgba(0,0,0,0.8)",
-        }}>{w}</span>;
-      })}
-    </div>
+    <div style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>
   );
 }
 
 // ═══════════════════════════════════════════════════
 // SCROLL DECODE TEXT — Characters resolve as you scroll
 // ═══════════════════════════════════════════════════
+// Static statement heading. Was a scroll-driven character scramble (matrix
+// cosplay) — demoted: the scan-reveal on its section already performs the one
+// "resolves into spec" motion, so the text itself stays legible.
 function ScrollDecode(props) {
-  var text = props.text || "";
-  var ref = useRef(null);
-  var [resolved, setResolved] = useState(0);
-  var chars = "!@#$%^&*<>{}[]|/\\01";
-
-  useEffect(function() {
-    function handleScroll() {
-      if (!ref.current) return;
-      var rect = ref.current.getBoundingClientRect();
-      var vh = window.innerHeight;
-      var progress = Math.max(0, Math.min(1, (vh - rect.top) / (vh + rect.height)));
-      setResolved(Math.floor(progress * text.length * 1.3));
-    }
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return function() { window.removeEventListener("scroll", handleScroll); };
-  }, [text]);
-
-  var display = text.split("").map(function(ch, i) {
-    if (i < resolved) return ch;
-    if (ch === " ") return " ";
-    return chars[Math.floor(Math.random() * chars.length)];
-  }).join("");
-
-  return <div ref={ref} style={props.style}>{display}</div>;
+  return <div style={Object.assign({color:INK},props.style,{fontFamily:DISP})}>{props.text||""}</div>;
 }
 
 // ═══════════════════════════════════════════════════
@@ -2068,7 +2016,7 @@ function PrintForge(){
         var hw2=prof[layer]*W*.5,y2=baseY-layer*lh;
         var hx=cx-hw2+(sub%1)*(hw2*2);
         ctx.strokeStyle="rgba(245,245,240,.25)";ctx.beginPath();ctx.moveTo(W*.05,y2-lh);ctx.lineTo(W*.95,y2-lh);ctx.stroke();
-        ctx.fillStyle="#f5f5f0";ctx.beginPath();ctx.moveTo(hx,y2-lh+2);ctx.lineTo(hx-5,y2-lh-8);ctx.lineTo(hx+5,y2-lh-8);ctx.closePath();ctx.fill();
+        ctx.fillStyle="#C9D1D6";ctx.beginPath();ctx.moveTo(hx,y2-lh+2);ctx.lineTo(hx-5,y2-lh-8);ctx.lineTo(hx+5,y2-lh-8);ctx.closePath();ctx.fill();
         ctx.fillStyle="rgba(0,229,255,.9)";ctx.fillRect(hx-1,y2-lh+2,2,4);
         sub+=.06;if(sub>=1){sub=0;layer++}
         if(layer>=NL){phase=1;setTimeout(function(){phase=2;scanY=baseY-NL*lh},900)}
@@ -2210,17 +2158,155 @@ function Monument(props){
     <div style={{position:"absolute",top:12,left:14,fontSize:9,letterSpacing:".2em",color:"rgba(0,229,255,.7)"}}>
       {count!=null?count.toLocaleString()+" "+tt("shards"):"LOCAL PREVIEW"}
     </div>
-    <div style={{position:"absolute",bottom:12,left:14,fontSize:8,letterSpacing:".2em",color:mine>=0?"#f5f5f0":"#555"}}>
+    <div style={{position:"absolute",bottom:12,left:14,fontSize:8,letterSpacing:".2em",color:mine>=0?"#C9D1D6":"#555"}}>
       {mine>=0?"\u25c6 "+tt("yours"):"\u25cc "+tt("forging")}
     </div>
   </div>;
 }
 
 // ═══════════════════════════════════════════════════
+// TOLERANCE SIGNATURE — the measured carbon surface
+// A precision-measured mesh: opens as a sparse scan-point cloud (digital),
+// resolves in ≤900ms into the woven carbon weave (physical). One idea,
+// executed deeply. Replaces the particle-text hero.
+// ═══════════════════════════════════════════════════
+function MeasuredSurface(){
+  var host=useRef(null);
+  useEffect(function(){
+    var el=host.current; if(!el) return;
+    if(!should3D()){
+      // Mobile / reduced-motion: static blueprint canvas instead of the 680KB WebGL
+      var c=document.createElement("canvas");c.style.width="100%";c.style.height="100%";c.style.display="block";
+      var ctx=c.getContext("2d");var dpr=Math.min(window.devicePixelRatio||1,2);
+      function paint(){var w=el.clientWidth,h=el.clientHeight;c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+        var cols=26,rows=16,gx=w/cols,gy=h/rows;ctx.strokeStyle="rgba(201,209,214,.06)";ctx.lineWidth=1;
+        for(var x=0;x<=cols;x++){ctx.beginPath();ctx.moveTo(x*gx,0);ctx.lineTo(x*gx,h);ctx.stroke();}
+        for(var y=0;y<=rows;y++){ctx.beginPath();ctx.moveTo(0,y*gy);ctx.lineTo(w,y*gy);ctx.stroke();}
+        ctx.fillStyle="rgba(0,229,255,.55)";for(var i=0;i<70;i++){var px=(i*137.5)%w,py=(i*89.3)%h;ctx.fillRect(px,py,2,2);} }
+      el.appendChild(c);paint();window.addEventListener("resize",paint);
+      return function(){window.removeEventListener("resize",paint);if(el.contains(c))el.removeChild(c);};
+    }
+    var mounted=true,cleanup=null;
+    import("three").then(function(THREE){
+      if(!mounted||!el) return;
+      var scene=new THREE.Scene();
+      var cam=new THREE.PerspectiveCamera(42,el.clientWidth/el.clientHeight,0.1,100);
+      cam.position.set(0,0,6);
+      var renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
+      renderer.setSize(el.clientWidth,el.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+      renderer.setClearColor(0x000000,0);
+      el.appendChild(renderer.domElement);
+
+      // A measured plane — woven carbon, gently curved
+      var SEGX=48,SEGY=30;
+      var geo=new THREE.PlaneGeometry(9,5.4,SEGX,SEGY);
+      var base=geo.attributes.position.array.slice();
+      for(var i=0;i<base.length;i+=3){ // anisotropic weave displacement baked once
+        var x=base[i],y=base[i+1];
+        base[i+2]=Math.sin(x*2.2)*0.08+Math.cos(y*2.6)*0.06;
+      }
+      // Woven wireframe (the resolved physical part)
+      var weave=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x1c2024,wireframe:true,transparent:true,opacity:0}));
+      // Measurement points (the digital scan)
+      var pGeo=new THREE.BufferGeometry();
+      pGeo.setAttribute("position",new THREE.BufferAttribute(geo.attributes.position.array.slice(),3));
+      var pts=new THREE.Points(pGeo,new THREE.PointsMaterial({color:0x00e5ff,size:0.045,transparent:true,opacity:0.9}));
+      var grp=new THREE.Group();grp.rotation.x=-0.55;grp.rotation.z=0.04;
+      grp.add(weave);grp.add(pts);scene.add(grp);
+
+      var t0=performance.now(),raf,mx=0,my=0,tmx=0,tmy=0;
+      function onMove(e){tmx=(e.clientX/window.innerWidth-0.5);tmy=(e.clientY/window.innerHeight-0.5);}
+      window.addEventListener("pointermove",onMove,{passive:true});
+      var pos=geo.attributes.position.array,ppos=pGeo.attributes.position.array,scan=geo.attributes.position.array.slice();
+
+      function loop(now){
+        if(!mounted) return;
+        var t=(now-t0)/1000;
+        var resolve=Math.min(t/0.9,1);            // 0→1 in 900ms: scan resolves to weave
+        var e=1-Math.pow(1-resolve,3);            // ease-out cubic
+        // points fall from a scattered scan cloud onto the measured surface
+        for(var i=0;i<pos.length;i+=3){
+          var tx=base[i],ty=base[i+1],tz=base[i+2];
+          var sx=tx*1.18,sy=ty*1.18,sz=tz+ (((i*0.013)%1)-0.5)*3.2;
+          ppos[i]=sx+(tx-sx)*e; ppos[i+1]=sy+(ty-sy)*e; ppos[i+2]=sz+(tz-sz)*e;
+          pos[i]=tx;pos[i+1]=ty;pos[i+2]=tz+Math.sin(tx*2.2+t*0.6)*0.02;
+        }
+        pGeo.attributes.position.needsUpdate=true; geo.attributes.position.needsUpdate=true;
+        pts.material.opacity=0.9*(1-e)+0.18;
+        weave.material.opacity=0.5*e;
+        mx+=(tmx-mx)*0.04; my+=(tmy-my)*0.04;
+        grp.rotation.y=mx*0.4; grp.rotation.x=-0.55+my*0.18;
+        renderer.render(scene,cam); raf=requestAnimationFrame(loop);
+      }
+      raf=requestAnimationFrame(loop);
+      function onResize(){if(!el)return;cam.aspect=el.clientWidth/el.clientHeight;cam.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);}
+      window.addEventListener("resize",onResize);
+      cleanup=function(){cancelAnimationFrame(raf);window.removeEventListener("resize",onResize);window.removeEventListener("pointermove",onMove);if(el&&el.contains(renderer.domElement))el.removeChild(renderer.domElement);geo.dispose();pGeo.dispose();renderer.dispose();};
+    });
+    return function(){mounted=false;if(cleanup)cleanup();};
+  },[]);
+  return <div ref={host} aria-hidden="true" style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none"}}/>;
+}
+
+// Scroll-scan reveal: a thin cyan measurement line sweeps the section once on
+// entry; content resolves from blueprint (wireframe) to finished. One motif,
+// repeated with discipline. Honors prefers-reduced-motion.
+function ScanReveal(props){
+  var ref=useRef(null);
+  var [seen,setSeen]=useState(false);
+  useEffect(function(){
+    var el=ref.current; if(!el) return;
+    try{ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setSeen(true);return;} }catch(e){}
+    if(!("IntersectionObserver" in window)){setSeen(true);return;}
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){setSeen(true);io.disconnect();}});},{threshold:0.18});
+    io.observe(el);
+    return function(){io.disconnect();};
+  },[]);
+  return <div ref={ref} className={"cs-scan"+(seen?" in":"")} style={props.style}>
+    <span className="cs-scan-line" aria-hidden="true"/>
+    {props.children}
+  </div>;
+}
+
+// Blueprint furniture — dimension line with a tolerance callout. Real layout
+// furniture that carries the engineering-drawing metaphor, not decoration.
+function Dim(props){
+  return <div aria-hidden="true" style={Object.assign({display:"flex",alignItems:"center",gap:8,fontFamily:MONO,fontSize:9,letterSpacing:".18em",color:INK2},props.style)}>
+    <span style={{width:6,height:6,borderLeft:"1px solid "+INK2,borderBottom:"1px solid "+INK2}}/>
+    <span style={{flex:props.flex?"1":"none",height:1,minWidth:24,background:"repeating-linear-gradient(90deg,"+INK2+" 0 4px,transparent 4px 8px)",opacity:.5}}/>
+    <span>{props.label}</span>
+  </div>;
+}
+
+// Functional caliper cursor — a precision instrument, not a costume crosshair.
+// A small ring that reads out live X/Y coordinates and grows a measuring tick
+// when hovering an interactive target. Hidden on touch devices.
+function CaliperCursor(){
+  var dot=useRef(null),lbl=useRef(null);
+  useEffect(function(){
+    if(typeof window==="undefined")return;
+    try{ if(window.matchMedia&&window.matchMedia("(pointer:coarse)").matches)return; }catch(e){}
+    var x=window.innerWidth/2,y=window.innerHeight/2,cx=x,cy=y,raf,active=false;
+    function move(e){x=e.clientX;y=e.clientY;var tgt=e.target;active=!!(tgt&&tgt.closest&&tgt.closest("a,button,[role='button'],input,textarea,label"));}
+    function loop(){cx+=(x-cx)*0.35;cy+=(y-cy)*0.35;
+      if(dot.current){dot.current.style.transform="translate("+cx+"px,"+cy+"px) translate(-50%,-50%)";dot.current.style.width=active?"34px":"16px";dot.current.style.height=active?"34px":"16px";dot.current.style.borderColor=active?C:"rgba(201,209,214,.5)";}
+      if(lbl.current){lbl.current.style.transform="translate("+(cx+18)+"px,"+(cy+14)+"px)";lbl.current.textContent="X"+String(Math.round(x)).padStart(4,"0")+" Y"+String(Math.round(y)).padStart(4,"0");lbl.current.style.opacity=active?"1":"0.45";}
+      raf=requestAnimationFrame(loop);}
+    window.addEventListener("pointermove",move,{passive:true});raf=requestAnimationFrame(loop);
+    return function(){window.removeEventListener("pointermove",move);cancelAnimationFrame(raf);};
+  },[]);
+  return <React.Fragment>
+    <div ref={dot} className="cs-caliper" aria-hidden="true" style={{position:"fixed",left:0,top:0,width:16,height:16,border:"1px solid rgba(201,209,214,.5)",borderRadius:"50%",zIndex:2147483000,pointerEvents:"none",transition:"width .18s "+EASE+",height .18s "+EASE+",border-color .18s "+EASE}}/>
+    <div ref={lbl} className="cs-caliper" aria-hidden="true" style={{position:"fixed",left:0,top:0,fontFamily:MONO,fontSize:8,letterSpacing:".15em",color:C,zIndex:2147483000,pointerEvents:"none",whiteSpace:"nowrap"}}/>
+  </React.Fragment>;
+}
+
+// ═══════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════
 export default function App(){
-  const[loaded,setLoaded]=useState(false);const[pct,setPct]=useState(0);
+  const[loaded,setLoaded]=useState(true);const[pct,setPct]=useState(100);
   const[time,setTime]=useState("00:00:00");const[bat,setBat]=useState("N/A");
   const[net,setNet]=useState("?");const[fps,setFps]=useState(60);
   const[scrollPx,setScrollPx]=useState(0);
@@ -2247,6 +2333,20 @@ export default function App(){
   useEffect(function(){var c=navigator.connection||navigator.mozConnection;if(c)setNet((c.effectiveType||"?").toUpperCase())},[]);
   useEffect(function(){var raf;function loop(){fpsF.current.push(performance.now());var now=performance.now();fpsF.current=fpsF.current.filter(function(t){return now-t<1000});setFps(fpsF.current.length);raf=requestAnimationFrame(loop)}loop();return function(){cancelAnimationFrame(raf)}},[]);
   useEffect(function(){function h(){setScrollPx(window.scrollY)}window.addEventListener("scroll",h,{passive:true});return function(){window.removeEventListener("scroll",h)}},[]);
+
+  // Scroll re-measures: a cyan line sweeps each section once on entry and its
+  // content resolves from blueprint to finished. The single signature motif,
+  // applied site-wide via one observer (no per-section markup).
+  useEffect(function(){
+    if(!loaded) return;
+    try{ if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches) return; }catch(e){}
+    if(!("IntersectionObserver" in window)) return;
+    var secs=document.querySelectorAll("#main section");
+    secs.forEach(function(s){s.classList.add("cs-prep");});
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("cs-seen");io.unobserve(en.target);}});},{threshold:0.12,rootMargin:"0px 0px -8% 0px"});
+    secs.forEach(function(s){io.observe(s);});
+    return function(){io.disconnect();};
+  },[loaded,lang]);
 
   // ── Collect REAL system info for boot sequence ──
   var [sysInfo, setSysInfo] = useState({});
@@ -2299,7 +2399,7 @@ export default function App(){
       { delay: 100, text: "CARBON STEALTH BIOS v5.0.2026", color: C },
       { delay: 300, text: "EIK: BG208725180 — UL. SAMUIL 3, BOBOV DOL 2670, BULGARIA", color: "#ccc" },
       { delay: 500, text: "\u2500".repeat(52), color: "#ccc" },
-      { delay: 700, text: "SCANNING HARDWARE...", color: "#f5f5f0" },
+      { delay: 700, text: "SCANNING HARDWARE...", color: "#C9D1D6" },
       { delay: 900, text: "  CPU THREADS:    " + (sysInfo.cores || "?") + " CORES DETECTED", color: C },
       { delay: 1100, text: "  MEMORY:         " + (sysInfo.mem || "SCANNING..."), color: C },
       { delay: 1250, text: "  GPU:            " + (sysInfo.webgl || "DETECTING...").substring(0, 40), color: C },
@@ -2309,7 +2409,7 @@ export default function App(){
       { delay: 1850, text: "  BATTERY:        " + (sysInfo.battery || "N/A"), color: C },
       { delay: 2000, text: "  ENGINE:         " + (sysInfo.ua || "?"), color: C },
       { delay: 2200, text: "\u2500".repeat(52), color: "#ccc" },
-      { delay: 2400, text: "INITIALIZING SUBSYSTEMS...", color: "#f5f5f0" },
+      { delay: 2400, text: "INITIALIZING SUBSYSTEMS...", color: "#C9D1D6" },
       { delay: 2600, text: "  [OK] THREE.JS 3D ENGINE", color: "#00ff88" },
       { delay: 2750, text: "  [OK] WEBGL RENDER PIPELINE", color: "#00ff88" },
       { delay: 2900, text: "  [OK] CANVAS COMPOSITOR", color: "#00ff88" },
@@ -2533,7 +2633,7 @@ export default function App(){
     return function() { cancelAnimationFrame(raf); };
   }, [loaded]);
 
-  var HEAD="Inter Tight,sans-serif";
+  var HEAD=DISP;
 
   // Lock scroll during boot, force top when loaded
   useEffect(function() {
@@ -2557,121 +2657,30 @@ export default function App(){
     }
   }, [loaded]);
 
-  if(!loaded)return(
-    <div style={{position:"fixed",inset:0,background:"#000",zIndex:999999,overflow:"hidden",
-      opacity: bootPhase === 2 ? 0 : 1,
-      transform: bootPhase === 2 ? "scale(1.1)" : "scale(1)",
-      transition: bootPhase >= 1 ? "opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)" : "none",
-    }}>
-      <style>{"@keyframes scanBoot{from{top:-2px}to{top:100%}}@keyframes blinkCursor{50%{opacity:0}}"}</style>
-
-      {/* Particle network background */}
-      <canvas ref={bootCanvasRef} style={{position:"absolute",inset:0,zIndex:0}}/>
-
-      {/* THREE.JS BOOT SCENE — morphing icosahedron */}
-      <div ref={bootSceneRef} style={{position:"absolute",inset:0,zIndex:2,pointerEvents:"none"}}/>
-
-      {/* Scan line */}
-      <div style={{position:"absolute",left:0,width:"100%",height:"1px",background:"linear-gradient(90deg,transparent,rgba("+CR+",.15),transparent)",zIndex:3,animation:"scanBoot 2s linear infinite"}}/>
-
-      {/* Grid */}
-      <div style={{position:"absolute",inset:0,zIndex:1,backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 39px,rgba("+CR+",.03) 39px,rgba("+CR+",.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba("+CR+",.03) 39px,rgba("+CR+",.03) 40px)",pointerEvents:"none"}}/>
-
-      {/* Main content */}
-      <div style={{position:"relative",zIndex:5,padding:24,fontFamily:"'Space Mono',monospace",height:"100%",display:"flex",flexDirection:"column"}}>
-
-        {/* Top bar */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingBottom:16,borderBottom:"1px solid rgba("+CR+",.1)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{width:6,height:6,background:C,animation:"blinkCursor 1s steps(1) infinite"}}/>
-            <span style={{fontSize:9,letterSpacing:".4em",color:C}}>CS BOOT SEQUENCE</span>
-          </div>
-          <span style={{fontSize:9,color:"#ddd",letterSpacing:".15em"}}>{sysInfo.time ? sysInfo.time.substring(0, 19) : ""}</span>
-        </div>
-
-        {/* Terminal boot log */}
-        <div style={{flex:1,overflow:"hidden",paddingTop:16,paddingBottom:16}}>
-          {bootLines.map(function(line, i) {
-            return <div key={i} style={{
-              fontSize: 10, lineHeight: 1.8, color: line.color,
-              fontFamily: "'Space Mono', monospace", letterSpacing: ".05em",
-            }}>{line.text}</div>;
-          })}
-          {bootPhase === 0 && <span style={{display:"inline-block",width:7,height:14,background:C,animation:"blinkCursor .6s steps(1) infinite",verticalAlign:"middle",marginLeft:2}}/>}
-        </div>
-
-        {/* Bottom section: massive percentage + progress */}
-        <div style={{borderTop:"1px solid rgba("+CR+",.1)",paddingTop:20,display:"flex",justifyContent:"space-between",alignItems:"flex-end"}}>
-          <div>
-            <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"clamp(5rem,15vw,12rem)",lineHeight:.85,letterSpacing:"-.05em",color:bootPhase>=1?C:"#f5f5f0",transition:"color .4s"}}>
-              {String(pct).padStart(3,"0")}
-            </div>
-            <div style={{fontSize:8,letterSpacing:".3em",color:"#ddd",marginTop:8}}>
-              {bootPhase >= 1 ? "BOOT COMPLETE \u2014 LAUNCHING" : "SYSTEM INITIALIZATION"}
-            </div>
-          </div>
-          <div style={{width:200}}>
-            {/* Multi-layer progress bar */}
-            <div style={{height:2,background:"#111",marginBottom:4,position:"relative",overflow:"hidden"}}>
-              <div style={{height:"100%",background:C,width:pct+"%",transition:"width 80ms"}}/>
-            </div>
-            <div style={{height:1,background:"#111",marginBottom:4,position:"relative",overflow:"hidden"}}>
-              <div style={{height:"100%",background:"rgba("+CR+",.4)",width:Math.min(pct*1.2,100)+"%",transition:"width 120ms"}}/>
-            </div>
-            <div style={{height:1,background:"#111",position:"relative",overflow:"hidden"}}>
-              <div style={{height:"100%",background:"rgba("+CR+",.2)",width:Math.min(pct*1.5,100)+"%",transition:"width 160ms"}}/>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
-              <span style={{fontSize:7,color:"#ccc",letterSpacing:".15em"}}>0%</span>
-              <span style={{fontSize:7,color:"#ccc",letterSpacing:".15em"}}>PROGRESS</span>
-              <span style={{fontSize:7,color:"#ccc",letterSpacing:".15em"}}>100%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Corner decorations */}
-      <div style={{position:"absolute",top:12,right:12,width:20,height:20,borderTop:"1px solid rgba("+CR+",.2)",borderRight:"1px solid rgba("+CR+",.2)",zIndex:6}}/>
-      <div style={{position:"absolute",bottom:12,left:12,width:20,height:20,borderBottom:"1px solid rgba("+CR+",.2)",borderLeft:"1px solid rgba("+CR+",.2)",zIndex:6}}/>
-      <div style={{position:"absolute",top:12,left:12,width:20,height:20,borderTop:"1px solid rgba("+CR+",.2)",borderLeft:"1px solid rgba("+CR+",.2)",zIndex:6}}/>
-      <div style={{position:"absolute",bottom:12,right:12,width:20,height:20,borderBottom:"1px solid rgba("+CR+",.2)",borderRight:"1px solid rgba("+CR+",.2)",zIndex:6}}/>
-    </div>);
-
   var parallaxFast = -scrollPx * 0.15;
   var parallaxSlow = -scrollPx * 0.05;
 
   return(
-    <div style={{background:"#000",color:"#f5f5f0",fontFamily:"'Space Mono',monospace",fontSize:12,cursor:"crosshair",letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
+    <div className="cs-root" style={{background:BASE,color:INK,fontFamily:MONO,fontSize:12,letterSpacing:".02em",position:"relative",overflowX:"hidden"}}>
       <a href="#main" className="cs-skip">{lang==="it"?"Salta al contenuto":lang==="bg"?"Към съдържанието":"Skip to content"}</a>
       {showAdmin && <AdminPanel onClose={function(){setShowAdmin(false)}} />}
-      {/* Post-boot circuit trace reveal (one-shot, removes itself) */}
-      <CircuitSweep />
-      <style>{"::selection{background:"+C+";color:#000}*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow-x:hidden}@keyframes blink{50%{opacity:.3}}@keyframes scanH{from{transform:translateX(-100%)}to{transform:translateX(100%)}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes diagScan{from{transform:translateY(-200%) rotate(45deg)}to{transform:translateY(200%) rotate(45deg)}}input::placeholder{color:#999}input:disabled{cursor:wait}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}"}</style>
-
-      {/* Generative painting canvas */}
-      <CodeRain />
-      <GenerativeCanvas />
-      <GlitchFlash />
       <SEOInjector />
-      <VelocityMeter />
-      <ScrollSpeed />
+      <CaliperCursor />
+      <style>{"::selection{background:"+C+";color:"+BASE+"}*{margin:0;padding:0;box-sizing:border-box}html{cursor:none}body{background:"+BASE+";overflow-x:hidden;cursor:none}a,button,[role='button'],input,textarea,select{cursor:none}@media(hover:none),(pointer:coarse){html,body,a,button,[role='button']{cursor:auto}.cs-caliper{display:none}}@keyframes blink{50%{opacity:.3}}@keyframes tickerMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}input::placeholder{color:"+INK2+"}input:disabled{cursor:wait}.cs-scan{position:relative}.cs-scan-line{position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}.cs-scan>*:not(.cs-scan-line){opacity:0;transform:translateY(14px);filter:blur(2px)}.cs-scan.in>*:not(.cs-scan-line){opacity:1;transform:none;filter:none;transition:opacity .6s "+EASE+",transform .6s "+EASE+",filter .6s "+EASE+"}.cs-scan.in .cs-scan-line{animation:csSweep .7s "+EASE+" forwards}@keyframes csSweep{0%{opacity:0;top:0}10%{opacity:1}100%{opacity:0;top:100%}}@media(prefers-reduced-motion:reduce){.cs-scan>*{opacity:1!important;transform:none!important;filter:none!important}.cs-scan-line{display:none}}#main section.cs-prep{opacity:0;transform:translateY(18px)}#main section.cs-prep::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,"+C+",transparent);box-shadow:0 0 8px rgba("+CR+",.5);opacity:0;z-index:6;pointer-events:none}#main section.cs-seen{opacity:1;transform:none;transition:opacity .55s "+EASE+",transform .55s "+EASE+"}#main section.cs-seen::after{animation:csSweep .7s "+EASE+" forwards}@media(prefers-reduced-motion:reduce){#main section.cs-prep{opacity:1;transform:none}#main section::after{display:none}}@media(max-width:767px){.cs-lab-grid{grid-template-columns:1fr !important}}"}</style>
 
-      {/* Diagonal scan line */}
-      <div style={{position:"fixed",left:0,width:"200%",height:1,background:"linear-gradient(90deg,transparent,rgba("+CR+",.06),transparent)",zIndex:9996,pointerEvents:"none",animation:"diagScan 6s linear infinite",transformOrigin:"center"}}/>
-
-      {/* Grid overlay - DIAGONAL */}
-      <div style={{position:"fixed",inset:0,zIndex:1,pointerEvents:"none",opacity:.2,backgroundImage:"repeating-linear-gradient(45deg,rgba("+CR+",.015) 0,rgba("+CR+",.015) 1px,transparent 1px,transparent 60px),repeating-linear-gradient(-45deg,rgba("+CR+",.015) 0,rgba("+CR+",.015) 1px,transparent 1px,transparent 60px)"}}/>
+      {/* Engineering-drawing grid — a faint technical baseline, not decoration */}
+      <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient("+LINE+" 1px,transparent 1px),linear-gradient(90deg,"+LINE+" 1px,transparent 1px)",backgroundSize:"96px 96px",maskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)",WebkitMaskImage:"radial-gradient(circle at 50% 30%,#000,transparent 80%)"}}/>
 
       {/* NAV */}
       <nav style={{position:"fixed",top:0,left:0,width:"100%",zIndex:10000,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid rgba(245,245,240,.08)",background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,background:C,animation:"blink 1s steps(1) infinite"}}/><img src="/logo.png" alt="Carbon Stealth VCC" style={{height:28,objectFit:"contain",filter:"drop-shadow(0 0 6px rgba(0,229,255,0.3))"}}/></div>
-        <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"crosshair",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
+        <div className="cs-nav-links" style={{display:"flex",gap:20,alignItems:"center"}}>{[{txt:t("nav_manifesto"),id:"about"},{txt:t("nav_services"),id:"services"},{txt:t("nav_work"),id:"portfolio"},{txt:t("nav_lab"),id:"lab"},{txt:t("nav_contact"),id:"contact"}].map(function(item){return <div key={item.txt} {...kb(function(){scrollToId(item.id)},item.txt)} style={{cursor:"pointer"}}><Scr text={item.txt} style={{fontSize:9,letterSpacing:".2em"}}/></div>})}<a href={lang==="it"?"/test/":lang==="bg"?"/bg/test/":"/en/test/"} style={{textDecoration:"none"}}><Scr text={t("nav_test")} style={{fontSize:9,letterSpacing:".2em",cursor:"none",color:C,border:"1px solid rgba("+CR+",.3)",padding:"5px 10px"}}/></a></div>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{fps}FPS</span>
           {bat!=="N/A"&&<span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{bat}</span>}
           <span className="cs-nav-meta" style={{fontSize:9,color:"#ccc"}}>{time}</span>
           <div className="cs-nav-lang" style={{display:"flex",gap:2,marginLeft:8}}>
-            {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"crosshair",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
+            {["it","en","bg"].map(function(l){return <span key={l} role="button" tabIndex={0} aria-label={l.toUpperCase()} onKeyDown={function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();setLang(l);try{localStorage.setItem("cs_lang",l)}catch(err){}}}} onClick={function(){setLang(l);try{localStorage.setItem("cs_lang",l)}catch(e){}}} style={{fontSize:8,padding:"3px 6px",letterSpacing:".1em",cursor:"none",background:lang===l?"rgba("+CR+",.15)":"transparent",color:lang===l?C:"#ccc",border:"1px solid "+(lang===l?"rgba("+CR+",.3)":"rgba(245,245,240,.06)"),fontWeight:lang===l?700:400,textTransform:"uppercase"}}>{l}</span>})}
           </div>
           <div className="cs-hamburger" {...kb(function(){setMobileMenu(true)},"Open menu")}><span/><span/><span/></div>
         </div>
@@ -2695,46 +2704,36 @@ export default function App(){
       {/* ═══════════════════════════════════════════
           HERO — Viewport-spanning typography + 3D
           ═══════════════════════════════════════════ */}
-      <section id="hero" aria-label={t("hero_eyebrow")} style={{position:"relative",height:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:20}}>
-        <LiquidFilter />
-        <div style={{position:"absolute",inset:0,filter:"url(#liquid-distort)",zIndex:1}} aria-hidden="true"><Scene3D /></div>
-        <Shockwave />
-        <CursorLight />
+      <section id="hero" aria-label={t("hero_eyebrow")} style={{position:"relative",minHeight:"100vh",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"0 clamp(20px,5vw,64px) clamp(40px,6vh,72px)"}}>
+        {/* Signature: the measured carbon surface, resolving scan -> weave */}
+        <MeasuredSurface />
 
-        {/* Massive parallax background text */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,"+(parallaxSlow-50)+"%) rotate(-5deg)",fontFamily:HEAD,fontWeight:900,fontSize:"clamp(15rem,35vw,40rem)",color:"rgba("+CR+",.04)",lineHeight:.8,whiteSpace:"nowrap",pointerEvents:"none",zIndex:0,userSelect:"none"}}>
-          CS
+        {/* Blueprint furniture - measured coordinates + tolerance callout */}
+        <div aria-hidden="true" style={{position:"absolute",top:96,right:"clamp(20px,5vw,64px)",fontFamily:MONO,fontSize:9,letterSpacing:".22em",color:INK2,textAlign:"right",lineHeight:2.1,zIndex:5}}>
+          42.3482{"°"}N {"·"} 23.0017{"°"}E<br/>BOBOV DOL {"·"} ALT 550M<br/><span style={{color:C}}>{"±"}0.02 TOL</span> {"·"} <span style={{color:C}}>{"◦"} MEASURING</span>
         </div>
 
-        {/* Coordinates floating */}
-        <div style={{position:"absolute",top:80,right:20,fontSize:10,color:"#ccc",textAlign:"right",lineHeight:2.2,zIndex:5,animation:"float 4s ease-in-out infinite"}}>
-          42.3482{"\u00b0"}N<br/>23.0017{"\u00b0"}E<br/>ALT:550M<br/><span style={{color:C}}>{"\u25cf"} LIVE</span>
-        </div>
+        <div style={{position:"relative",zIndex:10,maxWidth:1180,width:"100%",margin:"0 auto"}}>
+          <div style={{display:"flex",alignItems:"center",gap:14,fontSize:10,letterSpacing:".4em",color:INK2,marginBottom:"clamp(20px,4vh,40px)"}}>
+            <span style={{width:24,height:1,background:C}}/>{t("hero_eyebrow")}
+          </div>
 
-        <div style={{position:"relative",zIndex:10,background:"linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)",margin:"-60px -20px 0",padding:"60px 20px 0"}}>
-          <div style={{fontSize:11,letterSpacing:".5em",color:C,marginBottom:28,fontWeight:700}}>{t("hero_eyebrow")}</div>
+          {/* Type is the hero - oversized neo-grotesque, few words */}
+          <h2 style={{fontFamily:DISP,fontWeight:600,fontSize:"clamp(2.6rem,8vw,7.2rem)",lineHeight:.92,letterSpacing:"-.035em",color:INK,margin:0,maxWidth:"14ch"}}>
+            {t("hero_title")}
+          </h2>
 
-          {/* Variable weight hero text */}
-          <ProximityText
-            text={t("hero_title")}
-            style={{fontFamily:HEAD,fontWeight:800,fontSize:"clamp(2.5rem,7vw,6rem)",textShadow:"0 2px 30px rgba(0,0,0,0.9), 0 0 60px rgba(0,229,255,0.2)",lineHeight:.95,letterSpacing:"-.04em",textTransform:"uppercase",marginLeft:-3,color:"#f5f5f0"}}
-          />
+          {/* Mono spec line - the instruments */}
+          <div style={{fontFamily:MONO,fontSize:11,letterSpacing:".2em",color:INK2,marginTop:24,textTransform:"uppercase"}}>{t("hero_sub")}</div>
 
-          {/* Magnetic repulsion subtitle */}
-          <MagneticRepel
-            text={t("hero_sub")}
-            style={{fontFamily:"'Space Mono',monospace",fontSize:12,letterSpacing:".2em",color:"#ccc",marginTop:24,textTransform:"uppercase"}}
-          />
-
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",borderTop:"1px solid rgba(245,245,240,.1)",paddingTop:18,marginTop:32}}>
-            <p style={{maxWidth:340,fontSize:12,lineHeight:1.9,color:"#ddd"}}>{t("hero_desc")}</p>
-            <div style={{fontSize:10,color:"#ddd",lineHeight:2,textAlign:"right"}}>{fps}FPS | {bat} | {net}<br/><span style={{color:C}}>{"\u25cf"} CS CORE ACTIVE</span></div>
+          <div style={{display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"flex-end",gap:28,borderTop:"1px solid "+LINE,paddingTop:22,marginTop:"clamp(28px,5vh,44px)"}}>
+            <p style={{maxWidth:380,fontSize:12,lineHeight:1.95,color:INK2}}>{t("hero_desc")}</p>
+            <div onClick={function(){scrollToId("contact")}} {...kb(function(){scrollToId("contact")},t("cta_btn"))}>
+              <MagneticRepel text={t("cta_btn")+"  →"} style={{display:"inline-block",fontFamily:MONO,fontSize:11,letterSpacing:".28em",color:C,border:"1px solid rgba("+CR+",.4)",padding:"15px 30px",textTransform:"uppercase"}}/>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* ═══ DIAGONAL DIVIDER ═══ */}
-      <div style={{height:80,background:"linear-gradient(170deg, #000 49.5%, rgba("+CR+",.08) 49.5%, rgba("+CR+",.08) 50.5%, #000 50.5%)",position:"relative",zIndex:5}}/>
 
       {/* ═══════════════════════════════════════════
           ABOUT — Scroll-decode text
@@ -2745,7 +2744,7 @@ export default function App(){
           <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("about_tag")}</div>
           <ScrollDecode
             text={t("about_scroll")}
-            style={{fontFamily:HEAD,fontWeight:800,fontSize:"clamp(1.6rem,3.5vw,2.8rem)",lineHeight:1.2,letterSpacing:"-.02em",textTransform:"uppercase",color:"#f5f5f0",textShadow:"0 2px 20px rgba(0,0,0,0.8)"}}
+            style={{fontFamily:HEAD,fontWeight:800,fontSize:"clamp(1.6rem,3.5vw,2.8rem)",lineHeight:1.2,letterSpacing:"-.02em",textTransform:"uppercase",color:"#C9D1D6",textShadow:"0 2px 20px rgba(0,0,0,0.8)"}}
           />
           <p style={{fontSize:12,lineHeight:2,color:"#ccc",maxWidth:420,marginTop:28}}>{t("about_body")}</p>
         </div>
@@ -2753,25 +2752,27 @@ export default function App(){
           {[[t("stat_1"),"120+"],[t("stat_2"),"98%"],[t("stat_3"),"IT \u00b7 EN \u00b7 BG"],[t("stat_4"),"0"]].map(function(item,i){
             return <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"14px 0",borderBottom:"1px solid rgba(245,245,240,.08)"}}>
               <span style={{fontSize:9,letterSpacing:".25em",textTransform:"uppercase",color:"#ddd"}}>{item[0]}</span>
-              <span style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#f5f5f0"}}>{item[1]}</span></div>})}
+              <span style={{fontFamily:HEAD,fontWeight:900,fontSize:i===3?"2rem":"1.4rem",letterSpacing:"-.02em",color:i===3?C:"#C9D1D6"}}>{item[1]}</span></div>})}
         </div>
       </section>
 
-      {/* ═══ REVERSED DIAGONAL ═══ */}
-      <div style={{height:80,background:"linear-gradient(10deg, #000 49.5%, rgba("+CR+",.06) 49.5%, rgba("+CR+",.06) 50.5%, #000 50.5%)",position:"relative",zIndex:5}}/>
+      {/* ═══ BLUEPRINT DIVIDER — dimension line with tolerance callout ═══ */}
+      <div style={{position:"relative",zIndex:5,padding:"32px clamp(20px,5vw,64px)"}}>
+        <Dim flex label="SEC.02 / SERVICES · ±0.02MM" style={{maxWidth:1180,margin:"0 auto"}}/>
+      </div>
 
       {/* ═══════════════════════════════════════════
           SERVICES — Oversized index numbers
           ═══════════════════════════════════════════ */}
       <section id="services" style={{position:"relative",zIndex:5,padding:"120px 20px"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("srv_tag")}</div>
-        <ProximityText text={t("srv_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:48,color:"#f5f5f0",fontWeight:700}}/>
+        <ProximityText text={t("srv_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:48,color:"#C9D1D6",fontWeight:700}}/>
 
         {(SRV_DATA[lang]||SRV_DATA.en).map(function(s,i){
           return <div key={i} style={{display:"grid",gridTemplateColumns:"100px 1fr",gap:20,padding:"28px 0",borderBottom:"1px solid rgba(245,245,240,.08)",position:"relative"}}>
             <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"3.5rem",color:"rgba("+CR+",.06)",lineHeight:1,letterSpacing:"-.03em"}}>{s.n}</div>
             <div>
-              <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,color:"#f5f5f0"}}>{s.t}</div>
+              <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1.1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:6,color:"#C9D1D6"}}>{s.t}</div>
               <div style={{fontSize:10,color:"#ddd",lineHeight:1.8,marginBottom:8}}>{s.d}</div>
               <div style={{fontSize:8,letterSpacing:".2em",color:C}}>{s.tags}</div>
             </div>
@@ -2787,55 +2788,8 @@ export default function App(){
 
       {/* ═══ ASCII SCULPTURE ═══ */}
       <section style={{position:"relative",zIndex:5,padding:"40px 20px 80px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
-        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20,textAlign:"center"}}>{lang==="it"?"// ASCII GENERATIVO — CALCOLATO IN TEMPO REALE":lang==="bg"?"// \u0413\u0415\u041D\u0415\u0420\u0410\u0422\u0418\u0412\u041D\u041E ASCII — \u0418\u0417\u0427\u0418\u0421\u041B\u0415\u041D\u041E \u0412 \u0420\u0415\u0410\u041B\u041D\u041E \u0412\u0420\u0415\u041C\u0415":"// GENERATIVE ASCII — REAL-TIME COMPUTED"}</div>
+        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20,textAlign:"center"}}>{lang==="it"?"// LA SCANSIONE — IL PEZZO FISICO, MISURATO NEL DIGITALE":lang==="bg"?"// \u0421\u041a\u0410\u041d\u042a\u0422 — \u0424\u0418\u0417\u0418\u0427\u0415\u0421\u041a\u0410\u0422\u0410 \u0427\u0410\u0421\u0422, \u0418\u0417\u041c\u0415\u0420\u0415\u041d\u0410 \u0412 \u0414\u0418\u0413\u0418\u0422\u0410\u041b\u041d\u041e\u0422\u041e":"// THE SCAN — A PHYSICAL PART, MEASURED INTO THE DIGITAL"}</div>
         <ASCIISculpture />
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          WORLD'S FIRST — Technology innovation badges
-          ═══════════════════════════════════════════ */}
-      <section style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba("+CR+",.15)",borderBottom:"1px solid rgba("+CR+",.15)",background:"rgba("+CR+",.01)"}}>
-        <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20,textAlign:"center"}}>{lang==="it"?"// PRIMI AL MONDO — TECNOLOGIE PIONIERISTICHE SU QUESTO SITO":lang==="bg"?"// \u0421\u0412\u0415\u0422\u041E\u0412\u041D\u0418 \u041F\u042A\u0420\u0412\u0415\u041D\u0421\u0422\u0412\u0410 — \u0422\u0415\u0425\u041D\u041E\u041B\u041E\u0413\u0418\u0418 \u041F\u0418\u041E\u041D\u0415\u0420\u0418 \u041D\u0410 \u0422\u041E\u0417\u0418 \u0421\u0410\u0419\u0422":"// WORLD FIRSTS — TECHNOLOGIES PIONEERED ON THIS WEBSITE"}</div>
-        <div style={{textAlign:"center",marginBottom:48}}>
-          <div style={{fontFamily:HEAD,fontWeight:900,fontSize:"clamp(1.5rem,4vw,3rem)",textTransform:"uppercase",letterSpacing:"-.02em",color:"#f5f5f0"}}>
-            {lang==="it"?"PRIMI AL MONDO":lang==="bg"?"\u041F\u042A\u0420\u0412\u0418 \u0412 \u0421\u0412\u0415\u0422\u0410":"WORLD FIRSTS"}
-          </div>
-          <p style={{fontSize:11,color:"#ccc",maxWidth:500,margin:"12px auto 0",lineHeight:1.8}}>
-            {lang==="it"?"Tecnologie mai combinate prima su un singolo sito web. Ogni badge rappresenta un primato mondiale.":lang==="bg"?"\u0422\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438 \u043d\u0438\u043a\u043e\u0433\u0430 \u043d\u0435\u043a\u043e\u043c\u0431\u0438\u043d\u0438\u0440\u0430\u043d\u0438 \u043f\u0440\u0435\u0434\u0438 \u0432 \u0435\u0434\u0438\u043d \u0441\u0430\u0439\u0442. \u0412\u0441\u0435\u043a\u0438 \u0431\u0430\u0434\u0436 \u0435 \u0441\u0432\u0435\u0442\u043e\u0432\u0435\u043d \u043f\u0440\u0438\u043c\u0430\u0442.":"Technologies never combined before on a single website. Each badge represents a world first."}
-          </p>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:2,maxWidth:1100,margin:"0 auto"}}>
-          {[
-            {id:"WF-001",title:"LIVE PRINT FORGE",desc:lang==="it"?"Stampante 3D simulata in canvas: il pezzo nasce strato per strato in tempo reale":lang==="bg"?"\u0421\u0438\u043c\u0443\u043b\u0438\u0440\u0430\u043d 3D \u043f\u0440\u0438\u043d\u0442\u0435\u0440 \u0432 canvas: \u0447\u0430\u0441\u0442\u0442\u0430 \u0441\u0435 \u0440\u0430\u0436\u0434\u0430 \u0441\u043b\u043e\u0439 \u043f\u043e \u0441\u043b\u043e\u0439 \u0432 \u0440\u0435\u0430\u043b\u043d\u043e \u0432\u0440\u0435\u043c\u0435":"Simulated 3D printer in canvas: the part is built layer by layer in real time",tech:"CANVAS 2D + ADDITIVE SIM",year:"2026"},
-            {id:"WF-011",title:"LIVING MONUMENT",desc:lang==="it"?"Cristallo permanente costruito dal comportamento di ogni visitatore \u2014 pu\u00f2 solo crescere":lang==="bg"?"\u041f\u0435\u0440\u043c\u0430\u043d\u0435\u043d\u0442\u0435\u043d \u043a\u0440\u0438\u0441\u0442\u0430\u043b, \u0438\u0437\u0433\u0440\u0430\u0436\u0434\u0430\u043d \u043e\u0442 \u043f\u043e\u0432\u0435\u0434\u0435\u043d\u0438\u0435\u0442\u043e \u043d\u0430 \u0432\u0441\u0435\u043a\u0438 \u043f\u043e\u0441\u0435\u0442\u0438\u0442\u0435\u043b \u2014 \u043c\u043e\u0436\u0435 \u0441\u0430\u043c\u043e \u0434\u0430 \u0440\u0430\u0441\u0442\u0435":"Permanent crystal grown from every visitor's behavior \u2014 it can only get bigger",tech:"SHA-256 ENTROPY + PHYLLOTAXIS",year:"2026"},
-            {id:"WF-002",title:"8K PARTICLE TEXT",desc:lang==="it"?"8.000 particelle GLSL che formano testo e reagiscono al cursore":lang==="bg"?"8000 GLSL \u0447\u0430\u0441\u0442\u0438\u0446\u0438 \u0444\u043e\u0440\u043c\u0438\u0440\u0430\u0449\u0438 \u0442\u0435\u043a\u0441\u0442 \u0438 \u0440\u0435\u0430\u0433\u0438\u0440\u0430\u0449\u0438 \u043d\u0430 \u043a\u0443\u0440\u0441\u043e\u0440\u0430":"8,000 GLSL particles forming text with mouse repulsion physics",tech:"THREE.JS + CUSTOM GLSL SHADERS",year:"2026"},
-            {id:"WF-003",title:"HARDWARE BIOS BOOT",desc:lang==="it"?"Scansione hardware reale del dispositivo (CPU, GPU, RAM, batteria, rete)":lang==="bg"?"\u0420\u0435\u0430\u043b\u043d\u043e \u0441\u043a\u0430\u043d\u0438\u0440\u0430\u043d\u0435 \u043d\u0430 \u0445\u0430\u0440\u0434\u0443\u0435\u0440 (CPU, GPU, RAM, \u0431\u0430\u0442\u0435\u0440\u0438\u044f)":"Real device hardware scan (CPU, GPU, RAM, battery, network)",tech:"NAVIGATOR API + WEBGL_DEBUG",year:"2026"},
-            {id:"WF-004",title:"SVG LIQUID DISTORTION",desc:lang==="it"?"Filtro SVG feTurbulence animato applicato all'intero hero in tempo reale":lang==="bg"?"\u0410\u043d\u0438\u043c\u0438\u0440\u0430\u043d SVG feTurbulence \u0444\u0438\u043b\u0442\u044a\u0440 \u0432\u044a\u0440\u0445\u0443 \u0446\u044f\u043b\u043e\u0442\u043e hero":"Animated SVG feTurbulence filter applied to entire hero section",tech:"SVG FILTER + REQUESTANIMATIONFRAME",year:"2026"},
-            {id:"WF-005",title:"VARIABLE WEIGHT TYPOGRAPHY",desc:lang==="it"?"Peso del font (100-900) che cambia in base alla distanza del cursore":lang==="bg"?"\u0422\u0435\u0433\u043b\u043e \u043d\u0430 \u0448\u0440\u0438\u0444\u0442\u0430 (100-900) \u0441\u043f\u043e\u0440\u0435\u0434 \u0440\u0430\u0437\u0441\u0442\u043e\u044f\u043d\u0438\u0435 \u043e\u0442 \u043a\u0443\u0440\u0441\u043e\u0440\u0430":"Font weight (100-900) changes based on cursor proximity distance",tech:"VARIABLE FONTS + MOUSE TRACKING",year:"2026"},
-            {id:"WF-006",title:"MAGNETIC TEXT REPULSION",desc:lang==="it"?"Lettere che si respingono fisicamente dal cursore con calcolo angolare":lang==="bg"?"\u0411\u0443\u043a\u0432\u0438 \u043a\u043e\u0438\u0442\u043e \u0441\u0435 \u043e\u0442\u0431\u043b\u044a\u0441\u043a\u0432\u0430\u0442 \u043e\u0442 \u043a\u0443\u0440\u0441\u043e\u0440\u0430 \u0441 \u0444\u0438\u0437\u0438\u043a\u0430":"Letters physically repel from cursor with angular force calculation",tech:"DOM POSITION + TRIGONOMETRY",year:"2026"},
-            {id:"WF-007",title:"GENERATIVE CANVAS PAINTING",desc:lang==="it"?"Il cursore lascia segni permanenti — ogni visitatore crea un'opera unica":lang==="bg"?"\u041a\u0443\u0440\u0441\u043e\u0440\u044a\u0442 \u043e\u0441\u0442\u0430\u0432\u044f \u043f\u0435\u0440\u043c\u0430\u043d\u0435\u043d\u0442\u043d\u0438 \u0441\u043b\u0435\u0434\u0438 \u2014 \u0432\u0441\u0435\u043a\u0438 \u043f\u043e\u0441\u0435\u0442\u0438\u0442\u0435\u043b \u0441\u044a\u0437\u0434\u0430\u0432\u0430 \u0443\u043d\u0438\u043a\u0430\u043b\u043d\u043e":"Cursor leaves permanent marks — every visitor creates unique artwork",tech:"CANVAS 2D + NO CLEAR",year:"2026"},
-            {id:"WF-008",title:"PHOSPHOR CURSOR TRAIL",desc:lang==="it"?"Scia luminosa CRT con persistenza fosforo — il cursore emette luce":lang==="bg"?"CRT \u0441\u0432\u0435\u0442\u043b\u0438\u043d\u043d\u0430 \u0441\u043b\u0435\u0434\u0430 \u0441 \u0444\u043e\u0441\u0444\u043e\u0440\u043d\u0430 \u043f\u0435\u0440\u0441\u0438\u0441\u0442\u0435\u043d\u0442\u043d\u043e\u0441\u0442":"CRT-style phosphor persistence light trail from cursor movement",tech:"RADIAL GRADIENT + ALPHA FADE",year:"2026"},
-            {id:"WF-009",title:"30+ BROWSER APIs",desc:lang==="it"?"Piu di 30 API browser usate simultaneamente in un singolo file React":lang==="bg"?"\u041d\u0430\u0434 30 \u0431\u0440\u0430\u0443\u0437\u044a\u0440 API \u0438\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u043d\u0438 \u0435\u0434\u043d\u043e\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u0432 \u0435\u0434\u0438\u043d React \u0444\u0430\u0439\u043b":"Over 30 browser APIs used simultaneously in a single React file",tech:"WEB AUDIO + SPEECH + BATTERY + NET",year:"2026"},
-            {id:"WF-010",title:"2000+ LINES / 1 FILE",desc:lang==="it"?"Oltre 2.000 righe di React con 3D, audio, fisica e schema SEO in un file":lang==="bg"?"\u041d\u0430\u0434 2000 \u0440\u0435\u0434\u0430 React \u0441 3D, \u0430\u0443\u0434\u0438\u043e, \u0444\u0438\u0437\u0438\u043a\u0430 \u0438 SEO \u0441\u0445\u0435\u043c\u0438 \u0432 \u0435\u0434\u0438\u043d \u0444\u0430\u0439\u043b":"Over 2,000 lines of React with 3D, audio, physics and SEO schemas in one file",tech:"REACT + THREE.JS + WEBGL",year:"2026"},
-          ].map(function(wf,i){
-            return <div key={i} style={{border:"1px solid rgba("+CR+",.12)",padding:"20px 16px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:190,position:"relative",overflow:"hidden"}}>
-              {/* Background glow */}
-              <div style={{position:"absolute",top:0,right:0,width:60,height:60,background:"radial-gradient(circle,rgba("+CR+",.06) 0%,transparent 70%)",pointerEvents:"none"}}/>
-              <div>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                  <span style={{fontSize:7,letterSpacing:".3em",color:C,fontWeight:700}}>{wf.id}</span>
-                  <span style={{fontSize:7,letterSpacing:".15em",color:"#ccc",background:"rgba("+CR+",.08)",padding:"2px 6px"}}>{wf.year}</span>
-                </div>
-                <div style={{fontFamily:HEAD,fontWeight:800,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"-.01em",color:"#f5f5f0",marginBottom:8,lineHeight:1.2}}>{wf.title}</div>
-                <div style={{fontSize:9,color:"#ccc",lineHeight:1.7}}>{wf.desc}</div>
-              </div>
-              <div style={{fontSize:7,letterSpacing:".2em",color:C,marginTop:12,paddingTop:8,borderTop:"1px solid rgba("+CR+",.1)"}}>{wf.tech}</div>
-            </div>
-          })}
-        </div>
-        <div style={{textAlign:"center",marginTop:32}}>
-          <div style={{fontSize:8,color:"#ccc",letterSpacing:".2em"}}>{lang==="it"?"CARBON STEALTH VCC \u00b7 10 PRIMATI MONDIALI \u00b7 1 SITO WEB \u00b7 2026":lang==="bg"?"CARBON STEALTH VCC \u00b7 10 \u0421\u0412\u0415\u0422\u041E\u0412\u041D\u0418 \u041F\u042A\u0420\u0412\u0415\u041D\u0421\u0422\u0412\u0410 \u00b7 1 \u0421\u0410\u0419\u0422 \u00b7 2026":"CARBON STEALTH VCC \u00b7 10 WORLD FIRSTS \u00b7 1 WEBSITE \u00b7 2026"}</div>
-        </div>
       </section>
 
       {/* ═══════════════════════════════════════════
@@ -2847,7 +2801,7 @@ export default function App(){
         <div style={{height:48}}/>
 
         {[["001","NEXUS DOMINION","BROWSER MMO","https://nexus.carbonstealth.eu"],["002","OU VAPTSAROV","SCHOOL WEBSITE","https://ouvaptsarov.com"],["003","ERP ASCENSORI","ERP SYSTEM","https://erp.carbonstealth.eu"],["004","CS ANTICHEAT v4.0","FIVEM 40+ MODULES","https://ac.carbonstealth.eu"],["005","TRETI MART","MARKETPLACE BG","https://tretimart.carbonstealth.eu"]].map(function(w){
-          return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" style={{display:"grid",gridTemplateColumns:"60px 1fr auto",gap:16,padding:"16px 0",borderBottom:"1px solid rgba(245,245,240,.08)",cursor:"crosshair",textDecoration:"none",color:"inherit"}}>
+          return <a key={w[0]} href={w[3]} target="_blank" rel="noopener" style={{display:"grid",gridTemplateColumns:"60px 1fr auto",gap:16,padding:"16px 0",borderBottom:"1px solid rgba(245,245,240,.08)",cursor:"none",textDecoration:"none",color:"inherit"}}>
             <span style={{fontSize:9,color:"#ccc",letterSpacing:".2em"}}>{w[0]}</span>
             <Scr text={w[1]} style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em"}}/>
             <span style={{fontSize:9,color:"#ccc",letterSpacing:".15em",textTransform:"uppercase"}}>{w[2]}</span></a>})}
@@ -2858,7 +2812,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="products" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("prod_tag")}</div>
-        <ProximityText text={t("prod_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#f5f5f0",fontWeight:700}}/>
+        <ProximityText text={t("prod_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#C9D1D6",fontWeight:700}}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:2}}>
           {[
             {name:"Nexus Dominion",desc:"MMO browser game dark fantasy medievale. Gilde, dungeon, battaglie PvP ed economia gestita dai giocatori.",url:"https://nexus.carbonstealth.eu",tag:"GAMING"},
@@ -2866,10 +2820,10 @@ export default function App(){
             {name:"Treti Mart",desc:"Il marketplace bulgaro. Compra e vendi prodotti in Bulgaria con annunci gratuiti e pagamenti sicuri.",url:"https://tretimart.carbonstealth.eu",tag:"MARKETPLACE"},
             {name:"CS ERP Demo",desc:"Demo live del sistema ERP. Prova moduli CRM, magazzino, contabilita e dashboard BI.",url:"https://erp.carbonstealth.eu",tag:"ERP"},
           ].map(function(p,i){
-            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"crosshair",background:"rgba("+CR+",.01)"}}>
+            return <a key={i} href={p.url} target="_blank" rel="noopener" style={{border:"1px solid rgba(245,245,240,.06)",padding:"24px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,textDecoration:"none",color:"inherit",cursor:"none",background:"rgba("+CR+",.01)"}}>
               <div>
                 <div style={{fontSize:8,letterSpacing:".3em",color:C,marginBottom:8}}>{p.tag}</div>
-                <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",marginBottom:8,color:"#f5f5f0"}}>{p.name}</div>
+                <div style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",marginBottom:8,color:"#C9D1D6"}}>{p.name}</div>
                 <div style={{fontSize:10,color:"#ccc",lineHeight:1.8}}>{p.desc}</div>
               </div>
               <div style={{fontSize:8,letterSpacing:".15em",color:C,marginTop:14,paddingTop:10,borderTop:"1px solid rgba(245,245,240,.06)"}}>{p.url.replace("https://","")} {"\u2192"}</div>
@@ -2883,7 +2837,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="lab" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("lab_tag")}</div>
-        <ProximityText text={t("lab_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#f5f5f0",fontWeight:700}}/>
+        <ProximityText text={t("lab_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
         <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("lab_desc")}</p>
         <div className="cs-lab-grid" style={{display:"grid",gridTemplateColumns:"minmax(280px,1fr) minmax(280px,1fr)",gap:2,alignItems:"stretch"}}>
           <div style={{border:"1px solid rgba("+CR+",.15)",background:"rgba("+CR+",.02)",minHeight:340,position:"relative"}}>
@@ -2896,7 +2850,7 @@ export default function App(){
                 <span style={{fontSize:11,color:"#ddd",lineHeight:1.8,letterSpacing:".05em"}}>{b}</span>
               </div>
             })}
-            <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"crosshair",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
+            <div onClick={function(){scrollToId("contact")}} style={{marginTop:10,padding:"12px 24px",border:"1px solid "+C,color:C,fontSize:10,letterSpacing:".25em",cursor:"none",alignSelf:"flex-start"}}>{t("lab_cta")}</div>
           </div>
         </div>
       </section>
@@ -2906,7 +2860,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="monument" style={{position:"relative",zIndex:5,padding:"80px 20px 120px",borderTop:"1px solid rgba(245,245,240,.08)"}}>
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("mon_tag")}</div>
-        <ProximityText text={t("mon_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#f5f5f0",fontWeight:700}}/>
+        <ProximityText text={t("mon_title")} style={{fontFamily:HEAD,fontSize:"clamp(2rem,5vw,4rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:12,color:"#C9D1D6",fontWeight:700}}/>
         <p style={{fontSize:12,color:"#ccc",marginBottom:28,maxWidth:560,lineHeight:1.9}}>{t("mon_desc")}</p>
         <div style={{border:"1px solid rgba("+CR+",.15)",background:"radial-gradient(circle at 50% 50%, rgba("+CR+",.04), transparent 70%)",height:"min(72vh,560px)",position:"relative"}}>
           <Monument lang={lang}/>
@@ -2929,11 +2883,11 @@ export default function App(){
           ) : (
             <form onSubmit={function(e){e.preventDefault();handleFormSubmit()}} style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} aria-label={t("form_name")} required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
-                <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} aria-label={t("form_email")} type="email" required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+                <input value={formName} onChange={function(e){setFormName(e.target.value)}} placeholder={t("form_name")} aria-label={t("form_name")} required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+                <input value={formEmail} onChange={function(e){setFormEmail(e.target.value)}} placeholder={t("form_email")} aria-label={t("form_email")} type="email" required style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
               </div>
-              <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} aria-label={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
-              <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#f5f5f0",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
+              <input value={formPhone} onChange={function(e){setFormPhone(e.target.value)}} placeholder={t("form_phone")} aria-label={t("form_phone")} type="tel" style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace"}}/>
+              <textarea value={formMsg} onChange={function(e){setFormMsg(e.target.value)}} placeholder={t("form_msg")} aria-label={t("form_msg")} required rows={5} style={{background:"rgba(245,245,240,.03)",border:"1px solid rgba(245,245,240,.1)",color:"#C9D1D6",padding:"14px 16px",fontSize:11,fontFamily:"'Space Mono',monospace",resize:"vertical"}}/>
               <p style={{fontSize:9,color:"#999",lineHeight:1.6}}>{t("form_gdpr")} <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} style={{color:C,textDecoration:"none"}}>{lang==="it"?"Informativa Privacy":lang==="bg"?"\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy Policy"}</a>.</p>
               {formSent==="error" && <div role="alert" style={{padding:"12px 16px",border:"1px solid rgba(255,51,102,.4)",background:"rgba(255,51,102,.06)",color:"#ff6688",fontSize:11,lineHeight:1.6}}>{lang==="it"?"Invio non riuscito. Riprova o scrivici direttamente a info@carbonstealth.eu":lang==="bg"?"\u0418\u0437\u043F\u0440\u0430\u0449\u0430\u043D\u0435\u0442\u043E \u0435 \u043D\u0435\u0443\u0441\u043F\u0435\u0448\u043D\u043E. \u041E\u043F\u0438\u0442\u0430\u0439\u0442\u0435 \u043E\u0442\u043D\u043E\u0432\u043E \u0438\u043B\u0438 \u043D\u0438 \u043F\u0438\u0448\u0435\u0442\u0435 \u043D\u0430 info@carbonstealth.eu":"Send failed. Please try again or email us at info@carbonstealth.eu"}</div>}
               <button type="submit" style={{display:"inline-block",padding:"14px 36px",border:"1px solid "+C,fontSize:10,letterSpacing:".3em",textTransform:"uppercase",cursor:"pointer",color:C,background:"transparent",textAlign:"center",marginTop:8,fontFamily:"'Space Mono',monospace"}}>{t("form_send")}</button>
@@ -2955,7 +2909,7 @@ export default function App(){
           ═══════════════════════════════════════════ */}
       <section id="faq" style={{position:"relative",zIndex:5,padding:"100px 20px",borderTop:"1px solid rgba(245,245,240,.08)"}} itemScope itemType="https://schema.org/FAQPage">
         <div style={{fontSize:9,letterSpacing:".5em",color:C,marginBottom:20}}>{t("faq_tag")}</div>
-        <ProximityText text={t("faq_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#f5f5f0",fontWeight:700}}/>
+        <ProximityText text={t("faq_title")} style={{fontFamily:HEAD,fontSize:"clamp(1.5rem,4vw,3rem)",letterSpacing:"-.03em",textTransform:"uppercase",marginBottom:40,color:"#C9D1D6",fontWeight:700}}/>
         {({
           it: [
             ["Quali servizi offre Carbon Stealth VCC?", "Carbon Stealth offre sviluppo web (React, Node.js, PostgreSQL), sviluppo giochi (FiveM, browser MMO), sistemi embedded e IoT (PLC, Modbus, Eurotherm), DevOps (Docker, Nginx, Hetzner VPS), branding e design, e consulenza tecnica."],
@@ -2983,7 +2937,7 @@ export default function App(){
           ],
         }[lang] || []).map(function(pair, i) {
           return <div key={i} itemScope itemProp="mainEntity" itemType="https://schema.org/Question" style={{borderBottom:"1px solid rgba(245,245,240,.08)",padding:"20px 0"}}>
-            <h3 itemProp="name" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:8,color:"#f5f5f0",textShadow:"0 1px 10px rgba(0,0,0,0.5)"}}>{pair[0]}</h3>
+            <h3 itemProp="name" style={{fontFamily:HEAD,fontWeight:700,fontSize:"1rem",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:8,color:"#C9D1D6",textShadow:"0 1px 10px rgba(0,0,0,0.5)"}}>{pair[0]}</h3>
             <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
               <p itemProp="text" className="about-answer" style={{fontSize:11,lineHeight:1.9,color:"#ccc",maxWidth:600}}>{pair[1]}</p>
             </div>
@@ -3007,9 +2961,9 @@ export default function App(){
             </div>
             <p style={{fontSize:10,lineHeight:1.9,color:"#ddd",maxWidth:280,marginBottom:16}}>{t("ft_desc")}</p>
             <div style={{display:"flex",gap:10}}>
-              <a href="https://wa.me/393792969699" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"crosshair"}} title="WhatsApp">WA</a>
-              <a href="mailto:info@carbonstealth.eu" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"crosshair"}} title="Email">EM</a>
-              <a href="https://www.linkedin.com/company/carbonstealth.vcc" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"crosshair"}} title="LinkedIn">LI</a>
+              <a href="https://wa.me/393792969699" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="WhatsApp">WA</a>
+              <a href="mailto:info@carbonstealth.eu" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,cursor:"none"}} title="Email">EM</a>
+              <a href="https://www.linkedin.com/company/carbonstealth.vcc" style={{width:32,height:32,border:"1px solid rgba(245,245,240,.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,letterSpacing:".1em",cursor:"none"}} title="LinkedIn">LI</a>
             </div>
           </div>
 
@@ -3023,7 +2977,7 @@ export default function App(){
             ],bg:[
               ["\u0423\u0435\u0431 \u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0430","services"],["\u0415\u043B\u0435\u043A\u0442\u0440\u043E\u043D\u043D\u0430 \u0422\u044A\u0440\u0433\u043E\u0432\u0438\u044F","services"],["\u0421\u043E\u0444\u0442\u0443\u0435\u0440 \u043F\u043E \u041F\u043E\u0440\u044A\u0447\u043A\u0430","services"],["\u041F\u0440\u043E\u0444\u0435\u0441\u0438\u043E\u043D\u0430\u043B\u0435\u043D ERP","services"],["\u041C\u043E\u0431\u0438\u043B\u043D\u0438 \u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u044F","services"],["SEO / GEO / AEO","services"],["\u0425\u043E\u0441\u0442\u0438\u043D\u0433","services"],["Game Cheat Checker","https://ac.carbonstealth.eu"],["\u041A\u0438\u0431\u0435\u0440\u0441\u0438\u0433\u0443\u0440\u043D\u043E\u0441\u0442","services"]
             ]}[lang]||[]).map(function(s){
-              return s[1].startsWith("http")?<a key={s[0]} href={s[1]} target="_blank" rel="noopener" style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"crosshair",textDecoration:"none"}}>{s[0]}</a>:<div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"crosshair"}}>{s[0]}</div>;
+              return s[1].startsWith("http")?<a key={s[0]} href={s[1]} target="_blank" rel="noopener" style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>:<div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
             })}
           </div>
 
@@ -3037,7 +2991,7 @@ export default function App(){
             ],bg:[
               ["\u0417\u0430 \u041D\u0430\u0441","about"],["\u041F\u043E\u0440\u0442\u0444\u043E\u043B\u0438\u043E","portfolio"],["\u0411\u043B\u043E\u0433 \u0438 \u0420\u0435\u0441\u0443\u0440\u0441\u0438","faq"],["\u041F\u0440\u0438\u043C\u0435\u0440\u043D\u0438 \u041F\u0440\u043E\u0435\u043A\u0442\u0438","portfolio"],["\u041A\u0430\u0440\u0438\u0435\u0440\u0438","contact"],["\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u0438","contact"]
             ]}[lang]||[]).map(function(s){
-              return <div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"crosshair"}}>{s[0]}</div>;
+              return <div key={s[0]} onClick={function(){scrollToId(s[1])}} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none"}}>{s[0]}</div>;
             })}
           </div>
 
@@ -3051,7 +3005,7 @@ export default function App(){
             ],bg:[
               ["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442","/bg/privacy/"],["\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u0437\u0430 \u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438","/bg/cookie/"],["\u041E\u0431\u0449\u0438 \u0423\u0441\u043B\u043E\u0432\u0438\u044F","/bg/termini/"],["Sitemap XML","/sitemap.xml"]
             ]}[lang]||[]).map(function(s){
-              return <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"crosshair",textDecoration:"none"}}>{s[0]}</a>;
+              return <a key={s[0]} href={s[1]} style={{display:"block",fontSize:10,color:"#ccc",lineHeight:2.2,cursor:"none",textDecoration:"none"}}>{s[0]}</a>;
             })}
             <div style={{marginTop:16,display:"flex",gap:12}}>
               <span style={{fontSize:8,color:"#ccc",letterSpacing:".15em"}}>SSL {lang==="it"?"PROTETTO":lang==="bg"?"\u0417\u0410\u0429\u0418\u0422\u0415\u041D":"SECURED"}</span>
@@ -3064,24 +3018,24 @@ export default function App(){
         <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(245,245,240,.08)",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:24,alignItems:"center"}}>
           <span style={{fontSize:9,color:"#ccc",letterSpacing:".1em"}}>{lang==="it"?"Sede Legale:":lang==="bg"?"\u0421\u0435\u0434\u0430\u043B\u0438\u0449\u0435:":"Registered Office:"} ul. Samuil 3, Bobov Dol 2670, Bulgaria</span>
           <span style={{fontSize:9,color:"#ccc"}}>EIK BG208725180</span>
-          <a href="tel:+393792969699" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"crosshair"}}>IT +39 379 296 9699</a>
-          <a href="tel:+359877414874" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"crosshair"}}>BG +359 877 414 874</a>
-          <a href="mailto:info@carbonstealth.eu" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"crosshair"}}>info@carbonstealth.eu</a>
+          <a href="tel:+393792969699" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>IT +39 379 296 9699</a>
+          <a href="tel:+359877414874" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>BG +359 877 414 874</a>
+          <a href="mailto:info@carbonstealth.eu" style={{fontSize:9,color:C,letterSpacing:".1em",cursor:"none"}}>info@carbonstealth.eu</a>
         </div>
 
         {/* BOTTOM BAR */}
         <div style={{padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
           <span style={{fontSize:8,color:"#ccc",letterSpacing:".1em"}}>{"\u00a9"} 2025-2026 Carbon Stealth VCC {"\u00b7"} EIK BG208725180 {"\u00b7"} Bobov Dol, Bulgaria</span>
           <div style={{display:"flex",gap:16}}>
-            <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"crosshair",textDecoration:"none"}}>{lang==="it"?"Privacy":lang==="bg"?"\u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy"}</a>
-            <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"crosshair",textDecoration:"none"}}>{lang==="it"?"Cookie":lang==="bg"?"\u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438":"Cookies"}</a>
-            <a href={lang==="bg"?"/bg/termini/":lang==="en"?"/en/termini/":"/termini/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"crosshair",textDecoration:"none"}}>{lang==="it"?"Termini":lang==="bg"?"\u0423\u0441\u043B\u043E\u0432\u0438\u044F":"Terms"}</a>
+            <a href={lang==="bg"?"/bg/privacy/":lang==="en"?"/en/privacy/":"/privacy/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Privacy":lang==="bg"?"\u041F\u043E\u0432\u0435\u0440\u0438\u0442\u0435\u043B\u043D\u043E\u0441\u0442":"Privacy"}</a>
+            <a href={lang==="bg"?"/bg/cookie/":lang==="en"?"/en/cookie/":"/cookie/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Cookie":lang==="bg"?"\u0411\u0438\u0441\u043A\u0432\u0438\u0442\u043A\u0438":"Cookies"}</a>
+            <a href={lang==="bg"?"/bg/termini/":lang==="en"?"/en/termini/":"/termini/"} target="_blank" rel="noopener" style={{fontSize:8,color:"#ccc",letterSpacing:".1em",cursor:"none",textDecoration:"none"}}>{lang==="it"?"Termini":lang==="bg"?"\u0423\u0441\u043B\u043E\u0432\u0438\u044F":"Terms"}</a>
           </div>
         </div>
 
         {/* POWERED BY */}
         <div style={{padding:"10px 20px",textAlign:"center",borderTop:"1px solid rgba(245,245,240,.02)"}}>
-          <span style={{fontSize:7,color:"#444",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} THREE.JS {"\u00b7"} WEB AUDIO {"\u00b7"} WEBGL {"\u00b7"} CANVAS 2D</span>
+          <span style={{fontSize:7,color:"#444",letterSpacing:".3em"}}>{lang==="it"?"CREATO E PROGETTATO DA CARBON STEALTH":lang==="bg"?"\u0421\u042A\u0417\u0414\u0410\u0414\u0415\u041D\u041E \u0418 \u041F\u0420\u041E\u0415\u041A\u0422\u0418\u0420\u0410\u041D\u041E \u041E\u0422 CARBON STEALTH":"CREATED AND DESIGNED BY CARBON STEALTH"} {"\u00b7"} WEBGL {"\u00b7"} REVERSE ENGINEERING {"\u00b7"} 3D PRINTING {"\u00b7"} \u00b10.02MM</span>
         </div>
       </footer>
 
