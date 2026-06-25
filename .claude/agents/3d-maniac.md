@@ -133,3 +133,8 @@ standalone + SOLIDWORKS plug-in — sweet spot за хибрид.
 - **Сегментация:** `python3 tools/3d/ransac_segment.py scan.ply` (RANSAC равнини → засява призматичните features). **Форма:** `python3 tools/3d/generate_mold.py part.step --ply 1.2 --draft 3` (offset/shell/draft чернова). **Deviation:** `clean_and_validate.py --deviation ref.stl`.
 - **AI scan→CAD:** cadrille (ICLR 2026) / CAD-Recode → **редактируем CadQuery код**; третирай като ЧЕРНОВА — одитирай топология/размери, не приемай сляпо.
 - **Планирано (L):** интеграция на cadrille pipeline; PyNite FEA скрининг. Никога структурна карбон част само на FEA скрининг — gate на deviation + ACP/физичен тест.
+
+## Надеждност (v2.1)
+- **Техника:** **само детерминистичен грейдър за геометрия** — никакъв LLM-съдия; `clean_and_validate.py` asserts (watertight + deviation в толеранс) са присъдата.
+- **Нов инструмент:** `python3 tools/3d/clean_and_validate.py clean.stl --deviation ref.stl --heatmap dev.ply` — цветна карта на отклонението (зелено=добре, червено=отклонение).
+- Виж `.claude/agents/_evals/reliability.md`.

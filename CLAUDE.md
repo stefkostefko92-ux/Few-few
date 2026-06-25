@@ -216,17 +216,22 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 | **3D Maniac** `3d-maniac.md`              | 3D reverse engineering & Mesh→Solid CAD for **carbon-fiber motorcycle parts**; QuickSurface Pro power user: scan→CAD, class-A NURBS (G2), deviation analysis, design-intent capture, composite tooling (ply offset, draft, parting lines), automation via CadQuery/build123d/FreeCAD/PyMeshLab/Open3D. |
 | **Социалджията** `socialdjiyata.md`       | Social Media Manager for max **reach/visibility** (TikTok/Reels/Shorts/X/LinkedIn/FB): hook science, retention, social SEO, cadence/repurpose. Uniquely **produces clips** via a scriptable pipeline (ffmpeg reframe 9:16, WhisperX karaoke captions, cut-on-silence, music duck, −14 LUFS, C2PA/AI disclosure). |
 
-All nine agents are at **v2.0** — each ends with an **operating contract** (source-or-silence,
+All nine agents are at **v2.1** — each ends with an **operating contract** (source-or-silence,
 verify-before-asserting, confidence labels, adversarial self-check, stop-and-ask on irreversible
-actions, a per-agent Definition of Done), a **v1.1** block (worked example + explicit competence
-boundary), and a **v2.0** block that turns the agent from advisor into an *instrumented executor*:
-it runs real tools (`tools/<area>/`) and verifies with data. When upgrading an agent, append an
-`evolution` entry + bump the version in `agents-dashboard/agents.json`.
+actions, a per-agent Definition of Done), a **v1.1** block (worked example + competence boundary),
+a **v2.0** block that turns the agent into an *instrumented executor* (runs real `tools/<area>/`
+and verifies with data), and a **v2.1 reliability** block assigning the right error-reduction
+technique — Chain-of-Verification (legal/SEO/translator), Reflexion against real gates
+(code/seed/VPS/FiveM), deterministic code-graders only (3D), cross-family LLM-judge calibration.
+When upgrading an agent, append an `evolution` entry + bump the version in `agents-dashboard/agents.json`.
 
 Supporting files under `.claude/agents/`:
 - **`_shared/glossary.md`** — canonical BG·EN·IT glossary (incl. the *verified* clinical terms
   and the ready IT base) + base project facts, so agents don't re-derive or drift. Преводач owns it.
 - **`_proposals/v2.0.md`** — the v2.0 roadmap (✅ shipped vs 🟡 planned, per agent, with effort).
+- **`_evals/reliability.md`** — the v2.1 reliability playbook (which technique per agent + judge
+  calibration); **`_evals/run.sh`** under `tools/evals/` is the runnable deterministic-grader gate
+  (it caught the 536 duplicate seed slugs). **`_evals/promptfooconfig.yaml`** scaffolds the LLM-rubric layer.
 - **`_evals/golden-cases.md`** — one manual golden case per agent (input + expected traits +
   pitfalls); run an agent against its case after an upgrade to catch regressions.
 

@@ -85,3 +85,8 @@ model: opus
 - **IaC:** `tools/vps/ansible/site.yml` (rebuildable хост, не snowflake). **Бекъп+restore:** `bash tools/vps/backup-verify.sh verify` (restic check + **test-restore** — бекъп без тестван restore не е бекъп). **Мониторинг:** `tools/vps/monitoring/docker-compose.monitoring.yml` (Beszel + Uptime Kuma + алерти).
 - **Тайни:** sops+age (криптирани в репото, decrypt при деплой в mode 600). **Целост:** sha256 (вече) + cosign verify гейт.
 - **Планирано (M):** blue/green превключване на Caddy/nginx upstream в `autodeploy.sh`. Без тежък Prometheus/Vault на малък VPS.
+
+## Надеждност (v2.1)
+- **Техника:** Reflexion срещу health check/логове; нищо разрушително без потвърждение и проверка след.
+- **Нов инструмент:** `bash tools/vps/blue-green.sh <project_dir> <health_path>` — деплой без прекъсване: вдига нов цвят → чака healthcheck → атомарен upstream суич → дренира стария. Rollback = не превключвай.
+- Виж `.claude/agents/_evals/reliability.md`.

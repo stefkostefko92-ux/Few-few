@@ -78,3 +78,8 @@ model: opus
 - **Паритет:** `node tools/i18n/check-parity.mjs bg.json en.json it.json`. **Pseudo/overflow:** `node tools/i18n/pseudo.mjs en.json > pseudo.json` (хваща отрязан текст + твърдо кодирани низове; IT е ~+20%).
 - Имаш WebFetch/WebSearch — провери EN/IT клиничен термин (UMLS/SNOMED/MedDRA) или маркирай за човек; глосарът enforce-ва клиничните термини; ICU MessageFormat за IT plural/gender.
 - **Планирано (L):** COMET/CometKiwi + back-translation adequacy гейт; авто-екстракция (i18next-cli); TMX памет. Клиничните низове — **никога авто-merge**.
+
+## Надеждност (v2.1)
+- **Техника:** CoVe за термини; клиничната безопасност се съди от **друго моделно семейство** (не Claude съди Claude) + човек в цикъла; никога авто-merge на клиничен низ.
+- **Нов инструмент:** `node tools/i18n/glossary-check.mjs <en|it> <locale.json>` — налага одобрените клинични термини от `_shared/glossary.md` (разминаване = провал).
+- Виж `.claude/agents/_evals/reliability.md`.

@@ -71,7 +71,7 @@ def decimate(m, target):
         return m
 
 
-def deviation(trimesh, m, ref_path):
+def deviation(trimesh, m, ref_path, heatmap=None):
     _, ref = load(ref_path)
     # Разстояние от върховете на ref до повърхността на m (proxy за deviation).
     try:
@@ -84,6 +84,17 @@ def deviation(trimesh, m, ref_path):
         good = (dist <= 0.2).mean() * 100
         print(f"  в ±0.2 mm: {good:.1f}% от точките")
         print("  Цел: тяло ±0.1–0.2 mm; пасващи повърхнини ≤0.05–0.1 mm.")
+        if heatmap:
+            # Цветна карта: зелено ≤0.1, жълто ≤0.2, червено над → PLY за оглед.
+            cap = max(0.3, float(np.percentile(dist, 95)))
+            t = np.clip(dist / cap, 0, 1)
+            colors = np.zeros((len(dist), 4), dtype=np.uint8)
+            colors[:, 0] = (t * 255).astype(np.uint8)          # R расте с грешката
+            colors[:, 1] = ((1 - t) * 255).astype(np.uint8)    # G пада
+            colors[:, 3] = 255
+            cloud = trimesh.PointCloud(ref.vertices, colors=colors)
+            cloud.export(heatmap)
+            print(f"  ✔ Heatmap (зелено=добре, червено=отклонение) → {heatmap}")
     except Exception as e:
         print(f"  ⚠ deviation пропуснат: {e}")
 
@@ -94,6 +105,7 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--target-faces", type=int)
     ap.add_argument("--deviation", metavar="REF")
+    ap.add_argument("--heatmap", metavar="OUT.ply", help="цветна карта на отклонението (с --deviation)")
     a = ap.parse_args()
 
     trimesh, m = load(a.input)
@@ -112,7 +124,7 @@ def main():
         print("    (за тежки случаи: pymeshlab Screened Poisson или ръчно в QuickSurface mesh repair)")
 
     if a.deviation:
-        deviation(trimesh, m, a.deviation)
+        deviation(trimesh, m, a.deviation, heatmap=a.heatmap)
 
     if a.out:
         m.export(a.out)

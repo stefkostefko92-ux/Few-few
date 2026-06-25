@@ -59,10 +59,21 @@ cmd_secrets(){ # [--diff]
   ok "Тайни → gitleaks.json"
 }
 
+cmd_mutation(){ # [project_dir]  — диф-обхватно mutation testing (доказва, че тестовете ловят промяната)
+  local d="${1:-.}"
+  if [ -f "$d/package.json" ] && (have npx); then
+    inf "Mutation testing (StrykerJS) в $d — incremental/diff обхват"
+    ( cd "$d" && npx --yes stryker run --incremental 2>/dev/null ) \
+      || warn "stryker не е конфигуриран (нужен stryker.conf.json) — виж README"
+  else
+    miss "npx/package.json за StrykerJS"
+  fi
+}
+
 cmd_all(){ cmd_sast "${1:-.}"; cmd_deps; cmd_secrets; echo; ok "Готово. Адъюдикирай: всяка находка с доказуема source→sink пътека остава; иначе → FP."; }
 
 sub="${1:-check}"; shift || true
 case "$sub" in
-  check) cmd_check;; sast) cmd_sast "$@";; deps) cmd_deps;; secrets) cmd_secrets "$@";; all) cmd_all "$@";;
+  check) cmd_check;; sast) cmd_sast "$@";; deps) cmd_deps;; secrets) cmd_secrets "$@";; mutation) cmd_mutation "$@";; all) cmd_all "$@";;
   *) die "Непозната подкоманда: $sub";;
 esac

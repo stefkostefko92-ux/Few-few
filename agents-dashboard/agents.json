@@ -2,7 +2,7 @@
   "meta": {
     "title": "Лаборатория на агентите · Carbon Stealth",
     "subtitle": "Тук живеят персонализираните Claude Code агенти на този монорепо. Всеки има анимационно лице, времева линия на развитие (версии) и поток на дейността.",
-    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него. Към v1.1: всеки агент има worked-пример, граница на компетентност и (където пасва) реален скрипт в tools/. v2.0: всеки агент пуска реални инструменти (tools/<area>/) и проверява с данни; пътна карта в .claude/agents/_proposals/v2.0.md.",
+    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него. Към v1.1: всеки агент има worked-пример, граница на компетентност и (където пасва) реален скрипт в tools/. v2.0: всеки агент пуска реални инструменти (tools/<area>/) и проверява с данни; пътна карта в .claude/agents/_proposals/v2.0.md. v2.1: слой за надеждност (детерминистични грейдъри tools/evals/run.sh, CoVe/Reflexion, калибриран съдия; виж _evals/reliability.md).",
     "repo": "stefkostefko92-ux/Few-few",
     "updated": "2026-06-25",
     "definitionsDir": ".claude/agents/"
@@ -34,7 +34,8 @@
         "Импресум (Дир. 2000/31)",
         "robots.txt / sitemap.xml / llms.txt / JSON-LD",
         "SEO / GEO / AEO за AI цитирания",
-        "Runtime consent + a11y гейтове (tools/legal/)"
+        "Runtime consent + a11y гейтове (tools/legal/)",
+        "RoPA/DPIA генератор (tools/legal/ropa-gen.mjs)"
       ],
       "knowledge": {
         "sources": 34,
@@ -75,9 +76,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: runtime consent скенер + a11y гейт (Playwright/axe); планирани RoPA/DPIA генератори."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Chain-of-Verification + RoPA/DPIA генератор от Prisma схемата."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -139,7 +151,8 @@
         "Стеково-специфични капани (force-dynamic, Prisma singleton, CSP nonce)",
         "Самопроверка преди доклад — изхвърля неекплоатируемите находки",
         "Доклад по тежест × увереност с file:line и минимална поправка",
-        "SAST/SCA оркестратор (tools/code/scan.sh)"
+        "SAST/SCA оркестратор (tools/code/scan.sh)",
+        "Mutation testing (tools/code/scan.sh mutation)"
       ],
       "knowledge": {
         "sources": 26,
@@ -180,9 +193,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: SAST/SCA оркестратор (Semgrep+osv+gitleaks+SBOM) с адъюдикация на FP."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу реални гейтове + mutation testing (scan.sh mutation)."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -248,7 +272,8 @@
         "ox_lib + oxmysql (параметризирани заявки)",
         "Server-authoritative сигурност (никога не вярвай на клиента)",
         "Оптимизация: кеширане на natives, Wait дисциплина, state bags",
-        "FiveM lint + CI (tools/fivem/)"
+        "FiveM lint + CI (tools/fivem/)",
+        "Busted spec + event-fuzz (tools/fivem/)"
       ],
       "knowledge": {
         "sources": 26,
@@ -289,9 +314,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: lint (luacheck+selene с FiveM std) + CI + busted тест-поток с мокнати natives."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу lint/busted + busted spec с мокнати natives + event-fuzz."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -354,7 +390,8 @@
         "Многоезичен hreflang bg/en/it + x-default",
         "robots.txt / sitemap.xml / llms.txt стратегия",
         "Приоритизиране по ефект × усилие (бързи победи)",
-        "CWV/JSON-LD/AI-bot скриптове (tools/seo/)"
+        "CWV/JSON-LD/AI-bot скриптове (tools/seo/)",
+        "GSC ingest (tools/seo/gsc.mjs)"
       ],
       "knowledge": {
         "sources": 21,
@@ -395,9 +432,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: реални CWV (PSI/CrUX), JSON-LD валидатор, AI-bot лог анализ."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Chain-of-Verification + Search Console ingest (реални заявки/CTR)."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -461,7 +509,8 @@
         "Безопасни клинични термини (без сляп машинен превод)",
         "Речник за последователност + транслитерация на имена",
         "Скрипт за паритет на ключове (tools/i18n/check-parity.mjs)",
-        "Псевдолокализация (tools/i18n/pseudo.mjs)"
+        "Псевдолокализация (tools/i18n/pseudo.mjs)",
+        "Глосар enforcement (tools/i18n/glossary-check.mjs)"
       ],
       "knowledge": {
         "sources": 15,
@@ -502,9 +551,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: паритет + псевдолокализация + проверка на клинични термини; планиран COMET adequacy гейт."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: CoVe + cross-family съдия за клинична безопасност + глосар enforcement."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -569,7 +629,8 @@
         "Регистрация в package.json + db:seed:all",
         "Проверени български факти (телефони, институции)",
         "Детектор за дублирани slug-ове (tools/seed/check-dups.mjs)",
-        "Zod seed factory + provenance (tools/seed/)"
+        "Zod seed factory + provenance (tools/seed/)",
+        "Integrity check (tools/seed/check-integrity.mjs)"
       ],
       "knowledge": {
         "sources": 11,
@@ -610,9 +671,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: Zod-валидиран сийд с provenance + open-data pipeline; integrity гейт."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу tsc/check-dups + integrity проверка (slug/задължителни)."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -677,7 +749,8 @@
         "Бекъпи преди миграция; releases за връщане назад",
         "Втвърдяване: ufw, SSH с ключ, fail2ban, TLS",
         "Харднат autodeploy.sh (sha256 + авто-порт)",
-        "IaC + backup-verify + мониторинг (tools/vps/)"
+        "IaC + backup-verify + мониторинг (tools/vps/)",
+        "Blue/green деплой (tools/vps/blue-green.sh)"
       ],
       "knowledge": {
         "sources": 16,
@@ -718,9 +791,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: IaC (Ansible) + backup/test-restore (restic) + лек мониторинг (Beszel/Uptime Kuma)."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: Reflexion срещу health + blue/green деплой без прекъсване."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -787,7 +871,8 @@
         "Качество: watertight, design intent (не шум), ±0.1–0.2 mm",
         "Автоматизация: PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD",
         "Скриптуем prep/verify (tools/3d/clean_and_validate.py)",
-        "RANSAC + mold генератор (tools/3d/)"
+        "RANSAC + mold генератор (tools/3d/)",
+        "Deviation heatmap (clean_and_validate --heatmap)"
       ],
       "knowledge": {
         "sources": 32,
@@ -828,9 +913,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: RANSAC сегментация + параметрична форма (CadQuery) + deviation; планиран cadrille scan→CAD."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: само детерминистичен грейдър за геометрия + deviation heatmap."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -897,7 +993,8 @@
         "AI инструменти (Veo/Runway/HeyGen/ElevenLabs/OpusClip) + WhisperX",
         "Loudness −14 LUFS, export спецификации, C2PA/AI-разкриване (AI Act чл. 50)",
         "Скриптуем клип pipeline (tools/social/clip.sh)",
-        "Trends + C2PA + publish (tools/social/)"
+        "Trends + C2PA + publish (tools/social/)",
+        "Repurpose (tools/social/repurpose.sh)"
       ],
       "knowledge": {
         "sources": 26,
@@ -932,9 +1029,20 @@
           "date": "2026-06-25",
           "event": "v2.0 — инструментиран изпълнител",
           "detail": "v2.0: trend-sensing + C2PA подпис + публикуващ поток; планирани официални API."
+        },
+        {
+          "version": "2.1.0",
+          "date": "2026-06-25",
+          "event": "v2.1 — слой за надеждност",
+          "detail": "v2.1: итерация срещу реални метрики + repurpose 1 дълго→много shorts."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.1 — слой за надеждност (CoVe/Reflexion/детерминистични грейдъри) + нов инструмент; проверен срещу репото."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",

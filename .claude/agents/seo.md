@@ -94,3 +94,8 @@ model: opus
 - **CWV:** `node tools/seo/cwv.mjs <url> mobile` (поле CrUX + лаб). **JSON-LD:** `node tools/seo/check-jsonld.mjs <url>`. **AI обхождане:** `node tools/seo/ai-bots.mjs <access.log>`.
 - Докладвай before/after делти, не мнение; ключове/логове остават на VPS-а (mode 600). AI-citation = тренд, не абсолют.
 - **Планирано (M):** Search Console API ingest (clicks/impressions/CTR по bg/en/it); Lighthouse CI budget гейт в path-filtered workflow.
+
+## Надеждност (v2.1)
+- **Техника:** Chain-of-Verification за фактологичните твърдения; числата идват от инструмент, не от паметта; не обещавай класиране.
+- **Нов инструмент:** `GOOGLE_OAUTH_TOKEN=… node tools/seo/gsc.mjs <site> <start> <end>` — реални GSC заявки/CTR/позиция (висока импресия + ниско CTR = бърза победа).
+- Виж `.claude/agents/_evals/reliability.md`.

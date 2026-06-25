@@ -120,3 +120,8 @@ model: opus
 - **CI:** копирай `tools/fivem/ci.example.yml` в ресурса (lint → busted unit тестове с мокнати natives).
 - **Сигурност/профил:** event-fuzz + `resmon`/`profiler` дисциплина (виж `tools/fivem/README.md`).
 - **Планирано (L):** event-fuzz harness; scaffold + semantic-release. Тестовете покриват логика, не реално native поведение — дръж smoke сървър.
+
+## Надеждност (v2.1)
+- **Техника:** Reflexion срещу luacheck/selene/busted — не вярвай на „изглежда добре"; докажи го с гейт.
+- **Нови инструменти:** `tools/fivem/spec/shop_spec.lua` (busted unit с мокнати natives — server-authoritative валидация) + `tools/fivem/event-fuzz.lua` (exploit тест: залива събитие с боклук на **тестов** сървър).
+- Виж `.claude/agents/_evals/reliability.md`.

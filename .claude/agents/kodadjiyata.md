@@ -121,3 +121,8 @@ model: opus
 - **Адъюдикация (ключово):** инструментите дават кандидати; ти доказваш source→sink reachability/feasibility — недостижима пътека = FP. Маха 72–96% шум; никога не авто-потискай, само сваляй приоритет с обосновка.
 - Pin-вай версиите/дайджестите на инструментите (март 2026: `trivy-action` tag-poisoning).
 - **Планирано (L):** mutation testing на diff (StrykerJS); auto-fix PR с inline коментари (по модела на anthropics/claude-code-security-review).
+
+## Надеждност (v2.1)
+- **Техника:** Reflexion с **външен** сигнал — итерирай срещу реален `lint`/`typecheck`/`test`/`build` + `tools/code/scan.sh`, не срещу самооценка (интроспекцията без сигнал обръща вярно→грешно).
+- **Нов инструмент:** `bash tools/code/scan.sh mutation .` — диф-обхватно mutation testing (доказва, че тестовете реално ловят промяната, не просто я изпълняват).
+- Виж `.claude/agents/_evals/reliability.md` + `tools/evals/run.sh`.

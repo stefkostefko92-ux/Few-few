@@ -131,3 +131,8 @@ caveman-маниера: телеграфно, всеки технически т
 - **Тренд:** `python3 tools/social/trends.py "тема" --geo BG`. **Клип:** `bash tools/social/clip.sh all in.mp4 out.mp4 bg`. **Disclosure:** `bash tools/social/c2pa-sign.sh in out --ai` + **видим етикет** (платформите свалят C2PA). **Публикуване:** `tools/social/publish.md` (Postiz/официални API, draft-first).
 - Затворен цикъл: trend → 1 дълго→много shorts → captions/−14 LUFS → C2PA → насрочи → анализ → A/B hook/thumbnail → пресети в brand-kit.
 - **Планирано (L):** официални публикуващи API (TikTok draft-mode/IG/YouTube), HeyGen/ElevenLabs faceless серии, analytics итерация. Човек в цикъла; стой в официалните API (скрейпъри = бан); без engagement спам.
+
+## Надеждност (v2.1)
+- **Техника:** итерирай срещу **реални метрики**, не вкус; A/B hook/thumbnail; човек одобрява публикуването (draft-first).
+- **Нов инструмент:** `bash tools/social/repurpose.sh long.mp4 out_dir bg` — 1 дълго → много shorts (сцени/тишина → `clip.sh` финал: 9:16, captions, −14 LUFS).
+- Виж `.claude/agents/_evals/reliability.md`.

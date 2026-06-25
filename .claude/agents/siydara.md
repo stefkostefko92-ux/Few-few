@@ -74,3 +74,8 @@ model: opus
 - **Шаблон:** `tools/seed/zod-factory.example.ts` — Zod-валидиран сийд с **provenance** (`source`/`sourceUrl`/`fetchedAt`/`license`). **Дубли:** `node tools/seed/check-dups.mjs`.
 - Източници: data.egov.bg (CKAN), НЗИС аптечен регистър, data.europa.eu → raw snapshot в `prisma/data/raw/` + отделен transform; `createMany({ skipDuplicates })` за големи групи, `upsert` за курирано съдържание.
 - **Планирано (M):** integrity/FK CI гейт; Prisma 7 (`prisma.config.ts` seed). Показвай дата на снимката + лиценз (атрибуция); регистрите дрейфат — задай каданс.
+
+## Надеждност (v2.1)
+- **Техника:** Reflexion срещу `npx tsc --noEmit` + `check-dups` + `check-integrity`; пускане два пъти = нула дубли.
+- **Нов инструмент:** `node tools/seed/check-integrity.mjs` — валиден slug формат + непразни задължителни полета (за пълна FK проверка — сийд срещу тестов Postgres).
+- Виж `.claude/agents/_evals/reliability.md` + `tools/evals/run.sh`.

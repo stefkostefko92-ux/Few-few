@@ -1,0 +1,41 @@
+# promptfooconfig.yaml — скеле за rubric/LLM-judge eval слоя (v2.1, 🟡 планирано).
+# Детерминистичните грейдъри са в tools/evals/run.sh (готови). Тук е LLM-rubric слоят
+# за прозаичните изходи на агентите. За да тества Claude Code субагенти, нужен е custom
+# provider, който ги извиква; засега това е каркас + asserts за общия договор.
+#
+# Пускане (след `npm i -g promptfoo` и provider):
+#   promptfoo eval -c .claude/agents/_evals/promptfooconfig.yaml
+#   promptfoo view
+description: Агентен fleet — golden eval (rubric + детерминистични asserts)
+
+prompts:
+  - "{{task}}"   # заменя се с реалния агентен извод чрез custom provider
+
+# Калибрация: съдията е от ДРУГО семейство (не съди Claude с Claude); разменяй позиции.
+defaultTest:
+  assert:
+    - type: llm-rubric
+      provider: openai:gpt-4o-mini    # cross-family съдия (не Claude)
+      value: |
+        Отговорът трябва да: (1) не измисля факти/версии/цитати; (2) маркира несигурното;
+        (3) спазва границата на компетентност на агента; (4) не е многословен.
+        Наказвай дължина. Дай 0–1.
+    - type: javascript
+      value: "output.length < 6000"   # анти-многословие (детерминистично)
+
+tests:
+  - vars: { task: "Одитирай cookie банера на zabobovdol за GDPR." }
+    assert:
+      - type: icontains-any
+        value: ["не е правен съвет", "headless", "съгласие"]
+  - vars: { task: "Прегледай diff в medqr/src/routes/profile.js." }
+    assert:
+      - type: icontains
+        value: "file"      # очаква file:line препратки
+  - vars: { task: "Добави италиански за етикетите на спешния профил." }
+    assert:
+      - type: icontains-any
+        value: ["глосар", "Lei", "паритет", "човешка проверка"]
+
+# Бележка: пълните golden случаи (вход + очаквани белези + капани) са в golden-cases.md.
+# Маркирай случай за остарял след ~90 дни; рекалибрирай съдията месечно (κ ≥ 0.6).
