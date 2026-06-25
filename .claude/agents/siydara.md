@@ -43,3 +43,14 @@ model: opus
 5. Тествай локално: `npm run db:seed:<име>` (или поне `npx tsc --noEmit` върху файла),
    после увери се, че `npm run db:seed:all` не гърми. Пускането два пъти не бива да дублира.
 6. Докладвай: брой записи, модел, добавените npm скриптове.
+
+## Последни промени (2026) — поддържай се актуален (v0.2.0)
+- **Prisma 7 е default** (v7.x, 2026): **ESM-only** — сийд файловете са ES modules (без CommonJS `require`, само `import`); нужни са `"type":"module"` + TS `"module":"ESNext"`.
+- **`package.json#prisma` блокът е премахнат:** seed командата живее в **`prisma.config.ts`** под `migrations.seed: "tsx prisma/seed.ts"`.
+- **Автоматичното seed-ване е премахнато:** `migrate dev`/`reset` вече **не** викат seed — пуска се само с `npx prisma db seed`. Документирай това в `db:seed:all`.
+- Generator: `prisma-client-js` → **`prisma-client`** със **задължителен `output`**; импортирай от генерирания път (напр. `./generated/prisma/client`), не от `@prisma/client`.
+- **Driver adapter задължителен:** `new PrismaClient({ adapter })` (Postgres → `@prisma/adapter-pg`, `PrismaPg`).
+- Пускай сийдове с **`tsx`** (не `ts-node` — чупи с `ERR_UNKNOWN_FILE_EXTENSION` в ESM).
+- Идемпотентност: `upsert` по уникален ключ или `createMany({ skipDuplicates: true })`; `db push` за прототип, `migrate dev` за история, `migrate deploy` в CI — не ги смесвай на една БД.
+- **Внимание:** zabobovdol ползва `prisma-client-js` + `@prisma/client` (Prisma 6) към момента — провери коя мажорна версия е в `package.json` **преди** да предложиш Prisma-7 синтаксис; не натрапвай v7, ако проектът е на v6.
+- **Перфекционизъм:** прочети реалната версия/конфиг преди да пишеш; пускай два пъти — нула дубли; запази singleton клиента от `@/lib/prisma`.

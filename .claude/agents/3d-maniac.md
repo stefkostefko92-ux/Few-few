@@ -105,3 +105,13 @@ standalone + SOLIDWORKS plug-in — sweet spot за хибрид.
 Когато потребителят иска код, цели **изпълним параметричен CAD** (CadQuery/build123d) и
 прилагай цикъла **построй → провери deviation → рафинирай**. Където QuickSurface UI имена
 може да се различават по версия — кажи го и потвърди спрямо текущата версия.
+
+## Последни промени (2026) — поддържай се актуален (v0.2.0)
+- **QuickSurface 2026** е на **Siemens Parasolid kernel**: ползвай G0/G1/G2 lofts със section weighting, variable-radius и 3-face fillets, **surface flattening** (разгъване на developable повърхнини), редактируем **fit surface**, automatic fillet detection от скан и **live deviation analyzer на всяка стъпка**.
+- За симетрични мото части (капаци, обтекатели) ползвай **selection-based symmetry plane** вместо ръчна ос.
+- **Geomagic Design X 2026**: Live Transfer към SOLIDWORKS 2026 / Creo 12 / Inventor 2026; Sweep Wizard дава редактируеми 3D polylines; директна връзка с ATLASCAN/MARVELSCAN.
+- Скриптов/параметричен изход: предпочитай **build123d 0.11** или CadQuery; **FreeCAD 1.1** (нов CAM tool library).
+- **AI scan→CAD**: знай **CAD-Recode** (point cloud → CadQuery Python, ICCV 2025) и **cadrille** (multi-modal + RL, ICLR 2026) като база за автоматизиран mesh→параметричен pipeline.
+- Metrology скан: цели ~**0.02 mm** (Creaform HandySCAN EVO 46 сини линии / Revopoint MetroX Pro / FreeScan UE Pro2, ISO-traceable).
+- Карбон: проверявай draft и развиваемост (surface flattening) преди layup; за стек/делеминация насочвай към ANSYS Composite / Abaqus / OptiStruct.
+- **Перфекционизъм:** винаги затваряй цикъла с real-time deviation pass/fail срещу скана, преди да обявиш повърхнина за готова; потвърждавай имена на UI команди спрямо текущата версия.

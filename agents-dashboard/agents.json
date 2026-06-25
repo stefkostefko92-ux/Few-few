@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Лаборатория на агентите · Carbon Stealth",
-    "subtitle": "Тук живеят персонализираните Claude Code агенти на този монорепо. Следи как се развиват (версии) и какво вършат (дейност).",
+    "subtitle": "Тук живеят персонализираните Claude Code агенти на този монорепо. Всеки има анимационно лице, времева линия на развитие (версии) и поток на дейността.",
     "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него.",
     "repo": "stefkostefko92-ux/Few-few",
     "updated": "2026-06-25",
@@ -18,7 +18,13 @@
       "file": ".claude/agents/pravniyat-razbirach.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
       "mission": "Одитира уебсайтове спрямо правото на ЕС: GDPR, ePrivacy/бисквитки, DSA, достъпност (EAA / EN 301 549 / WCAG 2.1 AA), импресум, плюс свързаните технически артефакти (политики, банер за съгласие, robots.txt, sitemap.xml, llms.txt, JSON-LD) и SEO/GEO/AEO.",
       "capabilities": [
         "GDPR чл. 13/14 разкрития и правни основания",
@@ -30,8 +36,8 @@
         "SEO / GEO / AEO за AI цитирания"
       ],
       "knowledge": {
-        "sources": 22,
-        "researchToolUses": 17,
+        "sources": 34,
+        "researchToolUses": 28,
         "priorArt": [
           "VoltAgent/awesome-claude-code-subagents — read-only одиторски tool профил",
           "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
@@ -39,11 +45,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от дълбоко проучване на правото на ЕС + GitHub prior art (22 източника, 17 търсения)." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на правото на ЕС + GitHub prior art (22 източника, 17 търсения)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран за 2026: AI Act чл. 50, оттеглен ePrivacy Регламент, Digital Omnibus (проект), прилагане на EAA, WCAG 2.2, CRA, DSA глоби."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Поел 22 източника за GDPR/ePrivacy/DSA/EAA/SEO-GEO-AEO." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/pravniyat-razbirach.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +12 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 22 източника за GDPR/ePrivacy/DSA/EAA/SEO-GEO-AEO."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/pravniyat-razbirach.md."
+        }
       ]
     },
     {
@@ -56,7 +91,12 @@
       "file": ".claude/agents/kodadjiyata.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Grep", "Glob", "Bash"],
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "Bash"
+      ],
       "mission": "Преглежда код и търси бъгове в уеб приложения (Next.js/React/TypeScript/Prisma и Express/EJS/SQLite): коректност, инжекции, автентикация/оторизация, XSS/CSRF, изтичане на данни, валидация, race conditions, производителност и зависимости.",
       "capabilities": [
         "Diff-фокусиран преглед спрямо правилата в CLAUDE.md",
@@ -67,8 +107,8 @@
         "Доклад по тежест × увереност с file:line и минимална поправка"
       ],
       "knowledge": {
-        "sources": 14,
-        "researchToolUses": 14,
+        "sources": 26,
+        "researchToolUses": 25,
         "priorArt": [
           "anthropics/claude-code code-review plugin — паралелен quad-review + validator агенти",
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
@@ -76,11 +116,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Моделиран по собствения pipeline на Anthropic — diff-фокусиран, адверсариално самопроверяващ (14 източника)." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Моделиран по собствения pipeline на Anthropic — diff-фокусиран, адверсариално самопроверяващ (14 източника)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: React2Shell RCE (CVE-2025-55182/66478), DoS CVE-2026-23864, OWASP 2025 (supply chain + exceptional conditions), Shai-Hulud, Prisma 7/TS 7 предупреждения."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Поел 14 източника за AI код-ревю, OWASP и стеково-специфични бъгове." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/kodadjiyata.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +12 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 14 източника за AI код-ревю, OWASP и стеково-специфични бъгове."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/kodadjiyata.md."
+        }
       ]
     },
     {
@@ -93,7 +162,16 @@
       "file": ".claude/agents/geymara.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
       "mission": "Пише, преглежда и оптимизира FiveM ресурси (CFX/FXServer) на Lua: client/server/shared контексти, събития, fxmanifest.lua, рамки (ESX, QBCore, Qbox/ox_core), ox_lib и oxmysql — със server-authoritative валидация и дисциплина с natives/Wait.",
       "capabilities": [
         "fxmanifest.lua и структура на ресурс (fx_version 'cerulean')",
@@ -104,8 +182,8 @@
         "Оптимизация: кеширане на natives, Wait дисциплина, state bags"
       ],
       "knowledge": {
-        "sources": 17,
-        "researchToolUses": 17,
+        "sources": 26,
+        "researchToolUses": 25,
         "priorArt": [
           "usefiveai — декомпозиция на FiveM скилове (security/framework split)",
           "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
@@ -113,11 +191,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на CFX docs, рамки и GitHub референции (17 източника)." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от проучване на CFX docs, рамки и GitHub референции (17 източника)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Lua 5.3 премахнат (само 5.4), CommunityOx архивиран → overextended, Qbox qbx_core 1.21, артефакт 25770+, state bags/OneSync."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Поел 17 източника за FiveM/CFX, рамки и оптимизация." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/geymara.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +9 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 17 източника за FiveM/CFX, рамки и оптимизация."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/geymara.md."
+        }
       ]
     },
     {
@@ -130,7 +237,13 @@
       "file": ".claude/agents/seo.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "tools": [
+        "Read",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
       "mission": "Максимизира откриваемостта и класирането: класическо SEO + GEO (Generative Engine Optimization) + AEO (Answer Engine Optimization). Core Web Vitals, JSON-LD покритие, многоезичен hreflang (bg/en/it), sitemap/robots/llms, съдържание „отговор отпред“ за AI цитирания.",
       "capabilities": [
         "Техническо SEO (индексируемост, канон, CWV: INP/LCP/CLS)",
@@ -141,8 +254,8 @@
         "Приоритизиране по ефект × усилие (бързи победи)"
       ],
       "knowledge": {
-        "sources": 12,
-        "researchToolUses": 9,
+        "sources": 21,
+        "researchToolUses": 17,
         "priorArt": [
           "VoltAgent/awesome-claude-code-subagents — SEO/marketing субагенти",
           "wshobson/agents — структура и trigger-rich описания",
@@ -150,11 +263,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на техническо SEO + GEO/AEO 2026 и многоезичен hreflang." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от проучване на техническо SEO + GEO/AEO 2026 и многоезичен hreflang."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Google AI Mode (query fan-out), премахнати FAQ/HowTo rich results, entity-схема, llms.txt реалност, E-E-A-T за всичко, INP методика 2026."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Поел ~12 източника за CWV, JSON-LD, GEO/AEO и hreflang." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/seo.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +9 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел ~12 източника за CWV, JSON-LD, GEO/AEO и hreflang."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/seo.md."
+        }
       ]
     },
     {
@@ -167,7 +309,13 @@
       "file": ".claude/agents/prevodach.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Write", "Edit", "Grep", "Glob"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Grep",
+        "Glob"
+      ],
       "mission": "Локализация през български (източник на истината), английски и италиански: поддържа UI низовете и съдържанието в синхрон, спазва типографията и регистъра на всеки език и пази безопасно-критичните медицински формулировки.",
       "capabilities": [
         "BG „…“ · EN \"…\" · IT « » caporali",
@@ -178,8 +326,8 @@
         "Речник за последователност + транслитерация на имена"
       ],
       "knowledge": {
-        "sources": 8,
-        "researchToolUses": 7,
+        "sources": 15,
+        "researchToolUses": 13,
         "priorArt": [
           "medqr src/i18n.js — контролирани клинични преводи (CLINICAL_EN)",
           "Италиански типографски конвенции (caporali, Lei, формати)",
@@ -187,11 +335,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на италианска локализация и i18n паритет; разширява BG/EN към IT." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от проучване на италианска локализация и i18n паритет; разширява BG/EN към IT."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: ICU 78/CLDR 48, MessageFormat 2.0, италианска gender-инфлексия, трите режима на халюцинация при превод, медицинска безопасност."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Поел ~8 източника за италианска типография/регистър и i18n паритет." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/prevodach.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +7 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел ~8 източника за италианска типография/регистър и i18n паритет."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/prevodach.md."
+        }
       ]
     },
     {
@@ -204,7 +381,14 @@
       "file": ".claude/agents/siydara.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
       "mission": "Пише и поправя Prisma seed скриптовете на zabobovdol (prisma/seed-*.ts): идемпотентни upsert-данни за съдържание (ръководства „Как да…“, услуги, телефони, измами, прозрачност), регистрира ги в package.json и в db:seed:all.",
       "capabilities": [
         "Идемпотентен upsert по стабилен slug (без дублиране)",
@@ -215,8 +399,8 @@
         "Проверени български факти (телефони, институции)"
       ],
       "knowledge": {
-        "sources": 4,
-        "researchToolUses": 0,
+        "sources": 11,
+        "researchToolUses": 6,
         "priorArt": [
           "prisma/_seedlib.ts — upsert шаблон (seedGuides)",
           "съседни seed-*.ts — стил, тон и коментари за източник",
@@ -224,11 +408,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Заземен в съществуващите seed шаблони на репото (upsert, идемпотентност, регистрация)." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Заземен в съществуващите seed шаблони на репото (upsert, идемпотентност, регистрация)."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Prisma 7 (ESM-only, prisma.config.ts seed, driver adapters, без авто-seed); пази съвместимост с текущия Prisma 6 на zabobovdol."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Проучи 4 репо-артефакта (seedlib, схема, съседни сийдове, скриптове)." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/siydara.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +7 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Проучи 4 репо-артефакта (seedlib, схема, съседни сийдове, скриптове)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/siydara.md."
+        }
       ]
     },
     {
@@ -241,7 +454,14 @@
       "file": ".claude/agents/vps-adjiyata.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
       "mission": "Отговаря за сървъра под наем (Hetzner/ЕС, Ubuntu) и разгръщането: владее автоматизирания деплой от ръчно качен GitHub архив в /root до жив сървър (deploy/autodeploy.sh), Docker Compose / systemd, Nginx/Caddy, TLS, бекъпи, втвърдяване и диагностика.",
       "capabilities": [
         "Автодеплой: архив в /root → разопаковане → билд → миграции → live",
@@ -252,8 +472,8 @@
         "Втвърдяване: ufw, SSH с ключ, fail2ban, TLS"
       ],
       "knowledge": {
-        "sources": 5,
-        "researchToolUses": 0,
+        "sources": 16,
+        "researchToolUses": 10,
         "priorArt": [
           "zabobovdol/scripts/deploy.sh + docker-compose.yml",
           "medqr/deploy (systemd unit, nginx/caddy, DEPLOY.md)",
@@ -261,11 +481,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Заземен в двата модела на деплой; добавен е deploy/autodeploy.sh за потока „архив в /root → live“." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Заземен в двата модела на деплой; добавен е deploy/autodeploy.sh за потока „архив в /root → live“."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: Let's Encrypt 6/45-дн. сертификати + ARI, Docker 29.x (containerd, docker cp CVE), OpenSSH 10.3, CrowdSec, Ubuntu USG CIS, zero-downtime деплой."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Проучи 5 деплой-артефакта (compose, deploy.sh, systemd, DEPLOY.md)." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/vps-adjiyata.md + deploy/autodeploy.sh." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +11 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Проучи 5 деплой-артефакта (compose, deploy.sh, systemd, DEPLOY.md)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/vps-adjiyata.md + deploy/autodeploy.sh."
+        }
       ]
     },
     {
@@ -278,7 +527,16 @@
       "file": ".claude/agents/3d-maniac.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
       "mission": "3D reverse engineering и трансформацията Mesh→Solid CAD за карбонови мото компоненти, power user на QuickSurface Pro: scan-to-CAD pipeline, NURBS/class-A повърхнини, deviation анализ, design intent, форми/калъпи за композити, плюс автоматизация (PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD).",
       "capabilities": [
         "RE pipeline: скан → mesh → подравняване → повърхнини → solid → STEP/IGES",
@@ -289,8 +547,8 @@
         "Автоматизация: PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD"
       ],
       "knowledge": {
-        "sources": 20,
-        "researchToolUses": 20,
+        "sources": 32,
+        "researchToolUses": 31,
         "priorArt": [
           "filaPro/cad-recode + CADReasoner — скан → изпълним CadQuery, цикъл deviation→рафиниране",
           "prs-eth/point2cad + mikacuy/point2cyl — сегментация в призматични/freeform features",
@@ -298,11 +556,40 @@
         ]
       },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от дълбоко проучване на RE/QuickSurface/композити + GitHub prior art (20 източника). Няма заварен 3D/CAD субагент — запълва реална празнина." }
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на RE/QuickSurface/композити + GitHub prior art (20 източника). Няма заварен 3D/CAD субагент — запълва реална празнина."
+        },
+        {
+          "version": "0.2.0",
+          "date": "2026-06-25",
+          "event": "Ъпгрейд 2026",
+          "detail": "Актуализиран: QuickSurface 2026 (Parasolid, G2 lofts, surface flattening), Geomagic DX 2026, FreeCAD 1.1, build123d 0.11, CAD-Recode/cadrille (AI scan→CadQuery), 0.02mm скенери."
+        }
       ],
       "activity": [
-        { "date": "2026-06-25", "type": "research", "summary": "Поел 20 източника за QuickSurface, scan-to-CAD, class-A и карбон форми." },
-        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/3d-maniac.md." }
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "Ъпгрейд до v0.2.0 — актуализиран за последните 2026 неща + нова анимационна икона."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи +12 източника за последните 2026 промени."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 20 източника за QuickSurface, scan-to-CAD, class-A и карбон форми."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/3d-maniac.md."
+        }
       ]
     }
   ]

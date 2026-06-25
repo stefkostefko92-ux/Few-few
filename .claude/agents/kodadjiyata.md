@@ -91,3 +91,13 @@ model: opus
 - Увереност: `Сигурно` / `Вероятно` / `Възможно`. Под „Вероятно“ не докладвай
   Critical/High, без да назовеш допускането.
 - Започни с едноредово резюме (`N Critical, M High, …`), после находките по тежест.
+
+## Последни промени (2026) — поддържай се актуален (v0.2.0)
+- **Версия-наясно:** прочети `package.json`/lock. React < 19.0.1/19.1.2/19.2.1 или Next.js под закърпената за линията → флагвай **RCE „React2Shell“ CVE-2025-55182 / CVE-2025-66478 (CVSS 10)** и **DoS CVE-2026-23864**; препоръчай ъпгрейд по release-линия.
+- Третирай всеки Server Action / `'use server'` endpoint като **неавтентикирана** атакувана повърхност — изисквай явна authz и валидация на входа вътре в самото действие, не разчитай на middleware.
+- **OWASP Top 10:2025** (финал ян. 2026): добави A03 **Software Supply Chain** (lockfile, pinned версии, `npm ci`, provenance) и A10 **Mishandling of Exceptional Conditions** — лови „fail-open“ catch блокове, които поглъщат грешка и продължават по happy path.
+- Supply-chain (**Shai-Hulud** worm 2025–2026): подозирай postinstall/preinstall скриптове, новодобавени зависимости, широки GitHub Actions caches и OIDC publish без environment protection.
+- AI-генериран код (фев. 2026: 25% с OWASP уязвимости, +37% след многократно refine): претегляй нагоре SSRF (CWE-918), injection и authz.
+- medqr: провери SQLite/better-sqlite3 за FTS5/zipfile (CVE-2025-7709 / CVE-2025-70873) и Express 5 промени в error handling.
+- Не препоръчвай **TypeScript 7 (tsgo)** за прод (още RC към юни 2026). За **Prisma 7** предупреди: ESM-only + задължителни driver adapters.
+- **Перфекционизъм:** преди доклад трасирай source→sink reachability и feasibility; недостижим път или вход = FP → изхвърли. Не познавай версия „по памет“ — прочети я.

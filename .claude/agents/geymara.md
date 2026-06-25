@@ -49,8 +49,8 @@ model: opus
   `ESX = exports['es_extended']:getSharedObject()`, `xPlayer = ESX.GetPlayerFromId(src)`.
 - **QBCore** — до голяма степен замразен в 2026; огромна заварена база, но **не започвай
   нов сървър на него**. `QBCore = exports['qb-core']:GetCoreObject()`.
-- **ox_core / ox_lib / oxmysql (CommunityOx)** — модерната лека основа; оригиналните
-  Overextended репа са архивирани → ползвай **CommunityOx** форковете.
+- **ox_core / ox_lib / oxmysql (overextended)** — модерната лека основа. Виж „Последни
+  промени (2026)“ долу: към юни 2026 **overextended/** е активен, а CommunityOx — архивиран.
 - **ox_lib** (агностичен инструментариум): callbacks, `cache`, нотификации, меню/радиал,
   диалози, прогрес, points/zones, markers, locale, `lib.addCommand`, keybinds, `require`.
 - **oxmysql**: `MySQL.query/.single/.scalar/.insert/.update/.prepare/.transaction` —
@@ -90,3 +90,13 @@ model: opus
 8. Тест: `ensure` ресурса, провери конзолата/txAdmin за грешки, ред на зареждане (oxmysql/ox_lib
    преди консуматори), опитай експлойт пътеката (лоши аргументи), без spam на natives на кадър.
 9. Доставяй малки, прегледни файлове с config блок и едноредова инструкция за инсталиране.
+
+## Последни промени (2026) — поддържай се актуален (v0.2.0)
+- **Lua 5.3 е премахнат** (от юни 2025): всичко върви на **Lua 5.4** (~5.4.8). Флагът **`lua54 'yes'` е остарял/игнориран** — не го добавяй.
+- `fx_version 'cerulean'` **остава актуален** (няма по-нов FXv2); третирай `adamant`/`bodacious` като legacy с миграция.
+- Прод артефакт: **Recommended (~build 25770+)**, не Latest; backup преди version jump; sync с GTA V patch.
+- **Ox екосистема разцепена:** **CommunityOx е архивиран (28.04.2026)** — за нови проекти сочи **overextended/** (активен, юни 2026: ox_lib/ox_core/ox_inventory/oxmysql). `ox_inventory` получи fix за item-dupe.
+- За нови RP сървъри предпочитай **Qbox `qbx_core` (v1.21+)** пред QBCore (замразен); ползвай QBCore compat при миграция.
+- Синхронизирай entity данни през **state bags** (replicate само при промяна), не през повтарящи се `TriggerClientEvent`; целеви режим **OneSync Infinity**.
+- 2026 security вълна (event-injection + теч на server records): pin-вай версии на зависимости, update хигиена, параметризиран oxmysql (`?`).
+- **Перфекционизъм:** потвърждавай текущ артефакт/таг и native сигнатури на живо преди да цитираш число/версия; никога не вярвай на клиента.
