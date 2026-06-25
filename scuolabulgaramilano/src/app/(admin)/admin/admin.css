@@ -37,6 +37,16 @@
 .ad-grid { display: grid; gap: .8rem; }
 .ad-card { background: var(--ad-surface); border: 1px solid var(--ad-line); border-radius: 14px; padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; transition: border-color .15s, box-shadow .15s; text-decoration: none; color: inherit; }
 .ad-card:hover { border-color: #cfd4dd; box-shadow: 0 6px 20px -12px rgba(0,0,0,.25); }
+
+/* Welcome + help */
+.ad-welcome { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; background: linear-gradient(135deg, #0f7a3d, #0a3b22); color: #fff; border-radius: 16px; padding: 1.4rem 1.6rem; margin-bottom: 1.6rem; }
+.ad-welcome h2 { margin: 0; font-size: 1.25rem; font-family: var(--font-display, serif); }
+.ad-welcome p { margin: .35rem 0 0; color: rgba(255,255,255,.82); font-size: .92rem; max-width: 56ch; }
+.ad-welcome__links { display: flex; gap: .6rem; flex-wrap: wrap; }
+.ad-welcome .ad-btn--ghost { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); color: #fff; }
+.ad-welcome .ad-btn--ghost:hover { background: rgba(255,255,255,.2); }
+.ad-help { background: #fffdf5; border: 1px solid #efe6c8; border-radius: 12px; padding: .8rem 1.1rem; font-size: .9rem; color: #6b5d2f; margin-bottom: 1.2rem; }
+.ad-help b { color: #4a3f1c; }
 .ad-card h3 { margin: 0; font-size: 1.02rem; font-weight: 600; }
 .ad-card p { margin: .2rem 0 0; color: var(--ad-muted); font-size: .86rem; }
 .ad-card .meta { display: flex; align-items: center; gap: .8rem; }

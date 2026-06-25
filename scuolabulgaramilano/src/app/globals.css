@@ -16,6 +16,29 @@
   position: relative; z-index: 101;
 }
 
+/* Scroll progress bar (sits under the tricolour) */
+.scrollprogress { position: sticky; top: 0; height: 3px; z-index: 100; background: transparent; pointer-events: none; }
+.scrollprogress i { display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--lime-500), var(--green-700), var(--red-600)); transition: width .12s linear; }
+
+/* Gentle micro-animations (disabled when reduced motion is requested) */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes qb-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes qb-hue { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(2%, -2%, 0) scale(1.06); } }
+  .rose-ornament .rose-photo { animation: qb-float 5.5s var(--ease) infinite; }
+  .hero__bg { animation: qb-hue 18s ease-in-out infinite; }
+  /* sheen sweep on filled buttons */
+  .btn--primary, .btn--accent, .btn--light { position: relative; overflow: hidden; }
+  .btn--primary::after, .btn--accent::after, .btn--light::after {
+    content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+    transform: skewX(-18deg); transition: left .6s var(--ease);
+  }
+  .btn--primary:hover::after, .btn--accent:hover::after, .btn--light:hover::after { left: 130%; }
+  /* card icon subtle pop on hover */
+  .card:hover .card__icon { transform: translateY(-3px) rotate(-3deg); }
+  .card__icon { transition: transform .3s var(--ease); }
+}
+
 /* Bulgarian rose ornament — national symbol, used as a section flourish */
 .rose-ornament { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 0 auto 1.4rem; }
 .rose-ornament::before, .rose-ornament::after {

@@ -315,7 +315,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       eyebrow: "La nostra comunità",
       title: "Momenti di lingua, cultura e festa",
       tiles: [
-        { kind: "image", src: "/assets/img/photos/community.png", alt: "La comunità riunita in costumi tradizionali bulgari" },
+        { kind: "image", src: "/assets/img/photos/community.webp", alt: "La comunità riunita in costumi tradizionali bulgari" },
         { kind: "green", big: "Horo", small: "La danza in cerchio" },
         { kind: "red", script: "Заедно", small: "Insieme" },
         { kind: "ink", big: "P. Yavorov", small: "La nostra scuola" },
@@ -326,7 +326,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       eyebrow: "Нашата общност",
       title: "Моменти на език, култура и празник",
       tiles: [
-        { kind: "image", src: "/assets/img/photos/community.png", alt: "Общността, събрана в традиционни български носии" },
+        { kind: "image", src: "/assets/img/photos/community.webp", alt: "Общността, събрана в традиционни български носии" },
         { kind: "green", big: "Хоро", small: "Танцът в кръг" },
         { kind: "red", script: "Заедно", small: "Заедно" },
         { kind: "ink", big: "П. Яворов", small: "Нашето училище" },
@@ -337,7 +337,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       eyebrow: "Our community",
       title: "Moments of language, culture and celebration",
       tiles: [
-        { kind: "image", src: "/assets/img/photos/community.png", alt: "The community gathered in traditional Bulgarian costumes" },
+        { kind: "image", src: "/assets/img/photos/community.webp", alt: "The community gathered in traditional Bulgarian costumes" },
         { kind: "green", big: "Horo", small: "The circle dance" },
         { kind: "red", script: "Заедно", small: "Together" },
         { kind: "ink", big: "P. Yavorov", small: "Our school" },

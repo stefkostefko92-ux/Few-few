@@ -17,6 +17,17 @@ export default async function AdminDashboard() {
 
   return (
     <AdminShell active="dashboard" title="Dashboard" subtitle="Panoramica del sito e accesso rapido alla gestione.">
+      <div className="ad-welcome">
+        <div>
+          <h2>Benvenuto nel pannello di Qui Bulgaria 👋</h2>
+          <p>Da qui gestisci tutto il sito: testi nelle tre lingue, immagini e richieste. Nessun codice, tutto con pochi clic.</p>
+        </div>
+        <div className="ad-welcome__links">
+          <Link className="ad-btn ad-btn--primary" href="/admin/content">Modifica i contenuti</Link>
+          <Link className="ad-btn ad-btn--ghost" href="/admin/media">Carica immagini</Link>
+        </div>
+      </div>
+
       <div className="ad-stats">
         <div className="ad-stat"><div className="n">{sections.length}</div><div className="l">Sezioni di contenuto</div></div>
         <div className="ad-stat"><div className="n">3</div><div className="l">Lingue (IT · BG · EN)</div></div>

@@ -95,7 +95,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       "Centro linguistico e culturale a Milano (Lombardia): lingua e cultura bulgara, scuola “P. Yavorov”, corsi per bambini e adulti e danza tradizionale.",
     foundingDate: "2014-01-12",
     email: settings.email,
-    telephone: `+${settings.phoneHref.replace(/\D/g, "")}`,
+    telephone: `+${(settings.phoneHref || "").replace(/\D/g, "")}`,
     sameAs: [settings.facebookUrl],
     address: {
       "@type": "PostalAddress",
@@ -184,7 +184,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <div className="hero__visual reveal" data-delay="2">
                 <img className="hero__swoosh" src="/assets/img/brand/swoosh.svg" alt="" aria-hidden="true" />
                 <figure className="hero__photo">
-                  <img src="/assets/img/photos/community.png" alt={about.tag} width={526} height={452} />
+                  <img src="/assets/img/photos/community.webp" alt={about.tag} width={526} height={452} fetchPriority="high" />
                 </figure>
                 <div className="hero__badge">
                   <span className="num" data-count={hero.stat}>{hero.stat}</span>
@@ -211,7 +211,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div className="container">
             <div className="grid about__grid">
               <div className="about__media reveal">
-                <img src="/assets/img/photos/community.png" alt={about.tag} loading="lazy" />
+                <img src="/assets/img/photos/community.webp" alt={about.tag} loading="lazy" />
                 <span className="tag"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10Z" strokeLinejoin="round" /></svg>{about.tag}</span>
               </div>
               <div className="about__copy reveal" data-delay="1">
@@ -429,7 +429,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
 
             <div className="cta-band reveal" style={{ marginTop: "4rem" }}>
-              <div className="rose-ornament" aria-hidden="true"><span className="rose-photo"><img src="/assets/img/photos/rose-damascena.jpg" alt="" loading="lazy" /></span></div>
+              <div className="rose-ornament" aria-hidden="true"><span className="rose-photo"><img src="/assets/img/photos/rose-damascena.webp" alt="" loading="lazy" /></span></div>
               <h2>{cta.title}</h2>
               <p>{cta.body}</p>
               <div className="hero__cta">

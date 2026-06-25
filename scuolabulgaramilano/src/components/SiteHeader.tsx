@@ -20,10 +20,16 @@ export default function SiteHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [active, setActive] = useState<string>("");
+  const [progress, setProgress] = useState(0);
   const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 12);
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      setProgress(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -94,6 +100,7 @@ export default function SiteHeader({
     <>
     {/* Bulgarian national tricolour */}
     <div className="topflag" role="presentation" aria-hidden="true" />
+    <div className="scrollprogress" aria-hidden="true"><i style={{ ["--p" as string]: `${progress}%` }} /></div>
     <div className="menu-backdrop" aria-hidden="true" onClick={close} />
     <header className={`header ${scrolled ? "is-scrolled" : ""}`}>
       <div className="container">
