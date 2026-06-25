@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "title": "Лаборатория на агентите · Carbon Stealth",
+    "subtitle": "Тук живеят персонализираните Claude Code агенти на този монорепо. Следи как се развиват (версии) и какво вършат (дейност).",
+    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него.",
+    "repo": "stefkostefko92-ux/Few-few",
+    "updated": "2026-06-25",
+    "definitionsDir": ".claude/agents/"
+  },
+  "agents": [
+    {
+      "id": "pravniyat-razbirach",
+      "name": "Правният Разбирач",
+      "title": "Одитор за правна изрядност (ЕС)",
+      "emoji": "⚖️",
+      "accent": "#c9a227",
+      "tagline": "Прави сайта законен по правото на ЕС — и видим за AI търсачките.",
+      "file": ".claude/agents/pravniyat-razbirach.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "mission": "Одитира уебсайтове спрямо правото на ЕС: GDPR, ePrivacy/бисквитки, DSA, достъпност (EAA / EN 301 549 / WCAG 2.1 AA), импресум, плюс свързаните технически артефакти (политики, банер за съгласие, robots.txt, sitemap.xml, llms.txt, JSON-LD) и SEO/GEO/AEO.",
+      "capabilities": [
+        "GDPR чл. 13/14 разкрития и правни основания",
+        "Съгласие за бисквитки преди тракинг + откриване на тъмни модели",
+        "DSA задължения при потребителско съдържание",
+        "Достъпност WCAG 2.1 AA / EAA",
+        "Импресум (Дир. 2000/31)",
+        "robots.txt / sitemap.xml / llms.txt / JSON-LD",
+        "SEO / GEO / AEO за AI цитирания"
+      ],
+      "knowledge": {
+        "sources": 22,
+        "researchToolUses": 17,
+        "priorArt": [
+          "VoltAgent/awesome-claude-code-subagents — read-only одиторски tool профил",
+          "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
+          "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от дълбоко проучване на правото на ЕС + GitHub prior art (22 източника, 17 търсения)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 22 източника за GDPR/ePrivacy/DSA/EAA/SEO-GEO-AEO." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/pravniyat-razbirach.md." }
+      ]
+    },
+    {
+      "id": "kodadjiyata",
+      "name": "Кодаджията",
+      "title": "Ревюър на код и ловец на бъгове",
+      "emoji": "🛠️",
+      "accent": "#2f9e6f",
+      "tagline": "Хваща бъгове и уязвимости — с нула шум, всяка находка самопроверена.",
+      "file": ".claude/agents/kodadjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Grep", "Glob", "Bash"],
+      "mission": "Преглежда код и търси бъгове в уеб приложения (Next.js/React/TypeScript/Prisma и Express/EJS/SQLite): коректност, инжекции, автентикация/оторизация, XSS/CSRF, изтичане на данни, валидация, race conditions, производителност и зависимости.",
+      "capabilities": [
+        "Diff-фокусиран преглед спрямо правилата в CLAUDE.md",
+        "OWASP-ориентирана сигурност (инжекции, IDOR, XSS, CSRF)",
+        "Откриване на изтекли тайни и данни по GDPR чл. 9",
+        "Стеково-специфични капани (force-dynamic, Prisma singleton, CSP nonce)",
+        "Самопроверка преди доклад — изхвърля неекплоатируемите находки",
+        "Доклад по тежест × увереност с file:line и минимална поправка"
+      ],
+      "knowledge": {
+        "sources": 14,
+        "researchToolUses": 14,
+        "priorArt": [
+          "anthropics/claude-code code-review plugin — паралелен quad-review + validator агенти",
+          "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
+          "VoltAgent + wshobson/agents — измерения и severity нива"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Моделиран по собствения pipeline на Anthropic — diff-фокусиран, адверсариално самопроверяващ (14 източника)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 14 източника за AI код-ревю, OWASP и стеково-специфични бъгове." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/kodadjiyata.md." }
+      ]
+    },
+    {
+      "id": "geymara",
+      "name": "Геймъра",
+      "title": "Разработчик на FiveM скриптове",
+      "emoji": "🎮",
+      "accent": "#6f7bf7",
+      "tagline": "Пише сигурни, оптимизирани FiveM ресурси — сървърът е авторитетът.",
+      "file": ".claude/agents/geymara.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "mission": "Пише, преглежда и оптимизира FiveM ресурси (CFX/FXServer) на Lua: client/server/shared контексти, събития, fxmanifest.lua, рамки (ESX, QBCore, Qbox/ox_core), ox_lib и oxmysql — със server-authoritative валидация и дисциплина с natives/Wait.",
+      "capabilities": [
+        "fxmanifest.lua и структура на ресурс (fx_version 'cerulean')",
+        "Събития и lib.callback (client/server split)",
+        "Рамки: Qbox/ox_core (препоръчан), ESX, QBCore",
+        "ox_lib + oxmysql (параметризирани заявки)",
+        "Server-authoritative сигурност (никога не вярвай на клиента)",
+        "Оптимизация: кеширане на natives, Wait дисциплина, state bags"
+      ],
+      "knowledge": {
+        "sources": 17,
+        "researchToolUses": 17,
+        "priorArt": [
+          "usefiveai — декомпозиция на FiveM скилове (security/framework split)",
+          "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
+          "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на CFX docs, рамки и GitHub референции (17 източника)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 17 източника за FiveM/CFX, рамки и оптимизация." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/geymara.md." }
+      ]
+    }
+  ]
+}

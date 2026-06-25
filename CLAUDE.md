@@ -194,5 +194,43 @@ test/                smoke.test.js + webauthn.e2e.mjs
 - Both products are proprietary (`UNLICENSED` / proprietary `LICENSE`) and host
   data in the EU; treat privacy/GDPR and security as primary requirements, not
   afterthoughts. See each project's `SECURITY.md`.
+
+---
+
+## Custom agents — `.claude/agents/`
+
+This repo ships a small team of **purpose-built Claude Code subagents**. Each is a
+markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`) and a
+Bulgarian system prompt distilled from deep web + GitHub research. Invoke one with the
+Agent tool (e.g. *"пусни Кодаджията върху промените"*); several can run in parallel.
+
+| Agent (file)                              | Викай го за…                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| **Правният Разбирач** `pravniyat-razbirach.md` | EU-law audit: GDPR, ePrivacy/cookies, DSA, accessibility (EAA/WCAG 2.1 AA), imprint, robots/sitemap/llms/JSON-LD, SEO/GEO/AEO. Read-only auditor; ends every legal output with a „not legal advice“ disclaimer. |
+| **Кодаджията** `kodadjiyata.md`           | Code review & bug hunting (Next.js/Prisma + Express/SQLite): correctness, OWASP, auth, XSS/CSRF, data leaks, perf. Diff-focused; **adversarially self-verifies** every finding before reporting; severity × confidence with `file:line`. |
+| **Геймъра** `geymara.md`                  | Writing/reviewing FiveM (CFX) Lua resources: fxmanifest, client/server/shared, events, ESX/QBCore/Qbox-ox, ox_lib/oxmysql. **Server-authoritative validation** and native/Wait discipline are non-negotiable. |
+
+Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
+scope `tools` to least privilege (auditors are read-only; only Геймъра writes files); give
+the `description` crisp triggers so the agent auto-selects; bump the version + append an
+`evolution` entry in `agents-dashboard/agents.json` whenever you change a definition.
+
+### Agents lab dashboard — `agents-dashboard/`
+
+A self-contained page (`index.html`, no build step) that visualizes the roster: each
+agent's capabilities, **evolution timeline** (versions) and an **activity feed**, driven by
+`agents.json` (the canonical manifest; the HTML also embeds a fallback snapshot so it opens
+over `file://`). Open it directly, or serve it: `python3 -m http.server -d agents-dashboard`.
+Note: Claude Code subagents are stateless between runs — they don't persistently "learn", so
+the dashboard tracks the honest equivalent: how each definition *evolves* and what it's *used
+for*. Keep `agents.json` in sync when you add/upgrade an agent.
+
+### Communication style (caveman-inspired)
+
+Following the *caveman* approach (https://github.com/juliusbrussee/caveman — "why use many
+token when few token do trick"): in agent output and reviews, prefer terse, fragment-style
+prose that keeps every technical token (code, commands, `file:line`, error strings) exact and
+drops filler. Compress the prose, never the substance — and never the Bulgarian user-facing
+UI strings, which stay full and natural.
 </content>
 </invoke>

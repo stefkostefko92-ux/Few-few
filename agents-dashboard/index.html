@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Лаборатория на агентите · Carbon Stealth</title>
+<style>
+  :root {
+    --bg: #0c0f14; --panel: #141922; --panel2: #1b2230; --line: #273142;
+    --txt: #e7edf5; --mut: #93a1b5; --accent: #2f9e6f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(1200px 600px at 80% -10%, #16241d 0%, var(--bg) 55%) fixed;
+    color: var(--txt); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: .2px; }
+  header p { margin: 0; color: var(--mut); max-width: 760px; }
+  .note {
+    margin: 18px 0 8px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent); border-radius: 8px; color: var(--mut); font-size: 13.5px;
+  }
+  .stats { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 26px; }
+  .stat { flex: 1 1 150px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .stat b { display: block; font-size: 24px; }
+  .stat span { color: var(--mut); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
+  .card {
+    background: linear-gradient(180deg, var(--panel) 0%, #11151d 100%);
+    border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
+  }
+  .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ac); }
+  .chead { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .ava { width: 44px; height: 44px; border-radius: 11px; display: grid; place-items: center; font-size: 22px;
+         background: var(--ac15); border: 1px solid var(--ac40); }
+  .chead h2 { margin: 0; font-size: 18px; }
+  .chead .role { color: var(--mut); font-size: 12.5px; }
+  .tag { color: var(--txt); font-size: 13.5px; margin: 10px 0 14px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .badge { font-size: 11.5px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line);
+           padding: 3px 9px; border-radius: 999px; }
+  .badge.ac { color: #0c0f14; background: var(--ac); border-color: var(--ac); font-weight: 600; }
+  .sec { margin-top: 14px; }
+  .sec h3 { margin: 0 0 7px; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--mut); }
+  ul.caps { margin: 0; padding-left: 18px; }
+  ul.caps li { margin: 2px 0; font-size: 13px; }
+  .metrics { display: flex; gap: 16px; margin: 14px 0 2px; }
+  .metric b { font-size: 18px; } .metric span { color: var(--mut); font-size: 11.5px; display: block; }
+  .timeline { border-left: 2px solid var(--line); margin-left: 4px; padding-left: 14px; }
+  .ev { position: relative; margin: 0 0 10px; }
+  .ev::before { content: ""; position: absolute; left: -20px; top: 5px; width: 9px; height: 9px; border-radius: 50%;
+                background: var(--ac); box-shadow: 0 0 0 3px var(--ac15); }
+  .ev .v { font-weight: 600; font-size: 13px; } .ev .d { color: var(--mut); font-size: 11.5px; }
+  .ev .x { font-size: 12.5px; color: var(--txt); }
+  .feed { margin-top: 8px; }
+  .feed .row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+  .feed .row:last-child { border: 0; }
+  .feed .when { color: var(--mut); white-space: nowrap; }
+  .pill { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
+  footer { margin-top: 40px; color: var(--mut); font-size: 12.5px; text-align: center; }
+  code { background: var(--panel2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="title">Лаборатория на агентите</h1>
+    <p id="subtitle"></p>
+  </header>
+  <div class="note" id="note"></div>
+
+  <div class="stats" id="stats"></div>
+  <div class="grid" id="grid"></div>
+
+  <h2 style="margin:34px 0 8px;font-size:18px;">Поток на дейността</h2>
+  <div class="card" style="--ac:var(--accent);"><div class="feed" id="globalfeed"></div></div>
+
+  <footer>
+    Данните идват от <code>agents-dashboard/agents.json</code>. Дефинициите на агентите са в
+    <code id="defdir">.claude/agents/</code>. · Carbon Stealth VCC
+  </footer>
+</div>
+
+<script>
+// Вграден снимков фалбек — за да работи и при отваряне директно като файл (file://).
+// Каноничният източник е agents.json; ако fetch успее, той надделява.
+const FALLBACK = {
+  "meta": {
+    "title": "Лаборатория на агентите · Carbon Stealth",
+    "subtitle": "Тук живеят персонализираните Claude Code агенти на този монорепо. Следи как се развиват (версии) и какво вършат (дейност).",
+    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него.",
+    "repo": "stefkostefko92-ux/Few-few",
+    "updated": "2026-06-25",
+    "definitionsDir": ".claude/agents/"
+  },
+  "agents": [
+    {
+      "id": "pravniyat-razbirach",
+      "name": "Правният Разбирач",
+      "title": "Одитор за правна изрядност (ЕС)",
+      "emoji": "⚖️",
+      "accent": "#c9a227",
+      "tagline": "Прави сайта законен по правото на ЕС — и видим за AI търсачките.",
+      "file": ".claude/agents/pravniyat-razbirach.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "mission": "Одитира уебсайтове спрямо правото на ЕС: GDPR, ePrivacy/бисквитки, DSA, достъпност (EAA / EN 301 549 / WCAG 2.1 AA), импресум, плюс свързаните технически артефакти (политики, банер за съгласие, robots.txt, sitemap.xml, llms.txt, JSON-LD) и SEO/GEO/AEO.",
+      "capabilities": [
+        "GDPR чл. 13/14 разкрития и правни основания",
+        "Съгласие за бисквитки преди тракинг + откриване на тъмни модели",
+        "DSA задължения при потребителско съдържание",
+        "Достъпност WCAG 2.1 AA / EAA",
+        "Импресум (Дир. 2000/31)",
+        "robots.txt / sitemap.xml / llms.txt / JSON-LD",
+        "SEO / GEO / AEO за AI цитирания"
+      ],
+      "knowledge": {
+        "sources": 22,
+        "researchToolUses": 17,
+        "priorArt": [
+          "VoltAgent/awesome-claude-code-subagents — read-only одиторски tool профил",
+          "auto-c-suite/legal.md — риск-първо + уговорка „не е правен съвет“",
+          "sparq/compliance-orchestration.md — data-flow + DPIA артефакти, разделяне писач/одитор"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от дълбоко проучване на правото на ЕС + GitHub prior art (22 източника, 17 търсения)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 22 източника за GDPR/ePrivacy/DSA/EAA/SEO-GEO-AEO." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/pravniyat-razbirach.md." }
+      ]
+    },
+    {
+      "id": "kodadjiyata",
+      "name": "Кодаджията",
+      "title": "Ревюър на код и ловец на бъгове",
+      "emoji": "🛠️",
+      "accent": "#2f9e6f",
+      "tagline": "Хваща бъгове и уязвимости — с нула шум, всяка находка самопроверена.",
+      "file": ".claude/agents/kodadjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Grep", "Glob", "Bash"],
+      "mission": "Преглежда код и търси бъгове в уеб приложения (Next.js/React/TypeScript/Prisma и Express/EJS/SQLite): коректност, инжекции, автентикация/оторизация, XSS/CSRF, изтичане на данни, валидация, race conditions, производителност и зависимости.",
+      "capabilities": [
+        "Diff-фокусиран преглед спрямо правилата в CLAUDE.md",
+        "OWASP-ориентирана сигурност (инжекции, IDOR, XSS, CSRF)",
+        "Откриване на изтекли тайни и данни по GDPR чл. 9",
+        "Стеково-специфични капани (force-dynamic, Prisma singleton, CSP nonce)",
+        "Самопроверка преди доклад — изхвърля неекплоатируемите находки",
+        "Доклад по тежест × увереност с file:line и минимална поправка"
+      ],
+      "knowledge": {
+        "sources": 14,
+        "researchToolUses": 14,
+        "priorArt": [
+          "anthropics/claude-code code-review plugin — паралелен quad-review + validator агенти",
+          "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
+          "VoltAgent + wshobson/agents — измерения и severity нива"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Моделиран по собствения pipeline на Anthropic — diff-фокусиран, адверсариално самопроверяващ (14 източника)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 14 източника за AI код-ревю, OWASP и стеково-специфични бъгове." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/kodadjiyata.md." }
+      ]
+    },
+    {
+      "id": "geymara",
+      "name": "Геймъра",
+      "title": "Разработчик на FiveM скриптове",
+      "emoji": "🎮",
+      "accent": "#6f7bf7",
+      "tagline": "Пише сигурни, оптимизирани FiveM ресурси — сървърът е авторитетът.",
+      "file": ".claude/agents/geymara.md",
+      "model": "opus",
+      "status": "active",
+      "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "WebFetch", "WebSearch"],
+      "mission": "Пише, преглежда и оптимизира FiveM ресурси (CFX/FXServer) на Lua: client/server/shared контексти, събития, fxmanifest.lua, рамки (ESX, QBCore, Qbox/ox_core), ox_lib и oxmysql — със server-authoritative валидация и дисциплина с natives/Wait.",
+      "capabilities": [
+        "fxmanifest.lua и структура на ресурс (fx_version 'cerulean')",
+        "Събития и lib.callback (client/server split)",
+        "Рамки: Qbox/ox_core (препоръчан), ESX, QBCore",
+        "ox_lib + oxmysql (параметризирани заявки)",
+        "Server-authoritative сигурност (никога не вярвай на клиента)",
+        "Оптимизация: кеширане на natives, Wait дисциплина, state bags"
+      ],
+      "knowledge": {
+        "sources": 17,
+        "researchToolUses": 17,
+        "priorArt": [
+          "usefiveai — декомпозиция на FiveM скилове (security/framework split)",
+          "Manason/effective-fivem-lua — стилов канон (кеширане, дисциплина с natives)",
+          "CommunityOx (ox_lib/ox_core/oxmysql) — каноничните модерни модели"
+        ]
+      },
+      "evolution": [
+        { "version": "0.1.0", "date": "2026-06-25", "event": "Раждане", "detail": "Създаден от проучване на CFX docs, рамки и GitHub референции (17 източника)." }
+      ],
+      "activity": [
+        { "date": "2026-06-25", "type": "research", "summary": "Поел 17 източника за FiveM/CFX, рамки и оптимизация." },
+        { "date": "2026-06-25", "type": "born", "summary": "Дефиницията записана в .claude/agents/geymara.md." }
+      ]
+    }
+  ]
+};
+
+function el(t, c, h){ const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e; }
+function hexA(hex, a){ const n=parseInt(hex.slice(1),16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+const typeLabel = { research:"учене", born:"раждане", invoked:"извикване", upgrade:"ъпгрейд" };
+
+function render(data){
+  document.getElementById("title").textContent = data.meta.title;
+  document.getElementById("subtitle").textContent = data.meta.subtitle;
+  document.getElementById("note").textContent = data.meta.note;
+  document.getElementById("defdir").textContent = data.meta.definitionsDir;
+
+  const agents = data.agents;
+  const totalSources = agents.reduce((s,a)=>s+(a.knowledge?.sources||0),0);
+  const totalCaps = agents.reduce((s,a)=>s+(a.capabilities?.length||0),0);
+  const stats = [
+    [agents.length, "агента"],
+    [totalSources, "поети източника"],
+    [totalCaps, "способности"],
+    [data.meta.updated, "обновено"]
+  ];
+  const sw = document.getElementById("stats");
+  stats.forEach(([b,s])=> sw.appendChild(el("div","stat",`<b>${b}</b><span>${s}</span>`)));
+
+  const grid = document.getElementById("grid");
+  agents.forEach(a=>{
+    const card = el("div","card");
+    card.style.setProperty("--ac", a.accent);
+    card.style.setProperty("--ac15", hexA(a.accent,.15));
+    card.style.setProperty("--ac40", hexA(a.accent,.40));
+
+    card.appendChild(el("div","chead",
+      `<div class="ava">${a.emoji}</div><div><h2>${a.name}</h2><div class="role">${a.title}</div></div>`));
+    card.appendChild(el("div","tag", a.tagline));
+
+    const badges = el("div","badges");
+    badges.appendChild(el("span","badge ac", a.status==="active"?"● активен":a.status));
+    badges.appendChild(el("span","badge", "модел: "+a.model));
+    a.tools.forEach(t=> badges.appendChild(el("span","badge", t)));
+    card.appendChild(badges);
+
+    const m = el("div","metrics");
+    m.appendChild(el("div","metric",`<b>${a.knowledge.sources}</b><span>източника</span>`));
+    m.appendChild(el("div","metric",`<b>${a.capabilities.length}</b><span>способности</span>`));
+    m.appendChild(el("div","metric",`<b>v${a.evolution[a.evolution.length-1].version}</b><span>версия</span>`));
+    card.appendChild(m);
+
+    const caps = el("div","sec"); caps.appendChild(el("h3",null,"Способности"));
+    const ul = el("ul","caps"); a.capabilities.forEach(c=> ul.appendChild(el("li",null,c))); caps.appendChild(ul);
+    card.appendChild(caps);
+
+    const evo = el("div","sec"); evo.appendChild(el("h3",null,"Развитие (версии)"));
+    const tl = el("div","timeline");
+    a.evolution.slice().reverse().forEach(e=>{
+      tl.appendChild(el("div","ev",
+        `<div class="v">v${e.version} · ${e.event} <span class="d">— ${e.date}</span></div><div class="x">${e.detail}</div>`));
+    });
+    evo.appendChild(tl); card.appendChild(evo);
+
+    grid.appendChild(card);
+  });
+
+  // Глобален поток на дейността
+  const feed = document.getElementById("globalfeed");
+  const all = [];
+  agents.forEach(a=> (a.activity||[]).forEach(ac=> all.push({...ac, who:a.name, accent:a.accent})));
+  all.sort((x,y)=> (y.date>x.date?1:-1));
+  all.forEach(ac=>{
+    const row = el("div","row");
+    row.innerHTML = `<span class="when">${ac.date}</span>
+      <span class="pill" style="border-color:${hexA(ac.accent,.5)};color:${ac.accent}">${typeLabel[ac.type]||ac.type}</span>
+      <span><b>${ac.who}</b> — ${ac.summary}</span>`;
+    feed.appendChild(row);
+  });
+}
+
+fetch("./agents.json").then(r=>{ if(!r.ok) throw 0; return r.json(); })
+  .then(render).catch(()=> render(FALLBACK));
+</script>
+</body>
+</html>
