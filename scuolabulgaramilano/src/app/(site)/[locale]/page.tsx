@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { prisma } from "@/lib/db";
 import { ensureSeeded } from "@/lib/content";
 import { defaultFor } from "@/lib/defaults";
@@ -41,7 +42,7 @@ async function load(locale: Locale): Promise<Loaded> {
   return { get, enabled };
 }
 
-const ICONS: Record<string, JSX.Element> = {
+const ICONS: Record<string, ReactNode> = {
   presence: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 5h18M5 5v14m14-14v14M3 19h18M9 9h6M9 13h4" strokeLinecap="round" /></svg>),
   distance: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8M12 17v4" strokeLinecap="round" /></svg>),
   hybrid: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3v18M4 7h16M4 17h16" strokeLinecap="round" /></svg>),
@@ -52,8 +53,9 @@ const ICONS: Record<string, JSX.Element> = {
 const Check = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const Arrow = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 
-export default async function HomePage({ params }: { params: { locale: string } }) {
-  const locale = (isLocale(params.locale) ? params.locale : "en") as Locale;
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: raw } = await params;
+  const locale = (isLocale(raw) ? raw : "en") as Locale;
   const { get, enabled } = await load(locale);
 
   const settings = get("settings") as Settings;
@@ -96,6 +98,9 @@ export default async function HomePage({ params }: { params: { locale: string } 
       <a className="skip-link btn btn--primary" href="#main" style={{ position: "absolute", left: "-9999px", top: 0, zIndex: 200 }}>
         {t(locale, "skip")}
       </a>
+
+      {/* Bulgarian national tricolour */}
+      <div className="topflag" role="presentation" aria-hidden="true" />
 
       <SiteHeader locale={locale} brandName={settings.brandName} brandSub={settings.brandSub} nav={nav} />
 
@@ -373,7 +378,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
             </div>
 
             <div className="cta-band reveal" style={{ marginTop: "4rem" }}>
-              <div className="ribbon ribbon--inset" role="presentation" aria-hidden="true" style={{ marginBottom: "1.6rem" }} />
+              <div className="rose-ornament" aria-hidden="true"><img src="/assets/img/brand/rose.svg" alt="" /></div>
               <h2>{cta.title}</h2>
               <p>{cta.body}</p>
               <div className="hero__cta">

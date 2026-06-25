@@ -10,10 +10,11 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
+  const { locale: raw } = await params;
   const base = process.env.SITE_URL || "https://www.scuolabulgaramilano.it";
-  const locale = isLocale(params.locale) ? params.locale : "en";
+  const locale = isLocale(raw) ? raw : "en";
   const alt: Record<string, string> = {};
   for (const l of LOCALES) alt[LOCALE_META[l].htmlLang] = `${base}/${l}`;
   return {
@@ -21,6 +22,15 @@ export async function generateMetadata({
     title: { default: "Qui Bulgaria — Scuola bulgara di Milano", template: "%s · Qui Bulgaria" },
     description:
       "Centro linguistico e culturale a Milano: lingua e cultura bulgara, scuola “P. Yavorov”, corsi e danza tradizionale.",
+    keywords: [
+      "scuola bulgara",
+      "scuola bulgara milano",
+      "българско училище",
+      "българско училище в Милано",
+      "Carbon Stealth",
+    ],
+    authors: [{ name: "Carbon Stealth VCC", url: "https://carbonstealth.eu" }],
+    creator: "Carbon Stealth VCC",
     alternates: { canonical: `${base}/${locale}`, languages: alt },
     icons: { icon: "/assets/img/brand/favicon.svg", apple: "/assets/img/brand/favicon.svg" },
     manifest: "/site.webmanifest",
@@ -35,15 +45,16 @@ export async function generateMetadata({
 
 export const viewport = { themeColor: "#0f7a3d" };
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  if (!isLocale(params.locale)) notFound();
-  const locale = params.locale as Locale;
+  const { locale: raw } = await params;
+  if (!isLocale(raw)) notFound();
+  const locale = raw as Locale;
   return (
     <html lang={LOCALE_META[locale].htmlLang}>
       <head>

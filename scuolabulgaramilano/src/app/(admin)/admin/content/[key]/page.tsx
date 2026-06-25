@@ -16,8 +16,9 @@ function parse(raw: string, key: string, locale: Locale) {
   return defaultFor(key, locale);
 }
 
-export default async function ContentEditPage({ params }: { params: { key: string } }) {
-  const row = await prisma.content.findUnique({ where: { key: params.key } });
+export default async function ContentEditPage({ params }: { params: Promise<{ key: string }> }) {
+  const { key } = await params;
+  const row = await prisma.content.findUnique({ where: { key } });
   if (!row) notFound();
 
   const initial = {

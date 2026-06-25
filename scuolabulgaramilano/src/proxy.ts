@@ -10,7 +10,7 @@ function hasLocalePrefix(pathname: string): Locale | null {
   return isLocale(seg) ? seg : null;
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // ---- Admin area: protect everything except the login page ----

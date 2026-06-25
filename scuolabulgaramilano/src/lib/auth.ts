@@ -40,7 +40,7 @@ export async function verifySession(token: string | undefined): Promise<Session 
 
 // Read the current admin session from the request cookies (server components).
 export async function getSession(): Promise<Session | null> {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
   return verifySession(token);
 }
 

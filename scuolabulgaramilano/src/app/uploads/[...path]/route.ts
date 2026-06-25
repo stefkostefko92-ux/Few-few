@@ -6,8 +6,9 @@ export const dynamic = "force-dynamic";
 
 // Serves uploaded media from the on-disk uploads directory. In production you
 // may also let nginx serve /uploads directly for speed (see DEPLOY.md).
-export async function GET(_req: NextRequest, { params }: { params: { path: string[] } }) {
-  const rel = (params.path || []).join("/");
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const { path } = await params;
+  const rel = (path || []).join("/");
   const file = await readUpload(rel);
   if (!file) return new Response("Not found", { status: 404 });
   return new Response(file.data, {

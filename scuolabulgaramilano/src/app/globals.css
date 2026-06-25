@@ -5,6 +5,36 @@
    that build on the original design system in _design.css.
    ================================================================= */
 
+/* Bulgarian tricolour bar at the very top of the page (white·green·red) */
+.topflag {
+  height: 6px;
+  background: linear-gradient(to bottom,
+    #ffffff 0 33.34%,
+    #00966e 33.34% 66.67%,
+    #d62612 66.67% 100%);
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.08);
+  position: relative; z-index: 101;
+}
+
+/* Bulgarian rose ornament — national symbol, used as a section flourish */
+.rose-ornament { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 0 auto 1.4rem; }
+.rose-ornament::before, .rose-ornament::after {
+  content: ""; width: clamp(40px, 12vw, 90px); height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--lime-500), var(--red-600));
+}
+.rose-ornament::after { background: linear-gradient(90deg, var(--red-600), var(--lime-500), transparent); }
+.rose-ornament img { width: 44px; height: 44px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+.cta-band .rose-ornament::before, .cta-band .rose-ornament::after { background: linear-gradient(90deg, transparent, rgba(255,255,255,.55)); }
+.cta-band .rose-ornament::after { background: linear-gradient(90deg, rgba(255,255,255,.55), transparent); }
+
+/* Footer logo: render the real, full-colour logo exactly like the header,
+   on a light chip so it reads identically against the dark footer. */
+.footer__brand img {
+  filter: none; opacity: 1;
+  background: #fff; padding: .55rem .8rem; border-radius: 14px;
+  box-shadow: 0 6px 18px -8px rgba(0,0,0,.5);
+}
+
 /* Language switcher */
 .langsw { position: relative; }
 .langsw__btn {
