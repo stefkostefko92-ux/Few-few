@@ -107,6 +107,46 @@
     });
   }
 
+  /* ---------- Facebook feed (consent-gated) ---------- */
+  const fbEmbed = doc.querySelector("#fb-embed");
+  if (fbEmbed) {
+    const href = fbEmbed.dataset.fbhref;
+    const STORE_KEY = "qb-fb-consent";
+    const loadFeed = () => {
+      const consent = doc.querySelector("#fb-consent");
+      if (consent) consent.classList.add("is-loading");
+      const width = Math.min(520, Math.max(320, Math.round(fbEmbed.clientWidth)));
+      const height = 600;
+      const src =
+        "https://www.facebook.com/plugins/page.php?href=" + encodeURIComponent(href) +
+        "&tabs=timeline&width=" + width + "&height=" + height +
+        "&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true";
+      const iframe = doc.createElement("iframe");
+      iframe.src = src;
+      iframe.title = "Post recenti da Facebook — Qui Bulgaria";
+      iframe.width = String(width);
+      iframe.height = String(height);
+      iframe.loading = "lazy";
+      iframe.setAttribute("scrolling", "no");
+      iframe.setAttribute("frameborder", "0");
+      iframe.allow = "encrypted-media; clipboard-write; web-share";
+      iframe.referrerPolicy = "no-referrer-when-downgrade";
+      iframe.addEventListener("load", () => { fbEmbed.innerHTML = ""; fbEmbed.appendChild(iframe); });
+      // Append immediately (hidden behind consent) so the load event swaps it in.
+      iframe.style.width = "100%";
+      fbEmbed.appendChild(iframe);
+    };
+    const loadBtn = doc.querySelector("#fb-load");
+    if (loadBtn) {
+      loadBtn.addEventListener("click", () => {
+        try { localStorage.setItem(STORE_KEY, "1"); } catch (e) {}
+        loadFeed();
+      });
+    }
+    // Auto-load if the visitor already consented in a previous visit.
+    try { if (localStorage.getItem(STORE_KEY) === "1") loadFeed(); } catch (e) {}
+  }
+
   /* ---------- Year ---------- */
   const y = doc.querySelector("#year");
   if (y) y.textContent = new Date().getFullYear();
