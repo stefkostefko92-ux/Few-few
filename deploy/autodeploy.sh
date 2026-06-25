@@ -32,7 +32,9 @@ MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
 MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
 
-# zabobovdol (Docker Compose модел) — портът идва от неговия .env (HTTP_PORT)
+# zabobovdol (Docker Compose модел) — портът се авто-засича от неговия .env (HTTP_PORT),
+# освен ако ZBD_HEALTH_URL не е зададен изрично.
+ZBD_HEALTH_URL_SET="${ZBD_HEALTH_URL:+1}"
 ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/}"
 FORCE_SEED="${FORCE_SEED:-0}"
 # ╚══════════════════════════════════════════════════════════════════════════════
@@ -56,6 +58,19 @@ find_archive() {
 }
 ARCHIVE_PATH="$(find_archive)"
 log "Архив: $ARCHIVE_PATH"
+
+# ── 1б) Проверка на целостта (по избор) ───────────────────────────────────────
+# Ако до архива има <архив>.sha256, верифицирай преди да разопаковаш. Така
+# случайно повреден или подменен архив не стига до сървъра.
+if [ -f "${ARCHIVE_PATH}.sha256" ]; then
+  log "Проверявам sha256…"
+  ( cd "$(dirname "$ARCHIVE_PATH")" \
+    && sha256sum -c "$(basename "$ARCHIVE_PATH").sha256" ) \
+    || die "sha256 не съвпада — спирам (повреден или подменен архив)."
+  ok "sha256 е валиден."
+else
+  warn "Няма ${ARCHIVE_PATH##*/}.sha256 — пропускам проверка на целостта (препоръчително я добави)."
+fi
 
 # ── 2) Разопаковай в нов release и нормализирай корена ────────────────────────
 REL="$RELEASES_DIR/$TS"
@@ -98,7 +113,13 @@ deploy_zabobovdol() {
       bash scripts/setup-env.sh && bash scripts/deploy.sh
     fi
   )
-  health "$ZBD_HEALTH_URL" "zabobovdol" || deploy_failed=1
+  # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
+  local url="$ZBD_HEALTH_URL"
+  if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/"
+  fi
+  health "$url" "zabobovdol" || deploy_failed=1
 }
 
 # ── 3b) medqr — systemd ───────────────────────────────────────────────────────

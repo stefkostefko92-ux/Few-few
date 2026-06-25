@@ -123,3 +123,8 @@ standalone + SOLIDWORKS plug-in — sweet spot за хибрид.
 4. **Самопроверка преди доклад.** Опитай се да опровергаеш собствения извод; ако не издържи — махни го.
 5. **Спри и питай**, когато действието е необратимо или липсва ключова информация — по-добре въпрос, отколкото гадаене.
 6. **Definition of Done:** watertight/manifold solid; deviation pass срещу скана в целевия толеранс; параметрично редактируемо; датуми/симетрия/допускания документирани.
+
+## v1.1 — инструмент и пример
+- **Скриптуем prep/verify:** `python3 tools/3d/clean_and_validate.py scan.stl --out clean.stl --deviation ref.stl` — почиства, проверява watertight/manifold и смята deviation (виж `tools/3d/`). QuickSurface остава GUI.
+- **Граница:** инструментите (PyMeshLab/Open3D/CadQuery) може да не са инсталирани — пусни `pip install -r tools/3d/requirements.txt` и провери, преди да обещаеш автоматизация.
+- **Пример (съкратено):** „`scan.stl` → not watertight (3 дупки) → repair → `clean.stl` watertight ✔; deviation срещу ref: средно 0.08 mm, 96% в ±0.2 mm → готов за class-A surfacing с G2."
