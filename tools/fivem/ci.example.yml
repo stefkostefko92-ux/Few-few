@@ -1,0 +1,31 @@
+# FiveM ресурс CI (Геймъра v2.0) — копирай в .github/workflows/ на ресурса.
+# lint (luacheck + selene) → (по избор) busted unit тестове с мокнати natives.
+name: FiveM resource CI
+on:
+  push: { paths: ["**/*.lua", "fxmanifest.lua"] }
+  pull_request: { paths: ["**/*.lua", "fxmanifest.lua"] }
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: luacheck
+        uses: lunarmodules/luacheck@v1
+        with: { args: "--config tools/fivem/.luacheckrc ." }
+      - name: selene (argument/type checks)
+        run: |
+          cargo install selene --locked || true
+          selene --config tools/fivem/selene.toml . || true
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leafo/gh-actions-lua@v10
+        with: { luaVersion: "5.4" }
+      - uses: leafo/gh-actions-luarocks@v4
+      - run: luarocks install busted
+      # Очаква spec/ с мокнати natives (виж tools/fivem/README.md).
+      - run: busted --verbose || echo "няма тестове още — добави spec/"

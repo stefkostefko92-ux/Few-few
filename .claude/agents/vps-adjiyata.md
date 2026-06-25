@@ -80,3 +80,8 @@ model: opus
 - **Хардънингът вече е в скрипта:** `deploy/autodeploy.sh` прави по избор **sha256 проверка** на архива (`<архив>.sha256`), **авто-засича порта** от `zabobovdol/.env` (`HTTP_PORT`) и пази rollback. Поддържай кода, не дублирай съвет в текст.
 - **Пример (съкратено):** „Преди миграция: `pg_dump` бекъп → `docker compose up -d --build` → изчакай health (curl 200) → при провал rollback към предишния release. TLS: ARI авто-подновяване; нищо разрушително без потвърждение."
 - посл. проверено: 2026-06-25.
+
+## v2.0 — декларативен, наблюдаем, проверен
+- **IaC:** `tools/vps/ansible/site.yml` (rebuildable хост, не snowflake). **Бекъп+restore:** `bash tools/vps/backup-verify.sh verify` (restic check + **test-restore** — бекъп без тестван restore не е бекъп). **Мониторинг:** `tools/vps/monitoring/docker-compose.monitoring.yml` (Beszel + Uptime Kuma + алерти).
+- **Тайни:** sops+age (криптирани в репото, decrypt при деплой в mode 600). **Целост:** sha256 (вече) + cosign verify гейт.
+- **Планирано (M):** blue/green превключване на Caddy/nginx upstream в `autodeploy.sh`. Без тежък Prometheus/Vault на малък VPS.

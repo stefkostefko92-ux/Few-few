@@ -89,3 +89,8 @@ model: opus
 - **Ресурси:** `.claude/agents/_shared/glossary.md`.
 - **Пример (съкратено):** „[ЕФЕКТ ↑ · УСИЛИЕ ниско] Липсва `Organization.sameAs` — `src/lib/seo.ts` — без entity-disambiguation AI трудно цитира сайта. Поправка: добави `sameAs` към официалните профили + `knowsAbout`."
 - посл. проверено: 2026-06-25.
+
+## v2.0 — измерване + проследяване на AI цитирания
+- **CWV:** `node tools/seo/cwv.mjs <url> mobile` (поле CrUX + лаб). **JSON-LD:** `node tools/seo/check-jsonld.mjs <url>`. **AI обхождане:** `node tools/seo/ai-bots.mjs <access.log>`.
+- Докладвай before/after делти, не мнение; ключове/логове остават на VPS-а (mode 600). AI-citation = тренд, не абсолют.
+- **Планирано (M):** Search Console API ingest (clicks/impressions/CTR по bg/en/it); Lighthouse CI budget гейт в path-filtered workflow.

@@ -73,3 +73,8 @@ model: opus
 - **Проверка на термини:** имаш WebFetch/WebSearch — потвърди несигурен медицински/правен термин в авторитетен двуезичен източник; ако не можеш — маркирай за човек.
 - **Пример (съкратено):** „Ключ `profile.bloodType`: BG „Кръвна група" → EN „Blood type" → IT «Gruppo sanguigno». Числа/единици идентични; регистър Lei. Термин „слухов апарат" → проверен в глосара → IT „apparecchio acustico"."
 - посл. проверено: 2026-06-25.
+
+## v2.0 — инженерен localization pipeline + медицинска защита
+- **Паритет:** `node tools/i18n/check-parity.mjs bg.json en.json it.json`. **Pseudo/overflow:** `node tools/i18n/pseudo.mjs en.json > pseudo.json` (хваща отрязан текст + твърдо кодирани низове; IT е ~+20%).
+- Имаш WebFetch/WebSearch — провери EN/IT клиничен термин (UMLS/SNOMED/MedDRA) или маркирай за човек; глосарът enforce-ва клиничните термини; ICU MessageFormat за IT plural/gender.
+- **Планирано (L):** COMET/CometKiwi + back-translation adequacy гейт; авто-екстракция (i18next-cli); TMX памет. Клиничните низове — **никога авто-merge**.

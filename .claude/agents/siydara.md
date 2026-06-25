@@ -69,3 +69,8 @@ model: opus
 - **Проверка на факти:** имаш WebFetch/WebSearch — потвърди телефон/институция/срок от официален източник; цитирай го в коментар с дата.
 - **Граница:** пълно пускане иска Postgres; ако няма — поне `npx tsc --noEmit` върху файла + `check-dups`.
 - **Пример (съкратено):** „`seed-apteki.ts`: `prisma.service.upsert({ where:{ slug:'dezhurna-apteka-bobov-dol' }, … })`, тел. от НЗОК (пров. 2026-06). Регистриран `db:seed:apteki` + добавен в `db:seed:all`; `check-dups` чист."
+
+## v2.0 — типизиран data pipeline от отворени данни
+- **Шаблон:** `tools/seed/zod-factory.example.ts` — Zod-валидиран сийд с **provenance** (`source`/`sourceUrl`/`fetchedAt`/`license`). **Дубли:** `node tools/seed/check-dups.mjs`.
+- Източници: data.egov.bg (CKAN), НЗИС аптечен регистър, data.europa.eu → raw snapshot в `prisma/data/raw/` + отделен transform; `createMany({ skipDuplicates })` за големи групи, `upsert` за курирано съдържание.
+- **Планирано (M):** integrity/FK CI гейт; Prisma 7 (`prisma.config.ts` seed). Показвай дата на снимката + лиценз (атрибуция); регистрите дрейфат — задай каданс.

@@ -216,26 +216,29 @@ Agent tool (e.g. *"пусни Кодаджията върху промените
 | **3D Maniac** `3d-maniac.md`              | 3D reverse engineering & Mesh→Solid CAD for **carbon-fiber motorcycle parts**; QuickSurface Pro power user: scan→CAD, class-A NURBS (G2), deviation analysis, design-intent capture, composite tooling (ply offset, draft, parting lines), automation via CadQuery/build123d/FreeCAD/PyMeshLab/Open3D. |
 | **Социалджията** `socialdjiyata.md`       | Social Media Manager for max **reach/visibility** (TikTok/Reels/Shorts/X/LinkedIn/FB): hook science, retention, social SEO, cadence/repurpose. Uniquely **produces clips** via a scriptable pipeline (ffmpeg reframe 9:16, WhisperX karaoke captions, cut-on-silence, music duck, −14 LUFS, C2PA/AI disclosure). |
 
-All nine agents are at **v1.1** — each ends with an **operating contract** (source-or-silence,
+All nine agents are at **v2.0** — each ends with an **operating contract** (source-or-silence,
 verify-before-asserting, confidence labels, adversarial self-check, stop-and-ask on irreversible
-actions, a per-agent Definition of Done) plus a **v1.1** block: a worked example, an explicit
-**competence boundary** (what the agent *can't* do here — e.g. no live cookie runtime without a
-headless browser, no real CWV without Lighthouse, no FXServer to test on), and a pointer to its
-real script where one exists. When upgrading an agent, append an `evolution` entry + bump the
-version in `agents-dashboard/agents.json`.
+actions, a per-agent Definition of Done), a **v1.1** block (worked example + explicit competence
+boundary), and a **v2.0** block that turns the agent from advisor into an *instrumented executor*:
+it runs real tools (`tools/<area>/`) and verifies with data. When upgrading an agent, append an
+`evolution` entry + bump the version in `agents-dashboard/agents.json`.
 
 Supporting files under `.claude/agents/`:
 - **`_shared/glossary.md`** — canonical BG·EN·IT glossary (incl. the *verified* clinical terms
   and the ready IT base) + base project facts, so agents don't re-derive or drift. Преводач owns it.
+- **`_proposals/v2.0.md`** — the v2.0 roadmap (✅ shipped vs 🟡 planned, per agent, with effort).
 - **`_evals/golden-cases.md`** — one manual golden case per agent (input + expected traits +
   pitfalls); run an agent against its case after an upgrade to catch regressions.
 
-Agents that have real "hands" reference runnable scripts in **`tools/`**: `tools/social/clip.sh`
-(Социалджията — 9:16 reframe, WhisperX captions, cut-on-silence, −14 LUFS, thumbnail),
-`tools/3d/clean_and_validate.py` (3D Maniac — mesh repair + watertight/deviation check),
-`tools/i18n/check-parity.mjs` (Преводач — locale key parity), `tools/seed/check-dups.mjs`
-(Сийдъра — duplicate-slug detector). Each `tools/<area>/` has a README + requirements and
-degrades gracefully when an optional tool is missing.
+Agents have real "hands" — runnable scripts under **`tools/<area>/`**, one area per agent
+(each with a README + requirements, degrading gracefully when an optional tool is absent):
+`tools/legal/` (consent-scan + a11y via Playwright/axe), `tools/code/` (scan.sh: Semgrep +
+osv-scanner + gitleaks + SBOM, with repo-specific `semgrep-rules.yml`), `tools/fivem/`
+(luacheck/selene configs + CI), `tools/seo/` (cwv.mjs PSI/CrUX, check-jsonld.mjs, ai-bots.mjs),
+`tools/i18n/` (check-parity.mjs, pseudo.mjs), `tools/seed/` (check-dups.mjs, zod-factory.example.ts),
+`tools/vps/` (Ansible skeleton, backup-verify.sh, monitoring compose), `tools/3d/`
+(clean_and_validate.py, ransac_segment.py, generate_mold.py), `tools/social/` (clip.sh, trends.py,
+c2pa-sign.sh, publish.md). The shipped-vs-planned split per agent is in `_proposals/v2.0.md`.
 
 Conventions when authoring or editing an agent: keep the **system prompt in Bulgarian**;
 scope `tools` to least privilege (read-only auditors: Правният Разбирач, SEO, Кодаджията; the

@@ -115,3 +115,9 @@ model: opus
 - **Ресурси:** `.claude/agents/_shared/glossary.md` (факти за стека/версиите).
 - **Пример (съкратено):** „[Critical · Сигурно] SQL инжекция — `medqr/src/routes/profile.js:88` — `db.prepare('… '+req.body.q)` слепва вход на потребител в SQL. Пътека: `POST /profile` с `q=' OR 1=1 --` → достъп до цялата таблица. Поправка: `db.prepare('… ?').all(req.body.q)`."
 - посл. проверено (CVE/версии): 2026-06-25.
+
+## v2.0 — оркестратор на SAST/SCA + адъюдикация
+- **Пусни:** `bash tools/code/scan.sh all .` → Semgrep (репо-правила `tools/code/semgrep-rules.yml`) + osv-scanner + gitleaks + SBOM (SARIF/JSON).
+- **Адъюдикация (ключово):** инструментите дават кандидати; ти доказваш source→sink reachability/feasibility — недостижима пътека = FP. Маха 72–96% шум; никога не авто-потискай, само сваляй приоритет с обосновка.
+- Pin-вай версиите/дайджестите на инструментите (март 2026: `trivy-action` tag-poisoning).
+- **Планирано (L):** mutation testing на diff (StrykerJS); auto-fix PR с inline коментари (по модела на anthropics/claude-code-security-review).

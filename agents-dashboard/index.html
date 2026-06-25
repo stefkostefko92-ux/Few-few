@@ -92,7 +92,7 @@ const FALLBACK = {
   "meta": {
     "title": "Лаборатория на агентите · Carbon Stealth",
     "subtitle": "Тук живеят персонализираните Claude Code агенти на този монорепо. Всеки има анимационно лице, времева линия на развитие (версии) и поток на дейността.",
-    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него. Към v1.1: всеки агент има worked-пример, граница на компетентност и (където пасва) реален скрипт в tools/.",
+    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него. Към v1.1: всеки агент има worked-пример, граница на компетентност и (където пасва) реален скрипт в tools/. v2.0: всеки агент пуска реални инструменти (tools/<area>/) и проверява с данни; пътна карта в .claude/agents/_proposals/v2.0.md.",
     "repo": "stefkostefko92-ux/Few-few",
     "updated": "2026-06-25",
     "definitionsDir": ".claude/agents/"
@@ -123,7 +123,8 @@ const FALLBACK = {
         "Достъпност WCAG 2.1 AA / EAA",
         "Импресум (Дир. 2000/31)",
         "robots.txt / sitemap.xml / llms.txt / JSON-LD",
-        "SEO / GEO / AEO за AI цитирания"
+        "SEO / GEO / AEO за AI цитирания",
+        "Runtime consent + a11y гейтове (tools/legal/)"
       ],
       "knowledge": {
         "sources": 34,
@@ -158,9 +159,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: български слой (КЗЛД/ЗЗЛД/ЗЕС/ЗЗП), граница за runtime cookie одит (headless), worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: runtime consent скенер + a11y гейт (Playwright/axe); планирани RoPA/DPIA генератори."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -216,7 +228,8 @@ const FALLBACK = {
         "Откриване на изтекли тайни и данни по GDPR чл. 9",
         "Стеково-специфични капани (force-dynamic, Prisma singleton, CSP nonce)",
         "Самопроверка преди доклад — изхвърля неекплоатируемите находки",
-        "Доклад по тежест × увереност с file:line и минимална поправка"
+        "Доклад по тежест × увереност с file:line и минимална поправка",
+        "SAST/SCA оркестратор (tools/code/scan.sh)"
       ],
       "knowledge": {
         "sources": 26,
@@ -251,9 +264,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: пуска реалните гейтове като доказателство (lint/test/audit), worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: SAST/SCA оркестратор (Semgrep+osv+gitleaks+SBOM) с адъюдикация на FP."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -313,7 +337,8 @@ const FALLBACK = {
         "Рамки: Qbox/ox_core (препоръчан), ESX, QBCore",
         "ox_lib + oxmysql (параметризирани заявки)",
         "Server-authoritative сигурност (никога не вярвай на клиента)",
-        "Оптимизация: кеширане на natives, Wait дисциплина, state bags"
+        "Оптимизация: кеширане на natives, Wait дисциплина, state bags",
+        "FiveM lint + CI (tools/fivem/)"
       ],
       "knowledge": {
         "sources": 26,
@@ -348,9 +373,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: ясна граница (тест на реален сървър), worked-пример за event-валидация, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: lint (luacheck+selene с FiveM std) + CI + busted тест-поток с мокнати natives."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -407,7 +443,8 @@ const FALLBACK = {
         "GEO/AEO — отговор отпред, E-E-A-T, AI обхождачи",
         "Многоезичен hreflang bg/en/it + x-default",
         "robots.txt / sitemap.xml / llms.txt стратегия",
-        "Приоритизиране по ефект × усилие (бързи победи)"
+        "Приоритизиране по ефект × усилие (бързи победи)",
+        "CWV/JSON-LD/AI-bot скриптове (tools/seo/)"
       ],
       "knowledge": {
         "sources": 21,
@@ -442,9 +479,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: граница за CWV (Lighthouse), разделена отговорност с Правния Разбирач, worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: реални CWV (PSI/CrUX), JSON-LD валидатор, AI-bot лог анализ."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -502,7 +550,8 @@ const FALLBACK = {
         "Паритет на i18n ключовете през трите езика",
         "Безопасни клинични термини (без сляп машинен превод)",
         "Речник за последователност + транслитерация на имена",
-        "Скрипт за паритет на ключове (tools/i18n/check-parity.mjs)"
+        "Скрипт за паритет на ключове (tools/i18n/check-parity.mjs)",
+        "Псевдолокализация (tools/i18n/pseudo.mjs)"
       ],
       "knowledge": {
         "sources": 15,
@@ -537,9 +586,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: +WebFetch/WebSearch за термини, споделен глосар BG·EN·IT, parity-чекер, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: паритет + псевдолокализация + проверка на клинични термини; планиран COMET adequacy гейт."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -598,7 +658,8 @@ const FALLBACK = {
         "Енуми за категории от @/lib/categories",
         "Регистрация в package.json + db:seed:all",
         "Проверени български факти (телефони, институции)",
-        "Детектор за дублирани slug-ове (tools/seed/check-dups.mjs)"
+        "Детектор за дублирани slug-ове (tools/seed/check-dups.mjs)",
+        "Zod seed factory + provenance (tools/seed/)"
       ],
       "knowledge": {
         "sources": 11,
@@ -633,9 +694,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: +WebFetch/WebSearch за факти, детектор за дублирани slug-ове (намери 536), eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: Zod-валидиран сийд с provenance + open-data pipeline; integrity гейт."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -694,7 +766,8 @@ const FALLBACK = {
         "Health check + автоматичен rollback при провал",
         "Бекъпи преди миграция; releases за връщане назад",
         "Втвърдяване: ufw, SSH с ключ, fail2ban, TLS",
-        "Харднат autodeploy.sh (sha256 + авто-порт)"
+        "Харднат autodeploy.sh (sha256 + авто-порт)",
+        "IaC + backup-verify + мониторинг (tools/vps/)"
       ],
       "knowledge": {
         "sources": 16,
@@ -729,9 +802,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: хардънингът вкаран в autodeploy.sh (sha256 + авто-засичане на порт), worked-пример, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: IaC (Ansible) + backup/test-restore (restic) + лек мониторинг (Beszel/Uptime Kuma)."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -792,7 +876,8 @@ const FALLBACK = {
         "Карбон форми: ply offset, draft ≥3°, parting lines, фланци, spring-in",
         "Качество: watertight, design intent (не шум), ±0.1–0.2 mm",
         "Автоматизация: PyMeshLab/Open3D/trimesh/CadQuery/build123d/FreeCAD",
-        "Скриптуем prep/verify (tools/3d/clean_and_validate.py)"
+        "Скриптуем prep/verify (tools/3d/clean_and_validate.py)",
+        "RANSAC + mold генератор (tools/3d/)"
       ],
       "knowledge": {
         "sources": 32,
@@ -827,9 +912,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: реален prep/verify скрипт (почистване, watertight, deviation) + requirements, eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: RANSAC сегментация + параметрична форма (CadQuery) + deviation; планиран cadrille scan→CAD."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",
@@ -890,7 +986,8 @@ const FALLBACK = {
         "Генериране на клипчета: reframe 9:16, karaoke captions, cut-on-silence, music duck",
         "AI инструменти (Veo/Runway/HeyGen/ElevenLabs/OpusClip) + WhisperX",
         "Loudness −14 LUFS, export спецификации, C2PA/AI-разкриване (AI Act чл. 50)",
-        "Скриптуем клип pipeline (tools/social/clip.sh)"
+        "Скриптуем клип pipeline (tools/social/clip.sh)",
+        "Trends + C2PA + publish (tools/social/)"
       ],
       "knowledge": {
         "sources": 26,
@@ -919,9 +1016,20 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "Ъпгрейд v1.1",
           "detail": "v1.1: реален clip pipeline (9:16/captions/-14 LUFS/thumbnail), граница (не публикува), eval."
+        },
+        {
+          "version": "2.0.0",
+          "date": "2026-06-25",
+          "event": "v2.0 — инструментиран изпълнител",
+          "detail": "v2.0: trend-sensing + C2PA подпис + публикуващ поток; планирани официални API."
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v2.0 — от съветник към инструментиран изпълнител: реални скриптове в tools/ + CI гейтове."
+        },
         {
           "date": "2026-06-25",
           "type": "upgrade",

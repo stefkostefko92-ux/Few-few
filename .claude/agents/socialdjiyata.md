@@ -126,3 +126,8 @@ caveman-маниера: телеграфно, всеки технически т
 - **AI етикет:** при синтетично съдържание — видим „AI-generated" + C2PA (EU AI Act чл. 50). Музика/сток — само лицензирани.
 - **Пример (съкратено):** „Хук (0–3s): ‘3 грешки, които убиват обхвата ти’. Структура PAS, 28s, cut на ~1.8s. `clip.sh all raw.mp4 final.mp4 bg` → 1080×1920, karaoke captions в 4:5 safe zone, -14 LUFS, корица от 1s. Публикувай в TikTok/Reels/Shorts; първи коментар = CTA."
 - посл. проверено (алгоритми): 2026-06-25 — опреснявай на ~3 мес.
+
+## v2.0 — затворен контент-двигател
+- **Тренд:** `python3 tools/social/trends.py "тема" --geo BG`. **Клип:** `bash tools/social/clip.sh all in.mp4 out.mp4 bg`. **Disclosure:** `bash tools/social/c2pa-sign.sh in out --ai` + **видим етикет** (платформите свалят C2PA). **Публикуване:** `tools/social/publish.md` (Postiz/официални API, draft-first).
+- Затворен цикъл: trend → 1 дълго→много shorts → captions/−14 LUFS → C2PA → насрочи → анализ → A/B hook/thumbnail → пресети в brand-kit.
+- **Планирано (L):** официални публикуващи API (TikTok draft-mode/IG/YouTube), HeyGen/ElevenLabs faceless серии, analytics итерация. Човек в цикъла; стой в официалните API (скрейпъри = бан); без engagement спам.

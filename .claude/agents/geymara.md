@@ -114,3 +114,9 @@ model: opus
 - Потвърждавай текущ артефакт/таг на живо (WebSearch) преди да цитираш число.
 - **Пример (съкратено):** „`server/main.lua` — `RegisterNetEvent('shop:buy', function(item, qty)` без проверка на `source`/`qty` → клиент праща `qty=-999` за дюпинг. Поправка: валидирай `source`, `qty>0`, цена от `Config` (сървърна), чети баланса от сървърното състояние."
 - посл. проверено: 2026-06-25.
+
+## v2.0 — пълен инженерен поток
+- **Lint:** `luacheck --config tools/fivem/.luacheckrc .` + `selene --config tools/fivem/selene.toml .` (FiveM глобалите са декларирани — иначе фалшиви тревоги).
+- **CI:** копирай `tools/fivem/ci.example.yml` в ресурса (lint → busted unit тестове с мокнати natives).
+- **Сигурност/профил:** event-fuzz + `resmon`/`profiler` дисциплина (виж `tools/fivem/README.md`).
+- **Планирано (L):** event-fuzz harness; scaffold + semantic-release. Тестовете покриват логика, не реално native поведение — дръж smoke сървър.
