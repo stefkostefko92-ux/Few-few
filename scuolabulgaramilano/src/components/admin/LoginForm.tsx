@@ -1,0 +1,51 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function LoginForm({ next }: { next?: string }) {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    const data = new FormData(e.currentTarget);
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.get("email"), password: data.get("password") }),
+      });
+      if (!res.ok) {
+        setError("Email o password non corretti.");
+        setBusy(false);
+        return;
+      }
+      router.push(next || "/admin");
+      router.refresh();
+    } catch {
+      setError("Errore di rete. Riprova.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      {error && <div className="ad-err">{error}</div>}
+      <div className="ad-field">
+        <label htmlFor="email">Email</label>
+        <input id="email" name="email" type="email" autoComplete="username" required autoFocus />
+      </div>
+      <div className="ad-field">
+        <label htmlFor="password">Password</label>
+        <input id="password" name="password" type="password" autoComplete="current-password" required />
+      </div>
+      <button className="ad-btn ad-btn--primary" type="submit" disabled={busy} style={{ width: "100%", justifyContent: "center", marginTop: ".4rem" }}>
+        {busy ? "Accesso…" : "Accedi"}
+      </button>
+    </form>
+  );
+}

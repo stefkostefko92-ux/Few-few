@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    image: scuolabulgaramilano:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "file:/app/data/app.db"
+      UPLOADS_DIR: "/app/data/uploads"
+      ADMIN_EMAIL: "${ADMIN_EMAIL}"
+      ADMIN_PASSWORD_HASH: "${ADMIN_PASSWORD_HASH}"
+      AUTH_SECRET: "${AUTH_SECRET}"
+      SITE_URL: "${SITE_URL:-https://www.scuolabulgaramilano.it}"
+    volumes:
+      # Persists the SQLite database and uploaded images across deploys.
+      - qb-data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/en').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  qb-data:

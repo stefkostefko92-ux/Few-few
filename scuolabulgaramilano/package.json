@@ -1,0 +1,43 @@
+{
+  "name": "scuolabulgaramilano",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sito multilingue e CMS della Scuola bulgara di Milano — Associazione Qui Bulgaria",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "setup": "prisma db push && tsx prisma/seed.ts",
+    "hash": "tsx scripts/hash-password.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "bcryptjs": "2.4.3",
+    "jose": "5.9.6",
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "sharp": "0.33.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "2.4.6",
+    "@types/node": "20.16.5",
+    "@types/react": "18.3.5",
+    "@types/react-dom": "18.3.0",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.35",
+    "prisma": "5.22.0",
+    "tsx": "4.19.2",
+    "typescript": "5.6.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

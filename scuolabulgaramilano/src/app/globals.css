@@ -1,0 +1,47 @@
+@import "./_design.css";
+
+/* =================================================================
+   Additions for the multilingual app (language switcher, banners)
+   that build on the original design system in _design.css.
+   ================================================================= */
+
+/* Language switcher */
+.langsw { position: relative; }
+.langsw__btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .5rem .75rem; border-radius: 999px; border: 1.5px solid var(--line);
+  background: var(--white); font-weight: 600; font-size: .9rem; color: var(--ink);
+  transition: border-color .2s, transform .2s;
+}
+.langsw__btn:hover { border-color: var(--ink); transform: translateY(-1px); }
+.langsw__btn .chev { width: 14px; height: 14px; transition: transform .25s var(--ease); }
+.langsw[data-open="true"] .chev { transform: rotate(180deg); }
+.langsw__menu {
+  position: absolute; right: 0; top: calc(100% + .5rem); min-width: 180px;
+  background: var(--white); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: var(--shadow); padding: .4rem; z-index: 120;
+  opacity: 0; visibility: hidden; transform: translateY(-6px); transition: all .2s var(--ease);
+}
+.langsw[data-open="true"] .langsw__menu { opacity: 1; visibility: visible; transform: none; }
+.langsw__item {
+  display: flex; align-items: center; gap: .6rem; width: 100%;
+  padding: .6rem .7rem; border-radius: 10px; font-size: .95rem; font-weight: 500;
+  color: var(--ink-soft); background: transparent; text-align: left; transition: background-color .15s;
+}
+.langsw__item:hover { background: var(--paper-2); color: var(--ink); }
+.langsw__item.is-active { color: var(--green-700); font-weight: 700; }
+.langsw__item .flag { font-size: 1.15rem; line-height: 1; }
+.langsw__item .tick { margin-left: auto; width: 16px; height: 16px; color: var(--green-700); }
+
+/* keep desktop CTA + switcher inline; in the mobile drawer they stack */
+.nav__actions { gap: .5rem; }
+@media (max-width: 760px) {
+  .nav__actions .langsw { display: none; }
+  .nav__menu .langsw { display: block; margin-top: 1rem; }
+  .nav__menu .langsw__btn { width: 100%; justify-content: space-between; }
+  .nav__menu .langsw__menu { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; padding: .3rem 0 0; }
+}
+.nav__menu .langsw { display: none; }
+
+/* Empty-state for a section with no content yet */
+.empty-note { color: var(--muted); font-style: italic; }
