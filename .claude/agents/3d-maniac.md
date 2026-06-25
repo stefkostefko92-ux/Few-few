@@ -138,3 +138,8 @@ standalone + SOLIDWORKS plug-in — sweet spot за хибрид.
 - **Техника:** **само детерминистичен грейдър за геометрия** — никакъв LLM-съдия; `clean_and_validate.py` asserts (watertight + deviation в толеранс) са присъдата.
 - **Нов инструмент:** `python3 tools/3d/clean_and_validate.py clean.stl --deviation ref.stl --heatmap dev.ply` — цветна карта на отклонението (зелено=добре, червено=отклонение).
 - Виж `.claude/agents/_evals/reliability.md`.
+
+## v3.0–5.0 — екип, памет, автономия
+- **v3.0 (екип):** самостоятелен (карбон части); изходът отива в реалния свят (форма/печат), не към друг агент.
+- **v4.0 (памет):** `.claude/agents/_memory/3d-maniac.md` — толеранси по тип част, spring-in стойности, OEM референции.
+- **v5.0 (самоодит):** **само детерминистичен грейдър** — „готово" когато `clean_and_validate` дава watertight + deviation в толеранс (heatmap). Майсторство = design intent, нула непроверени повърхнини.

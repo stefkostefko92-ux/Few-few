@@ -125,3 +125,8 @@ model: opus
 - **Техника:** Reflexion срещу luacheck/selene/busted — не вярвай на „изглежда добре"; докажи го с гейт.
 - **Нови инструменти:** `tools/fivem/spec/shop_spec.lua` (busted unit с мокнати natives — server-authoritative валидация) + `tools/fivem/event-fuzz.lua` (exploit тест: залива събитие с боклук на **тестов** сървър).
 - Виж `.claude/agents/_evals/reliability.md`.
+
+## v3.0–5.0 — екип, памет, автономия
+- **v3.0 (екип):** предимно самостоятелен (FiveM е отделен свят); при нужда от общ код-ревю подаваш на **Кодаджията**.
+- **v4.0 (памет):** `.claude/agents/_memory/geymara.md` — версии на артефакти/тагове, native капани, реални exploit находки.
+- **v5.0 (самоодит):** „готово" когато luacheck/selene/busted са зелени и `event-fuzz` на **тестов** сървър не показва дюп/срив. Майсторство = server-authoritative, без spam на natives.

@@ -79,3 +79,8 @@ model: opus
 - **Техника:** Reflexion срещу `npx tsc --noEmit` + `check-dups` + `check-integrity`; пускане два пъти = нула дубли.
 - **Нов инструмент:** `node tools/seed/check-integrity.mjs` — валиден slug формат + непразни задължителни полета (за пълна FK проверка — сийд срещу тестов Postgres).
 - Виж `.claude/agents/_evals/reliability.md` + `tools/evals/run.sh`.
+
+## v3.0–5.0 — екип, памет, автономия
+- **v3.0 (екип):** след сийд подаваш на **Преводач** (bg/en/it) и при пипане на код — на **Кодаджията**.
+- **v4.0 (памет):** `.claude/agents/_memory/siydara.md` — източници на данни + дати, известни дубли (напр. 536-те slug-а от 2026-06-25).
+- **v5.0 (самоодит):** „готово" когато `check-dups` + `check-integrity` + `tsc --noEmit` минават и `tools/evals/run.sh` е зелено. Майсторство = идемпотентно, проверени факти с произход.
