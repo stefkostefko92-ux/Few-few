@@ -8,6 +8,8 @@ import {
   getSponsors,
 } from "@/lib/data";
 import { Crest } from "@/components/Crest";
+import { JsonLd } from "@/components/JsonLd";
+import { webPageLd } from "@/lib/seo";
 import { Section } from "@/components/ui";
 import { NextMatchCard } from "@/components/NextMatchCard";
 import { MatchList } from "@/components/MatchList";
@@ -44,6 +46,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={webPageLd({ name: SITE.name, description: SITE.description, path: "/" })} />
       {/* Геройска секция в клубните цветове */}
       <section className="relative overflow-hidden bg-brand-900 text-white">
         <Crest
@@ -71,7 +74,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="hidden justify-center lg:flex">
-            <Crest className="h-64 w-auto drop-shadow-2xl" />
+            <Crest className="h-64 w-auto drop-shadow-2xl" priority />
           </div>
         </div>
         <div className="h-1.5 w-full bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400" />

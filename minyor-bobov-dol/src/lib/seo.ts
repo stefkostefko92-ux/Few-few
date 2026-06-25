@@ -78,6 +78,7 @@ export function sportsOrganizationLd(opts?: { sameAs?: string[] }) {
     },
     image: `${SITE.url}/og.png`,
     knowsLanguage: "bg",
+    knowsAbout: ["Футбол", SITE.geo.city, "Областна група Кюстендил"],
     location: {
       "@type": "Place",
       name: SITE.stadium.name,
@@ -218,6 +219,53 @@ export function matchEventLd(m: {
         addressRegion: SITE.geo.region,
         addressCountry: SITE.geo.countryCode,
       },
+    },
+  };
+}
+
+// Спортният отбор (състав + щаб) — отговаря на въпроси „кой играе за Миньор“.
+export function sportsTeamLd(opts: {
+  athletes?: string[];
+  coaches?: string[];
+}) {
+  const athletes = (opts.athletes ?? []).filter(Boolean);
+  const coaches = (opts.coaches ?? []).filter(Boolean);
+  return {
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    "@id": `${SITE.url}/#team`,
+    name: SITE.name,
+    sport: "Football",
+    url: `${SITE.url}/otbor`,
+    memberOf: { "@id": ORG_ID },
+    ...(athletes.length
+      ? { athlete: athletes.map((name) => ({ "@type": "Person", name })) }
+      : {}),
+    ...(coaches.length
+      ? { coach: coaches.map((name) => ({ "@type": "Person", name })) }
+      : {}),
+  };
+}
+
+// Стадионът — Place/StadiumOrArena с координати и капацитет.
+export function stadiumLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "StadiumOrArena",
+    name: SITE.stadium.name,
+    maximumAttendeeCapacity: SITE.stadium.capacity,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: SITE.stadium.address,
+      addressLocality: SITE.geo.city,
+      addressRegion: SITE.geo.region,
+      postalCode: SITE.geo.postalCode,
+      addressCountry: SITE.geo.countryCode,
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: SITE.geo.latitude,
+      longitude: SITE.geo.longitude,
     },
   };
 }

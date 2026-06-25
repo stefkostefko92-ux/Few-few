@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, sportsTeamLd, webPageLd } from "@/lib/seo";
 import { getActivePlayers, getStaff } from "@/lib/data";
 import { POSITION_LABELS, POSITION_ORDER, labelFor } from "@/lib/categories";
 import { PageHero, EmptyState } from "@/components/ui";
+import { JsonLd } from "@/components/JsonLd";
 import { PlayerCard } from "@/components/PlayerCard";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,15 @@ export default async function TeamPage() {
         title="Нашият отбор"
         intro="Футболистите и треньорският щаб на „миньорите“."
         crumbs={[{ name: "Отбор", path: "/otbor" }]}
+      />
+      <JsonLd
+        data={[
+          webPageLd({ name: "Отбор", path: "/otbor" }),
+          sportsTeamLd({
+            athletes: players.map((p) => p.name),
+            coaches: staff.map((s) => s.name),
+          }),
+        ]}
       />
       <div className="container-content space-y-12 py-10">
         {players.length === 0 && staff.length === 0 ? (

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { buildMetadata, canonical, matchEventLd } from "@/lib/seo";
 import { getUpcomingMatches, getRecentResults } from "@/lib/data";
+import { SITE } from "@/lib/site";
+import { formatDate, formatTime } from "@/lib/format";
 import { PageHero, EmptyState } from "@/components/ui";
 import { MatchList } from "@/components/MatchList";
 import { JsonLd } from "@/components/JsonLd";
@@ -21,6 +23,14 @@ export default async function ProgramPage() {
   ]);
 
   const empty = upcoming.length === 0 && results.length === 0;
+
+  // Кратък „отговор отпред“ за хора и за AI: следващият мач в едно изречение.
+  const next = upcoming[0];
+  const nextSummary = next
+    ? `Следващ мач на ${SITE.shortName}: срещу ${next.opponent} ` +
+      `(${next.isHome ? "домакин" : "гост"}) на ${formatDate(next.kickoff)} от ` +
+      `${formatTime(next.kickoff)} ч.${next.venue ? `, ${next.venue}` : ""}.`
+    : null;
 
   return (
     <>
@@ -45,6 +55,11 @@ export default async function ProgramPage() {
         />
       )}
       <div className="container-content space-y-10 py-10">
+        {nextSummary && (
+          <p className="rounded-xl border border-slate-200 bg-gold-50 p-4 text-slate-800">
+            {nextSummary}
+          </p>
+        )}
         {empty ? (
           <EmptyState
             title="Все още няма въведени мачове"
@@ -74,6 +89,9 @@ export default async function ProgramPage() {
             </section>
           </>
         )}
+        <p className="text-xs text-slate-400">
+          Източник на програмата и резултатите: bgclubs.eu.
+        </p>
       </div>
     </>
   );

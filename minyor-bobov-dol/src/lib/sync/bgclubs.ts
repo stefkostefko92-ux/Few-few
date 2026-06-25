@@ -41,7 +41,13 @@ async function fetchHtml(slug: string): Promise<string> {
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} за ${slug}`);
-  return res.text();
+  const text = await res.text();
+  // Защита в дълбочина: ограничаваме размера на чуждия вход преди да го парсваме
+  // с регулярни изрази (предпазва event loop-а от прекомерна работа).
+  if (text.length > 2_000_000) {
+    throw new Error(`Прекалено голям отговор за ${slug} (${text.length} байта)`);
+  }
+  return text;
 }
 
 // ── HTML помощници (без външни зависимости) ──
@@ -120,14 +126,21 @@ function parseFixtures(html: string): { fixtures: Fixture[]; competition: string
 }
 
 // Извлича състава на групата като карта „име на отбор → bgclubs slug".
+// Парсингът е на два прости, ЛИНЕЙНИ прохода (анкер → атрибути/текст, после
+// href → slug), за да няма катастрофален backtracking при чужд/зловреден HTML.
 function parseTeamLinks(html: string): Map<string, string> {
   const map = new Map<string, string>();
-  const re = /<a[^>]+href="[^"]*\/teams\/([^"#?]+)[^"]*"[^>]*>([^<]+)<\/a>/gi;
+  const anchorRe = /<a\b([^>]*)>([^<]*)<\/a>/gi;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(html))) {
-    const slug = decodeURIComponent(m[1]).trim();
+  while ((m = anchorRe.exec(html))) {
     const name = stripTags(m[2]);
-    if (name && !map.has(name)) map.set(name, slug);
+    if (!name) continue;
+    const href = /href="([^"]*)"/i.exec(m[1]);
+    if (!href) continue;
+    const team = /\/teams\/([^"#?]+)/.exec(href[1]);
+    if (!team) continue;
+    const slug = decodeURIComponent(team[1]).trim();
+    if (slug && !map.has(name)) map.set(name, slug);
   }
   return map;
 }
@@ -314,10 +327,37 @@ async function recordStatus(summary: SyncSummary) {
   }
 }
 
+// Срок на съхранение на съобщенията от контакти (виж Политиката за
+// поверителност). Изтриваме автоматично по-старите при всяка синхронизация.
+const CONTACT_RETENTION_DAYS = 365;
+async function pruneOldContactMessages(): Promise<void> {
+  try {
+    const cutoff = new Date(Date.now() - CONTACT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    await prisma.contactMessage.deleteMany({ where: { createdAt: { lt: cutoff } } });
+  } catch {
+    /* не критично за синхронизацията */
+  }
+}
+
+// Прост in-process lock: cron и бутонът „Обнови сега" могат да съвпаднат;
+// без него два паралелни прохода биха дублирали редовете в класирането
+// (StandingRow няма уникален ключ). Пази единствен активен проход на процес.
+let syncInProgress = false;
+
 // Публична входна точка: изпълнява синхронизацията и записва статуса.
 export async function runSync(): Promise<SyncSummary> {
+  if (syncInProgress) {
+    return {
+      ok: false,
+      matches: 0,
+      standings: 0,
+      error: "Синхронизацията вече е в ход. Опитайте отново след малко.",
+    };
+  }
+  syncInProgress = true;
   try {
     const summary = await runSyncInternal();
+    await pruneOldContactMessages();
     await recordStatus(summary);
     return summary;
   } catch (err) {
@@ -329,5 +369,7 @@ export async function runSync(): Promise<SyncSummary> {
     };
     await recordStatus(summary);
     return summary;
+  } finally {
+    syncInProgress = false;
   }
 }

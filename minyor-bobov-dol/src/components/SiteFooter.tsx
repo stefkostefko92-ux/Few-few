@@ -3,6 +3,7 @@ import { Phone, Mail, MapPin } from "@/components/icons";
 import { Crest } from "@/components/Crest";
 import { SITE, PRIMARY_NAV, FOOTER_NAV } from "@/lib/site";
 import { getFacebookUrl } from "@/lib/settings";
+import { CookieSettingsLink } from "@/components/CookieSettingsLink";
 
 // Вградена иконка на Facebook.
 function FacebookIcon({ className }: { className?: string }) {
@@ -107,6 +108,8 @@ export async function SiteFooter() {
         <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 text-sm text-slate-400 sm:flex-row sm:items-center">
           <p>
             © {year} {SITE.name}. Всички права запазени.
+            {" · "}
+            <CookieSettingsLink className="underline hover:text-gold-400" />
           </p>
           <p>
             Изработка и дарение:{" "}
