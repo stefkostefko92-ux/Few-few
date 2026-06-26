@@ -18,7 +18,7 @@
         <% if (hearing) { %> <%= t('emerg.hearing') %>: <%= clin(profile.hearing_status) %>.<% } %>
         <% if (profile.can_speak) { %> <%= t('emerg.speech') %>: <%= clin(profile.can_speak) %>.<% } %>
         <% if (usesSign) { %> <%= t('emerg.sign') %>: <%= clin(profile.sign_language) %>.<% } %>
-        <% if (profile.communication_pref) { %> <%= t('emerg.prefers') %>: <strong><%= profile.communication_pref %></strong>.<% } %>
+        <% if (profile.communication_pref) { %> <%= t('emerg.prefers') %>: <strong><%= name(profile.communication_pref) %></strong>.<% } %>
       </span>
     </div>
 
@@ -149,7 +149,7 @@
       <dt><%= t('emerg.dob') %></dt><dd><%= profile.date_of_birth %></dd>
     <% } %>
     <% if (profile.preferred_language) { %>
-      <dt><%= t('emerg.language') %></dt><dd><%= profile.preferred_language %></dd>
+      <dt><%= t('emerg.language') %></dt><dd><%= name(profile.preferred_language) %></dd>
     <% } %>
   </dl>
 

@@ -1604,3 +1604,42 @@ body.comm-open {
   display: block;
   margin-top: 0.3rem;
 }
+
+/* ---------- Достъпност (WCAG 2.2 AA) ---------- */
+/* Границите на интерактивните контроли трябва да са ≥3:1 спрямо фона (1.4.11).
+   --line (#e2e8ef ≈1.23:1) е добре за декоративни линии, но не очертава контрол. */
+:root {
+  --control-border: #8595a4; /* ≈3.1:1 спрямо бяло */
+}
+.stack input,
+.stack textarea,
+.stack select,
+.form-wide input,
+.form-wide textarea,
+.form-wide select,
+.chip,
+.cc,
+.ps,
+.size-btn,
+#comm-type {
+  border-color: var(--control-border);
+}
+.bm {
+  stroke: #6f97a8; /* по-тъмен ръб за видимост при слабо зрение */
+}
+/* Цели за докосване ≥44px и достатъчна разделимост (2.5.8). */
+.chip,
+.size-btn {
+  min-height: 44px;
+}
+.lang-switch a {
+  padding: 0.35rem 0.55rem;
+}
+/* Неактивният език: непрозрачен светъл цвят с контраст ≥4.5:1 върху марковия фон. */
+.lang-switch a {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.92);
+}
+.lang-switch a.is-active {
+  color: #fff;
+}

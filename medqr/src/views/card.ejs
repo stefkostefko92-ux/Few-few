@@ -11,11 +11,12 @@
       <span class="wc-cross" aria-hidden="true">+</span> СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ
     </p>
     <p class="wc-sub">EMERGENCY MEDICAL INFORMATION</p>
-    <p class="wc-name"><%= profile.full_name %></p>
+    <p class="wc-name"><%= name(profile.full_name) %></p>
     <p class="wc-line"><strong>Кръвна група / Blood:</strong> <%= profile.blood_type || '—' %></p>
-    <p class="wc-line"><strong>Алергии / Allergies:</strong> <%= profile.allergies || '—' %></p>
+    <% const cardAllergies = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
+    <p class="wc-line"><strong>Алергии / Allergies:</strong> <%= cardAllergies || '—' %></p>
     <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
-      <p class="wc-line"><%- include('partials/icon', { name: 'ear' }) %> <%= profile.hearing_status %></p>
+      <p class="wc-line"><%- include('partials/icon', { name: 'ear' }) %> <%= clin(profile.hearing_status) %></p>
     <% } %>
     <p class="wc-hint">Сканирайте за пълна информация · Scan for full details</p>
   </div>

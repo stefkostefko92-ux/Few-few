@@ -195,7 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
         commOverlay.querySelectorAll(
           'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
         )
-      ).filter((el) => el.offsetParent !== null);
+        // getClientRects работи и за SVG (картата на тялото), за разлика от
+        // offsetParent, който винаги е null за SVG и ги изключваше от капана.
+      ).filter((el) => el.getClientRects().length > 0);
     const open = () => {
       prevFocus = document.activeElement;
       commOverlay.hidden = false;
@@ -324,12 +326,18 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch {
         /* без вибрация */
       }
-      if (alarmBtn) alarmBtn.classList.remove('is-on');
+      if (alarmBtn) {
+        alarmBtn.classList.remove('is-on');
+        alarmBtn.setAttribute('aria-pressed', 'false');
+      }
     };
     const startAlarm = () => {
       alarmOn = true;
       document.body.classList.add('sos-active');
-      if (alarmBtn) alarmBtn.classList.add('is-on');
+      if (alarmBtn) {
+        alarmBtn.classList.add('is-on');
+        alarmBtn.setAttribute('aria-pressed', 'true');
+      }
       try {
         const AC = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AC();

@@ -20,7 +20,7 @@
   <fieldset>
     <legend><%= t('edit.identity') %></legend>
     <label><%= t('edit.full_name_req') %>
-      <input type="text" name="full_name" value="<%= profile.full_name || '' %>" required>
+      <input type="text" name="full_name" value="<%= profile.full_name || '' %>" required aria-required="true">
     </label>
     <label><%= t('edit.dob') %>
       <input type="date" name="date_of_birth" value="<%= profile.date_of_birth || '' %>">

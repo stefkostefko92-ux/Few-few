@@ -29,7 +29,7 @@
   </div>
 
   <div class="sos-actions">
-    <button type="button" class="btn sos-alarm" data-sos-alarm>
+    <button type="button" class="btn sos-alarm" data-sos-alarm aria-pressed="false">
       <%- include('partials/icon', { name: 'volume' }) %> <%= t('sos.alarm') %>
     </button>
     <% if (profile.emergency_contact_phone || profile.emergency_contact_email) { %>

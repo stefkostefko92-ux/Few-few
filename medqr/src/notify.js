@@ -14,13 +14,17 @@ export function notifyActive(profile) {
 // Записва маркера синхронно; самият имейл се праща неблокиращо.
 export function notifyScan(profile, when = new Date()) {
   if (!notifyActive(profile)) return false;
-  if (
-    profile.last_notified_at &&
-    Date.now() - new Date(profile.last_notified_at).getTime() < DEDUPE_MINUTES * 60000
-  ) {
-    return false;
-  }
-  db.prepare("UPDATE profiles SET last_notified_at = datetime('now') WHERE id = ?").run(profile.id);
+  // Атомарен анти-спам прозорец: маркерът се обновява само ако е празен или
+  // по-стар от DEDUPE_MINUTES. Изпращаме имейл единствено ако този ред е „спечелил“
+  // обновяването — така две едновременни сканирания не дублират известието.
+  const updated = db
+    .prepare(
+      `UPDATE profiles SET last_notified_at = datetime('now')
+       WHERE id = ?
+         AND (last_notified_at IS NULL OR last_notified_at <= datetime('now', ?))`
+    )
+    .run(profile.id, `-${DEDUPE_MINUTES} minutes`);
+  if (updated.changes !== 1) return false;
   const ts = when.toLocaleString('bg-BG');
   sendMail({
     to: profile.emergency_contact_email,
