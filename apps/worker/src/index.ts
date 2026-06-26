@@ -6,6 +6,7 @@ import { logger } from "./logger.js";
 import { rolloverSeasons } from "./jobs/seasons.js";
 import { cleanupQuests } from "./jobs/quests.js";
 import { detectCollusion } from "./jobs/collusion.js";
+import { recordJob, startMetricsServer } from "./prometheus.js";
 
 const QUEUE_NAME = "aso-maintenance";
 
@@ -46,9 +47,16 @@ async function main(): Promise<void> {
     { connection },
   );
 
-  worker.on("failed", (job, err) => logger.error({ job: job?.name, err }, "job failed"));
-  worker.on("completed", (job) => logger.debug({ job: job.name }, "job completed"));
+  worker.on("failed", (job, err) => {
+    if (job) recordJob(job.name, "failed");
+    logger.error({ job: job?.name, err }, "job failed");
+  });
+  worker.on("completed", (job) => {
+    recordJob(job.name, "completed");
+    logger.debug({ job: job.name }, "job completed");
+  });
 
+  startMetricsServer();
   logger.info("🛠️  АСО worker started (maintenance queue)");
 
   const shutdown = async (signal: string) => {

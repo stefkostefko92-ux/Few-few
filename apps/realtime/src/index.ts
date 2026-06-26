@@ -18,6 +18,7 @@ import { pubClient, redis, subClient } from "./redis.js";
 import { verifyHandshake } from "./auth.js";
 import { Matchmaker } from "./matchmaking.js";
 import { LobbyManager } from "./lobby.js";
+import { metricsText, registerRealtimeGauges } from "./prometheus.js";
 import type { GameRoom } from "./room.js";
 import { sanitizeChat, chatRateOk, socketRateOk } from "./chat.js";
 
@@ -93,6 +94,13 @@ async function main(): Promise<void> {
       res.end(JSON.stringify({ status: "ok", service: "realtime" }));
       return;
     }
+    if (req.url === "/metrics") {
+      void metricsText().then(({ body, type }) => {
+        res.writeHead(200, { "content-type": type });
+        res.end(body);
+      });
+      return;
+    }
     res.writeHead(404);
     res.end();
   });
@@ -156,6 +164,13 @@ async function main(): Promise<void> {
     return u?.displayName ?? "Играч";
   };
   const lobbies = new LobbyManager(io, matchmaker, displayNameOf);
+
+  // Live gauges for Prometheus (sampled on each /metrics scrape).
+  registerRealtimeGauges({
+    rooms: () => matchmaker.activeRoomCount(),
+    sockets: () => (io.engine as { clientsCount?: number }).clientsCount ?? 0,
+    lobbies: () => lobbies.openCount(),
+  });
 
   /** Broadcast a chat line to every human seat in a room (reaches clients on
    *  any node via the adapter). */
