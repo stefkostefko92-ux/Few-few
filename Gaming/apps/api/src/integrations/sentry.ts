@@ -16,6 +16,21 @@ export function initSentry(): void {
     dsn: env.SENTRY_DSN,
     environment: env.NODE_ENV,
     tracesSampleRate: env.SENTRY_TRACES_SAMPLE_RATE,
+    sendDefaultPii: false,
+    // GDPR data minimisation: scrub user identity, cookies and auth headers
+    // from every event before it leaves the process.
+    beforeSend(event) {
+      delete event.user;
+      if (event.request) {
+        delete event.request.cookies;
+        const h = event.request.headers as Record<string, unknown> | undefined;
+        if (h) {
+          delete h.cookie;
+          delete h.authorization;
+        }
+      }
+      return event;
+    },
   });
   started = true;
   logger.info("sentry initialised");

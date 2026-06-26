@@ -173,15 +173,20 @@ adminRouter.patch(
     if (input.role) data.role = input.role;
     if (input.vipTier) data.vipTier = input.vipTier;
     if (typeof input.banned === "boolean") data.banned = input.banned;
-    // Grants set a clamped absolute value (never below 0) computed from the
-    // current balance, so a negative grant can't drive the economy negative.
+    // Credits use an ATOMIC increment so concurrent grants (or a grant racing a
+    // webhook credit / daily claim) can't lose an update. Debits keep the
+    // read-then-clamp (rare, staff-serialized) so the balance can't go negative.
     if (typeof input.grantChips === "number" && input.grantChips !== 0) {
-      const next = target.chips + BigInt(input.grantChips);
-      data.chips = next < 0n ? 0n : next;
+      data.chips =
+        input.grantChips > 0
+          ? { increment: BigInt(input.grantChips) }
+          : (() => {
+              const next = target.chips + BigInt(input.grantChips);
+              return next < 0n ? 0n : next;
+            })();
     }
     if (typeof input.grantGems === "number" && input.grantGems !== 0) {
-      const next = target.gems + input.grantGems;
-      data.gems = next < 0 ? 0 : next;
+      data.gems = input.grantGems > 0 ? { increment: input.grantGems } : Math.max(0, target.gems + input.grantGems);
     }
 
     if (Object.keys(data).length === 0) throw badRequest("noop", "Няма промени");

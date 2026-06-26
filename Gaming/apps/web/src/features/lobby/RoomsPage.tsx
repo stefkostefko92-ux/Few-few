@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   SOCKET_EVENTS,
   type GameKey,
@@ -16,6 +17,7 @@ import { RoomView } from "./RoomView";
 const READY_GAMES = GAME_CATALOG.filter((g) => g.ready);
 
 export function RoomsPage() {
+  const { t } = useTranslation();
   const lobby = useLobbyStore((s) => s.lobby);
   const [game, setGame] = useState<GameKey>((READY_GAMES[0]?.key ?? "CHESS") as GameKey);
   const [visibility, setVisibility] = useState<LobbyVisibility>("public");
@@ -41,14 +43,14 @@ export function RoomsPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-4xl text-brass-300">Стаи</h1>
+      <h1 className="mb-6 text-4xl text-brass-300">{t("rooms.title")}</h1>
 
       {/* Create */}
       <Panel className="mb-6">
-        <h2 className="mb-3 text-lg text-ink-300">Създай стая</h2>
+        <h2 className="mb-3 text-lg text-ink-300">{t("rooms.createTitle")}</h2>
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-ink-muted">Игра</span>
+            <span className="text-ink-muted">{t("rooms.game")}</span>
             <select
               value={game}
               onChange={(e) => setGame(e.target.value as GameKey)}
@@ -62,25 +64,25 @@ export function RoomsPage() {
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-ink-muted">Видимост</span>
+            <span className="text-ink-muted">{t("rooms.visibility")}</span>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value as LobbyVisibility)}
               className="rounded-card border border-brass-400/20 bg-felt-900/60 px-2 py-1.5 text-ink-100"
             >
-              <option value="public">Публична</option>
-              <option value="private">Частна (само с покана)</option>
+              <option value="public">{t("rooms.public")}</option>
+              <option value="private">{t("rooms.privateInvite")}</option>
             </select>
           </label>
-          <Button onClick={() => lobbyActions.create(game, visibility)}>Създай</Button>
+          <Button onClick={() => lobbyActions.create(game, visibility)}>{t("rooms.create")}</Button>
         </div>
       </Panel>
 
       {/* Browse public rooms */}
       <Panel>
-        <h2 className="mb-3 text-lg text-ink-300">Публични стаи</h2>
+        <h2 className="mb-3 text-lg text-ink-300">{t("rooms.publicRooms")}</h2>
         {list.length === 0 ? (
-          <p className="text-ink-muted">Няма отворени публични стаи. Създай първата!</p>
+          <p className="text-ink-muted">{t("rooms.none")}</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {list.map((l) => (
@@ -91,11 +93,11 @@ export function RoomsPage() {
                 <span className="text-ink-100">
                   {titleOf(l.game)} · {l.hostName}
                   <span className="ml-2 text-sm text-ink-muted">
-                    {l.players}/{l.maxSeats} ({l.humans} играчи)
+                    {l.players}/{l.maxSeats} ({t("rooms.players", { count: l.humans })})
                   </span>
                 </span>
                 <Button variant="felt" onClick={() => lobbyActions.join(l.id)} disabled={l.players >= l.maxSeats}>
-                  Влез
+                  {t("rooms.join")}
                 </Button>
               </li>
             ))}

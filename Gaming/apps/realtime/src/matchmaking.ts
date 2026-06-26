@@ -117,6 +117,10 @@ export class Matchmaker {
   async joinQueue(userId: string, game: GameKey, mode = "ranked"): Promise<boolean> {
     if (!this.engineFor(game)) return false;
     const q: QueueDesc = { game, mode };
+    // A user may sit in exactly ONE queue at a time. Without this a client can
+    // QUEUE_JOIN repeatedly with different (game,mode) pairs and be matched into
+    // several live matches at once → results/chips/XP credited multiple times.
+    await this.leaveAllQueues(userId);
     const rating = await prisma.ratingPerGame.findUnique({
       where: { userId_game: { userId, game } },
     });
@@ -248,12 +252,17 @@ export class Matchmaker {
     const seats = Math.max(2, seatsFor(game));
     const humans = free.slice(0, seats);
     const q: QueueDesc = { game, mode: "private" };
-    await this.dequeue(q, humans); // ensure they're not also queued elsewhere
+    // Pull each invitee out of EVERY queue (not just `private`) so the leader
+    // can't also match them from the ranked queue into a second live match.
+    for (const id of humans) await this.leaveAllQueues(id);
     return this.createMatch(q, humans, seats - humans.length);
   }
 
   /** Create a match: human seats first, then `botFill` bot seats. Returns id. */
   private async createMatch(q: QueueDesc, userIds: string[], botFill: number): Promise<string> {
+    // Belt-and-suspenders against double-seating: end any live match a player is
+    // still in before seating them into a new one (mirrors startFromLobby).
+    for (const id of userIds) this.activeRoomForUser(id)?.resign(id);
     const seed = generateSeed();
     const [match, names] = await Promise.all([
       prisma.match.create({ data: { game: q.game, mode: q.mode, seed } }),

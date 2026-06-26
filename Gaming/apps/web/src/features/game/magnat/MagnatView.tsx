@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BOARD, GROUP_COLORS, GROUP_TILES, isOwnable, type MagnatAction, type MagnatState } from "@aso/shared";
 import type { MagnatScene } from "./magnatScene";
 import { playCue } from "../../../lib/sound";
@@ -21,6 +22,7 @@ function webglSupported(): boolean {
 }
 
 export function MagnatView({ title }: { title: string }) {
+  const { t } = useTranslation();
   const m = useMatch<MagnatState, MagnatAction>("MAGNAT");
   const { state, seat, phase, result, legal, players } = m;
   const felt = useEquippedCosmetic("MAGNAT", "ESTATE");
@@ -91,7 +93,7 @@ export function MagnatView({ title }: { title: string }) {
   const pending = state?.pendingBuy ?? null;
   const myProps = state ? BOARD.map((_, i) => i).filter((i) => isOwnable(i) && state.owner[i] === seat) : [];
 
-  const name = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `Играч ${s + 1}`;
+  const name = (s: number) => players.find((p) => p.seat === s)?.displayName ?? t("magnat.player", { num: s + 1 });
 
   // A property is tradable if owned and its whole colour group has no houses.
   const tradableOf = (owner: number): number[] =>
@@ -142,10 +144,20 @@ export function MagnatView({ title }: { title: string }) {
 
   const boardSummary =
     state &&
-    `Дъска Магнат. ${state.cash
-      .map((c, s) => `${name(s)}: ${state.bankrupt[s] ? "банкрут" : `${c} в брой`}, на поле ${BOARD[state.pos[s]!]!.name}`)
+    `${t("magnat.boardTitle")}. ${state.cash
+      .map(
+        (c, s) =>
+          `${name(s)}: ${state.bankrupt[s] ? t("magnat.bankrupt") : t("magnat.inCash", { amount: c })}, ${t(
+            "magnat.onField",
+            { tile: BOARD[state.pos[s]!]!.name },
+          )}`,
+      )
       .join("; ")}.`;
-  const liveLine = state ? (state.done ? "Край на играта." : `Ред: ${name(state.turn)}. ${state.log.at(-1) ?? ""}`) : "";
+  const liveLine = state
+    ? state.done
+      ? t("magnat.gameOver")
+      : `${t("magnat.turnOf", { name: name(state.turn) })} ${state.log.at(-1) ?? ""}`
+    : "";
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result} wide>
@@ -156,13 +168,11 @@ export function MagnatView({ title }: { title: string }) {
               <canvas
                 ref={canvasRef}
                 role="img"
-                aria-label={boardSummary ?? "Дъска Магнат"}
+                aria-label={boardSummary ?? t("magnat.boardTitle")}
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
             ) : (
-              <p className="mag-nogl">
-                3D дъската изисква WebGL, който не е наличен в този браузър. Можеш да играеш чрез таблото вдясно.
-              </p>
+              <p className="mag-nogl">{t("magnat.noWebGL")}</p>
             )}
           </div>
 
@@ -177,9 +187,9 @@ export function MagnatView({ title }: { title: string }) {
                   <span className="mag-dot" style={{ background: PLAYER_COLORS[s % PLAYER_COLORS.length] }} />
                   <span className="mag-name">
                     {name(s)}
-                    {s === seat ? " (ти)" : ""}
+                    {s === seat ? ` ${t("room.you")}` : ""}
                   </span>
-                  <span className="mag-cash">{state.bankrupt[s] ? "банкрут" : `${cash}`}</span>
+                  <span className="mag-cash">{state.bankrupt[s] ? t("magnat.bankrupt") : `${cash}`}</span>
                 </div>
               ))}
             </div>
@@ -187,27 +197,29 @@ export function MagnatView({ title }: { title: string }) {
             {/* actions */}
             <div className="mag-actions">
               {!myTurn ? (
-                <p className="mag-hint">{state.done ? "Край на играта" : `Ред е на ${name(state.turn)}…`}</p>
+                <p className="mag-hint">
+                  {state.done ? t("magnat.gameOver") : t("magnat.turnHint", { name: name(state.turn) })}
+                </p>
               ) : state.phase === "ROLL" ? (
                 <div className="mag-btns">
-                  {has("JAIL_CARD") ? <Button onClick={() => send({ type: "JAIL_CARD" })}>Карта за затвора</Button> : null}
-                  {has("JAIL_PAY") ? <Button variant="felt" onClick={() => send({ type: "JAIL_PAY" })}>Плати гаранция (50)</Button> : null}
-                  {has("ROLL") ? <Button onClick={() => send({ type: "ROLL" })}>Хвърли заровете</Button> : null}
+                  {has("JAIL_CARD") ? <Button onClick={() => send({ type: "JAIL_CARD" })}>{t("magnat.jailCard")}</Button> : null}
+                  {has("JAIL_PAY") ? <Button variant="felt" onClick={() => send({ type: "JAIL_PAY" })}>{t("magnat.payBail")}</Button> : null}
+                  {has("ROLL") ? <Button onClick={() => send({ type: "ROLL" })}>{t("magnat.roll")}</Button> : null}
                 </div>
               ) : state.phase === "BUY" && pending !== null ? (
                 <div className="mag-btns">
                   {has("BUY") ? (
                     <Button onClick={() => send({ type: "BUY" })}>
-                      Купи {BOARD[pending]!.name} ({BOARD[pending]!.price})
+                      {t("magnat.buy", { name: BOARD[pending]!.name, price: BOARD[pending]!.price })}
                     </Button>
                   ) : null}
-                  <Button variant="felt" onClick={() => send({ type: "DECLINE" })}>Откажи</Button>
+                  <Button variant="felt" onClick={() => send({ type: "DECLINE" })}>{t("magnat.decline")}</Button>
                 </div>
               ) : state.phase === "AUCTION" && auction ? (
                 <div className="mag-auction">
                   <p className="mag-hint">
-                    Търг: <b>{BOARD[auction.tile]!.name}</b> · текуща оферта{" "}
-                    {auction.high > 0 ? `${auction.high} (${name(auction.highBidder)})` : "няма"}
+                    {t("magnat.auctionFor", { name: BOARD[auction.tile]!.name })}{" "}
+                    {auction.high > 0 ? `${auction.high} (${name(auction.highBidder)})` : t("magnat.auctionNone")}
                   </p>
                   <div className="mag-bidrow">
                     <input
@@ -230,36 +242,34 @@ export function MagnatView({ title }: { title: string }) {
                         onClick={() => send({ type: "BID", amount: bid })}
                         disabled={bid < minBid || bid > state.cash[seat]!}
                       >
-                        Наддай {bid}
+                        {t("magnat.bid", { amount: bid })}
                       </Button>
                     ) : null}
-                    <Button variant="felt" onClick={() => send({ type: "PASS_BID" })}>Пас</Button>
+                    <Button variant="felt" onClick={() => send({ type: "PASS_BID" })}>{t("magnat.pass")}</Button>
                   </div>
                 </div>
               ) : state.phase === "TRADE" && state.trade && state.trade.to === seat ? (
                 <div className="mag-trade-resp">
-                  <p className="mag-hint">
-                    {name(state.trade.from)} ти предлага сделка:
-                  </p>
+                  <p className="mag-hint">{t("magnat.tradeOffer", { name: name(state.trade.from) })}</p>
                   <p className="mag-trade-line">
-                    Даваш: {state.trade.want.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
+                    {t("magnat.give")} {state.trade.want.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
                     {state.trade.want.cash ? ` + ${state.trade.want.cash}` : ""}
                   </p>
                   <p className="mag-trade-line">
-                    Получаваш: {state.trade.give.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
+                    {t("magnat.get")} {state.trade.give.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
                     {state.trade.give.cash ? ` + ${state.trade.give.cash}` : ""}
                   </p>
                   <div className="mag-btns">
-                    {has("TRADE_ACCEPT") ? <Button onClick={() => send({ type: "TRADE_ACCEPT" })}>Приеми</Button> : null}
-                    <Button variant="felt" onClick={() => send({ type: "TRADE_DECLINE" })}>Откажи</Button>
+                    {has("TRADE_ACCEPT") ? <Button onClick={() => send({ type: "TRADE_ACCEPT" })}>{t("magnat.accept")}</Button> : null}
+                    <Button variant="felt" onClick={() => send({ type: "TRADE_DECLINE" })}>{t("magnat.decline")}</Button>
                   </div>
                 </div>
               ) : state.phase === "MANAGE" ? (
                 <div className="mag-btns">
-                  <Button onClick={() => send({ type: "END" })}>Приключи хода</Button>
+                  <Button onClick={() => send({ type: "END" })}>{t("magnat.endTurn")}</Button>
                   {state.config.trading && state.seats > 1 ? (
                     <Button variant="felt" onClick={() => setTradeOpen((o) => !o)}>
-                      {tradeOpen ? "Затвори сделка" : "Сделка"}
+                      {tradeOpen ? t("magnat.closeTrade") : t("magnat.trade")}
                     </Button>
                   ) : null}
                 </div>
@@ -270,7 +280,7 @@ export function MagnatView({ title }: { title: string }) {
             {/* trade composer */}
             {myTurn && state.phase === "MANAGE" && tradeOpen ? (
               <div className="mag-trade">
-                <h4>Предложи сделка</h4>
+                <h4>{t("magnat.proposeTrade")}</h4>
                 <select
                   value={partner ?? ""}
                   onChange={(e) => {
@@ -278,7 +288,7 @@ export function MagnatView({ title }: { title: string }) {
                     setWant(new Set());
                   }}
                 >
-                  <option value="">— избери играч —</option>
+                  <option value="">{t("magnat.selectPlayer")}</option>
                   {state.cash.map((_, s) =>
                     s !== seat && !state.bankrupt[s] ? (
                       <option key={s} value={s}>{name(s)}</option>
@@ -288,7 +298,7 @@ export function MagnatView({ title }: { title: string }) {
                 {partner !== null ? (
                   <div className="mag-trade-cols">
                     <div>
-                      <p className="mag-trade-h">Даваш</p>
+                      <p className="mag-trade-h">{t("magnat.giveCol")}</p>
                       {tradableOf(seat).map((i) => (
                         <label key={i} className="mag-trade-item">
                           <input type="checkbox" checked={give.has(i)} onChange={() => toggle(give, setGive, i)} />
@@ -297,11 +307,11 @@ export function MagnatView({ title }: { title: string }) {
                       ))}
                       <input
                         type="number" min={0} max={state.cash[seat]} step={10} value={giveCash}
-                        onChange={(e) => setGiveCash(Number(e.target.value))} placeholder="пари"
+                        onChange={(e) => setGiveCash(Number(e.target.value))} placeholder={t("magnat.money")}
                       />
                     </div>
                     <div>
-                      <p className="mag-trade-h">Искаш</p>
+                      <p className="mag-trade-h">{t("magnat.wantCol")}</p>
                       {tradableOf(partner).map((i) => (
                         <label key={i} className="mag-trade-item">
                           <input type="checkbox" checked={want.has(i)} onChange={() => toggle(want, setWant, i)} />
@@ -310,7 +320,7 @@ export function MagnatView({ title }: { title: string }) {
                       ))}
                       <input
                         type="number" min={0} max={state.cash[partner]} step={10} value={wantCash}
-                        onChange={(e) => setWantCash(Number(e.target.value))} placeholder="пари"
+                        onChange={(e) => setWantCash(Number(e.target.value))} placeholder={t("magnat.money")}
                       />
                     </div>
                   </div>
@@ -320,7 +330,7 @@ export function MagnatView({ title }: { title: string }) {
                     onClick={sendTrade}
                     disabled={partner === null || (give.size === 0 && want.size === 0 && giveCash === 0 && wantCash === 0)}
                   >
-                    Предложи
+                    {t("magnat.propose")}
                   </Button>
                 </div>
               </div>
@@ -329,7 +339,7 @@ export function MagnatView({ title }: { title: string }) {
             {/* my properties */}
             {myProps.length > 0 ? (
               <div className="mag-props">
-                <h4>Моите имоти</h4>
+                <h4>{t("magnat.myProps")}</h4>
                 {myProps.map((i) => {
                   const tl = BOARD[i]!;
                   return (
@@ -337,14 +347,16 @@ export function MagnatView({ title }: { title: string }) {
                       <span className="mag-prop-band" style={{ background: tl.type === "prop" ? GROUP_COLORS[tl.group] : "#888" }} />
                       <span className="mag-prop-name">
                         {tl.name}
-                        {state.houses[i]! > 0 ? ` · ${state.houses[i] === 5 ? "хотел" : `${state.houses[i]}🏠`}` : ""}
-                        {state.mortgaged[i] ? " · ипотека" : ""}
+                        {state.houses[i]! > 0
+                          ? ` · ${state.houses[i] === 5 ? t("magnat.hotel") : t("magnat.houses", { n: state.houses[i] })}`
+                          : ""}
+                        {state.mortgaged[i] ? ` · ${t("magnat.mortgaged")}` : ""}
                       </span>
                       <span className="mag-prop-acts">
                         {tileHas("BUILD", i) ? <button type="button" onClick={() => send({ type: "BUILD", tile: i })}>+🏠</button> : null}
                         {tileHas("SELL", i) ? <button type="button" onClick={() => send({ type: "SELL", tile: i })}>−</button> : null}
-                        {tileHas("MORTGAGE", i) ? <button type="button" onClick={() => send({ type: "MORTGAGE", tile: i })}>ипотека</button> : null}
-                        {tileHas("UNMORTGAGE", i) ? <button type="button" onClick={() => send({ type: "UNMORTGAGE", tile: i })}>откупи</button> : null}
+                        {tileHas("MORTGAGE", i) ? <button type="button" onClick={() => send({ type: "MORTGAGE", tile: i })}>{t("magnat.mortgage")}</button> : null}
+                        {tileHas("UNMORTGAGE", i) ? <button type="button" onClick={() => send({ type: "UNMORTGAGE", tile: i })}>{t("magnat.redeem")}</button> : null}
                       </span>
                     </div>
                   );
@@ -356,7 +368,9 @@ export function MagnatView({ title }: { title: string }) {
             {state.log.length > 0 ? (
               <div className="mag-log">
                 {state.log.slice(-5).map((l, i) => (
-                  <p key={i}>{l}</p>
+                  // Stable key off the absolute log index — the slice is a sliding
+                  // window, so a positional key would remap lines to wrong nodes.
+                  <p key={state.log.length - Math.min(5, state.log.length) + i}>{l}</p>
                 ))}
               </div>
             ) : null}

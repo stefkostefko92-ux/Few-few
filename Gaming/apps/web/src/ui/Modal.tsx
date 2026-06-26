@@ -17,6 +17,12 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
+  // Hold the latest onClose in a ref so the focus-management effect can key on
+  // [open] only. Otherwise a parent re-render that changes onClose's identity
+  // (inline arrow) tears down + re-runs the effect, yanking focus out of the
+  // field the user is typing in.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
@@ -28,7 +34,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !panel) return;
@@ -56,7 +62,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       document.removeEventListener("keydown", onKey);
       restoreRef.current?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
