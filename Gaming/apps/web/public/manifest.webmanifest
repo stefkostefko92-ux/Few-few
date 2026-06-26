@@ -1,0 +1,20 @@
+{
+  "name": "АСО — Премиум игри на карти",
+  "short_name": "АСО",
+  "description": "Премиум браузърен портал за карти и игри на маса. Играй с приятели в реално време.",
+  "lang": "bg",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0c1f17",
+  "theme_color": "#0c1f17",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

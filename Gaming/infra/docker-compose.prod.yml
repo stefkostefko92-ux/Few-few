@@ -1,0 +1,131 @@
+# АСО — production stack. Pulls prebuilt images from GHCR (built by the
+# "Deploy" GitHub Action) and auto-redeploys via Watchtower. No source code and
+# NO build happen on the server — ideal for a shared box.
+#
+# One-time bring-up (from the dir holding this file + a filled-in .env):
+#   docker login ghcr.io                # read:packages PAT
+#   docker compose --env-file .env -f docker-compose.prod.yml up -d
+#
+# Thereafter: click "Run workflow" → Deploy on GitHub. Watchtower notices the
+# new :latest images within WATCHTOWER_INTERVAL seconds and restarts the
+# affected containers (the api container re-runs DB migrations on start).
+name: aso
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aso}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-aso}
+    volumes:
+      - aso_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aso}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - aso_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    pull_policy: always
+    labels: { com.centurylinklabs.watchtower.enable: "true" }
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      API_PORT: 4500
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET in .env}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:4502}
+      WEB_BASE_PATH: ${WEB_BASE_PATH:-/app}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?set INTERNAL_API_SECRET in .env}
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-4500}:4500"
+
+  realtime:
+    image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-realtime:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    pull_policy: always
+    labels: { com.centurylinklabs.watchtower.enable: "true" }
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      REALTIME_PORT: 4501
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4502}
+      BOT_FALLBACK_SECONDS: ${BOT_FALLBACK_SECONDS:-8}
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4500}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?}
+    ports:
+      - "127.0.0.1:${RT_HOST_PORT:-4501}:4501"
+
+  worker:
+    image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-worker:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    pull_policy: always
+    labels: { com.centurylinklabs.watchtower.enable: "true" }
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-aso}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-aso}?schema=public
+      REDIS_URL: redis://redis:6379
+      SEASON_DAYS: ${SEASON_DAYS:-35}
+
+  web:
+    image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    pull_policy: always
+    labels: { com.centurylinklabs.watchtower.enable: "true" }
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-4502}:4502"
+
+  marketing:
+    image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-marketing:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    pull_policy: always
+    labels: { com.centurylinklabs.watchtower.enable: "true" }
+    # 8080 is taken by Pterodactyl Wings → default the host port to 8090.
+    ports:
+      - "127.0.0.1:${MK_HOST_PORT:-8090}:8080"
+
+  # Watches the labelled containers and redeploys when a new :latest is pushed.
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # GHCR pull creds (created by `docker login ghcr.io`), read-only.
+      - ${DOCKER_CONFIG_JSON:-/root/.docker/config.json}:/config.json:ro
+    command: --interval ${WATCHTOWER_INTERVAL:-60} --cleanup --label-enable
+
+volumes:
+  aso_pgdata:
+  aso_redisdata:

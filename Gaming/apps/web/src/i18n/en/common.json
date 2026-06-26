@@ -1,0 +1,495 @@
+{
+  "brand": "АСО",
+  "tagline": "Premium card & tabletop games",
+  "nav": {
+    "lobby": "Lobby",
+    "rooms": "Rooms",
+    "shop": "Shop",
+    "leaderboard": "Leaderboard",
+    "friends": "Friends",
+    "admin": "Admin",
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "friends": {
+    "title": "Friends",
+    "search": "Search a player by name",
+    "searchBtn": "Search",
+    "add": "Add",
+    "incoming": "Requests to you",
+    "accept": "Accept",
+    "decline": "Decline",
+    "yourFriends": "Your friends",
+    "empty": "No friends yet. Search for someone above!",
+    "outgoing": "Sent requests",
+    "pending": "pending",
+    "online": "Online",
+    "offline": "Offline",
+    "invite": "Invite",
+    "remove": "Remove"
+  },
+  "notif": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "friendRequest": "New friend request",
+    "friendAccepted": "Friend request accepted",
+    "system": "System notice",
+    "achievement": "Achievement unlocked 🏆"
+  },
+  "invite": {
+    "received": "{{name}} invited you to {{game}}",
+    "accept": "Accept"
+  },
+  "admin": {
+    "title": "Admin panel",
+    "subtitle": "Manage players, flags, and notifications.",
+    "dashboard": "Dashboard",
+    "users": "Players",
+    "flags": "Flags",
+    "totalUsers": "Total players",
+    "newToday": "New today",
+    "matchesToday": "Matches today",
+    "revenue": "Revenue",
+    "purchases": "Purchases",
+    "openFlags": "Open flags",
+    "banned": "Banned",
+    "vipBreakdown": "VIP breakdown",
+    "recentActions": "Recent actions",
+    "noActions": "No actions yet.",
+    "searchUsers": "Search by name or email",
+    "search": "Search",
+    "player": "Player",
+    "role": "Role",
+    "manage": "Manage",
+    "noUsers": "No players.",
+    "level": "Level",
+    "matches": "Matches",
+    "saveRoleVip": "Save role/VIP",
+    "saved": "Saved.",
+    "grantChips": "Grant chips",
+    "grantGems": "Grant gems",
+    "granted": "Credited.",
+    "ban": "Ban",
+    "unban": "Unban",
+    "readOnly": "Read-only (ADMIN rights required).",
+    "history": "History",
+    "actionError": "Error. Try again.",
+    "noFlags": "No open flags 🎉",
+    "dismiss": "Dismiss",
+    "confirm": "Confirm",
+    "discordHint": "Notifications for signups, purchases, VIP, and admin actions.",
+    "connected": "Connected",
+    "notConfigured": "Not configured",
+    "broadcastTitle": "Broadcast to Discord",
+    "broadcastPlaceholder": "Write a message…",
+    "send": "Send",
+    "sendTest": "Test",
+    "discordSent": "Sent to Discord.",
+    "discordDisabled": "Discord webhook not configured.",
+    "gamesToday": "Today's games by type",
+    "noGames": "No games today."
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "registerTitle": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Player name",
+    "loginCta": "Sign in",
+    "registerCta": "Create account",
+    "toRegister": "No account? Sign up",
+    "toLogin": "Already have an account? Sign in",
+    "errorGeneric": "Something went wrong. Try again.",
+    "errorCredentials": "Wrong email or password",
+    "errorEmailTaken": "That email is already registered",
+    "forgotPassword": "Forgot password?",
+    "or": "or",
+    "continueGoogle": "Continue with Google",
+    "continueFacebook": "Continue with Facebook",
+    "oauthNoEmail": "The provider didn't share an email. Sign up with email instead.",
+    "oauthUnavailable": "That sign-in method isn't available right now.",
+    "oauthFailed": "Sign-in failed. Please try again.",
+    "emailUnverified": "Your email isn't verified yet.",
+    "resend": "Resend the link",
+    "resendSent": "We've sent a new verification link.",
+    "consentPre": "I am 18+ and accept the",
+    "consentTerms": "Terms of Service",
+    "consentAnd": "and",
+    "consentPrivacy": "Privacy Policy"
+  },
+  "account": {
+    "title": "Account",
+    "verified": "Email verified",
+    "unverified": "Unverified",
+    "level": "Level",
+    "privacy": "Privacy & data",
+    "privacyHint": "Download a copy of your data or delete your account (GDPR).",
+    "exportData": "Download my data",
+    "deleteAccount": "Delete account",
+    "deleteTitle": "Delete account",
+    "deleteBody": "This anonymizes your personal data and ends access. Virtual chips, gems, and cosmetics are lost permanently. Are you sure?",
+    "cancel": "Cancel",
+    "confirmDelete": "Yes, delete",
+    "achievements": "Achievements"
+  },
+  "cookie": {
+    "text": "We use only strictly necessary cookies for sign-in.",
+    "learn": "Learn more",
+    "accept": "Got it"
+  },
+  "live": {
+    "opponentDropped": "{{name}} dropped — bot is covering",
+    "yourTurnTimer": "Your turn: {{s}}s"
+  },
+  "verify": {
+    "title": "Email verification",
+    "verifying": "Verifying your email…",
+    "success": "Email verified! 🎉",
+    "successBody": "You now have access to all account features.",
+    "continue": "Go to the app",
+    "failed": "The link is invalid or has expired.",
+    "backToLogin": "Back to sign in"
+  },
+  "forgot": {
+    "title": "Forgot password",
+    "intro": "Enter your email and we'll send you a reset link.",
+    "submit": "Send link",
+    "sent": "If that email exists, we've sent a password reset link.",
+    "backToLogin": "Back to sign in"
+  },
+  "reset": {
+    "title": "New password",
+    "intro": "Enter your new password.",
+    "newPassword": "New password",
+    "submit": "Save password",
+    "success": "Password changed! You can sign in now.",
+    "goLogin": "Go to sign in",
+    "invalid": "The link is invalid or has expired.",
+    "requestNew": "Request a new link"
+  },
+  "lobby": {
+    "title": "Choose a game",
+    "welcome": "Welcome, {{name}}",
+    "comingSoon": "Coming soon",
+    "play": "Play"
+  },
+  "game": {
+    "searching": "Finding an opponent…",
+    "yourTurn": "Your turn",
+    "opponentTurn": "Opponent's turn",
+    "opponent": "Opponent",
+    "you": "You",
+    "gameOver": "Game over",
+    "youWin": "You win!",
+    "youLose": "You lose",
+    "draw": "Draw",
+    "leave": "Leave",
+    "backToLobby": "Back to lobby"
+  },
+  "santase": {
+    "trump": "Trump",
+    "stock": "Stock: {{count}}",
+    "close": "Close",
+    "exchange": "Swap trump",
+    "match": "Match",
+    "dealNo": "Deal",
+    "toEleven": "to 11",
+    "marriage": "Marriage",
+    "trumpMarriage": "Trump marriage"
+  },
+  "belote": {
+    "yourTeam": "Your team",
+    "theirTeam": "Opponents",
+    "pass": "Pass",
+    "emptyTrick": "Waiting for the first card",
+    "auction": "Auction — call trump",
+    "contract": "Trump",
+    "decl": {
+      "tierce": "Tierce",
+      "fifty": "Fifty",
+      "hundred": "Hundred",
+      "carre": "Carré",
+      "belote": "Belote"
+    },
+    "noTrump": "NT",
+    "allTrump": "AT",
+    "noTrumpFull": "No trumps",
+    "allTrumpFull": "All trumps",
+    "contra": "Double",
+    "recontra": "Redouble",
+    "match": "Match",
+    "deal": "Deal",
+    "target": "to",
+    "hanging": "hanging",
+    "dealPoints": "This deal",
+    "lastDeal": "Deal",
+    "valat": "Capot!",
+    "inside": "Inside"
+  },
+  "wallet": {
+    "chips": "Chips",
+    "gems": "Gems",
+    "level": "Level {{level}}"
+  },
+  "shop": {
+    "disclaimer": "Money buys only cosmetics, comfort, and entry chips. Chips are never cashed back out.",
+    "purchaseSuccess": "Thank you! Purchase complete.",
+    "purchaseCancel": "Purchase cancelled.",
+    "unavailable": "Payments are not enabled right now.",
+    "error": "Something went wrong. Try again.",
+    "grantGems": "+{{n}} gems",
+    "grantChips": "+{{n}} chips",
+    "perMonth": "per month",
+    "perk": {
+      "noAds": "No ads",
+      "xp": "+{{p}}% XP",
+      "daily": "+{{p}}% daily bonus",
+      "gems": "{{n}} 💎 per month",
+      "cosmetics": "Exclusive cosmetics",
+      "quests": "{{n}} quest slots",
+      "badge": "VIP badge & coloured name"
+    },
+    "kind": {
+      "VIP_SUB": "VIP subscription",
+      "GEMS": "Gems",
+      "CHIP_PACK": "Chip packs",
+      "COSMETIC": "Cosmetics"
+    }
+  },
+  "daily": {
+    "title": "Daily bonus",
+    "prompt": "Log in today for free chips!",
+    "already": "Today's bonus claimed.",
+    "claimed": "+{{chips}} chips, +{{gems}} gems!",
+    "claim": "Claim"
+  },
+  "leaderboard": {
+    "empty": "No ranked players yet."
+  },
+  "footer": {
+    "attribution": "Created and Designed by Carbon Stealth VCC",
+    "notGambling": "Social gaming — not real-money gambling.",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "responsible": "Responsible gaming"
+  },
+  "cosmetics": {
+    "title": "Customize",
+    "subtitle": "Personalize your table — paid with gems 💎.",
+    "customize": "Customize",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "vipOnly": "VIP only",
+    "needGems": "Not enough gems",
+    "type": {
+      "FELT": "Table felt",
+      "CARDBACK": "Card back",
+      "BOARD": "Board",
+      "CUE": "Cue cloth",
+      "ESTATE": "Board felt"
+    },
+    "buyGems": "Buy gems"
+  },
+  "outOfChips": {
+    "title": "Out of chips",
+    "body": "You need at least {{min}} chips to sit at this table. You have {{chips}}.",
+    "free": "Chips are earned for free too — daily bonus and wins.",
+    "topUp": "Buy chips"
+  },
+  "store": {
+    "title": "Quick store",
+    "topUp": "Top up balance",
+    "fullShop": "Full shop",
+    "lowChips": "Low on chips? Top up!",
+    "lowGems": "You need gems",
+    "vipTitle": "Go VIP"
+  },
+  "chat": {
+    "title": "Chat",
+    "send": "Send",
+    "placeholder": "Type a message…",
+    "empty": "Say hi to the table 👋",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "quick": {
+      "hi": "Hi! 👋",
+      "gl": "Good luck!",
+      "nice": "Nice! 👏",
+      "gg": "Good game",
+      "oops": "Oops! 😅",
+      "thanks": "Thanks"
+    }
+  },
+  "common": {
+    "loading": "Loading…",
+    "dismiss": "Dismiss"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "toggleSound": "Toggle sound",
+    "toggleMotion": "Reduced motion"
+  },
+  "svara": {
+    "pot": "Pot",
+    "call": "Call",
+    "raise": "Raise",
+    "fold": "Fold",
+    "notice": "Social game with virtual chips — not real-money gambling."
+  },
+  "bridge": {
+    "auction": "Auction",
+    "contract": "Contract",
+    "yourBid": "Your bid",
+    "weTricks": "Our tricks",
+    "theyTricks": "Their tricks",
+    "double": "Double",
+    "redouble": "Redouble",
+    "rubber": "Rubber",
+    "deal": "Deal",
+    "games": "Games",
+    "vulnerable": "Vulnerable!",
+    "lastDeal": "Last",
+    "made": "made",
+    "defeated": "down"
+  },
+  "war": {
+    "flip": "Flip",
+    "battle": "WAR"
+  },
+  "rummy": {
+    "stock": "Stock",
+    "discard": "Discard",
+    "phase": "Phase",
+    "drawPhase": "Draw",
+    "discardPhase": "Discard",
+    "knock": "Knock",
+    "discardHint": "Pick a card to discard",
+    "drawHint": "Draw from stock or discard"
+  },
+  "gofish": {
+    "ocean": "Ocean",
+    "askFrom": "Ask",
+    "books": "Books"
+  },
+  "backgammon": {
+    "roll": "Roll",
+    "pass": "Pass",
+    "bar": "Bar",
+    "off": "Off"
+  },
+  "battleship": {
+    "enemy": "Enemy: {{name}}",
+    "yourFleet": "Your fleet"
+  },
+  "dice": {
+    "roll": "Roll",
+    "reroll": "Reroll ({{n}})",
+    "held": "Held",
+    "holdHint": "Tap a die to hold",
+    "category": "Category",
+    "total": "Total",
+    "cat": {
+      "ones": "Ones",
+      "twos": "Twos",
+      "threes": "Threes",
+      "fours": "Fours",
+      "fives": "Fives",
+      "sixes": "Sixes",
+      "threeKind": "Three of a kind",
+      "fourKind": "Four of a kind",
+      "fullHouse": "Full house",
+      "smallStraight": "Small straight",
+      "largeStraight": "Large straight",
+      "chance": "Chance",
+      "yahtzee": "Yahtzee"
+    }
+  },
+  "bingo": {
+    "draw": "Draw",
+    "drawn": "Drawn: {{n}}",
+    "yourCard": "Your card"
+  },
+  "words": {
+    "nextLetter": "Next letter",
+    "pass": "Pass"
+  },
+  "ludo": {
+    "base": "base",
+    "home": "home",
+    "pickToken": "Pick a token"
+  },
+  "domino": {
+    "empty": "Place the first domino",
+    "side": "Side",
+    "draw": "Draw",
+    "round": "Round",
+    "target": "to",
+    "lastRound": "Last round",
+    "out": "went out",
+    "blocked": "blocked"
+  },
+  "cue": {
+    "power": "Power",
+    "shoot": "Shoot",
+    "yourTurn": "Aim and shoot",
+    "yourTurnBih": "Ball in hand — place and shoot",
+    "placeCue": "Place cue ball",
+    "placeHint": "Click to place the cue ball",
+    "shootKey": "Shoot with the Space key"
+  },
+  "net": {
+    "reconnecting": "Connection lost — reconnecting…"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "An unexpected error occurred. Go back to the lobby and try again.",
+    "backToLobby": "Back to lobby"
+  },
+  "kent": {
+    "round": "Round",
+    "passes": "Swaps",
+    "yourPass": "Pass a card left",
+    "waiting": "Waiting for others…",
+    "pickToPass": "Awaiting passes",
+    "signaled": "Signal!",
+    "chosen": "chose",
+    "youHaveKent": "You have KENT! Signal your partner or call Kupe.",
+    "signal": "Signal",
+    "callKupe": "Kupe!",
+    "target": "to",
+    "lastCall": "Last Kupe",
+    "correct": "correct ✓",
+    "wrong": "false ✗"
+  },
+  "chess": {
+    "check": "Check!",
+    "checkmate": "Checkmate!",
+    "mateWin": "Checkmate — you win!",
+    "drawn": "Draw",
+    "illegal": "Illegal move!"
+  },
+  "fx": {
+    "hit": "Hit!",
+    "hitYou": "You were hit!",
+    "capture": "Capture!",
+    "captured": "You were captured!",
+    "six": "Six!",
+    "take": "Capture!",
+    "lostPiece": "Lost a piece",
+    "king": "King!",
+    "oppKing": "Opponent kinged",
+    "fireHit": "Hit!",
+    "fireHitYou": "You were hit!",
+    "book": "Book!",
+    "oppBook": "Book (opponent)",
+    "oppPass": "Opponent passes",
+    "blocked": "Blocked!",
+    "war": "WAR!",
+    "fold": "Fold",
+    "raise": "Raise!",
+    "winPot": "wins the pot",
+    "youWinPot": "You win the pot!"
+  }
+}

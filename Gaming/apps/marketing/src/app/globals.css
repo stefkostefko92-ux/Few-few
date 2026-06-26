@@ -1,0 +1,107 @@
+/* Marketing layer — Premium Nocturnal Tabletop, mirrored from the app tokens
+   (§3.2) but self-contained so the SSG build has no Vite/Tailwind dependency. */
+:root {
+  --felt-900: #0c1f17;
+  --felt-800: #123026;
+  --felt-700: #18402f;
+  --charcoal-900: #0b0e0d;
+  --brass-400: #d9b25f;
+  --brass-300: #e7c87b;
+  --brass-100: #f4e3b6;
+  --ink-100: #f6f1e4;
+  --ink-300: #cdbfa3;
+  --ink-muted: #8a8169;
+  --r-panel: 20px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--felt-900);
+  background-image:
+    radial-gradient(120% 80% at 12% -10%, rgba(217, 178, 95, 0.06), transparent 60%),
+    radial-gradient(120% 80% at 100% 110%, rgba(31, 90, 64, 0.18), transparent 55%);
+  background-attachment: fixed;
+  color: var(--ink-100);
+  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Playfair Display", "PT Serif", Georgia, serif;
+  color: var(--brass-300);
+  line-height: 1.2;
+}
+
+a {
+  color: var(--brass-300);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--brass-100);
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.panel {
+  background: rgba(18, 48, 38, 0.8);
+  border: 1px solid rgba(217, 178, 95, 0.15);
+  border-radius: var(--r-panel);
+  padding: 1.5rem;
+}
+
+.cta {
+  display: inline-block;
+  background: linear-gradient(to bottom, var(--brass-300), var(--brass-400));
+  color: var(--charcoal-900);
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 14px;
+}
+.cta:hover {
+  color: var(--charcoal-900);
+  filter: brightness(1.05);
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.site-header,
+.site-footer {
+  border-color: rgba(217, 178, 95, 0.1);
+}
+.site-header {
+  border-bottom: 1px solid rgba(217, 178, 95, 0.1);
+}
+.site-footer {
+  border-top: 1px solid rgba(217, 178, 95, 0.1);
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

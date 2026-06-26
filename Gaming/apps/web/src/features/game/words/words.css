@@ -1,0 +1,88 @@
+/* Думи (§4.18 'Печатницата') — typographic atelier. */
+.words-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  height: 100%;
+  padding: 24px 16px;
+}
+.words-players {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.words-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: rgba(11, 14, 13, 0.5);
+  border: 1px solid rgba(217, 178, 95, 0.15);
+  font-size: 0.85rem;
+  color: var(--ink-300);
+}
+.words-player--active {
+  border-color: var(--brass-300);
+  box-shadow: 0 0 14px var(--brass-glow);
+  color: var(--brass-100);
+}
+.words-lives {
+  color: var(--loss);
+  letter-spacing: 1px;
+}
+.words-chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 680px;
+  min-height: 48px;
+}
+.words-tile {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #2a2018, #14100b);
+  color: var(--ink-100);
+  border: 1px solid rgba(217, 178, 95, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.words-tile--last {
+  background: linear-gradient(180deg, var(--brass-300), var(--brass-400));
+  color: var(--charcoal-900);
+}
+.words-prompt {
+  color: var(--ink-300);
+}
+.words-letter {
+  font-family: var(--font-display, serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--brass-300);
+}
+.words-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 620px;
+}
+.words-opt {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #fffdf6, #ece3cf);
+  color: var(--charcoal-900);
+  font-weight: 600;
+  border: 1px solid rgba(217, 178, 95, 0.4);
+  cursor: pointer;
+  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
+}
+.words-opt:hover {
+  transform: translateY(-2px);
+}

@@ -1,0 +1,45 @@
+/* tokens.css — АСО design tokens (concept §3.2). Single source of truth.
+   Tailwind theme (tailwind.config.js) references these CSS variables. */
+:root {
+  /* Surfaces — dark felt */
+  --felt-900: #0c1f17; /* darkest felt */
+  --felt-800: #123026;
+  --felt-700: #18402f; /* active table */
+  --felt-glow: #1f5a40; /* halo under cards */
+  --charcoal-900: #0b0e0d;
+  --wood-800: #2a1c12; /* table edge (wood) */
+
+  /* Brass / accents */
+  --brass-400: #d9b25f;
+  --brass-300: #e7c87b;
+  --brass-100: #f4e3b6;
+  --brass-glow: rgba(217, 178, 95, 0.35);
+
+  /* Suits / semantics */
+  --suit-red: #c2362f;
+  --suit-black: #14171a;
+  --win: #4ea96b;
+  --loss: #c2362f;
+  --vip: #e7c87b;
+
+  /* Text */
+  --ink-100: #f6f1e4;
+  --ink-200: #e2d7bf;
+  --ink-300: #cdbfa3;
+  --ink-muted: #a7a08c; /* ≥4.5:1 on felt-900 for WCAG AA body text */
+
+  /* Radii / shadows / motion */
+  --r-card: 14px;
+  --r-panel: 20px;
+  --shadow-card: 0 8px 20px -6px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lift: 0 18px 40px -10px rgba(0, 0, 0, 0.65);
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.25, 1.15); /* light overshoot for juice */
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+  --dur-slow: 420ms;
+
+  /* Type families (validated for BG Cyrillic — §3.3) */
+  --font-display: "Playfair Display", "PT Serif", Georgia, serif;
+  --font-body: "Manrope", system-ui, -apple-system, sans-serif;
+}
