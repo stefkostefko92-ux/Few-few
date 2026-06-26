@@ -1,6 +1,8 @@
-# Replace nexus-dominion.example.com with your real domain.
-# Caddy will obtain & renew a Let's Encrypt certificate automatically.
-{$DOMAIN:nexus-dominion.example.com} {
+# DOMAIN is read from .env (see .env.example). Caddy obtains and renews
+# the Let's Encrypt certificate automatically. The :nexus.example.com
+# fallback is only there so the file parses; Let's Encrypt will refuse
+# to issue against it.
+{$DOMAIN:nexus.example.com} {
   encode zstd gzip
 
   # Security headers

@@ -15,8 +15,18 @@ services:
       # '*' — surfacing that at compose time rather than after the
       # process exits inside the container.
       CORS_ORIGIN: "${CORS_ORIGIN:?Set CORS_ORIGIN in .env (comma-separated origin list)}"
+      # PUBLIC_BASE_URL is required by the Stripe / OSS checkout flow
+      # to lock success_url + cancel_url to a known origin (open-redirect
+      # mitigation — see audit batch 1, payments.ts).
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:?Set PUBLIC_BASE_URL in .env (https://nexus.your-domain)}"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:-}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-}"
     ports:
-      - "4000:4000"
+      # Bind to loopback only — Caddy / nginx terminates TLS on :443
+      # and proxies to :4000. Exposing :4000 on 0.0.0.0 lets the
+      # internet skip every reverse-proxy header rewrite, including
+      # the CORS allow-list above.
+      - "127.0.0.1:4000:4000"
     volumes:
       - nexus-dominion_data:/app/data
     healthcheck:

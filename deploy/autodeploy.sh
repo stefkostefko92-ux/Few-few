@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -31,6 +31,13 @@ KEEP_RELEASES="${KEEP_RELEASES:-5}"
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
 MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
+
+# Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
+# behind nginx/Caddy. State (server/data + server/.env) lives outside
+# the release dir and is carried over on every redeploy.
+NEXUS_DIR="${NEXUS_DIR:-/opt/nexus}"
+NEXUS_STATE_DIR="${NEXUS_STATE_DIR:-/opt/nexus/state}"
+NEXUS_HEALTH_URL="${NEXUS_HEALTH_URL:-http://127.0.0.1:4000/api/health}"
 
 # zabobovdol (Docker Compose модел) — портът се авто-засича от неговия .env (HTTP_PORT),
 # освен ако ZBD_HEALTH_URL не е зададен изрично.
@@ -151,6 +158,49 @@ deploy_medqr() {
   fi
 }
 
+# ── 3c) nexus — Docker Compose + persistent state ─────────────────────────────
+deploy_nexus() {
+  local d="$SRC/Nexus"
+  [ -d "$d" ] || { warn "Няма Nexus/ в архива — пропускам."; return; }
+  log "Разгръщам Nexus Dominion (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай го преди да продължиш."
+  command -v rsync  >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  # State dir holds the live SQLite + .env. Compose mounts it as a volume.
+  mkdir -p "$NEXUS_STATE_DIR/data"
+  # First-time bootstrap: copy the template .env IFF the operator has not
+  # already left one in place. We never overwrite an existing .env.
+  if [ ! -f "$NEXUS_STATE_DIR/.env" ]; then
+    if [ -f "$d/.env.example" ]; then
+      cp "$d/.env.example" "$NEXUS_STATE_DIR/.env"
+      chmod 600 "$NEXUS_STATE_DIR/.env"
+      warn "Създадох $NEXUS_STATE_DIR/.env от .env.example — попълни тайните преди следващия restart."
+    fi
+  fi
+  # Backup current code (state dir is untouched — it sits outside the release dir).
+  [ -d "$NEXUS_DIR/source" ] && cp -a "$NEXUS_DIR/source" "$NEXUS_DIR/source.bak-$TS"
+  mkdir -p "$NEXUS_DIR/source"
+  rsync -a --delete \
+    --exclude node_modules/ --exclude server/data/ --exclude server/.env --exclude .git/ \
+    "$d"/ "$NEXUS_DIR/source"/
+  # Link the operator-managed state into the release tree so the bundled
+  # docker-compose.yml + server pick them up at their canonical paths.
+  ln -sfn "$NEXUS_STATE_DIR/data" "$NEXUS_DIR/source/server/data"
+  [ -f "$NEXUS_STATE_DIR/.env" ] && ln -sfn "$NEXUS_STATE_DIR/.env" "$NEXUS_DIR/source/server/.env"
+  ( cd "$NEXUS_DIR/source" && docker compose build && docker compose up -d --remove-orphans )
+  sleep 5
+  if health "$NEXUS_HEALTH_URL" "nexus"; then
+    rm -rf "$NEXUS_DIR/source.bak-$TS"
+  else
+    deploy_failed=1
+    warn "nexus health провал — връщам предишния код."
+    if [ -d "$NEXUS_DIR/source.bak-$TS" ]; then
+      rm -rf "$NEXUS_DIR/source"
+      mv "$NEXUS_DIR/source.bak-$TS" "$NEXUS_DIR/source"
+      ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
+    fi
+  fi
+}
+
 # ── Health check ──────────────────────────────────────────────────────────────
 health() {
   local url="$1" name="$2" i
@@ -165,6 +215,7 @@ for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
+    nexus)      deploy_nexus ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
