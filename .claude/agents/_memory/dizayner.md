@@ -1,0 +1,58 @@
+# Памет на агента „Дизайнера" (v6.0 — самообучение)
+
+Трайно файлово знание между извикванията (Claude Code субагентите са stateless).
+Цикълът е **наложен от hooks** (виж `_memory/PROTOCOL.md`): при старт `SubagentStart`
+инжектира „Проверени поуки"; накрая `SubagentStop` добавя новия ```learn блок
+(verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
+**Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
+
+## Проверени поуки (verified)
+- **2026-06-26:** @view-transition cross-document (navigation: auto; изисква same-origin) е Limited availability — НЕ Baseline; работи само same-origin без cross-origin redirect → дръж го като progressive enhancement без твърда зависимост _(cross-document VT progressive enhancement; verified; https://developer.mozilla.org/en-US/docs/Web/CSS/@view-transition)_
+- **2026-06-26:** pmndrs/postprocessing: RenderPass се добавя ПЪРВИ (чисти буфери + рендерира сцената), после EffectPass; EffectPass обединява много fullscreen ефекти в един пас без penalty на верижни пасове _(EffectComposer ред на пасове; verified; https://github.com/pmndrs/postprocessing)_
+- **2026-06-26:** Three.js WebGLRenderer.setPixelRatio(value) записва _pixelRatio и вика setSize без промяна на canvas style — затова cap-ваш САМ преди подаване (Math.min(devicePixelRatio,2)), рендерът не cap-ва _(DPR cap за perf в Three.js; verified; https://raw.githubusercontent.com/mrdoob/three.js/dev/src/renderers/WebGLRenderer.js)_
+- **2026-06-26:** Three.js ColorManagement.enabled е true по подразбиране (source src/math/ColorManagement.js) — затова renderer.outputColorSpace=SRGB и автоматична sRGB-linear конверсия са активни без ръчна намеса _(Three.js color management default; verified; https://raw.githubusercontent.com/mrdoob/three.js/dev/src/math/ColorManagement.js)_
+- **2026-06-26:** window.devicePixelRatio = физически/CSS пиксели (2 = Retina); за остър canvas умножи buffer-а по него — но MDN НЕ препоръчва cap; cap-ът за perf (Math.min(dpr,2)) е практическа конвенция, не MDN правило _(DPR за canvas резолюция perf cap; verified; https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio)_
+- **2026-06-26:** IntersectionObserver (Baseline от март 2019) за lazy-init/teardown на WebGL: rootMargin раздува/свива root-а за trigger преди реален вход във viewport, thresholds (0..1) контролира кога fire-ва; observe/unobserve/disconnect _(lazy WebGL init/teardown; verified; https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)_
+- **2026-06-26:** video.requestVideoFrameCallback(cb) се вика на нов видео кадър (не на display refresh), връща id за cancelVideoFrameCallback; metadata дава mediaTime, presentedFrames, width/height; Baseline 2024 _(видео-синхрон canvas/WebGL; verified; https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/requestVideoFrameCallback)_
+- **2026-06-26:** content-visibility: auto пропуска layout/paint на off-screen съдържание но го пази достъпно за find-in-page/таб/SR (за разлика от display:none); сдвоявай с contain-intrinsic-size за нулев layout shift _(CWV perf дълги ефект-страници; verified; https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility)_
+- **2026-06-26:** OffscreenCanvas е Baseline Widely available (от март 2023), достъпен в Web Workers; htmlCanvas.transferControlToOffscreen() прехвърля контрола, после worker.postMessage({canvas: offscreen}, [offscreen]) — рендер извън main thread _(GPU извън main thread; verified; https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)_
+- **2026-06-26:** prefers-reduced-motion има точно 2 валидни стойности: no-preference и reduce; reduce eval-ва true, затова @media (prefers-reduced-motion: reduce) и съкратеното @media (prefers-reduced-motion) са еквивалентни _(reduced-motion guard синтаксис; verified; https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion)_
+- **2026-06-26:** Three.js TSL вмъква raw shader код чрез wgslFn(code, includes) и glslFn(code, includes) — НЕ чрез wgsl()/glsl() (тези не са exports в src/nodes/TSL.js). Source истина в src/nodes/code/FunctionNode.js: 'export const wgslFn = (code, includes) => nativeFn(code, includes, \"wgsl\");' и аналогично glslFn с 'glsl'. Връщат callable proxy, инстанциращ FunctionNode. wgslFn за WebGPU, glslFn за WebGL2 fallback. CoVe-урок: WebFetch обобщи несъществуващ wgsl()/glsl() API — source-verify TSL exports преди да обещаеш. _("WebGPU/WebGL2 TSL shader авторство в Three.js"; verified; "https://raw.githubusercontent.com/mrdoob/three.js/dev/src/nodes/code/FunctionNode.js + src/nodes/TSL.js (GitHub source, 2026-06-26)")_
+- **2026-06-26:** GSAP SplitText (3.13+) е пренаписан, 50% по-малък, 100% безплатен (вкл. комерсиално). Нови опции: mask ('lines'|'words'|'chars' → clip wrapper за reveal, достъпни през .masks); aria ('auto' по подразбиране слага aria-label на контейнера + aria-hidden на парчетата — SR чете целия текст, не буква по буква); autoSplit (пресплит при resize/late font load с авто-cleanup/resume); onSplit()/onRevert() callbacks. Достъп: API чрез SplitText.create(target, {...}). _("анимация/typography reveal; сериозен режим: обвий reveal в @media (prefers-reduced-motion: no-preference), aria:auto дава достъпност"; verified; "https://gsap.com/docs/v3/Plugins/SplitText/ + https://gsap.com/blog/3-13/ (gsap.com docs/blog, 2026-06-26)")_
+- **2026-06-26:** Детерминистично reduced-motion правило (де-факто индустриален стандарт, stylelint-a11y media-prefers-reduced-motion): флаг = property animation/animation-name/transition НЕ обвито в @media (prefers-reduced-motion: reduce) блок; валиден е и no-preference patternът; има --fix за авто-вмъкване на guard. Заемка за scope логиката на tools/design/motion-a11y.mjs (по-прецизно от regex). _(dizayner; verified; "https://github.com/YozhikM/stylelint-a11y/blob/master/src/rules/media-prefers-reduced-motion/README.md (GitHub, 2026-06-26)")_
+- **2026-06-26:** Текущи версии за пинване при инсталация: Lenis 1.3.24 (плавен скрол; изключи под reduced-motion); Rapier @dimforge/rapier2d 0.19.3 (физика, Rust→WASM). _(dizayner; verified; "https://registry.npmjs.org/lenis/latest, https://registry.npmjs.org/@dimforge/rapier2d/latest (npm registry API, 2026-06-26)")_
+- **2026-06-26:** CSS scroll-driven animations (animation-timeline: scroll() / view()) е MARKирана 'Limited availability' на MDN — НЕ е Baseline (Firefox/Safari непълна поддръжка). Пускай само като progressive enhancement зад @supports (animation-timeline: scroll()) + reduced-motion guard; никога твърда зависимост — fallback на JS scroll (Lenis) или статика. _(dizayner; verified; "https://developer.mozilla.org/en-US/docs/Web/CSS/animation-timeline/scroll (2026-06-26)")_
+- **2026-06-26:** WebGPU ~82% global, но Firefox още disabled by default на desktop И Android (v153-155); Safari 26 само partial. WebGL2 fallback остава задължителен. _("WebGPU Baseline статус"; verified; "https://caniuse.com/webgpu (2026-06-26)")_
+- **2026-06-26:** Firefox 144+ ship-на View Transitions same-document по подразбиране (изключен в 143). Same-document VT вече ~88% global, широко Baseline-подобно; cross-document VT още НЕ е Baseline → progressive enhancement. _("View Transitions поддръжка"; verified; "https://caniuse.com/view-transitions (2026-06-26)")_
+- **2026-06-26:** Three.js latest = 0.185.0 (r185, ~юни 2026); GSAP 3.15.0; Pixi 8.19.0; anime.js 4.5.0; Motion 12.42.0 — пинвай тези при инсталация. _("creative front-end версии"; verified; "https://registry.npmjs.org/three/latest, /gsap/latest, /pixi.js/latest, /animejs/latest, /motion/latest (npm registry API, 2026-06-26)")_
+- **2026-06-26:** **Режимът зависи от типа сайт (директива на собственика).** Reduced-motion дисциплината
+  (gate, статичен fallback, спокойни defaults, строг CWV, „работи без JS") важи за **СЕРИОЗНИ** сайтове —
+  корпоративни/медицински/граждански/държавни/финансови (вкл. zabobovdol/medqr). За **ТВОРЧЕСКИ** (портфолио/
+  арт/бранд) → по подразбиране максимален спектакъл, reduced-motion по избор. **Универсално и в двата режима:**
+  никога >3 проблясъка/сек (WCAG 2.3.1 — епилепсия), защото е физическа безопасност, не консерватизъм.
+  Ако режимът не е ясен — питай. (Източник: директива на собственика 2026-06-26.)
+- **2026-06-26:** Носещ компромис на репото (СЕРИОЗЕН режим): zabobovdol е за **възрастни** (вестибуларна
+  чувствителност), medqr е медицински за **глухи/слабочуващи** + CSP nonce. **Спешният `/e/<token>` изглед —
+  почти без декоративна анимация** (спокойствие > спектакъл). (Източник: CLAUDE.md, medqr conventions.)
+- **2026-06-26:** `tools/design/motion-a11y.mjs` има `--creative` флаг: в творчески режим reduced-motion HIGH-овете
+  падат до INFO (не fail-ват гейта), анти-строб остава. По подразбиране = сериозен/строг. (Източник: собствен инструмент.)
+- **2026-06-26:** Винаги fallback: под reduced-motion → статичен poster; low-FPS/mobile → разруши WebGL
+  контекста (`loseContext()`) → CSS/статика. Progressive enhancement: работи без JS. (Източник: web.dev, Blenra prompt.)
+- **2026-06-26:** WebGPU е shippable 2026 (Safari 26, Firefox 141/145) **но WebGL2 fallback задължителен**
+  (Firefox Linux/Android още). Three r182, от r171 WebGPURenderer zero-config; **TSL** компилира към GLSL/WGSL.
+  (Източник: utsubo 2026, web.dev/webgpu, MDN.)
+- **2026-06-26:** **GSAP е 100% безплатен** (вкл. бивши Club плъгини, комерсиално) — Webflow купи GreenSock 2024.
+  (Източник: gsap.com/pricing, webflow.com/updates/gsap-becomes-free. Точните условия — провери license страницата.)
+- **2026-06-26:** Стек по тежест: **Three.js+GLSL** макс съвместимост; **WebGPU+TSL** ново тежко (+WebGL2 fallback);
+  **OGL/raw WebGL2** единичен лек ефект (по-малък bundle = по-добър LCP); **Pixi v8** 2D; **R3F v9** за React 19 (zabobovdol).
+  **Lenis** плавен скрол, но **изключи под reduced-motion**. (Източник: r3f docs, lenis, pixijs.)
+- **2026-06-26:** Производителност: GPU не main thread; **OffscreenCanvas + Web Worker** (`transferControlToOffscreen`);
+  rAF→`setTimeout` за paint между интеракция и тежка логика (INP); lazy-init с IntersectionObserver, teardown при изход.
+  (Източник: web.dev/offscreen-canvas, debugbear rAF/INP.)
+- **2026-06-26:** `tools/design/motion-a11y.mjs` хваща: анимация без reduced-motion, WebGL без matchMedia, autoplay
+  без контрол, inline script без nonce, вероятен строб. Тествано; zabobovdol/src вече има reduced-motion gate. (Източник: собствен инструмент.)
+
+## Карантина (непроверени — НЕ са факт)
+- **2026-06-26:** Prior art за анти-халюцинация (CloudAI-X/threejs-skills, 2.3k★): пинвай не само ВЕРСИЯ, а и точни API сигнатури + 'three/addons/' import format за тази версия; одит срещу официална Three.js дока (r160+). dgreenheck/webgpu-claude-skill добавя 'API cheatsheet' в скила + deprecation flags (напр. PI2→TWO_PI). Заемка: малък verified-API-cheatsheet слой за пинатата версия. Конкретните сигнатури за 0.185.0 НЕ са верифицирани на живо в тази сесия. _(dizayner; unverified; "https://github.com/CloudAI-X/threejs-skills/blob/main/README.md, https://github.com/dgreenheck/webgpu-claude-skill (GitHub, 2026-06-26)")_
+- **2026-06-26:** Точният patch на Three (r182 vs npm 0.184), Rive 2026 версия, Houdini Paint cross-browser
+  статус, cross-document View Transitions поддръжка — **провери на живо** преди да обещаеш. (Несигурно/version-specific.)

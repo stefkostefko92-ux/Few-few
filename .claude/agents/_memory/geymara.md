@@ -1,8 +1,33 @@
-# Памет на агента „geymara" (v4.0)
+# Памет на агента „Геймъра" (v6.0 — самообучение)
 
-Трайно файлово „учене" между извикванията (Claude Code субагентите са stateless).
-**Прочети това в началото на всяка задача.** Накрая допиши само **проверена** поука
-(с дата + източник). Без тайни/лични данни. Подреждай най-новото отгоре.
+Трайно файлово знание между извикванията (Claude Code субагентите са stateless).
+Цикълът е **наложен от hooks** (виж `_memory/PROTOCOL.md`): при старт `SubagentStart`
+инжектира „Проверени поуки"; накрая `SubagentStop` добавя новия ```learn блок
+(verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
+**Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
-## Поуки (verified)
+## Проверени поуки (verified)
+- **2026-06-26:** GET_CURRENT_RESOURCE_NAME() е apiset:shared (клиент+сървър) и връща името на текущо изпълнявания ресурс; ox_lib го излага като cache.resource и добавя cache.game = fxserver/fivem/redm _(FiveM resource accessors; verified; https://github.com/citizenfx/fivem/blob/master/ext/native-decls/GetCurrentResourceName.md)_
+- **2026-06-26:** SET_ROUTING_BUCKET_POPULATION_ENABLED(bucketId, mode) apiset:server включва/изключва авто-създадена (ambient) популация за bucket — false спира NPC/превозни средства в този bucket _(OneSync population; verified; https://github.com/citizenfx/fivem/blob/master/ext/native-decls/SetRoutingBucketPopulationEnabled.md)_
+- **2026-06-26:** SET_ROUTING_BUCKET_ENTITY_LOCKDOWN_MODE(bucketId, mode) режими: strict (никакви клиентски ентитита), relaxed (само script-owned клиентски блокирани), inactive (всякакви) — сървър-authoritative анти-spawn _(OneSync entity lockdown; verified; https://github.com/citizenfx/fivem/blob/master/ext/native-decls/SetRoutingBucketEntityLockdownMode.md)_
+- **2026-06-26:** SET_PLAYER_ROUTING_BUCKET(playerSrc, bucket) е apiset:server; routing buckets са population-aware dimensions; играчи/ентитита виждат само другите в СЪЩИЯ bucket (default 0) _(OneSync routing buckets; verified; https://github.com/citizenfx/fivem/blob/master/ext/native-decls/SetPlayerRoutingBucket.md)_
+- **2026-06-26:** oxmysql параметризация: MySQL.query('... WHERE x = ?', { value }) — ? placeholder-ите се връзват позиционно към values таблицата; никога не конкатенирай стойности в SQL _(oxmysql сигурност; verified; https://overextended.dev/oxmysql/Functions/query)_
+- **2026-06-26:** ox_lib сървър callback: lib.callback.register(name, cb) — първият аргумент на cb е source (player id); все пак е клиентски-иницииран → валидирай аргументите сървърно _(ox_lib callback; verified; https://github.com/overextended/overextended.github.io/blob/main/content/docs/ox_lib/Callback/Lua/Server.mdx)_
+- **2026-06-26:** State bag :set(key, value, replicated): по подразбиране сървърно-зададеният state СЕ репликира към клиенти, клиентско-зададеният НЕ се репликира; третият boolean override-ва за извикване (Entity(net).state/Player(src).state/GlobalState) _(FiveM state bags; verified; https://docs.fivem.net/docs/scripting-manual/networking/state-bags/)_
+- **2026-06-26:** На сървъра глобалният source в net-event handler е id на триггериращия играч, но е валиден само за първоначалното извикване — копирай го в локална преди async/Wait scope _(FiveM source валидност; verified; https://docs.fivem.net/docs/scripting-manual/working-with-events/listening-for-events/)_
+- **2026-06-26:** RegisterNetEvent регистрира МРЕЖОВО събитие (триггерируемо през мрежата сървър-клиент); AddEventHandler само слуша ЛОКАЛНИ събития в ресурс — мрежовите събития ЗАДЪЛЖИТЕЛНО ползват RegisterNetEvent _(FiveM events сигурност; verified; https://docs.fivem.net/docs/scripting-manual/working-with-events/listening-for-events/)_
+- **2026-06-26:** fxmanifest: текущ FXv2 fx_version е 'cerulean' (валиден набор cerulean/bodacious/adamant); game/games приемат gta5, rdr3, common; client_script/server_script/shared_script поддържат globbing _(fxmanifest полета; verified; http://docs.fivem.net/docs/scripting-reference/resource-manifest/)_
+- **2026-06-26:** WebFetch към GitHub releases/tags през малък модел може да халюцинира ГОДИНАТА на release (видях 2024 vs 2026 за същия tag v2.14.1) — версията е надеждна, точната дата трябва cross-check; не цитирай дата от един fetch като verified. _(tooling-webfetch; verified; "наблюдение: два WebFetch на github.com/overextended/oxmysql дадоха конфликтни години за същата версия")_
+- **2026-06-26:** oxmysql най-нов tag е v2.14.1 ('rebind undefined parameters to null'); v2.14.0 носи mysql2/sqlstring bump срещу SQL-injection в зависимостите. _(ox-ecosystem; verified; "https://github.com/overextended/oxmysql/tags")_
+- **2026-06-26:** ox_inventory v2.47.8 (18.06.2026): item count нормализиран като positive integer, return empty slot при липсващ stack, shop decrement преди hooks, giveItem early-bailout без слот — anti-dupe/anti-negative хигиена, но НЕ заместват server-authoritative count>0 валидация в hooks. _(ox-ecosystem; verified; "https://github.com/overextended/ox_inventory/releases")_
+- **2026-06-26:** OneSync Infinity: до 2048 играча; entity id разширен 8192 (1<<13) → 65535 ((1<<16)-1) = таван entity; безплатен до 48 слота, focus zone ~424 units. _(fivem-onesync; verified; "https://docs.fivem.net/docs/scripting-reference/onesync/")_
+- **2026-06-26:** ox_lib НЯМА Lua lint/busted CI gate — единственият workflow е release.yml (version-bump + zip build). Не го цитирай като еталон за Lua тест-дисциплина; неговата проверка е на TS/web UI слоя. _(ox-ecosystem; verified; "https://github.com/overextended/ox_lib/blob/master/.github/workflows/release.yml")_
+- **2026-06-26:** luacheck връща non-zero exit и при WARNINGS (не само errors) — в CI задължително изричен severity/codes праг в .luacheckrc, иначе стилистичен шум блокира PR. luacheck-for-fivem action дава FiveM globals + JUnit за PR анотации. _(fivem-ci; verified; "https://github.com/marketplace/actions/luacheck-for-fivem ; https://forum.cfx.re/t/template-luacheck-config-files/5227643")_
+- **2026-06-26:** fivem-natives-mock авто-генерира Lua стъбове на ВСИЧКИ CFX natives като глобални функции с MockReturnValue['Name'] таблица за връщана стойност + вграден type-check на аргументите (error при грешен тип). Идеален isolated busted мок без жив сървър — заменя ad-hoc per-test стъбове. _(fivem-testing; verified; "https://github.com/Adrenaline-RP-dev/fivem-natives-mock (bin/server.lua, прегледан raw)")_
+- **2026-06-26:** ox_core най-нов е v1.5.14 (29 май 2026) с поддръжка за strict statebags — подсилва server-authoritative state дисциплината. _("ox-ecosystem-security"; verified; "https://github.com/overextended/ox_core/releases")_
+- **2026-06-26:** ox_lib най-нов е v3.38.0 (17 юни 2026): нови collection types, insertion-ordered Map, radial menu подобрения. _("ox-ecosystem"; verified; "https://github.com/overextended/ox_lib/releases")_
+- **2026-06-26:** FiveM Recommended server build е около 25770 (промотиран ~началото на юни 2026); за прод ползвай Recommended, не Latest. _("fivem-artifacts"; verified; "https://xgamingserver.com/blog/fivem-server-artifacts-explained/")_
 - **2026-06-25:** Lua 5.3 е премахнат — не добавяй `lua54 'yes'`; CommunityOx е архивиран → ползвай overextended.
+
+## Карантина (непроверени — НЕ са факт)
+- **2026-06-26:** qbx_core releases страницата показва ~v1.21–v1.23, но годината в UI е съмнителна (възможна display грешка) — потвърди точния таг/дата на живо преди да цитираш число. _("qbox-version"; unverified; "https://github.com/Qbox-project/qbx_core/releases")_

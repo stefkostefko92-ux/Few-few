@@ -6,12 +6,13 @@
 <title>Лаборатория на агентите · Carbon Stealth</title>
 <style>
   :root {
-    --bg: #0c0f14; --panel: #141922; --panel2: #1b2230; --line: #273142;
-    --txt: #e7edf5; --mut: #93a1b5; --accent: #2f9e6f;
+    /* Палитра от carbonstealth.eu: чисто черно + електрик циан #00e5ff */
+    --bg: #000000; --panel: #0a0d10; --panel2: #11161b; --line: #1b2730;
+    --txt: #e6edf2; --mut: #7e8a96; --accent: #00e5ff;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: radial-gradient(1200px 600px at 80% -10%, #16241d 0%, var(--bg) 55%) fixed;
+    margin: 0; background: radial-gradient(1200px 600px at 80% -10%, #04282e 0%, var(--bg) 55%) fixed;
     color: var(--txt); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   a { color: inherit; }
@@ -29,7 +30,7 @@
   .grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
   @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
   .card {
-    background: linear-gradient(180deg, var(--panel) 0%, #11151d 100%);
+    background: linear-gradient(180deg, var(--panel) 0%, #05080a 100%);
     border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: relative; overflow: hidden;
   }
   .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ac); }
@@ -60,6 +61,16 @@
   .feed .row:last-child { border: 0; }
   .feed .when { color: var(--mut); white-space: nowrap; }
   .pill { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
+  details.actv > summary { cursor: pointer; list-style: none; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--mut); user-select: none; padding: 2px 0; }
+  details.actv > summary::-webkit-details-marker { display: none; }
+  details.actv > summary::before { content: "▸ "; color: var(--ac); }
+  details.actv[open] > summary::before { content: "▾ "; }
+  details.actv[open] > summary { margin-bottom: 4px; }
+  #globalwrap > summary { cursor: pointer; list-style: none; font-size: 18px; font-weight: 600; margin: 34px 0 8px; }
+  #globalwrap > summary::-webkit-details-marker { display: none; }
+  #globalwrap > summary::before { content: "▸ "; color: var(--accent); }
+  #globalwrap[open] > summary::before { content: "▾ "; }
   footer { margin-top: 40px; color: var(--mut); font-size: 12.5px; text-align: center; }
   code { background: var(--panel2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
 .ava svg{ width:40px; height:40px; display:block; }
@@ -71,13 +82,14 @@
     <h1 id="title">Лаборатория на агентите</h1>
     <p id="subtitle"></p>
   </header>
-  <div class="note" id="note"></div>
 
   <div class="stats" id="stats"></div>
   <div class="grid" id="grid"></div>
 
-  <h2 style="margin:34px 0 8px;font-size:18px;">Поток на дейността</h2>
-  <div class="card" style="--ac:var(--accent);"><div class="feed" id="globalfeed"></div></div>
+  <details id="globalwrap">
+    <summary>Поток на дейността</summary>
+    <div class="card" style="--ac:var(--accent);"><div class="feed" id="globalfeed"></div></div>
+  </details>
 
   <footer>
     Данните идват от <code>agents-dashboard/agents.json</code>. Дефинициите на агентите са в
@@ -92,9 +104,9 @@ const FALLBACK = {
   "meta": {
     "title": "Лаборатория на агентите · Carbon Stealth",
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
-    "note": "Claude Code субагентите са без постоянна памет между извикванията — не „учат“ автоматично. Това табло показва честния еквивалент на учене: еволюцията на дефиницията им (версии) и регистър на дейността им. „Развитие“ = всяка нова версия на агента; „учене“ = източниците, които поемаме в него. Към v1.1: всеки агент има worked-пример, граница на компетентност и (където пасва) реален скрипт в tools/. v2.0: всеки агент пуска реални инструменти (tools/<area>/) и проверява с данни; пътна карта в .claude/agents/_proposals/v2.0.md. v2.1: слой за надеждност (детерминистични грейдъри tools/evals/run.sh, CoVe/Reflexion, калибриран съдия; виж _evals/reliability.md). v3.0–5.0: екипна оркестрация (_orchestration.md), файлова памет (_memory/) и автономен самоодит.",
+    "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-06-25",
+    "updated": "2026-06-26",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -191,9 +203,179 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: EAA (Дир. 2019/882) се прилага от 28 юни 2025; към 2026 прилагането се засилва — реални… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: CRA (Регл. (ЕС) 2024/2847) чл. 14 — задълженията за докладване на активно експлоатирани… (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: Заемаема техника за детерминистичен consent-гейт: Slashgear/gdpr-cookie-scanner скорира… (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: CRA (Регл. (ЕС) 2024/2847) има ТРЕТИ междинен срок освен познатите: Глава IV (нотификац… (+1 още)"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: AI Act (Регл. ЕС 2024/1689): забранени практики от 02.02.2025; GPAI задължения от 02.08…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: AI Act чл. 99: забранени практики (чл. 5) глоба до 35000000 EUR или 7% от световен годи…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Data Act (Регл. ЕС 2023/2854): влиза в сила 11.01.2024, прилага се от 12.09.2025; задъл…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: EN 301 549 актуална версия е V3.2.1 (март 2021), цитирана в Официален вестник чрез Impl…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: GDPR чл. 30(5): ROPA освобождаване за под 250 заети ОТПАДА ако обработката е рискова ИЛ…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: EDPB Opinion 08/2024: за големи онлайн платформи бинарен избор „съгласие за поведенческ…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: EDPB Guidelines 03/2022 (v2.0) за deceptive design patterns в социални медии категоризи…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: DSA чл. 39: само VLOP/VLOSE поддържат публичен търсим ad repository (съдържание, реклам…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: DSA чл. 52: максимална глоба до 6% от световния годишен оборот; до 1% за невярна/подвеж…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: EDPB Opinion 08/2024 потвърждава: получаването на съгласие НЕ освобождава администратор…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EDPB Opinion 08/2024 потвърждава: получаването на съгласие НЕ освобождава администратор…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „DSA чл. 52: максимална глоба до 6% от световния годишен оборот; до 1% за невярна/подвеж…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „DSA чл. 39: само VLOP/VLOSE поддържат публичен търсим ad repository (съдържание, реклам…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EDPB Guidelines 03/2022 (v2.0) за deceptive design patterns в социални медии категоризи…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EDPB Opinion 08/2024: за големи онлайн платформи бинарен избор „съгласие за поведенческ…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „GDPR чл. 30(5): ROPA освобождаване за под 250 заети ОТПАДА ако обработката е рискова ИЛ…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EN 301 549 актуална версия е V3.2.1 (март 2021), цитирана в Официален вестник чрез Impl…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Data Act (Регл. ЕС 2023/2854): влиза в сила 11.01.2024, прилага се от 12.09.2025; задъл…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „AI Act чл. 99: забранени практики (чл. 5) глоба до 35000000 EUR или 7% от световен годи…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „AI Act (Регл. ЕС 2024/1689): забранени практики от 02.02.2025; GPAI задължения от 02.08…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CRA (Регл. (ЕС) 2024/2847) има ТРЕТИ междинен срок освен познатите: Глава IV (нотификац…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Заемаема техника за детерминистичен consent-гейт: Slashgear/gdpr-cookie-scanner скорира…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CRA (Регл. (ЕС) 2024/2847) чл. 14 — задълженията за докладване на активно експлоатирани…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EAA (Дир. 2019/882) се прилага от 28 юни 2025; към 2026 прилагането се засилва — реални…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "invoked",
+          "summary": "Одитира правната изрядност на zadupnitsa и приложи: чл.13 под формите, DSA точка за контакт, импресум (ЕИК), формална декларация за достъпност, AI Act чл.50 маркиране."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -347,9 +529,195 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Next.js middleware/proxy authz bypass CVE-2026-44575 (GHSA-267c-6grr-h53f, HIGH/CVSS 7.… (+1 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: jose npm — последно/най-ново GitHub advisory е CVE-2024-28176 (GHSA-hhhv-q57g-882q, med… (+3 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: anthropics/claude-code-security-review (официален Anthropic GitHub Action, 5374 stars) … (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: npm 'audit signatures' е отделна команда от 'npm audit': проверява registry signatures … (+2 още)"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: CVE-2025-29927 (GHSA-f82v-jwr5-mffw, CRITICAL) — Next.js middleware authz bypass чрез п… (+5 още)"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: CVE-2025-29927 (GHSA-f82v-jwr5-mffw, CRITICAL) Next.js middleware authz bypass чрез x-m…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Node.js v22 Jod: LTS старт 2024-10-29, maintenance 2025-10-21, End-of-Life 2027-04-30 —…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: OWASP препоръка за Argon2id: минимум 19 MiB памет, iteration count 2, parallelism 1 (m=…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: bcrypt има макс. вход 72 байта — по-дълга парола се мълчаливо отрязва; enforce max 72 б…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: JWT alg:none атака: някои библиотеки приемат none-подписан токен за валиден; при verify…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Prisma 6 breaking: минимални Node 18.18.0 / 20.9.0; поле Bytes вече е Uint8Array (не Bu…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Prisma 6: fullTextSearch preview е GA само за MySQL — за PostgreSQL остава preview feature"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: better-sqlite3 .transaction() НЕ работи с async функции — async връща след първия await…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: better-sqlite3 db.exec(string) изпълнява суров multi-statement SQL — по-бавно и по-малк…"
+        },
+        {
+          "version": "6.15.0",
+          "date": "2026-06-26",
+          "event": "v6.15 — учене",
+          "detail": "Научи: better-sqlite3 bound parameters НЕ са позволени вътре в module arguments на virtual tab…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „better-sqlite3 bound parameters НЕ са позволени вътре в module arguments на virtual tab…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „better-sqlite3 db.exec(string) изпълнява суров multi-statement SQL — по-бавно и по-малк…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „better-sqlite3 .transaction() НЕ работи с async функции — async връща след първия await…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Prisma 6: fullTextSearch preview е GA само за MySQL — за PostgreSQL остава preview feature\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Prisma 6 breaking: минимални Node 18.18.0 / 20.9.0; поле Bytes вече е Uint8Array (не Bu…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „JWT alg:none атака: някои библиотеки приемат none-подписан токен за валиден; при verify…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „bcrypt има макс. вход 72 байта — по-дълга парола се мълчаливо отрязва; enforce max 72 б…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OWASP препоръка за Argon2id: минимум 19 MiB памет, iteration count 2, parallelism 1 (m=…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Node.js v22 Jod: LTS старт 2024-10-29, maintenance 2025-10-21, End-of-Life 2027-04-30 —…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CVE-2025-29927 (GHSA-f82v-jwr5-mffw, CRITICAL) Next.js middleware authz bypass чрез x-m…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CVE-2025-29927 (GHSA-f82v-jwr5-mffw, CRITICAL) — Next.js middleware authz bypass чрез п…\" (+5 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „npm 'audit signatures' е отделна команда от 'npm audit': проверява registry signatures …\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „anthropics/claude-code-security-review (официален Anthropic GitHub Action, 5374 stars) …\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „jose npm — последно/най-ново GitHub advisory е CVE-2024-28176 (GHSA-hhhv-q57g-882q, med…\" (+3 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Next.js middleware/proxy authz bypass CVE-2026-44575 (GHSA-267c-6grr-h53f, HIGH/CVSS 7.…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "invoked",
+          "summary": "Одитира новия сайт zadupnitsa и приложи поправки по сигурността: CSP nonce (без unsafe-inline), XFF rate-limit, AUTH_SECRET в .env.example."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „zadupnitsa е порт 1:1 на zabobovdol; auth/authz слоят е огледален — requireUser/require…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -507,9 +875,163 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: FiveM Recommended server build е около 25770 (промотиран ~началото на юни 2026); за про… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: fivem-natives-mock авто-генерира Lua стъбове на ВСИЧКИ CFX natives като глобални функци… (+2 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: OneSync Infinity: до 2048 играча; entity id разширен 8192 (1<<13) → 65535 ((1<<16)-1) =… (+3 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: fxmanifest: текущ FXv2 fx_version е 'cerulean' (валиден набор cerulean/bodacious/adaman…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: RegisterNetEvent регистрира МРЕЖОВО събитие (триггерируемо през мрежата сървър-клиент);…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: На сървъра глобалният source в net-event handler е id на триггериращия играч, но е вали…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: State bag :set(key, value, replicated): по подразбиране сървърно-зададеният state СЕ ре…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: ox_lib сървър callback: lib.callback.register(name, cb) — първият аргумент на cb е sour…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: oxmysql параметризация: MySQL.query('... WHERE x = ?', { value }) — ? placeholder-ите с…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: SET_PLAYER_ROUTING_BUCKET(playerSrc, bucket) е apiset:server; routing buckets са popula…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: SET_ROUTING_BUCKET_ENTITY_LOCKDOWN_MODE(bucketId, mode) режими: strict (никакви клиентс…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: SET_ROUTING_BUCKET_POPULATION_ENABLED(bucketId, mode) apiset:server включва/изключва ав…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: GET_CURRENT_RESOURCE_NAME() е apiset:shared (клиент+сървър) и връща името на текущо изп…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „GET_CURRENT_RESOURCE_NAME() е apiset:shared (клиент+сървър) и връща името на текущо изп…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „SET_ROUTING_BUCKET_POPULATION_ENABLED(bucketId, mode) apiset:server включва/изключва ав…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „SET_ROUTING_BUCKET_ENTITY_LOCKDOWN_MODE(bucketId, mode) режими: strict (никакви клиентс…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „SET_PLAYER_ROUTING_BUCKET(playerSrc, bucket) е apiset:server; routing buckets са popula…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „oxmysql параметризация: MySQL.query('... WHERE x = ?', { value }) — ? placeholder-ите с…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ox_lib сървър callback: lib.callback.register(name, cb) — първият аргумент на cb е sour…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „State bag :set(key, value, replicated): по подразбиране сървърно-зададеният state СЕ ре…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „На сървъра глобалният source в net-event handler е id на триггериращия играч, но е вали…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „RegisterNetEvent регистрира МРЕЖОВО събитие (триггерируемо през мрежата сървър-клиент);…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „fxmanifest: текущ FXv2 fx_version е 'cerulean' (валиден набор cerulean/bodacious/adaman…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OneSync Infinity: до 2048 играча; entity id разширен 8192 (1<<13) → 65535 ((1<<16)-1) =…\" (+3 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „fivem-natives-mock авто-генерира Lua стъбове на ВСИЧКИ CFX natives като глобални функци…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „FiveM Recommended server build е около 25770 (промотиран ~началото на юни 2026); за про…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -664,9 +1186,179 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Google официално: НЯМА специална schema.org разметка за AI features (AI Mode/AI Overvie… (+3 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: robots.txt пейзажът за 2026 има нови AI user-agents, които конфиги от 2022-2023 пропуск… (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: Детерминистична JSON-LD валидация е заемаема от chharvey/schemaorg-jsd: компилира schem… (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: Ahrefs (863K SERP, 4M AI Overview URL): делът на AI Overview цитирания, идващи от стран…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: INP официално замени FID като Core Web Vital на 12 март 2024; прагове: добър ≤200ms, ну… (+7 още)"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: Sitemap протокол: един файл ≤50000 URL и ≤50MB (52428800 байта) несвит; sitemap index ≤…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Google налага максимум 500 KiB за robots.txt (над това се игнорира) и поддържа само use…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: IndexNow: до 10000 URL на POST (http+https смесени); ключ 8-128 hex символа хостван кат…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: hreflang (Google): кодове ISO 639-1 (език) + опц. ISO 3166-1 Alpha 2 (регион); fully-qu…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: llms.txt предложение: markdown файл в root /llms.txt (опц. подпът), curated карта с опи…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Google: за да е ефективен noindex, страницата НЕ трябва да е блокирана от robots.txt — …"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Google Product rich result изисква property name + поне едно от review, aggregateRating…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Google ползва sitemap <lastmod> само ако е консистентно и проверимо точен (сравнява с р…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: Всяко robots правило (noindex, nofollow и др.) може да се подаде и през HTTP header X-R…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Всяко robots правило (noindex, nofollow и др.) може да се подаде и през HTTP header X-R…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Google ползва sitemap <lastmod> само ако е консистентно и проверимо точен (сравнява с р…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Google Product rich result изисква property name + поне едно от review, aggregateRating…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Google: за да е ефективен noindex, страницата НЕ трябва да е блокирана от robots.txt — …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „llms.txt предложение: markdown файл в root /llms.txt (опц. подпът), curated карта с опи…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „hreflang (Google): кодове ISO 639-1 (език) + опц. ISO 3166-1 Alpha 2 (регион); fully-qu…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „IndexNow: до 10000 URL на POST (http+https смесени); ключ 8-128 hex символа хостван кат…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Google налага максимум 500 KiB за robots.txt (над това се игнорира) и поддържа само use…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Sitemap протокол: един файл ≤50000 URL и ≤50MB (52428800 байта) несвит; sitemap index ≤…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „INP официално замени FID като Core Web Vital на 12 март 2024; прагове: добър ≤200ms, ну…\" (+7 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Ahrefs (863K SERP, 4M AI Overview URL): делът на AI Overview цитирания, идващи от стран…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Детерминистична JSON-LD валидация е заемаема от chharvey/schemaorg-jsd: компилира schem…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „robots.txt пейзажът за 2026 има нови AI user-agents, които конфиги от 2022-2023 пропуск…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Google официално: НЯМА специална schema.org разметка за AI features (AI Mode/AI Overvie…\" (+3 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "invoked",
+          "summary": "Одитира SEO на zadupnitsa и приложи: постоянен Organization.knowsAbout (entity за AI цитиране) + стабилен sitemap lastmod."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -822,9 +1514,163 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: e-government термин: BG „лична карта\" → EN „identity card\" → IT „carta d'identità\"; офи…"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Placeholder/ICU паритетът трябва да е ОТДЕЛНА проверка от key-паритета: за всеки ключ и… (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: e-government/документен термин: BG „шофьорска книжка“ → EN „driving licence“ (UK правоп…"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: CLDR cardinal plural категории по език: български (bg) има две — one (n=1) и other; анг…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: CLDR delimiters: италиански основни кавички са «…» (caporali U+00AB/U+00BB), а вложенит…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: CLDR български delimiters: quotationStart = „ (U+201E DOUBLE LOW-9), quotationEnd = \" (…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: CLDR English delimiters: основни \"…\" (U+201C…U+201D), вложени '…' (U+2018…U+2019)"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: BCP47/IANA конвенция за регистър: език = малки (it), script = Title-case 4 букви (Latn)…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: W3C: винаги слагай language атрибут на html елемента (не на body, защото body не покрив…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: Intl.DateTimeFormat подрежда датата по локал: en-US дава месец-преди-ден (June 1, 2012)…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: SI/NIST правило (BIPM): има интервал между числовата стойност и символа на единицата (о…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: IATE (InterActive Terminology for Europe) е официалната многоезична терминологична база…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Accademia della Crusca препоръчва редовно образуване на женски род за професии (la mini…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Accademia della Crusca препоръчва редовно образуване на женски род за професии (la mini…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „IATE (InterActive Terminology for Europe) е официалната многоезична терминологична база…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „SI/NIST правило (BIPM): има интервал между числовата стойност и символа на единицата (о…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Intl.DateTimeFormat подрежда датата по локал: en-US дава месец-преди-ден (June 1, 2012)…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „W3C: винаги слагай language атрибут на html елемента (не на body, защото body не покрив…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „BCP47/IANA конвенция за регистър: език = малки (it), script = Title-case 4 букви (Latn)…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CLDR English delimiters: основни \"…\" (U+201C…U+201D), вложени '…' (U+2018…U+2019)\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CLDR български delimiters: quotationStart = „ (U+201E DOUBLE LOW-9), quotationEnd = \" (…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CLDR delimiters: италиански основни кавички са «…» (caporali U+00AB/U+00BB), а вложенит…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CLDR cardinal plural категории по език: български (bg) има две — one (n=1) и other; анг…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „e-government/документен термин: BG „шофьорска книжка“ → EN „driving licence“ (UK правоп…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Placeholder/ICU паритетът трябва да е ОТДЕЛНА проверка от key-паритета: за всеки ключ и…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „e-government термин: BG „лична карта\" → EN „identity card\" → IT „carta d'identità\"; офи…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -981,9 +1827,174 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Prisma 7 е release-нат; seed командата живее в prisma.config.ts под migrations.seed (на… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Текущата стабилна мажорна версия на PostgreSQL (2026-06) е 18.4 (издадена 2026-05-14); … (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: Snaplet Seed (open-source като supabase-community/seed след 08.2024) ползва Copycat за … (+2 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: PostgreSQL 18 въвежда uuidv7() — timestamp-подредени UUID (по-добра индексна локалност … (+2 още)"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: Prisma createMany() skipDuplicates НЕ е поддържан на MongoDB, SQL Server и SQLite — сам…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: Prisma $transaction([...]) (sequential) изпълнява операциите в реда на подаване; ако ня…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Default размер на Prisma connection pool (v6, URL param connection_limit) = num_physica…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: prisma db push НЕ създава/обновява _prisma_migrations таблицата и не генерира migration…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: PostgreSQL INSERT ON CONFLICT поддържа като arbiter само NOT DEFERRABLE constraints и u…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: В ON CONFLICT DO UPDATE предложеният за вмъкване ред е достъпен през специалната таблиц…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Partial index (CREATE INDEX ... WHERE predicate) индексира само редовете, които пасват …"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: PostgreSQL generated column не може да се записва директно: в INSERT/UPDATE не се подав…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: pg_dump прави консистентни експорти дори при конкурентно ползване и НЕ блокира четящи/п…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: PostgreSQL multi-column UNIQUE (col1, col2) изисква само комбинацията да е уникална (дв…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PostgreSQL multi-column UNIQUE (col1, col2) изисква само комбинацията да е уникална (дв…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „pg_dump прави консистентни експорти дори при конкурентно ползване и НЕ блокира четящи/п…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PostgreSQL generated column не може да се записва директно: в INSERT/UPDATE не се подав…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Partial index (CREATE INDEX ... WHERE predicate) индексира само редовете, които пасват …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „В ON CONFLICT DO UPDATE предложеният за вмъкване ред е достъпен през специалната таблиц…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PostgreSQL INSERT ON CONFLICT поддържа като arbiter само NOT DEFERRABLE constraints и u…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „prisma db push НЕ създава/обновява _prisma_migrations таблицата и не генерира migration…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Default размер на Prisma connection pool (v6, URL param connection_limit) = num_physica…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Prisma $transaction([...]) (sequential) изпълнява операциите в реда на подаване; ако ня…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Prisma createMany() skipDuplicates НЕ е поддържан на MongoDB, SQL Server и SQLite — сам…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PostgreSQL 18 въвежда uuidv7() — timestamp-подредени UUID (по-добра индексна локалност …\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Snaplet Seed (open-source като supabase-community/seed след 08.2024) ползва Copycat за …\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Текущата стабилна мажорна версия на PostgreSQL (2026-06) е 18.4 (издадена 2026-05-14); …\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Prisma 7 е release-нат; seed командата живее в prisma.config.ts под migrations.seed (на…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -1140,9 +2151,174 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Ubuntu 26.04 'Resolute Raccoon' е текущият LTS (издаден 2026-04-23, standard support до… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Docker Engine текущ е 29.6.0 (18.06.2026, серия 29.x не-LTS). Серия 28 е EOL от 13.05.2… (+2 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: Image scan gate с trivy: 'trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-u… (+2 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: nginx има ВТОРИ, по-ранен батч CVE отделен от 1.31.2/1.30.3: CVE-2026-42926 (buffer ove…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: Ubuntu LTS получава 5 г. standard security maintenance + разширено покритие (ESM/Ubuntu…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: Let's Encrypt лимити (живо 2026): 50 серта/registered domain/7 дни, 5 дубликата/exact s…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Docker Compose top-level version: е OBSOLETE — само информативен, Compose дава warning …"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: Compose default файл е compose.yaml (предпочитан) или compose.yml; docker-compose.yaml/…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: Docker json-file (default logging driver) НЕ прави log rotation по подразбиране → диск …"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: systemd: при ProtectSystem=strict + PrivateTmp= директориите /tmp и /var/tmp стават зап…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Certbot 4.0.0+: прагът за подновяване вече е ДИНАМИЧЕН (ARI; за серти с живот до 10 дни…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: UFW по подразбиране е DISABLED; политиката по подразбиране е deny (incoming), allow (ou…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Ubuntu SSH хардънинг: конфигурирай през snippet файлове в /etc/ssh/sshd_config.d/*.conf…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: unattended-upgrades: dpkg-reconfigure --priority=low unattended-upgrades пише /etc/apt/…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „unattended-upgrades: dpkg-reconfigure --priority=low unattended-upgrades пише /etc/apt/…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Ubuntu SSH хардънинг: конфигурирай през snippet файлове в /etc/ssh/sshd_config.d/*.conf…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „UFW по подразбиране е DISABLED; политиката по подразбиране е deny (incoming), allow (ou…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Certbot 4.0.0+: прагът за подновяване вече е ДИНАМИЧЕН (ARI; за серти с живот до 10 дни…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „systemd: при ProtectSystem=strict + PrivateTmp= директориите /tmp и /var/tmp стават зап…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Docker json-file (default logging driver) НЕ прави log rotation по подразбиране → диск …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Compose default файл е compose.yaml (предпочитан) или compose.yml; docker-compose.yaml/…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Docker Compose top-level version: е OBSOLETE — само информативен, Compose дава warning …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Let's Encrypt лимити (живо 2026): 50 серта/registered domain/7 дни, 5 дубликата/exact s…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Ubuntu LTS получава 5 г. standard security maintenance + разширено покритие (ESM/Ubuntu…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „nginx има ВТОРИ, по-ранен батч CVE отделен от 1.31.2/1.30.3: CVE-2026-42926 (buffer ove…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Image scan gate с trivy: 'trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-u…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Docker Engine текущ е 29.6.0 (18.06.2026, серия 29.x не-LTS). Серия 28 е EOL от 13.05.2…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Ubuntu 26.04 'Resolute Raccoon' е текущият LTS (издаден 2026-04-23, standard support до…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -1301,9 +2477,163 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: build123d 0.11.0 е издаден на 2026-06-17; добавя Face.wrap (пренос на плоски features в… (+1 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: trimesh разделя валидността на solid на три независими свойства в base.py: is_watertigh… (+2 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: PyMeshLab текуща версия е 2025.7.post1 (потвърдена в PyPI страница, PyPI JSON info.vers… (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: trimesh fill_holes пълни САМО единични триъгълни и единични четириъгълни дупки (не прои…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: trimesh fix_normals оправя face_normals + winding на faces за consistent outward нормал…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: trimesh convert_units(desired:str, guess:bool=False) конвертира единиците на мрежата; а…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Open3D estimate_normals дава ЛОКАЛНО изчислени нормали, които НЕ са consistently ориент…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: Open3D create_from_point_cloud_poisson връща (mesh, densities); ниска density = връх, п…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: Open3D segment_plane(distance_threshold, ransac_n, num_iterations) връща (plane_model […"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: Open3D simplify_quadric_decimation(target_number_of_triangles, maximum_error=inf, bound…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: PyMeshLab generate_surface_reconstruction_screened_poisson има depth:int=8 (Reconstruct…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: PyMeshLab meshing_decimation_quadric_edge_collapse: targetfacenum:int=6, targetperc:flo…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: OCCT STEP интерфейсът чете/пише AP203 и AP214 + частично AP242; за CAD обмен предпочита…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OCCT STEP интерфейсът чете/пише AP203 и AP214 + частично AP242; за CAD обмен предпочита…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PyMeshLab meshing_decimation_quadric_edge_collapse: targetfacenum:int=6, targetperc:flo…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PyMeshLab generate_surface_reconstruction_screened_poisson има depth:int=8 (Reconstruct…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Open3D simplify_quadric_decimation(target_number_of_triangles, maximum_error=inf, bound…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Open3D segment_plane(distance_threshold, ransac_n, num_iterations) връща (plane_model […\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Open3D create_from_point_cloud_poisson връща (mesh, densities); ниска density = връх, п…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Open3D estimate_normals дава ЛОКАЛНО изчислени нормали, които НЕ са consistently ориент…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „trimesh convert_units(desired:str, guess:bool=False) конвертира единиците на мрежата; а…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „trimesh fix_normals оправя face_normals + winding на faces за consistent outward нормал…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „trimesh fill_holes пълни САМО единични триъгълни и единични четириъгълни дупки (не прои…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PyMeshLab текуща версия е 2025.7.post1 (потвърдена в PyPI страница, PyPI JSON info.vers…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „trimesh разделя валидността на solid на три независими свойства в base.py: is_watertigh…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „build123d 0.11.0 е издаден на 2026-06-17; добавя Face.wrap (пренос на плоски features в…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -1456,9 +2786,168 @@ const FALLBACK = {
           "date": "2026-06-25",
           "event": "v5.0 — автономия и самоодит",
           "detail": "v5.0: самоодит преди „готово“ (собствен инструмент/eval + golden case), Definition of Mastery, и предлага собствено следващо подобрение."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: EU AI Act чл. 50 влиза 02.08.2026; Code of Practice финализиран 10.06.2026 (C2PA Conten…"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Официалният c2patool (contentauth/c2pa-rs) маркира AI съдържание чрез `--create trained… (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: ffmpeg loudnorm (EBU R128) defaults: I integrated target -24.0 LUFS (range -70..-5), TP…"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: ffmpeg loudnorm linear=true (default) прави линейно мащабиране, но ИЗИСКВА всичките mea…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: EBU R128 (R 128 v5.0) дефинира programme loudness target -23 LUFS като broadcast normal…"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: ffmpeg silencedetect defaults: noise tolerance -60dB (=0.001 амплитуда), duration 2s; л…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: ffmpeg silenceremove: НЕГАТИВЕН stop_periods маха тишина от СРЕДАТА на файла (не само н…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: ffmpeg subtitles филтър рисува субтитри през libass, конвертирайки входа към ASS вътреш…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: ffmpeg 9:16 reframe примитиви: crop (w/h default iw/ih, x default центриран), scale пре…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: C2PA Manifest = една или повече assertions (вкл. content bindings) + единичен claim + c…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: C2PA интегритет се верифицира чрез hard binding = един или повече криптографски хешове,…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: WhisperX дава word-level timestamps чрез wav2vec2 forced alignment с language-specific …"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: YouTube Shorts: официалните инструменти за създаване правят кратки вертикални видеа до …"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „YouTube Shorts: официалните инструменти за създаване правят кратки вертикални видеа до …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „WhisperX дава word-level timestamps чрез wav2vec2 forced alignment с language-specific …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „C2PA интегритет се верифицира чрез hard binding = един или повече криптографски хешове,…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „C2PA Manifest = една или повече assertions (вкл. content bindings) + единичен claim + c…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ffmpeg 9:16 reframe примитиви: crop (w/h default iw/ih, x default центриран), scale пре…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ffmpeg subtitles филтър рисува субтитри през libass, конвертирайки входа към ASS вътреш…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ffmpeg silenceremove: НЕГАТИВЕН stop_periods маха тишина от СРЕДАТА на файла (не само н…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ffmpeg silencedetect defaults: noise tolerance -60dB (=0.001 амплитуда), duration 2s; л…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EBU R128 (R 128 v5.0) дефинира programme loudness target -23 LUFS като broadcast normal…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ffmpeg loudnorm linear=true (default) прави линейно мащабиране, но ИЗИСКВА всичките mea…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ffmpeg loudnorm (EBU R128) defaults: I integrated target -24.0 LUFS (range -70..-5), TP…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „LinkedIn 2026 (третиращ консенсус, НЕ официално): 'линк в първи коментар' вече често на…\" (+1)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Официалният c2patool (contentauth/c2pa-rs) маркира AI съдържание чрез `--create trained…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „EU AI Act чл. 50 влиза 02.08.2026; Code of Practice финализиран 10.06.2026 (C2PA Conten…\" · 2 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
         {
           "date": "2026-06-25",
           "type": "research",
@@ -1510,6 +2999,1432 @@ const FALLBACK = {
           "summary": "Дефиницията записана в .claude/agents/socialdjiyata.md."
         }
       ]
+    },
+    {
+      "id": "prodavacha",
+      "name": "Продавача",
+      "title": "Експерт по e-commerce и плащания (Stripe)",
+      "emoji": "🛒",
+      "accent": "#635bff",
+      "tagline": "Продава онлайн без да губи пари: коректен Stripe, нула дублирано таксуване, изряден по правото на ЕС.",
+      "file": ".claude/agents/prodavacha.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Изгражда и ревюира e-commerce/checkout/billing код на корпоративно ниво: коректна Stripe интеграция (Checkout/Payment Element/PaymentIntents, SCA/3DS, проверени идемпотентни webhook-и), Stripe Billing (абонаменти, trial, proration, dunning, Customer Portal, Stripe Tax, фактури), минимален PCI обхват (SAQ A) и съответствие с правото на ЕС за онлайн продажби (ДДС OSS/IOSS, 14-дневен отказ + чл. 16(м), Omnibus, ЗЗП). Никога не вярва на сумите от клиента; права се дават през проверен webhook, не през redirect.",
+      "capabilities": [
+        "Stripe Checkout / Payment Element / PaymentIntents (SAQ A обхват)",
+        "SCA / 3-D Secure 2 (PSD2) + обработка на requires_action",
+        "Проверени webhook-и: подпис със суров body + идемпотентност по event.id",
+        "Stripe Billing: абонаменти, trial, proration, dunning / Smart Retries",
+        "Customer Portal + Stripe Tax (ДДС) + жизнен цикъл на фактури",
+        "PCI DSS обхват: SAQ A vs A-EP, 6.4.3 / 11.6.1 (анти-скиминг)",
+        "Право на ЕС: 14-дневен отказ + чл. 16(м), ДДС OSS/IOSS, Omnibus, ЗЗП",
+        "Сигурност: restricted keys, test/live, само Stripe ID-та, пин на API версия, Radar",
+        "Инструменти: stripe-lint.mjs + stripe listen/trigger (tools/commerce/)",
+        "Памет + екипна оркестрация (правен слой → Правния Разбирач)"
+      ],
+      "knowledge": {
+        "sources": 32,
+        "researchToolUses": 40,
+        "priorArt": [
+          "Stripe Agent Toolkit (stripe/ai) — least-privilege actions обект + read/write split, restricted keys",
+          "VoltAgent payment-integration / fintech-engineer — терсен threshold-чеклист (идемпотентност, ACID)",
+          "rshah515 payment-expert + wshobson stripe-integration SKILL — таксономия + Checkout-vs-PaymentIntent рубрика",
+          "Stripe docs + EUR-Lex/ЗЗП — webhook/PCI/Billing + право на ЕС за дистанционни продажби"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-25",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване на Stripe (docs/Agent Toolkit/MCP), PCI DSS v4.0.1, и правото на ЕС за e-commerce (3 паралелни research агента, 32 източника)."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-25",
+          "event": "v5.0 — ражда се в пълна форма (паритет с екипа)",
+          "detail": "Носи целия стек от старта: операционен договор (източник-или-мълчание, DoD), v1.1 граница+пример, v2.0 инструмент (tools/commerce/stripe-lint.mjs + stripe listen/trigger), v2.1 надеждност (Reflexion + двойна доставка/ретрай), v3.0 екипна оркестрация, v4.0 файлова памет, v5.0 самоодит. Неприкосновено: сървърни суми, достъп само през проверен webhook, идемпотентност."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Stripe текуща стабилна API версия е 2026-06-24.dahlia (издадена 24.06.2026); breaking c… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Stripe Customer Portal: от API 2025-12-15.clover billing_cycle_anchor е конфигурируем п… (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: Stripe Agent Toolkit (stripe/ai, бивш stripe/agent-toolkit) налага достъп чрез декларат… (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: Stripe SCA TRA (Transaction Risk Analysis) изключение, лимити по юрисдикция: EEA — до 2… (+1 още)"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: SCA low-value exemption праг = 30 EUR (25 GBP); но SCA пак се иска ако кумулативната су… (+6 още)"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: SCA low-value exemption праг = 30 EUR (25 GBP); но SCA пак се иска ако кумулативната су…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: PaymentIntent статуси: requires_payment_method, requires_confirmation, requires_action,…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: Webhook подпис: Stripe-Signature v1 е HMAC-SHA256 (игнорирай схеми различни от v1 срещу…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: ЕС ДДС: OSS Union scheme има единен EU-wide праг 10000 EUR (старите национални distance…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: Stripe Tax определя данъка от business address + tax registrations + product tax codes …"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Customer Portal е Stripe-hosted prebuilt страница (no-code през Dashboard или low-code …"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Payment Element е embeddable UI компонент (за разлика от hosted Checkout), приема 100+ …"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Stripe API очаква amount стойности в НАЙ-МАЛКАТА единица на валутата без десетични: 109…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: Stripe идемпотентност: чрез header Idempotency-Key; Stripe пази резултата (status code …"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe идемпотентност: чрез header Idempotency-Key; Stripe пази резултата (status code …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe API очаква amount стойности в НАЙ-МАЛКАТА единица на валутата без десетични: 109…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Payment Element е embeddable UI компонент (за разлика от hosted Checkout), приема 100+ …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Customer Portal е Stripe-hosted prebuilt страница (no-code през Dashboard или low-code …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe Tax определя данъка от business address + tax registrations + product tax codes …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „ЕС ДДС: OSS Union scheme има единен EU-wide праг 10000 EUR (старите национални distance…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Webhook подпис: Stripe-Signature v1 е HMAC-SHA256 (игнорирай схеми различни от v1 срещу…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „PaymentIntent статуси: requires_payment_method, requires_confirmation, requires_action,…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „SCA low-value exemption праг = 30 EUR (25 GBP); но SCA пак се иска ако кумулативната су…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „SCA low-value exemption праг = 30 EUR (25 GBP); но SCA пак се иска ако кумулативната су…\" (+6 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe SCA TRA (Transaction Risk Analysis) изключение, лимити по юрисдикция: EEA — до 2…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe Agent Toolkit (stripe/ai, бивш stripe/agent-toolkit) налага достъп чрез декларат…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe Customer Portal: от API 2025-12-15.clover billing_cycle_anchor е конфигурируем п…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Stripe текуща стабилна API версия е 2026-06-24.dahlia (издадена 24.06.2026); breaking c…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел първи проверени поуки в паметта си (_memory/prodavacha.md): реални анти-патърни от Stripe одита."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "upgrade",
+          "summary": "v5.0 — ражда се в пълна форма: договор + tools/commerce + надеждност + памет + самоодит."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Допроучи Stripe Agent Toolkit/MCP, PCI DSS v4.0.1 (SAQ A/A-EP, 6.4.3/11.6.1) и право на ЕС (отказ/ДДС/Omnibus)."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "research",
+          "summary": "Поел 32 източника за коректна Stripe интеграция, billing, webhooks и сравними агенти."
+        },
+        {
+          "date": "2026-06-25",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/prodavacha.md."
+        }
+      ]
+    },
+    {
+      "id": "mobildjiyata",
+      "name": "Мобилджията",
+      "title": "Специалист по iOS и Android приложения",
+      "emoji": "📱",
+      "accent": "#30b06a",
+      "tagline": "Прави приложения, които минават ревюто и усещат нативно — без тайни в бъндъла.",
+      "file": ".claude/agents/mobildjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Изгражда и подготвя iOS+Android приложения на корпоративно ниво: двата пътя на репото (Capacitor обвивка на medqr, TWA през Bubblewrap за zabobovdol), нативни възможности (push APNs/FCM, deep links, Core NFC, biometrics, offline), сигурност по OWASP MASVS, достъпност (EAA/EN 301 549), и преминаване през App Store Review (вкл. Guideline 4.2 за обвивки) и Google Play (AAB, target API, Data Safety). Тайни никога в бъндъла; нативна стойност, иначе отказ.",
+      "capabilities": [
+        "Capacitor (web→native) + TWA/Bubblewrap (Digital Asset Links)",
+        "Нативно: push (APNs/FCM), Universal/App Links, Core NFC, biometrics, offline",
+        "Apple App Review — Guideline 4.2 (обвивки), Privacy Manifest, ATT",
+        "Google Play — App Signing, AAB, target API, Data Safety, tracks/pre-launch",
+        "Сигурност OWASP MASVS v2.1 — Keychain/Keystore, без тайни в бъндъла",
+        "Достъпност EAA / EN 301 549 / WCAG 2.1 AA (VoiceOver/TalkBack, визуал+хаптик)",
+        "Кросплатформа: React Native / Flutter / SwiftUI / Jetpack Compose",
+        "Производителност: cold start, 60fps, размер (AAB+R8), crash reporter",
+        "Инструмент: store-readiness.mjs (tools/mobile/)",
+        "Памет + екипна оркестрация (право→Правния Разбирач, web→SEO)"
+      ],
+      "knowledge": {
+        "sources": 40,
+        "researchToolUses": 60,
+        "priorArt": [
+          "awesome-claude-code-subagents / VoltAgent — mobile/iOS/Android агент структури (терсен чеклист)",
+          "OWASP MASVS v2.1 + MASTG — рамка за мобилна сигурност (8 групи)",
+          "developer.apple.com / developer.android.com — App Review, Privacy Manifest, AAB, target API, Data Safety",
+          "Bubblewrap / Capacitor / EAA (EN 301 549) — двата пътя на обвиване + достъпност"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-26",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване (5 паралелни research агента, 40 източника): мобилна сигурност (MASVS), нативни възможности (APNs/FCM/Core NFC), производителност, App Store + Play submission, EU DMA/EAA/TWA."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-26",
+          "event": "v5.0 — ражда се в пълна форма (паритет с екипа)",
+          "detail": "Носи целия стек: операционен договор + DoD, v1.1 граница+пример, v2.0 инструмент (tools/mobile/store-readiness.mjs), v2.1 надеждност (симулира откази на ревюта), v3.0 екипна оркестрация, v4.0 файлова памет, v5.0 самоодит. Неприкосновено: без тайни в бъндъла, нативна стойност за 4.2, a11y по EN 301 549."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Google Play target SDK: от 31.08.2025 нови апове и ъпдейти таргетират Android 15 (API 3… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: React Native New Architecture (Fabric + TurboModules) е по подразбиране от v0.76 за вси… (+1 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: fastlane precheck е level-базиран metadata lint: всяко правило носи ниво :skip/:warn/:e… (+2 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: Android 16 (API 36): edge-to-edge enforcement без отказ — windowOptOutEdgeToEdgeEnforce… (+2 още)"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: Required-reason API в Privacy Manifest: от 1 май 2024 App Store Connect ОТКАЗВА апове б… (+7 още)"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: Required-reason API: от 1 май 2024 App Store Connect отказва апове, които не описват из…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Capacitor 8 среда: NodeJS 22+, минимум Xcode 26.0, Android Studio 2025.2.1, Android мин…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: AASA хостинг: файл apple-app-site-association (без разширение) в /.well-known/, серви с…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: Core NFC чете NDEF тагове тип 1-5 (+ ISO 7816/15693/FeliCa/MIFARE); НЕ е достъпно в app…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: NFC tag read/write entitlement (com.apple.developer.nfc.readersession.formats) се добав…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: App Store Guideline 4.2.2: Other than catalogs, apps shouldn't primarily be marketing m…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Play Data Safety форма е задължителна за ВСИЧКИ публикувани апове, дори тези без събира…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Play App Signing: Google държи app signing key и преподписва финалните APK; разработчик…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: App Store изискване (от 28.04.2026): приложенията, качвани в App Store Connect, трябва …"
+        },
+        {
+          "version": "6.15.0",
+          "date": "2026-06-26",
+          "event": "v6.15 — учене",
+          "detail": "Научи: medqr/mobile е Capacitor 6 обвивка с server.url към живия сайт и САМО един нативен плъг… (+3 още)"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „medqr/mobile е Capacitor 6 обвивка с server.url към живия сайт и САМО един нативен плъг…\" (+3 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „App Store изискване (от 28.04.2026): приложенията, качвани в App Store Connect, трябва …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Play App Signing: Google държи app signing key и преподписва финалните APK; разработчик…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Play Data Safety форма е задължителна за ВСИЧКИ публикувани апове, дори тези без събира…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „App Store Guideline 4.2.2: Other than catalogs, apps shouldn't primarily be marketing m…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „NFC tag read/write entitlement (com.apple.developer.nfc.readersession.formats) се добав…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Core NFC чете NDEF тагове тип 1-5 (+ ISO 7816/15693/FeliCa/MIFARE); НЕ е достъпно в app…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „AASA хостинг: файл apple-app-site-association (без разширение) в /.well-known/, серви с…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Capacitor 8 среда: NodeJS 22+, минимум Xcode 26.0, Android Studio 2025.2.1, Android мин…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Required-reason API: от 1 май 2024 App Store Connect отказва апове, които не описват из…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Required-reason API в Privacy Manifest: от 1 май 2024 App Store Connect ОТКАЗВА апове б…\" (+7 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Android 16 (API 36): edge-to-edge enforcement без отказ — windowOptOutEdgeToEdgeEnforce…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „fastlane precheck е level-базиран metadata lint: всяко правило носи ниво :skip/:warn/:e…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „React Native New Architecture (Fabric + TurboModules) е по подразбиране от v0.76 за вси…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Google Play target SDK: от 31.08.2025 нови апове и ъпдейти таргетират Android 15 (API 3…\" (+2 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v5.0 — ражда се в пълна форма: договор + tools/mobile + надеждност + памет + самоодит."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "research",
+          "summary": "Проучи App Store Review 4.2, Privacy Manifest, Play AAB/target API, EU DMA/EAA/TWA, OWASP MASVS, Core NFC."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "research",
+          "summary": "Поел 40 източника за iOS/Android, нативни възможности и качване в магазините."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/mobildjiyata.md."
+        }
+      ]
+    },
+    {
+      "id": "printadjiyata",
+      "name": "Принтаджията",
+      "title": "Дизайн и подготовка за печат на Creality K2 Plus",
+      "emoji": "🖨️",
+      "accent": "#f26322",
+      "tagline": "Прави модели, които печатат от първия път на K2 Plus — здрави по правилната ос, без излишен support.",
+      "file": ".claude/agents/printadjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Проектира и подготвя 3D модели готови за FDM печат на Creality K2 Plus (CoreXY, активна камера 60°C, CFS мулти-цвят до 16 нишки): design-for-FDM (стени, надвеси, ориентация/анизотропия, толеранси/сглобки, heat-set inserts, elephant foot), слайсване (Creality Print / OrcaSlicer, 3MF), мулти-цветно с минимум отпадък на CFS, и хигиена на мрежата (watertight/manifold, mm, нормали). Различен от 3D Maniac (reverse engineering/NURBS/карбон форми).",
+      "capabilities": [
+        "K2 Plus спецификации (350³, 350°C, камера 60°C, втвърдена дюза, CFS 16 нишки)",
+        "Design-for-FDM: стени/надвеси/мостове, ориентация по анизотропия",
+        "Толеранси/сглобки, heat-set inserts, elephant-foot компенсация",
+        "Слайсване Creality Print / OrcaSlicer, 3MF, калибрация (PA/flow/retraction)",
+        "Мулти-цвят на CFS с минимум отпадък (групиране, светло→тъмно, flush тунинг)",
+        "Материал↔камера/дюза (PLA/PETG/ABS/ASA/PC/PA/CF; TPU не в CFS)",
+        "Хигиена на мрежата: watertight/manifold, mm, нормали; 3MF > STL",
+        "Инструмент: printability.mjs (tools/print/)",
+        "Памет + екипна оркестрация (скан→CAD от 3D Maniac; визуализация → Социалджията)"
+      ],
+      "knowledge": {
+        "sources": 30,
+        "researchToolUses": 23,
+        "priorArt": [
+          "Creality (store/Wiki) + 3dpros/MatterHackers/3dwithus — K2 Plus + CFS спецификации",
+          "OrcaSlicer / Creality Print — K2 Plus профили, 3MF, flush/калибрация",
+          "UltiMaker/Stratasys/Protolabs/Hubs/Markforged/Prusa — DfAM правила (толеранси, надвеси, inserts, elephant foot)"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-26",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване (30 източника): K2 Plus машина + CFS, слайсване (Creality Print/OrcaSlicer, 3MF), и design-for-FDM правила (стени/надвеси/толеранси/inserts/elephant foot/ориентация). Различен от 3D Maniac."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-26",
+          "event": "v5.0 — ражда се в пълна форма (паритет с екипа)",
+          "detail": "Носи целия стек: операционен договор + DoD, v1.1 граница+пример, v2.0 инструмент (tools/print/printability.mjs — watertight/обем/единици от binary STL), v2.1 надеждност, v3.0 екипна оркестрация, v4.0 файлова памет, v5.0 самоодит. Неприкосновено: ориентация по товара, watertight 3MF, минимум отпадък на CFS."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: OrcaSlicer v2.4.0 е официалният стабилен release (публикуван 2026-06-20) и носи Crealit… (+1 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: trimesh.repair предлага точни примитиви за детерминистичен printability grader: broken_… (+2 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: K2 Plus камерна температура по материал (официален Creality wiki): ниско-температурни P… (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: OrcaSlicer flow rate (Flow Ratio): препоръчаният YOLO метод е еднопроходен — нов flow r…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: OrcaSlicer pressure advance компенсира изоставането на налягането при смяна на скорост …"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: OrcaSlicer temp tower: ниска T → по-малко стрингинг, висока T → по-добра междуслоева ад…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: OrcaSlicer line width: отправна точка = 100% от диаметъра на дюзата, работен диапазон 1…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: OrcaSlicer top/bottom shells: поне 3 shell слоя за повечето печати; shell thickness е п…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: OrcaSlicer infill: Grid и Triangles се завъртат всеки слой за изотропна якост; Grid е n…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: OrcaSlicer elephant foot compensation: негативно отстояние върху първите N слоя, намаля…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: OrcaSlicer seam позиции: Aligned (скрит вътрешен фасет), Nearest (бързо), Back (Min Y о…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: OrcaSlicer bridging: bridge flow ratio управлява дебелината — под 1.0 намалява материал…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: OrcaSlicer brim типове: Auto (капва на 20mm), Outer, Inner, Outer and Inner, Painted, M…"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer brim типове: Auto (капва на 20mm), Outer, Inner, Outer and Inner, Painted, M…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer bridging: bridge flow ratio управлява дебелината — под 1.0 намалява материал…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer seam позиции: Aligned (скрит вътрешен фасет), Nearest (бързо), Back (Min Y о…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer elephant foot compensation: негативно отстояние върху първите N слоя, намаля…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer infill: Grid и Triangles се завъртат всеки слой за изотропна якост; Grid е n…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer top/bottom shells: поне 3 shell слоя за повечето печати; shell thickness е п…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer line width: отправна точка = 100% от диаметъра на дюзата, работен диапазон 1…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer temp tower: ниска T → по-малко стрингинг, висока T → по-добра междуслоева ад…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer pressure advance компенсира изоставането на налягането при смяна на скорост …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer flow rate (Flow Ratio): препоръчаният YOLO метод е еднопроходен — нов flow r…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „K2 Plus камерна температура по материал (официален Creality wiki): ниско-температурни P…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „trimesh.repair предлага точни примитиви за детерминистичен printability grader: broken_…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OrcaSlicer v2.4.0 е официалният стабилен release (публикуван 2026-06-20) и носи Crealit…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v5.0 — ражда се в пълна форма: договор + tools/print + надеждност + памет + самоодит."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "research",
+          "summary": "Проучи K2 Plus + CFS спецификации, OrcaSlicer/Creality Print слайсване и DfAM правила."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "research",
+          "summary": "Поел 30 източника за FDM печат, K2 Plus и design-for-additive-manufacturing."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/printadjiyata.md."
+        }
+      ]
+    },
+    {
+      "id": "dizayner",
+      "name": "Дизайнера",
+      "title": "Brutal уеб визуални ефекти (WebGL/shaders/анимация)",
+      "emoji": "✨",
+      "accent": "#b026ff",
+      "tagline": "Изскача с нещо брутално за гледане — пълна дисциплина за сериозни сайтове, максимален спектакъл за творчески.",
+      "file": ".claude/agents/dizayner.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Създава brutal, weird, mindblowing уеб визуални ефекти на Awwwards ниво: WebGL/Three.js (+R3F/drei/postprocessing), WebGPU/TSL/WGSL, GLSL шейдъри (raymarching/SDF, noise, fresnel, displacement, post-fx), мощна анимация (GSAP+ScrollTrigger/SplitText/Flip, Motion, anime.js v4, WAAPI, View Transitions, CSS scroll-driven, Lenis), 2D/генеративно (Pixi v8, p5, canvas, SVG филтри, blend modes), физика (Rapier/Matter), Lottie/Rive. Уникална фантазия — но всичко е progressive enhancement: деградира зад prefers-reduced-motion, не чупи LCP/INP, не стробоскопи.",
+      "capabilities": [
+        "WebGL/Three.js + react-three-fiber/drei/postprocessing",
+        "WebGPU / TSL / WGSL (+ задължителен WebGL2 fallback)",
+        "GLSL шейдъри: raymarching/SDF, noise, fresnel, displacement, post-fx",
+        "Анимация: GSAP (безплатен) + ScrollTrigger/SplitText/Flip, Motion, anime.js v4, WAAPI",
+        "Scroll магия: View Transitions, CSS scroll-driven, Lenis (изкл. под reduced-motion)",
+        "2D/генеративно: Pixi v8, p5, canvas, SVG филтри, blend modes, Houdini",
+        "Физика Rapier/Matter; вектор Lottie/Rive",
+        "Производителност: 60fps, GPU, OffscreenCanvas/worker, lazy-init, CWV (LCP/INP)",
+        "Контекстно-зависим режим: reduced-motion дисциплина за сериозни сайтове; спектакъл за творчески; универсален анти-строб",
+        "Инструмент: motion-a11y.mjs (tools/design/)"
+      ],
+      "knowledge": {
+        "sources": 30,
+        "researchToolUses": 17,
+        "priorArt": [
+          "VoltAgent frontend-developer — 5-секционен скелет + a11y/CSP вградени навсякъде",
+          "Blenra WebGL shader prompt — мандат за fallback (teardown на WebGL → CSS) на mobile/low-FPS",
+          "Three.js/r3f/Codrops/iquilezles/thebookofshaders — каноничните техники и API",
+          "W3C WCAG (C39, 2.3.3, 2.2.2, 2.3.1) — gate-овете на движението"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-26",
+          "event": "Раждане",
+          "detail": "Създаден от дълбоко проучване (30 източника): creative front-end стек (Three/WebGPU/TSL, GLSL, GSAP/Motion/anime v4, View Transitions/scroll-driven/Lenis, Pixi/Rapier/Lottie/Rive) + неподлежащите gate-ове на движението (prefers-reduced-motion, 2.2.2, 2.3.1) и компромиса с възрастната/медицинската аудитория на репото."
+        },
+        {
+          "version": "5.0.0",
+          "date": "2026-06-26",
+          "event": "v5.0 — ражда се в пълна форма (паритет с екипа)",
+          "detail": "Носи целия стек: операционен договор + DoD, v1.1 граница+пример, v2.0 инструмент (tools/design/motion-a11y.mjs), v2.1 надеждност (симулира reduced-motion/throttle/без-JS), v3.0 екипна оркестрация, v4.0 файлова памет, v5.0 самоодит. Неприкосновено: progressive enhancement, reduced-motion → статика, GPU не main thread, без строб."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващ се цикъл",
+          "detail": "v6.0: затворен, наложен от hooks цикъл чети→провери→запиши→подреди — SubagentStart preload на проверените поуки + SubagentStop capture на learn-блока + tools/memory/curate.mjs. Само проверено става факт; непроверено отива в Карантина; дедуп срещу дрейф."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — контекстно-зависим режим на движение",
+          "detail": "По директива на собственика: reduced-motion дисциплината важи за СЕРИОЗНИ сайтове (корпоративни/медицински/граждански — вкл. zabobovdol/medqr); за ТВОРЧЕСКИ (портфолио/арт/бранд) → максимален спектакъл по подразбиране, reduced-motion по избор. Универсално остава само анти-строб (WCAG 2.3.1). Инструментът motion-a11y.mjs получи --creative флаг."
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Three.js latest = 0.185.0 (r185, ~юни 2026); GSAP 3.15.0; Pixi 8.19.0; anime.js 4.5.0; … (+2 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: CSS scroll-driven animations (animation-timeline: scroll() / view()) е MARKирана 'Limit… (+1 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: Детерминистично reduced-motion правило (де-факто индустриален стандарт, stylelint-a11y …"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: GSAP SplitText (3.13+) е пренаписан, 50% по-малък, 100% безплатен (вкл. комерсиално). Н… (+1 още)"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: prefers-reduced-motion има точно 2 валидни стойности: no-preference и reduce; reduce ev…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: OffscreenCanvas е Baseline Widely available (от март 2023), достъпен в Web Workers; htm…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: content-visibility: auto пропуска layout/paint на off-screen съдържание но го пази дост…"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: video.requestVideoFrameCallback(cb) се вика на нов видео кадър (не на display refresh),…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: IntersectionObserver (Baseline от март 2019) за lazy-init/teardown на WebGL: rootMargin…"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: window.devicePixelRatio = физически/CSS пиксели (2 = Retina); за остър canvas умножи bu…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Three.js ColorManagement.enabled е true по подразбиране (source src/math/ColorManagemen…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Three.js WebGLRenderer.setPixelRatio(value) записва _pixelRatio и вика setSize без пром…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: pmndrs/postprocessing: RenderPass се добавя ПЪРВИ (чисти буфери + рендерира сцената), п…"
+        },
+        {
+          "version": "6.15.0",
+          "date": "2026-06-26",
+          "event": "v6.15 — учене",
+          "detail": "Научи: @view-transition cross-document (navigation: auto; изисква same-origin) е Limited avail…"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „@view-transition cross-document (navigation: auto; изисква same-origin) е Limited avail…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „pmndrs/postprocessing: RenderPass се добавя ПЪРВИ (чисти буфери + рендерира сцената), п…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Three.js WebGLRenderer.setPixelRatio(value) записва _pixelRatio и вика setSize без пром…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Three.js ColorManagement.enabled е true по подразбиране (source src/math/ColorManagemen…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „window.devicePixelRatio = физически/CSS пиксели (2 = Retina); за остър canvas умножи bu…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „IntersectionObserver (Baseline от март 2019) за lazy-init/teardown на WebGL: rootMargin…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „video.requestVideoFrameCallback(cb) се вика на нов видео кадър (не на display refresh),…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „content-visibility: auto пропуска layout/paint на off-screen съдържание но го пази дост…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OffscreenCanvas е Baseline Widely available (от март 2023), достъпен в Web Workers; htm…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „prefers-reduced-motion има точно 2 валидни стойности: no-preference и reduce; reduce ev…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „GSAP SplitText (3.13+) е пренаписан, 50% по-малък, 100% безплатен (вкл. комерсиално). Н…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Детерминистично reduced-motion правило (де-факто индустриален стандарт, stylelint-a11y …\" · 1 в карантина"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „CSS scroll-driven animations (animation-timeline: scroll() / view()) е MARKирана 'Limit…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Three.js latest = 0.185.0 (r185, ~юни 2026); GSAP 3.15.0; Pixi 8.19.0; anime.js 4.5.0; …\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.1 — контекстно-зависим режим: пълна reduced-motion дисциплина за сериозни сайтове, брутален спектакъл за творчески; универсален анти-строб."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v6.0 — самообучаващ се цикъл: hook-наложена памет (preload+capture+curate); само проверено става факт."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "upgrade",
+          "summary": "v5.0 — ражда се в пълна форма: договор + tools/design + надеждност + памет + самоодит."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "research",
+          "summary": "Проучи Three/WebGPU/TSL, GLSL техники, GSAP/Motion/anime v4, scroll-driven/View Transitions/Lenis, и WCAG gate-овете на движението."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "research",
+          "summary": "Поел 30 източника за награждаем creative front-end + достъпност на движение."
+        },
+        {
+          "date": "2026-06-26",
+          "type": "born",
+          "summary": "Дефиницията записана в .claude/agents/dizayner.md."
+        }
+      ]
+    },
+    {
+      "id": "hromadjiyata",
+      "name": "Хромаджията",
+      "title": "Разширения за Google Chrome (Manifest V3)",
+      "emoji": "🧩",
+      "accent": "#1a73e8",
+      "tagline": "MV3 по подразбиране: ефимерен service worker, минимални права, declarativeNetRequest, нула отдалечен код — минава ревюто от първия път.",
+      "file": ".claude/agents/hromadjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Изгражда, преглежда и одитира разширения за Google Chrome (и Edge/Brave/Chromium) на enterprise ниво по Manifest V3: event-driven service worker + състояние в chrome.storage + chrome.alarms; content scripts в изолиран свят; минимални права (activeTab/optional_permissions пред <all_urls>); message passing; declarativeNetRequest вместо blocking webRequest; action/sidePanel/offscreen API; строг extension CSP; OAuth/identity. Прекарва разширения през Chrome Web Store ревюто (MV3-only, single purpose, нула отдалечен код, честна data декларация) и публикуване. Мигрира MV2→MV3.",
+      "capabilities": [
+        "Manifest V3 манифест: минимални permissions/host_permissions, action, CSP",
+        "Service worker: ефимерен жизнен цикъл, синхронни слушатели, chrome.alarms, състояние в storage",
+        "Content scripts: изолиран/MAIN свят, безопасна инжекция, postMessage с origin валидация",
+        "Message passing: runtime/tabs.sendMessage, async (return true), Port, externally_connectable",
+        "chrome.storage (local/sync/session/managed) + квоти; край на localStorage в SW",
+        "declarativeNetRequest вместо blocking webRequest (privacy-preserving филтриране)",
+        "UI повърхности: popup/action, Side Panel, context menus, omnibox, options, offscreen",
+        "Least privilege: activeTab, optional_permissions + permissions.request от user gesture",
+        "Нула отдалечен код: пакетиране, забрана на eval/new Function/CDN script (MV3 CSP)",
+        "Chrome Web Store: пакет/версия, single purpose, privacy декларация, причини за отказ",
+        "Миграция MV2→MV3 (browser_action→action, background.scripts→service_worker, webRequest→DNR)",
+        "Кросбраузър: Edge/Brave/Opera/Chromium + допир до WebExtensions (web-ext lint)"
+      ],
+      "knowledge": {
+        "sources": 26,
+        "researchToolUses": 0,
+        "priorArt": [
+          "developer.chrome.com — Extensions / Manifest V3 (service worker, permissions, DNR, scripting, offscreen, side panel)",
+          "Chrome Web Store Program Policies — single purpose, minimum permissions, нула отдалечен код, User Data Policy",
+          "MDN WebExtensions — кросбраузър API повърхност и съвместимост",
+          "Mozilla web-ext lint — статична проверка (валидна и за Chrome пакети)",
+          "chromestatus.com — наличност на API по Chrome milestone"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-26",
+          "event": "Раждане",
+          "detail": "Създаден като специалист по разширения за Google Chrome (MV3): service worker, content scripts, права/least-privilege, message passing, storage, declarativeNetRequest, action/sidePanel/offscreen, extension CSP, нула отдалечен код, и ревюто/публикуването в Chrome Web Store."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващо поколение",
+          "detail": "Вграден в наложения от hooks цикъл на учене (read→act→verify→persist→curate): preload на проверени поуки при старт, CoVe-гейт преди „verified\", auto-capture + версия + auto-push към таблото. Инструмент: tools/chrome/mv3-lint.mjs (MV2 остатъци, отдалечен код, слаб CSP, широки права, blocking webRequest, localStorage в SW)."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Service worker в MV3 спира след 30 s бездействие; също при fetch() отговор >30 s или ед… (+2 още)"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: declarativeNetRequest статични лимити: GUARANTEED_MINIMUM_STATIC_RULES=30000, MAX_NUMBE… (+2 още)"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: chrome.storage.local QUOTA_BYTES=10485760 (10 MB; беше 5 MB в Chrome ≤113); лимитът се … (+2 още)"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: activeTab дава временен достъп до активния таб при потребителски жест: изпълнение на ac… (+2 още)"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: MV3 extension_pages CSP по подразбиране = `script-src 'self'; object-src 'self';` и НЕ … (+1 още)"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: MV2 график (за миграционни решения): спрян прием на нови MV2 в Web Store (01.2022 publi…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Side Panel API (chrome.sidePanel) е стабилно от Chrome 114+; декларира се с манифест кл… (+2 още)"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: chrome.scripting.executeScript с func сериализира функцията (текст) и я десериализира з… (+4 още)"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: chrome.userScripts API е от Chrome 120+ (само MV3), иска право `userScripts` в манифест… (+2 още)"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: chrome.action.onClicked НЕ се вика ако action-ът има popup (default_popup в манифеста и… (+4 още)"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Single purpose (CWS): 'An extension must have a single purpose that is narrow and easy … (+4 още)"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Статичен content_scripts запис: matches (задължително) + поне едно от js/css. run_at по… (+5 още)"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Статичен content_scripts запис: matches (задължително) + поне едно от js/css. run_at по…\" (+5 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Single purpose (CWS): 'An extension must have a single purpose that is narrow and easy …\" (+4 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „chrome.action.onClicked НЕ се вика ако action-ът има popup (default_popup в манифеста и…\" (+4 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „chrome.userScripts API е от Chrome 120+ (само MV3), иска право `userScripts` в манифест…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „chrome.scripting.executeScript с func сериализира функцията (текст) и я десериализира з…\" (+4 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Side Panel API (chrome.sidePanel) е стабилно от Chrome 114+; декларира се с манифест кл…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „MV2 график (за миграционни решения): спрян прием на нови MV2 в Web Store (01.2022 publi…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „MV3 extension_pages CSP по подразбиране = `script-src 'self'; object-src 'self';` и НЕ …\" (+1 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „activeTab дава временен достъп до активния таб при потребителски жест: изпълнение на ac…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „chrome.storage.local QUOTA_BYTES=10485760 (10 MB; беше 5 MB в Chrome ≤113); лимитът се …\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „declarativeNetRequest статични лимити: GUARANTEED_MINIMUM_STATIC_RULES=30000, MAX_NUMBE…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Service worker в MV3 спира след 30 s бездействие; също при fetch() отговор >30 s или ед…\" (+2 още)"
+        },
+        {
+          "date": "2026-06-26",
+          "type": "born",
+          "summary": "Създаден — специалист по разширения за Google Chrome (Manifest V3). Дефиниция в .claude/agents/hromadjiyata.md, инструмент tools/chrome/mv3-lint.mjs."
+        }
+      ]
+    },
+    {
+      "id": "diskordjiyata",
+      "name": "Дискорджията",
+      "title": "Discord ботове, webhooks и всичко около Discord",
+      "emoji": "🤖",
+      "accent": "#5865f2",
+      "tagline": "Event-driven и rate-limit-aware: таен токен, минимални intents, defer под 3 секунди, Ed25519 верификация на interactions.",
+      "file": ".claude/agents/diskordjiyata.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Изгражда, преглежда и одитира Discord ботове и webhook интеграции на enterprise ниво: application/slash команди, interactions и message components (бутони/select/modals), Gateway (WebSocket, intents, sharding, heartbeat/resume), REST API (v10), Webhooks (execute + embeds), OAuth2 (scopes bot/applications.commands, bitwise permissions), HTTP interactions с Ed25519 верификация, rate limits (per-route buckets + global), discord.js / discord.py. Сигурност: таен токен, least-privilege intents, валидиран вход, ephemeral за чувствително.",
+      "capabilities": [
+        "Application/slash команди (CHAT_INPUT/USER/MESSAGE), глобални vs per-guild регистрация",
+        "Interactions: 3s отговор, defer (type 5), 15-мин token, follow-up-и",
+        "Message components: action rows, бутони, select menus, modals, custom_id рутиране",
+        "Gateway: intents (вкл. привилегировани), Identify/Heartbeat/Resume, sharding",
+        "REST API v10: Authorization: Bot, версиониране, endpoint-и",
+        "Webhooks: execute + embeds, URL като тайна, нотификации без пълен бот",
+        "OAuth2: scopes (bot/applications.commands/identify), bitwise permissions, add-bot URL",
+        "HTTP interactions: Ed25519 верификация на подписа + PING→PONG",
+        "Rate limits: per-route buckets, global ~50/s, 429/retry_after, Cloudflare бан праг",
+        "Embed/съобщение лимити (title 256/desc 4096/25 полета/≤6000/2000 знака)",
+        "Сигурност: таен токен, least-privilege intents, allowed_mentions, валидиран вход",
+        "discord.js / discord.py — идиоми и капани"
+      ],
+      "knowledge": {
+        "sources": 22,
+        "researchToolUses": 0,
+        "priorArt": [
+          "discord.com/developers/docs — Interactions, Gateway, REST, Webhooks, OAuth2, Rate Limits",
+          "discord.js Guide & docs — идиоматичен Node бот, intents, components",
+          "discord.py docs — алтернативен Python стек",
+          "Discord Developer Policy & ToS — verification, привилегировани intents, данни"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-06-26",
+          "event": "Раждане",
+          "detail": "Създаден като специалист по Discord (ботове + webhooks + всичко около Discord): slash команди, interactions, message components, Gateway/intents/sharding, REST v10, webhooks, OAuth2, Ed25519 HTTP interactions, rate limits и сигурност (таен токен, least-privilege intents)."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-06-26",
+          "event": "v6.0 — самообучаващо поколение",
+          "detail": "Вграден в наложения от hooks цикъл на учене (read→act→verify→persist→curate): preload на проверени поуки, CoVe-гейт преди 'verified', auto-capture + версия + auto-push. Инструмент: tools/discord/discord-lint.mjs (твърд токен/webhook URL, привилегировани intents, липсваща Ed25519 верификация, interaction без defer, плътен REST цикъл, @everyone без guard)."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-06-26",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Discord interaction: трябва да изпратиш първоначален отговор до 3 СЕКУНДИ от получаване…"
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-06-26",
+          "event": "v6.2 — учене",
+          "detail": "Научи: Interaction callback types: PONG=1, CHANNEL_MESSAGE_WITH_SOURCE=4, DEFERRED_CHANNEL_MES…"
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-06-26",
+          "event": "v6.3 — учене",
+          "detail": "Научи: Interaction token-ите са валидни 15 минути и се ползват за follow-up съобщения след пър…"
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-06-26",
+          "event": "v6.4 — учене",
+          "detail": "Научи: HTTP (webhook) interactions: ЗАДЪЛЖИТЕЛНО валидирай X-Signature-Ed25519 + X-Signature-T…"
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-06-26",
+          "event": "v6.5 — учене",
+          "detail": "Научи: Ephemeral съобщение (видимо само за извикалия потребител) се задава с flag 1<<6 = 64 в …"
+        },
+        {
+          "version": "6.6.0",
+          "date": "2026-06-26",
+          "event": "v6.6 — учене",
+          "detail": "Научи: Discord глобален rate limit: всички ботове могат до 50 заявки/секунда към API-то (незав…"
+        },
+        {
+          "version": "6.7.0",
+          "date": "2026-06-26",
+          "event": "v6.7 — учене",
+          "detail": "Научи: Rate-limit хедъри: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (epoch с…"
+        },
+        {
+          "version": "6.8.0",
+          "date": "2026-06-26",
+          "event": "v6.8 — учене",
+          "detail": "Научи: При надхвърлен лимит → HTTP 429 с JSON тяло: retry_after (секунди до следваща заявка), …"
+        },
+        {
+          "version": "6.9.0",
+          "date": "2026-06-26",
+          "event": "v6.9 — учене",
+          "detail": "Научи: Gateway lifecycle (opcodes): Hello=10 (носи heartbeat_interval ms), Heartbeat=1 (изпрат…"
+        },
+        {
+          "version": "6.10.0",
+          "date": "2026-06-26",
+          "event": "v6.10 — учене",
+          "detail": "Научи: Sharding: всеки shard поддържа максимум 2500 guild-а; ботове в 2500+ guild-а ТРЯБВА да …"
+        },
+        {
+          "version": "6.11.0",
+          "date": "2026-06-26",
+          "event": "v6.11 — учене",
+          "detail": "Научи: Application command types: CHAT_INPUT=1 (slash, /), USER=2 (десен клик върху потребител…"
+        },
+        {
+          "version": "6.12.0",
+          "date": "2026-06-26",
+          "event": "v6.12 — учене",
+          "detail": "Научи: Embed лимити: title 256, description 4096, до 25 полета (field.name 256, field.value 10…"
+        },
+        {
+          "version": "6.13.0",
+          "date": "2026-06-26",
+          "event": "v6.13 — учене",
+          "detail": "Научи: Привилегировани intents (bitwise): GUILD_PRESENCES=1<<8, GUILD_MEMBERS=1<<1, MESSAGE_CO…"
+        },
+        {
+          "version": "6.14.0",
+          "date": "2026-06-26",
+          "event": "v6.14 — учене",
+          "detail": "Научи: Webhook типове: Incoming=1 (пише в канал с генериран токен), Channel Follower=2 (за Cha…"
+        },
+        {
+          "version": "6.15.0",
+          "date": "2026-06-26",
+          "event": "v6.15 — учене",
+          "detail": "Научи: OAuth2 scopes: bot (добавя бота в избрания guild), applications.commands (добавя команд…"
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „OAuth2 scopes: bot (добавя бота в избрания guild), applications.commands (добавя команд…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Webhook типове: Incoming=1 (пише в канал с генериран токен), Channel Follower=2 (за Cha…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Привилегировани intents (bitwise): GUILD_PRESENCES=1<<8, GUILD_MEMBERS=1<<1, MESSAGE_CO…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Embed лимити: title 256, description 4096, до 25 полета (field.name 256, field.value 10…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Application command types: CHAT_INPUT=1 (slash, /), USER=2 (десен клик върху потребител…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Sharding: всеки shard поддържа максимум 2500 guild-а; ботове в 2500+ guild-а ТРЯБВА да …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Gateway lifecycle (opcodes): Hello=10 (носи heartbeat_interval ms), Heartbeat=1 (изпрат…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „При надхвърлен лимит → HTTP 429 с JSON тяло: retry_after (секунди до следваща заявка), …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Rate-limit хедъри: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (epoch с…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Discord глобален rate limit: всички ботове могат до 50 заявки/секунда към API-то (незав…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Ephemeral съобщение (видимо само за извикалия потребител) се задава с flag 1<<6 = 64 в …\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „HTTP (webhook) interactions: ЗАДЪЛЖИТЕЛНО валидирай X-Signature-Ed25519 + X-Signature-T…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Interaction token-ите са валидни 15 минути и се ползват за follow-up съобщения след пър…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Interaction callback types: PONG=1, CHANNEL_MESSAGE_WITH_SOURCE=4, DEFERRED_CHANNEL_MES…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "learning",
+          "summary": "Научи: „Discord interaction: трябва да изпратиш първоначален отговор до 3 СЕКУНДИ от получаване…\""
+        },
+        {
+          "date": "2026-06-26",
+          "type": "born",
+          "summary": "Създаден — специалист по Discord (ботове, webhooks, interactions). Дефиниция в .claude/agents/diskordjiyata.md, инструмент tools/discord/discord-lint.mjs."
+        }
+      ]
     }
   ]
 };
@@ -1529,7 +4444,13 @@ function avatarSVG(a){
     'siydara':{skin:'#f3c9a6',hair:'#6b4a2a',style:'gardener'},
     'vps-adjiyata':{skin:'#e9bf98',hair:'#2c2c2c',style:'sysadmin'},
     '3d-maniac':{skin:'#f5cba6',hair:'#1f1a17',style:'maker'},
-    'socialdjiyata':{skin:'#f1c49a',hair:'#2a2320',style:'creator'}
+    'socialdjiyata':{skin:'#f1c49a',hair:'#2a2320',style:'creator'},
+    'prodavacha':{skin:'#f2c8a2',hair:'#241c16',style:'merchant'},
+    'mobildjiyata':{skin:'#efc59e',hair:'#23201d',style:'mobile'},
+    'printadjiyata':{skin:'#f1c69f',hair:'#2b211a',style:'printer'},
+    'dizayner':{skin:'#f0c6a4',hair:'#1c1620',style:'designer'},
+    'hromadjiyata':{skin:'#efc59e',hair:'#241c16',style:'browser'},
+    'diskordjiyata':{skin:'#f1c69f',hair:'#2a2320',style:'discord'}
   };
   const f=F[a.id]||{skin:'#f0c8a0',hair:'#2c2c2c',style:''};
   const sk=f.skin, hr=f.hair, st=f.style;
@@ -1584,17 +4505,46 @@ function avatarSVG(a){
       +'<path d="M40 16 q6 6 4 16" stroke="'+ac+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
     gear='<g transform="rotate(-16 50 47)"><rect x="46" y="40" width="9" height="16" rx="2" fill="#1e1e1e"/><rect x="47.4" y="42" width="6.2" height="11" rx="1" fill="'+ac+'" opacity=".55"/></g>'
       +'<g fill="'+ac+'"><circle cx="13" cy="20" r="1.2"/><circle cx="51" cy="15" r="1"/><path d="M11 29 l1 2 2 1 -2 1 -1 2 -1 -2 -2 -1 2 -1z"/></g>';
+  } else if(st==='merchant'){
+    hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>';
+    gear='<g transform="rotate(-12 44 46)"><rect x="38" y="40" width="16" height="10" rx="2" fill="'+ac+'"/><rect x="38" y="43" width="16" height="2.4" fill="#fff" opacity=".85"/><circle cx="41" cy="48" r="1.1" fill="#fff" opacity=".9"/></g>'
+      +'<g fill="'+ac+'"><circle cx="13" cy="20" r="1.1"/><circle cx="51" cy="16" r="1"/></g>';
+  } else if(st==='mobile'){
+    hair='<path d="M15 30 q3 -19 17 -19 q14 0 17 19 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
+    gear='<g transform="rotate(14 46 44)"><rect x="42" y="36" width="11" height="18" rx="2.5" fill="#1e1e1e"/><rect x="43.2" y="38.4" width="8.6" height="11.8" rx="1" fill="'+ac+'" opacity=".7"/><circle cx="47.5" cy="52" r="1" fill="#fff" opacity=".8"/></g>'
+      +'<g stroke="'+ac+'" stroke-width="1.3" fill="none" opacity=".8"><path d="M40 31 q4 -4 8 0"/><path d="M37.5 28.5 q6.5 -6 13 0"/></g>';
+  } else if(st==='printer'){
+    hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>';
+    gear='<g><rect x="38" y="38" width="16" height="13" rx="1.5" fill="#2a2a2a"/><rect x="40" y="40.5" width="12" height="2" rx="1" fill="'+ac+'"/>'
+      +'<rect x="45" y="42.5" width="2" height="6" fill="#cfcfcf"/><rect x="44" y="48" width="4" height="2.4" rx="0.6" fill="'+ac+'"/></g>'
+      +'<g fill="'+ac+'" opacity=".9"><rect x="44.4" y="50.4" width="3.2" height="4" rx="0.5"/></g>';
+  } else if(st==='designer'){
+    back='<radialGradient id="dz'+a.id+'" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="'+ac+'" stop-opacity=".55"/><stop offset="100%" stop-color="'+ac+'" stop-opacity="0"/></radialGradient><circle cx="32" cy="34" r="26" fill="url(#dz'+a.id+')"/>';
+    hair='<path d="M13 32 q2 -21 19 -21 q17 0 19 21 q-7 -10 -19 -10 q-12 0 -19 10z" fill="'+hr+'"/>';
+    gear='<g fill="'+ac+'"><path d="M50 16 l1.4 4 4 1.4 -4 1.4 -1.4 4 -1.4 -4 -4 -1.4 4 -1.4z"/><path d="M14 13 l1 2.8 2.8 1 -2.8 1 -1 2.8 -1 -2.8 -2.8 -1 2.8 -1z"/><circle cx="52" cy="40" r="1.4"/></g>'
+      +'<path d="M11 47 q9 5 21 5 q12 0 21 -5" stroke="'+ac+'" stroke-width="1.4" fill="none" opacity=".55"/>';
+  } else if(st==='browser'){
+    back='<circle cx="32" cy="34" r="25" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".4"/>';
+    hair='<path d="M15 30 q3 -19 17 -19 q14 0 17 19 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
+    gear='<g transform="translate(40 42)"><circle cx="6" cy="6" r="7" fill="#fff" stroke="'+ac+'" stroke-width="1.4"/><circle cx="6" cy="6" r="2.6" fill="'+ac+'"/>'
+      +'<path d="M6 -1 v-3 M11 6 h3 M6 13 v3 M-1 6 h-3" stroke="'+ac+'" stroke-width="1.6" stroke-linecap="round"/></g>'
+      +'<g fill="'+ac+'" opacity=".85"><circle cx="13" cy="20" r="1.1"/><circle cx="51" cy="16" r="1"/></g>';
+  } else if(st==='discord'){
+    back='<circle cx="32" cy="34" r="25" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".4"/>';
+    hair='<path d="M15 30 q3 -19 17 -19 q14 0 17 19 q-7 -8 -17 -8 q-10 0 -17 8z" fill="'+hr+'"/>';
+    gear='<g transform="translate(38 40)"><ellipse cx="7" cy="6" rx="8" ry="6" fill="'+ac+'"/><path d="M2 12 q5 2 10 0 l-1.5 -2.5 q-3.5 1.2 -7 0z" fill="'+ac+'"/>'
+      +'<ellipse cx="4.4" cy="5.5" rx="1.5" ry="2" fill="#fff"/><ellipse cx="9.6" cy="5.5" rx="1.5" ry="2" fill="#fff"/></g>'
+      +'<g fill="'+ac+'" opacity=".85"><circle cx="13" cy="20" r="1.1"/><circle cx="51" cy="16" r="1"/></g>';
   } else { hair='<path d="M15 31 q3 -19 17 -19 q14 0 17 19 q-7 -9 -17 -9 q-10 0 -17 9z" fill="'+hr+'"/>'; }
   const showEyes = (st!=='maker');
   return '<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true">'
     +back+ears+head+hair+(showEyes?eyes+brows+nose+blush+mouth:mouth)+gear+'</svg>';
 }
-const typeLabel = { research:"учене", born:"раждане", invoked:"извикване", upgrade:"ъпгрейд" };
+const typeLabel = { research:"учене", born:"раждане", invoked:"извикване", upgrade:"ъпгрейд", learning:"научено", quarantine:"карантина" };
 
 function render(data){
   document.getElementById("title").textContent = data.meta.title;
   document.getElementById("subtitle").textContent = data.meta.subtitle;
-  document.getElementById("note").textContent = data.meta.note;
   document.getElementById("defdir").textContent = data.meta.definitionsDir;
 
   const agents = data.agents;
@@ -1636,13 +4586,29 @@ function render(data){
     const ul = el("ul","caps"); a.capabilities.forEach(c=> ul.appendChild(el("li",null,c))); caps.appendChild(ul);
     card.appendChild(caps);
 
-    const evo = el("div","sec"); evo.appendChild(el("h3",null,"Развитие (версии)"));
+    const evo = el("details","sec actv");
+    evo.innerHTML = `<summary>Развитие · версии (${a.evolution.length})</summary>`;
     const tl = el("div","timeline");
     a.evolution.slice().reverse().forEach(e=>{
       tl.appendChild(el("div","ev",
         `<div class="v">v${e.version} · ${e.event} <span class="d">— ${e.date}</span></div><div class="x">${e.detail}</div>`));
     });
     evo.appendChild(tl); card.appendChild(evo);
+
+    // Дейност (сгъваем dropdown, без лимит) — целият поток на учене на агента.
+    const acts = a.activity || [];
+    if (acts.length) {
+      const det = el("details","sec actv");
+      det.innerHTML = `<summary>Дейност (${acts.length})</summary>`;
+      const fd = el("div","feed");
+      acts.forEach(ac=>{
+        fd.appendChild(el("div","row",
+          `<span class="when">${ac.date}</span>`+
+          `<span class="pill" style="border-color:${hexA(a.accent,.5)};color:${a.accent}">${typeLabel[ac.type]||ac.type}</span>`+
+          `<span>${ac.summary}</span>`));
+      });
+      det.appendChild(fd); card.appendChild(det);
+    }
 
     grid.appendChild(card);
   });
