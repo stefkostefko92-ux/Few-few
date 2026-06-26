@@ -32,7 +32,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
         {...rest}
       />
       {error ? (
-        <p id={errorId} className="text-sm text-loss">
+        <p id={errorId} aria-live="polite" className="text-sm text-loss">
           {error}
         </p>
       ) : null}
