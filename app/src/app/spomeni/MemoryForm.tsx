@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { submitMemory } from "./actions";
 import { EMPTY_FORM_STATE } from "@/lib/forms";
-import { Honeypot, SubmitButton, FormResult } from "@/components/FormParts";
+import { Honeypot, SubmitButton, FormResult, PrivacyNotice } from "@/components/FormParts";
 
 export function MemoryForm() {
   const [state, action] = useActionState(submitMemory, EMPTY_FORM_STATE);
@@ -42,6 +42,7 @@ export function MemoryForm() {
         </label>
         <input id="imageUrl" name="imageUrl" className="input" placeholder="https://…" />
       </div>
+      <PrivacyNotice />
       <SubmitButton label="Сподели спомена" />
       <FormResult state={state} />
     </form>

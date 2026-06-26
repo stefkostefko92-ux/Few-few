@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { submitRideshare } from "./actions";
 import { EMPTY_FORM_STATE } from "@/lib/forms";
-import { Honeypot, SubmitButton, FormResult } from "@/components/FormParts";
+import { Honeypot, SubmitButton, FormResult, PrivacyNotice } from "@/components/FormParts";
 
 export function RideForm() {
   const [state, action] = useActionState(submitRideshare, EMPTY_FORM_STATE);
@@ -52,6 +52,7 @@ export function RideForm() {
           <input name="contactEmail" type="email" className="input" placeholder="Имейл" />
         </div>
       </fieldset>
+      <PrivacyNotice />
       <SubmitButton label="Публикувай обявата" />
       <FormResult state={state} />
     </form>

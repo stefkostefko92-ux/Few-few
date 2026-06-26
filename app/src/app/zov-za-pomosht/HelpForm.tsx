@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { submitHelpCause } from "./actions";
 import { EMPTY_FORM_STATE } from "@/lib/forms";
-import { Honeypot, SubmitButton, FormResult } from "@/components/FormParts";
+import { Honeypot, SubmitButton, FormResult, PrivacyNotice } from "@/components/FormParts";
 
 export function HelpForm() {
   const [state, action] = useActionState(submitHelpCause, EMPTY_FORM_STATE);
@@ -45,6 +45,7 @@ export function HelpForm() {
           <input name="contactEmail" type="email" className="input" placeholder="Имейл" />
         </div>
       </fieldset>
+      <PrivacyNotice />
       <SubmitButton label="Изпрати" />
       <FormResult state={state} />
     </form>

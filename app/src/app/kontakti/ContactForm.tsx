@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2 } from "@/components/icons";
+import { PrivacyNotice } from "@/components/FormParts";
 import { submitContact, type ContactState } from "./actions";
 
 const initial: ContactState = { ok: false };
@@ -81,6 +82,7 @@ export function ContactForm() {
         aria-hidden
       />
 
+      <PrivacyNotice />
       <button type="submit" className="btn-primary" disabled={pending}>
         {pending ? "Изпращане…" : "Изпрати съобщението"}
       </button>

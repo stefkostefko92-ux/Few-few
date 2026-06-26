@@ -15,6 +15,20 @@ export function Honeypot() {
   );
 }
 
+// Кратко уведомление по чл. 13 GDPR на мястото на събиране на данните.
+// Слага се над бутона за изпращане във всяка форма, която събира лични данни.
+export function PrivacyNotice() {
+  return (
+    <p className="mt-4 text-sm text-gray-600">
+      С изпращането приемате обработката на въведените данни съгласно{" "}
+      <a href="/poveritelnost" className="underline">
+        Политиката за поверителност
+      </a>
+      .
+    </p>
+  );
+}
+
 export function SubmitButton({ label = "Изпрати" }: { label?: string }) {
   const { pending } = useFormStatus();
   return (

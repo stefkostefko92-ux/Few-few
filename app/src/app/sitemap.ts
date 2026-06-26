@@ -6,7 +6,11 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE.url;
-  const now = new Date();
+  // Стабилна дата на последна редакция на статичното съдържание — НЕ `new Date()`,
+  // иначе lastmod е винаги „днес" (build time) и търсачките се научават да го игнорират.
+  // Обнови я, когато промениш съдържанието на статичните страници.
+  // Динамичните записи (от базата, по-долу) ползват реалния updatedAt.
+  const now = new Date("2026-06-01T00:00:00Z");
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },

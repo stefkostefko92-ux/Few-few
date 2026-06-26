@@ -51,8 +51,16 @@ export default function TermsPage() {
             град {SITE.geo.city}. Сайтът <strong>не е официален сайт</strong> на
             община {SITE.geo.city} и не предоставя административни услуги от името
             на държавни или общински органи. Изработка, поддръжка и администриране:{" "}
-            <strong>Carbon Stealth VCC</strong> (със седалище в град {SITE.geo.city}
-            ).
+            <strong>Carbon Stealth VCC</strong>, ЕИК <strong>BG208725180</strong>,
+            със седалище в град {SITE.geo.city}, България. Контакт за връзка:{" "}
+            {SITE.contact.email ? (
+              <a href={`mailto:${SITE.contact.email}`} className="underline">
+                {SITE.contact.email}
+              </a>
+            ) : (
+              "през формата за контакт"
+            )}
+            .
           </p>
 
           <h2>2. Информация в сайта</h2>
@@ -88,6 +96,26 @@ export default function TermsPage() {
               непознати.
             </li>
           </ul>
+          <p>
+            <strong>Сигнал за незаконно или нередно съдържание (DSA).</strong> Ако
+            видите публикувано съдържание, което смятате за незаконно или нарушаващо
+            тези условия, можете да ни уведомите по всяко време през{" "}
+            <a href="/kontakti" className="underline">
+              формата за контакт
+            </a>
+            {SITE.contact.email ? (
+              <>
+                {" "}или на{" "}
+                <a href={`mailto:${SITE.contact.email}`} className="underline">
+                  {SITE.contact.email}
+                </a>
+              </>
+            ) : null}
+            . Опишете конкретното съдържание (връзка) и причината. Разглеждаме
+            сигналите без необосновано забавяне и ще ви уведомим за решението си;
+            при премахване уведомяваме и подателя на съдържанието с кратко
+            основание. Това е точката за контакт по Регламент (ЕС) 2022/2065 (DSA).
+          </p>
 
           <h2>4. Възраст</h2>
           <p>

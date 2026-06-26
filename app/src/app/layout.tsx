@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, Bitter } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/site";
@@ -88,6 +89,8 @@ export default async function RootLayout({
     getFacebookUrl(),
     getSeoVerification(),
   ]);
+  // CSP nonce, зададен per-request в middleware.ts — слагаме го на нашите inline скриптове.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="bg" className={`${sans.variable} ${serif.variable}`}>
       <head>
@@ -107,6 +110,7 @@ export default async function RootLayout({
           content={`${SITE.geo.latitude}, ${SITE.geo.longitude}`}
         />
         <JsonLd
+          nonce={nonce}
           data={[
             organizationLd({ sameAs: facebookUrl ? [facebookUrl] : [] }),
             websiteLd(),
@@ -118,6 +122,7 @@ export default async function RootLayout({
         {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
           <script
             defer
+            nonce={nonce}
             data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
             src={
               process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ||
@@ -128,6 +133,7 @@ export default async function RootLayout({
         {/* Прилага запазените настройки за достъпност преди първия рендер,
             за да няма „премигване“ на размера/контраста. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html:
               "(function(){try{var s={'2':'112.5%','3':'125%'};var f=localStorage.getItem('a11y-font');if(f&&s[f])document.documentElement.style.fontSize=s[f];if(localStorage.getItem('a11y-contrast')==='1')document.documentElement.classList.add('hc');if(localStorage.getItem('a11y-bigtouch')==='1')document.documentElement.classList.add('bt');if(localStorage.getItem('a11y-dark')==='1')document.documentElement.classList.add('dark');}catch(e){}})();",

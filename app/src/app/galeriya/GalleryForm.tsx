@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { submitPhoto } from "./actions";
 import { EMPTY_FORM_STATE } from "@/lib/forms";
-import { Honeypot, SubmitButton, FormResult } from "@/components/FormParts";
+import { Honeypot, SubmitButton, FormResult, PrivacyNotice } from "@/components/FormParts";
 
 export function GalleryForm() {
   const [state, action] = useActionState(submitPhoto, EMPTY_FORM_STATE);
@@ -36,6 +36,7 @@ export function GalleryForm() {
         </label>
         <input id="submitterContact" name="submitterContact" className="input" />
       </div>
+      <PrivacyNotice />
       <SubmitButton label="Изпрати снимката" />
       <FormResult state={state} />
     </form>

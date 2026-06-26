@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { submitVolunteer } from "./actions";
 import { EMPTY_FORM_STATE } from "@/lib/forms";
-import { Honeypot, SubmitButton, FormResult } from "@/components/FormParts";
+import { Honeypot, SubmitButton, FormResult, PrivacyNotice } from "@/components/FormParts";
 
 export function VolunteerForm() {
   const [state, action] = useActionState(submitVolunteer, EMPTY_FORM_STATE);
@@ -45,6 +45,7 @@ export function VolunteerForm() {
           <input name="email" type="email" className="input" placeholder="Имейл" />
         </div>
       </fieldset>
+      <PrivacyNotice />
       <SubmitButton label="Запиши ме като доброволец" />
       <FormResult state={state} />
     </form>

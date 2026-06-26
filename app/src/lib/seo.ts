@@ -78,6 +78,17 @@ export function organizationLd(opts?: { sameAs?: string[] }) {
     },
     image: `${SITE.url}/og.png`,
     knowsLanguage: "bg",
+    // Постоянна entity-дизамбигуация за AI търсачки (ChatGPT/Perplexity/Claude) —
+    // не зависи от админ-настройки; най-силният лост за AI-цитиране.
+    knowsAbout: [
+      `град ${SITE.geo.city}`,
+      "местни услуги и телефони",
+      "електронно управление",
+      "социални помощи",
+      "защита от измами",
+      "обмяна на левове в евро",
+      "транспорт и автобусни разписания",
+    ],
     areaServed: [
       { "@type": "AdministrativeArea", name: `Община ${SITE.geo.city}` },
       { "@type": "City", name: SITE.geo.city },
