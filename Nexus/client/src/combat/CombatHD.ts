@@ -44,6 +44,7 @@ export interface RenderBackend {
   ssrPass: SSRPass | null;
   taaPass: TAARenderPass | null;
   rgbShift: ShaderPass | null;
+  vignettePass: ShaderPass | null;
   // Exposed for the GUI to flip live.
   tuneables: HDTuneables;
   // Frame submission — call once per rAF.
@@ -186,7 +187,7 @@ export async function createCombatBackend(opts: {
       kind: 'webgl1-lite',
       renderer,
       composer: null,
-      bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null,
+      bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null, vignettePass: null,
       tuneables,
       render: () => renderer.render(scene, camera),
       dispose: () => {
@@ -229,7 +230,7 @@ export async function createCombatBackend(opts: {
             kind: 'webgpu',
             renderer: renderer as any,
             composer: null,
-            bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null,
+            bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null, vignettePass: null,
             tuneables,
             render: () => renderer.render(scene, camera),
             dispose: () => {
@@ -346,6 +347,7 @@ export async function createCombatBackend(opts: {
     ssrPass,
     taaPass,
     rgbShift,
+    vignettePass: vignette,
     tuneables,
     render: () => composer.render(),
     dispose: () => {

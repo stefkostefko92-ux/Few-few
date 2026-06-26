@@ -77,10 +77,14 @@ export const warriorBasic: Timeline = {
   ],
   cues: [
     cue(0.02, 'rig.crossfade', { side: 'attacker', action: 'attack', dur: 0.10 }),
+    // Heel-plant dust as the lunge step lands
+    cue(0.15, 'vfx.dustKick',  { intensity: 0.85 }),
     cue(0.18, 'audio',         { name: 'swoosh.heavy' }),
     cue(0.22, 'vfx.slashArc',  { fromX: HERO_BASE_X + 0.5, toX: FOE_BASE_X - 0.3, color: 0xffd34d }),
     cue(0.28, 'vfx.shockwave', { useTarget: true, color: 0xffd34d, bloomKick: { delta: 0.25, recover: 0.25 } }),
     cue(0.28, 'vfx.burst',     { useTarget: true, y: 1.4, count: 35, color: 0xffd34d }),
+    // Foot-plant dust at impact (target end)
+    cue(0.28, 'vfx.dustKick',  { useTarget: true, intensity: 1.1 }),
     cue(0.28, 'shake',         { amount: 0.30, dur: 0.18 }),
     cue(0.28, 'hitstop',       { dur: 0.06 }),
     cue(0.28, 'audio',         { name: 'impact.thud' }),
@@ -136,8 +140,12 @@ export const rangerBasic: Timeline = {
   cues: [
     cue(0.02, 'rig.crossfade', { side: 'attacker', action: 'attack', dur: 0.12 }),
     cue(0.05, 'audio',         { name: 'bow.draw' }),
+    // Anime wind streak builds during the draw for tension
+    cue(0.30, 'vfx.windStreak',{ color: 0xddeeff }),
     cue(0.45, 'audio',         { name: 'bow.release' }),
     cue(0.45, 'vfx.arrow',     { color: 0x9ad9ff }),
+    // Second wind streak rides the arrow path on release
+    cue(0.45, 'vfx.windStreak',{ color: 0x9ad9ff }),
     cue(0.55, 'audio',         { name: 'impact.flesh' }),
     cue(0.55, 'vfx.burst',     { useTarget: true, y: 1.4, count: 24, color: 0x9ad9ff }),
     cue(0.55, 'shake',         { amount: 0.18, dur: 0.12 }),
@@ -203,11 +211,15 @@ export const mageBasic: Timeline = {
   ],
   cues: [
     cue(0.02, 'rig.crossfade',  { side: 'attacker', action: 'attack', dur: 0.15 }),
+    // Mana wisps gather around the staff during the cast wind-up
+    cue(0.20, 'vfx.manaWisps',  { count: 7, color: 0xc294ff }),
     cue(0.30, 'audio',          { name: 'magic.cast' }),
     cue(0.35, 'vfx.magicCircle',{ useTarget: true, color: 0xc294ff }),
     cue(0.55, 'audio',          { name: 'magic.beam' }),
     cue(0.75, 'vfx.shockwave',  { useTarget: true, color: 0xc294ff, bloomKick: { delta: 0.35, recover: 0.30 } }),
     cue(0.75, 'vfx.burst',      { useTarget: true, y: 1.8, count: 50, color: 0xc294ff }),
+    // God-ray bounce out of the impact point — vertical violet cone
+    cue(0.75, 'vfx.godRay',     { useTarget: true, color: 0xc294ff, height: 5 }),
     cue(0.75, 'shake',          { amount: 0.25, dur: 0.20 }),
     cue(0.75, 'hitstop',        { dur: 0.08 }),
     cue(0.75, 'audio',          { name: 'impact.thud' }),
@@ -265,9 +277,13 @@ export const rogueBasic: Timeline = {
   cues: [
     cue(0.02, 'rig.crossfade', { side: 'attacker', action: 'attack', dur: 0.08 }),
     cue(0.05, 'audio',         { name: 'swoosh.light' }),
+    // Shadow tendrils gather at the start of the shadow-step
+    cue(0.05, 'vfx.shadowTendril', { side: 'attacker', color: 0x2a1a35 }),
     cue(0.10, 'vfx.afterImage',{ tint: 0xe85a4f }),
     cue(0.14, 'vfx.afterImage',{ tint: 0xe85a4f }),
     cue(0.18, 'vfx.afterImage',{ tint: 0xe85a4f }),
+    // Second wisp of shadow at the snap-out frame
+    cue(0.22, 'vfx.shadowTendril', { side: 'attacker', color: 0x2a1a35 }),
     cue(0.30, 'vfx.slashArc',  { fromX: FOE_BASE_X - 0.4, toX: FOE_BASE_X + 0.4, color: 0xe85a4f }),
     cue(0.32, 'audio',         { name: 'impact.flesh' }),
     cue(0.32, 'vfx.burst',     { useTarget: true, y: 1.4, count: 28, color: 0xe85a4f }),
@@ -333,11 +349,31 @@ export const defeatHero: Timeline = {
       k(0.00, 0),
       k(0.40, 0.25, 'cubicInOut'),  // sway sideways
     ]),
+    // Vignette swells and holds — the audience knows it's over even
+    // before the rig finishes folding.
+    track('post.vignette', [
+      k(0.00, 0),
+      k(0.20, 0.0, 'hold'),
+      k(0.60, 0.8, 'cubicInOut'),
+      k(1.65, 0.95, 'cubicInOut'),
+      k(1.95, 0.5, 'cubicInOut'),
+    ]),
+    // Desaturate during the hold beat — colours drain as the fight ends.
+    track('post.desaturation', [
+      k(0.00, 0),
+      k(0.55, 0.0, 'hold'),
+      k(1.20, 0.45, 'cubicInOut'),
+      k(1.65, 0.45, 'hold'),
+      k(1.95, 0, 'cubicOut'),
+    ]),
   ],
   cues: [
     cue(0.05, 'rig.crossfade', { side: 'attacker', action: 'death', dur: 0.25 }),
+    // Dust kick from the buckling knee
+    cue(0.35, 'vfx.dustKick',  { intensity: 1.4 }),
     cue(0.30, 'audio',         { name: 'defeat.collapse' }),
     cue(0.40, 'vfx.burst',     { y: 0.4, count: 35, color: 0x6a6056 }),
+    cue(1.20, 'audio',         { name: 'defeat.hold' }),
   ],
   meta: { tier: 'basic', class: 'defeat' },
 };
@@ -426,6 +462,25 @@ export function applyCritModifier(t: Timeline): Timeline {
     tracks: [
       ...t.tracks.filter((tr) => !overridden.has(tr.channel)),
       ...overrideTracks,
+      // Cinematic slow-mo grade: desaturate the picture while time
+      // crawls, snap back when the world resumes. Authored against the
+      // same impact frame as the timeScale curve so the two move
+      // together — bright impact → desaturated breath → recovery.
+      track('post.desaturation', [
+        k(0.00, 0),
+        k(impactT + 0.16, 0, 'hold'),
+        k(impactT + 0.20, 0.55, 'cubicOut'),
+        k(impactT + 0.45, 0.55, 'hold'),
+        k(impactT + 0.80, 0, 'cubicOut'),
+      ]),
+      // Vignette pulses up briefly to focus attention on the impact.
+      track('post.vignette', [
+        k(0.00, 0),
+        k(impactT - 0.05, 0, 'hold'),
+        k(impactT + 0.05, 0.7, 'cubicOut'),
+        k(impactT + 0.45, 0.7, 'hold'),
+        k(impactT + 0.95, 0, 'cubicInOut'),
+      ]),
     ],
     cues: [
       ...t.cues,
@@ -434,6 +489,10 @@ export function applyCritModifier(t: Timeline): Timeline {
       cue(impactT, 'hitstop',  { dur: 0.12 }),
       cue(impactT, 'shake',    { amount: 0.55, dur: 0.25 }),
       cue(impactT, 'vfx.groundCrack', { useTarget: true, color: sigilColor }),
+      // God-ray bounce + lens flare at the impact point — sells the
+      // "fluorescent burst" of a crit landing.
+      cue(impactT, 'vfx.godRay',   { useTarget: true, color: sigilColor, height: 4.5 }),
+      cue(impactT + 0.04, 'vfx.lensFlare', { color: sigilColor, intensity: 0.7, life: 0.55 }),
       // RGB shift sting
       cue(impactT,        'audio', { name: 'impact.metal', rgbShift: 0.005 }),
       cue(impactT + 0.18, 'audio', { name: 'noop',         rgbShift: 0.0008 }),

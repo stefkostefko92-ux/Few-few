@@ -173,7 +173,13 @@ export class Choreographer {
       case 'bone.attacker.torsoYaw': this.setBone('attacker', 'torsoYaw', v); break;
       case 'bone.attacker.torsoPitch': this.setBone('attacker', 'torsoPitch', v); break;
       case 'bone.attacker.armPitch': this.setBone('attacker', 'armPitch', v); break;
-      // post.* + light.* + timeScale are cue-driven, not track-driven.
+      // Post-process channels are track-sampled too — vignette intensifies
+      // through defeat sequences and desaturation is the cinema-grade
+      // slow-mo grade. The executor pulls them through the VfxBus so the
+      // scene's composer can apply them without leaking state here.
+      case 'post.vignette': this.vfx.setVignette(v); break;
+      case 'post.desaturation': this.vfx.setDesaturation(v); break;
+      // light.* + timeScale + post.bloom + post.rgbShift are cue-driven.
     }
   }
 
@@ -268,6 +274,33 @@ export class Choreographer {
       case 'vfx.groundCrack':
         this.vfx.groundCrack(payload.useTarget ? targetPos.x : attackerPos.x,
           payload.z ?? 0, payload.color ?? 0xff8040);
+        break;
+      case 'vfx.dustKick': {
+        // Spawn under attacker's feet by default, target's if useTarget.
+        const x = payload.useTarget ? targetPos.x : attackerPos.x;
+        this.vfx.dustKick(x, payload.z ?? 0, payload.intensity ?? 1.0);
+        break;
+      }
+      case 'vfx.windStreak': {
+        const fromX = payload.fromX ?? attackerPos.x;
+        const toX = payload.toX ?? targetPos.x;
+        this.vfx.windStreak(fromX, toX, payload.color ?? 0xffffff);
+        break;
+      }
+      case 'vfx.manaWisps': {
+        const x = payload.useTarget ? targetPos.x : attackerPos.x;
+        this.vfx.manaWisps(x, payload.y ?? 1.3, payload.count ?? 6, payload.color ?? 0xc294ff);
+        break;
+      }
+      case 'vfx.shadowTendril':
+        this.vfx.shadowTendril(sideFromPayload(payload.side ?? 'attacker'), payload.color ?? 0x2a1a35);
+        break;
+      case 'vfx.godRay':
+        this.vfx.godRay(payload.useTarget ? targetPos.x : attackerPos.x,
+          payload.z ?? 0, payload.color ?? 0xfff1c4, payload.height ?? 4);
+        break;
+      case 'vfx.lensFlare':
+        this.vfx.lensFlare(payload.color ?? 0xffe0a0, payload.intensity ?? 0.6, payload.life ?? 0.4);
         break;
       case 'shake':
         this.vfx.shake(payload.amount ?? 0.3, payload.dur ?? 0.18);

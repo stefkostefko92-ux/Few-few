@@ -29,7 +29,7 @@ export type NumericChannel =
   | 'root.target.x'   | 'root.target.y'   | 'root.target.z'
   | 'bone.attacker.torsoYaw' | 'bone.attacker.torsoPitch'
   | 'bone.attacker.armPitch'
-  | 'post.bloom' | 'post.rgbShift' | 'post.vignette' | 'post.fogDensity'
+  | 'post.bloom' | 'post.rgbShift' | 'post.vignette' | 'post.desaturation' | 'post.fogDensity'
   | 'light.attacker' | 'light.target'
   | 'timeScale';
 
@@ -52,6 +52,10 @@ export type CueType =
   | 'vfx.shockwave' | 'vfx.slashArc' | 'vfx.magicCircle' | 'vfx.arrow'
   | 'vfx.afterImage' | 'vfx.burst' | 'vfx.sigilFlash' | 'vfx.groundCrack'
   | 'vfx.scratch'
+  // Ambient signature layer per class — fired alongside the impact cues
+  // so attacks feel grounded in the world, not pasted on top of it.
+  | 'vfx.dustKick' | 'vfx.windStreak' | 'vfx.manaWisps' | 'vfx.shadowTendril'
+  | 'vfx.godRay' | 'vfx.lensFlare'
   // Rig
   | 'rig.crossfade'
   // Camera convenience

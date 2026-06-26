@@ -28,6 +28,22 @@ export interface VfxBus {
   sigilFlash: (glyph: string, color: number) => void;
   /** Chromatic ground crack decal expanding from a point. */
   groundCrack: (x: number, z: number, color: number) => void;
+  /** Boots-on-dirt cloud — small grey burst kicked up from the lunge feet. */
+  dustKick: (x: number, z: number, intensity?: number) => void;
+  /** Anime wind streak — horizontal motion lines that fly past the camera. */
+  windStreak: (fromX: number, toX: number, color: number) => void;
+  /** Floating runic wisps orbiting a point. Used during mage cast. */
+  manaWisps: (x: number, y: number, count: number, color: number) => void;
+  /** Inky shadow tendrils trailing a side during a shadow-step. */
+  shadowTendril: (side: 'hero' | 'foe', color: number) => void;
+  /** Ground-up god-ray bounce — vertical light cone from an impact point. */
+  godRay: (x: number, z: number, color: number, height?: number) => void;
+  /** Lens flare blip on the camera near a fighter's tint. */
+  lensFlare: (color: number, intensity?: number, life?: number) => void;
+  /** Vignette intensity (0..1). Timeline-driven via post.vignette channel. */
+  setVignette: (intensity: number) => void;
+  /** Desaturate the picture (0..1, 0=normal, 1=greyscale) — used in slow-mo. */
+  setDesaturation: (amount: number) => void;
   /** Camera shake controller. */
   shake: (amount: number, time: number) => void;
   /** Hit-stop controller — freezes simulation for `dur` seconds. */
@@ -58,6 +74,8 @@ export function emptyVfxBus(): VfxBus {
   return {
     shockwave: noop, slashArc: noop, magicCircle: noop, arrow: noop,
     afterImage: noop, burst: noop, sigilFlash: noop, groundCrack: noop,
+    dustKick: noop, windStreak: noop, manaWisps: noop, shadowTendril: noop,
+    godRay: noop, lensFlare: noop, setVignette: noop, setDesaturation: noop,
     shake: noop, hitstop: noop, bloomKick: noop, setRgbShift: noop,
     lightPulse: noop,
     cameraAnchor: () => ({ x: 0, y: 1.9, z: 6, lx: 0, ly: 1.3, lz: 0, fov: 48 }),

@@ -307,6 +307,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   // `.update(dt)`.
   const choreoRef = useRef<Choreographer | null>(null);
   const bloomKickRecoverRef = useRef(0.30);
+  /** Two-sine handheld micro-shake offset added to the camera anchor on
+   *  top of the choreographer's tracks. Keeps every shot subtly alive
+   *  even on a still timeline frame. */
+  const idleHandheldRef = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -362,6 +366,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     let composer: import('three/examples/jsm/postprocessing/EffectComposer.js').EffectComposer | null = null;
     let bloom: import('three/examples/jsm/postprocessing/UnrealBloomPass.js').UnrealBloomPass | null = null;
     let rgbShift: import('three/examples/jsm/postprocessing/ShaderPass.js').ShaderPass | null = null;
+    let vignettePass: import('three/examples/jsm/postprocessing/ShaderPass.js').ShaderPass | null = null;
+    // Desaturation amount the bus sets (slow-mo). The composer doesn't
+    // expose a saturation pass directly, so we fake it by tinting the
+    // vignette darkness up and modulating the scene's renderer
+    // toneMappingExposure subtly. Range 0..1.
+    let desaturationAmt = 0;
 
     /* ----- sky parallax cylinder ----- */
     {
@@ -819,6 +829,131 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.add(plane);
     }
 
+    /** Dust kick — short-lived grey particle puff at ground level + a
+     *  thin shockwave-style ring. Sells the "boots on dirt" weight of
+     *  a warrior or rogue lunge. */
+    function dustKick(x: number, z: number, intensity: number) {
+      // Small horizontal mist ring
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xb8a988, transparent: true, opacity: 0.55 * intensity,
+        blending: THREE.NormalBlending, depthWrite: false, side: THREE.DoubleSide,
+      });
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.18, 18), ringMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(x, 0.03, z);
+      ring.userData = { kind: 'dustRing', life: 0, max: 0.45 };
+      fxGroup.add(ring);
+      // 12-20 dust motes drifting away + up
+      spawnBurst(x, 0.10, z, Math.round(12 * intensity), 0xc7b89a);
+    }
+
+    /** Wind streak — horizontal additive line spawning between attacker
+     *  and target, drifting toward camera. Used by ranger draw + release. */
+    function windStreak(fromX: number, toX: number, color: number) {
+      const dir = Math.sign(toX - fromX) || 1;
+      const xMid = (fromX + toX) / 2;
+      const mat = new THREE.MeshBasicMaterial({
+        color, transparent: true, opacity: 0.55,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(
+          new THREE.LineCurve3(
+            new THREE.Vector3(fromX, 1.6, 0.5),
+            new THREE.Vector3(toX - dir * 0.3, 1.55, 0.45),
+          ),
+          6, 0.025, 6, false,
+        ),
+        mat,
+      );
+      tube.userData = { kind: 'windStreak', life: 0, max: 0.30 };
+      fxGroup.add(tube);
+      // Small dust motes along the path
+      for (let i = 0; i < 5; i++) {
+        const t = i / 4;
+        spawnBurst(fromX + (toX - fromX) * t, 1.4 + Math.random() * 0.3, 0.3, 2, color);
+      }
+      void xMid;
+    }
+
+    /** Floating mana wisps orbiting a point. Used by mage cast wind-up. */
+    function manaWisps(x: number, y: number, count: number, color: number) {
+      const baseTime = performance.now() / 1000;
+      for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2;
+        const r = 0.6 + Math.random() * 0.3;
+        const wisp = new THREE.Mesh(
+          new THREE.SphereGeometry(0.05, 8, 6),
+          new THREE.MeshBasicMaterial({
+            color, transparent: true, opacity: 0.9,
+            blending: THREE.AdditiveBlending, depthWrite: false,
+          }),
+        );
+        wisp.position.set(x + Math.cos(angle) * r, y - 0.2, Math.sin(angle) * r * 0.4);
+        wisp.userData = {
+          kind: 'wisp', life: 0, max: 0.9,
+          orbitX: x, orbitY: y, orbitR: r, orbitPhase: angle, t0: baseTime,
+        };
+        fxGroup.add(wisp);
+      }
+    }
+
+    /** Inky shadow tendrils trailing the rogue during shadow-step. */
+    function shadowTendril(side: 'hero' | 'foe', color: number) {
+      const src = side === 'hero' ? heroRigRef.current : foeRigRef.current;
+      if (!src) return;
+      const pos = src.position;
+      for (let i = 0; i < 5; i++) {
+        const tendril = new THREE.Mesh(
+          new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 6, 6),
+          new THREE.MeshBasicMaterial({
+            color, transparent: true, opacity: 0.45,
+            blending: THREE.NormalBlending, depthWrite: false,
+          }),
+        );
+        tendril.position.set(
+          pos.x + (Math.random() - 0.5) * 0.5,
+          0.3 + Math.random() * 1.5,
+          (Math.random() - 0.5) * 0.4,
+        );
+        tendril.userData = { kind: 'tendril', life: 0, max: 0.55 };
+        fxGroup.add(tendril);
+      }
+    }
+
+    /** Ground-up god-ray bounce — vertical cone of soft light at the
+     *  impact point. Sells the "fluorescent burst" of a crit landing. */
+    function godRay(x: number, z: number, color: number, height: number) {
+      const geo = new THREE.ConeGeometry(0.8, height, 16, 1, true);
+      const mat = new THREE.MeshBasicMaterial({
+        color, transparent: true, opacity: 0.35,
+        blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+      });
+      const cone = new THREE.Mesh(geo, mat);
+      cone.position.set(x, height / 2, z);
+      // Cone points down by default; flip so the apex is at ground.
+      cone.rotation.x = Math.PI;
+      cone.userData = { kind: 'godRay', life: 0, max: 0.7 };
+      fxGroup.add(cone);
+    }
+
+    /** Lens flare — additive sprite attached to the camera that flickers
+     *  briefly. Used after a crit impact for that "lens caught the light"
+     *  cinematic punctuation. */
+    function lensFlare(color: number, intensity: number, life: number) {
+      const cam = cameraRef.current;
+      if (!cam) return;
+      const mat = new THREE.MeshBasicMaterial({
+        color, transparent: true, opacity: intensity,
+        blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false,
+        toneMapped: false,
+      });
+      const flare = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), mat);
+      flare.position.set(0.5, 0.3, -2);
+      flare.userData = { kind: 'lensFlare', life: 0, max: life, peak: intensity };
+      cam.add(flare);
+    }
+
     /** Chromatic ground crack — radial decal expanding from a point. */
     function groundCrack(x: number, z: number, color: number) {
       const mat = new THREE.MeshBasicMaterial({
@@ -955,6 +1090,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       backend = b;
       renderer = b.renderer;
       composer = b.composer;
+      vignettePass = b.vignettePass;
       bloom = b.bloomPass;
       rgbShift = b.rgbShift;
       try { mount.removeChild(loadingBg); } catch {}
@@ -999,6 +1135,27 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       burst: (x, y, z, count, color) => spawnBurst(x, y, z, count, color),
       sigilFlash: (glyph, color) => sigilFlash(glyph, color),
       groundCrack: (x, z, color) => groundCrack(x, z, color),
+      dustKick: (x, z, intensity) => dustKick(x, z, intensity ?? 1.0),
+      windStreak: (fromX, toX, color) => windStreak(fromX, toX, color),
+      manaWisps: (x, y, count, color) => manaWisps(x, y, count, color),
+      shadowTendril: (side, color) => shadowTendril(side, color),
+      godRay: (x, z, color, height) => godRay(x, z, color, height ?? 4),
+      lensFlare: (color, intensity, life) => lensFlare(color, intensity ?? 0.6, life ?? 0.4),
+      setVignette: (intensity) => {
+        if (vignettePass) {
+          // Map 0..1 → darkness 0.95..1.4 (baseline 0.95, doubles
+          // toward fully dark at intensity=1).
+          vignettePass.uniforms['darkness'].value = 0.95 + intensity * 0.55;
+        }
+      },
+      setDesaturation: (amount) => {
+        desaturationAmt = Math.max(0, Math.min(1, amount));
+        // Pulling tone-mapping exposure down a bit + tinting bloom strength
+        // sells the cinematic slow-mo grade without an extra pass.
+        if (renderer && tuneables) {
+          renderer.toneMappingExposure = tuneables.exposure * (1 - amount * 0.20);
+        }
+      },
       shake: (amount, time) => { shakeRef.current = { amount, t: time }; },
       hitstop: (dur) => { hitStopRef.current = dur; },
       bloomKick: (delta, recover) => {
@@ -1112,6 +1269,30 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           const r = 0.4 + k * 5.5;
           obj.scale.set(r, r, r);
           mat.opacity = (1 - k) * 0.8;
+        } else if (ud.kind === 'dustRing') {
+          const r = 1 + k * 3.5;
+          obj.scale.set(r, r, r);
+          mat.opacity = (1 - k) * 0.55;
+        } else if (ud.kind === 'windStreak') {
+          mat.opacity = (1 - k) * 0.55;
+          obj.position.z += dt * 0.8; // drift toward camera
+        } else if (ud.kind === 'wisp') {
+          // Orbit + rise + fade
+          const orbitSpeed = 4.5;
+          const phase = ud.orbitPhase + (now * 0.001 - ud.t0) * orbitSpeed;
+          obj.position.x = ud.orbitX + Math.cos(phase) * ud.orbitR * (1 - k * 0.4);
+          obj.position.y = ud.orbitY - 0.2 + k * 1.4;
+          obj.position.z = Math.sin(phase) * ud.orbitR * 0.4 * (1 - k * 0.4);
+          mat.opacity = k < 0.3 ? (k / 0.3) * 0.9 : (1 - (k - 0.3) / 0.7) * 0.9;
+        } else if (ud.kind === 'tendril') {
+          obj.position.y += dt * 1.5;
+          const scale = 1 + k * 0.6;
+          obj.scale.set(scale, scale * 1.4, scale);
+          mat.opacity = (1 - k) * 0.45;
+        } else if (ud.kind === 'godRay') {
+          // Flicker the opacity + slight rotation
+          mat.opacity = (1 - k) * 0.4 * (0.85 + Math.sin(now * 0.05) * 0.15);
+          obj.rotation.y += dt * 1.8;
         }
         if (ud.life >= ud.max) {
           fg.remove(obj);
@@ -1134,18 +1315,31 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       if (cam0) {
         for (let i = cam0.children.length - 1; i >= 0; i--) {
           const o = cam0.children[i] as THREE.Mesh;
-          if (o.userData?.kind !== 'sigil') continue;
-          o.userData.life += dt;
-          const k = Math.min(1, o.userData.life / o.userData.max);
-          // 30ms in → 50ms hold → 120ms out — punchy anime flash curve.
-          const opacity = k < 0.15 ? (k / 0.15) * 0.85
-                        : k < 0.40 ? 0.85
-                        : (1 - (k - 0.40) / 0.60) * 0.85;
-          (o.material as THREE.MeshBasicMaterial).opacity = Math.max(0, opacity);
-          if (o.userData.life >= o.userData.max) {
-            cam0.remove(o);
-            o.geometry?.dispose?.();
-            (o.material as any).dispose?.();
+          if (o.userData?.kind === 'sigil') {
+            o.userData.life += dt;
+            const k = Math.min(1, o.userData.life / o.userData.max);
+            // 30ms in → 50ms hold → 120ms out — punchy anime flash curve.
+            const opacity = k < 0.15 ? (k / 0.15) * 0.85
+                          : k < 0.40 ? 0.85
+                          : (1 - (k - 0.40) / 0.60) * 0.85;
+            (o.material as THREE.MeshBasicMaterial).opacity = Math.max(0, opacity);
+            if (o.userData.life >= o.userData.max) {
+              cam0.remove(o);
+              o.geometry?.dispose?.();
+              (o.material as any).dispose?.();
+            }
+          } else if (o.userData?.kind === 'lensFlare') {
+            o.userData.life += dt;
+            const k = Math.min(1, o.userData.life / o.userData.max);
+            // Sharp pop then bias-decay; bias-randomised flicker on top.
+            const base = k < 0.2 ? (k / 0.2) : (1 - (k - 0.2) / 0.8);
+            const flicker = 0.85 + Math.sin(now * 0.04) * 0.15;
+            (o.material as THREE.MeshBasicMaterial).opacity = Math.max(0, base * o.userData.peak * flicker);
+            if (o.userData.life >= o.userData.max) {
+              cam0.remove(o);
+              o.geometry?.dispose?.();
+              (o.material as any).dispose?.();
+            }
           }
         }
       }
@@ -1159,11 +1353,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       fl.intensity = Math.max(0, fl.intensity - dt * 8);
       // Subtle idle breathing on the rigs — only when the choreographer
       // isn't playing something, otherwise we'd fight its root track.
+      // The two rigs breathe out of phase so the scene reads as alive
+      // even with the camera locked off.
       if (!choreoRef.current?.isPlaying()) {
         const idleBob = Math.sin(now * 0.0014) * 0.015;
         if (heroRigRef.current) heroRigRef.current.position.y = idleBob;
         if (foeRigRef.current) foeRigRef.current.position.y = -idleBob;
       }
+      // Handheld-style micro-shake on the camera anchor — composed of
+      // two slow sines at different freqs so it never repeats cleanly
+      // and never crosses the strobe threshold. Always on but very
+      // subtle; the choreographer's `shake` cue overrides it during
+      // attacks via the existing shakeRef path (additive).
+      idleHandheldRef.current.x = Math.sin(now * 0.00041) * 0.018 + Math.sin(now * 0.00073) * 0.010;
+      idleHandheldRef.current.y = Math.sin(now * 0.00033) * 0.013 + Math.sin(now * 0.00067) * 0.008;
 
       // Intro orbital sweep — overrides camera anchor for the first 1.4s.
       const intro = introRef.current;
@@ -1191,8 +1394,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const shakeY = s.t > 0 ? (Math.random() - 0.5) * s.amount * (s.t / 0.35) : 0;
 
       const lerpK = intro.active ? Math.min(1, rawDt * 8) : Math.min(1, rawDt * 6);
-      cam.position.x += (camTargetX + shakeX - cam.position.x) * lerpK;
-      cam.position.y += (camTargetY + shakeY - cam.position.y) * lerpK;
+      const hh = idleHandheldRef.current;
+      cam.position.x += (camTargetX + shakeX + hh.x - cam.position.x) * lerpK;
+      cam.position.y += (camTargetY + shakeY + hh.y - cam.position.y) * lerpK;
       cam.position.z += (camTargetZ - cam.position.z) * Math.min(1, rawDt * 4);
       // Dolly-zoom FOV lerp
       cam.fov += (camTargetFov - cam.fov) * Math.min(1, rawDt * 5);
