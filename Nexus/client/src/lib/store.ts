@@ -24,7 +24,7 @@ interface State {
 
   init: () => Promise<void>;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, dateOfBirth: string, country: string) => Promise<void>;
   logout: () => void;
 
   refreshCharacter: () => Promise<void>;
@@ -99,10 +99,10 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
-  async register(username, email, password) {
+  async register(username, email, password, dateOfBirth, country) {
     set({ loading: true });
     try {
-      const r = await api.post('/auth/register', { username, email, password });
+      const r = await api.post('/auth/register', { username, email, password, dateOfBirth, country });
       setToken(r.token);
       set({ token: r.token, user: r.user, character: null });
     } finally {

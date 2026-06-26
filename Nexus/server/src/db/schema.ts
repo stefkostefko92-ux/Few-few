@@ -224,6 +224,16 @@ export function applySchema(db: Database.Database): void {
     );
   `);
 
+  // GDPR Art. 8 — age-gate columns on users. date_of_birth is collected
+  // once at registration and never displayed back; country picks the
+  // member-state digital-consent threshold (BG/IT 14, FR 15, DE/AT/IE
+  // /others 16). Stored on the user row so future Stripe/OSS jobs can
+  // cross-check the buyer's billing country.
+  const usrCols = db.prepare(`PRAGMA table_info(users)`).all() as { name: string }[];
+  const usrHave = new Set(usrCols.map((c) => c.name));
+  if (!usrHave.has('date_of_birth')) db.exec(`ALTER TABLE users ADD COLUMN date_of_birth TEXT`);
+  if (!usrHave.has('country')) db.exec(`ALTER TABLE users ADD COLUMN country TEXT`);
+
   // Idempotent lifetime-stat column additions.
   const cols = db.prepare(`PRAGMA table_info(characters)`).all() as { name: string }[];
   const have = new Set(cols.map((c) => c.name));

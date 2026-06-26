@@ -477,7 +477,17 @@ export default function Landing(): React.ReactElement {
             <h4>Studio</h4>
             <Link to="/terms">Terms of Service</Link>
             <Link to="/privacy">Privacy Policy</Link>
-            <a href="mailto:support@nexus-dominion.example">Contact Support</a>
+            <a href="mailto:support@carbonstealth.eu">Contact Support</a>
+            {/* GDPR Art. 7(3) + ePrivacy Art. 7 — withdrawal must be as easy
+                as granting consent. Re-opens the cookie banner with the
+                current state so the user can flip categories or reject all. */}
+            <button
+              type="button"
+              onClick={() => { try { window.dispatchEvent(new CustomEvent('nd:open-cookie-banner')); } catch {} }}
+              style={{ background: 'none', border: 0, padding: 0, color: 'inherit', font: 'inherit', textDecoration: 'underline', cursor: 'pointer', textAlign: 'left' }}
+            >
+              Cookie settings
+            </button>
           </div>
         </div>
         <div className="footer-bottom">

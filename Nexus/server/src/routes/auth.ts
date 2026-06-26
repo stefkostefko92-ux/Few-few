@@ -47,10 +47,32 @@ export const passwordRule = z.string().min(8).max(100)
   .refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), 'Password is too common');
 export const PASSWORD_BCRYPT_ROUNDS = 12;
 
+// GDPR Art. 8 — digital consent age varies per member state. Bulgaria and
+// Italy set the floor at 14 (ЗЗЛД 25е / Codice Privacy 2-quinquies); France
+// 15; Germany / most other EU 16; non-EU 13 as a global floor.
+const AGE_OF_DIGITAL_CONSENT: Record<string, number> = {
+  BG: 14, IT: 14, FR: 15,
+  DE: 16, AT: 16, IE: 16, HU: 16, NL: 16, LU: 16, LT: 16, RO: 16, SK: 16, HR: 16,
+  default: 16,
+};
+
+function ageFromDob(dob: string, now = new Date()): number {
+  const d = new Date(dob);
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
+}
+
 const registerSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/, 'Use letters, numbers, underscores only'),
   email: z.string().email(),
   password: passwordRule,
+  // ISO date (YYYY-MM-DD) — never displayed back. Used once at register
+  // time for the age gate and stored hashed-less so the user can later
+  // amend it via a support request (no self-service field).
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of birth required'),
+  country: z.string().length(2).regex(/^[A-Z]{2}$/),
 });
 
 router.post('/register', async (req, res) => {
@@ -59,7 +81,21 @@ router.post('/register', async (req, res) => {
     res.status(400).json({ error: parse.error.flatten() });
     return;
   }
-  const { username, email, password } = parse.data;
+  const { username, email, password, dateOfBirth, country } = parse.data;
+  // Server-side age gate — the client UI also blocks but a hand-rolled
+  // POST would bypass it. We refuse the registration entirely below the
+  // threshold instead of asking for parental consent (the operator does
+  // not have the parental-consent infrastructure yet).
+  const minAge = AGE_OF_DIGITAL_CONSENT[country] ?? AGE_OF_DIGITAL_CONSENT.default;
+  const age = ageFromDob(dateOfBirth);
+  if (!Number.isFinite(age) || age < 0 || age > 130) {
+    res.status(400).json({ error: 'Invalid date of birth' });
+    return;
+  }
+  if (age < minAge) {
+    res.status(403).json({ error: `Registration requires age ${minAge}+ in ${country}.` });
+    return;
+  }
   const db = getDb();
   const existing = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
   if (existing) {
@@ -69,11 +105,11 @@ router.post('/register', async (req, res) => {
   const hash = await bcrypt.hash(password, 12);  // audit #14: rounds 12 ≥ OWASP guidance
   const now = Date.now();
   const info = db
-    .prepare('INSERT INTO users (username, email, password_hash, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?)')
-    .run(username, email, hash, now, now);
+    .prepare('INSERT INTO users (username, email, password_hash, date_of_birth, country, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .run(username, email, hash, dateOfBirth, country, now, now);
   const uid = info.lastInsertRowid as number;
   const token = signToken({ uid, username }, 0);
-  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email } });
+  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email, country, age } });
   res.status(201).json({ token, user: { id: uid, username, email, is_admin: 0 } });
 });
 
