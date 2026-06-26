@@ -22,7 +22,8 @@ export function recordJob(job: string, outcome: "completed" | "failed"): void {
 }
 
 export function startMetricsServer(): void {
-  const port = Number(process.env.WORKER_METRICS_PORT ?? 9091);
+  const parsed = Number(process.env.WORKER_METRICS_PORT);
+  const port = Number.isInteger(parsed) && parsed > 0 ? parsed : 9091;
   const server = createServer((req, res) => {
     if (req.url === "/health") {
       res.writeHead(200, { "content-type": "application/json" });
@@ -30,10 +31,17 @@ export function startMetricsServer(): void {
       return;
     }
     if (req.url === "/metrics") {
-      void registry.metrics().then((body) => {
-        res.writeHead(200, { "content-type": registry.contentType });
-        res.end(body);
-      });
+      registry
+        .metrics()
+        .then((body) => {
+          res.writeHead(200, { "content-type": registry.contentType });
+          res.end(body);
+        })
+        .catch((err: unknown) => {
+          logger.error({ err }, "metrics render failed");
+          res.writeHead(500);
+          res.end();
+        });
       return;
     }
     res.writeHead(404);

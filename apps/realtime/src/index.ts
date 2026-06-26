@@ -95,10 +95,16 @@ async function main(): Promise<void> {
       return;
     }
     if (req.url === "/metrics") {
-      void metricsText().then(({ body, type }) => {
-        res.writeHead(200, { "content-type": type });
-        res.end(body);
-      });
+      metricsText()
+        .then(({ body, type }) => {
+          res.writeHead(200, { "content-type": type });
+          res.end(body);
+        })
+        .catch((err: unknown) => {
+          logger.error({ err }, "metrics render failed");
+          res.writeHead(500);
+          res.end();
+        });
       return;
     }
     res.writeHead(404);

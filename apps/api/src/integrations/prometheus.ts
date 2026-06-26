@@ -1,5 +1,6 @@
 import { collectDefaultMetrics, Histogram, Registry } from "prom-client";
 import type { RequestHandler } from "express";
+import { logger } from "../logger.js";
 
 /**
  * Prometheus metrics for the API (§ ops / launch readiness). Exposes process +
@@ -31,8 +32,14 @@ export const metricsMiddleware: RequestHandler = (req, res, next) => {
 };
 
 export const metricsHandler: RequestHandler = (_req, res) => {
-  void registry.metrics().then((body) => {
-    res.setHeader("content-type", registry.contentType);
-    res.end(body);
-  });
+  registry
+    .metrics()
+    .then((body) => {
+      res.setHeader("content-type", registry.contentType);
+      res.end(body);
+    })
+    .catch((err: unknown) => {
+      logger.error({ err }, "metrics render failed");
+      if (!res.headersSent) res.status(500).end();
+    });
 };
