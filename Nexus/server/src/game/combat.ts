@@ -69,8 +69,13 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
     const defender = heroTurn ? F : H;
     const attackerSide: 'hero' | 'foe' = heroTurn ? 'hero' : 'foe';
 
-    // Dodge check
-    if (rng() < defender.dodge_chance) {
+    // Dodge check. Clamp the effective dodge to 0.75 here regardless of
+    // where the stat came from (buffs, set bonuses, NPC seeds) — a value
+    // ≥ 1.0 would make the defender literally unhittable and reduce the
+    // fight to a timer. PvP stats are already capped at 0.45 upstream;
+    // this is the universal floor-of-safety. (Balance audit.)
+    const dodgeP = Math.min(0.75, defender.dodge_chance);
+    if (rng() < dodgeP) {
       rounds.push({
         index,
         attacker: attackerSide,
@@ -153,7 +158,15 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
   if (H.hp > 0 && F.hp > 0) {
     const heroPct = (F.hp_max - F.hp) / Math.max(1, F.hp_max);
     const foePct = (H.hp_max - H.hp) / Math.max(1, H.hp_max);
-    winner = heroPct >= foePct ? 'hero' : 'foe';
+    // On an exact percentage tie don't hand the win to the hero by
+    // default (the old `>=` did, which let two identical arena builds
+    // resolve in the attacker's favour every time). Break the tie by
+    // initiative — faster fighter wins; if speed is also equal fall back
+    // to a final RNG coin-flip so it stays fair. (Balance audit.)
+    if (heroPct > foePct) winner = 'hero';
+    else if (foePct > heroPct) winner = 'foe';
+    else if (H.speed !== F.speed) winner = H.speed > F.speed ? 'hero' : 'foe';
+    else winner = rng() < 0.5 ? 'hero' : 'foe';
   } else {
     winner = H.hp > 0 ? 'hero' : 'foe';
   }

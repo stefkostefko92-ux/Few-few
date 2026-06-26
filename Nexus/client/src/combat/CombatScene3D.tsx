@@ -69,10 +69,37 @@ export interface CombatScene3DHandle {
   resetCamera: () => void;
 }
 
+/** Live HUD payload for the floating health bar above a fighter's head. */
+export interface FighterHud {
+  name: string;
+  level: number;
+  /** Current HP as a 0..100 percentage. */
+  hpPct: number;
+  /** Trailing "ghost" HP (the white lost-chunk that lags behind). 0..100. */
+  ghostPct: number;
+  hp: number;
+  hpMax: number;
+}
+
+/** A floating damage number anchored over the struck fighter. */
+export interface DamagePop {
+  id: number;
+  side: 'hero' | 'foe';
+  text: string;
+  kind: 'normal' | 'big' | 'crit' | 'miss' | 'dodge' | 'block';
+}
+
 interface Props {
   heroClass: string;
   foeClass: string;
   region?: string;
+  /** When provided, the 3D scene renders floating health bars above each
+   *  fighter's head, projected from their world position every frame and
+   *  driven by these live values (real-time as the fight resolves). */
+  heroHud?: FighterHud;
+  foeHud?: FighterHud;
+  /** Floating damage numbers anchored over the struck fighter. */
+  pops?: DamagePop[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -274,8 +301,19 @@ const CLASS_TINT: Record<string, string> = {
   rogue:   '#e85a4f',
 };
 
-const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass, foeClass, region = 'whispering_woods' }, ref) => {
+const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass, foeClass, region = 'whispering_woods', heroHud, foeHud, pops }, ref) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  // DOM overlay anchors for the floating HUD. Positioned imperatively each
+  // frame inside the rAF tick by projecting the rig head world position to
+  // screen space — see `projectHud()` in the loop.
+  const heroBarRef = useRef<HTMLDivElement>(null);
+  const foeBarRef = useRef<HTMLDivElement>(null);
+  const popLayerRef = useRef<HTMLDivElement>(null);
+  // Latest HUD props mirrored into a ref so the rAF tick (which closes over
+  // the first render's props) always reads current values without
+  // re-running the heavy scene-setup effect.
+  const hudRef = useRef<{ hero?: FighterHud; foe?: FighterHud }>({});
+  hudRef.current = { hero: heroHud, foe: foeHud };
   const vfxRef = useRef<{
     burst: (x: number, y: number, z: number, color: number, count: number, speedScale?: number) => void;
     shockwave: (x: number, z: number, color: number) => void;
@@ -1072,7 +1110,11 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       if (composer) composer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      // Invalidate the cached mount rect so the HUD projector re-reads it.
+      mountRectDirty.flag = true;
     }
+    // Shared dirty flag for the HUD projector's cached mount dimensions.
+    const mountRectDirty = { flag: true };
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
 
@@ -1188,11 +1230,62 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       vfxBus,
     );
 
+    /* ----- floating HUD projection helper ----- */
+    // Scratch vector reused every frame (no per-frame alloc).
+    const hudProjVec = new THREE.Vector3();
+    const mountRect = { w: 0, h: 0 };
+    function projectHud(rig: THREE.Object3D | null, bar: HTMLDivElement | null, camera: THREE.PerspectiveCamera) {
+      if (!bar) return;
+      if (!rig) { bar.style.opacity = '0'; return; }
+      // Anchor a touch above the rig's head (rig is ~2.4u tall, feet at y=0).
+      hudProjVec.set(rig.position.x, 2.85, rig.position.z);
+      hudProjVec.project(camera);
+      // Behind the camera → hide.
+      if (hudProjVec.z > 1) { bar.style.opacity = '0'; return; }
+      if (mountRectDirty.flag || mountRect.w === 0) {
+        mountRect.w = mount.clientWidth; mountRect.h = mount.clientHeight;
+        mountRectDirty.flag = false;
+      }
+      const sx = (hudProjVec.x * 0.5 + 0.5) * mountRect.w;
+      const sy = (-hudProjVec.y * 0.5 + 0.5) * mountRect.h;
+      bar.style.opacity = '1';
+      bar.style.transform = `translate(-50%, -100%) translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px)`;
+    }
+
+    /* ----- adaptive resolution monitor -----
+     * If the rolling average frame time stays high, ratchet the renderer
+     * pixel ratio down once (then again if still slow). One-way so it
+     * never oscillates. Saves laptops + mid phones that picked the WebGL2
+     * path but can't quite hold 60fps with the full post chain. */
+    let frameAccum = 0, frameCount = 0;
+    let dprStep = 0;               // 0 = untouched, 1 = first drop, 2 = floor
+    const DPR_STEPS = [1.5, 1.15, 0.85];
+    function adaptiveResolution(dtMs: number) {
+      if (!renderer || dprStep >= DPR_STEPS.length - 1) return;
+      frameAccum += dtMs; frameCount++;
+      if (frameCount < 90) return;  // ~1.5s window
+      const avg = frameAccum / frameCount;
+      frameAccum = 0; frameCount = 0;
+      // 28ms ≈ 36fps sustained → step down.
+      if (avg > 28) {
+        dprStep++;
+        const target = Math.min(window.devicePixelRatio, DPR_STEPS[dprStep]);
+        renderer.setPixelRatio(target);
+        composer?.setPixelRatio(target);
+        const w = mount.clientWidth, h = mount.clientHeight;
+        renderer.setSize(w, h, false);
+        composer?.setSize(w, h);
+        mountRectDirty.flag = true;
+      }
+    }
+
     /* ----- main loop ----- */
     let last = performance.now();
     function tick(now: number) {
-      const rawDt = Math.min(0.05, (now - last) / 1000);
+      const frameMs = now - last;          // real (uncapped) frame time
+      const rawDt = Math.min(0.05, frameMs / 1000);
       last = now;
+      adaptiveResolution(frameMs > 0 && frameMs < 1000 ? frameMs : 16);
 
       // Hit-stop freezes simulation for a few frames (camera + bloom still tick).
       const ts = timeScaleRef.current;
@@ -1403,6 +1496,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
 
+      // Floating HUD projection — anchor each health bar above its rig's
+      // head by projecting a world point to screen space. Runs every
+      // frame so the bars ride the camera dolly / shake. The fill width
+      // is React-driven (props → JSX), only the transform is imperative.
+      projectHud(heroRigRef.current, heroBarRef.current, cam);
+      projectHud(foeRigRef.current, foeBarRef.current, cam);
+
       // Bloom + RGB shift ease back to their tuneables baseline. The
       // Choreographer fires `bloomKick(delta, recover)` cues that nudge
       // the values up; this recovery pulls them back over
@@ -1530,7 +1630,51 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     },
   }));
 
-  return <div ref={mountRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} aria-hidden />;
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      <div ref={mountRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} aria-hidden />
+      {/* Floating health bars — positioned imperatively each frame by the
+          rAF projector; the fill width is React-driven so it updates in
+          real time as the fight resolves. */}
+      {heroHud && (
+        <FloatingHealthBar innerRef={heroBarRef} hud={heroHud} side="hero" />
+      )}
+      {foeHud && (
+        <FloatingHealthBar innerRef={foeBarRef} hud={foeHud} side="foe" />
+      )}
+      {/* Damage-number layer — anchored over the hero/foe slot. */}
+      <div ref={popLayerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 6 }}>
+        {(pops || []).map((p) => (
+          <div key={p.id} className={`combat3d-pop ${p.side} ${p.kind}`}>{p.text}</div>
+        ))}
+      </div>
+    </div>
+  );
 });
+
+/** Floating health bar rendered above a fighter's head. The wrapper is
+ *  transform-positioned by the scene's rAF tick; this component only owns
+ *  the visual fill + ghost trail + label. */
+function FloatingHealthBar({
+  innerRef, hud, side,
+}: {
+  innerRef: React.RefObject<HTMLDivElement>;
+  hud: FighterHud;
+  side: 'hero' | 'foe';
+}): React.ReactElement {
+  return (
+    <div ref={innerRef} className={`combat3d-hpbar ${side}`}>
+      <div className="combat3d-hpbar-name">
+        <span className="nm">{hud.name}</span>
+        <span className="lv">Lv {hud.level}</span>
+      </div>
+      <div className="combat3d-hpbar-track">
+        <div className="combat3d-hpbar-ghost" style={{ width: `${Math.max(hud.ghostPct, hud.hpPct)}%` }} />
+        <div className="combat3d-hpbar-fill" style={{ width: `${hud.hpPct}%` }} />
+      </div>
+      <div className="combat3d-hpbar-num">{Math.max(0, Math.round(hud.hp))} / {hud.hpMax}</div>
+    </div>
+  );
+}
 
 export default CombatScene3D;

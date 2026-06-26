@@ -822,3 +822,105 @@
   .combat-stage .embers,
   .combat-stage .idle-bob { animation: none !important; }
 }
+
+/* ============================================================
+   Floating 3D HUD — health bars anchored above each fighter's
+   head + damage numbers. Positioned imperatively by the scene's
+   rAF projector (translate set inline); these rules own the look.
+   ============================================================ */
+.combat3d-hpbar {
+  position: absolute;
+  top: 0; left: 0;
+  width: 160px;
+  /* transform is set every frame by the projector (translate -50%,-100%
+     + screen px). Start hidden until the first projection lands. */
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+  z-index: 7;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.55));
+}
+.combat3d-hpbar-name {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 6px; margin-bottom: 2px; padding: 0 2px;
+  line-height: 1.1;
+}
+.combat3d-hpbar-name .nm {
+  font-size: 12px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.combat3d-hpbar-name .lv {
+  font-size: 10px; font-weight: 600; color: #ffd36a;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+}
+.combat3d-hpbar-track {
+  position: relative;
+  height: 9px;
+  border-radius: 5px;
+  background: rgba(8,10,16,.85);
+  border: 1px solid rgba(255,255,255,.18);
+  overflow: hidden;
+}
+.combat3d-hpbar-ghost {
+  position: absolute; inset: 0 auto 0 0; height: 100%;
+  background: rgba(255,255,255,.45);
+  transition: width .55s cubic-bezier(.4,0,.2,1);
+}
+.combat3d-hpbar-fill {
+  position: absolute; inset: 0 auto 0 0; height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #34d058, #7ef08a);
+  transition: width .28s cubic-bezier(.2,.7,.2,1);
+}
+.combat3d-hpbar.foe .combat3d-hpbar-fill {
+  background: linear-gradient(90deg, #e8483a, #ff7d54);
+}
+/* Low-HP warning pulse (driven purely by width via the fill colour shift) */
+.combat3d-hpbar-fill[style*="width: 0%"],
+.combat3d-hpbar-fill[style*="width:0%"] { background: #4a1410; }
+.combat3d-hpbar-num {
+  margin-top: 1px; text-align: center;
+  font-size: 9px; font-weight: 600; letter-spacing: .2px;
+  color: rgba(255,255,255,.85);
+  text-shadow: 0 1px 2px rgba(0,0,0,.9);
+}
+
+/* Damage numbers anchored over the hero / foe slot. */
+.combat3d-pop {
+  position: absolute;
+  top: 42%;
+  font-weight: 800;
+  font-size: 22px;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,.85), 0 0 12px rgba(0,0,0,.5);
+  pointer-events: none;
+  animation: combat3d-pop-rise 0.9s cubic-bezier(.2,.8,.3,1) forwards;
+  white-space: nowrap;
+}
+.combat3d-pop.hero { left: 26%; }
+.combat3d-pop.foe  { right: 26%; }
+.combat3d-pop.big   { font-size: 30px; color: #ffe07a; }
+.combat3d-pop.crit  { font-size: 38px; color: #ff5a4a; text-shadow: 0 0 14px rgba(255,90,74,.8), 0 2px 6px rgba(0,0,0,.9); }
+.combat3d-pop.miss  { font-size: 18px; color: #cfd6e4; font-style: italic; }
+.combat3d-pop.dodge { font-size: 18px; color: #8fd6ff; font-style: italic; }
+.combat3d-pop.block { font-size: 18px; color: #ffd36a; }
+@keyframes combat3d-pop-rise {
+  0%   { transform: translateY(8px) scale(.7); opacity: 0; }
+  18%  { transform: translateY(0) scale(1.15); opacity: 1; }
+  35%  { transform: translateY(-6px) scale(1); opacity: 1; }
+  100% { transform: translateY(-44px) scale(.95); opacity: 0; }
+}
+
+/* Mobile: shrink the floating bars so they don't overlap on small stages. */
+@media (max-width: 700px) {
+  .combat3d-hpbar { width: 120px; }
+  .combat3d-hpbar-name .nm { font-size: 11px; }
+  .combat3d-pop { font-size: 18px; }
+  .combat3d-pop.crit { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combat3d-pop { animation-duration: .01ms; }
+  .combat3d-hpbar-fill, .combat3d-hpbar-ghost { transition: none; }
+}

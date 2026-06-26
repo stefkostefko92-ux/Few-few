@@ -321,32 +321,19 @@ export default function CombatScene(props: Props): React.ReactElement {
         </div>
       )}
 
-      <div className="combat-header">
-        <Combatant actor={{ ...hero, hp: heroHp }} hpPct={heroHpPct} ghostPct={heroGhost} />
-        <div className="combat-vs">VS</div>
-        <Combatant actor={{ ...foe, hp: foeHp }} hpPct={foeHpPct} ghostPct={foeGhost} side="foe" />
-      </div>
-
       <div className="combat-field combat-field-3d">
-        {/* True 3D stage: WebGL via Three.js. Sits behind the legacy 2D
-            sprites + damage numbers so the existing HUD still reads. */}
-        <CombatScene3D ref={stage3DRef} heroClass={hero.class || hero.sprite} foeClass={foe.class || foe.sprite} region={region} />
-        {/* Legacy 2D layer kept — only the damage numbers and dodge/block
-            captions remain visually (Fighter SVGs are now hidden via CSS
-            below so the 3D fighters are the focal point). */}
-        <Fighter
-          side="hero"
-          anim={heroAnim}
-          sprite={hero.sprite}
-          fx={fx.filter((f) => f.side === 'hero')}
-          pops={pops.filter((p) => p.side === 'hero')}
-        />
-        <Fighter
-          side="foe"
-          anim={foeAnim}
-          sprite={foe.sprite}
-          fx={fx.filter((f) => f.side === 'foe')}
-          pops={pops.filter((p) => p.side === 'foe')}
+        {/* The 3D stage is now the sole fighter presentation. It renders
+            the rigs, the cinematic choreographer, AND the floating health
+            bars + damage numbers anchored above each fighter's head — the
+            legacy 2D sprite layer + corner HUD cards have been retired. */}
+        <CombatScene3D
+          ref={stage3DRef}
+          heroClass={hero.class || hero.sprite}
+          foeClass={foe.class || foe.sprite}
+          region={region}
+          heroHud={{ name: hero.name, level: hero.level, hpPct: heroHpPct, ghostPct: heroGhost, hp: heroHp, hpMax: hero.hp_max }}
+          foeHud={{ name: foe.name, level: foe.level, hpPct: foeHpPct, ghostPct: foeGhost, hp: foeHp, hpMax: foe.hp_max }}
+          pops={pops}
         />
         <CombatCanvas ref={canvasFxRef} />
         {/* Cinematic DOM layer: letterbox bars, anime speed lines, crit stamp. */}

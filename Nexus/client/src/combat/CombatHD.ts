@@ -124,6 +124,12 @@ function liteCriteria(): boolean {
   if (window.matchMedia('(pointer: coarse)').matches) return true;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
   if (window.innerWidth < 900) return true;
+  // Low-spec laptops / tablets with a fine pointer but little memory or
+  // few cores can't sustain the full GTAO + SSR + TAA + 2048 shadow
+  // chain. Drop them to the lite path even at desktop widths.
+  const nav = navigator as Navigator & { deviceMemory?: number; hardwareConcurrency?: number };
+  if (typeof nav.deviceMemory === 'number' && nav.deviceMemory > 0 && nav.deviceMemory <= 4) return true;
+  if (typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency > 0 && nav.hardwareConcurrency <= 4) return true;
   return false;
 }
 
@@ -250,7 +256,12 @@ export async function createCombatBackend(opts: {
 
   // WebGL2 path — full PBR + GTAO + SSR + Bloom + TAA chain.
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Cap DPR at 1.5 on the WebGL2 path. Beyond that the fill-rate cost of
+  // the GTAO + SSR + TAA chain on a 4K-ish retina panel outweighs the
+  // sharpness gain — laptops with integrated GPUs especially. The
+  // adaptive monitor in CombatScene3D can drop this further if frames
+  // run long.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(width, height, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -263,7 +274,7 @@ export async function createCombatBackend(opts: {
   const ibl = setupIBL(renderer, scene, tuneables.iblIntensity);
 
   const composer = new EffectComposer(renderer);
-  composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  composer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   composer.setSize(width, height);
 
   const renderPass = new RenderPass(scene, camera);

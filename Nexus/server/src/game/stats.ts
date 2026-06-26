@@ -226,9 +226,24 @@ export function deriveStats(ch: Character, equipped: { item: Item; entry: Invent
     def     = Math.round(def     * guildBuffs.defence_multiplier);
   }
 
+  // Sanitise every numeric derived stat before it leaves this function.
+  // Enchant / typed-damage bonuses are summed raw from item JSON
+  // (stats.ts:107-139); a malformed bonus (NaN from a string coercion,
+  // or Infinity) would otherwise propagate into the combat sim and HP
+  // pool unchecked. fin() clamps to a finite, non-negative value with a
+  // sensible default. (Balance audit.)
+  const fin = (n: number, d = 0): number => (Number.isFinite(n) && n >= 0 ? n : d);
   return {
-    atk_min, atk_max, defense: def, hp_max, mp_max, crit_chance, dodge_chance, speed,
-    phys_dmg, phys_def, mag_dmg, mag_def,
+    atk_min: fin(atk_min, 1),
+    atk_max: fin(atk_max, Math.max(1, fin(atk_min, 1))),
+    defense: fin(def),
+    hp_max: fin(hp_max, 1),
+    mp_max: fin(mp_max),
+    crit_chance: Math.min(1, fin(crit_chance)),
+    dodge_chance: Math.min(0.75, fin(dodge_chance)),
+    speed: fin(speed),
+    phys_dmg: fin(phys_dmg), phys_def: fin(phys_def),
+    mag_dmg: fin(mag_dmg), mag_def: fin(mag_def),
     active_sets,
   };
 }

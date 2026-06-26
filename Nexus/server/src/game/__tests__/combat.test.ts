@@ -62,13 +62,20 @@ test('combat: defense reduces damage', () => {
   }
 });
 
-test('combat: dodge can prevent damage', () => {
+test('combat: high dodge prevents most damage but stays hittable', () => {
+  // dodge_chance is clamped to 0.75 inside simulateCombat so a fighter is
+  // never literally unhittable (a value ≥ 1.0 used to make the fight a
+  // pure timer). A very evasive foe should dodge the large majority of
+  // swings but still take some hits over a long fight.
   const hero = actor({ name: 'Hero', side: 'hero', atk_min: 5, atk_max: 5 });
-  const elusiveFoe = actor({ name: 'Wind', side: 'foe', dodge_chance: 1.0 });
+  const elusiveFoe = actor({ name: 'Wind', side: 'foe', dodge_chance: 1.0, hp: 500, hp_max: 500 });
   const r = simulateCombat(hero, elusiveFoe);
-  // Every hero attack should be a dodge
   const heroOffense = r.rounds.filter((rd) => rd.attacker === 'hero');
-  assert.ok(heroOffense.every((rd) => rd.action === 'dodge'));
+  const dodged = heroOffense.filter((rd) => rd.action === 'dodge').length;
+  // Majority dodged...
+  assert.ok(dodged / Math.max(1, heroOffense.length) > 0.5, 'most swings dodged');
+  // ...but not literally all of them (the 0.75 clamp lets some through).
+  assert.ok(dodged < heroOffense.length, 'foe is still hittable');
 });
 
 test('combat: round indices are monotonic', () => {

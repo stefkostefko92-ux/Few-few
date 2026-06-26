@@ -67,11 +67,17 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'Opponent not found' });
     return;
   }
+  // Arena is a duel of equals — both fighters enter at full HP. Previously
+  // the hero entered with current HP (possibly fresh off a hunt at 11%)
+  // while the opponent always entered at hp_max, handing the defender a
+  // systematic advantage. PvP normalises both to full so the result
+  // reflects build + RNG, not who hunted most recently. (Balance audit.)
   const hero = loadActor(char);
-  hero.hp = char.hp;
+  hero.hp = hero.hp_max;
   const foe = loadActor(opp);
   foe.side = 'foe';
   foe.sprite = opp.class;
+  foe.hp = foe.hp_max;
 
   const result = simulateCombat(hero, foe);
 
