@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { SITE } from "../lib/site";
-import { GAME_CONTENT } from "../content/games";
 import { SITE_FAQ } from "../content/faq";
 import { JsonLd } from "../components/JsonLd";
 import { breadcrumbLd, siteFaqLd } from "../lib/jsonld";
+import { useLocale, useT } from "../i18n/I18nProvider";
+import { localizedGames, localizedSiteFaq } from "../i18n/content";
 import "./landing.css";
 
 const FAN = [
@@ -38,32 +41,14 @@ const GAME_GLYPH: Record<string, string> = {
   WORDS: "✍",
 };
 
-const FEATURES = [
-  {
-    icon: "🃏",
-    title: "21 истинска игра",
-    text: "Белот с обяви, Сантасе, Шах, Табла, билярд и снукър — пълни правила, не опростени.",
-  },
-  { icon: "⚡", title: "Реално време", text: "Мигновен мултиплейър със server-authoritative логика — без лаг, без измами." },
-  {
-    icon: "🎯",
-    title: "Реалистична физика",
-    text: "Билярдът и снукърът ползват детерминирана 2D физика с прицелване и анимация на удара.",
-  },
-  { icon: "🤖", title: "Умни ботове", text: "Няма съперник? Влизаш веднага срещу бот, който се цели и вкарва — и продължаваш да играеш." },
-  { icon: "🏆", title: "Класации и сезони", text: "ELO рейтинг за всяка игра, дневни мисии, сезони и постижения." },
-  { icon: "🛡️", title: "Честна игра", text: "Без „плати, за да печелиш“. Игрите със залог са само с виртуални чипове." },
-];
-
-const STEPS = [
-  { n: 1, title: "Влез за секунди", text: "С имейл, Google или Facebook — без дълги формуляри." },
-  { n: 2, title: "Избери игра", text: "21 заглавие, всяко с матчмейкинг по ниво." },
-  { n: 3, title: "Играй и се изкачвай", text: "Печели чипове, нива и място в класацията." },
-];
-
 export default function Home() {
+  const t = useT();
+  const locale = useLocale();
+  const games = localizedGames(locale);
+
   return (
     <>
+      {/* JSON-LD stays in the canonical BG source of truth (SEO). */}
       <JsonLd data={[breadcrumbLd([{ name: "Начало", url: `${SITE.url}/` }]), siteFaqLd(SITE_FAQ)]} />
 
       {/* HERO */}
@@ -73,19 +58,16 @@ export default function Home() {
         <span className="lp-mote" style={{ left: "60%", top: "55%", animationDelay: "3s" }} />
         <span className="lp-mote" style={{ left: "30%", top: "60%", animationDelay: "4.5s" }} />
 
-        <span className="lp-eyebrow">Премиум клуб за игри</span>
+        <span className="lp-eyebrow">{t.home.eyebrow}</span>
         <h1 className="lp-title">{SITE.name}</h1>
         <p className="lp-sub">{SITE.tagline}</p>
-        <p className="lp-lead">
-          21 класически игри на карти, маса, кий спортове и настолни в реално време. Белот, Сантасе, Шах, Табла,
-          билярд и снукър — срещу приятели и ботове, безплатно, направо в браузъра.
-        </p>
+        <p className="lp-lead">{t.home.lead}</p>
         <div className="lp-cta-row">
           <a className="cta cta-lg" href={SITE.playUrl}>
-            Играй сега
+            {t.home.playNow}
           </a>
           <Link className="cta-ghost" href="/games/">
-            Разгледай игрите
+            {t.home.browseGames}
           </Link>
         </div>
 
@@ -114,28 +96,28 @@ export default function Home() {
       <div className="lp-stats">
         <div className="lp-stat">
           <div className="lp-stat-num">21</div>
-          <div className="lp-stat-label">игри</div>
+          <div className="lp-stat-label">{t.home.stats.games}</div>
         </div>
         <div className="lp-stat">
           <div className="lp-stat-num">3</div>
-          <div className="lp-stat-label">езика</div>
+          <div className="lp-stat-label">{t.home.stats.languages}</div>
         </div>
         <div className="lp-stat">
           <div className="lp-stat-num">24/7</div>
-          <div className="lp-stat-label">маси отворени</div>
+          <div className="lp-stat-label">{t.home.stats.tablesOpen}</div>
         </div>
         <div className="lp-stat">
-          <div className="lp-stat-num">0 лв.</div>
-          <div className="lp-stat-label">за да започнеш</div>
+          <div className="lp-stat-num">{t.home.statValues.toStart}</div>
+          <div className="lp-stat-label">{t.home.stats.toStart}</div>
         </div>
       </div>
 
       {/* FEATURES */}
       <section className="lp-section">
-        <h2>Защо АСО</h2>
-        <p className="lp-section-sub">Класиката, която обичаш — с качеството, което заслужава.</p>
+        <h2>{t.home.features.heading}</h2>
+        <p className="lp-section-sub">{t.home.features.sub}</p>
         <div className="lp-features">
-          {FEATURES.map((f) => (
+          {t.home.features.items.map((f) => (
             <div key={f.title} className="lp-feature">
               <div className="lp-feature-icon" aria-hidden>
                 {f.icon}
@@ -149,12 +131,12 @@ export default function Home() {
 
       {/* HOW IT WORKS */}
       <section className="lp-section lp-section--alt">
-        <h2>Как се започва</h2>
-        <p className="lp-section-sub">Три стъпки до първата ти ръка.</p>
+        <h2>{t.home.steps.heading}</h2>
+        <p className="lp-section-sub">{t.home.steps.sub}</p>
         <div className="lp-steps">
-          {STEPS.map((s) => (
-            <div key={s.n} className="lp-step">
-              <div className="lp-step-num">{s.n}</div>
+          {t.home.steps.items.map((s, i) => (
+            <div key={s.title} className="lp-step">
+              <div className="lp-step-num">{i + 1}</div>
               <h3 style={{ color: "var(--ink-100)" }}>{s.title}</h3>
               <p className="muted" style={{ marginTop: ".4rem" }}>
                 {s.text}
@@ -166,57 +148,59 @@ export default function Home() {
 
       {/* GAMES */}
       <section className="lp-section">
-        <h2>Игрите</h2>
-        <p className="lp-section-sub">Всяка с пълни правила и собствена премиум маса.</p>
+        <h2>{t.home.games.heading}</h2>
+        <p className="lp-section-sub">{t.home.games.sub}</p>
         <div className="lp-games">
-          {GAME_CONTENT.slice(0, 12).map((g) => (
+          {games.slice(0, 12).map((g) => (
             <Link key={g.key} href={`/games/${g.slug}/`} className="lp-game">
               <div className="lp-game-glyph" aria-hidden>
                 {GAME_GLYPH[g.key] ?? "♠"}
               </div>
               <h3>{g.title}</h3>
               <p className="muted">
-                {g.players} · {g.durationMin} мин
+                {g.players} · {g.durationMin} {t.home.games.minutesShort}
               </p>
             </Link>
           ))}
         </div>
         <div className="lp-games-more">
           <Link className="cta-ghost" href="/games/">
-            Виж всички игри
+            {t.home.games.viewAll}
           </Link>
         </div>
       </section>
 
       {/* FAQ (AEO) */}
       <section className="lp-section lp-section--alt">
-        <h2>Често задавани въпроси</h2>
-        <p className="lp-section-sub">Бързи отговори, преди да седнеш на масата.</p>
+        <h2>{t.home.faq.heading}</h2>
+        <p className="lp-section-sub">{t.home.faq.sub}</p>
         <div className="lp-faq">
-          {SITE_FAQ.slice(0, 6).map((f) => (
-            <details key={f.question} className="lp-faq-item">
-              <summary>{f.question}</summary>
-              <p>{f.answer}</p>
-            </details>
-          ))}
+          {localizedSiteFaq(locale)
+            .slice(0, 6)
+            .map((f) => (
+              <details key={f.question} className="lp-faq-item">
+                <summary>{f.question}</summary>
+                <p>{f.answer}</p>
+              </details>
+            ))}
         </div>
         <div className="lp-games-more">
           <Link className="cta-ghost" href="/faq/">
-            Всички въпроси
+            {t.home.faq.allQuestions}
           </Link>
         </div>
       </section>
 
       {/* FINAL CTA */}
       <section className="lp-final">
-        <h2>Масата те чака.</h2>
+        <h2>{t.home.final.heading}</h2>
         <div className="lp-trust">
-          <span>Безплатно за старт</span>
-          <span>Без хазарт за реални пари</span>
-          <span>Играй на всяко устройство</span>
+          {t.home.final.trust.map((s) => (
+            <span key={s}>{s}</span>
+          ))}
         </div>
         <a className="cta cta-lg" href={SITE.playUrl}>
-          Влез и играй
+          {t.home.final.cta}
         </a>
       </section>
     </>
