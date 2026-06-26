@@ -29,6 +29,8 @@ export interface SvaraState {
   chips: number[]; // virtual chips per seat
   bet: number[]; // current contribution to the pot this round
   folded: boolean[];
+  /** Whether each seat has acted at least once this betting round. */
+  acted: boolean[];
   pot: number;
   current: number; // highest bet to match
   turn: Seat;
@@ -77,6 +79,7 @@ export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
       chips,
       bet,
       folded: new Array<boolean>(seats).fill(false),
+      acted: new Array<boolean>(seats).fill(false),
       pot: ANTE * seats,
       current: ANTE,
       turn: 0,
@@ -133,9 +136,11 @@ function reduceHand(
       chips: state.chips.slice(),
       bet: state.bet.slice(),
       folded: state.folded.slice(),
+      acted: state.acted.slice(),
     };
     const events: SvaraEvent[] = [];
     const toCall = next.current - (next.bet[seat] ?? 0);
+    next.acted[seat] = true; // this seat has now acted this round
 
     if (action.type === "FOLD") {
       next.folded[seat] = true;
@@ -162,10 +167,13 @@ function reduceHand(
       return award(next, active[0]!, events);
     }
 
-    // If betting is matched and everyone has acted at the current level, showdown.
+    // Showdown only once bets are matched AND every active player has acted at
+    // least once — otherwise the opening round (all seats start at the ANTE, so
+    // bets are already "matched") would end after the very first CALL, before
+    // anyone else gets to raise/fold.
     const advanced = nextActive(next, seat);
     next.turn = advanced;
-    if (betsMatched(next)) {
+    if (betsMatched(next) && activeSeats(next).every((s) => next.acted[s])) {
       return showdown(next, events);
     }
     return { state: next, events };
@@ -196,6 +204,7 @@ function nextHandOrEnd(
     chips: state.chips.slice(),
     bet: new Array<number>(state.seats).fill(0),
     folded: state.folded.slice(),
+    acted: new Array<boolean>(state.seats).fill(false),
     done: false,
     winner: null,
   };

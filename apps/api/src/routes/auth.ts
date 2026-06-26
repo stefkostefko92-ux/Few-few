@@ -295,6 +295,13 @@ async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthProfile, 
   // No link yet. If the provider gave us an email, attach to (or create) the
   // matching local account; otherwise we cannot safely create one.
   if (!profile.email) return null;
+  // Only an email the provider has VERIFIED may auto-link to / authenticate an
+  // existing account — otherwise a provider that returns an unverified address
+  // could be used to take over a victim's local account by asserting their email.
+  if (!profile.emailVerified) {
+    const clash = await prisma.user.findUnique({ where: { email: profile.email }, select: { id: true } });
+    if (clash) return null; // refuse silent takeover; user must verify/link explicitly
+  }
 
   try {
     const byEmail = await prisma.user.findUnique({ where: { email: profile.email } });

@@ -64,10 +64,10 @@ friendsRouter.get(
       where: {
         deletedAt: null,
         id: { notIn: [...linked] },
-        OR: [
-          { displayName: { contains: q, mode: "insensitive" } },
-          { email: { contains: q, mode: "insensitive" } },
-        ],
+        // Search by display name only. Matching on email would let anyone probe
+        // whether a given address is registered (email enumeration), defeating
+        // the anti-enumeration design of the auth/forgot-password flows.
+        displayName: { contains: q, mode: "insensitive" },
       },
       select: lite,
       take: 10,

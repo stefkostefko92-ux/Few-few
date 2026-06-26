@@ -14,6 +14,7 @@ import {
   type QuestView,
 } from "@aso/shared";
 import { redis } from "../redis.js";
+import { logger } from "../logger.js";
 
 const dayKey = (d = new Date()): string => d.toISOString().slice(0, 10);
 
@@ -108,8 +109,13 @@ export async function recordMatchResult(opts: {
   try {
     const first = await redis.set(`progression:done:${matchId}:${userId}`, "1", "EX", 60 * 60 * 24 * 3, "NX");
     if (first === null) return;
-  } catch {
-    /* if Redis is down, proceed (best-effort) rather than drop progression */
+  } catch (err) {
+    // Quest progress isn't transactionally idempotent, so without the SETNX
+    // guard a retry could double-grant chips/XP. Fail CLOSED: skip progression
+    // for this match rather than risk awarding it twice. (MMR + match chips are
+    // separately protected by the DB endedAt claim in rating.ts.)
+    logger.warn({ err, matchId, userId }, "progression idempotency store unavailable — skipping");
+    return;
   }
 
   // Update leaderboard ZSET (rating as score).

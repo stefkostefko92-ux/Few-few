@@ -299,7 +299,12 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       const value = suit === next.trump ? 40 : 20;
       next.points[seat] = (next.points[seat] ?? 0) + value;
       events.push({ type: "MARRIAGE", seat, suit, value });
-      if ((next.points[seat] ?? 0) >= 66) return finish(next, seat, events, rng);
+      // Reaching 66 via a marriage in a CLOSED game must apply the closing rules
+      // (closer-failed penalty) too — mirror the trick path below.
+      if ((next.points[seat] ?? 0) >= 66) {
+        if (next.closed) return finishClosed(next, events, rng);
+        return finish(next, seat, events, rng);
+      }
     }
 
     next.hands[seat] = next.hands[seat]!.filter((c) => c !== action.card);
