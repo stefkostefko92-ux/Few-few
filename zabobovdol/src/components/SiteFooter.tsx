@@ -150,13 +150,18 @@ export async function SiteFooter() {
           <p className="text-slate-500">
             Изработка и поддръжка на сайта:{" "}
             <a
-              href="https://carbonstealth.eu"
+              href={SITE.company.website}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-slate-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-700"
             >
-              Carbon Stealth VCC
+              {SITE.company.tradeName}
             </a>
+            <br />
+            <span className="text-xs text-slate-400">
+              {SITE.company.legalName} · ЕИК {SITE.company.eik} · ДДС №{" "}
+              {SITE.company.vat}
+            </span>
           </p>
         </div>
       </div>

@@ -50,9 +50,14 @@ export default function TermsPage() {
             {SITE.name} е независим граждански информационен проект за жителите на
             град {SITE.geo.city}. Сайтът <strong>не е официален сайт</strong> на
             община {SITE.geo.city} и не предоставя административни услуги от името
-            на държавни или общински органи. Изработка, поддръжка и администриране:{" "}
-            <strong>Carbon Stealth VCC</strong> (със седалище в град {SITE.geo.city}
-            ).
+            на държавни или общински органи. Изработка, поддръжка и
+            администриране:{" "}
+            <strong>{SITE.company.legalName}</strong> (
+            {SITE.company.tradeName}) — {SITE.company.legalForm}, ЕИК{" "}
+            {SITE.company.eik}, ДДС № {SITE.company.vat}, със седалище и адрес
+            на управление: {SITE.company.address}; вписана в{" "}
+            {SITE.company.register}. За контакт:{" "}
+            <a href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>.
           </p>
 
           <h2>2. Информация в сайта</h2>

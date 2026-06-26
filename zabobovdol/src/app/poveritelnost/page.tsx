@@ -50,8 +50,40 @@ export default function PrivacyPage() {
 
           <h2>1. Кой обработва данните (администратор)</h2>
           <p>
-            Администратор на личните данни е <strong>Carbon Stealth VCC</strong>{" "}
-            (фирма на основателя на проекта, със седалище в град {SITE.geo.city}).
+            Администратор на личните данни е{" "}
+            <strong>{SITE.company.legalName}</strong> (
+            {SITE.company.tradeName}) — {SITE.company.legalForm}, със следните
+            данни:
+          </p>
+          <ul>
+            <li>
+              <strong>ЕИК:</strong> {SITE.company.eik}
+            </li>
+            <li>
+              <strong>ДДС №:</strong> {SITE.company.vat}
+            </li>
+            <li>
+              <strong>Седалище и адрес на управление:</strong>{" "}
+              {SITE.company.address}
+            </li>
+            <li>
+              <strong>Вписана в:</strong> {SITE.company.register}
+            </li>
+            <li>
+              <strong>Управител:</strong> {SITE.company.manager}
+            </li>
+            <li>
+              <strong>Уебсайт:</strong>{" "}
+              <a
+                href={SITE.company.website}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {SITE.company.website.replace(/^https?:\/\//, "")}
+              </a>
+            </li>
+          </ul>
+          <p>
             Сайтът {SITE.name} е <strong>независим граждански проект</strong> и{" "}
             <strong>не е официален сайт на община {SITE.geo.city}</strong>.
           </p>
