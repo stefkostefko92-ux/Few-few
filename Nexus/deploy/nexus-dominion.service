@@ -1,0 +1,24 @@
+[Unit]
+Description=Nexus Dominion game server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nexus
+Group=nexus
+WorkingDirectory=/opt/nexus
+EnvironmentFile=/opt/nexus/server/.env
+ExecStart=/usr/bin/node /opt/nexus/server/dist/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/nexus/server.log
+StandardError=append:/var/log/nexus/server.err
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/nexus/data /var/log/nexus
+
+[Install]
+WantedBy=multi-user.target

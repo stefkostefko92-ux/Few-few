@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+**/dist
+server/data
+client/dist
+.git
+.gitignore
+*.md
+.env*
+deploy

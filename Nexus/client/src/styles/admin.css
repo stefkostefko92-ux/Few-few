@@ -1,0 +1,175 @@
+/* Admin panel — dense tables, editors, control surfaces */
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - var(--nav-h));
+  background: var(--bg-1);
+}
+
+.admin-sidebar {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border-right: 1px solid var(--border-1);
+  padding: 24px 16px;
+}
+.admin-sidebar h2 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--gold-1);
+  margin-bottom: 16px;
+  padding: 0 8px;
+}
+.admin-sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+.admin-sidebar a.active {
+  background: linear-gradient(90deg, rgba(214,161,61,.16), rgba(214,161,61,.04));
+  color: var(--gold-1);
+  border-left: 2px solid var(--gold-2);
+  padding-left: 10px;
+}
+.admin-sidebar a:hover { background: rgba(255,255,255,.04); color: var(--gold-1); }
+
+.admin-main {
+  padding: 28px 36px;
+  overflow-x: auto;
+}
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+.admin-toolbar h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--gold-1);
+}
+.admin-toolbar .search {
+  flex: 1;
+  max-width: 360px;
+}
+
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.admin-stat {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--border-1);
+  border-left: 3px solid var(--gold-2);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+.admin-stat .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-3);
+}
+.admin-stat .num {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--gold-1);
+  margin-top: 4px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-2);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.admin-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-3);
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--border-2);
+}
+.admin-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-1);
+  font-size: 13px;
+  color: var(--text-2);
+  vertical-align: middle;
+}
+.admin-table tr:hover td { background: rgba(255,255,255,.02); }
+
+.admin-editor {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 480px;
+  background: var(--bg-2);
+  border-left: 1px solid var(--border-2);
+  padding: 28px;
+  overflow-y: auto;
+  z-index: 200;
+  box-shadow: -24px 0 64px rgba(0,0,0,.5);
+  animation: slide-in .2s ease-out;
+}
+@keyframes slide-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.admin-editor h3 {
+  font-family: var(--font-display);
+  color: var(--gold-1);
+  margin-bottom: 16px;
+}
+.admin-editor .field { margin-bottom: 12px; }
+.admin-editor .field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.admin-editor .actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  border-top: 1px solid var(--border-1);
+  padding-top: 16px;
+}
+
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 150;
+  animation: overlay-in .15s ease-out;
+}
+@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+
+.rarity-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+.rarity-pill.common { color: var(--rare-common); }
+.rarity-pill.uncommon { color: var(--rare-uncommon); background: rgba(106,216,164,.1); }
+.rarity-pill.rare { color: var(--rare-rare); background: rgba(106,167,255,.1); }
+.rarity-pill.epic { color: var(--rare-epic); background: rgba(194,148,255,.1); }
+.rarity-pill.legendary { color: var(--rare-legendary); background: rgba(255,193,106,.12); }

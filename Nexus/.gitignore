@@ -1,0 +1,39 @@
+node_modules/
+**/node_modules/
+**/dist/
+.env
+.env.local
+**/.env
+**/.env.local
+*.log
+server/data/
+# Stray SQLite databases — schema enables WAL mode so the sidecar
+# files matter too. Nothing under server/data/ matches because it's
+# already gitignored above, but these globs catch anyone running
+# better-sqlite3 from a different cwd.
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+.idea/
+.vscode/
+client/tsconfig.tsbuildinfo
+screenshots/
+screenshots-v2/
+screenshots-v3/
+screenshots-v4/
+screenshots-v5/
+screenshots-v6/
+screenshots-v7/
+screenshots-v8/
+screenshots-v9/
+screenshots-v10/
+screenshots-v11/
+screenshots-v12/
+screenshots-v13/
+screenshots-v14/
+screenshots-v16/
+screenshots-v17/
+screenshots-v18/
+screenshots-v19/
+screenshots-v20/
