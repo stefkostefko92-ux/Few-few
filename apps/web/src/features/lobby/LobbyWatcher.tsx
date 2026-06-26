@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   SOCKET_EVENTS,
@@ -19,6 +20,7 @@ import { GAME_CATALOG } from "./games";
  * as accept/dismiss toasts.
  */
 export function LobbyWatcher() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [invites, setInvites] = useState<LobbyInviteReceivedMsg[]>([]);
@@ -79,19 +81,19 @@ export function LobbyWatcher() {
             className="flex items-center gap-3 rounded-panel border border-brass-400/30 bg-felt-900/95 px-4 py-3 shadow-lift backdrop-blur"
           >
             <span className="text-sm text-ink-100">
-              {inv.fromName} те кани в стая · {title}
+              {t("room.inviteNotif", { name: inv.fromName, game: title })}
             </span>
             <button
               type="button"
               onClick={() => accept(inv)}
               className="rounded-card bg-gradient-to-b from-brass-300 to-brass-400 px-3 py-1.5 text-sm font-semibold text-charcoal-900"
             >
-              Влез
+              {t("room.inviteJoin")}
             </button>
             <button
               type="button"
               onClick={() => dismiss(inv)}
-              aria-label="Откажи"
+              aria-label={t("room.inviteDismiss")}
               className="text-ink-muted hover:text-ink-100"
             >
               ✕
