@@ -1,14 +1,52 @@
-# Allow all well-behaved crawlers — including answer engines (AI bots) which
-# are explicitly named below so they can index marketing content for AEO.
+# Marketing pages (`/`, `/login`, `/register`, `/terms`, `/privacy`) are
+# public; the authed app (`/app/*`) and admin (`/admin/*`) are explicitly
+# disallowed for every crawler. Search robots, answer-engine robots and
+# AI-training robots are split below so we can opt in to citations while
+# opting out of training corpora.
+
 User-agent: *
 Allow: /
-Allow: /login
-Allow: /register
 Disallow: /app/
 Disallow: /admin
 Disallow: /api/
 
-# Answer-engine / AI crawlers (AEO). Allowed on public marketing pages only.
+# ── Search-engine bots ───────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+# ── Answer-engine / live-search bots ────────────────────────────────────────
+# These crawl on user query, return citations with links — we WANT them on
+# marketing pages so the game shows up in Perplexity / SearchGPT / Brave AI.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Bingbot-AI
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+# ── Training-corpus bots ────────────────────────────────────────────────────
+# We allow them to index the public marketing pages too. If you want to opt
+# out of LLM training entirely, swap each `Allow: /` for `Disallow: /`.
 User-agent: GPTBot
 Allow: /
 Disallow: /app/
@@ -21,14 +59,16 @@ Disallow: /app/
 Disallow: /admin
 Disallow: /api/
 
-User-agent: PerplexityBot
+User-agent: Google-Extended
 Allow: /
 Disallow: /app/
 Disallow: /admin
 Disallow: /api/
 
-User-agent: Google-Extended
+User-agent: CCBot
 Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
 
-# Update this absolute URL after pointing a domain at the VPS.
 Sitemap: https://nexus.carbonstealth.eu/sitemap.xml

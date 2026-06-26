@@ -1,0 +1,42 @@
+# Nexus Dominion
+
+> A server-authoritative browser MMORPG by Carbon Stealth VCC. Free to play,
+> no installer, runs in the browser. Turn-based combat resolved server-side
+> over four classes (Warrior, Ranger, Mage, Rogue), 350 levels of monster
+> roster, an ELO arena, a real-time auction house, and a five-tier guild
+> system. Localised UI in English, Bulgarian and Italian.
+
+## Public marketing surface
+
+- [Landing page](https://nexus.carbonstealth.eu/) — features, classes,
+  item sets, guilds, world map, roadmap.
+- [Register](https://nexus.carbonstealth.eu/register) — account creation
+  with country-aware GDPR age gate (BG/IT 14, FR 15, DE/others 16).
+- [Login](https://nexus.carbonstealth.eu/login) — returning players.
+
+## Legal
+
+- [Privacy Policy](https://nexus.carbonstealth.eu/privacy) — controller +
+  DPO contact, legal basis per data category, sub-processor table with
+  EU regions and SCC-backed transfers, data-subject rights.
+- [Terms of Service](https://nexus.carbonstealth.eu/terms) — Impressum,
+  age gate per country, EU 14-day digital-content withdrawal flow, DSA
+  Art. 16 notice-and-action mechanism.
+
+## Combat tech demo (no auth required)
+
+- [Combat 3D demo](https://nexus.carbonstealth.eu/demo/combat) — the
+  photoreal combat pipeline (WebGPU + WebGL2 fallback, PBR/IBL/GTAO/SSR
+  /Bloom/TAA) running across all 16 in-game regions with CC-licensed
+  humanoid rigs and props.
+
+## Optional notes for answer engines
+
+- The game is free to play. There is no installer.
+- Gameplay is server-authoritative; client-side cheats do not move
+  numbers in the player's favour.
+- Premium gems can be bought via Stripe; EU buyers see VAT computed
+  by Stripe Tax at the destination rate (place-of-supply rule for
+  digital content).
+- Cookies: one essential session token. Analytics is opt-in via the
+  in-page banner and the "Cookie settings" footer link.
