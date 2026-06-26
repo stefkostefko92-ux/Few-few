@@ -1,6 +1,7 @@
 import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 // Photoreal pipeline — renderer + post + IBL + PBR helpers + lil-gui panel.
 // Heavy passes (GTAO/SSR/TAA) and the GUI live here behind dynamic boundaries
 // so the lite path doesn't pay for them.
@@ -15,6 +16,9 @@ import { mountHDPanel } from './CombatHDPanel';
 import { buildRegionEnvironment, getRegionEmberSpec, type RegionEnvironment } from './CombatEnvironment';
 import { ensurePropsLoaded } from './CombatProps3D';
 import { fitToHeight } from './CombatToon';
+import { Choreographer } from './choreo/Choreographer';
+import type { VfxBus } from './choreo/VfxBus';
+import { pickAttackTimeline, pickDefeatTimeline, applyCritModifier } from './choreo/timelines';
 
 /**
  * Cinematic 3D battle stage (Three.js + post-processing).
@@ -296,7 +300,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   const introRef = useRef({ t: 0, dur: 1.4, active: true });
   const particlesRef = useRef<{ pts: THREE.Points; positions: Float32Array; velocities: Float32Array; lives: Float32Array; maxLives: Float32Array; colors: Float32Array; sizes: Float32Array; alive: number; } | null>(null);
   const fxGroupRef = useRef<THREE.Group | null>(null);
-  const animRef = useRef<{ kind: 'idle'|'windup-hero'|'windup-foe'|'lunge-hero'|'lunge-foe'|'defeated-hero'|'defeated-foe'; t: number } & {[k:string]:any}>({ kind:'idle', t:0 });
+  // The previous `animRef.kind` state machine has been replaced by the
+  // timeline-driven Choreographer in `combat/choreo/`. We still hold a
+  // ref to the live instance so `attack()` and `defeat()` from the
+  // imperative handle can `.play()` into it, and the rAF tick can call
+  // `.update(dt)`.
+  const choreoRef = useRef<Choreographer | null>(null);
+  const bloomKickRecoverRef = useRef(0.30);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -740,10 +750,122 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       fxGroup.add(clone);
     }
 
+    /** Rig after-image — clones the visible meshes of the attacker rig with a
+     *  ghost emissive material, fades over 0.45s. Used by the rogue shadow-step.
+     *
+     *  SkinnedMesh rigs need SkeletonUtils.clone so the ghost gets an
+     *  independent skeleton + bone refs (Object3D.clone shares them, which
+     *  would mean later geometry.dispose() on the ghost ALSO frees the
+     *  live rig's GPU resources — observed earlier audit-batch bug). The
+     *  cloned geometry stays shared between ghost and source so we tag
+     *  it userData.shared and the fade tick refuses to dispose it. */
+    function afterImageRig(side: 'hero' | 'foe', tint: number) {
+      const src = side === 'hero' ? heroRigRef.current : foeRigRef.current;
+      if (!src) return;
+      const ghost = SkeletonUtils.clone(src);
+      ghost.traverse((o: THREE.Object3D) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        if (m.geometry) m.geometry.userData.shared = true; // shared with the live rig
+        const mat = new THREE.MeshBasicMaterial({
+          color: tint, transparent: true, opacity: 0.55,
+          blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+        });
+        m.material = mat;
+      });
+      ghost.userData = { kind: 'afterimage', life: 0, max: 0.45 };
+      fxGroup.add(ghost);
+    }
+
+    // Cache for sigil glyph textures so the crit flash doesn't re-rasterise
+    // a 256² canvas every time.
+    const sigilCache = new Map<string, THREE.CanvasTexture>();
+    function sigilTexture(glyph: string): THREE.CanvasTexture {
+      const cached = sigilCache.get(glyph);
+      if (cached) return cached;
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext('2d')!;
+      ctx.clearRect(0, 0, 256, 256);
+      ctx.fillStyle = 'rgba(255,255,255,1)';
+      ctx.font = 'bold 200px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#fff';
+      ctx.shadowBlur = 24;
+      ctx.fillText(glyph, 128, 138);
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      sigilCache.set(glyph, t);
+      return t;
+    }
+
+    /** Full-screen sigil flash (anime kanji punctuation on crits). 80ms total. */
+    function sigilFlash(glyph: string, color: number) {
+      const cam = cameraRef.current;
+      if (!cam) return;
+      const tex = sigilTexture(glyph);
+      const plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(6, 6),
+        new THREE.MeshBasicMaterial({
+          map: tex, color, transparent: true, opacity: 0,
+          blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false,
+          toneMapped: false,
+        }),
+      );
+      // Attached to the camera so it follows whatever the orbit is doing.
+      plane.position.set(0, 0, -3);
+      plane.userData = { kind: 'sigil', life: 0, max: 0.20 };
+      cam.add(plane);
+    }
+
+    /** Chromatic ground crack — radial decal expanding from a point. */
+    function groundCrack(x: number, z: number, color: number) {
+      const mat = new THREE.MeshBasicMaterial({
+        color, transparent: true, opacity: 0.8,
+        blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.4, 32), mat);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(x, 0.04, z);
+      mesh.userData = { kind: 'groundCrack', life: 0, max: 0.6 };
+      fxGroup.add(mesh);
+    }
+
     /* ----- particle helpers ----- */
     // Hoisted scratch Color so spawn loops don't allocate ~110 fresh
     // THREE.Color instances per crit burst.
     const tmpColor = new THREE.Color();
+
+    /** Fire-and-forget particle burst at (x,y,z). Reuses the ambient pool —
+     *  slots are recycled as new bursts overflow. Used by attack timelines. */
+    function spawnBurst(x: number, y: number, z: number, count: number, color: number) {
+      const p = particlesRef.current!;
+      const cap = liteParticleBudget ? Math.min(count, 30) : count;
+      tmpColor.set(color);
+      for (let i = 0; i < cap; i++) {
+        const slot = (p.alive++ % MAX_P);
+        const idx = slot * 3;
+        if (p.lives[slot] >= p.maxLives[slot]) liveParticleCount++;
+        const ang = Math.random() * Math.PI * 2;
+        const r = Math.random() * 0.4;
+        p.positions[idx]     = x + Math.cos(ang) * r;
+        p.positions[idx + 1] = y + Math.sin(ang) * r;
+        p.positions[idx + 2] = z + (Math.random() - 0.5) * 0.4;
+        const speed = 2 + Math.random() * 3.5;
+        const spread = Math.random() * Math.PI * 2;
+        p.velocities[idx]     = Math.cos(spread) * speed * 0.4;
+        p.velocities[idx + 1] = 1.5 + Math.random() * 3.5;
+        p.velocities[idx + 2] = Math.sin(spread) * speed * 0.4;
+        p.colors[idx]     = tmpColor.r;
+        p.colors[idx + 1] = tmpColor.g;
+        p.colors[idx + 2] = tmpColor.b;
+        p.lives[slot] = 0;
+        p.maxLives[slot] = 0.7 + Math.random() * 0.4;
+      }
+      geo.attributes.color.needsUpdate = true;
+    }
+
     // Region-aware ambient spawner — tint, rate, and direction read off
     // the recipe so Frostvale gets falling snow, Stormpeaks gets settling
     // mist, Emberreach gets rising embers, Conclave gets rising rune
@@ -863,6 +985,52 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       hdPanel = mountHDPanel(b, scene, keyLight);
     });
 
+    /* ----- combat choreographer mount -----
+     * Hands the VFX functions defined above + the runtime refs (camera
+     * anchor, rig refs, mixers) to the Choreographer. From here on every
+     * attack() / defeat() goes through a Timeline; no per-tick state
+     * machine. */
+    const vfxBus: VfxBus = {
+      shockwave: (x, z, color) => shockwave(x, z, color),
+      slashArc: (fromX, _fromZ, toX, _toZ, color) => slashArc(fromX, toX, color),
+      magicCircle: (x, z, color) => magicCircle(x, z, color),
+      arrow: (fromX, _fromZ, toX, _toZ, color) => arrowStreak(fromX, toX, color),
+      afterImage: (side, tint) => afterImageRig(side, tint),
+      burst: (x, y, z, count, color) => spawnBurst(x, y, z, count, color),
+      sigilFlash: (glyph, color) => sigilFlash(glyph, color),
+      groundCrack: (x, z, color) => groundCrack(x, z, color),
+      shake: (amount, time) => { shakeRef.current = { amount, t: time }; },
+      hitstop: (dur) => { hitStopRef.current = dur; },
+      bloomKick: (delta, recover) => {
+        // Stash on an animRef-like scratchpad; the post tick block below
+        // already eases bloom back to its base value, so we just nudge.
+        if (bloom) {
+          bloom.strength = Math.min(2.0, bloom.strength + delta);
+          bloomKickRecoverRef.current = recover;
+        }
+      },
+      setRgbShift: (amount) => { if (rgbShift) rgbShift.uniforms['amount'].value = amount; },
+      lightPulse: (side, tint, intensity) => {
+        const l = side === 'hero' ? heroLightRef.current : foeLightRef.current;
+        if (l) { l.color.setHex(tint); l.intensity = intensity; }
+      },
+      cameraAnchor: () => camAnchorRef.current,
+      fighterPos: (side) => {
+        const rig = side === 'hero' ? heroRigRef.current : foeRigRef.current;
+        if (rig) return rig.position.clone();
+        return new THREE.Vector3(side === 'hero' ? -2.2 : 2.2, 0, 0);
+      },
+    };
+    choreoRef.current = new Choreographer(
+      {
+        get hero() { return heroRigRef.current; },
+        get foe() { return foeRigRef.current; },
+        get heroMixer() { return heroMixerRef.current; },
+        get foeMixer() { return foeMixerRef.current; },
+      } as any,
+      vfxBus,
+    );
+
     /* ----- main loop ----- */
     let last = performance.now();
     function tick(now: number) {
@@ -935,92 +1103,66 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         } else if (ud.kind === 'arc' || ud.kind === 'streak') {
           mat.opacity = (1 - k) * 0.95;
         } else if (ud.kind === 'afterimage') {
-          mat.opacity = (1 - k) * 0.55;
+          // Group clones — iterate every material child + fade them all.
+          obj.traverse?.((c: any) => {
+            if (c.material && 'opacity' in c.material) c.material.opacity = (1 - k) * 0.55;
+          });
+          if (mat) mat.opacity = (1 - k) * 0.55;
+        } else if (ud.kind === 'groundCrack') {
+          const r = 0.4 + k * 5.5;
+          obj.scale.set(r, r, r);
+          mat.opacity = (1 - k) * 0.8;
         }
         if (ud.life >= ud.max) {
           fg.remove(obj);
-          (obj as any).geometry?.dispose?.();
-          mat.dispose?.();
+          // For afterimages: dispose only the per-instance materials we
+          // created on top of the shared rig geometry. The geometry
+          // itself is tagged userData.shared (so the env cleanup walker
+          // also skips it) — touching it would tear the live rig down.
+          if (ud.kind === 'afterimage') {
+            obj.traverse?.((c: any) => {
+              if (c.material && typeof c.material.dispose === 'function') c.material.dispose();
+            });
+          } else {
+            (obj as any).geometry?.dispose?.();
+            mat.dispose?.();
+          }
+        }
+      }
+      // Camera-attached sigil flashes live on the camera, not in fxGroup.
+      const cam0 = cameraRef.current;
+      if (cam0) {
+        for (let i = cam0.children.length - 1; i >= 0; i--) {
+          const o = cam0.children[i] as THREE.Mesh;
+          if (o.userData?.kind !== 'sigil') continue;
+          o.userData.life += dt;
+          const k = Math.min(1, o.userData.life / o.userData.max);
+          // 30ms in → 50ms hold → 120ms out — punchy anime flash curve.
+          const opacity = k < 0.15 ? (k / 0.15) * 0.85
+                        : k < 0.40 ? 0.85
+                        : (1 - (k - 0.40) / 0.60) * 0.85;
+          (o.material as THREE.MeshBasicMaterial).opacity = Math.max(0, opacity);
+          if (o.userData.life >= o.userData.max) {
+            cam0.remove(o);
+            o.geometry?.dispose?.();
+            (o.material as any).dispose?.();
+          }
         }
       }
 
-      // Animation state
-      const a = animRef.current; a.t += dt;
-      const h = heroRef.current!, f = foeRef.current!;
+      // Choreographer drives every animation channel now — root motion,
+      // bone lean, camera anchor, VFX cues, hit-stop, slow-mo. The
+      // executor reads/writes through the VfxBus mounted below.
+      choreoRef.current?.update(rawDt);
       const hl = heroLightRef.current!, fl = foeLightRef.current!;
       hl.intensity = Math.max(0, hl.intensity - dt * 8);
       fl.intensity = Math.max(0, fl.intensity - dt * 8);
-
-      function ease(t: number, k: number) { return 1 - Math.pow(1 - t, k); }
-      if (a.kind === 'windup-hero') {
-        const k = Math.min(1, a.t / 0.25);
-        h.position.x = -2.2 - 0.6 * ease(k, 3);
-        h.material.rotation = -0.18 * ease(k, 3);
-        if (k >= 1) { a.kind = 'lunge-hero'; a.t = 0; }
-      } else if (a.kind === 'lunge-hero') {
-        const k = Math.min(1, a.t / 0.32);
-        const eased = ease(k, 2);
-        h.position.x = -2.2 - 0.6 + 4.0 * eased;
-        h.scale.x = 2.2 + 0.55 * (1 - Math.abs(2 * eased - 1));
-        h.material.rotation = -0.18 + 0.4 * eased;
-        if (k >= 0.5 && !a.didImpact) {
-          a.didImpact = true;
-          fireImpact('hero', a);
-        }
-        if (k >= 1) { a.kind = 'idle'; h.position.x = -2.2; h.scale.x = 2.2; h.material.rotation = 0; }
-      } else if (a.kind === 'windup-foe') {
-        const k = Math.min(1, a.t / 0.25);
-        f.position.x = 2.2 + 0.6 * ease(k, 3);
-        f.material.rotation = 0.18 * ease(k, 3);
-        if (k >= 1) { a.kind = 'lunge-foe'; a.t = 0; }
-      } else if (a.kind === 'lunge-foe') {
-        const k = Math.min(1, a.t / 0.32);
-        const eased = ease(k, 2);
-        f.position.x = 2.2 + 0.6 - 4.0 * eased;
-        f.scale.x = 2.2 + 0.55 * (1 - Math.abs(2 * eased - 1));
-        f.material.rotation = 0.18 - 0.4 * eased;
-        if (k >= 0.5 && !a.didImpact) {
-          a.didImpact = true;
-          fireImpact('foe', a);
-        }
-        if (k >= 1) { a.kind = 'idle'; f.position.x = 2.2; f.scale.x = 2.2; f.material.rotation = 0; }
-      } else if (a.kind === 'defeated-hero') {
-        const k = Math.min(1, a.t / 1.0);
-        h.position.y = 1.4 - 1.0 * ease(k, 2);
-        h.material.rotation = -0.9 * ease(k, 2);
-        h.material.opacity = 1 - 0.6 * k;
-      } else if (a.kind === 'defeated-foe') {
-        const k = Math.min(1, a.t / 1.0);
-        f.position.y = 1.4 - 1.0 * ease(k, 2);
-        f.material.rotation = 0.9 * ease(k, 2);
-        f.material.opacity = 1 - 0.6 * k;
-      } else {
-        h.position.y = 1.4 + Math.sin(now * 0.0014) * 0.04;
-        f.position.y = 1.4 + Math.sin(now * 0.0014 + 1.6) * 0.04;
-      }
-
-      // Mirror lunge / windup translations from the (invisible) sprite
-      // onto the 3D rig: the existing anim logic still drives sprite x
-      // (it's the canonical fighter anchor used by VFX, lights, target
-      // math) and we just slide the rig along with it. The rig sits at
-      // ground level so we don't track sprite y.
-      if (heroRigRef.current) heroRigRef.current.position.x = h.position.x;
-      if (foeRigRef.current) foeRigRef.current.position.x = f.position.x;
-
-      // Once the lunge animation state returns to idle, fade any
-      // attack/death clip on the rig back to its idle loop. Defeat is
-      // sticky — once a side is "defeated-*" we keep the death pose
-      // clamped (clampWhenFinished is set when triggered).
-      if (a.kind === 'idle') {
-        for (const model of [heroRigRef.current, foeRigRef.current]) {
-          if (!model) continue;
-          const actions = (model as any).userData.combatActions as Record<string, THREE.AnimationAction> | undefined;
-          const current = (model as any).userData.combatCurrent as THREE.AnimationAction | undefined;
-          if (!actions || !actions.idle || !current || current === actions.idle || current === actions.death) continue;
-          actions.idle.reset().setEffectiveWeight(1).fadeIn(0.20).play();
-          current.fadeOut(0.20);
-          (model as any).userData.combatCurrent = actions.idle;
-        }
+      // Subtle idle breathing on the rigs — only when the choreographer
+      // isn't playing something, otherwise we'd fight its root track.
+      if (!choreoRef.current?.isPlaying()) {
+        const idleBob = Math.sin(now * 0.0014) * 0.015;
+        if (heroRigRef.current) heroRigRef.current.position.y = idleBob;
+        if (foeRigRef.current) foeRigRef.current.position.y = -idleBob;
       }
 
       // Intro orbital sweep — overrides camera anchor for the first 1.4s.
@@ -1057,17 +1199,17 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       cam.updateProjectionMatrix();
       cam.lookAt(camAnchorRef.current.lx, camAnchorRef.current.ly, camAnchorRef.current.lz);
 
-      // Bloom pulse on heavy hits — driven by anim flag. Skipped on lite
-      // mode (no post-processing chain to drive).
+      // Bloom + RGB shift ease back to their tuneables baseline. The
+      // Choreographer fires `bloomKick(delta, recover)` cues that nudge
+      // the values up; this recovery pulls them back over
+      // `bloomKickRecoverRef` seconds. Pulling the baseline straight
+      // off `tuneables.*` (not literal constants) so the lil-gui live
+      // tune panel actually controls the resting point.
       if (bloom && rgbShift) {
-        if (a.bloomKick && a.bloomKick > 0) {
-          bloom.strength = 0.55 + a.bloomKick * 0.7;
-          rgbShift.uniforms['amount'].value = 0.0018 + a.bloomKick * 0.0035;
-          a.bloomKick = Math.max(0, a.bloomKick - rawDt * 3);
-        } else {
-          bloom.strength += (0.55 - bloom.strength) * Math.min(1, rawDt * 4);
-          rgbShift.uniforms['amount'].value += (0.0018 - rgbShift.uniforms['amount'].value) * Math.min(1, rawDt * 4);
-        }
+        const recover = bloomKickRecoverRef.current || 0.30;
+        const decayRate = 1 / Math.max(0.05, recover);
+        bloom.strength += (tuneables.bloomStrength - bloom.strength) * Math.min(1, rawDt * decayRate * 4);
+        rgbShift.uniforms['amount'].value += (tuneables.rgbShiftAmount - rgbShift.uniforms['amount'].value) * Math.min(1, rawDt * decayRate * 4);
       }
 
       // Tick rig animation mixers (idle/attack loops). Driven by `dt`
@@ -1083,63 +1225,13 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       rafRef.current = requestAnimationFrame(tick);
     }
 
-    /** Handles impact bookkeeping for both sides — particle bursts, light flashes,
-     *  shockwave/magic/arrow signature VFX, camera shake, dolly-zoom on crits. */
-    function fireImpact(attacker: 'hero' | 'foe', a: any) {
-      // Drive the DOM-side impact (SFX, canvas burst, screen flash,
-      // crit overlay, hurt animation) from THIS exact frame so the
-      // visual particle burst, the hit-stop, and the sound cue all
-      // align — fixes the slow-laptop drift the animation audit
-      // surfaced. Guarded so it can only fire once per attack.
-      try { a.onImpact && a.onImpact(); } catch { /* never let the DOM caller break the 3D tick */ }
-      a.onImpact = null;
-      const isHero = attacker === 'hero';
-      const target = isHero ? foeRef.current! : heroRef.current!;
-      const targetLight = isHero ? foeLightRef.current! : heroLightRef.current!;
-      const color = a.color || 0xffd34d;
-      const tx = target.position.x;
-      const tz = target.position.z;
-
-      // Core burst + rim flash
-      targetLight.intensity = a.crit ? 7 : 3;
-      vfxRef.current?.burst(tx + (isHero ? -0.4 : 0.4), target.position.y, tz, color, a.crit ? 110 : 50, a.crit ? 1.7 : 1.15);
-
-      // Signature VFX per effect.
-      const effect = a.effect as string | undefined;
-      const attackerSprite = isHero ? heroRef.current! : foeRef.current!;
-      if (effect === 'magic') {
-        vfxRef.current?.magicCircle(tx, tz, color);
-      } else if (effect === 'arrow') {
-        vfxRef.current?.arrowStreak(attackerSprite.position.x, tx, color);
-      } else if (effect === 'pierce') {
-        vfxRef.current?.afterImage(attackerSprite);
-      } else {
-        // slash (default)
-        vfxRef.current?.slashArc(attackerSprite.position.x, tx, color);
-      }
-      // Every impact lands a ground shockwave under the target.
-      vfxRef.current?.shockwave(tx, tz, color);
-
-      // Cinematic punch: shake, hit-stop, slow-mo on crits, dolly-zoom + bloom kick.
-      shakeRef.current = { amount: a.crit ? 0.32 : 0.16, t: 0.40 };
-      a.bloomKick = a.crit ? 1.4 : 0.55;
-      if (a.crit) {
-        hitStopRef.current = 0.085;          // ~5 frame freeze at 60fps
-        timeScaleRef.current = 0.35;         // slow-mo until eased back to 1×
-        camAnchorRef.current.z = 4.6;        // push camera in (Hitchcock)
-        camAnchorRef.current.fov = 58;       // widen FOV → dolly-zoom feel
-      } else {
-        camAnchorRef.current.z = 5.4;
-        camAnchorRef.current.fov = 48;
-      }
-    }
-
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
+      try { choreoRef.current?.stop(); choreoRef.current = null; } catch {}
       try { hdPanel?.dispose(); } catch {}
       envCancelled = true;
       try { environment?.dispose(); } catch {}
@@ -1172,6 +1264,22 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // releases its GPU handle on unmount.
       magicCircleCache.forEach((t) => t.dispose());
       magicCircleCache.clear();
+      // sigil planes live as children of the camera (so they ride the
+      // orbit on crit) — the scene traverse-dispose above doesn't reach
+      // them. Walk the camera explicitly and free both the plane and the
+      // cached CanvasTexture for each glyph.
+      const camCleanup = cameraRef.current;
+      if (camCleanup) {
+        for (let i = camCleanup.children.length - 1; i >= 0; i--) {
+          const o = camCleanup.children[i] as THREE.Mesh;
+          if (o.userData?.kind !== 'sigil') continue;
+          o.geometry?.dispose?.();
+          (o.material as any)?.dispose?.();
+          camCleanup.remove(o);
+        }
+      }
+      sigilCache.forEach((t) => t.dispose());
+      sigilCache.clear();
       // Renderer canvas removal is handled inside backend.dispose() now;
       // this used to be the direct unmount call back when renderer was
       // a non-null local. Kept as a no-op safety net for any leftover
@@ -1181,53 +1289,40 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   }, [heroClass, foeClass, region]);
 
   // Crossfade the named action ("attack" / "death") on a rig. Idle is
-  // owned by the tick loop so we don't fire it from the imperative call;
-  // the loop fades back to idle once the lunge state machine exits.
-  const triggerRigAction = (side: 'hero' | 'foe', name: 'attack' | 'death') => {
-    const model = side === 'hero' ? heroRigRef.current : foeRigRef.current;
-    if (!model) return;
-    const actions = (model as any).userData.combatActions as Record<string, THREE.AnimationAction> | undefined;
-    const current = (model as any).userData.combatCurrent as THREE.AnimationAction | undefined;
-    if (!actions || !actions[name]) return;
-    const next = actions[name];
-    if (current === next) return;
-    next.reset().setEffectiveWeight(1).setEffectiveTimeScale(name === 'attack' ? 1.6 : 1.0);
-    if (name === 'death') {
-      next.clampWhenFinished = true;
-      next.loop = THREE.LoopOnce;
-    }
-    if (current) current.fadeOut(0.12);
-    next.fadeIn(0.12).play();
-    (model as any).userData.combatCurrent = next;
-  };
-
   useImperativeHandle(ref, () => ({
     attack({ attacker, effect, crit, damageRatio = 0.3, missed, dodged, onImpact }) {
-      const color = effect === 'magic' ? 0xc294ff : effect === 'arrow' ? 0x9ad9ff : effect === 'pierce' ? 0xffe7a8 : 0xffd34d;
-      triggerRigAction(attacker, 'attack');
-      // Audit (animation CRITICAL #4): the caller used to fire its
-      // SFX + canvas burst + crit overlay from a wall-clock setTimeout
-      // while the 3D scene resolved impact on its own dt-driven anim
-      // time — on slower laptops the two visibly drifted (sound a
-      // frame or two ahead of the burst). Stash the impact callback
-      // on the anim record so fireImpact() invokes it on the SAME
-      // frame as the 3D burst, eliminating the drift.
-      animRef.current = { kind: attacker === 'hero' ? 'windup-hero' : 'windup-foe', t: 0, color, crit: !!crit, effect, didImpact: false, onImpact };
-      // Pre-position camera for the lunge (overridden again on impact).
-      if ((damageRatio || 0) > 0.25 || crit) { camAnchorRef.current.z = 5.2; }
-      else camAnchorRef.current.z = 6.0;
-      camAnchorRef.current.fov = 48;
+      // Choreographer-driven: build a Timeline from the class+effect, fold
+      // the crit modifier in (dolly-zoom + sigil flash + heavy hit-stop +
+      // slow-mo + bloom kick) and play it. The timeline's
+      // `callback.onImpact` cue fires `onImpact` at the exact 3D impact
+      // frame, so the UI / SFX side stays in sync without the old wall-
+      // clock setTimeout drift.
+      const cls = attacker === 'hero' ? heroClass : foeClass;
+      const base = pickAttackTimeline(cls, attacker, effect);
+      const timeline = crit ? applyCritModifier(base) : base;
+      choreoRef.current?.play(timeline, {
+        attacker,
+        damageRatio: damageRatio || 0.3,
+        crit: !!crit,
+        onImpact,
+      });
       if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18 };
     },
     defeat(side) {
-      animRef.current = { kind: side === 'hero' ? 'defeated-hero' : 'defeated-foe', t: 0 };
-      triggerRigAction(side, 'death');
-      camAnchorRef.current.z = 5.0;
-      camAnchorRef.current.fov = 44; // tight tele-lens for the death beat
+      // Cinematic knee-buckle with timeScale ramp + camera tilt + push-in
+      // hold. Death rig clip fades in via the timeline's rig.crossfade
+      // cue; clampWhenFinished is set in Choreographer.rigCrossfade.
+      const timeline = pickDefeatTimeline(side);
+      choreoRef.current?.play(timeline, {
+        attacker: side, // defeat timeline frames the loser as 'attacker'
+        damageRatio: 1,
+        crit: false,
+      });
     },
     resetCamera() {
       camAnchorRef.current = { x: 0, y: 1.9, z: 6.0, lx: 0, ly: 1.3, lz: 0, fov: 48 };
       introRef.current = { t: 0, dur: 1.4, active: true };
+      choreoRef.current?.stop();
     },
   }));
 
