@@ -3,8 +3,10 @@ import { SITE } from "../../lib/site";
 import { SITE_FAQ } from "../../content/faq";
 import { JsonLd } from "../../components/JsonLd";
 import { breadcrumbLd, siteFaqLd } from "../../lib/jsonld";
+import { FaqBody } from "./FaqBody";
 import "../legal.css";
 
+// Metadata + JSON-LD stay in the canonical BG source of truth (SEO).
 export const metadata: Metadata = {
   title: "Често задавани въпроси",
   description: "Отговори на въпроси за АСО — безплатния браузърен портал за игри на карти, маса, билярд и снукър.",
@@ -23,19 +25,7 @@ export default function Faq() {
           siteFaqLd(SITE_FAQ),
         ]}
       />
-      <article className="legal container">
-        <h1>Често задавани въпроси</h1>
-        <p className="legal-updated">Всичко за АСО на едно място.</p>
-        {SITE_FAQ.map((f) => (
-          <div key={f.question}>
-            <h2>{f.question}</h2>
-            <p>{f.answer}</p>
-          </div>
-        ))}
-        <p className="legal-foot">
-          Готов за игра? <a href={SITE.playUrl}>Влез и играй</a>.
-        </p>
-      </article>
+      <FaqBody />
     </>
   );
 }

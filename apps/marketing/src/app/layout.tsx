@@ -4,6 +4,7 @@ import { SITE } from "../lib/site";
 import { JsonLd } from "../components/JsonLd";
 import { Footer, Header } from "../components/Chrome";
 import { organizationLd, websiteLd } from "../lib/jsonld";
+import { I18nProvider } from "../i18n/I18nProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -57,9 +58,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <JsonLd data={[organizationLd(), websiteLd()]} />
       </head>
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <I18nProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </I18nProvider>
       </body>
     </html>
   );

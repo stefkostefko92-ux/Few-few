@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { SITE } from "../lib/site";
+import { useT } from "../i18n/I18nProvider";
+import { LangSwitcher } from "./LangSwitcher";
 
 export function Header() {
+  const t = useT();
   return (
     <header className="site-header">
       <div
@@ -12,11 +17,12 @@ export function Header() {
           {SITE.name}
         </Link>
         <nav style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-          <Link href="/games/">Игри</Link>
-          <Link href="/faq/">Въпроси</Link>
-          <Link href="/about/">За нас</Link>
+          <Link href="/games/">{t.nav.games}</Link>
+          <Link href="/faq/">{t.nav.faq}</Link>
+          <Link href="/about/">{t.nav.about}</Link>
+          <LangSwitcher />
           <a className="cta" href={SITE.playUrl}>
-            Играй сега
+            {t.nav.play}
           </a>
         </nav>
       </div>
@@ -25,24 +31,25 @@ export function Header() {
 }
 
 export function Footer() {
+  const t = useT();
   return (
     <footer className="site-footer">
       <div className="container" style={{ padding: "1.5rem 1.25rem" }}>
         <nav
           style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1.25rem", marginBottom: "0.75rem", fontSize: "0.9rem" }}
         >
-          <Link href="/games/">Игри</Link>
-          <Link href="/faq/">Въпроси</Link>
-          <Link href="/about/">За нас</Link>
-          <Link href="/terms/">Общи условия</Link>
-          <Link href="/privacy/">Поверителност</Link>
-          <Link href="/cookies/">Бисквитки</Link>
-          <Link href="/responsible/">Отговорна игра</Link>
+          <Link href="/games/">{t.footer.games}</Link>
+          <Link href="/faq/">{t.footer.faq}</Link>
+          <Link href="/about/">{t.footer.about}</Link>
+          <Link href="/terms/">{t.footer.terms}</Link>
+          <Link href="/privacy/">{t.footer.privacy}</Link>
+          <Link href="/cookies/">{t.footer.cookies}</Link>
+          <Link href="/responsible/">{t.footer.responsible}</Link>
         </nav>
-        <p>Социална игра — не е хазарт за реални пари. Само за 18+.</p>
+        <p>{t.footer.disclaimer}</p>
         <p style={{ marginTop: "0.25rem" }}>
           <a href={SITE.org.url} target="_blank" rel="noopener noreferrer">
-            Created and Designed by Carbon Stealth VCC
+            {t.footer.credit}
           </a>
         </p>
       </div>
