@@ -484,7 +484,7 @@ function renderProductPage(p) {
 <link rel="preload" as="image" href="/${escHtml(p.image || 'img/og-prodotti.jpg')}" fetchpriority="high">
 <link rel="preload" href="/css/style.css" as="style">
 <link rel="preload" href="/js/app.js" as="script">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
@@ -541,7 +541,7 @@ function renderProductPage(p) {
 <div>
   <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.5rem" itemprop="category">${escHtml(p.category)}</div>
   <h1 itemprop="name" style="font-size:2.2rem;margin-bottom:.3rem;line-height:1.2">${escHtml(p.name)}</h1>
-  ${p.codice ? `<div style="color:var(--text-muted);font-family:'Rajdhani',sans-serif;letter-spacing:.05em;margin-bottom:1rem" itemprop="mpn">${escHtml(p.codice)}</div>` : ''}
+  ${p.codice ? `<div style="color:var(--text-muted);font-family:var(--font-mono);letter-spacing:.05em;margin-bottom:1rem" itemprop="mpn">${escHtml(p.codice)}</div>` : ''}
 
   <div itemprop="offers" itemscope itemtype="https://schema.org/Offer" style="padding:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:2rem">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
