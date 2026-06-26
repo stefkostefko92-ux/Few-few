@@ -42,6 +42,7 @@ import realmBossRoutes from './routes/realmBoss';
 import factionRoutes from './routes/faction';
 import eventsRoutes from './routes/events';
 import mythicPlusRoutes from './routes/mythicPlus';
+import dsaRoutes from './routes/dsa';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
 
@@ -181,6 +182,7 @@ app.use('/api/realm-boss', realmBossRoutes);
 app.use('/api/faction', factionRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/mythic-plus', mythicPlusRoutes);
+app.use('/api/dsa', dsaRoutes);
 
 // Serve client build if present (production)
 const clientDist = path.resolve(__dirname, '../../client/dist');

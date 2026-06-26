@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "login": "Sign in",
+    "register": "Sign up",
+    "play": "Play"
+  },
+  "auth": {
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "country": "Country of residence",
+    "dob": "Date of birth (used for age verification only — never displayed)",
+    "minAgeHint": "Minimum age in {{country}}: {{minAge}}.",
+    "tooYoung": "Registration requires age {{minAge}}+ in {{country}}. We cannot create your account.",
+    "acceptTerms": "I have read and accept the {{terms}} and the {{privacy}}.",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy",
+    "createButton": "Create Account",
+    "creatingButton": "Forging…",
+    "submitErrorTerms": "You must accept the Terms of Service and Privacy Policy.",
+    "submitErrorDob": "Please enter your date of birth.",
+    "signInPrompt": "Already a hero? {{signin}}",
+    "signIn": "Sign in"
+  },
+  "cookies": {
+    "title": "We respect your choices.",
+    "intro": "Necessary cookies keep you logged in and the site running. Other categories are off by default — you opt in below. Read the details in our {{policy}}.",
+    "policyLink": "Privacy Policy",
+    "necessary": "Necessary",
+    "necessaryDesc": "Auth session, CSRF token. Always on.",
+    "preferences": "Preferences",
+    "preferencesDesc": "Language, region, UI density.",
+    "analytics": "Analytics",
+    "analyticsDesc": "Anonymised page metrics + error reports (Sentry, EU region).",
+    "marketing": "Marketing",
+    "marketingDesc": "None active right now; toggle has no effect until a campaign is configured.",
+    "rejectAll": "Reject all",
+    "saveChoice": "Save my choice",
+    "customise": "Customise",
+    "acceptAll": "Accept all"
+  },
+  "footer": {
+    "cookieSettings": "Cookie settings",
+    "contactSupport": "Contact Support",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  }
+}

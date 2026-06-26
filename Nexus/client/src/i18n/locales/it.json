@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "login": "Accedi",
+    "register": "Registrati",
+    "play": "Gioca"
+  },
+  "auth": {
+    "username": "Nome utente",
+    "email": "Email",
+    "password": "Password",
+    "country": "Paese di residenza",
+    "dob": "Data di nascita (utilizzata solo per la verifica dell'età — mai mostrata)",
+    "minAgeHint": "Età minima in {{country}}: {{minAge}}.",
+    "tooYoung": "La registrazione richiede {{minAge}}+ anni in {{country}}. Non possiamo creare il tuo account.",
+    "acceptTerms": "Ho letto e accetto i {{terms}} e la {{privacy}}.",
+    "termsLink": "Termini di servizio",
+    "privacyLink": "Informativa sulla privacy",
+    "createButton": "Crea account",
+    "creatingButton": "Forgiando…",
+    "submitErrorTerms": "Devi accettare i Termini di servizio e l'Informativa sulla privacy.",
+    "submitErrorDob": "Inserisci la tua data di nascita.",
+    "signInPrompt": "Sei già un eroe? {{signin}}",
+    "signIn": "Accedi"
+  },
+  "cookies": {
+    "title": "Rispettiamo le tue scelte.",
+    "intro": "I cookie necessari mantengono l'accesso e fanno funzionare il sito. Le altre categorie sono disattivate per impostazione predefinita — attivale qui sotto. Tutti i dettagli nella nostra {{policy}}.",
+    "policyLink": "Informativa sulla privacy",
+    "necessary": "Necessari",
+    "necessaryDesc": "Sessione di autenticazione, token CSRF. Sempre attivi.",
+    "preferences": "Preferenze",
+    "preferencesDesc": "Lingua, regione, densità dell'interfaccia.",
+    "analytics": "Analisi",
+    "analyticsDesc": "Metriche di pagina anonime + segnalazioni di errori (Sentry, regione UE).",
+    "marketing": "Marketing",
+    "marketingDesc": "Nessuna campagna attiva al momento; l'opzione non ha effetto finché non ne viene configurata una.",
+    "rejectAll": "Rifiuta tutti",
+    "saveChoice": "Salva la mia scelta",
+    "customise": "Personalizza",
+    "acceptAll": "Accetta tutti"
+  },
+  "footer": {
+    "cookieSettings": "Impostazioni cookie",
+    "contactSupport": "Contatta l'assistenza",
+    "terms": "Termini di servizio",
+    "privacy": "Informativa sulla privacy"
+  }
+}

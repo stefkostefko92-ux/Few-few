@@ -1,6 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+// i18n bootstrap — must run before App so the first render already sees
+// the detected language. Side-effect import is intentional.
+import './i18n';
 // Self-hosted webfonts (no IP leak to fonts.gstatic.com pre-consent).
 // Each @fontsource package bundles WOFF2 + a tiny @font-face rule that
 // vite copies into /assets at build time.
