@@ -22,6 +22,12 @@ function isBlocked(ip: string): boolean {
 }
 
 function recordFail(ip: string) {
+  // Opportunistically drop expired entries so rotating-IP floods can't grow the
+  // map without bound (single-instance, so a periodic sweep here is enough).
+  if (attempts.size > 1000) {
+    const now = Date.now();
+    for (const [k, v] of attempts) if (now - v.first > WINDOW_MS) attempts.delete(k);
+  }
   const a = attempts.get(ip);
   if (!a || Date.now() - a.first > WINDOW_MS) attempts.set(ip, { count: 1, first: Date.now() });
   else a.count += 1;

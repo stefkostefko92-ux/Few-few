@@ -16,6 +16,10 @@ const nextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           // No "preload" until TLS is confirmed stable — preload is hard to reverse.
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          // Safe CSP directives that don't touch script/style-src (so Next's inline
+          // bootstrap and the Facebook embed keep working). A full script-src CSP
+          // needs per-request nonces — a separate, larger change.
+          { key: "Content-Security-Policy", value: "base-uri 'self'; object-src 'none'; frame-ancestors 'self'" },
         ],
       },
     ];

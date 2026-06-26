@@ -15,9 +15,9 @@ export default function CookieSettingsLink({ locale }: { locale: Locale }) {
   };
   return (
     <li>
-      <a href="#" onClick={(e) => { e.preventDefault(); open(); }}>
+      <button type="button" className="linklike" onClick={open}>
         {t(locale, "cookie.manage")}
-      </a>
+      </button>
     </li>
   );
 }

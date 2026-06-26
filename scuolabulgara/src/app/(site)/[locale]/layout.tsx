@@ -18,8 +18,9 @@ export async function generateMetadata({
   const locale = isLocale(raw) ? raw : "en";
   const alt: Record<string, string> = {};
   for (const l of LOCALES) alt[LOCALE_META[l].htmlLang] = `${base}/${l}`;
-  // x-default points to the root, which geo-detects and redirects to the best locale.
-  alt["x-default"] = base;
+  // x-default points to the Italian version (direct 200), consistent with the
+  // legal pages — a concrete URL is a stronger hreflang signal than the redirecting root.
+  alt["x-default"] = `${base}/it`;
   return {
     metadataBase: new URL(base),
     title: { default: "Qui Bulgaria — Scuola bulgara di Milano", template: "%s · Qui Bulgaria" },

@@ -106,12 +106,39 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       addressCountry: "IT",
     },
     geo: { "@type": "GeoCoordinates", latitude: 45.4642, longitude: 9.19 },
+    hasMap: settings.mapUrl,
     areaServed: [
       { "@type": "City", name: "Milano" },
       { "@type": "AdministrativeArea", name: "Lombardia" },
       { "@type": "Country", name: "Italia" },
     ],
     knowsLanguage: ["bg", "it", "en"],
+    knowsAbout: [
+      "Lingua bulgara",
+      "Cultura bulgara",
+      "Danza popolare bulgara",
+      "Corsi di lingua per bambini e adulti",
+    ],
+  };
+
+  // WebSite node — gives the graph a root entity AI can anchor to.
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${base}/#website`,
+    url: base,
+    name: "Qui Bulgaria — Scuola bulgara di Milano",
+    inLanguage: ["it", "bg", "en"],
+    publisher: { "@id": `${base}/#organization` },
+  };
+
+  // Breadcrumb for the current localized home.
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${base}/${locale}` },
+    ],
   };
 
   // Course catalogue for search/answer engines (built from the editable cards).
@@ -169,7 +196,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(website) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(org) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(faq) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld(courseLd) }} />
       <a className="skip-link btn btn--primary" href="#main">
@@ -232,7 +261,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <div className="container">
             <div className="grid about__grid">
               <div className="about__media reveal">
-                <img src="/assets/img/photos/community.webp" alt={about.tag} loading="lazy" />
+                <img src="/assets/img/photos/community.webp" alt={about.tag} width={526} height={452} loading="lazy" />
                 <span className="tag"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10Z" strokeLinejoin="round" /></svg>{about.tag}</span>
               </div>
               <div className="about__copy reveal" data-delay="1">
@@ -401,7 +430,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <div className="gallery reveal" style={{ marginTop: "2.5rem" }}>
               {(gallery.tiles || []).map((tile, i) => {
                 if (tile.kind === "image") {
-                  return (<figure className="span-2 row-2" key={i}><img src={tile.src} alt={tile.alt || ""} loading="lazy" /></figure>);
+                  return (<figure className="span-2 row-2" key={i}><img src={tile.src} alt={tile.alt || ""} width={800} height={600} loading="lazy" /></figure>);
                 }
                 return (
                   <figure className={`tile tile--${tile.kind}`} key={i}>
@@ -468,7 +497,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
 
             <div className="cta-band reveal" style={{ marginTop: "4rem" }}>
-              <div className="rose-ornament" aria-hidden="true"><span className="rose-photo"><img src="/assets/img/photos/rose-damascena.webp" alt="" loading="lazy" /></span></div>
+              <div className="rose-ornament" aria-hidden="true"><span className="rose-photo"><img src="/assets/img/photos/rose-damascena.webp" alt="" width={400} height={400} loading="lazy" /></span></div>
               <h2>{cta.title}</h2>
               <p>{cta.body}</p>
               <div className="hero__cta">

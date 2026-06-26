@@ -135,20 +135,20 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     label: "Училище „П. Яворов“",
     order: 3,
     it: {
-      eyebrow: "La scuola “P. Yavorov”",
+      eyebrow: "La scuola «P. Yavorov»",
       title: "Un percorso completo, dal 2014 ad oggi",
-      lead: "La scuola bulgara “P. Yavorov” ha aperto le porte il 12 gennaio 2014. Nata per i bambini delle famiglie bulgare e miste in Lombardia, si è poi estesa agli adulti e, da febbraio 2020, all'apprendimento online tramite piattaforma e-learning.",
+      lead: "La scuola bulgara «P. Yavorov» ha aperto le porte il 12 gennaio 2014. Nata per i bambini delle famiglie bulgare e miste in Lombardia, si è poi estesa agli adulti e, da febbraio 2020, all'apprendimento online tramite piattaforma e-learning.",
       items: [
         { icon: "presence", title: "In presenza", text: "Lezioni dal vivo a Milano per bambini e adulti, con piccoli gruppi e attenzione a ogni studente.", bullets: [] },
         { icon: "distance", title: "A distanza", text: "Corsi di lingua bulgara online tramite piattaforma e-learning, ovunque ti trovi in Italia o all'estero.", bullets: [] },
         { icon: "hybrid", title: "Formato ibrido", text: "Il meglio dei due mondi: combina lezioni in aula e a distanza secondo le tue esigenze e i tuoi tempi.", bullets: [] },
       ],
       quote: "I nostri docenti sono filologi, pedagogisti e storici. Nel team abbiamo anche un docente universitario.",
-      quoteCite: "— Il corpo insegnante della scuola “P. Yavorov”",
+      quoteCite: "— Il corpo insegnante della scuola «P. Yavorov»",
     },
     bg: {
       eyebrow: "Училище „П. Яворов“",
-      title: "Завършен път, от 2014 г. до днес",
+      title: "Пълноценен път, от 2014 г. до днес",
       lead: "Българското училище „П. Яворов“ отвори врати на 12 януари 2014 г. Създадено за децата на българските и смесените семейства в Ломбардия, по-късно се разшири към възрастни, а от февруари 2020 г. — и към онлайн обучение чрез платформа за е-обучение.",
       items: [
         { icon: "presence", title: "Присъствено", text: "Живи уроци в Милано за деца и възрастни, в малки групи и с внимание към всеки ученик.", bullets: [] },
@@ -177,7 +177,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     label: "Числа",
     order: 4,
     it: { items: [
-      { num: "2014", label: "Fondazione della scuola “P. Yavorov”" },
+      { num: "2014", label: "Fondazione della scuola «P. Yavorov»" },
       { num: "2", label: "Discipline: lingua e danza tradizionale" },
       { num: "100%", label: "Docenti qualificati: filologi e pedagogisti" },
       { num: "2", label: "Sedi a Milano: Corvetto e zona Rho" },
@@ -238,7 +238,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
     order: 6,
     it: {
       eyebrow: "Danza tradizionale",
-      title: "Il gruppo “Veselie”: un vulcano di emozioni",
+      title: "Il gruppo «Veselie»: un vulcano di emozioni",
       lead: "Le danze popolari bulgare sono un'arte conosciuta in tutto il mondo: costumi colorati, musica e canti che accendono sempre un vulcano di emozioni.",
       body: "Oltre a custodire il patrimonio culturale, ballare fa bene al corpo e alla mente: riduce lo stress, tonifica e crea comunità attorno all'horo, la tradizionale danza in cerchio. Accogliamo bambini e adulti, famiglie bulgare e partecipanti italiani. Una sola iscrizione dà accesso a entrambi gli appuntamenti settimanali.",
       scheduleTitle: "Orari delle prove",
@@ -246,7 +246,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
         { day: "DOM", time: "10–12", title: "Domenica · 10:00–12:00", place: "Vicino a Piazzale Corvetto, Milano · segue il calendario scolastico" },
         { day: "GIO", time: "20:30", title: "Giovedì · 20:30–22:30", place: "Zona Rho (Milano)" },
       ],
-      groupNote: "Il gruppo di danza “Veselie” è nato nel 2016 in seno alla Scuola bulgara di Milano ed è cresciuto molto da allora.",
+      groupNote: "Il gruppo di danza «Veselie» è nato nel 2016 in seno alla Scuola bulgara di Milano ed è cresciuto molto da allora.",
       instructorName: "Stanimir Minev",
       instructorRole: "Ballerino e coreografo, diplomato alla Scuola Nazionale di Danza e Balletto bulgara · a Milano dal 2013",
       cta: "Iscriviti alla danza",
@@ -291,7 +291,7 @@ export const DEFAULT_CONTENT: DefaultRow[] = [
       eyebrow: "Sui social",
       title: "Seguici su Facebook",
       lead: "Foto, eventi, lezioni e novità della nostra comunità: tutto quello che pubblichiamo, direttamente dalla nostra pagina, in tempo reale.",
-      points: ["Eventi e appuntamenti del gruppo “Veselie”", "Foto e momenti della vita scolastica", "Avvisi su iscrizioni e nuovi corsi"],
+      points: ["Eventi e appuntamenti del gruppo «Veselie»", "Foto e momenti della vita scolastica", "Avvisi su iscrizioni e nuovi corsi"],
     },
     bg: {
       eyebrow: "В социалните мрежи",

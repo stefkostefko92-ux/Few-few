@@ -54,7 +54,7 @@ export default function MediaManager() {
         <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ margin: "0 auto .5rem" }}><path d="M12 16V4m0 0 4 4m-4-4-4 4" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" /></svg>
         <div>{uploading ? "Качване…" : "Плъзнете снимки тук или кликнете за качване"}</div>
-        <small>JPG, PNG, WebP, GIF, SVG — макс. 12 MB</small>
+        <small>JPG, PNG, WebP, GIF — макс. 12 MB</small>
       </div>
 
       {loading ? (

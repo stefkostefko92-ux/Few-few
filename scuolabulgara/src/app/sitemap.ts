@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       languages["x-default"] = `${base}${path === "" ? "" : "/it" + path}`;
       entries.push({
         url: `${base}/${locale}${path}`,
+        lastModified: new Date(),
         changeFrequency: path === "" ? "weekly" : "yearly",
         priority: path === "" ? 1 : 0.4,
         alternates: { languages },

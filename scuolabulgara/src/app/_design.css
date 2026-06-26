@@ -371,6 +371,10 @@ body.menu-open .nav__toggle span::after { transform: rotate(-45deg) translateY(0
 .footer ul { display: grid; gap: .65rem; }
 .footer a { color: rgba(251,248,241,.7); font-size: .94rem; transition: color .2s; }
 .footer a:hover { color: var(--lime-400); }
+/* Cookie-preferences trigger: a real <button> styled as a footer link (a11y). */
+.footer .linklike { color: rgba(251,248,241,.7); font-size: .94rem; transition: color .2s;
+  background: none; border: 0; padding: 0; font-family: inherit; cursor: pointer; text-align: left; }
+.footer .linklike:hover { color: var(--lime-400); }
 .footer__bottom { margin-top: 3rem; padding-top: 1.6rem; border-top: 1px solid rgba(255,255,255,.1); display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center; font-size: .85rem; color: rgba(251,248,241,.5); }
 .footer__flag { display: inline-flex; border-radius: 4px; overflow: hidden; }
 .footer__flag i { width: 8px; height: 14px; }
