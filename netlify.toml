@@ -1,0 +1,7 @@
+# Disabilita completamente le Deploy Preview di Netlify sulle pull request.
+# Il comando `ignore` viene eseguito prima della build: se restituisce exit 0,
+# Netlify ANNULLA (salta) la build per quel contesto. Impostandolo a "exit 0"
+# nel contesto deploy-preview, nessuna anteprima viene piu' generata sulle PR.
+# I deploy di produzione / branch NON sono toccati.
+[context.deploy-preview]
+  ignore = "exit 0"
