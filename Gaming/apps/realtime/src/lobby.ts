@@ -217,6 +217,13 @@ export class LobbyManager {
     return this.lobbies.get(id);
   }
 
+  /** Count of open (non-closed) lobbies — for metrics. */
+  openCount(): number {
+    let n = 0;
+    for (const l of this.lobbies.values()) if (!l.closed) n++;
+    return n;
+  }
+
   /** The open lobby a user currently sits in, if any. */
   lobbyForUser(userId: string): Lobby | undefined {
     for (const l of this.lobbies.values()) if (!l.closed && l.has(userId)) return l;

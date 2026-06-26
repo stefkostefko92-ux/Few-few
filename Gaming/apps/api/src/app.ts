@@ -8,6 +8,7 @@ import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { globalLimiter } from "./middleware/rateLimit.js";
 import { csrfOriginGuard } from "./middleware/csrf.js";
+import { metricsHandler, metricsMiddleware } from "./integrations/prometheus.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
@@ -48,6 +49,8 @@ export function createApp(): Express {
       },
     }),
   );
+  // Time every request for the Prometheus RED metrics.
+  app.use(metricsMiddleware);
 
   // Stripe webhook MUST receive the raw body for signature verification, so it
   // is mounted before cookieParser/json (§11.3). It is also not rate limited.
@@ -56,8 +59,10 @@ export function createApp(): Express {
   app.use(cookieParser());
   app.use(express.json({ limit: "100kb" }));
 
-  // Health endpoints are not rate limited (probes hit them frequently).
+  // Health + Prometheus scrape: not rate limited (probes/scrapes hit often).
+  // /metrics is plain-text Prometheus exposition (firewall to monitoring net).
   app.use("/", healthRouter);
+  app.get("/metrics", metricsHandler);
 
   app.use(globalLimiter);
   // CSRF defence-in-depth for cookie auth: reject cross-origin state changes.

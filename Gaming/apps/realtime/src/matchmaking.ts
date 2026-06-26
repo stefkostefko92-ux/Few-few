@@ -79,6 +79,13 @@ export class Matchmaker {
     return this.rooms.get(matchId);
   }
 
+  /** Count of live (unfinished) matches this node owns — for metrics. */
+  activeRoomCount(): number {
+    let n = 0;
+    for (const r of this.rooms.values()) if (!r.isDone) n++;
+    return n;
+  }
+
   /** The active (unfinished) room a user is seated in ON THIS NODE, if any. */
   activeRoomForUser(userId: string): GameRoom | undefined {
     for (const room of this.rooms.values()) {
