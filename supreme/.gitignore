@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+frontend/dist/
+
+# Environment files — never commit secrets
+.env
+*/.env
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test / coverage artifacts
+coverage/
+.vite/
+
+# OS noise
+.DS_Store
+Thumbs.db

@@ -1,0 +1,44 @@
+# Supreme Bot
+
+> Multi-tenant Discord bot SaaS platform by Carbon Stealth VCC. Provides ticket systems, application forms, AI auto-replies via Anthropic Claude, white-label custom bots, verification, automation, analytics, and a public REST API. EU-hosted, GDPR-compliant by design.
+
+Carbon Stealth VCC is an EU-registered software company (EIK BG208725180) headquartered in Bobov Dol, Bulgaria, with offices in Sofia and Vittuone/Milano (Italy). Supreme Bot is one of several digital products in our portfolio. The platform serves Discord communities, esports organizations, customer support teams, agencies, and content creators worldwide.
+
+Pricing: Free tier (3 panels, 2 forms, persistent transcripts) and Premium (€9.99/server/month with unlimited panels, AI replies, white-label bot, 14-day free trial without credit card).
+
+## Documentation
+
+- [Landing page](https://supreme.carbonstealth.eu/): Product overview, full feature list, pricing, FAQ, signup with Discord OAuth
+- Localized landing pages: [Български](https://supreme.carbonstealth.eu/bg), [Deutsch](https://supreme.carbonstealth.eu/de), [Español](https://supreme.carbonstealth.eu/es), [Français](https://supreme.carbonstealth.eu/fr), [Italiano](https://supreme.carbonstealth.eu/it), [Nederlands](https://supreme.carbonstealth.eu/nl), [Polski](https://supreme.carbonstealth.eu/pl)
+- [Service status](https://supreme.carbonstealth.eu/status): Real-time uptime monitoring and component health for database, bot, API, and web
+- [Terms of Service](https://supreme.carbonstealth.eu/terms): Legal terms governing use of Supreme Bot SaaS
+- [Privacy Policy](https://supreme.carbonstealth.eu/privacy): Data processing details, subprocessor list (Hetzner, Stripe, Anthropic, Discord), data subject rights, retention policy
+- [Cookie Policy](https://supreme.carbonstealth.eu/cookies): Cookie usage details and consent management options
+- [End-User License Agreement](https://supreme.carbonstealth.eu/eula): Software license terms governing customer use
+
+## Features
+
+- [Ticket System](https://supreme.carbonstealth.eu/#features-tickets): Visual button panels, automatic channel creation, round-robin staff assignment, persistent HTML transcripts that survive Discord channel deletion
+- [Application Forms](https://supreme.carbonstealth.eu/#features-forms): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
+- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features-whitelabel): Premium feature allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
+- [AI Auto-Replies](https://supreme.carbonstealth.eu/#features-ai): Premium feature using Anthropic Claude for context-aware first-response replies; EU AI Act Article 50 disclosure compliant
+- [Verification System](https://supreme.carbonstealth.eu/#features-verification): Captcha-based bot/troll prevention with account age requirements and auto-role on success
+- [Automation Engine](https://supreme.carbonstealth.eu/#features-automation): If-this-then-that workflows with event triggers, action chains, and conditional logic
+- [Public REST API](https://supreme.carbonstealth.eu/#features-api): Bearer-token authentication for building custom integrations and dashboards
+- [Webhook Integrations](https://supreme.carbonstealth.eu/#features-webhooks): HMAC-signed outgoing webhooks on every platform event
+
+## Compliance and infrastructure
+
+- [GDPR Privacy Settings](https://supreme.carbonstealth.eu/dashboard/privacy-settings): Self-service data export (Articles 15+20), account deletion (Article 17), consent withdrawal (Article 7.3)
+- [Robots policy](https://supreme.carbonstealth.eu/robots.txt): AI crawler permissions (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended allowed; CCBot and Bytespider blocked)
+- [Sitemap](https://supreme.carbonstealth.eu/sitemap.xml): Complete URL inventory with last-modified dates
+
+## Optional
+
+- [Carbon Stealth main site](https://carbonstealth.eu/): Parent company catalog of digital products beyond Supreme Bot — includes ERP systems, gaming platforms, e-commerce solutions, carbon fiber composites
+- [Support Discord](https://discord.gg/wpCRpy8B): Community support channel
+- General contact: discord@carbonstealth.eu
+- Privacy and DPO matters: privacy@carbonstealth.eu
+- Security disclosures: security@carbonstealth.eu
+- Italian customer support: +39 379 296 9699
+- Bulgarian customer support: +359 877 414 874

@@ -1,0 +1,181 @@
+# Supreme Bot — robots.txt
+# Built by Carbon Stealth VCC — https://carbonstealth.eu
+# Last updated: 2026-05-09
+# Strategy: Allow all major search + AI crawlers for AEO visibility.
+# Block known aggressive scrapers and SEO tools that don't add value.
+
+# ─── Default policy ──────────────────────────────────────────────────────────
+User-agent: *
+Allow: /
+Allow: /terms
+Allow: /privacy
+Allow: /cookies
+Allow: /eula
+Allow: /accessibility
+Allow: /status
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /api
+Disallow: /archive/
+Disallow: /public/
+
+# ─── Traditional search engines (explicit allow) ────────────────────────────
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# ─── AI crawlers — OpenAI ───────────────────────────────────────────────────
+User-agent: GPTBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+# ─── AI crawlers — Anthropic ────────────────────────────────────────────────
+User-agent: ClaudeBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+# ─── AI crawlers — Google ───────────────────────────────────────────────────
+User-agent: Google-Extended
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+# ─── AI crawlers — Apple ────────────────────────────────────────────────────
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+# ─── AI crawlers — Perplexity ───────────────────────────────────────────────
+User-agent: PerplexityBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+# ─── AI crawlers — Meta ─────────────────────────────────────────────────────
+User-agent: Meta-ExternalAgent
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: FacebookBot
+Allow: /
+
+# ─── AI crawlers — Other ────────────────────────────────────────────────────
+User-agent: MistralAI-User
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: YouBot
+Allow: /
+
+# ─── Blocked: aggressive scrapers / non-compliant ──────────────────────────
+# Bytespider has documented history of ignoring robots.txt; block at edge too
+User-agent: Bytespider
+Disallow: /
+
+# Common Crawl is reused by many AI training pipelines without disclosure
+# (block to avoid uncontrolled data harvesting)
+User-agent: CCBot
+Disallow: /
+
+# SEO tools — high crawl cost, no SEO benefit
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+# Known scrapers
+User-agent: Diffbot
+Disallow: /
+
+User-agent: Omgili
+Disallow: /
+
+User-agent: img2dataset
+Disallow: /
+
+# ─── Sitemap + host ─────────────────────────────────────────────────────────
+Sitemap: https://supreme.carbonstealth.eu/sitemap.xml
+Host: supreme.carbonstealth.eu
