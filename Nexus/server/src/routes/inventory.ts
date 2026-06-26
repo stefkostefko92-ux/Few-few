@@ -58,13 +58,21 @@ router.post('/equip', (req, res) => {
   }
   const row = db
     .prepare(
-      `SELECT inv.id as inv_id, inv.equipped, inv.slot, items.* FROM inventory inv
+      `SELECT inv.id as inv_id, inv.equipped, inv.slot, inv.listed, items.* FROM inventory inv
        JOIN items ON inv.item_id = items.id
        WHERE inv.id = ? AND inv.character_id = ?`,
     )
     .get(parse.data.inventoryId, char.id) as any;
   if (!row) {
     res.status(404).json({ error: 'Item not found' });
+    return;
+  }
+  // A market-listed item is committed to its listing; equipping it would
+  // give the seller the stats of an item that's also exposed for sale,
+  // which is the small bypass the audit flagged. Cancel the listing
+  // first or wait for it to sell.
+  if (row.listed) {
+    res.status(409).json({ error: 'Cancel the marketplace listing before equipping this item.' });
     return;
   }
   if (row.level_req > char.level) {

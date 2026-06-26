@@ -499,6 +499,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const tryLoadRig = (cls: string, side: 'hero' | 'foe') => {
       const url = `/assets/characters/${cls}.glb`;
       loader.load(url, (gltf) => {
+        // GLB parse is async — by the time it resolves the effect may
+        // have been re-run (region change, hot reload, unmount). Bail
+        // before we touch the scene or attach an AnimationMixer that
+        // the cleanup pass has already finished traversing past.
+        if (cancelled) {
+          gltf.scene.traverse((o) => {
+            const m = o as THREE.Mesh;
+            if (m.geometry) m.geometry.dispose?.();
+            const mat = m.material as THREE.Material | THREE.Material[] | undefined;
+            if (Array.isArray(mat)) mat.forEach((mm) => mm.dispose?.());
+            else if (mat) mat.dispose?.();
+          });
+          return;
+        }
         const model = gltf.scene;
         // Photoreal pass: keep the original PBR materials shipped with
         // the glTF (MeshStandardMaterial with baseColor / normal / mr
@@ -1130,6 +1144,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       envCancelled = true;
       try { environment?.dispose(); } catch {}
       try { backend?.dispose(); } catch {}
+      // Stop animation mixers + drop their cached actions on both rigs
+      // before the scene traverse-dispose runs. Without this the actions
+      // keep their refs to the rig's skeleton and the rig's geometry
+      // disposes can race with mixer.update on the next frame.
+      for (const ref of [heroMixerRef, foeMixerRef]) {
+        const mixer = ref.current;
+        if (mixer) {
+          try { mixer.stopAllAction(); } catch {}
+          try { (mixer as any)._actions?.forEach?.((a: THREE.AnimationAction) => a.reset?.()); } catch {}
+          const root = (ref === heroMixerRef ? heroRigRef : foeRigRef).current;
+          if (root) try { mixer.uncacheRoot(root); } catch {}
+          ref.current = null;
+        }
+      }
       try { mount.contains(loadingBg) && mount.removeChild(loadingBg); } catch {}
       scene.traverse((obj) => {
         if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry?.dispose();

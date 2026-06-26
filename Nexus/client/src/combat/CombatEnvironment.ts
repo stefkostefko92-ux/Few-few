@@ -263,10 +263,22 @@ export function buildRegionEnvironment(
       for (const obj of created) {
         obj.traverse((o) => {
           const m = o as THREE.Mesh;
-          if (m.geometry) m.geometry.dispose();
+          // Skip shared resources owned by the CombatProps3D template
+          // cache — disposing them would white-out every other mount.
+          // Per-instance materials are not shared so we still free them;
+          // their texture slots are tagged shared.
+          if (m.geometry && !m.geometry.userData.shared) m.geometry.dispose();
+          const disposeMat = (mat: THREE.Material) => {
+            const mm = mat as THREE.MeshStandardMaterial;
+            for (const slot of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'] as const) {
+              const tex = (mm as any)[slot] as THREE.Texture | null;
+              if (tex && tex.userData.shared) (mm as any)[slot] = null;
+            }
+            mat.dispose?.();
+          };
           const mat = m.material as THREE.Material | THREE.Material[] | undefined;
-          if (Array.isArray(mat)) mat.forEach((mm) => mm.dispose?.());
-          else if (mat) (mat as THREE.Material).dispose?.();
+          if (Array.isArray(mat)) mat.forEach(disposeMat);
+          else if (mat) disposeMat(mat);
         });
         group.remove(obj);
       }

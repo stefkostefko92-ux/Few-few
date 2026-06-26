@@ -8,6 +8,15 @@ import { logFromRequest } from '../lib/logger';
 
 const router = Router();
 
+/**
+ * PII minimisation for event_log (GDPR Art. 5(1)(c)). Lets us correlate
+ * repeat unknown-identifier attempts for forensics without dumping raw
+ * usernames or emails into a log that's exported with a DB backup.
+ */
+function hashIdentifier(s: string): string {
+  return crypto.createHash('sha256').update(s.trim().toLowerCase()).digest('hex').slice(0, 12);
+}
+
 // Ensure the password-reset bookkeeping table exists. Idempotent — runs
 // on every server boot via the route registration.
 const db = getDb();
@@ -89,7 +98,7 @@ router.post('/login', async (req, res) => {
   const dummyHash = '$2a$10$0123456789012345678901u4qHYAxvqlH/2DH9MlYrFkH4q/Tj0aae';
   if (!user) {
     await bcrypt.compare(password, dummyHash).catch(() => false);
-    logFromRequest(req, { category: 'auth', action: 'login_failed', level: 'warn', message: `Unknown identifier ${username}` });
+    logFromRequest(req, { category: 'auth', action: 'login_failed', level: 'warn', message: `Unknown identifier ${hashIdentifier(username)}` });
     res.status(401).json({ error: 'Invalid credentials' });
     return;
   }
@@ -125,7 +134,7 @@ router.post('/forgot', async (req, res) => {
     .get(identifier, identifier) as { id: number; username: string; email: string } | undefined;
   // Always pretend it worked, to avoid an account-enumeration oracle.
   if (!user) {
-    logFromRequest(req, { category: 'auth', action: 'forgot_unknown', level: 'warn', message: `forgot for unknown ${identifier}` });
+    logFromRequest(req, { category: 'auth', action: 'forgot_unknown', level: 'warn', message: `forgot for unknown ${hashIdentifier(identifier)}` });
     res.json({ ok: true });
     return;
   }

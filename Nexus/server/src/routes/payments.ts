@@ -82,7 +82,21 @@ router.get('/history', (req, res) => {
 });
 
 /* ---- Create a checkout session ---- */
-const checkoutSchema = z.object({ kind: z.string() });
+// Schema for the EU digital-content checkout: requires two acknowledgements
+// before we ever talk to Stripe — Dir. 2011/83/EU Art. 16(m) is satisfied
+// only when the buyer (a) gives prior express consent to immediate
+// performance, AND (b) acknowledges loss of the 14-day withdrawal right.
+// The text the user agreed to is captured below so we can replay it in a
+// dispute.
+const checkoutSchema = z.object({
+  kind: z.string(),
+  digital_immediate_consent: z.literal(true, {
+    errorMap: () => ({ message: 'You must consent to immediate delivery to purchase digital content.' }),
+  }),
+  withdrawal_waiver: z.literal(true, {
+    errorMap: () => ({ message: 'You must acknowledge that this waives the 14-day withdrawal right.' }),
+  }),
+});
 
 router.post('/checkout', async (req, res) => {
   const parse = checkoutSchema.safeParse(req.body);
@@ -94,19 +108,27 @@ router.post('/checkout', async (req, res) => {
 
   const db = getDb();
   const now = Date.now();
+  const currency = (product.currency || 'eur').toLowerCase();
   const insert = db.prepare(
     `INSERT INTO purchases (character_id, kind, amount_cents, currency, gems_granted, effect_payload, status, mode, created_at)
-     VALUES (?, ?, ?, 'usd', ?, ?, 'pending', ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
   );
   const info = insert.run(
-    char.id, product.kind, product.price_cents, product.effects.gems || 0,
+    char.id, product.kind, product.price_cents, currency, product.effects.gems || 0,
     JSON.stringify(product.effects), isDevMode() ? 'dev' : 'stripe', now,
   );
-  // currency override
-  if (product.currency && product.currency !== 'usd') {
-    getDb().prepare('UPDATE purchases SET currency = ? WHERE id = ?').run(product.currency, info.lastInsertRowid);
-  }
   const purchaseId = info.lastInsertRowid as number;
+  // Record the consent text the user agreed to, so a chargeback dispute
+  // can prove Art. 16(m) was followed. Stored on the purchase row itself.
+  try {
+    db.prepare(
+      `UPDATE purchases SET consent_text = ?, consent_at = ? WHERE id = ?`,
+    ).run(
+      'EU digital-content checkout: buyer consented to immediate performance and acknowledged loss of the 14-day withdrawal right (Dir. 2011/83/EU Art. 16(m)).',
+      now,
+      purchaseId,
+    );
+  } catch { /* consent_text column added in a forward migration; tolerate */ }
 
   logFromRequest(req, {
     category: 'payment',
@@ -118,9 +140,25 @@ router.post('/checkout', async (req, res) => {
     meta: { kind: product.kind, price_cents: product.price_cents, currency: product.currency, mode: isDevMode() ? 'dev' : 'stripe' },
   });
 
+  // Resolve the redirect host once. In production the only acceptable
+  // origin is PUBLIC_BASE_URL — echoing back req.headers.origin would
+  // let a curl with a spoofed Origin: header turn Stripe's success_url
+  // into an open redirect carrying the session_id query param.
+  const resolveOrigin = (): string | null => {
+    const env = process.env.PUBLIC_BASE_URL;
+    if (env) return env.replace(/\/$/, '');
+    if (process.env.NODE_ENV !== 'production') {
+      return req.headers.origin || `http://${req.headers.host}`;
+    }
+    return null;
+  };
+
   if (isDevMode()) {
-    // Return a redirect URL that completes the purchase on visit.
-    const origin = req.headers.origin || `http://${req.headers.host}`;
+    const origin = resolveOrigin();
+    if (!origin) {
+      res.status(500).json({ error: 'PUBLIC_BASE_URL not configured' });
+      return;
+    }
     res.json({
       mode: 'dev',
       url: `${origin}/app/premium?dev_complete=${purchaseId}`,
@@ -130,27 +168,49 @@ router.post('/checkout', async (req, res) => {
   }
 
   try {
-    const origin = req.headers.origin || `http://${req.headers.host}`;
+    const origin = resolveOrigin();
+    if (!origin) {
+      res.status(500).json({ error: 'PUBLIC_BASE_URL not configured' });
+      return;
+    }
+    // EU VAT / OSS — Stripe Tax computes the destination-country rate
+    // (place of supply for digital content is the buyer's country). We
+    // collect the billing address up front so Tax actually has a country
+    // to use, and emit a customer so future receipts / VAT invoices are
+    // attached to a stable record.
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
+      currency,
       line_items: [
         {
           price_data: {
-            currency: product.currency || 'eur',
+            currency,
             unit_amount: product.price_cents,
             product_data: {
               name: product.name,
               description: product.description,
+              tax_code: 'txcd_10000000', // Generic electronically-supplied service
             },
           },
           quantity: 1,
         },
       ],
+      automatic_tax: { enabled: true },
+      billing_address_collection: 'required',
+      customer_creation: 'always',
+      tax_id_collection: { enabled: true },
+      payment_intent_data: { description: product.name },
       success_url: `${origin}/app/premium?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/app/premium?cancelled=1`,
       client_reference_id: String(purchaseId),
-      metadata: { purchase_id: String(purchaseId), character_id: String(char.id) },
+      metadata: {
+        purchase_id: String(purchaseId),
+        character_id: String(char.id),
+        // Replay-ready evidence of Art. 16(m) consent for chargebacks.
+        digital_immediate_consent: 'true',
+        withdrawal_waiver: 'true',
+      },
     });
     db.prepare('UPDATE purchases SET stripe_session_id = ? WHERE id = ?').run(session.id, purchaseId);
     res.json({ mode: 'stripe', url: session.url, session_id: session.id, purchase_id: purchaseId });
@@ -301,7 +361,23 @@ webhookRouter.post('/', async (req, res) => {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const purchaseId = Number(session.metadata?.purchase_id || session.client_reference_id);
-      if (purchaseId) applyPurchase(purchaseId);
+      if (purchaseId) {
+        // EU OSS bookkeeping — Stripe Tax reports `total_details.amount_tax`
+        // (sub-totals minor units) and `customer_details.address.country`.
+        // Stash both on the purchase row before we apply gems/gold so the
+        // financial side of the ledger settles even if applyPurchase
+        // throws for some game-state reason.
+        try {
+          const taxCents = Number(session.total_details?.amount_tax ?? 0) || 0;
+          const country = session.customer_details?.address?.country
+            || session.customer_details?.tax_ids?.[0]?.country
+            || null;
+          getDb().prepare(
+            `UPDATE purchases SET tax_country = ?, tax_amount_cents = ? WHERE id = ?`,
+          ).run(country, taxCents, purchaseId);
+        } catch { /* tax columns added by forward migration */ }
+        applyPurchase(purchaseId);
+      }
     }
     res.json({ received: true });
   } catch (e: any) {

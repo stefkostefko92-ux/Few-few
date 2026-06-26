@@ -32,13 +32,20 @@ async function request<T = any>(method: string, path: string, body?: any): Promi
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
   if (!res.ok) {
-    const message =
-      typeof data?.error === 'string'
-        ? data.error
-        : data?.error?.formErrors?.[0] ||
-          data?.error?.fieldErrors
-            ? Object.values<string[]>(data.error.fieldErrors).flat()[0]
-            : `Request failed (${res.status})`;
+    // Zod's `.flatten()` ships back `{ formErrors, fieldErrors }` and most
+    // route handlers either wrap it as `data.error` or echo a plain string.
+    // The old ternary chained `||` with `?:` at the wrong precedence, so a
+    // form-level error path returned `undefined` and surfaced the generic
+    // fallback instead of the real message.
+    const err = data?.error;
+    let message: string | undefined;
+    if (typeof err === 'string') {
+      message = err;
+    } else if (err && typeof err === 'object') {
+      const fe = err.fieldErrors as Record<string, string[]> | undefined;
+      const firstField = fe && Object.values(fe).flat()[0];
+      message = firstField || err.formErrors?.[0];
+    }
     throw new Error(message || `Request failed (${res.status})`);
   }
   return data as T;

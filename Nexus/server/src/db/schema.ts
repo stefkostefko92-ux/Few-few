@@ -460,6 +460,19 @@ export function applySchema(db: Database.Database): void {
   if (!invHave.has('listed')) db.exec(`ALTER TABLE inventory ADD COLUMN listed INTEGER NOT NULL DEFAULT 0`);
   if (!invHave.has('vaulted_guild_id')) db.exec(`ALTER TABLE inventory ADD COLUMN vaulted_guild_id INTEGER NOT NULL DEFAULT 0`);
 
+  // Dir. 2011/83/EU Art. 16(m) consent capture on the purchase row. The
+  // server replays consent_text in a chargeback dispute; consent_at is
+  // the timestamp at which the buyer accepted the digital-content waiver.
+  const purchCols = db.prepare(`PRAGMA table_info(purchases)`).all() as { name: string }[];
+  const purchHave = new Set(purchCols.map((c) => c.name));
+  if (!purchHave.has('consent_text')) db.exec(`ALTER TABLE purchases ADD COLUMN consent_text TEXT`);
+  if (!purchHave.has('consent_at')) db.exec(`ALTER TABLE purchases ADD COLUMN consent_at INTEGER`);
+  // EU VAT / OSS bookkeeping — Stripe Tax computes the destination rate
+  // at the moment of checkout. Store both the rate and the country so we
+  // can file the OSS report without re-querying every Stripe session.
+  if (!purchHave.has('tax_country')) db.exec(`ALTER TABLE purchases ADD COLUMN tax_country TEXT`);
+  if (!purchHave.has('tax_amount_cents')) db.exec(`ALTER TABLE purchases ADD COLUMN tax_amount_cents INTEGER`);
+
   // Active alchemy buffs (JSON array of { stat, percent, expires_at })
   const charCols = db.prepare(`PRAGMA table_info(characters)`).all() as { name: string }[];
   const charHave = new Set(charCols.map((c) => c.name));

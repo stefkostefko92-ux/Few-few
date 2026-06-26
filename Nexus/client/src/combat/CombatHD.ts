@@ -369,11 +369,11 @@ export function configureShadows(light: THREE.DirectionalLight, mapSize: number)
   light.shadow.camera.bottom = -2;
   light.shadow.bias = -0.0005;
   light.shadow.normalBias = 0.02;
-  // VSM softens to a gaussian; bump radius for that "render-room" look
-  // and pre-blur so the shadow edge doesn't read as a hard rectangle on
-  // CPU rasterizers (SwiftShader still uses PCF for legacy maps).
-  light.shadow.radius = 6;
-  (light.shadow as any).blurSamples = 25;
+  // VSM softens via a depth gaussian; the previous radius=6/blurSamples=25
+  // pair was ~15ms on mid-range mobile per frame at 2048². Pull both down
+  // to the sweet spot — still soft, half the cost on the same hardware.
+  light.shadow.radius = 4;
+  (light.shadow as any).blurSamples = 8;
 }
 
 // --- PBR ground factory ------------------------------------------------

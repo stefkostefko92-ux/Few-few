@@ -75,21 +75,40 @@ export function ensurePropsLoaded(): Promise<void> {
   return assetsLoading;
 }
 
-/** Clone a cached asset for instancing. SkinnedMesh-free models clone cheaply. */
+/** Clone a cached asset for instancing. SkinnedMesh-free models clone cheaply.
+ *  Three.js's `Object3D.clone(true)` and `Material.clone()` only deep-copy the
+ *  object tree; geometry references and texture references are still shared
+ *  with the template. If the per-instance clone gets disposed later (via the
+ *  region environment cleanup) it would also free the template's GPU
+ *  resources, leaving every subsequent mount with white meshes.
+ *  Tag every shared resource so the cleanup walker knows to skip it. */
 function instanceAsset(kind: PropKind): THREE.Object3D | null {
   const template = assetCache.get(kind);
   if (!template) return null;
   const clone = template.clone(true);
-  // Per-instance subtle tint variation so identical assets feel less repeat.
   clone.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (m.isMesh && m.material) {
-      const mat = (m.material as THREE.MeshStandardMaterial).clone();
+    if (!m.isMesh) return;
+    // Geometry is intentionally shared — mark it so dispose() walkers
+    // know to skip it. Disposing would destroy every other instance
+    // currently rendering this template.
+    if (m.geometry) m.geometry.userData.shared = true;
+    if (m.material) {
+      // Material clone is per-instance (we tint it below), but its
+      // `map`/`normalMap`/etc. references stay pointing at the template's
+      // textures. Tag the textures themselves as shared so the env
+      // cleanup walker leaves them alone.
+      const src = m.material as THREE.MeshStandardMaterial;
+      const mat = src.clone();
       const jitter = 0.92 + Math.random() * 0.15;
       mat.color.multiplyScalar(jitter);
+      for (const slot of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'] as const) {
+        const tex = (mat as any)[slot] as THREE.Texture | null;
+        if (tex) tex.userData.shared = true;
+      }
       m.material = mat;
-      m.castShadow = true; m.receiveShadow = true;
     }
+    m.castShadow = true; m.receiveShadow = true;
   });
   return clone;
 }
