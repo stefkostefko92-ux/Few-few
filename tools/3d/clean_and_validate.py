@@ -55,7 +55,11 @@ def report(tag, m):
 def repair(trimesh, m):
     m.remove_infinite_values()
     m.update_faces(m.unique_faces())
-    m.update_faces(m.nonzero_faces())
+    # nonzero/degenerate faces: API се различава между версии на trimesh
+    try:
+        m.update_faces(m.nonzero_faces())
+    except AttributeError:
+        m.update_faces(m.nondegenerate_faces())
     m.remove_unreferenced_vertices()
     trimesh.repair.fix_normals(m)
     trimesh.repair.fix_winding(m)
