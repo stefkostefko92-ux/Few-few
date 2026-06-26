@@ -33,3 +33,6 @@ apps/web/e2e/.auth/
 apps/web/test-results/
 apps/web/playwright-report/
 apps/web/blob-report/
+
+# Claude Code agent worktrees (transient)
+.claude/worktrees/
