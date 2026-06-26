@@ -37,7 +37,7 @@ export function createSession(userId, req, remember = false) {
   const token = randomToken(32);
   const ttl = ttlFor(remember);
   const expiresAt = new Date(Date.now() + ttl).toISOString();
-  const ip = req ? (req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '').trim() : null;
+  const ip = req ? (req.ip || '').trim() : null;
   const ua = req ? String(req.get?.('user-agent') || '').slice(0, 300) : null;
   db.prepare(
     'INSERT INTO sessions (token, user_id, ip, user_agent, long_lived, expires_at) VALUES (?, ?, ?, ?, ?, ?)'

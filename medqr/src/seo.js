@@ -96,14 +96,23 @@ Sitemap: ${base}/sitemap.xml
 }
 
 export function sitemapXml(base, lastmod = new Date().toISOString().slice(0, 10)) {
-  const urls = PUBLIC_PAGES.map(
-    (p) =>
-      `  <url>\n    <loc>${base}${p.path}</loc>\n    <lastmod>${p.lastmod || lastmod}</lastmod>\n` +
-      `    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
-  ).join('\n');
+  const urls = PUBLIC_PAGES.map((p) => {
+    const loc = `${base}${p.path}`;
+    // hreflang алтернативи (BG/EN/x-default) за двуезичното съдържание.
+    const alts =
+      `    <xhtml:link rel="alternate" hreflang="bg" href="${loc}?lang=bg"/>\n` +
+      `    <xhtml:link rel="alternate" hreflang="en" href="${loc}?lang=en"/>\n` +
+      `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}"/>\n`;
+    return (
+      `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${p.lastmod || lastmod}</lastmod>\n` +
+      `    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n` +
+      `${alts}  </url>`
+    );
+  }).join('\n');
   return (
     `<?xml version="1.0" encoding="UTF-8"?>\n` +
-    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ` +
+    `xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`
   );
 }
 

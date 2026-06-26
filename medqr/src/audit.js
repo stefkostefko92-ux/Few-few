@@ -1,9 +1,11 @@
 import { createHash } from 'node:crypto';
 import db from './db.js';
 
-// Извлича реалния клиентски IP (зад reverse proxy като Hetzner).
+// Извлича реалния клиентски IP. Разчита на Express `trust proxy` (виж server.js),
+// който връща надеждния адрес — за разлика от ръчно парсване на първия елемент от
+// X-Forwarded-For, който е подаден от клиента и може да бъде подправен.
 export function clientIp(req) {
-  return (req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '').trim();
+  return (req.ip || '').trim();
 }
 
 // Записва събитие по сигурността/поверителността в tamper-evident верига:

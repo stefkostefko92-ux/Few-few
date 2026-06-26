@@ -64,7 +64,8 @@ router.post('/webauthn/register/verify', requireAuth, async (req, res) => {
     audit(req, 'passkey_added');
     res.json({ ok: true });
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    console.error('webauthn register verify:', e.message);
+    res.status(400).json({ error: res.locals.t('err.webauthn_failed') });
   }
 });
 
@@ -107,7 +108,8 @@ router.post('/webauthn/login/verify', async (req, res) => {
     audit(req, 'login_success', { userId: cred.user_id, detail: 'passkey' });
     res.json({ ok: true, redirect: '/dashboard' });
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    console.error('webauthn login verify:', e.message);
+    res.status(400).json({ error: res.locals.t('err.webauthn_failed') });
   }
 });
 
