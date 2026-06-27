@@ -614,11 +614,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // angle, not pure profile. Soldier.glb's default forward is -Z.
         model.rotation.y = side === 'hero' ? Math.PI / 4 : -Math.PI / 4;
 
-        // Animation: build a small named action map so the imperative
-        // attack()/defeat() callbacks can fade between idle / attack /
-        // death without re-walking the clip list each time. RobotExpressive
-        // ships "Idle" / "Punch" / "Death"; we also fall back to the first
-        // non-TPose clip if naming doesn't match.
+        // Animation action map. The Quaternius RPG Characters pack ships
+        // class-appropriate authored clips (Blender/UE-grade) — Sword_Attack,
+        // Bow_Draw/Bow_Shoot, Spell1/Staff_Attack, Dagger_Attack, RecieveHit,
+        // Roll, Death, Idle. We resolve them into a stable named action map
+        // (idle/attack/attack2/draw/cast/hit/dodge/death) with the right
+        // loop modes so the choreographer can crossfade between them. When
+        // a clip is missing the map simply omits that action and the
+        // choreographer's procedural body-lean covers it.
         if (gltf.animations && gltf.animations.length) {
           const mixer = new THREE.AnimationMixer(model);
           const clips = gltf.animations;
@@ -629,15 +632,45 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
             }
             return null;
           };
-          const idleClip = findClip('Idle', 'idle', 'Idling') || clips.find((c) => !/tpose|t-pose/i.test(c.name)) || clips[0];
-          const attackClip = findClip('Punch', 'punch', 'Attack', 'attack', 'Wave') || idleClip;
-          const deathClip = findClip('Death', 'death', 'Defeat') || idleClip;
-          const idle = mixer.clipAction(idleClip);
+          const oneShot = (clip: THREE.AnimationClip | null): THREE.AnimationAction | null => {
+            if (!clip) return null;
+            const a = mixer.clipAction(clip);
+            a.loop = THREE.LoopOnce;
+            a.clampWhenFinished = true;
+            return a;
+          };
+          const looping = (clip: THREE.AnimationClip | null): THREE.AnimationAction | null => {
+            if (!clip) return null;
+            const a = mixer.clipAction(clip);
+            a.loop = THREE.LoopRepeat;
+            return a;
+          };
+          // Class-specific primary + secondary attack clips.
+          const attackByClass: Record<string, string[]> = {
+            warrior: ['Sword_Attack', 'Sword_Slash', 'Punch'],
+            ranger:  ['Bow_Shoot', 'Punch'],
+            mage:    ['Staff_Attack', 'Spell1', 'Punch'],
+            rogue:   ['Dagger_Attack', 'Punch'],
+          };
+          const attack2ByClass: Record<string, string[]> = {
+            warrior: ['Sword_Attack2'],
+            ranger:  ['Bow_Shoot'],
+            mage:    ['Spell2', 'Staff_Attack'],
+            rogue:   ['Dagger_Attack2'],
+          };
+          const idleClip = findClip('Idle', 'Idle_Neutral', 'Idling') || clips.find((c) => !/tpose|t-pose/i.test(c.name)) || clips[0];
+          const idle = looping(idleClip)!;
           idle.play();
           const actions: Record<string, THREE.AnimationAction> = { idle };
-          if (attackClip !== idleClip) actions.attack = mixer.clipAction(attackClip);
-          if (deathClip !== idleClip) actions.death = mixer.clipAction(deathClip);
-          // Stash on the model so attack()/defeat() can fade actions.
+          const setIf = (key: string, action: THREE.AnimationAction | null) => { if (action) actions[key] = action; };
+          setIf('attack', oneShot(findClip(...(attackByClass[cls] || ['Sword_Attack', 'Punch']))));
+          setIf('attack2', oneShot(findClip(...(attack2ByClass[cls] || []))));
+          setIf('draw', oneShot(findClip('Bow_Draw')));
+          setIf('cast', oneShot(findClip('Spell1', 'Spell2', 'Staff_Attack')));
+          setIf('hit', oneShot(findClip('RecieveHit', 'RecieveHit_2', 'HitRecieve')));
+          setIf('dodge', oneShot(findClip('Roll')));
+          setIf('death', oneShot(findClip('Death', 'Defeat')));
+          // Stash on the model so the choreographer can fade actions.
           (model as any).userData.combatActions = actions;
           (model as any).userData.combatCurrent = idle;
           if (side === 'hero') heroMixerRef.current = mixer; else foeMixerRef.current = mixer;

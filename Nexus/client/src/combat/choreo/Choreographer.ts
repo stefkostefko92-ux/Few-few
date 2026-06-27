@@ -329,14 +329,26 @@ export class Choreographer {
     if (!rig) return;
     const actions = (rig as any).userData?.combatActions as Record<string, THREE.AnimationAction> | undefined;
     const current = (rig as any).userData?.combatCurrent as THREE.AnimationAction | undefined;
-    if (!actions || !actions[name]) return;
-    const next = actions[name];
+    if (!actions) return;
+    // Graceful clip fallbacks so a timeline that asks for a clip a given
+    // rig doesn't ship still does something sensible: attack2→attack,
+    // cast/draw→attack, hit→(stay/idle), dodge→idle.
+    const resolved =
+      actions[name] ? name :
+      name === 'attack2' && actions.attack ? 'attack' :
+      (name === 'cast' || name === 'draw') && actions.attack ? 'attack' :
+      name === 'hit' && actions.hit ? 'hit' :
+      name === 'dodge' && actions.dodge ? 'dodge' :
+      actions[name] ? name : (actions.idle ? null : null);
+    if (!resolved || !actions[resolved]) return;
+    const next = actions[resolved];
     if (current === next) return;
-    next.reset().setEffectiveWeight(1);
-    if (name === 'death') {
-      next.clampWhenFinished = true;
-      next.loop = THREE.LoopOnce;
-    }
+    // One-shot clips (attack/hit/dodge/death) restart from frame 0; their
+    // loop/clamp mode is already set at action-creation time in the rig
+    // loader, so we just reset + fade here.
+    next.reset().setEffectiveWeight(1).setEffectiveTimeScale(
+      resolved === 'attack' || resolved === 'attack2' ? 1.25 : 1.0,
+    );
     if (current) current.fadeOut(dur);
     next.fadeIn(dur).play();
     (rig as any).userData.combatCurrent = next;
