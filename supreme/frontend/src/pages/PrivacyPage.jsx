@@ -84,14 +84,14 @@ export default function PrivacyPage() {
                 <Td>Ticket & message data</Td>
                 <Td>Discord user IDs of ticket creators, message content, attachment URLs</Td>
                 <Td>Provide ticket system; generate transcripts</Td>
-                <Td>Art. 6(1)(f) — legitimate interest of server operator</Td>
+                <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator determines the legal basis (typically Art. 6(1)(f))</Td>
                 <Td>Free: 30 days after closure. Premium: indefinite (or until deleted)</Td>
               </Tr>
               <Tr>
                 <Td>Application form answers</Td>
                 <Td>Text answers submitted by Discord users in application forms</Td>
                 <Td>Provide application management feature</Td>
-                <Td>Art. 6(1)(f) — legitimate interest of server operator</Td>
+                <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator determines the legal basis (typically Art. 6(1)(f))</Td>
                 <Td>Until server operator deletes or account is removed</Td>
               </Tr>
               <Tr>
@@ -113,7 +113,7 @@ export default function PrivacyPage() {
                 <Td>Action type, actor ID, timestamp, target resource ID</Td>
                 <Td>Security audit trail; fraud prevention; compliance</Td>
                 <Td>Art. 6(1)(f) — legitimate interest (security)</Td>
-                <Td>90 days</Td>
+                <Td>2 years (records tied to GDPR requests or abuse reports are kept longer where legally required)</Td>
               </Tr>
               <Tr>
                 <Td>Error / diagnostic data</Td>
@@ -271,7 +271,7 @@ export default function PrivacyPage() {
               <Tr>
                 <Td>Data portability</Td>
                 <Td>Art. 20</Td>
-                <Td>Receive your data in a structured, machine-readable format (CSV)</Td>
+                <Td>Receive your data in a structured, machine-readable format (JSON)</Td>
               </Tr>
               <Tr>
                 <Td>Objection</Td>
@@ -318,7 +318,7 @@ export default function PrivacyPage() {
           <li><strong>Ticket transcripts (Premium)</strong> — Indefinitely until manually deleted or subscription lapses;</li>
           <li><strong>Application data</strong> — Until deleted by the server operator;</li>
           <li><strong>Billing records</strong> — 7 years (tax and accounting legal obligation);</li>
-          <li><strong>Audit logs</strong> — 90 days;</li>
+          <li><strong>Audit logs</strong> — 2 years (records tied to GDPR requests or abuse reports are retained longer where legally required);</li>
           <li><strong>Error logs (Sentry)</strong> — 30 days;</li>
           <li><strong>Session cookies</strong> — 7 days from last login.</li>
         </ul>

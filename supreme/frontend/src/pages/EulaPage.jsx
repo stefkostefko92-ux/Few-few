@@ -571,10 +571,14 @@ export default function EulaPage() {
         </p>
         <p>
           <strong className="text-gray-300">18.4 EU Consumer Rights.</strong>{" "}
-          If you are a consumer in the EU, you may also refer disputes to the European Commission's
-          Online Dispute Resolution platform at{" "}
-          <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">ec.europa.eu/consumers/odr</a>.
+          If you are a consumer in the EU, you may refer disputes to an alternative dispute
+          resolution (ADR) body. The European Commission's Online Dispute Resolution platform
+          was discontinued on 20 July 2025, so it is no longer available. Consumers in Bulgaria
+          may contact the conciliation commissions of the Commission for Consumer Protection
+          (КЗП), and consumers elsewhere in the EU may use the European Consumer Centres Network
+          (ECC-Net) at{" "}
+          <a href="https://www.eccnet.eu/" target="_blank" rel="noopener noreferrer"
+            className="text-discord-400 hover:underline">eccnet.eu</a>.
           EU consumer law rights are not affected by this Agreement.
         </p>
       </S>

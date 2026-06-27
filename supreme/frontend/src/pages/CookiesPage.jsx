@@ -15,9 +15,10 @@ export default function CookiesPage() {
       />
 
       <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-8 text-sm text-gray-300">
-        <strong className="text-white">Short version:</strong> We use exactly <strong>one cookie</strong>.
-        It is strictly necessary for login to work. We do not use advertising cookies, tracking
-        cookies, or analytics cookies. No cookie banner required.
+        <strong className="text-white">Short version:</strong> We use exactly <strong>one cookie</strong>,
+        which is strictly necessary for login to work. We do not use advertising cookies, tracking
+        cookies, or analytics cookies. We show a consent banner and remember your choice in your
+        browser's local storage (a single strictly-necessary entry) so we don't ask again.
       </div>
 
       <S title="1. What Is a Cookie?">
@@ -80,21 +81,28 @@ export default function CookiesPage() {
         </ul>
       </S>
 
-      <S title="3. Why No Cookie Banner?">
+      <S title="3. Cookie Consent Banner">
         <p>
           Under the EU ePrivacy Directive (Recital 25), cookies that are <em>strictly necessary</em>{" "}
           for a service explicitly requested by the user are exempt from the consent requirement.
-          Our session cookie falls within this exemption because:
+          Our session cookie falls within this exemption because you explicitly request to log in,
+          the cookie is essential for login to work, it contains no personal data in itself, and it
+          is never used for tracking, profiling, or advertising.
         </p>
-        <ul>
-          <li>You explicitly request to log in to the dashboard;</li>
-          <li>The cookie is essential for the login functionality to work;</li>
-          <li>The cookie contains no personal data in itself;</li>
-          <li>The cookie is not used for any tracking, profiling, or advertising purpose.</li>
-        </ul>
         <p>
-          Because we use no cookies other than this strictly necessary session cookie, we are
-          not required to display a cookie consent banner under the ePrivacy Directive or GDPR.
+          Even though our single session cookie is exempt, we still display a{" "}
+          <strong>cookie consent banner</strong> on first visit. The banner lets you accept or
+          reject any future non-essential categories (analytics and marketing, both currently
+          unused and switched off by default). Essential cookies cannot be switched off because
+          the service cannot function without them. Both "Accept all" and "Reject non-essential"
+          are offered with equal prominence — there is no pre-ticked box and no cookie wall.
+        </p>
+        <p>
+          Your choice is stored in your browser's <strong>local storage</strong> under the key{" "}
+          <code className="bg-dark-100 px-1 rounded text-xs">supreme-bot-cookie-consent</code> so
+          that we do not ask again on every visit. This entry is itself strictly necessary (it
+          records your consent decision), stays on your device, is never transmitted to our
+          servers, and reappears if we materially change this policy.
         </p>
       </S>
 
@@ -136,7 +144,7 @@ export default function CookiesPage() {
         </p>
       </S>
 
-      <S title="5. Session Storage (Not Cookies)">
+      <S title="5. Local and Session Storage (Not Cookies)">
         <p>
           In addition to cookies, modern browsers provide other local storage mechanisms.
           We may use browser <strong>session storage</strong> (not cookies) solely for
@@ -145,7 +153,13 @@ export default function CookiesPage() {
           personal data and is never transmitted to our servers.
         </p>
         <p>
-          We do not use <strong>localStorage</strong> (persistent browser storage).
+          We use <strong>localStorage</strong> (persistent browser storage) for exactly one
+          strictly-necessary purpose: the key{" "}
+          <code className="bg-dark-100 px-1 rounded text-xs">supreme-bot-cookie-consent</code>{" "}
+          described in section 3, which records your cookie-consent choice so the banner is not
+          shown on every visit. It stores only your consent decision, a version number, and a
+          timestamp — no personal data — and is never sent to our servers. We do not use
+          localStorage for analytics, advertising, or tracking.
         </p>
       </S>
 

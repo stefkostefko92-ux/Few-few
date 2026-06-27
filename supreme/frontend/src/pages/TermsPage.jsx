@@ -285,11 +285,14 @@ export default function TermsPage() {
           {COUNTRY}.
         </p>
         <p>
-          If you are a consumer in the EU, you may also use the European Commission's Online
-          Dispute Resolution (ODR) platform:{" "}
-          <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer"
+          If you are a consumer in the EU, you may also use alternative dispute resolution (ADR).
+          The European Commission's Online Dispute Resolution (ODR) platform was discontinued on
+          20 July 2025 and is no longer available. Consumers in Bulgaria may contact the
+          conciliation commissions of the Commission for Consumer Protection (КЗП); consumers
+          elsewhere in the EU may use the European Consumer Centres Network (ECC-Net) at{" "}
+          <a href="https://www.eccnet.eu/" target="_blank" rel="noopener noreferrer"
             className="text-discord-400 hover:underline">
-            ec.europa.eu/consumers/odr
+            eccnet.eu
           </a>.
         </p>
       </S>
