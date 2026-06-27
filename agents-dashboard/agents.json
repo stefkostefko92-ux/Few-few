@@ -3060,9 +3060,20 @@
           "date": "2026-06-27",
           "event": "v6.15 — учене",
           "detail": "Научи: Текущата стабилна Stripe API версия е 2026-06-24.dahlia (major release 'dahlia'). Пинва… (+1 още)"
+        },
+        {
+          "version": "6.16.0",
+          "date": "2026-06-27",
+          "event": "v6.16 — учене",
+          "detail": "Научи: Supreme Bot: createCheckout в supreme/frontend/src/api/index.js праща само { serverId }… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-27",
+          "type": "learning",
+          "summary": "Научи: „Supreme Bot: createCheckout в supreme/frontend/src/api/index.js праща само { serverId }…\" (+1 още)"
+        },
         {
           "date": "2026-06-27",
           "type": "learning",
