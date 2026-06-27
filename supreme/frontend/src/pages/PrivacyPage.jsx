@@ -298,6 +298,17 @@ export default function PrivacyPage() {
           We may need to verify your identity before processing your request.
         </p>
         <p>
+          <strong>What deletion (erasure) actually does:</strong> when you delete your account we
+          anonymize your profile (username and avatar) and erase your sessions and OAuth tokens.
+          For referential integrity we keep a non-identifying internal reference so other users'
+          records (e.g. tickets they opened) remain intact — this is pseudonymized data, not a full
+          re-identifiable profile. Records we are legally required to keep, in particular invoice
+          and transaction data (7 years for tax law), are retained for that period and then purged.
+          If you have an active Premium subscription, please cancel it before requesting deletion,
+          since billing must be wound down first — this is a permitted limitation under Article
+          17(3)(b) and (e) GDPR.
+        </p>
+        <p>
           You also have the right to lodge a complaint with the supervisory authority in the
           EU member state of your habitual residence, place of work, or the place of the alleged
           infringement. A list of supervisory authorities is available at:{" "}

@@ -149,8 +149,48 @@ export default function TermsPage() {
           <li>Use the Service in any manner that could overload, damage, or impair its operation.</li>
         </ul>
         <p>
-          We reserve the right to investigate suspected violations and to suspend or terminate
-          access at our sole discretion.
+          We reserve the right to investigate suspected violations and to suspend or restrict
+          access where justified. Any such restriction is applied diligently and proportionately,
+          with regard to your legitimate interests, and is subject to the notice-and-appeal process
+          described below.
+        </p>
+
+        <h3 className="text-sm font-semibold text-white mt-5 mb-2">7.1 Notices and content moderation (Digital Services Act)</h3>
+        <p>
+          As a hosting service under Regulation (EU) 2022/2065 (the Digital Services Act), we
+          operate a notice-and-action mechanism:
+        </p>
+        <ul>
+          <li>
+            <strong>Report illegal or infringing content</strong> — anyone may notify us of content
+            they consider illegal by emailing{" "}
+            <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+            with the location (e.g. a link or transcript reference) and an explanation. We
+            acknowledge notices and act in a timely, diligent and non-arbitrary manner.
+          </li>
+          <li>
+            <strong>Statement of reasons</strong> — where we remove or restrict specific content or
+            an account because of illegality or a breach of these Terms, we will inform the affected
+            user of the decision and the main reasons for it, unless doing so is legally prohibited.
+          </li>
+          <li>
+            <strong>Appeal</strong> — if you believe a moderation decision was wrong, you may
+            challenge it within 6 months by replying to our statement of reasons or emailing{" "}
+            <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+            Appeals are reviewed by a person (not solely automated means), and we will reverse a
+            decision that proves unfounded.
+          </li>
+          <li>
+            <strong>Point of contact</strong> — for users and authorities, our single point of
+            contact under Articles 11–12 DSA is{" "}
+            <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>,
+            in English or Bulgarian.
+          </li>
+        </ul>
+        <p className="text-xs text-gray-500">
+          As a micro/small enterprise we are exempt from certain DSA obligations (e.g. Articles 15
+          and 19 transparency reporting), but the notice-and-action, statement-of-reasons and
+          point-of-contact duties above still apply.
         </p>
       </S>
 

@@ -26,10 +26,11 @@ export default function AccessibilityPage() {
           <Section title="Our commitment">
             <p>
               {COMPANY} is committed to making Supreme Bot accessible to the widest
-              possible audience, regardless of ability or technology. We aim to
-              conform to the <strong>Web Content Accessibility Guidelines (WCAG) 2.1
-              Level AA</strong> and the European standard <strong>EN 301 549</strong>,
-              as required by the European Accessibility Act (Directive 2019/882).
+              possible audience, regardless of ability or technology. We conform to the{" "}
+              <strong>Web Content Accessibility Guidelines (WCAG) 2.1 Level AA</strong> and
+              the European standard <strong>EN 301 549</strong> as required by the European
+              Accessibility Act (Directive 2019/882), and we are progressively adopting the
+              newer <strong>WCAG 2.2 Level AA</strong> success criteria.
             </p>
           </Section>
 
@@ -54,10 +55,25 @@ export default function AccessibilityPage() {
           </Section>
 
           <Section title="Known limitations">
-            <p>Despite our efforts, some limitations may remain. We are working to resolve:</p>
+            <p>
+              Despite our efforts, the following non-conformances are known. We are working
+              to resolve them, and each is referenced to the WCAG success criterion it affects:
+            </p>
             <ul>
-              <li>Some complex data tables and charts may not yet expose full text alternatives.</li>
-              <li>A small number of legacy dialogs are being migrated to a fully accessible pattern.</li>
+              <li>
+                Some analytics charts and complex data tables do not yet expose full text
+                alternatives or programmatic relationships (WCAG <strong>1.1.1 Non-text Content</strong>,{" "}
+                <strong>1.3.1 Info and Relationships</strong>).
+              </li>
+              <li>
+                A small number of legacy dialogs are still being migrated to our fully accessible
+                dialog pattern, so focus management may be imperfect in those views
+                (WCAG <strong>2.4.3 Focus Order</strong>, <strong>4.1.2 Name, Role, Value</strong>).
+              </li>
+              <li>
+                Some third-party embedded content (e.g. Discord widgets) is outside our direct
+                control and may not fully meet AA.
+              </li>
             </ul>
             <p>If you encounter a barrier not listed here, please tell us — see below.</p>
           </Section>
@@ -81,10 +97,14 @@ export default function AccessibilityPage() {
 
           <Section title="Preparation of this statement">
             <p>
-              This statement was prepared on 23 June 2026. It is reviewed when the
-              service changes materially and at least annually. The assessment was
-              carried out by {COMPANY} through internal self-evaluation combined with
-              automated and manual testing.
+              This statement was prepared on 23 June 2026 and last reviewed on 27 June 2026.
+              It is reviewed when the service changes materially and at least annually. The
+              assessment was carried out by {COMPANY} through internal self-evaluation using a
+              combination of <strong>automated testing</strong> (axe-core across all public
+              routes, returning zero violations on the marketing and legal pages),{" "}
+              <strong>manual keyboard-only navigation</strong>, and <strong>screen-reader
+              checks</strong>, evaluated against WCAG 2.1 Level AA (with WCAG 2.2 AA criteria
+              progressively included).
             </p>
           </Section>
         </div>

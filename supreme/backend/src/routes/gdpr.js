@@ -203,7 +203,7 @@ router.post("/delete-account", async (req, res, next) => {
 
     res.json({
       ok: true,
-      message: "Your account has been anonymized. Transactional data retained per legal obligation (EU 7-year invoice retention). All personal identifiers removed.",
+      message: "Your account has been deleted. Your profile (username, avatar) has been anonymized and your sessions and OAuth tokens erased. A non-identifying internal reference is kept only for referential integrity (so other users' records stay intact), and transactional invoice records are retained for the legally required 7 years. After those periods the remaining data is purged.",
     });
   } catch (err) { next(err); }
 });
