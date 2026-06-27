@@ -53,4 +53,11 @@ export default {
   "premium.trialEndingSoon": "⏰ La prova gratuita scade tra {{days}} giorni.",
 
   "welcomer.default": "Benvenuto {{user}} in {{server}}! Siamo ora {{memberCount}} membri.",
+
+  // Informativa AI (Regolamento UE sull'IA, art. 50 — interazione con contenuti generati dall'IA)
+  "ai.disclosure.author": "🤖 Risposta generata dall'IA",
+  "ai.disclosure.title": "Risposta automatica dell'IA",
+  "ai.disclosure.fieldName": "⚠️ Informativa IA",
+  "ai.disclosure.body": "Questa risposta è stata generata da un modello linguistico IA ({{model}}). Potrebbe contenere errori o imprecisioni. Un membro dello staff ti contatterà a breve per conferma.",
+  "ai.disclosure.footer": "Supreme Bot · Risposta automatica IA · Powered by Claude",
 };

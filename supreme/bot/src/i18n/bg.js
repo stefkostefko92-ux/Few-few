@@ -53,4 +53,11 @@ export default {
   "premium.trialEndingSoon": "⏰ Пробният период изтича след {{days}} дни.",
 
   "welcomer.default": "Добре дошъл {{user}} в {{server}}! Вече сме {{memberCount}} членове.",
+
+  // AI разкритие (EU AI Act, чл. 50 — взаимодействие със съдържание, генерирано от AI)
+  "ai.disclosure.author": "🤖 Отговор, генериран от AI",
+  "ai.disclosure.title": "Автоматичен AI отговор",
+  "ai.disclosure.fieldName": "⚠️ AI разкритие",
+  "ai.disclosure.body": "Този отговор е генериран от AI езиков модел ({{model}}). Възможно е да съдържа грешки или неточности. Член на екипа ще се свърже с теб скоро за потвърждение.",
+  "ai.disclosure.footer": "Supreme Bot · Автоматичен AI отговор · Powered by Claude",
 };
