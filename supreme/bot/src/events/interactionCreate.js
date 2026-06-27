@@ -146,10 +146,14 @@ export default {
       }
 
       // ── Modal Submissions ───────────────────────────────────────────────────
+      // Note: формите минават през DM collectors (runFormSession), не през modal,
+      // затова тук няма "form_modal:" клон. Ако стигне непознат modal submit, го
+      // потвърждаваме ephemeral, за да не вижда потребителят „This interaction failed".
       if (interaction.isModalSubmit()) {
-        if (interaction.customId.startsWith("form_modal:")) {
-          interaction.client.emit("formModalSubmit", interaction);
-        }
+        await interaction.reply({
+          content: "❌ This form is no longer active. Please start over.",
+          ephemeral: true,
+        }).catch(() => {});
         return;
       }
 
@@ -488,6 +492,22 @@ async function handleAppReview(interaction, appId, action) {
 // ─── Ticket Action Buttons ────────────────────────────────────────────────────
 // Handles: close, claim, transcript, close-confirm, close-cancel, reopen, delete
 
+// Дали извикалият е член на support екипа (роля от supportRoleIds или ManageGuild).
+function isTicketStaff(interaction, panel) {
+  const hasSupportRole = (panel?.supportRoleIds || []).some((r) =>
+    interaction.member?.roles?.cache?.has(r)
+  );
+  return hasSupportRole || interaction.member?.permissions?.has("ManageGuild");
+}
+
+// Единен ephemeral отказ за тикет действия без права.
+function denyTicketAction(interaction) {
+  return interaction.reply({
+    content: "❌ Only support team members can perform this action.",
+    ephemeral: true,
+  });
+}
+
 async function handleTicketAction(interaction, action, ticketId) {
   try {
     // Look up the ticket + its panel (for config)
@@ -497,13 +517,28 @@ async function handleTicketAction(interaction, action, ticketId) {
     }
     const panel = ticket.panel || (ticket.panelId ? await api.get(`/bot/panel/${ticket.panelId}`).then(r => r.data).catch(() => null) : null);
 
+    // ── Authz (OWASP A01) ────────────────────────────────────────────────
+    // Всяко действие, което променя/чете тикета, изисква права на support
+    // екипа. Изключение: създателят на тикета може да затвори СОБСТВЕНИЯ си
+    // тикет, но не чужди (reopen/transcript/delete остават само за екипа).
+    const isStaff = isTicketStaff(interaction, panel);
+    const isCreator = ticket.creatorId && interaction.user.id === ticket.creatorId;
+
     switch (action) {
-      case "close":         return handleTicketClosePrompt(interaction, ticket, panel);
-      case "close-confirm": return handleTicketCloseFinalize(interaction, ticket, panel);
+      case "close":
+        if (!isStaff && !isCreator) return denyTicketAction(interaction);
+        return handleTicketClosePrompt(interaction, ticket, panel);
+      case "close-confirm":
+        if (!isStaff && !isCreator) return denyTicketAction(interaction);
+        return handleTicketCloseFinalize(interaction, ticket, panel);
       case "close-cancel":  return interaction.update({ components: [] }).catch(() => {});
       case "claim":         return handleTicketClaim(interaction, ticket, panel);
-      case "transcript":    return handleTicketTranscript(interaction, ticket, panel);
-      case "reopen":        return handleTicketReopen(interaction, ticket, panel);
+      case "transcript":
+        if (!isStaff) return denyTicketAction(interaction);
+        return handleTicketTranscript(interaction, ticket, panel);
+      case "reopen":
+        if (!isStaff) return denyTicketAction(interaction);
+        return handleTicketReopen(interaction, ticket, panel);
       case "delete":        return handleTicketDelete(interaction, ticket, panel);
       default:
         return interaction.reply({ content: "❌ Unknown ticket action.", ephemeral: true });
@@ -721,8 +756,7 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
 }
 
 async function handleTicketClaim(interaction, ticket, panel) {
-  if (!panel || !(panel.supportRoleIds || []).some((r) => interaction.member.roles.cache.has(r))
-      && !interaction.member.permissions.has("ManageGuild")) {
+  if (!isTicketStaff(interaction, panel)) {
     return interaction.reply({ content: "❌ Only support team members can claim tickets.", ephemeral: true });
   }
 
@@ -808,8 +842,7 @@ async function handleTicketReopen(interaction, ticket, panel) {
 
 async function handleTicketDelete(interaction, ticket, panel) {
   // Only staff can delete
-  if (!(panel?.supportRoleIds || []).some((r) => interaction.member.roles.cache.has(r))
-      && !interaction.member.permissions.has("ManageGuild")) {
+  if (!isTicketStaff(interaction, panel)) {
     return interaction.reply({ content: "❌ Only support team members can delete tickets.", ephemeral: true });
   }
 

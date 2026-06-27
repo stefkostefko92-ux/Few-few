@@ -196,7 +196,21 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     }
 
     // Appy.bot-style regex validation
+    // ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата,
+    // а `content` е необработен потребителски вход в споделен bot процес. Зъл
+    // (или просто лош) шаблон + дълъг вход може да предизвика катастрофичен
+    // backtracking и да блокира event loop-а за всички сървъри. Капваме твърдо
+    // дължината на входа преди `.test()` — кратък вход прави експоненциалното
+    // връщане практически безвредно. Малформиран шаблон се хваща от try/catch.
+    const REGEX_INPUT_MAX = 1000;
     if (question.validationRegex) {
+      if (content.length > REGEX_INPUT_MAX) {
+        await dmChannel.send(
+          `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
+        );
+        await sendQuestion(client, dmChannel, session, sessionKey);
+        return;
+      }
       try {
         const re = new RegExp(question.validationRegex);
         if (!re.test(content)) {

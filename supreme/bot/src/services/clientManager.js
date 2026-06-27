@@ -31,7 +31,12 @@ let cachedEvents = null;
 const SHARED_INTENTS = [
   GatewayIntentBits.Guilds,
   GatewayIntentBits.GuildMessages,
+  // Привилегирован intent (1<<15): нужен за четене на съдържанието на съобщения
+  // в тикет каналите (логване на диалога + AI auto-reply). Без него content идва
+  // празен. Включва се в Dev Portal на всеки white-label бот; review при 10000+.
   GatewayIntentBits.MessageContent,
+  // Привилегирован intent (1<<1): нужен за разрешаване на ролите на члена при
+  // authz/verification и за GuildMember събития. Dev Portal + review при 10000+.
   GatewayIntentBits.GuildMembers,
   GatewayIntentBits.DirectMessages,
 ];

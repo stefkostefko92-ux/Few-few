@@ -1,9 +1,17 @@
 // bot/src/utils/api.js
 import axios from "axios";
 
+// API_SECRET е споделената тайна между бота и backend-а. Никога не падаме на
+// слаб дефолт ("changeme") — това би оставило internal API-то отворено, ако
+// тайната не е зададена. Fail-fast при стартиране вместо мълчалива несигурност.
+const API_SECRET = process.env.API_SECRET;
+if (!API_SECRET) {
+  throw new Error("API_SECRET е задължителен (липсва в средата) — спирам стартирането.");
+}
+
 const api = axios.create({
   baseURL: process.env.API_URL || "http://localhost:3000/api",
-  headers: { "x-bot-secret": process.env.API_SECRET || "changeme" },
+  headers: { "x-bot-secret": API_SECRET },
   timeout: 10000,
 });
 

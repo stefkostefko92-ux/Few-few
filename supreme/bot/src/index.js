@@ -35,7 +35,14 @@ export const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    // Привилегирован intent (1<<15): нужен за четене на съдържанието на съобщения
+    // в тикет каналите (логване на тикет диалога + AI auto-reply). Без него
+    // content/attachments идват празни. Изисква включване в Dev Portal; при 10000+
+    // уникални потребители — Discord review.
     GatewayIntentBits.MessageContent,
+    // Привилегирован intent (1<<1): нужен за разрешаване на ролите на члена при
+    // authz проверки (supportRoleIds), verification (min account age / role assign)
+    // и за GuildMember събития. Изисква включване в Dev Portal + review при 10000+.
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
   ],
@@ -572,12 +579,19 @@ app.post("/internal/giveaway-ended", async (req, res) => {
     }
 
     // Announce
+    // allowedMentions guard: пингваме само победителите (реални user ID-та),
+    // никога @everyone/@here — `prize` идва от dashboard вход и не бива да
+    // позволява масов пинг.
     if (winners?.length) {
       await channel.send({
         content: `🎉 Congratulations ${winners.map((id) => `<@${id}>`).join(", ")}! You won **${prize}**!`,
+        allowedMentions: { parse: ["users"] },
       });
     } else {
-      await channel.send({ content: `😔 Giveaway for **${prize}** ended with no eligible entrants.` });
+      await channel.send({
+        content: `😔 Giveaway for **${prize}** ended with no eligible entrants.`,
+        allowedMentions: { parse: [] },
+      });
     }
     res.json({ ok: true });
   } catch (err) {
@@ -599,9 +613,12 @@ app.post("/internal/scheduled-message-send", async (req, res) => {
           description: embedDescription || content,
           color: parseInt((embedColor || "#00e5ff").replace("#", ""), 16),
         }],
+        // allowedMentions guard: scheduled съдържание идва от dashboard вход —
+        // забраняваме всякакви пингове (вкл. @everyone/@here).
+        allowedMentions: { parse: [] },
       });
     } else {
-      await channel.send({ content });
+      await channel.send({ content, allowedMentions: { parse: [] } });
     }
     res.json({ ok: true });
   } catch (err) {
@@ -664,6 +681,9 @@ app.post("/internal/admin-broadcast", async (req, res) => {
         footer: { text: `— Supreme Bot admin${senderTag ? ` (${senderTag})` : ""}` },
         timestamp: new Date().toISOString(),
       }],
+      // allowedMentions guard: broadcast съдържанието идва от admin dashboard
+      // вход — забраняваме всякакви пингове (вкл. @everyone/@here).
+      allowedMentions: { parse: [] },
     });
 
     res.json({ ok: true });
