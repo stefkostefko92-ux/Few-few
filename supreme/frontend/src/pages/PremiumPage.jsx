@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Star, Zap, Check, ExternalLink, CreditCard, Download } from "lucide-react";
-import { getStripeStatus, createCheckout, openPortal, exportTicketsCSV, exportApplicationsCSV } from "../api";
+import api, { getStripeStatus, openPortal, exportTicketsCSV, exportApplicationsCSV } from "../api";
 
 const BASE_FEATURES = [
   "Up to 3 ticket panels",
@@ -33,8 +33,18 @@ export default function PremiumPage() {
     queryFn: () => getStripeStatus(serverId),
   });
 
+  // F7 — изрично съгласие за загуба на 14-дневното право на отказ (чл. 16(м)
+  // Дир. 2011/83/ЕС). Неотметнато по подразбиране; задължително преди checkout.
+  const [withdrawalConsent, setWithdrawalConsent] = useState(false);
+
   const checkoutMut = useMutation({
-    mutationFn: () => createCheckout(serverId),
+    // F7 — пращаме съгласието към backend-а; той го изисква и логва преди да
+    // създаде сесията. Ползваме директно axios инстанса, за да добавим флага
+    // без да пипаме общия api клиент.
+    mutationFn: () =>
+      api
+        .post("/stripe/create-checkout", { serverId, withdrawalConsent })
+        .then((r) => r.data),
     onSuccess: (data) => { window.location.href = data.url; },
   });
 
@@ -203,14 +213,41 @@ export default function PremiumPage() {
                 {portalMut.isPending ? "Loading…" : "Manage Subscription"}
               </button>
             ) : (
-              <button
-                onClick={() => checkoutMut.mutate()}
-                disabled={checkoutMut.isPending}
-                className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <Star className="w-4 h-4 fill-black" />
-                {checkoutMut.isPending ? "Redirecting…" : "Upgrade to Premium"}
-              </button>
+              <>
+                {/* F7 — обща цена с ДДС (преддоговорна информация, чл. 6 / ЗЗП чл. 47) */}
+                <p className="text-xs text-gray-400 mb-3">
+                  €9.99/month, VAT included where applicable
+                </p>
+
+                {/* F7 — задължителна, неотметната по подразбиране отметка за
+                    изрично съгласие незабавно изпълнение → загуба на 14-дневното
+                    право на отказ (чл. 16(м) Дир. 2011/83/ЕС). Достъпно: label е
+                    свързан с input, target ≥24px, видим focus ring. */}
+                <label
+                  htmlFor="withdrawal-consent"
+                  className="flex items-start gap-3 mb-4 cursor-pointer text-sm text-gray-300"
+                >
+                  <input
+                    id="withdrawal-consent"
+                    type="checkbox"
+                    checked={withdrawalConsent}
+                    onChange={(e) => setWithdrawalConsent(e.target.checked)}
+                    className="mt-0.5 w-6 h-6 flex-shrink-0 accent-yellow-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-dark-300"
+                  />
+                  <span>
+                    I expressly request that the Premium subscription starts immediately. I understand that once the service is activated I lose my 14-day right of withdrawal for this billing period (Art. 16(m) Directive 2011/83/EU).
+                  </span>
+                </label>
+
+                <button
+                  onClick={() => checkoutMut.mutate()}
+                  disabled={checkoutMut.isPending || !withdrawalConsent}
+                  className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-yellow-500"
+                >
+                  <Star className="w-4 h-4 fill-black" />
+                  {checkoutMut.isPending ? "Redirecting…" : "Upgrade to Premium"}
+                </button>
+              </>
             )}
           </div>
         </div>

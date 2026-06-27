@@ -26,13 +26,41 @@ function requireStripe(req, res, next) {
 // Create a Stripe Checkout session for Premium subscription
 
 router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req, res, next) => {
-  const { serverId } = req.body;
+  const { serverId, withdrawalConsent } = req.body;
   if (!serverId) return res.status(400).json({ error: "serverId required" });
+
+  // F7 — Право на отказ за дигитална услуга (чл. 16(м) Дир. 2011/83/ЕС; ЗЗП).
+  // Достъпът се активира незабавно, затова изискваме ИЗРИЧНО предварително
+  // съгласие от потребителя, че губи 14-дневното право на отказ за този период.
+  // Без булев true → отказваме да създадем сесия (не доверяваме липсващ/неистинен флаг).
+  if (withdrawalConsent !== true) {
+    return res.status(400).json({
+      error:
+        "Withdrawal-rights consent is required before starting the subscription (Art. 16(m) Directive 2011/83/EU).",
+    });
+  }
 
   try {
     const server = await prisma.server.findUnique({ where: { id: serverId } });
     if (!server) return res.status(404).json({ error: "Server not found" });
     if (server.isPremium) return res.status(400).json({ error: "Server is already Premium" });
+
+    // F7 — Логваме съгласието като доказателство ПРЕДИ да създадем сесията
+    // (timestamp идва от createdAt @default(now())). Доказва изричното съгласие
+    // при евентуален спор за правото на отказ.
+    await prisma.auditLog.create({
+      data: {
+        actorId: req.user.id,
+        serverId,
+        action: "WITHDRAWAL_CONSENT",
+        targetId: serverId,
+        metadata: {
+          withdrawalConsent: true,
+          legalBasis: "Art. 16(m) Directive 2011/83/EU",
+          consentedAt: new Date().toISOString(),
+        },
+      },
+    });
 
     let customerId = server.stripeCustomerId;
 
