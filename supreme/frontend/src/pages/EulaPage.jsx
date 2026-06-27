@@ -12,7 +12,7 @@ export default function EulaPage() {
   const COUNTRY = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="End User License Agreement (EULA)" updated="1 January 2025">
+    <LegalPage title="End User License Agreement (EULA)" updated="27 June 2026">
       <Seo
         title="End User License Agreement — Supreme Bot"
         description="End User License Agreement for Supreme Bot: SaaS access, bot deployment, premium features, white-label terms, and API usage."
@@ -650,7 +650,7 @@ export default function EulaPage() {
           <li>Support Server: <a href={SUPPORT} target="_blank" rel="noopener noreferrer" className="text-discord-400 hover:underline">{SUPPORT}</a></li>
         </ul>
         <p className="mt-4 text-xs text-gray-400">
-          This EULA was last reviewed by the Licensor's legal team on 1 January 2025.
+          This EULA was last reviewed by the Licensor's legal team on 27 June 2026.
           It covers the {COMPANY} platform as deployed with Node.js, React, Discord.js v14,
           PostgreSQL, Redis, Stripe, and Anthropic integrations.
         </p>

@@ -8,7 +8,7 @@ export default function TermsPage() {
   const COUNTRY    = import.meta.env.VITE_COMPANY_COUNTRY || "Bulgaria";
 
   return (
-    <LegalPage title="Terms of Service" updated="1 January 2025">
+    <LegalPage title="Terms of Service" updated="27 June 2026">
       <Seo
         title="Terms of Service — Supreme Bot"
         description="Terms of Service for Supreme Bot, the multi-tenant Discord bot SaaS platform by Carbon Stealth VCC."
