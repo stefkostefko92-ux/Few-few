@@ -496,7 +496,7 @@ model PaymentLog {
   serverId        String
   stripeInvoiceId String?  @unique
   amount          Int      // in cents
-  currency        String   @default("usd")
+  currency        String   @default("eur")  // F6 — продуктът таксува в евро (ЕС)
   status          String   // paid, open, void, uncollectible
   description     String?
   createdAt       DateTime @default(now())
@@ -504,6 +504,20 @@ model PaymentLog {
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   @@map("payment_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRIPE WEBHOOK IDEMPOTENCY (F1+F2)
+// ─────────────────────────────────────────────────────────────────────────────
+// Маркер за вече обработено Stripe събитие. Записва се в СЪЩАТА транзакция
+// като бизнес-ефекта, ключиран по event.id (PK). Втора доставка на същото
+// събитие хвърля P2002 → транзакцията се отказва → ефектът не се дублира.
+model ProcessedStripeEvent {
+  id        String   @id // Stripe event.id (evt_...)
+  type      String   // event.type, за одит/диагностика
+  createdAt DateTime @default(now())
+
+  @@map("processed_stripe_events")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -685,7 +699,7 @@ model ReferralCommission {
   stripeInvoiceId String    @unique  // Source invoice from Stripe
   amountCents     Int       // Customer paid amount in cents
   commissionCents Int       // 20% of amount, what we owe referrer
-  currency        String    @default("usd")
+  currency        String    @default("eur")  // F6 — продуктът таксува в евро (ЕС)
   status          String    @default("pending")  // pending, paid, refunded
   payoutId        String?   // Stripe payout ID when paid out
   paidAt          DateTime?

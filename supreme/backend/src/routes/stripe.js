@@ -6,9 +6,14 @@ import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js
 
 const router = Router();
 
-// Guard: stripe routes degrade gracefully if key not configured
+// Guard: stripe routes degrade gracefully if key not configured.
+// F3 — пинваме API версията: без пин ъпгрейд на акаунта мълчаливо променя
+// формата на обектите/събитията. Текуща стабилна версия (проверена на живо
+// 2026-06-27, docs.stripe.com/changelog): 2026-06-24.dahlia.
 const stripeKey = process.env.STRIPE_SECRET_KEY;
-const stripe = stripeKey ? new Stripe(stripeKey) : null;
+const stripe = stripeKey
+  ? new Stripe(stripeKey, { apiVersion: "2026-06-24.dahlia" })
+  : null;
 
 function requireStripe(req, res, next) {
   if (!stripe) {
@@ -33,10 +38,16 @@ router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req
 
     // Create Stripe customer if one doesn't exist
     if (!customerId) {
-      const customer = await stripe.customers.create({
-        metadata: { serverId, discordUserId: req.user.id },
-        description: `Discord server ${serverId}`,
-      });
+      // F4 — Idempotency-Key: при ретрай (timeout/мрежа) не създаваме дубъл
+      // Stripe клиент за същия сървър. Ключ по serverId, защото при липсващ
+      // stripeCustomerId има точно един клиент на сървър.
+      const customer = await stripe.customers.create(
+        {
+          metadata: { serverId, discordUserId: req.user.id },
+          description: `Discord server ${serverId}`,
+        },
+        { idempotencyKey: `cust-${serverId}` }
+      );
       customerId = customer.id;
 
       await prisma.server.update({
@@ -45,22 +56,27 @@ router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      payment_method_types: ["card"],
-      mode: "subscription",
-      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
-      subscription_data: {
-        // Free trial: set STRIPE_TRIAL_DAYS=0 to disable, default is 14 days
-        ...(Number(process.env.STRIPE_TRIAL_DAYS ?? 14) > 0 && {
-          trial_period_days: Number(process.env.STRIPE_TRIAL_DAYS ?? 14),
-        }),
+    const session = await stripe.checkout.sessions.create(
+      {
+        customer: customerId,
+        payment_method_types: ["card"],
+        mode: "subscription",
+        line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+        subscription_data: {
+          // Free trial: set STRIPE_TRIAL_DAYS=0 to disable, default is 14 days
+          ...(Number(process.env.STRIPE_TRIAL_DAYS ?? 14) > 0 && {
+            trial_period_days: Number(process.env.STRIPE_TRIAL_DAYS ?? 14),
+          }),
+          metadata: { serverId },
+        },
+        success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
+        cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
         metadata: { serverId },
       },
-      success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
-      cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
-      metadata: { serverId },
-    });
+      // F4 — Idempotency-Key и тук: ретрай на същия POST не създава втора сесия.
+      // Включваме timestamp, за да позволим нова сесия след отказана/изтекла.
+      { idempotencyKey: `checkout-${serverId}-${Date.now()}` }
+    );
 
     res.json({ url: session.url });
   } catch (err) {
@@ -105,6 +121,34 @@ router.post("/webhook", requireStripe, async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // F1+F2 — Идемпотентност по event.id. Stripe ПОВТАРЯ webhook-и при всеки
+  // не-2xx/timeout и при ретраи. Затова всеки handler пуска бизнес-ефекта си
+  // в една prisma.$transaction, чието ПЪРВО действие е create на
+  // ProcessedStripeEvent(event.id). Ако събитието вече е обработено → Prisma
+  // хвърля P2002 (unique violation) → отказва цялата транзакция → връщаме 200
+  // и спираме, без да дублираме ефекта (двойно таксуване/двойна комисионна).
+  //
+  // Помощник: обвива даден ефект в транзакция с маркер за идемпотентност.
+  // Връща true ако ефектът е изпълнен, false ако събитието вече е обработено.
+  async function runOnce(effect) {
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Маркерът е ПЪРВ — при дубъл P2002 спира преди ефекта.
+        await tx.processedStripeEvent.create({
+          data: { id: event.id, type: event.type },
+        });
+        await effect(tx);
+      });
+      return true;
+    } catch (err) {
+      if (err?.code === "P2002") {
+        console.log(`↩️  Stripe event ${event.id} (${event.type}) вече обработено — пропускам`);
+        return false;
+      }
+      throw err;
+    }
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -117,29 +161,32 @@ router.post("/webhook", requireStripe, async (req, res) => {
           ? "trialing"  // will be updated by subscription.updated event
           : "active";
 
-        await prisma.server.update({
-          where: { id: serverId },
-          data: {
-            isPremium: true,
-            premiumSince: new Date(),
-            stripeSubscriptionId: session.subscription,
-            stripeStatus: initialStatus,
-            // Reset archiveRetentionDays to null (forever) for premium
-            archiveRetentionDays: null,
-          },
+        const did = await runOnce(async (tx) => {
+          await tx.server.update({
+            where: { id: serverId },
+            data: {
+              isPremium: true,
+              premiumSince: new Date(),
+              stripeSubscriptionId: session.subscription,
+              stripeStatus: initialStatus,
+              // Reset archiveRetentionDays to null (forever) for premium
+              archiveRetentionDays: null,
+            },
+          });
+
+          await tx.paymentLog.create({
+            data: {
+              serverId,
+              amount: session.amount_total || 0,
+              // F6 — fallback "eur": продуктът таксува в евро (ЕС).
+              currency: session.currency || "eur",
+              status: "paid",
+              description: "Premium subscription started",
+            },
+          });
         });
 
-        await prisma.paymentLog.create({
-          data: {
-            serverId,
-            amount: session.amount_total || 0,
-            currency: session.currency || "usd",
-            status: "paid",
-            description: "Premium subscription started",
-          },
-        });
-
-        console.log(`✅ Server ${serverId} upgraded to Premium`);
+        if (did) console.log(`✅ Server ${serverId} upgraded to Premium`);
         break;
       }
 
@@ -151,20 +198,24 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
-        await prisma.paymentLog.create({
-          data: {
-            serverId: server.id,
-            stripeInvoiceId: invoice.id,
-            amount: invoice.amount_paid,
-            currency: invoice.currency,
-            status: "paid",
-            description: "Recurring subscription payment",
-          },
-        });
+        // Целият ефект (payment log + affiliate комисионна) е в ЕДНА транзакция,
+        // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
+        // payment log-а, нито 20% комисионната за афилиейта.
+        await runOnce(async (tx) => {
+          await tx.paymentLog.create({
+            data: {
+              serverId: server.id,
+              stripeInvoiceId: invoice.id,
+              amount: invoice.amount_paid,
+              // F6 — fallback "eur" вместо "usd".
+              currency: invoice.currency || "eur",
+              status: "paid",
+              description: "Recurring subscription payment",
+            },
+          });
 
-        // v2.1 — Affiliate commission tracking (20% for 12 months)
-        try {
-          const referral = await prisma.affiliateReferral.findFirst({
+          // v2.1 — Affiliate commission tracking (20% for 12 months)
+          const referral = await tx.affiliateReferral.findFirst({
             where: { referredServerId: server.id, status: { in: ["pending", "active"] } },
           });
           if (referral) {
@@ -174,7 +225,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               : 0;
             if (!referral.firstPaymentAt || elapsed < twelveMonths) {
               const commission = Math.floor(invoice.amount_paid * 0.20); // 20%
-              await prisma.affiliateReferral.update({
+              await tx.affiliateReferral.update({
                 where: { id: referral.id },
                 data: {
                   status: "active",
@@ -183,7 +234,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
                   totalEarnings: { increment: commission },
                 },
               });
-              await prisma.affiliateCode.update({
+              await tx.affiliateCode.update({
                 where: { id: referral.affiliateId },
                 data: {
                   totalEarnings:   { increment: commission },
@@ -193,9 +244,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               });
             }
           }
-        } catch (affErr) {
-          console.error("[affiliate] commission tracking failed:", affErr.message);
-        }
+        });
         break;
       }
 
@@ -206,20 +255,23 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
-        await prisma.server.update({
-          where: { id: server.id },
-          data: { stripeStatus: "past_due" },
-        });
+        await runOnce(async (tx) => {
+          await tx.server.update({
+            where: { id: server.id },
+            data: { stripeStatus: "past_due" },
+          });
 
-        await prisma.paymentLog.create({
-          data: {
-            serverId: server.id,
-            stripeInvoiceId: invoice.id,
-            amount: invoice.amount_due,
-            currency: invoice.currency,
-            status: "failed",
-            description: "Payment failed",
-          },
+          await tx.paymentLog.create({
+            data: {
+              serverId: server.id,
+              stripeInvoiceId: invoice.id,
+              amount: invoice.amount_due,
+              // F6 — fallback "eur" вместо "usd".
+              currency: invoice.currency || "eur",
+              status: "failed",
+              description: "Payment failed",
+            },
+          });
         });
         break;
       }
@@ -231,16 +283,18 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
-        await prisma.server.update({
-          where: { id: server.id },
-          data: {
-            isPremium: false,
-            stripeStatus: "canceled",
-            stripeSubscriptionId: null,
-          },
+        const did = await runOnce(async (tx) => {
+          await tx.server.update({
+            where: { id: server.id },
+            data: {
+              isPremium: false,
+              stripeStatus: "canceled",
+              stripeSubscriptionId: null,
+            },
+          });
         });
 
-        console.log(`❌ Server ${server.id} subscription canceled (churn)`);
+        if (did) console.log(`❌ Server ${server.id} subscription canceled (churn)`);
         break;
       }
 
@@ -251,24 +305,47 @@ router.post("/webhook", requireStripe, async (req, res) => {
         });
         if (!server) break;
 
-        // When trial converts to paid (trialing→active), ensure isPremium=true
-        // When subscription is cancelled or past_due, keep isPremium until period ends
-        const isPremiumStatus = ["active", "trialing"].includes(sub.status);
+        // ─── F5 — Политика на достъп спрямо статуса на абонамента ────────────
+        // active/trialing → Premium ВКЛ. (платено или валиден пробен период).
+        // past_due        → GRACE: оставяме isPremium=true до края на периода;
+        //                   Smart Retries още опитват да съберат плащането.
+        //                   Реалното отнемане при изчерпани ретраи идва после
+        //                   като subscription.updated→unpaid/canceled или
+        //                   subscription.deleted.
+        // unpaid          → ретраите се изчерпаха → СВАЛЯМЕ isPremium=false.
+        // incomplete_expired → първото плащане никога не мина (SCA/картов
+        //                   провал в рамките на ~23ч) → достъп НЕ се дава →
+        //                   isPremium=false.
+        // canceled/paused → достъпът се отнема (canceled обикновено идва и
+        //                   през subscription.deleted; тук е за подсигуряване).
+        const premiumOn = ["active", "trialing"].includes(sub.status);
+        const premiumOff = ["unpaid", "incomplete_expired", "canceled", "paused"].includes(
+          sub.status
+        );
+        // past_due НЕ е в нито един списък → isPremium остава непроменен (grace).
 
-        await prisma.server.update({
-          where: { id: server.id },
-          data: {
-            stripeStatus: sub.status,
-            // Only activate premium here (deactivation is handled by subscription.deleted)
-            ...(isPremiumStatus && !server.isPremium && {
-              isPremium: true,
-              premiumSince: new Date(),
-            }),
-          },
+        const wasTrialing = server.stripeStatus === "trialing";
+
+        await runOnce(async (tx) => {
+          await tx.server.update({
+            where: { id: server.id },
+            data: {
+              stripeStatus: sub.status,
+              ...(premiumOn && !server.isPremium && {
+                isPremium: true,
+                premiumSince: new Date(),
+              }),
+              // Отнемане на достъп при изчерпани ретраи / изтекъл incomplete.
+              ...(premiumOff && { isPremium: false }),
+            },
+          });
         });
 
-        if (sub.status === "active" && server.stripeStatus === "trialing") {
+        if (sub.status === "active" && wasTrialing) {
           console.log(`✅ Server ${server.id} trial converted to paid subscription`);
+        }
+        if (premiumOff) {
+          console.log(`❌ Server ${server.id} достъп отнет (статус: ${sub.status})`);
         }
         break;
       }
