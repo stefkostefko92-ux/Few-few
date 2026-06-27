@@ -297,16 +297,22 @@ interface LifeBones {
   shoulderL: THREE.Object3D | null;
   shoulderR: THREE.Object3D | null;
   weapon: THREE.Object3D | null;
+  root: THREE.Object3D | null;
+  /** Root bone yaw at bind pose — re-applied each frame so a clip whose
+   *  authored root rotation differs (Idle vs Sword_Attack) can't spin the
+   *  body; model.rotation.y stays the sole facing control. */
+  rootRestY: number;
   // Rest-pose rotations captured once so we add deltas, not absolutes.
   rest: Map<THREE.Object3D, THREE.Euler>;
 }
 
 function discoverLifeBones(rig: THREE.Object3D): LifeBones {
-  const find = (re: RegExp) => {
+  const find = (re: RegExp): THREE.Object3D | null => {
     let hit: THREE.Object3D | null = null;
     rig.traverse((o) => { if (!hit && re.test(o.name)) hit = o; });
     return hit;
   };
+  const root = find(/^Root$/i) || find(/^Hips$/i);
   const lb: LifeBones = {
     torso: find(/^Torso$/i) || find(/torso|chest|spine_?0?2/i),
     abdomen: find(/^Abdomen$/i) || find(/abdomen|spine_?0?1/i),
@@ -316,6 +322,8 @@ function discoverLifeBones(rig: THREE.Object3D): LifeBones {
     shoulderL: find(/^Shoulder\.L$/i),
     shoulderR: find(/^Shoulder\.R$/i),
     weapon: find(/^Weapon\.R$/i) || find(/weapon/i),
+    root,
+    rootRestY: root ? root.rotation.y : 0,
     rest: new Map(),
   };
   return lb;
@@ -353,6 +361,183 @@ function applyLifeLayer(lb: LifeBones, nowS: number, phase: number, face: number
   add(lb.head, breath * 0.008, headDrift + face, sway * 0.01);
   // Weapon hand micro-drift — the sword/staff never sits dead still.
   add(lb.weapon, breath2 * 0.02, headDrift * 0.5, breath * 0.015);
+}
+
+/* ------------------------------------------------------------------ */
+/* Detailed face decals — the Quaternius heads are flat low-poly with a  */
+/* near-featureless skin texture. We paint a stylised RPG face (eyes,    */
+/* brows, nose, mouth, per-class extras) to a transparent canvas and     */
+/* overlay it on a curved decal that tracks the Head bone, giving the    */
+/* fighters expressive faces without new geometry.                       */
+/* ------------------------------------------------------------------ */
+const _faceTexCache = new Map<string, THREE.CanvasTexture>();
+function makeFaceTexture(cls: string): THREE.CanvasTexture {
+  const cached = _faceTexCache.get(cls);
+  if (cached) return cached;
+  const S = 512;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, S, S);
+
+  // Per-class look.
+  const iris: Record<string, string> = { warrior: '#5b3a1e', ranger: '#2f6b3a', mage: '#3a5e8c', rogue: '#6a2f2f' };
+  const browCol: Record<string, string> = { warrior: '#3a2410', ranger: '#4a3415', mage: '#cfcfcf', rogue: '#221812' };
+  const irisCol = iris[cls] || '#4a3a2a';
+  const brow = browCol[cls] || '#2a1c10';
+
+  const eye = (cx: number, cy: number, w: number, h: number, look: number) => {
+    // Sclera
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, w, h, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#f4efe6'; ctx.fill();
+    ctx.clip();
+    // Iris + pupil, shifted by `look` toward the opponent.
+    const ix = cx + look;
+    ctx.beginPath(); ctx.arc(ix, cy + 2, h * 0.92, 0, Math.PI * 2);
+    ctx.fillStyle = irisCol; ctx.fill();
+    ctx.beginPath(); ctx.arc(ix, cy + 2, h * 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#100c08'; ctx.fill();
+    // Catch-light highlight
+    ctx.beginPath(); ctx.arc(ix - h * 0.3, cy - h * 0.2, h * 0.22, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fill();
+    ctx.restore();
+    // Upper lid line + lash
+    ctx.strokeStyle = 'rgba(40,28,18,.85)'; ctx.lineWidth = S * 0.012;
+    ctx.beginPath(); ctx.ellipse(cx, cy, w, h, 0, Math.PI * 1.02, Math.PI * 1.98); ctx.stroke();
+    // Lower lid soft line
+    ctx.strokeStyle = 'rgba(120,90,70,.4)'; ctx.lineWidth = S * 0.006;
+    ctx.beginPath(); ctx.ellipse(cx, cy, w * 0.9, h * 0.9, 0, Math.PI * 0.1, Math.PI * 0.9); ctx.stroke();
+  };
+
+  // Eyes (centred on the upper-middle of the decal). Look slightly to the
+  // side as if regarding the opponent.
+  const eyeY = S * 0.42, eyeDX = S * 0.16, eyeW = S * 0.085, eyeH = S * 0.06;
+  eye(S * 0.5 - eyeDX, eyeY, eyeW, eyeH, S * 0.02);
+  eye(S * 0.5 + eyeDX, eyeY, eyeW, eyeH, S * 0.02);
+
+  // Eyebrows — angled for a determined expression.
+  ctx.strokeStyle = brow; ctx.lineWidth = S * 0.026; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(S * 0.5 - eyeDX - eyeW, eyeY - eyeH * 1.9);
+  ctx.lineTo(S * 0.5 - eyeDX + eyeW, eyeY - eyeH * 2.4);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(S * 0.5 + eyeDX + eyeW, eyeY - eyeH * 1.9);
+  ctx.lineTo(S * 0.5 + eyeDX - eyeW, eyeY - eyeH * 2.4);
+  ctx.stroke();
+
+  // Nose — soft shadow + nostril hints.
+  ctx.strokeStyle = 'rgba(90,60,40,.35)'; ctx.lineWidth = S * 0.01;
+  ctx.beginPath(); ctx.moveTo(S * 0.5 - S * 0.012, eyeY + eyeH); ctx.lineTo(S * 0.5 - S * 0.022, S * 0.56); ctx.stroke();
+  ctx.fillStyle = 'rgba(70,45,30,.3)';
+  ctx.beginPath(); ctx.ellipse(S * 0.5 - S * 0.03, S * 0.575, S * 0.012, S * 0.008, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(S * 0.5 + S * 0.03, S * 0.575, S * 0.012, S * 0.008, 0, 0, 7); ctx.fill();
+
+  // Mouth — neutral-stern.
+  ctx.strokeStyle = 'rgba(110,55,45,.7)'; ctx.lineWidth = S * 0.016; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(S * 0.5 - S * 0.07, S * 0.66);
+  ctx.quadraticCurveTo(S * 0.5, S * 0.675, S * 0.5 + S * 0.07, S * 0.66);
+  ctx.stroke();
+
+  // Per-class face hair.
+  if (cls === 'mage') {
+    // Full white wizard beard + moustache.
+    ctx.fillStyle = 'rgba(238,238,236,.96)';
+    ctx.beginPath();
+    ctx.moveTo(S * 0.28, S * 0.60);
+    ctx.quadraticCurveTo(S * 0.5, S * 0.70, S * 0.72, S * 0.60);
+    ctx.quadraticCurveTo(S * 0.74, S * 0.86, S * 0.5, S * 0.99);
+    ctx.quadraticCurveTo(S * 0.26, S * 0.86, S * 0.28, S * 0.60);
+    ctx.fill();
+    // soft shading down the beard
+    ctx.strokeStyle = 'rgba(180,180,182,.5)'; ctx.lineWidth = S * 0.008; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(S * 0.5, S * 0.66); ctx.lineTo(S * 0.5, S * 0.95); ctx.stroke();
+    // bushy moustache over the mouth
+    ctx.fillStyle = 'rgba(242,242,240,.96)';
+    ctx.beginPath();
+    ctx.moveTo(S * 0.5 - S * 0.13, S * 0.605);
+    ctx.quadraticCurveTo(S * 0.5, S * 0.70, S * 0.5 + S * 0.13, S * 0.605);
+    ctx.quadraticCurveTo(S * 0.5, S * 0.645, S * 0.5 - S * 0.13, S * 0.605);
+    ctx.fill();
+  } else if (cls === 'warrior') {
+    // Light stubble shadow on the jaw.
+    ctx.fillStyle = 'rgba(40,28,18,.18)';
+    ctx.beginPath();
+    ctx.moveTo(S * 0.36, S * 0.6);
+    ctx.quadraticCurveTo(S * 0.5, S * 0.78, S * 0.64, S * 0.6);
+    ctx.quadraticCurveTo(S * 0.62, S * 0.74, S * 0.5, S * 0.8);
+    ctx.quadraticCurveTo(S * 0.38, S * 0.74, S * 0.36, S * 0.6);
+    ctx.fill();
+  } else if (cls === 'rogue') {
+    // Subtle scar across one brow.
+    ctx.strokeStyle = 'rgba(150,90,80,.5)'; ctx.lineWidth = S * 0.008;
+    ctx.beginPath(); ctx.moveTo(S * 0.5 + eyeDX, eyeY - eyeH * 3); ctx.lineTo(S * 0.5 + eyeDX + S * 0.01, eyeY + eyeH); ctx.stroke();
+  }
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  _faceTexCache.set(cls, t);
+  return t;
+}
+
+
+/** Build the curved face card and parent it to the head bone so it tracks
+ *  the head through every clip. side only differs the rim tint upstream. */
+function addFaceOverlay(
+  model: THREE.Object3D,
+  scene: THREE.Scene,
+  cls: string,
+  _side: 'hero' | 'foe',
+): void {
+  let head: THREE.Object3D | null = null;
+  model.traverse((o) => { if ((o as any).isBone && /^head$/i.test(o.name)) head = o; });
+  if (!head) return;
+  const headBone: THREE.Object3D = head;
+
+  model.updateWorldMatrix(true, true);
+  const box = new THREE.Box3().setFromObject(model);
+  const size = new THREE.Vector3(); box.getSize(size);
+  const headR = Math.max(0.12, size.y * 0.072); // world-space head half-width
+
+  // Curved card sized to the face panel of the head, gently bulged so it
+  // hugs the rounded skull instead of reading as a flat sticker.
+  const geo = new THREE.PlaneGeometry(headR * 1.55, headR * 1.75, 12, 12);
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  const halfW = headR * 0.8;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i);
+    const r2 = (x * x + y * y) / (halfW * halfW);
+    pos.setZ(i, r2 * headR * 0.32); // mild bulge toward +Z (the face front)
+  }
+  geo.computeVertexNormals();
+
+  const tex = makeFaceTexture(cls);
+  // True decal: drawn on top of the head (depthTest off) so no part is buried
+  // in the low-poly skull. Transparent everywhere but the features. Lit by the
+  // scene so it doesn't read as flat. Facing is gated per-frame so it never
+  // shows through the back of the head.
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex, transparent: true, alphaTest: 0.02,
+    roughness: 0.85, metalness: 0.0,
+    depthWrite: false, depthTest: false,
+  });
+  const face = new THREE.Mesh(geo, mat);
+  face.name = 'FaceOverlay';
+  face.renderOrder = 20;
+  face.frustumCulled = false;
+  face.castShadow = false; face.receiveShadow = false;
+  scene.add(face);
+
+  // Driven each frame from the head bone's WORLD matrix (the rig root is
+  // scaled by fitToHeight, so bone-parenting would collapse a world-sized
+  // mesh — we keep it in world space instead).
+  (model as any).userData.faceMesh = face;
+  (model as any).userData.faceHead = headBone;
+  (model as any).userData.faceR = headR;
 }
 
 /** A soft radial contact-shadow texture (dark centre → transparent edge). */
@@ -883,6 +1068,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // them — real cast shadows from the key light add a lot of life
         // (the sword's shadow swings with the attack).
         const rimColor = new THREE.Color(side === 'hero' ? 0xfff1d0 : 0xd6e4ff);
+        // Add a curved, properly-UV'd face overlay (own texture — never the
+        // shared body atlas) parented to the head bone, so each fighter gets
+        // eyes/brows/nose/mouth without smearing onto limbs.
+        addFaceOverlay(model, scene, cls, side);
         model.traverse((o) => {
           const m = o as THREE.Mesh;
           if (!m.isMesh) return;
@@ -930,6 +1119,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           scene.add(shadow);
           (model as any).userData.contactShadow = shadow;
         }
+
+        // Face detail is added via addFaceOverlay() above: a curved card with
+        // its own texture, re-parented to the head bone so it animates with
+        // the head and never smears onto the shared-UV body atlas.
 
         // Animation action map. The Quaternius RPG Characters pack ships
         // class-appropriate authored clips (Blender/UE-grade) — Sword_Attack,
@@ -1587,6 +1780,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /* ----- floating HUD projection helper ----- */
     // Scratch vector reused every frame (no per-frame alloc).
     const hudProjVec = new THREE.Vector3();
+    // Scratch for the per-frame face-overlay placement (no alloc).
+    const faceHeadPos = new THREE.Vector3();
+    const faceFwd = new THREE.Vector3();
+    const faceToCam = new THREE.Vector3();
+    const faceX = new THREE.Vector3();
+    const faceY = new THREE.Vector3();
+    const faceUp = new THREE.Vector3(0, 1, 0);
+    const faceBasis = new THREE.Matrix4();
     const mountRect = { w: 0, h: 0 };
     function projectHud(rig: THREE.Object3D | null, bar: HTMLDivElement | null, camera: THREE.PerspectiveCamera) {
       if (!bar) return;
@@ -1905,6 +2106,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         if (!rig) continue;
         const lb = (rig as any).userData.lifeBones as LifeBones | undefined;
         if (!lb) continue;
+        // Lock the root yaw to its bind value so a clip with a different
+        // authored root facing (Idle vs Sword_Attack) can't spin the body.
+        // model.rotation.y is then the only thing that aims the fighter.
+        if (lb.root) lb.root.rotation.y = lb.rootRestY;
         const phase = (rig as any).userData.lifePhase ?? 0;
         const isHero = rig === heroRigRef.current;
         // Head turns toward the opponent: hero (rotated +45°) looks right,
@@ -1918,6 +2123,34 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           shadow.position.x = rig.position.x;
           const lift = Math.max(0, rig.position.y);
           (shadow.material as THREE.MeshBasicMaterial).opacity = 0.5 * Math.max(0, 1 - lift * 1.5);
+        }
+        // Face overlay — snap to the head bone's world transform each frame
+        // (after mixer + life layer have posed the head), oriented along the
+        // rig's anatomical front so the face sits on the head and rides every
+        // nod, lunge and hit-reaction. Kept in world space (not bone-parented)
+        // because the fitToHeight scale on the rig root would otherwise
+        // collapse it.
+        const faceMesh = (rig as any).userData.faceMesh as THREE.Mesh | undefined;
+        const faceHead = (rig as any).userData.faceHead as THREE.Object3D | undefined;
+        const faceR = (rig as any).userData.faceR as number | undefined;
+        if (faceMesh && faceHead && faceR) {
+          faceHead.updateWorldMatrix(true, false);
+          faceHeadPos.setFromMatrixPosition(faceHead.matrixWorld);
+          // Rig's anatomical front is its local +Z (the Quaternius RPG rig
+          // faces +Z; ±π/4 yaw turns that toward the camera for both sides).
+          faceFwd.set(0, 0, 1).applyQuaternion(rig.quaternion).normalize();
+          faceToCam.copy(camera.position).sub(faceHeadPos);
+          // Build an orthonormal basis with +Z = front, +Y ≈ world up.
+          faceX.copy(faceUp).cross(faceFwd).normalize();
+          faceY.copy(faceFwd).cross(faceX).normalize();
+          faceMesh.position.copy(faceHeadPos)
+            .addScaledVector(faceY, faceR * 1.0)
+            .addScaledVector(faceFwd, faceR * 0.85);
+          faceBasis.makeBasis(faceX, faceY, faceFwd);
+          faceMesh.quaternion.setFromRotationMatrix(faceBasis);
+          // Hide when the head turns its back to us, so the on-top decal can't
+          // bleed through the back of the skull.
+          faceMesh.visible = rig.visible && faceFwd.dot(faceToCam.normalize()) > -0.15;
         }
       }
 
