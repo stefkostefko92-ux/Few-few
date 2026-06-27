@@ -4,7 +4,9 @@
 
 import axios from "axios";
 import crypto from "crypto";
+import https from "https";
 import { lookup as dnsLookup } from "dns/promises";
+import { lookup as dnsLookupCb } from "dns";
 import { isIP } from "net";
 import { prisma } from "../lib/prisma.js";
 
@@ -68,6 +70,25 @@ export async function validateWebhookUrl(rawUrl) {
   return null;
 }
 
+// SSRF-safe HTTPS agent. validateWebhookUrl() проверява DNS, но axios прави
+// втори, независим resolve при свързване — между двата атакуващ с контрол над
+// DNS може да върне публичен IP на проверката и частен на заявката (DNS
+// rebinding / TOCTOU). Този custom lookup проверява РЕАЛНО свързвания IP в
+// момента на connect, затваряйки прозореца. TLS SNI/cert валидацията си остава
+// по hostname.
+function ssrfSafeLookup(hostname, options, callback) {
+  const cb = typeof options === "function" ? options : callback;
+  const opts = typeof options === "function" ? {} : options;
+  dnsLookupCb(hostname, opts, (err, address, family) => {
+    if (err) return cb(err);
+    if (ipIsPrivate(address)) {
+      return cb(new Error("SSRF blocked: hostname resolved to a private address"));
+    }
+    cb(null, address, family);
+  });
+}
+const ssrfSafeAgent = new https.Agent({ lookup: ssrfSafeLookup });
+
 /**
  * Fire a webhook event to all enabled, subscribed webhooks for a server.
  * Non-blocking — returns immediately, delivery happens in background.
@@ -118,6 +139,7 @@ async function deliverWebhook(hook, bodyStr) {
       headers,
       timeout: 10000,
       maxRedirects: 0, // redirects could bounce the request to internal targets
+      httpsAgent: ssrfSafeAgent, // re-checks the resolved IP at connect time (anti-rebinding)
     });
     await prisma.webhook.update({
       where: { id: hook.id },

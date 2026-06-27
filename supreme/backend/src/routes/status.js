@@ -31,7 +31,9 @@ router.get("/", async (_req, res) => {
       latencyMs: Date.now() - start,
     };
   } catch (err) {
-    results.services.database = { status: "down", error: err.message };
+    // Не връщай сурово err.message навън (може да съдържа host/port на инфраструктурата).
+    console.error("[status] database check failed:", err.message);
+    results.services.database = { status: "down" };
     results.status = "degraded";
   }
 
@@ -80,7 +82,9 @@ router.get("/", async (_req, res) => {
         latencyMs: Date.now() - start,
       };
     } catch (err) {
-      results.services.cache = { status: "down", error: err.message };
+      // Не връщай сурово err.message навън (host/port на Redis).
+      console.error("[status] cache check failed:", err.message);
+      results.services.cache = { status: "down" };
       results.status = "degraded";
     }
   } else {
