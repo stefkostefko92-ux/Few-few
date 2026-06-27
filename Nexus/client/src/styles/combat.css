@@ -857,25 +857,27 @@
 }
 .combat3d-hpbar-track {
   position: relative;
-  height: 9px;
-  border-radius: 5px;
-  background: rgba(8,10,16,.85);
-  border: 1px solid rgba(255,255,255,.18);
+  height: 13px;
+  border-radius: 7px;
+  background: rgba(4,6,10,.92);
+  border: 1.5px solid rgba(0,0,0,.85);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.28), inset 0 1px 2px rgba(0,0,0,.6);
   overflow: hidden;
 }
 .combat3d-hpbar-ghost {
   position: absolute; inset: 0 auto 0 0; height: 100%;
-  background: rgba(255,255,255,.45);
+  background: rgba(255,255,255,.5);
   transition: width .55s cubic-bezier(.4,0,.2,1);
 }
 .combat3d-hpbar-fill {
   position: absolute; inset: 0 auto 0 0; height: 100%;
-  border-radius: 5px;
-  background: linear-gradient(90deg, #34d058, #7ef08a);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #5cf07a 0%, #2ecc55 55%, #1ba843 100%);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.45);
   transition: width .28s cubic-bezier(.2,.7,.2,1);
 }
 .combat3d-hpbar.foe .combat3d-hpbar-fill {
-  background: linear-gradient(90deg, #e8483a, #ff7d54);
+  background: linear-gradient(180deg, #ff8a64 0%, #ee5240 55%, #c93020 100%);
 }
 /* Low-HP warning pulse (driven purely by width via the fill colour shift) */
 .combat3d-hpbar-fill[style*="width: 0%"],

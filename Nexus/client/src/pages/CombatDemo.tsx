@@ -13,6 +13,10 @@ export default function CombatDemo(): React.ReactElement {
   const sceneRef = useRef<any>(null);
   const [phase, setPhase] = useState('idle');
   const [region, setRegion] = useState('whispering_woods');
+  // Mock live HUD so the floating health bars show in the demo. The
+  // puppeteer harness can drive these via window.__combatDemo.setHp.
+  const [heroHp, setHeroHp] = useState(72);
+  const [foeHp, setFoeHp] = useState(41);
 
   useEffect(() => {
     // Expose manual triggers on window so the puppeteer harness can fire
@@ -23,6 +27,7 @@ export default function CombatDemo(): React.ReactElement {
       attack: (opts: any) => sceneRef.current?.attack(opts),
       defeat: (side: 'hero' | 'foe') => sceneRef.current?.defeat(side),
       reset: () => sceneRef.current?.resetCamera(),
+      setHp: (hero: number, foe: number) => { setHeroHp(hero); setFoeHp(foe); },
       setPhase,
     };
     return () => { delete (window as any).__combatDemo; };
@@ -35,6 +40,8 @@ export default function CombatDemo(): React.ReactElement {
         heroClass="warrior"
         foeClass="mage"
         region={region}
+        heroHud={{ name: 'Aldric', level: 24, hpPct: heroHp, ghostPct: Math.min(100, heroHp + 12), hp: Math.round(heroHp * 4.8), hpMax: 480 }}
+        foeHud={{ name: 'Witchling', level: 22, hpPct: foeHp, ghostPct: Math.min(100, foeHp + 18), hp: Math.round(foeHp * 4.1), hpMax: 410 }}
       />
       <div
         style={{

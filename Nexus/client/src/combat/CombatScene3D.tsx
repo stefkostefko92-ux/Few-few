@@ -2,6 +2,10 @@ import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+// Own the floating-HUD styles here so the health bars render correctly
+// wherever the 3D scene is mounted — including the standalone /demo/combat
+// harness, which doesn't pull in the CombatScene orchestrator's CSS.
+import '../styles/combat.css';
 // Photoreal pipeline — renderer + post + IBL + PBR helpers + lil-gui panel.
 // Heavy passes (GTAO/SSR/TAA) and the GUI live here behind dynamic boundaries
 // so the lite path doesn't pay for them.
