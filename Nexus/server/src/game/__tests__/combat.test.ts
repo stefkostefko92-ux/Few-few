@@ -22,13 +22,18 @@ function actor(over: Partial<CombatActor>): CombatActor {
   };
 }
 
-test('combat: terminates within MAX_ROUNDS', () => {
+test('combat: ends by death, not a round timer', () => {
   const hero = actor({ name: 'Hero', side: 'hero' });
   const foe = actor({ name: 'Foe', side: 'foe' });
   const r = simulateCombat(hero, foe);
   assert.ok(r.rounds.length > 0);
-  assert.ok(r.rounds.length <= 60);
   assert.ok(r.winner === 'hero' || r.winner === 'foe');
+  // The loser must actually be at 0 HP — the win is decided by death,
+  // not by surviving a round cap.
+  const loserHp = r.winner === 'hero' ? r.foe.hp : r.hero.hp;
+  assert.equal(loserHp, 0, 'loser is dead');
+  const winnerHp = r.winner === 'hero' ? r.hero.hp : r.foe.hp;
+  assert.ok(winnerHp > 0, 'winner survives');
 });
 
 test('combat: higher speed actor strikes first', () => {

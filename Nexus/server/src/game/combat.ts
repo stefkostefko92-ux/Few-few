@@ -62,8 +62,16 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
   // Initiative: whoever has more speed strikes first; tie -> hero
   let heroTurn = H.speed >= F.speed;
 
-  const MAX_ROUNDS = 60;
-  while (H.hp > 0 && F.hp > 0 && index < MAX_ROUNDS) {
+  // No gameplay round cap — the fight runs until one side actually drops
+  // to 0 HP. The only bound is a server anti-hang backstop: the loop is
+  // synchronous on a single-threaded process, so an absurd matchup (e.g.
+  // a 1-damage attacker vs a 200k-HP wall) could otherwise build a
+  // multi-hundred-thousand-entry array and stall the process. Every
+  // landing hit deals ≥ 1 damage (floor below) and dodge is capped at
+  // 0.75, so any real fight terminates by death long before this guard —
+  // it exists purely so a pathological build can't DoS the server.
+  const SAFETY_ROUNDS = 100_000;
+  while (H.hp > 0 && F.hp > 0 && index < SAFETY_ROUNDS) {
     index++;
     const attacker = heroTurn ? H : F;
     const defender = heroTurn ? F : H;
@@ -147,22 +155,17 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
     heroTurn = !heroTurn;
   }
 
-  // Timer outcomes (audit gamebreaker #1): if we hit the round cap with
-  // both fighters alive, the player who dealt the larger HP-percentage of
-  // their opponent wins. That replaces the old behaviour where the more
-  // durable side automatically won by surviving the timer — at endgame
-  // monster HP scales faster than hero damage and a Lv 350 hero with
-  // 12k HP / 65 dmg/swing was beating a Lv 350 monster with 225k HP
-  // simply because their own HP was still positive.
+  // Outcome is decided purely by death: whoever still has HP > 0 wins.
+  // In the normal case exactly one fighter has dropped to 0. The only
+  // way both are still alive here is the SAFETY_ROUNDS anti-hang guard
+  // (a pathological min-damage matchup that should never occur in real
+  // play); in that single edge case we award the win to whoever is
+  // closer to killing their opponent, then by speed, then a coin-flip,
+  // so the function always returns a definite winner instead of hanging.
   let winner: 'hero' | 'foe';
   if (H.hp > 0 && F.hp > 0) {
     const heroPct = (F.hp_max - F.hp) / Math.max(1, F.hp_max);
     const foePct = (H.hp_max - H.hp) / Math.max(1, H.hp_max);
-    // On an exact percentage tie don't hand the win to the hero by
-    // default (the old `>=` did, which let two identical arena builds
-    // resolve in the attacker's favour every time). Break the tie by
-    // initiative — faster fighter wins; if speed is also equal fall back
-    // to a final RNG coin-flip so it stays fair. (Balance audit.)
     if (heroPct > foePct) winner = 'hero';
     else if (foePct > heroPct) winner = 'foe';
     else if (H.speed !== F.speed) winner = H.speed > F.speed ? 'hero' : 'foe';
