@@ -282,6 +282,127 @@ function hexA(color: number, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+/* ------------------------------------------------------------------ */
+/* "Alive" layer — procedural breathing / weight-shift / head-track    */
+/* applied additively on top of the idle clip so the fighters never    */
+/* hold perfectly still (the single biggest "this is a living thing"   */
+/* cue). Bone names are the Quaternius RPG skeleton.                    */
+/* ------------------------------------------------------------------ */
+interface LifeBones {
+  torso: THREE.Object3D | null;
+  abdomen: THREE.Object3D | null;
+  head: THREE.Object3D | null;
+  neck: THREE.Object3D | null;
+  hips: THREE.Object3D | null;
+  shoulderL: THREE.Object3D | null;
+  shoulderR: THREE.Object3D | null;
+  weapon: THREE.Object3D | null;
+  // Rest-pose rotations captured once so we add deltas, not absolutes.
+  rest: Map<THREE.Object3D, THREE.Euler>;
+}
+
+function discoverLifeBones(rig: THREE.Object3D): LifeBones {
+  const find = (re: RegExp) => {
+    let hit: THREE.Object3D | null = null;
+    rig.traverse((o) => { if (!hit && re.test(o.name)) hit = o; });
+    return hit;
+  };
+  const lb: LifeBones = {
+    torso: find(/^Torso$/i) || find(/torso|chest|spine_?0?2/i),
+    abdomen: find(/^Abdomen$/i) || find(/abdomen|spine_?0?1/i),
+    head: find(/^Head$/i),
+    neck: find(/^Neck$/i),
+    hips: find(/^Hips$/i) || find(/pelvis/i),
+    shoulderL: find(/^Shoulder\.L$/i),
+    shoulderR: find(/^Shoulder\.R$/i),
+    weapon: find(/^Weapon\.R$/i) || find(/weapon/i),
+    rest: new Map(),
+  };
+  return lb;
+}
+
+/**
+ * Drive the additive life layer for one rig. Called every frame AFTER the
+ * animation mixer has set the clip pose, so we add small deltas on top.
+ * `face` is the yaw bias (radians) that turns the head toward the foe.
+ * `intensity` scales everything down during attacks so it doesn't fight
+ * the authored motion.
+ */
+function applyLifeLayer(lb: LifeBones, nowS: number, phase: number, face: number, intensity: number): void {
+  if (intensity <= 0.001) return;
+  // Breath cycle ~0.26 Hz. Chest pitches forward/back + shoulders rise.
+  const breath = Math.sin(nowS * 1.6 + phase);
+  const breath2 = Math.sin(nowS * 1.6 + phase + 0.5);
+  // Slow weight shift ~0.12 Hz.
+  const sway = Math.sin(nowS * 0.75 + phase * 1.7);
+  // Lazy head drift + look toward the foe.
+  const headDrift = Math.sin(nowS * 0.5 + phase) * 0.04 + Math.sin(nowS * 0.23) * 0.03;
+
+  const add = (bone: THREE.Object3D | null, dx: number, dy: number, dz: number) => {
+    if (!bone) return;
+    bone.rotation.x += dx * intensity;
+    bone.rotation.y += dy * intensity;
+    bone.rotation.z += dz * intensity;
+  };
+  add(lb.abdomen, breath * 0.018, 0, sway * 0.012);
+  add(lb.torso, breath * 0.022, sway * 0.01, sway * 0.018);
+  add(lb.shoulderL, -breath2 * 0.03, 0, 0);
+  add(lb.shoulderR, -breath2 * 0.03, 0, 0);
+  add(lb.hips, sway * 0.006, 0, -sway * 0.014);
+  add(lb.neck, breath * 0.01, (headDrift + face) * 0.5, 0);
+  add(lb.head, breath * 0.008, headDrift + face, sway * 0.01);
+  // Weapon hand micro-drift — the sword/staff never sits dead still.
+  add(lb.weapon, breath2 * 0.02, headDrift * 0.5, breath * 0.015);
+}
+
+/** A soft radial contact-shadow texture (dark centre → transparent edge). */
+let _contactShadowTex: THREE.CanvasTexture | null = null;
+function makeContactShadowTexture(): THREE.CanvasTexture {
+  if (_contactShadowTex) return _contactShadowTex;
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(64, 64, 4, 64, 64, 60);
+  g.addColorStop(0, 'rgba(0,0,0,0.85)');
+  g.addColorStop(0.45, 'rgba(0,0,0,0.45)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  // Slightly elongated front-to-back so it reads as a grounded oval.
+  ctx.save(); ctx.translate(64, 64); ctx.scale(1, 0.78); ctx.translate(-64, -64);
+  ctx.fillRect(0, 0, 128, 128); ctx.restore();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  _contactShadowTex = t;
+  return t;
+}
+
+/** Inject a fresnel rim term into a MeshStandardMaterial so silhouette
+ *  edges catch a soft light-wrap glow — the premium "lit from all sides"
+ *  look that makes a low-poly character read as alive and three-
+ *  dimensional. Cheap; runs in the existing standard shader. */
+function addFresnelRim(mat: THREE.MeshStandardMaterial, color: THREE.Color, power = 2.6, strength = 0.5): void {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uRimColor = { value: color };
+    shader.uniforms.uRimPower = { value: power };
+    shader.uniforms.uRimStrength = { value: strength };
+    shader.vertexShader =
+      'varying vec3 vRimViewN;\nvarying vec3 vRimViewPos;\n' +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\n  vRimViewN = normalize(normalMatrix * objectNormal);\n  vRimViewPos = (modelViewMatrix * vec4(transformed,1.0)).xyz;',
+      );
+    shader.fragmentShader =
+      'uniform vec3 uRimColor;\nuniform float uRimPower;\nuniform float uRimStrength;\nvarying vec3 vRimViewN;\nvarying vec3 vRimViewPos;\n' +
+      shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        '  float rim = pow(clamp(1.0 - dot(normalize(vRimViewN), normalize(-vRimViewPos)), 0.0, 1.0), uRimPower);\n' +
+        '  gl_FragColor.rgb += uRimColor * rim * uRimStrength;\n' +
+        '#include <dithering_fragment>',
+      );
+  };
+  mat.needsUpdate = true;
+}
+
 const REGION_PALETTE: Record<string, { sky: number; fog: number; ground: number; ambient: number; }> = {
   // Act 1 (lv 1-25)
   whispering_woods: { sky: 0x2c4a2d, fog: 0x1e2a1f, ground: 0x1c2818, ambient: 0x4a7a3d },
@@ -758,15 +879,57 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // renders as a hard rectangle on legacy shadow paths (SwiftShader,
         // older mobile drivers). The HD backend's IBL + ambient occlusion
         // grounds the figure adequately.
+        // Cast shadows now that we have a soft contact shadow grounding
+        // them — real cast shadows from the key light add a lot of life
+        // (the sword's shadow swings with the attack).
+        const rimColor = new THREE.Color(side === 'hero' ? 0xfff1d0 : 0xd6e4ff);
         model.traverse((o) => {
           const m = o as THREE.Mesh;
-          if (m.isMesh) { m.castShadow = false; m.receiveShadow = true; }
+          if (!m.isMesh) return;
+          m.castShadow = true; m.receiveShadow = true;
+          // Material polish: let the rig catch the IBL + god rays, and
+          // wrap a soft fresnel rim around its silhouette so it reads as
+          // a lit, living form rather than flat-shaded low-poly.
+          const mats = Array.isArray(m.material) ? m.material : [m.material];
+          for (const mm of mats) {
+            const std = mm as THREE.MeshStandardMaterial;
+            if (!std || !std.isMaterial) continue;
+            std.envMapIntensity = 1.15;
+            // Slightly sharpen the response so armour / weapon metal pops.
+            if (std.roughness !== undefined) std.roughness = Math.min(1, std.roughness * 0.9 + 0.05);
+            addFresnelRim(std, rimColor, 2.8, 0.42);
+          }
         });
 
         model.position.set(side === 'hero' ? -2.2 : 2.2, 0, 0);
-        // 3/4 view: rotate ~45° off camera so we see body and weapon at
-        // angle, not pure profile. Soldier.glb's default forward is -Z.
+        // 3/4 FRONT view: ±π/4 turns each fighter to face their opponent
+        // while keeping their front + weapon toward the camera (the
+        // Quaternius RPG rig's authored forward reads correctly here).
         model.rotation.y = side === 'hero' ? Math.PI / 4 : -Math.PI / 4;
+
+        // Cache the life-layer bones + a per-rig breath phase so the
+        // two fighters don't breathe in lockstep.
+        (model as any).userData.lifeBones = discoverLifeBones(model);
+        (model as any).userData.lifePhase = side === 'hero' ? 0 : 2.3;
+
+        // Soft contact shadow — a radial-gradient disc that follows the
+        // fighter's feet (scene-parented so the rig's fit-to-height scale
+        // doesn't shrink it). UE-style capsule-shadow feel; grounds the
+        // figure cleanly. Its x is updated in the tick to track the rig.
+        {
+          const shadow = new THREE.Mesh(
+            new THREE.PlaneGeometry(2.0, 2.0),
+            new THREE.MeshBasicMaterial({
+              map: makeContactShadowTexture(), transparent: true, opacity: 0.5,
+              depthWrite: false,
+            }),
+          );
+          shadow.rotation.x = -Math.PI / 2;
+          shadow.position.set(side === 'hero' ? -2.2 : 2.2, 0.012, 0.1);
+          shadow.renderOrder = 1;
+          scene.add(shadow);
+          (model as any).userData.contactShadow = shadow;
+        }
 
         // Animation action map. The Quaternius RPG Characters pack ships
         // class-appropriate authored clips (Blender/UE-grade) — Sword_Attack,
@@ -1730,6 +1893,33 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // crit hit-stops alongside the rest of the simulation.
       if (heroMixerRef.current) heroMixerRef.current.update(dt);
       if (foeMixerRef.current) foeMixerRef.current.update(dt);
+
+      // "Alive" layer — applied AFTER the mixer set the clip pose so it
+      // adds breathing / weight-shift / head-track as deltas on top. Use
+      // real-time (not dt) so the fighters keep breathing even through a
+      // hit-stop freeze — a frozen-but-breathing body still reads as
+      // living. Reduced during attacks so it doesn't fight authored motion.
+      const nowS = now * 0.001;
+      const playing = choreoRef.current?.isPlaying();
+      for (const rig of [heroRigRef.current, foeRigRef.current]) {
+        if (!rig) continue;
+        const lb = (rig as any).userData.lifeBones as LifeBones | undefined;
+        if (!lb) continue;
+        const phase = (rig as any).userData.lifePhase ?? 0;
+        const isHero = rig === heroRigRef.current;
+        // Head turns toward the opponent: hero (rotated +45°) looks right,
+        // foe looks left. Sign chosen so they regard each other.
+        const face = isHero ? 0.18 : -0.18;
+        applyLifeLayer(lb, nowS, phase, face, playing ? 0.35 : 1.0);
+        // Contact shadow follows the rig's x; fades as it leaves the
+        // ground (defeat fall) so it doesn't float under a raised body.
+        const shadow = (rig as any).userData.contactShadow as THREE.Mesh | undefined;
+        if (shadow) {
+          shadow.position.x = rig.position.x;
+          const lift = Math.max(0, rig.position.y);
+          (shadow.material as THREE.MeshBasicMaterial).opacity = 0.5 * Math.max(0, 1 - lift * 1.5);
+        }
+      }
 
       // Backend-aware render — null until createCombatBackend resolves
       // (WebGPU init takes ~50-200ms). The first few rAFs after mount
