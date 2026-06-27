@@ -33,6 +33,8 @@ import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass.js';
 import { TAARenderPass } from 'three/examples/jsm/postprocessing/TAARenderPass.js';
 import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
 import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader.js';
+import { makeCinemaGradePass, makeBokehPass } from './CombatCinema';
+import type { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
 export interface RenderBackend {
   kind: 'webgpu' | 'webgl2' | 'webgl1-lite';
@@ -45,6 +47,8 @@ export interface RenderBackend {
   taaPass: TAARenderPass | null;
   rgbShift: ShaderPass | null;
   vignettePass: ShaderPass | null;
+  bokehPass: BokehPass | null;
+  cinemaGrade: ShaderPass | null;
   // Exposed for the GUI to flip live.
   tuneables: HDTuneables;
   // Frame submission — call once per rAF.
@@ -193,7 +197,7 @@ export async function createCombatBackend(opts: {
       kind: 'webgl1-lite',
       renderer,
       composer: null,
-      bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null, vignettePass: null,
+      bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null, vignettePass: null, bokehPass: null, cinemaGrade: null,
       tuneables,
       render: () => renderer.render(scene, camera),
       dispose: () => {
@@ -236,7 +240,7 @@ export async function createCombatBackend(opts: {
             kind: 'webgpu',
             renderer: renderer as any,
             composer: null,
-            bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null, vignettePass: null,
+            bloomPass: null, gtaoPass: null, ssrPass: null, taaPass: null, rgbShift: null, vignettePass: null, bokehPass: null, cinemaGrade: null,
             tuneables,
             render: () => renderer.render(scene, camera),
             dispose: () => {
@@ -337,15 +341,34 @@ export async function createCombatBackend(opts: {
     taaPass = null;
   }
 
+  // Depth of field — focuses the fighter plane, melts the background into
+  // bokeh. Most of what reads as "cinematic depth" on a low-poly scene.
+  // Inserted before bloom-driven sparks so the bokeh doesn't smear them.
+  let bokehPass: BokehPass | null = null;
+  try {
+    bokehPass = makeBokehPass(scene, camera, width, height);
+    composer.addPass(bokehPass);
+  } catch { bokehPass = null; }
+
   // Subtle chromatic aberration for visceral hits — same path as before.
   const rgbShift = new ShaderPass(RGBShiftShader);
   rgbShift.uniforms['amount'].value = tuneables.rgbShiftAmount;
   composer.addPass(rgbShift);
 
-  // Final vignette + tone-mapped output.
+  // Cinematic colour grade — filmic contrast, split-tone, saturation,
+  // sharpen, animated grain + vignette. The single biggest "shot on a
+  // real camera" lever, region-agnostic. Its own vignette replaces the
+  // old VignetteShader (kept only as the tuneable target for the
+  // choreographer's defeat-sequence darkening).
+  const cinemaGrade = makeCinemaGradePass(width, height);
+  composer.addPass(cinemaGrade);
+
+  // Vignette pass kept in the chain (after grade) so the choreographer's
+  // post.vignette track still has a uniform to drive on crits / defeats;
+  // its baseline darkness is low so it only kicks in when driven.
   const vignette = new ShaderPass(VignetteShader);
-  vignette.uniforms['offset'].value = 0.85;
-  vignette.uniforms['darkness'].value = 0.95;
+  vignette.uniforms['offset'].value = 0.95;
+  vignette.uniforms['darkness'].value = 0.0;
   composer.addPass(vignette);
   composer.addPass(new OutputPass());
 
@@ -359,6 +382,8 @@ export async function createCombatBackend(opts: {
     taaPass,
     rgbShift,
     vignettePass: vignette,
+    bokehPass,
+    cinemaGrade,
     tuneables,
     render: () => composer.render(),
     dispose: () => {

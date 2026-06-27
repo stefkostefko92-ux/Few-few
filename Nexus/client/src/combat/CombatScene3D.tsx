@@ -276,6 +276,12 @@ function magicCircleTexture(tint: string): THREE.CanvasTexture {
   return tex;
 }
 
+/** 0xRRGGBB int + alpha → `rgba(r,g,b,a)` string for canvas gradients. */
+function hexA(color: number, alpha: number): string {
+  const r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 const REGION_PALETTE: Record<string, { sky: number; fog: number; ground: number; ambient: number; }> = {
   // Act 1 (lv 1-25)
   whispering_woods: { sky: 0x2c4a2d, fog: 0x1e2a1f, ground: 0x1c2818, ambient: 0x4a7a3d },
@@ -409,29 +415,68 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     let bloom: import('three/examples/jsm/postprocessing/UnrealBloomPass.js').UnrealBloomPass | null = null;
     let rgbShift: import('three/examples/jsm/postprocessing/ShaderPass.js').ShaderPass | null = null;
     let vignettePass: import('three/examples/jsm/postprocessing/ShaderPass.js').ShaderPass | null = null;
+    let bokehPass: import('three/examples/jsm/postprocessing/BokehPass.js').BokehPass | null = null;
+    let cinemaGrade: import('three/examples/jsm/postprocessing/ShaderPass.js').ShaderPass | null = null;
     // Desaturation amount the bus sets (slow-mo). The composer doesn't
     // expose a saturation pass directly, so we fake it by tinting the
     // vignette darkness up and modulating the scene's renderer
     // toneMappingExposure subtly. Range 0..1.
     let desaturationAmt = 0;
 
-    /* ----- sky parallax cylinder ----- */
+    /* ----- atmospheric sky cylinder -----
+     * Richer than a flat gradient: a vertical sky→horizon→ground gradient,
+     * a soft sun/moon glow biased toward the key-light side, horizon haze,
+     * and layered silhouette ridgelines for depth. Per-region tinted. */
     {
       const skyTex = (() => {
         const c = document.createElement('canvas');
-        c.width = 2048; c.height = 512;
+        c.width = 2048; c.height = 640;
         const ctx = c.getContext('2d')!;
+        const skyHex = '#' + pal.sky.toString(16).padStart(6, '0');
+        const fogHex = '#' + pal.fog.toString(16).padStart(6, '0');
+        const ambHex = '#' + pal.ambient.toString(16).padStart(6, '0');
+        // Base vertical gradient: zenith (darker sky) → horizon (fog) → a
+        // touch of ground bounce at the very bottom.
         const g = ctx.createLinearGradient(0, 0, 0, c.height);
-        g.addColorStop(0, '#' + pal.sky.toString(16).padStart(6, '0'));
-        g.addColorStop(1, '#' + pal.fog.toString(16).padStart(6, '0'));
+        g.addColorStop(0, skyHex);
+        g.addColorStop(0.55, skyHex);
+        g.addColorStop(0.78, fogHex);
+        g.addColorStop(1, fogHex);
         ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
+        // Sun / moon glow — a big soft radial near the horizon on the
+        // key-light side, tinted with the region ambient colour.
+        const sunX = c.width * 0.72, sunY = c.height * 0.52;
+        const glow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, c.height * 0.9);
+        glow.addColorStop(0, ambHex);
+        glow.addColorStop(0.12, hexA(pal.ambient, 0.55));
+        glow.addColorStop(0.4, hexA(pal.ambient, 0.12));
+        glow.addColorStop(1, hexA(pal.ambient, 0));
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = glow; ctx.fillRect(0, 0, c.width, c.height);
+        // Bright sun core
+        const core = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, c.height * 0.10);
+        core.addColorStop(0, 'rgba(255,255,255,.9)');
+        core.addColorStop(0.5, hexA(pal.ambient, 0.5));
+        core.addColorStop(1, hexA(pal.ambient, 0));
+        ctx.fillStyle = core; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.globalCompositeOperation = 'source-over';
+        // Horizon haze band — lifts the horizon line.
+        const haze = ctx.createLinearGradient(0, c.height * 0.62, 0, c.height * 0.82);
+        haze.addColorStop(0, hexA(pal.ambient, 0));
+        haze.addColorStop(0.5, hexA(pal.ambient, 0.16));
+        haze.addColorStop(1, hexA(pal.ambient, 0));
+        ctx.fillStyle = haze; ctx.fillRect(0, c.height * 0.62, c.width, c.height * 0.20);
+        // Layered ridgelines for parallax depth.
         for (let layer = 0; layer < 3; layer++) {
-          ctx.fillStyle = `rgba(0,0,0,${0.18 + layer * 0.12})`;
+          ctx.fillStyle = `rgba(0,0,0,${0.16 + layer * 0.13})`;
           ctx.beginPath();
           ctx.moveTo(0, c.height);
-          const baseY = c.height * (0.55 + layer * 0.12);
-          for (let x = 0; x <= c.width; x += 30) {
-            const y = baseY - Math.abs(Math.sin(x * 0.005 + layer * 1.7)) * (80 - layer * 18) - Math.random() * 12;
+          const baseY = c.height * (0.66 + layer * 0.09);
+          for (let x = 0; x <= c.width; x += 26) {
+            const y = baseY
+              - Math.abs(Math.sin(x * 0.005 + layer * 1.7)) * (70 - layer * 16)
+              - Math.abs(Math.sin(x * 0.017 + layer * 3.1)) * (24 - layer * 6)
+              - Math.random() * 8;
             ctx.lineTo(x, y);
           }
           ctx.lineTo(c.width, c.height); ctx.closePath(); ctx.fill();
@@ -442,37 +487,106 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         return t;
       })();
       const sky = new THREE.Mesh(
-        new THREE.CylinderGeometry(18, 18, 8, 60, 1, true),
+        new THREE.CylinderGeometry(18, 18, 10, 60, 1, true),
         new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false }),
       );
-      sky.position.y = 2;
+      sky.position.y = 2.5;
       scene.add(sky);
     }
 
-    /* ----- ground ----- */
+    /* ----- ground (PBR: albedo + procedural normal + roughness) -----
+     * A flat-coloured plane reads as plastic. We build a value-noise
+     * height field, derive a tangent-space normal map (Sobel) and a
+     * roughness-variation map from it, so the key light + IBL catch the
+     * surface micro-relief and the ground reads as real dirt/stone/snow. */
     {
-      const groundCanvas = document.createElement('canvas');
-      groundCanvas.width = 1024; groundCanvas.height = 1024;
-      const gctx = groundCanvas.getContext('2d')!;
-      gctx.fillStyle = '#' + pal.ground.toString(16).padStart(6, '0');
-      gctx.fillRect(0, 0, 1024, 1024);
-      gctx.strokeStyle = 'rgba(255,255,255,.05)';
-      gctx.lineWidth = 1.5;
-      for (let r = 64; r < 1024; r += 64) {
-        gctx.beginPath();
-        gctx.arc(512, 512, r, 0, Math.PI * 2);
-        gctx.stroke();
+      const SIZE = 512;
+      // 1) Albedo — base colour + subtle mottling + faint guide rings.
+      const albedo = document.createElement('canvas');
+      albedo.width = albedo.height = SIZE;
+      const actx = albedo.getContext('2d')!;
+      actx.fillStyle = '#' + pal.ground.toString(16).padStart(6, '0');
+      actx.fillRect(0, 0, SIZE, SIZE);
+      // 2) Height field — layered value noise sampled into a Float array.
+      const height = new Float32Array(SIZE * SIZE);
+      const rand = (x: number, y: number) => {
+        const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+        return s - Math.floor(s);
+      };
+      const valNoise = (x: number, y: number, scale: number) => {
+        const xi = Math.floor(x / scale), yi = Math.floor(y / scale);
+        const xf = (x / scale) - xi, yf = (y / scale) - yi;
+        const tl = rand(xi, yi), tr = rand(xi + 1, yi);
+        const bl = rand(xi, yi + 1), br = rand(xi + 1, yi + 1);
+        const sx = xf * xf * (3 - 2 * xf), sy = yf * yf * (3 - 2 * yf);
+        return (tl * (1 - sx) + tr * sx) * (1 - sy) + (bl * (1 - sx) + br * sx) * sy;
+      };
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          height[y * SIZE + x] = valNoise(x, y, 64) * 0.55 + valNoise(x, y, 22) * 0.3 + valNoise(x, y, 7) * 0.15;
+        }
       }
-      // (Removed: the ground texture used to bake two dark radial blobs
-      // under the fighter slots as a faux contact shadow. The PBR
-      // characters now produce real PCF shadows from the key light,
-      // so the baked blobs read as a flat black halo and clash with
-      // the lit shadow underneath.)
-      const groundTex = new THREE.CanvasTexture(groundCanvas);
-      groundTex.colorSpace = THREE.SRGBColorSpace;
+      // Bake the height mottle into albedo lightness in one buffer pass
+      // (per-pixel getImageData round-trips would be ~260k canvas ops).
+      const albImg = actx.getImageData(0, 0, SIZE, SIZE);
+      for (let i = 0; i < SIZE * SIZE; i++) {
+        const shade = 0.78 + height[i] * 0.44;
+        albImg.data[i * 4] = Math.min(255, albImg.data[i * 4] * shade);
+        albImg.data[i * 4 + 1] = Math.min(255, albImg.data[i * 4 + 1] * shade);
+        albImg.data[i * 4 + 2] = Math.min(255, albImg.data[i * 4 + 2] * shade);
+      }
+      actx.putImageData(albImg, 0, 0);
+      // 3) Normal map (Sobel on the height field).
+      const normalC = document.createElement('canvas');
+      normalC.width = normalC.height = SIZE;
+      const nctx = normalC.getContext('2d')!;
+      const nImg = nctx.createImageData(SIZE, SIZE);
+      const H = (x: number, y: number) => height[((y + SIZE) % SIZE) * SIZE + ((x + SIZE) % SIZE)];
+      const strength = 2.6;
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          const dx = (H(x - 1, y) - H(x + 1, y)) * strength;
+          const dy = (H(x, y - 1) - H(x, y + 1)) * strength;
+          const len = Math.hypot(dx, dy, 1);
+          const i = (y * SIZE + x) * 4;
+          nImg.data[i] = ((dx / len) * 0.5 + 0.5) * 255;
+          nImg.data[i + 1] = ((dy / len) * 0.5 + 0.5) * 255;
+          nImg.data[i + 2] = ((1 / len) * 0.5 + 0.5) * 255;
+          nImg.data[i + 3] = 255;
+        }
+      }
+      nctx.putImageData(nImg, 0, 0);
+      // 4) Roughness variation — wetter (smoother) in the dips, rough on peaks.
+      const roughC = document.createElement('canvas');
+      roughC.width = roughC.height = SIZE;
+      const rctx = roughC.getContext('2d')!;
+      const rImg = rctx.createImageData(SIZE, SIZE);
+      for (let i = 0; i < SIZE * SIZE; i++) {
+        const r = Math.round((0.62 + height[i] * 0.33) * 255);
+        rImg.data[i * 4] = rImg.data[i * 4 + 1] = rImg.data[i * 4 + 2] = r;
+        rImg.data[i * 4 + 3] = 255;
+      }
+      rctx.putImageData(rImg, 0, 0);
+
+      const albedoTex = new THREE.CanvasTexture(albedo);
+      albedoTex.colorSpace = THREE.SRGBColorSpace;
+      const normalTex = new THREE.CanvasTexture(normalC);
+      const roughTex = new THREE.CanvasTexture(roughC);
+      for (const t of [albedoTex, normalTex, roughTex]) {
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(5, 3);
+      }
       const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(20, 14),
-        new THREE.MeshStandardMaterial({ map: groundTex, roughness: 0.95, metalness: 0 }),
+        new THREE.PlaneGeometry(34, 22, 1, 1),
+        new THREE.MeshStandardMaterial({
+          map: albedoTex,
+          normalMap: normalTex,
+          normalScale: new THREE.Vector2(0.85, 0.85),
+          roughnessMap: roughTex,
+          roughness: 1.0,
+          metalness: 0,
+          envMapIntensity: 0.6,
+        }),
       );
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = 0;
@@ -503,19 +617,59 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const emberSpec = getRegionEmberSpec(region);
 
     /* ----- lights ----- (cinematic 3-point + sky/ground hemi)
-     * Key sun + cool sky fill + warm back rim. Higher key intensity
-     * for crisp PBR highlights on the rigged characters; the back rim
-     * carves them off the BG for that "shot on a tripod" silhouette. */
-    scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.60));
-    const key = new THREE.DirectionalLight(0xfff1c4, 1.10);
+     * Key sun + cool sky fill + warm back rim. Stronger key for crisp PBR
+     * highlights, a brighter cool fill for the teal-orange contrast the
+     * grade leans into, and a punchy back rim that carves the fighters
+     * off the BG. */
+    scene.add(new THREE.HemisphereLight(pal.ambient, pal.ground, 0.55));
+    const key = new THREE.DirectionalLight(0xfff1c4, 1.45);
     key.position.set(4, 8, 5);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6aa7ff, 0.40);
+    const fill = new THREE.DirectionalLight(0x6aa7ff, 0.55);
     fill.position.set(-5, 3, 2);
     scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffe7c2, 0.55);
+    const rim = new THREE.DirectionalLight(0xffe7c2, 0.85);
     rim.position.set(0, 4, -7);
     scene.add(rim);
+    // A region-tinted ambient bounce from below — fakes light kicking off
+    // the ground into the undersides, which IBL alone misses on a single
+    // plane. Subtle but adds the "grounded in a place" feel.
+    const bounce = new THREE.DirectionalLight(new THREE.Color(pal.ambient), 0.25);
+    bounce.position.set(0, -4, 3);
+    scene.add(bounce);
+
+    /* ----- volumetric god-ray light shafts -----
+     * A few large, soft additive cones angled along the key-light
+     * direction. With the height fog + bloom they read as sunbeams
+     * cutting through atmosphere. Gated to the non-lite path via the
+     * particle budget so phones skip the extra transparent overdraw. */
+    if (!liteParticleBudget) {
+      const shaftGroup = new THREE.Group();
+      shaftGroup.name = 'godrays';
+      const shaftColor = new THREE.Color(pal.ambient).lerp(new THREE.Color(0xffffff), 0.35);
+      for (let i = 0; i < 4; i++) {
+        const h = 10 + Math.random() * 3;
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(1.6 + Math.random() * 0.8, h, 16, 1, true),
+          new THREE.MeshBasicMaterial({
+            color: shaftColor,
+            transparent: true,
+            opacity: 0.05 + Math.random() * 0.03,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+            fog: false,
+          }),
+        );
+        // Angle them like the key light (coming from upper-right-front).
+        cone.position.set(-3 + i * 2.2, h * 0.5 - 1, -3 - Math.random() * 2);
+        cone.rotation.z = -0.32;
+        cone.rotation.x = 0.12;
+        cone.userData.kind = 'godray';
+        shaftGroup.add(cone);
+      }
+      scene.add(shaftGroup);
+    }
 
     /* ----- fighters ----- */
     function addFighter(cls: string, side: 'hero' | 'foe'): { sprite: THREE.Sprite; light: THREE.PointLight } {
@@ -1170,6 +1324,8 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       renderer = b.renderer;
       composer = b.composer;
       vignettePass = b.vignettePass;
+      bokehPass = b.bokehPass;
+      cinemaGrade = b.cinemaGrade;
       bloom = b.bloomPass;
       rgbShift = b.rgbShift;
       try { mount.removeChild(loadingBg); } catch {}
@@ -1186,16 +1342,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // Replace the existing ground plane (a simple painted disc) with a
       // physically-correct plane so SSR has something to reflect from
       // and GTAO has surface to occlude into.
-      const oldGround = scene.children.find((c) =>
-        (c as any).userData?.kind === 'ground',
-      );
-      if (oldGround) {
-        scene.remove(oldGround);
-        try { (oldGround as any).geometry?.dispose?.(); (oldGround as any).material?.dispose?.(); } catch {}
+      // The scene already mounts a normal-mapped PBR ground (albedo +
+      // procedural normal + roughness maps) that reads well on every
+      // path, so we no longer swap in the backend's plain clearcoat
+      // ground. Just bump its env-map intensity now that real IBL is live.
+      const sceneGround = scene.children.find((c) => (c as any).userData?.kind === 'ground') as THREE.Mesh | undefined;
+      if (sceneGround && (sceneGround.material as any)?.envMapIntensity !== undefined) {
+        (sceneGround.material as THREE.MeshStandardMaterial).envMapIntensity = 0.8;
       }
-      const pbrGround = buildPbrGround(40, pal.ground ?? 0x2a2418);
-      pbrGround.userData.kind = 'ground';
-      scene.add(pbrGround);
 
       hdPanel = mountHDPanel(b, scene, keyLight);
     });
@@ -1551,6 +1705,24 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         const decayRate = 1 / Math.max(0.05, recover);
         bloom.strength += (tuneables.bloomStrength - bloom.strength) * Math.min(1, rawDt * decayRate * 4);
         rgbShift.uniforms['amount'].value += (tuneables.rgbShiftAmount - rgbShift.uniforms['amount'].value) * Math.min(1, rawDt * decayRate * 4);
+      }
+
+      // Cinematic grade: advance the film-grain clock, and drive
+      // saturation down with the choreographer's desaturation (slow-mo
+      // grade) so the grain pass owns the whole look.
+      if (cinemaGrade) {
+        cinemaGrade.uniforms['uTime'].value = now * 0.001;
+        const baseSat = 1.12;
+        cinemaGrade.uniforms['uSat'].value = baseSat * (1 - desaturationAmt * 0.7);
+      }
+      // Depth-of-field follows the live camera→fighter distance so the
+      // fighters stay crisp through every dolly / push-in while the
+      // background melts. BokehPass exposes focus on its materialBokeh
+      // uniforms.
+      if (bokehPass) {
+        const focusDist = Math.max(2, camAnchorRef.current.z);
+        const u = (bokehPass as any).materialBokeh?.uniforms;
+        if (u?.focus) u.focus.value += (focusDist - u.focus.value) * Math.min(1, rawDt * 4);
       }
 
       // Tick rig animation mixers (idle/attack loops). Driven by `dt`
