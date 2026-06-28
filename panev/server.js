@@ -218,6 +218,21 @@ app.use((req, res, next) => {
 // ─────────────────────────────────────────────────────────────
 //  Static files
 // ─────────────────────────────────────────────────────────────
+const fs = require('fs');
+// Transparent WebP content-negotiation: if the client accepts image/webp and a
+// .webp sibling of the requested .png/.jpg exists, serve it instead (≈50% smaller).
+app.use((req, res, next) => {
+  if (/^\/img\/.+\.(png|jpe?g)$/i.test(req.path) &&
+      /image\/webp/.test(req.headers.accept || '')) {
+    const webpRel = req.path.replace(/\.(png|jpe?g)$/i, '.webp');
+    if (fs.existsSync(path.join(__dirname, webpRel))) {
+      res.setHeader('Vary', 'Accept');
+      req.url = webpRel + req.url.slice(req.path.length);
+    }
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname), {
   maxAge: IS_PROD ? '7d' : 0,
   etag: true,

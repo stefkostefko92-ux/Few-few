@@ -144,15 +144,52 @@ async function ensureProductsLoaded() {
   return Products.getAll();
 }
 
+// ── Accessible overlay helpers (focus trap / Esc / restore) ──
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let _lastFocus = null;
+function trapKeydown(container) {
+  return (e) => {
+    if (e.key === 'Tab') {
+      const f = [...container.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  };
+}
+function openOverlay(el, opener) {
+  if (!el) return;
+  _lastFocus = opener || document.activeElement;
+  el._trap = trapKeydown(el);
+  el.addEventListener('keydown', el._trap);
+  const first = el.querySelector(FOCUSABLE);
+  setTimeout(() => (first || el).focus(), 50);
+}
+function closeOverlay(el) {
+  if (!el) return;
+  if (el._trap) { el.removeEventListener('keydown', el._trap); el._trap = null; }
+  if (_lastFocus && typeof _lastFocus.focus === 'function') _lastFocus.focus();
+  _lastFocus = null;
+}
+
 // ── Cart Sidebar toggle ─────────────────────────────────
 function openCart() {
-  document.getElementById('cart-sidebar')?.classList.add('open');
+  const s = document.getElementById('cart-sidebar');
+  s?.classList.add('open');
+  s?.removeAttribute('inert');
+  s?.setAttribute('aria-hidden', 'false');
   document.getElementById('cart-overlay')?.classList.add('on');
   Cart.renderSidebar();
+  openOverlay(s, document.activeElement);
 }
 function closeCart() {
-  document.getElementById('cart-sidebar')?.classList.remove('open');
+  const s = document.getElementById('cart-sidebar');
+  s?.classList.remove('open');
+  s?.setAttribute('inert', '');
+  s?.setAttribute('aria-hidden', 'true');
   document.getElementById('cart-overlay')?.classList.remove('on');
+  closeOverlay(s);
 }
 
 // ── Toast ────────────────────────────────────────────────
@@ -205,16 +242,33 @@ function initNavbar() {
 }
 
 // ── Mobile nav ───────────────────────────────────────────
+function openMobileNav() {
+  const nav = document.getElementById('mobile-nav');
+  if (!nav) return;
+  nav.classList.add('open');
+  nav.removeAttribute('inert');
+  nav.setAttribute('aria-hidden', 'false');
+  openOverlay(nav, document.getElementById('nav-hamburger'));
+}
+function closeMobileNav() {
+  const nav = document.getElementById('mobile-nav');
+  if (!nav) return;
+  nav.classList.remove('open');
+  nav.setAttribute('aria-hidden', 'true');
+  nav.setAttribute('inert', '');           // remove off-canvas links from tab order
+  closeOverlay(nav);
+}
 function initMobileNav() {
   const btn = document.getElementById('nav-hamburger');
   const nav = document.getElementById('mobile-nav');
   const close = document.getElementById('mobile-nav-close');
   if (!btn || !nav) return;
-  btn.addEventListener('click', () => nav.classList.add('open'));
-  close?.addEventListener('click', () => nav.classList.remove('open'));
-  nav.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => nav.classList.remove('open'));
-  });
+  // Closed by default: keep its links out of the tab order until opened.
+  nav.setAttribute('aria-hidden', 'true');
+  nav.setAttribute('inert', '');
+  btn.addEventListener('click', openMobileNav);
+  close?.addEventListener('click', closeMobileNav);
+  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileNav));
 }
 
 // ── Navbar HTML ──────────────────────────────────────────
@@ -460,9 +514,14 @@ function renderFooter() {
 function renderCartSidebar() {
   const s = document.getElementById('cart-sidebar');
   if (!s) return;
+  s.setAttribute('role', 'dialog');
+  s.setAttribute('aria-modal', 'true');
+  s.setAttribute('aria-label', 'Carrello');
+  s.setAttribute('aria-hidden', 'true');
+  s.setAttribute('inert', '');
   s.innerHTML = `
     <div class="cart-sid-head">
-      <h3>Carrello</h3>
+      <h3 tabindex="-1">Carrello</h3>
       <button class="cart-close" onclick="closeCart()" aria-label="Chiudi carrello">✕</button>
     </div>
     <div class="cart-items-list" id="cart-items-list"></div>
@@ -495,4 +554,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('cart-overlay')?.addEventListener('click', closeCart);
+
+  // Global Esc closes whichever overlay is open
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('cart-sidebar')?.classList.contains('open')) closeCart();
+    else if (document.getElementById('mobile-nav')?.classList.contains('open')) closeMobileNav();
+  });
 });
