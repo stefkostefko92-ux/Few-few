@@ -1938,9 +1938,6 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const hudProjVec = new THREE.Vector3();
     // Scratch for the per-frame face-overlay placement (no alloc).
     const faceHeadPos = new THREE.Vector3();
-    const faceHeadQuat = new THREE.Quaternion();
-    const faceScratchScale = new THREE.Vector3();
-    const faceFwd = new THREE.Vector3();
     const faceToCam = new THREE.Vector3();
     const faceX = new THREE.Vector3();
     const faceY = new THREE.Vector3();
@@ -2270,9 +2267,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         if (lb.root) lb.root.rotation.y = lb.rootRestY;
         const phase = (rig as any).userData.lifePhase ?? 0;
         const isHero = rig === heroRigRef.current;
-        // Head turns toward the opponent: hero (rotated +45°) looks right,
-        // foe looks left. Sign chosen so they regard each other.
-        const face = isHero ? 0.18 : -0.18;
+        // Head turns slightly toward the opponent: hero (rotated +45°) looks
+        // right, foe looks left, so they regard each other. Kept subtle — a
+        // big head-look turns the rigid face decal too far from a front camera.
+        const face = isHero ? 0.08 : -0.08;
         applyLifeLayer(lb, nowS, phase, face, playing ? 0.35 : 1.0);
         // Contact shadow follows the rig's x; fades as it leaves the
         // ground (defeat fall) so it doesn't float under a raised body.
@@ -2297,39 +2295,29 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           // so the face rides the head's actual orientation (turns, nods,
           // hit-reactions), using the front/up axes calibrated into the bone's
           // local frame at setup.
-          faceHead.matrixWorld.decompose(faceHeadPos, faceHeadQuat, faceScratchScale);
-          // Head-bone local +Z is the anatomical front (verified: head-local
-          // +Z → world +Z, dot 0.994 in bind). Applying the bone's live world
-          // rotation makes the face follow head turns/nods. Keep the card's UP
-          // as world-up (stable) — the bone's local +Y isn't reliably world-up,
-          // and deriving up from it can roll/degenerate the basis.
-          faceFwd.set(0, 0, 1).applyQuaternion(faceHeadQuat).normalize();
+          faceHeadPos.setFromMatrixPosition(faceHead.matrixWorld);
+          // The fighters' heads are in near-profile (they regard each other
+          // along ±X, ~90° from a front camera), and the runtime head-bone
+          // axes don't reliably resolve a clean "front" through the animated
+          // chain — so any head-locked orientation lands the face side-on, on
+          // the ear, or (with the wrong axis) on the back of the skull. For a
+          // stylised game where the player must actually SEE the faces, we pin
+          // a camera-facing portrait to the camera-facing surface of the head
+          // (Animal-Crossing / Mii style): always frontal, always centred on
+          // the head, never on the ear, never backward, from any camera angle.
           faceToCam.copy(camera.position).sub(faceHeadPos).normalize();
-          // Gate visibility on the RAW head facing (before the camera blend),
-          // so the decal hides when the head genuinely turns its back to us and
-          // can't bleed through the back of the skull.
-          const headFacing = faceFwd.dot(faceToCam);
-          // Partial billboard: follow the head's real orientation (so the face
-          // stays glued to the head through turns/attacks — the old code used
-          // only the body yaw, so during combat the head rotated away and the
-          // face ended up on the ear), but blend part-way toward the camera so
-          // a strong head-look (body yaw + the life-layer "regard opponent"
-          // ≈ 64°) still presents a readable, both-eyes face rather than a
-          // side-on sliver.
-          const FACE_CAM_BLEND = 0.5;
-          faceFwd.lerp(faceToCam, FACE_CAM_BLEND).normalize();
-          // Orthonormal basis: +Z = front, +Y ≈ world up.
-          faceX.copy(faceUp).cross(faceFwd).normalize();
-          faceY.copy(faceFwd).cross(faceX).normalize();
-          // Lift to the real face centre (the head bone sits at the neck base,
-          // ~0.15·model-height below the face panel centre — measured) and push
-          // onto the front surface.
+          // Billboard basis facing the camera, +Y ≈ world up.
+          faceX.copy(faceUp).cross(faceToCam).normalize();
+          faceY.copy(faceToCam).cross(faceX).normalize();
+          // Lift from the neck-base head bone to the head centre, then sit on
+          // the camera-facing surface of the head so it reads as the face.
           faceMesh.position.copy(faceHeadPos)
-            .addScaledVector(faceY, faceR * 1.08)
-            .addScaledVector(faceFwd, faceR * 0.88);
-          faceBasis.makeBasis(faceX, faceY, faceFwd);
+            .addScaledVector(faceUp, faceR * 0.98)
+            .addScaledVector(faceToCam, faceR * 0.72);
+          faceBasis.makeBasis(faceX, faceY, faceToCam);
           faceMesh.quaternion.setFromRotationMatrix(faceBasis);
-          faceMesh.visible = rig.visible && headFacing > -0.15;
+          (faceMesh.material as THREE.MeshStandardMaterial).opacity = 1;
+          faceMesh.visible = rig.visible;
         }
       }
 
