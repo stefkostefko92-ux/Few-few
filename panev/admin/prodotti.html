@@ -23,7 +23,7 @@
 
       <div class="admin-toolbar">
         <div class="toolbar-left">
-          <input type="text" id="prod-search" placeholder="Cerca prodotti…" class="admin-search" oninput="filterProducts()">
+          <input type="text" id="prod-search" aria-label="Cerca prodotti" placeholder="Cerca prodotti…" class="admin-search" oninput="filterProducts()">
           <select id="prod-cat-filter" class="admin-select" onchange="filterProducts()">
             <option value="">Tutte le categorie</option>
           </select>
@@ -54,11 +54,11 @@
       <div class="modal-two-col">
         <div>
           <div class="form-group-admin">
-            <label>Nome Prodotto *</label>
+            <label for="pm-name">Nome Prodotto *</label>
             <input type="text" id="pm-name" placeholder="es. Staffa Porta A 65.170.7" maxlength="200">
           </div>
           <div class="form-group-admin">
-            <label>Categoria *</label>
+            <label for="pm-cat">Categoria *</label>
             <select id="pm-cat">
               <option value="">— Seleziona —</option>
               <option value="Staffe Porte Brevettate">Staffe Porte Brevettate</option>
@@ -68,31 +68,31 @@
             </select>
           </div>
           <div class="form-group-admin">
-            <label>Codice</label>
+            <label for="pm-codice">Codice</label>
             <input type="text" id="pm-codice" placeholder="COD.- A 65 170 7" maxlength="80">
           </div>
           <div class="form-group-admin">
-            <label>Prezzo (€) — 0 per "su richiesta"</label>
+            <label for="pm-price">Prezzo (€) — 0 per "su richiesta"</label>
             <input type="number" id="pm-price" placeholder="0.00" min="0" step="0.01">
           </div>
           <div class="form-group-admin">
-            <label>Etichetta Prezzo</label>
+            <label for="pm-pricelabel">Etichetta Prezzo</label>
             <input type="text" id="pm-pricelabel" placeholder="es. 13,03 € o Su richiesta" maxlength="80">
           </div>
           <div class="form-row-admin">
             <div class="form-group-admin">
-              <label>Badge</label>
+              <label for="pm-badge">Badge</label>
               <input type="text" id="pm-badge" placeholder="es. 🏛 Brevettata" maxlength="80">
             </div>
             <div class="form-group-admin">
-              <label>Icona</label>
+              <label for="pm-icon">Icona</label>
               <input type="text" id="pm-icon" placeholder="🔩" maxlength="4">
             </div>
           </div>
         </div>
         <div>
           <div class="form-group-admin">
-            <label>URL Immagine</label>
+            <label for="pm-image">URL Immagine</label>
             <input type="text" id="pm-image" placeholder="img/staffa-A65-170.png" oninput="previewImage(this.value)" maxlength="300">
             <div id="pm-img-preview" class="img-preview-box">
               <span>Anteprima immagine</span>
@@ -100,21 +100,21 @@
           </div>
           <div class="form-row-admin">
             <div class="form-group-admin">
-              <label>Spessore</label>
+              <label for="pm-spessore">Spessore</label>
               <input type="text" id="pm-spessore" placeholder="5mm" maxlength="30">
             </div>
             <div class="form-group-admin">
-              <label>Larghezza</label>
+              <label for="pm-larghezza">Larghezza</label>
               <input type="text" id="pm-larghezza" placeholder="65mm" maxlength="30">
             </div>
           </div>
           <div class="form-row-admin">
             <div class="form-group-admin">
-              <label>Lunghezza</label>
+              <label for="pm-lunghezza">Lunghezza</label>
               <input type="text" id="pm-lunghezza" placeholder="170mm" maxlength="30">
             </div>
             <div class="form-group-admin">
-              <label>Ordinamento</label>
+              <label for="pm-sort">Ordinamento</label>
               <input type="number" id="pm-sort" placeholder="0" value="0">
             </div>
           </div>
@@ -122,12 +122,12 @@
       </div>
 
       <div class="form-group-admin">
-        <label>Descrizione breve</label>
+        <label for="pm-descrizione">Descrizione breve</label>
         <input type="text" id="pm-descrizione" placeholder="Staffa porte superiore" maxlength="500">
       </div>
 
       <div class="form-group-admin">
-        <label>Descrizione completa</label>
+        <label for="pm-desc">Descrizione completa</label>
         <textarea id="pm-desc" rows="4" placeholder="Descrizione dettagliata del prodotto…" maxlength="2000"></textarea>
       </div>
 
