@@ -416,7 +416,7 @@ function makeFaceTexture(cls: string): FaceMaps {
   dome.addColorStop(0, '#9a9a9a'); dome.addColorStop(1, '#6a6a6a');
   bx.fillStyle = dome; bx.fillRect(0, 0, S, S);
 
-  const eyeY = S * 0.45, eyeDX = S * 0.155, eyeW = S * 0.092, eyeH = S * 0.052;
+  const eyeY = S * 0.42, eyeDX = S * 0.150, eyeW = S * 0.092, eyeH = S * 0.052;
 
   // ---- 2) Eye sockets (recess shadow + bump-dark) ----
   for (const sgn of [-1, 1]) {
@@ -489,7 +489,7 @@ function makeFaceTexture(cls: string): FaceMaps {
   drawBrow(-1); drawBrow(1);
 
   // ---- 5) Nose (bridge highlight, side shadow, tip, nostrils) ----
-  const noseTipY = S * 0.60;
+  const noseTipY = S * 0.56;
   // bridge highlight
   const bridge = ctx.createLinearGradient(cx - S * 0.03, 0, cx + S * 0.03, 0);
   bridge.addColorStop(0, 'rgba(255,240,220,0)');
@@ -516,7 +516,7 @@ function makeFaceTexture(cls: string): FaceMaps {
   bx.fillStyle = '#c9c9c9'; bx.beginPath(); bx.arc(cx, noseTipY - S * 0.005, S * 0.028, 0, 7); bx.fill();
 
   // ---- 6) Lips ----
-  const mouthY = S * 0.71, mw = S * 0.085;
+  const mouthY = S * 0.66, mw = S * 0.085;
   // upper lip (darker)
   ctx.fillStyle = 'rgba(150,86,72,0.7)';
   ctx.beginPath();
@@ -570,11 +570,19 @@ function makeFaceTexture(cls: string): FaceMaps {
     speckle(ctx, S, cx, S * 0.56, S * 0.2, S * 0.06, 'rgba(120,70,40,0.4)', 36); // freckles
   }
 
-  // No feather mask needed — the background is already transparent and the
-  // features sit centred on the head, so edges blend by construction.
+  // Feather the edge: multiply alpha by a radial falloff so the card melts
+  // into the head's own skin instead of showing a hard rectangular cutoff.
+  ctx.globalCompositeOperation = 'destination-in';
+  const vig = ctx.createRadialGradient(cx, S * 0.52, S * 0.20, cx, S * 0.52, S * 0.52);
+  vig.addColorStop(0.0, 'rgba(0,0,0,1)');
+  vig.addColorStop(0.72, 'rgba(0,0,0,1)');
+  vig.addColorStop(1.0, 'rgba(0,0,0,0)');
+  ctx.fillStyle = vig; ctx.fillRect(0, 0, S, S);
+  ctx.globalCompositeOperation = 'source-over';
 
   const map = new THREE.CanvasTexture(cm);
   map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
+  map.generateMipmaps = true; map.minFilter = THREE.LinearMipmapLinearFilter;
   const bump = new THREE.CanvasTexture(cb);
   bump.anisotropy = 4;
   const maps: FaceMaps = { map, bump };
@@ -597,28 +605,44 @@ function speckle(ctx: CanvasRenderingContext2D, _S: number, cx: number, cy: numb
   }
 }
 function paintBeard(ctx: CanvasRenderingContext2D, S: number, cx: number, mouthY: number, light: string, dark: string) {
+  // A full, rounded wizard beard — wide cheeks tapering to a soft point, so it
+  // reads as a beard and not a vertical white strip.
   ctx.fillStyle = light;
   ctx.beginPath();
-  ctx.moveTo(cx - S * 0.17, mouthY - S * 0.10);
-  ctx.quadraticCurveTo(cx, mouthY + S * 0.0, cx + S * 0.17, mouthY - S * 0.10);
-  ctx.quadraticCurveTo(cx + S * 0.19, mouthY + S * 0.18, cx, mouthY + S * 0.30);
-  ctx.quadraticCurveTo(cx - S * 0.19, mouthY + S * 0.18, cx - S * 0.17, mouthY - S * 0.10);
+  ctx.moveTo(cx - S * 0.20, mouthY - S * 0.11);
+  ctx.quadraticCurveTo(cx, mouthY - S * 0.02, cx + S * 0.20, mouthY - S * 0.11);
+  ctx.quadraticCurveTo(cx + S * 0.21, mouthY + S * 0.16, cx + S * 0.07, mouthY + S * 0.24);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.30, cx - S * 0.07, mouthY + S * 0.24);
+  ctx.quadraticCurveTo(cx - S * 0.21, mouthY + S * 0.16, cx - S * 0.20, mouthY - S * 0.11);
   ctx.fill();
-  // strands
-  ctx.strokeStyle = dark; ctx.lineWidth = S * 0.006; ctx.lineCap = 'round';
-  for (let k = -3; k <= 3; k++) {
-    const sx = cx + k * S * 0.022;
-    ctx.beginPath(); ctx.moveTo(sx, mouthY - S * 0.02); ctx.quadraticCurveTo(sx + k * S * 0.004, mouthY + S * 0.14, cx + k * S * 0.012, mouthY + S * 0.27); ctx.stroke();
+  // very soft volume shading (a couple of faint strands, not a hard line)
+  ctx.strokeStyle = dark; ctx.lineWidth = S * 0.004; ctx.lineCap = 'round'; ctx.globalAlpha = 0.5;
+  for (const k of [-2, -1, 1, 2]) {
+    const sx = cx + k * S * 0.05;
+    ctx.beginPath(); ctx.moveTo(sx, mouthY + S * 0.02); ctx.quadraticCurveTo(sx, mouthY + S * 0.15, cx + k * S * 0.02, mouthY + S * 0.22); ctx.stroke();
   }
-  // moustache
+  ctx.globalAlpha = 1;
+  // bushy moustache sweeping out over the mouth corners
   ctx.fillStyle = light;
   ctx.beginPath();
-  ctx.moveTo(cx - S * 0.12, mouthY - S * 0.05);
-  ctx.quadraticCurveTo(cx, mouthY + S * 0.02, cx + S * 0.12, mouthY - S * 0.05);
-  ctx.quadraticCurveTo(cx, mouthY - S * 0.012, cx - S * 0.12, mouthY - S * 0.05);
+  ctx.moveTo(cx - S * 0.14, mouthY - S * 0.055);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.03, cx + S * 0.14, mouthY - S * 0.055);
+  ctx.quadraticCurveTo(cx, mouthY - S * 0.005, cx - S * 0.14, mouthY - S * 0.055);
   ctx.fill();
 }
 
+
+// Head-bone LOCAL anatomical axes for the Quaternius RPG rigs, calibrated from
+// the GLB geometry (identical across warrior/mage/ranger/rogue). At runtime,
+// `v.applyQuaternion(headBoneWorldQuat)` reconstructs the true world direction:
+// FACE_FRONT_LOCAL points out of the nose, FACE_UP_LOCAL to the crown. They
+// bake out the bone's ~6.4° bind-pose tilt so the face sits straight.
+const FACE_FRONT_LOCAL = new THREE.Vector3(0, 0.1121, 0.9937).normalize();
+const FACE_UP_LOCAL = new THREE.Vector3(0, 0.9937, -0.1121).normalize();
+// Orientation tunables for the clamped-bias billboard.
+const FACE_MAX_YAW = THREE.MathUtils.degToRad(55);   // max cheat of the face toward the camera
+const FACE_FADE_FROM = THREE.MathUtils.degToRad(95);  // head this far from camera → start fading
+const FACE_FADE_TO = THREE.MathUtils.degToRad(125);   // …fully gone (camera behind the head)
 
 /** Build the curved face card and parent it to the head bone so it tracks
  *  the head through every clip. side only differs the rim tint upstream. */
@@ -672,12 +696,16 @@ function addFaceOverlay(
   // blend into the head's own skin; bump map adds fine relief; lit by the
   // scene. Facing is gated per-frame so it never shows through the back.
   const mat = new THREE.MeshStandardMaterial({
-    map, bumpMap: bump, bumpScale: headR * 0.25,
-    // Low-intensity self-illumination from the same texture so the painted
-    // features (white beard, irises, lips) keep their colour even when the
-    // sculpted relief tilts a normal toward the cool ground-hemisphere light.
-    emissiveMap: map, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.32,
-    transparent: true, alphaTest: 0.04,
+    // bumpScale is in texture units, NOT world units — headR*0.25 ≈ 0.03 was
+    // practically flat, which is why the relief never read. A fixed ~0.6 gives
+    // real surface relief in the lighting.
+    map, bumpMap: bump, bumpScale: 0.6,
+    // A whisper of self-illumination so the painted features keep their colour
+    // in shadow — but low (0.32 made the sclera / white beard glow unnaturally).
+    emissiveMap: map, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.12,
+    // Feathered alpha edge (see makeFaceTexture) needs a near-zero cutoff so the
+    // soft blend into the head's own skin survives.
+    transparent: true, alphaTest: 0.012,
     roughness: 0.78, metalness: 0.0,
     depthWrite: false, depthTest: false,
   });
@@ -1938,10 +1966,14 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     const hudProjVec = new THREE.Vector3();
     // Scratch for the per-frame face-overlay placement (no alloc).
     const faceHeadPos = new THREE.Vector3();
+    const faceHeadQuat = new THREE.Quaternion();
+    const faceScratchScale = new THREE.Vector3();
+    const faceFront = new THREE.Vector3();
+    const faceHeadUp = new THREE.Vector3();
+    const faceZ = new THREE.Vector3();
     const faceToCam = new THREE.Vector3();
     const faceX = new THREE.Vector3();
     const faceY = new THREE.Vector3();
-    const faceUp = new THREE.Vector3(0, 1, 0);
     const faceBasis = new THREE.Matrix4();
     const mountRect = { w: 0, h: 0 };
     function projectHud(rig: THREE.Object3D | null, bar: HTMLDivElement | null, camera: THREE.PerspectiveCamera) {
@@ -2291,33 +2323,49 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         const faceR = (rig as any).userData.faceR as number | undefined;
         if (faceMesh && faceHead && faceR) {
           faceHead.updateWorldMatrix(true, false);
-          // Take BOTH position and rotation from the head bone's world matrix
-          // so the face rides the head's actual orientation (turns, nods,
-          // hit-reactions), using the front/up axes calibrated into the bone's
-          // local frame at setup.
-          faceHeadPos.setFromMatrixPosition(faceHead.matrixWorld);
-          // The fighters' heads are in near-profile (they regard each other
-          // along ±X, ~90° from a front camera), and the runtime head-bone
-          // axes don't reliably resolve a clean "front" through the animated
-          // chain — so any head-locked orientation lands the face side-on, on
-          // the ear, or (with the wrong axis) on the back of the skull. For a
-          // stylised game where the player must actually SEE the faces, we pin
-          // a camera-facing portrait to the camera-facing surface of the head
-          // (Animal-Crossing / Mii style): always frontal, always centred on
-          // the head, never on the ear, never backward, from any camera angle.
+          faceHead.matrixWorld.decompose(faceHeadPos, faceHeadQuat, faceScratchScale);
+          // The head's TRUE anatomical axes, reconstructed from the bone's live
+          // world rotation via vectors calibrated from the GLB geometry
+          // (FACE_FRONT_LOCAL points out of the nose, FACE_UP_LOCAL to the
+          // crown — verified, identical across all four rigs). This is what
+          // finally anchors the face to the real front of the head.
+          faceFront.copy(FACE_FRONT_LOCAL).applyQuaternion(faceHeadQuat).normalize();
+          faceHeadUp.copy(FACE_UP_LOCAL).applyQuaternion(faceHeadQuat).normalize();
           faceToCam.copy(camera.position).sub(faceHeadPos).normalize();
-          // Billboard basis facing the camera, +Y ≈ world up.
-          faceX.copy(faceUp).cross(faceToCam).normalize();
-          faceY.copy(faceToCam).cross(faceX).normalize();
-          // Lift from the neck-base head bone to the head centre, then sit on
-          // the camera-facing surface of the head so it reads as the face.
-          faceMesh.position.copy(faceHeadPos)
-            .addScaledVector(faceUp, faceR * 0.98)
-            .addScaledVector(faceToCam, faceR * 0.72);
-          faceBasis.makeBasis(faceX, faceY, faceToCam);
-          faceMesh.quaternion.setFromRotationMatrix(faceBasis);
-          (faceMesh.material as THREE.MeshStandardMaterial).opacity = 1;
-          faceMesh.visible = rig.visible;
+          // How far the head is turned away from the camera.
+          const turn = Math.acos(THREE.MathUtils.clamp(faceFront.dot(faceToCam), -1, 1));
+          // Fade out once the camera is roughly behind the head, so the on-top
+          // decal can never show on the back of the skull.
+          const fade = 1 - THREE.MathUtils.clamp((turn - FACE_FADE_FROM) / (FACE_FADE_TO - FACE_FADE_FROM), 0, 1);
+          if (fade <= 0.001) {
+            faceMesh.visible = false;
+          } else {
+            faceMesh.visible = rig.visible;
+            // Resolved forward: start at the head's true front, then rotate
+            // toward the camera but CLAMP the cheat to FACE_MAX_YAW. The
+            // fighters regard each other (heads near-profile to a front camera),
+            // so this keeps the face readable without ever swinging onto the
+            // ear or the back — it stays visibly attached to the head's front.
+            faceZ.copy(faceFront);
+            if (turn > 1e-3) {
+              const t = Math.min(FACE_MAX_YAW, turn) / turn;
+              faceZ.copy(faceFront).lerp(faceToCam, t).normalize();
+            }
+            // Basis: up rides the HEAD's up, so the face nods/tilts WITH the
+            // head (a fixed world-up is what made it "float").
+            faceX.copy(faceHeadUp).cross(faceZ).normalize();
+            if (faceX.lengthSq() < 1e-6) faceX.set(1, 0, 0);
+            faceY.copy(faceZ).cross(faceX).normalize();
+            faceBasis.makeBasis(faceX, faceY, faceZ);
+            faceMesh.quaternion.setFromRotationMatrix(faceBasis);
+            // Position: lift to the head centre along the head's own up, then
+            // out onto the face surface along the RESOLVED forward (not raw
+            // toCam) so it lands on the nose and never slides to the temple.
+            faceMesh.position.copy(faceHeadPos)
+              .addScaledVector(faceHeadUp, faceR * 0.42)
+              .addScaledVector(faceZ, faceR * 0.92);
+            (faceMesh.material as THREE.MeshStandardMaterial).opacity = fade;
+          }
         }
       }
 
