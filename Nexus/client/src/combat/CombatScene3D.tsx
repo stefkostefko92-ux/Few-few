@@ -364,124 +364,259 @@ function applyLifeLayer(lb: LifeBones, nowS: number, phase: number, face: number
 }
 
 /* ------------------------------------------------------------------ */
-/* Detailed face decals — the Quaternius heads are flat low-poly with a  */
-/* near-featureless skin texture. We paint a stylised RPG face (eyes,    */
-/* brows, nose, mouth, per-class extras) to a transparent canvas and     */
-/* overlay it on a curved decal that tracks the Head bone, giving the    */
-/* fighters expressive faces without new geometry.                       */
+/* Realistic face — the Quaternius heads are ~12-triangle, near-feature- */
+/* less low-poly. We can't swap in a high-poly real-human rig here       */
+/* (Mixamo/Ready-Player-Me are auth/policy-gated), so we give each       */
+/* fighter REAL facial geometry the other way: a sculpted, bump-mapped    */
+/* face card (own colour + height texture) carrying a painted-realistic   */
+/* skin face — eyes with shaded irises, a relief nose, lips, cheek/jaw    */
+/* shading, per-class detail — re-parented in world space to the head    */
+/* bone so it rides every clip. Lit by the scene; feathered edges blend   */
+/* into the head's own skin so it reads as the face, not a sticker.       */
 /* ------------------------------------------------------------------ */
-const _faceTexCache = new Map<string, THREE.CanvasTexture>();
-function makeFaceTexture(cls: string): THREE.CanvasTexture {
-  const cached = _faceTexCache.get(cls);
+interface FaceMaps { map: THREE.CanvasTexture; bump: THREE.CanvasTexture; }
+const _faceMapCache = new Map<string, FaceMaps>();
+
+interface SkinTone { base: string; hi: string; sh: string; }
+const SKIN: Record<string, SkinTone> = {
+  warrior: { base: '#d9ab7e', hi: '#eecb9e', sh: '#ab7a50' },
+  ranger:  { base: '#d2a06f', hi: '#e8bf8c', sh: '#a37246' },
+  mage:    { base: '#e0b78f', hi: '#f2d2aa', sh: '#b98a61' },
+  rogue:   { base: '#cf9d6f', hi: '#e4ba88', sh: '#9f7146' },
+};
+
+function makeFaceTexture(cls: string): FaceMaps {
+  const cached = _faceMapCache.get(cls);
   if (cached) return cached;
   const S = 512;
-  const c = document.createElement('canvas');
-  c.width = c.height = S;
-  const ctx = c.getContext('2d')!;
+  const cm = document.createElement('canvas'); cm.width = cm.height = S;
+  const cb = document.createElement('canvas'); cb.width = cb.height = S;
+  const ctx = cm.getContext('2d')!;
+  const bx = cb.getContext('2d')!;
   ctx.clearRect(0, 0, S, S);
+  bx.fillStyle = '#808080'; bx.fillRect(0, 0, S, S); // bump mid-grey = flat
 
-  // Per-class look.
-  const iris: Record<string, string> = { warrior: '#5b3a1e', ranger: '#2f6b3a', mage: '#3a5e8c', rogue: '#6a2f2f' };
-  const browCol: Record<string, string> = { warrior: '#3a2410', ranger: '#4a3415', mage: '#cfcfcf', rogue: '#221812' };
-  const irisCol = iris[cls] || '#4a3a2a';
-  const brow = browCol[cls] || '#2a1c10';
+  const skin = SKIN[cls] || SKIN.warrior;
+  const irisC: Record<string, string> = { warrior: '#5b3a1e', ranger: '#2f6b3a', mage: '#3a5e8c', rogue: '#4a2a20' };
+  const browC: Record<string, string> = { warrior: '#3a2410', ranger: '#4a3415', mage: '#dadada', rogue: '#1c130d' };
+  const iris = irisC[cls] || '#4a3a2a';
+  const brow = browC[cls] || '#2a1c10';
 
-  const eye = (cx: number, cy: number, w: number, h: number, look: number) => {
-    // Sclera
-    ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, w, h, 0, 0, Math.PI * 2);
-    ctx.fillStyle = '#f4efe6'; ctx.fill();
-    ctx.clip();
-    // Iris + pupil, shifted by `look` toward the opponent.
-    const ix = cx + look;
-    ctx.beginPath(); ctx.arc(ix, cy + 2, h * 0.92, 0, Math.PI * 2);
-    ctx.fillStyle = irisCol; ctx.fill();
-    ctx.beginPath(); ctx.arc(ix, cy + 2, h * 0.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#100c08'; ctx.fill();
-    // Catch-light highlight
-    ctx.beginPath(); ctx.arc(ix - h * 0.3, cy - h * 0.2, h * 0.22, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fill();
-    ctx.restore();
-    // Upper lid line + lash
-    ctx.strokeStyle = 'rgba(40,28,18,.85)'; ctx.lineWidth = S * 0.012;
-    ctx.beginPath(); ctx.ellipse(cx, cy, w, h, 0, Math.PI * 1.02, Math.PI * 1.98); ctx.stroke();
-    // Lower lid soft line
-    ctx.strokeStyle = 'rgba(120,90,70,.4)'; ctx.lineWidth = S * 0.006;
-    ctx.beginPath(); ctx.ellipse(cx, cy, w * 0.9, h * 0.9, 0, Math.PI * 0.1, Math.PI * 0.9); ctx.stroke();
-  };
+  const cx = S * 0.5;
+  void skin; // skin tone no longer painted as a base — features blend onto the head's own skin
 
-  // Eyes (centred on the upper-middle of the decal). Look slightly to the
-  // side as if regarding the opponent.
-  const eyeY = S * 0.42, eyeDX = S * 0.16, eyeW = S * 0.085, eyeH = S * 0.06;
-  eye(S * 0.5 - eyeDX, eyeY, eyeW, eyeH, S * 0.02);
-  eye(S * 0.5 + eyeDX, eyeY, eyeW, eyeH, S * 0.02);
+  // No skin base: the card is TRANSPARENT and we paint only realistic
+  // features (shaded eyes, brows, relief nose, lips) plus soft low-alpha
+  // shadow/highlight that MULTIPLY onto the head's own skin. This avoids a
+  // mismatched skin disc and blends perfectly on every class. Subtle nose-
+  // bridge + brow highlight and cheek warmth come later in their sections.
 
-  // Eyebrows — angled for a determined expression.
-  ctx.strokeStyle = brow; ctx.lineWidth = S * 0.026; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(S * 0.5 - eyeDX - eyeW, eyeY - eyeH * 1.9);
-  ctx.lineTo(S * 0.5 - eyeDX + eyeW, eyeY - eyeH * 2.4);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(S * 0.5 + eyeDX + eyeW, eyeY - eyeH * 1.9);
-  ctx.lineTo(S * 0.5 + eyeDX - eyeW, eyeY - eyeH * 2.4);
-  ctx.stroke();
+  // ---- bump: overall dome + cheeks raised, temples lower ----
+  const dome = bx.createRadialGradient(cx, S * 0.5, S * 0.05, cx, S * 0.5, S * 0.5);
+  dome.addColorStop(0, '#9a9a9a'); dome.addColorStop(1, '#6a6a6a');
+  bx.fillStyle = dome; bx.fillRect(0, 0, S, S);
 
-  // Nose — soft shadow + nostril hints.
-  ctx.strokeStyle = 'rgba(90,60,40,.35)'; ctx.lineWidth = S * 0.01;
-  ctx.beginPath(); ctx.moveTo(S * 0.5 - S * 0.012, eyeY + eyeH); ctx.lineTo(S * 0.5 - S * 0.022, S * 0.56); ctx.stroke();
-  ctx.fillStyle = 'rgba(70,45,30,.3)';
-  ctx.beginPath(); ctx.ellipse(S * 0.5 - S * 0.03, S * 0.575, S * 0.012, S * 0.008, 0, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(S * 0.5 + S * 0.03, S * 0.575, S * 0.012, S * 0.008, 0, 0, 7); ctx.fill();
+  const eyeY = S * 0.45, eyeDX = S * 0.155, eyeW = S * 0.092, eyeH = S * 0.052;
 
-  // Mouth — neutral-stern.
-  ctx.strokeStyle = 'rgba(110,55,45,.7)'; ctx.lineWidth = S * 0.016; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(S * 0.5 - S * 0.07, S * 0.66);
-  ctx.quadraticCurveTo(S * 0.5, S * 0.675, S * 0.5 + S * 0.07, S * 0.66);
-  ctx.stroke();
-
-  // Per-class face hair.
-  if (cls === 'mage') {
-    // Full white wizard beard + moustache.
-    ctx.fillStyle = 'rgba(238,238,236,.96)';
-    ctx.beginPath();
-    ctx.moveTo(S * 0.28, S * 0.60);
-    ctx.quadraticCurveTo(S * 0.5, S * 0.70, S * 0.72, S * 0.60);
-    ctx.quadraticCurveTo(S * 0.74, S * 0.86, S * 0.5, S * 0.99);
-    ctx.quadraticCurveTo(S * 0.26, S * 0.86, S * 0.28, S * 0.60);
-    ctx.fill();
-    // soft shading down the beard
-    ctx.strokeStyle = 'rgba(180,180,182,.5)'; ctx.lineWidth = S * 0.008; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(S * 0.5, S * 0.66); ctx.lineTo(S * 0.5, S * 0.95); ctx.stroke();
-    // bushy moustache over the mouth
-    ctx.fillStyle = 'rgba(242,242,240,.96)';
-    ctx.beginPath();
-    ctx.moveTo(S * 0.5 - S * 0.13, S * 0.605);
-    ctx.quadraticCurveTo(S * 0.5, S * 0.70, S * 0.5 + S * 0.13, S * 0.605);
-    ctx.quadraticCurveTo(S * 0.5, S * 0.645, S * 0.5 - S * 0.13, S * 0.605);
-    ctx.fill();
-  } else if (cls === 'warrior') {
-    // Light stubble shadow on the jaw.
-    ctx.fillStyle = 'rgba(40,28,18,.18)';
-    ctx.beginPath();
-    ctx.moveTo(S * 0.36, S * 0.6);
-    ctx.quadraticCurveTo(S * 0.5, S * 0.78, S * 0.64, S * 0.6);
-    ctx.quadraticCurveTo(S * 0.62, S * 0.74, S * 0.5, S * 0.8);
-    ctx.quadraticCurveTo(S * 0.38, S * 0.74, S * 0.36, S * 0.6);
-    ctx.fill();
-  } else if (cls === 'rogue') {
-    // Subtle scar across one brow.
-    ctx.strokeStyle = 'rgba(150,90,80,.5)'; ctx.lineWidth = S * 0.008;
-    ctx.beginPath(); ctx.moveTo(S * 0.5 + eyeDX, eyeY - eyeH * 3); ctx.lineTo(S * 0.5 + eyeDX + S * 0.01, eyeY + eyeH); ctx.stroke();
+  // ---- 2) Eye sockets (recess shadow + bump-dark) ----
+  for (const sgn of [-1, 1]) {
+    const ex = cx + sgn * eyeDX;
+    const og = ctx.createRadialGradient(ex, eyeY, eyeH * 0.4, ex, eyeY, eyeW * 1.7);
+    og.addColorStop(0, 'rgba(60,38,24,0.0)');
+    og.addColorStop(1, 'rgba(55,32,20,0.30)');
+    ctx.fillStyle = og;
+    ctx.beginPath(); ctx.ellipse(ex, eyeY + eyeH * 0.2, eyeW * 1.7, eyeH * 1.9, 0, 0, 7); ctx.fill();
+    const ob = bx.createRadialGradient(ex, eyeY, eyeH * 0.4, ex, eyeY, eyeW * 1.5);
+    ob.addColorStop(0, '#4f4f4f'); ob.addColorStop(1, 'rgba(127,127,127,0)');
+    bx.fillStyle = ob; bx.beginPath(); bx.ellipse(ex, eyeY, eyeW * 1.5, eyeH * 1.6, 0, 0, 7); bx.fill();
   }
 
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  _faceTexCache.set(cls, t);
-  return t;
+  // ---- 3) Eyes ----
+  const drawEye = (ex: number, look: number) => {
+    // sclera
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(ex, eyeY, eyeW, eyeH, 0, 0, 7); ctx.clip();
+    const sc = ctx.createLinearGradient(0, eyeY - eyeH, 0, eyeY + eyeH);
+    sc.addColorStop(0, '#d9d2c4'); sc.addColorStop(0.4, '#f3eee4'); sc.addColorStop(1, '#e7dccb');
+    ctx.fillStyle = sc; ctx.fillRect(ex - eyeW, eyeY - eyeH, eyeW * 2, eyeH * 2);
+    // iris
+    const ix = ex + look, iy = eyeY + eyeH * 0.05, ir = eyeH * 1.02;
+    const ig = ctx.createRadialGradient(ix - ir * 0.2, iy - ir * 0.2, ir * 0.1, ix, iy, ir);
+    ig.addColorStop(0, lighten(iris, 0.35));
+    ig.addColorStop(0.55, iris);
+    ig.addColorStop(1, darken(iris, 0.4));
+    ctx.fillStyle = ig; ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 7); ctx.fill();
+    // limbal ring
+    ctx.strokeStyle = 'rgba(20,14,8,0.55)'; ctx.lineWidth = S * 0.006;
+    ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 7); ctx.stroke();
+    // pupil
+    ctx.fillStyle = '#0b0805'; ctx.beginPath(); ctx.arc(ix, iy, ir * 0.46, 0, 7); ctx.fill();
+    // catch-light
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.beginPath(); ctx.arc(ix - ir * 0.32, iy - ir * 0.34, ir * 0.2, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath(); ctx.arc(ix + ir * 0.25, iy + ir * 0.2, ir * 0.1, 0, 7); ctx.fill();
+    ctx.restore();
+    // upper lid line + lashes (thick, dark)
+    ctx.strokeStyle = 'rgba(28,18,10,0.9)'; ctx.lineWidth = S * 0.014; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.ellipse(ex, eyeY, eyeW, eyeH, 0, Math.PI * 1.0, Math.PI * 2.0); ctx.stroke();
+    // upper-lid crease
+    ctx.strokeStyle = 'rgba(90,58,38,0.35)'; ctx.lineWidth = S * 0.006;
+    ctx.beginPath(); ctx.ellipse(ex, eyeY - eyeH * 0.7, eyeW * 1.05, eyeH * 0.9, 0, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+    // lower lid
+    ctx.strokeStyle = 'rgba(120,86,62,0.4)'; ctx.lineWidth = S * 0.005;
+    ctx.beginPath(); ctx.ellipse(ex, eyeY, eyeW * 0.92, eyeH * 0.92, 0, Math.PI * 0.08, Math.PI * 0.92); ctx.stroke();
+  };
+  drawEye(cx - eyeDX, S * 0.012); drawEye(cx + eyeDX, S * 0.012);
+
+  // ---- 4) Brows (filled + hair strokes) ----
+  const browY = eyeY - eyeH * 2.05;
+  const drawBrow = (sgn: number) => {
+    const x0 = cx + sgn * (eyeDX - eyeW * 0.9), x1 = cx + sgn * (eyeDX + eyeW * 1.05);
+    ctx.strokeStyle = brow; ctx.lineWidth = S * 0.028; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x0, browY + eyeH * 0.35); ctx.quadraticCurveTo((x0 + x1) / 2, browY - eyeH * 0.35, x1, browY - eyeH * 0.05); ctx.stroke();
+    // hair strokes
+    ctx.lineWidth = S * 0.004;
+    for (let k = 0; k < 7; k++) {
+      const tt = k / 6, hx = x0 + (x1 - x0) * tt;
+      const hy = browY + eyeH * 0.35 + (-(eyeH * 0.7) * Math.sin(Math.PI * tt));
+      ctx.beginPath(); ctx.moveTo(hx, hy + eyeH * 0.18); ctx.lineTo(hx + sgn * eyeH * 0.12, hy - eyeH * 0.28); ctx.stroke();
+    }
+    // bump ridge
+    bx.strokeStyle = '#b8b8b8'; bx.lineWidth = S * 0.03; bx.lineCap = 'round';
+    bx.beginPath(); bx.moveTo(x0, browY + eyeH * 0.2); bx.quadraticCurveTo((x0 + x1) / 2, browY - eyeH * 0.4, x1, browY - eyeH * 0.1); bx.stroke();
+  };
+  drawBrow(-1); drawBrow(1);
+
+  // ---- 5) Nose (bridge highlight, side shadow, tip, nostrils) ----
+  const noseTipY = S * 0.60;
+  // bridge highlight
+  const bridge = ctx.createLinearGradient(cx - S * 0.03, 0, cx + S * 0.03, 0);
+  bridge.addColorStop(0, 'rgba(255,240,220,0)');
+  bridge.addColorStop(0.5, 'rgba(255,243,224,0.4)');
+  bridge.addColorStop(1, 'rgba(255,240,220,0)');
+  ctx.fillStyle = bridge; ctx.fillRect(cx - S * 0.04, browY, S * 0.08, noseTipY - browY);
+  // side shadows
+  ctx.strokeStyle = 'rgba(120,78,50,0.28)'; ctx.lineWidth = S * 0.018; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx - S * 0.028, browY + eyeH * 0.6); ctx.quadraticCurveTo(cx - S * 0.05, S * 0.55, cx - S * 0.045, noseTipY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + S * 0.028, browY + eyeH * 0.6); ctx.quadraticCurveTo(cx + S * 0.05, S * 0.55, cx + S * 0.045, noseTipY); ctx.stroke();
+  // tip highlight
+  ctx.fillStyle = 'rgba(255,244,226,0.35)';
+  ctx.beginPath(); ctx.ellipse(cx, noseTipY - S * 0.01, S * 0.03, S * 0.022, 0, 0, 7); ctx.fill();
+  // nostrils
+  ctx.fillStyle = 'rgba(50,28,16,0.5)';
+  ctx.beginPath(); ctx.ellipse(cx - S * 0.034, noseTipY + S * 0.006, S * 0.013, S * 0.009, 0.3, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx + S * 0.034, noseTipY + S * 0.006, S * 0.013, S * 0.009, -0.3, 0, 7); ctx.fill();
+  // base shadow
+  ctx.strokeStyle = 'rgba(110,70,46,0.22)'; ctx.lineWidth = S * 0.008;
+  ctx.beginPath(); ctx.moveTo(cx - S * 0.04, noseTipY + S * 0.012); ctx.quadraticCurveTo(cx, noseTipY + S * 0.03, cx + S * 0.04, noseTipY + S * 0.012); ctx.stroke();
+  // nose bump ridge
+  bx.strokeStyle = '#c4c4c4'; bx.lineWidth = S * 0.03; bx.lineCap = 'round';
+  bx.beginPath(); bx.moveTo(cx, browY); bx.lineTo(cx, noseTipY - S * 0.01); bx.stroke();
+  bx.fillStyle = '#c9c9c9'; bx.beginPath(); bx.arc(cx, noseTipY - S * 0.005, S * 0.028, 0, 7); bx.fill();
+
+  // ---- 6) Lips ----
+  const mouthY = S * 0.71, mw = S * 0.085;
+  // upper lip (darker)
+  ctx.fillStyle = 'rgba(150,86,72,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(cx - mw, mouthY);
+  ctx.quadraticCurveTo(cx - mw * 0.5, mouthY - S * 0.018, cx, mouthY - S * 0.006);
+  ctx.quadraticCurveTo(cx + mw * 0.5, mouthY - S * 0.018, cx + mw, mouthY);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.01, cx - mw, mouthY);
+  ctx.fill();
+  // lower lip (fuller, highlight)
+  ctx.fillStyle = 'rgba(176,104,88,0.72)';
+  ctx.beginPath();
+  ctx.moveTo(cx - mw * 0.92, mouthY + S * 0.004);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.032, cx + mw * 0.92, mouthY + S * 0.004);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.018, cx - mw * 0.92, mouthY + S * 0.004);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,225,210,0.3)';
+  ctx.beginPath(); ctx.ellipse(cx, mouthY + S * 0.016, mw * 0.4, S * 0.006, 0, 0, 7); ctx.fill();
+  // mouth line
+  ctx.strokeStyle = 'rgba(90,46,38,0.6)'; ctx.lineWidth = S * 0.006; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx - mw, mouthY); ctx.quadraticCurveTo(cx, mouthY + S * 0.006, cx + mw, mouthY); ctx.stroke();
+  // lip bump
+  bx.fillStyle = '#9a9a9a';
+  bx.beginPath(); bx.ellipse(cx, mouthY + S * 0.006, mw, S * 0.026, 0, 0, 7); bx.fill();
+
+  // subtle cheek warmth
+  for (const sgn of [-1, 1]) {
+    const chg = ctx.createRadialGradient(cx + sgn * S * 0.18, S * 0.62, S * 0.01, cx + sgn * S * 0.18, S * 0.62, S * 0.12);
+    chg.addColorStop(0, 'rgba(200,110,90,0.12)'); chg.addColorStop(1, 'rgba(200,110,90,0)');
+    ctx.fillStyle = chg; ctx.fillRect(0, 0, S, S);
+  }
+
+  // ---- 7) Per-class ----
+  if (cls === 'mage') {
+    paintBeard(ctx, S, cx, mouthY, '#f6f5f1', '#d2d2cf');
+  } else if (cls === 'warrior') {
+    // stubble shadow on jaw/chin
+    ctx.save(); ctx.globalAlpha = 0.16; ctx.fillStyle = '#2a1c10';
+    ctx.beginPath();
+    ctx.moveTo(cx - S * 0.15, S * 0.66);
+    ctx.quadraticCurveTo(cx, S * 0.86, cx + S * 0.15, S * 0.66);
+    ctx.quadraticCurveTo(cx, S * 0.8, cx - S * 0.15, S * 0.66);
+    ctx.fill(); ctx.restore();
+    speckle(ctx, S, cx, S * 0.78, S * 0.15, S * 0.07, 'rgba(30,20,12,0.5)', 90);
+  } else if (cls === 'rogue') {
+    // scar across the right brow + leaner shading
+    ctx.strokeStyle = 'rgba(150,96,84,0.6)'; ctx.lineWidth = S * 0.009; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx + eyeDX + eyeW * 0.3, browY - eyeH * 0.6); ctx.lineTo(cx + eyeDX - eyeW * 0.1, eyeY + eyeH * 0.6); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,235,225,0.25)'; ctx.lineWidth = S * 0.004;
+    ctx.beginPath(); ctx.moveTo(cx + eyeDX + eyeW * 0.34, browY - eyeH * 0.5); ctx.lineTo(cx + eyeDX - eyeW * 0.06, eyeY + eyeH * 0.5); ctx.stroke();
+  } else if (cls === 'ranger') {
+    speckle(ctx, S, cx, S * 0.56, S * 0.2, S * 0.06, 'rgba(120,70,40,0.4)', 36); // freckles
+  }
+
+  // No feather mask needed — the background is already transparent and the
+  // features sit centred on the head, so edges blend by construction.
+
+  const map = new THREE.CanvasTexture(cm);
+  map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
+  const bump = new THREE.CanvasTexture(cb);
+  bump.anisotropy = 4;
+  const maps: FaceMaps = { map, bump };
+  _faceMapCache.set(cls, maps);
+  return maps;
+}
+
+function lighten(hex: string, amt: number): string {
+  const c = new THREE.Color(hex); c.lerp(new THREE.Color('#ffffff'), amt); return '#' + c.getHexString();
+}
+function darken(hex: string, amt: number): string {
+  const c = new THREE.Color(hex); c.lerp(new THREE.Color('#000000'), amt); return '#' + c.getHexString();
+}
+function speckle(ctx: CanvasRenderingContext2D, _S: number, cx: number, cy: number, rx: number, ry: number, col: string, n: number) {
+  ctx.fillStyle = col;
+  for (let i = 0; i < n; i++) {
+    const a = (i * 2.399963), r = Math.sqrt((i + 1) / n);
+    const px = cx + Math.cos(a) * rx * r, py = cy + Math.sin(a) * ry * r;
+    ctx.beginPath(); ctx.arc(px, py, _S * 0.0035, 0, 7); ctx.fill();
+  }
+}
+function paintBeard(ctx: CanvasRenderingContext2D, S: number, cx: number, mouthY: number, light: string, dark: string) {
+  ctx.fillStyle = light;
+  ctx.beginPath();
+  ctx.moveTo(cx - S * 0.17, mouthY - S * 0.10);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.0, cx + S * 0.17, mouthY - S * 0.10);
+  ctx.quadraticCurveTo(cx + S * 0.19, mouthY + S * 0.18, cx, mouthY + S * 0.30);
+  ctx.quadraticCurveTo(cx - S * 0.19, mouthY + S * 0.18, cx - S * 0.17, mouthY - S * 0.10);
+  ctx.fill();
+  // strands
+  ctx.strokeStyle = dark; ctx.lineWidth = S * 0.006; ctx.lineCap = 'round';
+  for (let k = -3; k <= 3; k++) {
+    const sx = cx + k * S * 0.022;
+    ctx.beginPath(); ctx.moveTo(sx, mouthY - S * 0.02); ctx.quadraticCurveTo(sx + k * S * 0.004, mouthY + S * 0.14, cx + k * S * 0.012, mouthY + S * 0.27); ctx.stroke();
+  }
+  // moustache
+  ctx.fillStyle = light;
+  ctx.beginPath();
+  ctx.moveTo(cx - S * 0.12, mouthY - S * 0.05);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.02, cx + S * 0.12, mouthY - S * 0.05);
+  ctx.quadraticCurveTo(cx, mouthY - S * 0.012, cx - S * 0.12, mouthY - S * 0.05);
+  ctx.fill();
 }
 
 
@@ -503,26 +638,47 @@ function addFaceOverlay(
   const size = new THREE.Vector3(); box.getSize(size);
   const headR = Math.max(0.12, size.y * 0.072); // world-space head half-width
 
-  // Curved card sized to the face panel of the head, gently bulged so it
-  // hugs the rounded skull instead of reading as a flat sticker.
-  const geo = new THREE.PlaneGeometry(headR * 1.55, headR * 1.75, 12, 12);
+  // Sculpted face card: a dense plane with real anatomical relief (dome,
+  // brow ridge, nose, eye sockets, cheeks, jaw taper) so it lights as a 3D
+  // face, not a flat sticker. The relief drives the normals.
+  const halfW = (headR * 1.55) / 2, halfH = (headR * 1.75) / 2;
+  const geo = new THREE.PlaneGeometry(headR * 1.55, headR * 1.75, 36, 36);
   const pos = geo.attributes.position as THREE.BufferAttribute;
-  const halfW = headR * 0.8;
+  const gauss = (v: number, mu: number, sig: number) => Math.exp(-((v - mu) * (v - mu)) / (2 * sig * sig));
   for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), y = pos.getY(i);
-    const r2 = (x * x + y * y) / (halfW * halfW);
-    pos.setZ(i, r2 * headR * 0.32); // mild bulge toward +Z (the face front)
+    const xn = pos.getX(i) / halfW;            // [-1,1] left→right
+    const yn = pos.getY(i) / halfH;            // [-1,1] bottom→top
+    // base dome — recedes toward the edges
+    let z = (1 - Math.min(1, xn * xn * 0.95 + yn * yn * 0.78)) * headR * 0.30;
+    // brow ridge (just above the eye line)
+    z += gauss(yn, 0.30, 0.10) * Math.max(0, 1 - Math.abs(xn) / 0.75) * headR * 0.10;
+    // nose ridge down the centre, swelling at the tip
+    const noseX = gauss(xn, 0, 0.11);
+    z += noseX * gauss(yn, 0.0, 0.26) * headR * 0.20;
+    z += gauss(xn, 0, 0.10) * gauss(yn, -0.20, 0.08) * headR * 0.10; // tip
+    // eye sockets — recess
+    for (const sgn of [-1, 1]) z -= gauss(xn, sgn * 0.34, 0.13) * gauss(yn, 0.12, 0.10) * headR * 0.07;
+    // cheeks
+    for (const sgn of [-1, 1]) z += gauss(xn, sgn * 0.5, 0.18) * gauss(yn, -0.12, 0.22) * headR * 0.05;
+    // jaw taper (gently pull the bottom corners back)
+    z -= Math.max(0, -yn - 0.55) * (xn * xn) * headR * 0.22;
+    pos.setZ(i, z);
   }
   geo.computeVertexNormals();
 
-  const tex = makeFaceTexture(cls);
+  const { map, bump } = makeFaceTexture(cls);
   // True decal: drawn on top of the head (depthTest off) so no part is buried
-  // in the low-poly skull. Transparent everywhere but the features. Lit by the
-  // scene so it doesn't read as flat. Facing is gated per-frame so it never
-  // shows through the back of the head.
+  // in the low-poly skull. Skin-toned centre with feathered alpha edges that
+  // blend into the head's own skin; bump map adds fine relief; lit by the
+  // scene. Facing is gated per-frame so it never shows through the back.
   const mat = new THREE.MeshStandardMaterial({
-    map: tex, transparent: true, alphaTest: 0.02,
-    roughness: 0.85, metalness: 0.0,
+    map, bumpMap: bump, bumpScale: headR * 0.25,
+    // Low-intensity self-illumination from the same texture so the painted
+    // features (white beard, irises, lips) keep their colour even when the
+    // sculpted relief tilts a normal toward the cool ground-hemisphere light.
+    emissiveMap: map, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.32,
+    transparent: true, alphaTest: 0.04,
+    roughness: 0.78, metalness: 0.0,
     depthWrite: false, depthTest: false,
   });
   const face = new THREE.Mesh(geo, mat);
