@@ -2487,6 +2487,11 @@
         {
           "date": "2026-06-28",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Quaternius RPG GLB риговете (warrior/mage/ranger/rogue) споделят един скелет; joints[7]…\" (+1)"
+        },
+        {
+          "date": "2026-06-28",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „Quaternius RPG glTF риговете (warrior/mage/ranger/rogue) имат анатомичен фронт на глава…\" (+2)"
         },
         {
