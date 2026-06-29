@@ -639,10 +639,10 @@ function paintBeard(ctx: CanvasRenderingContext2D, S: number, cx: number, mouthY
 // bake out the bone's ~6.4° bind-pose tilt so the face sits straight.
 const FACE_FRONT_LOCAL = new THREE.Vector3(0, 0.1121, 0.9937).normalize();
 const FACE_UP_LOCAL = new THREE.Vector3(0, 0.9937, -0.1121).normalize();
-// Orientation tunables for the clamped-bias billboard.
-const FACE_MAX_YAW = THREE.MathUtils.degToRad(55);   // max cheat of the face toward the camera
-const FACE_FADE_FROM = THREE.MathUtils.degToRad(95);  // head this far from camera → start fading
-const FACE_FADE_TO = THREE.MathUtils.degToRad(125);   // …fully gone (camera behind the head)
+// The face is a camera-facing portrait centred on the head; faceFront (the
+// head's true front) is used only to fade it out when the head turns its back.
+const FACE_FADE_FROM = THREE.MathUtils.degToRad(100); // head this far from camera → start fading
+const FACE_FADE_TO = THREE.MathUtils.degToRad(135);   // …fully gone (camera behind the head)
 
 /** Build the curved face card and parent it to the head bone so it tracks
  *  the head through every clip. side only differs the rim tint upstream. */
@@ -2341,29 +2341,26 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
             faceMesh.visible = false;
           } else {
             faceMesh.visible = rig.visible;
-            // Resolved forward: start at the head's true front, then rotate
-            // toward the camera but CLAMP the cheat to FACE_MAX_YAW. The
-            // fighters regard each other (heads near-profile to a front camera),
-            // so this keeps the face readable without ever swinging onto the
-            // ear or the back — it stays visibly attached to the head's front.
-            faceZ.copy(faceFront);
-            if (turn > 1e-3) {
-              const t = Math.min(FACE_MAX_YAW, turn) / turn;
-              faceZ.copy(faceFront).lerp(faceToCam, t).normalize();
-            }
-            // Basis: up rides the HEAD's up, so the face nods/tilts WITH the
-            // head (a fixed world-up is what made it "float").
+            // CAMERA BILLBOARD, CENTRED ON THE HEAD. The fighters' heads are in
+            // near-profile (they face each other), and the camera-facing SIDE
+            // of a profile head is the cheek/ear — so anything that pushes the
+            // face toward the head's camera-facing surface lands on the ear.
+            // Instead we centre a camera-facing portrait on the head silhouette
+            // (covers the middle, never the edge/ear) and only push it a hair
+            // toward the camera so it sits just proud of the skull. The head's
+            // true front (faceFront) is used solely for the back-of-head fade.
+            faceZ.copy(faceToCam);
             faceX.copy(faceHeadUp).cross(faceZ).normalize();
             if (faceX.lengthSq() < 1e-6) faceX.set(1, 0, 0);
             faceY.copy(faceZ).cross(faceX).normalize();
             faceBasis.makeBasis(faceX, faceY, faceZ);
             faceMesh.quaternion.setFromRotationMatrix(faceBasis);
-            // Position: lift to the head centre along the head's own up, then
-            // out onto the face surface along the RESOLVED forward (not raw
-            // toCam) so it lands on the nose and never slides to the temple.
+            // Lift along the head's own up to the head centre, plus a small
+            // nudge toward the camera — NOT a big forward offset (that's what
+            // walked it onto the ear).
             faceMesh.position.copy(faceHeadPos)
-              .addScaledVector(faceHeadUp, faceR * 0.42)
-              .addScaledVector(faceZ, faceR * 0.92);
+              .addScaledVector(faceHeadUp, faceR * 0.72)
+              .addScaledVector(faceToCam, faceR * 0.30);
             (faceMesh.material as THREE.MeshStandardMaterial).opacity = fade;
           }
         }
