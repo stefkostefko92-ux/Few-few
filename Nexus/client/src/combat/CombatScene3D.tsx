@@ -639,10 +639,11 @@ function paintBeard(ctx: CanvasRenderingContext2D, S: number, cx: number, mouthY
 // bake out the bone's ~6.4° bind-pose tilt so the face sits straight.
 const FACE_FRONT_LOCAL = new THREE.Vector3(0, 0.1121, 0.9937).normalize();
 const FACE_UP_LOCAL = new THREE.Vector3(0, 0.9937, -0.1121).normalize();
-// The face is a camera-facing portrait centred on the head; faceFront (the
-// head's true front) is used only to fade it out when the head turns its back.
-const FACE_FADE_FROM = THREE.MathUtils.degToRad(100); // head this far from camera → start fading
-const FACE_FADE_TO = THREE.MathUtils.degToRad(135);   // …fully gone (camera behind the head)
+const FACE_Y_AXIS = new THREE.Vector3(0, 1, 0);
+// Head-look-at-camera: the bodies face each other, so we gently turn each head
+// toward the camera (clamped) so the player sees the rigidly-attached face.
+const FACE_LOOK_RESIDUAL = THREE.MathUtils.degToRad(16); // head ends ~16° off the camera (natural 3/4)
+const FACE_LOOK_MAX = THREE.MathUtils.degToRad(70);      // max correction from an extreme pose
 
 /** Build the curved face card and parent it to the head bone so it tracks
  *  the head through every clip. side only differs the rim tint upstream. */
@@ -716,12 +717,28 @@ function addFaceOverlay(
   face.castShadow = false; face.receiveShadow = false;
   scene.add(face);
 
-  // Driven each frame from the head bone's WORLD matrix (the rig root is
-  // scaled by fitToHeight, so bone-parenting would collapse a world-sized
-  // mesh — we keep it in world space instead).
-  (model as any).userData.faceMesh = face;
-  (model as any).userData.faceHead = headBone;
-  (model as any).userData.faceR = headR;
+  // RIGIDLY glue the face to the head bone so it IS the head's front. Orient
+  // the card along the head's true anatomical front (calibrated vectors), set
+  // its world transform, then re-parent it to the bone with attach() (which
+  // preserves the world transform and bakes out the rig's fitToHeight scale).
+  // From then on the face turns, nods and faces away exactly with the head —
+  // it can NEVER land on the neck/ear/back the way a camera billboard does.
+  // Done now, at bind pose (before model.rotation.y and before the mixer), so
+  // the captured offset lives purely in the head's local frame.
+  // Back-face culling (default FrontSide) hides it when the head turns away.
+  headBone.updateWorldMatrix(true, false);
+  const hPos = new THREE.Vector3(), hQuat = new THREE.Quaternion(), hScale = new THREE.Vector3();
+  headBone.matrixWorld.decompose(hPos, hQuat, hScale);
+  const fFront = FACE_FRONT_LOCAL.clone().applyQuaternion(hQuat).normalize();
+  const fUp = FACE_UP_LOCAL.clone().applyQuaternion(hQuat).normalize();
+  const fRight = new THREE.Vector3().crossVectors(fUp, fFront).normalize();
+  const fUp2 = new THREE.Vector3().crossVectors(fFront, fRight).normalize();
+  face.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(fRight, fUp2, fFront));
+  face.position.copy(hPos)
+    .addScaledVector(fUp, headR * 0.90)   // lift from the neck-base bone to the face centre
+    .addScaledVector(fFront, headR * 0.42); // out onto the front surface
+  face.updateWorldMatrix(false, false);
+  headBone.attach(face);
 }
 
 /** A soft radial contact-shadow texture (dark centre → transparent edge). */
@@ -1964,17 +1981,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /* ----- floating HUD projection helper ----- */
     // Scratch vector reused every frame (no per-frame alloc).
     const hudProjVec = new THREE.Vector3();
-    // Scratch for the per-frame face-overlay placement (no alloc).
-    const faceHeadPos = new THREE.Vector3();
-    const faceHeadQuat = new THREE.Quaternion();
-    const faceScratchScale = new THREE.Vector3();
-    const faceFront = new THREE.Vector3();
-    const faceHeadUp = new THREE.Vector3();
-    const faceZ = new THREE.Vector3();
-    const faceToCam = new THREE.Vector3();
-    const faceX = new THREE.Vector3();
-    const faceY = new THREE.Vector3();
-    const faceBasis = new THREE.Matrix4();
+    // Scratch for the per-frame head-look-at-camera (no alloc).
+    const faceLookFront = new THREE.Vector3();
+    const faceLookPos = new THREE.Vector3();
+    const faceLookQuat = new THREE.Quaternion();
     const mountRect = { w: 0, h: 0 };
     function projectHud(rig: THREE.Object3D | null, bar: HTMLDivElement | null, camera: THREE.PerspectiveCamera) {
       if (!bar) return;
@@ -2312,56 +2322,28 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           const lift = Math.max(0, rig.position.y);
           (shadow.material as THREE.MeshBasicMaterial).opacity = 0.5 * Math.max(0, 1 - lift * 1.5);
         }
-        // Face overlay — snap to the head bone's world transform each frame
-        // (after mixer + life layer have posed the head), oriented along the
-        // rig's anatomical front so the face sits on the head and rides every
-        // nod, lunge and hit-reaction. Kept in world space (not bone-parented)
-        // because the fitToHeight scale on the rig root would otherwise
-        // collapse it.
-        const faceMesh = (rig as any).userData.faceMesh as THREE.Mesh | undefined;
-        const faceHead = (rig as any).userData.faceHead as THREE.Object3D | undefined;
-        const faceR = (rig as any).userData.faceR as number | undefined;
-        if (faceMesh && faceHead && faceR) {
-          faceHead.updateWorldMatrix(true, false);
-          faceHead.matrixWorld.decompose(faceHeadPos, faceHeadQuat, faceScratchScale);
-          // The head's TRUE anatomical axes, reconstructed from the bone's live
-          // world rotation via vectors calibrated from the GLB geometry
-          // (FACE_FRONT_LOCAL points out of the nose, FACE_UP_LOCAL to the
-          // crown — verified, identical across all four rigs). This is what
-          // finally anchors the face to the real front of the head.
-          faceFront.copy(FACE_FRONT_LOCAL).applyQuaternion(faceHeadQuat).normalize();
-          faceHeadUp.copy(FACE_UP_LOCAL).applyQuaternion(faceHeadQuat).normalize();
-          faceToCam.copy(camera.position).sub(faceHeadPos).normalize();
-          // How far the head is turned away from the camera.
-          const turn = Math.acos(THREE.MathUtils.clamp(faceFront.dot(faceToCam), -1, 1));
-          // Fade out once the camera is roughly behind the head, so the on-top
-          // decal can never show on the back of the skull.
-          const fade = 1 - THREE.MathUtils.clamp((turn - FACE_FADE_FROM) / (FACE_FADE_TO - FACE_FADE_FROM), 0, 1);
-          if (fade <= 0.001) {
-            faceMesh.visible = false;
-          } else {
-            faceMesh.visible = rig.visible;
-            // CAMERA BILLBOARD, CENTRED ON THE HEAD. The fighters' heads are in
-            // near-profile (they face each other), and the camera-facing SIDE
-            // of a profile head is the cheek/ear — so anything that pushes the
-            // face toward the head's camera-facing surface lands on the ear.
-            // Instead we centre a camera-facing portrait on the head silhouette
-            // (covers the middle, never the edge/ear) and only push it a hair
-            // toward the camera so it sits just proud of the skull. The head's
-            // true front (faceFront) is used solely for the back-of-head fade.
-            faceZ.copy(faceToCam);
-            faceX.copy(faceHeadUp).cross(faceZ).normalize();
-            if (faceX.lengthSq() < 1e-6) faceX.set(1, 0, 0);
-            faceY.copy(faceZ).cross(faceX).normalize();
-            faceBasis.makeBasis(faceX, faceY, faceZ);
-            faceMesh.quaternion.setFromRotationMatrix(faceBasis);
-            // Lift along the head's own up to the head centre, plus a small
-            // nudge toward the camera — NOT a big forward offset (that's what
-            // walked it onto the ear).
-            faceMesh.position.copy(faceHeadPos)
-              .addScaledVector(faceHeadUp, faceR * 0.72)
-              .addScaledVector(faceToCam, faceR * 0.30);
-            (faceMesh.material as THREE.MeshStandardMaterial).opacity = fade;
+        // The face overlay is rigidly parented to the head bone (addFaceOverlay):
+        // it IS the head's front. To make sure the player actually SEES it (the
+        // bodies face each other, so heads default to profile), gently turn the
+        // head toward the camera — clamped, leaving a natural ~16° residual so
+        // it reads as a 3/4 glance, not a dead-on stare. Because the face is a
+        // child of the head bone, it follows for free; no billboard, so it can
+        // never land on the ear / neck / back.
+        if (lb.head) {
+          lb.head.updateWorldMatrix(true, false);
+          faceLookQuat.setFromRotationMatrix(lb.head.matrixWorld);
+          faceLookFront.copy(FACE_FRONT_LOCAL).applyQuaternion(faceLookQuat);
+          faceLookPos.setFromMatrixPosition(lb.head.matrixWorld);
+          // Signed horizontal angle (about world up) from the head's front to
+          // the camera direction.
+          const aFront = Math.atan2(faceLookFront.x, faceLookFront.z);
+          const aCam = Math.atan2(camera.position.x - faceLookPos.x, camera.position.z - faceLookPos.z);
+          let d = aCam - aFront;
+          d = Math.atan2(Math.sin(d), Math.cos(d)); // wrap to [-π, π]
+          const applied = Math.sign(d) * THREE.MathUtils.clamp(Math.abs(d) - FACE_LOOK_RESIDUAL, 0, FACE_LOOK_MAX);
+          if (Math.abs(applied) > 1e-3) {
+            lb.head.rotateOnWorldAxis(FACE_Y_AXIS, applied);
+            lb.head.updateWorldMatrix(true, false);
           }
         }
       }
