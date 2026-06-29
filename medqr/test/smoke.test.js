@@ -200,6 +200,34 @@ try {
   );
   ok('английският изглед превежда клиничните данни и транслитерира името');
 
+  // 11b. Canonical/hreflang са само-референтни по език (SEO кластер)
+  const homeEn = await (await req('/?lang=en')).text();
+  assert.ok(
+    /rel="canonical" href="[^"]*\?lang=en"/.test(homeEn) &&
+      homeEn.includes('hreflang="en"') &&
+      homeEn.includes('hreflang="x-default"'),
+    'EN страницата има само-референтен canonical и hreflang алтернативи'
+  );
+  ok('canonical/hreflang са само-референтни по език');
+
+  // 11c. Манифестът предлага PNG + maskable иконки (PWA инсталируемост)
+  const manifest = await (await req('/manifest.webmanifest')).json();
+  assert.ok(
+    manifest.icons.some((i) => i.src === '/icon-512.png' && i.sizes === '512x512') &&
+      manifest.icons.some((i) => i.purpose === 'maskable'),
+    'манифестът включва 512px PNG и maskable иконка'
+  );
+  ok('манифестът включва PNG и maskable иконки');
+
+  // 11d. PIN изисква поне 6 цифри (защита от груба сила)
+  await req('/profile/pin', { method: 'POST', body: { pin: '1234' } });
+  assert.ok(!getByUserId(user.id).pin_hash, 'къс 4-цифрен PIN не се приема');
+  await req('/profile/pin', { method: 'POST', body: { pin: '135790' } });
+  assert.ok(getByUserId(user.id).pin_hash, '6-цифрен PIN се приема');
+  await req('/profile/pin', { method: 'POST', body: { pin: '' } }); // изчистваме за следващите тестове
+  assert.ok(!getByUserId(user.id).pin_hash, 'празно поле премахва PIN-а');
+  ok('PIN изисква поне 6 цифри');
+
   // 11б. Близкият е автоматично уведомен (без дублиране в рамките на прозореца)
   const settle = () => new Promise((r) => setTimeout(r, 100)); // известието се праща неблокиращо
   const notif = () =>

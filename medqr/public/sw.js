@@ -1,7 +1,7 @@
 // MedQR service worker — офлайн достъп до съществените екрани.
 // Сценарий: няма сигнал (метро, сграда, планина). Запазено копие на личния
 // SOS екран, таблото, спешния изглед и статичните ресурси работи и офлайн.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = `medqr-shell-${VERSION}`;
 const RUNTIME = `medqr-runtime-${VERSION}`;
 const PRIVATE = `medqr-private-${VERSION}`; // чувствителни лични екрани — чистят се при изход
@@ -12,6 +12,9 @@ const SHELL_ASSETS = [
   '/app.js',
   '/manifest.webmanifest',
   '/favicon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
   '/fonts/inter-cyrillic-400-normal.woff2',
   '/fonts/inter-latin-400-normal.woff2',
 ];
@@ -58,15 +61,24 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Статични ресурси: cache-first + тихо опресняване.
+  // Статични ресурси: stale-while-revalidate — връщаме кеша веднага (бързо и
+  // офлайн), но паралелно дърпаме свежо копие, така че следващото зареждане е
+  // актуално дори без ръчно вдигане на версията на кеша.
   if (STATIC_RE.test(url.pathname)) {
     e.respondWith(
       (async () => {
-        const hit = await caches.match(request);
-        if (hit) return hit;
-        const res = await fetch(request);
-        if (res.ok) cachePut(e, SHELL, request, res.clone());
-        return res;
+        const cached = await caches.match(request);
+        const network = fetch(request)
+          .then((res) => {
+            if (res.ok) cachePut(e, SHELL, request, res.clone());
+            return res;
+          })
+          .catch(() => null);
+        if (cached) {
+          e.waitUntil(network);
+          return cached;
+        }
+        return (await network) || fetch(request);
       })()
     );
     return;

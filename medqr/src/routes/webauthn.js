@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../async-router.js';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -19,7 +19,7 @@ import {
   deleteCredential,
 } from '../webauthn.js';
 
-const router = Router();
+const router = asyncRouter();
 const prod = process.env.NODE_ENV === 'production';
 const challengeCookie = { httpOnly: true, sameSite: 'strict', secure: prod, maxAge: 1000 * 60 * 5 };
 

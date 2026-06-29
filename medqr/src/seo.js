@@ -12,6 +12,10 @@ export const DEFAULT_DESCRIPTION =
 // Едно място — за да съвпадат страниците и структурираните данни.
 export const LEGAL = { version: '1.1', effective: '2026-06-22' };
 
+// Дата на последна значима промяна по съдържанието (за sitemap lastmod на
+// началната страница). Фиксирана — за да не „плава" с всяко зареждане.
+export const SITE_UPDATED = '2026-06-29';
+
 // Класически GEO сигнали (държава/регион на услугата) за търсачки и карти.
 export const GEO = {
   region: 'BG',
@@ -23,7 +27,7 @@ export const GEO = {
 // Само публичните (индексируеми) страници. Правните страници носят датата на
 // влизане в сила като lastmod.
 export const PUBLIC_PAGES = [
-  { path: '/', changefreq: 'weekly', priority: '1.0' },
+  { path: '/', changefreq: 'weekly', priority: '1.0', lastmod: SITE_UPDATED },
   { path: '/privacy', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
   { path: '/cookies', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
   { path: '/terms', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
@@ -98,9 +102,10 @@ Sitemap: ${base}/sitemap.xml
 export function sitemapXml(base, lastmod = new Date().toISOString().slice(0, 10)) {
   const urls = PUBLIC_PAGES.map((p) => {
     const loc = `${base}${p.path}`;
-    // hreflang алтернативи (BG/EN/x-default) за двуезичното съдържание.
+    // hreflang: BG (чист URL) = x-default, EN с ?lang=en — съвпада с canonical/head,
+    // за да е кластерът реципрочен и само-референтен.
     const alts =
-      `    <xhtml:link rel="alternate" hreflang="bg" href="${loc}?lang=bg"/>\n` +
+      `    <xhtml:link rel="alternate" hreflang="bg" href="${loc}"/>\n` +
       `    <xhtml:link rel="alternate" hreflang="en" href="${loc}?lang=en"/>\n` +
       `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}"/>\n`;
     return (
@@ -163,7 +168,12 @@ export function webManifest() {
     background_color: '#f5f7fa',
     theme_color: '#0b6e8c',
     lang: 'bg',
-    icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+    icons: [
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+    ],
     shortcuts: [
       {
         name: 'Спешна помощ (SOS)',

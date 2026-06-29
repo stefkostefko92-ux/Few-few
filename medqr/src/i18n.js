@@ -437,8 +437,8 @@ const DICT = {
   },
   'dash.security': { bg: 'Сигурност', en: 'Security' },
   'dash.pin_label': {
-    bg: 'Незадължителен PIN (4–8 цифри) за допълнителна защита',
-    en: 'Optional PIN (4–8 digits) for extra protection',
+    bg: 'Незадължителен PIN (6–8 цифри) за допълнителна защита',
+    en: 'Optional PIN (6–8 digits) for extra protection',
   },
   'dash.pin_save': { bg: 'Запази PIN', en: 'Save PIN' },
   'dash.pin_empty': { bg: 'Празно поле премахва PIN-а.', en: 'An empty field removes the PIN.' },

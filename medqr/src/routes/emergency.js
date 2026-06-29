@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { asyncRouter } from '../async-router.js';
 import db from '../db.js';
 import { getByToken } from '../profiles.js';
 import { verifyPassword } from '../auth.js';
 import { clientIp } from '../audit.js';
 import { notifyScan, notifyActive, notifyLocation } from '../notify.js';
 
-const router = Router();
+const router = asyncRouter();
 const PIN_MAX_ATTEMPTS = 5;
 const PIN_LOCK_MINUTES = 15;
 

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../async-router.js';
 import QRCode from 'qrcode';
 import { authenticator } from 'otplib';
 import db from '../db.js';
@@ -18,7 +18,7 @@ import { audit } from '../audit.js';
 import { notifySos } from '../notify.js';
 import { QR_SIZES, resolveSize, buildLabelSvg } from '../label.js';
 
-const router = Router();
+const router = asyncRouter();
 
 // Консервативна проверка на имейл: единствен @, разумни символи, дължина ≤254 и
 // без нови редове (срещу инжектиране на имейл хедъри).
@@ -123,7 +123,7 @@ router.post('/profile/pin', requireAuth, async (req, res) => {
       'UPDATE profiles SET pin_hash = NULL, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?'
     ).run(profile.id);
     audit(req, 'pin_removed');
-  } else if (/^\d{4,8}$/.test(pin)) {
+  } else if (/^\d{6,8}$/.test(pin)) {
     const pinHash = await hashPassword(pin);
     db.prepare(
       'UPDATE profiles SET pin_hash = ?, pin_attempts = 0, pin_locked_until = NULL WHERE id = ?'

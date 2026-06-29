@@ -128,10 +128,17 @@ app.use((req, res, next) => {
   res.locals.legal = LEGAL;
   res.locals.geo = GEO;
   res.locals.site = { name: SITE_NAME, locale: SITE_LOCALE, base };
+  // Езикът се адресира през ?lang=: BG е по подразбиране (чист URL = x-default),
+  // EN — с ?lang=en. canonical-ът сочи към собствения езиков вариант (self-ref),
+  // за да не се „канонизира“ EN страницата обратно към BG и да отпадне от индекса.
+  const urlClean = base + (req.path === '/' ? '/' : req.path);
+  const urlEn = urlClean + '?lang=en';
   res.locals.meta = {
     description: DEFAULT_DESCRIPTION,
     robots: 'noindex, nofollow', // безопасно по подразбиране; публичните страници го отменят
-    canonical: base + (req.path === '/' ? '/' : req.path),
+    canonical: lang === 'en' ? urlEn : urlClean,
+    urlClean,
+    urlEn,
     ogType: 'website',
     ogImage: base + '/og-image.png',
   };
