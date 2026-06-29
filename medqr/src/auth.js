@@ -8,7 +8,14 @@ const PENDING_TTL_MS = 1000 * 60 * 5; // 5 минути за въвеждане 
 const MAX_FAILED = 5;
 const LOCK_MINUTES = 15;
 
+// Абсолютен таван на живота на сесия — дори при плъзгащо подновяване една сесия не
+// може да живее вечно. След тавана се изисква нов вход (ограничава щетите от
+// откраднат „sid“).
+const ABSOLUTE_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 дни (обикновена сесия)
+const REMEMBER_ABSOLUTE_TTL_MS = 1000 * 60 * 60 * 24 * 365; // 1 година („остани вписан“)
+
 const ttlFor = (longLived) => (longLived ? REMEMBER_TTL_MS : SESSION_TTL_MS);
+const absoluteTtlFor = (longLived) => (longLived ? REMEMBER_ABSOLUTE_TTL_MS : ABSOLUTE_TTL_MS);
 
 // Опции за бисквитката на сесията (sid). maxAge = срок на валидност.
 export function sessionCookieOptions(maxAge) {
@@ -53,20 +60,32 @@ export function userFromSession(token) {
   if (!token) return null;
   const row = db
     .prepare(
-      `SELECT u.id, u.email, s.long_lived FROM sessions s
+      `SELECT u.id, u.email, s.long_lived, s.created_at FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.token = ? AND s.expires_at > datetime('now')`
     )
     .get(token);
   if (!row) return null;
-  // Плъзгащо подновяване: активният потребител не бива изхвърлян (вход веднъж).
-  const ttl = ttlFor(row.long_lived);
-  const expiresAt = new Date(Date.now() + ttl).toISOString();
+  // Абсолютен таван: ако сесията е по-стара от позволеното, изтриваме я и искаме
+  // нов вход — плъзгащото подновяване не може да я държи жива безкрайно.
+  // SQLite datetime('now') е „YYYY-MM-DD HH:MM:SS“ в UTC — нормализираме към ISO.
+  const createdMs = new Date(String(row.created_at).replace(' ', 'T') + 'Z').getTime();
+  const absoluteMax = absoluteTtlFor(row.long_lived);
+  if (Number.isFinite(createdMs) && Date.now() - createdMs > absoluteMax) {
+    destroySession(token);
+    return null;
+  }
+  // Плъзгащо подновяване: активният потребител не бива изхвърлян (вход веднъж),
+  // но не отвъд абсолютния таван.
+  const slideTtl = ttlFor(row.long_lived);
+  const cap = Number.isFinite(createdMs) ? createdMs + absoluteMax : Date.now() + slideTtl;
+  const newExpiresMs = Math.min(Date.now() + slideTtl, cap);
+  const expiresAt = new Date(newExpiresMs).toISOString();
   db.prepare("UPDATE sessions SET last_seen = datetime('now'), expires_at = ? WHERE token = ?").run(
     expiresAt,
     token
   );
-  return { id: row.id, email: row.email, _ttlMs: ttl };
+  return { id: row.id, email: row.email, _ttlMs: Math.max(0, newExpiresMs - Date.now()) };
 }
 
 // Списък с активни сесии на потребител (за „активни устройства").

@@ -1246,13 +1246,13 @@ body.comm-open {
 .comm-sec {
   margin-bottom: 1.1rem;
 }
-.comm-sec h3 {
+.comm-sec h2 {
   font-size: 0.95rem;
   color: var(--muted);
   margin: 0 0 0.5rem;
   font-weight: 600;
 }
-.comm-sec h3 .icon {
+.comm-sec h2 .icon {
   vertical-align: -0.2em;
   margin-right: 0.25rem;
   color: var(--brand);

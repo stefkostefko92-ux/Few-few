@@ -60,7 +60,7 @@
 
       <div class="comm-body">
         <section class="comm-sec">
-          <h3><%- include('partials/icon', { name: 'keyboard' }) %> <%= t('comm.write_h') %></h3>
+          <h2><%- include('partials/icon', { name: 'keyboard' }) %> <%= t('comm.write_h') %></h2>
           <textarea id="comm-type" rows="2" placeholder="<%= t('comm.write_ph') %>"></textarea>
           <div class="comm-row">
             <button type="button" class="btn btn-say" data-say><%- include('partials/icon', { name: 'volume' }) %> <%= t('comm.read_aloud') %></button>
@@ -70,7 +70,7 @@
         </section>
 
         <section class="comm-sec">
-          <h3><%= t('comm.patient_h') %></h3>
+          <h2><%= t('comm.patient_h') %></h2>
           <div class="comm-cards">
             <button type="button" class="cc cc-yes" data-phrase="<%= t('p.yes') %>"><%= t('p.yes') %></button>
             <button type="button" class="cc cc-no" data-phrase="<%= t('p.no') %>"><%= t('p.no') %></button>
@@ -84,7 +84,7 @@
         </section>
 
         <section class="comm-sec">
-          <h3><%= t('comm.team_h') %></h3>
+          <h2><%= t('comm.team_h') %></h2>
           <div class="comm-cards">
             <button type="button" class="cc" data-phrase="<%= t('p.here_to_help') %>"><%= t('p.here_to_help_s') %></button>
             <button type="button" class="cc" data-phrase="<%= t('p.where_hurts') %>"><%= t('p.where_hurts_s') %></button>
@@ -95,7 +95,7 @@
         </section>
 
         <section class="comm-sec">
-          <h3><%= t('comm.body_h') %></h3>
+          <h2><%= t('comm.body_h') %></h2>
           <div class="bodymap">
             <svg viewBox="0 0 200 380" role="group" aria-label="<%= t('comm.body_h') %>">
               <rect class="bm-neck" x="90" y="62" width="20" height="22" rx="6"/>
@@ -115,7 +115,7 @@
         </section>
 
         <section class="comm-sec">
-          <h3><%= t('comm.pain_h') %></h3>
+          <h2><%= t('comm.pain_h') %></h2>
           <div class="pain-scale">
             <% for (let n = 0; n <= 10; n++) { %>
               <button type="button" class="ps ps-<%= n <= 3 ? 'low' : (n <= 6 ? 'mid' : 'high') %>" data-phrase="<%= t('pain.scale', { n }) %>"><%= n %></button>

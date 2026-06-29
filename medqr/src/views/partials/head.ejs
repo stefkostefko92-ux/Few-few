@@ -12,10 +12,10 @@
   <meta name="publisher" content="<%= company.name %>">
   <meta name="rating" content="general">
   <link rel="canonical" href="<%= meta.canonical %>">
-  <!-- Двуезичие (BG/EN): hreflang алтернативи за търсачки -->
-  <link rel="alternate" hreflang="bg" href="<%= meta.canonical %>?lang=bg">
-  <link rel="alternate" hreflang="en" href="<%= meta.canonical %>?lang=en">
-  <link rel="alternate" hreflang="x-default" href="<%= meta.canonical %>">
+  <!-- Двуезичие (BG/EN): реципрочни, само-референтни hreflang алтернативи -->
+  <link rel="alternate" hreflang="bg" href="<%= meta.urlClean %>">
+  <link rel="alternate" hreflang="en" href="<%= meta.urlEn %>">
+  <link rel="alternate" hreflang="x-default" href="<%= meta.urlClean %>">
 
   <!-- GEO: държава/регион на услугата -->
   <meta name="geo.region" content="<%= geo.region %>">
@@ -32,6 +32,7 @@
   <meta property="og:description" content="<%= meta.description %>">
   <meta property="og:url" content="<%= meta.canonical %>">
   <meta property="og:image" content="<%= meta.ogImage %>">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="<%= t('og.image_alt') %>">
@@ -41,10 +42,11 @@
   <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title : site.name %>">
   <meta name="twitter:description" content="<%= meta.description %>">
   <meta name="twitter:image" content="<%= meta.ogImage %>">
+  <meta name="twitter:image:alt" content="<%= t('og.image_alt') %>">
 
   <meta name="theme-color" content="#0b6e8c">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
 
   <link rel="preload" href="/fonts/inter-cyrillic-400-normal.woff2" as="font" type="font/woff2" crossorigin>

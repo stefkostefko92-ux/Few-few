@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../async-router.js';
 import { authenticator } from 'otplib';
 import db from '../db.js';
 import { decrypt } from '../crypto.js';
@@ -26,7 +26,7 @@ import {
   consumeRecoveryCode,
 } from '../auth.js';
 
-const router = Router();
+const router = asyncRouter();
 const CONSENT_VERSION = '1.0';
 const MIN_PASSWORD = 10;
 const prod = process.env.NODE_ENV === 'production';
