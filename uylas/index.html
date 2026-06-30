@@ -113,25 +113,30 @@
     "name": "Menu — Uylas Kebap Center",
     "inLanguage": "it-IT",
     "hasMenuSection": [
-      { "@type": "MenuSection", "name": "Kebab & Durum", "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Panino Kebab", "offers": { "@type": "Offer", "price": "5.50", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Durum Kebab", "offers": { "@type": "Offer", "price": "6.00", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Piadina Kebab", "offers": { "@type": "Offer", "price": "6.00", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Adana Kebab", "offers": { "@type": "Offer", "price": "8.50", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Yogurt & Iskender", "offers": { "@type": "Offer", "price": "9.50", "priceCurrency": "EUR" } }
+      { "@type": "MenuSection", "name": "Kebab & Döner", "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Panino Doner Kebab", "offers": { "@type": "Offer", "price": "9.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Piadina Yufka Doner Kebab", "offers": { "@type": "Offer", "price": "9.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Doner Kebab con Patate e Insalata", "offers": { "@type": "Offer", "price": "13.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Doner Kebab con Riso", "offers": { "@type": "Offer", "price": "13.00", "priceCurrency": "EUR" } }
       ]},
-      { "@type": "MenuSection", "name": "Pizza", "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Margherita", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Diavola", "offers": { "@type": "Offer", "price": "6.50", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Kebab Pizza", "offers": { "@type": "Offer", "price": "7.50", "priceCurrency": "EUR" } }
+      { "@type": "MenuSection", "name": "Pizze & Turche", "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Uylas Kebab", "description": "Pomodoro, mozzarella, carne di doner kebab, insalata, cipolla e salse", "offers": { "@type": "Offer", "price": "14.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Margherita", "offers": { "@type": "Offer", "price": "9.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Pizza Turca", "offers": { "@type": "Offer", "price": "12.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Lahmacun", "offers": { "@type": "Offer", "price": "10.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Pide Kebab", "offers": { "@type": "Offer", "price": "12.00", "priceCurrency": "EUR" } }
       ]},
       { "@type": "MenuSection", "name": "Menù combo", "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Menù Panino Kebab", "description": "Panino kebab + patatine + bibita 33cl", "offers": { "@type": "Offer", "price": "12.00", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Menù Durum", "offers": { "@type": "Offer", "price": "12.00", "priceCurrency": "EUR" } }
+        { "@type": "MenuItem", "name": "Menù Panino Kebab", "description": "Panino doner kebab + patatine piccole + bibita 33cl", "offers": { "@type": "Offer", "price": "12.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Menù Margherita", "description": "Pizza margherita + patatine piccole + bibita 33cl", "offers": { "@type": "Offer", "price": "12.00", "priceCurrency": "EUR" } }
       ]},
       { "@type": "MenuSection", "name": "Veg & Falafel", "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Panino Falafel", "suitableForDiet": "https://schema.org/VegetarianDiet", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "EUR" } },
-        { "@type": "MenuItem", "name": "Hummus & Pane", "suitableForDiet": "https://schema.org/VegetarianDiet", "offers": { "@type": "Offer", "price": "4.50", "priceCurrency": "EUR" } }
+        { "@type": "MenuItem", "name": "Panino Falafel", "suitableForDiet": "https://schema.org/VegetarianDiet", "offers": { "@type": "Offer", "price": "9.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Insalata Mista (Çoban)", "suitableForDiet": "https://schema.org/VegetarianDiet", "offers": { "@type": "Offer", "price": "8.50", "priceCurrency": "EUR" } }
+      ]},
+      { "@type": "MenuSection", "name": "Dolci", "hasMenuItem": [
+        { "@type": "MenuItem", "name": "Baklava", "offers": { "@type": "Offer", "price": "6.00", "priceCurrency": "EUR" } },
+        { "@type": "MenuItem", "name": "Kadayif", "offers": { "@type": "Offer", "price": "6.00", "priceCurrency": "EUR" } }
       ]}
     ]
   }
@@ -252,58 +257,69 @@
     </div>
 
     <div class="menu-tabs" role="tablist" aria-label="Categorie del menu">
-      <button class="menu-tab" role="tab" aria-selected="true" aria-controls="cat-kebab" id="tab-kebab" data-i18n="menu.cat.kebab">🥙 Kebab &amp; Durum</button>
-      <button class="menu-tab" role="tab" aria-selected="false" aria-controls="cat-pizza" id="tab-pizza" data-i18n="menu.cat.pizza">🍕 Pizza</button>
+      <button class="menu-tab" role="tab" aria-selected="true" aria-controls="cat-kebab" id="tab-kebab" data-i18n="menu.cat.kebab">🥙 Kebab &amp; Döner</button>
+      <button class="menu-tab" role="tab" aria-selected="false" aria-controls="cat-pizza" id="tab-pizza" data-i18n="menu.cat.pizza">🍕 Pizze &amp; Turche</button>
       <button class="menu-tab" role="tab" aria-selected="false" aria-controls="cat-menu" id="tab-menu" data-i18n="menu.cat.combo">🍟 Menù combo</button>
       <button class="menu-tab" role="tab" aria-selected="false" aria-controls="cat-veg" id="tab-veg" data-i18n="menu.cat.veg">🌱 Veg &amp; Falafel</button>
-      <button class="menu-tab" role="tab" aria-selected="false" aria-controls="cat-extra" id="tab-extra" data-i18n="menu.cat.extra">🥤 Extra &amp; Bibite</button>
+      <button class="menu-tab" role="tab" aria-selected="false" aria-controls="cat-extra" id="tab-extra" data-i18n="menu.cat.extra">🥤 Extra, Dolci &amp; Bibite</button>
     </div>
 
     <!-- KEBAB -->
     <div class="menu-panel" role="tabpanel" id="cat-kebab" aria-labelledby="tab-kebab">
-      <article class="dish-card"><div class="row"><h4>Panino Kebab</h4><span class="price">€ 5,50</span></div><p data-i18n="d.panino">Pane turco, carne alla brace, insalata fresca e salse a scelta.</p><div class="tags"><span class="tag hot">Brace</span><span class="tag">Halal</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Durum Kebab</h4><span class="price">€ 6,00</span></div><p data-i18n="d.durum">Piadina turca arrotolata, carne, verdure croccanti e salse.</p><div class="tags"><span class="tag hot">Brace</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Piadina Kebab</h4><span class="price">€ 6,00</span></div><p data-i18n="d.piadina">Piadina farcita con kebab, insalata e salse della casa.</p></article>
-      <article class="dish-card"><div class="row"><h4>Adana Kebab</h4><span class="price">€ 8,50</span></div><p data-i18n="d.adana">Spiedino speziato di carne macinata cotto alla brace, con contorni.</p><div class="tags"><span class="tag hot">Piccante</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Kebab nel piatto</h4><span class="price">€ 9,00</span></div><p data-i18n="d.piatto">Generosa porzione di carne, patatine, insalata e pane caldo.</p><div class="tags"><span class="tag">XL</span></div></article>
-      <article class="dish-card featured"><div class="row"><h4>Yogurt &amp; Iskender</h4><span class="price">€ 9,50</span></div><p data-i18n="d.iskender">Kebab su pane con salsa di pomodoro, burro e yogurt.</p><div class="tags"><span class="tag new">Specialità</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Panino Doner Kebab</h4><span class="price">€ 9,00</span></div><p data-i18n="d.k1">Carne di vitello e tacchino, insalata, pomodoro, cipolla e salse.</p><div class="tags"><span class="tag hot">Alla brace</span><span class="tag">Halal</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Piadina Yufka Doner</h4><span class="price">€ 9,00</span></div><p data-i18n="d.k2">Piadina turca yufka arrotolata con doner, verdure fresche e salse.</p><div class="tags"><span class="tag hot">Alla brace</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Big Panino Doner</h4><span class="price">€ 11,50</span></div><p data-i18n="d.k3">La versione XL del nostro panino doner kebab più amato.</p><div class="tags"><span class="tag">XL</span></div></article>
+      <article class="dish-card featured"><div class="row"><h4>Doner con Patate e Insalata</h4><span class="price">€ 13,00</span></div><p data-i18n="d.k4">Generosa porzione di carne alla brace con patatine e insalata.</p><div class="tags"><span class="tag new">Più ordinato</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Doner con Riso</h4><span class="price">€ 13,00</span></div><p data-i18n="d.k5">Carne di vitello e tacchino su riso, con salse di yogurt e piccante.</p></article>
+      <article class="dish-card"><div class="row"><h4>Doner in Vaschetta</h4><span class="price">€ 11–16</span></div><p data-i18n="d.k6">Solo carne, in tre formati: piccola, media e grande.</p><div class="tags"><span class="tag">Halal</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Falafel con Patate e Insalata</h4><span class="price">€ 13,00</span></div><p data-i18n="d.k7">Polpette di ceci e verdure macinate con spezie, patatine e insalata.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
     </div>
 
     <!-- PIZZA -->
     <div class="menu-panel" role="tabpanel" id="cat-pizza" aria-labelledby="tab-pizza" hidden>
-      <article class="dish-card"><div class="row"><h4>Margherita</h4><span class="price">€ 5,00</span></div><p data-i18n="d.margherita">Pomodoro, mozzarella e basilico. Impasto fatto in casa.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Diavola</h4><span class="price">€ 6,50</span></div><p data-i18n="d.diavola">Pomodoro, mozzarella e salame piccante.</p><div class="tags"><span class="tag hot">Piccante</span></div></article>
-      <article class="dish-card featured"><div class="row"><h4>Kebab Pizza</h4><span class="price">€ 7,50</span></div><p data-i18n="d.kebabpizza">La nostra firma: pomodoro, mozzarella, carne kebab e salse.</p><div class="tags"><span class="tag new">La firma</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Quattro Stagioni</h4><span class="price">€ 7,00</span></div><p data-i18n="d.stagioni">Pomodoro, mozzarella, funghi, prosciutto, carciofi e olive.</p></article>
-      <article class="dish-card"><div class="row"><h4>Vegetariana</h4><span class="price">€ 7,00</span></div><p data-i18n="d.vegpizza">Pomodoro, mozzarella e verdure grigliate di stagione.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Capricciosa</h4><span class="price">€ 7,50</span></div><p data-i18n="d.capricciosa">Pomodoro, mozzarella, prosciutto, funghi, carciofi e uovo.</p></article>
+      <article class="dish-card featured"><div class="row"><h4>Uylas Kebab</h4><span class="price">€ 14,00</span></div><p data-i18n="d.p1">La nostra firma: pomodoro, mozzarella, carne di doner kebab, insalata, cipolla e salse.</p><div class="tags"><span class="tag new">La firma</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Margherita</h4><span class="price">€ 9,00</span></div><p data-i18n="d.p2">Pomodoro e mozzarella. Impasto fatto in casa.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Marinara</h4><span class="price">€ 8,00</span></div><p data-i18n="d.p3">Pomodoro, aglio e origano.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Diavola</h4><span class="price">€ 10,00</span></div><p data-i18n="d.p4">Pomodoro, mozzarella e salame piccante.</p><div class="tags"><span class="tag hot">Piccante</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Capricciosa</h4><span class="price">€ 12,00</span></div><p data-i18n="d.p5">Pomodoro, mozzarella, prosciutto cotto, olive, capperi, funghi e carciofi.</p></article>
+      <article class="dish-card"><div class="row"><h4>Bufala</h4><span class="price">€ 10,00</span></div><p data-i18n="d.p6">Pomodoro e mozzarella di bufala.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Ortolana</h4><span class="price">€ 11,00</span></div><p data-i18n="d.p7">Pomodoro, mozzarella, melanzane, zucchine e peperoni.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>4 Formaggi</h4><span class="price">€ 11,00</span></div><p data-i18n="d.p8">Mozzarella, gorgonzola, taleggio e grana.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Pizza Turca</h4><span class="price">€ 12,00</span></div><p data-i18n="d.p9">Pomodoro, mozzarella, doner kebab e peperoni.</p><div class="tags"><span class="tag">Turca</span></div></article>
+      <article class="dish-card featured"><div class="row"><h4>Lahmacun</h4><span class="price">€ 10,00</span></div><p data-i18n="d.p10">Sottile pizza turca con carne macinata speziata.</p><div class="tags"><span class="tag new">Turca</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Pide Kebab</h4><span class="price">€ 12,00</span></div><p data-i18n="d.p11">Pide turca a barchetta farcita con doner kebab.</p><div class="tags"><span class="tag">Turca</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Pizza Kebab</h4><span class="price">€ 11,00</span></div><p data-i18n="d.p12">Pomodoro, mozzarella e carne di doner kebab.</p></article>
     </div>
 
     <!-- COMBO -->
     <div class="menu-panel" role="tabpanel" id="cat-menu" aria-labelledby="tab-menu" hidden>
-      <article class="dish-card"><div class="row"><h4>Menù Panino Kebab</h4><span class="price">€ 12,00</span></div><p data-i18n="d.mpanino">Panino kebab + patatine + bibita 33cl.</p><div class="tags"><span class="tag">Completo</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Menù Durum</h4><span class="price">€ 12,00</span></div><p data-i18n="d.mdurum">Durum kebab + patatine + bibita 33cl.</p></article>
-      <article class="dish-card"><div class="row"><h4>Menù Margherita</h4><span class="price">€ 12,00</span></div><p data-i18n="d.mmargherita">Pizza margherita + patatine + bibita 33cl.</p></article>
-      <article class="dish-card"><div class="row"><h4>Menù Falafel</h4><span class="price">€ 12,00</span></div><p data-i18n="d.mfalafel">Panino falafel + patatine + bibita 33cl.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Menù Cotoletta</h4><span class="price">€ 12,00</span></div><p data-i18n="d.mcotoletta">Panino con cotoletta + patatine + bibita 33cl.</p></article>
-      <article class="dish-card"><div class="row"><h4>Menù Famiglia</h4><span class="price">€ 24,00</span></div><p data-i18n="d.mfamiglia">2 kebab + pizza + patatine grandi + 4 bibite.</p><div class="tags"><span class="tag new">Risparmio</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Menù Panino Kebab</h4><span class="price">€ 12,00</span></div><p data-i18n="d.m1">Panino doner kebab + patatine piccole + bibita in lattina 33cl.</p><div class="tags"><span class="tag">Completo</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Menù Piadina Kebab</h4><span class="price">€ 12,00</span></div><p data-i18n="d.m2">Piadina doner kebab + patatine piccole + bibita in lattina 33cl.</p></article>
+      <article class="dish-card"><div class="row"><h4>Menù Margherita</h4><span class="price">€ 12,00</span></div><p data-i18n="d.m3">Pizza margherita + patatine piccole + bibita in lattina 33cl.</p></article>
+      <article class="dish-card"><div class="row"><h4>Menù Panino Falafel</h4><span class="price">€ 12,00</span></div><p data-i18n="d.m4">Panino falafel + patatine piccole + bibita in lattina 33cl.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Menù Cotoletta</h4><span class="price">€ 12,00</span></div><p data-i18n="d.m5">Panino con cotoletta + patatine piccole + bibita in lattina 33cl.</p></article>
     </div>
 
     <!-- VEG -->
     <div class="menu-panel" role="tabpanel" id="cat-veg" aria-labelledby="tab-veg" hidden>
-      <article class="dish-card"><div class="row"><h4>Panino Falafel</h4><span class="price">€ 5,00</span></div><p data-i18n="d.falafel">Polpette di ceci e spezie, verdure fresche e salsa allo yogurt.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Durum Falafel</h4><span class="price">€ 5,50</span></div><p data-i18n="d.durumfalafel">Piadina arrotolata con falafel, hummus e verdure.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Insalatona</h4><span class="price">€ 6,00</span></div><p data-i18n="d.insalata">Insalata mista abbondante con verdure di stagione.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
-      <article class="dish-card"><div class="row"><h4>Hummus &amp; Pane</h4><span class="price">€ 4,50</span></div><p data-i18n="d.hummus">Crema di ceci e tahina servita con pane turco caldo.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Panino Falafel</h4><span class="price">€ 9,00</span></div><p data-i18n="d.v1">Polpette di ceci e verdure macinate, insalata, pomodoro, cipolla e salse.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Piadina Falafel</h4><span class="price">€ 9,00</span></div><p data-i18n="d.v2">Piadina con falafel, verdure fresche, pomodoro, cipolla e salse.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Panino Vegetariano</h4><span class="price">€ 9,00</span></div><p data-i18n="d.v3">Pomodoro, mozzarella e verdure grigliate.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Insalata Mista (Çoban)</h4><span class="price">€ 8,50</span></div><p data-i18n="d.v4">Pomodoro, cetrioli, peperoncino e prezzemolo — çoban salatası.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Insalata Tonno</h4><span class="price">€ 9,00</span></div><p data-i18n="d.v5">Insalata verde, pomodoro, tonno, olive, peperoni e salse.</p></article>
+      <article class="dish-card"><div class="row"><h4>Falafel (1 pezzo)</h4><span class="price">€ 3,50</span></div><p data-i18n="d.v6">Polpetta di ceci e verdure macinate con spezie.</p><div class="tags"><span class="tag veg">Veg</span></div></article>
     </div>
 
     <!-- EXTRA -->
     <div class="menu-panel" role="tabpanel" id="cat-extra" aria-labelledby="tab-extra" hidden>
-      <article class="dish-card"><div class="row"><h4>Patatine fritte</h4><span class="price">€ 3,00</span></div><p data-i18n="d.patatine">Croccanti fuori, morbide dentro. Piccole o grandi.</p></article>
-      <article class="dish-card"><div class="row"><h4>Onion rings</h4><span class="price">€ 3,50</span></div><p data-i18n="d.onion">Anelli di cipolla dorati e croccanti.</p></article>
-      <article class="dish-card"><div class="row"><h4>Bibite 33cl</h4><span class="price">€ 2,00</span></div><p data-i18n="d.bibite">Cola, aranciata, acqua, the freddo e altre bevande.</p></article>
-      <article class="dish-card"><div class="row"><h4>Ayran</h4><span class="price">€ 2,00</span></div><p data-i18n="d.ayran">Bevanda turca a base di yogurt, fresca e dissetante.</p></article>
-      <article class="dish-card"><div class="row"><h4>Baklava</h4><span class="price">€ 3,50</span></div><p data-i18n="d.baklava">Dolce turco a strati di pasta fillo, miele e pistacchio.</p><div class="tags"><span class="tag new">Dolce</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Patatine Fritte</h4><span class="price">€ 5–7</span></div><p data-i18n="d.e1">Croccanti, in tre formati: piccola, media e grande.</p></article>
+      <article class="dish-card"><div class="row"><h4>Fagottino</h4><span class="price">€ 3,50</span></div><p data-i18n="d.e2">Patate, formaggio e spezie (1 pezzo).</p></article>
+      <article class="dish-card"><div class="row"><h4>Baklava</h4><span class="price">€ 6,00</span></div><p data-i18n="d.e3">Pasta sfoglia, pistacchio, burro e sciroppo di zucchero (4 pezzi).</p><div class="tags"><span class="tag new">Dolce</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Kadayif</h4><span class="price">€ 6,00</span></div><p data-i18n="d.e4">Pasta grattugiata, pistacchio e sciroppo di zucchero.</p><div class="tags"><span class="tag new">Dolce</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Piadina con Nutella</h4><span class="price">€ 6,00</span></div><p data-i18n="d.e5">Piadina dolce con Nutella e zucchero a velo.</p><div class="tags"><span class="tag new">Dolce</span></div></article>
+      <article class="dish-card"><div class="row"><h4>Ayran</h4><span class="price">€ 3,00</span></div><p data-i18n="d.e6">Bevanda turca a base di yogurt, fresca e dissetante.</p></article>
+      <article class="dish-card"><div class="row"><h4>Bibita in Lattina 33cl</h4><span class="price">€ 3,00</span></div><p data-i18n="d.e7">Pepsi, the pesca/limone, oran soda, lemon soda e altre.</p></article>
+      <article class="dish-card"><div class="row"><h4>Acqua Naturale 50cl</h4><span class="price">€ 2,00</span></div><p data-i18n="d.e8">Acqua naturale in bottiglia.</p></article>
     </div>
 
     <div class="menu-foot reveal">
