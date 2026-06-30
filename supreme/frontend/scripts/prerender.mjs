@@ -179,10 +179,29 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
       ).join("");
     } catch { /* leave faqHtml empty if parsing fails */ }
   }
+  // English answer-content for the x-default root. Kept at parity with the
+  // localized snapshots (features + pricing + FAQ) so the most-important page
+  // is not the thinnest for AEO crawlers. Features mirror the SoftwareApplication
+  // featureList; pricing mirrors the enforced tiers (premium.js) and EUR offers.
+  const EN_FEATURES = [
+    ["Ticket system", "Unlimited tickets with button panels, claim, escalation, rename, two-step close and full HTML transcripts that survive channel deletion."],
+    ["Forms & applications", "Multi-step questionnaires with validation, logic branching and an approve/deny review workflow — a full Appy.bot replacement."],
+    ["Verification & anti-bot", "One-click button or math captcha, account-age requirements and brute-force protection."],
+    ["Polls & giveaways", "Live polls (up to 9 options) and giveaways with role requirements, scheduled end and re-roll."],
+    ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
+    ["AI auto-replies", "Optional first response powered by Anthropic Claude, with an EU AI Act Art. 50 disclosure."],
+    ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
+    ["White-label bot", "Premium servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
+  ];
+  const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
+  const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
+    + `<div><h3>Premium — €9.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies, round-robin assignment, white-label bot</li><li>Webhooks, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`;
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
     <p>One bot. Everything you need.</p>
     <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
     <p>Multi-tenant Discord bot management by Carbon Stealth VCC: ticket panels, logic-branching application forms, verification, polls, giveaways, scheduled messages, webhooks, AI auto-replies, white-label bots and Stripe subscriptions — all from a modern web dashboard. EU-hosted, GDPR-compliant.</p>
+    <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
+    <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>
     <section><h2>Frequently asked questions</h2>${faqHtml}</section>
   </div>`;
   let html = injectHead(template, `  ${hreflangCluster()}`);
