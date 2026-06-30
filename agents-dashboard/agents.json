@@ -999,9 +999,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Helmet по подразбиране задава Strict-Transport-Security max-age=31536000; includeSubDom…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-06-30",
+          "event": "v10.0 — учене",
+          "detail": "Научи: CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-30",
+          "type": "learning",
+          "summary": "Научи: „CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…\""
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
