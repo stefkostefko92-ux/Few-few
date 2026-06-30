@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-06-26",
+    "updated": "2026-06-30",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -7595,6 +7595,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Процедурна skeletal поза върху неанимиран RPM/Mixamo хуманоид: reset всяка кост към кло…\" (+1)"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
