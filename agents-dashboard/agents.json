@@ -5963,6 +5963,11 @@
       ],
       "activity": [
         {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Counter-pattern: webhook който findFirst за commission-запис (AffiliateReferral), който…\" (+3)"
+        },
+        {
           "date": "2026-06-26",
           "type": "learning",
           "summary": "Научи: „Stripe API версии: всеки акаунт има default API версия (Workbench); override per-reques…\""
