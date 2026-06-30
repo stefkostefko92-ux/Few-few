@@ -122,9 +122,16 @@ function latestVersion(a) {
   for (const e of a.evolution || []) if (cmpVer(e.version, best) > 0) best = e.version;
   return best;
 }
-function bumpMinor(v) {
+// Схема „учене ролва в major": всеки 10 проверени поуки = +1 major.
+// minor е цифра 0–9; 10-ото учене ролва в следващ major (6.9 → 7.0 → … → 10.0).
+// Капва на 10.0 = максимална зрялост (целта). 10 учения = +1.0.
+function bumpVersion(v) {
   const p = String(v).split(".").map((n) => parseInt(n, 10) || 0);
-  return `${p[0] || 0}.${(p[1] || 0) + 1}.0`;
+  let maj = p[0] || 0;
+  let min = (p[1] || 0) + 1;
+  if (min > 9) { maj += 1; min = 0; }
+  if (maj > 10 || (maj === 10 && min > 0)) { maj = 10; min = 0; } // таван 10.0
+  return `${maj}.${min}.0`;
 }
 
 // Прилага activity запис и (при проверено учене) вдига minor версията + timeline запис.
@@ -144,7 +151,7 @@ function applyUpdate(obj, agentId, activityEntry, evoDetail) {
   if (evoDetail) {
     a.evolution = a.evolution || [];
     if (!a.evolution.some((e) => e.detail === evoDetail)) {
-      const next = bumpMinor(latestVersion(a));
+      const next = bumpVersion(latestVersion(a));
       a.evolution.push({
         version: next,
         date: activityEntry.date,
