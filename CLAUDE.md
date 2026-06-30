@@ -4,7 +4,7 @@ Guidance for AI assistants (and humans) working in this repository.
 
 ## Repository overview
 
-This is a **monorepo containing two independent products** by Carbon Stealth VCC
+This is a **monorepo containing several independent products** by Carbon Stealth VCC
 (https://carbonstealth.eu). They share no code and have separate dependencies,
 toolchains, CI workflows and deployment paths. Always work inside the relevant
 subdirectory.
@@ -13,6 +13,7 @@ subdirectory.
 | -------------- | ------------- | ----------------------------------------------------------- | ----------------------------------- |
 | `zabobovdol/`  | За Бобов дол  | Next.js 15 (App Router) · React 19 · TypeScript · Prisma · PostgreSQL · Tailwind | https://zabobovdol.carbonstealth.eu |
 | `medqr/`       | MedQR         | Node.js · Express · EJS · SQLite (better-sqlite3) — plain JS (ESM) | https://medqr.carbonstealth.eu      |
+| `supreme/`     | Supreme Bot   | Express · discord.js v14 · React 18 + Vite · Prisma · PostgreSQL · Redis · Docker — plain JS (ESM) | https://supreme.carbonstealth.eu    |
 
 There is **no root-level `package.json`** — `cd` into the project you are
 changing and run its scripts there. The root `.gitignore` only ignores

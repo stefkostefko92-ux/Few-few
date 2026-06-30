@@ -26,6 +26,10 @@
   билд + вдигане + миграции, сийд само при първо пускане).
 - **medqr:** rsync в `/opt/medqr` (без `data/`, `.env`), `npm ci --omit=dev`,
   `systemctl restart medqr`; при провал — автоматичен rollback към предишния код.
+- **supreme** (Supreme Bot): пренася четирите `.env` файла (`supreme/.env`,
+  `backend/.env`, `bot/.env`, `frontend/.env`), после `supreme/deploy.sh` (Docker Compose
+  билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
+  Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -34,7 +38,7 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus supreme` | кои проекти да се разгръщат тук |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
@@ -42,8 +46,9 @@
 
 ## Важно
 
-- **Тайните не са в архива.** `zabobovdol/.env` и `/etc/medqr/medqr.env` живеят на сървъра
-  (права 600). Скриптът пренася съществуващия `.env` при деплой.
+- **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env` и четирите
+  `supreme/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
+  Скриптът пренася съществуващите `.env` при всеки деплой.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
 - Първоначалната настройка на сървъра (юзъри, `ufw`, systemd unit, Nginx/Caddy, TLS) се
   прави веднъж — виж `zabobovdol/DEPLOY.md` и `medqr/deploy/DEPLOY.md`.
