@@ -388,192 +388,259 @@ const SKIN: Record<string, SkinTone> = {
 function makeFaceTexture(cls: string): FaceMaps {
   const cached = _faceMapCache.get(cls);
   if (cached) return cached;
+  // Боецът е почти цял ръст в кадър → главата е МАЛКА (~30-50px), картата чете
+  // като thumbnail. Затова дизайнът е за SQUINT-четимост: смели контрастни очи,
+  // наситена уста, малко силни акценти — НЕ фотореален фин детайл (той mip-ва в
+  // нищо при 40px). 512 е достатъчно: при този екранен размер 768 не личи.
   const S = 512;
   const cm = document.createElement('canvas'); cm.width = cm.height = S;
   const cb = document.createElement('canvas'); cb.width = cb.height = S;
   const ctx = cm.getContext('2d')!;
   const bx = cb.getContext('2d')!;
   ctx.clearRect(0, 0, S, S);
-  bx.fillStyle = '#808080'; bx.fillRect(0, 0, S, S); // bump mid-grey = flat
+  bx.fillStyle = '#808080'; bx.fillRect(0, 0, S, S); // bump mid-grey = плоско
+  ctx.lineJoin = 'round'; bx.lineJoin = 'round'; ctx.lineCap = 'round';
 
   const skin = SKIN[cls] || SKIN.warrior;
   const irisC: Record<string, string> = { warrior: '#5b3a1e', ranger: '#2f6b3a', mage: '#3a5e8c', rogue: '#4a2a20' };
-  const browC: Record<string, string> = { warrior: '#3a2410', ranger: '#4a3415', mage: '#dadada', rogue: '#1c130d' };
+  const browC: Record<string, string> = { warrior: '#3a2410', ranger: '#4a3415', mage: '#dcdcdc', rogue: '#1c130d' };
   const iris = irisC[cls] || '#4a3a2a';
   const brow = browC[cls] || '#2a1c10';
+  const masc = cls === 'warrior' || cls === 'rogue' || cls === 'ranger'; // мъжки контур
+  void skin; // тонът прозира от главата — рисуваме само черти + мек multiply
 
   const cx = S * 0.5;
-  void skin; // skin tone no longer painted as a base — features blend onto the head's own skin
 
-  // No skin base: the card is TRANSPARENT and we paint only realistic
-  // features (shaded eyes, brows, relief nose, lips) plus soft low-alpha
-  // shadow/highlight that MULTIPLY onto the head's own skin. This avoids a
-  // mismatched skin disc and blends perfectly on every class. Subtle nose-
-  // bridge + brow highlight and cheek warmth come later in their sections.
+  /* --- локален помощник: мек елипс-петно (сянка/руменина/светлик) --- */
+  const blob = (x: number, y: number, rx: number, ry: number, col: string, a0: number) => {
+    const c = new THREE.Color(col);
+    const r = (c.r * 255) | 0, g = (c.g * 255) | 0, b = (c.b * 255) | 0;
+    const rad = Math.max(rx, ry);
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    grad.addColorStop(0, `rgba(${r},${g},${b},${a0})`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.save(); ctx.translate(x, y); ctx.scale(rx / rad, ry / rad);
+    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0, 0, rad, 0, 7); ctx.fill(); ctx.restore();
+  };
+  // bump-петно: светло=изпъкнало, тъмно=хлътнало
+  const bblob = (x: number, y: number, rx: number, ry: number, grey: number, a0: number) => {
+    const rad = Math.max(rx, ry);
+    const grad = bx.createRadialGradient(x, y, 0, x, y, rad);
+    grad.addColorStop(0, `rgba(${grey},${grey},${grey},${a0})`);
+    grad.addColorStop(1, `rgba(${grey},${grey},${grey},0)`);
+    bx.save(); bx.translate(x, y); bx.scale(rx / rad, ry / rad);
+    bx.fillStyle = grad; bx.beginPath(); bx.arc(0, 0, rad, 0, 7); bx.fill(); bx.restore();
+  };
 
-  // ---- bump: overall dome + cheeks raised, temples lower ----
-  const dome = bx.createRadialGradient(cx, S * 0.5, S * 0.05, cx, S * 0.5, S * 0.5);
-  dome.addColorStop(0, '#9a9a9a'); dome.addColorStop(1, '#6a6a6a');
+  /* --- ПРОПОРЦИИ за thumbnail: очи ГОЛЕМИ и по-високо, уста по-ниско, чертите
+     разтегнати да запълнят картата (горе чело, долу брадичка не зеят празни). --- */
+  const eyeY = S * 0.40;
+  const eyeW = S * 0.115;            // полу-ширина (БЕШЕ 0.086 — сега доминира)
+  const eyeH = S * 0.072;            // полу-височина (БЕШЕ 0.046 — анимѐ-голямо)
+  const eyeDX = eyeW * 1.25;         // центрове на ±eyeDX; межд. очите < око → събрани, „живи"
+  const browY = eyeY - eyeH * 1.5;
+  const noseTipY = S * 0.585;
+  const mouthY = S * 0.745;
+
+  /* ---- 0) основа: общ bump-купол + челни буци ---- */
+  const dome = bx.createRadialGradient(cx, S * 0.5, S * 0.04, cx, S * 0.5, S * 0.52);
+  dome.addColorStop(0, '#9c9c9c'); dome.addColorStop(0.7, '#7c7c7c'); dome.addColorStop(1, '#666666');
   bx.fillStyle = dome; bx.fillRect(0, 0, S, S);
+  bblob(cx - S * 0.10, S * 0.27, S * 0.12, S * 0.10, 152, 0.5);
+  bblob(cx + S * 0.10, S * 0.27, S * 0.12, S * 0.10, 152, 0.5);
 
-  const eyeY = S * 0.42, eyeDX = S * 0.150, eyeW = S * 0.092, eyeH = S * 0.052;
-
-  // ---- 2) Eye sockets (recess shadow + bump-dark) ----
+  /* ---- 1) очни кухини: топла хлътнала сянка (силна, чете при 40px) ---- */
   for (const sgn of [-1, 1]) {
     const ex = cx + sgn * eyeDX;
-    const og = ctx.createRadialGradient(ex, eyeY, eyeH * 0.4, ex, eyeY, eyeW * 1.7);
-    og.addColorStop(0, 'rgba(60,38,24,0.0)');
-    og.addColorStop(1, 'rgba(55,32,20,0.30)');
-    ctx.fillStyle = og;
-    ctx.beginPath(); ctx.ellipse(ex, eyeY + eyeH * 0.2, eyeW * 1.7, eyeH * 1.9, 0, 0, 7); ctx.fill();
-    const ob = bx.createRadialGradient(ex, eyeY, eyeH * 0.4, ex, eyeY, eyeW * 1.5);
-    ob.addColorStop(0, '#4f4f4f'); ob.addColorStop(1, 'rgba(127,127,127,0)');
-    bx.fillStyle = ob; bx.beginPath(); bx.ellipse(ex, eyeY, eyeW * 1.5, eyeH * 1.6, 0, 0, 7); bx.fill();
+    blob(ex, eyeY - eyeH * 0.1, eyeW * 1.5, eyeH * 1.7, '#5a3520', 0.34);
+    bblob(ex, eyeY, eyeW * 1.4, eyeH * 1.5, 76, 0.9);
   }
 
-  // ---- 3) Eyes ----
-  const drawEye = (ex: number, look: number) => {
-    // sclera
-    ctx.save();
-    ctx.beginPath(); ctx.ellipse(ex, eyeY, eyeW, eyeH, 0, 0, 7); ctx.clip();
-    const sc = ctx.createLinearGradient(0, eyeY - eyeH, 0, eyeY + eyeH);
-    sc.addColorStop(0, '#d9d2c4'); sc.addColorStop(0.4, '#f3eee4'); sc.addColorStop(1, '#e7dccb');
-    ctx.fillStyle = sc; ctx.fillRect(ex - eyeW, eyeY - eyeH, eyeW * 2, eyeH * 2);
-    // iris
-    const ix = ex + look, iy = eyeY + eyeH * 0.05, ir = eyeH * 1.02;
-    const ig = ctx.createRadialGradient(ix - ir * 0.2, iy - ir * 0.2, ir * 0.1, ix, iy, ir);
-    ig.addColorStop(0, lighten(iris, 0.35));
-    ig.addColorStop(0.55, iris);
-    ig.addColorStop(1, darken(iris, 0.4));
-    ctx.fillStyle = ig; ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 7); ctx.fill();
-    // limbal ring
-    ctx.strokeStyle = 'rgba(20,14,8,0.55)'; ctx.lineWidth = S * 0.006;
-    ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 7); ctx.stroke();
-    // pupil
-    ctx.fillStyle = '#0b0805'; ctx.beginPath(); ctx.arc(ix, iy, ir * 0.46, 0, 7); ctx.fill();
-    // catch-light
-    ctx.fillStyle = 'rgba(255,255,255,0.95)';
-    ctx.beginPath(); ctx.arc(ix - ir * 0.32, iy - ir * 0.34, ir * 0.2, 0, 7); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.beginPath(); ctx.arc(ix + ir * 0.25, iy + ir * 0.2, ir * 0.1, 0, 7); ctx.fill();
-    ctx.restore();
-    // upper lid line + lashes (thick, dark)
-    ctx.strokeStyle = 'rgba(28,18,10,0.9)'; ctx.lineWidth = S * 0.014; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.ellipse(ex, eyeY, eyeW, eyeH, 0, Math.PI * 1.0, Math.PI * 2.0); ctx.stroke();
-    // upper-lid crease
-    ctx.strokeStyle = 'rgba(90,58,38,0.35)'; ctx.lineWidth = S * 0.006;
-    ctx.beginPath(); ctx.ellipse(ex, eyeY - eyeH * 0.7, eyeW * 1.05, eyeH * 0.9, 0, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
-    // lower lid
-    ctx.strokeStyle = 'rgba(120,86,62,0.4)'; ctx.lineWidth = S * 0.005;
-    ctx.beginPath(); ctx.ellipse(ex, eyeY, eyeW * 0.92, eyeH * 0.92, 0, Math.PI * 0.08, Math.PI * 0.92); ctx.stroke();
-  };
-  drawEye(cx - eyeDX, S * 0.012); drawEye(cx + eyeDX, S * 0.012);
+  /* ---- 2) ОЧИ — голями, контрастни, доминиращи. Зеницата плътно тъмна,
+     ирисът ясен висок-контраст, горният клепач ДЕБЕЛ и тъмен (#1 четимост). ---- */
+  const drawEye = (ex: number, sgn: number) => {
+    const ix = ex + sgn * S * 0.004, iy = eyeY + eyeH * 0.08;
+    const ir = eyeH * 0.86; // ГОЛЯМ ирис — почти пълни окото вертикално → анимѐ
 
-  // ---- 4) Brows (filled + hair strokes) ----
-  const browY = eyeY - eyeH * 2.05;
-  const drawBrow = (sgn: number) => {
-    const x0 = cx + sgn * (eyeDX - eyeW * 0.9), x1 = cx + sgn * (eyeDX + eyeW * 1.05);
-    ctx.strokeStyle = brow; ctx.lineWidth = S * 0.028; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x0, browY + eyeH * 0.35); ctx.quadraticCurveTo((x0 + x1) / 2, browY - eyeH * 0.35, x1, browY - eyeH * 0.05); ctx.stroke();
-    // hair strokes
-    ctx.lineWidth = S * 0.004;
-    for (let k = 0; k < 7; k++) {
-      const tt = k / 6, hx = x0 + (x1 - x0) * tt;
-      const hy = browY + eyeH * 0.35 + (-(eyeH * 0.7) * Math.sin(Math.PI * tt));
-      ctx.beginPath(); ctx.moveTo(hx, hy + eyeH * 0.18); ctx.lineTo(hx + sgn * eyeH * 0.12, hy - eyeH * 0.28); ctx.stroke();
+    // склера, клипната в бадем с увиснал външен ъгъл
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(ex - eyeW, eyeY + eyeH * 0.05);
+    ctx.quadraticCurveTo(ex - eyeW * 0.35, eyeY - eyeH * 0.95, ex + eyeW * 0.5, eyeY - eyeH * 0.72);
+    ctx.quadraticCurveTo(ex + eyeW, eyeY - eyeH * 0.3, ex + eyeW * 1.02, eyeY + eyeH * 0.12);
+    ctx.quadraticCurveTo(ex + eyeW * 0.5, eyeY + eyeH * 0.85, ex - eyeW * 0.25, eyeY + eyeH * 0.8);
+    ctx.quadraticCurveTo(ex - eyeW * 0.78, eyeY + eyeH * 0.6, ex - eyeW, eyeY + eyeH * 0.05);
+    ctx.closePath(); ctx.clip();
+    const sc = ctx.createLinearGradient(0, eyeY - eyeH, 0, eyeY + eyeH);
+    sc.addColorStop(0, '#d3cabb'); sc.addColorStop(0.5, '#f6f1e8'); sc.addColorStop(1, '#e2d6c4');
+    ctx.fillStyle = sc; ctx.fillRect(ex - eyeW * 1.2, eyeY - eyeH * 1.2, eyeW * 2.5, eyeH * 2.4);
+    // сянка от горния клепач (силна горе → дълбочина)
+    const lidSh = ctx.createLinearGradient(0, eyeY - eyeH, 0, eyeY + eyeH * 0.1);
+    lidSh.addColorStop(0, 'rgba(38,22,12,0.6)'); lidSh.addColorStop(1, 'rgba(38,22,12,0)');
+    ctx.fillStyle = lidSh; ctx.fillRect(ex - eyeW * 1.2, eyeY - eyeH * 1.2, eyeW * 2.5, eyeH * 1.4);
+
+    // ИРИС — висок-контраст радиален градиент (без фибри: те mip-ват в нищо)
+    const ig = ctx.createRadialGradient(ix, iy, ir * 0.15, ix, iy, ir);
+    ig.addColorStop(0, lighten(iris, 0.45));
+    ig.addColorStop(0.55, iris);
+    ig.addColorStop(1, darken(iris, 0.5));
+    ctx.fillStyle = ig; ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 7); ctx.fill();
+    // дебел тъмен лимбал — ясно очертава ириса при 40px
+    ctx.strokeStyle = 'rgba(16,10,6,0.7)'; ctx.lineWidth = S * 0.008;
+    ctx.beginPath(); ctx.arc(ix, iy, ir * 0.95, 0, 7); ctx.stroke();
+    // ЗЕНИЦА — голяма, плътно черна (силен акцент, четим)
+    ctx.fillStyle = '#080605'; ctx.beginPath(); ctx.arc(ix, iy, ir * 0.46, 0, 7); ctx.fill();
+    // ЕДИН силен катч-светлик горе-ляво (живо око, чете и при squint)
+    ctx.fillStyle = 'rgba(255,255,255,0.98)';
+    ctx.beginPath(); ctx.arc(ix - ir * 0.32, iy - ir * 0.34, ir * 0.26, 0, 7); ctx.fill();
+    ctx.restore(); // край клип
+
+    // ГОРЕН КЛЕПАЧ — ДЕБЕЛА тъмна линия с мигли (доминантата на окото)
+    ctx.strokeStyle = 'rgba(20,12,7,0.95)';
+    ctx.lineWidth = S * 0.017; // дебел → чете като силна форма
+    ctx.beginPath();
+    ctx.moveTo(ex - eyeW, eyeY + eyeH * 0.05);
+    ctx.quadraticCurveTo(ex - eyeW * 0.35, eyeY - eyeH * 1.0, ex + eyeW * 0.5, eyeY - eyeH * 0.75);
+    ctx.quadraticCurveTo(ex + eyeW, eyeY - eyeH * 0.3, ex + eyeW * 1.04, eyeY + eyeH * 0.12);
+    ctx.stroke();
+    // мигли — 3 смели къси косъма от външния ъгъл (не ситни)
+    ctx.lineWidth = S * 0.005;
+    for (let k = 0; k < 3; k++) {
+      const tt = 0.7 + k * 0.12;
+      const lx = ex - eyeW + (eyeW * 2.04) * tt;
+      const ly = eyeY - eyeH * 0.55 + (tt - 0.7) * eyeH * 1.5;
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + sgn * eyeH * 0.4, ly - eyeH * 0.55); ctx.stroke();
     }
-    // bump ridge
-    bx.strokeStyle = '#b8b8b8'; bx.lineWidth = S * 0.03; bx.lineCap = 'round';
-    bx.beginPath(); bx.moveTo(x0, browY + eyeH * 0.2); bx.quadraticCurveTo((x0 + x1) / 2, browY - eyeH * 0.4, x1, browY - eyeH * 0.1); bx.stroke();
+    // ДОЛЕН КЛЕПАЧ — една ясна (не свръх-фина) топла линия
+    ctx.strokeStyle = 'rgba(110,76,52,0.5)'; ctx.lineWidth = S * 0.006;
+    ctx.beginPath();
+    ctx.moveTo(ex - eyeW * 0.85, eyeY + eyeH * 0.4);
+    ctx.quadraticCurveTo(ex, eyeY + eyeH * 0.95, ex + eyeW * 0.9, eyeY + eyeH * 0.35);
+    ctx.stroke();
+
+    // bump: топчето на окото изпъква, ръбът на клепача хлътва
+    bblob(ix, iy, eyeW * 0.9, eyeH * 0.95, 150, 0.5);
+  };
+  drawEye(cx - eyeDX, -1);
+  drawEye(cx + eyeDX, 1);
+
+  /* ---- 3) ВЕЖДИ — СМЕЛИ тъмни форми (плътна основа) + косъмчета отгоре ---- */
+  const drawBrow = (sgn: number) => {
+    const inX = cx + sgn * (eyeDX - eyeW * 0.9);
+    const outX = cx + sgn * (eyeDX + eyeW * 1.0);
+    const archX = (inX + outX) / 2;
+    const baseY = browY + eyeH * 0.25;
+    const archY = browY - eyeH * 0.5;
+    // ПЛЪТНА смела основа (висока алфа → чете като форма при 40px)
+    ctx.strokeStyle = brow; ctx.globalAlpha = 0.85;
+    ctx.lineWidth = S * 0.026; // дебела
+    ctx.beginPath();
+    ctx.moveTo(inX, baseY);
+    ctx.quadraticCurveTo(archX, archY, outX, browY + eyeH * 0.05);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    // косъмчета отгоре за текстура (не носят формата, само я подсилват)
+    ctx.lineWidth = S * 0.004;
+    for (let k = 0; k < 9; k++) {
+      const tt = k / 8;
+      const hx = (1 - tt) * (1 - tt) * inX + 2 * (1 - tt) * tt * archX + tt * tt * outX;
+      const hy = (1 - tt) * (1 - tt) * baseY + 2 * (1 - tt) * tt * archY + tt * tt * (browY + eyeH * 0.05);
+      const len = eyeH * (0.35 + 0.25 * Math.sin(Math.PI * tt));
+      ctx.strokeStyle = k % 2 === 0 ? lighten(brow, 0.15) : brow;
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + sgn * eyeH * 0.15, hy - len); ctx.stroke();
+    }
+    bblob(archX, archY + eyeH * 0.15, eyeW * 1.2, eyeH * 0.6, 172, 0.6);
   };
   drawBrow(-1); drawBrow(1);
 
-  // ---- 5) Nose (bridge highlight, side shadow, tip, nostrils) ----
-  const noseTipY = S * 0.56;
-  // bridge highlight
-  const bridge = ctx.createLinearGradient(cx - S * 0.03, 0, cx + S * 0.03, 0);
-  bridge.addColorStop(0, 'rgba(255,240,220,0)');
-  bridge.addColorStop(0.5, 'rgba(255,243,224,0.4)');
-  bridge.addColorStop(1, 'rgba(255,240,220,0)');
-  ctx.fillStyle = bridge; ctx.fillRect(cx - S * 0.04, browY, S * 0.08, noseTipY - browY);
-  // side shadows
-  ctx.strokeStyle = 'rgba(120,78,50,0.28)'; ctx.lineWidth = S * 0.018; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(cx - S * 0.028, browY + eyeH * 0.6); ctx.quadraticCurveTo(cx - S * 0.05, S * 0.55, cx - S * 0.045, noseTipY); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx + S * 0.028, browY + eyeH * 0.6); ctx.quadraticCurveTo(cx + S * 0.05, S * 0.55, cx + S * 0.045, noseTipY); ctx.stroke();
-  // tip highlight
-  ctx.fillStyle = 'rgba(255,244,226,0.35)';
-  ctx.beginPath(); ctx.ellipse(cx, noseTipY - S * 0.01, S * 0.03, S * 0.022, 0, 0, 7); ctx.fill();
-  // nostrils
-  ctx.fillStyle = 'rgba(50,28,16,0.5)';
-  ctx.beginPath(); ctx.ellipse(cx - S * 0.034, noseTipY + S * 0.006, S * 0.013, S * 0.009, 0.3, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(cx + S * 0.034, noseTipY + S * 0.006, S * 0.013, S * 0.009, -0.3, 0, 7); ctx.fill();
-  // base shadow
-  ctx.strokeStyle = 'rgba(110,70,46,0.22)'; ctx.lineWidth = S * 0.008;
-  ctx.beginPath(); ctx.moveTo(cx - S * 0.04, noseTipY + S * 0.012); ctx.quadraticCurveTo(cx, noseTipY + S * 0.03, cx + S * 0.04, noseTipY + S * 0.012); ctx.stroke();
-  // nose bump ridge
-  bx.strokeStyle = '#c4c4c4'; bx.lineWidth = S * 0.03; bx.lineCap = 'round';
-  bx.beginPath(); bx.moveTo(cx, browY); bx.lineTo(cx, noseTipY - S * 0.01); bx.stroke();
-  bx.fillStyle = '#c9c9c9'; bx.beginPath(); bx.arc(cx, noseTipY - S * 0.005, S * 0.028, 0, 7); bx.fill();
+  /* ---- 4) НОС — МИНИМАЛЕН: само лека сянка + ноздри (не хаби контраст) ---- */
+  // фина странична сянка от едната страна (асиметрия → обем без шум)
+  blob(cx - S * 0.045, (browY + noseTipY) * 0.5, S * 0.03, (noseTipY - browY) * 0.45, '#7a4e32', 0.22);
+  // под носа лека сянка
+  blob(cx, noseTipY + S * 0.012, S * 0.045, S * 0.02, '#6e4630', 0.26);
+  // ноздри — два малки тъмни акцента (само толкова)
+  ctx.fillStyle = 'rgba(44,24,14,0.55)';
+  ctx.beginPath(); ctx.ellipse(cx - S * 0.026, noseTipY, S * 0.011, S * 0.008, 0.3, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cx + S * 0.026, noseTipY, S * 0.011, S * 0.008, -0.3, 0, 7); ctx.fill();
+  // bump: тънка мостова греда + връх-топче (за релеф през светлината)
+  bx.strokeStyle = '#bcbcbc'; bx.lineWidth = S * 0.022; bx.lineCap = 'round';
+  bx.beginPath(); bx.moveTo(cx, browY + eyeH * 0.3); bx.lineTo(cx, noseTipY - S * 0.01); bx.stroke();
+  bblob(cx, noseTipY - S * 0.004, S * 0.028, S * 0.024, 195, 0.65);
 
-  // ---- 6) Lips ----
-  const mouthY = S * 0.66, mw = S * 0.085;
-  // upper lip (darker)
-  ctx.fillStyle = 'rgba(150,86,72,0.7)';
+  /* ---- 5) УСТА — ЯСНА и наситена (чете при 40px): горна тъмна, долна плътна ---- */
+  const mw = S * 0.092; // по-широка → видима
+  // ГОРНА устна (наситена, тъмна, с купидонова дъга)
+  ctx.fillStyle = 'rgba(150,80,68,0.9)';
   ctx.beginPath();
   ctx.moveTo(cx - mw, mouthY);
-  ctx.quadraticCurveTo(cx - mw * 0.5, mouthY - S * 0.018, cx, mouthY - S * 0.006);
-  ctx.quadraticCurveTo(cx + mw * 0.5, mouthY - S * 0.018, cx + mw, mouthY);
-  ctx.quadraticCurveTo(cx, mouthY + S * 0.01, cx - mw, mouthY);
+  ctx.quadraticCurveTo(cx - mw * 0.5, mouthY - S * 0.026, cx - mw * 0.15, mouthY - S * 0.01);
+  ctx.quadraticCurveTo(cx, mouthY - S * 0.024, cx + mw * 0.15, mouthY - S * 0.01);
+  ctx.quadraticCurveTo(cx + mw * 0.5, mouthY - S * 0.026, cx + mw, mouthY);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.014, cx - mw, mouthY);
   ctx.fill();
-  // lower lip (fuller, highlight)
-  ctx.fillStyle = 'rgba(176,104,88,0.72)';
+  // ДОЛНА устна (по-плътна, по-светла/топла)
+  ctx.fillStyle = 'rgba(186,112,94,0.92)';
   ctx.beginPath();
-  ctx.moveTo(cx - mw * 0.92, mouthY + S * 0.004);
-  ctx.quadraticCurveTo(cx, mouthY + S * 0.032, cx + mw * 0.92, mouthY + S * 0.004);
-  ctx.quadraticCurveTo(cx, mouthY + S * 0.018, cx - mw * 0.92, mouthY + S * 0.004);
+  ctx.moveTo(cx - mw * 0.9, mouthY + S * 0.004);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.042, cx + mw * 0.9, mouthY + S * 0.004);
+  ctx.quadraticCurveTo(cx, mouthY + S * 0.018, cx - mw * 0.9, mouthY + S * 0.004);
   ctx.fill();
-  ctx.fillStyle = 'rgba(255,225,210,0.3)';
-  ctx.beginPath(); ctx.ellipse(cx, mouthY + S * 0.016, mw * 0.4, S * 0.006, 0, 0, 7); ctx.fill();
-  // mouth line
-  ctx.strokeStyle = 'rgba(90,46,38,0.6)'; ctx.lineWidth = S * 0.006; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(cx - mw, mouthY); ctx.quadraticCurveTo(cx, mouthY + S * 0.006, cx + mw, mouthY); ctx.stroke();
-  // lip bump
-  bx.fillStyle = '#9a9a9a';
-  bx.beginPath(); bx.ellipse(cx, mouthY + S * 0.006, mw, S * 0.026, 0, 0, 7); bx.fill();
+  // ЕДИН силен светлик на долната устна
+  ctx.fillStyle = 'rgba(255,228,214,0.4)';
+  ctx.beginPath(); ctx.ellipse(cx, mouthY + S * 0.02, mw * 0.4, S * 0.007, 0, 0, 7); ctx.fill();
+  // централна линия — НАСИТЕНА тъмна (силната четима черта на устата)
+  ctx.strokeStyle = 'rgba(70,32,26,0.85)'; ctx.lineWidth = S * 0.009;
+  ctx.beginPath(); ctx.moveTo(cx - mw, mouthY); ctx.quadraticCurveTo(cx, mouthY + S * 0.008, cx + mw, mouthY); ctx.stroke();
+  // ъглови сенки (дефинират устата)
+  blob(cx - mw, mouthY, S * 0.022, S * 0.016, '#5a2e26', 0.45);
+  blob(cx + mw, mouthY, S * 0.022, S * 0.016, '#5a2e26', 0.45);
+  // bump устни
+  bblob(cx, mouthY - S * 0.005, mw * 0.95, S * 0.014, 150, 0.6);
+  bblob(cx, mouthY + S * 0.02, mw * 0.85, S * 0.018, 172, 0.72);
 
-  // subtle cheek warmth
+  /* ---- 6) Скули + БРАДИЧКА: запълни долната трета, дай характер ---- */
   for (const sgn of [-1, 1]) {
-    const chg = ctx.createRadialGradient(cx + sgn * S * 0.18, S * 0.62, S * 0.01, cx + sgn * S * 0.18, S * 0.62, S * 0.12);
-    chg.addColorStop(0, 'rgba(200,110,90,0.12)'); chg.addColorStop(1, 'rgba(200,110,90,0)');
-    ctx.fillStyle = chg; ctx.fillRect(0, 0, S, S);
+    blob(cx + sgn * S * 0.19, S * 0.58, S * 0.1, S * 0.08, '#c8705a', 0.18);   // руменина
+    blob(cx + sgn * S * 0.205, S * 0.65, S * 0.08, S * 0.13, '#7a4a30', 0.2);  // под-скулна сянка
+  }
+  // БРАДИЧКА — светлик в центъра + сянка под устната → долната трета не зее празна
+  blob(cx, mouthY + S * 0.07, S * 0.07, S * 0.04, '#7a4a30', 0.24);            // сянка под устната
+  blob(cx, S * 0.85, S * 0.055, S * 0.035, '#f2d2aa', 0.18);                   // брадичка-светлик
+  bblob(cx, S * 0.85, S * 0.07, S * 0.05, 160, 0.45);                          // брадичка изпъква
+  if (masc) {
+    // по-силна челюстна сянка → мъжки контур, запълва ъглите
+    for (const sgn of [-1, 1]) {
+      blob(cx + sgn * S * 0.195, S * 0.74, S * 0.07, S * 0.14, '#6a3e28', 0.22);
+    }
   }
 
-  // ---- 7) Per-class ----
+  /* ---- 7) По класове ---- */
   if (cls === 'mage') {
     paintBeard(ctx, S, cx, mouthY, '#f6f5f1', '#d2d2cf');
+    bblob(cx, mouthY + S * 0.12, S * 0.2, S * 0.18, 150, 0.4);
   } else if (cls === 'warrior') {
-    // stubble shadow on jaw/chin
-    ctx.save(); ctx.globalAlpha = 0.16; ctx.fillStyle = '#2a1c10';
+    ctx.save(); ctx.globalAlpha = 0.17; ctx.fillStyle = '#241608';
     ctx.beginPath();
-    ctx.moveTo(cx - S * 0.15, S * 0.66);
-    ctx.quadraticCurveTo(cx, S * 0.86, cx + S * 0.15, S * 0.66);
-    ctx.quadraticCurveTo(cx, S * 0.8, cx - S * 0.15, S * 0.66);
+    ctx.moveTo(cx - S * 0.16, mouthY - S * 0.01);
+    ctx.quadraticCurveTo(cx, S * 0.92, cx + S * 0.16, mouthY - S * 0.01);
+    ctx.quadraticCurveTo(cx, S * 0.84, cx - S * 0.16, mouthY - S * 0.01);
     ctx.fill(); ctx.restore();
-    speckle(ctx, S, cx, S * 0.78, S * 0.15, S * 0.07, 'rgba(30,20,12,0.5)', 90);
+    speckle(ctx, S, cx, S * 0.82, S * 0.16, S * 0.08, 'rgba(26,16,10,0.5)', 120);
   } else if (cls === 'rogue') {
-    // scar across the right brow + leaner shading
-    ctx.strokeStyle = 'rgba(150,96,84,0.6)'; ctx.lineWidth = S * 0.009; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(cx + eyeDX + eyeW * 0.3, browY - eyeH * 0.6); ctx.lineTo(cx + eyeDX - eyeW * 0.1, eyeY + eyeH * 0.6); ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,235,225,0.25)'; ctx.lineWidth = S * 0.004;
-    ctx.beginPath(); ctx.moveTo(cx + eyeDX + eyeW * 0.34, browY - eyeH * 0.5); ctx.lineTo(cx + eyeDX - eyeW * 0.06, eyeY + eyeH * 0.5); ctx.stroke();
+    // белег през дясната вежда — смел тъмен + светъл ръб
+    ctx.strokeStyle = 'rgba(138,86,74,0.7)'; ctx.lineWidth = S * 0.011; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx + eyeDX + eyeW * 0.3, browY - eyeH * 0.6); ctx.lineTo(cx + eyeDX - eyeW * 0.05, eyeY + eyeH * 0.55); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,236,226,0.3)'; ctx.lineWidth = S * 0.004;
+    ctx.beginPath(); ctx.moveTo(cx + eyeDX + eyeW * 0.34, browY - eyeH * 0.5); ctx.lineTo(cx + eyeDX - eyeW * 0.01, eyeY + eyeH * 0.45); ctx.stroke();
+    bx.strokeStyle = '#5e5e5e'; bx.lineWidth = S * 0.007; bx.lineCap = 'round';
+    bx.beginPath(); bx.moveTo(cx + eyeDX + eyeW * 0.3, browY - eyeH * 0.6); bx.lineTo(cx + eyeDX - eyeW * 0.05, eyeY + eyeH * 0.55); bx.stroke();
   } else if (cls === 'ranger') {
-    speckle(ctx, S, cx, S * 0.56, S * 0.2, S * 0.06, 'rgba(120,70,40,0.4)', 36); // freckles
+    speckle(ctx, S, cx, S * 0.58, S * 0.2, S * 0.07, 'rgba(122,72,42,0.45)', 40); // лунички (по-малко, по-смели)
   }
 
-  // Feather the edge: multiply alpha by a radial falloff so the card melts
-  // into the head's own skin instead of showing a hard rectangular cutoff.
+  /* ---- 8) Перо на ръба: радиален falloff → сливане в кожата на главата ---- */
   ctx.globalCompositeOperation = 'destination-in';
-  const vig = ctx.createRadialGradient(cx, S * 0.52, S * 0.20, cx, S * 0.52, S * 0.52);
+  const vig = ctx.createRadialGradient(cx, S * 0.55, S * 0.22, cx, S * 0.55, S * 0.54);
   vig.addColorStop(0.0, 'rgba(0,0,0,1)');
   vig.addColorStop(0.72, 'rgba(0,0,0,1)');
   vig.addColorStop(1.0, 'rgba(0,0,0,0)');
@@ -581,10 +648,11 @@ function makeFaceTexture(cls: string): FaceMaps {
   ctx.globalCompositeOperation = 'source-over';
 
   const map = new THREE.CanvasTexture(cm);
-  map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
-  map.generateMipmaps = true; map.minFilter = THREE.LinearMipmapLinearFilter;
+  map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+  map.generateMipmaps = true; map.minFilter = THREE.LinearMipmapLinearFilter; map.magFilter = THREE.LinearFilter;
   const bump = new THREE.CanvasTexture(cb);
-  bump.anisotropy = 4;
+  bump.anisotropy = 8;
+  bump.generateMipmaps = true; bump.minFilter = THREE.LinearMipmapLinearFilter; bump.magFilter = THREE.LinearFilter;
   const maps: FaceMaps = { map, bump };
   _faceMapCache.set(cls, maps);
   return maps;
@@ -667,27 +735,40 @@ function addFaceOverlay(
   // brow ridge, nose, eye sockets, cheeks, jaw taper) so it lights as a 3D
   // face, not a flat sticker. The relief drives the normals.
   const halfW = (headR * 1.55) / 2, halfH = (headR * 1.75) / 2;
-  const geo = new THREE.PlaneGeometry(headR * 1.55, headR * 1.75, 36, 36);
+  // 48×48 вместо 36×36: тесните гаусови features (ноздрени крила sig≈0.045,
+  // нос sig≈0.072) искат 2–3 върха през ширината си, иначе релефът aliasва.
+  const geo = new THREE.PlaneGeometry(headR * 1.55, headR * 1.75, 48, 48);
   const pos = geo.attributes.position as THREE.BufferAttribute;
   const gauss = (v: number, mu: number, sig: number) => Math.exp(-((v - mu) * (v - mu)) / (2 * sig * sig));
+  // smoothstep за плавно стопяване към ръба
+  const smooth = (e0: number, e1: number, x: number) => {
+    const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+  };
   for (let i = 0; i < pos.count; i++) {
-    const xn = pos.getX(i) / halfW;            // [-1,1] left→right
-    const yn = pos.getY(i) / halfH;            // [-1,1] bottom→top
-    // base dome — recedes toward the edges
-    let z = (1 - Math.min(1, xn * xn * 0.95 + yn * yn * 0.78)) * headR * 0.30;
-    // brow ridge (just above the eye line)
-    z += gauss(yn, 0.30, 0.10) * Math.max(0, 1 - Math.abs(xn) / 0.75) * headR * 0.10;
-    // nose ridge down the centre, swelling at the tip
-    const noseX = gauss(xn, 0, 0.11);
-    z += noseX * gauss(yn, 0.0, 0.26) * headR * 0.20;
-    z += gauss(xn, 0, 0.10) * gauss(yn, -0.20, 0.08) * headR * 0.10; // tip
-    // eye sockets — recess
-    for (const sgn of [-1, 1]) z -= gauss(xn, sgn * 0.34, 0.13) * gauss(yn, 0.12, 0.10) * headR * 0.07;
-    // cheeks
-    for (const sgn of [-1, 1]) z += gauss(xn, sgn * 0.5, 0.18) * gauss(yn, -0.12, 0.22) * headR * 0.05;
-    // jaw taper (gently pull the bottom corners back)
-    z -= Math.max(0, -yn - 0.55) * (xn * xn) * headR * 0.22;
-    pos.setZ(i, z);
+    const xn = pos.getX(i) / halfW;            // [-1,1] ляво→дясно
+    const yn = pos.getY(i) / halfH;            // [-1,1] долу→горе
+    const ax = Math.abs(xn);
+    // плавно радиално стопяване към ръба — без твърд силует при profile (depthTest off)
+    const edge = 1 - smooth(0.62, 0.98, Math.sqrt(xn * xn * 0.94 + yn * yn * 0.82));
+    // 1) плитък лицев купол — само закръгля към краищата
+    let z = (1 - Math.min(1, xn * xn * 0.95 + yn * yn * 0.80)) * headR * 0.12;
+    // 2) надвесена вежда (brow ridge) над очната линия
+    z += gauss(yn, 0.30, 0.085) * Math.max(0, 1 - ax / 0.78) * headR * 0.075;
+    // 3) НОС: гръбнак (спускащ) + връх (най-отпред) + крила на ноздрите
+    z += gauss(xn, 0, 0.085) * gauss(yn, 0.04, 0.28) * headR * 0.120;          // гръбнак
+    z += gauss(xn, 0, 0.072) * gauss(yn, -0.16, 0.075) * headR * 0.105;        // връх ~yn=-0.16
+    for (const s of [-1, 1]) z += gauss(xn, s * 0.085, 0.045) * gauss(yn, -0.20, 0.06) * headR * 0.040; // ноздри
+    // 4) хлътнали очни кухини (xn≈±0.30, точно под веждата)
+    for (const s of [-1, 1]) z -= gauss(xn, s * 0.32, 0.115) * gauss(yn, 0.155, 0.085) * headR * 0.070;
+    // 5) изпъкнали скули
+    for (const s of [-1, 1]) z += gauss(xn, s * 0.46, 0.16) * gauss(yn, -0.10, 0.20) * headR * 0.045;
+    // 6) лека брадичка
+    z += gauss(xn, 0, 0.18) * gauss(yn, -0.66, 0.12) * headR * 0.040;
+    // 7) челюстно стопяване — издърпва долните ъгли назад
+    z -= Math.max(0, -yn - 0.50) * (xn * xn) * headR * 0.18;
+    // 8) глобално стопяване към ръба → мек силует
+    pos.setZ(i, z * edge);
   }
   geo.computeVertexNormals();
 
@@ -700,14 +781,14 @@ function addFaceOverlay(
     // bumpScale is in texture units, NOT world units — headR*0.25 ≈ 0.03 was
     // practically flat, which is why the relief never read. A fixed ~0.6 gives
     // real surface relief in the lighting.
-    map, bumpMap: bump, bumpScale: 0.6,
+    map, bumpMap: bump, bumpScale: 0.45,
     // A whisper of self-illumination so the painted features keep their colour
     // in shadow — but low (0.32 made the sclera / white beard glow unnaturally).
-    emissiveMap: map, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.12,
+    emissiveMap: map, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0.1,
     // Feathered alpha edge (see makeFaceTexture) needs a near-zero cutoff so the
     // soft blend into the head's own skin survives.
     transparent: true, alphaTest: 0.012,
-    roughness: 0.78, metalness: 0.0,
+    roughness: 0.74, metalness: 0.0,
     depthWrite: false, depthTest: false,
   });
   const face = new THREE.Mesh(geo, mat);
