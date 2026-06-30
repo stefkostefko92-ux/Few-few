@@ -27,7 +27,12 @@ function toCSV(rows, columns) {
     columns
       .map((c) => {
         const val = typeof c.value === "function" ? c.value(row) : row[c.key] ?? "";
-        return `"${String(val).replace(/"/g, '""')}"`;
+        let s = String(val);
+        // CSV formula-injection guard: a cell that a spreadsheet would treat as
+        // a formula (starts with = + - @ tab or CR) is user-controlled here
+        // (usernames, close reasons, answers), so prefix a single quote to neutralize it.
+        if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        return `"${s.replace(/"/g, '""')}"`;
       })
       .join(",")
   );

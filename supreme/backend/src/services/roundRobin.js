@@ -37,17 +37,21 @@ export async function pickNextAssignee(serverId, botToken) {
     const members = await fetchRoleMembers(serverId, server.roundRobinRoleId, botToken);
     if (!members.length) return null;
 
-    // Pick current index (clamped to valid range)
-    const index = server.roundRobinIndex % members.length;
-    const assigneeId = members[index];
-
-    // Advance index for next ticket (wrap around)
-    await prisma.server.update({
+    // Atomically advance the counter at the DB level. A read-then-write here
+    // would race: two concurrent tickets could read the same index and get
+    // assigned to the same person. `increment` is a single atomic SQL UPDATE,
+    // so each concurrent call receives a distinct sequential value.
+    const updated = await prisma.server.update({
       where: { id: serverId },
-      data: { roundRobinIndex: (index + 1) % members.length },
+      data: { roundRobinIndex: { increment: 1 } },
+      select: { roundRobinIndex: true },
     });
 
-    return assigneeId;
+    // Use the pre-increment value, wrapped into the current member range.
+    // (The raw counter grows unbounded but the modulo cycles correctly even
+    // when the member count changes between tickets.)
+    const index = ((updated.roundRobinIndex - 1) % members.length + members.length) % members.length;
+    return members[index];
   } catch (err) {
     console.error("[Round-Robin] Error picking assignee:", err.message);
     return null;
