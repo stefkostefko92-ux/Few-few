@@ -35,29 +35,42 @@ shopRouter.post(
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw unauthorized();
 
+    // Block a second active VIP subscription up front (one per user; the DB has a
+    // unique userId on Subscription, so a 2nd would later 500 the webhook).
+    if (product.kind === "VIP_SUB") {
+      const existing = await prisma.subscription.findUnique({ where: { userId } });
+      if (existing) throw badRequest("already_subscribed", "Вече имаш активен абонамент");
+    }
+
     const stripe = getStripe();
     const isSubscription = product.kind === "VIP_SUB";
 
-    const session = await stripe.checkout.sessions.create({
-      mode: isSubscription ? "subscription" : "payment",
-      // Carry identity + sku so the webhook knows what to grant, to whom.
-      client_reference_id: userId,
-      metadata: { userId, sku },
-      ...(isSubscription ? { subscription_data: { metadata: { userId, sku } } } : {}),
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "eur",
-            unit_amount: product.priceCents,
-            product_data: { name: product.title },
-            ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: isSubscription ? "subscription" : "payment",
+        // Carry identity + sku so the webhook knows what to grant, to whom.
+        client_reference_id: userId,
+        metadata: { userId, sku },
+        ...(isSubscription ? { subscription_data: { metadata: { userId, sku } } } : {}),
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: "eur",
+              unit_amount: product.priceCents,
+              product_data: { name: product.title },
+              ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),
+            },
           },
-        },
-      ],
-      success_url: `${env.PUBLIC_WEB_URL}/shop?status=success`,
-      cancel_url: `${env.PUBLIC_WEB_URL}/shop?status=cancel`,
-    });
+        ],
+        success_url: `${env.PUBLIC_WEB_URL}/shop?status=success`,
+        cancel_url: `${env.PUBLIC_WEB_URL}/shop?status=cancel`,
+      },
+      // Idempotency: the SDK retries network failures by replaying the POST, and
+      // a user can double-click. A short per-user/sku time bucket collapses both
+      // into one Checkout Session instead of two charges.
+      { idempotencyKey: `checkout:${userId}:${sku}:${Math.floor(Date.now() / 30_000)}` },
+    );
 
     res.json({ url: session.url });
   }),
@@ -77,10 +90,10 @@ shopRouter.post(
     const stripeSub = await stripe.subscriptions.retrieve(sub.stripeSubId);
     const customer = typeof stripeSub.customer === "string" ? stripeSub.customer : stripeSub.customer.id;
 
-    const portal = await stripe.billingPortal.sessions.create({
-      customer,
-      return_url: `${env.PUBLIC_WEB_URL}/shop`,
-    });
+    const portal = await stripe.billingPortal.sessions.create(
+      { customer, return_url: `${env.PUBLIC_WEB_URL}/shop` },
+      { idempotencyKey: `portal:${userId}:${Math.floor(Date.now() / 30_000)}` },
+    );
     res.json({ url: portal.url });
   }),
 );

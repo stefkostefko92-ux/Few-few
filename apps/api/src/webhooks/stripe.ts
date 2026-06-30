@@ -198,6 +198,37 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       return;
     }
 
+    case "invoice.payment_failed": {
+      // Dunning: Stripe Smart Retries handle the re-charge; we notify the player
+      // so they can update their card before VIP lapses.
+      const invoice = event.data.object as Stripe.Invoice;
+      const subId = invoiceSubscriptionId(invoice);
+      const sub = subId ? await getStripe().subscriptions.retrieve(subId) : null;
+      const userId = sub?.metadata?.userId;
+      await prisma.$transaction(async (tx) => {
+        if (userId) {
+          await tx.notification.create({
+            data: { userId, type: "system", data: JSON.stringify({ kind: "payment_failed" }) },
+          });
+        }
+        await markProcessed(tx, event);
+      });
+      logger.warn({ id: event.id, userId }, "invoice payment failed (dunning)");
+      return;
+    }
+
+    case "charge.dispute.created": {
+      // A chargeback was opened. We do NOT auto-clawback virtual currency, but
+      // ops must act (respond to the dispute, consider an abuse ban). Alert loudly.
+      const dispute = event.data.object as Stripe.Dispute;
+      logger.error(
+        { id: event.id, dispute: dispute.id, amount: dispute.amount, reason: dispute.reason },
+        "STRIPE DISPUTE opened — manual review required",
+      );
+      await prisma.$transaction((tx) => markProcessed(tx, event));
+      return;
+    }
+
     case "charge.refunded": {
       // Audit only — we do not claw back virtual currency automatically.
       const charge = event.data.object as Stripe.Charge;

@@ -35,8 +35,11 @@ export async function grantProduct(
       update: {},
     });
   }
-  if (product.kind === "VIP_SUB" && product.vipTier) {
-    await applyVip(tx, userId, product.vipTier, daysFromNow(31));
+  // VIP is a subscription: granted from invoice.paid with the REAL Stripe period,
+  // never here (grantProduct runs only for one-time mode:payment). Never fabricate
+  // a period — just flag the misuse.
+  if (product.kind === "VIP_SUB") {
+    logger.warn({ sku, userId }, "grantProduct: VIP sku in one-time path — ignored (granted via invoice.paid)");
   }
 }
 
@@ -71,8 +74,4 @@ export async function clearVip(
   userId: string,
 ): Promise<void> {
   await tx.user.update({ where: { id: userId }, data: { vipTier: "NONE", vipUntil: null } });
-}
-
-function daysFromNow(days: number): Date {
-  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 }
