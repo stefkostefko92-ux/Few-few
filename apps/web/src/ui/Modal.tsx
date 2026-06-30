@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Panel } from "./Panel";
 
 interface ModalProps {
@@ -14,6 +15,7 @@ const FOCUSABLE =
 /** Accessible dialog: backdrop click + Escape to close, with a real focus trap
  *  (focus moves in on open, Tab cycles within, focus restores on close). */
 export function Modal({ open, onClose, title, children }: ModalProps) {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -78,7 +80,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
-        aria-label={title ? undefined : "Диалог"}
+        aria-label={title ? undefined : t("a11y.dialog")}
         className="w-full max-w-md focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >

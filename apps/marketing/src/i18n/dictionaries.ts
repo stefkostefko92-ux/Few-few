@@ -185,7 +185,7 @@ const bg: Dict = {
   about: {
     breadcrumb: "За нас",
     heading: "За АСО",
-    p1: "АСО е премиум браузърен портал за 18 класически игри на карти и маса в реално време. Играй срещу приятели и ботове, изкачвай класацията и отключвай козметика — всичко безплатно, направо в браузъра.",
+    p1: "АСО е премиум браузърен портал за 21 класически игри на карти и маса в реално време. Играй срещу приятели и ботове, изкачвай класацията и отключвай козметика — всичко безплатно, направо в браузъра.",
     p2: "Никакъв „плати, за да печелиш“. Парите купуват само козметика и комфорт. Игрите със залог се играят само с виртуални чипове — социална игра, не хазарт за реални пари.",
     createdByPrefix: "Създадено от",
   },
@@ -285,7 +285,7 @@ const en: Dict = {
   about: {
     breadcrumb: "About",
     heading: "About АСО",
-    p1: "АСО is a premium browser portal for 18 classic card and table games in real time. Play against friends and bots, climb the leaderboard and unlock cosmetics — all free, right in your browser.",
+    p1: "АСО is a premium browser portal for 21 classic card and table games in real time. Play against friends and bots, climb the leaderboard and unlock cosmetics — all free, right in your browser.",
     p2: "No “pay to win” whatsoever. Money buys cosmetics and comfort only. Wager games are played with virtual chips alone — a social game, not real-money gambling.",
     createdByPrefix: "Created by",
   },
@@ -385,7 +385,7 @@ const it: Dict = {
   about: {
     breadcrumb: "Chi siamo",
     heading: "Chi è АСО",
-    p1: "АСО è un portale browser premium per 18 giochi classici di carte e da tavolo in tempo reale. Gioca contro amici e bot, scala la classifica e sblocca elementi estetici — tutto gratis, direttamente nel browser.",
+    p1: "АСО è un portale browser premium per 21 giochi classici di carte e da tavolo in tempo reale. Gioca contro amici e bot, scala la classifica e sblocca elementi estetici — tutto gratis, direttamente nel browser.",
     p2: "Nessun “paga per vincere”. Il denaro acquista solo estetica e comodità. I giochi con puntate si giocano esclusivamente con fiches virtuali — un gioco sociale, non gioco d'azzardo con denaro reale.",
     createdByPrefix: "Creato da",
   },

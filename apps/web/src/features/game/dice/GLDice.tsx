@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { GLDice as GLDiceRenderer } from "./glDice";
 
 /** Returns false if WebGL is unavailable (lets the caller fall back to CSS dice). */
@@ -31,6 +32,7 @@ export function GLDice({
   rollNonce: number;
   heldLabel: string;
 }) {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const diceRef = useRef<GLDiceRenderer | null>(null);
@@ -88,7 +90,7 @@ export function GLDice({
             className="dice-gl__btn"
             disabled={!canToggle}
             aria-pressed={held[i]}
-            aria-label={`зар ${values[i]}${held[i] ? `, ${heldLabel}` : ""}`}
+            aria-label={`${t("a11y.die", { v: values[i] })}${held[i] ? `, ${heldLabel}` : ""}`}
             onClick={() => canToggle && onToggle(i)}
           >
             {held[i] ? <span className="dice-held-tag">{heldLabel}</span> : null}

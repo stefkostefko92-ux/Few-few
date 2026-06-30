@@ -165,7 +165,7 @@ export function DraughtsView({ title }: { title: string }) {
                     key={i}
                     type="button"
                     onClick={() => onCell(i)}
-                    aria-label={`клетка ${i}`}
+                    aria-label={t("a11y.cell", { i })}
                     className={cn(
                       "aso-cell",
                       dark ? "aso-cell--dark" : "aso-cell--light",

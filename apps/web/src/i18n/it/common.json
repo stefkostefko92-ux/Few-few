@@ -204,8 +204,8 @@
     "theirTeam": "Avversari",
     "pass": "Passo",
     "emptyTrick": "In attesa della prima carta",
-    "auction": "Asta — chiama la briscola",
-    "contract": "Briscola",
+    "auction": "Asta — chiama l'atout",
+    "contract": "Atout",
     "decl": {
       "tierce": "Terza",
       "fifty": "Cinquanta",
@@ -288,7 +288,7 @@
     "type": {
       "FELT": "Panno del tavolo",
       "CARDBACK": "Dorso delle carte",
-      "BOARD": "Scacchiera",
+      "BOARD": "Tabellone",
       "CUE": "Panno biliardo",
       "ESTATE": "Panno del tabellone"
     },
@@ -331,7 +331,14 @@
   "a11y": {
     "skipToContent": "Vai al contenuto",
     "toggleSound": "Attiva/disattiva audio",
-    "toggleMotion": "Movimento ridotto"
+    "toggleMotion": "Movimento ridotto",
+    "cell": "cella {{i}}",
+    "die": "dado {{v}}",
+    "token": "pedina {{seat}}-{{token}}",
+    "card": "carta",
+    "cardNamed": "{{name}}",
+    "domino": "domino {{a}}-{{b}}",
+    "dialog": "Finestra di dialogo"
   },
   "svara": {
     "pot": "Piatto",
@@ -358,7 +365,8 @@
   },
   "war": {
     "flip": "Gira",
-    "battle": "GUERRA"
+    "battle": "GUERRA",
+    "cards": "{{n}} carte"
   },
   "rummy": {
     "stock": "Mazzo",

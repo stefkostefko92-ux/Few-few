@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "../../../ui";
 
 const PIP_MAP: Record<number, number[]> = {
@@ -33,6 +34,7 @@ export function DominoTile({
   playable?: boolean;
   onClick?: () => void;
 }) {
+  const { t } = useTranslation();
   if (tile === "?") return <span className="dom-tile dom-tile--back" aria-hidden />;
   const [a, b] = tile.split("-").map(Number) as [number, number];
   const Tag = onClick ? "button" : "div";
@@ -40,7 +42,7 @@ export function DominoTile({
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      aria-label={`домино ${a}-${b}`}
+      aria-label={t("a11y.domino", { a, b })}
       className={cn("dom-tile", vertical && "dom-tile--v", playable && "dom-tile--playable")}
       style={{ transition: "transform 140ms cubic-bezier(.2,.9,.25,1.15)" }}
     >

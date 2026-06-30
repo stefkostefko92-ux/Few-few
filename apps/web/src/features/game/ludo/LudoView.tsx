@@ -211,7 +211,7 @@ export function LudoView({ title }: { title: string }) {
                         type="button"
                         disabled={!p.movable}
                         onClick={() => p.seat === seat && moveToken(p.token)}
-                        aria-label={`пионка ${p.seat}-${p.token}`}
+                        aria-label={t("a11y.token", { seat: p.seat, token: p.token })}
                         className={cn("ludo-pawn", p.movable && "ludo-pawn--movable")}
                         style={{
                           background: SEAT_COLORS[p.seat],

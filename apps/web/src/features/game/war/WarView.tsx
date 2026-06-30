@@ -61,7 +61,7 @@ export function WarView({ title }: { title: string }) {
               pos="top"
               name={oppName}
               active={state.turn === opp}
-              badge={<span className="tnum">{state.hands[opp]?.length ?? 0} карти</span>}
+              badge={<span className="tnum">{t("war.cards", { n: state.hands[opp]?.length ?? 0 })}</span>}
             >
               <PlayingCard card="?" size="md" />
             </Seat>
@@ -82,7 +82,7 @@ export function WarView({ title }: { title: string }) {
               pos="bottom"
               name={user?.displayName ?? t("game.you")}
               active={state.turn === seat}
-              badge={<span className="tnum">{state.hands[seat]?.length ?? 0} карти</span>}
+              badge={<span className="tnum">{t("war.cards", { n: state.hands[seat]?.length ?? 0 })}</span>}
             >
               <PlayingCard card="?" size="md" />
             </Seat>
