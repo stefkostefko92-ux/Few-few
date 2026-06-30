@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Falafel con verdure fresche">
+  <defs>
+    <radialGradient id="flbg" cx="50%" cy="40%" r="80%"><stop offset="0" stop-color="#281a12"/><stop offset="1" stop-color="#130D0A"/></radialGradient>
+    <radialGradient id="flball" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#7BA24A"/><stop offset="60%" stop-color="#4F7D34"/><stop offset="1" stop-color="#33531f"/></radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#flbg)"/>
+  <ellipse cx="300" cy="330" rx="240" ry="200" fill="#3F7D52" opacity="0.12"/>
+  <!-- bowl -->
+  <ellipse cx="300" cy="360" rx="220" ry="150" fill="#241a14"/>
+  <ellipse cx="300" cy="345" rx="220" ry="140" fill="#FBF1DC"/>
+  <ellipse cx="300" cy="345" rx="190" ry="120" fill="#33251c"/>
+  <!-- hummus base -->
+  <ellipse cx="300" cy="350" rx="170" ry="104" fill="#E8C887"/>
+  <!-- falafel balls -->
+  <g>
+    <circle cx="230" cy="320" r="42" fill="url(#flball)"/><circle cx="320" cy="300" r="46" fill="url(#flball)"/>
+    <circle cx="380" cy="345" r="40" fill="url(#flball)"/><circle cx="270" cy="380" r="44" fill="url(#flball)"/>
+    <circle cx="350" cy="400" r="38" fill="url(#flball)"/>
+  </g>
+  <!-- sesame/texture specks -->
+  <g fill="#2f4a1c" opacity="0.55">
+    <circle cx="222" cy="312" r="3"/><circle cx="240" cy="330" r="3"/><circle cx="318" cy="292" r="3"/><circle cx="330" cy="312" r="3"/><circle cx="372" cy="340" r="3"/><circle cx="264" cy="374" r="3"/><circle cx="348" cy="398" r="3"/>
+  </g>
+  <!-- parsley + tomato -->
+  <g fill="#3F7D52"><path d="M300 270c12-7 26-5 30 7-10 7-24 5-30-7z"/><path d="M410 360c12-7 26-5 30 7-10 7-24 5-30-7z"/></g>
+  <circle cx="180" cy="360" r="20" fill="#D33A33"/><circle cx="420" cy="320" r="18" fill="#C1272D"/>
+  <!-- sauce drizzle -->
+  <path d="M210 350c30 16 60 16 90 0 30 16 60 16 90 0" stroke="#FBF6EE" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.85"/>
+</svg>

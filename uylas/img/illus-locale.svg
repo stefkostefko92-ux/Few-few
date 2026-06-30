@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Il locale Uylas Kebap Center a Bareggio">
+  <defs>
+    <linearGradient id="lsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A130E"/><stop offset="1" stop-color="#2A1C13"/></linearGradient>
+    <linearGradient id="lwin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2C879"/><stop offset="1" stop-color="#E89A3C"/></linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#lsky)"/>
+  <!-- warm interior glow -->
+  <ellipse cx="300" cy="430" rx="260" ry="150" fill="#E8480C" opacity="0.14"/>
+  <!-- facade -->
+  <rect x="70" y="150" width="460" height="380" fill="#241a14"/>
+  <!-- awning -->
+  <path d="M60 150h480v60H60z" fill="#C1272D"/>
+  <g fill="#FBF6EE" opacity="0.9"><rect x="60" y="150" width="60" height="60"/><rect x="180" y="150" width="60" height="60"/><rect x="300" y="150" width="60" height="60"/><rect x="420" y="150" width="60" height="60"/></g>
+  <path d="M60 210h480l-12 26H72z" fill="#9c1f24"/>
+  <!-- sign -->
+  <rect x="150" y="92" width="300" height="48" rx="8" fill="#14100E" stroke="#E8B04B" stroke-width="2"/>
+  <text x="300" y="126" text-anchor="middle" font-family="'Anton','Arial Narrow',sans-serif" font-size="30" fill="#E8B04B" letter-spacing="2">UYLAS</text>
+  <!-- windows -->
+  <rect x="100" y="250" width="180" height="200" rx="6" fill="url(#lwin)"/>
+  <rect x="320" y="250" width="180" height="200" rx="6" fill="url(#lwin)"/>
+  <g opacity="0.25" fill="#7E3C13"><rect x="100" y="250" width="180" height="200" rx="6"/></g>
+  <!-- door -->
+  <rect x="262" y="350" width="76" height="180" rx="4" fill="#3a2a20"/>
+  <rect x="270" y="360" width="60" height="120" rx="4" fill="url(#lwin)" opacity="0.85"/>
+  <!-- silhouettes inside -->
+  <g fill="#7E3C13" opacity="0.5"><circle cx="160" cy="350" r="20"/><rect x="150" y="368" width="20" height="50" rx="8"/><circle cx="230" cy="360" r="18"/><rect x="221" y="376" width="18" height="46" rx="8"/></g>
+  <!-- döner in window -->
+  <g transform="translate(420 300)"><rect x="-6" y="-30" width="12" height="150" rx="6" fill="#E8B04B"/><path d="M0 -20c30 6 48 30 48 72s-22 70-48 86c-26-16-48-44-48-86s18-66 48-72z" fill="#C46A22"/></g>
+  <!-- sidewalk -->
+  <rect x="0" y="530" width="600" height="70" fill="#1c1510"/>
+  <rect x="0" y="530" width="600" height="8" fill="#E8B04B" opacity="0.3"/>
+</svg>

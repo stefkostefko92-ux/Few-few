@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Pizza appena sfornata">
+  <defs>
+    <radialGradient id="pbg" cx="50%" cy="42%" r="75%">
+      <stop offset="0" stop-color="#241813"/><stop offset="1" stop-color="#140D0A"/>
+    </radialGradient>
+    <radialGradient id="pcrust" cx="50%" cy="50%" r="50%">
+      <stop offset="68%" stop-color="#E8A94B"/><stop offset="82%" stop-color="#C9802E"/><stop offset="1" stop-color="#9c5a1e"/>
+    </radialGradient>
+    <radialGradient id="psauce" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#E84C2B"/><stop offset="1" stop-color="#C1272D"/>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#pbg)"/>
+  <ellipse cx="300" cy="320" rx="250" ry="250" fill="#000" opacity="0.25"/>
+  <circle cx="300" cy="300" r="248" fill="url(#pcrust)"/>
+  <circle cx="300" cy="300" r="210" fill="url(#psauce)"/>
+  <!-- mozzarella blobs -->
+  <g fill="#FBF1DC">
+    <ellipse cx="240" cy="220" rx="42" ry="34"/><ellipse cx="360" cy="250" rx="48" ry="36"/>
+    <ellipse cx="220" cy="350" rx="44" ry="36"/><ellipse cx="350" cy="380" rx="50" ry="38"/>
+    <ellipse cx="300" cy="300" rx="46" ry="36"/><ellipse cx="410" cy="330" rx="34" ry="28"/>
+    <ellipse cx="270" cy="430" rx="38" ry="30"/>
+  </g>
+  <g fill="#F6E2BE" opacity="0.6">
+    <ellipse cx="240" cy="220" rx="42" ry="10"/><ellipse cx="360" cy="250" rx="48" ry="10"/>
+    <ellipse cx="350" cy="380" rx="50" ry="10"/>
+  </g>
+  <!-- basil -->
+  <g fill="#3F7D52">
+    <path d="M300 210c14-8 30-6 34 8-12 8-28 6-34-8z"/>
+    <path d="M380 320c14-8 30-6 34 8-12 8-28 6-34-8z"/>
+    <path d="M250 400c14-8 30-6 34 8-12 8-28 6-34-8z"/>
+    <path d="M330 440c12-7 26-5 30 7-10 7-24 5-30-7z"/>
+  </g>
+  <!-- pepperoni accents -->
+  <g fill="#A81E28">
+    <circle cx="200" cy="280" r="18"/><circle cx="400" cy="220" r="18"/><circle cx="320" cy="380" r="18"/><circle cx="380" cy="430" r="16"/>
+  </g>
+  <!-- oil sheen -->
+  <ellipse cx="240" cy="240" rx="120" ry="60" fill="#fff" opacity="0.05"/>
+</svg>
