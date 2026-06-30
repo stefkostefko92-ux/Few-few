@@ -95,6 +95,12 @@ async function main(): Promise<void> {
       return;
     }
     if (req.url === "/metrics") {
+      const metricsToken = process.env.METRICS_TOKEN;
+      if (metricsToken && req.headers.authorization !== `Bearer ${metricsToken}`) {
+        res.writeHead(401);
+        res.end();
+        return;
+      }
       metricsText()
         .then(({ body, type }) => {
           res.writeHead(200, { "content-type": type });

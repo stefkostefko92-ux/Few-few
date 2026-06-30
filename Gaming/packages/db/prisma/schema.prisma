@@ -26,6 +26,7 @@ model User {
   level         Int       @default(1)
   vipTier       VipTier   @default(NONE)
   vipUntil      DateTime?
+  stripeCustomerId String? @unique // reuse one Stripe customer per user (no dupes)
   banned        Boolean   @default(false) // blocked at login by staff (§14)
   termsAcceptedAt DateTime? // consent to ToS + 18+ at registration (GDPR)
   deletedAt     DateTime? // GDPR erasure: anonymized + login disabled
@@ -347,4 +348,12 @@ enum GameKey {
   NINEBALL
   SNOOKER
   MAGNAT
+}
+
+/// Key-value app settings, editable from the admin panel (e.g. the Discord
+/// webhook config). `value` holds JSON; the app layer parses/validates it.
+model Setting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
 }

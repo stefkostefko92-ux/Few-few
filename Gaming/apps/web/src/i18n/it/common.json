@@ -87,7 +87,15 @@
     "discordSent": "Inviato su Discord.",
     "discordDisabled": "Webhook Discord non configurato.",
     "gamesToday": "Partite di oggi per tipo",
-    "noGames": "Nessuna partita oggi."
+    "noGames": "Nessuna partita oggi.",
+    "audit": "Audit",
+    "save": "Salva",
+    "loadMore": "Carica altro",
+    "discordConfig": "Impostazioni webhook",
+    "discordBotName": "Nome bot",
+    "discordEnabled": "Attivo",
+    "discordEvents": "Quali eventi inviare",
+    "discordBadUrl": "URL webhook non valido"
   },
   "auth": {
     "loginTitle": "Accedi",

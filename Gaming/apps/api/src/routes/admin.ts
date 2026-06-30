@@ -6,6 +6,7 @@ import { asyncHandler, badRequest, forbidden } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyAdminAction, notifyBroadcast, sendTest } from "../integrations/discord.js";
+import { getDiscordConfig, setDiscordConfig } from "../settings.js";
 
 export const adminRouter: Router = Router();
 
@@ -261,10 +262,79 @@ adminRouter.patch(
 
 // ── Discord (ADMIN/OWNER) ────────────────────────────────────────────────────
 
-/** GET /api/admin/discord — webhook configured status. */
-adminRouter.get("/discord", (_req, res) => {
-  res.json({ enabled: discordEnabled() });
+/** GET /api/admin/audit — paginated staff audit log (most recent first). */
+adminRouter.get(
+  "/audit",
+  asyncHandler(async (req, res) => {
+    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const cursor = typeof req.query.cursor === "string" ? req.query.cursor : undefined;
+    const rows = await prisma.adminAudit.findMany({
+      take: take + 1,
+      orderBy: { createdAt: "desc" },
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+    const hasMore = rows.length > take;
+    const items = (hasMore ? rows.slice(0, take) : rows).map((a) => ({
+      id: a.id,
+      actorName: a.actorName,
+      action: a.action,
+      targetId: a.targetId,
+      detail: a.detail,
+      createdAt: a.createdAt,
+    }));
+    res.json({ items, nextCursor: hasMore ? items[items.length - 1]?.id : null });
+  }),
+);
+
+/** GET /api/admin/discord — full webhook config (editable in the admin panel). */
+adminRouter.get(
+  "/discord",
+  asyncHandler(async (_req, res) => {
+    const cfg = await getDiscordConfig(true);
+    res.json(cfg);
+  }),
+);
+
+const discordConfigSchema = z.object({
+  // Empty string clears it; otherwise must be a Discord webhook URL.
+  webhookUrl: z
+    .string()
+    .trim()
+    .max(400)
+    .refine((v) => v === "" || /^https:\/\/(canary\.|ptb\.)?discord(app)?\.com\/api\/webhooks\//.test(v), {
+      message: "Must be a https://discord.com/api/webhooks/… URL",
+    })
+    .optional(),
+  webhookName: z.string().trim().min(1).max(80).optional(),
+  enabled: z.boolean().optional(),
+  events: z
+    .object({
+      registration: z.boolean(),
+      purchase: z.boolean(),
+      vip: z.boolean(),
+      flag: z.boolean(),
+      adminAction: z.boolean(),
+      broadcast: z.boolean(),
+    })
+    .partial()
+    .optional(),
 });
+
+/** PUT /api/admin/discord — update the webhook config (ADMIN/OWNER). */
+adminRouter.put(
+  "/discord",
+  STAFF_WRITE,
+  asyncHandler(async (req, res) => {
+    const patch = discordConfigSchema.parse(req.body);
+    const cfg = await setDiscordConfig(patch);
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, "discord_config", null, {
+      enabled: cfg.enabled,
+      hasUrl: cfg.webhookUrl.length > 0,
+    });
+    res.json(cfg);
+  }),
+);
 
 /** POST /api/admin/discord/test — send a test embed. */
 adminRouter.post(

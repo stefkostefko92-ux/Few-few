@@ -4,6 +4,7 @@ import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { redis } from "./redis.js";
 import { seedProducts } from "./economy/seed.js";
+import { primeSettings } from "./settings.js";
 import { initSentry } from "./integrations/sentry.js";
 
 // Last-resort guards. An unhandled rejection is logged; an uncaught exception
@@ -21,6 +22,10 @@ async function main(): Promise<void> {
 
   // Establish the Redis connection up front (progression uses it directly).
   await redis.connect().catch((err) => logger.warn({ err: err.message }, "redis connect at boot failed"));
+
+  // Warm the admin-editable settings cache (Discord config) so the first
+  // fire-and-forget notification uses the right webhook.
+  await primeSettings();
 
   // Mirror the product catalog into the DB so Purchase rows can FK to it.
   await seedProducts().catch((err) => logger.error({ err }, "product seed failed"));

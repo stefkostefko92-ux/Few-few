@@ -31,6 +31,12 @@ export function startMetricsServer(): void {
       return;
     }
     if (req.url === "/metrics") {
+      const token = process.env.METRICS_TOKEN;
+      if (token && req.headers.authorization !== `Bearer ${token}`) {
+        res.writeHead(401);
+        res.end();
+        return;
+      }
       registry
         .metrics()
         .then((body) => {

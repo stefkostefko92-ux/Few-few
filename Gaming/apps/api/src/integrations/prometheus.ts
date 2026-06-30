@@ -31,7 +31,15 @@ export const metricsMiddleware: RequestHandler = (req, res, next) => {
   next();
 };
 
-export const metricsHandler: RequestHandler = (_req, res) => {
+export const metricsHandler: RequestHandler = (req, res) => {
+  // Optional bearer-token gate: on a shared host, localhost-bound /metrics is
+  // readable by any local process. Set METRICS_TOKEN to require Prometheus to
+  // authenticate; unset = open (rely on network isolation).
+  const token = process.env.METRICS_TOKEN;
+  if (token && req.headers.authorization !== `Bearer ${token}`) {
+    res.status(401).end();
+    return;
+  }
   registry
     .metrics()
     .then((body) => {

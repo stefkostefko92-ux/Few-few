@@ -87,7 +87,15 @@
     "discordSent": "Изпратено в Discord.",
     "discordDisabled": "Discord webhook не е настроен.",
     "gamesToday": "Игри днес по тип",
-    "noGames": "Няма игри днес."
+    "noGames": "Няма игри днес.",
+    "audit": "Одит",
+    "save": "Запази",
+    "loadMore": "Зареди още",
+    "discordConfig": "Настройки на webhook",
+    "discordBotName": "Име на бота",
+    "discordEnabled": "Включен",
+    "discordEvents": "Кои събития да се изпращат",
+    "discordBadUrl": "Невалиден webhook URL"
   },
   "auth": {
     "loginTitle": "Вход",

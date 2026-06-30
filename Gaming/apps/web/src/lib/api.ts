@@ -177,7 +177,9 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
-  adminDiscord: () => request<{ enabled: boolean }>("/admin/discord"),
+  adminDiscord: () => request<DiscordConfig>("/admin/discord"),
+  adminDiscordSave: (patch: Partial<DiscordConfig>) =>
+    request<DiscordConfig>("/admin/discord", { method: "PUT", body: JSON.stringify(patch) }),
   adminDiscordTest: () =>
     request<{ sent: boolean; enabled: boolean }>("/admin/discord/test", { method: "POST" }),
   adminBroadcast: (message: string) =>
@@ -185,7 +187,27 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ message }),
     }),
+  adminAudit: (cursor?: string) =>
+    request<{ items: AdminAuditEntry[]; nextCursor: string | null }>(
+      `/admin/audit${cursor ? `?cursor=${cursor}` : ""}`,
+    ),
 };
+
+export type DiscordEventKey = "registration" | "purchase" | "vip" | "flag" | "adminAction" | "broadcast";
+export interface DiscordConfig {
+  webhookUrl: string;
+  webhookName: string;
+  enabled: boolean;
+  events: Record<DiscordEventKey, boolean>;
+}
+export interface AdminAuditEntry {
+  id: string;
+  actorName: string;
+  action: string;
+  targetId: string | null;
+  detail: string;
+  createdAt: string;
+}
 
 // ── Social DTOs ──────────────────────────────────────────────────────────────
 export interface FriendLite {

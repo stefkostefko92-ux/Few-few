@@ -11,10 +11,30 @@
 # affected containers (the api container re-runs DB migrations on start).
 name: aso
 
+# Shared hardening: bounded logs (disk) + resource caps (RAM/CPU/PIDs) + no
+# privilege escalation. Applied to every service so a runaway container can't
+# OOM the shared host or fill the disk with logs.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-app: &app
+  logging: *logging
+  mem_limit: 512m
+  cpus: 1.0
+  pids_limit: 256
+  security_opt:
+    - "no-new-privileges:true"
+
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *logging
+    mem_limit: 1g
+    security_opt: ["no-new-privileges:true"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-aso}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
@@ -29,6 +49,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    <<: *app
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
@@ -41,6 +62,7 @@ services:
 
   api:
     image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-api:${IMAGE_TAG:-latest}
+    <<: *app
     restart: unless-stopped
     pull_policy: always
     labels: { com.centurylinklabs.watchtower.enable: "true" }
@@ -66,6 +88,7 @@ services:
 
   realtime:
     image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-realtime:${IMAGE_TAG:-latest}
+    <<: *app
     restart: unless-stopped
     pull_policy: always
     labels: { com.centurylinklabs.watchtower.enable: "true" }
@@ -87,6 +110,7 @@ services:
 
   worker:
     image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-worker:${IMAGE_TAG:-latest}
+    <<: *app
     restart: unless-stopped
     pull_policy: always
     labels: { com.centurylinklabs.watchtower.enable: "true" }
@@ -101,6 +125,7 @@ services:
 
   web:
     image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-web:${IMAGE_TAG:-latest}
+    <<: *app
     restart: unless-stopped
     pull_policy: always
     labels: { com.centurylinklabs.watchtower.enable: "true" }
@@ -109,6 +134,7 @@ services:
 
   marketing:
     image: ghcr.io/${IMAGE_OWNER:-stefkostefko92-ux}/aso-marketing:${IMAGE_TAG:-latest}
+    <<: *app
     restart: unless-stopped
     pull_policy: always
     labels: { com.centurylinklabs.watchtower.enable: "true" }
@@ -119,6 +145,7 @@ services:
   # Watches the labelled containers and redeploys when a new :latest is pushed.
   watchtower:
     image: containrrr/watchtower
+    <<: *app
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
