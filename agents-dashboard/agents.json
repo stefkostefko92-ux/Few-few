@@ -8690,6 +8690,11 @@
       ],
       "activity": [
         {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Mention-и в Discord embed (title/description/fields) НЕ известяват/пингват — само menti…\" (+1)"
+        },
+        {
           "date": "2026-06-26",
           "type": "learning",
           "summary": "Научи: „Scheduled Events EXTERNAL: изисква entity_metadata.location (1-100 знака) + scheduled_e…\""
