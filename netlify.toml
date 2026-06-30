@@ -1,0 +1,8 @@
+# Коренът на репото е публикуван от Netlify. Истинският сайт е в toto-analyzer/.
+# 301 пренасочване, за да работи голият URL и да се консолидира link equity-то
+# (за разлика от meta-refresh в index.html, който е само резерва).
+[[redirects]]
+  from = "/"
+  to = "/toto-analyzer/"
+  status = 301
+  force = true
