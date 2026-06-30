@@ -2281,6 +2281,11 @@
       ],
       "activity": [
         {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За локален Restaurant single-page сайт с JS-only превключвател на език (?lang=en само c…\" (+1)"
+        },
+        {
           "date": "2026-06-26",
           "type": "learning",
           "summary": "Научи: „Google третира canonical като СИГНАЛ, не директива; сила по ред: redirect (силен) > rel…\""
