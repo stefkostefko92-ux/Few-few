@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { isGameKey } from "@aso/shared";
 import { cn } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
@@ -40,9 +41,10 @@ const PIP_MAP: Record<number, number[]> = {
 
 /** A single pipped die (1..6). */
 export function Die({ value, rolling }: { value: number; rolling?: boolean }) {
+  const { t } = useTranslation();
   const on = new Set(PIP_MAP[value] ?? []);
   return (
-    <span className={cn("aso-die", rolling && "aso-die--rolling")} aria-label={`зар ${value}`}>
+    <span className={cn("aso-die", rolling && "aso-die--rolling")} aria-label={t("a11y.die", { v: value })}>
       {Array.from({ length: 9 }).map((_, i) => (
         <span key={i} className={cn("aso-pip", !on.has(i) && "aso-pip--off")} />
       ))}

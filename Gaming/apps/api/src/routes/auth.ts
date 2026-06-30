@@ -322,6 +322,9 @@ async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthProfile, 
         passwordHash: null,
         emailVerified: profile.emailVerified,
         displayName: profile.displayName.slice(0, 32),
+        // The OAuth buttons sit under the same 18+/ToS notice as the password
+        // form, so record consent at creation (parity with password register).
+        termsAcceptedAt: new Date(),
         oauth: { create: { provider, providerAccountId: profile.providerAccountId } },
       },
     });

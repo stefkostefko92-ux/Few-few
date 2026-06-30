@@ -169,6 +169,14 @@ adminRouter.patch(
     const target = await prisma.user.findUnique({ where: { id } });
     if (!target) throw badRequest("not_found", "Няма такъв играч");
 
+    // No staff member may ban/demote/modify an account of equal-or-higher rank
+    // (prevents an ADMIN from decapitating the OWNER or another ADMIN). Self-edit
+    // is allowed (the OWNER-mint guard above still applies).
+    const rank = (r: string) => ROLES.indexOf(r as (typeof ROLES)[number]);
+    if (id !== req.user!.sub && rank(target.role) >= rank(actorRole)) {
+      throw forbidden("Не може да променяш акаунт с равен или по-висок ранг");
+    }
+
     const data: Record<string, unknown> = {};
     if (input.role) data.role = input.role;
     if (input.vipTier) data.vipTier = input.vipTier;

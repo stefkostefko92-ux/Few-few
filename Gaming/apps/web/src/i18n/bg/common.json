@@ -331,7 +331,14 @@
   "a11y": {
     "skipToContent": "Към съдържанието",
     "toggleSound": "Звук вкл./изкл.",
-    "toggleMotion": "Намалено движение"
+    "toggleMotion": "Намалено движение",
+    "cell": "клетка {{i}}",
+    "die": "зар {{v}}",
+    "token": "пионка {{seat}}-{{token}}",
+    "card": "карта",
+    "cardNamed": "{{name}}",
+    "domino": "домино {{a}}-{{b}}",
+    "dialog": "Диалог"
   },
   "svara": {
     "pot": "Пот",
@@ -358,7 +365,8 @@
   },
   "war": {
     "flip": "Обърни",
-    "battle": "ВОЙНА"
+    "battle": "ВОЙНА",
+    "cards": "{{n}} карти"
   },
   "rummy": {
     "stock": "Тесте",

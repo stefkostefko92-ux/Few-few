@@ -78,6 +78,25 @@ function load() {
     console.error("❌ INTERNAL_API_SECRET must be set in production (still the dev default).");
     process.exit(1);
   }
+  // Reject placeholder / weak / duplicated auth secrets in production: a length
+  // check alone passes the 36-char `change-me-…` examples, which would allow
+  // anyone to forge tokens (full auth bypass).
+  if (parsed.data.NODE_ENV === "production") {
+    const { JWT_SECRET, JWT_REFRESH_SECRET } = parsed.data;
+    const placeholder = (s: string) => /change-me|changeme|placeholder|example|secret-min/i.test(s);
+    if (placeholder(JWT_SECRET) || placeholder(JWT_REFRESH_SECRET)) {
+      console.error("❌ JWT_SECRET / JWT_REFRESH_SECRET are still placeholders in production.");
+      process.exit(1);
+    }
+    if (JWT_SECRET === JWT_REFRESH_SECRET) {
+      console.error("❌ JWT_SECRET and JWT_REFRESH_SECRET must differ in production.");
+      process.exit(1);
+    }
+    if (parsed.data.CORS_ORIGINS.includes("localhost")) {
+      console.error("❌ CORS_ORIGINS still points at localhost in production.");
+      process.exit(1);
+    }
+  }
   return parsed.data;
 }
 

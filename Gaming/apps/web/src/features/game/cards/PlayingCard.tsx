@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { isGameKey } from "@aso/shared";
 import { cn } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
@@ -58,6 +59,7 @@ export const PlayingCard = memo(function PlayingCard({
   className,
   style,
 }: PlayingCardProps) {
+  const { t } = useTranslation();
   const { w, h } = SIZES[size];
   const cornerGlyph = size === "lg" ? 15 : size === "md" ? 11 : 8;
   const { game } = useParams<{ game: string }>();
@@ -77,7 +79,7 @@ export const PlayingCard = memo(function PlayingCard({
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      aria-label={faceDown ? "карта" : `${RANK_LABEL[rank]}${suit}`}
+      aria-label={faceDown ? t("a11y.card") : `${RANK_LABEL[rank]}${suit}`}
       className={cn("aso-card", selected && "aso-card--selected", className)}
       style={{
         width: w,

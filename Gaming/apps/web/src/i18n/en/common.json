@@ -331,7 +331,14 @@
   "a11y": {
     "skipToContent": "Skip to content",
     "toggleSound": "Toggle sound",
-    "toggleMotion": "Reduced motion"
+    "toggleMotion": "Reduced motion",
+    "cell": "cell {{i}}",
+    "die": "die {{v}}",
+    "token": "token {{seat}}-{{token}}",
+    "card": "card",
+    "cardNamed": "{{name}}",
+    "domino": "domino {{a}}-{{b}}",
+    "dialog": "Dialog"
   },
   "svara": {
     "pot": "Pot",
@@ -358,7 +365,8 @@
   },
   "war": {
     "flip": "Flip",
-    "battle": "WAR"
+    "battle": "WAR",
+    "cards": "{{n}} cards"
   },
   "rummy": {
     "stock": "Stock",
@@ -536,10 +544,10 @@
   "magnat": {
     "rulesTitle": "Rules (Magnat)",
     "startingCash": "Starting capital",
-    "goBonus": "Go bonus",
+    "goBonus": "Start bonus",
     "turnTime": "Turn time (sec)",
     "auctions": "Auctions",
-    "pot": "Free parking pot",
+    "pot": "Parking jackpot",
     "trading": "Trading",
     "resetRules": "Reset to classic rules",
     "player": "Player {{num}}",
