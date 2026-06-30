@@ -365,6 +365,11 @@
         {
           "date": "2026-06-30",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Google Fonts, хостван от Google CDN (fonts.googleapis.com/fonts.gstatic.com), праща IP …\" (+1)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „България (ЗЗЛД чл. 25, ал. 6) е транспонирала 14 г. като възрастов праг по чл. 8 GDPR з…\" (+2)"
         },
         {
