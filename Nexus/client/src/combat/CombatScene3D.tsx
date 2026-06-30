@@ -364,6 +364,142 @@ function applyLifeLayer(lb: LifeBones, nowS: number, phase: number, face: number
 }
 
 /* ------------------------------------------------------------------ */
+/* Procedural humanoid animation for realistic Ready-Player-Me/Mixamo    */
+/* rigs (standard skeleton, NO authored clips). Reset bones to rest each */
+/* frame, then add deltas → idle (breathing/sway) blended with a melee   */
+/* attack. AXIS signs are calibrated visually (Mixamo mirrors L/R).      */
+/* ------------------------------------------------------------------ */
+interface BoneRest { bone: THREE.Bone; rest: THREE.Quaternion; }
+export interface HumanoidBones {
+  Hips?: BoneRest; Spine?: BoneRest; Spine1?: BoneRest; Spine2?: BoneRest; Neck?: BoneRest; Head?: BoneRest;
+  LeftShoulder?: BoneRest; LeftArm?: BoneRest; LeftForeArm?: BoneRest; LeftHand?: BoneRest;
+  RightShoulder?: BoneRest; RightArm?: BoneRest; RightForeArm?: BoneRest; RightHand?: BoneRest;
+  LeftUpLeg?: BoneRest; LeftLeg?: BoneRest; LeftFoot?: BoneRest;
+  RightUpLeg?: BoneRest; RightLeg?: BoneRest; RightFoot?: BoneRest;
+  hipsRestPos?: THREE.Vector3;
+}
+const HB_NAMES = [
+  'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head',
+  'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand',
+  'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand',
+  'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'RightUpLeg', 'RightLeg', 'RightFoot',
+] as const;
+type HBName = (typeof HB_NAMES)[number];
+
+function discoverHumanoidBones(rig: THREE.Object3D): HumanoidBones {
+  const byName = new Map<string, THREE.Bone>();
+  rig.traverse((o) => { if ((o as THREE.Bone).isBone) byName.set(o.name, o as THREE.Bone); });
+  const find = (name: HBName): THREE.Bone | undefined => {
+    const exact = byName.get(name);
+    if (exact) return exact;
+    for (const [k, v] of byName) { if (k.endsWith(':' + name) || k.endsWith('_' + name)) return v; }
+    return undefined;
+  };
+  const hb: HumanoidBones = {};
+  for (const name of HB_NAMES) {
+    const bone = find(name);
+    if (!bone) continue;
+    (hb as Record<string, BoneRest>)[name] = { bone, rest: bone.quaternion.clone() };
+  }
+  if (hb.Hips) hb.hipsRestPos = hb.Hips.bone.position.clone();
+  return hb;
+}
+
+// Calibration signs (flip if a limb points the wrong way; see notes in commit).
+const HB_AXIS = {
+  // RPM/Mixamo arm bones are NOT mirrored L/R — both use the same local frame,
+  // so the left signs match the right (calibrated visually in-engine).
+  ARM_DOWN_L: +1, ARM_DOWN_R: +1, ARM_FWD_L: -1, ARM_FWD_R: -1,
+  FOREARM_BEND_L: -1, FOREARM_BEND_R: -1, PUNCH_DIR: +1,
+} as const;
+const HB_D = Math.PI / 180;
+const _hbQ = new THREE.Quaternion();
+const _hbE = new THREE.Euler();
+const _hbY = new THREE.Vector3(0, 1, 0);
+const _hbZ = new THREE.Vector3(0, 0, 1);
+function hbEuler(br: BoneRest | undefined, x: number, y: number, z: number): void {
+  if (!br) return;
+  _hbE.set(x, y, z, 'XYZ'); _hbQ.setFromEuler(_hbE);
+  br.bone.quaternion.copy(br.rest).multiply(_hbQ);
+}
+function hbAxis(br: BoneRest | undefined, axis: THREE.Vector3, angle: number): void {
+  if (!br) return;
+  _hbQ.setFromAxisAngle(axis, angle);
+  br.bone.quaternion.copy(br.rest).multiply(_hbQ);
+}
+function hbSmooth(e0: number, e1: number, x: number): number {
+  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+}
+
+/** Reset every discovered bone to its rest pose (call BEFORE poseHumanoid;
+ *  there is no AnimationMixer to do it). */
+function resetHumanoid(hb: HumanoidBones): void {
+  for (const k of HB_NAMES) {
+    const br = (hb as Record<string, BoneRest | undefined>)[k];
+    if (br && br.bone) br.bone.quaternion.copy(br.rest);
+  }
+  if (hb.Hips && hb.hipsRestPos) hb.Hips.bone.position.copy(hb.hipsRestPos);
+}
+
+/** Pose the humanoid. `stance` 0→1 raises the T-pose into a combat guard
+ *  (arms down/forward, elbows bent) — held at 1 while in a fight. `punch`
+ *  0→1 is the right-cross swing progress. Idle breathing always rides on
+ *  top, scaled down as `punch` peaks. Additive deltas on rest. */
+function poseHumanoid(hb: HumanoidBones, t: number, stance: number, punch: number, side: 'hero' | 'foe'): void {
+  const st = Math.min(1, Math.max(0, stance));
+  const pn = Math.min(1, Math.max(0, punch));
+  const idleW = 1 - pn * 0.85;
+  const ph = side === 'foe' ? Math.PI * 0.7 : 0;
+
+  if (idleW > 0.001) {
+    const w = idleW;
+    const br = t * 1.6 + ph, sway = t * 0.6 + ph, drift = t * 0.9 + ph;
+    hbEuler(hb.Spine, Math.sin(br) * 1.2 * HB_D * w, 0, 0);
+    hbEuler(hb.Spine1, Math.sin(br - 0.4) * 1.6 * HB_D * w, 0, 0);
+    hbEuler(hb.Spine2, Math.sin(br - 0.8) * 1.0 * HB_D * w, Math.sin(sway) * 1.5 * HB_D * w, 0);
+    if (hb.Hips && hb.hipsRestPos) {
+      hb.Hips.bone.position.y = hb.hipsRestPos.y + Math.sin(br * 2) * 0.004 * w;
+      hbEuler(hb.Hips, 0, Math.sin(sway) * 2.0 * HB_D * w, Math.sin(sway * 0.5) * 1.5 * HB_D * w);
+    }
+    hbEuler(hb.Neck, Math.sin(drift * 0.7) * 1.5 * HB_D * w, -Math.sin(sway) * 2.0 * HB_D * w, 0);
+    hbEuler(hb.Head, Math.sin(drift) * 1.2 * HB_D * w, -Math.sin(sway * 0.8) * 2.5 * HB_D * w, 0);
+    hbEuler(hb.LeftArm, 0, 0, Math.sin(drift + 1.1) * 2.0 * HB_D * w);
+    hbEuler(hb.RightArm, 0, 0, Math.sin(drift - 1.1) * 2.0 * HB_D * w);
+    hbEuler(hb.LeftForeArm, Math.sin(drift * 1.3) * 2.5 * HB_D * w, 0, 0);
+    hbEuler(hb.RightForeArm, Math.sin(drift * 1.3 + 0.6) * 2.5 * HB_D * w, 0, 0);
+  }
+
+  if (st > 0.001) {
+    const stanceW = st;
+    // Arms hang down by the sides with a light forward bias + slight elbow bend
+    // → a relaxed ready stance, not a presenting gesture.
+    const down = 82 * HB_D * stanceW, fwd = 8 * HB_D * stanceW;
+    hbAxis(hb.LeftArm, _hbZ, HB_AXIS.ARM_DOWN_L * down);
+    hbAxis(hb.RightArm, _hbZ, HB_AXIS.ARM_DOWN_R * down);
+    if (hb.LeftArm) { _hbQ.setFromAxisAngle(_hbY, HB_AXIS.ARM_FWD_L * fwd); hb.LeftArm.bone.quaternion.multiply(_hbQ); }
+    if (hb.RightArm) { _hbQ.setFromAxisAngle(_hbY, HB_AXIS.ARM_FWD_R * fwd); hb.RightArm.bone.quaternion.multiply(_hbQ); }
+    hbAxis(hb.LeftForeArm, _hbY, HB_AXIS.FOREARM_BEND_L * 28 * HB_D * stanceW);
+    hbAxis(hb.RightForeArm, _hbY, HB_AXIS.FOREARM_BEND_R * 28 * HB_D * stanceW);
+    hbEuler(hb.Spine1, 3 * HB_D * stanceW, HB_AXIS.PUNCH_DIR * 5 * HB_D * stanceW, 0);
+  }
+
+  if (pn > 0.001) {
+    const windup = hbSmooth(0.0, 0.35, pn);
+    const extend = hbSmooth(0.3, 0.55, pn) * (1 - hbSmooth(0.6, 0.95, pn));
+    hbEuler(hb.RightShoulder, 0, -HB_AXIS.PUNCH_DIR * 18 * HB_D * windup, 0);
+    hbEuler(hb.Spine2, 0, -HB_AXIS.PUNCH_DIR * 14 * HB_D * windup, 0);
+    hbEuler(hb.RightShoulder, 0, HB_AXIS.PUNCH_DIR * 30 * HB_D * extend, 0);
+    hbEuler(hb.Spine2, 0, HB_AXIS.PUNCH_DIR * 22 * HB_D * extend, 0);
+    hbEuler(hb.Spine1, 0, HB_AXIS.PUNCH_DIR * 12 * HB_D * extend, 0);
+    hbAxis(hb.RightForeArm, _hbY, -HB_AXIS.FOREARM_BEND_R * 70 * HB_D * extend);
+    hbAxis(hb.RightArm, _hbY, HB_AXIS.ARM_FWD_R * 35 * HB_D * extend);
+    if (hb.Hips && hb.hipsRestPos) hbEuler(hb.Hips, -6 * HB_D * extend, HB_AXIS.PUNCH_DIR * 6 * HB_D * extend, 0);
+    hbEuler(hb.Neck, 3 * HB_D * extend, HB_AXIS.PUNCH_DIR * 5 * HB_D * extend, 0);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Realistic face — the Quaternius heads are ~12-triangle, near-feature- */
 /* less low-poly. We can't swap in a high-poly real-human rig here       */
 /* (Mixamo/Ready-Player-Me are auth/policy-gated), so we give each       */
@@ -1301,8 +1437,18 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
        targeting math (which reads sprite.position) still resolves. */
     const loader = new GLTFLoader();
     const tryLoadRig = (cls: string, side: 'hero' | 'foe') => {
-      const url = `/assets/characters/${cls}.glb`;
-      loader.load(url, (gltf) => {
+      // Prefer a realistic Ready-Player-Me / Mixamo rig at realistic/<cls>.glb
+      // (real face geometry — eyes/teeth/beard meshes — and a standard
+      // humanoid skeleton); fall back to the stylised Quaternius rig. Realistic
+      // rigs ship no authored clips: they're driven procedurally and skip the
+      // painted-face decal + the head-look-at-camera (they HAVE a real face).
+      const realisticUrl = `/assets/characters/realistic/${cls}.glb`;
+      const fallbackUrl = `/assets/characters/${cls}.glb`;
+      const onError = () => {
+        const pair = side === 'hero' ? heroPair : foePair;
+        pair.sprite.visible = true; scene.add(pair.sprite);
+      };
+      const setupRig = (gltf: { scene: THREE.Object3D; animations: THREE.AnimationClip[] }, isRealistic: boolean) => {
         // GLB parse is async — by the time it resolves the effect may
         // have been re-run (region change, hot reload, unmount). Bail
         // before we touch the scene or attach an AnimationMixer that
@@ -1349,26 +1495,25 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // Cast shadows now that we have a soft contact shadow grounding
         // them — real cast shadows from the key light add a lot of life
         // (the sword's shadow swings with the attack).
+        (model as any).userData.realistic = isRealistic;
         const rimColor = new THREE.Color(side === 'hero' ? 0xfff1d0 : 0xd6e4ff);
-        // Add a curved, properly-UV'd face overlay (own texture — never the
-        // shared body atlas) parented to the head bone, so each fighter gets
-        // eyes/brows/nose/mouth without smearing onto limbs.
-        addFaceOverlay(model, scene, cls, side);
+        // Painted-face decal only for the stylised Quaternius heads — realistic
+        // rigs already carry real eyes/nose/mouth geometry.
+        if (!isRealistic) addFaceOverlay(model, scene, cls, side);
         model.traverse((o) => {
           const m = o as THREE.Mesh;
           if (!m.isMesh) return;
           m.castShadow = true; m.receiveShadow = true;
-          // Material polish: let the rig catch the IBL + god rays, and
-          // wrap a soft fresnel rim around its silhouette so it reads as
-          // a lit, living form rather than flat-shaded low-poly.
+          // Material polish: let the rig catch the IBL + god rays.
           const mats = Array.isArray(m.material) ? m.material : [m.material];
           for (const mm of mats) {
             const std = mm as THREE.MeshStandardMaterial;
             if (!std || !std.isMaterial) continue;
             std.envMapIntensity = 1.15;
-            // Slightly sharpen the response so armour / weapon metal pops.
             if (std.roughness !== undefined) std.roughness = Math.min(1, std.roughness * 0.9 + 0.05);
-            addFresnelRim(std, rimColor, 2.8, 0.42);
+            // Fresnel rim suits the flat-shaded low-poly silhouette; on a
+            // realistic PBR skin it reads as an unnatural glow, so skip it.
+            if (!isRealistic) addFresnelRim(std, rimColor, 2.8, 0.42);
           }
         });
 
@@ -1382,6 +1527,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // two fighters don't breathe in lockstep.
         (model as any).userData.lifeBones = discoverLifeBones(model);
         (model as any).userData.lifePhase = side === 'hero' ? 0 : 2.3;
+        // Realistic rigs have no clips → drive them with the procedural
+        // humanoid poser (idle + melee) instead of the Quaternius life-layer.
+        if (isRealistic) (model as any).userData.humanoidBones = discoverHumanoidBones(model);
 
         // Soft contact shadow — a radial-gradient disc that follows the
         // fighter's feet (scene-parented so the rig's fit-to-height scale
@@ -1475,12 +1623,12 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // — its position field is the canonical lunge/VFX anchor — but
         // it stays out of the scene graph for good.
         if (side === 'hero') heroRigRef.current = model; else foeRigRef.current = model;
-      }, undefined, () => {
-        // No rig asset → bring the 2D sprite into the scene as a fallback.
-        const pair = side === 'hero' ? heroPair : foePair;
-        pair.sprite.visible = true;
-        scene.add(pair.sprite);
-      });
+      };
+      // Try the realistic rig first; on any error fall back to Quaternius, then
+      // to the 2D sprite. So realistic/<cls>.glb is used automatically the
+      // moment it's uploaded, with no change needed here.
+      loader.load(realisticUrl, (g) => setupRig(g as any, true), undefined,
+        () => loader.load(fallbackUrl, (g) => setupRig(g as any, false), undefined, onError));
     };
     tryLoadRig(heroClass, 'hero');
     tryLoadRig(foeClass, 'foe');
@@ -2384,6 +2532,23 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         if (!rig) continue;
         const lb = (rig as any).userData.lifeBones as LifeBones | undefined;
         if (!lb) continue;
+        // Realistic RPM/Mixamo rig: drive it with the procedural humanoid
+        // poser (real face, no clips, no painted decal / head-look needed).
+        const hb = (rig as any).userData.humanoidBones as HumanoidBones | undefined;
+        if (hb) {
+          resetHumanoid(hb);
+          // stance held at 1 (combat guard); punch hooked to the choreographer
+          // later — resting guard + breathing for now.
+          const atkP = (rig as any).userData.punch ?? 0;
+          poseHumanoid(hb, nowS, 1, atkP, rig === heroRigRef.current ? 'hero' : 'foe');
+          const shadow = (rig as any).userData.contactShadow as THREE.Mesh | undefined;
+          if (shadow) {
+            shadow.position.x = rig.position.x;
+            const lift = Math.max(0, rig.position.y);
+            (shadow.material as THREE.MeshBasicMaterial).opacity = 0.5 * Math.max(0, 1 - lift * 1.5);
+          }
+          continue;
+        }
         // Lock the root yaw to its bind value so a clip with a different
         // authored root facing (Idle vs Sword_Attack) can't spin the body.
         // model.rotation.y is then the only thing that aims the fighter.
