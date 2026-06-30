@@ -341,6 +341,7 @@ app.post("/internal/application-discuss", async (req, res) => {
     // Welcome embed with context
     await channel.send({
       content: `<@${applicantId}> <@${reviewerId}>`,
+      allowedMentions: { parse: ["users", "roles"] }, // само споменатите users/roles, без @everyone
       embeds: [{
         title: `📋 Application Discussion — ${formName}`,
         description:
