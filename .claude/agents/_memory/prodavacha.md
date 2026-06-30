@@ -75,6 +75,8 @@
   (Източник: docs.stripe.com/webhooks.)
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-06-30:** checkout.session.completed при subscription mode с trial има payment_status='no_payment_required' (не 'paid') и session.subscription е попълнено — guard срещу 'unpaid' трябва да изключва subscription-присъстващи сесии, иначе блокира легитимни trial активации. _("checkout-session-payment-status"; medium; "https://docs.stripe.com/api/checkout/sessions/object")_
+- **2026-06-30:** Stripe Checkout с automatic_tax:{enabled:true} върху СЪЩЕСТВУВАЩ Customer изисква customer_update (напр. address:'auto'), иначе сесията се проваля — Stripe трябва да обнови адреса на клиента, за да изчисли данъка. _("stripe-tax-checkout"; high; "https://docs.stripe.com/tax/checkout")_
 - **2026-06-30:** Trial double-dip: локален trialUsed флаг + Stripe trial_period_days независими → create-checkout трябва да гледа trialUsed преди да подаде trial_period_days, иначе 2x безплатен период. _(trial-logic; high; "supreme/backend/src/routes/trial.js:11 + stripe.js:95")_
 - **2026-06-30:** 12*30 дни (360) ≠ 12 календарни месеца — често срещана грешка в commission-прозорци; води до спорове. Изисквай addMonths/съхранен commissionEndsAt. _(commission-window; high; "supreme/backend/src/routes/stripe.js:250")_
 - **2026-06-30:** Counter-pattern: dunning grace където past_due умишлено НЕ отнема достъп и разчита само на бъдещо unpaid/canceled събитие — ако Stripe Dashboard е на 'leave past_due', абонаментът увисва Premium безсрочно. Изисквай терминален статус + серверен grace-таймаут (pastDueSince), не разчитай на едно събитие за пари. _(dunning-access-revocation; high; "supreme/backend/src/routes/stripe.js:349-353")_

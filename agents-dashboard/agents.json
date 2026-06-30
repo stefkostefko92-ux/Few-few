@@ -5975,6 +5975,11 @@
         {
           "date": "2026-06-30",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Stripe Checkout с automatic_tax:{enabled:true} върху СЪЩЕСТВУВАЩ Customer изисква custo…\" (+1)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „Counter-pattern: webhook който findFirst за commission-запис (AffiliateReferral), който…\" (+3)"
         },
         {
