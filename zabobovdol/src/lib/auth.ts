@@ -74,19 +74,26 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const store = await cookies();
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
+  let sub: string;
   try {
     const { payload } = await jwtVerify(token, secret(), {
       algorithms: ["HS256"],
     });
-    return {
-      id: String(payload.sub),
-      email: String(payload.email),
-      name: String(payload.name),
-      role: payload.role === "ADMIN" ? "ADMIN" : "EDITOR",
-    };
+    sub = String(payload.sub);
   } catch {
     return null;
   }
+  // Сверяваме сесията с базата: деактивиран или изтрит потребител губи достъп
+  // веднага (не чак при изтичане на токена след 8 ч.), а ролята се чете от
+  // базата, за да е винаги актуална (а не „замразена“ в стария токен).
+  const user = await prisma.user.findUnique({ where: { id: sub } });
+  if (!user || !user.active) return null;
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role as Role,
+  };
 }
 
 // За използване в admin server компоненти/действия.

@@ -337,6 +337,8 @@ export const RESOURCES: Resource[] = [
     slugFrom: "location",
     defaultSort: { field: "createdAt", dir: "desc" },
     moderated: true,
+    // Съдържа непубличните контакти на подателя (телефон/имейл) — достъп само ADMIN.
+    adminOnly: true,
     fields: [
       { name: "location", label: "Местоположение", type: "text", required: true, listVisible: true },
       { name: "slug", label: "URL адрес (slug)", type: "text" },
@@ -397,6 +399,8 @@ export const RESOURCES: Resource[] = [
     labelPlural: "Контактни съобщения",
     titleField: "subject",
     defaultSort: { field: "createdAt", dir: "desc" },
+    // Лична кореспонденция с граждани (имена/имейли/телефони) — достъп само ADMIN.
+    adminOnly: true,
     fields: [
       { name: "subject", label: "Тема", type: "text", listVisible: true },
       { name: "name", label: "Име", type: "text", listVisible: true },
