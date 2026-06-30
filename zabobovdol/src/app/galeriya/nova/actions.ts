@@ -73,7 +73,7 @@ export async function submitPhoto(
     action: "CREATE",
     entity: "GalleryPhoto",
     entityId: created.id,
-    summary: `Нова снимка за галерията: „${d.title}" (от ${d.author}) — чака одобрение`,
+    summary: `Нова снимка за галерията: „${d.title}“ (от ${d.author}) — чака одобрение`,
   });
 
   return { ok: true };

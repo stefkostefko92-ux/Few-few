@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
-import { buildMetadata, faqPageLd, howToLd, canonical } from "@/lib/seo";
+import { buildMetadata, faqPageLd, howToLd, webPageLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { PrintButton } from "@/components/PrintButton";
 import { getIllustrations } from "@/lib/howto-illustrations";
@@ -63,21 +63,27 @@ export default async function FaqPage({
 
   return (
     <>
+      {/* Свързваме страницата в графа (WebPage) и избираме ЕДИН основен тип:
+          HowTo при наличие на стъпки, иначе FAQPage — без застъпване. */}
       <JsonLd
-        data={faqPageLd([
-          { question: faq.question, answerText: plainText(faq.answer, 600) },
-        ])}
-      />
-      {steps.length > 0 && (
-        <JsonLd
-          data={howToLd({
+        data={[
+          webPageLd({
             name: faq.question,
-            description: plainText(faq.answer, 200),
-            steps,
-            url: canonical(`/kak-da/${faq.slug}`),
-          })}
-        />
-      )}
+            description: plainText(faq.answer, 160),
+            path: `/kak-da/${faq.slug}`,
+          }),
+          steps.length > 0
+            ? howToLd({
+                name: faq.question,
+                description: plainText(faq.answer, 200),
+                steps,
+                url: canonical(`/kak-da/${faq.slug}`),
+              })
+            : faqPageLd([
+                { question: faq.question, answerText: plainText(faq.answer, 600) },
+              ]),
+        ]}
+      />
       <PageHero
         title={faq.question}
         crumbs={[

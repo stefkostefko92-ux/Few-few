@@ -72,7 +72,7 @@ export async function submitDumpReport(
     action: "CREATE",
     entity: "DumpReport",
     entityId: created.id,
-    summary: `Нов сигнал за сметище: „${d.location}" (чака одобрение)`,
+    summary: `Нов сигнал за сметище: „${d.location}“ (чака одобрение)`,
   });
 
   return { ok: true };
