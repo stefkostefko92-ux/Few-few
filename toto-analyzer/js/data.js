@@ -198,7 +198,8 @@
     return draws;
   }
 
-  // Тегли официалния авто-обновяван архив от data/<игра>.json.
+  // Зарежда локален архивен файл data/<игра>.json, ако ти си го поставил
+  // (напр. свой експорт). Не се сваля нищо външно — само твой файл в проекта.
   async function fetchOfficial(game) {
     try {
       const res = await fetch("data/" + game.id + ".json", { cache: "no-store" });
@@ -215,8 +216,7 @@
   /*
    * Връща тегленията за играта по приоритет:
    *   1. Ако потребителят сам е импортирал данни — те имат предимство.
-   *   2. Иначе официалният архив (data/<игра>.json), който се обновява
-   *      автоматично от GitHub Action — това е целта: без ръчно нанасяне.
+   *   2. Иначе локален архивен файл data/<игра>.json, ако си го поставил.
    *   3. Запазени данни, ако има.
    *   4. Демо данни (случайни) — само за да е сайтът използваем без архив.
    */
@@ -229,12 +229,12 @@
       return { draws: stored, source: "imported" };
     }
 
-    // 2. Официалният архив (авто-обновяван).
+    // 2. Локален архивен файл (ако е наличен в проекта).
     const official = await fetchOfficial(game);
     if (official) {
       save(game.id, official);
-      setMeta(game.id, { source: "official" });
-      return { draws: official, source: "official" };
+      setMeta(game.id, { source: "file" });
+      return { draws: official, source: "file" };
     }
 
     // 3. Каквото е запазено в браузъра.

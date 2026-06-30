@@ -92,8 +92,8 @@
     if (state.source === "demo") {
       srcLabel = 'ДЕМО данни (случайни) — реалният архив още не е зареден';
       srcClass = "badge-demo";
-    } else if (state.source === "official") {
-      srcLabel = "Архив от публични източници (авто-обновяван)";
+    } else if (state.source === "file") {
+      srcLabel = "Зареден архивен файл";
       srcClass = "badge-imported";
     } else if (state.source === "seed") {
       srcLabel = "Стартов архив";
@@ -309,13 +309,13 @@
     if (state.source === "demo") {
       el.className = "data-notice warn";
       el.innerHTML =
-        "🎲 Това са <strong>демонстрационни</strong> (случайни) данни. Реалните " +
-        "тегления се зареждат автоматично от публичния архив (таб Данни).";
+        "🎲 Това са <strong>демонстрационни</strong> (случайни) данни. Внеси " +
+        "реалните тегления ръчно през таб Данни (импорт на CSV/JSON).";
     } else if (n < MIN_DRAWS) {
       el.className = "data-notice warn";
       el.innerHTML =
-        `ℹ️ Засега има само <strong>${n}</strong> ${n === 1 ? "тираж" : "тиража"} реални данни. ` +
-        "Архивът се пълни автоматично след всеки тираж — статистиката и " +
+        `ℹ️ Засега има само <strong>${n}</strong> ${n === 1 ? "тираж" : "тиража"} данни. ` +
+        "Импортирай повече тиражи ръчно (таб Данни) — статистиката и " +
         "предложенията стават надеждни при поне " + MIN_DRAWS + " тиража. " +
         'Натисни <button class="link-btn" id="noticeDemo">тук</button>, за да разгледаш как работи с демо данни.';
       const b = el.querySelector("#noticeDemo");
@@ -406,18 +406,18 @@
 
   function setupDataActions() {
     $("#btnSync").addEventListener("click", async () => {
-      const official = await window.TotoData.fetchOfficial(game());
-      if (!official) {
-        msg($("#importMsg"), "Официалният архив не е достъпен в момента.", false);
+      const fromFile = await window.TotoData.fetchOfficial(game());
+      if (!fromFile) {
+        msg($("#importMsg"), "Няма архивен файл за тази игра (data/" + state.gameId + ".json). Импортирай данни по-долу.", false);
         return;
       }
-      state.draws = official;
-      state.source = "official";
+      state.draws = fromFile;
+      state.source = "file";
       window.TotoData.save(state.gameId, state.draws);
-      window.TotoData.setMeta(state.gameId, { source: "official" });
+      window.TotoData.setMeta(state.gameId, { source: "file" });
       recompute();
       renderAll();
-      msg($("#importMsg"), `Заредени ${official.length} тиража от публичния архив.`, true);
+      msg($("#importMsg"), `Заредени ${fromFile.length} тиража от архивния файл.`, true);
     });
 
     $("#btnExport").addEventListener("click", () => {
