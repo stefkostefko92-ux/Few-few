@@ -100,10 +100,11 @@ export const getPayments = (params) => api.get("/admin/payments", { params }).th
 export const getAuditLogs = (params) => api.get("/admin/audit-logs", { params }).then((r) => r.data);
 
 // ─── Stripe ───────────────────────────────────────────────────────────────────
+// serverId е PATH параметър (минава през requireServerAdmin authz на backend-а).
 export const createCheckout = (serverId) =>
-  api.post("/stripe/create-checkout", { serverId }).then((r) => r.data);
+  api.post(`/stripe/create-checkout/${serverId}`).then((r) => r.data);
 export const openPortal = (serverId) =>
-  api.post("/stripe/portal", { serverId }).then((r) => r.data);
+  api.post(`/stripe/portal/${serverId}`).then((r) => r.data);
 export const getStripeStatus = (serverId) =>
   api.get(`/stripe/status/${serverId}`).then((r) => r.data);
 

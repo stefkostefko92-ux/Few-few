@@ -57,6 +57,7 @@ import v1Router from "./routes/v1.js";
 import referralRouter from "./routes/referral.js";
 import gdprRouter from "./routes/gdpr.js";
 import { scheduleRetention } from "./jobs/dataRetention.js";
+import { scheduleDunning } from "./jobs/dunning.js";
 import "./services/scheduler.js"; // Start background jobs
 
 const app = express();
@@ -215,6 +216,8 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Backend API running on http://localhost:${PORT}`);
   // GDPR data retention — daily 03:00 UTC
   scheduleRetention();
+  // C3 — Dunning guard: сваля Premium при past_due >14 дни — daily 03:30 UTC
+  scheduleDunning();
 });
 
 // ─── Graceful shutdown ────────────────────────────────────────────────────────

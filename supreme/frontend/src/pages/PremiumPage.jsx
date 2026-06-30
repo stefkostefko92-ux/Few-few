@@ -43,7 +43,9 @@ export default function PremiumPage() {
     // без да пипаме общия api клиент.
     mutationFn: () =>
       api
-        .post("/stripe/create-checkout", { serverId, withdrawalConsent })
+        // serverId е PATH параметър (authz: requireServerAdmin); withdrawalConsent
+        // остава в тялото (чл. 16(м) съгласие).
+        .post(`/stripe/create-checkout/${serverId}`, { withdrawalConsent })
         .then((r) => r.data),
     onSuccess: (data) => { window.location.href = data.url; },
   });

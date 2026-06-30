@@ -14,29 +14,29 @@ datasource db {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id            String   @id // Discord user ID
-  username      String
-  discriminator String   @default("0")
-  avatar        String?
-  globalRole    GlobalRole @default(USER)
-  isBlacklisted Boolean  @default(false)
-  language      String   @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
+  id                       String     @id // Discord user ID
+  username                 String
+  discriminator            String     @default("0")
+  avatar                   String?
+  globalRole               GlobalRole @default(USER)
+  isBlacklisted            Boolean    @default(false)
+  language                 String     @default("en") // v2.1: preferred UI language (en, bg, it, de, es, fr, pt, ru, pl, tr)
   // v2.1 Affiliate program
-  referralCode     String? @unique  // User's own code for sharing (assigned on first visit)
-  referredByCode   String?          // Code of the user who referred this user
-  stripeConnectedAccountId String?  @unique  // For payout
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  referralCode             String?    @unique // User's own code for sharing (assigned on first visit)
+  referredByCode           String? // Code of the user who referred this user
+  stripeConnectedAccountId String?    @unique // For payout
+  createdAt                DateTime   @default(now())
+  updatedAt                DateTime   @updatedAt
 
   // Relations
-  serverMembers ServerMember[]
-  sessions      Session[]
-  auditLogs     AuditLog[]     @relation("AuditActor")
-  tickets       Ticket[]       @relation("TicketCreator")
-  assignedTickets Ticket[]     @relation("TicketAssignee")
-  applications  Application[]
-  apiKeys       ApiKey[]
-  commissions   ReferralCommission[]
+  serverMembers   ServerMember[]
+  sessions        Session[]
+  auditLogs       AuditLog[]           @relation("AuditActor")
+  tickets         Ticket[]             @relation("TicketCreator")
+  assignedTickets Ticket[]             @relation("TicketAssignee")
+  applications    Application[]
+  apiKeys         ApiKey[]
+  commissions     ReferralCommission[]
 
   @@map("users")
 }
@@ -66,63 +66,67 @@ model Session {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Server {
-  id              String   @id // Discord guild ID
-  name            String
-  icon            String?
-  ownerId         String
-  isPremium       Boolean  @default(false)
-  premiumSince    DateTime?
+  id                    String    @id // Discord guild ID
+  name                  String
+  icon                  String?
+  ownerId               String
+  isPremium             Boolean   @default(false)
+  premiumSince          DateTime?
   // v2.0 Trial system
-  trialUsed         Boolean  @default(false)  // Each server gets one 14-day trial
-  trialStartedAt    DateTime?
-  trialEndsAt       DateTime?
+  trialUsed             Boolean   @default(false) // Each server gets one 14-day trial
+  trialStartedAt        DateTime?
+  trialEndsAt           DateTime?
   // v2.1 Localization + Affiliate
-  language          String   @default("en")  // Server-wide bot UI language
-  referredByCode    String?  // Code of the user who referred this server's owner
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  stripeStatus         String?  // active, canceled, past_due, trialing
+  language              String    @default("en") // Server-wide bot UI language
+  referredByCode        String? // Code of the user who referred this server's owner
+  stripeCustomerId      String?   @unique
+  stripeSubscriptionId  String?   @unique
+  stripeStatus          String? // active, canceled, past_due, trialing
+  // C3 — Dunning guard: маркер кога абонаментът е влязъл в past_due. Scheduler
+  // сваля isPremium=false ако past_due е по-старо от 14 дни (виж jobs/dunning.js).
+  // Изчиства се при връщане към active/trialing.
+  pastDueSince          DateTime?
   // White-label custom bot token (premium only)
-  customBotToken  String?
-  customBotName   String?
-  customBotAvatar String?
+  customBotToken        String?
+  customBotName         String?
+  customBotAvatar       String?
   // Settings
-  logChannelId        String?
-  archiveChannelId    String?
+  logChannelId          String?
+  archiveChannelId      String?
   // Round-Robin ticket assignment (Premium)
-  roundRobinEnabled   Boolean  @default(false)
-  roundRobinRoleId    String?  // Discord role to cycle through
-  roundRobinIndex     Int      @default(0)
+  roundRobinEnabled     Boolean   @default(false)
+  roundRobinRoleId      String? // Discord role to cycle through
+  roundRobinIndex       Int       @default(0)
   // AI auto-replies (Premium)
-  aiRepliesEnabled    Boolean  @default(false)
-  aiRepliesPrompt     String?  // Custom system prompt (max 1000 chars)
+  aiRepliesEnabled      Boolean   @default(false)
+  aiRepliesPrompt       String? // Custom system prompt (max 1000 chars)
   // Archive retention (null = forever/Premium, 30 = Base default)
-  archiveRetentionDays Int?    @default(30)
+  archiveRetentionDays  Int?      @default(30)
   // Soft-delete marker when bot is kicked from Discord guild.
   // Keeps Stripe/payment/audit history intact. Cleared on re-join.
-  botRemovedAt    DateTime?
+  botRemovedAt          DateTime?
   // ─── v1.6 appy.bot-style server-level features ───────────────────────────
-  welcomerEnabled       Boolean @default(false)
+  welcomerEnabled       Boolean   @default(false)
   welcomerChannelId     String?
-  welcomerMessage       String? @db.Text  // Supports {user}, {server}, {server.members}, {date}
-  welcomerEmbedColor    String? @default("#00e5ff")
-  welcomerDmEnabled     Boolean @default(false)
-  welcomerDmMessage     String? @db.Text
-  autoroleIds           String[] @default([])  // Roles given to new members
-  autoroleBotIds        String[] @default([])  // Roles given to bots on join
-  stickyMessagesEnabled Boolean @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  welcomerMessage       String?   @db.Text // Supports {user}, {server}, {server.members}, {date}
+  welcomerEmbedColor    String?   @default("#00e5ff")
+  welcomerDmEnabled     Boolean   @default(false)
+  welcomerDmMessage     String?   @db.Text
+  autoroleIds           String[]  @default([]) // Roles given to new members
+  autoroleBotIds        String[]  @default([]) // Roles given to bots on join
+  stickyMessagesEnabled Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   // Relations
-  members      ServerMember[]
-  panels       Panel[]
-  forms        Form[]
-  tickets      Ticket[]
-  applications Application[]
+  members            ServerMember[]
+  panels             Panel[]
+  forms              Form[]
+  tickets            Ticket[]
+  applications       Application[]
   verificationPanels VerificationPanel[]
-  auditLogs    AuditLog[]
-  paymentLogs  PaymentLog[]
+  auditLogs          AuditLog[]
+  paymentLogs        PaymentLog[]
 
   @@map("servers")
 }
@@ -152,49 +156,49 @@ enum ServerRole {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Panel {
-  id              String @id @default(cuid())
-  serverId        String
-  name            String
-  title           String
-  description     String?
-  color           String  @default("#5865F2")
-  thumbnailUrl    String?
-  imageUrl        String?
+  id                        String   @id @default(cuid())
+  serverId                  String
+  name                      String
+  title                     String
+  description               String?
+  color                     String   @default("#5865F2")
+  thumbnailUrl              String?
+  imageUrl                  String?
   // Discord IDs after panel is spawned
-  channelId       String?
-  messageId       String?
+  channelId                 String?
+  messageId                 String?
   // Ticket settings
-  categoryId      String?  // Discord category for new tickets (legacy, use categoryOpenId)
-  supportRoleIds  String[] // Roles that can see tickets
-  maxOpenPerUser  Int      @default(1)
-  namingTemplate  String   @default("ticket-{username}")
+  categoryId                String? // Discord category for new tickets (legacy, use categoryOpenId)
+  supportRoleIds            String[] // Roles that can see tickets
+  maxOpenPerUser            Int      @default(1)
+  namingTemplate            String   @default("ticket-{username}")
   // ─── TicketTool-style v1.5 additions ─────────────────────────────────────────
-  categoryOpenId     String?  // Category for open tickets (preferred over categoryId)
-  categoryClosedId   String?  // Category tickets move to after "Close"
-  logChannelId       String?  // Separate from transcript: logs open/close/claim events
-  transcriptChannelId String? // Where HTML transcripts post on delete
-  channelNamePrefix  String   @default("ticket")  // e.g. "ticket-0001-username"
-  ticketCounter      Int      @default(0)          // Auto-increment, ATOMIC on open
-  counterPadding     Int      @default(4)          // "0001", "00001", etc.
-  welcomeMessage     String?  @db.Text // Supports {user}, {ticket.count}, etc.
-  welcomeEmbedColor  String   @default("#00e5ff")
-  closeAskEnabled    Boolean  @default(true)       // Two-step close
-  closeAskMessage    String?  @db.Text             // "Are you sure?" embed text
-  dmOnOpen           Boolean  @default(false)
-  dmOnOpenMessage    String?  @db.Text
-  dmOnClose          Boolean  @default(false)
-  dmOnCloseMessage   String?  @db.Text
-  observerRoleIds    String[] @default([])         // Can see ticket but can't talk
-  maxOpenPerUserPanel Int?                         // Per-panel limit (null = unlimited)
-  buttonStyle        String   @default("BUTTON")   // BUTTON | DROPDOWN | THREAD
-  inactivityCloseHours Int?                        // Auto-close after N hours (Premium)
-  autoCloseOnLeave   Boolean  @default(false)      // Close ticket when creator leaves guild
-  feedbackEnabled    Boolean  @default(false)      // DM rating prompt after close
+  categoryOpenId            String? // Category for open tickets (preferred over categoryId)
+  categoryClosedId          String? // Category tickets move to after "Close"
+  logChannelId              String? // Separate from transcript: logs open/close/claim events
+  transcriptChannelId       String? // Where HTML transcripts post on delete
+  channelNamePrefix         String   @default("ticket") // e.g. "ticket-0001-username"
+  ticketCounter             Int      @default(0) // Auto-increment, ATOMIC on open
+  counterPadding            Int      @default(4) // "0001", "00001", etc.
+  welcomeMessage            String?  @db.Text // Supports {user}, {ticket.count}, etc.
+  welcomeEmbedColor         String   @default("#00e5ff")
+  closeAskEnabled           Boolean  @default(true) // Two-step close
+  closeAskMessage           String?  @db.Text // "Are you sure?" embed text
+  dmOnOpen                  Boolean  @default(false)
+  dmOnOpenMessage           String?  @db.Text
+  dmOnClose                 Boolean  @default(false)
+  dmOnCloseMessage          String?  @db.Text
+  observerRoleIds           String[] @default([]) // Can see ticket but can't talk
+  maxOpenPerUserPanel       Int? // Per-panel limit (null = unlimited)
+  buttonStyle               String   @default("BUTTON") // BUTTON | DROPDOWN | THREAD
+  inactivityCloseHours      Int? // Auto-close after N hours (Premium)
+  autoCloseOnLeave          Boolean  @default(false) // Close ticket when creator leaves guild
+  feedbackEnabled           Boolean  @default(false) // DM rating prompt after close
   // ─── v1.7 Verification gate ──────────────────────────────────────────────
-  requireVerifiedRoleIds String[] @default([])     // User must have ALL these roles to open ticket
-  verificationDeniedMessage String? @db.Text       // Custom "you need X role" message
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  requireVerifiedRoleIds    String[] @default([]) // User must have ALL these roles to open ticket
+  verificationDeniedMessage String?  @db.Text // Custom "you need X role" message
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 
   server  Server        @relation(fields: [serverId], references: [id], onDelete: Cascade)
   buttons PanelButton[]
@@ -204,16 +208,16 @@ model Panel {
 }
 
 model PanelButton {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   panelId String
   label   String
   emoji   String?
-  style   String @default("PRIMARY") // PRIMARY, SECONDARY, SUCCESS, DANGER
+  style   String  @default("PRIMARY") // PRIMARY, SECONDARY, SUCCESS, DANGER
   // What happens when clicked
   formId  String? // If set, opens a form instead of creating a ticket directly
 
-  panel Panel  @relation(fields: [panelId], references: [id], onDelete: Cascade)
-  form  Form?  @relation(fields: [formId], references: [id], onDelete: SetNull)
+  panel Panel @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  form  Form? @relation(fields: [formId], references: [id], onDelete: SetNull)
 
   @@map("panel_buttons")
 }
@@ -223,59 +227,59 @@ model PanelButton {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model VerificationPanel {
-  id              String   @id @default(cuid())
-  serverId        String
-  name            String   // internal/admin name
-  title           String   // embed title
-  description     String?  @db.Text
-  color           String   @default("#00e5ff")
-  imageUrl        String?
-  thumbnailUrl    String?
+  id                String   @id @default(cuid())
+  serverId          String
+  name              String // internal/admin name
+  title             String // embed title
+  description       String?  @db.Text
+  color             String   @default("#00e5ff")
+  imageUrl          String?
+  thumbnailUrl      String?
   // Where the panel is spawned in Discord
-  channelId       String?
-  messageId       String?
+  channelId         String?
+  messageId         String?
   // Verification method
-  type            String   @default("BUTTON") // BUTTON | MATH | REACTION
-  buttonLabel     String   @default("Verify")
-  buttonEmoji     String?
-  buttonStyle     String   @default("SUCCESS") // PRIMARY | SECONDARY | SUCCESS | DANGER
-  successMessage  String?  @db.Text            // "You're verified!"
-  failureMessage  String?  @db.Text            // "Wrong answer. Try again."
+  type              String   @default("BUTTON") // BUTTON | MATH | REACTION
+  buttonLabel       String   @default("Verify")
+  buttonEmoji       String?
+  buttonStyle       String   @default("SUCCESS") // PRIMARY | SECONDARY | SUCCESS | DANGER
+  successMessage    String?  @db.Text // "You're verified!"
+  failureMessage    String?  @db.Text // "Wrong answer. Try again."
   // Math captcha difficulty — defines number range
-  mathDifficulty  String   @default("EASY")    // EASY (1-10), MEDIUM (1-50), HARD (1-100)
+  mathDifficulty    String   @default("EASY") // EASY (1-10), MEDIUM (1-50), HARD (1-100)
   // Roles applied on success
-  grantRoleIds    String[] @default([])        // Given on successful verification
-  removeRoleIds   String[] @default([])        // Removed on successful verification
+  grantRoleIds      String[] @default([]) // Given on successful verification
+  removeRoleIds     String[] @default([]) // Removed on successful verification
   // Anti-bot: minimum account age
-  minAccountAgeDays Int?                       // Block accounts younger than this
+  minAccountAgeDays Int? // Block accounts younger than this
   // Logging
-  logChannelId    String?
-  dmOnSuccess     Boolean  @default(false)
-  dmSuccessMessage String? @db.Text
+  logChannelId      String?
+  dmOnSuccess       Boolean  @default(false)
+  dmSuccessMessage  String?  @db.Text
   // Analytics
-  successCount    Int      @default(0)
-  failCount       Int      @default(0)
+  successCount      Int      @default(0)
+  failCount         Int      @default(0)
   // Attempt limits — prevent brute-forcing MATH captcha
-  maxAttempts     Int      @default(5)         // Attempts before cooldown
-  cooldownMinutes Int      @default(10)        // Cooldown after maxAttempts
+  maxAttempts       Int      @default(5) // Attempts before cooldown
+  cooldownMinutes   Int      @default(10) // Cooldown after maxAttempts
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  server   Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  server   Server                @relation(fields: [serverId], references: [id], onDelete: Cascade)
   attempts VerificationAttempt[]
 
   @@map("verification_panels")
 }
 
 model VerificationAttempt {
-  id                   String   @id @default(cuid())
-  verificationPanelId  String
-  userId               String
-  success              Boolean  @default(false)
-  answer               String?  // What the user entered (for MATH)
-  ip                   String?  // Bot interaction doesn't give IP, stays null
-  createdAt            DateTime @default(now())
+  id                  String   @id @default(cuid())
+  verificationPanelId String
+  userId              String
+  success             Boolean  @default(false)
+  answer              String? // What the user entered (for MATH)
+  ip                  String? // Bot interaction doesn't give IP, stays null
+  createdAt           DateTime @default(now())
 
   panel VerificationPanel @relation(fields: [verificationPanelId], references: [id], onDelete: Cascade)
 
@@ -288,30 +292,30 @@ model VerificationAttempt {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Form {
-  id          String   @id @default(cuid())
-  serverId    String
-  name        String
-  description String?
-  isApplication Boolean @default(false) // true = application form, false = ticket intake form
+  id                  String    @id @default(cuid())
+  serverId            String
+  name                String
+  description         String?
+  isApplication       Boolean   @default(false) // true = application form, false = ticket intake form
   // Where to send the filled form
-  reviewChannelId  String?  // Channel to post the review embed
+  reviewChannelId     String? // Channel to post the review embed
   // ─── Appy.bot-style application features ───
-  acceptRoleIds    String[] @default([])  // Roles granted on accept
-  denyRoleIds      String[] @default([])  // Roles granted on deny (e.g. "verified no")
-  removeRoleIds    String[] @default([])  // Roles removed on accept (e.g. "pending")
-  managerRoleIds   String[] @default([])  // Roles allowed to review (beyond Manage Server)
-  pingRoleIds      String[] @default([])  // Roles pinged when new submission arrives
-  acceptMessage    String?  @db.Text     // DM to applicant on accept (markdown)
-  denyMessage      String?  @db.Text     // DM to applicant on deny (markdown)
-  cooldownSeconds  Int?     @default(0)  // Per-user cooldown between submissions
-  maxSubmissions   Int?                   // Total cap per user (null = unlimited)
-  closedAt         DateTime?              // Applications closed — rejects new submissions
-  requireVerification Boolean @default(false) // Captcha-style "solve to submit"
+  acceptRoleIds       String[]  @default([]) // Roles granted on accept
+  denyRoleIds         String[]  @default([]) // Roles granted on deny (e.g. "verified no")
+  removeRoleIds       String[]  @default([]) // Roles removed on accept (e.g. "pending")
+  managerRoleIds      String[]  @default([]) // Roles allowed to review (beyond Manage Server)
+  pingRoleIds         String[]  @default([]) // Roles pinged when new submission arrives
+  acceptMessage       String?   @db.Text // DM to applicant on accept (markdown)
+  denyMessage         String?   @db.Text // DM to applicant on deny (markdown)
+  cooldownSeconds     Int?      @default(0) // Per-user cooldown between submissions
+  maxSubmissions      Int? // Total cap per user (null = unlimited)
+  closedAt            DateTime? // Applications closed — rejects new submissions
+  requireVerification Boolean   @default(false) // Captcha-style "solve to submit"
   transcriptChannelId String? // Where to post application transcript on approve/deny
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  server       Server        @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  server       Server         @relation(fields: [serverId], references: [id], onDelete: Cascade)
   questions    FormQuestion[]
   applications Application[]
   panelButtons PanelButton[]
@@ -321,9 +325,9 @@ model Form {
 }
 
 model FormCooldown {
-  id        String   @id @default(cuid())
-  formId    String
-  userId    String
+  id              String   @id @default(cuid())
+  formId          String
+  userId          String
   lastSubmittedAt DateTime @default(now())
   submissionCount Int      @default(1)
 
@@ -335,21 +339,21 @@ model FormCooldown {
 }
 
 model FormQuestion {
-  id          String       @id @default(cuid())
-  formId      String
-  order       Int
-  label       String
-  placeholder String?
-  type        QuestionType @default(SHORT_TEXT)
-  required    Boolean      @default(true)
-  minLength   Int?
-  maxLength   Int?
+  id                String       @id @default(cuid())
+  formId            String
+  order             Int
+  label             String
+  placeholder       String?
+  type              QuestionType @default(SHORT_TEXT)
+  required          Boolean      @default(true)
+  minLength         Int?
+  maxLength         Int?
   // Logic branching
-  choices     String[]     // For SELECT type
-  branches    Json?        // { "choice_value": next_question_id }
+  choices           String[] // For SELECT type
+  branches          Json? // { "choice_value": next_question_id }
   // Appy.bot-style validation
-  validationRegex   String?  // e.g. "^\\d{4}$" for 4-digit codes
-  validationMessage String?  // Shown to user on validation failure
+  validationRegex   String? // e.g. "^\\d{4}$" for 4-digit codes
+  validationMessage String? // Shown to user on validation failure
 
   form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
 
@@ -369,42 +373,42 @@ enum QuestionType {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Ticket {
-  id          String       @id @default(cuid())
-  serverId    String
-  panelId     String?
-  creatorId   String
-  assigneeId  String?
-  status      TicketStatus @default(OPEN)
+  id                   String       @id @default(cuid())
+  serverId             String
+  panelId              String?
+  creatorId            String
+  assigneeId           String?
+  status               TicketStatus @default(OPEN)
   // Discord IDs
-  channelId   String?      // Thread or channel ID
+  channelId            String? // Thread or channel ID
   // Linked application (escalation)
-  applicationId String?   @unique
+  applicationId        String?      @unique
   // Archive
-  archiveUrl  String?
-  archiveHtml String?      // Full HTML transcript
+  archiveUrl           String?
+  archiveHtml          String? // Full HTML transcript
   // Unguessable token required to view the public archive page — cuids are
   // not secrets and transcript HTML contains PII.
-  archiveToken String?
-  closedAt    DateTime?
-  closeReason String?
+  archiveToken         String?
+  closedAt             DateTime?
+  closeReason          String?
   // ─── v1.5 TicketTool-style additions ─────────────────────────────────────────
-  number           Int?                // Auto-increment per panel (ticket-0042)
-  reopenedAt       DateTime?
-  reopenCount      Int      @default(0)
-  renamedFrom      String?             // Original channel name if renamed
-  feedbackRating   Int?                // 1-5 stars after close
-  feedbackComment  String?  @db.Text
-  feedbackAt       DateTime?
-  lastActivityAt   DateTime @default(now()) // For inactivity auto-close
-  inactivityNotifiedAt DateTime?        // Prevents spam of "about to close" warnings
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  number               Int? // Auto-increment per panel (ticket-0042)
+  reopenedAt           DateTime?
+  reopenCount          Int          @default(0)
+  renamedFrom          String? // Original channel name if renamed
+  feedbackRating       Int? // 1-5 stars after close
+  feedbackComment      String?      @db.Text
+  feedbackAt           DateTime?
+  lastActivityAt       DateTime     @default(now()) // For inactivity auto-close
+  inactivityNotifiedAt DateTime? // Prevents spam of "about to close" warnings
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
-  server      Server      @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  panel       Panel?      @relation(fields: [panelId], references: [id], onDelete: SetNull)
-  creator     User        @relation("TicketCreator", fields: [creatorId], references: [id])
-  assignee    User?       @relation("TicketAssignee", fields: [assigneeId], references: [id])
-  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  server      Server          @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  panel       Panel?          @relation(fields: [panelId], references: [id], onDelete: SetNull)
+  creator     User            @relation("TicketCreator", fields: [creatorId], references: [id])
+  assignee    User?           @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  application Application?    @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   messages    TicketMessage[]
 
   @@map("tickets")
@@ -418,13 +422,13 @@ enum TicketStatus {
 }
 
 model TicketMessage {
-  id        String   @id @default(cuid())
-  ticketId  String
-  authorId  String
-  authorTag String
-  content   String
+  id          String   @id @default(cuid())
+  ticketId    String
+  authorId    String
+  authorTag   String
+  content     String
   attachments String[]
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
@@ -436,22 +440,22 @@ model TicketMessage {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Application {
-  id        String            @id @default(cuid())
-  serverId  String
-  formId    String
-  userId    String
-  status    ApplicationStatus @default(PENDING)
+  id              String            @id @default(cuid())
+  serverId        String
+  formId          String
+  userId          String
+  status          ApplicationStatus @default(PENDING)
   // Filled answers: { question_id: answer }
-  answers   Json
+  answers         Json
   // Discord review message
   reviewMessageId String?
   reviewChannelId String?
   // Escalation to ticket
-  ticket    Ticket?
-  reviewerId String?
-  reviewNote String?
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  ticket          Ticket?
+  reviewerId      String?
+  reviewNote      String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
   form   Form   @relation(fields: [formId], references: [id])
@@ -474,8 +478,8 @@ enum ApplicationStatus {
 model AuditLog {
   id        String   @id @default(cuid())
   serverId  String?
-  actorId   String?  // Nullable to support SYSTEM actions (bot join/leave)
-  actorTag  String?  // Human-readable tag when no actorId (e.g. "SYSTEM")
+  actorId   String? // Nullable to support SYSTEM actions (bot join/leave)
+  actorTag  String? // Human-readable tag when no actorId (e.g. "SYSTEM")
   action    String
   targetId  String?
   metadata  Json?
@@ -495,9 +499,9 @@ model PaymentLog {
   id              String   @id @default(cuid())
   serverId        String
   stripeInvoiceId String?  @unique
-  amount          Int      // in cents
-  currency        String   @default("eur")  // F6 — продуктът таксува в евро (ЕС)
-  status          String   // paid, open, void, uncollectible
+  amount          Int // in cents
+  currency        String   @default("eur") // F6 — продуктът таксува в евро (ЕС)
+  status          String // paid, open, void, uncollectible
   description     String?
   createdAt       DateTime @default(now())
 
@@ -514,7 +518,7 @@ model PaymentLog {
 // събитие хвърля P2002 → транзакцията се отказва → ефектът не се дублира.
 model ProcessedStripeEvent {
   id        String   @id // Stripe event.id (evt_...)
-  type      String   // event.type, за одит/диагностика
+  type      String // event.type, за одит/диагностика
   createdAt DateTime @default(now())
 
   @@map("processed_stripe_events")
@@ -525,18 +529,18 @@ model ProcessedStripeEvent {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Poll {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   serverId    String
   creatorId   String
   channelId   String
   messageId   String?
   question    String
   options     String[]
-  multiChoice Boolean  @default(false)
-  anonymous   Boolean  @default(false)
+  multiChoice Boolean   @default(false)
+  anonymous   Boolean   @default(false)
   closesAt    DateTime?
   closedAt    DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   votes PollVote[]
 
@@ -607,7 +611,7 @@ model ScheduledMessage {
   embedDescription String?   @db.Text
   embedColor       String    @default("#00e5ff")
   sendAt           DateTime
-  recurrence       String?   // daily | weekly | monthly | null(one-shot)
+  recurrence       String? // daily | weekly | monthly | null(one-shot)
   sentAt           DateTime?
   nextAt           DateTime?
   createdBy        String
@@ -667,19 +671,19 @@ model Webhook {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ApiKey {
-  id            String    @id @default(cuid())
-  userId        String
-  serverId      String    // Scoped to single server — prevents cross-server reads
-  name          String
-  keyHash       String    @unique  // SHA-256 hash; plaintext shown only at creation
-  keyPrefix     String    // First 8 chars for identification (e.g. "bp_live_abc123xx")
-  scopes        String[]  @default([])  // ["tickets:read", "tickets:write", "forms:read", ...]
-  lastUsedAt    DateTime?
-  expiresAt     DateTime?
-  revokedAt     DateTime?
-  requestCount  Int       @default(0)
-  createdBy     String?   // v2.1 — Discord user ID who created the key (same as userId usually)
-  createdAt     DateTime  @default(now())
+  id           String    @id @default(cuid())
+  userId       String
+  serverId     String // Scoped to single server — prevents cross-server reads
+  name         String
+  keyHash      String    @unique // SHA-256 hash; plaintext shown only at creation
+  keyPrefix    String // First 8 chars for identification (e.g. "bp_live_abc123xx")
+  scopes       String[]  @default([]) // ["tickets:read", "tickets:write", "forms:read", ...]
+  lastUsedAt   DateTime?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  requestCount Int       @default(0)
+  createdBy    String? // v2.1 — Discord user ID who created the key (same as userId usually)
+  createdAt    DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -693,17 +697,17 @@ model ApiKey {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ReferralCommission {
-  id              String    @id @default(cuid())
-  referrerId      String    // User ID who referred
-  referredServerId String   // Server that was referred
-  stripeInvoiceId String    @unique  // Source invoice from Stripe
-  amountCents     Int       // Customer paid amount in cents
-  commissionCents Int       // 20% of amount, what we owe referrer
-  currency        String    @default("eur")  // F6 — продуктът таксува в евро (ЕС)
-  status          String    @default("pending")  // pending, paid, refunded
-  payoutId        String?   // Stripe payout ID when paid out
-  paidAt          DateTime?
-  createdAt       DateTime  @default(now())
+  id               String    @id @default(cuid())
+  referrerId       String // User ID who referred
+  referredServerId String // Server that was referred
+  stripeInvoiceId  String    @unique // Source invoice from Stripe
+  amountCents      Int // Customer paid amount in cents
+  commissionCents  Int // 20% of amount, what we owe referrer
+  currency         String    @default("eur") // F6 — продуктът таксува в евро (ЕС)
+  status           String    @default("pending") // pending, paid, refunded
+  payoutId         String? // Stripe payout ID when paid out
+  paidAt           DateTime?
+  createdAt        DateTime  @default(now())
 
   user User @relation(fields: [referrerId], references: [id], onDelete: Cascade)
 
@@ -717,17 +721,17 @@ model ReferralCommission {
 // ═════════════════════════════════════════════════════════════════════════════
 
 model AffiliateCode {
-  id              String    @id @default(cuid())
-  userId          String    @unique  // Discord user ID — one code per user
-  code            String    @unique  // Human-readable code
-  clicks          Int       @default(0)
-  signups         Int       @default(0)
-  conversions     Int       @default(0)  // Paid subscriptions attributed
-  totalEarnings   Int       @default(0)  // Cents, lifetime
-  pendingEarnings Int       @default(0)  // Cents, available for payout
-  paidEarnings    Int       @default(0)  // Cents, already paid out
-  paypalEmail     String?   // For payouts
-  createdAt       DateTime  @default(now())
+  id              String   @id @default(cuid())
+  userId          String   @unique // Discord user ID — one code per user
+  code            String   @unique // Human-readable code
+  clicks          Int      @default(0)
+  signups         Int      @default(0)
+  conversions     Int      @default(0) // Paid subscriptions attributed
+  totalEarnings   Int      @default(0) // Cents, lifetime
+  pendingEarnings Int      @default(0) // Cents, available for payout
+  paidEarnings    Int      @default(0) // Cents, already paid out
+  paypalEmail     String? // For payouts
+  createdAt       DateTime @default(now())
 
   referrals AffiliateReferral[]
 
@@ -735,14 +739,14 @@ model AffiliateCode {
 }
 
 model AffiliateReferral {
-  id              String    @id @default(cuid())
-  affiliateId     String
+  id               String    @id @default(cuid())
+  affiliateId      String
   referredServerId String
-  status          String    @default("pending") // pending | active | churned
-  firstPaymentAt  DateTime?
-  lastPaymentAt   DateTime?
-  totalEarnings   Int       @default(0)  // Cents commission from this referral
-  createdAt       DateTime  @default(now())
+  status           String    @default("pending") // pending | active | churned
+  firstPaymentAt   DateTime?
+  lastPaymentAt    DateTime?
+  totalEarnings    Int       @default(0) // Cents commission from this referral
+  createdAt        DateTime  @default(now())
 
   affiliate AffiliateCode @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
 
@@ -756,20 +760,20 @@ model AffiliateReferral {
 // ═════════════════════════════════════════════════════════════════════════════
 
 model DailyMetric {
-  id                String   @id @default(cuid())
-  serverId          String
-  date              DateTime @db.Date  // One row per server per day
-  ticketsOpened     Int      @default(0)
-  ticketsClosed     Int      @default(0)
-  ticketsEscalated  Int      @default(0)
-  formsSubmitted    Int      @default(0)
-  applicationsApproved Int   @default(0)
-  applicationsDenied   Int   @default(0)
-  verificationsSuccess Int   @default(0)
-  verificationsFailure Int   @default(0)
-  avgResponseTimeSec   Int?  // First-reply time median
-  avgResolutionTimeSec Int?  // Open → close time median
-  createdAt         DateTime @default(now())
+  id                   String   @id @default(cuid())
+  serverId             String
+  date                 DateTime @db.Date // One row per server per day
+  ticketsOpened        Int      @default(0)
+  ticketsClosed        Int      @default(0)
+  ticketsEscalated     Int      @default(0)
+  formsSubmitted       Int      @default(0)
+  applicationsApproved Int      @default(0)
+  applicationsDenied   Int      @default(0)
+  verificationsSuccess Int      @default(0)
+  verificationsFailure Int      @default(0)
+  avgResponseTimeSec   Int? // First-reply time median
+  avgResolutionTimeSec Int? // Open → close time median
+  createdAt            DateTime @default(now())
 
   @@unique([serverId, date])
   @@index([serverId, date])

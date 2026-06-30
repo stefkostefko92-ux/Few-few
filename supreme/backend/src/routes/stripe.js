@@ -22,11 +22,39 @@ function requireStripe(req, res, next) {
   next();
 }
 
-// ─── POST /api/stripe/create-checkout ────────────────────────────────────────
-// Create a Stripe Checkout session for Premium subscription
+// H2 — добавя календарни месеци към дата (за прозореца на афилиейт комисионната).
+// Коректно обработва месеци с различна дължина: ако целевият месец е по-къс
+// (напр. 31 ян + 1 месец), нормализира към последния ден на месеца, а не прелива
+// в следващия.
+function addMonths(date, months) {
+  const d = new Date(date.getTime());
+  const targetMonth = d.getUTCMonth() + months;
+  const day = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(targetMonth);
+  const daysInTarget = new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)
+  ).getUTCDate();
+  d.setUTCDate(Math.min(day, daysInTarget));
+  return d;
+}
 
-router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req, res, next) => {
-  const { serverId, withdrawalConsent } = req.body;
+// ─── POST /api/stripe/create-checkout/:serverId ──────────────────────────────
+// Create a Stripe Checkout session for Premium subscription.
+//
+// IDOR fix: serverId е PATH параметър (не req.body), за да мине през
+// requireServerAdmin — който чете req.params.serverId и проверява, че req.user
+// има ManageGuild (0x20) над този Discord сървър. Без тази проверка всеки логнат
+// потребител можеше да стартира абонамент за чужд сървър.
+router.post(
+  "/create-checkout/:serverId",
+  requireAuth,
+  loadUser,
+  requireServerAdmin,
+  requireStripe,
+  async (req, res, next) => {
+  const { serverId } = req.params;
+  const { withdrawalConsent } = req.body;
   if (!serverId) return res.status(400).json({ error: "serverId required" });
 
   // F7 — Право на отказ за дигитална услуга (чл. 16(м) Дир. 2011/83/ЕС; ЗЗП).
@@ -84,6 +112,12 @@ router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req
       });
     }
 
+    // M1 — Trial double-dip: подаваме Stripe trial САМО ако сървърът още не е
+    // ползвал пробен период. Иначе локалният 14-дневен trial + Stripe trial =
+    // 28 дни безплатно. trialUsed се вдига при стартиране на локалния trial.
+    const trialDays = Number(process.env.STRIPE_TRIAL_DAYS ?? 14);
+    const grantStripeTrial = trialDays > 0 && server.trialUsed !== true;
+
     const session = await stripe.checkout.sessions.create(
       {
         customer: customerId,
@@ -91,19 +125,32 @@ router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req
         mode: "subscription",
         line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
         subscription_data: {
-          // Free trial: set STRIPE_TRIAL_DAYS=0 to disable, default is 14 days
-          ...(Number(process.env.STRIPE_TRIAL_DAYS ?? 14) > 0 && {
-            trial_period_days: Number(process.env.STRIPE_TRIAL_DAYS ?? 14),
-          }),
+          // M1 — без trial_period_days, ако trialUsed===true (вече е ползван).
+          ...(grantStripeTrial && { trial_period_days: trialDays }),
           metadata: { serverId },
         },
+        // M3 — Stripe Tax: автоматично изчислява ДДС по местоназначение и
+        // събира tax ID (reverse charge за B2B в ЕС). Изисква активни Tax
+        // registrations в Stripe Dashboard (Settings → Tax). customer_update е
+        // задължителен, защото automatic_tax има нужда да обнови адреса на
+        // клиента от данните на Checkout.
+        automatic_tax: { enabled: true },
+        tax_id_collection: { enabled: true },
+        customer_update: { address: "auto", name: "auto" },
         success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
         metadata: { serverId },
       },
-      // F4 — Idempotency-Key и тук: ретрай на същия POST не създава втора сесия.
-      // Включваме timestamp, за да позволим нова сесия след отказана/изтекла.
-      { idempotencyKey: `checkout-${serverId}-${Date.now()}` }
+      // L1 — Idempotency-Key със стабилен ключ за кратък прозорец: при ретрай на
+      // същия POST (timeout/мрежа) Stripe връща СЪЩАТА сесия вместо да създаде
+      // втора. Date.now() обезсмисляше идемпотентността (всеки ретрай = нов ключ).
+      // Ключираме по serverId + UTC дата, така че опит за нов checkout на
+      // следващия ден (напр. след изтекла сесия) пак минава.
+      {
+        idempotencyKey: `checkout-${serverId}-${new Date()
+          .toISOString()
+          .slice(0, 10)}`,
+      }
     );
 
     res.json({ url: session.url });
@@ -112,11 +159,20 @@ router.post("/create-checkout", requireAuth, loadUser, requireStripe, async (req
   }
 });
 
-// ─── POST /api/stripe/portal ──────────────────────────────────────────────────
-// Open the Stripe Customer Portal (manage/cancel subscription)
-
-router.post("/portal", requireAuth, loadUser, requireStripe, async (req, res, next) => {
-  const { serverId } = req.body;
+// ─── POST /api/stripe/portal/:serverId ────────────────────────────────────────
+// Open the Stripe Customer Portal (manage/cancel subscription).
+//
+// IDOR fix: serverId е PATH параметър → минава през requireServerAdmin. Преди
+// това всеки логнат потребител можеше да отвори чужд Customer Portal (вижда
+// фактури/платежен метод, отказва абонамента на чужд сървър).
+router.post(
+  "/portal/:serverId",
+  requireAuth,
+  loadUser,
+  requireServerAdmin,
+  requireStripe,
+  async (req, res, next) => {
+  const { serverId } = req.params;
 
   try {
     const server = await prisma.server.findUnique({ where: { id: serverId } });
@@ -184,6 +240,19 @@ router.post("/webhook", requireStripe, async (req, res) => {
         const serverId = session.metadata?.serverId;
         if (!serverId) break;
 
+        // M2 — payment_status guard: не активирай Premium при неплатена сесия.
+        // За subscription mode с trial Stripe праща payment_status="no_payment_required"
+        // (валидно — trial-ът дава достъп) и session.subscription е попълнено.
+        // "unpaid" БЕЗ subscription означава, че няма нито плащане, нито абонамент
+        // → НЕ даваме достъп; реалната активация ще дойде по-късно през
+        // invoice.paid / customer.subscription.updated.
+        if (session.payment_status === "unpaid" && !session.subscription) {
+          console.warn(
+            `⚠️  checkout.session.completed за ${serverId} с payment_status=unpaid и без subscription — пропускам активацията`
+          );
+          break;
+        }
+
         // Determine initial status — trialing if trial_end is set, else active
         const initialStatus = session.subscription
           ? "trialing"  // will be updated by subscription.updated event
@@ -230,6 +299,15 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
         await runOnce(async (tx) => {
+          // C3 — успешно плащане → ако сървърът е бил в past_due, нулираме
+          // маркера (dunning възстановен), за да не го отнеме scheduler-ът.
+          if (server.pastDueSince) {
+            await tx.server.update({
+              where: { id: server.id },
+              data: { pastDueSince: null },
+            });
+          }
+
           await tx.paymentLog.create({
             data: {
               serverId: server.id,
@@ -247,11 +325,13 @@ router.post("/webhook", requireStripe, async (req, res) => {
             where: { referredServerId: server.id, status: { in: ["pending", "active"] } },
           });
           if (referral) {
-            const twelveMonths = 12 * 30 * 24 * 60 * 60 * 1000;
-            const elapsed = referral.firstPaymentAt
-              ? Date.now() - referral.firstPaymentAt.getTime()
-              : 0;
-            if (!referral.firstPaymentAt || elapsed < twelveMonths) {
+            // H2 — прозорецът на комисионната е КАЛЕНДАРНИ 12 месеца от първото
+            // плащане, не 12*30=360 дни. addMonths коректно прескача месеци с
+            // различна дължина и високосни години.
+            const windowEnd = referral.firstPaymentAt
+              ? addMonths(referral.firstPaymentAt, 12)
+              : null;
+            if (!referral.firstPaymentAt || Date.now() < windowEnd.getTime()) {
               const commission = Math.floor(invoice.amount_paid * 0.20); // 20%
               await tx.affiliateReferral.update({
                 where: { id: referral.id },
@@ -286,7 +366,12 @@ router.post("/webhook", requireStripe, async (req, res) => {
         await runOnce(async (tx) => {
           await tx.server.update({
             where: { id: server.id },
-            data: { stripeStatus: "past_due" },
+            data: {
+              stripeStatus: "past_due",
+              // C3 — маркираме началото на past_due само ако още не е маркиран
+              // (за да броим от ПЪРВИЯ провал, не от всеки последващ ретрай).
+              ...(server.pastDueSince ? {} : { pastDueSince: new Date() }),
+            },
           });
 
           await tx.paymentLog.create({
@@ -318,6 +403,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               isPremium: false,
               stripeStatus: "canceled",
               stripeSubscriptionId: null,
+              pastDueSince: null, // C3 — приключен абонамент, маркерът отпада.
             },
           });
         });
@@ -351,6 +437,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
           sub.status
         );
         // past_due НЕ е в нито един списък → isPremium остава непроменен (grace).
+        // C3 — но маркираме pastDueSince, за да може scheduler-ът да отнеме
+        // достъпа, ако grace продължи >14 дни (Stripe не винаги довежда до
+        // unpaid/canceled при определени dunning настройки).
 
         const wasTrialing = server.stripeStatus === "trialing";
 
@@ -365,6 +454,12 @@ router.post("/webhook", requireStripe, async (req, res) => {
               }),
               // Отнемане на достъп при изчерпани ретраи / изтекъл incomplete.
               ...(premiumOff && { isPremium: false }),
+              // C3 — past_due: засичаме началото (само при първи преход).
+              ...(sub.status === "past_due" && !server.pastDueSince && {
+                pastDueSince: new Date(),
+              }),
+              // C3 — върнал се е към платен/пробен статус → нулираме маркера.
+              ...(premiumOn && { pastDueSince: null }),
             },
           });
         });
