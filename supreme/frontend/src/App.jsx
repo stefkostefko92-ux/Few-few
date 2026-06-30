@@ -35,7 +35,8 @@ const CommandsPage = lazy(() => import("./pages/CommandsPage"));
 const AutomationPage = lazy(() => import("./pages/AutomationPage"));
 const WebhooksPage = lazy(() => import("./pages/WebhooksPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
-const AffiliatePage = lazy(() => import("./pages/AffiliatePage"));
+// AffiliatePage изключен за launch (одит C1/C2 — да не се рекламира неплащана комисионна)
+// const AffiliatePage = lazy(() => import("./pages/AffiliatePage"));
 const ApiKeysPage = lazy(() => import("./pages/ApiKeysPage"));
 
 const queryClient = new QueryClient({
@@ -104,7 +105,7 @@ export default function App() {
                 <Route path=":serverId/webhooks" element={<WebhooksPage />} />
                 <Route path=":serverId/analytics" element={<AnalyticsPage />} />
                 <Route path=":serverId/apikeys" element={<ApiKeysPage />} />
-                <Route path="affiliate" element={<AffiliatePage />} />
+                {/* Affiliate route изключен за launch — програмата не плаща комисионни (одит C1/C2) */}
                 <Route path=":serverId/premium" element={<PremiumPage />} />
                 <Route path=":serverId/settings" element={<SettingsPage />} />
                 <Route path="privacy-settings" element={<PrivacySettingsPage />} />

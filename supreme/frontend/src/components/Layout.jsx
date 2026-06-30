@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Ticket, FileText, Layout as LayoutIcon,
   Star, Shield, ShieldCheck, LogOut, ChevronLeft, Settings, Users, ExternalLink, Webhook,
   Zap, BookOpen,
-  LineChart, Key, Gift,
+  LineChart, Key,
   Menu, X as CloseIcon,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
@@ -120,7 +120,7 @@ export default function Layout() {
             <>
               <SectionLabel>Navigation</SectionLabel>
               <NavItem to="/dashboard" icon={LayoutDashboard} end>Dashboard</NavItem>
-              <NavItem to="/dashboard/affiliate" icon={Gift}>Affiliate</NavItem>
+              {/* Affiliate скрит за launch — програмата не е функционална (одит C1/C2); включи пак след referral attribution */}
               {isSuperUser && (
                 <NavItem to="/dashboard/admin" icon={Shield} accent>Super Admin</NavItem>
               )}

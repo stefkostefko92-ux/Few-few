@@ -186,7 +186,7 @@ app.use("/api/bot", botV18Router);           // v1.8 polls/giveaways/sticky/sche
 app.use("/api", webhooksRouter);              // /api/:serverId/webhooks + /api/events + /api/:serverId/panels/:panelId/duplicate
 app.use("/api/automation", automationRouter); // v1.8 dashboard CRUD for polls/giveaways/sticky/scheduled + commands catalog
 app.use("/api/trial", trialRouter);           // v2.0 Premium trial system
-app.use("/api/affiliate", affiliateRouter);   // v2.1 20% recurring commissions
+// app.use("/api/affiliate", affiliateRouter); // ИЗКЛЮЧЕН за launch — програмата не начислява комисионни (одит C1/C2)
 app.use("/api/analytics", analyticsRouter);   // v2.1 Heatmap, leaderboard, funnel
 app.use("/api/apikeys", apiKeyManagementRouter); // v2.1 API key CRUD (dashboard-authed)
 app.use("/public/v1", publicApiRouter);       // v2.1 Public REST API (bearer token)
@@ -195,7 +195,7 @@ app.use("/archive", archiveRouter);           // v2.1 Public ticket transcript v
 // apiKeyManagementRouter on the same path. The file is kept solely for
 // its `requireApiKey` middleware export, used by v1.js.
 app.use("/api/v1", v1Router);                 // v2.1 Public API (bearer-authed)
-app.use("/api/referral", referralRouter);     // v2.1 Affiliate program
+// app.use("/api/referral", referralRouter);  // ИЗКЛЮЧЕН за launch — счупена/дублирана affiliate система (одит C2)
 app.use("/api/gdpr", gdprRouter);             // GDPR Articles 15, 17, 20 + DSA abuse reports
 
 // ─── Error handler ────────────────────────────────────────────────────────────
