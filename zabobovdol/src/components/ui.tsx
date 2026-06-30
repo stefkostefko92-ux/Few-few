@@ -56,13 +56,16 @@ export function Breadcrumbs({
   crumbs: { name: string; path: string }[];
 }) {
   return (
-    <nav aria-label="Навигация по трохи" className="text-sm text-slate-500">
+    <nav aria-label="Навигация по трохи" className="text-sm text-slate-600">
       <ol className="flex flex-wrap items-center gap-1">
         {crumbs.map((c, i) => (
           <li key={c.path} className="flex items-center gap-1">
             {i > 0 && <span aria-hidden>/</span>}
             {i < crumbs.length - 1 ? (
-              <Link href={c.path} className="hover:text-brand-700">
+              <Link
+                href={c.path}
+                className="underline decoration-slate-300 underline-offset-2 hover:text-brand-700"
+              >
                 {c.name}
               </Link>
             ) : (

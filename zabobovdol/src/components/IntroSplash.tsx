@@ -16,9 +16,12 @@ export function IntroSplash() {
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [visitorNo, setVisitorNo] = useState<number | null>(null);
+  const [reduce, setReduce] = useState(false);
   const skipRef = useRef<HTMLButtonElement>(null);
 
-  const seconds = SITE.intro.seconds;
+  // При „по-малко движение“ показваме екрана съвсем кратко и без анимирана
+  // лента — за хора с вестибуларна чувствителност и за да не бави достъпа.
+  const seconds = reduce ? 1.5 : SITE.intro.seconds;
 
   // Истински брояч на посетителите: всеки браузър получава пореден номер
   // веднъж и го запомня, за да не надува брояча при всяко зареждане.
@@ -63,13 +66,18 @@ export function IntroSplash() {
     } catch {
       /* sessionStorage недостъпен — показваме веднъж нормално */
     }
+    const reduceM =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    setReduce(reduceM);
+    const eff = reduceM ? 1.5 : SITE.intro.seconds;
     setVisible(true);
     document.body.style.overflow = "hidden";
-    const t1 = setTimeout(() => setLeaving(true), seconds * 1000 - 500);
+    const t1 = setTimeout(() => setLeaving(true), eff * 1000 - 500);
     const t2 = setTimeout(() => {
       setVisible(false);
       document.body.style.overflow = "";
-    }, seconds * 1000);
+    }, eff * 1000);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -143,11 +151,16 @@ export function IntroSplash() {
         </p>
       )}
 
-      {/* Лента за прогрес (изпълва се за времето на екрана) */}
+      {/* Лента за прогрес (изпълва се за времето на екрана). При „по-малко
+          движение“ е статична — без анимация. */}
       <div className="mt-8 h-1 w-44 overflow-hidden rounded-full bg-white/20">
         <div
           className="h-full rounded-full bg-gold-400"
-          style={{ animation: `splashBar ${seconds}s linear forwards` }}
+          style={
+            reduce
+              ? { width: "100%" }
+              : { animation: `splashBar ${seconds}s linear forwards` }
+          }
         />
       </div>
 
@@ -155,7 +168,7 @@ export function IntroSplash() {
         ref={skipRef}
         type="button"
         onClick={skip}
-        className="mt-6 rounded-full border border-white/30 px-4 py-1.5 text-sm font-medium text-white/90 transition hover:bg-white/10"
+        className="mt-6 inline-flex min-h-[44px] items-center rounded-full border-2 border-white/60 px-6 py-2.5 text-base font-semibold text-white transition hover:bg-white/15"
       >
         Прескочи →
       </button>

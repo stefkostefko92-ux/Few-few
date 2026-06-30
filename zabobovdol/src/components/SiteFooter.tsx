@@ -49,7 +49,7 @@ export async function SiteFooter() {
             <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
               Раздели
             </h2>
             <ul className="mt-3 space-y-2 text-sm">
@@ -63,7 +63,7 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
               Информация
             </h2>
             <ul className="mt-3 space-y-2 text-sm">
@@ -77,7 +77,7 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
               Спешни телефони
             </h2>
             <ul className="mt-3 space-y-2 text-sm">
