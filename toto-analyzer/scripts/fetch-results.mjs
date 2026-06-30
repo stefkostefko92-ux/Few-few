@@ -101,6 +101,29 @@ function saveGame(id, draws) {
   writeFileSync(join(dataDir, id + ".json"), JSON.stringify(draws, null, 2) + "\n");
 }
 
+// Sanity-проверка преди автоматичен запис: понеже парсваме недоверен HTML и
+// после `git push`-ваме без човешка проверка, отхвърляме явно сгрешен парс
+// (числа извън диапазона/повтарящи се, безсмислена или твърде бъдеща дата).
+function isSane(draw) {
+  const game = GAMES[draw.gameId];
+  if (!game) return false;
+  const nums = draw.numbers;
+  if (!Array.isArray(nums) || nums.length !== game.picks) return false;
+  const seen = new Set();
+  for (const n of nums) {
+    if (!Number.isInteger(n) || n < 1 || n > game.pool) return false;
+    if (seen.has(n)) return false;
+    seen.add(n);
+  }
+  if (!draw.date || !/^\d{4}-\d{2}-\d{2}$/.test(draw.date)) return false;
+  const t = Date.parse(draw.date + "T00:00:00Z");
+  if (Number.isNaN(t)) return false;
+  const now = Date.now();
+  // не по-стар от 2010 г. и не повече от 2 дни в бъдещето
+  if (t < Date.parse("2010-01-01") || t > now + 2 * 86400000) return false;
+  return true;
+}
+
 // Добавя тираж, ако още го няма (по дата или номер на тираж).
 function mergeDraw(list, draw) {
   const exists = list.some(
@@ -123,6 +146,10 @@ async function main() {
   let added = 0;
   const touched = new Set();
   for (const d of fresh) {
+    if (!isSane(d)) {
+      console.warn(`! Пропуснат съмнителен парс: ${d.gameId} ${d.date} ${JSON.stringify(d.numbers)}`);
+      continue;
+    }
     const list = loadGame(d.gameId);
     if (mergeDraw(list, d)) {
       saveGame(d.gameId, list);

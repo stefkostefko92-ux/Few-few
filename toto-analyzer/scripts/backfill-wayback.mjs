@@ -97,10 +97,16 @@ function saveGame(id, draws) {
 }
 
 function mergeDraw(list, draw) {
-  if (!draw.date) return false;
-  const exists = list.some((d) => d.date === draw.date);
+  // Дедуп по дата, с резерва номер на тираж — за да не губим снимки, чийто
+  // tiraj-regex не е уловил дата, но има валиден номер.
+  if (!draw.date && draw.draw == null) return false;
+  const exists = list.some(
+    (d) =>
+      (draw.date && d.date === draw.date) ||
+      (draw.draw != null && d.draw === draw.draw)
+  );
   if (exists) return false;
-  list.push({ date: draw.date, numbers: draw.numbers, draw: draw.draw });
+  list.push({ date: draw.date || null, numbers: draw.numbers, draw: draw.draw });
   return true;
 }
 

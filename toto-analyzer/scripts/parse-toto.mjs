@@ -44,8 +44,12 @@ export function parseResultsPage(html) {
     const id = nameToId(m[1]);
     if (!id) continue;
     const game = GAMES[id];
-    // Прозорец след заглавието, в който се намират тиражът и числата.
-    const region = html.slice(m.index, m.index + 3500);
+    // Регион до СЛЕДВАЩОТО заглавие на игра (не фиксиран офсет), за да не
+    // поемем топчета от съседен блок.
+    const afterHeader = m.index + m[0].length;
+    const nextRel = html.slice(afterHeader).search(/<h3 class="game-name-blue">/);
+    const end = nextRel === -1 ? html.length : afterHeader + nextRel;
+    const region = html.slice(m.index, end);
 
     const tirajM = region.match(/class="tiraj">\s*Тираж\s*(\d+)\s*-\s*([\d.]+)/i);
     const draw = tirajM ? parseInt(tirajM[1], 10) : null;

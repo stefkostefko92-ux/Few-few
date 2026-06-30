@@ -188,9 +188,17 @@ h3 { font-size: 1.05rem; margin: 26px 0 10px; color: var(--ink); }
 }
 
 /* Weights */
-.weights { display: flex; flex-direction: column; gap: 10px; max-width: 520px; margin-bottom: 18px; }
-.weights label { display: grid; grid-template-columns: 220px 1fr 40px; align-items: center; gap: 10px; color: var(--muted); }
-.weights input[type="range"] { width: 100%; }
+.weights {
+  display: grid;
+  grid-template-columns: 220px 1fr 44px;
+  align-items: center;
+  gap: 10px 12px;
+  max-width: 520px;
+  margin-bottom: 18px;
+}
+.weights label { color: var(--muted); }
+.weights input[type="range"] { width: 100%; min-height: 28px; }
+.weights output { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
 
 /* Likely next draw (probability model) */
 .likely-box {
@@ -279,6 +287,38 @@ h3 { font-size: 1.05rem; margin: 26px 0 10px; color: var(--ink); }
 .site-footer { border-top: 1px solid var(--line); padding: 18px 0; color: var(--muted); font-size: 0.85rem; }
 
 @media (max-width: 560px) {
-  .weights label { grid-template-columns: 1fr; }
+  .weights { grid-template-columns: 1fr auto; }
+  .weights label { grid-column: 1 / -1; }
+  .view-tabs button, .games button { padding: 11px 16px; }
+  .add-draw input[type="text"] { min-width: min(240px, 100%); }
   .bar-row { grid-template-columns: 34px 1fr 54px; }
+}
+
+/* Достъпност: видим фокус, минимални таргети, скрит текст, reduced-motion */
+:where(button, a, input, select, textarea, [tabindex], [role="tab"]):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+input[type="range"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+
+.view-tabs button, .games button { min-height: 44px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -7,6 +7,13 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+  // Екранира стойности преди вмъкване през innerHTML (защита срещу DOM-XSS,
+  // напр. злонамерена „дата" от импортиран файл).
+  const esc = (s) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
+
   const state = {
     gameId: window.TOTO_GAME_ORDER[0],
     draws: [],
@@ -40,18 +47,41 @@
   function renderGameTabs() {
     const nav = $("#gameTabs");
     nav.innerHTML = "";
-    for (const id of window.TOTO_GAME_ORDER) {
+    nav.setAttribute("role", "tablist");
+    nav.setAttribute("aria-label", "Избор на игра");
+    const ids = window.TOTO_GAME_ORDER;
+    const buttons = [];
+    ids.forEach((id, i) => {
       const g = window.TOTO_GAMES[id];
       const b = document.createElement("button");
       b.textContent = g.name;
-      if (id === state.gameId) b.classList.add("active");
+      b.setAttribute("role", "tab");
+      const on = id === state.gameId;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      b.tabIndex = on ? 0 : -1;
       b.addEventListener("click", () => {
+        buttons.forEach((x) => {
+          const sel = x === b;
+          x.classList.toggle("active", sel);
+          x.setAttribute("aria-selected", sel ? "true" : "false");
+          x.tabIndex = sel ? 0 : -1;
+        });
         loadGame(id);
-        $$("#gameTabs button").forEach((x) => x.classList.remove("active"));
-        b.classList.add("active");
       });
+      b.addEventListener("keydown", (e) => {
+        let j = null;
+        if (e.key === "ArrowRight") j = (i + 1) % ids.length;
+        else if (e.key === "ArrowLeft") j = (i - 1 + ids.length) % ids.length;
+        if (j !== null) {
+          e.preventDefault();
+          buttons[j].focus();
+          buttons[j].click();
+        }
+      });
+      buttons.push(b);
       nav.appendChild(b);
-    }
+    });
   }
 
   function renderStatus() {
@@ -63,7 +93,7 @@
       srcLabel = 'ДЕМО данни (случайни) — реалният архив още не е зареден';
       srcClass = "badge-demo";
     } else if (state.source === "official") {
-      srcLabel = "Официален архив (toto.bg, авто-обновяван)";
+      srcLabel = "Архив от публични източници (авто-обновяван)";
       srcClass = "badge-imported";
     } else if (state.source === "seed") {
       srcLabel = "Стартов архив";
@@ -75,13 +105,14 @@
       <span class="pill ${srcClass}">${srcLabel}</span>
       <span class="pill">Игра: <strong>${game().name}</strong></span>
       <span class="pill">Тиражи: <strong>${a.drawCount}</strong></span>
-      <span class="pill">Последен: <strong>${last && last.date ? last.date : "—"}</strong></span>
+      <span class="pill">Последен: <strong>${last && last.date ? esc(last.date) : "—"}</strong></span>
     `;
     $("#expGap").textContent = a.expectedGap.toFixed(1);
   }
 
+  // Топчето е визуално; текстовият смисъл идва от aria-label на контейнера.
   function ball(n) {
-    return `<span class="ball">${n}</span>`;
+    return `<span class="ball" aria-hidden="true">${n}</span>`;
   }
 
   function renderOverdue() {
@@ -95,12 +126,17 @@
       const pct = maxGapSeen ? Math.round((item.gap / maxGapSeen) * 100) : 0;
       const card = document.createElement("div");
       card.className = "num-card" + (isOverdue ? " is-overdue" : "");
+      card.setAttribute("role", "group");
+      card.setAttribute(
+        "aria-label",
+        `Число ${item.n}: ${item.gap} тиража без поява (×${item.gapIndex.toFixed(2)} от средното), рекорд ${item.maxGap}`
+      );
       card.innerHTML = `
         ${ball(item.n)}
-        <div class="gap-num">${item.gap}</div>
-        <div class="gap-label">тиража без поява</div>
-        <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-        <div class="meta">×${item.gapIndex.toFixed(2)} от средното · рекорд: ${item.maxGap}</div>
+        <div class="gap-num" aria-hidden="true">${item.gap}</div>
+        <div class="gap-label" aria-hidden="true">тиража без поява</div>
+        <div class="track" aria-hidden="true"><div class="fill" style="width:${pct}%"></div></div>
+        <div class="meta" aria-hidden="true">×${item.gapIndex.toFixed(2)} от средното · рекорд: ${item.maxGap}</div>
       `;
       grid.appendChild(card);
     });
@@ -120,12 +156,19 @@
     nums.forEach((item) => {
       const pct = Math.round((item.freq / maxFreq) * 100);
       const cls = item.freqIndex >= 1.05 ? "hot" : item.freqIndex <= 0.95 ? "cold" : "";
+      // Стрелка, за да не разчитаме само на цвят (WCAG 1.4.1).
+      const dir = cls === "hot" ? "▲ " : cls === "cold" ? "▼ " : "";
       const row = document.createElement("div");
       row.className = "bar-row " + cls;
+      row.setAttribute("role", "group");
+      row.setAttribute(
+        "aria-label",
+        `Число ${item.n}: изтеглено ${item.freq} пъти, индекс ${item.freqIndex.toFixed(2)}`
+      );
       row.innerHTML = `
         <div class="bnum">${item.n}</div>
-        <div class="btrack"><div class="bfill" style="width:${pct}%"></div></div>
-        <div class="bval">${item.freq} · ×${item.freqIndex.toFixed(2)}</div>
+        <div class="btrack" aria-hidden="true"><div class="bfill" style="width:${pct}%"></div></div>
+        <div class="bval">${dir}${item.freq} · ×${item.freqIndex.toFixed(2)}</div>
       `;
       bars.appendChild(row);
     });
@@ -140,7 +183,9 @@
     $("#baseProb").textContent = (probs.baseline * 100).toFixed(1) + "%";
 
     const combo = P.likelyTicket(a, state.weights);
-    $("#likelyCombo").innerHTML = combo.map(ball).join("");
+    const comboEl = $("#likelyCombo");
+    comboEl.innerHTML = combo.map(ball).join("");
+    comboEl.setAttribute("aria-label", "Примерна комбинация: " + combo.join(", "));
 
     // Честен тест дали данните се отклоняват от равномерни.
     const fair = P.fairnessTest(a);
@@ -174,11 +219,11 @@
       .map((it) => {
         const pct = Math.round((it.prob / maxProb) * 100);
         return `
-        <div class="prob-row">
+        <div class="prob-row" role="group" aria-label="Число ${it.n}: относителна тежест ${(it.prob * 100).toFixed(1)} процента. ${esc(it.reason)}">
           <span class="bnum">${it.n}</span>
           <div class="prob-body">
-            <div class="prob-track"><div class="prob-fill" style="width:${pct}%"></div></div>
-            <div class="prob-reason">${it.reason}</div>
+            <div class="prob-track" aria-hidden="true"><div class="prob-fill" style="width:${pct}%"></div></div>
+            <div class="prob-reason">${esc(it.reason)}</div>
           </div>
           <span class="prob-val">${(it.prob * 100).toFixed(1)}%</span>
         </div>`;
@@ -195,7 +240,7 @@
       div.innerHTML = `
         <h4>${t.name}</h4>
         <p class="desc">${t.desc}</p>
-        <div class="balls">${t.numbers.map(ball).join("")}</div>
+        <div class="balls" aria-label="Числа: ${t.numbers.join(", ")}">${t.numbers.map(ball).join("")}</div>
       `;
       cont.appendChild(div);
     });
@@ -207,9 +252,11 @@
       const pct = Math.round((item.score / maxScore) * 100);
       const row = document.createElement("div");
       row.className = "bar-row";
+      row.setAttribute("role", "group");
+      row.setAttribute("aria-label", `Число ${item.n}: резултат ${item.score.toFixed(3)}`);
       row.innerHTML = `
         <div class="bnum">${item.n}</div>
-        <div class="btrack"><div class="bfill" style="width:${pct}%"></div></div>
+        <div class="btrack" aria-hidden="true"><div class="bfill" style="width:${pct}%"></div></div>
         <div class="bval">${item.score.toFixed(3)}</div>
       `;
       bars.appendChild(row);
@@ -263,7 +310,7 @@
       el.className = "data-notice warn";
       el.innerHTML =
         "🎲 Това са <strong>демонстрационни</strong> (случайни) данни. Реалните " +
-        "тегления се зареждат автоматично от официалния архив (таб Данни).";
+        "тегления се зареждат автоматично от публичния архив (таб Данни).";
     } else if (n < MIN_DRAWS) {
       el.className = "data-notice warn";
       el.innerHTML =
@@ -299,13 +346,33 @@
   }
 
   // ---- Събития ----
+  // Достъпни табове: aria-selected + roving tabindex + навигация със стрелки
+  // (WAI-ARIA Tabs pattern).
   function setupViewTabs() {
-    $$("#viewTabs button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        $$("#viewTabs button").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        $$(".view").forEach((v) => v.classList.add("hidden"));
-        $("#view-" + btn.dataset.view).classList.remove("hidden");
+    const tabs = $$("#viewTabs button");
+    function activate(btn) {
+      tabs.forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
+        b.tabIndex = on ? 0 : -1;
+      });
+      $$(".view").forEach((v) => v.classList.add("hidden"));
+      $("#view-" + btn.dataset.view).classList.remove("hidden");
+    }
+    tabs.forEach((btn, i) => {
+      btn.addEventListener("click", () => activate(btn));
+      btn.addEventListener("keydown", (e) => {
+        let j = null;
+        if (e.key === "ArrowRight") j = (i + 1) % tabs.length;
+        else if (e.key === "ArrowLeft") j = (i - 1 + tabs.length) % tabs.length;
+        else if (e.key === "Home") j = 0;
+        else if (e.key === "End") j = tabs.length - 1;
+        if (j !== null) {
+          e.preventDefault();
+          activate(tabs[j]);
+          tabs[j].focus();
+        }
       });
     });
   }
@@ -318,8 +385,10 @@
     ];
     map.forEach(([id, key]) => {
       const el = $("#" + id);
+      el.setAttribute("aria-valuetext", el.value + " от 100");
       el.addEventListener("input", () => {
         $("#" + id + "V").textContent = el.value;
+        el.setAttribute("aria-valuetext", el.value + " от 100");
         state.weights[key] = Number(el.value) / 100;
         renderPredict();
       });
@@ -348,7 +417,7 @@
       window.TotoData.setMeta(state.gameId, { source: "official" });
       recompute();
       renderAll();
-      msg($("#importMsg"), `Заредени ${official.length} тиража от официалния архив.`, true);
+      msg($("#importMsg"), `Заредени ${official.length} тиража от публичния архив.`, true);
     });
 
     $("#btnExport").addEventListener("click", () => {
@@ -394,7 +463,11 @@
       becomeReal();
       state.draws.push({ date: dateVal, numbers });
       window.TotoData.sortDraws(state.draws);
+      // Маркираме източника като ръчен, иначе при следващо зареждане
+      // официалният архив ще презапише добавения тираж.
+      state.source = "imported";
       window.TotoData.save(state.gameId, state.draws);
+      window.TotoData.setMeta(state.gameId, { source: "imported" });
       recompute();
       renderAll();
       $("#addNumbers").value = "";
