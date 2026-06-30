@@ -4133,6 +4133,11 @@
       ],
       "activity": [
         {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Supreme Bot (supreme/) деплой моделът е Docker Compose; собственият supreme/deploy.sh п…\" (+1)"
+        },
+        {
           "date": "2026-06-26",
           "type": "learning",
           "summary": "Научи: „Compose network с internal: true създава външно изолирана мрежа (без външна свързаност)…\""
