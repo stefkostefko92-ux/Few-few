@@ -194,6 +194,124 @@ export default function AccessibilityPage() {
           </a>
         </section>
 
+        {/* Формална Декларация за достъпност по Закона за изискванията за
+            достъпност на продуктите и услугите (транспониращ Директива (ЕС)
+            2019/882 — EAA) и EN 301 549 / WCAG 2.1. */}
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Декларация за достъпност
+          </h2>
+          <p className="mt-3 text-slate-700">
+            <strong>{SITE.name}</strong> се ангажира да осигури достъпност на
+            този сайт в съответствие с европейския стандарт{" "}
+            <strong>EN 301 549</strong> и насоките{" "}
+            <strong>WCAG 2.1, ниво AA</strong>, и с изискванията на Закона за
+            изискванията за достъпност на продуктите и услугите (транспониращ
+            Директива (ЕС) 2019/882).
+          </p>
+
+          <h3 className="mt-5 font-bold text-slate-900">
+            Състояние на съответствие
+          </h3>
+          <p className="mt-1 text-slate-700">
+            Сайтът е в <strong>частично съответствие</strong> с WCAG 2.1 ниво AA
+            — поради изброените по-долу несъответствия, по които продължаваме да
+            работим.
+          </p>
+
+          <h3 className="mt-5 font-bold text-slate-900">
+            Недостъпно съдържание (известни ограничения)
+          </h3>
+          <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">
+            <li>
+              Вградени карти и външни услуги (напр. карта на „Опознай Бобов дол“,
+              прогнозата за времето) идват от трети страни и може да имат
+              собствени ограничения за достъпност, които не контролираме изцяло.
+            </li>
+            <li>
+              Някои документи и материали за печат (PDF, плакати, брошура) може
+              да не отговарят напълно на изискванията за достъпни документи.
+            </li>
+            <li>
+              Връзки към сайтове на институции (egov.bg, общината и др.) водят
+              към съдържание, за чиято достъпност отговарят съответните
+              институции.
+            </li>
+          </ul>
+
+          <h3 className="mt-5 font-bold text-slate-900">
+            Изготвяне на декларацията
+          </h3>
+          <p className="mt-1 text-slate-700">
+            Тази декларация е изготвена на <strong>30 юни 2026 г.</strong> въз
+            основа на <strong>самооценка</strong> — ръчен преглед спрямо WCAG 2.1
+            AA, съчетан с автоматизирани проверки и вътрешен одит. Последен
+            преглед: <strong>юни 2026 г.</strong>
+          </p>
+
+          <h3 className="mt-5 font-bold text-slate-900">
+            Обратна връзка и сигнали за достъпност
+          </h3>
+          <p className="mt-1 text-slate-700">
+            Ако срещнете пречка за достъпност или съдържание, което не можете да
+            ползвате, пишете ни — ще се постараем да отговорим и да отстраним
+            проблема{" "}
+            <strong>в разумен срок (обикновено до един месец)</strong>:
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
+            {SITE.contact.email && (
+              <li>
+                Имейл:{" "}
+                <a
+                  href={`mailto:${SITE.contact.email}`}
+                  className="font-medium text-brand-700 underline"
+                >
+                  {SITE.contact.email}
+                </a>
+              </li>
+            )}
+            {SITE.contact.phone && (
+              <li>
+                Телефон:{" "}
+                <a
+                  href={`tel:${SITE.contact.phone}`}
+                  className="font-medium text-brand-700 underline"
+                >
+                  {SITE.contact.phone}
+                </a>
+              </li>
+            )}
+            <li>
+              Форма за контакт:{" "}
+              <Link
+                href="/kontakti"
+                className="font-medium text-brand-700 underline"
+              >
+                Контакти
+              </Link>
+            </li>
+          </ul>
+
+          <h3 className="mt-5 font-bold text-slate-900">
+            Процедура по прилагане
+          </h3>
+          <p className="mt-1 text-slate-700">
+            Ако не получите отговор или не сте доволни от отговора, можете да
+            подадете сигнал до компетентния надзорен орган по достъпността в
+            Република България. За въпроси, свързани със защита на потребителите,
+            компетентна е <strong>Комисията за защита на потребителите</strong> —{" "}
+            <a
+              href="https://kzp.bg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-brand-700 underline"
+            >
+              kzp.bg
+            </a>
+            .
+          </p>
+        </section>
+
         <div className="no-print">
           <PrintButton variant="secondary" label="Принтирай тази страница" />
         </div>

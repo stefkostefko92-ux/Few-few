@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { LISTING_TYPE_LABELS, labelFor } from "@/lib/categories";
 import { PrintButton } from "@/components/PrintButton";
+import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
 
@@ -114,9 +115,10 @@ export default async function ListingPage({
           </div>
           <p className="mt-3 text-xs text-slate-500">
             Внимавайте при сделки. Не превеждайте пари предварително на
-            непознати. {`"За Бобов дол"`} не носи отговорност за съдържанието на
+            непознати. „За Бобов дол“ не носи отговорност за съдържанието на
             обявите.
           </p>
+          <ReportContent subject={l.title} path={`/obyavi/${l.slug}`} />
         </aside>
       </div>
     </>

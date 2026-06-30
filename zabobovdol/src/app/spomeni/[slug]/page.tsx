@@ -5,6 +5,7 @@ import { PageHero, Prose } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { PrintButton } from "@/components/PrintButton";
+import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ export default async function MemoryPage({
         <div className="mt-6 no-print">
           <PrintButton variant="secondary" />
         </div>
+        <ReportContent subject={m.title} path={`/spomeni/${m.slug}`} />
       </article>
     </>
   );
