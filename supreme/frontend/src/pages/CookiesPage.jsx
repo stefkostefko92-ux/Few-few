@@ -76,7 +76,7 @@ export default function CookiesPage() {
         <ul>
           <li><strong>HttpOnly</strong> — The cookie cannot be accessed by JavaScript, protecting against XSS attacks;</li>
           <li><strong>Secure</strong> — The cookie is only transmitted over HTTPS connections;</li>
-          <li><strong>SameSite=Strict</strong> (production) — The cookie is not sent with cross-site requests, mitigating CSRF attacks;</li>
+          <li><strong>SameSite=Lax</strong> — The cookie is not sent with most cross-site requests, mitigating CSRF while remaining compatible with the Discord OAuth login redirect;</li>
           <li><strong>Path=/</strong> — The cookie is scoped to the entire domain.</li>
         </ul>
       </S>

@@ -23,8 +23,6 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
     <image:image>
       <image:loc>https://supreme.carbonstealth.eu/og-image.png</image:loc>
-      <image:title>Supreme Bot — Discord Bot SaaS Platform</image:title>
-      <image:caption>Multi-tenant Discord bot management by Carbon Stealth VCC</image:caption>
     </image:image>
   </url>
 
@@ -151,28 +149,28 @@
 
   <url>
     <loc>https://supreme.carbonstealth.eu/terms</loc>
-    <lastmod>2026-05-09</lastmod>
+    <lastmod>2026-06-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://supreme.carbonstealth.eu/privacy</loc>
-    <lastmod>2026-05-09</lastmod>
+    <lastmod>2026-06-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://supreme.carbonstealth.eu/cookies</loc>
-    <lastmod>2026-05-09</lastmod>
+    <lastmod>2026-06-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
     <loc>https://supreme.carbonstealth.eu/eula</loc>
-    <lastmod>2026-05-09</lastmod>
+    <lastmod>2026-06-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>

@@ -346,7 +346,9 @@ export default function PrivacyPage() {
         <p>
           In the EU, processing of children's data for online services is lawful only where the
           child is at least 16 years of age (or such lower age as set by the member state's law,
-          minimum 13), or with parental consent (Article 8 GDPR).
+          minimum 13), or with parental consent (Article 8 GDPR). In <strong>Bulgaria</strong>,
+          where we are established, that age threshold is <strong>14</strong> (Personal Data
+          Protection Act): children under 14 require parental consent.
         </p>
       </S>
 
