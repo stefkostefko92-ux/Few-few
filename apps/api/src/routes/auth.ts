@@ -86,7 +86,7 @@ authRouter.post(
     }
 
     await sendVerification(user.id, user.email);
-    notifyRegistration({ email: user.email, displayName: user.displayName });
+    notifyRegistration({ displayName: user.displayName });
 
     // Sign the player in immediately; verification is a soft gate surfaced in
     // the UI, not a hard block on entering the lobby.

@@ -45,9 +45,22 @@ shopRouter.post(
     const stripe = getStripe();
     const isSubscription = product.kind === "VIP_SUB";
 
+    // Reuse one Stripe customer per user (no duplicate cus_… on guest checkout;
+    // also lets the billing portal resolve the subscription reliably).
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create(
+        { email: user.email, metadata: { userId } },
+        { idempotencyKey: `customer:${userId}` },
+      );
+      customerId = customer.id;
+      await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customerId } });
+    }
+
     const session = await stripe.checkout.sessions.create(
       {
         mode: isSubscription ? "subscription" : "payment",
+        customer: customerId,
         // Carry identity + sku so the webhook knows what to grant, to whom.
         client_reference_id: userId,
         metadata: { userId, sku },
