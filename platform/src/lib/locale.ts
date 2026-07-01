@@ -25,3 +25,15 @@ export const LOCALE_OG: Record<Locale, string> = {
 export function parseLocale(value: unknown): Locale {
   return value === "en" ? "en" : "bg";
 }
+
+// Решава активната локала и дали да показваме EN (switcher/hreflang). EN се
+// „рекламира" само когато сайтът има включен EN И страницата има реално EN
+// съдържание — иначе не индексираме празни ?lang=en дубликати.
+export function localeState(
+  siteHasEn: boolean,
+  lang: unknown,
+  enBlockCount: number,
+): { locale: Locale; showEn: boolean } {
+  const showEn = siteHasEn && enBlockCount > 0;
+  return { locale: showEn ? parseLocale(lang) : "bg", showEn };
+}

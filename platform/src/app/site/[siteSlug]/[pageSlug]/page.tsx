@@ -5,7 +5,7 @@ import { parseBlocks } from "@/lib/blocks";
 import { BlockView } from "@/components/blocks/BlockView";
 import { LanguageSwitcher } from "@/components/blocks/LanguageSwitcher";
 import { blocksToPlainText, pageUrl, siteJsonLd } from "@/lib/seo";
-import { parseLocale, LOCALE_OG } from "@/lib/locale";
+import { localeState, LOCALE_OG } from "@/lib/locale";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +30,11 @@ export async function generateMetadata({
   const data = await loadPage(siteSlug, pageSlug);
   if (!data) return { title: "Страница", robots: { index: false } };
 
-  const hasEn = data.site.localeEn;
-  const locale = hasEn ? parseLocale(lang) : "bg";
-  const blocks =
-    locale === "en" ? parseBlocks(data.page.blocksEn) : parseBlocks(data.page.blocks);
+  const bgBlocks = parseBlocks(data.page.blocks);
+  const enBlocks = parseBlocks(data.page.blocksEn);
+  const { locale, showEn } = localeState(data.site.localeEn, lang, enBlocks.length);
+  const primary = locale === "en" ? enBlocks : bgBlocks;
+  const blocks = primary.length > 0 ? primary : bgBlocks; // резерв към BG
   const pageTitle =
     locale === "en" ? data.page.titleEn || data.page.title : data.page.title;
   const title = `${pageTitle} · ${data.site.name}`;
@@ -47,7 +48,7 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: url,
-      languages: hasEn ? { bg: bgUrl, en: enUrl, "x-default": bgUrl } : undefined,
+      languages: showEn ? { bg: bgUrl, en: enUrl, "x-default": bgUrl } : undefined,
     },
     robots: { index: true, follow: true },
     openGraph: {
@@ -75,10 +76,11 @@ export default async function SitePage({
   const data = await loadPage(siteSlug, pageSlug);
   if (!data) notFound();
 
-  const hasEn = data.site.localeEn;
-  const locale = hasEn ? parseLocale(lang) : "bg";
-  const blocks =
-    locale === "en" ? parseBlocks(data.page.blocksEn) : parseBlocks(data.page.blocks);
+  const bgBlocks = parseBlocks(data.page.blocks);
+  const enBlocks = parseBlocks(data.page.blocksEn);
+  const { locale, showEn } = localeState(data.site.localeEn, lang, enBlocks.length);
+  const primary = locale === "en" ? enBlocks : bgBlocks;
+  const blocks = primary.length > 0 ? primary : bgBlocks; // резерв към BG
   const pageTitle =
     locale === "en" ? data.page.titleEn || data.page.title : data.page.title;
 
@@ -94,7 +96,7 @@ export default async function SitePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {hasEn && (
+      {showEn && (
         <LanguageSwitcher
           basePath={`/site/${data.site.slug}/${data.page.slug}`}
           active={locale}

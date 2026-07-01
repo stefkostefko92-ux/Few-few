@@ -10,6 +10,7 @@ import { logAudit } from "@/lib/audit";
 import { parseBlocks, type Block } from "@/lib/blocks";
 import { generatePageBlocks } from "@/lib/ai/generate";
 import { assistText } from "@/lib/ai/assist";
+import { resolveProvider } from "@/lib/ai/generate";
 import { ASSIST_ACTIONS, type AssistAction } from "@/lib/ai/assist-core";
 import { rateLimit } from "@/lib/ratelimit";
 import { z } from "zod";
@@ -264,6 +265,10 @@ export async function translatePageAction(
 ): Promise<PageActionResult> {
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
+  // Без AI ключ преводът е безсмислен цикъл (връща оригинала) — спираме рано.
+  if (resolveProvider().provider === "rules") {
+    return { error: "AI не е свързан. Задайте AI ключ, за да превеждате." };
+  }
   if (!rateLimit(`ai-translate:${ctx.user.id}`, 6, 60_000)) {
     return { error: "Твърде много опити. Опитайте отново след минута." };
   }
