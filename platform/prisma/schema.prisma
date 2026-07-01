@@ -63,6 +63,7 @@ model Site {
   deployHookUrl  String? // адрес за задействане на деплой (по избор)
   status         SiteStatus @default(UNKNOWN)
   monitorEnabled Boolean    @default(true)
+  localeEn       Boolean    @default(false) // включена английска версия на сайта
   lastCheckAt    DateTime?
   lastStatusCode Int?
   lastResponseMs Int?
@@ -112,6 +113,10 @@ model Page {
   isHome      Boolean    @default(false)
   blocks      Json       @default("[]")
   draftBlocks Json       @default("[]")
+  // Английска версия (по избор) — паралелни блокове и заглавие.
+  titleEn        String?
+  blocksEn       Json    @default("[]")
+  draftBlocksEn  Json    @default("[]")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   publishedAt DateTime?

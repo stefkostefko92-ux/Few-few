@@ -32,24 +32,39 @@ const PALETTE: BlockType[] = [
   "spacer",
 ];
 
+type Locale = "bg" | "en";
+
 export function PageBuilder({
   slug,
   previewHref,
   publicHref,
   initialBlocks,
+  initialBlocksEn = [],
+  localeEnEnabled = false,
   saveDraft,
   publish,
   assist,
+  toggleLocaleEn,
+  translatePage,
 }: {
   slug: string;
   previewHref: string;
   publicHref: string;
   initialBlocks: Block[];
-  saveDraft: (blocks: Block[]) => Promise<PageActionResult>;
-  publish: (blocks: Block[]) => Promise<PageActionResult>;
+  initialBlocksEn?: Block[];
+  localeEnEnabled?: boolean;
+  saveDraft: (locale: string, blocks: Block[]) => Promise<PageActionResult>;
+  publish: (locale: string, blocks: Block[]) => Promise<PageActionResult>;
   assist?: AssistFn;
+  toggleLocaleEn?: (enabled: boolean) => Promise<PageActionResult>;
+  translatePage?: (blocks: Block[]) => Promise<PageActionResult>;
 }) {
-  const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
+  const [byLocale, setByLocale] = useState<Record<Locale, Block[]>>({
+    bg: initialBlocks,
+    en: initialBlocksEn,
+  });
+  const [locale, setLocale] = useState<Locale>("bg");
+  const [enOn, setEnOn] = useState(localeEnEnabled);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialBlocks[0]?.id ?? null,
   );
@@ -58,6 +73,9 @@ export function PageBuilder({
   const [pending, start] = useTransition();
   const dragIndex = useRef<number | null>(null);
 
+  const blocks = byLocale[locale];
+  const setBlocks = (next: Block[]) =>
+    setByLocale((prev) => ({ ...prev, [locale]: next }));
   const selected = blocks.find((b) => b.id === selectedId) ?? null;
 
   function update(next: Block[]) {
@@ -107,11 +125,42 @@ export function PageBuilder({
     update(next);
   }
 
-  function run(action: (b: Block[]) => Promise<PageActionResult>) {
+  function run(action: (locale: string, b: Block[]) => Promise<PageActionResult>) {
     start(async () => {
-      const r = await action(blocks);
+      const r = await action(locale, blocks);
       setMsg(r);
       if (r.ok) setDirty(false);
+    });
+  }
+
+  function switchLocale(next: Locale) {
+    if (next === locale) return;
+    if (dirty && !confirm("Има незапазени промени. Смяна на езика без запазване?")) return;
+    setLocale(next);
+    setSelectedId(byLocale[next][0]?.id ?? null);
+    setDirty(false);
+    setMsg(null);
+  }
+
+  function enableEn() {
+    if (!toggleLocaleEn) return;
+    start(async () => {
+      const r = await toggleLocaleEn(true);
+      setMsg(r);
+      if (r.ok) setEnOn(true);
+    });
+  }
+
+  function doTranslate() {
+    if (!translatePage) return;
+    if (!confirm("Да преведа текущата българска чернова на английски с AI? Това ще презапише английската чернова.")) return;
+    start(async () => {
+      const r = await translatePage(byLocale.bg);
+      setMsg(r);
+      if (r.ok) {
+        // Презареждаме, за да видим преведените блокове от сървъра.
+        window.location.reload();
+      }
     });
   }
 
@@ -123,6 +172,41 @@ export function PageBuilder({
           <a href={`/dashboard/sites/${slug}/pages`} className="text-ink-400 hover:text-white">
             ← Страници
           </a>
+          {/* Език: табове BG/EN когато е включено */}
+          {enOn ? (
+            <div className="flex overflow-hidden rounded border border-ink-700 text-xs">
+              {(["bg", "en"] as const).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => switchLocale(l)}
+                  className={`px-2 py-1 ${locale === l ? "bg-brand-600 text-white" : "text-ink-300 hover:bg-ink-800"}`}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          ) : (
+            toggleLocaleEn && (
+              <button
+                onClick={enableEn}
+                disabled={pending}
+                className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-brand-600 hover:bg-ink-800"
+                title="Добави английска версия на сайта"
+              >
+                + English
+              </button>
+            )
+          )}
+          {enOn && locale === "en" && translatePage && (
+            <button
+              onClick={doTranslate}
+              disabled={pending}
+              className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-brand-600 hover:bg-ink-800"
+              title="Преведи българската чернова на английски с AI"
+            >
+              🌐 Преведи от BG
+            </button>
+          )}
           {dirty && <span className="text-xs text-amber-400">• незапазени промени</span>}
           {msg?.ok && <span className="text-xs text-green-400">{msg.ok}</span>}
           {msg?.error && <span className="text-xs text-red-400">{msg.error}</span>}
@@ -210,7 +294,7 @@ export function PageBuilder({
                       <IconBtn title="Изтрий" danger onClick={(e) => { e.stopPropagation(); remove(b.id); }}>✕</IconBtn>
                     </div>
                     <div className="pointer-events-none">
-                      <BlockRender block={b} />
+                      <BlockRender block={b} locale={locale} />
                     </div>
                   </div>
                 ))}

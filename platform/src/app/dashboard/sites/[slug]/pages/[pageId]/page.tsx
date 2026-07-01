@@ -4,7 +4,13 @@ import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { parseBlocks } from "@/lib/blocks";
 import { PageBuilder } from "@/components/blocks/PageBuilder";
-import { saveDraftAction, publishPageAction, assistTextAction } from "../actions";
+import {
+  saveDraftAction,
+  publishPageAction,
+  assistTextAction,
+  toggleLocaleEnAction,
+  translatePageAction,
+} from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +31,8 @@ export default async function EditPage({
   // В редактора показваме черновата (ако е празна — публикуваната версия).
   const draft = parseBlocks(page.draftBlocks);
   const initial = draft.length > 0 ? draft : parseBlocks(page.blocks);
+  const draftEn = parseBlocks(page.draftBlocksEn);
+  const initialEn = draftEn.length > 0 ? draftEn : parseBlocks(page.blocksEn);
   const publicPath = page.isHome
     ? `/site/${found.site.slug}`
     : `/site/${found.site.slug}/${page.slug}`;
@@ -40,9 +48,13 @@ export default async function EditPage({
         previewHref={`/dashboard/sites/${slug}/pages/${page.id}/preview`}
         publicHref={publicPath}
         initialBlocks={initial}
+        initialBlocksEn={initialEn}
+        localeEnEnabled={found.site.localeEn}
         saveDraft={saveDraftAction.bind(null, slug, page.id)}
         publish={publishPageAction.bind(null, slug, page.id)}
         assist={assistTextAction.bind(null, slug)}
+        toggleLocaleEn={toggleLocaleEnAction.bind(null, slug)}
+        translatePage={translatePageAction.bind(null, slug, page.id)}
       />
     </div>
   );

@@ -180,9 +180,14 @@ export async function assistTextAction(
   return { text: out, ai: provider !== "rules" };
 }
 
+function isEn(locale: string): boolean {
+  return locale === "en";
+}
+
 export async function saveDraftAction(
   slug: string,
   pageId: string,
+  locale: string,
   blocks: Block[],
 ): Promise<PageActionResult> {
   const ctx = await pageForUser(slug, pageId, "manage");
@@ -190,7 +195,7 @@ export async function saveDraftAction(
   const clean = parseBlocks(blocks); // валидира и изчиства чрез Zod
   await prisma.page.update({
     where: { id: pageId },
-    data: { draftBlocks: clean },
+    data: isEn(locale) ? { draftBlocksEn: clean } : { draftBlocks: clean },
   });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
   return { ok: "Черновата е запазена." };
@@ -199,6 +204,7 @@ export async function saveDraftAction(
 export async function publishPageAction(
   slug: string,
   pageId: string,
+  locale: string,
   blocks: Block[],
 ): Promise<PageActionResult> {
   const ctx = await pageForUser(slug, pageId, "manage");
@@ -206,22 +212,86 @@ export async function publishPageAction(
   const clean = parseBlocks(blocks);
   await prisma.page.update({
     where: { id: pageId },
-    data: {
-      draftBlocks: clean,
-      blocks: clean,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-    },
+    data: isEn(locale)
+      ? { draftBlocksEn: clean, blocksEn: clean }
+      : {
+          draftBlocks: clean,
+          blocks: clean,
+          status: "PUBLISHED",
+          publishedAt: new Date(),
+        },
   });
   await logAudit(ctx.user, {
     action: "UPDATE",
     entity: "Page",
     entityId: pageId,
-    summary: `Публикувана страница „${ctx.page.title}"`,
+    summary: `Публикувана страница „${ctx.page.title}" (${isEn(locale) ? "EN" : "BG"})`,
   });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
   revalidatePath(`/site/${ctx.site.slug}`);
-  return { ok: "Страницата е публикувана." };
+  return { ok: `Страницата е публикувана (${isEn(locale) ? "EN" : "BG"}).` };
+}
+
+// Включва/изключва английската версия на сайта (site-scope, MANAGER).
+export async function toggleLocaleEnAction(
+  slug: string,
+  enabled: boolean,
+): Promise<PageActionResult> {
+  const user = await requireUser();
+  const found = await getSiteForUser(user, slug, "manage");
+  if (!found) return { error: "Нямате достъп." };
+  await prisma.site.update({
+    where: { id: found.site.id },
+    data: { localeEn: enabled },
+  });
+  revalidatePath(`/dashboard/sites/${slug}`, "layout");
+  return { ok: enabled ? "Английската версия е включена." : "Английската версия е изключена." };
+}
+
+// Превежда черновата (BG → EN) с AI и я записва в EN черновата. Без AI ключ
+// текстът остава непокътнат (не разваля нищо).
+export async function translatePageAction(
+  slug: string,
+  pageId: string,
+  blocks: Block[],
+): Promise<PageActionResult> {
+  const ctx = await pageForUser(slug, pageId, "manage");
+  if (!ctx) return { error: "Нямате достъп." };
+  if (!rateLimit(`ai-translate:${ctx.user.id}`, 6, 60_000)) {
+    return { error: "Твърде много опити. Опитайте отново след минута." };
+  }
+  const src = parseBlocks(blocks);
+  const translated = await translateBlocks(src);
+  await prisma.page.update({
+    where: { id: pageId },
+    data: { draftBlocksEn: translated },
+  });
+  revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
+  return { ok: "Преводът е готов в английската чернова." };
+}
+
+// Превежда текстовите полета на всеки блок (BG→EN), пази структурата и id-тата.
+async function translateBlocks(blocks: Block[]): Promise<Block[]> {
+  const tr = async (t: string) => {
+    const s = t.trim();
+    if (!s) return t;
+    const { text } = await assistText("translate-en", s);
+    return text || t;
+  };
+  const out: Block[] = [];
+  for (const b of blocks) {
+    if (b.type === "heading") out.push({ ...b, text: await tr(b.text) });
+    else if (b.type === "text") out.push({ ...b, text: await tr(b.text) });
+    else if (b.type === "columns") out.push({ ...b, left: await tr(b.left), right: await tr(b.right) });
+    else if (b.type === "hero") out.push({ ...b, title: await tr(b.title), subtitle: await tr(b.subtitle), buttonLabel: await tr(b.buttonLabel) });
+    else if (b.type === "button") out.push({ ...b, label: await tr(b.label) });
+    else if (b.type === "faq") out.push({ ...b, items: await Promise.all(b.items.map(async (i) => ({ q: await tr(i.q), a: await tr(i.a) }))) });
+    else if (b.type === "testimonials") out.push({ ...b, items: await Promise.all(b.items.map(async (i) => ({ quote: await tr(i.quote), author: i.author, role: await tr(i.role) }))) });
+    else if (b.type === "pricing") out.push({ ...b, plans: await Promise.all(b.plans.map(async (p) => ({ ...p, name: await tr(p.name), period: await tr(p.period), features: await Promise.all(p.features.map(tr)) }))) });
+    else if (b.type === "form") out.push({ ...b, title: await tr(b.title), buttonLabel: await tr(b.buttonLabel), successMessage: await tr(b.successMessage) });
+    else out.push(b);
+  }
+  return out;
 }
 
 export async function deletePageAction(slug: string, pageId: string): Promise<void> {

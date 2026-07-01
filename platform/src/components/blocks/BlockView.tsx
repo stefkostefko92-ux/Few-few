@@ -23,9 +23,11 @@ const itemsCls: Record<Align, string> = {
 export function BlockRender({
   block,
   siteSlug,
+  locale = "bg",
 }: {
   block: Block;
   siteSlug?: string;
+  locale?: "bg" | "en";
 }) {
   switch (block.type) {
     case "heading": {
@@ -279,6 +281,7 @@ export function BlockRender({
           title={block.title}
           buttonLabel={block.buttonLabel}
           successMessage={block.successMessage}
+          locale={locale}
         />
       );
     case "divider":
@@ -295,9 +298,11 @@ export function BlockRender({
 export function BlockView({
   blocks,
   siteSlug,
+  locale = "bg",
 }: {
   blocks: Block[];
   siteSlug?: string;
+  locale?: "bg" | "en";
 }) {
   if (blocks.length === 0) {
     return <p className="py-20 text-center text-slate-400">Празна страница.</p>;
@@ -310,7 +315,7 @@ export function BlockView({
           className="pub-reveal"
           style={{ animationDelay: `${Math.min(i, 8) * 70}ms` }}
         >
-          <BlockRender block={b} siteSlug={siteSlug} />
+          <BlockRender block={b} siteSlug={siteSlug} locale={locale} />
         </div>
       ))}
     </div>
