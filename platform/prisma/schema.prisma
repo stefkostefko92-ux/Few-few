@@ -75,6 +75,34 @@ model Site {
   links        SiteLink[]
   deployments  Deployment[]
   contentItems ContentItem[]
+  pages        Page[]
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// Страница, изградена и хоствана от платформата (вграден конструктор „като Wix").
+// `blocks` е публикуваната версия; `draftBlocks` е работната чернова в редактора.
+// Блоковете са JSON масив (валидиран със Zod при запис — виж src/lib/blocks.ts).
+model Page {
+  id          String     @id @default(cuid())
+  siteId      String
+  slug        String // адрес в рамките на сайта („" = начална страница)
+  title       String
+  status      PageStatus @default(DRAFT)
+  isHome      Boolean    @default(false)
+  blocks      Json       @default("[]")
+  draftBlocks Json       @default("[]")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  publishedAt DateTime?
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, slug])
+  @@index([siteId])
 }
 
 // Скоуп на достъпа: кой потребител до кой сайт и с каква роля.

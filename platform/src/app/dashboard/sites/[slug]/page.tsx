@@ -72,9 +72,17 @@ export default async function SitePage({
             {site.url}
           </a>
         </div>
-        <span className="rounded bg-ink-800 px-2 py-1 text-xs text-ink-400">
-          Вашата роля: {role === "MANAGER" ? "мениджър" : "наблюдател"}
-        </span>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/dashboard/sites/${slug}/pages`}
+            className="btn-primary px-3 py-1.5 text-xs"
+          >
+            🧩 Конструктор на страници
+          </Link>
+          <span className="rounded bg-ink-800 px-2 py-1 text-xs text-ink-400">
+            Вашата роля: {role === "MANAGER" ? "мениджър" : "наблюдател"}
+          </span>
+        </div>
       </div>
 
       {/* Мониторинг */}
