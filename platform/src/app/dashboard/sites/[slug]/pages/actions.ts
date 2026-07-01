@@ -213,7 +213,14 @@ export async function publishPageAction(
   await prisma.page.update({
     where: { id: pageId },
     data: isEn(locale)
-      ? { draftBlocksEn: clean, blocksEn: clean }
+      ? {
+          draftBlocksEn: clean,
+          blocksEn: clean,
+          // Публикуването на EN също прави страницата видима (status е на ниво
+          // страница, не на локала); publishedAt се задава ако още липсва.
+          status: "PUBLISHED",
+          publishedAt: ctx.page.publishedAt ?? new Date(),
+        }
       : {
           draftBlocks: clean,
           blocks: clean,
