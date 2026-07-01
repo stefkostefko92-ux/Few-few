@@ -4190,9 +4190,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: Next.js standalone (output: 'standalone') слага server.js в корена на .next/standalone … (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Prisma v6 (prisma generate / @prisma/fetch-engine) ползва собствен HTTP клиент за тегле…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Prisma v6 (prisma generate / @prisma/fetch-engine) ползва собствен HTTP клиент за тегле…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
