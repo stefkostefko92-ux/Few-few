@@ -1069,9 +1069,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: platform/ middleware.ts:55 rewrite към /hosted е защитен от двоен слой: isPlatformHost(… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ getSiteForUser(user, slug, \\\"manage\\\") налага MANAGER скоуп през roleSatisfie… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ getSiteForUser(user, slug, \\\"manage\\\") налага MANAGER скоуп през roleSatisfie…\" (+2 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
