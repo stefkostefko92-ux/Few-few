@@ -7,6 +7,7 @@ import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { parseBlocks, type Block } from "@/lib/blocks";
+import { generatePageBlocks } from "@/lib/ai/generate";
 import { z } from "zod";
 
 export type PageActionResult = { ok?: string; error?: string };
@@ -82,6 +83,44 @@ export async function createPageAction(
     entity: "Page",
     entityId: page.id,
     summary: `Нова страница „${title}" за ${found.site.name}`,
+  });
+  redirect(`/dashboard/sites/${slug}/pages/${page.id}`);
+}
+
+// Създава страница от текстово описание чрез AI (или rules fallback без ключ).
+export async function createAiPageAction(
+  slug: string,
+  _prev: PageActionResult,
+  formData: FormData,
+): Promise<PageActionResult> {
+  const user = await requireUser();
+  const found = await getSiteForUser(user, slug, "manage");
+  if (!found) return { error: "Нямате достъп." };
+
+  const prompt = String(formData.get("prompt") ?? "").trim();
+  if (prompt.length < 4) return { error: "Опишете какво да съдържа страницата." };
+
+  const { blocks, provider } = await generatePageBlocks(prompt);
+
+  const count = await prisma.page.count({ where: { siteId: found.site.id } });
+  const isHome = count === 0;
+  const title = prompt.slice(0, 60);
+  const finalSlug = isHome ? "" : `stranica-${count + 1}`;
+
+  const page = await prisma.page.create({
+    data: {
+      siteId: found.site.id,
+      title,
+      slug: finalSlug,
+      isHome,
+      draftBlocks: blocks,
+    },
+  });
+  await logAudit(user, {
+    action: "CREATE",
+    entity: "Page",
+    entityId: page.id,
+    summary: `AI страница (${provider}) за ${found.site.name}`,
   });
   redirect(`/dashboard/sites/${slug}/pages/${page.id}`);
 }

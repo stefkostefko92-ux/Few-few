@@ -4,7 +4,8 @@ import { requireUser } from "@/lib/auth";
 import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { CreatePageForm } from "@/components/blocks/CreatePageForm";
-import { createPageAction } from "./actions";
+import { AiPageForm } from "@/components/blocks/AiPageForm";
+import { createPageAction, createAiPageAction } from "./actions";
 import { formatRelative } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -63,10 +64,19 @@ export default async function PagesList({
       )}
 
       {canManage && (
-        <section className="card">
-          <h2 className="mb-3 font-medium text-white">Нова страница</h2>
-          <CreatePageForm action={createPageAction.bind(null, slug)} />
-        </section>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <section className="card border-brand-800/60">
+            <h2 className="mb-1 font-medium text-white">✨ Създай страница с AI</h2>
+            <p className="mb-3 text-xs text-ink-500">
+              Опиши на естествен език — AI построява черновата (като Wix).
+            </p>
+            <AiPageForm action={createAiPageAction.bind(null, slug)} />
+          </section>
+          <section className="card">
+            <h2 className="mb-3 font-medium text-white">Празна нова страница</h2>
+            <CreatePageForm action={createPageAction.bind(null, slug)} />
+          </section>
+        </div>
       )}
     </div>
   );
