@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus supreme}"
+PROJECTS="${PROJECTS:-zabobovdol platform medqr nexus supreme}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -44,6 +44,16 @@ NEXUS_HEALTH_URL="${NEXUS_HEALTH_URL:-http://127.0.0.1:4000/api/health}"
 ZBD_HEALTH_URL_SET="${ZBD_HEALTH_URL:+1}"
 ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/}"
 FORCE_SEED="${FORCE_SEED:-0}"
+
+# platform (Docker Compose модел) — панел за управление на свързани сайтове.
+# web слуша само на localhost:${HTTP_PORT} (по подр. 3000) зад външно reverse
+# proxy, което поема TLS. db е във вътрешна мрежа. Тайните живеят в platform/.env
+# на сървъра (права 600) и се пренасят при всеки деплой. Собствените Dockerfile +
+# docker-entrypoint.sh правят migrate/db push и сийдват само при първо пускане.
+# Портът се авто-засича от platform/.env (HTTP_PORT), освен ако PLATFORM_HEALTH_URL
+# не е зададен изрично.
+PLATFORM_HEALTH_URL_SET="${PLATFORM_HEALTH_URL:+1}"
+PLATFORM_HEALTH_URL="${PLATFORM_HEALTH_URL:-http://127.0.0.1:3000/api/health}"
 
 # supreme (Supreme Bot — Docker Compose модел) — frontend nginx е единственият
 # публикуван порт (127.0.0.1:8080), останалите services са вътрешни. backend
@@ -104,7 +114,7 @@ else
   SRC="$REL"
 fi
 shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/supreme" ] || die "Архивът не прилича на това репо ($SRC)."
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/platform" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/supreme" ] || die "Архивът не прилича на това репо ($SRC)."
 ok "Разопаковано в $SRC"
 
 deploy_failed=0
@@ -134,6 +144,35 @@ deploy_zabobovdol() {
     [ -n "$p" ] && url="http://127.0.0.1:${p}/"
   fi
   health "$url" "zabobovdol" || deploy_failed=1
+}
+
+# ── 3a2) platform — Docker Compose ────────────────────────────────────────────
+deploy_platform() {
+  local d="$SRC/platform"
+  [ -d "$d" ] || { warn "Няма platform/ в архива — пропускам."; return; }
+  log "Разгръщам platform (Docker Compose)…"
+  command -v docker >/dev/null || die "Липсва docker — инсталирай го преди да продължиш."
+  # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
+  if [ -f "$CURRENT_LINK/platform/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/platform/.env" "$d/.env"; ok "Пренесох platform/.env"
+  fi
+  [ -f "$d/.env" ] || warn "Няма platform/.env на сървъра — попълни го (DATABASE_URL, AUTH_SECRET≥32, ENCRYPTION_KEY, CRON_TOKEN, OWNER_*)."
+  # Билд + вдигане. Миграциите (db push) и сийдът (само 1-ви път) са в
+  # docker-entrypoint.sh на контейнера. FORCE_SEED се предава на web-а през env.
+  ( cd "$d"
+    if [ "$FORCE_SEED" = "1" ]; then
+      FORCE_SEED=1 docker compose up -d --build --remove-orphans
+    else
+      docker compose up -d --build --remove-orphans
+    fi
+  )
+  # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
+  local url="$PLATFORM_HEALTH_URL"
+  if [ -z "${PLATFORM_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
+    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9')"
+    [ -n "$p" ] && url="http://127.0.0.1:${p}/api/health"
+  fi
+  health "$url" "platform" || deploy_failed=1
 }
 
 # ── 3b) medqr — systemd ───────────────────────────────────────────────────────
@@ -247,6 +286,7 @@ health() {
 for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
+    platform)   deploy_platform ;;
     medqr)      deploy_medqr ;;
     nexus)      deploy_nexus ;;
     supreme)    deploy_supreme ;;

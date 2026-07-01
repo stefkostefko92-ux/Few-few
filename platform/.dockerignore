@@ -1,0 +1,23 @@
+# Извън контекста на билда — по-бърз билд и без тайни/боклук в образа.
+node_modules
+.next
+out
+build
+npm-debug.log*
+*.tsbuildinfo
+
+# Тайни — НИКОГА не влизат в образа (идват от .env на сървъра при рънтайм).
+.env
+.env*.local
+
+# Локални/девелопърски неща
+.git
+.gitignore
+.vscode
+.idea
+*.md
+README.md
+DEPLOY.md
+Dockerfile
+.dockerignore
+docker-compose.yml

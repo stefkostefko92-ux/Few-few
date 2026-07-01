@@ -5,6 +5,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Slim продукционен образ: standalone носи минимален сървър + само нужните
+  // node_modules (виж Dockerfile). Стартира се с `node server.js`.
+  output: "standalone",
   // Проектът е в подпапка с втори lockfile — фиксираме коренната директория.
   outputFileTracingRoot: __dirname,
   poweredByHeader: false,

@@ -70,6 +70,24 @@ curl -X POST -H "Authorization: Bearer $CRON_TOKEN" https://platform.carbonsteal
 
 Закачете го на cron (systemd timer / GitHub Actions / външен уеб-хук) на желания интервал.
 
+## Деплой
+
+Продукционно върви като `zabobovdol` — **Docker Compose зад reverse proxy**
+(`web` + `db`), а TLS/портовете 80/443 се поемат от външния nginx/Caddy. Билд +
+вдигане + `prisma db push` + сийд (само първия път) са в `Dockerfile` и
+`docker-entrypoint.sh`; `web` слуша на `127.0.0.1:${HTTP_PORT}` (по подр. 3000).
+
+```bash
+cp .env.example .env            # попълни тайните; chmod 600 .env
+docker compose up -d --build
+curl -fsS http://127.0.0.1:3000/api/health   # → {"status":"ok",…}
+```
+
+Интегриран е в `deploy/autodeploy.sh` (проект `platform`). Задължителни env:
+`DATABASE_URL`, `AUTH_SECRET`≥32, `ENCRYPTION_KEY` (32B hex), `CRON_TOKEN`,
+`OWNER_*`. Пълни стъпки, reverse proxy конфиг и cron за `/api/cron/health` — в
+**`DEPLOY.md`**.
+
 ## Сигурност
 
 - `AUTH_SECRET` ≥32 знака (кодът отказва примерната стойност).
