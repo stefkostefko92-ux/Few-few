@@ -26,8 +26,18 @@ export function loadConfig(env = process.env) {
 
     symbol: env.SYMBOL || 'BTC/USDT',
     timeframe: env.TIMEFRAME || '1h',
+    // Стратегия: 'trend' (препоръчано — EMA cross + тренд филтър + RSI + ATR стоп) или 'sma'.
+    strategy: (env.STRATEGY || 'trend') === 'sma' ? 'sma' : 'trend',
     smaFast: num('SMA_FAST', 20, { min: 2 }),
     smaSlow: num('SMA_SLOW', 50, { min: 3 }),
+    emaFast: num('EMA_FAST', 12, { min: 2 }),
+    emaSlow: num('EMA_SLOW', 26, { min: 3 }),
+    emaTrend: num('EMA_TREND', 200, { min: 10 }),   // дълъг тренд филтър
+    rsiPeriod: num('RSI_PERIOD', 14, { min: 2 }),
+    rsiOverbought: num('RSI_OVERBOUGHT', 75, { min: 50, max: 100 }),
+    atrPeriod: num('ATR_PERIOD', 14, { min: 2 }),
+    atrMult: num('ATR_MULT', 2.5, { min: 0.5, max: 10 }),   // стоп = ATR × mult
+    useTrailing: env.USE_TRAILING === 'true',                // trailing stop нагоре
 
     riskPctPerTrade: num('RISK_PCT_PER_TRADE', 0.5, { min: 0.01, max: 5 }),
     stopLossPct: num('STOP_LOSS_PCT', 2, { min: 0.1, max: 50 }),
@@ -41,8 +51,10 @@ export function loadConfig(env = process.env) {
   };
 
   // --- Валидации, които спасяват пари ---
-  if (cfg.smaFast >= cfg.smaSlow)
+  if (cfg.strategy === 'sma' && cfg.smaFast >= cfg.smaSlow)
     throw new Error(`Конфиг грешка: SMA_FAST (${cfg.smaFast}) трябва да е < SMA_SLOW (${cfg.smaSlow}).`);
+  if (cfg.strategy === 'trend' && cfg.emaFast >= cfg.emaSlow)
+    throw new Error(`Конфиг грешка: EMA_FAST (${cfg.emaFast}) трябва да е < EMA_SLOW (${cfg.emaSlow}).`);
 
   if (cfg.live && (!cfg.apiKey || !cfg.apiSecret))
     throw new Error('TRADING_LIVE=true, но липсват BINANCE_API_KEY/SECRET.');

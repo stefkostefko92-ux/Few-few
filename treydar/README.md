@@ -51,7 +51,7 @@ cp .env.example .env      # попълни ключове и параметри
 ## Препоръчан път (не прескачай стъпки)
 
 ```bash
-# 1) Бектест на пример-стратегията (публични данни, без ключове). Гледай TEST (out-of-sample) резултата.
+# 1) Бектест (публични данни, без ключове). Гледай walk-forward: бие ли B&H устойчиво през фолдовете?
 npm run backtest                 # или: node src/backtest.js ETH/USDT 4h
 
 # 2) Тестове на риск логиката
@@ -79,22 +79,44 @@ index.js            вход: .env → конфиг → старт
 src/config.js       валидация + gating на "живо" (сърце на безопасността)
 src/exchange.js     ccxt Binance spot фабрика (+ testnet)
 src/marketdata.js   само ЗАТВОРЕНИ свещи (без look-ahead) + капитал
-src/strategy.js     ПРИМЕРНА SMA crossover (подмени я)
+src/indicators.js   SMA/EMA/ATR/RSI (чисти, без look-ahead)
+src/strategy.js     стратегии: "trend" (EMA cross + тренд филтър + RSI + ATR стоп) или "sma"
 src/risk.js         размер от риска, стоп, дневен лимит, max-drawdown kill-switch (чисти функции)
 src/execute.js      идемпотентни поръчки (clientOrderId + reconcile), precision, стоп на борсата
 src/state.js        трайно състояние между рестарти (equity връх, дневен старт, kill)
-src/bot.js          главният цикъл: данни → сигнал → риск → изпълнение
-src/backtest.js     честен бектест (fees+slippage, no look-ahead, out-of-sample сплит)
-test/risk.test.js   unit тестове за риск математиката
+src/bot.js          главният цикъл: данни → сигнал → риск → изпълнение (+ trailing stop)
+src/metrics.js      Sharpe/Sortino/Calmar/profit factor/expectancy/max DD/exposure
+src/backtest.js     ПРОФ. бектест: walk-forward фолдове + buy&hold бенчмарк + robustness grid
+test/               unit тестове (risk, indicators, strategy)
 data/               одит лог + състояние (в .gitignore)
 ```
 
-## Как да замениш стратегията
+## Стратегии
 
-Пипаш само `src/strategy.js`: `signalAt(closes, i, fast, slow)` връща `'long' | 'exit' | null`
-за **затворената** свещ на индекс `i`. Дисциплина: никакво четене на бъдещи барове; сигналът се
-изпълнява на отваряне на следващия бар (бектестът вече го прави така). След промяна → пусни
-`npm run backtest` и провери out-of-sample резултата, преди testnet/live.
+По подразбиране **`STRATEGY=trend`**: влиза само по посока на дългия тренд (цена над `EMA_TREND`),
+на `EMA_FAST`/`EMA_SLOW` cross нагоре, ако не е прегрят (`RSI < RSI_OVERBOUGHT`); стопът е **ATR-базиран**
+(`вход − ATR × ATR_MULT`) — адаптира се към волатилността, вместо фиксиран %. `USE_TRAILING=true`
+качва стопа нагоре при движение в твоя полза. Има и прост `STRATEGY=sma` (crossover) за сравнение.
+
+⚠ Нито една от тях не е гаранция за печалба. Смисълът на бектеста е да покаже дали изобщо си струва.
+
+## Как да четеш бектеста (`npm run backtest`)
+
+- **Walk-forward фолдове** — 4 последователни out-of-sample прозореца. Търсиш **устойчивост**:
+  печели ли в повечето фолда, или само в един (късмет)? Ред `бие B&H в X/4 фолда` е ключов.
+- **Buy & Hold (B&H)** — ако не биеш простото държане устойчиво, стратегията **не струва** за реални
+  пари. `✅/❌` до всеки фолд показва това.
+- **Метрики** — Sharpe/Sortino (доходност спрямо риск), max DD (най-лошото пропадане), profit factor
+  (>1.5 е прилично), win% и expectancy, exposure (колко време си в пазара).
+- **Robustness grid** — вариране на `atrMult × emaFast`. **Тесен и положителен разлив** = устойчиво;
+  голям разлив min→max = крехко/overfit (не вярвай на един „щастлив“ набор параметри).
+
+## Как да замениш/донастроиш стратегията
+
+Пипаш `src/strategy.js`: `signalAt(ctx, i)` връща `'long' | 'exit' | null` за **затворената** свещ `i`;
+`stopDistance(ctx, i, entry)` дава разстоянието до стопа. Дисциплина: никакво четене на бъдещи барове
+(има тест за това); сигналът се изпълнява на отваряне на следващия бар. След всяка промяна →
+`npm run backtest` и гледай walk-forward + robustness, преди testnet/live.
 
 ---
 

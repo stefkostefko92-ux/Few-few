@@ -27,8 +27,11 @@ try {
   process.exit(1);
 }
 
+const stratDesc = cfg.strategy === 'sma'
+  ? `SMA ${cfg.smaFast}/${cfg.smaSlow}`
+  : `trend EMA ${cfg.emaFast}/${cfg.emaSlow}/тренд ${cfg.emaTrend} · RSI<${cfg.rsiOverbought} · ATR×${cfg.atrMult}${cfg.useTrailing ? ' · trailing' : ''}`;
 log.info(`Режим: ${describeMode(cfg)}`);
-log.info(`Пазар: ${cfg.symbol} · ${cfg.timeframe} · SMA ${cfg.smaFast}/${cfg.smaSlow}`);
+log.info(`Пазар: ${cfg.symbol} · ${cfg.timeframe} · стратегия: ${stratDesc}`);
 log.info(`Риск: ${cfg.riskPctPerTrade}%/сделка · стоп ${cfg.stopLossPct}% · дневен лимит ${cfg.dailyLossLimitPct}% · max DD ${cfg.maxDrawdownPct}%`);
 if (cfg.realMoney) log.warn('РАБОТИШ С РЕАЛНИ ПАРИ. Загубите са реални. Не е инвестиционен съвет.');
 

@@ -4,16 +4,17 @@
 // Всяка стъпка е защитена: рискът се проверява ПРЕДИ всеки вход; kill-switch спира всичко.
 import { makeExchange, loadMarket } from './exchange.js';
 import { fetchClosedCandles, currentPrice, readEquity } from './marketdata.js';
-import { signalAt } from './strategy.js';
-import { positionSize, stopFromPct, checkRiskGates, updateEquityPeak } from './risk.js';
+import { prepare, signalAt, stopDistance } from './strategy.js';
+import { positionSize, checkRiskGates, updateEquityPeak } from './risk.js';
 import { marketBuy, marketSell, placeStopLoss, cancelAllOpen } from './execute.js';
 import { loadState, saveState, rollDay } from './state.js';
 import { log, audit } from './logger.js';
 
 export async function runOnce(ex, cfg, market, state) {
   const price = await currentPrice(ex, cfg.symbol);
-  const { closes } = await fetchClosedCandles(ex, cfg.symbol, cfg.timeframe, Math.max(cfg.smaSlow + 5, 200));
-  if (closes.length < cfg.smaSlow + 2) { log.warn('Недостатъчно свещи още.'); return state; }
+  const warmup = Math.max(cfg.emaTrend, cfg.emaSlow, cfg.smaSlow, cfg.atrPeriod, cfg.rsiPeriod) + 5;
+  const { candles, closes } = await fetchClosedCandles(ex, cfg.symbol, cfg.timeframe, warmup + 50);
+  if (closes.length < warmup) { log.warn('Недостатъчно свещи още (warmup).'); return state; }
 
   // Капитал: в live/testnet чете реалния баланс; в dry-run без ключове ползва paper капитал.
   let equity, baseTotal;
@@ -27,14 +28,15 @@ export async function runOnce(ex, cfg, market, state) {
   rollDay(state, equity);
   updateEquityPeak(state, equity);
 
+  const ctx = prepare(candles, cfg);
   const i = closes.length - 1;                 // последна ЗАТВОРЕНА свещ
-  const sig = signalAt(closes, i, cfg.smaFast, cfg.smaSlow);
+  const sig = signalAt(ctx, i);
   const hasPosition = baseTotal * price > (market?.limits?.cost?.min ?? 0);
 
   audit('tick', { price, equity, signal: sig, hasPosition, killed: state.killed });
   log.info(`tick: price=${price} equity=${equity.toFixed(2)} signal=${sig ?? '—'} pos=${hasPosition}`);
 
-  // Изход: сигнал за изход ИЛИ вече няма позиция → нищо за продаване.
+  // Изход: сигнал за изход → продавам и махам стопа.
   if (hasPosition && sig === 'exit') {
     log.info('Сигнал за ИЗХОД → продавам и махам стопа.');
     await cancelAllOpen({ ex, cfg, symbol: cfg.symbol });
@@ -42,6 +44,18 @@ export async function runOnce(ex, cfg, market, state) {
     state.position = null;
     saveState(state);
     return state;
+  }
+
+  // Trailing stop: ако сме в позиция и цената се вдигна, качваме стопа НАГОРЕ (никога надолу).
+  if (hasPosition && cfg.useTrailing && state.position) {
+    const newStop = price - stopDistance(ctx, i, price);
+    if (newStop > (state.position.stopPrice ?? 0) * 1.001) {
+      log.info(`Trailing: качвам стоп ${(state.position.stopPrice ?? 0).toFixed(2)} → ${newStop.toFixed(2)}`);
+      await cancelAllOpen({ ex, cfg, symbol: cfg.symbol });
+      await placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: baseTotal, stopPrice: newStop });
+      state.position.stopPrice = newStop;
+      saveState(state);
+    }
   }
 
   // Вход: само ако нямаме позиция и има long сигнал.
@@ -58,7 +72,7 @@ export async function runOnce(ex, cfg, market, state) {
       return state;
     }
 
-    const stopPrice = stopFromPct(price, cfg.stopLossPct);
+    const stopPrice = price - stopDistance(ctx, i, price); // ATR-базиран (или % fallback)
     const qty = positionSize({
       equity, riskPct: cfg.riskPctPerTrade, entry: price, stopPrice,
       maxPositionPct: cfg.maxPositionPct,

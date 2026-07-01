@@ -38,7 +38,11 @@ for (const f of files) {
   try { src = readFileSync(f, "utf8"); } catch { continue; }
   // Само файлове, които РЕАЛНО са бектест — по име или по изричен маркер — иначе бот-файловете
   // (които уместно споменават equity/drawdown в риск логиката) дават лъжливи находки.
-  const isBacktest = /backtest|back_test/i.test(f) || /in-?sample|out.?of.?sample|walk.?forward/i.test(src);
+  // Реален бектест = име на файла ИЛИ (маркер за out-of-sample/walk-forward И структура на симулация).
+  // Само споменаване на термините в коментар (напр. в strategy.js) не брои — иначе лъжливи находки.
+  const hasStructure = /simulate\s*\(|equityCurve|tradeReturns|finalEquity|equity_curve/i.test(src);
+  const hasMarker = /in-?sample|out.?of.?sample|walk.?forward/i.test(src);
+  const isBacktest = /backtest|back_test/i.test(f) || (hasMarker && hasStructure);
   if (!isBacktest) continue;
   const rel = f.replace(root, "").replace(/^\//, "") || f;
 
