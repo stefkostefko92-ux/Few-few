@@ -1,0 +1,171 @@
+// Платформа за управление на свързани уебсайтове — схема на данните.
+// База: PostgreSQL. ORM: Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Роля на ниво платформа. OWNER вижда и управлява всичко (вкл. акаунти и
+// свързване на сайтове). MEMBER вижда само сайтовете, до които е получил достъп.
+enum Role {
+  OWNER
+  MEMBER
+}
+
+// Роля на потребител спрямо конкретен сайт (скоуп на достъпа).
+// MANAGER може да действа (проверки, деплой, редакция); VIEWER само чете.
+enum SiteRole {
+  MANAGER
+  VIEWER
+}
+
+enum SiteStatus {
+  UP // последната проверка е успешна
+  DEGRADED // отговаря, но бавно/с предупреждение
+  DOWN // последната проверка е неуспешна
+  PAUSED // мониторингът е спрян ръчно
+  UNKNOWN // още няма проверка
+}
+
+enum DeployStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         Role         @default(MEMBER)
+  active       Boolean      @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  memberships  Membership[]
+  auditLogs    AuditLog[]
+}
+
+model Site {
+  id             String     @id @default(cuid())
+  name           String
+  slug           String     @unique
+  url            String // публичен адрес, който се проверява за здраве
+  apiBaseUrl     String? // базов адрес на API-то на сайта (за съдържание/деплой)
+  apiKeyEnc      String? // API ключ на сайта, криптиран (AES-256-GCM)
+  deployHookUrl  String? // адрес за задействане на деплой (по избор)
+  status         SiteStatus @default(UNKNOWN)
+  monitorEnabled Boolean    @default(true)
+  lastCheckAt    DateTime?
+  lastStatusCode Int?
+  lastResponseMs Int?
+  notes          String? // свободни бележки (хъб)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  memberships  Membership[]
+  healthChecks HealthCheck[]
+  links        SiteLink[]
+  deployments  Deployment[]
+  contentItems ContentItem[]
+}
+
+// Скоуп на достъпа: кой потребител до кой сайт и с каква роля.
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  siteId    String
+  role      SiteRole @default(VIEWER)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, siteId])
+  @@index([userId])
+  @@index([siteId])
+}
+
+// История на здравните проверки (мониторинг).
+model HealthCheck {
+  id         String   @id @default(cuid())
+  siteId     String
+  ok         Boolean
+  statusCode Int?
+  responseMs Int?
+  error      String?
+  checkedAt  DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, checkedAt])
+}
+
+// Хъб: полезни връзки към сайта (админ панел, репо, документи, аналитика…).
+model SiteLink {
+  id        String   @id @default(cuid())
+  siteId    String
+  label     String
+  url       String
+  note      String?
+  createdAt DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+}
+
+// Кеширано съдържание, издърпано от API-то на сайта (CMS прокси, само четене).
+model ContentItem {
+  id         String   @id @default(cuid())
+  siteId     String
+  externalId String // идентификатор в самия сайт
+  kind       String // тип: post | listing | page | …
+  title      String
+  status     String? // published | draft | …
+  url        String?
+  syncedAt   DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, externalId])
+  @@index([siteId])
+}
+
+// Записи за задействани деплои.
+model Deployment {
+  id              String       @id @default(cuid())
+  siteId          String
+  status          DeployStatus @default(PENDING)
+  triggeredByEmail String
+  message         String?
+  createdAt       DateTime     @default(now())
+  finishedAt      DateTime?
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+}
+
+// Одит: кой какво е направил.
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String // LOGIN | LOGIN_FAILED | CREATE | UPDATE | DELETE | CHECK | DEPLOY | SYNC
+  entity    String // Site | User | Membership | SiteLink | Deployment
+  entityId  String?
+  summary   String
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
