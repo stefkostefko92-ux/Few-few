@@ -4,11 +4,13 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, createSession } from "@/lib/auth";
+import { decryptSecret } from "@/lib/crypto";
+import { verifyTotp } from "@/lib/totp";
 import { loginSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
 import { rateLimit } from "@/lib/ratelimit";
 
-export type LoginState = { error?: string };
+export type LoginState = { error?: string; need2fa?: boolean };
 
 export async function login(
   _prev: LoginState,
@@ -47,6 +49,15 @@ export async function login(
       summary: `Неуспешен вход за ${email}`,
     });
     return { error: "Грешен имейл или парола." };
+  }
+
+  // Втори фактор (ако е включен): изисква валиден TOTP код.
+  if (user.totpEnabled && user.totpSecret) {
+    const code = String(formData.get("code") ?? "").trim();
+    if (!code) return { need2fa: true };
+    if (!verifyTotp(decryptSecret(user.totpSecret), code, Date.now())) {
+      return { error: "Невалиден код за потвърждение.", need2fa: true };
+    }
   }
 
   await prisma.user.update({

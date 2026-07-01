@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/ProfileForm";
+import { TwoFactorSetup } from "@/components/TwoFactorSetup";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const user = await requireUser();
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { totpEnabled: true },
+  });
 
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -18,6 +24,11 @@ export default async function ProfilePage() {
       <section className="card">
         <h2 className="mb-3 font-medium text-white">Смяна на парола</h2>
         <ProfileForm />
+      </section>
+
+      <section className="card">
+        <h2 className="mb-3 font-medium text-white">Двуфакторна автентикация (2FA)</h2>
+        <TwoFactorSetup enabled={dbUser?.totpEnabled ?? false} />
       </section>
     </div>
   );

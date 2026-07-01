@@ -48,13 +48,29 @@ export default function LoginPage() {
               className="input"
             />
           </div>
+          {state.need2fa && (
+            <div>
+              <label className="label" htmlFor="code">Код за потвърждение (2FA)</label>
+              <input
+                id="code"
+                name="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]*"
+                maxLength={6}
+                autoFocus
+                className="input tracking-widest"
+                placeholder="123456"
+              />
+            </div>
+          )}
           {state.error && (
             <p className="text-sm text-red-400" role="alert">
               {state.error}
             </p>
           )}
           <button type="submit" className="btn-primary w-full" disabled={pending}>
-            {pending ? "Влизане…" : "Вход"}
+            {pending ? "Влизане…" : state.need2fa ? "Потвърди" : "Вход"}
           </button>
           <div className="flex items-center justify-between text-xs text-ink-500">
             <Link href="/register" className="text-brand-400 hover:underline">Създай акаунт</Link>

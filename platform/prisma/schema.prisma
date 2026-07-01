@@ -62,6 +62,9 @@ model User {
   // Възстановяване на парола (токен + валидност).
   resetToken    String?   @unique
   resetTokenExp DateTime?
+  // Двуфакторна автентикация (TOTP). Тайната е криптирана (AES-256-GCM).
+  totpSecret    String?
+  totpEnabled   Boolean   @default(false)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   memberships  Membership[]
