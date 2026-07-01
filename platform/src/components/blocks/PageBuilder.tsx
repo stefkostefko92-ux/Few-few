@@ -10,6 +10,7 @@ import {
 import { BlockRender } from "@/components/blocks/BlockView";
 import type { PageActionResult } from "@/app/dashboard/sites/[slug]/pages/actions";
 import { Inspector } from "@/components/blocks/Inspector";
+import { A11yPanel } from "@/components/blocks/A11yPanel";
 
 const PALETTE: BlockType[] = [
   "hero",
@@ -115,6 +116,7 @@ export function PageBuilder({
           {msg?.error && <span className="text-xs text-red-400">{msg.error}</span>}
         </div>
         <div className="flex items-center gap-2">
+          <A11yPanel blocks={blocks} onSelect={setSelectedId} />
           <a href={previewHref} target="_blank" rel="noreferrer" className="btn-ghost px-3 py-1.5 text-xs">
             Преглед
           </a>
