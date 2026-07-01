@@ -6132,6 +6132,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Stripe Node SDK v22.3.0 пинва LatestApiVersion literal = '2026-06-24.dahlia' (node_modu…\" (+2)"
+        },
+        {
           "date": "2026-06-30",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „Stripe Checkout с automatic_tax:{enabled:true} върху СЪЩЕСТВУВАЩ Customer изисква custo…\" (+1)"
