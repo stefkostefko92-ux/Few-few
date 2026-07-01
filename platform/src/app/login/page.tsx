@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { login, type LoginState } from "./actions";
+import { LegalFooter } from "@/components/LegalFooter";
 
 const initial: LoginState = {};
 
@@ -9,8 +10,9 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, initial);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <main className="flex min-h-screen flex-col px-4">
+      <div className="flex flex-1 items-center justify-center">
+        <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-semibold text-white">Платформа</h1>
           <p className="mt-1 text-sm text-ink-400">
@@ -54,7 +56,9 @@ export default function LoginPage() {
             {pending ? "Влизане…" : "Вход"}
           </button>
         </form>
+        </div>
       </div>
+      <LegalFooter />
     </main>
   );
 }
