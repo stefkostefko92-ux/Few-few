@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseBlocks } from "@/lib/blocks";
-import { BlockView } from "@/components/blocks/BlockView";
-import { SiteChrome } from "@/components/blocks/SiteChrome";
-import { blocksToPlainText, pageUrl, siteJsonLd } from "@/lib/seo";
+import { PublicSiteView } from "@/components/PublicSiteView";
+import { blocksToPlainText, pageUrl } from "@/lib/seo";
 import { localeState, LOCALE_OG } from "@/lib/locale";
-import { loadSiteNav } from "@/lib/site-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -80,43 +78,15 @@ export default async function SitePage({
   const data = await loadPage(siteSlug, pageSlug);
   if (!data) notFound();
 
-  const bgBlocks = parseBlocks(data.page.blocks);
-  const enBlocks = parseBlocks(data.page.blocksEn);
-  const { locale, showEn } = localeState(data.site.localeEn, lang, enBlocks.length);
-  const primary = locale === "en" ? enBlocks : bgBlocks;
-  const blocks = primary.length > 0 ? primary : bgBlocks; // резерв към BG
-  const pageTitle =
-    locale === "en" ? data.page.titleEn || data.page.title : data.page.title;
-
-  const nav = await loadSiteNav(data.site.id, data.site.slug, locale, data.page.slug);
-  const jsonLd = siteJsonLd({
-    siteName: data.site.name,
-    siteSlug: data.site.slug,
-    pageTitle,
-    pageSlug: data.page.slug,
-  });
+  const base = `/site/${data.site.slug}`;
   return (
-    <div lang={locale}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <SiteChrome
-        siteName={data.site.name}
-        siteSlug={data.site.slug}
-        currentPath={`/site/${data.site.slug}/${data.page.slug}`}
-        logoUrl={data.site.logoUrl}
-        brandColor={data.site.brandColor}
-        fontFamily={data.site.fontFamily}
-        navEnabled={data.site.navEnabled}
-        nav={nav}
-        locale={locale}
-        showEn={showEn}
-        footerText={data.site.footerText}
-        privacyUrl={data.site.privacyUrl}
-      >
-        <BlockView blocks={blocks} siteSlug={data.site.slug} locale={locale} />
-      </SiteChrome>
-    </div>
+    <PublicSiteView
+      site={data.site}
+      page={data.page}
+      lang={lang}
+      hrefBase={base}
+      homeHref={base}
+      currentPath={`${base}/${data.page.slug}`}
+    />
   );
 }

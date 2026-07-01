@@ -1,46 +1,55 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseBlocks } from "@/lib/blocks";
+import { siteByHost } from "@/lib/site-by-host";
 import { PublicSiteView } from "@/components/PublicSiteView";
-import { blocksToPlainText, pageUrl } from "@/lib/seo";
+import { blocksToPlainText } from "@/lib/seo";
 import { localeState, LOCALE_OG } from "@/lib/locale";
 
 export const dynamic = "force-dynamic";
 
-async function loadHome(siteSlug: string) {
-  const site = await prisma.site.findUnique({ where: { slug: siteSlug } });
+// Обслужване на публикуван сайт по СОБСТВЕН домейн / наш поддомейн. Middleware
+// пренаписва заявки от такива хостове насам; истинският хост е в заглавието Host.
+async function resolve(path: string[] | undefined) {
+  const h = await headers();
+  const host = h.get("host") || "";
+  const proto = h.get("x-forwarded-proto") || "https";
+  const site = await siteByHost(host);
   if (!site) return null;
+  const slug = path?.[0] ?? "";
   const page = await prisma.page.findFirst({
-    where: { siteId: site.id, slug: "", status: "PUBLISHED" },
+    where: { siteId: site.id, slug, status: "PUBLISHED" },
   });
-  return page ? { site, page } : null;
+  if (!page) return null;
+  return { site, page, slug, origin: `${proto}://${host.split(":")[0]}` };
 }
 
 export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: Promise<{ siteSlug: string }>;
+  params: Promise<{ path?: string[] }>;
   searchParams: Promise<{ lang?: string }>;
 }): Promise<Metadata> {
-  const { siteSlug } = await params;
+  const { path } = await params;
   const { lang } = await searchParams;
-  const data = await loadHome(siteSlug);
+  const data = await resolve(path);
   if (!data) return { title: "Страница", robots: { index: false } };
 
   const bgBlocks = parseBlocks(data.page.blocks);
   const enBlocks = parseBlocks(data.page.blocksEn);
   const { locale, showEn } = localeState(data.site.localeEn, lang, enBlocks.length);
   const primary = locale === "en" ? enBlocks : bgBlocks;
-  const blocks = primary.length > 0 ? primary : bgBlocks; // резерв към BG
+  const blocks = primary.length > 0 ? primary : bgBlocks;
   const pageTitle =
-    (data.page.seoTitle && data.page.seoTitle) ||
+    data.page.seoTitle ||
     (locale === "en" ? data.page.titleEn || data.page.title : data.page.title);
   const title = `${pageTitle} · ${data.site.name}`;
   const description =
     data.page.seoDescription || blocksToPlainText(blocks).slice(0, 155) || undefined;
-  const bgUrl = pageUrl(data.site.slug, "");
+  const bgUrl = data.slug ? `${data.origin}/${data.slug}` : data.origin;
   const enUrl = `${bgUrl}?lang=en`;
   const url = locale === "en" ? enUrl : bgUrl;
 
@@ -65,28 +74,26 @@ export async function generateMetadata({
   };
 }
 
-// Публична начална страница на сайт, изграден в платформата.
-export default async function SiteHome({
+export default async function HostSite({
   params,
   searchParams,
 }: {
-  params: Promise<{ siteSlug: string }>;
+  params: Promise<{ path?: string[] }>;
   searchParams: Promise<{ lang?: string }>;
 }) {
-  const { siteSlug } = await params;
+  const { path } = await params;
   const { lang } = await searchParams;
-  const data = await loadHome(siteSlug);
+  const data = await resolve(path);
   if (!data) notFound();
 
-  const base = `/site/${data.site.slug}`;
   return (
     <PublicSiteView
       site={data.site}
       page={data.page}
       lang={lang}
-      hrefBase={base}
-      homeHref={base}
-      currentPath={base}
+      hrefBase=""
+      homeHref="/"
+      currentPath={data.slug ? `/${data.slug}` : "/"}
     />
   );
 }

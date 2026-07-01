@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { getSiteForUser } from "@/lib/access";
 import { safeFont } from "@/lib/theme";
+import { PLATFORM_APEX } from "@/lib/domains";
 import { SettingsForm } from "@/components/SettingsForm";
+import { DomainSettings } from "@/components/DomainSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +42,26 @@ export default async function SiteSettings({
           privacyUrl: s.privacyUrl ?? "",
         }}
       />
+
+      <div>
+        <h2 className="mb-1 text-lg font-semibold text-white">Домейни и публикуване</h2>
+        <p className="mb-3 text-sm text-ink-400">
+          Пуснете сайта на наш поддомейн или на свой собствен домейн.
+        </p>
+        <DomainSettings
+          init={{
+            slug,
+            apex: PLATFORM_APEX,
+            subdomain: s.subdomain ?? "",
+            customDomain: s.customDomain ?? "",
+            domainVerified: s.domainVerified,
+            domainToken: s.domainToken ?? "",
+            published: s.published,
+            premium: s.premium,
+            isOwner: user.role === "OWNER",
+          }}
+        />
+      </div>
     </div>
   );
 }

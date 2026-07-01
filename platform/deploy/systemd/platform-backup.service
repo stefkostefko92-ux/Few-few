@@ -1,0 +1,23 @@
+# Криптиран бекъп на platform (Postgres + том с качванията) — виж deploy/backup.sh.
+# AGE_RECIPIENT (публичен ключ) идва от EnvironmentFile; частният ключ НЕ е на
+# сървъра. Пуска се от хоста, защото ползва `docker compose exec`.
+#
+# Инсталация:
+#   sudo cp platform-backup.* /etc/systemd/system/
+#   # /etc/platform/backup.env (mode 600) с ред: AGE_RECIPIENT=age1...публичен...
+#   sudo systemctl daemon-reload && sudo systemctl enable --now platform-backup.timer
+#   sudo systemctl start platform-backup.service   # пробно пускане
+[Unit]
+Description=platform — криптиран бекъп (Postgres + качвания)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+# Публичният ключ за криптиране (и по избор BACKUP_DIR/BACKUP_RETENTION).
+EnvironmentFile=/etc/platform/backup.env
+# Пътят до проекта на сървъра — коригирай, ако е различен.
+WorkingDirectory=/opt/few-few/current/platform
+ExecStart=/usr/bin/env bash /opt/few-few/current/platform/deploy/backup.sh
+# Бекъпът може да отнеме време при голяма база — дай разумен таван.
+TimeoutStartSec=1800

@@ -8,7 +8,7 @@ export type NavItem = { href: string; label: string; active: boolean };
 // Прилага темата (цвят/шрифт) като CSS променливи върху цялото съдържание.
 export function SiteChrome({
   siteName,
-  siteSlug,
+  homeHref,
   currentPath,
   logoUrl,
   brandColor,
@@ -19,11 +19,12 @@ export function SiteChrome({
   showEn,
   footerText,
   privacyUrl,
+  premium = false,
   children,
 }: {
   siteName: string;
-  siteSlug: string;
-  currentPath: string; // напр. /site/slug или /site/slug/page — за езиковия превключвател
+  homeHref: string; // адрес на началната (напр. / или /site/slug)
+  currentPath: string; // текущият път — за езиковия превключвател
   logoUrl?: string | null;
   brandColor?: string | null;
   fontFamily?: string | null;
@@ -33,11 +34,11 @@ export function SiteChrome({
   showEn: boolean;
   footerText?: string | null;
   privacyUrl?: string | null;
+  premium?: boolean;
   children: React.ReactNode;
 }) {
   const vars = themeVars(brandColor, fontFamily) as React.CSSProperties;
-  const homeBase = `/site/${siteSlug}`;
-  const homeHref = locale === "en" ? `${homeBase}?lang=en` : homeBase;
+  const homeLink = locale === "en" ? `${homeHref}?lang=en` : homeHref;
 
   return (
     <div
@@ -47,7 +48,7 @@ export function SiteChrome({
       {navEnabled && (
         <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-3">
-            <Link href={homeHref} className="flex items-center gap-2">
+            <Link href={homeLink} className="flex items-center gap-2">
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt={siteName} className="h-8 w-auto" />
@@ -129,6 +130,23 @@ export function SiteChrome({
             <span className="text-slate-400">© {siteName}</span>
           </div>
         </div>
+
+        {/* Воден знак за безплатните сайтове (премахва се при премиум). */}
+        {!premium && (
+          <div className="border-t border-slate-200 bg-white">
+            <div className="mx-auto flex max-w-5xl items-center justify-center px-5 py-3">
+              <a
+                href="https://carbonstealth.eu"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 shadow-sm transition hover:text-slate-800"
+              >
+                <span aria-hidden>⚡</span>
+                {locale === "en" ? "Made with Carbon Stealth" : "Създадено с Carbon Stealth"}
+              </a>
+            </div>
+          </div>
+        )}
       </footer>
     </div>
   );

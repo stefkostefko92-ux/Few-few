@@ -50,6 +50,7 @@ model User {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   memberships  Membership[]
+  uploads      Upload[]
   auditLogs    AuditLog[]
 }
 
@@ -76,6 +77,13 @@ model Site {
   navEnabled     Boolean  @default(true) // показвай меню/хедър
   footerText     String? // импресум/контакти в долния колонтитул
   privacyUrl     String? // връзка към политика за поверителност на сайта
+  // Публикуване и домейни.
+  published      Boolean  @default(false) // сайтът е пуснат публично
+  premium        Boolean  @default(false) // премиум → без воден знак „Carbon Stealth"
+  subdomain      String?  @unique // нашият поддомейн: <subdomain>.carbonstealth.site
+  customDomain   String?  @unique // собствен домейн на клиента (напр. example.com)
+  domainVerified Boolean  @default(false) // потвърден собствен домейн (DNS сочи към нас)
+  domainToken    String? // таен токен за TXT верификация на собствения домейн
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -86,6 +94,20 @@ model Site {
   contentItems ContentItem[]
   pages        Page[]
   submissions  FormSubmission[]
+}
+
+// Качен файл (медийна библиотека) — за преизползване, преглед и изтриване.
+model Upload {
+  id         String   @id @default(cuid())
+  url        String   @unique // публичен път /uploads/<uuid>.<ext>
+  kind       String // png | jpeg | webp | gif
+  bytes      Int
+  uploaderId String?
+  createdAt  DateTime @default(now())
+
+  uploader User? @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+
+  @@index([uploaderId])
 }
 
 // Заявка от контактна форма на публичен сайт (събиране на запитвания).

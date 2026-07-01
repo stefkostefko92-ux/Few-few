@@ -1,0 +1,12 @@
+# Дневно изчистване по давност — нощем в 03:30 (местно време на хоста).
+[Unit]
+Description=platform — таймер за изчистване по давност
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=platform-cron-prune.service
+
+[Install]
+WantedBy=timers.target
