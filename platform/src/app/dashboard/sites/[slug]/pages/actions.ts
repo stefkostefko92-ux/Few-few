@@ -5,9 +5,11 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
 import { parseBlocks, type Block } from "@/lib/blocks";
 import { generatePageBlocks } from "@/lib/ai/generate";
+import { rateLimit } from "@/lib/ratelimit";
 import { z } from "zod";
 
 export type PageActionResult = { ok?: string; error?: string };
@@ -100,22 +102,40 @@ export async function createAiPageAction(
   const prompt = String(formData.get("prompt") ?? "").trim();
   if (prompt.length < 4) return { error: "Опишете какво да съдържа страницата." };
 
+  // Лимит на скъпите AI извиквания: 10 на минута на потребител (пази от
+  // харчене на токени в цикъл). In-memory — при няколко инстанции ползвайте Redis.
+  if (!rateLimit(`ai-page:${user.id}`, 10, 60_000)) {
+    return { error: "Твърде много опити. Опитайте отново след минута." };
+  }
+
   const { blocks, provider } = await generatePageBlocks(prompt);
 
+  // Уникален slug с кратък суфикс, за да няма сблъсък при паралелни/повторни заявки.
   const count = await prisma.page.count({ where: { siteId: found.site.id } });
   const isHome = count === 0;
   const title = prompt.slice(0, 60);
-  const finalSlug = isHome ? "" : `stranica-${count + 1}`;
+  const finalSlug = isHome
+    ? ""
+    : `stranica-${count + 1}-${Math.abs(prompt.length * 2654435761 % 46656).toString(36)}`;
 
-  const page = await prisma.page.create({
-    data: {
-      siteId: found.site.id,
-      title,
-      slug: finalSlug,
-      isHome,
-      draftBlocks: blocks,
-    },
-  });
+  let page;
+  try {
+    page = await prisma.page.create({
+      data: {
+        siteId: found.site.id,
+        title,
+        slug: finalSlug,
+        isHome,
+        draftBlocks: blocks,
+      },
+    });
+  } catch (err) {
+    // Уникалният ключ (siteId, slug) или начална страница вече съществува.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return { error: "Вече има страница с този адрес — опитайте отново." };
+    }
+    throw err;
+  }
   await logAudit(user, {
     action: "CREATE",
     entity: "Page",
