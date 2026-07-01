@@ -1028,9 +1028,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: platform/ AI page generator (src/lib/ai/generate.ts): изходът на LLM минава finalize()→… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ submitContactAction (src/app/site/submit-action.ts:43) взима IP от x-forwarde… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ submitContactAction (src/app/site/submit-action.ts:43) взима IP от x-forwarde…\" (+2 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
