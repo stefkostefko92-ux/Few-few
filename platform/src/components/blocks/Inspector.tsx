@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Block, Align } from "@/lib/blocks";
 import { BLOCK_LABELS } from "@/lib/blocks";
 import { ASSIST_ACTIONS, type AssistAction } from "@/lib/ai/assist-core";
+import { UploadButton } from "@/components/blocks/UploadButton";
 
 export type AssistFn = (
   action: AssistAction,
@@ -47,6 +48,7 @@ export function Inspector({
       {block.type === "image" && (
         <>
           <Field label="Адрес на снимка (URL)" value={block.url} onChange={(url) => onChange({ url })} />
+          <UploadButton onUploaded={(url) => onChange({ url })} />
           <Field label="Описание (alt)" value={block.alt} onChange={(alt) => onChange({ alt })} />
           <AlignField value={block.align} onChange={(align) => onChange({ align })} />
           <Toggle label="Заоблени ъгли" checked={block.rounded} onChange={(rounded) => onChange({ rounded })} />
@@ -304,30 +306,54 @@ function GalleryEditor({
     <div className="space-y-2">
       <span className="label">Снимки</span>
       {images.map((img, i) => (
-        <div key={i} className="flex gap-1">
+        <div key={i} className="space-y-1 rounded border border-ink-800 p-2">
+          <div className="flex gap-1">
+            <input
+              className="input"
+              placeholder="URL"
+              value={img.url}
+              onChange={(e) => {
+                const next = [...images];
+                next[i] = { ...next[i], url: e.target.value };
+                onChange(next);
+              }}
+            />
+            <button
+              className="btn-ghost px-2 py-1 text-xs"
+              onClick={() => onChange(images.filter((_, j) => j !== i))}
+            >
+              ✕
+            </button>
+          </div>
           <input
             className="input"
-            placeholder="URL"
-            value={img.url}
+            placeholder="Описание (alt)"
+            value={img.alt}
             onChange={(e) => {
               const next = [...images];
-              next[i] = { ...next[i], url: e.target.value };
+              next[i] = { ...next[i], alt: e.target.value };
               onChange(next);
             }}
           />
-          <button
-            className="btn-ghost px-2 py-1 text-xs"
-            onClick={() => onChange(images.filter((_, j) => j !== i))}
-          >
-            ✕
-          </button>
+          <UploadButton
+            label="⬆ Качи в тази клетка"
+            onUploaded={(url) => {
+              const next = [...images];
+              next[i] = { ...next[i], url };
+              onChange(next);
+            }}
+          />
         </div>
       ))}
+      <UploadButton
+        label="⬆ Качи нова снимка"
+        onUploaded={(url) => onChange([...images, { url, alt: "" }])}
+      />
       <button
         className="btn-ghost w-full text-xs"
         onClick={() => onChange([...images, { url: "", alt: "" }])}
       >
-        + Добави снимка
+        + Добави празна клетка
       </button>
     </div>
   );
