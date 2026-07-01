@@ -1022,9 +1022,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: platform/ renderInline (src/lib/blocks.ts:120-137) е безопасен срещу XSS: escapeHtml ко… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ AI page generator (src/lib/ai/generate.ts): изходът на LLM минава finalize()→… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ AI page generator (src/lib/ai/generate.ts): изходът на LLM минава finalize()→…\" (+1 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
