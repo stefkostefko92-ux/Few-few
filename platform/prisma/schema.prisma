@@ -39,6 +39,18 @@ enum DeployStatus {
   FAILED
 }
 
+// Огледало на статуса на абонамента от Stripe (не се доверяваме на клиента —
+// сменя се само от проверения webhook). `premium` е ВКЛ. само при ACTIVE/TRIALING.
+enum BillingStatus {
+  NONE // няма абонамент
+  TRIALING // пробен период
+  ACTIVE // активен платен абонамент
+  PAST_DUE // неуспешно плащане, в процес на повторни опити (dunning)
+  CANCELED // прекратен
+  UNPAID // изчерпани опити за плащане
+  INCOMPLETE // първоначалното плащане не е завършено (напр. чака 3DS)
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -83,6 +95,13 @@ model Site {
   // Публикуване и домейни.
   published      Boolean  @default(false) // сайтът е пуснат публично
   premium        Boolean  @default(false) // премиум → без воден знак „Carbon Stealth"
+  // Билинг (Stripe). Пазим САМО Stripe идентификатори — никакви картови данни.
+  // `premium` е производно: задава се ЕДИНСТВЕНО от проверения webhook, никога
+  // от success_url или клиента.
+  stripeCustomerId     String?       @unique // cus_… (клиент в Stripe)
+  stripeSubscriptionId String?       @unique // sub_… (текущ абонамент)
+  billingStatus        BillingStatus @default(NONE) // огледало на статуса от Stripe
+  planRenewsAt         DateTime? // край на текущия платен период (за информация)
   subdomain      String?  @unique // нашият поддомейн: <subdomain>.carbonstealth.site
   customDomain   String?  @unique // собствен домейн на клиента (напр. example.com)
   domainVerified Boolean  @default(false) // потвърден собствен домейн (DNS сочи към нас)
@@ -256,4 +275,16 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+}
+
+// Идемпотентност на Stripe webhook-ите. Stripe ПОВТАРЯ доставки при всеки
+// не-2xx/timeout, така че всяко събитие се обработва точно веднъж: записът тук
+// (по event.id) и бизнес-ефектът (Site.premium) са в ЕДНА транзакция. Наличен
+// ред = вече обработено → пропускаме.
+model WebhookEvent {
+  id          String   @id // Stripe event.id (напр. evt_…)
+  type        String // тип на събитието (checkout.session.completed, …)
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
 }

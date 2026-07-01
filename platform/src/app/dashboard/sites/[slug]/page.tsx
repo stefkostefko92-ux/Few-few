@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ActionButton } from "@/components/ActionButton";
 import { AddLinkForm } from "@/components/AddLinkForm";
+import { BillingLink } from "@/components/BillingLink";
 import { formatDateTime, formatRelative, formatMs } from "@/lib/format";
 import {
   checkNowAction,
@@ -93,6 +94,7 @@ export default async function SitePage({
               ⚙️ Настройки
             </Link>
           )}
+          {canManage && <BillingLink slug={slug} premium={site.premium} />}
           <span className="rounded bg-ink-800 px-2 py-1 text-xs text-ink-400">
             Вашата роля: {role === "MANAGER" ? "мениджър" : "наблюдател"}
           </span>
