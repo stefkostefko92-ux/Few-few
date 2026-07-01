@@ -98,6 +98,7 @@
       'foot.explore': 'Esplora', 'foot.contact': 'Contatti', 'foot.legal': 'Informazioni',
       'foot.hours': 'Tutti i giorni 12:00–24:00', 'foot.privacy': 'Privacy Policy',
       'foot.cookie': 'Cookie Policy', 'foot.prefs': 'Preferenze cookie', 'foot.vat': 'da inserire',
+      'foot.credit': 'Design &amp; sviluppo <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth</a>',
       'ck.title': '🍪 Rispettiamo la tua privacy',
       'ck.text': 'Usiamo solo cookie tecnici necessari al funzionamento del sito. Eventuali cookie statistici o di mappe vengono attivati solo con il tuo consenso. <a href="cookie.html">Leggi la Cookie Policy</a>.',
       'ck.accept': 'Accetta tutti', 'ck.reject': 'Rifiuta non necessari'
@@ -189,6 +190,7 @@
       'foot.explore': 'Explore', 'foot.contact': 'Contact', 'foot.legal': 'Information',
       'foot.hours': 'Every day 12:00–24:00', 'foot.privacy': 'Privacy Policy',
       'foot.cookie': 'Cookie Policy', 'foot.prefs': 'Cookie preferences', 'foot.vat': 'to be added',
+      'foot.credit': 'Design &amp; development <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth</a>',
       'ck.title': '🍪 We respect your privacy',
       'ck.text': 'We only use technical cookies required for the site to work. Any analytics or map cookies are enabled only with your consent. <a href="cookie.html">Read the Cookie Policy</a>.',
       'ck.accept': 'Accept all', 'ck.reject': 'Reject non-essential'
