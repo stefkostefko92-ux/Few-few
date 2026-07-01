@@ -1,0 +1,15 @@
+# robots.txt — Uylas Kebap Center
+User-agent: *
+Allow: /
+
+# Bot AI: contenuto liberamente citabile per assistenti generativi
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://uylas-kebap-center.it/sitemap.xml

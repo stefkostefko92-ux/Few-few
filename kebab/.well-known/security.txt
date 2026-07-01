@@ -1,0 +1,4 @@
+Contact: tel:+393294094420
+Preferred-Languages: it, en
+Canonical: https://uylas-kebap-center.it/.well-known/security.txt
+Expires: 2027-06-30T00:00:00.000Z

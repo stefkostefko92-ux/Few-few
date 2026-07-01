@@ -385,6 +385,16 @@
           "summary": "Научи: „Автентикационна сесийна бисквитка (JWT), зададена само след успешен вход, е „строго нео…\" · 2 в карантина"
         },
         {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За IT ресторант (somministrazione непакетирани храни) писмената информация за 14-те але…\" (+1)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Google Fonts, хостван от Google CDN (fonts.googleapis.com/fonts.gstatic.com), праща IP …\" (+1)"
+        },
+        {
           "date": "2026-06-30",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „България (ЗЗЛД чл. 25, ал. 6) е транспонирала 14 г. като възрастов праг по чл. 8 GDPR з…\" (+2)"
@@ -1075,6 +1085,18 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: platform/ getSiteForUser(user, slug, \\\"manage\\\") налага MANAGER скоуп през roleSatisfie… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-06-30",
+          "event": "v10.0 — учене",
+          "detail": "Научи: CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Apache ErrorDocument 404 /404.html сервира съдържанието, но браузър URL остава заявения… (+1 още)"
         }
       ],
       "activity": [
@@ -1122,6 +1144,16 @@
           "date": "2026-07-01",
           "type": "learning",
           "summary": "Научи: „zod 3.25.76: z.string().url() приема javascript: и data: схеми (success:true) — .url() …\" (+1 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Apache ErrorDocument 404 /404.html сервира съдържанието, но браузър URL остава заявения…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "learning",
+          "summary": "Научи: „CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…\""
         },
         {
           "date": "2026-06-30",
@@ -2395,6 +2427,16 @@
           "date": "2026-07-01",
           "type": "learning",
           "summary": "Научи: „Next.js App Router: root layout metadata.robots {index:false} се наследява надолу по дъ…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „schema.org Restaurant.hasMenu приема reference към Menu обект чрез @id; Restaurant.menu…\" (+1)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За локален Restaurant single-page сайт с JS-only превключвател на език (?lang=en само c…\" (+1)"
         },
         {
           "date": "2026-06-26",
@@ -7792,6 +7834,12 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: three-mesh-bvh: computeBoundsTree() на geometry + Mesh.prototype.raycast=acceleratedRay…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: backdrop-filter върху fixed предшественик създава нов containing block и чупи вложено f… (+1 още)"
         }
       ],
       "activity": [
@@ -7799,6 +7847,16 @@
           "date": "2026-07-01",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „Tailwind config в platform/ дефинира само brand-50..900 и ink-палитра (без brand-950); …\" (+1)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „backdrop-filter върху fixed предшественик създава нов containing block и чупи вложено f…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За комерсиален food/ресторант сайт най-голям конверсионен лифт дава sticky mobile botto…\" (+2)"
         },
         {
           "date": "2026-06-30",
