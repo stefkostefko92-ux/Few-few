@@ -79,6 +79,12 @@ export default async function SitePage({
           >
             🧩 Конструктор на страници
           </Link>
+          <Link
+            href={`/dashboard/sites/${slug}/submissions`}
+            className="btn-ghost px-3 py-1.5 text-xs"
+          >
+            📨 Заявки
+          </Link>
           <span className="rounded bg-ink-800 px-2 py-1 text-xs text-ink-400">
             Вашата роля: {role === "MANAGER" ? "мениджър" : "наблюдател"}
           </span>

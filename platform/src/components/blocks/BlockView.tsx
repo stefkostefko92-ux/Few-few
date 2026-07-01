@@ -1,6 +1,7 @@
 import type { Block, Align } from "@/lib/blocks";
-import { renderInline } from "@/lib/blocks";
+import { renderInline, videoEmbedSrc, mapEmbedSrc } from "@/lib/blocks";
 import { HeroBackdrop } from "./HeroBackdrop";
+import { SiteContactForm } from "./SiteContactForm";
 
 const alignCls: Record<Align, string> = {
   left: "text-left",
@@ -19,7 +20,13 @@ const itemsCls: Record<Align, string> = {
 };
 
 // Рендира един блок в реалния (публичен) вид на страницата.
-export function BlockRender({ block }: { block: Block }) {
+export function BlockRender({
+  block,
+  siteSlug,
+}: {
+  block: Block;
+  siteSlug?: string;
+}) {
   switch (block.type) {
     case "heading": {
       // H1 и H2 получават изящен serif display; H3 остава чист sans за йерархия.
@@ -154,6 +161,124 @@ export function BlockRender({ block }: { block: Block }) {
           )}
         </div>
       );
+    case "columns":
+      return (
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div
+            className="pub-body leading-[1.75] text-slate-600"
+            dangerouslySetInnerHTML={{ __html: renderInline(block.left) }}
+          />
+          <div
+            className="pub-body leading-[1.75] text-slate-600"
+            dangerouslySetInnerHTML={{ __html: renderInline(block.right) }}
+          />
+        </div>
+      );
+    case "faq":
+      if (block.items.length === 0) return null;
+      return (
+        <div className="mx-auto w-full max-w-2xl divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+          {block.items.map((it, i) => (
+            <details key={i} className="group px-5 py-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-slate-800">
+                {it.q}
+                <span aria-hidden className="ml-3 text-slate-400 transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p
+                className="pub-body mt-2 leading-relaxed text-slate-600"
+                dangerouslySetInnerHTML={{ __html: renderInline(it.a) }}
+              />
+            </details>
+          ))}
+        </div>
+      );
+    case "testimonials":
+      if (block.items.length === 0) return null;
+      return (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {block.items.map((t, i) => (
+            <figure key={i} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <blockquote className="pub-body text-slate-700">„{t.quote}“</blockquote>
+              <figcaption className="mt-4 text-sm">
+                <span className="font-semibold text-slate-900">{t.author}</span>
+                {t.role && <span className="text-slate-500"> · {t.role}</span>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      );
+    case "pricing":
+      if (block.plans.length === 0) return null;
+      return (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {block.plans.map((p, i) => (
+            <div key={i} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-slate-900">{p.name}</h3>
+              <p className="mt-2">
+                <span className="text-3xl font-bold text-slate-900">{p.price}</span>
+                <span className="text-slate-500">{p.period}</span>
+              </p>
+              <ul className="mt-4 flex-1 space-y-2 text-sm text-slate-600">
+                {p.features.map((f, j) => (
+                  <li key={j} className="flex gap-2">
+                    <span aria-hidden className="text-brand-600">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              {p.href && (
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pub-btn mt-5 inline-flex justify-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-500"
+                >
+                  Избери
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    case "video": {
+      const src = videoEmbedSrc(block.url);
+      if (!src) return null;
+      return (
+        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-slate-900 shadow-lg">
+          <iframe
+            src={src}
+            title="Видео"
+            className="h-full w-full"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      );
+    }
+    case "map":
+      if (!block.query) return null;
+      return (
+        <div className="h-80 w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+          <iframe
+            src={mapEmbedSrc(block.query)}
+            title={`Карта: ${block.query}`}
+            className="h-full w-full"
+            loading="lazy"
+          />
+        </div>
+      );
+    case "form":
+      return (
+        <SiteContactForm
+          siteSlug={siteSlug}
+          title={block.title}
+          buttonLabel={block.buttonLabel}
+          successMessage={block.successMessage}
+        />
+      );
     case "divider":
       return (
         <hr className="mx-auto h-px w-full max-w-[8rem] border-0 bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
@@ -164,7 +289,14 @@ export function BlockRender({ block }: { block: Block }) {
 }
 
 // Рендира цялата страница (списък блокове) в светла тема — реалният сайт.
-export function BlockView({ blocks }: { blocks: Block[] }) {
+// siteSlug е нужен на формата за контакт, за да знае къде да прати заявката.
+export function BlockView({
+  blocks,
+  siteSlug,
+}: {
+  blocks: Block[];
+  siteSlug?: string;
+}) {
   if (blocks.length === 0) {
     return <p className="py-20 text-center text-slate-400">Празна страница.</p>;
   }
@@ -176,7 +308,7 @@ export function BlockView({ blocks }: { blocks: Block[] }) {
           className="pub-reveal"
           style={{ animationDelay: `${Math.min(i, 8) * 70}ms` }}
         >
-          <BlockRender block={b} />
+          <BlockRender block={b} siteSlug={siteSlug} />
         </div>
       ))}
     </div>

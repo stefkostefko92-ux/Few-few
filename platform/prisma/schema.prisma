@@ -76,6 +76,23 @@ model Site {
   deployments  Deployment[]
   contentItems ContentItem[]
   pages        Page[]
+  submissions  FormSubmission[]
+}
+
+// Заявка от контактна форма на публичен сайт (събиране на запитвания).
+model FormSubmission {
+  id        String   @id @default(cuid())
+  siteId    String
+  name      String
+  email     String
+  message   String
+  pagePath  String? // от коя страница е дошла
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
 }
 
 enum PageStatus {

@@ -22,13 +22,18 @@ const nextConfig = {
         ? "script-src 'self' 'unsafe-inline'"
         : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
 
+    // Публичните сайтове на конструктора ползват външни снимки и вграждат
+    // видео (YouTube/Vimeo) и карти (OpenStreetMap) — затова img-src разрешава
+    // https: и frame-src изброява доверените embed хостове. Панелът остава строг
+    // (frame-ancestors 'none' пази нас от вграждане в чужд сайт).
     const csp = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
+      "img-src 'self' data: https:",
       "font-src 'self' data:",
       "connect-src 'self'",
+      "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com https://www.openstreetmap.org",
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'",

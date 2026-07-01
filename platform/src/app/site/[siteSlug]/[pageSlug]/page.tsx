@@ -66,7 +66,7 @@ export default async function SitePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <BlockView blocks={parseBlocks(data.page.blocks)} />
+      <BlockView blocks={parseBlocks(data.page.blocks)} siteSlug={data.site.slug} />
     </div>
   );
 }

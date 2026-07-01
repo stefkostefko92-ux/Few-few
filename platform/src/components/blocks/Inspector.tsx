@@ -65,6 +65,57 @@ export function Inspector({
         <GalleryEditor images={block.images} onChange={(images) => onChange({ images })} />
       )}
 
+      {block.type === "columns" && (
+        <>
+          <Area label="Лява колона (markdown)" rows={5} value={block.left} onChange={(left) => onChange({ left })} />
+          <Area label="Дясна колона (markdown)" rows={5} value={block.right} onChange={(right) => onChange({ right })} />
+        </>
+      )}
+
+      {block.type === "video" && (
+        <>
+          <Field label="Адрес на видео (YouTube/Vimeo)" value={block.url} onChange={(url) => onChange({ url })} />
+          <p className="text-[11px] text-ink-600">Поддържат се само YouTube и Vimeo връзки.</p>
+        </>
+      )}
+
+      {block.type === "map" && (
+        <Field label="Място (търсене в картата)" value={block.query} onChange={(query) => onChange({ query })} />
+      )}
+
+      {block.type === "form" && (
+        <>
+          <Field label="Заглавие" value={block.title} onChange={(title) => onChange({ title })} />
+          <Field label="Надпис на бутон" value={block.buttonLabel} onChange={(buttonLabel) => onChange({ buttonLabel })} />
+          <Area label="Съобщение при успех" value={block.successMessage} onChange={(successMessage) => onChange({ successMessage })} />
+          <p className="text-[11px] text-ink-600">Заявките се събират в „Заявки“ на сайта.</p>
+        </>
+      )}
+
+      {block.type === "faq" && (
+        <ListEditor
+          label="Въпроси"
+          items={block.items}
+          make={() => ({ q: "Нов въпрос?", a: "Отговор." })}
+          onChange={(items) => onChange({ items })}
+          fields={[["q", "Въпрос"], ["a", "Отговор"]]}
+        />
+      )}
+
+      {block.type === "testimonials" && (
+        <ListEditor
+          label="Отзиви"
+          items={block.items}
+          make={() => ({ quote: "Отзив…", author: "Име", role: "" })}
+          onChange={(items) => onChange({ items })}
+          fields={[["quote", "Цитат"], ["author", "Автор"], ["role", "Роля"]]}
+        />
+      )}
+
+      {block.type === "pricing" && (
+        <PricingEditor plans={block.plans} onChange={(plans) => onChange({ plans })} />
+      )}
+
       {block.type === "spacer" && (
         <Select label="Размер" value={block.size} options={[["sm", "Малко"], ["md", "Средно"], ["lg", "Голямо"]]} onChange={(v) => onChange({ size: v as "sm" | "md" | "lg" })} />
       )}
@@ -72,6 +123,100 @@ export function Inspector({
       {block.type === "divider" && (
         <p className="text-sm text-ink-500">Хоризонтална линия — няма настройки.</p>
       )}
+    </div>
+  );
+}
+
+// Общ редактор на списък от обекти с текстови полета (FAQ, отзиви).
+function ListEditor<T extends Record<string, string>>({
+  label,
+  items,
+  make,
+  fields,
+  onChange,
+}: {
+  label: string;
+  items: T[];
+  make: () => T;
+  fields: [keyof T & string, string][];
+  onChange: (items: T[]) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <span className="label">{label}</span>
+      {items.map((item, i) => (
+        <div key={i} className="space-y-1 rounded border border-ink-800 p-2">
+          {fields.map(([key, lbl]) => (
+            <input
+              key={key}
+              className="input"
+              placeholder={lbl}
+              value={item[key]}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = { ...next[i], [key]: e.target.value };
+                onChange(next);
+              }}
+            />
+          ))}
+          <button
+            className="btn-ghost w-full px-2 py-1 text-xs text-red-400"
+            onClick={() => onChange(items.filter((_, j) => j !== i))}
+          >
+            Премахни
+          </button>
+        </div>
+      ))}
+      <button className="btn-ghost w-full text-xs" onClick={() => onChange([...items, make()])}>
+        + Добави
+      </button>
+    </div>
+  );
+}
+
+type Plan = { name: string; price: string; period: string; features: string[]; href: string };
+
+function PricingEditor({
+  plans,
+  onChange,
+}: {
+  plans: Plan[];
+  onChange: (plans: Plan[]) => void;
+}) {
+  const patch = (i: number, changes: Partial<Plan>) => {
+    const next = [...plans];
+    next[i] = { ...next[i], ...changes };
+    onChange(next);
+  };
+  return (
+    <div className="space-y-3">
+      <span className="label">Планове</span>
+      {plans.map((p, i) => (
+        <div key={i} className="space-y-1 rounded border border-ink-800 p-2">
+          <input className="input" placeholder="Име" value={p.name} onChange={(e) => patch(i, { name: e.target.value })} />
+          <div className="flex gap-1">
+            <input className="input" placeholder="Цена" value={p.price} onChange={(e) => patch(i, { price: e.target.value })} />
+            <input className="input" placeholder="Период" value={p.period} onChange={(e) => patch(i, { period: e.target.value })} />
+          </div>
+          <textarea
+            className="input"
+            rows={3}
+            placeholder="Функции (по една на ред)"
+            value={p.features.join("\n")}
+            onChange={(e) => patch(i, { features: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })}
+          />
+          <input className="input" placeholder="Връзка (URL)" value={p.href} onChange={(e) => patch(i, { href: e.target.value })} />
+          <button className="btn-ghost w-full px-2 py-1 text-xs text-red-400" onClick={() => onChange(plans.filter((_, j) => j !== i))}>
+            Премахни план
+          </button>
+        </div>
+      ))}
+      <button
+        className="btn-ghost w-full text-xs"
+        onClick={() => onChange([...plans, { name: "Нов план", price: "0 лв.", period: "/месец", features: [], href: "" }])}
+      >
+        + Добави план
+      </button>
     </div>
   );
 }
