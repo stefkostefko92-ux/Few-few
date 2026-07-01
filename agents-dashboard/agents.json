@@ -1016,9 +1016,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: zod 3.25.76: z.string().url() приема javascript: и data: схеми (success:true) — .url() … (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ renderInline (src/lib/blocks.ts:120-137) е безопасен срещу XSS: escapeHtml ко… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ renderInline (src/lib/blocks.ts:120-137) е безопасен срещу XSS: escapeHtml ко…\" (+2 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
