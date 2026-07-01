@@ -1,6 +1,12 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/locale";
+import { LOCALE_LABEL } from "@/lib/locale";
 import { themeVars } from "@/lib/theme";
+
+// Адрес за дадена локала: bg е чист път, en/it носят ?lang=.
+function localeHref(path: string, loc: Locale): string {
+  return loc === "bg" ? path : `${path}?lang=${loc}`;
+}
 
 export type NavItem = { href: string; label: string; active: boolean };
 
@@ -16,7 +22,7 @@ export function SiteChrome({
   navEnabled,
   nav,
   locale,
-  showEn,
+  locales,
   footerText,
   privacyUrl,
   premium = false,
@@ -31,14 +37,15 @@ export function SiteChrome({
   navEnabled: boolean;
   nav: NavItem[];
   locale: Locale;
-  showEn: boolean;
+  locales: Locale[]; // наличните езици (>1 → показва превключвател)
   footerText?: string | null;
   privacyUrl?: string | null;
   premium?: boolean;
   children: React.ReactNode;
 }) {
   const vars = themeVars(brandColor, fontFamily) as React.CSSProperties;
-  const homeLink = locale === "en" ? `${homeHref}?lang=en` : homeHref;
+  const homeLink = localeHref(homeHref, locale);
+  const showLangs = locales.length > 1;
 
   return (
     <div
@@ -74,23 +81,21 @@ export function SiteChrome({
                   ))}
                 </nav>
               )}
-              {showEn && (
+              {showLangs && (
                 <div className="flex items-center gap-1 text-sm">
-                  <Link
-                    href={currentPath}
-                    hrefLang="bg"
-                    className={locale === "bg" ? "font-semibold text-slate-900" : "text-slate-400 hover:text-slate-700"}
-                  >
-                    BG
-                  </Link>
-                  <span className="text-slate-300">/</span>
-                  <Link
-                    href={`${currentPath}?lang=en`}
-                    hrefLang="en"
-                    className={locale === "en" ? "font-semibold text-slate-900" : "text-slate-400 hover:text-slate-700"}
-                  >
-                    EN
-                  </Link>
+                  {locales.map((loc, i) => (
+                    <span key={loc} className="flex items-center gap-1">
+                      {i > 0 && <span className="text-slate-300">/</span>}
+                      <Link
+                        href={localeHref(currentPath, loc)}
+                        hrefLang={loc}
+                        title={LOCALE_LABEL[loc]}
+                        className={loc === locale ? "font-semibold text-slate-900" : "text-slate-400 hover:text-slate-700"}
+                      >
+                        {loc.toUpperCase()}
+                      </Link>
+                    </span>
+                  ))}
                 </div>
               )}
             </div>

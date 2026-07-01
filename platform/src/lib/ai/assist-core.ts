@@ -9,6 +9,7 @@ export type AssistAction =
   | "friendly"
   | "translate-en"
   | "translate-bg"
+  | "translate-it"
   | "alt";
 
 export const ASSIST_ACTIONS: { action: AssistAction; label: string; hint: string }[] = [
@@ -19,6 +20,7 @@ export const ASSIST_ACTIONS: { action: AssistAction; label: string; hint: string
   { action: "friendly", label: "Приятелски", hint: "Топъл тон" },
   { action: "translate-en", label: "EN", hint: "Преведи на английски" },
   { action: "translate-bg", label: "BG", hint: "Преведи на български" },
+  { action: "translate-it", label: "IT", hint: "Преведи на италиански" },
 ];
 
 const INSTRUCTIONS: Record<AssistAction, string> = {
@@ -29,6 +31,7 @@ const INSTRUCTIONS: Record<AssistAction, string> = {
   friendly: "Пренапиши текста в топъл, приятелски, достъпен тон. Запази езика.",
   "translate-en": "Преведи текста на естествен английски. Върни само превода.",
   "translate-bg": "Преведи текста на естествен български. Върни само превода.",
+  "translate-it": "Преведи текста на естествен италиански. Върни само превода.",
   alt: "Върни кратко описание (alt текст) на български, до 120 знака, което обяснява какво се вижда. Само описанието.",
 };
 

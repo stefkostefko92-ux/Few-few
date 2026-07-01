@@ -80,6 +80,7 @@ model Site {
   status         SiteStatus @default(UNKNOWN)
   monitorEnabled Boolean    @default(true)
   localeEn       Boolean    @default(false) // включена английска версия на сайта
+  localeIt       Boolean    @default(false) // включена италианска версия на сайта
   lastCheckAt    DateTime?
   lastStatusCode Int?
   lastResponseMs Int?
@@ -169,6 +170,10 @@ model Page {
   titleEn        String?
   blocksEn       Json    @default("[]")
   draftBlocksEn  Json    @default("[]")
+  // Италианска версия (по избор).
+  titleIt        String?
+  blocksIt       Json    @default("[]")
+  draftBlocksIt  Json    @default("[]")
   // Навигация и SEO (Настройки на страницата).
   showInNav      Boolean @default(true) // показвай в менюто на сайта
   navOrder       Int     @default(0) // ред в менюто (по-малко = по-напред)

@@ -8,7 +8,7 @@ import {
   saveDraftAction,
   publishPageAction,
   assistTextAction,
-  toggleLocaleEnAction,
+  toggleLocaleAction,
   translatePageAction,
 } from "../actions";
 
@@ -33,6 +33,8 @@ export default async function EditPage({
   const initial = draft.length > 0 ? draft : parseBlocks(page.blocks);
   const draftEn = parseBlocks(page.draftBlocksEn);
   const initialEn = draftEn.length > 0 ? draftEn : parseBlocks(page.blocksEn);
+  const draftIt = parseBlocks(page.draftBlocksIt);
+  const initialIt = draftIt.length > 0 ? draftIt : parseBlocks(page.blocksIt);
   const publicPath = page.isHome
     ? `/site/${found.site.slug}`
     : `/site/${found.site.slug}/${page.slug}`;
@@ -50,11 +52,13 @@ export default async function EditPage({
         publicHref={publicPath}
         initialBlocks={initial}
         initialBlocksEn={initialEn}
+        initialBlocksIt={initialIt}
         localeEnEnabled={found.site.localeEn}
+        localeItEnabled={found.site.localeIt}
         saveDraft={saveDraftAction.bind(null, slug, page.id)}
         publish={publishPageAction.bind(null, slug, page.id)}
         assist={assistTextAction.bind(null, slug)}
-        toggleLocaleEn={toggleLocaleEnAction.bind(null, slug)}
+        toggleLocale={toggleLocaleAction.bind(null, slug)}
         translatePage={translatePageAction.bind(null, slug, page.id)}
       />
     </div>

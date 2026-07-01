@@ -25,6 +25,15 @@ const T = {
     notice:
       "By submitting, you provide your name and email so we can reply to your enquiry. We process the data only for this purpose (legitimate interest, Art. 6(1)(f) GDPR), do not share it with third parties for marketing, and keep it for a limited period. You have the right of access, rectification and erasure.",
   },
+  it: {
+    name: "Nome",
+    email: "Email",
+    message: "Messaggio",
+    sending: "Invio…",
+    preview: "(Anteprima — il modulo funziona sul sito pubblicato.)",
+    notice:
+      "Inviando, fornisci il tuo nome e la tua email affinché possiamo rispondere alla tua richiesta. Trattiamo i dati solo per questo scopo (legittimo interesse, art. 6, par. 1, lett. f, GDPR), non li condividiamo con terzi per marketing e li conserviamo per un periodo limitato. Hai diritto di accesso, rettifica e cancellazione.",
+  },
 } as const;
 
 // Контактна форма на публичен сайт → събира заявки в платформата.
@@ -40,7 +49,7 @@ export function SiteContactForm({
   title: string;
   buttonLabel: string;
   successMessage: string;
-  locale?: "bg" | "en";
+  locale?: "bg" | "en" | "it";
 }) {
   const [state, formAction, pending] = useActionState(submitContactAction, initial);
   const disabled = !siteSlug;

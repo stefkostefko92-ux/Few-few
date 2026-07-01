@@ -27,7 +27,7 @@ export function BlockRender({
 }: {
   block: Block;
   siteSlug?: string;
-  locale?: "bg" | "en";
+  locale?: "bg" | "en" | "it";
 }) {
   switch (block.type) {
     case "heading": {
@@ -379,7 +379,7 @@ export function BlockView({
 }: {
   blocks: Block[];
   siteSlug?: string;
-  locale?: "bg" | "en";
+  locale?: "bg" | "en" | "it";
 }) {
   if (blocks.length === 0) {
     return <p className="py-20 text-center text-slate-400">Празна страница.</p>;

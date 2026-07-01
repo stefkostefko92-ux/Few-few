@@ -181,8 +181,23 @@ export async function assistTextAction(
   return { text: out, ai: provider !== "rules" };
 }
 
-function isEn(locale: string): boolean {
-  return locale === "en";
+type Loc = "bg" | "en" | "it";
+function asLoc(locale: string): Loc {
+  return locale === "en" ? "en" : locale === "it" ? "it" : "bg";
+}
+
+function draftData(loc: Loc, clean: Block[]): Prisma.PageUpdateInput {
+  if (loc === "en") return { draftBlocksEn: clean };
+  if (loc === "it") return { draftBlocksIt: clean };
+  return { draftBlocks: clean };
+}
+
+function publishData(loc: Loc, clean: Block[], prev: Date | null): Prisma.PageUpdateInput {
+  const status = "PUBLISHED" as const;
+  // status/publishedAt са на ниво страница; вторичен език също прави видима.
+  if (loc === "en") return { draftBlocksEn: clean, blocksEn: clean, status, publishedAt: prev ?? new Date() };
+  if (loc === "it") return { draftBlocksIt: clean, blocksIt: clean, status, publishedAt: prev ?? new Date() };
+  return { draftBlocks: clean, blocks: clean, status, publishedAt: new Date() };
 }
 
 export async function saveDraftAction(
@@ -194,10 +209,7 @@ export async function saveDraftAction(
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
   const clean = parseBlocks(blocks); // валидира и изчиства чрез Zod
-  await prisma.page.update({
-    where: { id: pageId },
-    data: isEn(locale) ? { draftBlocksEn: clean } : { draftBlocks: clean },
-  });
+  await prisma.page.update({ where: { id: pageId }, data: draftData(asLoc(locale), clean) });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
   return { ok: "Черновата е запазена." };
 }
@@ -210,61 +222,54 @@ export async function publishPageAction(
 ): Promise<PageActionResult> {
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
+  const loc = asLoc(locale);
   const clean = parseBlocks(blocks);
   await prisma.page.update({
     where: { id: pageId },
-    data: isEn(locale)
-      ? {
-          draftBlocksEn: clean,
-          blocksEn: clean,
-          // Публикуването на EN също прави страницата видима (status е на ниво
-          // страница, не на локала); publishedAt се задава ако още липсва.
-          status: "PUBLISHED",
-          publishedAt: ctx.page.publishedAt ?? new Date(),
-        }
-      : {
-          draftBlocks: clean,
-          blocks: clean,
-          status: "PUBLISHED",
-          publishedAt: new Date(),
-        },
+    data: publishData(loc, clean, ctx.page.publishedAt),
   });
   await logAudit(ctx.user, {
     action: "UPDATE",
     entity: "Page",
     entityId: pageId,
-    summary: `Публикувана страница „${ctx.page.title}" (${isEn(locale) ? "EN" : "BG"})`,
+    summary: `Публикувана страница „${ctx.page.title}" (${loc.toUpperCase()})`,
   });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
   revalidatePath(`/site/${ctx.site.slug}`);
-  return { ok: `Страницата е публикувана (${isEn(locale) ? "EN" : "BG"}).` };
+  return { ok: `Страницата е публикувана (${loc.toUpperCase()}).` };
 }
 
-// Включва/изключва английската версия на сайта (site-scope, MANAGER).
-export async function toggleLocaleEnAction(
+// Включва/изключва вторичен език на сайта (en/it) — site-scope, MANAGER.
+export async function toggleLocaleAction(
   slug: string,
+  locale: string,
   enabled: boolean,
 ): Promise<PageActionResult> {
   const user = await requireUser();
   const found = await getSiteForUser(user, slug, "manage");
   if (!found) return { error: "Нямате достъп." };
+  const loc = asLoc(locale);
+  if (loc === "bg") return { error: "Българският е основен." };
   await prisma.site.update({
     where: { id: found.site.id },
-    data: { localeEn: enabled },
+    data: loc === "en" ? { localeEn: enabled } : { localeIt: enabled },
   });
   revalidatePath(`/dashboard/sites/${slug}`, "layout");
-  return { ok: enabled ? "Английската версия е включена." : "Английската версия е изключена." };
+  const name = loc === "en" ? "Английската" : "Италианската";
+  return { ok: enabled ? `${name} версия е включена.` : `${name} версия е изключена.` };
 }
 
-// Превежда черновата (BG → EN) с AI и я записва в EN черновата. Без AI ключ
-// текстът остава непокътнат (не разваля нищо).
+// Превежда черновата (BG → целевия език) с AI и я записва в неговата чернова.
 export async function translatePageAction(
   slug: string,
   pageId: string,
+  target: string,
   blocks: Block[],
 ): Promise<PageActionResult> {
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
+  const loc = asLoc(target);
+  if (loc === "bg") return { error: "Изберете вторичен език." };
   // Без AI ключ преводът е безсмислен цикъл (връща оригинала) — спираме рано.
   if (resolveProvider().provider === "rules") {
     return { error: "AI не е свързан. Задайте AI ключ, за да превеждате." };
@@ -273,21 +278,18 @@ export async function translatePageAction(
     return { error: "Твърде много опити. Опитайте отново след минута." };
   }
   const src = parseBlocks(blocks);
-  const translated = await translateBlocks(src);
-  await prisma.page.update({
-    where: { id: pageId },
-    data: { draftBlocksEn: translated },
-  });
+  const translated = await translateBlocks(src, loc === "it" ? "translate-it" : "translate-en");
+  await prisma.page.update({ where: { id: pageId }, data: draftData(loc, translated) });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
-  return { ok: "Преводът е готов в английската чернова." };
+  return { ok: `Преводът е готов в ${loc === "it" ? "италианската" : "английската"} чернова.` };
 }
 
-// Превежда текстовите полета на всеки блок (BG→EN), пази структурата и id-тата.
-async function translateBlocks(blocks: Block[]): Promise<Block[]> {
+// Превежда текстовите полета на всеки блок (BG→target), пази структурата и id-тата.
+async function translateBlocks(blocks: Block[], action: "translate-en" | "translate-it"): Promise<Block[]> {
   const tr = async (t: string) => {
     const s = t.trim();
     if (!s) return t;
-    const { text } = await assistText("translate-en", s);
+    const { text } = await assistText(action, s);
     return text || t;
   };
   const out: Block[] = [];

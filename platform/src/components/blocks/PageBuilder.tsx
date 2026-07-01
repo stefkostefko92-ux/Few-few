@@ -36,7 +36,9 @@ const PALETTE: BlockType[] = [
   "spacer",
 ];
 
-type Locale = "bg" | "en";
+type Locale = "bg" | "en" | "it";
+const SECONDARY: Locale[] = ["en", "it"];
+const LOC_NAME: Record<Locale, string> = { bg: "BG", en: "English", it: "Italiano" };
 
 export function PageBuilder({
   slug,
@@ -45,11 +47,13 @@ export function PageBuilder({
   publicHref,
   initialBlocks,
   initialBlocksEn = [],
+  initialBlocksIt = [],
   localeEnEnabled = false,
+  localeItEnabled = false,
   saveDraft,
   publish,
   assist,
-  toggleLocaleEn,
+  toggleLocale,
   translatePage,
 }: {
   slug: string;
@@ -58,19 +62,25 @@ export function PageBuilder({
   publicHref: string;
   initialBlocks: Block[];
   initialBlocksEn?: Block[];
+  initialBlocksIt?: Block[];
   localeEnEnabled?: boolean;
+  localeItEnabled?: boolean;
   saveDraft: (locale: string, blocks: Block[]) => Promise<PageActionResult>;
   publish: (locale: string, blocks: Block[]) => Promise<PageActionResult>;
   assist?: AssistFn;
-  toggleLocaleEn?: (enabled: boolean) => Promise<PageActionResult>;
-  translatePage?: (blocks: Block[]) => Promise<PageActionResult>;
+  toggleLocale?: (locale: string, enabled: boolean) => Promise<PageActionResult>;
+  translatePage?: (target: string, blocks: Block[]) => Promise<PageActionResult>;
 }) {
   const [byLocale, setByLocale] = useState<Record<Locale, Block[]>>({
     bg: initialBlocks,
     en: initialBlocksEn,
+    it: initialBlocksIt,
   });
   const [locale, setLocale] = useState<Locale>("bg");
-  const [enOn, setEnOn] = useState(localeEnEnabled);
+  const [enabled, setEnabled] = useState<Record<"en" | "it", boolean>>({
+    en: localeEnEnabled,
+    it: localeItEnabled,
+  });
   const [selectedId, setSelectedId] = useState<string | null>(
     initialBlocks[0]?.id ?? null,
   );
@@ -211,25 +221,22 @@ export function PageBuilder({
     setMsg(null);
   }
 
-  function enableEn() {
-    if (!toggleLocaleEn) return;
+  function enableLocale(loc: "en" | "it") {
+    if (!toggleLocale) return;
     start(async () => {
-      const r = await toggleLocaleEn(true);
+      const r = await toggleLocale(loc, true);
       setMsg(r);
-      if (r.ok) setEnOn(true);
+      if (r.ok) setEnabled((e) => ({ ...e, [loc]: true }));
     });
   }
 
   function doTranslate() {
-    if (!translatePage) return;
-    if (!confirm("Да преведа текущата българска чернова на английски с AI? Това ще презапише английската чернова.")) return;
+    if (!translatePage || locale === "bg") return;
+    if (!confirm(`Да преведа българската чернова на ${LOC_NAME[locale]} с AI? Това ще презапише текущата чернова.`)) return;
     start(async () => {
-      const r = await translatePage(byLocale.bg);
+      const r = await translatePage(locale, byLocale.bg);
       setMsg(r);
-      if (r.ok) {
-        // Презареждаме, за да видим преведените блокове от сървъра.
-        window.location.reload();
-      }
+      if (r.ok) window.location.reload(); // презареждаме преведените блокове
     });
   }
 
@@ -242,36 +249,37 @@ export function PageBuilder({
             ← Страници
           </a>
           {/* Език: табове BG/EN когато е включено */}
-          {enOn ? (
-            <div className="flex overflow-hidden rounded border border-ink-700 text-xs">
-              {(["bg", "en"] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => switchLocale(l)}
-                  className={`px-2 py-1 ${locale === l ? "bg-brand-600 text-white" : "text-ink-300 hover:bg-ink-800"}`}
-                >
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          ) : (
-            toggleLocaleEn && (
+          {/* Езикови табове: BG + включените вторични */}
+          <div className="flex overflow-hidden rounded border border-ink-700 text-xs">
+            {(["bg", ...SECONDARY.filter((l) => enabled[l as "en" | "it"])] as Locale[]).map((l) => (
               <button
-                onClick={enableEn}
+                key={l}
+                onClick={() => switchLocale(l)}
+                className={`px-2 py-1 ${locale === l ? "bg-brand-600 text-white" : "text-ink-300 hover:bg-ink-800"}`}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          {/* Добавяне на изключените вторични езици */}
+          {toggleLocale &&
+            SECONDARY.filter((l) => !enabled[l as "en" | "it"]).map((l) => (
+              <button
+                key={l}
+                onClick={() => enableLocale(l as "en" | "it")}
                 disabled={pending}
                 className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-brand-600 hover:bg-ink-800"
-                title="Добави английска версия на сайта"
+                title={`Добави ${LOC_NAME[l]} версия`}
               >
-                + English
+                + {LOC_NAME[l]}
               </button>
-            )
-          )}
-          {enOn && locale === "en" && translatePage && (
+            ))}
+          {locale !== "bg" && translatePage && (
             <button
               onClick={doTranslate}
               disabled={pending}
               className="rounded border border-ink-700 px-2 py-1 text-xs text-ink-300 hover:border-brand-600 hover:bg-ink-800"
-              title="Преведи българската чернова на английски с AI"
+              title={`Преведи българската чернова на ${LOC_NAME[locale]} с AI`}
             >
               🌐 Преведи от BG
             </button>

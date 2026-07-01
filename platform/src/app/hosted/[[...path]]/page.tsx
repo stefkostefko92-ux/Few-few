@@ -6,7 +6,7 @@ import { parseBlocks } from "@/lib/blocks";
 import { siteByHost } from "@/lib/site-by-host";
 import { PublicSiteView } from "@/components/PublicSiteView";
 import { blocksToPlainText } from "@/lib/seo";
-import { localeState, LOCALE_OG } from "@/lib/locale";
+import { availableLocales, resolveLocale, langAlternates, LOCALE_OG } from "@/lib/locale";
 
 export const dynamic = "force-dynamic";
 
@@ -40,20 +40,26 @@ export async function generateMetadata({
   const data = await resolve(path);
   if (!data) return { title: "Страница", robots: { index: false } };
 
-  const bgBlocks = parseBlocks(data.page.blocks);
-  const enBlocks = parseBlocks(data.page.blocksEn);
-  const { locale, showEn } = localeState(data.site.localeEn, lang, enBlocks.length);
-  const primary = locale === "en" ? enBlocks : bgBlocks;
-  const blocks = primary.length > 0 ? primary : bgBlocks;
-  const pageTitle =
-    data.page.seoTitle ||
-    (locale === "en" ? data.page.titleEn || data.page.title : data.page.title);
+  const byLocale = {
+    bg: parseBlocks(data.page.blocks),
+    en: parseBlocks(data.page.blocksEn),
+    it: parseBlocks(data.page.blocksIt),
+  } as const;
+  const locales = availableLocales({
+    localeEn: data.site.localeEn, enCount: byLocale.en.length,
+    localeIt: data.site.localeIt, itCount: byLocale.it.length,
+  });
+  const locale = resolveLocale(locales, lang);
+  const primary = byLocale[locale];
+  const blocks = primary.length > 0 ? primary : byLocale.bg;
+  const localizedTitle =
+    locale === "en" ? data.page.titleEn : locale === "it" ? data.page.titleIt : null;
+  const pageTitle = data.page.seoTitle || localizedTitle || data.page.title;
   const title = `${pageTitle} · ${data.site.name}`;
   const description =
     data.page.seoDescription || blocksToPlainText(blocks).slice(0, 155) || undefined;
   const bgUrl = data.slug ? `${data.origin}/${data.slug}` : data.origin;
-  const enUrl = `${bgUrl}?lang=en`;
-  const url = locale === "en" ? enUrl : bgUrl;
+  const url = locale === "bg" ? bgUrl : `${bgUrl}?lang=${locale}`;
 
   return {
     title,
@@ -61,7 +67,7 @@ export async function generateMetadata({
     icons: data.site.faviconUrl ? { icon: data.site.faviconUrl } : undefined,
     alternates: {
       canonical: url,
-      languages: showEn ? { bg: bgUrl, en: enUrl, "x-default": bgUrl } : undefined,
+      languages: langAlternates(bgUrl, locales),
     },
     robots: { index: true, follow: true },
     openGraph: {
