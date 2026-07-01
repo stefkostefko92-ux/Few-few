@@ -1015,9 +1015,20 @@
           "date": "2026-06-30",
           "event": "v10.0 — учене",
           "detail": "Научи: CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Apache ErrorDocument 404 /404.html сервира съдържанието, но браузър URL остава заявения… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Apache ErrorDocument 404 /404.html сервира съдържанието, но браузър URL остава заявения…\" (+1 още)"
+        },
         {
           "date": "2026-06-30",
           "type": "learning",
