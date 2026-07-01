@@ -9046,9 +9046,20 @@
           "date": "2026-07-01",
           "event": "v6.0 — самообучаващо поколение",
           "detail": "Вграден в наложения от hooks цикъл на учене (read→act→verify→persist→curate): preload на проверени поуки, CoVe-гейт преди 'verified' (пазарно твърдение НИКОГА не е verified), auto-capture + версия. Инструменти: tools/trading/trader-lint.mjs (поръчка без clientOrderId, сляп ретрай, float пари, липсващ stop-loss/kill-switch, WS без reconnect, плътен poll цикъл, backtest look-ahead, твърд ключ) и tools/trading/backtest-check.mjs (липсващи такси/slippage/out-of-sample + look-ahead)."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-07-01",
+          "event": "v6.1 — учене",
+          "detail": "Научи резултатите за 2025 (сребро +132%, злато +65%, Bitcoin −8%, Ethereum −15%; топ крипто MYX +3358% микрокап, Zcash +573%; топ акция Sandisk +596%) и извлече мисловни модели срещу recency/hindsight bias: победителят е непредвидим ex-ante, гоненето му = купуване на върха. Добавена секция „Начин на мислене“ (процес > пророчество, base rates, risk of ruin, expectancy, диверсификация, режими)."
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: най-големите печалби 2025 бяха непредвидими (MYX +3358%, сребро +132%), а BTC/ETH загубиха — урок срещу гоненето на миналогодишния победител; нова секция „Начин на мислене“."
+        },
         {
           "date": "2026-07-01",
           "type": "learning",

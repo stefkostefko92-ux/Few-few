@@ -41,5 +41,21 @@
   идемпотентни поръчки (newClientOrderId + reconcile) + стоп на борсата; backtest.js е no-look-ahead с
   такси+slippage+OOS _(treydar reference impl; verified; treydar/)_
 
+- **2026-07-01:** Резултати за 2025 (клас активи): СРЕБРО топ ~+132%; ЗЛАТО ~+65% (най-добра година от
+  1979, връх ~$4500); международни/EM акции силни; S&P 500 трета поредна двуцифрена година; Bitcoin
+  ОТРИЦАТЕЛЕН −7.6% (въпреки връх ~$125k); петрол най-лош ~−20% — урок: „сигурните" фаворити загубиха,
+  скучните метали спечелиха _(2025 asset classes; verified; https://www.cnbc.com/2025/12/30/best-and-worst-asset-classes-of-2025-gold-wins-the-year.html + https://www.thenationalnews.com/business/money/2026/01/01/gold-stocks-bitcoin-what-investing-in-main-asset-classes-will-look-like-in-2026/)_
+- **2026-07-01:** Топ крипто 2025: MYX Finance +3358% (микрокап дериватив на BNB Chain, пуснат май 2025 ~
+  $0.097) е №1; Zcash +~573% (privacy коини водещи, Monero ~+125%); НО Bitcoin −7.96% и Ethereum −15.25%
+  за годината → най-голямата печалба е непредвидим микрокап, а мажорите губят; гоненето му ex-post =
+  купуване на върха _(2025 crypto gainers; verified; https://www.fool.com/investing/2026/01/11/best-performing-cryptocurrencies-of-2025/ + https://www.coingecko.com/research/publications/top-crypto-gainers)_
+- **2026-07-01:** Топ S&P 500 акции 2025: Sandisk (SNDK) +~596% №1 (спин-оф от WDC, добавена ноем.);
+  Micron +~250%; Western Digital +~226%; Seagate; Robinhood +~215% — тема AI/памет/сторидж. Пак
+  survivorship: списъкът показва оцелелите победители, не загубилите _(2025 top stocks; verified; https://finance.yahoo.com/news/top-performing-p-500-stocks-145700080.html + https://stocktwits.com/news-articles/markets/equity/top-five-s-and-p-500-gainers-in-2025/cL7462UREUV)_
+- **2026-07-01:** Мисловен принцип (изведен от данните горе): победителят всяка година е различен и
+  непредвидим ex-ante; recency/hindsight bias кара хората да гонят миналогодишния лидер и да купуват
+  върха; правилният отговор е процес > пророчество — диверсификация, малък фиксиран риск/сделка,
+  walk-forward валидация, оцеляване пред максимизиране _(mental models; verified; .claude/agents/treydara.md „Начин на мислене")_
+
 ## Карантина (непроверени хипотези — НЕ факт)
 - _(празно)_
