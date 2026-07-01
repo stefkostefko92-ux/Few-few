@@ -91,6 +91,43 @@ export function Inspector({
         </>
       )}
 
+      {block.type === "columns3" && (
+        <>
+          <Area label="Колона 1 (markdown)" rows={4} value={block.col1} onChange={(col1) => onChange({ col1 })} />
+          <Area label="Колона 2 (markdown)" rows={4} value={block.col2} onChange={(col2) => onChange({ col2 })} />
+          <Area label="Колона 3 (markdown)" rows={4} value={block.col3} onChange={(col3) => onChange({ col3 })} />
+        </>
+      )}
+
+      {block.type === "cta" && (
+        <>
+          <Field label="Заглавие" value={block.title} onChange={(title) => onChange({ title })} />
+          <Area label="Подзаглавие" value={block.subtitle} onChange={(subtitle) => onChange({ subtitle })} />
+          <Field label="Надпис на бутон" value={block.buttonLabel} onChange={(buttonLabel) => onChange({ buttonLabel })} />
+          <Field label="Връзка на бутон (URL)" value={block.buttonHref} onChange={(buttonHref) => onChange({ buttonHref })} />
+        </>
+      )}
+
+      {block.type === "stats" && (
+        <ListEditor
+          label="Числа"
+          items={block.items}
+          make={() => ({ value: "100+", label: "нещо" })}
+          onChange={(items) => onChange({ items })}
+          fields={[["value", "Число"], ["label", "Етикет"]]}
+        />
+      )}
+
+      {block.type === "socials" && (
+        <ListEditor
+          label="Профили"
+          items={block.links}
+          make={() => ({ platform: "facebook", url: "" })}
+          onChange={(links) => onChange({ links })}
+          fields={[["platform", "Мрежа (facebook, instagram, x, youtube, linkedin, tiktok)"], ["url", "Връзка (URL)"]]}
+        />
+      )}
+
       {block.type === "video" && (
         <>
           <Field label="Адрес на видео (YouTube/Vimeo)" value={block.url} onChange={(url) => onChange({ url })} />

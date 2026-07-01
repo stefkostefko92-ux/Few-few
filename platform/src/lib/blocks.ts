@@ -15,6 +15,10 @@ export type Block =
   | { id: string; type: "hero"; title: string; subtitle: string; align: Align; buttonLabel: string; buttonHref: string }
   | { id: string; type: "gallery"; images: { url: string; alt: string }[] }
   | { id: string; type: "columns"; left: string; right: string }
+  | { id: string; type: "columns3"; col1: string; col2: string; col3: string }
+  | { id: string; type: "cta"; title: string; subtitle: string; buttonLabel: string; buttonHref: string }
+  | { id: string; type: "stats"; items: { value: string; label: string }[] }
+  | { id: string; type: "socials"; links: { platform: string; url: string }[] }
   | { id: string; type: "faq"; items: { q: string; a: string }[] }
   | { id: string; type: "testimonials"; items: { quote: string; author: string; role: string }[] }
   | { id: string; type: "pricing"; plans: { name: string; price: string; period: string; features: string[]; href: string }[] }
@@ -54,6 +58,10 @@ const blockSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string(), type: z.literal("hero"), title: z.string().max(200), subtitle: z.string().max(400), align, buttonLabel: z.string().max(120), buttonHref: httpOrEmpty }),
   z.object({ id: z.string(), type: z.literal("gallery"), images: z.array(z.object({ url: httpOrEmpty, alt: z.string().max(300) })).max(24) }),
   z.object({ id: z.string(), type: z.literal("columns"), left: z.string().max(4000), right: z.string().max(4000) }),
+  z.object({ id: z.string(), type: z.literal("columns3"), col1: z.string().max(3000), col2: z.string().max(3000), col3: z.string().max(3000) }),
+  z.object({ id: z.string(), type: z.literal("cta"), title: z.string().max(200), subtitle: z.string().max(400), buttonLabel: z.string().max(120), buttonHref: httpOrEmpty }),
+  z.object({ id: z.string(), type: z.literal("stats"), items: z.array(z.object({ value: z.string().max(40), label: z.string().max(120) })).max(6) }),
+  z.object({ id: z.string(), type: z.literal("socials"), links: z.array(z.object({ platform: z.string().max(20), url: httpOrEmpty })).max(8) }),
   z.object({ id: z.string(), type: z.literal("faq"), items: z.array(z.object({ q: z.string().max(300), a: z.string().max(2000) })).max(30) }),
   z.object({ id: z.string(), type: z.literal("testimonials"), items: z.array(z.object({ quote: z.string().max(600), author: z.string().max(120), role: z.string().max(120) })).max(20) }),
   z.object({ id: z.string(), type: z.literal("pricing"), plans: z.array(z.object({ name: z.string().max(80), price: z.string().max(40), period: z.string().max(40), features: z.array(z.string().max(160)).max(15), href: httpOrEmpty })).max(6) }),
@@ -95,6 +103,14 @@ export function makeBlock(type: BlockType): Block {
       return { id, type, images: [] };
     case "columns":
       return { id, type, left: "Лява колона. **Удебелен** и _курсив_ текст.", right: "Дясна колона. Опишете услуга или предимство." };
+    case "columns3":
+      return { id, type, col1: "Първо предимство.", col2: "Второ предимство.", col3: "Трето предимство." };
+    case "cta":
+      return { id, type, title: "Готови ли сте да започнете?", subtitle: "Свържете се с нас днес.", buttonLabel: "Свържете се", buttonHref: "" };
+    case "stats":
+      return { id, type, items: [{ value: "500+", label: "клиенти" }, { value: "10", label: "години опит" }, { value: "24/7", label: "поддръжка" }] };
+    case "socials":
+      return { id, type, links: [{ platform: "facebook", url: "" }, { platform: "instagram", url: "" }] };
     case "faq":
       return { id, type, items: [{ q: "Често задаван въпрос?", a: "Кратък ясен отговор." }] };
     case "testimonials":
@@ -122,6 +138,10 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   hero: "Хиро секция",
   gallery: "Галерия",
   columns: "Две колони",
+  columns3: "Три колони",
+  cta: "Призив (CTA)",
+  stats: "Числа/статистика",
+  socials: "Социални мрежи",
   faq: "Въпроси (FAQ)",
   testimonials: "Отзиви",
   pricing: "Цени",

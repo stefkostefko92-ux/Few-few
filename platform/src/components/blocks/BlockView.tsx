@@ -182,6 +182,76 @@ export function BlockRender({
           />
         </div>
       );
+    case "columns3":
+      return (
+        <div className="grid gap-6 sm:grid-cols-3">
+          {[block.col1, block.col2, block.col3].map((c, i) => (
+            <div
+              key={i}
+              className="pub-body leading-[1.7] text-slate-600"
+              dangerouslySetInnerHTML={{ __html: renderInline(c) }}
+            />
+          ))}
+        </div>
+      );
+    case "cta":
+      return (
+        <div
+          style={{ backgroundImage: "linear-gradient(135deg, var(--pub-accent, #4f46e5) 0%, var(--pub-accent-dark, #3730a3) 100%)" }}
+          className="flex flex-col items-center gap-4 rounded-3xl px-6 py-12 text-center text-white shadow-xl sm:px-12"
+        >
+          <h2 className="pub-display text-3xl font-semibold">{block.title}</h2>
+          {block.subtitle && <p className="pub-body max-w-xl text-white/90">{block.subtitle}</p>}
+          {block.buttonHref && block.buttonLabel && (
+            <a
+              href={block.buttonHref}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "var(--pub-accent, #4f46e5)" }}
+              className="pub-btn mt-2 inline-flex items-center rounded-xl bg-white px-7 py-3 text-sm font-semibold shadow-lg hover:bg-slate-50"
+            >
+              {block.buttonLabel}
+            </a>
+          )}
+        </div>
+      );
+    case "stats":
+      if (block.items.length === 0) return null;
+      return (
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
+          {block.items.map((s, i) => (
+            <div key={i} className="text-center">
+              <div style={{ color: "var(--pub-accent, #4f46e5)" }} className="pub-display text-4xl font-bold">
+                {s.value}
+              </div>
+              <div className="mt-1 text-sm text-slate-500">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      );
+    case "socials": {
+      const shown = block.links.filter((l) => l.url);
+      if (shown.length === 0) return null;
+      const LABELS: Record<string, string> = {
+        facebook: "Facebook", instagram: "Instagram", x: "X", twitter: "X",
+        youtube: "YouTube", linkedin: "LinkedIn", tiktok: "TikTok", telegram: "Telegram",
+      };
+      return (
+        <div className="flex flex-wrap justify-center gap-3">
+          {shown.map((l, i) => (
+            <a
+              key={i}
+              href={l.url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              {LABELS[l.platform.toLowerCase()] ?? l.platform}
+            </a>
+          ))}
+        </div>
+      );
+    }
     case "faq":
       if (block.items.length === 0) return null;
       return (
