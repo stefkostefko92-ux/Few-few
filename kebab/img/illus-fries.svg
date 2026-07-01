@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Patatine fritte croccanti">
+  <defs>
+    <radialGradient id="frbg" cx="50%" cy="40%" r="80%"><stop offset="0" stop-color="#281a12"/><stop offset="1" stop-color="#130D0A"/></radialGradient>
+    <linearGradient id="frfry" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6D77E"/><stop offset="1" stop-color="#D79A3C"/></linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#frbg)"/>
+  <ellipse cx="300" cy="340" rx="240" ry="200" fill="#E8B04B" opacity="0.10"/>
+  <!-- fries spilling -->
+  <g fill="url(#frfry)" stroke="#b9842f" stroke-width="2">
+    <rect x="250" y="120" width="26" height="240" rx="10" transform="rotate(-16 263 240)"/>
+    <rect x="290" y="110" width="26" height="250" rx="10" transform="rotate(-4 303 235)"/>
+    <rect x="330" y="120" width="26" height="245" rx="10" transform="rotate(8 343 242)"/>
+    <rect x="220" y="150" width="26" height="220" rx="10" transform="rotate(-26 233 260)"/>
+    <rect x="368" y="140" width="26" height="230" rx="10" transform="rotate(20 381 255)"/>
+  </g>
+  <!-- carton -->
+  <path d="M190 330h220l-26 200c-2 18-166 18-168 0z" fill="#C1272D"/>
+  <path d="M190 330h220l-6 46H196z" fill="#E84C2B"/>
+  <g fill="#fff" opacity="0.85"><rect x="240" y="400" width="14" height="70" rx="4"/><rect x="290" y="400" width="14" height="70" rx="4"/><rect x="340" y="400" width="14" height="70" rx="4"/></g>
+  <!-- front fries -->
+  <g fill="url(#frfry)" stroke="#b9842f" stroke-width="2">
+    <rect x="300" y="300" width="26" height="150" rx="10" transform="rotate(6 313 360)"/>
+    <rect x="262" y="305" width="26" height="150" rx="10" transform="rotate(-8 275 360)"/>
+  </g>
+</svg>

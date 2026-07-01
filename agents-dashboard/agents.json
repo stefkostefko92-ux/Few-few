@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-06-30",
+    "updated": "2026-07-01",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -362,6 +362,16 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За IT ресторант (somministrazione непакетирани храни) писмената информация за 14-те але…\" (+1)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Google Fonts, хостван от Google CDN (fonts.googleapis.com/fonts.gstatic.com), праща IP …\" (+1)"
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
@@ -999,9 +1009,31 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Helmet по подразбиране задава Strict-Transport-Security max-age=31536000; includeSubDom…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-06-30",
+          "event": "v10.0 — учене",
+          "detail": "Научи: CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Apache ErrorDocument 404 /404.html сервира съдържанието, но браузър URL остава заявения… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Apache ErrorDocument 404 /404.html сервира съдържанието, но браузър URL остава заявения…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "learning",
+          "summary": "Научи: „CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…\""
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
@@ -2264,6 +2296,16 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „schema.org Restaurant.hasMenu приема reference към Menu обект чрез @id; Restaurant.menu…\" (+1)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За локален Restaurant single-page сайт с JS-only превключвател на език (?lang=en само c…\" (+1)"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
@@ -7622,9 +7664,25 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: three-mesh-bvh: computeBoundsTree() на geometry + Mesh.prototype.raycast=acceleratedRay…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: backdrop-filter върху fixed предшественик създава нов containing block и чупи вложено f… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „backdrop-filter върху fixed предшественик създава нов containing block и чупи вложено f…\" (+1 още)"
+        },
+        {
+          "date": "2026-06-30",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „За комерсиален food/ресторант сайт най-голям конверсионен лифт дава sticky mobile botto…\" (+2)"
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",

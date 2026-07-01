@@ -1,0 +1,17 @@
+{
+  "name": "Uylas Kebap Center",
+  "short_name": "Uylas Kebap",
+  "description": "Kebab turco autentico, pizza e durum a Bareggio (MI). Asporto e consegna a domicilio.",
+  "lang": "it",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#14100E",
+  "theme_color": "#14100E",
+  "categories": ["food", "restaurant", "lifestyle"],
+  "icons": [
+    { "src": "img/mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "img/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
