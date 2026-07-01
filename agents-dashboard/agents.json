@@ -7664,9 +7664,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: three-mesh-bvh: computeBoundsTree() на geometry + Mesh.prototype.raycast=acceleratedRay…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: backdrop-filter върху fixed предшественик създава нов containing block и чупи вложено f… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „backdrop-filter върху fixed предшественик създава нов containing block и чупи вложено f…\" (+1 още)"
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
