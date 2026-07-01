@@ -9,7 +9,7 @@ import {
 } from "@/lib/blocks";
 import { BlockRender } from "@/components/blocks/BlockView";
 import type { PageActionResult } from "@/app/dashboard/sites/[slug]/pages/actions";
-import { Inspector } from "@/components/blocks/Inspector";
+import { Inspector, type AssistFn } from "@/components/blocks/Inspector";
 import { A11yPanel } from "@/components/blocks/A11yPanel";
 import { TemplatePicker } from "@/components/blocks/TemplatePicker";
 import { getTemplate } from "@/lib/templates";
@@ -39,6 +39,7 @@ export function PageBuilder({
   initialBlocks,
   saveDraft,
   publish,
+  assist,
 }: {
   slug: string;
   previewHref: string;
@@ -46,6 +47,7 @@ export function PageBuilder({
   initialBlocks: Block[];
   saveDraft: (blocks: Block[]) => Promise<PageActionResult>;
   publish: (blocks: Block[]) => Promise<PageActionResult>;
+  assist?: AssistFn;
 }) {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -220,7 +222,7 @@ export function PageBuilder({
         {/* Инспектор */}
         <aside className="overflow-y-auto border-l border-ink-800 bg-ink-900 p-4">
           {selected ? (
-            <Inspector block={selected} onChange={(c) => patch(selected.id, c)} />
+            <Inspector block={selected} onChange={(c) => patch(selected.id, c)} assist={assist} />
           ) : (
             <p className="text-sm text-ink-500">
               Изберете блок от платното, за да го редактирате.

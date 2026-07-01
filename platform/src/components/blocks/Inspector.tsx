@@ -1,15 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import type { Block, Align } from "@/lib/blocks";
 import { BLOCK_LABELS } from "@/lib/blocks";
+import { ASSIST_ACTIONS, type AssistAction } from "@/lib/ai/assist-core";
+
+export type AssistFn = (
+  action: AssistAction,
+  text: string,
+) => Promise<{ text?: string; error?: string }>;
 
 // Редактор на свойствата на един блок. Промените се вдигат нагоре чрез onChange.
 export function Inspector({
   block,
   onChange,
+  assist,
 }: {
   block: Block;
   onChange: (changes: Partial<Block>) => void;
+  assist?: AssistFn;
 }) {
   return (
     <div className="space-y-3">
@@ -20,6 +29,7 @@ export function Inspector({
       {block.type === "heading" && (
         <>
           <Area label="Текст" value={block.text} onChange={(text) => onChange({ text })} />
+          {assist && <AiTextTools assist={assist} value={block.text} onApply={(text) => onChange({ text })} />}
           <Select label="Ниво" value={String(block.level)} options={[["1", "H1 (голямо)"], ["2", "H2"], ["3", "H3"]]} onChange={(v) => onChange({ level: Number(v) as 1 | 2 | 3 })} />
           <AlignField value={block.align} onChange={(align) => onChange({ align })} />
         </>
@@ -28,6 +38,7 @@ export function Inspector({
       {block.type === "text" && (
         <>
           <Area label="Текст (markdown)" rows={6} value={block.text} onChange={(text) => onChange({ text })} />
+          {assist && <AiTextTools assist={assist} value={block.text} onApply={(text) => onChange({ text })} />}
           <p className="text-[11px] text-ink-600">**удебелен** · _курсив_ · [връзка](https://…)</p>
           <AlignField value={block.align} onChange={(align) => onChange({ align })} />
         </>
@@ -54,7 +65,9 @@ export function Inspector({
       {block.type === "hero" && (
         <>
           <Field label="Заглавие" value={block.title} onChange={(title) => onChange({ title })} />
+          {assist && <AiTextTools assist={assist} value={block.title} onApply={(title) => onChange({ title })} />}
           <Area label="Подзаглавие" value={block.subtitle} onChange={(subtitle) => onChange({ subtitle })} />
+          {assist && <AiTextTools assist={assist} value={block.subtitle} onApply={(subtitle) => onChange({ subtitle })} />}
           <Field label="Надпис на бутон" value={block.buttonLabel} onChange={(buttonLabel) => onChange({ buttonLabel })} />
           <Field label="Връзка на бутон (URL)" value={block.buttonHref} onChange={(buttonHref) => onChange({ buttonHref })} />
           <AlignField value={block.align} onChange={(align) => onChange({ align })} />
@@ -68,7 +81,9 @@ export function Inspector({
       {block.type === "columns" && (
         <>
           <Area label="Лява колона (markdown)" rows={5} value={block.left} onChange={(left) => onChange({ left })} />
+          {assist && <AiTextTools assist={assist} value={block.left} onApply={(left) => onChange({ left })} />}
           <Area label="Дясна колона (markdown)" rows={5} value={block.right} onChange={(right) => onChange({ right })} />
+          {assist && <AiTextTools assist={assist} value={block.right} onApply={(right) => onChange({ right })} />}
         </>
       )}
 
@@ -128,6 +143,58 @@ export function Inspector({
       {block.type === "divider" && (
         <p className="text-sm text-ink-500">Хоризонтална линия — няма настройки.</p>
       )}
+    </div>
+  );
+}
+
+// AI инструменти под текстово поле: подобри/скъси/официално/превод…
+function AiTextTools({
+  assist,
+  value,
+  onApply,
+}: {
+  assist: AssistFn;
+  value: string;
+  onApply: (text: string) => void;
+}) {
+  const [busy, setBusy] = useState<AssistAction | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(action: AssistAction) {
+    if (busy || !value.trim()) return;
+    setBusy(action);
+    setError(null);
+    try {
+      const res = await assist(action, value);
+      if (res.error) setError(res.error);
+      else if (res.text) onApply(res.text);
+    } catch {
+      setError("Възникна грешка. Опитайте отново.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="rounded border border-ink-800 bg-ink-950/50 p-2">
+      <div className="mb-1 flex items-center gap-1 text-[11px] text-ink-500">
+        <span aria-hidden>🤖</span> AI асистент
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {ASSIST_ACTIONS.map((a) => (
+          <button
+            key={a.action}
+            type="button"
+            title={a.hint}
+            disabled={!!busy || !value.trim()}
+            onClick={() => run(a.action)}
+            className="rounded border border-ink-700 px-2 py-1 text-[11px] text-ink-200 hover:border-brand-600 hover:bg-ink-800 disabled:opacity-40"
+          >
+            {busy === a.action ? "…" : a.label}
+          </button>
+        ))}
+      </div>
+      {error && <p className="mt-1 text-[11px] text-amber-400">{error}</p>}
     </div>
   );
 }

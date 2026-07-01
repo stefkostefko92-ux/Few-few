@@ -4,7 +4,7 @@ import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { parseBlocks } from "@/lib/blocks";
 import { PageBuilder } from "@/components/blocks/PageBuilder";
-import { saveDraftAction, publishPageAction } from "../actions";
+import { saveDraftAction, publishPageAction, assistTextAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +42,7 @@ export default async function EditPage({
         initialBlocks={initial}
         saveDraft={saveDraftAction.bind(null, slug, page.id)}
         publish={publishPageAction.bind(null, slug, page.id)}
+        assist={assistTextAction.bind(null, slug)}
       />
     </div>
   );

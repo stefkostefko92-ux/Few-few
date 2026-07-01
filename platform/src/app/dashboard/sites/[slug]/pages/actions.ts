@@ -9,10 +9,14 @@ import { Prisma } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
 import { parseBlocks, type Block } from "@/lib/blocks";
 import { generatePageBlocks } from "@/lib/ai/generate";
+import { assistText } from "@/lib/ai/assist";
+import { ASSIST_ACTIONS, type AssistAction } from "@/lib/ai/assist-core";
 import { rateLimit } from "@/lib/ratelimit";
 import { z } from "zod";
 
 export type PageActionResult = { ok?: string; error?: string };
+
+export type AssistActionResult = { text?: string; error?: string; ai?: boolean };
 
 const slugField = z
   .string()
@@ -143,6 +147,37 @@ export async function createAiPageAction(
     summary: `AI страница (${provider}) за ${found.site.name}`,
   });
   redirect(`/dashboard/sites/${slug}/pages/${page.id}`);
+}
+
+// AI асистент за текст на блок (подобри/скъси/официално/превод…). Скоуп по сайт
+// (manage), лимитиран, никога не хвърля към UI.
+const VALID_ASSIST = new Set<string>(
+  [...ASSIST_ACTIONS.map((a) => a.action), "alt"],
+);
+
+export async function assistTextAction(
+  slug: string,
+  action: string,
+  text: string,
+): Promise<AssistActionResult> {
+  const user = await requireUser();
+  const found = await getSiteForUser(user, slug, "manage");
+  if (!found) return { error: "Нямате достъп." };
+
+  if (!VALID_ASSIST.has(action)) return { error: "Непознато действие." };
+  const input = String(text ?? "").slice(0, 8000);
+  if (!input.trim()) return { error: "Няма текст за обработка." };
+
+  // Лимит на AI извикванията: 30 на минута на потребител.
+  if (!rateLimit(`ai-assist:${user.id}`, 30, 60_000)) {
+    return { error: "Твърде много опити. Опитайте отново след минута." };
+  }
+
+  const { text: out, provider } = await assistText(action as AssistAction, input);
+  if (provider === "rules" && out.trim() === input.trim()) {
+    return { error: "AI не е свързан. Задайте AI ключ, за да ползвате асистента." };
+  }
+  return { text: out, ai: provider !== "rules" };
 }
 
 export async function saveDraftAction(
