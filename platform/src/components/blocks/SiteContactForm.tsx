@@ -43,16 +43,16 @@ export function SiteContactForm({
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">Име</span>
-              <input name="name" required disabled={disabled} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900" />
+              <input name="name" required disabled={disabled} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400" />
             </label>
             <label className="block">
               <span className="mb-1 block text-sm font-medium text-slate-700">Имейл</span>
-              <input name="email" type="email" required disabled={disabled} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900" />
+              <input name="email" type="email" required disabled={disabled} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400" />
             </label>
           </div>
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-slate-700">Съобщение</span>
-            <textarea name="message" rows={4} required disabled={disabled} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900" />
+            <textarea name="message" rows={4} required disabled={disabled} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400" />
           </label>
           {state.error && <p className="text-sm text-red-600">{state.error}</p>}
           <button
