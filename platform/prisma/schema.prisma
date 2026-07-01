@@ -188,11 +188,26 @@ model Page {
   publishedAt DateTime?
   publishAt   DateTime? // насрочено публикуване (cron публикува при настъпване)
 
-  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site     Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  versions PageVersion[]
 
   @@unique([siteId, slug])
   @@index([siteId])
   @@index([publishAt])
+}
+
+// Снимка на съдържанието при публикуване (история/възстановяване).
+model PageVersion {
+  id        String   @id @default(cuid())
+  pageId    String
+  blocks    Json     @default("[]")
+  blocksEn  Json     @default("[]")
+  blocksIt  Json     @default("[]")
+  createdAt DateTime @default(now())
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt])
 }
 
 // Покана за достъп до сайт (за нерегистриран имейл). Регистриран потребител

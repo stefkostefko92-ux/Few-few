@@ -234,9 +234,53 @@ export async function publishPageAction(
     entityId: pageId,
     summary: `Публикувана страница „${ctx.page.title}" (${loc.toUpperCase()})`,
   });
+
+  // Снимка в историята (за възстановяване); пазим последните 20.
+  const fresh = await prisma.page.findUnique({
+    where: { id: pageId },
+    select: { blocks: true, blocksEn: true, blocksIt: true },
+  });
+  if (fresh) {
+    await prisma.pageVersion.create({
+      data: { pageId, blocks: fresh.blocks as object, blocksEn: fresh.blocksEn as object, blocksIt: fresh.blocksIt as object },
+    });
+    const stale = await prisma.pageVersion.findMany({
+      where: { pageId },
+      orderBy: { createdAt: "desc" },
+      skip: 20,
+      select: { id: true },
+    });
+    if (stale.length > 0) {
+      await prisma.pageVersion.deleteMany({ where: { id: { in: stale.map((s) => s.id) } } });
+    }
+  }
+
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
   revalidatePath(`/site/${ctx.site.slug}`);
   return { ok: `Страницата е публикувана (${loc.toUpperCase()}).` };
+}
+
+// Възстановява съдържание от версия в черновите (после потребителят публикува).
+export async function restoreVersionAction(
+  slug: string,
+  pageId: string,
+  versionId: string,
+): Promise<PageActionResult> {
+  const ctx = await pageForUser(slug, pageId, "manage");
+  if (!ctx) return { error: "Нямате достъп." };
+  const v = await prisma.pageVersion.findFirst({ where: { id: versionId, pageId } });
+  if (!v) return { error: "Версията не е намерена." };
+  await prisma.page.update({
+    where: { id: pageId },
+    data: {
+      draftBlocks: v.blocks as object,
+      draftBlocksEn: v.blocksEn as object,
+      draftBlocksIt: v.blocksIt as object,
+    },
+  });
+  revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
+  revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}/settings`);
+  return { ok: "Възстановено в черновата. Прегледайте и публикувайте." };
 }
 
 // Включва/изключва вторичен език на сайта (en/it) — site-scope, MANAGER.
