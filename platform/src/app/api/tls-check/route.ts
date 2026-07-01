@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { subdomainOf, isPlatformHost } from "@/lib/domains";
+import { rateLimit } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,13 @@ export const dynamic = "force-dynamic";
 // обслужваме (наш поддомейн, или потвърден собствен домейн на публикуван сайт).
 //   caddy: on_demand_tls { ask https://platform…/api/tls-check }
 export async function GET(req: NextRequest) {
+  // Публичен ask endpoint → лимит по IP срещу заливане на базата (последната
+  // стойност е добавената от доверения proxy/Caddy).
+  const ip = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "local";
+  if (!rateLimit(`tls:${ip}`, 60, 60_000)) {
+    return new NextResponse("slow down", { status: 429 });
+  }
+
   const domain = req.nextUrl.searchParams.get("domain")?.trim().toLowerCase() ?? "";
   if (!domain) return new NextResponse("no domain", { status: 400 });
 

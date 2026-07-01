@@ -18,6 +18,8 @@ async function resolve(path: string[] | undefined) {
   const proto = h.get("x-forwarded-proto") || "https";
   const site = await siteByHost(host);
   if (!site) return null;
+  // Плоски slug-ове: дълбоки пътища (/a/b) не съществуват → чист 404.
+  if (path && path.length > 1) return null;
   const slug = path?.[0] ?? "";
   const page = await prisma.page.findFirst({
     where: { siteId: site.id, slug, status: "PUBLISHED" },

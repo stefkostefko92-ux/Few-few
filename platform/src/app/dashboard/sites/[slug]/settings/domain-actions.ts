@@ -12,6 +12,7 @@ import {
   isValidDomain,
   RESERVED_SUBDOMAINS,
   PLATFORM_APEX,
+  platformHosts,
 } from "@/lib/domains";
 
 export type DomainResult = { ok?: string; error?: string };
@@ -72,6 +73,8 @@ export async function setCustomDomainAction(
     return { ok: "Собственият домейн е премахнат." };
   }
   if (!isValidDomain(domain)) return { error: "Невалиден домейн (напр. example.com)." };
+  // Защита в дълбочина: не позволявай да се „заеме" платформен хост.
+  if (platformHosts().includes(domain)) return { error: "Този домейн е запазен." };
 
   const taken = await prisma.site.findFirst({
     where: { customDomain: domain, NOT: { id: found.site.id } },
