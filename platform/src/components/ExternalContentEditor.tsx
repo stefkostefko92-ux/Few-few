@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { formatRelative } from "@/lib/format";
+import { isHttpUrl } from "@/lib/url";
 import type { ActionResult } from "@/app/dashboard/sites/[slug]/actions";
 
 const initial: ActionResult = {};
@@ -32,7 +33,7 @@ export function ExternalContentEditor({
     <>
       <tr>
         <td className="td">
-          {item.url ? (
+          {isHttpUrl(item.url) ? (
             <a
               href={item.url}
               target="_blank"

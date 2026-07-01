@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { decryptSecret } from "@/lib/crypto";
+import { httpUrlOrNull } from "@/lib/url";
 import type { Site } from "@prisma/client";
 
 // Конектор към свързаните сайтове. Договор с всеки сайт:
@@ -116,6 +117,9 @@ export async function syncSiteContent(site: Site): Promise<number> {
 
   for (const it of items) {
     if (!it.id) continue;
+    // URL-ът идва от чуждото API — приемаме само http(s) (без javascript:/data:),
+    // защото после се рендерира като href. Не-http(s) → без връзка.
+    const safeUrl = httpUrlOrNull(it.url);
     await prisma.contentItem.upsert({
       where: { siteId_externalId: { siteId: site.id, externalId: String(it.id) } },
       create: {
@@ -124,13 +128,13 @@ export async function syncSiteContent(site: Site): Promise<number> {
         kind: it.kind ?? "item",
         title: it.title ?? "(без заглавие)",
         status: it.status ?? null,
-        url: it.url ?? null,
+        url: safeUrl,
       },
       update: {
         kind: it.kind ?? "item",
         title: it.title ?? "(без заглавие)",
         status: it.status ?? null,
-        url: it.url ?? null,
+        url: safeUrl,
         syncedAt: new Date(),
       },
     });

@@ -8,6 +8,7 @@ import { ActionButton } from "@/components/ActionButton";
 import { AddLinkForm } from "@/components/AddLinkForm";
 import { BillingLink } from "@/components/BillingLink";
 import { ExternalContentEditor } from "@/components/ExternalContentEditor";
+import { isHttpUrl } from "@/lib/url";
 import { formatDateTime, formatRelative, formatMs } from "@/lib/format";
 import {
   checkNowAction,
@@ -203,7 +204,7 @@ export default async function SitePage({
                   ) : (
                     <tr key={it.id}>
                       <td className="td">
-                        {it.url ? (
+                        {isHttpUrl(it.url) ? (
                           <a
                             href={it.url}
                             target="_blank"
