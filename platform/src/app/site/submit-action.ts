@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/ratelimit";
+import { sendMail, mailConfigured } from "@/lib/mailer";
 import { z } from "zod";
 
 export type SubmitState = { ok?: boolean; error?: string };
@@ -49,7 +50,7 @@ export async function submitContactAction(
 
   const site = await prisma.site.findUnique({
     where: { slug: d.site },
-    select: { id: true },
+    select: { id: true, name: true, slug: true },
   });
   if (!site) return { error: "Сайтът не е намерен." };
 
@@ -62,5 +63,55 @@ export async function submitContactAction(
       pagePath: d.pagePath || null,
     },
   });
+
+  // Известие по имейл до отговорниците на сайта (ако SMTP е конфигуриран).
+  // Не блокира успеха на заявката — при липса/грешка просто остава в таблото.
+  if (mailConfigured()) {
+    await notifyManagers(site, d);
+  }
   return { ok: true };
+}
+
+type SiteRef = { id: string; name: string; slug: string };
+
+async function notifyManagers(
+  site: SiteRef,
+  d: { name: string; email: string; message: string; pagePath?: string },
+): Promise<void> {
+  try {
+    // Отговорници: мениджърите на сайта; ако няма — собствениците на платформата.
+    const managers = await prisma.user.findMany({
+      where: {
+        active: true,
+        memberships: { some: { siteId: site.id, role: "MANAGER" } },
+      },
+      select: { email: true },
+    });
+    let recipients = managers.map((m) => m.email);
+    if (recipients.length === 0) {
+      const owners = await prisma.user.findMany({
+        where: { active: true, role: "OWNER" },
+        select: { email: true },
+      });
+      recipients = owners.map((o) => o.email);
+    }
+    if (recipients.length === 0) return;
+
+    const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+    const dash = `${base}/dashboard/sites/${site.slug}/submissions`;
+    await sendMail({
+      to: recipients,
+      replyTo: d.email,
+      subject: `Нова заявка от формата на „${site.name}“`,
+      text:
+        `Ново запитване през сайта „${site.name}“:\n\n` +
+        `Име: ${d.name}\nИмейл: ${d.email}\n` +
+        (d.pagePath ? `Страница: ${d.pagePath}\n` : "") +
+        `\nСъобщение:\n${d.message}\n\n` +
+        `Виж всички заявки: ${dash}`,
+    });
+  } catch (err) {
+    // Известието е второстепенно — не бива да чупи изпращането на формата.
+    console.error("Известие за заявка: неуспех", err);
+  }
 }
