@@ -8,6 +8,7 @@ import { prepare, signalAt, stopDistance } from './strategy.js';
 import { positionSize, checkRiskGates, updateEquityPeak } from './risk.js';
 import { marketBuy, marketSell, placeStopLoss, cancelAllOpen } from './execute.js';
 import { loadState, saveState, rollDay } from './state.js';
+import { tradeRecord, recordTrade } from './journal.js';
 import { log, audit } from './logger.js';
 
 export async function runOnce(ex, cfg, market, state) {
@@ -35,6 +36,20 @@ export async function runOnce(ex, cfg, market, state) {
 
   audit('tick', { price, equity, signal: sig, hasPosition, killed: state.killed });
   log.info(`tick: price=${price} equity=${equity.toFixed(2)} signal=${sig ?? '—'} pos=${hasPosition}`);
+
+  // Позицията е затворена ОТВЪН (стопът на борсата се е напълнил, или ръчна продажба):
+  // запиши сделката в дневника като изход по стоп, за да учи ботът от нея.
+  if (!hasPosition && state.position) {
+    const rec = tradeRecord({
+      symbol: cfg.symbol, entry: state.position.entry, exit: state.position.stopPrice,
+      qty: state.position.qty, stopPrice: state.position.stopPrice, exitReason: 'stop',
+    });
+    recordTrade(rec);
+    audit('trade.closed', rec);
+    log.info(`Позицията е затворена (стоп) → записана в дневника: ${rec.rMultiple}R`);
+    state.position = null;
+    saveState(state);
+  }
 
   // Изход: сигнал за изход → продавам и махам стопа.
   if (hasPosition && sig === 'exit') {

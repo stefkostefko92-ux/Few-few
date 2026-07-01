@@ -10,6 +10,7 @@
     "start": "node index.js",
     "dry": "TRADING_LIVE=false node index.js",
     "backtest": "node src/backtest.js",
+    "review": "node src/review.js",
     "test": "node --test test/*.test.js",
     "lint": "node ../tools/trading/trader-lint.mjs src && node ../tools/trading/backtest-check.mjs src"
   },

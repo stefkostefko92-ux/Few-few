@@ -9021,7 +9021,8 @@
         "Честен бектест: без look-ahead/survivorship bias, такси+slippage+funding, walk-forward/OOS",
         "Метрики: Sharpe/Sortino/Calmar, max drawdown, win×R; после paper/forward преди реален капитал",
         "Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото, отделни testnet/live",
-        "Регулация ЕС: MiFID II чл. 17 (контроли/kill-switch/тестване), MAR (spoofing/wash/layering)"
+        "Регулация ЕС: MiFID II чл. 17 (контроли/kill-switch/тестване), MAR (spoofing/wash/layering)",
+        "Учене от грешки: journal (R-multiples) + coach (expectancy, ¼-Kelly, маркер на повтарящи се грешки)"
       ],
       "knowledge": {
         "sources": 9,
@@ -9052,9 +9053,20 @@
           "date": "2026-07-01",
           "event": "v6.1 — учене",
           "detail": "Научи резултатите за 2025 (сребро +132%, злато +65%, Bitcoin −8%, Ethereum −15%; топ крипто MYX +3358% микрокап, Zcash +573%; топ акция Sandisk +596%) и извлече мисловни модели срещу recency/hindsight bias: победителят е непредвидим ex-ante, гоненето му = купуване на върха. Добавена секция „Начин на мислене“ (процес > пророчество, base rates, risk of ruin, expectancy, диверсификация, режими)."
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-07-01",
+          "event": "v6.2 — учене (великите трейдъри)",
+          "detail": "Нашите агенти проучиха известни трейдъри (Turtles/Dennis, Seykota, Parker, Dunn, Harding, Eckhardt; PTJ, Druckenmiller, Soros, Kovner, Dalio; Simons/Thorp/AQR; Douglas/Tharp/Livermore). Дестилат в treydar/docs/principles.md + секция „Уроци от великите трейдъри“ (10 закона) в дефиницията. Внедрено: fractionalKelly() sizing (Thorp), journal.js (R-multiples) + coach.js/review.js — реален цикъл „учи от грешките си“ (expectancy, маркира disposition/асиметрия/твърде стегнат стоп/сменен режим)."
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Проучи великите трейдъри (Turtles, PTJ, Soros, Thorp, Kovner, Dalio…) и получи механизъм да учи от грешките си: трейд дневник в R + тренер (expectancy, ¼-Kelly, маркер на повтарящи се грешки)."
+        },
         {
           "date": "2026-07-01",
           "type": "learning",

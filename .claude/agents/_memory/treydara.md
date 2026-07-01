@@ -57,5 +57,37 @@
   върха; правилният отговор е процес > пророчество — диверсификация, малък фиксиран риск/сделка,
   walk-forward валидация, оцеляване пред максимизиране _(mental models; verified; .claude/agents/treydara.md „Начин на мислене")_
 
+- **2026-07-01:** Turtle Traders (Dennis) риск-система: N=ATR(20); 1 Unit оразмерен така, че 1N движение
+  ≈ 1% от капитала; стоп 2N; пирамидиране +1 unit на 0.5N до 4 units/пазар, 12 в посока. Survivorship:
+  НЕ всички Turtles успяха — правилата искат дисциплина през дълги drawdown-и _(Turtle rules; verified; https://oxfordstrat.com/coasdfASD32/uploads/2016/01/turtle-rules.pdf)_
+- **2026-07-01:** Kelly criterion (Thorp): f*=(bp−q)/b (бинарно) или f*=(μ−r)/σ² (непрекъснато); максимизира
+  E[log(богатство)] = геометричен растеж; ПРАКТИЦИТЕ ползват ДРОБЕН Kelly (½ дава ~75% растеж при ~¼
+  дисперсия; над Kelly → по-нисък растеж И по-висок риск; 2×Kelly → растеж 0); variance drag g≈μ−σ²/2
+  (волатилността влиза с квадрат) → недооценката ѝ е фатална; p,μ,σ са оценки с грешка → дробен Kelly е буфер _(Kelly fractional; verified; https://en.wikipedia.org/wiki/Kelly_criterion + https://gwern.net/doc/statistics/decision/2006-thorp.pdf)_
+- **2026-07-01:** Expectancy (Tharp): E[R]=p·avgWinR+(1−p)·avgLossR; R=първоначален риск (entry→stop);
+  печелиш при E[R]>0 върху достатъчна извадка; position size=(Account×Risk%)/|Entry−Stop|; sizing-ът, не
+  входът, е ключът _(expectancy R-multiple; verified; https://vantharpinstitute.com/tharp-think-trading-concepts/)_
+- **2026-07-01:** Kovner (Market Wizards): стоп се решава ПРЕДИ входа, на ниво което доказва че сделката
+  греши (не произволна сума); размерът се извежда от стопа; „undertrade, undertrade, undertrade — cut it
+  at least in half"; новаци търгуват 3–5× твърде голямо (5–10% риск вместо 1–2%) _(Kovner risk; verified; https://www.newtraderu.com/2020/08/04/market-wizard-bruce-kovner-trading-quotes/)_
+- **2026-07-01:** Признаване на грешка = едж: Soros „I'm only rich because I know when I'm wrong";
+  Druckenmiller наруши правилата си 2000 (FOMO), купи $6B tech на върха, загуби ~$3B за 6 седмици —
+  провалът беше ЕМОЦИОНАЛЕН, не аналитичен; PTJ „always thinking about losing money", цели 5:1 асиметрия,
+  200-дневна MA като защита-филтър _(macro mistake-admission; verified; https://novelinvestor.com/stan-druckenmillers-worst-mistake-ever/ + https://mebfaber.com/2014/11/06/paul-tudor-jones-on-the-200-day-moving-average/)_
+- **2026-07-01:** Eckhardt: „success rate of trades is the LEAST important performance statistic and may
+  be inversely related to performance" → НЕ оптимизирай win-rate; Seykota: „if you can't take a small
+  loss, sooner or later you take the mother of all losses"; тренд-фолоуинг hit-rate ~35–40%, печели от
+  асиметрия; Harding честно: Sharpe на тренда ~0.5 и спада _(trend-following; verified; https://macro-ops.com/william-eckhardts-market-wizard-trading-strategy-explained/ + https://www.daytrading.com/ed-seykota)_
+- **2026-07-01:** Dalio „Holy Grail": 15–20 НЕкорелирани доходни потока → ~80% по-малко риск при същата
+  доходност; корелацията е ключът, не броят; „Pain + Reflection = Progress"; честно: Pure Alpha на
+  загуба 2020, 1982 почти фалит от свръх-увереност _(Dalio uncorrelated; verified; https://macro-ops.com/ray-dalio-portfolio-allocation-strategy-holy-grail/)_
+- **2026-07-01:** Психологически грешки → механична неутрализация (правила > воля, защото волята се чупи
+  под стрес): disposition effect (стоп+таргет преди входа), revenge trading (cooldown + дневен loss
+  limit), over-trading (лимит сделки/ден), местене на стоп надолу (забранено, само trailing нагоре),
+  all-in (фиксиран риск% + таван), averaging down (забранено); Livermore фалира 4 пъти точно на тези _(trading psychology; verified; https://enlightenedstocktrading.com/disposition-effect-in-trading/ + https://macro-ops.com/jesse-livermores-strategy-flaw-position-sizing/)_
+- **2026-07-01:** Внедрено в treydar: fractionalKelly() в risk.js (¼-Kelly от реализираната статистика,
+  капнат, 0 при <30 сделки/без едж); journal.js записва сделки в R; coach.js/review.js смята expectancy
+  и маркира повтарящи се грешки — реален цикъл „учи от грешките си" _(treydar learning loop; verified; treydar/src/coach.js + treydar/src/journal.js)_
+
 ## Карантина (непроверени хипотези — НЕ факт)
 - _(празно)_

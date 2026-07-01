@@ -49,6 +49,21 @@ export function checkRiskGates({ equity, state, dailyLossLimitPct, maxDrawdownPc
   return { allowed: true, kill: false, reason: 'ok' };
 }
 
+// Дробен Kelly (Thorp): предлага риск% на сделка от РЕАЛИЗИРАНАТА статистика на бота.
+//   Kelly f* = W − (1−W)/Rr,  където W = win rate, Rr = avgWin/|avgLoss| (payoff ratio).
+// Ползваме ДРОБЕН Kelly (по подразбиране 1/4) заради variance drag и грешка в оценките;
+// капваме, и връщаме 0 при недостатъчна/дегенеративна статистика (без едж → без риск).
+export function fractionalKelly({ winRate, avgWinR, avgLossR, fraction = 0.25, cap = 2, minTrades = 30, trades = Infinity }) {
+  if (trades < minTrades) return 0;                 // твърде малка извадка → не оразмерявай по Kelly
+  const lossMag = Math.abs(avgLossR);
+  if (!(winRate > 0) || !(avgWinR > 0) || !(lossMag > 0)) return 0;
+  const payoff = avgWinR / lossMag;                 // Rr
+  const f = winRate - (1 - winRate) / payoff;       // пълен Kelly фракция от капитала
+  if (!(f > 0)) return 0;                            // няма едж → 0
+  const riskPct = f * fraction * 100;               // като % риск на сделка
+  return Math.min(riskPct, cap);                    // никога над cap%
+}
+
 // Обновява върха на капитала (за drawdown сметката).
 export function updateEquityPeak(state, equity) {
   state.equityPeak = Math.max(state.equityPeak ?? equity, equity);

@@ -87,9 +87,24 @@ src/state.js        трайно състояние между рестарти 
 src/bot.js          главният цикъл: данни → сигнал → риск → изпълнение (+ trailing stop)
 src/metrics.js      Sharpe/Sortino/Calmar/profit factor/expectancy/max DD/exposure
 src/backtest.js     ПРОФ. бектест: walk-forward фолдове + buy&hold бенчмарк + robustness grid
-test/               unit тестове (risk, indicators, strategy)
-data/               одит лог + състояние (в .gitignore)
+src/journal.js      трейд дневник (R-multiples) → data/trades.jsonl
+src/coach.js        тренер: expectancy, ¼-Kelly, маркира повтарящи се грешки
+src/review.js       `npm run review` — коучинг доклад от дневника (учи от грешки)
+docs/principles.md  дестилат от великите трейдъри (Turtles/PTJ/Soros/Thorp/Kovner/Dalio…)
+test/               unit тестове (risk, indicators, strategy, coach/journal/kelly)
+data/               одит лог + състояние + дневник (в .gitignore)
 ```
+
+## Учене от грешките (`npm run review`)
+
+Ботът записва всяка затворена сделка в **R-multiples** (`data/trades.jsonl`). `npm run review` смята
+**expectancy** `E[R]=p·avgWinR+(1−p)·avgLossR`, profit factor, стоп-out %, серии загуби, и **маркира
+повтарящи се грешки**: отрицателна expectancy, лоша асиметрия („режеш печалби/държиш загуби"), твърде
+стегнат стоп, дълга серия загуби (сменен режим), win-rate капан. Предлага и **¼-Kelly риск%** от
+реалната статистика (дробен Kelly срещу variance drag; 0 при <30 сделки или без едж). Пусни го редовно —
+това е механизмът, по който системата се учи от собствените си резултати.
+
+Философията зад всичко това (проучена от известни трейдъри, с източници) е в **`docs/principles.md`**.
 
 ## Стратегии
 
