@@ -87,13 +87,30 @@ src/state.js        трайно състояние между рестарти 
 src/bot.js          главният цикъл: данни → сигнал → риск → изпълнение (+ trailing stop)
 src/metrics.js      Sharpe/Sortino/Calmar/profit factor/expectancy/max DD/exposure
 src/backtest.js     ПРОФ. бектест: walk-forward фолдове + buy&hold бенчмарк + robustness grid
+src/engine.js       споделен симулационен двигател (backtest + portfolio)
 src/journal.js      трейд дневник (R-multiples) → data/trades.jsonl
 src/coach.js        тренер: expectancy, ¼-Kelly, маркира повтарящи се грешки
 src/review.js       `npm run review` — коучинг доклад от дневника (учи от грешки)
+src/portfolio.js    корелация, групиране, портфейлни лимити (Dalio „Holy Grail“)
+src/portfolio-backtest.js  `npm run portfolio` — диверсификационен ефект на кошница
 docs/principles.md  дестилат от великите трейдъри (Turtles/PTJ/Soros/Thorp/Kovner/Dalio…)
-test/               unit тестове (risk, indicators, strategy, coach/journal/kelly)
+test/               unit тестове (risk, indicators, strategy, coach, portfolio, extras)
 data/               одит лог + състояние + дневник (в .gitignore)
 ```
+
+## Още професионални предпазители
+
+- **ADX режим-филтър** (`ADX_MIN`, напр. 22) — търгувай само в достатъчно силен тренд; извън тренд
+  (страничен chop) не влиза. Пази от най-лошия пазар за тренд-стратегия.
+- **Честотни спирачки** (психология → правила): `MAX_TRADES_PER_DAY` (срещу over-trading) и
+  `COOLDOWN_MINUTES` след **губеща** сделка (срещу revenge trading). Наложени в кода, не с воля.
+- **Monte Carlo risk-of-ruin** (в `npm run backtest`): bootstrap на сделките оценява P(просадка ≥50%)
+  при различен риск/сделка — показва как по-големият риск води до разоряване. „Оцеляването е първо.“
+- **Портфейл `npm run portfolio`** (Dalio „Holy Grail“): пуска кошница символи, смята **корелацията**
+  на стратегийните им потоци, **групира** корелираните (напр. BTC/ETH = един залог) и показва как
+  комбинирането на **некорелирани** потоци сваля волатилността/просадката. `src/portfolio.js` носи и
+  лимитите (`MAX_CONCURRENT`, `MAX_PORTFOLIO_RISK_PCT`, `MAX_GROUP_RISK_PCT`) за бъдещ мулти-символен
+  live режим. **Забележка:** live ботът засега е едно-символен; мулти-символното се валидира първо тук.
 
 ## Учене от грешките (`npm run review`)
 

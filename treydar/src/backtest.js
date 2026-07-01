@@ -9,8 +9,9 @@
 // ⚠ Красива крива тук НЕ значи печалба на живо. Минала доходност ≠ бъдеща. НЕ е инвестиционен съвет.
 import ccxt from 'ccxt';
 import { loadConfig } from './config.js';
-import { prepare, signalAt, stopDistance } from './strategy.js';
-import { summarize } from './metrics.js';
+import { prepare } from './strategy.js';
+import { monteCarloRuin } from './metrics.js';
+import { simulate as engineSimulate } from './engine.js';
 
 const SYMBOL = process.argv[2] || process.env.SYMBOL || 'BTC/USDT';
 const TIMEFRAME = process.argv[3] || process.env.TIMEFRAME || '1h';
@@ -33,57 +34,8 @@ async function loadCandles() {
   return all.slice(0, -1); // хвърли последната (може да е незатворена)
 }
 
-// Симулира стратегията в прозореца [from, to) върху предварително подготвен ctx.
-function simulate(ctx, from, to) {
-  const { candles, closes } = ctx;
-  const opens = candles.map((c) => c[1]);
-  const lows = candles.map((c) => c[3]);
-  let cash = START, qty = 0, entry = 0, stop = 0;
-  const tradeReturns = [];
-  const equityCurve = [];
-  let barsInMarket = 0, totalBars = 0;
-
-  for (let i = from; i < to - 1; i++) {
-    const execPrice = opens[i + 1];
-    if (execPrice == null) break;
-
-    // 1) Стоп проверка през следващия бар (по неговото low).
-    if (qty > 0 && lows[i + 1] <= stop) {
-      const fill = stop * (1 - SLIPPAGE);
-      cash += qty * fill * (1 - TAKER_FEE);
-      tradeReturns.push((fill - entry) / entry);
-      qty = 0;
-    }
-
-    const sig = signalAt(ctx, i);
-
-    // 2) Изход по сигнал.
-    if (qty > 0 && sig === 'exit') {
-      const sell = execPrice * (1 - SLIPPAGE);
-      cash += qty * sell * (1 - TAKER_FEE);
-      tradeReturns.push((sell - entry) / entry);
-      qty = 0;
-    }
-    // 3) Вход по сигнал.
-    else if (qty === 0 && sig === 'long') {
-      const buy = execPrice * (1 + SLIPPAGE);
-      qty = (cash * (1 - TAKER_FEE)) / buy;
-      entry = buy;
-      stop = buy - stopDistance(ctx, i, buy);
-      cash = 0;
-    }
-
-    totalBars++;
-    if (qty > 0) barsInMarket++;
-    equityCurve.push(cash + qty * closes[i + 1]);
-  }
-  // затвори остатъка по последен close
-  const lastClose = closes[to - 1];
-  if (qty > 0) { tradeReturns.push((lastClose - entry) / entry); cash += qty * lastClose; qty = 0; }
-  const finalEquity = cash;
-
-  return summarize({ finalEquity, startEquity: START, tradeReturns, equityCurve, barsInMarket, totalBars });
-}
+// Симулира стратегията в прозореца [from, to) чрез споделения двигател.
+const simulate = (ctx, from, to) => engineSimulate(ctx, from, to, { fee: TAKER_FEE, slippage: SLIPPAGE, start: START });
 
 function buyHold(candles, from, to) {
   const a = candles[from][4], b = candles[to - 1][4];
@@ -129,6 +81,16 @@ console.log(`  → среден ret/фолд ${(sumRet / FOLDS).toFixed(1)}% · 
 console.log(`\n=== Цял период ===`);
 const full = simulate(ctx, warmup, candles.length);
 row('Всичко', full, buyHold(candles, warmup, candles.length));
+
+// --- Monte Carlo risk-of-ruin: колко вероятно е ПОСЛЕДОВАТЕЛНОСТ лоши сделки да те изтрие ---
+if (full.rMultiples.length >= 10) {
+  console.log(`\n=== Monte Carlo risk-of-ruin (1000 bootstrap пътища, риск ${(1).toFixed(1)}%/сделка) ===`);
+  for (const rf of [0.01, 0.02]) {
+    const mc = monteCarloRuin(full.rMultiples, { sims: 1000, riskFraction: rf, ruinDrawdown: 0.5 });
+    console.log(`  риск ${(rf * 100).toFixed(0)}%/сделка → P(просадка ≥50%) ${mc.ruinProbPct.toFixed(1)}% · медиана max DD ${mc.medianMaxDDPct.toFixed(1)}% · най-лош ${mc.worstMaxDDPct.toFixed(1)}%`);
+  }
+  console.log(`  По-голям риск/сделка → по-голям шанс за разоряване. Затова дробен риск + kill-switch.`);
+}
 
 // --- Robustness grid: чувствителност към параметрите (overfitting детектор) ---
 console.log(`\n=== Robustness (варираме atrMult × emaFast — стабилен резултат = добър знак) ===`);

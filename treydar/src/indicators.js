@@ -62,6 +62,35 @@ export function atr(candles, period) {
   return rma(tr, period);
 }
 
+// ADX (Wilder) — сила на тренда (0..100). Висок ADX = силен тренд; нисък = страничен пазар (chop).
+// Връща масив със стойност на индекс i, ползвайки само данни до i (без look-ahead).
+export function adx(candles, period) {
+  const n = candles.length;
+  const plusDM = new Array(n).fill(null);
+  const minusDM = new Array(n).fill(null);
+  const tr = new Array(n).fill(null);
+  for (let i = 1; i < n; i++) {
+    const h = candles[i][2], l = candles[i][3];
+    const ph = candles[i - 1][2], pl = candles[i - 1][3], pc = candles[i - 1][4];
+    const up = h - ph, down = pl - l;
+    plusDM[i] = up > down && up > 0 ? up : 0;
+    minusDM[i] = down > up && down > 0 ? down : 0;
+    tr[i] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+  }
+  const atrS = rma(tr, period);
+  const plusS = rma(plusDM, period);
+  const minusS = rma(minusDM, period);
+  const dx = new Array(n).fill(null);
+  for (let i = 0; i < n; i++) {
+    if (atrS[i] == null || plusS[i] == null || minusS[i] == null || atrS[i] === 0) continue;
+    const plusDI = 100 * plusS[i] / atrS[i];
+    const minusDI = 100 * minusS[i] / atrS[i];
+    const sum = plusDI + minusDI;
+    dx[i] = sum === 0 ? 0 : 100 * Math.abs(plusDI - minusDI) / sum;
+  }
+  return rma(dx, period);
+}
+
 // RSI (Wilder). Връща масив 0..100.
 export function rsi(closes, period) {
   const gains = new Array(closes.length).fill(null);

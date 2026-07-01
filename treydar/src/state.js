@@ -14,6 +14,8 @@ const DEFAULT = {
   dayKey: null,        // YYYY-MM-DD за нулиране на дневния лимит
   killed: false,
   position: null,      // { qty, entry, stopClientId } или null
+  dayTradeCount: 0,    // брой входове днес (за дневния лимит сделки)
+  lastLossMs: null,    // timestamp на последната губеща сделка (за cooldown)
 };
 
 export function loadState() {
@@ -34,6 +36,7 @@ export function rollDay(state, equity, now = new Date()) {
   if (state.dayKey !== key) {
     state.dayKey = key;
     state.dayStartEquity = equity;
+    state.dayTradeCount = 0;      // нов ден → нулирай дневния брояч сделки
   }
   if (state.dayStartEquity == null) state.dayStartEquity = equity;
   return state;

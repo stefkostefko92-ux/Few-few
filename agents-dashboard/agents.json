@@ -9022,7 +9022,9 @@
         "Метрики: Sharpe/Sortino/Calmar, max drawdown, win×R; после paper/forward преди реален капитал",
         "Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото, отделни testnet/live",
         "Регулация ЕС: MiFID II чл. 17 (контроли/kill-switch/тестване), MAR (spoofing/wash/layering)",
-        "Учене от грешки: journal (R-multiples) + coach (expectancy, ¼-Kelly, маркер на повтарящи се грешки)"
+        "Учене от грешки: journal (R-multiples) + coach (expectancy, ¼-Kelly, маркер на повтарящи се грешки)",
+        "ADX режим-филтър + честотни спирачки (cooldown/лимит сделки)",
+        "Monte Carlo risk-of-ruin + портфейл с корелационни лимити (Dalio Holy Grail)"
       ],
       "knowledge": {
         "sources": 9,
@@ -9059,9 +9061,20 @@
           "date": "2026-07-01",
           "event": "v6.2 — учене (великите трейдъри)",
           "detail": "Нашите агенти проучиха известни трейдъри (Turtles/Dennis, Seykota, Parker, Dunn, Harding, Eckhardt; PTJ, Druckenmiller, Soros, Kovner, Dalio; Simons/Thorp/AQR; Douglas/Tharp/Livermore). Дестилат в treydar/docs/principles.md + секция „Уроци от великите трейдъри“ (10 закона) в дефиницията. Внедрено: fractionalKelly() sizing (Thorp), journal.js (R-multiples) + coach.js/review.js — реален цикъл „учи от грешките си“ (expectancy, маркира disposition/асиметрия/твърде стегнат стоп/сменен режим)."
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-07-01",
+          "event": "v6.3 — проф. предпазители",
+          "detail": "treydar получи: ADX режим-филтър (само силен тренд), честотни спирачки (дневен лимит сделки + cooldown след загуба срещу over/revenge trading), Monte Carlo risk-of-ruin в бектеста (оцеляването е първо), портфейлен слой (корелация/групиране/лимити — Dalio Holy Grail) + `npm run portfolio`, споделен engine.js, и CI workflow (Node 20/22: test+lint). 37/37 теста."
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Вложени проф. предпазители: ADX режим-филтър, cooldown/лимит сделки, Monte Carlo risk-of-ruin, портфейл с корелационни лимити (Dalio Holy Grail), CI. 37 теста зелени."
+        },
         {
           "date": "2026-07-01",
           "type": "learning",

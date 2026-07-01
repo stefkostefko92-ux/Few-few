@@ -89,5 +89,13 @@
   капнат, 0 при <30 сделки/без едж); journal.js записва сделки в R; coach.js/review.js смята expectancy
   и маркира повтарящи се грешки — реален цикъл „учи от грешките си" _(treydar learning loop; verified; treydar/src/coach.js + treydar/src/journal.js)_
 
+- **2026-07-01:** Внедрени проф. предпазители в treydar: (1) ADX режим-филтър (indicators.adx + strategy)
+  — вход само в силен тренд; (2) честотни спирачки risk.tradingAllowedByFrequency — дневен лимит сделки
+  + cooldown след загуба (психология → правила срещу over/revenge trading); (3) Monte Carlo risk-of-ruin
+  metrics.monteCarloRuin — bootstrap на R-multiples показва P(просадка≥X) спрямо риск/сделка; (4) портфейл
+  portfolio.js (correlation/groupByCorrelation/canOpenPosition) + portfolio-backtest.js за Dalio Holy Grail
+  (некорелирани потоци сваля риска); (5) engine.js споделен симулационен двигател; (6) CI workflow treydar.
+  37/37 теста, линт чист _(treydar pro guards; verified; treydar/src/{portfolio,engine,metrics,indicators,risk}.js + .github/workflows/treydar.yml)_
+
 ## Карантина (непроверени хипотези — НЕ факт)
 - _(празно)_

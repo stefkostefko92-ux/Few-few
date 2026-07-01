@@ -1,7 +1,7 @@
 // strategy.js — стратегиите. ⚠ Дори „по-добрата“ тук НЕ е гаранция за печалба и НЕ е инвестиционен
 // съвет — валидирай с walk-forward бектеста преди реални пари. Дисциплина: без look-ahead,
 // сигнал на ЗАТВОРЕНА свещ i → изпълнение на i+1 (бектестът и ботът го спазват).
-import { sma, ema, atr, rsi } from './indicators.js';
+import { sma, ema, atr, rsi, adx } from './indicators.js';
 
 // Предварително смята индикаторните масиви веднъж (ефективно + чисто), после signalAt чете по индекс.
 export function prepare(candles, cfg) {
@@ -16,6 +16,7 @@ export function prepare(candles, cfg) {
     ctx.slow = ema(closes, cfg.emaSlow);
     ctx.trend = ema(closes, cfg.emaTrend);
     ctx.rsi = rsi(closes, cfg.rsiPeriod);
+    ctx.adx = cfg.adxMin > 0 ? adx(candles, cfg.adxPeriod) : null;
   }
   ctx.atr = atr(candles, cfg.atrPeriod);
   return ctx;
@@ -46,7 +47,9 @@ export function signalAt(ctx, i) {
 
   const uptrend = close > trend;
   const notOverbought = r == null || r < cfg.rsiOverbought;
-  if (crossUp && uptrend && notOverbought) return 'long';
+  // ADX режим-филтър: търгувай само в достатъчно силен тренд (пази от страничен chop).
+  const trending = !ctx.adx || ctx.adx[i] == null || ctx.adx[i] >= cfg.adxMin;
+  if (crossUp && uptrend && notOverbought && trending) return 'long';
   if (crossDown || close < trend) return 'exit';
   return null;
 }

@@ -1,17 +1,18 @@
 // config.js — чете и ВАЛИДИРА конфигурацията от env. Тук живее твърдото gating на "живо".
 // Философия: реални пари се движат само при изричен, недвусмислен избор — не при пропуск/бъг.
 
-function num(name, def, { min, max } = {}) {
-  const raw = process.env[name];
-  if (raw === undefined || raw === '') return def;
-  const v = Number(raw);
-  if (!Number.isFinite(v)) throw new Error(`Конфиг грешка: ${name} не е число: "${raw}"`);
-  if (min !== undefined && v < min) throw new Error(`Конфиг грешка: ${name}=${v} < мин ${min}`);
-  if (max !== undefined && v > max) throw new Error(`Конфиг грешка: ${name}=${v} > макс ${max}`);
-  return v;
-}
-
 export function loadConfig(env = process.env) {
+  // Чете число ОТ подадения env (не глобалния process.env) — консистентно и тестваемо.
+  const num = (name, def, { min, max } = {}) => {
+    const raw = env[name];
+    if (raw === undefined || raw === '') return def;
+    const v = Number(raw);
+    if (!Number.isFinite(v)) throw new Error(`Конфиг грешка: ${name} не е число: "${raw}"`);
+    if (min !== undefined && v < min) throw new Error(`Конфиг грешка: ${name}=${v} < мин ${min}`);
+    if (max !== undefined && v > max) throw new Error(`Конфиг грешка: ${name}=${v} > макс ${max}`);
+    return v;
+  };
+
   const testnet = env.BINANCE_TESTNET !== 'false'; // по подразбиране testnet
   // "живо" = праща реални поръчки. Всичко освен точно "true" е dry-run.
   const live = env.TRADING_LIVE === 'true';
@@ -38,6 +39,19 @@ export function loadConfig(env = process.env) {
     atrPeriod: num('ATR_PERIOD', 14, { min: 2 }),
     atrMult: num('ATR_MULT', 2.5, { min: 0.5, max: 10 }),   // стоп = ATR × mult
     useTrailing: env.USE_TRAILING === 'true',                // trailing stop нагоре
+    adxPeriod: num('ADX_PERIOD', 14, { min: 2 }),
+    adxMin: num('ADX_MIN', 0, { min: 0, max: 100 }),         // 0 = изключен режим-филтър; ~20-25 = само тренд
+
+    // Честотни спирачки (психология → правила)
+    maxTradesPerDay: num('MAX_TRADES_PER_DAY', 0, { min: 0, max: 1000 }), // 0 = без лимит
+    cooldownMinutes: num('COOLDOWN_MINUTES', 0, { min: 0, max: 10080 }),  // пауза след загуба
+
+    // Портфейл (за мулти-символен бектест / бъдещ мулти-символен режим)
+    symbols: (env.SYMBOLS || '').split(',').map((s) => s.trim()).filter(Boolean),
+    maxConcurrent: num('MAX_CONCURRENT', 3, { min: 1, max: 50 }),
+    maxPortfolioRiskPct: num('MAX_PORTFOLIO_RISK_PCT', 2, { min: 0.1, max: 100 }),
+    maxGroupRiskPct: num('MAX_GROUP_RISK_PCT', 1, { min: 0.1, max: 100 }),
+    corrThreshold: num('CORR_THRESHOLD', 0.7, { min: 0, max: 1 }),
 
     riskPctPerTrade: num('RISK_PCT_PER_TRADE', 0.5, { min: 0.01, max: 5 }),
     stopLossPct: num('STOP_LOSS_PCT', 2, { min: 0.1, max: 50 }),

@@ -69,3 +69,16 @@ export function updateEquityPeak(state, equity) {
   state.equityPeak = Math.max(state.equityPeak ?? equity, equity);
   return state.equityPeak;
 }
+
+// Честотни спирачки (психология → правила): дневен лимит сделки (over-trading) + cooldown след
+// загуба (revenge trading). state: { dayTradeCount, lastLossMs }. nowMs в милисекунди.
+export function tradingAllowedByFrequency({ state, maxTradesPerDay, cooldownMinutes, nowMs }) {
+  if (maxTradesPerDay > 0 && (state.dayTradeCount ?? 0) >= maxTradesPerDay)
+    return { allowed: false, reason: `Дневен лимит сделки (${maxTradesPerDay}) достигнат — стоп до утре (срещу over-trading).` };
+  if (cooldownMinutes > 0 && state.lastLossMs) {
+    const until = state.lastLossMs + cooldownMinutes * 60000;
+    if (nowMs < until)
+      return { allowed: false, reason: `Cooldown след загуба още ${Math.ceil((until - nowMs) / 60000)} мин (срещу revenge trading).` };
+  }
+  return { allowed: true, reason: 'ok' };
+}

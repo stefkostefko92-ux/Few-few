@@ -50,6 +50,35 @@ export function calmar(totalReturn, maxDD) {
   return maxDD > 0 ? totalReturn / maxDD : 0;
 }
 
+// Monte Carlo risk-of-ruin: bootstrap-преразбърква R-multiples на сделките и симулира equity пътища
+// при ФИКСИРАН риск/сделка → оценява P(просадка ≥ ruinDrawdown) и разпределението на max drawdown.
+// „Оцеляването е първо“: показва колко вероятно е да те изтрие ПОСЛЕДОВАТЕЛНОСТ от лоши сделки.
+// rng се подава (по подразбиране Math.random) — за детерминистични тестове инжектирай свой.
+export function monteCarloRuin(rMultiples, { sims = 1000, riskFraction = 0.01, ruinDrawdown = 0.5, pathLen, rng = Math.random } = {}) {
+  if (!rMultiples.length) return { ruinProbPct: 0, medianMaxDDPct: 0, worstMaxDDPct: 0 };
+  const len = pathLen || rMultiples.length;
+  const dds = [];
+  let ruined = 0;
+  for (let s = 0; s < sims; s++) {
+    let equity = 1, peak = 1, maxDD = 0;
+    for (let k = 0; k < len; k++) {
+      const r = rMultiples[Math.floor(rng() * rMultiples.length)];
+      equity *= 1 + riskFraction * r;                 // печалба/загуба = риск × R
+      if (equity <= 0) { maxDD = 1; break; }
+      peak = Math.max(peak, equity);
+      maxDD = Math.max(maxDD, (peak - equity) / peak);
+    }
+    dds.push(maxDD);
+    if (maxDD >= ruinDrawdown) ruined++;
+  }
+  dds.sort((a, b) => a - b);
+  return {
+    ruinProbPct: (ruined / sims) * 100,
+    medianMaxDDPct: dds[Math.floor(dds.length / 2)] * 100,
+    worstMaxDDPct: dds[dds.length - 1] * 100,
+  };
+}
+
 function mean(a) { return a.reduce((x, y) => x + y, 0) / a.length; }
 function std(a, m) { return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / a.length); }
 

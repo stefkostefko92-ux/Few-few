@@ -5,7 +5,7 @@
 import { makeExchange, loadMarket } from './exchange.js';
 import { fetchClosedCandles, currentPrice, readEquity } from './marketdata.js';
 import { prepare, signalAt, stopDistance } from './strategy.js';
-import { positionSize, checkRiskGates, updateEquityPeak } from './risk.js';
+import { positionSize, checkRiskGates, updateEquityPeak, tradingAllowedByFrequency } from './risk.js';
 import { marketBuy, marketSell, placeStopLoss, cancelAllOpen } from './execute.js';
 import { loadState, saveState, rollDay } from './state.js';
 import { tradeRecord, recordTrade } from './journal.js';
@@ -46,16 +46,27 @@ export async function runOnce(ex, cfg, market, state) {
     });
     recordTrade(rec);
     audit('trade.closed', rec);
+    if (rec.rMultiple <= 0) state.lastLossMs = Date.now(); // cooldown срещу revenge trading
     log.info(`Позицията е затворена (стоп) → записана в дневника: ${rec.rMultiple}R`);
     state.position = null;
     saveState(state);
   }
 
-  // Изход: сигнал за изход → продавам и махам стопа.
+  // Изход: сигнал за изход → продавам, махам стопа и записвам сделката в дневника.
   if (hasPosition && sig === 'exit') {
     log.info('Сигнал за ИЗХОД → продавам и махам стопа.');
     await cancelAllOpen({ ex, cfg, symbol: cfg.symbol });
     await marketSell({ ex, cfg, market, symbol: cfg.symbol, quantity: baseTotal, price });
+    if (state.position) {
+      const rec = tradeRecord({
+        symbol: cfg.symbol, entry: state.position.entry, exit: price,
+        qty: state.position.qty, stopPrice: state.position.stopPrice, exitReason: 'signal',
+      });
+      recordTrade(rec);
+      audit('trade.closed', rec);
+      if (rec.rMultiple <= 0) state.lastLossMs = Date.now();
+      log.info(`Изход по сигнал → записан в дневника: ${rec.rMultiple}R`);
+    }
     state.position = null;
     saveState(state);
     return state;
@@ -87,6 +98,16 @@ export async function runOnce(ex, cfg, market, state) {
       return state;
     }
 
+    // Честотни спирачки: дневен лимит сделки + cooldown след загуба (срещу over-/revenge trading).
+    const freq = tradingAllowedByFrequency({
+      state, maxTradesPerDay: cfg.maxTradesPerDay, cooldownMinutes: cfg.cooldownMinutes, nowMs: Date.now(),
+    });
+    if (!freq.allowed) {
+      log.warn(`ВХОД отказан (честота): ${freq.reason}`);
+      audit('freq.block', { reason: freq.reason });
+      return state;
+    }
+
     const stopPrice = price - stopDistance(ctx, i, price); // ATR-базиран (или % fallback)
     const qty = positionSize({
       equity, riskPct: cfg.riskPctPerTrade, entry: price, stopPrice,
@@ -100,6 +121,7 @@ export async function runOnce(ex, cfg, market, state) {
     // Веднага защитен стоп на БОРСАТА (не 'ментален').
     if (filled > 0) await placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: filled, stopPrice });
     state.position = { qty: filled, entry: buy.average ?? price, stopPrice };
+    state.dayTradeCount = (state.dayTradeCount ?? 0) + 1; // за дневния лимит сделки
     saveState(state);
     return state;
   }
