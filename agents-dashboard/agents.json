@@ -4151,9 +4151,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Compose network с internal: true създава външно изолирана мрежа (без външна свързаност)…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Next.js standalone (output: 'standalone') слага server.js в корена на .next/standalone … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Next.js standalone (output: 'standalone') слага server.js в корена на .next/standalone …\" (+1 още)"
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
