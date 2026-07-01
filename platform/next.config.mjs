@@ -11,12 +11,13 @@ const nextConfig = {
   compress: true,
   reactStrictMode: true,
   async headers() {
-    // Строг CSP — панелът е вътрешен инструмент, без вградено съдържание.
-    // В режим на разработка Next ползва eval за hot-reload → добавяме 'unsafe-eval'.
+    // CSP за вътрешен панел. Next.js (App Router) инжектира вградени скриптове
+    // за хидратация/RSC поток, затова script-src изисква 'unsafe-inline' (както
+    // в zabobovdol). В разработка Next ползва и eval за hot-reload.
     const scriptSrc =
       process.env.NODE_ENV === "production"
-        ? "script-src 'self'"
-        : "script-src 'self' 'unsafe-eval'";
+        ? "script-src 'self' 'unsafe-inline'"
+        : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
 
     const csp = [
       "default-src 'self'",
