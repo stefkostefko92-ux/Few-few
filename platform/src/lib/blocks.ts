@@ -29,18 +29,22 @@ export type BlockType = Block["type"];
 // --- Zod валидация (граница при запис) ---
 
 const align = z.enum(["left", "center", "right"]);
+// Относителни адреси на КАЧЕНИ файлове (/uploads/<uuid>.<ext>) — виж lib/uploads.
+const UPLOADED_PATH = /^\/uploads\/[a-f0-9-]{36}\.(png|jpg|jpeg|webp|gif)$/;
+
 const httpOrEmpty = z
   .string()
   .trim()
   .max(2000)
   .refine((u) => {
     if (u === "") return true;
+    if (UPLOADED_PATH.test(u)) return true; // наш качен файл (относителен път)
     try {
       return /^https?:$/.test(new URL(u).protocol);
     } catch {
       return false;
     }
-  }, "Само http(s) адреси.");
+  }, "Само http(s) адреси или качени файлове.");
 
 const blockSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string(), type: z.literal("heading"), level: z.union([z.literal(1), z.literal(2), z.literal(3)]), text: z.string().max(300), align }),
