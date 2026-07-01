@@ -117,6 +117,7 @@ model Site {
   contentItems ContentItem[]
   pages        Page[]
   submissions  FormSubmission[]
+  invites      Invite[]
 }
 
 // Качен файл (медийна библиотека) — за преизползване, преглед и изтриване.
@@ -182,10 +183,29 @@ model Page {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   publishedAt DateTime?
+  publishAt   DateTime? // насрочено публикуване (cron публикува при настъпване)
 
   site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@unique([siteId, slug])
+  @@index([siteId])
+  @@index([publishAt])
+}
+
+// Покана за достъп до сайт (за нерегистриран имейл). Регистриран потребител
+// получава членство веднага; при непознат имейл поканата се прилага при регистрация.
+model Invite {
+  id        String   @id @default(cuid())
+  siteId    String
+  email     String
+  role      SiteRole @default(VIEWER)
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([email])
   @@index([siteId])
 }
 

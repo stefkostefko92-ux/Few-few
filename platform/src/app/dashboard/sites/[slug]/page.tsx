@@ -88,6 +88,14 @@ export default async function SitePage({
           </Link>
           {canManage && (
             <Link
+              href={`/dashboard/sites/${slug}/members`}
+              className="btn-ghost px-3 py-1.5 text-xs"
+            >
+              👥 Екип
+            </Link>
+          )}
+          {canManage && (
+            <Link
               href={`/dashboard/sites/${slug}/settings`}
               className="btn-ghost px-3 py-1.5 text-xs"
             >

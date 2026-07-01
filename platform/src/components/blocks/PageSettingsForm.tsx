@@ -10,6 +10,7 @@ type Init = {
   navOrder: number;
   seoTitle: string;
   seoDescription: string;
+  publishAt: string; // YYYY-MM-DDTHH:mm или ""
 };
 
 export function PageSettingsForm({
@@ -38,6 +39,13 @@ export function PageSettingsForm({
       <label className="block">
         <span className="label">SEO описание (по избор, до 160 знака)</span>
         <textarea name="seoDescription" defaultValue={init.seoDescription} maxLength={160} rows={2} className="input" />
+      </label>
+      <label className="block">
+        <span className="label">Насрочено публикуване (по избор)</span>
+        <input type="datetime-local" name="publishAt" defaultValue={init.publishAt} className="input" />
+        <span className="mt-1 block text-[11px] text-ink-600">
+          Оставете празно за ръчно публикуване. При зададено време системата ще публикува страницата автоматично.
+        </span>
       </label>
       <div className="flex items-center gap-3">
         <button className="btn-primary px-4 py-2 text-sm" disabled={pending}>

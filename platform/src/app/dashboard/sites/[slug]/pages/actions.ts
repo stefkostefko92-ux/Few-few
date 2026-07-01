@@ -318,6 +318,14 @@ export async function updatePageSettingsAction(
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
 
+  const rawPublishAt = String(formData.get("publishAt") ?? "").trim();
+  let publishAt: Date | null = null;
+  if (rawPublishAt) {
+    const d = new Date(rawPublishAt);
+    if (isNaN(d.getTime())) return { error: "Невалидна дата за публикуване." };
+    publishAt = d;
+  }
+
   const parsed = z
     .object({
       showInNav: z.boolean(),
@@ -335,7 +343,7 @@ export async function updatePageSettingsAction(
     return { error: parsed.error.issues[0]?.message ?? "Проверете полетата." };
   }
 
-  await prisma.page.update({ where: { id: pageId }, data: parsed.data });
+  await prisma.page.update({ where: { id: pageId }, data: { ...parsed.data, publishAt } });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}/settings`);
   revalidatePath(`/site/${ctx.site.slug}`);
   return { ok: "Настройките на страницата са запазени." };

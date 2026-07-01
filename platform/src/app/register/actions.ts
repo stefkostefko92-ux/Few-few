@@ -106,6 +106,21 @@ export async function registerAction(
     }
   }
 
+  // Прилага чакащи покани за този имейл (достъп до чужди сайтове).
+  try {
+    const pending = await prisma.invite.findMany({ where: { email } });
+    for (const inv of pending) {
+      await prisma.membership.upsert({
+        where: { userId_siteId: { userId: user.id, siteId: inv.siteId } },
+        create: { userId: user.id, siteId: inv.siteId, role: inv.role },
+        update: { role: inv.role },
+      });
+    }
+    if (pending.length > 0) await prisma.invite.deleteMany({ where: { email } });
+  } catch (err) {
+    console.error("Прилагане на покани при регистрация:", err);
+  }
+
   await createSession({ id: user.id, email: user.email, name: user.name, role: user.role });
   redirect("/dashboard");
 }

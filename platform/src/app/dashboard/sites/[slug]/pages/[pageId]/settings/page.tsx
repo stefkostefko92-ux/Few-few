@@ -43,6 +43,8 @@ export default async function PageSettings({
             navOrder: page.navOrder,
             seoTitle: page.seoTitle ?? "",
             seoDescription: page.seoDescription ?? "",
+            // datetime-local очаква „YYYY-MM-DDTHH:mm"
+            publishAt: page.publishAt ? page.publishAt.toISOString().slice(0, 16) : "",
           }}
         />
       </div>
