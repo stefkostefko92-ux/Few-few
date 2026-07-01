@@ -33,7 +33,7 @@ const nextConfig = {
       "img-src 'self' data: https:",
       "font-src 'self' data:",
       "connect-src 'self'",
-      "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com https://www.openstreetmap.org",
+      "frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com https://www.openstreetmap.org https://openstreetmap.org",
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'",
