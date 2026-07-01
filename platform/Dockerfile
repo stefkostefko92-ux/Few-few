@@ -23,6 +23,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # подаваме dummy DATABASE_URL само за да генерираме клиента и да билднем.
 ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public
 RUN npx prisma generate && npm run build
+# public/ е по избор (в момента няма — robots.txt/sitemap са route-и). Гарантираме,
+# че съществува, за да не чупи COPY-то по-долу и да е готово за бъдещи статични файлове.
+RUN mkdir -p public
 
 # --- Продукционен образ (standalone) ---
 # next.config.mjs има output: "standalone" — .next/standalone носи минимален
