@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-06-30",
+    "updated": "2026-07-01",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -999,9 +999,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Helmet по подразбиране задава Strict-Transport-Security max-age=31536000; includeSubDom…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: zod 3.25.76: z.string().url() приема javascript: и data: схеми (success:true) — .url() … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „zod 3.25.76: z.string().url() приема javascript: и data: схеми (success:true) — .url() …\" (+1 още)"
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
