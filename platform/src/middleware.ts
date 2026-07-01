@@ -19,6 +19,9 @@ function isReserved(pathname: string): boolean {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot") ||
+    pathname.startsWith("/reset") ||
     pathname.startsWith("/legal") ||
     pathname.startsWith("/.well-known") ||
     pathname === "/favicon.ico" ||

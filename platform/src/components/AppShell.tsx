@@ -29,14 +29,14 @@ export function AppShell({
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-ink-400 sm:inline">
+            <Link href="/dashboard/profile" className="hidden text-ink-400 hover:text-white sm:inline">
               {user.name}
               {user.role === "OWNER" && (
                 <span className="ml-2 rounded bg-brand-600/20 px-1.5 py-0.5 text-xs text-brand-300">
                   собственик
                 </span>
               )}
-            </span>
+            </Link>
             <form action="/api/logout" method="post">
               <button type="submit" className="btn-ghost px-3 py-1.5 text-xs">
                 Изход

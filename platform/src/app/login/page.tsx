@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { login, type LoginState } from "./actions";
 import { LegalFooter } from "@/components/LegalFooter";
@@ -55,6 +56,10 @@ export default function LoginPage() {
           <button type="submit" className="btn-primary w-full" disabled={pending}>
             {pending ? "Влизане…" : "Вход"}
           </button>
+          <div className="flex items-center justify-between text-xs text-ink-500">
+            <Link href="/register" className="text-brand-400 hover:underline">Създай акаунт</Link>
+            <Link href="/forgot" className="hover:text-ink-300">Забравена парола?</Link>
+          </div>
         </form>
         </div>
       </div>
