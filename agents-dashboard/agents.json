@@ -1057,9 +1057,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: platform/ upload (be42a02): serve/sniff сигурността е чиста (магични байтове, isSafeSto… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ мултиезичност (957b485): localeEn е site-scope Boolean флаг (Site.localeEn, a… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ мултиезичност (957b485): localeEn е site-scope Boolean флаг (Site.localeEn, a…\" (+2 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
