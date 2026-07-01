@@ -10,115 +10,28 @@
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
   /* ───────── i18n ───────── */
-  var I18N = {
-    it: {
-      'skip': 'Vai al contenuto',
-      'nav.menu': 'Menu', 'nav.about': 'Chi siamo', 'nav.why': 'Perché noi',
-      'nav.delivery': 'Consegna', 'nav.contact': 'Contatti',
-      'hero.chip.halal': '🍢 Carne Halal', 'hero.chip.fresh': 'Forno & brace ogni giorno',
-      'hero.title1': 'Il vero kebab turco', 'hero.title2': 'a Bareggio.',
-      'hero.lead': 'Carne marinata e cotta alla brace, pizza con impasto fatto in casa, durum, piadine e falafel. Da gustare al tavolo, da asporto o a domicilio.',
-      'hero.cta.menu': 'Scopri il menu', 'hero.cta.call': 'Chiama & ordina',
-      'hero.note': 'Oltre 130 recensioni a 4.6★ su Google · Aperto tutti i giorni 12:00–24:00',
-      'about.eyebrow': 'La nostra storia', 'about.title': 'Sapori di <span class="accent">Istanbul</span>, cuore a Bareggio',
-      'about.p1': 'Uylas Kebap Center nasce dalla passione per la vera cucina turca di strada: carne selezionata, marinata con spezie e cotta lentamente alla brace, pane caldo ogni giorno e una pizza preparata con impasto fatto in casa.',
-      'about.p2': 'Qui a Bareggio serviamo famiglie, studenti e lavoratori che cercano un pasto generoso, onesto e veloce — al tavolo, da asporto o comodamente a casa. Ingredienti freschi, porzioni abbondanti e il sorriso di sempre.',
-      'about.stat1': 'anni a Bareggio', 'about.stat2': 'valutazione media', 'about.stat3': 'carne halal',
-      'about.photo': 'Foto del locale<br>(inserire immagine reale)',
-      'menu.eyebrow': 'Il menu', 'menu.title': 'Kebab e pizza a <span class="accent">Bareggio</span>',
-      'ob.call': 'Chiama', 'ob.order': 'Ordina online',
-      'menu.lead': 'Prezzi indicativi — la lista completa e aggiornata è disponibile in negozio e sulle app di consegna.',
-      'menu.cat.kebab': '🥙 Kebab & Döner', 'menu.cat.pizza': '🍕 Pizze & Turche', 'menu.cat.combo': '🍟 Menù combo',
-      'menu.cat.veg': '🌱 Veg & Falafel', 'menu.cat.extra': '🥤 Extra, Dolci & Bibite',
-      'menu.allergen': 'Per allergeni e intolleranze chiedi al personale: un registro scritto degli allergeni è disponibile in negozio. Opzioni vegetariane e halal disponibili.',
-      'menu.order': 'Ordina ora →',
-      'd.k1': 'Carne di vitello e tacchino, insalata, pomodoro, cipolla e salse.',
-      'd.k2': 'Piadina turca yufka arrotolata con doner, verdure fresche e salse.',
-      'd.k3': 'La versione XL del nostro panino doner kebab più amato.',
-      'd.k4': 'Generosa porzione di carne alla brace con patatine e insalata.',
-      'd.k5': 'Carne di vitello e tacchino su riso, con salse di yogurt e piccante.',
-      'd.k6': 'Solo carne, in tre formati: piccola, media e grande.',
-      'd.k7': 'Polpette di ceci e verdure macinate con spezie, patatine e insalata.',
-      'd.p1': 'La nostra firma: pomodoro, mozzarella, carne di doner kebab, insalata, cipolla e salse.',
-      'd.p2': 'Pomodoro e mozzarella. Impasto fatto in casa.',
-      'd.p3': 'Pomodoro, aglio e origano.',
-      'd.p4': 'Pomodoro, mozzarella e salame piccante.',
-      'd.p5': 'Pomodoro, mozzarella, prosciutto cotto, olive, capperi, funghi e carciofi.',
-      'd.p6': 'Pomodoro e mozzarella di bufala.',
-      'd.p7': 'Pomodoro, mozzarella, melanzane, zucchine e peperoni.',
-      'd.p8': 'Mozzarella, gorgonzola, taleggio e grana.',
-      'd.p9': 'Pomodoro, mozzarella, doner kebab e peperoni.',
-      'd.p10': 'Sottile pizza turca con carne macinata speziata.',
-      'd.p11': 'Pide turca a barchetta farcita con doner kebab.',
-      'd.p12': 'Pomodoro, mozzarella e carne di doner kebab.',
-      'd.m1': 'Panino doner kebab + patatine piccole + bibita in lattina 33cl.',
-      'd.m2': 'Piadina doner kebab + patatine piccole + bibita in lattina 33cl.',
-      'd.m3': 'Pizza margherita + patatine piccole + bibita in lattina 33cl.',
-      'd.m4': 'Panino falafel + patatine piccole + bibita in lattina 33cl.',
-      'd.m5': 'Panino con cotoletta + patatine piccole + bibita in lattina 33cl.',
-      'd.v1': 'Polpette di ceci e verdure macinate, insalata, pomodoro, cipolla e salse.',
-      'd.v2': 'Piadina con falafel, verdure fresche, pomodoro, cipolla e salse.',
-      'd.v3': 'Pomodoro, mozzarella e verdure grigliate.',
-      'd.v4': 'Pomodoro, cetrioli, peperoncino e prezzemolo — çoban salatası.',
-      'd.v5': 'Insalata verde, pomodoro, tonno, olive, peperoni e salse.',
-      'd.v6': 'Polpetta di ceci e verdure macinate con spezie.',
-      'd.e1': 'Croccanti, in tre formati: piccola, media e grande.',
-      'd.e2': 'Patate, formaggio e spezie (1 pezzo).',
-      'd.e3': 'Pasta sfoglia, pistacchio, burro e sciroppo di zucchero (4 pezzi).',
-      'd.e4': 'Pasta grattugiata, pistacchio e sciroppo di zucchero.',
-      'd.e5': 'Piadina dolce con Nutella e zucchero a velo.',
-      'd.e6': 'Bevanda turca a base di yogurt, fresca e dissetante.',
-      'd.e7': 'Pepsi, tè pesca/limone, oran soda, lemon soda e altre.',
-      'd.e8': 'Acqua naturale in bottiglia.',
-      'why.eyebrow': 'Perché Uylas', 'why.title': 'Buono. Onesto. <span class="accent">Generoso.</span>',
-      'why.1.t': 'Cottura alla brace', 'why.1.p': 'Carne marinata e cotta sullo spiedo verticale ogni giorno, per un sapore autentico e succoso.',
-      'why.2.t': 'Ingredienti freschi', 'why.2.p': 'Verdure di giornata, pane caldo e impasto pizza fatto in casa. Niente scorciatoie.',
-      'why.3.t': 'Veloce, sempre aperto', 'why.3.p': 'Tutti i giorni dalle 12:00 a mezzanotte. Pranzo, cena e dopo-serata.',
-      'why.4.t': 'Consegna a domicilio', 'why.4.p': 'A Bareggio e dintorni con Just Eat e Deliveroo, oppure ordina e ritira.',
-      'gal.eyebrow': 'Galleria', 'gal.title': 'Direttamente dalla <span class="accent">brace</span>',
-      'gal.ph1': 'Spiedo di kebab', 'gal.ph2': 'Pizza al forno', 'gal.ph3': 'Durum farcito',
-      'gal.ph4': 'Patatine', 'gal.ph5': 'Falafel', 'gal.ph6': 'Il locale',
-      'gal.note': 'Illustrazioni del brand — sostituiscile con le foto reali dei tuoi piatti quando vuoi.',
-      'rev.lead': 'Centinaia di recensioni positive da clienti di Bareggio, Cornaredo, Sedriano e Corbetta.',
-      'rev.note': 'Testimonianze illustrative. Leggi le recensioni reali sul nostro <a href="https://www.google.com/maps/search/?api=1&amp;query=Uylas+Kebap+Center+Bareggio" target="_blank" rel="noopener">profilo Google</a>.',
-      'rev.1': '„Il miglior kebab della zona, porzioni enormi e prezzo onesto. Carne saporita e personale gentilissimo.“',
-      'rev.2': '„Ordiniamo a casa quasi ogni venerdì. Pizza e durum sempre puntuali e caldi. Consigliatissimo!“',
-      'rev.3': '„Locale pulito, servizio veloce e falafel davvero buoni. Ottimo anche per chi non mangia carne.“',
-      'del.eyebrow': 'Ordina ora', 'del.title': 'A casa tua, <span class="accent">caldo e veloce</span>',
-      'del.lead': 'Consegniamo a Bareggio e nei comuni vicini. Ordina online sulle app o chiamaci direttamente per asporto e prenotazioni.',
-      'del.online': 'Ordina online', 'del.online2': 'Ordina online', 'del.call': 'Chiama e ordina',
-      'del.cta': '📞 Chiama adesso', 'del.note': 'Asporto pronto in pochi minuti · Prenotazione tavoli disponibile',
-      'con.eyebrow': 'Dove siamo', 'con.title': 'Passa a <span class="accent">trovarci</span>',
-      'con.open': 'Aperto adesso', 'con.closed': 'Chiuso adesso',
-      'con.addr': 'Indirizzo', 'con.phone': 'Telefono', 'con.hours': 'Orari di apertura',
-      'con.maptext': 'La mappa di Google viene caricata solo con il tuo consenso (cookie di terze parti).',
-      'con.mapbtn': 'Carica la mappa', 'con.mapalt': 'oppure apri in Google Maps →',
-      'day.mon': 'Lunedì', 'day.tue': 'Martedì', 'day.wed': 'Mercoledì', 'day.thu': 'Giovedì',
-      'day.fri': 'Venerdì', 'day.sat': 'Sabato', 'day.sun': 'Domenica',
-      'foot.tag': 'Il vero kebab turco, la pizza fatta in casa e i sapori mediterranei nel cuore di Bareggio.',
-      'foot.explore': 'Esplora', 'foot.contact': 'Contatti', 'foot.legal': 'Informazioni',
-      'foot.hours': 'Tutti i giorni 12:00–24:00', 'foot.privacy': 'Privacy Policy',
-      'foot.cookie': 'Cookie Policy', 'foot.prefs': 'Preferenze cookie', 'foot.vat': 'da inserire',
-      'foot.credit': 'Design &amp; sviluppo <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth</a>',
-      'ck.title': '🍪 Rispettiamo la tua privacy',
-      'ck.text': 'Usiamo solo cookie tecnici necessari al funzionamento del sito. Eventuali cookie statistici o di mappe vengono attivati solo con il tuo consenso. <a href="cookie.html">Leggi la Cookie Policy</a>.',
-      'ck.accept': 'Accetta tutti', 'ck.reject': 'Rifiuta non necessari'
-    },
-    en: {
+  var I18N_EN = {
+      'con.lead': 'Uylas Kebap Center in Cornaredo, Bareggio and Sedriano — always close to you in west Milan.',
+      'sede.main': '★ Main venue · wood-fired oven',
+      'sede.call': 'Call',
+      'sede.dir': 'Directions',
+      'sede.h.cornaredo': 'Tue–Sun 11:00–24:00 · Closed Monday',
+      'sede.h.bareggio': 'Every day 12:00–24:00',
+      'sede.h.sedriano': 'Tue–Sun 11:30–24:00 · Closed Monday',
       'skip': 'Skip to content',
       'nav.menu': 'Menu', 'nav.about': 'About us', 'nav.why': 'Why us',
       'nav.delivery': 'Delivery', 'nav.contact': 'Contact',
       'hero.chip.halal': '🍢 Halal meat', 'hero.chip.fresh': 'Oven & grill daily',
-      'hero.title1': 'Authentic Turkish kebab', 'hero.title2': 'in Bareggio.',
+      'hero.title1': 'Authentic Turkish kebab', 'hero.title2': 'in Milano Ovest.',
       'hero.lead': 'Marinated, flame-grilled meat, pizza with homemade dough, durum, piadina and falafel. Dine in, take away or delivered to your door.',
       'hero.cta.menu': 'See the menu', 'hero.cta.call': 'Call & order',
-      'hero.note': '130+ reviews at 4.6★ on Google · Open every day 12:00–24:00',
-      'about.eyebrow': 'Our story', 'about.title': 'Flavours of <span class="accent">Istanbul</span>, heart in Bareggio',
+      'hero.note': '3 locations: Cornaredo · Bareggio · Sedriano — wood-fired oven & free delivery',
+      'about.eyebrow': 'Our story', 'about.title': 'Flavours of <span class="accent">Istanbul</span>, heart in west Milan',
       'about.p1': 'Uylas Kebap Center was born from a passion for authentic Turkish street food: selected meat, spice-marinated and slow-grilled, warm bread every day and pizza made with homemade dough.',
-      'about.p2': 'Here in Bareggio we serve families, students and workers looking for a generous, honest and quick meal — at the table, to take away or comfortably at home. Fresh ingredients, big portions and a warm welcome.',
-      'about.stat1': 'years in Bareggio', 'about.stat2': 'average rating', 'about.stat3': 'halal meat',
+      'about.p2': 'With three locations in Cornaredo, Bareggio and Sedriano we serve families, students and workers looking for a generous, honest and quick meal — dine in, take away or at home. Fresh ingredients, big portions and a warm welcome.',
+      'about.stat1': 'locations nearby', 'about.stat2': 'wood-fired oven', 'about.stat3': 'halal meat',
       'about.photo': 'Photo of the venue<br>(add real image)',
-      'menu.eyebrow': 'The menu', 'menu.title': 'Kebab &amp; pizza in <span class="accent">Bareggio</span>',
+      'menu.eyebrow': 'The menu', 'menu.title': 'Kebab &amp; pizza <span class="accent">at Uylas</span>',
       'ob.call': 'Call', 'ob.order': 'Order online',
       'menu.lead': 'Indicative prices — the full, up-to-date list is available in store and on the delivery apps.',
       'menu.cat.kebab': '🥙 Kebab & Döner', 'menu.cat.pizza': '🍕 Pizzas & Turkish specials', 'menu.cat.combo': '🍟 Combo meals',
@@ -164,53 +77,55 @@
       'd.e7': 'Pepsi, peach/lemon iced tea, oran soda, lemon soda and more.',
       'd.e8': 'Still bottled water.',
       'why.eyebrow': 'Why Uylas', 'why.title': 'Tasty. Honest. <span class="accent">Generous.</span>',
-      'why.1.t': 'Flame-grilled', 'why.1.p': 'Meat marinated and cooked on the vertical spit every day for an authentic, juicy flavour.',
+      'why.1.t': 'Wood oven & grill', 'why.1.p': 'Pizza baked in the wood-fired oven and flame-grilled kebab every day, for an authentic taste.',
       'why.2.t': 'Fresh ingredients', 'why.2.p': 'Daily vegetables, warm bread and homemade pizza dough. No shortcuts.',
-      'why.3.t': 'Fast, always open', 'why.3.p': 'Every day from noon to midnight. Lunch, dinner and late night.',
-      'why.4.t': 'Home delivery', 'why.4.p': 'Across Bareggio and nearby towns via Just Eat and Deliveroo, or order and collect.',
+      'why.3.t': 'Non-stop hours', 'why.3.p': 'Tuesday to Sunday, 11:00–24:00 non-stop. Closed Monday. Meal vouchers accepted.',
+      'why.4.t': 'Home delivery', 'why.4.p': 'Across Cornaredo, Bareggio and nearby towns via Just Eat and Deliveroo, or order and collect.',
       'gal.eyebrow': 'Gallery', 'gal.title': 'Straight off the <span class="accent">grill</span>',
       'gal.ph1': 'Kebab spit', 'gal.ph2': 'Oven pizza', 'gal.ph3': 'Filled durum',
       'gal.ph4': 'Fries', 'gal.ph5': 'Falafel', 'gal.ph6': 'The venue',
       'gal.note': 'Brand illustrations — swap them for real photos of your dishes whenever you like.',
-      'rev.lead': 'Hundreds of positive reviews from customers in Bareggio, Cornaredo, Sedriano and Corbetta.',
-      'rev.note': 'Illustrative testimonials. Read the real reviews on our <a href="https://www.google.com/maps/search/?api=1&amp;query=Uylas+Kebap+Center+Bareggio" target="_blank" rel="noopener">Google profile</a>.',
+      'rev.lead': 'Hundreds of positive reviews from customers in Cornaredo, Bareggio, Pero and Rho.',
+      'rev.note': 'Illustrative testimonials. Read the real reviews on our <a href="https://www.google.com/maps/search/?api=1&amp;query=Uylas+Kebap+Center+Cornaredo" target="_blank" rel="noopener">Google profile</a>.',
       'rev.1': '“The best kebab around, huge portions and a fair price. Tasty meat and very kind staff.”',
       'rev.2': '“We order home almost every Friday. Pizza and durum always on time and hot. Highly recommended!”',
       'rev.3': '“Clean place, fast service and really good falafel. Great for non-meat eaters too.”',
       'del.eyebrow': 'Order now', 'del.title': 'To your door, <span class="accent">hot and fast</span>',
-      'del.lead': 'We deliver in Bareggio and nearby towns. Order online on the apps or call us directly for takeaway and reservations.',
+      'del.lead': 'Free home delivery in Cornaredo; 2 € to neighbouring towns, free for orders over 15 €. Order on the apps or call us for takeaway and reservations.',
       'del.online': 'Order online', 'del.online2': 'Order online', 'del.call': 'Call & order',
       'del.cta': '📞 Call now', 'del.note': 'Takeaway ready in minutes · Table reservations available',
-      'con.eyebrow': 'Find us', 'con.title': 'Come <span class="accent">visit us</span>',
+      'con.eyebrow': 'Find us', 'con.title': 'Our <span class="accent">three locations</span>',
       'con.open': 'Open now', 'con.closed': 'Closed now',
       'con.addr': 'Address', 'con.phone': 'Phone', 'con.hours': 'Opening hours',
-      'con.maptext': 'The Google map loads only with your consent (third-party cookies).',
+      'con.maptext': 'The Google map (Cornaredo) loads only with your consent.',
       'con.mapbtn': 'Load the map', 'con.mapalt': 'or open in Google Maps →',
       'day.mon': 'Monday', 'day.tue': 'Tuesday', 'day.wed': 'Wednesday', 'day.thu': 'Thursday',
       'day.fri': 'Friday', 'day.sat': 'Saturday', 'day.sun': 'Sunday',
-      'foot.tag': 'Authentic Turkish kebab, homemade pizza and Mediterranean flavours in the heart of Bareggio.',
+      'foot.tag': 'Kebap, bar and pizzeria with Turkish specialties and wood-fired pizza in the heart of Cornaredo.',
       'foot.explore': 'Explore', 'foot.contact': 'Contact', 'foot.legal': 'Information',
-      'foot.hours': 'Every day 12:00–24:00', 'foot.privacy': 'Privacy Policy',
+      'foot.hours': 'Tue–Sun 11:00–24:00 · Mon closed', 'foot.privacy': 'Privacy Policy',
       'foot.cookie': 'Cookie Policy', 'foot.prefs': 'Cookie preferences', 'foot.vat': 'to be added',
       'foot.credit': 'Design &amp; development <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth</a>',
       'ck.title': '🍪 We respect your privacy',
       'ck.text': 'We only use technical cookies required for the site to work. Any analytics or map cookies are enabled only with your consent. <a href="cookie.html">Read the Cookie Policy</a>.',
       'ck.accept': 'Accept all', 'ck.reject': 'Reject non-essential'
-    }
   };
 
+  /* Италианският е източникът на истината в HTML. Пазим оригиналите и
+     превеждаме към EN само при превключване; за IT връщаме оригинала. */
+  var I18N_NODES = $$('[data-i18n]');
+  I18N_NODES.forEach(function (el) { el.setAttribute('data-it', el.innerHTML); });
   function applyLang(lang) {
-    var dict = I18N[lang] || I18N.it;
-    $$('[data-i18n]').forEach(function (el) {
+    var en = lang === 'en';
+    I18N_NODES.forEach(function (el) {
       var key = el.getAttribute('data-i18n');
-      if (dict[key] != null) el.innerHTML = dict[key];
+      el.innerHTML = (en && I18N_EN[key] != null) ? I18N_EN[key] : el.getAttribute('data-it');
     });
-    document.documentElement.lang = lang;
+    document.documentElement.lang = en ? 'en' : 'it';
     $$('.lang-toggle button').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.getAttribute('data-lang') === lang));
     });
     try { localStorage.setItem('uylas_lang', lang); } catch (e) {}
-    refreshOpenState(lang);
   }
 
   /* lingua iniziale: query ?lang= → localStorage → browser → it */
@@ -218,7 +133,7 @@
     var q = new URLSearchParams(location.search).get('lang');
     var saved; try { saved = localStorage.getItem('uylas_lang'); } catch (e) {}
     var nav = (navigator.language || 'it').slice(0, 2);
-    var lang = q || saved || (I18N[nav] ? nav : 'it');
+    var lang = (q === 'en' || q === 'it') ? q : (saved || (nav === 'en' ? 'en' : 'it'));
     applyLang(lang);
   }
   $$('.lang-toggle button').forEach(function (b) {
@@ -300,28 +215,6 @@
     reveals.forEach(function (el) { io.observe(el); });
   } else {
     reveals.forEach(function (el) { el.classList.add('in'); });
-  }
-
-  /* ───────── Stato apertura (12:00–24:00 ogni giorno) ───────── */
-  function refreshOpenState(lang) {
-    var dict = I18N[lang] || I18N.it;
-    var now = new Date();
-    var h = now.getHours();
-    var open = h >= 12; // aperto 12:00 → mezzanotte
-    var badge = $('#openBadge');
-    if (badge) {
-      var label = badge.querySelector('[data-i18n="con.open"], [data-i18n="con.closed"]');
-      badge.classList.toggle('closed', !open);
-      if (label) {
-        label.textContent = open ? dict['con.open'] : dict['con.closed'];
-        label.setAttribute('data-i18n', open ? 'con.open' : 'con.closed');
-      }
-    }
-    // evidenzia il giorno corrente
-    var day = now.getDay();
-    $$('#hoursTable tr').forEach(function (tr) {
-      tr.classList.toggle('today', String(tr.getAttribute('data-day')) === String(day));
-    });
   }
 
   /* ───────── Cookie consent ───────── */
