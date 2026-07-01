@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 const COOKIE = "plf_session";
 const MAX_AGE = 60 * 60 * 8; // 8 часа
@@ -77,12 +78,19 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     const { payload } = await jwtVerify(token, secret(), {
       algorithms: ["HS256"],
     });
-    const role = payload.role === "OWNER" ? "OWNER" : "MEMBER";
+    // Не се доверяваме на role/active от подписания токен (живее 8h): зареждаме
+    // потребителя на живо, за да важат веднага деактивиране/изтриване/смяна на
+    // роля. Membership-достъпът и без това се чете свежо от базата.
+    const dbUser = await prisma.user.findUnique({
+      where: { id: String(payload.sub) },
+      select: { id: true, email: true, name: true, role: true, active: true },
+    });
+    if (!dbUser || !dbUser.active) return null;
     return {
-      id: String(payload.sub),
-      email: String(payload.email),
-      name: String(payload.name),
-      role,
+      id: dbUser.id,
+      email: dbUser.email,
+      name: dbUser.name,
+      role: dbUser.role === "OWNER" ? "OWNER" : "MEMBER",
     };
   } catch {
     return null;

@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { runHealthCheck } from "@/lib/sites";
 import { logAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
+// Сравнение с постоянно време (избягва timing по токена).
+function safeEqual(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ba.length !== bb.length) return false;
+  return timingSafeEqual(ba, bb);
+}
+
 // Периодична здравна проверка на всички активни сайтове.
-// Пази се с таен токен: Authorization: Bearer <CRON_TOKEN>.
-//   curl -H "Authorization: Bearer ТАЙНА" https://.../api/cron/health
+// Само POST и само със секрет в заглавие (не в URL, за да не влиза в логове):
+//   curl -X POST -H "Authorization: Bearer ТАЙНА" https://.../api/cron/health
 export async function POST(req: NextRequest) {
   const token = process.env.CRON_TOKEN;
   if (!token) {
@@ -17,8 +26,8 @@ export async function POST(req: NextRequest) {
       { status: 503 },
     );
   }
-  const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${token}`) {
+  const auth = req.headers.get("authorization") ?? "";
+  if (!safeEqual(auth, `Bearer ${token}`)) {
     return NextResponse.json({ error: "Неоторизиран." }, { status: 401 });
   }
 
@@ -38,6 +47,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ checked: results.length, down, results });
 }
-
-// Позволяваме и GET за лесно тестване с браузър/уеб-хук, който праща GET.
-export const GET = POST;

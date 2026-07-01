@@ -65,7 +65,7 @@ POST <deployHookUrl | apiBaseUrl/api/platform/deploy>  → 2xx при приет
 Пазен с таен токен маршрут проверява всички активни сайтове:
 
 ```bash
-curl -H "Authorization: Bearer $CRON_TOKEN" https://platform.carbonstealth.eu/api/cron/health
+curl -X POST -H "Authorization: Bearer $CRON_TOKEN" https://platform.carbonstealth.eu/api/cron/health
 ```
 
 Закачете го на cron (systemd timer / GitHub Actions / външен уеб-хук) на желания интервал.
