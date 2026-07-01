@@ -14,6 +14,7 @@ subdirectory.
 | `zabobovdol/`  | За Бобов дол  | Next.js 15 (App Router) · React 19 · TypeScript · Prisma · PostgreSQL · Tailwind | https://zabobovdol.carbonstealth.eu |
 | `medqr/`       | MedQR         | Node.js · Express · EJS · SQLite (better-sqlite3) — plain JS (ESM) | https://medqr.carbonstealth.eu      |
 | `supreme/`     | Supreme Bot   | Express · discord.js v14 · React 18 + Vite · Prisma · PostgreSQL · Redis · Docker — plain JS (ESM) | https://supreme.carbonstealth.eu    |
+| `treydar/`     | Трейдъра      | Node.js · CCXT — spot трейдинг бот за Binance, plain JS (ESM); риск-мениджмънт първо, НЕ инвестиционен съвет | — (локален/self-hosted)             |
 
 There is **no root-level `package.json`** — `cd` into the project you are
 changing and run its scripts there. The root `.gitignore` only ignores

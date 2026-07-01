@@ -36,7 +36,10 @@ const files = (statSync(root).isDirectory() ? walk(root) : [root])
 for (const f of files) {
   let src = "";
   try { src = readFileSync(f, "utf8"); } catch { continue; }
-  if (!/(backtest|back_test|equity|sharpe|drawdown|ohlcv|candles|bars)/i.test(src)) continue; // не изглежда бектест
+  // Само файлове, които РЕАЛНО са бектест — по име или по изричен маркер — иначе бот-файловете
+  // (които уместно споменават equity/drawdown в риск логиката) дават лъжливи находки.
+  const isBacktest = /backtest|back_test/i.test(f) || /in-?sample|out.?of.?sample|walk.?forward/i.test(src);
+  if (!isBacktest) continue;
   const rel = f.replace(root, "").replace(/^\//, "") || f;
 
   // Такси / комисионни

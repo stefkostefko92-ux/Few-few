@@ -31,6 +31,15 @@
 - **2026-07-01:** WebSocket устойчивост: auto-reconnect с backoff + resubscribe + heartbeat; при празнина
   пресверявай отворени поръчки/позиции през REST преди да продължиш; listenKey за user-data stream има
   срок → подновявай _(ws resilience; verified; .claude/agents/treydara.md)_
+- **2026-07-01:** Binance (вкл. testnet.binance.vision) връща HTTP 451 „Service unavailable from a
+  restricted location“ за IP на много дейта-центрове/облаци и ограничени юрисдикции — ботът трябва да се
+  пуска от разрешен регион/IP; не е бъг в кода. Наблюдавано на живо при exchangeInfo от CI средата
+  _(Binance 451 geo-block; verified; наблюдение GET https://testnet.binance.vision/api/v3/exchangeInfo → 451)_
+- **2026-07-01:** Референтна имплементация: treydar/ (spot бот, CCXT, ESM) — config.js gate-ва live с
+  тройна спирачка (BINANCE_TESTNET=false + TRADING_LIVE=true + I_UNDERSTAND_THE_RISK=РАЗБИРАМ-РИСКА);
+  risk.js носи тестваната логика (positionSize от риск, max-drawdown kill-switch); execute.js прави
+  идемпотентни поръчки (newClientOrderId + reconcile) + стоп на борсата; backtest.js е no-look-ahead с
+  такси+slippage+OOS _(treydar reference impl; verified; treydar/)_
 
 ## Карантина (непроверени хипотези — НЕ факт)
 - _(празно)_
