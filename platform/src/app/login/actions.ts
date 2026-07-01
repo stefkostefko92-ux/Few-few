@@ -24,7 +24,9 @@ export async function login(
 
   // Лимит по IP: 8 опита на 5 минути.
   const hdrs = await headers();
-  const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  // Последната стойност е добавената от доверения reverse proxy; първата е
+  // клиентски-контролируема → взимаме последната срещу spoof.
+  const ip = hdrs.get("x-forwarded-for")?.split(",").pop()?.trim() || "local";
   if (!rateLimit(`login:${ip}`, 8, 5 * 60_000)) {
     return { error: "Твърде много опити. Опитайте отново след няколко минути." };
   }

@@ -19,7 +19,7 @@ export type Block =
   | { id: string; type: "testimonials"; items: { quote: string; author: string; role: string }[] }
   | { id: string; type: "pricing"; plans: { name: string; price: string; period: string; features: string[]; href: string }[] }
   | { id: string; type: "video"; url: string }
-  | { id: string; type: "map"; query: string }
+  | { id: string; type: "map"; url: string }
   | { id: string; type: "form"; title: string; buttonLabel: string; successMessage: string }
   | { id: string; type: "divider" }
   | { id: string; type: "spacer"; size: SpacerSize };
@@ -54,7 +54,7 @@ const blockSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string(), type: z.literal("testimonials"), items: z.array(z.object({ quote: z.string().max(600), author: z.string().max(120), role: z.string().max(120) })).max(20) }),
   z.object({ id: z.string(), type: z.literal("pricing"), plans: z.array(z.object({ name: z.string().max(80), price: z.string().max(40), period: z.string().max(40), features: z.array(z.string().max(160)).max(15), href: httpOrEmpty })).max(6) }),
   z.object({ id: z.string(), type: z.literal("video"), url: httpOrEmpty }),
-  z.object({ id: z.string(), type: z.literal("map"), query: z.string().max(200) }),
+  z.object({ id: z.string(), type: z.literal("map"), url: httpOrEmpty }),
   z.object({ id: z.string(), type: z.literal("form"), title: z.string().max(160), buttonLabel: z.string().max(80), successMessage: z.string().max(300) }),
   z.object({ id: z.string(), type: z.literal("divider") }),
   z.object({ id: z.string(), type: z.literal("spacer"), size: z.enum(["sm", "md", "lg"]) }),
@@ -100,7 +100,7 @@ export function makeBlock(type: BlockType): Block {
     case "video":
       return { id, type, url: "" };
     case "map":
-      return { id, type, query: "Бобов дол" };
+      return { id, type, url: "" };
     case "form":
       return { id, type, title: "Свържете се с нас", buttonLabel: "Изпрати", successMessage: "Благодарим! Ще се свържем с вас скоро." };
     case "divider":
@@ -151,10 +151,20 @@ export function videoEmbedSrc(url: string): string | null {
   return null;
 }
 
-// Безопасен embed адрес за карта (OpenStreetMap търсене по текст).
-export function mapEmbedSrc(query: string): string {
-  const q = encodeURIComponent(query.slice(0, 200));
-  return `https://www.openstreetmap.org/export/embed.html?bbox=&layer=mapnik&marker=&query=${q}`;
+// Валиден embed адрес за карта — само OpenStreetMap „Споделяне → HTML“ iframe
+// (https://www.openstreetmap.org/export/embed.html?bbox=…&marker=…). Приемаме
+// само този хост и път, за да няма чужди cookies/тракери и счупени карти.
+export function mapEmbedSrc(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "openstreetmap.org" && u.pathname === "/export/embed.html") {
+      return u.href;
+    }
+  } catch {
+    /* невалиден URL */
+  }
+  return null;
 }
 
 // --- Безопасно рендиране на текст ---

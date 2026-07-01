@@ -40,7 +40,9 @@ export async function submitContactAction(
   const d = parsed.data;
 
   const hdrs = await headers();
-  const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  // Последната стойност е добавената от доверения reverse proxy; първата е
+  // клиентски-контролируема (nginx append-ва) → взимаме последната срещу spoof.
+  const ip = hdrs.get("x-forwarded-for")?.split(",").pop()?.trim() || "local";
   if (!rateLimit(`contact:${ip}`, 5, 10 * 60_000)) {
     return { error: "Твърде много заявки. Опитайте по-късно." };
   }

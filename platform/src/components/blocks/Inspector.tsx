@@ -80,7 +80,12 @@ export function Inspector({
       )}
 
       {block.type === "map" && (
-        <Field label="Място (търсене в картата)" value={block.query} onChange={(query) => onChange({ query })} />
+        <>
+          <Field label="Адрес за вграждане (OpenStreetMap)" value={block.url} onChange={(url) => onChange({ url })} />
+          <p className="text-[11px] text-ink-600">
+            В openstreetmap.org намерете мястото → „Споделяне“ → „HTML“ и копирайте адреса от полето (започва с https://www.openstreetmap.org/export/embed.html…).
+          </p>
+        </>
       )}
 
       {block.type === "form" && (

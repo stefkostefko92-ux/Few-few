@@ -258,18 +258,20 @@ export function BlockRender({
         </div>
       );
     }
-    case "map":
-      if (!block.query) return null;
+    case "map": {
+      const mapSrc = mapEmbedSrc(block.url);
+      if (!mapSrc) return null;
       return (
         <div className="h-80 w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
           <iframe
-            src={mapEmbedSrc(block.query)}
-            title={`Карта: ${block.query}`}
+            src={mapSrc}
+            title="Карта"
             className="h-full w-full"
             loading="lazy"
           />
         </div>
       );
+    }
     case "form":
       return (
         <SiteContactForm

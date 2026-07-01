@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 
 // Изчистване по давност (GDPR чл. 5(1)(e) — ограничение на съхранението).
 // Задържане по подразбиране (презаписва се през env):
-//   AuditLog     — 365 дни (сигурност/отчетност; съдържа имейли)
-//   HealthCheck  — 90 дни (оперативна телеметрия)
+//   AuditLog        — 365 дни (сигурност/отчетност; съдържа имейли)
+//   HealthCheck     — 90 дни (оперативна телеметрия)
+//   FormSubmission  — 365 дни (запитвания от контактни форми; имена/имейли)
 // Пази се със същия таен токен като здравния cron.
 //   curl -X POST -H "Authorization: Bearer ТАЙНА" https://.../api/cron/prune
 
@@ -37,24 +38,29 @@ export async function POST(req: NextRequest) {
 
   const auditDays = days("AUDIT_RETENTION_DAYS", 365);
   const healthDays = days("HEALTH_RETENTION_DAYS", 90);
+  const submissionDays = days("SUBMISSION_RETENTION_DAYS", 365);
   const auditBefore = new Date(Date.now() - auditDays * 86_400_000);
   const healthBefore = new Date(Date.now() - healthDays * 86_400_000);
+  const submissionBefore = new Date(Date.now() - submissionDays * 86_400_000);
 
-  const [audit, health] = await prisma.$transaction([
+  const [audit, health, submissions] = await prisma.$transaction([
     prisma.auditLog.deleteMany({ where: { createdAt: { lt: auditBefore } } }),
     prisma.healthCheck.deleteMany({ where: { checkedAt: { lt: healthBefore } } }),
+    prisma.formSubmission.deleteMany({ where: { createdAt: { lt: submissionBefore } } }),
   ]);
 
   await logAudit(null, {
     action: "DELETE",
     entity: "AuditLog",
-    summary: `Изчистване по давност: ${audit.count} одит записа (>${auditDays}д), ${health.count} проверки (>${healthDays}д)`,
+    summary: `Изчистване по давност: ${audit.count} одит записа (>${auditDays}д), ${health.count} проверки (>${healthDays}д), ${submissions.count} заявки (>${submissionDays}д)`,
   });
 
   return NextResponse.json({
     prunedAuditLogs: audit.count,
     prunedHealthChecks: health.count,
+    prunedSubmissions: submissions.count,
     auditRetentionDays: auditDays,
     healthRetentionDays: healthDays,
+    submissionRetentionDays: submissionDays,
   });
 }
