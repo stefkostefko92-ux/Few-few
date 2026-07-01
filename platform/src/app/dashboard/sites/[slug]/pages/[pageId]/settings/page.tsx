@@ -1,0 +1,51 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { requireUser } from "@/lib/auth";
+import { getSiteForUser } from "@/lib/access";
+import { prisma } from "@/lib/prisma";
+import { PageSettingsForm } from "@/components/blocks/PageSettingsForm";
+import { updatePageSettingsAction } from "../../actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function PageSettings({
+  params,
+}: {
+  params: Promise<{ slug: string; pageId: string }>;
+}) {
+  const { slug, pageId } = await params;
+  const user = await requireUser();
+  const found = await getSiteForUser(user, slug, "manage");
+  if (!found) notFound();
+  const page = await prisma.page.findFirst({
+    where: { id: pageId, siteId: found.site.id },
+  });
+  if (!page) notFound();
+
+  return (
+    <div className="mx-auto max-w-xl space-y-6">
+      <div>
+        <Link
+          href={`/dashboard/sites/${slug}/pages/${pageId}`}
+          className="text-xs text-ink-500 hover:text-ink-300"
+        >
+          ← Обратно към конструктора
+        </Link>
+        <h1 className="mt-1 text-xl font-semibold text-white">Настройки на страницата</h1>
+        <p className="text-sm text-ink-400">{page.title}</p>
+      </div>
+
+      <div className="card">
+        <PageSettingsForm
+          action={updatePageSettingsAction.bind(null, slug, pageId)}
+          init={{
+            showInNav: page.isHome ? true : page.showInNav,
+            navOrder: page.navOrder,
+            seoTitle: page.seoTitle ?? "",
+            seoDescription: page.seoDescription ?? "",
+          }}
+        />
+      </div>
+    </div>
+  );
+}

@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseBlocks } from "@/lib/blocks";
 import { BlockView } from "@/components/blocks/BlockView";
-import { LanguageSwitcher } from "@/components/blocks/LanguageSwitcher";
+import { SiteChrome } from "@/components/blocks/SiteChrome";
 import { blocksToPlainText, pageUrl, siteJsonLd } from "@/lib/seo";
 import { localeState, LOCALE_OG } from "@/lib/locale";
+import { loadSiteNav } from "@/lib/site-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -36,9 +37,11 @@ export async function generateMetadata({
   const primary = locale === "en" ? enBlocks : bgBlocks;
   const blocks = primary.length > 0 ? primary : bgBlocks; // резерв към BG
   const pageTitle =
-    locale === "en" ? data.page.titleEn || data.page.title : data.page.title;
+    (data.page.seoTitle && data.page.seoTitle) ||
+    (locale === "en" ? data.page.titleEn || data.page.title : data.page.title);
   const title = `${pageTitle} · ${data.site.name}`;
-  const description = blocksToPlainText(blocks).slice(0, 155) || undefined;
+  const description =
+    data.page.seoDescription || blocksToPlainText(blocks).slice(0, 155) || undefined;
   const bgUrl = pageUrl(data.site.slug, "");
   const enUrl = `${bgUrl}?lang=en`;
   const url = locale === "en" ? enUrl : bgUrl;
@@ -46,6 +49,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    icons: data.site.faviconUrl ? { icon: data.site.faviconUrl } : undefined,
     alternates: {
       canonical: url,
       languages: showEn ? { bg: bgUrl, en: enUrl, "x-default": bgUrl } : undefined,
@@ -84,6 +88,7 @@ export default async function SiteHome({
   const pageTitle =
     locale === "en" ? data.page.titleEn || data.page.title : data.page.title;
 
+  const nav = await loadSiteNav(data.site.id, data.site.slug, locale, "");
   const jsonLd = siteJsonLd({
     siteName: data.site.name,
     siteSlug: data.site.slug,
@@ -91,15 +96,27 @@ export default async function SiteHome({
     pageSlug: "",
   });
   return (
-    <div className="min-h-screen bg-white" lang={locale}>
+    <div lang={locale}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {showEn && (
-        <LanguageSwitcher basePath={`/site/${data.site.slug}`} active={locale} />
-      )}
-      <BlockView blocks={blocks} siteSlug={data.site.slug} locale={locale} />
+      <SiteChrome
+        siteName={data.site.name}
+        siteSlug={data.site.slug}
+        currentPath={`/site/${data.site.slug}`}
+        logoUrl={data.site.logoUrl}
+        brandColor={data.site.brandColor}
+        fontFamily={data.site.fontFamily}
+        navEnabled={data.site.navEnabled}
+        nav={nav}
+        locale={locale}
+        showEn={showEn}
+        footerText={data.site.footerText}
+        privacyUrl={data.site.privacyUrl}
+      >
+        <BlockView blocks={blocks} siteSlug={data.site.slug} locale={locale} />
+      </SiteChrome>
     </div>
   );
 }

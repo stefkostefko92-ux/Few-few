@@ -78,17 +78,18 @@ export function BlockRender({
       );
     case "button": {
       if (!block.href) return null;
-      const style =
-        block.variant === "primary"
-          ? "bg-brand-600 text-white shadow-lg shadow-brand-600/25 hover:bg-brand-500 hover:shadow-xl hover:shadow-brand-600/30"
-          : "border border-slate-300 bg-white/60 text-slate-700 backdrop-blur hover:border-slate-400 hover:bg-white";
+      const isPrimary = block.variant === "primary";
+      const cls = isPrimary
+        ? "text-[color:var(--pub-accent-text)] shadow-lg hover:opacity-90"
+        : "border border-slate-300 bg-white/60 text-slate-700 backdrop-blur hover:border-slate-400 hover:bg-white";
       return (
         <div className={`flex ${justifyCls[block.align]}`}>
           <a
             href={block.href}
             target="_blank"
             rel="noreferrer"
-            className={`pub-btn group inline-flex items-center gap-1.5 rounded-xl px-6 py-3 text-sm font-semibold tracking-wide ${style}`}
+            style={isPrimary ? { backgroundColor: "var(--pub-accent, #4f46e5)" } : undefined}
+            className={`pub-btn group inline-flex items-center gap-1.5 rounded-xl px-6 py-3 text-sm font-semibold tracking-wide ${cls}`}
           >
             {block.label}
             <span
@@ -104,7 +105,11 @@ export function BlockRender({
     case "hero":
       return (
         <div
-          className={`relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-900 px-6 py-20 text-white shadow-2xl shadow-brand-900/25 sm:px-12 sm:py-24 ${alignCls[block.align]}`}
+          style={{
+            backgroundImage:
+              "linear-gradient(135deg, var(--pub-accent, #4f46e5) 0%, var(--pub-accent-dark, #3730a3) 100%)",
+          }}
+          className={`relative isolate overflow-hidden rounded-3xl px-6 py-20 text-white shadow-2xl sm:px-12 sm:py-24 ${alignCls[block.align]}`}
         >
           <HeroBackdrop />
           <div className={`relative flex flex-col ${itemsCls[block.align]}`}>
@@ -112,7 +117,7 @@ export function BlockRender({
               {block.title}
             </h2>
             {block.subtitle && (
-              <p className="pub-body mt-5 max-w-xl text-lg leading-relaxed text-brand-100/95 sm:text-xl">
+              <p className="pub-body mt-5 max-w-xl text-lg leading-relaxed text-white/90 sm:text-xl">
                 {block.subtitle}
               </p>
             )}
@@ -122,7 +127,8 @@ export function BlockRender({
                   href={block.buttonHref}
                   target="_blank"
                   rel="noreferrer"
-                  className="pub-btn group inline-flex items-center gap-1.5 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-brand-700 shadow-lg shadow-brand-950/20 hover:bg-brand-50"
+                  style={{ color: "var(--pub-accent, #4f46e5)" }}
+                  className="pub-btn group inline-flex items-center gap-1.5 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold tracking-wide shadow-lg shadow-black/20 hover:bg-slate-50"
                 >
                   {block.buttonLabel}
                   <span
@@ -225,7 +231,7 @@ export function BlockRender({
               <ul className="mt-4 flex-1 space-y-2 text-sm text-slate-600">
                 {p.features.map((f, j) => (
                   <li key={j} className="flex gap-2">
-                    <span aria-hidden className="text-brand-600">✓</span>
+                    <span aria-hidden style={{ color: "var(--pub-accent, #4f46e5)" }}>✓</span>
                     {f}
                   </li>
                 ))}
@@ -235,7 +241,8 @@ export function BlockRender({
                   href={p.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="pub-btn mt-5 inline-flex justify-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-500"
+                  style={{ backgroundColor: "var(--pub-accent, #4f46e5)", color: "var(--pub-accent-text, #fff)" }}
+                  className="pub-btn mt-5 inline-flex justify-center rounded-xl px-5 py-2.5 text-sm font-semibold hover:opacity-90"
                 >
                   Избери
                 </a>

@@ -68,6 +68,14 @@ model Site {
   lastStatusCode Int?
   lastResponseMs Int?
   notes          String? // свободни бележки (хъб)
+  // Външен вид и брандиране на публикувания сайт (Настройки на сайта).
+  brandColor     String? // основен цвят (hex), напр. #4f46e5
+  fontFamily     String? // ключ на шрифт: "sans" | "serif" | "rounded"
+  logoUrl        String? // лого в хедъра (качен /uploads/… или https)
+  faviconUrl     String? // favicon (качен/https)
+  navEnabled     Boolean  @default(true) // показвай меню/хедър
+  footerText     String? // импресум/контакти в долния колонтитул
+  privacyUrl     String? // връзка към политика за поверителност на сайта
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
@@ -117,6 +125,11 @@ model Page {
   titleEn        String?
   blocksEn       Json    @default("[]")
   draftBlocksEn  Json    @default("[]")
+  // Навигация и SEO (Настройки на страницата).
+  showInNav      Boolean @default(true) // показвай в менюто на сайта
+  navOrder       Int     @default(0) // ред в менюто (по-малко = по-напред)
+  seoTitle       String? // ръчно SEO заглавие (иначе title)
+  seoDescription String? // ръчно meta описание (иначе от съдържанието)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   publishedAt DateTime?

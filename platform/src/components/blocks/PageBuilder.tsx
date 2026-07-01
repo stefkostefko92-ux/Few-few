@@ -36,6 +36,7 @@ type Locale = "bg" | "en";
 
 export function PageBuilder({
   slug,
+  pageId,
   previewHref,
   publicHref,
   initialBlocks,
@@ -48,6 +49,7 @@ export function PageBuilder({
   translatePage,
 }: {
   slug: string;
+  pageId: string;
   previewHref: string;
   publicHref: string;
   initialBlocks: Block[];
@@ -219,6 +221,12 @@ export function PageBuilder({
           </a>
           <a href={publicHref} target="_blank" rel="noreferrer" className="btn-ghost px-3 py-1.5 text-xs">
             Публичен адрес
+          </a>
+          <a
+            href={`/dashboard/sites/${slug}/pages/${pageId}/settings`}
+            className="btn-ghost px-3 py-1.5 text-xs"
+          >
+            ⚙️ Настройки
           </a>
           <button
             className="btn-ghost px-3 py-1.5 text-xs"

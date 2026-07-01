@@ -306,6 +306,39 @@ async function translateBlocks(blocks: Block[]): Promise<Block[]> {
   return out;
 }
 
+// Настройки на страница: видимост/ред в менюто + ръчно SEO. Server-action форма.
+export async function updatePageSettingsAction(
+  slug: string,
+  pageId: string,
+  _prev: PageActionResult,
+  formData: FormData,
+): Promise<PageActionResult> {
+  const ctx = await pageForUser(slug, pageId, "manage");
+  if (!ctx) return { error: "Нямате достъп." };
+
+  const parsed = z
+    .object({
+      showInNav: z.boolean(),
+      navOrder: z.number().int().min(-999).max(999),
+      seoTitle: z.string().trim().max(70).transform((s) => s || null),
+      seoDescription: z.string().trim().max(160).transform((s) => s || null),
+    })
+    .safeParse({
+      showInNav: formData.get("showInNav") === "on",
+      navOrder: Number(formData.get("navOrder") ?? 0),
+      seoTitle: String(formData.get("seoTitle") ?? ""),
+      seoDescription: String(formData.get("seoDescription") ?? ""),
+    });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Проверете полетата." };
+  }
+
+  await prisma.page.update({ where: { id: pageId }, data: parsed.data });
+  revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}/settings`);
+  revalidatePath(`/site/${ctx.site.slug}`);
+  return { ok: "Настройките на страницата са запазени." };
+}
+
 export async function deletePageAction(slug: string, pageId: string): Promise<void> {
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return;

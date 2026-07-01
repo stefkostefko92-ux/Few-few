@@ -45,6 +45,7 @@ export default async function EditPage({
       </div>
       <PageBuilder
         slug={slug}
+        pageId={page.id}
         previewHref={`/dashboard/sites/${slug}/pages/${page.id}/preview`}
         publicHref={publicPath}
         initialBlocks={initial}

@@ -83,7 +83,8 @@ export function SiteContactForm({
           <button
             type="submit"
             disabled={disabled || pending}
-            className="pub-btn inline-flex justify-center rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-500 disabled:opacity-50"
+            style={{ backgroundColor: "var(--pub-accent, #4f46e5)", color: "var(--pub-accent-text, #fff)" }}
+            className="pub-btn inline-flex justify-center rounded-xl px-6 py-3 text-sm font-semibold hover:opacity-90 disabled:opacity-50"
           >
             {pending ? t.sending : buttonLabel}
           </button>
