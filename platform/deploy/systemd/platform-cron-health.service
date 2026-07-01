@@ -1,0 +1,29 @@
+# Периодична здравна проверка на свързаните сайтове (POST /api/cron/health).
+# Секретът CRON_TOKEN се чете от EnvironmentFile (mode 600), а не от unit-а —
+# така не влиза в journal-а. Извикваме през ПУБЛИЧНИЯ адрес (през reverse proxy),
+# защото NEXT_PUBLIC_SITE_URL е каноничният вход; при нужда сложи локалния порт.
+#
+# Инсталация:
+#   sudo cp platform-cron-health.* /etc/systemd/system/
+#   sudo install -m 600 /path/to/platform/.env /etc/platform/cron.env   # съдържа CRON_TOKEN + BASE_URL
+#   sudo systemctl daemon-reload && sudo systemctl enable --now platform-cron-health.timer
+[Unit]
+Description=platform — здравна проверка (cron)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# CRON_TOKEN и BASE_URL идват оттук (mode 600, извън репото).
+EnvironmentFile=/etc/platform/cron.env
+# -fsS: тих при успех, ясна грешка при провал (нужно за systemd да маркира fail).
+# --max-time пази срещу увиснал proxy. Токенът е в заглавие, не в URL.
+ExecStart=/usr/bin/curl -fsS --max-time 60 -X POST \
+  -H "Authorization: Bearer ${CRON_TOKEN}" \
+  ${BASE_URL}/api/cron/health
+
+# Малко втвърдяване (unit-ът само вика curl).
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true

@@ -1,0 +1,333 @@
+// Платформа за управление на свързани уебсайтове — схема на данните.
+// База: PostgreSQL. ORM: Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Роля на ниво платформа. OWNER вижда и управлява всичко (вкл. акаунти и
+// свързване на сайтове). MEMBER вижда само сайтовете, до които е получил достъп.
+enum Role {
+  OWNER
+  MEMBER
+}
+
+// Роля на потребител спрямо конкретен сайт (скоуп на достъпа).
+// MANAGER може да действа (проверки, деплой, редакция); VIEWER само чете.
+enum SiteRole {
+  MANAGER
+  VIEWER
+}
+
+enum SiteStatus {
+  UP // последната проверка е успешна
+  DEGRADED // отговаря, но бавно/с предупреждение
+  DOWN // последната проверка е неуспешна
+  PAUSED // мониторингът е спрян ръчно
+  UNKNOWN // още няма проверка
+}
+
+enum DeployStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+// Огледало на статуса на абонамента от Stripe (не се доверяваме на клиента —
+// сменя се само от проверения webhook). `premium` е ВКЛ. само при ACTIVE/TRIALING.
+enum BillingStatus {
+  NONE // няма абонамент
+  TRIALING // пробен период
+  ACTIVE // активен платен абонамент
+  PAST_DUE // неуспешно плащане, в процес на повторни опити (dunning)
+  CANCELED // прекратен
+  UNPAID // изчерпани опити за плащане
+  INCOMPLETE // първоначалното плащане не е завършено (напр. чака 3DS)
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         Role         @default(MEMBER)
+  active       Boolean      @default(true)
+  lastLoginAt  DateTime?
+  // Възстановяване на парола (токен + валидност).
+  resetToken    String?   @unique
+  resetTokenExp DateTime?
+  // Двуфакторна автентикация (TOTP). Тайната е криптирана (AES-256-GCM).
+  totpSecret    String?
+  totpEnabled   Boolean   @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  memberships  Membership[]
+  uploads      Upload[]
+  auditLogs    AuditLog[]
+}
+
+model Site {
+  id             String     @id @default(cuid())
+  name           String
+  slug           String     @unique
+  url            String // публичен адрес, който се проверява за здраве
+  apiBaseUrl     String? // базов адрес на API-то на сайта (за съдържание/деплой)
+  apiKeyEnc      String? // API ключ на сайта, криптиран (AES-256-GCM)
+  deployHookUrl  String? // адрес за задействане на деплой (по избор)
+  status         SiteStatus @default(UNKNOWN)
+  monitorEnabled Boolean    @default(true)
+  localeEn       Boolean    @default(false) // включена английска версия на сайта
+  localeIt       Boolean    @default(false) // включена италианска версия на сайта
+  lastCheckAt    DateTime?
+  lastStatusCode Int?
+  lastResponseMs Int?
+  notes          String? // свободни бележки (хъб)
+  // Външен вид и брандиране на публикувания сайт (Настройки на сайта).
+  brandColor     String? // основен цвят (hex), напр. #4f46e5
+  fontFamily     String? // ключ на шрифт: "sans" | "serif" | "rounded"
+  logoUrl        String? // лого в хедъра (качен /uploads/… или https)
+  faviconUrl     String? // favicon (качен/https)
+  navEnabled     Boolean  @default(true) // показвай меню/хедър
+  footerText     String? // импресум/контакти в долния колонтитул
+  privacyUrl     String? // връзка към политика за поверителност на сайта
+  // Публикуване и домейни.
+  published      Boolean  @default(false) // сайтът е пуснат публично
+  premium        Boolean  @default(false) // премиум → без воден знак „Carbon Stealth"
+  // Билинг (Stripe). Пазим САМО Stripe идентификатори — никакви картови данни.
+  // `premium` е производно: задава се ЕДИНСТВЕНО от проверения webhook, никога
+  // от success_url или клиента.
+  stripeCustomerId     String?       @unique // cus_… (клиент в Stripe)
+  stripeSubscriptionId String?       @unique // sub_… (текущ абонамент)
+  billingStatus        BillingStatus @default(NONE) // огледало на статуса от Stripe
+  planRenewsAt         DateTime? // край на текущия платен период (за информация)
+  subdomain      String?  @unique // нашият поддомейн: <subdomain>.carbonstealth.site
+  customDomain   String?  @unique // собствен домейн на клиента (напр. example.com)
+  domainVerified Boolean  @default(false) // потвърден собствен домейн (DNS сочи към нас)
+  domainToken    String? // таен токен за TXT верификация на собствения домейн
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  memberships  Membership[]
+  healthChecks HealthCheck[]
+  links        SiteLink[]
+  deployments  Deployment[]
+  contentItems ContentItem[]
+  pages        Page[]
+  submissions  FormSubmission[]
+  invites      Invite[]
+}
+
+// Качен файл (медийна библиотека) — за преизползване, преглед и изтриване.
+model Upload {
+  id         String   @id @default(cuid())
+  url        String   @unique // публичен път /uploads/<uuid>.<ext>
+  kind       String // png | jpeg | webp | gif
+  bytes      Int
+  uploaderId String?
+  createdAt  DateTime @default(now())
+
+  uploader User? @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+
+  @@index([uploaderId])
+}
+
+// Заявка от контактна форма на публичен сайт (събиране на запитвания).
+model FormSubmission {
+  id        String   @id @default(cuid())
+  siteId    String
+  name      String
+  email     String
+  message   String
+  pagePath  String? // от коя страница е дошла
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// Страница, изградена и хоствана от платформата (вграден конструктор „като Wix").
+// `blocks` е публикуваната версия; `draftBlocks` е работната чернова в редактора.
+// Блоковете са JSON масив (валидиран със Zod при запис — виж src/lib/blocks.ts).
+model Page {
+  id          String     @id @default(cuid())
+  siteId      String
+  slug        String // адрес в рамките на сайта („" = начална страница)
+  title       String
+  status      PageStatus @default(DRAFT)
+  isHome      Boolean    @default(false)
+  blocks      Json       @default("[]")
+  draftBlocks Json       @default("[]")
+  // Английска версия (по избор) — паралелни блокове и заглавие.
+  titleEn        String?
+  blocksEn       Json    @default("[]")
+  draftBlocksEn  Json    @default("[]")
+  // Италианска версия (по избор).
+  titleIt        String?
+  blocksIt       Json    @default("[]")
+  draftBlocksIt  Json    @default("[]")
+  // Навигация и SEO (Настройки на страницата).
+  showInNav      Boolean @default(true) // показвай в менюто на сайта
+  navOrder       Int     @default(0) // ред в менюто (по-малко = по-напред)
+  seoTitle       String? // ръчно SEO заглавие (иначе title)
+  seoDescription String? // ръчно meta описание (иначе от съдържанието)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  publishedAt DateTime?
+  publishAt   DateTime? // насрочено публикуване (cron публикува при настъпване)
+
+  site     Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  versions PageVersion[]
+
+  @@unique([siteId, slug])
+  @@index([siteId])
+  @@index([publishAt])
+}
+
+// Снимка на съдържанието при публикуване (история/възстановяване).
+model PageVersion {
+  id        String   @id @default(cuid())
+  pageId    String
+  blocks    Json     @default("[]")
+  blocksEn  Json     @default("[]")
+  blocksIt  Json     @default("[]")
+  createdAt DateTime @default(now())
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt])
+}
+
+// Покана за достъп до сайт (за нерегистриран имейл). Регистриран потребител
+// получава членство веднага; при непознат имейл поканата се прилага при регистрация.
+model Invite {
+  id        String   @id @default(cuid())
+  siteId    String
+  email     String
+  role      SiteRole @default(VIEWER)
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([siteId])
+}
+
+// Скоуп на достъпа: кой потребител до кой сайт и с каква роля.
+model Membership {
+  id        String   @id @default(cuid())
+  userId    String
+  siteId    String
+  role      SiteRole @default(VIEWER)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, siteId])
+  @@index([userId])
+  @@index([siteId])
+}
+
+// История на здравните проверки (мониторинг).
+model HealthCheck {
+  id         String   @id @default(cuid())
+  siteId     String
+  ok         Boolean
+  statusCode Int?
+  responseMs Int?
+  error      String?
+  checkedAt  DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, checkedAt])
+}
+
+// Хъб: полезни връзки към сайта (админ панел, репо, документи, аналитика…).
+model SiteLink {
+  id        String   @id @default(cuid())
+  siteId    String
+  label     String
+  url       String
+  note      String?
+  createdAt DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId])
+}
+
+// Кеширано съдържание, издърпано от API-то на сайта (CMS прокси, само четене).
+model ContentItem {
+  id         String   @id @default(cuid())
+  siteId     String
+  externalId String // идентификатор в самия сайт
+  kind       String // тип: post | listing | page | …
+  title      String
+  status     String? // published | draft | …
+  url        String?
+  syncedAt   DateTime @default(now())
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, externalId])
+  @@index([siteId])
+}
+
+// Записи за задействани деплои.
+model Deployment {
+  id              String       @id @default(cuid())
+  siteId          String
+  status          DeployStatus @default(PENDING)
+  triggeredByEmail String
+  message         String?
+  createdAt       DateTime     @default(now())
+  finishedAt      DateTime?
+
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+}
+
+// Одит: кой какво е направил.
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String
+  action    String // LOGIN | LOGIN_FAILED | CREATE | UPDATE | DELETE | CHECK | DEPLOY | SYNC
+  entity    String // Site | User | Membership | SiteLink | Deployment
+  entityId  String?
+  summary   String
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+// Идемпотентност на Stripe webhook-ите. Stripe ПОВТАРЯ доставки при всеки
+// не-2xx/timeout, така че всяко събитие се обработва точно веднъж: записът тук
+// (по event.id) и бизнес-ефектът (Site.premium) са в ЕДНА транзакция. Наличен
+// ред = вече обработено → пропускаме.
+model WebhookEvent {
+  id          String   @id // Stripe event.id (напр. evt_…)
+  type        String // тип на събитието (checkout.session.completed, …)
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
+}

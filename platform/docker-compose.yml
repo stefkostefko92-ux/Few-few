@@ -1,0 +1,87 @@
+# Продукционен стек за platform.carbonstealth.eu на VPS: приложение + база.
+# TLS и публичните портове 80/443 се поемат от ВЪНШНОТО reverse proxy
+# (nginx/Caddy на хоста), което проксира домейна към 127.0.0.1:${HTTP_PORT}.
+# Стартиране: docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-platform}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-platform}
+      POSTGRES_DB: ${POSTGRES_DB:-platform}
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Базата е само във вътрешната мрежа — няма публикуван порт към хоста.
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-platform}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      TZ: UTC
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-platform}:${POSTGRES_PASSWORD:-platform}@db:5432/${POSTGRES_DB:-platform}?schema=public
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://platform.carbonstealth.eu}
+      # Задължителни тайни — идват от .env на сървъра (никога от репото).
+      AUTH_SECRET: ${AUTH_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      CRON_TOKEN: ${CRON_TOKEN:-}
+      # Начален собственик — ползва се само при първо сийдване.
+      OWNER_EMAIL: ${OWNER_EMAIL:-owner@carbonstealth.eu}
+      OWNER_PASSWORD: ${OWNER_PASSWORD:-}
+      OWNER_NAME: ${OWNER_NAME:-Собственик}
+      # AI за конструктора на страници (по избор). Без ключ панелът работи с
+      # rules fallback — НЕ изискваме ключове. Подай през .env само ако ползваш AI.
+      AI_PROVIDER: ${AI_PROVIDER:-anthropic}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-8}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # Ретенция за прунинг на логове (по избор; разумни default-и в кода).
+      AUDIT_RETENTION_DAYS: ${AUDIT_RETENTION_DAYS:-365}
+      HEALTH_RETENTION_DAYS: ${HEALTH_RETENTION_DAYS:-90}
+      SUBMISSION_RETENTION_DAYS: ${SUBMISSION_RETENTION_DAYS:-365}
+      # Билинг (Stripe; по избор). Без STRIPE_SECRET_KEY билингът е изключен.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_ID: ${STRIPE_PRICE_ID:-}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+      # Качени изображения — в монтиран том, за да оцелеят при ре-деплой.
+      UPLOAD_DIR: /data/uploads
+      # Имейл известия при нова заявка (по избор — без SMTP_HOST е изключено).
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+    volumes:
+      - uploads:/data/uploads
+    networks:
+      - internal
+    ports:
+      # Само на localhost — външното reverse proxy поема 80/443 и проксира насам.
+      # Смени порта през .env при конфликт (напр. HTTP_PORT=3100).
+      - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-3000}:3000"
+
+networks:
+  # db остава изолирана от външния свят — само web има достъп до нея.
+  internal:
+    driver: bridge
+
+volumes:
+  db-data:
+  uploads:

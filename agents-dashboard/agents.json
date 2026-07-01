@@ -359,9 +359,31 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Валидно съгласие по чл. 5(3) ePrivacy ползва дефиницията за съгласие от чл. 4(11) GDPR …"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Автентикационна сесийна бисквитка (JWT), зададена само след успешен вход, е „строго нео…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: IP, ползван само in-memory за rate-limit и НЕ персистиран, е образцова минимизация по ч…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „IP, ползван само in-memory за rate-limit и НЕ персистиран, е образцова минимизация по ч…\" · 2 в карантина"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Автентикационна сесийна бисквитка (JWT), зададена само след успешен вход, е „строго нео…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-01",
           "type": "quarantine",
@@ -1012,6 +1034,60 @@
         },
         {
           "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: zod 3.25.76: z.string().url() приема javascript: и data: схеми (success:true) — .url() … (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ renderInline (src/lib/blocks.ts:120-137) е безопасен срещу XSS: escapeHtml ко… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ AI page generator (src/lib/ai/generate.ts): изходът на LLM минава finalize()→… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ submitContactAction (src/app/site/submit-action.ts:43) взима IP от x-forwarde… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ assistTextAction (pages/actions.ts:158-181) е коректно закален 'use server' e… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ upload (be42a02): serve/sniff сигурността е чиста (магични байтове, isSafeSto… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ мултиезичност (957b485): localeEn е site-scope Boolean флаг (Site.localeEn, a… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ middleware.ts:55 rewrite към /hosted е защитен от двоен слой: isPlatformHost(… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ getSiteForUser(user, slug, \\\"manage\\\") налага MANAGER скоуп през roleSatisfie… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
           "date": "2026-06-30",
           "event": "v10.0 — учене",
           "detail": "Научи: CSS-само скриване чрез transform (translateY извън екрана) НЕ премахва елемента от tab-…"
@@ -1024,6 +1100,51 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ getSiteForUser(user, slug, \\\"manage\\\") налага MANAGER скоуп през roleSatisfie…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ middleware.ts:55 rewrite към /hosted е защитен от двоен слой: isPlatformHost(…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ мултиезичност (957b485): localeEn е site-scope Boolean флаг (Site.localeEn, a…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ upload (be42a02): serve/sniff сигурността е чиста (магични байтове, isSafeSto…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ assistTextAction (pages/actions.ts:158-181) е коректно закален 'use server' e…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ submitContactAction (src/app/site/submit-action.ts:43) взима IP от x-forwarde…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ AI page generator (src/lib/ai/generate.ts): изходът на LLM минава finalize()→…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ renderInline (src/lib/blocks.ts:120-137) е безопасен срещу XSS: escapeHtml ко…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „zod 3.25.76: z.string().url() приема javascript: и data: схеми (success:true) — .url() …\" (+1 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
@@ -2293,9 +2414,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Google третира canonical като СИГНАЛ, не директива; сила по ред: redirect (силен) > rel…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Next.js App Router: root layout metadata.robots {index:false} се наследява надолу по дъ… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Next.js App Router: root layout metadata.robots {index:false} се наследява надолу по дъ…\" (+2 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "quarantine",
@@ -4171,9 +4303,42 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Compose network с internal: true създава външно изолирана мрежа (без външна свързаност)…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Next.js standalone (output: 'standalone') слага server.js в корена на .next/standalone … (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Prisma v6 (prisma generate / @prisma/fetch-engine) ползва собствен HTTP клиент за тегле…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform (Docker Compose) cron контрактът е POST /api/cron/health и POST /api/cron/prun… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform (Docker Compose) cron контрактът е POST /api/cron/health и POST /api/cron/prun…\" (+1 още) · 1 в карантина"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Prisma v6 (prisma generate / @prisma/fetch-engine) ползва собствен HTTP клиент за тегле…\" · 2 в карантина"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „Next.js standalone (output: 'standalone') слага server.js в корена на .next/standalone …\" (+1 още)"
+        },
         {
           "date": "2026-06-30",
           "type": "quarantine",
@@ -6020,6 +6185,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Stripe Node SDK v22.3.0 пинва LatestApiVersion literal = '2026-06-24.dahlia' (node_modu…\" (+2)"
+        },
+        {
           "date": "2026-06-30",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „Stripe Checkout с automatic_tax:{enabled:true} върху СЪЩЕСТВУВАЩ Customer изисква custo…\" (+1)"
@@ -7673,6 +7843,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Tailwind config в platform/ дефинира само brand-50..900 и ink-палитра (без brand-950); …\" (+1)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",

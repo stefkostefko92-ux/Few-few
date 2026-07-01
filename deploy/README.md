@@ -24,6 +24,11 @@
   нормализира GitHub горната папка (`few-few-*`).
 - **zabobovdol:** пренася съществуващия `.env`, после `scripts/deploy.sh` (Docker Compose
   билд + вдигане + миграции, сийд само при първо пускане).
+- **platform** (панел за свързани сайтове): пренася `platform/.env`, после
+  `docker compose up -d --build`. Схемата (`prisma db push`) и сийдът (само при първо
+  пускане) са в `docker-entrypoint.sh` на контейнера. `web` слуша само на
+  `127.0.0.1:${HTTP_PORT}` (по подр. 3000) зад външно reverse proxy; `db` е във вътрешна
+  мрежа. Health на `/api/health`.
 - **medqr:** rsync в `/opt/medqr` (без `data/`, `.env`), `npm ci --omit=dev`,
   `systemctl restart medqr`; при провал — автоматичен rollback към предишния код.
 - **supreme** (Supreme Bot): пренася четирите `.env` файла (`supreme/.env`,
@@ -38,7 +43,7 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus supreme` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol platform medqr nexus supreme` | кои проекти да се разгръщат тук |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
@@ -46,9 +51,9 @@
 
 ## Важно
 
-- **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env` и четирите
-  `supreme/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
-  Скриптът пренася съществуващите `.env` при всеки деплой.
+- **Тайните не са в архива.** `zabobovdol/.env`, `platform/.env`, `/etc/medqr/medqr.env`
+  и четирите `supreme/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра
+  (права 600). Скриптът пренася съществуващите `.env` при всеки деплой.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
 - Първоначалната настройка на сървъра (юзъри, `ufw`, systemd unit, Nginx/Caddy, TLS) се
   прави веднъж — виж `zabobovdol/DEPLOY.md` и `medqr/deploy/DEPLOY.md`.

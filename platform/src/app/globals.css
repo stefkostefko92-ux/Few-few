@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  @apply bg-ink-950 text-ink-100 antialiased;
+}
+
+/* Достъпен фокус за клавиатурна навигация. */
+:focus-visible {
+  @apply outline-none ring-2 ring-brand-400 ring-offset-2 ring-offset-ink-950;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-500;
+  }
+  .btn-ghost {
+    @apply btn border border-ink-700 text-ink-200 hover:bg-ink-800;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-500;
+  }
+  .card {
+    @apply rounded-lg border border-ink-800 bg-ink-900 p-5;
+  }
+  .input {
+    @apply w-full rounded-md border border-ink-700 bg-ink-950 px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-brand-500;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-ink-300;
+  }
+  .th {
+    @apply px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-ink-400;
+  }
+  .td {
+    @apply px-3 py-2 text-sm text-ink-200;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Публични страници на конструктора (светла тема, „awwwards-lite").   */
+/* Капсулирано под .pubpage — не влияе на админ/тъмната част.          */
+/* Всички движения са зад prefers-reduced-motion guard в дъното.       */
+/* ------------------------------------------------------------------ */
+@layer components {
+  /* Изящна display-двойка: serif за заглавия, sans за тяло. */
+  .pub-display {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+      Cambria, "Times New Roman", serif;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .pub-body {
+    text-wrap: pretty;
+  }
+
+  /* Плавно появяване на блоковете при влизане във viewport. */
+  .pub-reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: pub-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* Бутон с фин sheen-подсветлен hover и повдигане. */
+  .pub-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .pub-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pub-btn:hover {
+    transform: translateY(-2px);
+  }
+  .pub-btn:hover::after {
+    transform: translateX(120%);
+  }
+  .pub-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Плочка от галерията: меко увеличение + отделяне на снимката. */
+  .pub-tile {
+    overflow: hidden;
+  }
+  .pub-tile img {
+    transition:
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.5s ease;
+  }
+  .pub-tile:hover img {
+    transform: scale(1.06);
+    filter: saturate(1.08);
+  }
+}
+
+/* Аврора-градиент за hero — бавно дишащи цветни петна, GPU-евтино. */
+@keyframes pub-aurora {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(4%, 3%, 0) scale(1.15);
+  }
+  100% {
+    transform: translate3d(-4%, -2%, 0) scale(1.05);
+  }
+}
+@keyframes pub-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Достъпност: при заявено намалено движение — нула анимации, статичен вид. */
+@media (prefers-reduced-motion: reduce) {
+  .pub-reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+  .pub-aurora {
+    animation: none !important;
+  }
+  .pub-btn,
+  .pub-btn::after,
+  .pub-tile img {
+    transition: none;
+  }
+  .pub-btn:hover {
+    transform: none;
+  }
+  .pub-tile:hover img {
+    transform: none;
+  }
+}

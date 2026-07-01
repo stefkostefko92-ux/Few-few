@@ -1,0 +1,12 @@
+# Дневен бекъп — нощем в 03:15 (преди prune в 03:30, за да хванем пълните данни).
+[Unit]
+Description=platform — таймер за дневен бекъп
+
+[Timer]
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+RandomizedDelaySec=120
+Unit=platform-backup.service
+
+[Install]
+WantedBy=timers.target

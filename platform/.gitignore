@@ -1,0 +1,12 @@
+/node_modules
+/.next
+/out
+/build
+/uploads
+next-env.d.ts
+.env
+.env*.local
+.backup.env
+/backups
+*.tsbuildinfo
+.ccr-ca-bundle.crt
