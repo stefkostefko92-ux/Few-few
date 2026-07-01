@@ -5,6 +5,7 @@ import type { Block, Align } from "@/lib/blocks";
 import { BLOCK_LABELS } from "@/lib/blocks";
 import { ASSIST_ACTIONS, type AssistAction } from "@/lib/ai/assist-core";
 import { UploadButton } from "@/components/blocks/UploadButton";
+import { MediaLibrary } from "@/components/blocks/MediaLibrary";
 
 export type AssistFn = (
   action: AssistAction,
@@ -49,6 +50,7 @@ export function Inspector({
         <>
           <Field label="Адрес на снимка (URL)" value={block.url} onChange={(url) => onChange({ url })} />
           <UploadButton onUploaded={(url) => onChange({ url })} />
+          <MediaLibrary onPick={(url) => onChange({ url })} />
           <Field label="Описание (alt)" value={block.alt} onChange={(alt) => onChange({ alt })} />
           <AlignField value={block.align} onChange={(align) => onChange({ align })} />
           <Toggle label="Заоблени ъгли" checked={block.rounded} onChange={(rounded) => onChange({ rounded })} />
@@ -348,6 +350,10 @@ function GalleryEditor({
       <UploadButton
         label="⬆ Качи нова снимка"
         onUploaded={(url) => onChange([...images, { url, alt: "" }])}
+      />
+      <MediaLibrary
+        label="📁 Добави от библиотеката"
+        onPick={(url) => onChange([...images, { url, alt: "" }])}
       />
       <button
         className="btn-ghost w-full text-xs"

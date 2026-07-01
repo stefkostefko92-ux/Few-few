@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import {
   type Block,
   type BlockType,
@@ -73,6 +73,10 @@ export function PageBuilder({
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState<PageActionResult | null>(null);
   const [pending, start] = useTransition();
+  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [undoStack, setUndoStack] = useState<Block[][]>([]);
+  const [redoStack, setRedoStack] = useState<Block[][]>([]);
+  const [autosaved, setAutosaved] = useState(false);
   const dragIndex = useRef<number | null>(null);
 
   const blocks = byLocale[locale];
@@ -80,10 +84,33 @@ export function PageBuilder({
     setByLocale((prev) => ({ ...prev, [locale]: next }));
   const selected = blocks.find((b) => b.id === selectedId) ?? null;
 
+  // Записва текущото състояние в историята (за отмяна) преди промяна.
   function update(next: Block[]) {
+    setUndoStack((s) => [...s.slice(-49), blocks]);
+    setRedoStack([]);
     setBlocks(next);
     setDirty(true);
+    setAutosaved(false);
     setMsg(null);
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    const prev = undoStack[undoStack.length - 1];
+    setUndoStack((s) => s.slice(0, -1));
+    setRedoStack((r) => [...r, blocks]);
+    setBlocks(prev);
+    setDirty(true);
+    setSelectedId(prev.some((b) => b.id === selectedId) ? selectedId : null);
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack((r) => r.slice(0, -1));
+    setUndoStack((s) => [...s, blocks]);
+    setBlocks(next);
+    setDirty(true);
   }
 
   function add(type: BlockType) {
@@ -135,11 +162,47 @@ export function PageBuilder({
     });
   }
 
+  // Автозапис: 2.5 сек след последна промяна пази черновата тихо.
+  useEffect(() => {
+    if (!dirty) return;
+    const t = setTimeout(() => {
+      start(async () => {
+        const r = await saveDraft(locale, blocks);
+        if (r.ok) {
+          setDirty(false);
+          setAutosaved(true);
+        }
+      });
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [byLocale, dirty, locale, saveDraft, blocks]);
+
+  // Клавишни комбинации: Ctrl/Cmd+Z отмяна, Ctrl+Shift+Z / Ctrl+Y повтаряне.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const k = e.key.toLowerCase();
+      if (k === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((k === "z" && e.shiftKey) || k === "y") {
+        e.preventDefault();
+        redo();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [undoStack, redoStack, blocks]);
+
   function switchLocale(next: Locale) {
     if (next === locale) return;
     if (dirty && !confirm("Има незапазени промени. Смяна на езика без запазване?")) return;
     setLocale(next);
     setSelectedId(byLocale[next][0]?.id ?? null);
+    setUndoStack([]);
+    setRedoStack([]);
     setDirty(false);
     setMsg(null);
   }
@@ -209,8 +272,40 @@ export function PageBuilder({
               🌐 Преведи от BG
             </button>
           )}
-          {dirty && <span className="text-xs text-amber-400">• незапазени промени</span>}
-          {msg?.ok && <span className="text-xs text-green-400">{msg.ok}</span>}
+          {/* Отмяна / повтаряне */}
+          <div className="flex overflow-hidden rounded border border-ink-700 text-xs">
+            <button
+              onClick={undo}
+              disabled={undoStack.length === 0}
+              title="Отмени (Ctrl+Z)"
+              className="px-2 py-1 text-ink-300 hover:bg-ink-800 disabled:opacity-30"
+            >
+              ↶
+            </button>
+            <button
+              onClick={redo}
+              disabled={redoStack.length === 0}
+              title="Повтори (Ctrl+Shift+Z)"
+              className="px-2 py-1 text-ink-300 hover:bg-ink-800 disabled:opacity-30"
+            >
+              ↷
+            </button>
+          </div>
+          {/* Изглед по устройство */}
+          <div className="flex overflow-hidden rounded border border-ink-700 text-xs">
+            {([["desktop", "🖥️"], ["tablet", "📲"], ["mobile", "📱"]] as const).map(([d, icon]) => (
+              <button
+                key={d}
+                onClick={() => setDevice(d)}
+                title={d}
+                className={`px-2 py-1 ${device === d ? "bg-brand-600 text-white" : "text-ink-300 hover:bg-ink-800"}`}
+              >
+                {icon}
+              </button>
+            ))}
+          </div>
+          {dirty && <span className="text-xs text-amber-400">• незапазени</span>}
+          {!dirty && autosaved && <span className="text-xs text-ink-500">✓ автозапазено</span>}
           {msg?.error && <span className="text-xs text-red-400">{msg.error}</span>}
         </div>
         <div className="flex items-center gap-2">
@@ -269,7 +364,11 @@ export function PageBuilder({
 
         {/* Платно */}
         <main className="overflow-y-auto bg-ink-950 p-6">
-          <div className="mx-auto max-w-3xl rounded-lg bg-white shadow-xl">
+          <div
+            className={`mx-auto rounded-lg bg-white shadow-xl transition-all ${
+              device === "mobile" ? "max-w-[390px]" : device === "tablet" ? "max-w-[768px]" : "max-w-3xl"
+            }`}
+          >
             {blocks.length === 0 ? (
               <TemplatePicker onPick={applyTemplate} variant="cards" />
             ) : (

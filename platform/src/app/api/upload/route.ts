@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getSessionUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/ratelimit";
 import {
   MAX_UPLOAD_BYTES,
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
 
   const dir = uploadDir();
   const name = newStoredName(kind);
+  const url = `/uploads/${name}`;
   try {
     await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, name), bytes);
@@ -57,5 +59,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Неуспешно записване." }, { status: 500 });
   }
 
-  return NextResponse.json({ url: `/uploads/${name}` });
+  // Записваме в медийната библиотека (за преизползване/изтриване). Провалът тук
+  // не бива да проваля самото качване.
+  try {
+    await prisma.upload.create({
+      data: { url, kind, bytes: bytes.length, uploaderId: user.id },
+    });
+  } catch (err) {
+    console.error("Качване: неуспешен запис в библиотеката", err);
+  }
+
+  return NextResponse.json({ url });
 }
