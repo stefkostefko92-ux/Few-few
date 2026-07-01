@@ -5,8 +5,10 @@ import type { Site } from "@prisma/client";
 
 // Конектор към свързаните сайтове. Договор с всеки сайт:
 //  • Здраве:     GET  <url>                         (публично, без ключ)
-//  • Съдържание: GET  <apiBaseUrl>/api/platform/content   Authorization: Bearer <ключ>
+//  • Съдържание (четене): GET  <apiBaseUrl>/api/platform/content   Authorization: Bearer <ключ>
 //                 → { items: [{ id, kind, title, status?, url? }] }
+//  • Съдържание (запис):  PUT  <apiBaseUrl>/api/platform/content/<id>  Bearer <ключ>
+//                 body { title?, status? } → 2xx при успех (сайтът сам записва)
 //  • Деплой:     POST <deployHookUrl | apiBaseUrl/api/platform/deploy>  Bearer <ключ>
 
 const TIMEOUT_MS = 10_000;
@@ -134,6 +136,38 @@ export async function syncSiteContent(site: Site): Promise<number> {
     });
   }
   return items.length;
+}
+
+export type ContentUpdate = { title?: string; status?: string };
+
+// Записва промяна в елемент от съдържанието НА самия свързан сайт (PUT към
+// неговото API). При 2xx обновява и локалното огледало. Хвърля при грешка.
+export async function pushSiteContent(
+  site: Site,
+  externalId: string,
+  fields: ContentUpdate,
+): Promise<void> {
+  if (!site.apiBaseUrl) throw new Error("Сайтът няма зададен API адрес.");
+  const url = `${site.apiBaseUrl.replace(/\/$/, "")}/api/platform/content/${encodeURIComponent(externalId)}`;
+  const res = await withTimeout(url, {
+    method: "PUT",
+    headers: {
+      authorization: `Bearer ${siteKey(site)}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(fields),
+  });
+  if (!res.ok) throw new Error(`API върна HTTP ${res.status}.`);
+
+  // Локалното огледало се обновява само след потвърждение от сайта.
+  await prisma.contentItem.updateMany({
+    where: { siteId: site.id, externalId },
+    data: {
+      ...(fields.title !== undefined ? { title: fields.title } : {}),
+      ...(fields.status !== undefined ? { status: fields.status } : {}),
+      syncedAt: new Date(),
+    },
+  });
 }
 
 // Задейства деплой на сайта. Връща true при приет (2xx) отговор.

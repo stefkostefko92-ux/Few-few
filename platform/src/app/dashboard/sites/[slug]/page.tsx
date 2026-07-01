@@ -7,10 +7,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { ActionButton } from "@/components/ActionButton";
 import { AddLinkForm } from "@/components/AddLinkForm";
 import { BillingLink } from "@/components/BillingLink";
+import { ExternalContentEditor } from "@/components/ExternalContentEditor";
 import { formatDateTime, formatRelative, formatMs } from "@/lib/format";
 import {
   checkNowAction,
   syncContentAction,
+  updateExternalContentAction,
   deployAction,
   addLinkAction,
   deleteLinkAction,
@@ -187,30 +189,39 @@ export default async function SitePage({
                   <th className="th">Тип</th>
                   <th className="th">Статус</th>
                   <th className="th">Синхр.</th>
+                  {canManage && <th className="th" />}
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-800">
-                {content.map((it) => (
-                  <tr key={it.id}>
-                    <td className="td">
-                      {it.url ? (
-                        <a
-                          href={it.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-brand-400 hover:underline"
-                        >
-                          {it.title}
-                        </a>
-                      ) : (
-                        it.title
-                      )}
-                    </td>
-                    <td className="td">{it.kind}</td>
-                    <td className="td">{it.status ?? "—"}</td>
-                    <td className="td">{formatRelative(it.syncedAt)}</td>
-                  </tr>
-                ))}
+                {content.map((it) =>
+                  canManage ? (
+                    <ExternalContentEditor
+                      key={it.id}
+                      item={it}
+                      action={updateExternalContentAction.bind(null, slug, it.externalId)}
+                    />
+                  ) : (
+                    <tr key={it.id}>
+                      <td className="td">
+                        {it.url ? (
+                          <a
+                            href={it.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-brand-400 hover:underline"
+                          >
+                            {it.title}
+                          </a>
+                        ) : (
+                          it.title
+                        )}
+                      </td>
+                      <td className="td">{it.kind}</td>
+                      <td className="td">{it.status ?? "—"}</td>
+                      <td className="td">{formatRelative(it.syncedAt)}</td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
           </div>

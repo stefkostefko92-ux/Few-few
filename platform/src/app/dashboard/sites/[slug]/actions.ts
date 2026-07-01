@@ -1,14 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
-import { runHealthCheck, syncSiteContent, triggerDeploy } from "@/lib/sites";
+import {
+  runHealthCheck,
+  syncSiteContent,
+  pushSiteContent,
+  triggerDeploy,
+} from "@/lib/sites";
 import { logAudit } from "@/lib/audit";
 import { linkSchema } from "@/lib/validation";
 
 export type ActionResult = { ok?: string; error?: string };
+
+// Редакция на елемент от съдържанието на самия свързан сайт. Заглавие по избор;
+// статус — само познати стойности (за да не пращаме боклук към чуждото API).
+const contentEditSchema = z.object({
+  title: z.string().trim().min(1, "Заглавието е задължително.").max(300).optional(),
+  status: z.enum(["published", "draft"]).optional(),
+});
 
 // Здравна проверка (нужен е поне четящ достъп — това е безопасно действие,
 // но го ограничаваме до MANAGER, за да не товарят VIEWER-и външния сайт).
@@ -132,4 +145,51 @@ export async function deleteLinkAction(
   });
   revalidatePath(`/dashboard/sites/${slug}`);
   return { ok: "Изтрито." };
+}
+
+// Записва промяна (заглавие/статус) в елемент от съдържанието на свързания сайт.
+// MANAGER скоуп. externalId се проверява, че принадлежи на този сайт, преди PUT.
+export async function updateExternalContentAction(
+  slug: string,
+  externalId: string,
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const user = await requireUser();
+  const found = await getSiteForUser(user, slug, "manage");
+  if (!found) return { error: "Нямате достъп." };
+
+  // Елементът трябва да е вече синхронизиран за този сайт (без обхождане на чужди id-та).
+  const item = await prisma.contentItem.findFirst({
+    where: { siteId: found.site.id, externalId },
+    select: { id: true },
+  });
+  if (!item) return { error: "Елементът не е намерен за този сайт." };
+
+  const rawTitle = formData.get("title");
+  const rawStatus = formData.get("status");
+  const parsed = contentEditSchema.safeParse({
+    title: typeof rawTitle === "string" && rawTitle.trim() ? rawTitle : undefined,
+    status: typeof rawStatus === "string" && rawStatus ? rawStatus : undefined,
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+  }
+  if (parsed.data.title === undefined && parsed.data.status === undefined) {
+    return { error: "Няма промени за запис." };
+  }
+
+  try {
+    await pushSiteContent(found.site, externalId, parsed.data);
+    await logAudit(user, {
+      action: "UPDATE",
+      entity: "Site",
+      entityId: found.site.id,
+      summary: `Редакция на съдържание „${externalId}" в ${found.site.name}`,
+    });
+    revalidatePath(`/dashboard/sites/${slug}`);
+    return { ok: "Промяната е записана в сайта." };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Грешка при записа." };
+  }
 }
