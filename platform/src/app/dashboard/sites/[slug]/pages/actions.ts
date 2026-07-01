@@ -17,6 +17,24 @@ const slugField = z
   .max(64)
   .regex(/^[a-z0-9-]*$/, "Само малки латински букви, цифри и тире.");
 
+// Транслитерация БГ→лат + slugify (кирилско заглавие да не дава празен slug).
+const CYR: Record<string, string> = {
+  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ж: "zh", з: "z", и: "i",
+  й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s",
+  т: "t", у: "u", ф: "f", х: "h", ц: "ts", ч: "ch", ш: "sh", щ: "sht",
+  ъ: "a", ь: "y", ю: "yu", я: "ya",
+};
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .split("")
+    .map((c) => CYR[c] ?? c)
+    .join("")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
 // Взима страница само ако е на сайт, до който потребителят има нужния достъп.
 async function pageForUser(slug: string, pageId: string, need: "read" | "manage") {
   const user = await requireUser();
@@ -43,8 +61,13 @@ export async function createPageAction(
   if (title.length < 2) return { error: "Въведете заглавие." };
   if (!pageSlug.success) return { error: pageSlug.error.issues[0]?.message ?? "Невалиден адрес." };
 
-  const isHome = (await prisma.page.count({ where: { siteId: found.site.id } })) === 0;
-  const finalSlug = isHome ? "" : pageSlug.data || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const count = await prisma.page.count({ where: { siteId: found.site.id } });
+  const isHome = count === 0;
+  // Не-начална страница: явен slug → транслитериран от заглавието → резервен,
+  // за да не се получи празен slug (който би се сблъскал с началната).
+  const finalSlug = isHome
+    ? ""
+    : pageSlug.data || slugify(title) || `stranica-${count + 1}`;
 
   const clash = await prisma.page.findFirst({
     where: { siteId: found.site.id, slug: finalSlug },
