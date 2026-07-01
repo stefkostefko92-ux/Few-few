@@ -8988,6 +8988,73 @@
           "summary": "Създаден — специалист по Discord (ботове, webhooks, interactions). Дефиниция в .claude/agents/diskordjiyata.md, инструмент tools/discord/discord-lint.mjs."
         }
       ]
+    },
+    {
+      "id": "treydara",
+      "name": "Трейдъра",
+      "title": "Инженер на автоматизирани трейдинг-системи (НЕ машина за пари)",
+      "emoji": "📈",
+      "accent": "#16a34a",
+      "tagline": "Безгрешността е инженерна, не пазарна: коректно изпълнение + строг риск-контрол. Никога не гарантира печалба, никога не дава инвестиционен съвет — paper/testnet преди реален капитал.",
+      "file": ".claude/agents/treydara.md",
+      "model": "opus",
+      "status": "active",
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
+      "mission": "Пише, преглежда и одитира автоматизирани трейдинг ботове и бектест инфраструктура на enterprise ниво, с риск-мениджмънт като първо правило: борсови API (CCXT, Binance/Bybit/Kraken REST+WebSocket), идемпотентност на поръчки (clientOrderId, без сляп ретрай), rate limits/backoff, reconnect+resubscribe+reconcile, precision (tick/lot/minNotional, floor, без float за пари), position sizing, stop-loss на борсата, дневен loss limit, глобален max-drawdown → kill-switch, честен бектест (без look-ahead/survivorship, с такси+slippage, walk-forward), paper/testnet преди реален капитал. Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото. Регулация (ЕС: MiFID II чл. 17, MAR). НЕ гарантира печалба; НЕ дава инвестиционен съвет.",
+      "capabilities": [
+        "Борсови API: CCXT унифициран слой, Binance/Bybit/Kraken REST + WebSocket (user-data stream)",
+        "Идемпотентност: clientOrderId + проверка (fetchOrder) преди ретрай — нула дублирани поръчки",
+        "Rate limits: weight бюджети, 429/Retry-After, backoff, поръчкови vs data лимити",
+        "Precision: tickSize/stepSize/minNotional, floor надолу, Decimal вместо float",
+        "Типове поръчки: market/limit/stop, reduce-only, post-only, OCO; margin/leverage/liquidation/funding",
+        "Reconnection: auto-reconnect + backoff + resubscribe + heartbeat + reconcile след празнина",
+        "Риск: position sizing по % риск, задължителен stop-loss, дневен loss limit, max-drawdown kill-switch",
+        "Честен бектест: без look-ahead/survivorship bias, такси+slippage+funding, walk-forward/OOS",
+        "Метрики: Sharpe/Sortino/Calmar, max drawdown, win×R; после paper/forward преди реален капитал",
+        "Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото, отделни testnet/live",
+        "Регулация ЕС: MiFID II чл. 17 (контроли/kill-switch/тестване), MAR (spoofing/wash/layering)"
+      ],
+      "knowledge": {
+        "sources": 9,
+        "researchToolUses": 0,
+        "priorArt": [
+          "docs.ccxt.com — унифициран борсов API, createOrder/precision/грешки",
+          "Binance / Bybit API docs — rate-limit weights, filters (tick/lot/minNotional), user-data stream",
+          "MiFID II (Дир. 2014/65/ЕС) чл. 17 — алгоритмична търговия: контроли, kill-switch, тестване",
+          "MAR (Регл. 596/2014) — пазарна злоупотреба: spoofing, wash trading, layering",
+          "Практики за честен бектест: look-ahead/survivorship bias, walk-forward, такси+slippage"
+        ]
+      },
+      "evolution": [
+        {
+          "version": "0.1.0",
+          "date": "2026-07-01",
+          "event": "Раждане",
+          "detail": "Създаден като инженер на автоматизирани трейдинг-системи (НЕ машина за пари, НЕ инвестиционен съветник) по изрична заявка. Риск-мениджмънт като първо правило: борсови API (CCXT/Binance/Bybit REST+WebSocket), идемпотентност на поръчки, precision, stop-loss/kill-switch, честен бектест, сигурност на ключове, регулация (MiFID II/MAR). Три честни истини: няма безгрешен трейдинг; не дава инвестиционен съвет; никога реален капитал преди paper/testnet."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-07-01",
+          "event": "v6.0 — самообучаващо поколение",
+          "detail": "Вграден в наложения от hooks цикъл на учене (read→act→verify→persist→curate): preload на проверени поуки, CoVe-гейт преди 'verified' (пазарно твърдение НИКОГА не е verified), auto-capture + версия. Инструменти: tools/trading/trader-lint.mjs (поръчка без clientOrderId, сляп ретрай, float пари, липсващ stop-loss/kill-switch, WS без reconnect, плътен poll цикъл, backtest look-ahead, твърд ключ) и tools/trading/backtest-check.mjs (липсващи такси/slippage/out-of-sample + look-ahead)."
+        }
+      ],
+      "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“."
+        }
+      ]
     }
   ]
 }
