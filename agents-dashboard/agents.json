@@ -1051,9 +1051,20 @@
           "date": "2026-07-01",
           "event": "v10.0 — учене",
           "detail": "Научи: platform/ assistTextAction (pages/actions.ts:158-181) е коректно закален 'use server' e… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-01",
+          "event": "v10.0 — учене",
+          "detail": "Научи: platform/ upload (be42a02): serve/sniff сигурността е чиста (магични байтове, isSafeSto… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: „platform/ upload (be42a02): serve/sniff сигурността е чиста (магични байтове, isSafeSto…\" (+1 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "learning",
