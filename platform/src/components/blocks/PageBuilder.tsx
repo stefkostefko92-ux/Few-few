@@ -11,6 +11,8 @@ import { BlockRender } from "@/components/blocks/BlockView";
 import type { PageActionResult } from "@/app/dashboard/sites/[slug]/pages/actions";
 import { Inspector } from "@/components/blocks/Inspector";
 import { A11yPanel } from "@/components/blocks/A11yPanel";
+import { TemplatePicker } from "@/components/blocks/TemplatePicker";
+import { getTemplate } from "@/lib/templates";
 
 const PALETTE: BlockType[] = [
   "hero",
@@ -68,6 +70,14 @@ export function PageBuilder({
     setSelectedId(b.id);
   }
 
+  function applyTemplate(id: string) {
+    const tpl = getTemplate(id);
+    if (!tpl) return;
+    const fresh = tpl.build();
+    update([...blocks, ...fresh]);
+    if (fresh[0]) setSelectedId(fresh[0].id);
+  }
+
   function patch(id: string, changes: Partial<Block>) {
     update(blocks.map((b) => (b.id === id ? ({ ...b, ...changes } as Block) : b)));
   }
@@ -116,6 +126,7 @@ export function PageBuilder({
           {msg?.error && <span className="text-xs text-red-400">{msg.error}</span>}
         </div>
         <div className="flex items-center gap-2">
+          <TemplatePicker onPick={applyTemplate} hasBlocks={blocks.length > 0} />
           <A11yPanel blocks={blocks} onSelect={setSelectedId} />
           <a href={previewHref} target="_blank" rel="noreferrer" className="btn-ghost px-3 py-1.5 text-xs">
             Преглед
@@ -166,9 +177,7 @@ export function PageBuilder({
         <main className="overflow-y-auto bg-ink-950 p-6">
           <div className="mx-auto max-w-3xl rounded-lg bg-white shadow-xl">
             {blocks.length === 0 ? (
-              <p className="p-16 text-center text-slate-400">
-                Празно платно. Добави блок отляво.
-              </p>
+              <TemplatePicker onPick={applyTemplate} variant="cards" />
             ) : (
               <div className="flex flex-col">
                 {blocks.map((b, i) => (
