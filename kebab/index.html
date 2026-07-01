@@ -34,7 +34,6 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:locale" content="it_IT">
-  <meta property="og:locale:alternate" content="en_GB">
 
   <!-- ═══ TWITTER ═══ -->
   <meta name="twitter:card" content="summary_large_image">
@@ -53,9 +52,9 @@
 
   <!-- ═══ FONT (self-hosted — nessun trasferimento a terzi) ═══ -->
   <link rel="preload" href="fonts/anton_v27_1Ptgg87LROyAm3Kz-C8.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/inter_v20_UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/style.css">
+  <noscript><style>.reveal{opacity:1;transform:none}.menu-panel[hidden]{display:grid}</style></noscript>
 
   <!-- ═══ SCHEMA.ORG — Restaurant ═══ -->
   <script type="application/ld+json">
@@ -87,14 +86,14 @@
     "openingHoursSpecification": [{
       "@type": "OpeningHoursSpecification",
       "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-      "opens": "12:00", "closes": "23:59"
+      "opens": "12:00", "closes": "24:00"
     }],
     "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.6", "reviewCount": "134", "bestRating": "5" },
     "sameAs": [
       "https://www.facebook.com/p/UYLAS-KEBAP-Cornaredo-Bareggio-100064194904493/",
       "https://www.instagram.com/uylas_kebab_cornaredo_bareggio/"
     ],
-    "menu": "https://uylas-kebap-center.it/#menu"
+    "hasMenu": { "@id": "https://uylas-kebap-center.it/#menu-data" }
   }
   </script>
   <script type="application/ld+json">
@@ -110,6 +109,7 @@
   {
     "@context": "https://schema.org",
     "@type": "Menu",
+    "@id": "https://uylas-kebap-center.it/#menu-data",
     "name": "Menu — Uylas Kebap Center",
     "inLanguage": "it-IT",
     "hasMenuSection": [
@@ -216,11 +216,12 @@
 </section>
 
 <!-- ═══════════ MARQUEE ═══════════ -->
-<div class="marquee" aria-hidden="true">
-  <div class="marquee-track">
+<div class="marquee">
+  <div class="marquee-track" aria-hidden="true">
     <span>Döner Kebab</span><span>Pizza</span><span>Durum</span><span>Piadina Kebab</span><span>Falafel</span><span>Adana</span><span>Patatine fritte</span><span>Halal</span>
     <span>Döner Kebab</span><span>Pizza</span><span>Durum</span><span>Piadina Kebab</span><span>Falafel</span><span>Adana</span><span>Patatine fritte</span><span>Halal</span>
   </div>
+  <button type="button" class="marquee-pause" id="marqueePause" aria-label="Metti in pausa lo scorrimento" aria-pressed="false">⏸</button>
 </div>
 
 <!-- ═══════════ CHI SIAMO ═══════════ -->
@@ -318,12 +319,12 @@
       <article class="dish-card"><div class="row"><h4>Kadayif</h4><span class="price">€ 6,00</span></div><p data-i18n="d.e4">Pasta grattugiata, pistacchio e sciroppo di zucchero.</p><div class="tags"><span class="tag new">Dolce</span></div></article>
       <article class="dish-card"><div class="row"><h4>Piadina con Nutella</h4><span class="price">€ 6,00</span></div><p data-i18n="d.e5">Piadina dolce con Nutella e zucchero a velo.</p><div class="tags"><span class="tag new">Dolce</span></div></article>
       <article class="dish-card"><div class="row"><h4>Ayran</h4><span class="price">€ 3,00</span></div><p data-i18n="d.e6">Bevanda turca a base di yogurt, fresca e dissetante.</p></article>
-      <article class="dish-card"><div class="row"><h4>Bibita in Lattina 33cl</h4><span class="price">€ 3,00</span></div><p data-i18n="d.e7">Pepsi, the pesca/limone, oran soda, lemon soda e altre.</p></article>
+      <article class="dish-card"><div class="row"><h4>Bibita in Lattina 33cl</h4><span class="price">€ 3,00</span></div><p data-i18n="d.e7">Pepsi, tè pesca/limone, oran soda, lemon soda e altre.</p></article>
       <article class="dish-card"><div class="row"><h4>Acqua Naturale 50cl</h4><span class="price">€ 2,00</span></div><p data-i18n="d.e8">Acqua naturale in bottiglia.</p></article>
     </div>
 
     <div class="menu-foot reveal">
-      <small data-i18n="menu.allergen">Per allergeni e intolleranze chiedi al personale. Disponibili opzioni vegetariane e halal.</small>
+      <small data-i18n="menu.allergen">Per allergeni e intolleranze chiedi al personale: un registro scritto degli allergeni è disponibile in negozio. Opzioni vegetariane e halal disponibili.</small>
       <a class="btn btn--gold" href="#consegna" data-i18n="menu.order">Ordina ora →</a>
     </div>
   </div>
@@ -407,6 +408,7 @@
         <div class="who"><span class="av">A</span><div><b>Ahmet Y.</b><span>Sedriano</span></div></div>
       </article>
     </div>
+    <p class="rev-note" data-i18n="rev.note">Testimonianze illustrative. Leggi le recensioni reali sul nostro <a href="https://www.google.com/maps/search/?api=1&amp;query=Uylas+Kebap+Center+Bareggio" target="_blank" rel="noopener">profilo Google</a>.</p>
   </div>
 </section>
 

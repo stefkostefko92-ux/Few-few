@@ -30,7 +30,7 @@
       'menu.lead': 'Prezzi indicativi — la lista completa e aggiornata è disponibile in negozio e sulle app di consegna.',
       'menu.cat.kebab': '🥙 Kebab & Döner', 'menu.cat.pizza': '🍕 Pizze & Turche', 'menu.cat.combo': '🍟 Menù combo',
       'menu.cat.veg': '🌱 Veg & Falafel', 'menu.cat.extra': '🥤 Extra, Dolci & Bibite',
-      'menu.allergen': 'Per allergeni e intolleranze chiedi al personale. Disponibili opzioni vegetariane e halal.',
+      'menu.allergen': 'Per allergeni e intolleranze chiedi al personale: un registro scritto degli allergeni è disponibile in negozio. Opzioni vegetariane e halal disponibili.',
       'menu.order': 'Ordina ora →',
       'd.k1': 'Carne di vitello e tacchino, insalata, pomodoro, cipolla e salse.',
       'd.k2': 'Piadina turca yufka arrotolata con doner, verdure fresche e salse.',
@@ -68,7 +68,7 @@
       'd.e4': 'Pasta grattugiata, pistacchio e sciroppo di zucchero.',
       'd.e5': 'Piadina dolce con Nutella e zucchero a velo.',
       'd.e6': 'Bevanda turca a base di yogurt, fresca e dissetante.',
-      'd.e7': 'Pepsi, the pesca/limone, oran soda, lemon soda e altre.',
+      'd.e7': 'Pepsi, tè pesca/limone, oran soda, lemon soda e altre.',
       'd.e8': 'Acqua naturale in bottiglia.',
       'why.eyebrow': 'Perché Uylas', 'why.title': 'Buono. Onesto. <span class="accent">Generoso.</span>',
       'why.1.t': 'Cottura alla brace', 'why.1.p': 'Carne marinata e cotta sullo spiedo verticale ogni giorno, per un sapore autentico e succoso.',
@@ -80,6 +80,7 @@
       'gal.ph4': 'Patatine', 'gal.ph5': 'Falafel', 'gal.ph6': 'Il locale',
       'gal.note': 'Illustrazioni del brand — sostituiscile con le foto reali dei tuoi piatti quando vuoi.',
       'rev.lead': 'Centinaia di recensioni positive da clienti di Bareggio, Cornaredo, Sedriano e Corbetta.',
+      'rev.note': 'Testimonianze illustrative. Leggi le recensioni reali sul nostro <a href="https://www.google.com/maps/search/?api=1&amp;query=Uylas+Kebap+Center+Bareggio" target="_blank" rel="noopener">profilo Google</a>.',
       'rev.1': '„Il miglior kebab della zona, porzioni enormi e prezzo onesto. Carne saporita e personale gentilissimo.“',
       'rev.2': '„Ordiniamo a casa quasi ogni venerdì. Pizza e durum sempre puntuali e caldi. Consigliatissimo!“',
       'rev.3': '„Locale pulito, servizio veloce e falafel davvero buoni. Ottimo anche per chi non mangia carne.“',
@@ -120,9 +121,9 @@
       'menu.eyebrow': 'The menu', 'menu.title': 'Kebab &amp; pizza in <span class="accent">Bareggio</span>',
       'ob.call': 'Call', 'ob.order': 'Order online',
       'menu.lead': 'Indicative prices — the full, up-to-date list is available in store and on the delivery apps.',
-      'menu.cat.kebab': '🥙 Kebab & Döner', 'menu.cat.pizza': '🍕 Pizzas & Turkish', 'menu.cat.combo': '🍟 Combo meals',
+      'menu.cat.kebab': '🥙 Kebab & Döner', 'menu.cat.pizza': '🍕 Pizzas & Turkish specials', 'menu.cat.combo': '🍟 Combo meals',
       'menu.cat.veg': '🌱 Veg & Falafel', 'menu.cat.extra': '🥤 Sides, Sweets & Drinks',
-      'menu.allergen': 'For allergens and intolerances ask our staff. Vegetarian and halal options available.',
+      'menu.allergen': 'For allergens and intolerances ask our staff: a written allergen register is available in store. Vegetarian and halal options available.',
       'menu.order': 'Order now →',
       'd.k1': 'Veal and turkey meat, salad, tomato, onion and sauces.',
       'd.k2': 'Rolled Turkish yufka flatbread with döner, fresh veg and sauces.',
@@ -172,6 +173,7 @@
       'gal.ph4': 'Fries', 'gal.ph5': 'Falafel', 'gal.ph6': 'The venue',
       'gal.note': 'Brand illustrations — swap them for real photos of your dishes whenever you like.',
       'rev.lead': 'Hundreds of positive reviews from customers in Bareggio, Cornaredo, Sedriano and Corbetta.',
+      'rev.note': 'Illustrative testimonials. Read the real reviews on our <a href="https://www.google.com/maps/search/?api=1&amp;query=Uylas+Kebap+Center+Bareggio" target="_blank" rel="noopener">Google profile</a>.',
       'rev.1': '“The best kebab around, huge portions and a fair price. Tasty meat and very kind staff.”',
       'rev.2': '“We order home almost every Friday. Pizza and durum always on time and hot. Highly recommended!”',
       'rev.3': '“Clean place, fast service and really good falafel. Great for non-meat eaters too.”',
@@ -226,21 +228,33 @@
   /* ───────── Tab del menu ───────── */
   var tabs = $$('.menu-tab');
   tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () { selectTab(tab); });
+    tab.setAttribute('tabindex', tab.getAttribute('aria-selected') === 'true' ? '0' : '-1');
+    tab.addEventListener('click', function () { selectTab(tab, true); });
     tab.addEventListener('keydown', function (e) {
       var i = tabs.indexOf(tab), n = null;
       if (e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
       else if (e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
-      if (n) { e.preventDefault(); n.focus(); selectTab(n); }
+      else if (e.key === 'Home') n = tabs[0];
+      else if (e.key === 'End') n = tabs[tabs.length - 1];
+      if (n) { e.preventDefault(); n.focus(); selectTab(n, true); }
     });
   });
-  function selectTab(tab) {
+  function selectTab(tab, anchor) {
     tabs.forEach(function (t) {
       var on = t === tab;
       t.setAttribute('aria-selected', String(on));
+      t.setAttribute('tabindex', on ? '0' : '-1');
       var panel = document.getElementById(t.getAttribute('aria-controls'));
       if (panel) panel.hidden = !on;
     });
+    // при смяна на таб котвим към лентата с табове, ако е излязла над хедъра
+    if (anchor) {
+      var head = document.querySelector('.menu-tabs');
+      if (head && head.getBoundingClientRect().top < 90) {
+        var top = head.getBoundingClientRect().top + window.scrollY - 90;
+        window.scrollTo({ top: top, behavior: prefersReduced() ? 'auto' : 'smooth' });
+      }
+    }
   }
 
   /* ───────── Navigazione mobile ───────── */
@@ -348,6 +362,14 @@
   if (mapLoadBtn) mapLoadBtn.addEventListener('click', function () {
     try { localStorage.setItem('uylas_map', '1'); } catch (e) {}  // съгласие за картата се запомня
     loadMap();
+  });
+
+  /* ───────── Marquee: пауза-контрол (WCAG 2.2.2) ───────── */
+  var mq = $('.marquee'), mqBtn = $('#marqueePause');
+  if (mq && mqBtn) mqBtn.addEventListener('click', function () {
+    var p = mq.classList.toggle('paused');
+    mqBtn.setAttribute('aria-pressed', String(p));
+    mqBtn.textContent = p ? '▶' : '⏸';
   });
 
   /* ───────── Anno corrente ───────── */

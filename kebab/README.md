@@ -10,7 +10,7 @@
 ## Структура
 
 ```
-uylas/
+kebab/
 ├── index.html              едностраничен сайт: hero, меню, за нас, защо, галерия,
 │                           отзиви, доставка, контакти/карта, футър, cookie банер
 ├── privacy.html            Политика за поверителност (GDPR, IT)
@@ -30,7 +30,7 @@ uylas/
 Няма билд. Просто статичен сървър:
 
 ```bash
-cd uylas
+cd kebab
 python3 -m http.server 8080      # → http://localhost:8080
 ```
 

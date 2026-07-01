@@ -247,7 +247,13 @@ body.nav-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg
 }
 
 /* ═══════════ MARQUEE ═══════════ */
-.marquee{background:var(--brace);color:#fff;overflow:hidden;border-block:1px solid rgba(0,0,0,.1)}
+.marquee{background:var(--brace);color:#fff;overflow:hidden;border-block:1px solid rgba(0,0,0,.1);position:relative}
+.marquee.paused .marquee-track{animation-play-state:paused}
+.marquee-pause{position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.32);color:#fff;
+  display:grid;place-items:center;font-size:.85rem;line-height:1;z-index:2}
+.marquee-pause:hover{background:rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:reduce){.marquee-pause{display:none}}
 .marquee-track{display:flex;gap:0;white-space:nowrap;width:max-content;animation:marq 28s linear infinite}
 .marquee:hover .marquee-track{animation-play-state:paused}
 .marquee span{font-family:var(--display);text-transform:uppercase;font-size:clamp(1.1rem,2.4vw,1.7rem);
@@ -302,7 +308,13 @@ body.nav-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg
 /* featured — водещи („signature“) ястия */
 .dish-card.featured{border-color:rgba(232,176,75,.45);
   background:radial-gradient(120% 100% at 100% 0%,rgba(232,72,12,.16),transparent 60%),linear-gradient(180deg,var(--carbone-2),var(--carbone-3))}
-@media (prefers-reduced-motion:reduce){.dish-card:hover{transform:none}.dish-card::after{transition:none}}
+.dish-card.featured .row{overflow:hidden}
+.dish-card.featured .row::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 40%,rgba(251,246,238,.14) 50%,transparent 60%);
+  transform:translateX(-120%);transition:transform .7s var(--ease)}
+.dish-card.featured:hover .row::after{transform:translateX(120%)}
+@media (prefers-reduced-motion:reduce){.dish-card:hover{transform:none}.dish-card::after{transition:none}.dish-card.featured .row::after{display:none}
+  .feat-card:hover,.partner:hover,.socials a:hover{transform:none}}
 .dish-card .row{display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
 .dish-card h4{font-size:1.12rem;font-weight:700;color:var(--crema);letter-spacing:.01em}
 .dish-card .price{font-family:var(--display);font-size:1.3rem;color:var(--oro);white-space:nowrap}
@@ -338,6 +350,7 @@ body.nav-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg
 .gal-item{margin:0}
 .gal-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s var(--ease)}
 .gal-item:hover .gal-img{transform:scale(1.06)}
+.gal-item.tall .gal-img{object-position:center 42%}
 @media (prefers-reduced-motion:reduce){.gal-item:hover .gal-img{transform:none}}
 .gal-item.big{grid-column:span 2;grid-row:span 2}
 .gal-item.tall{grid-row:span 2}
@@ -350,6 +363,8 @@ body.nav-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg
 .rev-top{display:flex;flex-wrap:wrap;align-items:center;gap:1.4rem;margin-bottom:2.4rem}
 .rev-score{font-family:var(--display);font-size:4rem;color:var(--oro);line-height:.9}
 .rev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.rev-note{margin-top:1.4rem;font-size:.82rem;color:var(--muto)}
+.rev-note a{color:var(--oro);text-decoration:underline}
 .rev-card{background:var(--carbone-2);border:1px solid var(--linea);border-radius:var(--r-lg);padding:1.6rem}
 .rev-card .stars{font-size:1rem;margin-bottom:.7rem}
 .rev-card p{font-size:.95rem;color:#D8CCBD;font-style:italic}
