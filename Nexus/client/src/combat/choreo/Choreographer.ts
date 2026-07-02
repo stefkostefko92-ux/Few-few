@@ -329,7 +329,22 @@ export class Choreographer {
     if (!rig) return;
     const actions = (rig as any).userData?.combatActions as Record<string, THREE.AnimationAction> | undefined;
     const current = (rig as any).userData?.combatCurrent as THREE.AnimationAction | undefined;
-    if (!actions) return;
+    if (!actions) {
+      // Реалистичните RPM/Mixamo ригове нямат authored клипове → превеждаме
+      // cue-то към процедурен one-shot (CombatScene3D чете procOneShot всеки
+      // кадър и го подава на poseHumanoid). Смъртта е еднопосочна.
+      const hbAny = (rig as any).userData?.humanoidBones;
+      if (hbAny) {
+        const existing = (rig as any).userData.procOneShot as { kind: string } | undefined;
+        if (existing?.kind === 'death') return;
+        const kind =
+          name === 'death' ? 'death' :
+          name === 'hit' || name === 'dodge' ? 'hit' :
+          name === 'idle' ? null : 'punch'; // attack/attack2/cast/draw → punch
+        if (kind) (rig as any).userData.procOneShot = { kind, t0: performance.now() };
+      }
+      return;
+    }
     // Graceful clip fallbacks so a timeline that asks for a clip a given
     // rig doesn't ship still does something sensible: attack2→attack,
     // cast/draw→attack, hit→(stay/idle), dodge→idle.

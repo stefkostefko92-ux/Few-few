@@ -15,17 +15,25 @@ mkdir -p "$DEST"
 
 # 1) Ready Player Me аватар (реалистично лице: EyeLeft/EyeRight, Wolf3D_Head
 #    2162 върха, Wolf3D_Teeth, Wolf3D_Beard; скелет Hips/Spine/Neck/Head/…).
-#    Свален от three.js examples (MIT за three.js; провери RPM ToS за съдържанието).
-curl -fsSL -o "$DEST/rpm-sample-male.glb" \
-  "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/readyplayer.me.glb"
+#    Loader-ът търси realistic/<клас>.glb → сваляме директно под тези имена
+#    (dev placeholder-и: warrior и mage са едно и също sample лице).
+#    ЛИЦЕНЗ: RPM sample = CC BY-NC (НЕкомерсиален) — САМО за разработка, НЕ за
+#    продукция. three.js MIT покрива кода, не асета. Виж docs/REALISTIC-CHARACTERS.md.
+RPM_URL="https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/readyplayer.me.glb"
+curl -fsSL -o "$DEST/warrior.glb" "$RPM_URL"
+cp "$DEST/warrior.glb" "$DEST/mage.glb"
 
-# 2) Mixamo-риг-нат анимиран персонаж (mixamorig: скелет; клипове SambaDance, TPose).
-#    Полезен като източник на анимации/референция за retargeting.
-curl -fsSL -o "$DEST/mixamo-michelle.glb" \
+# 2) Mixamo-риг-нат анимиран персонаж (mixamorig: скелет; клипове SambaDance,
+#    TPose) — САМО локална референция за retargeting. Mixamo лицензът позволява
+#    комерсиална употреба на ВГРАДЕНИ анимации, но забранява редистрибуция на
+#    суровите файлове → сваляме ИЗВЪН public/ и НЕ се committ-ва.
+REF_DIR="tmp-anim-ref"
+mkdir -p "$REF_DIR"
+curl -fsSL -o "$REF_DIR/mixamo-michelle.glb" \
   "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/Michelle.glb"
 
 # 3) (по желание) Soldier — Mixamo войник с текстурирано лице, idle/walk/run.
-# curl -fsSL -o "$DEST/mixamo-soldier.glb" \
+# curl -fsSL -o "$REF_DIR/mixamo-soldier.glb" \
 #   "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/Soldier.glb"
 
 echo "Готово. Свалени в $DEST:"

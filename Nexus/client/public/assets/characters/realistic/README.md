@@ -1,5 +1,11 @@
 # Реалистични персонажи (Ready Player Me / Mixamo)
 
+> ⚠️ **САМО ЗА РАЗРАБОТКА.** `warrior.glb` и `mage.glb`
+> тук са един и същ **RPM sample аватар под НЕкомерсиален лиценз (CC BY-NC)**.
+> **ЗАБРАНЕНИ са в публичен/комерсиален билд.** Преди пускане: изтрий ги или
+> замени с (i) собствени RPM аватари като регистриран RPM Developer/Partner,
+> или (ii) CC0/комерсиално-чист асет. Виж `docs/REALISTIC-CHARACTERS.md`.
+
 Сложи тук GLB с **истинско лице** на име `warrior.glb`, `mage.glb`, `ranger.glb`,
 `rogue.glb`. Боят автоматично ги предпочита пред нискополигоналните Quaternius
 ригове (`../<cls>.glb`) — без промяна в кода (`CombatScene3D.tryLoadRig`).

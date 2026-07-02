@@ -370,7 +370,7 @@ function applyLifeLayer(lb: LifeBones, nowS: number, phase: number, face: number
 /* attack. AXIS signs are calibrated visually (Mixamo mirrors L/R).      */
 /* ------------------------------------------------------------------ */
 interface BoneRest { bone: THREE.Bone; rest: THREE.Quaternion; }
-export interface HumanoidBones {
+interface HumanoidBones {
   Hips?: BoneRest; Spine?: BoneRest; Spine1?: BoneRest; Spine2?: BoneRest; Neck?: BoneRest; Head?: BoneRest;
   LeftShoulder?: BoneRest; LeftArm?: BoneRest; LeftForeArm?: BoneRest; LeftHand?: BoneRest;
   RightShoulder?: BoneRest; RightArm?: BoneRest; RightForeArm?: BoneRest; RightHand?: BoneRest;
@@ -405,27 +405,34 @@ function discoverHumanoidBones(rig: THREE.Object3D): HumanoidBones {
   return hb;
 }
 
-// Calibration signs (flip if a limb points the wrong way; see notes in commit).
+// Числено верифицирани оси/знаци (3D Maniac, от реалната GLB геометрия):
+// RPM/Wolf3D костите имат локалната Y ПО дължината на костта → Y е усукване;
+// махът е около локалните X (сваляне надолу) и Z (напред / лакътна панта).
+// ARM_DOWN не се огледаля L/R; ARM_FWD и FOREARM_BEND са огледални.
 const HB_AXIS = {
-  // RPM/Mixamo arm bones are NOT mirrored L/R — both use the same local frame,
-  // so the left signs match the right (calibrated visually in-engine).
-  ARM_DOWN_L: +1, ARM_DOWN_R: +1, ARM_FWD_L: -1, ARM_FWD_R: -1,
-  FOREARM_BEND_L: -1, FOREARM_BEND_R: -1, PUNCH_DIR: +1,
+  ARM_DOWN_L: +1, ARM_DOWN_R: +1,        // около локална X
+  ARM_FWD_L: +1, ARM_FWD_R: -1,          // около локална Z (огледални)
+  FOREARM_BEND_L: +1, FOREARM_BEND_R: -1, // около локална Z (огледални)
+  PUNCH_DIR: +1,                          // yaw на гръбнака около Y
 } as const;
 const HB_D = Math.PI / 180;
 const _hbQ = new THREE.Quaternion();
 const _hbE = new THREE.Euler();
-const _hbY = new THREE.Vector3(0, 1, 0);
+const _hbX = new THREE.Vector3(1, 0, 0);
 const _hbZ = new THREE.Vector3(0, 0, 1);
+// АДИТИВНИ хелпери: наслагват делта върху ТЕКУЩИЯ quaternion (multiply), НЕ
+// върху rest — така idle + stance + punch се композират на една кост, вместо
+// последният слой да презаписва предишните. resetHumanoid() е единственото
+// място, което връща костите към rest (всеки кадър, преди poseHumanoid).
 function hbEuler(br: BoneRest | undefined, x: number, y: number, z: number): void {
   if (!br) return;
   _hbE.set(x, y, z, 'XYZ'); _hbQ.setFromEuler(_hbE);
-  br.bone.quaternion.copy(br.rest).multiply(_hbQ);
+  br.bone.quaternion.multiply(_hbQ);
 }
 function hbAxis(br: BoneRest | undefined, axis: THREE.Vector3, angle: number): void {
   if (!br) return;
   _hbQ.setFromAxisAngle(axis, angle);
-  br.bone.quaternion.copy(br.rest).multiply(_hbQ);
+  br.bone.quaternion.multiply(_hbQ);
 }
 function hbSmooth(e0: number, e1: number, x: number): number {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -444,12 +451,19 @@ function resetHumanoid(hb: HumanoidBones): void {
 
 /** Pose the humanoid. `stance` 0→1 raises the T-pose into a combat guard
  *  (arms down/forward, elbows bent) — held at 1 while in a fight. `punch`
- *  0→1 is the right-cross swing progress. Idle breathing always rides on
- *  top, scaled down as `punch` peaks. Additive deltas on rest. */
-function poseHumanoid(hb: HumanoidBones, t: number, stance: number, punch: number, side: 'hero' | 'foe'): void {
+ *  0→1 is the right-cross swing progress; `hit` 0→1 is a flinch; `death`
+ *  0→1 slumps the figure to its knees and holds. Idle breathing always
+ *  rides on top, scaled down as the one-shots peak. Additive deltas on a
+ *  freshly reset rest pose (see resetHumanoid). */
+function poseHumanoid(
+  hb: HumanoidBones, t: number, stance: number, punch: number,
+  hit: number, death: number, side: 'hero' | 'foe',
+): void {
   const st = Math.min(1, Math.max(0, stance));
   const pn = Math.min(1, Math.max(0, punch));
-  const idleW = 1 - pn * 0.85;
+  const ht = Math.min(1, Math.max(0, hit));
+  const dt = Math.min(1, Math.max(0, death));
+  const idleW = (1 - pn * 0.85) * (1 - dt * 0.9);
   const ph = side === 'foe' ? Math.PI * 0.7 : 0;
 
   if (idleW > 0.001) {
@@ -475,27 +489,58 @@ function poseHumanoid(hb: HumanoidBones, t: number, stance: number, punch: numbe
     // Arms hang down by the sides with a light forward bias + slight elbow bend
     // → a relaxed ready stance, not a presenting gesture.
     const down = 82 * HB_D * stanceW, fwd = 8 * HB_D * stanceW;
-    hbAxis(hb.LeftArm, _hbZ, HB_AXIS.ARM_DOWN_L * down);
-    hbAxis(hb.RightArm, _hbZ, HB_AXIS.ARM_DOWN_R * down);
-    if (hb.LeftArm) { _hbQ.setFromAxisAngle(_hbY, HB_AXIS.ARM_FWD_L * fwd); hb.LeftArm.bone.quaternion.multiply(_hbQ); }
-    if (hb.RightArm) { _hbQ.setFromAxisAngle(_hbY, HB_AXIS.ARM_FWD_R * fwd); hb.RightArm.bone.quaternion.multiply(_hbQ); }
-    hbAxis(hb.LeftForeArm, _hbY, HB_AXIS.FOREARM_BEND_L * 28 * HB_D * stanceW);
-    hbAxis(hb.RightForeArm, _hbY, HB_AXIS.FOREARM_BEND_R * 28 * HB_D * stanceW);
+    hbAxis(hb.LeftArm, _hbX, HB_AXIS.ARM_DOWN_L * down);
+    hbAxis(hb.RightArm, _hbX, HB_AXIS.ARM_DOWN_R * down);
+    hbAxis(hb.LeftArm, _hbZ, HB_AXIS.ARM_FWD_L * fwd);
+    hbAxis(hb.RightArm, _hbZ, HB_AXIS.ARM_FWD_R * fwd);
+    hbAxis(hb.LeftForeArm, _hbZ, HB_AXIS.FOREARM_BEND_L * 28 * HB_D * stanceW);
+    hbAxis(hb.RightForeArm, _hbZ, HB_AXIS.FOREARM_BEND_R * 28 * HB_D * stanceW);
     hbEuler(hb.Spine1, 3 * HB_D * stanceW, HB_AXIS.PUNCH_DIR * 5 * HB_D * stanceW, 0);
   }
 
   if (pn > 0.001) {
-    const windup = hbSmooth(0.0, 0.35, pn);
+    // windup издърпва назад, extend изстрелва напред — адитивни, така че
+    // windup остатъкът омекотява прехода (не се презаписват взаимно).
+    const windup = hbSmooth(0.0, 0.35, pn) * (1 - hbSmooth(0.35, 0.6, pn));
     const extend = hbSmooth(0.3, 0.55, pn) * (1 - hbSmooth(0.6, 0.95, pn));
-    hbEuler(hb.RightShoulder, 0, -HB_AXIS.PUNCH_DIR * 18 * HB_D * windup, 0);
-    hbEuler(hb.Spine2, 0, -HB_AXIS.PUNCH_DIR * 14 * HB_D * windup, 0);
-    hbEuler(hb.RightShoulder, 0, HB_AXIS.PUNCH_DIR * 30 * HB_D * extend, 0);
-    hbEuler(hb.Spine2, 0, HB_AXIS.PUNCH_DIR * 22 * HB_D * extend, 0);
+    hbEuler(hb.RightShoulder, 0, HB_AXIS.PUNCH_DIR * (30 * extend - 18 * windup) * HB_D, 0);
+    hbEuler(hb.Spine2, 0, HB_AXIS.PUNCH_DIR * (22 * extend - 14 * windup) * HB_D, 0);
     hbEuler(hb.Spine1, 0, HB_AXIS.PUNCH_DIR * 12 * HB_D * extend, 0);
-    hbAxis(hb.RightForeArm, _hbY, -HB_AXIS.FOREARM_BEND_R * 70 * HB_D * extend);
-    hbAxis(hb.RightArm, _hbY, HB_AXIS.ARM_FWD_R * 35 * HB_D * extend);
+    hbAxis(hb.RightForeArm, _hbZ, -HB_AXIS.FOREARM_BEND_R * 70 * HB_D * extend);
+    hbAxis(hb.RightArm, _hbZ, HB_AXIS.ARM_FWD_R * 35 * HB_D * extend);
     if (hb.Hips && hb.hipsRestPos) hbEuler(hb.Hips, -6 * HB_D * extend, HB_AXIS.PUNCH_DIR * 6 * HB_D * extend, 0);
     hbEuler(hb.Neck, 3 * HB_D * extend, HB_AXIS.PUNCH_DIR * 5 * HB_D * extend, 0);
+  }
+
+  if (ht > 0.001) {
+    // Flinch: камбана 0→1→0 — тялото се дръпва назад/встрани, главата отскача.
+    const f = hbSmooth(0, 0.3, ht) * (1 - hbSmooth(0.45, 1, ht));
+    hbEuler(hb.Spine1, -10 * HB_D * f, 0, 6 * HB_D * f);
+    hbEuler(hb.Spine2, -8 * HB_D * f, 0, 4 * HB_D * f);
+    hbEuler(hb.Neck, -12 * HB_D * f, 0, 0);
+    hbEuler(hb.Head, -8 * HB_D * f, 5 * HB_D * f, 0);
+  }
+
+  if (dt > 0.001) {
+    // Death: свличане на колене + отпускане (стабилно за всеки хуманоид —
+    // без ragdoll). Краката се подгъват, ханшът пада, гръбнакът и главата
+    // клюмват напред, ръцете увисват.
+    const d = hbSmooth(0, 1, dt);
+    if (hb.Hips && hb.hipsRestPos) {
+      hb.Hips.bone.position.y = hb.hipsRestPos.y - 0.35 * d * Math.abs(hb.hipsRestPos.y || 1);
+      hbEuler(hb.Hips, 18 * HB_D * d, 0, 0);
+    }
+    hbEuler(hb.LeftUpLeg, -70 * HB_D * d, 0, 0);
+    hbEuler(hb.RightUpLeg, -70 * HB_D * d, 0, 0);
+    hbEuler(hb.LeftLeg, 95 * HB_D * d, 0, 0);
+    hbEuler(hb.RightLeg, 95 * HB_D * d, 0, 0);
+    hbEuler(hb.Spine, 14 * HB_D * d, 0, 0);
+    hbEuler(hb.Spine1, 18 * HB_D * d, 0, 3 * HB_D * d);
+    hbEuler(hb.Spine2, 16 * HB_D * d, 0, 0);
+    hbEuler(hb.Neck, 20 * HB_D * d, 0, 0);
+    hbEuler(hb.Head, 22 * HB_D * d, 0, 6 * HB_D * d);
+    hbAxis(hb.LeftArm, _hbX, HB_AXIS.ARM_DOWN_L * 8 * HB_D * d);
+    hbAxis(hb.RightArm, _hbX, HB_AXIS.ARM_DOWN_R * 8 * HB_D * d);
   }
 }
 
@@ -1445,6 +1490,10 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const realisticUrl = `/assets/characters/realistic/${cls}.glb`;
       const fallbackUrl = `/assets/characters/${cls}.glb`;
       const onError = () => {
+        // The effect may have been cleaned up while the (double) GLB load was
+        // in flight — adding the sprite then would leak it past the disposed
+        // scene traversal.
+        if (cancelled) return;
         const pair = side === 'hero' ? heroPair : foePair;
         pair.sprite.visible = true; scene.add(pair.sprite);
       };
@@ -1495,7 +1544,6 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         // Cast shadows now that we have a soft contact shadow grounding
         // them — real cast shadows from the key light add a lot of life
         // (the sword's shadow swings with the attack).
-        (model as any).userData.realistic = isRealistic;
         const rimColor = new THREE.Color(side === 'hero' ? 0xfff1d0 : 0xd6e4ff);
         // Painted-face decal only for the stylised Quaternius heads — realistic
         // rigs already carry real eyes/nose/mouth geometry.
@@ -1626,9 +1674,17 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       };
       // Try the realistic rig first; on any error fall back to Quaternius, then
       // to the 2D sprite. So realistic/<cls>.glb is used automatically the
-      // moment it's uploaded, with no change needed here.
-      loader.load(realisticUrl, (g) => setupRig(g as any, true), undefined,
-        () => loader.load(fallbackUrl, (g) => setupRig(g as any, false), undefined, onError));
+      // moment it's uploaded, with no change needed here. On the lite path
+      // (mobile / reduced-motion / narrow) skip the realistic rig entirely —
+      // it's a ~1.8MB PBR model with a ~2.2k-vertex head, heavier to download
+      // and skin than the low-poly Quaternius rig, exactly on the devices the
+      // lite budget protects.
+      if (liteParticleBudget) {
+        loader.load(fallbackUrl, (g) => setupRig(g as any, false), undefined, onError);
+      } else {
+        loader.load(realisticUrl, (g) => setupRig(g as any, true), undefined,
+          () => loader.load(fallbackUrl, (g) => setupRig(g as any, false), undefined, onError));
+      }
     };
     tryLoadRig(heroClass, 'hero');
     tryLoadRig(foeClass, 'foe');
@@ -2537,10 +2593,24 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         const hb = (rig as any).userData.humanoidBones as HumanoidBones | undefined;
         if (hb) {
           resetHumanoid(hb);
-          // stance held at 1 (combat guard); punch hooked to the choreographer
-          // later — resting guard + breathing for now.
-          const atkP = (rig as any).userData.punch ?? 0;
-          poseHumanoid(hb, nowS, 1, atkP, rig === heroRigRef.current ? 'hero' : 'foe');
+          // Процедурни one-shot фази от Choreographer-а (rig.crossfade cue-та
+          // без authored клипове пишат procOneShot): punch 0.6s, hit 0.45s,
+          // death 0.9s (еднопосочна, задържа се).
+          const os = (rig as any).userData.procOneShot as { kind: string; t0: number } | undefined;
+          let punchP = 0, hitP = 0, deathP = 0;
+          if (os) {
+            const el = (now - os.t0) / 1000;
+            if (os.kind === 'punch') {
+              punchP = el / 0.6;
+              if (punchP >= 1) { punchP = 0; (rig as any).userData.procOneShot = undefined; }
+            } else if (os.kind === 'hit') {
+              hitP = el / 0.45;
+              if (hitP >= 1) { hitP = 0; (rig as any).userData.procOneShot = undefined; }
+            } else if (os.kind === 'death') {
+              deathP = Math.min(1, el / 0.9);
+            }
+          }
+          poseHumanoid(hb, nowS, 1, punchP, hitP, deathP, rig === heroRigRef.current ? 'hero' : 'foe');
           const shadow = (rig as any).userData.contactShadow as THREE.Mesh | undefined;
           if (shadow) {
             shadow.position.x = rig.position.x;
