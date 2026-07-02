@@ -9,6 +9,7 @@
 }
 .mag-board {
   /* Дъската е звездата: взима почти цялата широчина, HUD-ът е отстрани. */
+  position: relative; /* anchors the card modal overlay */
   flex: 1 1 760px;
   max-width: 1100px;
   min-width: 300px;
@@ -16,6 +17,83 @@
   overflow: hidden;
   background: radial-gradient(120% 100% at 50% 0%, #1a4030, #0b2418);
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Късмет/Каса card modal (auto-dismisses) ────────────────────────────── */
+.mag-card-pop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  background: rgba(6, 14, 10, 0.35);
+}
+.mag-card {
+  max-width: min(340px, 84%);
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(217, 178, 95, 0.55);
+  background: linear-gradient(165deg, #14342a, #0b241a);
+  box-shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  animation: mag-card-in 0.28s ease-out;
+}
+.mag-card-kicker {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brass-300);
+  margin-bottom: 6px;
+}
+.mag-card-text {
+  font-size: 1.02rem;
+  color: var(--ink-100);
+}
+@keyframes mag-card-in {
+  from {
+    transform: translateY(10px) scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mag-card {
+    animation: none;
+  }
+}
+
+/* ── status pills (live auction, parking pot) ───────────────────────────── */
+.mag-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-100);
+  background: rgba(18, 48, 38, 0.7);
+  border: 1px solid rgba(217, 178, 95, 0.3);
+}
+.mag-pill--auction {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.14);
+}
+
+/* held "get out of jail" cards badge in the player list */
+.mag-key {
+  font-size: 0.8rem;
+  flex: 0 0 auto;
 }
 .mag-nogl {
   padding: 2rem 1.5rem;

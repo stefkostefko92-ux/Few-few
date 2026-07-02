@@ -4,6 +4,7 @@ import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { redis } from "./redis.js";
 import { seedProducts } from "./economy/seed.js";
+import { bootstrapOwner } from "./routes/admin.js";
 import { primeSettings } from "./settings.js";
 import { initSentry } from "./integrations/sentry.js";
 
@@ -29,6 +30,10 @@ async function main(): Promise<void> {
 
   // Mirror the product catalog into the DB so Purchase rows can FK to it.
   await seedProducts().catch((err) => logger.error({ err }, "product seed failed"));
+
+  // First-run owner bootstrap (§14): promote BOOTSTRAP_OWNER_EMAIL to OWNER so
+  // a fresh database never needs manual SQL to reach the admin panel.
+  await bootstrapOwner().catch((err) => logger.error({ err }, "owner bootstrap failed"));
 
   const server = app.listen(env.API_PORT, () => {
     logger.info(`🂡 АСО api listening on :${env.API_PORT} (${env.NODE_ENV})`);

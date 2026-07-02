@@ -10,6 +10,7 @@ import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements } from "../anim/useTableFx";
+import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
 import { useMatch } from "../useMatch";
 import { GameOverPanel, SceneHeader, fitOverlap } from "../scene/SceneShell";
 import "../cards/cards.css";
@@ -79,14 +80,36 @@ export function BeloteView({ title }: { title: string }) {
   const { state, legal, seat, phase, result, players } = m;
 
   const tableRef = useRef<HTMLDivElement>(null);
-  const { dealIn, playCard } = useCardAnimations(tableRef);
+  const { dealIn } = useCardAnimations(tableRef);
+  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
 
-  // Event-driven juice: trick flights + declaration/contra/valat banners.
+  // Event-buffered trick centre: played cards fly in from their seats, the
+  // full trick holds a beat, then flies to the winner.
+  const { displayTrick, registerHandOrigin, originFor, flight } = useTrickDisplay({
+    matchId: m.matchId,
+    seat,
+    scopeRef: tableRef,
+    stateTrick: state?.trick ?? null,
+    posOf: relativePos,
+  });
+
+  // Event-driven banners: the WHOLE auction is narrated (bids, passes, the
+  // closed contract) + declarations/contra/valat/deal report.
   const { banners } = useTableFx({
     matchId: m.matchId,
     seat,
     scopeRef: tableRef,
     toBanner: (ev) => {
+      if (ev.type === "BID" && typeof ev.seat === "number")
+        return { text: `${nameFor(ev.seat)}: ${contractGlyph(ev.contract as Contract, t)}`, tone: "brass" };
+      if (ev.type === "PASS" && typeof ev.seat === "number")
+        return { text: `${nameFor(ev.seat)}: ${t("belote.pass")}`, tone: "brass" };
+      if (ev.type === "CONTRACT" && typeof ev.declarer === "number")
+        return {
+          text: `${t("belote.contract")}: ${contractGlyph(ev.contract as Contract, t)} · ${nameFor(ev.declarer)}`,
+          tone: "win",
+        };
+      if (ev.type === "REDEAL") return { text: t("belote.redeal"), tone: "brass" };
       if (ev.type === "DECLARATIONS") {
         const decls = (ev.declarations as Array<{ kind: string; value: number }>) ?? [];
         return decls.map((d) => ({ text: `${t(`belote.decl.${d.kind}`)} +${d.value}`, tone: "brass" as const }));
@@ -94,9 +117,13 @@ export function BeloteView({ title }: { title: string }) {
       if (ev.type === "CONTRA") return { text: t("belote.contra") + "!", tone: "loss" };
       if (ev.type === "RECONTRA") return { text: t("belote.recontra") + "!", tone: "win" };
       if (ev.type === "DEAL_END") {
-        const s = ev.summary as { valat: number | null; inside: boolean } | undefined;
-        if (typeof s?.valat === "number") return { text: t("belote.valat"), tone: "win" };
-        if (s?.inside) return { text: t("belote.inside") + "!", tone: "loss" };
+        const s = ev.summary as { valat: number | null; inside: boolean; awarded?: [number, number] } | undefined;
+        const out: Array<{ text: string; tone: "brass" | "win" | "loss" }> = [];
+        if (typeof s?.valat === "number") out.push({ text: t("belote.valat"), tone: "win" });
+        if (s?.inside) out.push({ text: t("belote.inside") + "!", tone: "loss" });
+        if (s?.awarded)
+          out.push({ text: `${t("belote.dealPoints")}: ${s.awarded[seat % 2]}:${s.awarded[(seat + 1) % 2]}`, tone: "brass" });
+        return out.length ? out : null;
       }
       return null;
     },
@@ -126,8 +153,6 @@ export function BeloteView({ title }: { title: string }) {
     }
   }, [state, seat, dealIn]);
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
-
   if (!state) {
     return <SearchingOrOver title={title} phase={phase} seat={seat} result={result} />;
   }
@@ -138,7 +163,8 @@ export function BeloteView({ title }: { title: string }) {
   function onPlay(card: string, node: HTMLElement | null) {
     const action = playMap.get(card);
     if (!action) return;
-    playCard(node);
+    // the card will fly from this exact hand node when my PLAY event lands
+    registerHandOrigin(card, node);
     playCue("flip");
     m.send(action);
   }
@@ -178,15 +204,13 @@ export function BeloteView({ title }: { title: string }) {
             })}
 
           <TableCenter>
-            {state.trick.length === 0 ? (
+            {displayTrick.length === 0 ? (
               <span className="text-sm text-ink-muted">
                 {state.phase === "BID" ? t("belote.auction") : t("belote.emptyTrick")}
               </span>
             ) : (
-              state.trick.map((p) => (
-                <span key={p.seat} className="aso-trick-card" style={{ display: "inline-block" }}>
-                  <PlayingCard card={p.card} size="md" />
-                </span>
+              displayTrick.map((p) => (
+                <TrickCardSlot key={`${p.seat}-${p.card}`} play={p} originFor={originFor} flight={flight} />
               ))
             )}
           </TableCenter>
@@ -201,8 +225,10 @@ export function BeloteView({ title }: { title: string }) {
               {(state.hands[seat] ?? []).map((card, i) => {
                 const playable = myTurn && state.phase === "PLAY" && playMap.has(card);
                 return (
+                  // key by the card alone (cards are unique) — an index key
+                  // remounted the hand's tail and replayed the deal-in on every play
                   <CardSlot
-                    key={`${card}-${i}`}
+                    key={card}
                     index={i}
                     count={(state.hands[seat] ?? []).length}
                     card={card}

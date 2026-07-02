@@ -50,7 +50,7 @@ export interface BgState {
   remaining: number[];
 }
 
-export type PointId = number | "BAR";
+export type PointId = number | "BAR" | "OFF";
 
 const PW = 1.15; // point base width
 const PLEN = 4.2; // point (triangle) length
@@ -292,6 +292,34 @@ export class BackgammonScene {
     barHit.userData.pid = "BAR";
     this.scene.add(barHit);
     this.hitZones.push(barHit);
+
+    // bear-off trays on the right rail (white home bottom, black home top):
+    // recessed dark wells that hold the borne-off checkers and act as the
+    // "OFF" click target for bearing off.
+    const wellMat = new MeshStandardMaterial({ color: new Color("#160d06"), roughness: 0.85 });
+    for (const side of [0, 1] as const) {
+      const { x, z } = this.trayCentre(side);
+      const well = new Mesh(new BoxGeometry(RAIL * 0.92, 0.1, PLEN * 0.92), wellMat);
+      well.position.set(x, 0.05, z);
+      well.receiveShadow = true;
+      this.scene.add(well);
+      const rim = new Mesh(new BoxGeometry(RAIL * 0.98, 0.04, PLEN * 0.98), brass);
+      rim.position.set(x, 0.015, z);
+      this.scene.add(rim);
+
+      const offHit = new Mesh(new BoxGeometry(RAIL * 1.5, 0.8, PLEN), new MeshStandardMaterial({ visible: false }));
+      offHit.position.set(x, 0.3, z);
+      offHit.userData.pid = "OFF";
+      this.scene.add(offHit);
+      this.hitZones.push(offHit);
+    }
+  }
+
+  /** Centre of a seat's bear-off tray (0 = white, bottom-right; 1 = black, top-right). */
+  private trayCentre(side: 0 | 1): { x: number; z: number } {
+    const x = HALF + BARW / 2 + RAIL / 2;
+    const z = (side === 0 ? 1 : -1) * (PLEN / 2 + 0.05);
+    return { x, z };
   }
 
   /** World position of the k-th checker (0-based) of `count` on point i. */
@@ -310,7 +338,7 @@ export class BackgammonScene {
     return [p.x, 0.27 + lift, startZ + stack * step];
   }
 
-  setState(state: BgState, mySeat: number, highlight?: { from: Set<PointId>; targets: Set<number> }): void {
+  setState(state: BgState, mySeat: number, highlight?: { from: Set<PointId>; targets: Set<number | "OFF"> }): void {
     // rebuild checkers each state (≤30 cylinders — cheap, and disposed cleanly)
     disposeObject(this.checkerLayer);
     this.checkerLayer.clear();
@@ -371,6 +399,21 @@ export class BackgammonScene {
         if (k === n - 1) barTops[side] = c;
       }
     });
+    // borne-off checkers: flat stacks of five in each side's bear-off tray
+    const offs: [number, MeshStandardMaterial][] = [[state.off[0], matW], [state.off[1], matB]];
+    offs.forEach(([n, mat], side) => {
+      const { x, z } = this.trayCentre(side as 0 | 1);
+      const zDir = side === 0 ? 1 : -1;
+      const zStart = z + zDir * (PLEN * 0.46 - PW * 0.45);
+      for (let k = 0; k < n; k++) {
+        const stack = Math.floor(k / 5);
+        const level = k % 5;
+        const c = new Mesh(geo, mat);
+        c.position.set(x, 0.21 + level * 0.225, zStart - zDir * stack * (PW * 0.9 + 0.1));
+        c.castShadow = true;
+        this.checkerLayer.add(c);
+      }
+    });
 
     // Glide the moved checker (and a hit blot heading to the bar) from where it
     // stood to where it landed — the layer rebuild alone teleports everything.
@@ -417,20 +460,34 @@ export class BackgammonScene {
     this.prevPts = state.points.slice();
     this.prevBar = [state.bar[0], state.bar[1]];
 
-    // highlights (movable origins + targets)
+    // highlights (movable origins + targets; "OFF" glows the mover's tray)
     disposeObject(this.hiLayer);
     this.hiLayer.clear();
     if (highlight) {
-      for (const pid of highlight.from) if (pid !== "BAR") this.addHighlight(pid as number, "#e8c531");
-      for (const tg of highlight.targets) this.addHighlight(tg, "#3ad07a");
+      for (const pid of highlight.from) if (typeof pid === "number") this.addHighlight(pid, "#e8c531");
+      for (const tg of highlight.targets) {
+        if (tg === "OFF") this.addTrayHighlight(mySeat === 1 ? 1 : 0);
+        else this.addHighlight(tg, "#3ad07a");
+      }
     }
 
     this.syncDice(state.remaining.length ? state.remaining : state.dice);
-    void mySeat;
     this.core.invalidate();
   }
 
+  /** Glow the bear-off tray when bearing off is a legal landing. */
+  private addTrayHighlight(side: 0 | 1): void {
+    const { x, z } = this.trayCentre(side);
+    const glow = new Mesh(
+      new BoxGeometry(RAIL * 0.86, 0.05, PLEN * 0.86),
+      new MeshStandardMaterial({ color: new Color("#3ad07a"), emissive: new Color("#3ad07a"), emissiveIntensity: 0.5, transparent: true, opacity: 0.35 }),
+    );
+    glow.position.set(x, 0.14, z);
+    this.hiLayer.add(glow);
+  }
+
   private addHighlight(i: number, color: string): void {
+    if (i < 0 || i > 23) return; // guard: only real points glow (OFF handled above)
     const p = place(i);
     const D = 2 * PLEN;
     const ring = new Mesh(

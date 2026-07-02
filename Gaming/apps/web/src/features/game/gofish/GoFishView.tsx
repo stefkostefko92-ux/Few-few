@@ -5,6 +5,8 @@ import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
+import { useCardFlight } from "../anim/useCardFlight";
+import { useGameEvents } from "../useGameEvents";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
@@ -34,16 +36,61 @@ export function GoFishView({ title }: { title: string }) {
   const m = useMatch<GoFishState, GoFishAction>("GOFISH");
   const { state, legal, seat, phase, result, players } = m;
 
-  // Opponent-visible action announcements.
+  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+
+  // Opponent-visible action announcements: every ask, catch and fish is called
+  // out by name — remembering who asked for what is the core of the game.
   const { banners } = useGameAnnouncements({
     matchId: m.matchId,
     toBanner: (ev) => {
-      if (ev.type === "BOOK") return ev.seat === seat ? { text: t("fx.book"), tone: "win" } : { text: t("fx.oppBook"), tone: "brass" };
+      if (ev.type === "ASK" && typeof ev.seat === "number" && typeof ev.target === "number") {
+        const rank = RANK_LABEL[String(ev.rank)] ?? String(ev.rank);
+        const out: Array<{ text: string; tone: "brass" | "win" }> = [
+          { text: t("fx.asks", { from: nameFor(ev.seat), to: nameFor(ev.target), rank }), tone: "brass" },
+        ];
+        if (typeof ev.got === "number" && ev.got > 0) {
+          out.push({
+            text: t("fx.took", { name: nameFor(ev.seat), count: ev.got }),
+            tone: ev.seat === seat ? "win" : "brass",
+          });
+        }
+        return out;
+      }
+      if (ev.type === "FISH" && typeof ev.seat === "number") {
+        // Lucky fish — drew the very rank asked for, so the seat goes again.
+        return ev.lucky
+          ? { text: t("fx.luckyFish", { name: nameFor(ev.seat) }), tone: ev.seat === seat ? "win" : "brass" }
+          : { text: t("fx.fishes", { name: nameFor(ev.seat) }), tone: "brass" };
+      }
+      if (ev.type === "BOOK") {
+        return ev.seat === seat
+          ? { text: t("fx.book"), tone: "win" }
+          : { text: t("fx.oppBookBy", { name: nameFor(ev.seat as number) }), tone: "brass" };
+      }
       return null;
     },
   });
 
   const tableRef = useRef<HTMLDivElement>(null);
+  const flight = useCardFlight(tableRef);
+  const posOfRef = useRef(new Map<number, SeatPos>());
+
+  // Card-transfer flights: caught cards stream from the victim to the asker,
+  // a fish flies in from the ocean pile. Ghost clones — the state repaints
+  // the hands in the same tick.
+  useGameEvents(m.matchId, (events) => {
+    for (const raw of events) {
+      const ev = raw as { type?: string; seat?: number; target?: number; got?: number };
+      const posOf = (s2: number): SeatPos => (s2 === seat ? "bottom" : posOfRef.current.get(s2) ?? "top");
+      if (ev.type === "ASK" && typeof ev.seat === "number" && typeof ev.target === "number" && (ev.got ?? 0) > 0) {
+        flight.flyGhost(posOf(ev.target), posOf(ev.seat), { count: ev.got });
+      }
+      if (ev.type === "FISH" && typeof ev.seat === "number") {
+        const ocean = tableRef.current?.querySelector<HTMLElement>(".gofish-ocean") ?? null;
+        flight.flyGhost(ocean ?? "top", posOf(ev.seat));
+      }
+    }
+  });
   const { dealIn } = useCardAnimations(tableRef);
   const [target, setTarget] = useState<number | null>(null);
 
@@ -71,8 +118,6 @@ export function GoFishView({ title }: { title: string }) {
       playCue("deal");
     }
   }, [state, seat, dealIn]);
-
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>

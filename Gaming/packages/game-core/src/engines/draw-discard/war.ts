@@ -53,7 +53,9 @@ export const warEngine: GameEngine<WarState, WarAction, WarEvent> = {
   },
 
   legalActions(state, seat) {
-    if (state.done || seat !== 0) return [];
+    // Alternate who triggers the flip so both players stay engaged (the flip
+    // itself reveals BOTH top cards — War has no real decisions).
+    if (state.done || seat !== state.turn) return [];
     return [{ type: "FLIP" }];
   },
 
@@ -78,12 +80,12 @@ export const warEngine: GameEngine<WarState, WarAction, WarEvent> = {
     if (val(a) > val(b)) {
       hands[0]!.push(...pile);
       events.push({ type: "TAKE", seat: 0, count: pile.length });
-      return settle(state, hands, [], events);
+      return settle(state, hands, [], events, [a, b]);
     }
     if (val(b) > val(a)) {
       hands[1]!.push(...pile);
       events.push({ type: "TAKE", seat: 1, count: pile.length });
-      return settle(state, hands, [], events);
+      return settle(state, hands, [], events, [a, b]);
     }
 
     // War: each buries up to 1 card face-down (if available).
@@ -92,7 +94,7 @@ export const warEngine: GameEngine<WarState, WarAction, WarEvent> = {
     if (buryA) pile.push(buryA);
     if (buryB) pile.push(buryB);
     events.push({ type: "WAR", buried: (buryA ? 1 : 0) + (buryB ? 1 : 0) });
-    return settle(state, hands, pile, events);
+    return settle(state, hands, pile, events, [a, b]);
   },
 
   isTerminal: (s) => s.done,
@@ -122,9 +124,12 @@ function settle(
   hands: Card[][],
   pile: Card[],
   events: WarEvent[],
+  revealed: [Card, Card],
 ): { state: WarState; events: WarEvent[] } {
   const flips = prev.flips + 1;
-  const next: WarState = { ...prev, hands, pile, table: [null, null], flips };
+  // Keep the just-revealed pair on the table until the next flip — clearing it
+  // here meant clients NEVER saw a face-up card (§ audit P0).
+  const next: WarState = { ...prev, hands, pile, table: revealed, flips, turn: (flips % 2) as Seat };
 
   if (hands[0]!.length === 0 || hands[1]!.length === 0) {
     const winner: Seat = hands[0]!.length === 0 ? 1 : 0;

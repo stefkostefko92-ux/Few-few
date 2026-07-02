@@ -95,7 +95,60 @@
     "discordBotName": "Bot name",
     "discordEnabled": "Enabled",
     "discordEvents": "Which events to send",
-    "discordBadUrl": "Invalid webhook URL"
+    "discordBadUrl": "Invalid webhook URL",
+    "economy": "Economy",
+    "reports": "Reports",
+    "loadError": "Failed to load.",
+    "retry": "Retry",
+    "sessionExpired": "Session expired — sign in again.",
+    "goLogin": "Go to login",
+    "allRoles": "All roles",
+    "allVip": "All VIP",
+    "all": "All",
+    "onlyBanned": "Banned only",
+    "onlyActive": "Active only",
+    "status": "Status",
+    "lastSeen": "Last seen",
+    "registered": "Registered",
+    "banReason": "Ban reason",
+    "banReasonRequired": "A ban reason is required.",
+    "banUntil": "Banned until",
+    "banUntilLabel": "Banned until (blank = permanent)",
+    "banPermanent": "Permanent",
+    "banConfirm": "Ban account",
+    "cancel": "Cancel",
+    "grantNote": "Reason (audit note)",
+    "grantNotePlaceholder": "e.g. compensation for an aborted match",
+    "grantNoteRequired": "A reason is required for amounts over 10,000.",
+    "grantConfirmBig": "Large amount — are you sure?",
+    "ratings": "Ratings",
+    "matchHistory": "Match history",
+    "noMatches": "No matches played.",
+    "noPurchases": "No purchases.",
+    "noReports": "No reports.",
+    "match": "Match",
+    "seat": "Seat",
+    "reportedBy": "Reported by",
+    "resolve": "Resolve",
+    "reopen": "Reopen",
+    "action": "Action",
+    "allActions": "All actions",
+    "actor": "Admin",
+    "fromDate": "From",
+    "toDate": "To",
+    "applyFilters": "Filter",
+    "openTarget": "Open player",
+    "perDay": "Per day (last 14)",
+    "day": "Day",
+    "dau": "DAU",
+    "registrations": "Registrations",
+    "topGames": "Top games (14 days)",
+    "evRegistration": "Registrations",
+    "evPurchase": "Purchases",
+    "evVip": "VIP",
+    "evFlag": "Flags (collusion)",
+    "evAdminAction": "Admin actions",
+    "evBroadcast": "Broadcasts"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -209,10 +262,16 @@
     "match": "Match",
     "dealNo": "Deal",
     "toEleven": "to 11",
-    "marriage": "Marriage",
-    "trumpMarriage": "Trump marriage",
+    "marriage": "20",
+    "trumpMarriage": "40",
     "quiet": "No announce",
-    "quietOn": "No announce ✓"
+    "quietOn": "No announce ✓",
+    "twenty": "20!",
+    "forty": "40!",
+    "closedBy": "{{name}} closes the talon",
+    "exchangedBy": "{{name}} exchanges the trump nine",
+    "dealEnd": "{{name}} takes the deal (+{{n}})",
+    "closedTag": "Talon closed"
   },
   "belote": {
     "yourTeam": "Your team",
@@ -241,7 +300,8 @@
     "dealPoints": "This deal",
     "lastDeal": "Deal",
     "valat": "Capot!",
-    "inside": "Inside"
+    "inside": "Inside",
+    "redeal": "New deal"
   },
   "wallet": {
     "chips": "Chips",
@@ -362,7 +422,19 @@
     "call": "Call",
     "raise": "Raise",
     "fold": "Fold",
-    "notice": "Social game with virtual chips — not real-money gambling."
+    "notice": "Social game with virtual chips — not real-money gambling.",
+    "check": "Check",
+    "continue": "Continue",
+    "handNo": "Hand {{n}}/{{max}}",
+    "svara": "SVARA!",
+    "svaraBanner": "SVARA! The pot of {{pot}} carries over",
+    "join": "Join the svara ({{fee}})",
+    "skip": "Stay out",
+    "waitingJoin": "Svara! Waiting for decisions…",
+    "winsPot": "{{name}} wins the pot ({{pot}})",
+    "raisesTo": "{{name}} raises to {{to}}",
+    "joins": "{{name}} joins the svara ({{fee}})",
+    "newHand": "Hand {{n}}"
   },
   "bridge": {
     "auction": "Auction",
@@ -383,7 +455,8 @@
   "war": {
     "flip": "Flip",
     "battle": "WAR",
-    "cards": "{{n}} cards"
+    "cards": "Cards: {{n}}",
+    "tookPile": "{{name}} takes {{n}} cards"
   },
   "rummy": {
     "stock": "Stock",
@@ -395,7 +468,19 @@
     "discardHint": "Pick a card to discard",
     "drawHint": "Draw from stock or discard",
     "cancelKnock": "Cancel knock",
-    "knockHint": "Pick the card to knock with"
+    "knockHint": "Pick the card to knock with",
+    "match": "Match",
+    "dealNo": "Deal",
+    "toHundred": "to 100 pts",
+    "knockBanner": "{{name}} knocks at {{pts}}",
+    "ginBanner": "Gin! {{name}} goes out with zero deadwood",
+    "undercutBanner": "Undercut! {{name}} beats the knocker",
+    "dealWonBanner": "{{name}} wins the deal: +{{pts}}",
+    "deadHandBanner": "Dead hand — nobody scores",
+    "matchBanner": "{{name}} wins the match",
+    "deadwood": "Deadwood",
+    "layoffs": "Lay-offs",
+    "continue": "Continue"
   },
   "gofish": {
     "ocean": "Ocean",
@@ -406,10 +491,17 @@
     "roll": "Roll",
     "pass": "Pass",
     "bar": "Bar",
-    "off": "Off"
+    "off": "Off",
+    "bearOff": "Bear off",
+    "noMoves": "No legal moves — pass",
+    "gammon": "Gammon!",
+    "backgammon": "Backgammon!",
+    "openingRoll": "Opening roll",
+    "white": "White",
+    "black": "Black"
   },
   "battleship": {
-    "enemy": "Enemy: {{name}}",
+    "enemy": "Opponent: {{name}}",
     "yourFleet": "Your fleet"
   },
   "dice": {
@@ -433,21 +525,40 @@
       "largeStraight": "Large straight",
       "chance": "Chance",
       "yahtzee": "Yahtzee"
-    }
+    },
+    "upper": "Upper sum",
+    "bonus": "Bonus (63+)",
+    "pickCategory": "Pick a category"
   },
   "bingo": {
     "draw": "Draw",
     "drawn": "Drawn: {{n}}",
-    "yourCard": "Your card"
+    "yourCard": "Your card",
+    "bingo": "BINGO!",
+    "winner": "{{name}} got a bingo!",
+    "bestLine": "line {{n}}/5"
   },
   "words": {
     "nextLetter": "Next letter",
-    "pass": "Pass"
+    "pass": "Pass",
+    "inputPlaceholder": "A word with {{letter}}…",
+    "submit": "Play",
+    "notInDict": "\"{{word}}\" is not in the dictionary — you lose a life",
+    "alreadyUsed": "\"{{word}}\" was already used — you lose a life",
+    "wrongLetter": "The word must start with {{letter}} — you lose a life",
+    "passHint": "Pass: lose a life; the chain restarts with a new word",
+    "passBanner": "{{name}} passed (−1 life)",
+    "wrongBanner": "{{name}} got a word wrong (−1 life)",
+    "reseed": "New word: {{word}}",
+    "out": "out"
   },
   "ludo": {
     "base": "base",
     "home": "home",
-    "pickToken": "Pick a token"
+    "pickToken": "Pick a token",
+    "noMove": "No move — turn passes",
+    "noMoveRetry": "No move — roll again",
+    "noMoveOther": "{{name}} has no move"
   },
   "domino": {
     "empty": "Place the first domino",
@@ -457,7 +568,10 @@
     "target": "to",
     "lastRound": "Last round",
     "out": "went out",
-    "blocked": "blocked"
+    "blocked": "blocked",
+    "pass": "Pass",
+    "boneyard": "Boneyard",
+    "tie": "tie"
   },
   "cue": {
     "power": "Power",
@@ -470,7 +584,36 @@
     "solids": "solids",
     "stripes": "stripes",
     "expectRed": "target: red",
-    "expectColour": "target: colour"
+    "expectColour": "target: colour",
+    "foul": {
+      "scratch": "Foul: cue ball potted.",
+      "noContact": "Foul: no ball hit.",
+      "noRail": "Foul: no pot and no rail after contact.",
+      "wrongBall": "Foul: wrong ball hit first.",
+      "eightFirstOpen": "Foul: hit the 8 first on an open table.",
+      "eightWin": "The 8-ball is potted!",
+      "eightLoss": "8-ball potted illegally — game lost.",
+      "eightBreakRespot": "8 on the break — it is re-spotted.",
+      "lowestFirst": "Foul: lowest ball must be hit first.",
+      "nineWin": "The 9 is potted — win!",
+      "pushOut": "Push-out — the opponent chooses who plays.",
+      "continues": "Carries on.",
+      "needRed": "Foul: a red was required.",
+      "needColour": "Foul: a colour was required.",
+      "colourPotted": "Foul: potted a colour instead of a red.",
+      "redPotted": "Foul: potted a red.",
+      "multiColour": "Foul: more than one colour potted.",
+      "wrongPot": "Foul: wrong ball potted.",
+      "cleared": "Table cleared!",
+      "respotBlack": "Tie — the black is re-spotted."
+    },
+    "pushOut": "Push-out",
+    "pushPass": "Pass back",
+    "freeBall": "free ball",
+    "expectFreeColour": "target: colour of choice",
+    "expectBall": "target: ball",
+    "placeHintD": "inside the \"D\" only",
+    "placeHintBreak": "behind the head string"
   },
   "net": {
     "reconnecting": "Connection lost — reconnecting…"
@@ -494,7 +637,9 @@
     "target": "to",
     "lastCall": "Last Kupe",
     "correct": "correct ✓",
-    "wrong": "false ✗"
+    "wrong": "false ✗",
+    "callStop": "Stop Kent!",
+    "roundWon": "Round for {{team}}"
   },
   "chess": {
     "check": "Check!",
@@ -508,7 +653,19 @@
       "r": "rook",
       "b": "bishop",
       "n": "knight"
-    }
+    },
+    "resign": "Resign",
+    "offerDraw": "Offer draw",
+    "acceptDraw": "Accept draw",
+    "drawOffered": "Your opponent offers a draw",
+    "drawOfferSent": "Draw offered — waiting for a reply",
+    "youResigned": "You resigned",
+    "oppResigned": "Opponent resigned",
+    "stalemate": "Stalemate — draw",
+    "drawThreefold": "Draw — threefold repetition",
+    "drawAgreement": "Draw by agreement",
+    "drawFifty": "Draw — fifty-move rule",
+    "drawMaterial": "Draw — insufficient material"
   },
   "fx": {
     "hit": "Hit!",
@@ -530,7 +687,20 @@
     "fold": "Fold",
     "raise": "Raise!",
     "winPot": "wins the pot",
-    "youWinPot": "You win the pot!"
+    "youWinPot": "You win the pot!",
+    "passBy": "{{name}} passes",
+    "wentOut": "{{name}} went out!",
+    "roundPoints": "{{name}} +{{points}} pts",
+    "roundTie": "Blocked tie — no points awarded",
+    "asks": "{{from}} asks {{to}} for {{rank}}s",
+    "took": "{{name}} took {{count}}!",
+    "fishes": "{{name}} goes fishing",
+    "luckyFish": "{{name}} fished the asked rank — goes again!",
+    "oppBookBy": "Book for {{name}}!",
+    "sunk": "Ship sunk!",
+    "sunkYou": "Your ship was sunk!",
+    "mustCapture": "Capture is mandatory!",
+    "chain": "Keep capturing!"
   },
   "rooms": {
     "title": "Rooms",
@@ -616,7 +786,26 @@
     "onField": "on {{tile}}",
     "turnHint": "{{name}}'s turn…",
     "mortgage": "mortgage",
-    "houses": "{{n}}🏠"
+    "houses": "{{n}}🏠",
+    "rentBanner": "{{from}} pays {{to}} {{amount}} rent",
+    "jailStayYou": "🎲 {{d1}}+{{d2}} — no doubles, you stay in jail (attempt {{attempt}}/3)",
+    "jailStay": "{{name}} didn't roll doubles and stays in jail ({{attempt}}/3)",
+    "jailFee": "{{name}} pays {{amount}} and leaves jail",
+    "jailBanner": "{{name}} goes to jail",
+    "auctionStartBanner": "Auction for {{tile}}",
+    "bidBanner": "{{name}} bids {{amount}} for {{tile}}",
+    "auctionWonBanner": "{{name}} wins {{tile}} for {{amount}}",
+    "auctionPassedBanner": "{{tile}} goes unsold",
+    "potBanner": "{{name}} collects the {{amount}} jackpot",
+    "bankruptBanner": "{{name}} goes bankrupt",
+    "tradeDoneBanner": "Deal: {{from}} ↔ {{to}}",
+    "tradeRejectedBanner": "{{name}} declined the deal",
+    "cardDrawn": "{{name}} draws a card",
+    "auctionPill": "Auction: {{tile}}",
+    "auctionLeader": "leading: {{name}} {{amount}}",
+    "potPill": "Parking jackpot: {{amount}}",
+    "gojfCard": "Get-out-of-jail card",
+    "tradeWaiting": "Waiting for {{name}} to respond…"
   },
   "errors": {
     "generic": "Something went wrong",

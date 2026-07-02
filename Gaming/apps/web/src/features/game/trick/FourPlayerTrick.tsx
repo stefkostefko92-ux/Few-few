@@ -6,6 +6,7 @@ import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements, type BannerTone } from "../anim/useTableFx";
+import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
 import { HandCard } from "../scene/SceneShell";
 
 interface Play {
@@ -63,24 +64,34 @@ export function FourPlayerTrick({
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const tableRef = useRef<HTMLDivElement>(null);
-  const { dealIn, playCard } = useCardAnimations(tableRef);
+  const { dealIn } = useCardAnimations(tableRef);
   const { banners } = useTableFx({ matchId: matchId ?? null, seat, scopeRef: tableRef, toBanner });
+  // Event-buffered centre: played cards fly in, the full trick flies to its winner.
+  const { displayTrick, registerHandOrigin, originFor, flight } = useTrickDisplay({
+    matchId: matchId ?? null,
+    seat,
+    scopeRef: tableRef,
+    stateTrick: state.trick,
+    posOf: relativePos4,
+  });
 
   const myTurn = state.turn === seat && playable.size > 0;
   const others = useMemo(() => [0, 1, 2, 3].filter((s) => s !== seat), [seat]);
 
-  const dealtRef = useRef(false);
+  // A "deal" is any refill from empty — covers rubber deals 2..N, not just the first.
+  const prevCountRef = useRef(0);
   useEffect(() => {
-    if (!dealtRef.current && (state.hands[seat]?.length ?? 0) > 0) {
-      dealtRef.current = true;
+    const count = state.hands[seat]?.length ?? 0;
+    if (count > 0 && prevCountRef.current === 0) {
       requestAnimationFrame(() => dealIn(".aso-myhand .aso-card"));
       playCue("deal");
     }
+    prevCountRef.current = count;
   }, [state, seat, dealIn]);
 
   function handlePlay(card: string, node: HTMLElement | null) {
     if (!playable.has(card)) return;
-    playCard(node);
+    registerHandOrigin(card, node);
     playCue("flip");
     onPlay(card);
   }
@@ -119,13 +130,11 @@ export function FourPlayerTrick({
         ))}
 
         <TableCenter>
-          {state.trick.length === 0 ? (
+          {displayTrick.length === 0 ? (
             <span className="text-sm text-ink-muted">{emptyTrickLabel}</span>
           ) : (
-            state.trick.map((p) => (
-              <span key={p.seat} className="aso-trick-card" style={{ display: "inline-block" }}>
-                <PlayingCard card={p.card} size="md" />
-              </span>
+            displayTrick.map((p) => (
+              <TrickCardSlot key={`${p.seat}-${p.card}`} play={p} originFor={originFor} flight={flight} />
             ))
           )}
         </TableCenter>

@@ -10,7 +10,9 @@ import type { SeededRng } from "../../kernel/rng.js";
 /**
  * Backgammon / Табла (dice-race pattern, §7.2). Open information (board + dice
  * are public), so `redact` is a no-op; all randomness is the dice, drawn from
- * the seeded RNG on ROLL → provably fair via commit-reveal.
+ * the seeded RNG (opening roll in init, then ROLL) → provably fair via
+ * commit-reveal. The game opens with the standard opening roll: one die per
+ * player, the higher starts and plays exactly those two dice.
  *
  * Board: 24 points indexed 0..23. `points[i]` is a signed checker count —
  * positive = seat 0 ("white"), negative = seat 1 ("black").
@@ -30,6 +32,8 @@ export interface BackgammonState {
   phase: "ROLL" | "MOVE";
   dice: number[]; // dice rolled this turn (2, or 4 on doubles)
   remaining: number[]; // dice values not yet consumed
+  /** Opening roll [white die, black die] — present only during the first turn. */
+  openingRoll?: [number, number];
 }
 
 export type BackgammonAction =
@@ -43,7 +47,7 @@ export type BackgammonEvent =
   | { type: "HIT"; seat: Seat; point: number }
   | { type: "PASS"; seat: Seat }
   | { type: "BEAR_OFF"; seat: Seat; from: number }
-  | { type: "WIN"; seat: Seat };
+  | { type: "WIN"; seat: Seat; points: number };
 
 const WHITE = 0;
 const BLACK = 1;
@@ -183,7 +187,7 @@ function movesFor(s: BackgammonState): Array<{ from: number | "BAR"; die: number
 }
 
 function clone(s: BackgammonState): BackgammonState {
-  return {
+  const next: BackgammonState = {
     points: [...s.points],
     bar: [s.bar[0], s.bar[1]],
     off: [s.off[0], s.off[1]],
@@ -192,6 +196,8 @@ function clone(s: BackgammonState): BackgammonState {
     dice: [...s.dice],
     remaining: [...s.remaining],
   };
+  if (s.openingRoll) next.openingRoll = [s.openingRoll[0], s.openingRoll[1]];
+  return next;
 }
 
 function removeFromPoint(s: BackgammonState, i: number, seat: Seat): void {
@@ -214,18 +220,39 @@ function endTurn(s: BackgammonState): void {
   s.phase = "ROLL";
   s.dice = [];
   s.remaining = [];
+  delete s.openingRoll; // the opening turn is over
+}
+
+/** Match points for the winner: 1, gammon = 2, backgammon = 3. */
+function winPoints(s: BackgammonState, winner: 0 | 1): number {
+  const loser = winner === WHITE ? BLACK : WHITE;
+  if (s.off[loser] > 0) return 1;
+  const inWinnerHome =
+    winner === WHITE
+      ? s.points.slice(0, 6).some((v) => v < 0)
+      : s.points.slice(18, 24).some((v) => v > 0);
+  return s.bar[loser] > 0 || inWinnerHome ? 3 : 2;
 }
 
 export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, BackgammonEvent> = {
-  init(_opts: InitOpts): BackgammonState {
+  init(_opts: InitOpts, rng: SeededRng): BackgammonState {
+    // Opening roll: each player throws one die, the higher roller starts and
+    // plays exactly those two dice (re-rolled on a tie, so never doubles).
+    let d1 = rng.die();
+    let d2 = rng.die();
+    while (d1 === d2) {
+      d1 = rng.die();
+      d2 = rng.die();
+    }
     return {
       points: startingPoints(),
       bar: [0, 0],
       off: [0, 0],
-      turn: WHITE,
-      phase: "ROLL",
-      dice: [],
-      remaining: [],
+      turn: d1 > d2 ? WHITE : BLACK,
+      phase: "MOVE",
+      dice: [d1, d2],
+      remaining: [d1, d2],
+      openingRoll: [d1, d2],
     };
   },
 
@@ -292,7 +319,7 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
     if (idx >= 0) next.remaining.splice(idx, 1);
 
     if (next.off[seat] === 15) {
-      events.push({ type: "WIN", seat });
+      events.push({ type: "WIN", seat, points: winPoints(next, seat) });
     } else if (next.remaining.length === 0 || movesFor(next).length === 0) {
       endTurn(next);
     }
@@ -307,16 +334,8 @@ export const backgammonEngine: GameEngine<BackgammonState, BackgammonAction, Bac
   score(state): SeatScore[] {
     const winner = state.off[0] === 15 ? WHITE : BLACK;
     const loser = winner === WHITE ? BLACK : WHITE;
-    let points = 1;
-    if (state.off[loser] === 0) {
-      const inWinnerHome =
-        winner === WHITE
-          ? state.points.slice(0, 6).some((v) => v < 0)
-          : state.points.slice(18, 24).some((v) => v > 0);
-      points = state.bar[loser] > 0 || inWinnerHome ? 3 : 2;
-    }
     return [
-      { seat: winner, result: "win", points },
+      { seat: winner, result: "win", points: winPoints(state, winner) },
       { seat: loser, result: "loss", points: 0 },
     ];
   },

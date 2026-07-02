@@ -40,7 +40,7 @@ export function Header() {
                 ["/shop", t("nav.shop")],
                 ["/friends", t("nav.friends")],
                 ["/leaderboard", t("nav.leaderboard")],
-                ...(["MODERATOR", "ADMIN", "OWNER"].includes(user.role)
+                ...(["MODERATOR", "SUPPORT", "ADMIN", "OWNER"].includes(user.role)
                   ? ([["/admin", t("nav.admin")]] as const)
                   : []),
               ] as const

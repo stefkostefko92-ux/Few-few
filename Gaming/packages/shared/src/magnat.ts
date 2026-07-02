@@ -204,9 +204,13 @@ export type MagnatEvent =
   | { type: "RENT"; seat: number; to: number; amount: number }
   | { type: "CARD"; seat: number; text: string }
   | { type: "JAIL"; seat: number }
+  /** A jailed player rolled and failed to throw doubles (attempt = 1..2 of 3). */
+  | { type: "JAIL_STAY"; seat: number; dice: [number, number]; attempt: number }
+  /** Third failed attempt: the fine is paid and the player walks. */
+  | { type: "JAIL_FEE"; seat: number; amount: number }
   | { type: "BANKRUPT"; seat: number; to: number | null }
   | { type: "AUCTION_START"; tile: number }
-  | { type: "AUCTION_BID"; seat: number; amount: number }
+  | { type: "AUCTION_BID"; seat: number; amount: number; tile: number }
   | { type: "AUCTION_WON"; seat: number; tile: number; amount: number }
   | { type: "AUCTION_PASSED"; tile: number }
   | { type: "POT"; seat: number; amount: number }

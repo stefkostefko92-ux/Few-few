@@ -1,15 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BOARD, GROUP_COLORS, GROUP_TILES, isOwnable, type MagnatAction, type MagnatState } from "@aso/shared";
+import {
+  BOARD,
+  GROUP_COLORS,
+  GROUP_TILES,
+  isOwnable,
+  type MagnatAction,
+  type MagnatEvent,
+  type MagnatState,
+} from "@aso/shared";
 import type { MagnatScene } from "./magnatScene";
 import { playCue } from "../../../lib/sound";
 import { Button } from "../../../ui";
 import { useEquippedCosmetic } from "../../shop/useEquippedCosmetic";
 import { useMatch } from "../useMatch";
+import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
 import "./magnat.css";
 
 const PLAYER_COLORS = ["#e23b3b", "#2f7fe2", "#2faa55", "#e8b923", "#9b4fd0", "#e07a1f"];
+
+let cardSeq = 0;
 
 /** WebGL availability — МАГНАТ's board needs it; otherwise we degrade to the HUD. */
 function webglSupported(): boolean {
@@ -95,6 +106,75 @@ export function MagnatView({ title }: { title: string }) {
 
   const name = (s: number) => players.find((p) => p.seat === s)?.displayName ?? t("magnat.player", { num: s + 1 });
 
+  // ── event-driven feedback (GAME_EVENTS): banners for EVERYONE at the table
+  // (rent, auction bids, jail, pot, bankruptcies) + a card modal for Късмет/Каса.
+  // Previously the view never consumed the event stream — cards and rents were
+  // invisible beyond a tiny log line.
+  const [card, setCard] = useState<{ id: number; seat: number; text: string } | null>(null);
+  const cardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (cardTimer.current) clearTimeout(cardTimer.current);
+    },
+    [],
+  );
+  const showCard = (cardSeat: number, text: string) => {
+    playCue("flip");
+    setCard({ id: ++cardSeq, seat: cardSeat, text });
+    if (cardTimer.current) clearTimeout(cardTimer.current);
+    cardTimer.current = setTimeout(() => setCard(null), 3000);
+  };
+
+  const tileName = (i: unknown): string => (typeof i === "number" ? (BOARD[i]?.name ?? "") : "");
+  const { banners } = useGameAnnouncements({
+    matchId: m.matchId,
+    toBanner: (raw) => {
+      const ev = raw as unknown as MagnatEvent;
+      switch (ev.type) {
+        case "CARD":
+          showCard(ev.seat, ev.text); // shown as a modal over the board, not a banner
+          return null;
+        case "RENT":
+          return {
+            text: t("magnat.rentBanner", { from: name(ev.seat), to: name(ev.to), amount: ev.amount }),
+            tone: ev.seat === seat ? "loss" : ev.to === seat ? "win" : "brass",
+          };
+        case "JAIL_STAY":
+          return ev.seat === seat
+            ? { text: t("magnat.jailStayYou", { d1: ev.dice[0], d2: ev.dice[1], attempt: ev.attempt }), tone: "loss" }
+            : { text: t("magnat.jailStay", { name: name(ev.seat), attempt: ev.attempt }) };
+        case "JAIL_FEE":
+          return { text: t("magnat.jailFee", { name: name(ev.seat), amount: ev.amount }) };
+        case "JAIL":
+          return { text: t("magnat.jailBanner", { name: name(ev.seat) }), tone: ev.seat === seat ? "loss" : "brass" };
+        case "AUCTION_START":
+          return { text: t("magnat.auctionStartBanner", { tile: tileName(ev.tile) }) };
+        case "AUCTION_BID":
+          return { text: t("magnat.bidBanner", { name: name(ev.seat), amount: ev.amount, tile: tileName(ev.tile) }) };
+        case "AUCTION_WON":
+          return {
+            text: t("magnat.auctionWonBanner", { name: name(ev.seat), tile: tileName(ev.tile), amount: ev.amount }),
+            tone: ev.seat === seat ? "win" : "brass",
+          };
+        case "AUCTION_PASSED":
+          return { text: t("magnat.auctionPassedBanner", { tile: tileName(ev.tile) }) };
+        case "POT":
+          return {
+            text: t("magnat.potBanner", { name: name(ev.seat), amount: ev.amount }),
+            tone: ev.seat === seat ? "win" : "brass",
+          };
+        case "BANKRUPT":
+          return { text: t("magnat.bankruptBanner", { name: name(ev.seat) }), tone: ev.seat === seat ? "loss" : "brass" };
+        case "TRADE_DONE":
+          return { text: t("magnat.tradeDoneBanner", { from: name(ev.from), to: name(ev.to) }) };
+        case "TRADE_REJECTED":
+          return { text: t("magnat.tradeRejectedBanner", { name: name(ev.to) }) };
+        default:
+          return null;
+      }
+    },
+  });
+
   // A property is tradable if owned and its whole colour group has no houses.
   const tradableOf = (owner: number): number[] =>
     state
@@ -131,13 +211,17 @@ export function MagnatView({ title }: { title: string }) {
     if (next.has(i)) next.delete(i); else next.add(i);
     setSet(next);
   };
+  // The HTML max on the cash inputs doesn't stop manual typing — clamp to the
+  // owner's actual cash (and to integers) so the server never rejects silently.
+  const clampCash = (v: number, max: number): number =>
+    Math.max(0, Math.min(Number.isFinite(v) ? Math.floor(v) : 0, max));
   const sendTrade = () => {
-    if (partner === null) return;
+    if (!state || partner === null) return;
     send({
       type: "TRADE_OFFER",
       to: partner,
-      give: { cash: giveCash, tiles: [...give] },
-      want: { cash: wantCash, tiles: [...want] },
+      give: { cash: clampCash(giveCash, state.cash[seat] ?? 0), tiles: [...give] },
+      want: { cash: clampCash(wantCash, state.cash[partner] ?? 0), tiles: [...want] },
     });
     resetTrade();
   };
@@ -163,6 +247,7 @@ export function MagnatView({ title }: { title: string }) {
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result} wide>
       {state ? (
         <div className="mag-layout">
+          <Announcements banners={banners} fixed />
           <div ref={wrapRef} className="mag-board">
             {useGL ? (
               <canvas
@@ -174,12 +259,38 @@ export function MagnatView({ title }: { title: string }) {
             ) : (
               <p className="mag-nogl">{t("magnat.noWebGL")}</p>
             )}
+            {/* Късмет/Каса card — everyone sees the drawn card for a moment */}
+            {card ? (
+              <div key={card.id} className="mag-card-pop" role="status" aria-live="assertive">
+                <div className="mag-card">
+                  <p className="mag-card-kicker">{t("magnat.cardDrawn", { name: name(card.seat) })}</p>
+                  <p className="mag-card-text">{card.text}</p>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <aside className="mag-side">
             <p className="sr-only" aria-live="polite">
               {liveLine}
             </p>
+            {/* status pills: live auction (visible to ALL seats) + parking pot */}
+            {auction || state.config.freeParkingPot ? (
+              <div className="mag-pills">
+                {auction ? (
+                  <span className="mag-pill mag-pill--auction">
+                    {t("magnat.auctionPill", { tile: BOARD[auction.tile]!.name })}
+                    {" · "}
+                    {auction.high > 0
+                      ? t("magnat.auctionLeader", { name: name(auction.highBidder), amount: auction.high })
+                      : t("magnat.auctionNone")}
+                  </span>
+                ) : null}
+                {state.config.freeParkingPot ? (
+                  <span className="mag-pill">{t("magnat.potPill", { amount: state.pot })}</span>
+                ) : null}
+              </div>
+            ) : null}
             {/* players */}
             <div className="mag-players">
               {state.cash.map((cash, s) => (
@@ -189,6 +300,11 @@ export function MagnatView({ title }: { title: string }) {
                     {name(s)}
                     {s === seat ? ` ${t("room.you")}` : ""}
                   </span>
+                  {(state.gojf[s] ?? 0) > 0 ? (
+                    <span className="mag-key" title={t("magnat.gojfCard")} aria-label={t("magnat.gojfCard")}>
+                      🔑{state.gojf[s]! > 1 ? `×${state.gojf[s]}` : ""}
+                    </span>
+                  ) : null}
                   <span className="mag-cash">{state.bankrupt[s] ? t("magnat.bankrupt") : `${cash}`}</span>
                 </div>
               ))}
@@ -197,9 +313,24 @@ export function MagnatView({ title }: { title: string }) {
             {/* actions */}
             <div className="mag-actions">
               {!myTurn ? (
-                <p className="mag-hint">
-                  {state.done ? t("magnat.gameOver") : t("magnat.turnHint", { name: name(state.turn) })}
-                </p>
+                state.phase === "TRADE" && state.trade && state.trade.from === seat ? (
+                  // The offerer sees what they're waiting on instead of a bare turn hint.
+                  <div className="mag-trade-resp">
+                    <p className="mag-hint">{t("magnat.tradeWaiting", { name: name(state.trade.to) })}</p>
+                    <p className="mag-trade-line">
+                      {t("magnat.give")} {state.trade.give.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
+                      {state.trade.give.cash ? ` + ${state.trade.give.cash}` : ""}
+                    </p>
+                    <p className="mag-trade-line">
+                      {t("magnat.get")} {state.trade.want.tiles.map((i) => BOARD[i]!.name).join(", ") || "—"}
+                      {state.trade.want.cash ? ` + ${state.trade.want.cash}` : ""}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mag-hint">
+                    {state.done ? t("magnat.gameOver") : t("magnat.turnHint", { name: name(state.turn) })}
+                  </p>
+                )
               ) : state.phase === "ROLL" ? (
                 <div className="mag-btns">
                   {has("JAIL_CARD") ? <Button onClick={() => send({ type: "JAIL_CARD" })}>{t("magnat.jailCard")}</Button> : null}
@@ -336,10 +467,19 @@ export function MagnatView({ title }: { title: string }) {
               </div>
             ) : null}
 
-            {/* my properties */}
-            {myProps.length > 0 ? (
+            {/* my properties (+ held "get out of jail" cards) */}
+            {myProps.length > 0 || (state.gojf[seat] ?? 0) > 0 ? (
               <div className="mag-props">
                 <h4>{t("magnat.myProps")}</h4>
+                {(state.gojf[seat] ?? 0) > 0 ? (
+                  <div className="mag-prop">
+                    <span className="mag-prop-band" style={{ background: "#d9b25f" }} />
+                    <span className="mag-prop-name">
+                      🔑 {t("magnat.gojfCard")}
+                      {state.gojf[seat]! > 1 ? ` ×${state.gojf[seat]}` : ""}
+                    </span>
+                  </div>
+                ) : null}
                 {myProps.map((i) => {
                   const tl = BOARD[i]!;
                   return (

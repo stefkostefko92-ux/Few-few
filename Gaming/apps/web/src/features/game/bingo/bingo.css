@@ -20,7 +20,7 @@
   display: grid;
   place-items: center;
   font-family: var(--font-display, serif);
-  font-size: 2.6rem;
+  font-size: 1.9rem; /* fits the lettered call, e.g. "G-75" */
   font-weight: 700;
   color: var(--charcoal-900);
   background: radial-gradient(circle at 35% 30%, var(--brass-100), var(--brass-400));
@@ -114,4 +114,38 @@
 .bingo-cell--free {
   background: var(--felt-700);
   color: var(--brass-300);
+}
+/* Opponents' progress — cards are public, show how close each rival is. */
+.bingo-rivals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+.bingo-rival {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(11, 14, 13, 0.5);
+  border: 1px solid rgba(217, 178, 95, 0.15);
+  font-size: 0.8rem;
+  color: var(--ink-300);
+}
+.bingo-rival--hot {
+  border-color: var(--brass-300);
+  box-shadow: 0 0 14px var(--brass-glow);
+}
+.bingo-rival-name {
+  font-weight: 600;
+  color: var(--ink-100);
+}
+.bingo-rival-line {
+  color: var(--brass-300);
+  font-weight: 700;
+}
+.bingo-rival-marks {
+  font-size: 0.7rem;
 }

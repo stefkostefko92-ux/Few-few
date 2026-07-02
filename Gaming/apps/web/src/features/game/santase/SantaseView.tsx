@@ -9,6 +9,7 @@ import { type SuitChar } from "../cards/suits";
 import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements } from "../anim/useTableFx";
+import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill, HandCard } from "../scene/SceneShell";
 
@@ -42,24 +43,43 @@ export function SantaseView({ title }: { title: string }) {
   const { state, legal, seat, phase, result, players } = m;
 
   const tableRef = useRef<HTMLDivElement>(null);
-  const { dealIn, playCard } = useCardAnimations(tableRef);
+  const { dealIn } = useCardAnimations(tableRef);
+  const opp = seat === 0 ? 1 : 0;
+  const oppNameOf = (s: number) =>
+    s === seat ? (user?.displayName ?? t("game.you")) : (players.find((p) => p.seat === s)?.displayName ?? t("game.opponent"));
 
-  // Trick flights (2-handed: winner is bottom if me, else top) + marriage banners.
+  // Event-buffered trick centre: both cards fly in; the trick flies to its winner.
+  const { displayTrick, registerHandOrigin, originFor, flight } = useTrickDisplay({
+    matchId: m.matchId,
+    seat,
+    scopeRef: tableRef,
+    stateTrick: state?.trick ?? null,
+    posOf: (winner, mine) => (winner === mine ? "bottom" : "top"),
+  });
+
+  // Announce banners: 20/40, затваряне, размяна на 9-ката, край на раздаването.
   const { banners } = useTableFx({
     matchId: m.matchId,
     seat,
     scopeRef: tableRef,
-    posOf: (winner, mine) => (winner === mine ? "bottom" : "top"),
     toBanner: (ev) => {
       if (ev.type === "MARRIAGE" && typeof ev.value === "number") {
-        return { text: `${ev.value === 40 ? t("santase.trumpMarriage") : t("santase.marriage")} +${ev.value}`, tone: "win" };
+        return { text: ev.value === 40 ? t("santase.forty") : t("santase.twenty"), tone: "win" };
       }
+      if (ev.type === "CLOSE" && typeof ev.seat === "number")
+        return { text: t("santase.closedBy", { name: oppNameOf(ev.seat) }), tone: "loss" };
+      if (ev.type === "EXCHANGE" && typeof ev.seat === "number")
+        return { text: t("santase.exchangedBy", { name: oppNameOf(ev.seat) }), tone: "brass" };
+      if (ev.type === "DEAL_END" && typeof ev.seat === "number" && typeof ev.gamePoints === "number")
+        return {
+          text: t("santase.dealEnd", { name: oppNameOf(ev.seat), n: ev.gamePoints }),
+          tone: ev.seat === seat ? "win" : "loss",
+        };
       return null;
     },
   });
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
-  const opp = seat === 0 ? 1 : 0;
 
   // Prefer the marriage variant of a card when offered — unless the player has
   // armed "play quietly" (tactically legal: keep the announce for later).
@@ -95,12 +115,12 @@ export function SantaseView({ title }: { title: string }) {
   function onPlay(card: string, node: HTMLElement | null) {
     const action = playFor.get(card);
     if (!action) return;
-    playCard(node);
+    registerHandOrigin(card, node);
     playCue("flip");
     m.send(action);
   }
 
-  const oppName = players.find((p) => p.seat === opp)?.displayName ?? t("game.opponent");
+  const oppName = oppNameOf(opp);
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
@@ -110,6 +130,16 @@ export function SantaseView({ title }: { title: string }) {
             <Announcements banners={banners} />
             {/* Candlelit two-player duel (§4.2). */}
             <FeltTable crest={SUIT_GLYPH[state.trump]} feltColor="#15392c" feltDark="#0a1d15">
+              {/* Closed-talon marker: the whole hand plays under затваряне rules. */}
+              {state.closed ? (
+                <span
+                  className="aso-announce"
+                  data-tone="loss"
+                  style={{ position: "absolute", left: 24, top: 16, zIndex: 3 }}
+                >
+                  {t("santase.closedTag")}
+                </span>
+              ) : null}
               <Seat
                 pos="top"
                 name={oppName}
@@ -147,13 +177,11 @@ export function SantaseView({ title }: { title: string }) {
               </div>
 
               <TableCenter>
-                {state.trick.length === 0 ? (
+                {displayTrick.length === 0 ? (
                   <span className="text-sm text-ink-muted">{t("belote.emptyTrick")}</span>
                 ) : (
-                  state.trick.map((p) => (
-                    <span key={p.seat} className="aso-trick-card" style={{ display: "inline-block" }}>
-                      <PlayingCard card={p.card} size="md" />
-                    </span>
+                  displayTrick.map((p) => (
+                    <TrickCardSlot key={`${p.seat}-${p.card}`} play={p} originFor={originFor} flight={flight} />
                   ))
                 )}
               </TableCenter>

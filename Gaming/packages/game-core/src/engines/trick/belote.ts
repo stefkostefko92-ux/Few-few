@@ -269,7 +269,16 @@ function settleDeal(state: BeloteState, rng: SeededRng, events: BeloteEvent[]): 
     }
   }
 
-  const rounded: [number, number] = [Math.round(raw[0] / 10), Math.round(raw[1] / 10)];
+  // Rounding follows the table convention instead of plain Math.round:
+  // на боя remainder 5 rounds DOWN (95:67 → 9:7, не 10:7); на всичко коз
+  // remainder 4 rounds UP for the NON-declaring team (134:124 → 13:13 = 26).
+  const roundFor = (points: number, teamIdx: number): number => {
+    const rem = points % 10;
+    if (contract === "AT" && rem === 4 && teamIdx !== declTeam) return Math.ceil(points / 10);
+    if (contract !== "AT" && contract !== "NT" && rem === 5) return Math.floor(points / 10);
+    return Math.round(points / 10);
+  };
+  const rounded: [number, number] = [roundFor(raw[0], 0), roundFor(raw[1], 1)];
   const awarded: [number, number] = [0, 0];
   let inside = false;
   let hungNow = 0;
@@ -289,6 +298,10 @@ function settleDeal(state: BeloteState, rng: SeededRng, events: BeloteEvent[]): 
     inside = true;
     awarded[oppTeam as 0 | 1] = (rounded[0] + rounded[1]) * state.doubling + state.hanging;
     state.hanging = 0;
+  } else if (state.doubling > 1) {
+    // Равни при контра/реконтра: ЦЕЛИЯТ удвоен сбор виси — никой не записва.
+    hungNow = (rounded[0] + rounded[1]) * state.doubling;
+    state.hanging += hungNow;
   } else {
     // Равни → точките на обявилия отбор „висят" за следващото раздаване.
     awarded[oppTeam as 0 | 1] = rounded[oppTeam as 0 | 1];
@@ -501,17 +514,15 @@ export const beloteEngine: GameEngine<BeloteState, BeloteAction, BeloteEvent> = 
     if (state.phase === "BID") {
       const hand = state.hands[seat]!;
       const from = state.contract ? contractRank(state.contract) + 1 : 0;
-      let bestBid: Contract | null = null;
-      let bestScore = 0;
+      // Bid the MINIMUM sufficient contract: strength scales across contracts
+      // are incomparable, so "highest score wins" made every bot leapfrog to
+      // Всичко коз and human suit bids stayed permanently locked out.
       for (const c of CONTRACT_ORDER.slice(from)) {
         const s = bidStrength(hand, c);
-        const threshold = c === "AT" ? 55 : c === "NT" ? 40 : 46;
-        if (s >= threshold && s > bestScore) {
-          bestScore = s;
-          bestBid = c;
-        }
+        // NT/AT only on genuinely strong hands (two jacks / two nines класа).
+        const threshold = c === "AT" ? 66 : c === "NT" ? 52 : 46;
+        if (s >= threshold) return { type: "BID", contract: c };
       }
-      if (bestBid) return { type: "BID", contract: bestBid };
       return { type: "PASS" };
     }
     const cards = legalCards(state, seat);

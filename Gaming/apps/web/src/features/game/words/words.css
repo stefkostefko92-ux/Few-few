@@ -76,23 +76,60 @@
   font-weight: 700;
   color: var(--brass-300);
 }
-.words-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  max-width: 620px;
+.words-player--out {
+  opacity: 0.45;
 }
-.words-opt {
-  padding: 8px 14px;
+.words-player--out > span:first-child {
+  text-decoration: line-through;
+}
+.words-out {
+  font-size: 0.75rem;
+  color: var(--ink-300);
+  font-style: italic;
+}
+/* Typed answer — the player writes the word (no served options). */
+.words-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.words-input-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.words-input {
+  width: min(70vw, 300px);
+  padding: 10px 16px;
   border-radius: 10px;
+  font-family: var(--font-display, serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
   background: linear-gradient(to bottom, #fffdf6, #ece3cf);
   color: var(--charcoal-900);
-  font-weight: 600;
   border: 1px solid rgba(217, 178, 95, 0.4);
-  cursor: pointer;
-  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
 }
-.words-opt:hover {
-  transform: translateY(-2px);
+.words-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--brass-300);
+}
+.words-input--error {
+  border-color: var(--loss);
+  box-shadow: 0 0 0 2px var(--loss);
+}
+.words-error {
+  color: var(--loss);
+  font-size: 0.85rem;
+}
+.words-pass {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.words-pass-hint {
+  font-size: 0.75rem;
+  color: var(--ink-300);
+  max-width: 260px;
 }

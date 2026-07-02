@@ -1,20 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, Panel, cn } from "../../ui";
-import {
-  api,
-  type AdminAuditEntry,
-  type AdminFlag,
-  type AdminStats,
-  type DiscordConfig,
-  type DiscordEventKey,
-} from "../../lib/api";
+import { Badge, Button, Field, Panel, cn } from "../../ui";
+import { api, type AdminAuditEntry, type DiscordConfig, type DiscordEventKey } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
 import { isAdmin } from "../../app/RequireRole";
 import { GAME_CATALOG } from "../lobby/games";
-import { AdminUsers } from "./AdminUsers";
+import { adminApi } from "./adminApi";
+import { AdminEconomy } from "./AdminEconomy";
+import { AdminReports } from "./AdminReports";
+import { AdminUsers, UserDetailModal } from "./AdminUsers";
+import { ErrorPanel, errorMessage, useLoad } from "./load";
 
-type Tab = "dashboard" | "users" | "flags" | "discord" | "audit";
+type Tab = "dashboard" | "economy" | "users" | "flags" | "reports" | "discord" | "audit";
 
 export function AdminPanel() {
   const { t } = useTranslation();
@@ -22,8 +19,10 @@ export function AdminPanel() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "dashboard", label: t("admin.dashboard") },
+    { key: "economy", label: t("admin.economy", "Икономика") },
     { key: "users", label: t("admin.users") },
     { key: "flags", label: t("admin.flags") },
+    { key: "reports", label: t("admin.reports", "Доклади") },
     { key: "discord", label: "Discord" },
     { key: "audit", label: t("admin.audit") },
   ];
@@ -52,8 +51,10 @@ export function AdminPanel() {
       </div>
 
       {tab === "dashboard" ? <Dashboard /> : null}
+      {tab === "economy" ? <AdminEconomy /> : null}
       {tab === "users" ? <AdminUsers /> : null}
       {tab === "flags" ? <Flags /> : null}
+      {tab === "reports" ? <AdminReports /> : null}
       {tab === "discord" ? <Discord /> : null}
       {tab === "audit" ? <Audit /> : null}
     </div>
@@ -64,13 +65,10 @@ const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 function Dashboard() {
   const { t, i18n } = useTranslation();
-  const [stats, setStats] = useState<AdminStats | null>(null);
+  const { data: stats, error, loading, reload } = useLoad(() => api.adminStats(), []);
 
-  useEffect(() => {
-    api.adminStats().then(setStats).catch(() => undefined);
-  }, []);
-
-  if (!stats) return <p className="text-ink-muted">{t("common.loading")}</p>;
+  if (error) return <ErrorPanel error={error} onRetry={reload} />;
+  if (loading || !stats) return <p className="text-ink-muted">{t("common.loading")}</p>;
 
   const cards: { label: string; value: string; accent?: boolean }[] = [
     { label: t("admin.totalUsers"), value: String(stats.users) },
@@ -148,80 +146,118 @@ function Dashboard() {
   );
 }
 
+const FLAG_STATUSES = ["OPEN", "REVIEWING", "DISMISSED", "CONFIRMED"] as const;
+
 function Flags() {
   const { t } = useTranslation();
-  const [flags, setFlags] = useState<AdminFlag[]>([]);
+  const [status, setStatus] = useState<(typeof FLAG_STATUSES)[number]>("OPEN");
   const [busy, setBusy] = useState<string | null>(null);
+  const [openUser, setOpenUser] = useState<string | null>(null);
+  const { data, error, loading, reload } = useLoad(() => api.adminFlags(status), [status]);
+  const flags = data?.flags ?? [];
 
-  const load = () => api.adminFlags("OPEN").then((r) => setFlags(r.flags)).catch(() => undefined);
-  useEffect(() => {
-    void load();
-  }, []);
-
-  async function review(id: string, status: string) {
+  async function review(id: string, next: string) {
     setBusy(id);
     try {
-      await api.adminReviewFlag(id, status);
-      await load();
+      await api.adminReviewFlag(id, next);
+      reload();
     } finally {
       setBusy(null);
     }
   }
 
-  if (flags.length === 0)
-    return (
-      <Panel className="py-10 text-center text-ink-muted">{t("admin.noFlags")}</Panel>
-    );
-
   return (
-    <ul className="flex flex-col gap-3">
-      {flags.map((f) => (
-        <Panel key={f.id} className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 text-ink-100">
-              <Badge tone="felt">{f.game}</Badge>
-              {f.reason}
-              <span className="tnum text-loss">({f.score.toFixed(2)})</span>
-            </div>
-            <div className="text-xs text-ink-muted">
-              {f.userAId.slice(0, 8)}… ↔ {f.userBId.slice(0, 8)}…
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" loading={busy === f.id} onClick={() => review(f.id, "DISMISSED")}>
-              {t("admin.dismiss")}
-            </Button>
-            <Button loading={busy === f.id} onClick={() => review(f.id, "CONFIRMED")} className="!bg-loss">
-              {t("admin.confirm")}
-            </Button>
-          </div>
-        </Panel>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
+        {FLAG_STATUSES.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setStatus(s)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+              status === s
+                ? "border-brass-400/40 bg-brass-400/15 text-brass-300"
+                : "border-brass-400/10 text-ink-300 hover:text-ink-100",
+            )}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {error ? (
+        <ErrorPanel error={error} onRetry={reload} />
+      ) : loading ? (
+        <p className="text-ink-muted">{t("common.loading")}</p>
+      ) : flags.length === 0 ? (
+        <Panel className="py-10 text-center text-ink-muted">{t("admin.noFlags")}</Panel>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {flags.map((f) => (
+            <Panel key={f.id} className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 text-ink-100">
+                  <Badge tone="felt">{f.game}</Badge>
+                  {f.reason}
+                  <span className="tnum text-loss">({f.score.toFixed(2)})</span>
+                </div>
+                <div className="text-xs text-ink-muted">
+                  <button type="button" className="text-brass-300 underline" onClick={() => setOpenUser(f.userAId)}>
+                    {f.userAId.slice(0, 8)}…
+                  </button>{" "}
+                  ↔{" "}
+                  <button type="button" className="text-brass-300 underline" onClick={() => setOpenUser(f.userBId)}>
+                    {f.userBId.slice(0, 8)}…
+                  </button>
+                </div>
+              </div>
+              {f.status === "OPEN" || f.status === "REVIEWING" ? (
+                <div className="flex gap-2">
+                  <Button variant="ghost" loading={busy === f.id} onClick={() => review(f.id, "DISMISSED")}>
+                    {t("admin.dismiss")}
+                  </Button>
+                  <Button loading={busy === f.id} onClick={() => review(f.id, "CONFIRMED")} className="!bg-loss">
+                    {t("admin.confirm")}
+                  </Button>
+                </div>
+              ) : (
+                <Badge tone="felt">{f.status}</Badge>
+              )}
+            </Panel>
+          ))}
+        </ul>
+      )}
+
+      {openUser ? (
+        <UserDetailModal id={openUser} onClose={() => setOpenUser(null)} onChanged={reload} />
+      ) : null}
+    </div>
   );
 }
-
-const DISCORD_EVENTS: { key: DiscordEventKey; label: string }[] = [
-  { key: "registration", label: "Регистрации" },
-  { key: "purchase", label: "Покупки" },
-  { key: "vip", label: "VIP" },
-  { key: "flag", label: "Сигнали (колюзия)" },
-  { key: "adminAction", label: "Админ действия" },
-  { key: "broadcast", label: "Съобщения" },
-];
 
 function Discord() {
   const { t } = useTranslation();
   const meRole = useAuthStore((s) => s.user?.role);
   const canWrite = isAdmin(meRole);
+  const { data, error, loading, reload } = useLoad(() => api.adminDiscord(), []);
   const [cfg, setCfg] = useState<DiscordConfig | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    api.adminDiscord().then(setCfg).catch(() => undefined);
-  }, []);
+    if (data) setCfg(data);
+  }, [data]);
+
+  const DISCORD_EVENTS: { key: DiscordEventKey; label: string }[] = [
+    { key: "registration", label: t("admin.evRegistration", "Регистрации") },
+    { key: "purchase", label: t("admin.evPurchase", "Покупки") },
+    { key: "vip", label: t("admin.evVip", "VIP") },
+    { key: "flag", label: t("admin.evFlag", "Сигнали (колюзия)") },
+    { key: "adminAction", label: t("admin.evAdminAction", "Админ действия") },
+    { key: "broadcast", label: t("admin.evBroadcast", "Съобщения") },
+  ];
 
   async function save() {
     if (!cfg) return;
@@ -262,7 +298,8 @@ function Discord() {
     }
   }
 
-  if (!cfg) return <p className="text-ink-muted">{t("common.loading")}</p>;
+  if (error) return <ErrorPanel error={error} onRetry={reload} />;
+  if (loading || !cfg) return <p className="text-ink-muted">{t("common.loading")}</p>;
   const field =
     "rounded-card border border-brass-400/20 bg-felt-900/60 px-3 py-2 text-sm text-ink-100 placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-brass-300";
 
@@ -362,44 +399,157 @@ function Discord() {
   );
 }
 
+// Action keys the API writes today (free strings; the select is a convenience).
+const AUDIT_ACTIONS = [
+  "update_user",
+  "review_flag",
+  "resolve_report",
+  "discord_config",
+  "broadcast",
+  "bootstrap_owner",
+];
+
+function prettyDetail(detail: string): string {
+  try {
+    return JSON.stringify(JSON.parse(detail), null, 2);
+  } catch {
+    return detail;
+  }
+}
+
 function Audit() {
   const { t, i18n } = useTranslation();
+  const [action, setAction] = useState("");
+  const [actor, setActor] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [items, setItems] = useState<AdminAuditEntry[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [openUser, setOpenUser] = useState<string | null>(null);
 
-  const load = (c?: string) =>
-    api
-      .adminAudit(c)
-      .then((r) => {
-        setItems((prev) => (c ? [...prev, ...r.items] : r.items));
-        setCursor(r.nextCursor);
-      })
-      .catch(() => undefined)
-      .finally(() => setLoading(false));
+  const selectCls =
+    "rounded-card border border-brass-400/20 bg-felt-900/60 px-2 py-2 text-sm text-ink-100";
+
+  async function load(c?: string) {
+    setLoading(true);
+    if (!c) setError(null);
+    try {
+      const r = await adminApi.audit({
+        action: action || undefined,
+        actor: actor.trim() || undefined,
+        from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+        to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+        cursor: c,
+      });
+      setItems((prev) => (c ? [...prev, ...r.items] : r.items));
+      setCursor(r.nextCursor);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     void load();
-  }, []);
+  }, [action]);
 
-  if (loading) return <p className="text-ink-muted">{t("common.loading")}</p>;
-  if (items.length === 0) return <Panel className="py-10 text-center text-ink-muted">{t("admin.noActions")}</Panel>;
+  function onFilter(e: FormEvent) {
+    e.preventDefault();
+    void load();
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      <Panel className="flex flex-col gap-2">
-        {items.map((a) => (
-          <div key={a.id} className="flex flex-wrap items-center gap-x-2 border-b border-brass-400/10 pb-2 text-sm last:border-0">
-            <span className="text-brass-300">{a.action}</span>
-            <span className="text-ink-300">· {a.actorName}</span>
-            {a.targetId ? <span className="text-ink-muted">→ {a.targetId.slice(0, 8)}…</span> : null}
-            <span className="ml-auto text-xs text-ink-muted">{new Date(a.createdAt).toLocaleString(i18n.language)}</span>
-          </div>
-        ))}
-      </Panel>
-      {cursor ? (
-        <Button variant="ghost" onClick={() => load(cursor)}>
+      <form onSubmit={onFilter} className="flex flex-wrap items-end gap-2">
+        <select
+          aria-label={t("admin.action", "Действие")}
+          value={action}
+          onChange={(e) => setAction(e.target.value)}
+          className={selectCls}
+        >
+          <option value="">{t("admin.allActions", "Всички действия")}</option>
+          {AUDIT_ACTIONS.map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+        <Field
+          label=""
+          aria-label={t("admin.actor", "Админ")}
+          placeholder={t("admin.actor", "Админ")}
+          value={actor}
+          onChange={(e) => setActor(e.target.value)}
+          className="w-36 !py-2 text-sm"
+        />
+        <label className="flex flex-col gap-1 text-xs text-ink-muted">
+          {t("admin.fromDate", "От")}
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={selectCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-ink-muted">
+          {t("admin.toDate", "До")}
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={selectCls} />
+        </label>
+        <Button type="submit" variant="felt">
+          {t("admin.applyFilters", "Филтрирай")}
+        </Button>
+      </form>
+
+      {error && items.length === 0 ? (
+        <ErrorPanel error={error} onRetry={() => void load()} />
+      ) : loading && items.length === 0 ? (
+        <p className="text-ink-muted">{t("common.loading")}</p>
+      ) : items.length === 0 ? (
+        <Panel className="py-10 text-center text-ink-muted">{t("admin.noActions")}</Panel>
+      ) : (
+        <Panel className="flex flex-col gap-2">
+          {items.map((a) => (
+            <div key={a.id} className="border-b border-brass-400/10 pb-2 text-sm last:border-0">
+              <button
+                type="button"
+                onClick={() => setExpanded(expanded === a.id ? null : a.id)}
+                className="flex w-full flex-wrap items-center gap-x-2 text-left"
+                aria-expanded={expanded === a.id}
+              >
+                <span className="text-brass-300">{a.action}</span>
+                <span className="text-ink-300">· {a.actorName}</span>
+                {a.targetId ? <span className="text-ink-muted">→ {a.targetId.slice(0, 8)}…</span> : null}
+                <span className="ml-auto text-xs text-ink-muted">
+                  {new Date(a.createdAt).toLocaleString(i18n.language)}
+                </span>
+              </button>
+              {expanded === a.id ? (
+                <div className="mt-2 flex flex-col gap-1">
+                  <pre className="max-h-48 overflow-auto rounded-card border border-brass-400/10 bg-felt-900/60 p-2 text-xs text-ink-300">
+                    {prettyDetail(a.detail)}
+                  </pre>
+                  {a.targetId ? (
+                    <button
+                      type="button"
+                      className="self-start text-xs text-brass-300 underline"
+                      onClick={() => setOpenUser(a.targetId)}
+                    >
+                      {t("admin.openTarget", "Отвори играча")} →
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </Panel>
+      )}
+
+      {error && items.length > 0 ? <p className="text-center text-sm text-loss">{errorMessage(error)}</p> : null}
+      {cursor && !loading ? (
+        <Button variant="ghost" onClick={() => void load(cursor)}>
           {t("admin.loadMore")}
         </Button>
+      ) : null}
+
+      {openUser ? (
+        <UserDetailModal id={openUser} onClose={() => setOpenUser(null)} onChanged={() => undefined} />
       ) : null}
     </div>
   );

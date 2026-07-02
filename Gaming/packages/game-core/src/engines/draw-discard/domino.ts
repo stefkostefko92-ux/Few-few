@@ -12,8 +12,11 @@ import type { SeededRng } from "../../kernel/rng.js";
  * Each player draws 7 (2p) or fewer for more players; the rest is the boneyard.
  * On your turn play a matching tile onto either open end, or DRAW from the
  * boneyard, or PASS if you cannot play and the boneyard is empty. First to
- * empty their hand wins; if blocked, lowest pip-count wins. Hands + boneyard
- * are redacted.
+ * empty their hand wins; if blocked, lowest pip-count wins (a pip tie is a
+ * null round: nobody scores, redeal). Hands + boneyard are redacted.
+ *
+ * Българско откриване: първият кръг се открива от държащия най-голямото чифте
+ * (6-6, после 5-5…), който е длъжен да го постави; следващите кръгове ротират.
  *
  * A tile is "a-b" with a<=b. Ends of the line track the open pip values.
  */
@@ -32,8 +35,12 @@ export interface DominoState {
   matchScore: number[];
   roundNo: number;
   firstTurn: Seat;
-  /** Who won the last round + how (for the UI between rounds). */
-  lastRound: { seat: Seat; reason: "out" | "blocked"; points: number } | null;
+  /** Who won the last round + how (for the UI between rounds). `seat: null`
+   *  marks a blocked pip tie — a null round nobody scored. */
+  lastRound: { seat: Seat | null; reason: "out" | "blocked"; points: number } | null;
+  /** Round-1 forced opening tile (highest dealt double); null once played or
+   *  from round 2 on. Public by rule — the opener announces it. */
+  openingTile: Tile | null;
   winner: Seat | null;
   done: boolean;
 }
@@ -48,7 +55,8 @@ export type DominoEvent =
   | { type: "DRAW"; seat: Seat }
   | { type: "PASS"; seat: Seat }
   | { type: "WIN"; seat: Seat; reason: "out" | "blocked" }
-  | { type: "ROUND"; seat: Seat; points: number; matchScore: number[] }
+  /** Round settled. `seat` omitted = blocked pip tie (null round, no points). */
+  | { type: "ROUND"; seat?: Seat; points: number; matchScore: number[] }
   | { type: "MATCH"; seat: Seat };
 
 const pips = (t: Tile): [number, number] => {
@@ -81,6 +89,38 @@ function playableSides(tile: Tile, ends: [number, number] | null): Array<"L" | "
   return sides;
 }
 
+/**
+ * Българско откриване: кръг 1 открива държащият най-голямото чифте, който е
+ * длъжен да го постави. Ако (изключително рядко) няма раздадено чифте, открива
+ * държащият най-тежката плочка — със свободен избор на плочка.
+ */
+export function openingPick(hands: Tile[][]): { seat: Seat; tile: Tile | null } {
+  let seat: Seat = 0;
+  let tile: Tile | null = null;
+  let bestDouble = -1;
+  for (let s = 0; s < hands.length; s++) {
+    for (const t of hands[s]!) {
+      const [a, b] = pips(t);
+      if (a === b && a > bestDouble) {
+        bestDouble = a;
+        seat = s;
+        tile = t;
+      }
+    }
+  }
+  if (tile) return { seat, tile };
+  let bestSum = -1;
+  for (let s = 0; s < hands.length; s++) {
+    for (const t of hands[s]!) {
+      if (tilePipSum(t) > bestSum) {
+        bestSum = tilePipSum(t);
+        seat = s;
+      }
+    }
+  }
+  return { seat, tile: null };
+}
+
 export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = {
   init(opts: InitOpts, rng: SeededRng): DominoState {
     const seats = Math.min(Math.max(opts.seats, 2), 4);
@@ -88,6 +128,7 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
     const handSize = seats <= 2 ? 7 : 5;
     const hands: Tile[][] = [];
     for (let s = 0; s < seats; s++) hands.push(shuffled.splice(0, handSize));
+    const opening = openingPick(hands);
     return {
       hands,
       boneyard: shuffled,
@@ -95,9 +136,10 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
       ends: null,
       matchScore: new Array<number>(seats).fill(0),
       roundNo: 1,
-      firstTurn: 0,
+      firstTurn: opening.seat,
       lastRound: null,
-      turn: 0,
+      openingTile: opening.tile,
+      turn: opening.seat,
       seats,
       passes: 0,
       winner: null,
@@ -108,6 +150,10 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
   legalActions(state, seat) {
     if (state.done || seat !== state.turn) return [];
     const hand = state.hands[seat]!;
+    // Bulgarian opening: round 1 must start with the highest dealt double.
+    if (state.ends === null && state.openingTile && hand.includes(state.openingTile)) {
+      return [{ type: "PLAY", tile: state.openingTile, side: "L" }];
+    }
     const plays: DominoAction[] = [];
     for (const tile of hand) {
       for (const side of playableSides(tile, state.ends)) {
@@ -156,10 +202,14 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
     // PLAY
     const hand = next.hands[seat]!;
     if (!hand.includes(action.tile)) throw new IllegalActionError("Tile not in hand");
+    if (next.ends === null && next.openingTile && hand.includes(next.openingTile) && action.tile !== next.openingTile) {
+      throw new IllegalActionError("Round 1 must open with the highest double");
+    }
     const sides = playableSides(action.tile, next.ends);
     if (!sides.includes(action.side)) throw new IllegalActionError("Tile does not fit that side");
 
     next.hands[seat] = hand.filter((t) => t !== action.tile);
+    next.openingTile = null;
     const [a, b] = pips(action.tile);
     if (!next.ends) {
       next.ends = [a, b];
@@ -189,7 +239,7 @@ export const dominoEngine: GameEngine<DominoState, DominoAction, DominoEvent> = 
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winner = state.winner ?? lowestPipSeat(state);
+    const winner = state.winner ?? lowestPips(state).seat;
     return state.hands.map((_, seat) => ({
       seat,
       result: seat === winner ? "win" : "loss",
@@ -212,17 +262,21 @@ function playableActions(state: DominoState, seat: Seat): DominoAction[] {
   return plays;
 }
 
-function lowestPipSeat(state: DominoState): Seat {
+function lowestPips(state: DominoState): { seat: Seat; tie: boolean } {
   let best = 0;
   let bestSum = Infinity;
+  let tie = false;
   for (let s = 0; s < state.seats; s++) {
-    const sum = state.hands[s]!.reduce((a, t) => a + tilePipSum(t), 0);
+    const sum = handPips(state.hands[s]!);
     if (sum < bestSum) {
       bestSum = sum;
       best = s;
+      tie = false;
+    } else if (sum === bestSum) {
+      tie = true;
     }
   }
-  return best;
+  return { seat: best, tie };
 }
 
 function blockedFinish(
@@ -230,7 +284,13 @@ function blockedFinish(
   events: DominoEvent[],
   rng: SeededRng,
 ): { state: DominoState; events: DominoEvent[] } {
-  const winner = lowestPipSeat(state);
+  const { seat: winner, tie } = lowestPips(state);
+  if (tie) {
+    // Равенство на пиповете при блокада — нулев кръг: никой не взима точки.
+    state.lastRound = { seat: null, reason: "blocked", points: 0 };
+    events.push({ type: "ROUND", points: 0, matchScore: state.matchScore.slice() });
+    return { state: dealNextRound(state, rng), events };
+  }
   events.push({ type: "WIN", seat: winner, reason: "blocked" });
   const pts = state.hands.reduce((sum, h, s) => sum + (s === winner ? 0 : handPips(h)), 0);
   state.lastRound = { seat: winner, reason: "blocked", points: pts };
@@ -252,7 +312,11 @@ function settleRound(
     events.push({ type: "MATCH", seat: winner });
     return { state: { ...state, winner, done: true }, events };
   }
-  // Next round: re-shuffle, deal, rotate the opening seat.
+  return { state: dealNextRound(state, rng), events };
+}
+
+/** Re-shuffle and deal the next round; the opening seat rotates. */
+function dealNextRound(state: DominoState, rng: SeededRng): DominoState {
   const seats = state.seats;
   const shuffled = rng.shuffle(fullSet());
   const handSize = seats <= 2 ? 7 : 5;
@@ -260,19 +324,17 @@ function settleRound(
   for (let s = 0; s < seats; s++) hands.push(shuffled.splice(0, handSize));
   const firstTurn = ((state.firstTurn + 1) % seats) as Seat;
   return {
-    state: {
-      ...state,
-      hands,
-      boneyard: shuffled,
-      line: [],
-      ends: null,
-      passes: 0,
-      turn: firstTurn,
-      firstTurn,
-      roundNo: state.roundNo + 1,
-      winner: null,
-      done: false,
-    },
-    events,
+    ...state,
+    hands,
+    boneyard: shuffled,
+    line: [],
+    ends: null,
+    passes: 0,
+    turn: firstTurn,
+    firstTurn,
+    openingTile: null,
+    roundNo: state.roundNo + 1,
+    winner: null,
+    done: false,
   };
 }

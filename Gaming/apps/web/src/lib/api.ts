@@ -45,12 +45,32 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/** One in-flight refresh at a time — concurrent 401s all await the same call. */
+let refreshing: Promise<boolean> | null = null;
+
+async function tryRefresh(): Promise<boolean> {
+  refreshing ??= fetch("/api/auth/refresh", { method: "POST", credentials: "include" })
+    .then((r) => r.ok)
+    .catch(() => false)
+    .finally(() => {
+      refreshing = null;
+    });
+  return refreshing;
+}
+
+async function request<T>(path: string, init?: RequestInit, retried = false): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
     credentials: "include", // send httpOnly auth cookies
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
+
+  // The access cookie lives ~15 min: rotate it from the refresh cookie and
+  // replay ONCE, so long sessions (admin panel, shop tabs) never dead-end in
+  // silent 401s. Auth routes themselves are exempt (refresh loops).
+  if (res.status === 401 && !retried && !path.startsWith("/auth/")) {
+    if (await tryRefresh()) return request<T>(path, init, true);
+  }
 
   const body: unknown = res.status === 204 ? null : await res.json().catch(() => null);
 

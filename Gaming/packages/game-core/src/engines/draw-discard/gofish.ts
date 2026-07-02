@@ -11,9 +11,12 @@ import { buildDeck, hiddenLike, rankOf, RANKS_52, type Card } from "../cards.js"
 /**
  * Бръкни в морето (Go Fish) — 2–4p matching (§4.5). On your turn you ASK a
  * target player for a rank you hold. If they have cards of that rank they give
- * them all and you ask again; otherwise you "go fish" (draw from the ocean) and
- * the turn passes. Completing a set of 4 (a "book") scores a point. Game ends
- * when all 13 books are claimed; most books wins. Opponents' hands are redacted.
+ * them all and you ask again; otherwise you "go fish" (draw from the ocean).
+ * Fishing the very rank you asked for ("lucky fish") keeps the turn; any other
+ * card passes it. Completing a set of 4 (a "book") scores a point. Game ends
+ * when all 13 books are claimed; most books wins (ties: a WIN event per tied
+ * seat). Deal: 7 cards each at 2 players, 5 at 3–4. Opponents' hands are
+ * redacted.
  */
 
 export interface GoFishState {
@@ -29,19 +32,21 @@ export interface GoFishState {
 export type GoFishAction = { type: "ASK"; target: Seat; rank: string };
 export type GoFishEvent =
   | { type: "ASK"; seat: Seat; target: Seat; rank: string; got: number }
-  | { type: "FISH"; seat: Seat }
+  /** `lucky` — fished exactly the asked rank, so the seat goes again. */
+  | { type: "FISH"; seat: Seat; lucky: boolean }
   | { type: "BOOK"; seat: Seat; rank: string }
   | { type: "WIN"; seat: Seat };
 
-const HAND_SIZE = 5;
 const ranksInHand = (hand: Card[]): string[] => [...new Set(hand.map(rankOf))];
 
 export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = {
   init(opts: InitOpts, rng: SeededRng): GoFishState {
     const seats = Math.min(Math.max(opts.seats, 2), 4);
     const deck = rng.shuffle(buildDeck(RANKS_52));
+    // Classic deal: 7 cards each head-to-head, 5 with 3-4 players.
+    const handSize = seats === 2 ? 7 : 5;
     const hands: Card[][] = [];
-    for (let s = 0; s < seats; s++) hands.push(deck.splice(0, HAND_SIZE));
+    for (let s = 0; s < seats; s++) hands.push(deck.splice(0, handSize));
     const state: GoFishState = {
       hands,
       ocean: deck,
@@ -99,12 +104,15 @@ export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = 
     } else {
       events.push({ type: "ASK", seat, target: action.target, rank: action.rank, got: 0 });
       const drawn = next.ocean.shift();
+      // Lucky fish: drawing the very rank you asked for keeps the turn.
+      let lucky = false;
       if (drawn) {
         next.hands[seat]!.push(drawn);
-        events.push({ type: "FISH", seat });
+        lucky = rankOf(drawn) === action.rank;
+        events.push({ type: "FISH", seat, lucky });
         collectBooks(next, seat, events);
       }
-      next.turn = nextActiveSeat(next, seat);
+      if (!lucky) next.turn = nextActiveSeat(next, seat);
     }
 
     // Refill an empty hand from the ocean if possible; skip seats that can't act.
@@ -176,7 +184,11 @@ function allBooksClaimed(state: GoFishState): boolean {
 
 function finish(state: GoFishState, events: GoFishEvent[]): { state: GoFishState; events: GoFishEvent[] } {
   const max = Math.max(...state.books);
+  // On a tie every seat with the max gets a WIN event (consistent with score(),
+  // which marks them all "win"); state.winner keeps the first for compat.
   const winner = state.books.findIndex((b) => b === max);
-  events.push({ type: "WIN", seat: winner });
+  for (let s = 0; s < state.seats; s++) {
+    if (state.books[s] === max) events.push({ type: "WIN", seat: s });
+  }
   return { state: { ...state, winner, done: true }, events };
 }

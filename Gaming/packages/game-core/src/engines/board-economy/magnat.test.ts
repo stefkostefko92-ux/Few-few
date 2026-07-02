@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { BOARD, type MagnatState, type MagnatAction } from "@aso/shared";
+import { BOARD, type MagnatEvent, type MagnatState, type MagnatAction } from "@aso/shared";
 import { magnatEngine, magnatBot } from "./magnat.js";
+import { IllegalActionError } from "../../kernel/contract.js";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
 
@@ -104,6 +105,24 @@ describe("МАГНАТ — session config", () => {
     expect(s.config.auctions).toBe(true);
   });
 
+  it("the Старт card pays the salary plus the configured goBonus", () => {
+    // Land seat 0 on the chance tile (7) and force the "go to Старт" card
+    // (CHANCE[7]) to be on top: cash must gain GO_SALARY + goBonus.
+    for (let k = 0; k < 300; k++) {
+      const base = magnatEngine.init({ seats: 2, config: { goBonus: 250 } }, new SeededRng("gob"));
+      const s: MagnatState = { ...base, chance: [7], chancePtr: 0 };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`go-${k}`));
+      const move = events.find((e): e is Extract<MagnatEvent, { type: "MOVE" }> => e.type === "MOVE");
+      if (move?.to !== 7) continue; // didn't land on Късмет — try another seed
+      const card = events.find((e): e is Extract<MagnatEvent, { type: "CARD" }> => e.type === "CARD")!;
+      expect(card.text).toContain("Старт"); // CARD event carries the card text
+      expect(state.pos[0]).toBe(0);
+      expect(state.cash[0]).toBe(1500 + 200 + 250);
+      return;
+    }
+    throw new Error("no landing on Късмет (tile 7) in 300 seeds");
+  });
+
   it("routes a tax fee into the free-parking pot", () => {
     // Find a roll that lands seat 0 on the income-tax tile (4), then assert the
     // 200 fee went into the pot rather than vanishing to the bank.
@@ -149,6 +168,25 @@ describe("МАГНАТ — auctions", () => {
     expect(s.owner[5]).toBe(-1);
     expect(s.phase).toBe("MANAGE");
   });
+
+  it("BID emits AUCTION_BID with the tile and logs the raise", () => {
+    const s = auctionState();
+    const bidder = s.turn;
+    const { state, events } = magnatEngine.reduce(s, { type: "BID", amount: 120 }, new SeededRng("b"));
+    expect(events).toContainEqual({ type: "AUCTION_BID", seat: bidder, amount: 120, tile: 5 });
+    expect(state.log.some((l) => l.includes(`наддава 120 за ${BOARD[5]!.name}`))).toBe(true);
+  });
+
+  it("rejects raises below high+10 — validate and reduce agree with legalActions", () => {
+    const first = auctionState();
+    const s = magnatEngine.reduce(first, { type: "BID", amount: 100 }, new SeededRng("b")).state;
+    const next = s.turn;
+    expect(magnatEngine.validate!(s, next, { type: "BID", amount: 101 })).toBe(false);
+    expect(magnatEngine.validate!(s, next, { type: "BID", amount: 110 })).toBe(true);
+    expect(() => magnatEngine.reduce(s, { type: "BID", amount: 101 }, new SeededRng("x"))).toThrow(
+      IllegalActionError,
+    );
+  });
 });
 
 describe("МАГНАТ — trading", () => {
@@ -174,6 +212,22 @@ describe("МАГНАТ — trading", () => {
     expect(done.turn).toBe(0); // back to the offerer
   });
 
+  it("strips extra fields from the stored trade bundles", () => {
+    const base = init(2);
+    const owner = base.owner.slice();
+    owner[1] = 0;
+    const s: MagnatState = { ...base, owner, phase: "MANAGE", turn: 0, cash: [1000, 1000] };
+    const action = {
+      type: "TRADE_OFFER",
+      to: 1,
+      give: { cash: 10, tiles: [1], evil: "payload" },
+      want: { cash: 0, tiles: [] },
+    } as unknown as MagnatAction;
+    const { state } = magnatEngine.reduce(s, action, new SeededRng("t"));
+    expect(state.trade?.give).toEqual({ cash: 10, tiles: [1] });
+    expect(state.trade?.want).toEqual({ cash: 0, tiles: [] });
+  });
+
   it("rejects an offer of a property with houses in its group", () => {
     const base = init(2);
     const owner = base.owner.slice();
@@ -188,6 +242,100 @@ describe("МАГНАТ — trading", () => {
   });
 });
 
+describe("МАГНАТ — malformed input hardening (P0)", () => {
+  /** MANAGE state where seat 0 owns tile 1 and seat 1 owns tile 6. */
+  const tradeState = (): MagnatState => {
+    const base = init(3);
+    const owner = base.owner.slice();
+    owner[1] = 0;
+    owner[6] = 1;
+    return { ...base, owner, phase: "MANAGE", turn: 0, cash: [1000, 1000, 1000] };
+  };
+  const rejects = (action: unknown, label: string) => {
+    const s = tradeState();
+    let verdict: boolean | undefined;
+    expect(() => {
+      verdict = magnatEngine.validate!(s, 0, action as MagnatAction);
+    }, label).not.toThrow();
+    expect(verdict, label).toBe(false);
+    expect(() => magnatEngine.reduce(s, action as MagnatAction, new SeededRng("r")), label).toThrow(
+      IllegalActionError,
+    );
+  };
+
+  it("rejects non-action payloads without crashing", () => {
+    for (const junk of [null, undefined, 42, "TRADE_OFFER", true, [], {}, { type: 5 }, { type: null }]) {
+      rejects(junk, JSON.stringify(junk));
+    }
+  });
+
+  it("rejects malformed TRADE_OFFER payloads without crashing", () => {
+    const cases: unknown[] = [
+      { type: "TRADE_OFFER" }, // no fields at all
+      { type: "TRADE_OFFER", to: 1 }, // missing bundles
+      { type: "TRADE_OFFER", to: 1, give: null, want: null },
+      { type: "TRADE_OFFER", to: 1, give: "x", want: 5 },
+      { type: "TRADE_OFFER", to: 1, give: {}, want: {} },
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10 }, want: { cash: 0, tiles: [] } }, // no tiles array
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: {} }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: [999] }, want: { cash: 0, tiles: [] } }, // off-board
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: [-1] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: [1.5] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: ["1"] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: [1, 1] }, want: { cash: 0, tiles: [] } }, // dup
+      { type: "TRADE_OFFER", to: 1, give: { cash: 10, tiles: [6] }, want: { cash: 0, tiles: [] } }, // theirs, not mine
+      { type: "TRADE_OFFER", to: 1, give: { cash: 0, tiles: [] }, want: { cash: 0, tiles: [1] } }, // mine, not theirs
+      { type: "TRADE_OFFER", to: 1, give: { cash: 0, tiles: [0] }, want: { cash: 0, tiles: [] } }, // unownable tile
+      { type: "TRADE_OFFER", to: 1, give: { cash: -5, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: Number.NaN, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: Infinity, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: "50", tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1, give: { cash: 5000, tiles: [] }, want: { cash: 0, tiles: [] } }, // > cash
+      { type: "TRADE_OFFER", to: 1, give: { cash: 0, tiles: [] }, want: { cash: 0, tiles: [] } }, // empty offer
+      { type: "TRADE_OFFER", to: 0, give: { cash: 10, tiles: [] }, want: { cash: 0, tiles: [] } }, // self
+      { type: "TRADE_OFFER", to: 99, give: { cash: 10, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: -1, give: { cash: 10, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: 1.5, give: { cash: 10, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", to: "1", give: { cash: 10, tiles: [] }, want: { cash: 0, tiles: [] } },
+      { type: "TRADE_OFFER", give: { cash: 10, tiles: [] }, want: { cash: 0, tiles: [] } }, // no `to`
+      {
+        type: "TRADE_OFFER",
+        to: 1,
+        give: { cash: 0, tiles: Array.from({ length: 500 }, (_, i) => i % 40) },
+        want: { cash: 0, tiles: [] },
+      }, // oversized tiles array
+    ];
+    for (const c of cases) rejects(c, JSON.stringify(c));
+  });
+
+  it("survives 500 fuzzed TRADE_OFFER payloads (validate ⇒ reduce agreement)", () => {
+    const rng = new SeededRng("fuzz-trade");
+    const junk: unknown[] = [
+      undefined, null, 0, 1, 2, -1, 1.5, Number.NaN, Infinity, "", "1", "x", true, false,
+      [], {}, [1], [999], [-3, 2.5], [1, "6"], { cash: 1 }, () => 0,
+    ];
+    const pick = (): unknown => junk[rng.int(junk.length)];
+    const bundle = (): unknown => (rng.int(4) === 0 ? pick() : { cash: pick(), tiles: pick() });
+    for (let k = 0; k < 500; k++) {
+      const s = tradeState();
+      const action = { type: "TRADE_OFFER", to: pick(), give: bundle(), want: bundle() } as unknown as MagnatAction;
+      let ok = false;
+      expect(() => {
+        ok = magnatEngine.validate!(s, 0, action);
+      }).not.toThrow();
+      // The contract: reduce succeeds iff validate approved; any rejection is a
+      // clean IllegalActionError — never a TypeError that could crash the node.
+      try {
+        magnatEngine.reduce(s, action, new SeededRng(`fz-${k}`));
+        expect(ok).toBe(true);
+      } catch (err) {
+        expect(err).toBeInstanceOf(IllegalActionError);
+        expect(ok).toBe(false);
+      }
+    }
+  });
+});
+
 describe("МАГНАТ — jail", () => {
   it("paying bail frees the player and keeps them in the roll phase", () => {
     const s: MagnatState = { ...init(2), turn: 0, phase: "ROLL", inJail: [true, false] };
@@ -197,6 +345,39 @@ describe("МАГНАТ — jail", () => {
     expect(state.inJail[0]).toBe(false);
     expect(state.cash[0]).toBe(1500 - 50);
     expect(magnatEngine.legalActions(state, 0)).toEqual([{ type: "ROLL" }]);
+  });
+
+  it("a failed doubles attempt emits JAIL_STAY, logs it and passes the turn", () => {
+    for (let k = 0; k < 100; k++) {
+      const s: MagnatState = { ...init(2), turn: 0, phase: "ROLL", inJail: [true, false], jailTurns: [0, 0] };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`js-${k}`));
+      const roll = events.find((e): e is Extract<MagnatEvent, { type: "ROLL" }> => e.type === "ROLL")!;
+      if (roll.dice[0] === roll.dice[1]) continue; // doubles — try another seed
+      const stay = events.find((e) => e.type === "JAIL_STAY");
+      expect(stay).toEqual({ type: "JAIL_STAY", seat: 0, dice: roll.dice, attempt: 1 });
+      expect(state.inJail[0]).toBe(true);
+      expect(state.jailTurns[0]).toBe(1);
+      expect(state.turn).toBe(1); // turn passed
+      expect(state.log.some((l) => l.includes("остава в затвора (1/3)"))).toBe(true);
+      return;
+    }
+    throw new Error("no non-doubles roll in 100 seeds");
+  });
+
+  it("the third failed attempt pays the fine (JAIL_FEE) and the player moves", () => {
+    for (let k = 0; k < 100; k++) {
+      const s: MagnatState = { ...init(2), turn: 0, phase: "ROLL", inJail: [true, false], jailTurns: [2, 0] };
+      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`jf-${k}`));
+      const roll = events.find((e): e is Extract<MagnatEvent, { type: "ROLL" }> => e.type === "ROLL")!;
+      if (roll.dice[0] === roll.dice[1]) continue;
+      expect(events).toContainEqual({ type: "JAIL_FEE", seat: 0, amount: 50 });
+      expect(state.inJail[0]).toBe(false);
+      expect(state.jailTurns[0]).toBe(0);
+      expect(state.pos[0]).toBe(roll.dice[0] + roll.dice[1]); // walked out on the rolled sum
+      expect(state.log.some((l) => l.includes("плаща 50 и излиза от затвора"))).toBe(true);
+      return;
+    }
+    throw new Error("no non-doubles roll in 100 seeds");
   });
 });
 

@@ -10,9 +10,10 @@ import type { SeededRng } from "../../kernel/rng.js";
 /**
  * Покер на зарове (Yahtzee-style dice scoring) — 1–4p (§4.16). Each turn: ROLL
  * five dice, optionally re-roll a chosen subset up to twice (HOLD then ROLL),
- * then SCORE the result into one of 13 unused categories. After every player
- * fills all 13 categories the highest total wins. Original naming/scoring; no
- * trademarked assets (§2).
+ * then SCORE the result into one of 13 unused categories. Filling the upper
+ * section (ones..sixes) to 63+ earns a +35 bonus. After every player fills all
+ * 13 categories the highest total wins (equal totals draw). Original
+ * naming/scoring; no trademarked assets (§2).
  */
 
 export const CATEGORIES = [
@@ -21,8 +22,16 @@ export const CATEGORIES = [
 ] as const;
 export type Category = (typeof CATEGORIES)[number];
 
+/** Ones..sixes — the section whose 63+ subtotal earns the +35 bonus. */
+export const UPPER_CATEGORIES = CATEGORIES.slice(0, 6) as readonly Category[];
+export const UPPER_BONUS = 35;
+export const UPPER_BONUS_TARGET = 63;
+
 export interface DiceState {
   dice: number[]; // 5 dice (0 = unrolled)
+  /** Which dice the roller kept on their last re-roll — lets every seat watch
+   *  the holds, not just the player toggling them locally. */
+  held: boolean[];
   rerollsLeft: number;
   scores: Array<Partial<Record<Category, number>>>; // per seat
   turn: Seat;
@@ -39,7 +48,10 @@ export type DiceAction =
 export type DiceEvent =
   | { type: "ROLL"; seat: Seat; dice: number[]; rerollsLeft: number }
   | { type: "SCORE"; seat: Seat; category: Category; points: number }
-  | { type: "WIN"; seat: Seat };
+  | { type: "WIN"; seat: Seat }
+  | { type: "DRAW"; seats: Seat[] };
+
+const NO_HOLD: readonly boolean[] = [false, false, false, false, false];
 
 const counts = (dice: number[]): number[] => {
   const c = new Array<number>(7).fill(0);
@@ -76,11 +88,27 @@ function hasStraight(c: number[], len: number): boolean {
   return false;
 }
 
+/** Upper-section (ones..sixes) subtotal — drives the +35 bonus. */
+export const upperTotal = (s: Partial<Record<Category, number>>): number =>
+  UPPER_CATEGORIES.reduce((a, c) => a + (s[c] ?? 0), 0);
+
+/** Grand total for one seat's sheet, upper-section bonus included. */
+export const totalOf = (s: Partial<Record<Category, number>>): number =>
+  CATEGORIES.reduce((a, c) => a + (s[c] ?? 0), 0) +
+  (upperTotal(s) >= UPPER_BONUS_TARGET ? UPPER_BONUS : 0);
+
+/** A well-formed optional hold mask: up to 5 booleans (shorter = rest false). */
+function validHold(hold: unknown): boolean {
+  if (hold === undefined) return true;
+  return Array.isArray(hold) && hold.length <= 5 && hold.every((v) => typeof v === "boolean");
+}
+
 export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
   init(opts: InitOpts): DiceState {
     const seats = Math.min(Math.max(opts.seats, 1), 4);
     return {
       dice: [0, 0, 0, 0, 0],
+      held: NO_HOLD.slice(),
       rerollsLeft: 2,
       scores: Array.from({ length: seats }, () => ({})),
       turn: 0,
@@ -103,12 +131,33 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
     return actions;
   },
 
+  /** ROLL is parameterized by an arbitrary hold mask, so the room can't match
+   *  it against the enumerated legal set — accept any well-formed hold here
+   *  (the same way cue sports validate continuous shots). */
+  validate(state, seat, action) {
+    if (state.done || seat !== state.turn) return false;
+    const a = action as DiceAction;
+    if (a.type === "ROLL") {
+      if (state.rolledThisTurn && state.rerollsLeft <= 0) return false;
+      return validHold(a.hold);
+    }
+    if (a.type === "SCORE") {
+      return (
+        state.rolledThisTurn &&
+        CATEGORIES.includes(a.category) &&
+        state.scores[seat]![a.category] === undefined
+      );
+    }
+    return false;
+  },
+
   reduce(state, action, rng: SeededRng) {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
     const next: DiceState = {
       ...state,
       dice: state.dice.slice(),
+      held: state.held.slice(),
       scores: state.scores.map((s) => ({ ...s })),
     };
     const events: DiceEvent[] = [];
@@ -117,9 +166,12 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
       if (next.rolledThisTurn && next.rerollsLeft <= 0) {
         throw new IllegalActionError("No rerolls left");
       }
-      const hold = action.hold ?? [false, false, false, false, false];
+      if (!validHold(action.hold)) throw new IllegalActionError("Malformed hold");
+      const hold = action.hold ?? NO_HOLD;
+      // The first roll of a turn tumbles all five dice; holds apply to re-rolls.
+      next.held = NO_HOLD.map((_, i) => next.rolledThisTurn && hold[i] === true);
       for (let i = 0; i < 5; i++) {
-        if (!next.rolledThisTurn || !hold[i]) next.dice[i] = rng.die();
+        if (!next.held[i]) next.dice[i] = rng.die();
       }
       if (next.rolledThisTurn) next.rerollsLeft -= 1;
       next.rolledThisTurn = true;
@@ -138,16 +190,54 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
 
     // Reset for the next player's turn.
     next.dice = [0, 0, 0, 0, 0];
+    next.held = NO_HOLD.slice();
     next.rerollsLeft = 2;
     next.rolledThisTurn = false;
     next.turn = (seat + 1) % next.seats;
 
     if (next.scores.every((s) => CATEGORIES.every((c) => s[c] !== undefined))) {
-      const winner = topSeat(next);
-      events.push({ type: "WIN", seat: winner });
-      return { state: { ...next, winner, done: true }, events };
+      const tops = topSeats(next);
+      if (tops.length === 1) {
+        events.push({ type: "WIN", seat: tops[0]! });
+        return { state: { ...next, winner: tops[0]!, done: true }, events };
+      }
+      // Equal totals — a draw between the tied seats, not two wins.
+      events.push({ type: "DRAW", seats: tops });
+      return { state: { ...next, winner: null, done: true }, events };
     }
     return { state: next, events };
+  },
+
+  /** Hold what we have the most of, chase the best open category. */
+  bot(state, seat) {
+    if (state.done || seat !== state.turn) return null;
+    if (!state.rolledThisTurn) return { type: "ROLL" };
+
+    const sheet = state.scores[seat]!;
+    const open = CATEGORIES.filter((c) => sheet[c] === undefined);
+    if (open.length === 0) return null;
+    const isUpper = (c: Category) => UPPER_CATEGORIES.includes(c);
+    let best: Category = open[0]!;
+    let bestPts = -1;
+    for (const c of open) {
+      const pts = scoreCategory(state.dice, c);
+      // Ties prefer the upper section — it feeds the +35 bonus.
+      if (pts > bestPts || (pts === bestPts && isUpper(c) && !isUpper(best))) {
+        best = c;
+        bestPts = pts;
+      }
+    }
+
+    // Nothing lucrative yet and re-rolls remain: keep the most frequent face
+    // (higher pips break ties) and tumble the rest.
+    if (state.rerollsLeft > 0 && bestPts < 25) {
+      const c = counts(state.dice);
+      let face = 1;
+      for (let f = 2; f <= 6; f++) if ((c[f] ?? 0) >= (c[face] ?? 0)) face = f;
+      const keep = (c[face] ?? 0) >= 2;
+      return { type: "ROLL", hold: state.dice.map((d) => keep && d === face) };
+    }
+    return { type: "SCORE", category: best };
   },
 
   isTerminal: (s) => s.done,
@@ -155,18 +245,20 @@ export const diceEngine: GameEngine<DiceState, DiceAction, DiceEvent> = {
   score(state): SeatScore[] {
     const totals = state.scores.map(totalOf);
     const max = Math.max(...totals);
-    return totals.map((t, seat) => ({ seat, result: t === max ? "win" : "loss", points: t }));
+    const tied = totals.filter((t) => t === max).length > 1;
+    return totals.map((t, seat) => ({
+      seat,
+      result: t === max ? (tied ? "draw" : "win") : "loss",
+      points: t,
+    }));
   },
 
   redact: (s) => s, // open information
 };
 
-const totalOf = (s: Partial<Record<Category, number>>): number =>
-  CATEGORIES.reduce((a, c) => a + (s[c] ?? 0), 0);
-
-function topSeat(state: DiceState): Seat {
+/** All seats sharing the highest grand total (one seat = outright winner). */
+function topSeats(state: DiceState): Seat[] {
   const totals = state.scores.map(totalOf);
-  let best = 0;
-  for (let s = 1; s < totals.length; s++) if ((totals[s] ?? 0) > (totals[best] ?? 0)) best = s;
-  return best;
+  const max = Math.max(...totals);
+  return totals.flatMap((t, seat) => (t === max ? [seat] : []));
 }

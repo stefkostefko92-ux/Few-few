@@ -1,20 +1,64 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
-import { ROLES, VIP_TIERS } from "@aso/shared";
+import { ROLES, VIP_TIERS, type Role, type VipTier } from "@aso/shared";
 import { asyncHandler, badRequest, forbidden } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
 import { discordEnabled, notifyAdminAction, notifyBroadcast, sendTest } from "../integrations/discord.js";
 import { getDiscordConfig, setDiscordConfig } from "../settings.js";
+import { env } from "../env.js";
+import { logger } from "../logger.js";
 
 export const adminRouter: Router = Router();
 
-// Staff-only (§14). Read access for MODERATOR+; mutations gated to ADMIN/OWNER
-// per-route below.
-adminRouter.use(requireAuth, requireRole("MODERATOR", "ADMIN", "OWNER"));
+// Staff-only (§14). Read access for MODERATOR/SUPPORT+; mutations gated
+// per-route below (flag/report triage: MODERATOR+; the rest: ADMIN/OWNER).
+adminRouter.use(requireAuth, requireRole("MODERATOR", "SUPPORT", "ADMIN", "OWNER"));
 
 const STAFF_WRITE = requireRole("ADMIN", "OWNER");
+// Moderation triage (flags/reports) is moderator work; SUPPORT stays read-only.
+const MOD_WRITE = requireRole("MODERATOR", "ADMIN", "OWNER");
+
+/**
+ * First-run owner bootstrap (§14): if BOOTSTRAP_OWNER_EMAIL is set, promote
+ * that account to OWNER at boot (idempotent). Registration always grants
+ * PLAYER, so a fresh deploy would otherwise need manual SQL before anyone can
+ * open the admin panel. The user must re-login for the new role to enter the
+ * access-token claims.
+ */
+export async function bootstrapOwner(): Promise<void> {
+  const email = env.BOOTSTRAP_OWNER_EMAIL.trim().toLowerCase();
+  if (!email) return;
+  const res = await prisma.user.updateMany({
+    where: { email, role: { not: "OWNER" } },
+    data: { role: "OWNER" },
+  });
+  if (res.count > 0) {
+    logger.info({ email }, "bootstrap: promoted BOOTSTRAP_OWNER_EMAIL to OWNER");
+    await prisma.adminAudit.create({
+      data: {
+        actorId: "system",
+        actorName: "system",
+        action: "bootstrap_owner",
+        targetId: null,
+        detail: JSON.stringify({ email }),
+      },
+    });
+  }
+}
+
+/**
+ * Lazily lift expired temp bans (banned + banUntil in the past). Called from
+ * the admin read paths so staff always see the effective state; the Redis
+ * revocation entry self-expires (access-token TTL) and needs no cleanup.
+ */
+async function liftExpiredBans(): Promise<void> {
+  await prisma.user.updateMany({
+    where: { banned: true, banUntil: { not: null, lte: new Date() } },
+    data: { banned: false, banReason: null, banUntil: null },
+  });
+}
 
 /** Friendly actor label for the audit trail (display name, else the id). */
 async function resolveActorName(userId: string): Promise<string> {
@@ -51,6 +95,7 @@ const startOfToday = (): Date => {
 adminRouter.get(
   "/stats",
   asyncHandler(async (_req, res) => {
+    await liftExpiredBans();
     const since = startOfToday();
     const [users, banned, newToday, openFlags, matchesToday, vipGroups, byProduct, products, gameGroups, audits] =
       await Promise.all([
@@ -95,30 +140,116 @@ adminRouter.get(
   }),
 );
 
-/** GET /api/admin/users?q=&take= — search players. */
+interface DayCount {
+  day: Date;
+  n: number;
+}
+
+/** GET /api/admin/stats/timeseries?days=14 — per-day DAU (from lastSeenAt),
+ *  registrations, matches and completed-purchase revenue, plus the top games
+ *  by matches played in the window. Buckets are UTC days. */
+adminRouter.get(
+  "/stats/timeseries",
+  asyncHandler(async (req, res) => {
+    const days = Math.min(Math.max(Number(req.query.days ?? 14), 1), 90);
+    const start = new Date();
+    start.setUTCHours(0, 0, 0, 0);
+    start.setUTCDate(start.getUTCDate() - (days - 1));
+
+    const [dauRows, regRows, matchRows, revRows, gameGroups] = await Promise.all([
+      // DAU approximation: lastSeenAt is a single "last seen" timestamp, so a
+      // player counts toward the day of their most recent visit in the window.
+      prisma.$queryRaw<DayCount[]>`
+        SELECT date_trunc('day', "lastSeenAt")::date AS day, COUNT(*)::int AS n
+        FROM "User" WHERE "lastSeenAt" >= ${start} GROUP BY 1`,
+      prisma.$queryRaw<DayCount[]>`
+        SELECT date_trunc('day', "createdAt")::date AS day, COUNT(*)::int AS n
+        FROM "User" WHERE "createdAt" >= ${start} GROUP BY 1`,
+      prisma.$queryRaw<DayCount[]>`
+        SELECT date_trunc('day', "startedAt")::date AS day, COUNT(*)::int AS n
+        FROM "Match" WHERE "startedAt" >= ${start} GROUP BY 1`,
+      prisma.$queryRaw<(DayCount & { cents: number })[]>`
+        SELECT date_trunc('day', p."createdAt")::date AS day, COUNT(*)::int AS n,
+               COALESCE(SUM(pr."priceCents"), 0)::int AS cents
+        FROM "Purchase" p JOIN "Product" pr ON pr."id" = p."productId"
+        WHERE p."status" = 'completed' AND p."createdAt" >= ${start} GROUP BY 1`,
+      prisma.match.groupBy({
+        by: ["game"],
+        where: { startedAt: { gte: start } },
+        _count: { _all: true },
+        orderBy: { _count: { game: "desc" } },
+        take: 10,
+      }),
+    ]);
+
+    const key = (d: Date | string) => new Date(d).toISOString().slice(0, 10);
+    const dau = new Map(dauRows.map((r) => [key(r.day), r.n]));
+    const regs = new Map(regRows.map((r) => [key(r.day), r.n]));
+    const matches = new Map(matchRows.map((r) => [key(r.day), r.n]));
+    const rev = new Map(revRows.map((r) => [key(r.day), r]));
+
+    const series = Array.from({ length: days }, (_, i) => {
+      const k = key(new Date(start.getTime() + i * 86_400_000));
+      return {
+        day: k,
+        dau: dau.get(k) ?? 0,
+        registrations: regs.get(k) ?? 0,
+        matches: matches.get(k) ?? 0,
+        purchases: rev.get(k)?.n ?? 0,
+        revenueCents: rev.get(k)?.cents ?? 0,
+      };
+    });
+    res.json({
+      days,
+      series,
+      topGames: gameGroups.map((g) => ({ game: g.game, matches: g._count._all })),
+    });
+  }),
+);
+
+/** GET /api/admin/users?q=&role=&banned=&vip=&take=&cursor= — search players
+ *  with role/ban/VIP filters and cursor pagination. */
 adminRouter.get(
   "/users",
   asyncHandler(async (req, res) => {
+    await liftExpiredBans();
     const q = String(req.query.q ?? "").trim();
     const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
-    const where = q
-      ? {
-          OR: [
-            { email: { contains: q, mode: "insensitive" as const } },
-            { displayName: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
-      : {};
-    const users = await prisma.user.findMany({
+    const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
+    const roleQ = String(req.query.role ?? "");
+    const role = (ROLES as readonly string[]).includes(roleQ) ? (roleQ as Role) : undefined;
+    const vipQ = String(req.query.vip ?? "");
+    const vip = (VIP_TIERS as readonly string[]).includes(vipQ) ? (vipQ as VipTier) : undefined;
+    const bannedQ = String(req.query.banned ?? "");
+    const banned = bannedQ === "1" || bannedQ === "true" ? true : bannedQ === "0" || bannedQ === "false" ? false : undefined;
+
+    const where = {
+      ...(q
+        ? {
+            OR: [
+              { email: { contains: q, mode: "insensitive" as const } },
+              { displayName: { contains: q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+      ...(role ? { role } : {}),
+      ...(vip ? { vipTier: vip } : {}),
+      ...(banned !== undefined ? { banned } : {}),
+    };
+    const rows = await prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      take,
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       select: {
         id: true, email: true, displayName: true, role: true, vipTier: true,
-        banned: true, chips: true, gems: true, level: true, createdAt: true, lastSeenAt: true,
+        banned: true, banReason: true, banUntil: true, chips: true, gems: true,
+        level: true, createdAt: true, lastSeenAt: true,
       },
     });
-    res.json({ users: users.map((u) => ({ ...u, chips: u.chips.toString() })) });
+    const hasMore = rows.length > take;
+    const users = (hasMore ? rows.slice(0, take) : rows).map((u) => ({ ...u, chips: u.chips.toString() }));
+    res.json({ users, nextCursor: hasMore ? (users[users.length - 1]?.id ?? null) : null });
   }),
 );
 
@@ -126,6 +257,7 @@ adminRouter.get(
 adminRouter.get(
   "/users/:id",
   asyncHandler(async (req, res) => {
+    await liftExpiredBans();
     const id = String(req.params.id ?? "");
     const user = await prisma.user.findUnique({
       where: { id },
@@ -144,12 +276,47 @@ adminRouter.get(
   }),
 );
 
+/** GET /api/admin/users/:id/matches — the player's match history (paginated). */
+adminRouter.get(
+  "/users/:id/matches",
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id ?? "");
+    const take = Math.min(Math.max(Number(req.query.take ?? 20), 1), 50);
+    const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
+    const rows = await prisma.matchPlayer.findMany({
+      where: { userId: id },
+      include: { match: true },
+      orderBy: [{ match: { startedAt: "desc" } }, { id: "desc" }],
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+    const hasMore = rows.length > take;
+    const items = (hasMore ? rows.slice(0, take) : rows).map((mp) => ({
+      id: mp.id,
+      game: mp.match.game,
+      mode: mp.match.mode,
+      startedAt: mp.match.startedAt,
+      endedAt: mp.match.endedAt,
+      seat: mp.seat,
+      result: mp.result,
+      mmrDelta: mp.mmrDelta,
+      chipsDelta: mp.chipsDelta.toString(),
+    }));
+    res.json({ items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null });
+  }),
+);
+
 const updateUserSchema = z.object({
   role: z.enum(ROLES).optional(),
   vipTier: z.enum(VIP_TIERS).optional(),
   banned: z.boolean().optional(),
+  // Required when banned:true; ignored otherwise. banUntil null/absent = permanent.
+  banReason: z.string().trim().min(1).max(500).optional(),
+  banUntil: z.string().datetime().nullish(),
   grantChips: z.number().int().gte(-1_000_000_000).lte(1_000_000_000).optional(),
   grantGems: z.number().int().gte(-1_000_000).lte(1_000_000).optional(),
+  // Free-text "why" recorded in the audit trail (compensation, promo, test…).
+  note: z.string().trim().max(300).optional(),
 });
 
 /** PATCH /api/admin/users/:id — role / VIP / ban / grant currency (ADMIN+). */
@@ -181,7 +348,22 @@ adminRouter.patch(
     const data: Record<string, unknown> = {};
     if (input.role) data.role = input.role;
     if (input.vipTier) data.vipTier = input.vipTier;
-    if (typeof input.banned === "boolean") data.banned = input.banned;
+    // A ban always carries a reason (surfaced to staff + audit) and may carry
+    // an expiry; unban clears both.
+    if (input.banned === true) {
+      if (!input.banReason) throw badRequest("ban_reason_required", "Причината за блокиране е задължителна");
+      const until = input.banUntil ? new Date(input.banUntil) : null;
+      if (until && until.getTime() <= Date.now()) {
+        throw badRequest("ban_until_past", "Срокът на блокиране трябва да е в бъдещето");
+      }
+      data.banned = true;
+      data.banReason = input.banReason;
+      data.banUntil = until;
+    } else if (input.banned === false) {
+      data.banned = false;
+      data.banReason = null;
+      data.banUntil = null;
+    }
     // Credits use an ATOMIC increment so concurrent grants (or a grant racing a
     // webhook credit / daily claim) can't lose an update. Debits keep the
     // read-then-clamp (rare, staff-serialized) so the balance can't go negative.
@@ -216,11 +398,13 @@ adminRouter.patch(
 
 function toAdminUser(u: {
   id: string; email: string; displayName: string; role: string; vipTier: string;
-  banned: boolean; chips: bigint; gems: number; level: number;
+  banned: boolean; banReason: string | null; banUntil: Date | null;
+  chips: bigint; gems: number; level: number;
 }) {
   return {
     id: u.id, email: u.email, displayName: u.displayName, role: u.role,
-    vipTier: u.vipTier, banned: u.banned, chips: u.chips.toString(), gems: u.gems, level: u.level,
+    vipTier: u.vipTier, banned: u.banned, banReason: u.banReason, banUntil: u.banUntil,
+    chips: u.chips.toString(), gems: u.gems, level: u.level,
   };
 }
 
@@ -246,6 +430,7 @@ const reviewSchema = z.object({ status: z.enum(["REVIEWING", "DISMISSED", "CONFI
 /** PATCH /api/admin/flags/:id — triage a flag (never an auto-ban; §13.5). */
 adminRouter.patch(
   "/flags/:id",
+  MOD_WRITE,
   asyncHandler(async (req, res) => {
     const id = String(req.params.id ?? "");
     if (!id) throw badRequest("missing_id", "Missing flag id");
@@ -260,15 +445,96 @@ adminRouter.patch(
   }),
 );
 
+// ── Chat reports (read: staff; triage: MODERATOR+) ──────────────────────────
+
+const REPORT_STATUSES = ["OPEN", "RESOLVED", "DISMISSED"] as const;
+
+/** GET /api/admin/reports?status=OPEN&take=&cursor= — chat report queue. */
+adminRouter.get(
+  "/reports",
+  asyncHandler(async (req, res) => {
+    const status = String(req.query.status ?? "OPEN").toUpperCase();
+    const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
+    const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
+    const rows = await prisma.chatReport.findMany({
+      where: (REPORT_STATUSES as readonly string[]).includes(status) ? { status: status as "OPEN" } : {},
+      orderBy: { createdAt: "desc" },
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    });
+    const hasMore = rows.length > take;
+    const page = hasMore ? rows.slice(0, take) : rows;
+    // Reporter ids are plain strings (no FK); resolve display names in one query.
+    const ids = [...new Set(page.map((r) => r.fromUserId))];
+    const reporters = ids.length
+      ? await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, displayName: true } })
+      : [];
+    const nameById = new Map(reporters.map((u) => [u.id, u.displayName]));
+    const items = page.map((r) => ({
+      id: r.id,
+      matchId: r.matchId,
+      fromUserId: r.fromUserId,
+      fromName: nameById.get(r.fromUserId) ?? null,
+      targetSeat: r.targetSeat,
+      text: r.text,
+      status: r.status,
+      createdAt: r.createdAt,
+    }));
+    res.json({ items, nextCursor: hasMore ? (items[items.length - 1]?.id ?? null) : null });
+  }),
+);
+
+const reportPatchSchema = z.object({ status: z.enum(REPORT_STATUSES) });
+
+/** PATCH /api/admin/reports/:id — resolve/dismiss (or reopen) a chat report. */
+adminRouter.patch(
+  "/reports/:id",
+  MOD_WRITE,
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id ?? "");
+    if (!id) throw badRequest("missing_id", "Missing report id");
+    const { status } = reportPatchSchema.parse(req.body);
+    const report = await prisma.chatReport.update({ where: { id }, data: { status } });
+    const actorName = await resolveActorName(req.user!.sub);
+    await audit(req.user!, actorName, "resolve_report", id, { status, matchId: report.matchId });
+    res.json({ report });
+  }),
+);
+
 // ── Discord (ADMIN/OWNER) ────────────────────────────────────────────────────
 
-/** GET /api/admin/audit — paginated staff audit log (most recent first). */
+/** Parse an ISO/date query param; undefined when absent or invalid. */
+function parseDateParam(v: unknown): Date | undefined {
+  if (typeof v !== "string" || !v) return undefined;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+}
+
+/** GET /api/admin/audit — paginated staff audit log (most recent first).
+ *  Filters: action (exact), actor (name contains / exact id), targetId,
+ *  from/to (ISO timestamps). */
 adminRouter.get(
   "/audit",
   asyncHandler(async (req, res) => {
     const take = Math.min(Math.max(Number(req.query.take ?? 50), 1), 100);
-    const cursor = typeof req.query.cursor === "string" ? req.query.cursor : undefined;
+    const cursor = typeof req.query.cursor === "string" && req.query.cursor ? req.query.cursor : undefined;
+    const action = String(req.query.action ?? "").trim();
+    const actor = String(req.query.actor ?? "").trim();
+    const targetId = String(req.query.targetId ?? "").trim();
+    const from = parseDateParam(req.query.from);
+    const to = parseDateParam(req.query.to);
+    const where = {
+      ...(action ? { action } : {}),
+      ...(actor
+        ? { OR: [{ actorName: { contains: actor, mode: "insensitive" as const } }, { actorId: actor }] }
+        : {}),
+      ...(targetId ? { targetId } : {}),
+      ...(from || to
+        ? { createdAt: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } }
+        : {}),
+    };
     const rows = await prisma.adminAudit.findMany({
+      where,
       take: take + 1,
       orderBy: { createdAt: "desc" },
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
