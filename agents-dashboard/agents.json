@@ -4354,6 +4354,11 @@
         {
           "date": "2026-07-02",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Caddy 2.9+ премахна `interval`/`burst` под глобалния `on_demand_tls` блок — приема САМО…\" (+2)"
+        },
+        {
+          "date": "2026-07-02",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „platform (Next.js multi-tenant) има cron endpoint /api/cron/publish (насрочено публикув…\" (+3)"
         },
         {
