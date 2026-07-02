@@ -1,0 +1,37 @@
+<%- include('partials/head', { title: (lang === 'en' ? 'Contact' : 'Контакти') + ' — MedQR', user: user }) %>
+
+<article class="legal">
+  <h1><%= lang === 'en' ? 'Contact' : 'Контакти' %></h1>
+  <p class="lead">
+    <%= lang === 'en'
+      ? 'Questions, data-protection requests or a security report — reach us here.'
+      : 'Въпроси, заявки по защита на данните или сигнал за сигурност — пишете ни тук.' %>
+  </p>
+
+  <dl class="profile-view">
+    <dt><%= lang === 'en' ? 'Provider' : 'Доставчик' %></dt>
+    <dd><%= company.name %></dd>
+    <dt><%= lang === 'en' ? 'General' : 'Общи' %></dt>
+    <dd><a href="mailto:<%= company.email %>"><%= company.email %></a></dd>
+    <dt><%= lang === 'en' ? 'Privacy / data protection' : 'Поверителност / защита на данните' %></dt>
+    <dd><a href="mailto:<%= company.privacyEmail %>"><%= company.privacyEmail %></a></dd>
+    <dt><%= lang === 'en' ? 'Security reports' : 'Сигурност (докладване)' %></dt>
+    <dd><a href="mailto:<%= company.securityEmail %>"><%= company.securityEmail %></a>
+      · <a href="/.well-known/security.txt">security.txt</a></dd>
+    <dt><%= lang === 'en' ? 'Phone' : 'Телефон' %></dt>
+    <dd><a href="tel:<%= company.phone.replace(/\s/g, '') %>"><%= company.phone %></a></dd>
+    <dt><%= lang === 'en' ? 'Address' : 'Адрес' %></dt>
+    <dd><%= lang === 'en' ? company.addressEn : company.address %></dd>
+  </dl>
+
+  <p class="muted small" style="margin-top:1.2rem">
+    <%= lang === 'en'
+      ? 'In a medical emergency call 112. MedQR is not an emergency service.'
+      : 'При медицинска спешност се обадете на 112. MedQR не е служба за спешна помощ.' %>
+  </p>
+  <p class="center" style="margin-top:1rem">
+    <a class="btn btn-ghost" href="/about"><%= lang === 'en' ? 'About & imprint' : 'За нас и импресум' %></a>
+  </p>
+</article>
+
+<%- include('partials/foot') %>

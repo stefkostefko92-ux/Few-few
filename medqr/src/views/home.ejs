@@ -1,4 +1,4 @@
-<%- include('partials/head', { title: 'MedQR — ' + t('og.image_alt').replace('MedQR — ', ''), user }) %>
+<%- include('partials/head', { title: 'MedQR — ' + t('og.image_alt').replace('MedQR — ', ''), user, medicalPage: true }) %>
 
 <section class="hero">
   <span class="hero-badge"><%- include('partials/icon', { name: 'shield-check' }) %> <%= t('home.badge') %></span>
@@ -8,6 +8,11 @@
     <a class="btn btn-lg" href="/register"><%= t('home.cta_register') %></a>
     <a class="btn btn-lg btn-ghost" href="/login"><%= t('home.cta_login') %></a>
   </div>
+  <p class="muted small" style="margin-top:1rem">
+    <%= lang === 'en'
+      ? 'Informational service — not a medical device. In an emergency call 112.'
+      : 'Информационна услуга — не е медицинско изделие. При спешност се обадете на 112.' %>
+  </p>
 </section>
 
 <section class="steps">

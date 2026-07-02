@@ -22,6 +22,21 @@ function pinLocked(profile) {
   return !!(profile.pin_locked_until && new Date(profile.pin_locked_until).getTime() > Date.now());
 }
 
+// Разграничава реално отваряне (сканиран QR/NFC → навигация в браузър) от
+// автоматично издърпване на връзката (link-preview ботове на WhatsApp/Signal/
+// Slack и т.н., които игнорират robots.txt). Целта е да не пращаме ФАЛШИВО
+// „спешно" известие до близкия само защото линкът е споделен в чат.
+// Известните link-preview/unfurler ботове се разпознават надеждно по User-Agent.
+// Съзнателно клоним към ИЗПРАЩАНЕ при съмнение — за спешен продукт пропуснато
+// истинско известие е по-лошо от рядък фалшив preview (който дедупът ограничава).
+const PREVIEW_BOTS =
+  /bot\b|crawl|spider|preview|facebookexternalhit|whatsapp|slackbot|telegram|discord|twitterbot|linkedinbot|skype|google-read-aloud|bingpreview|embedly|redditbot|pinterest|vkshare|curl|wget|python-requests|okhttp|go-http|headless|monitor|uptime|whatsapp/i;
+function looksLikeRealVisit(req) {
+  const ua = String(req.get('user-agent') || '');
+  if (!ua) return false; // без User-Agent → скрипт/бот
+  return !PREVIEW_BOTS.test(ua);
+}
+
 // Публичен спешен изглед. Достъпен само със знание на дългия токен (от QR кода).
 // Показва само нужното на спешен екип. Всеки достъп се записва.
 router.get('/e/:token', (req, res) => {
@@ -38,8 +53,11 @@ router.get('/e/:token', (req, res) => {
       locked: pinLocked(profile),
     });
   }
-  logAccess(profile.id, req);
-  notifyScan(profile);
+  // Логваме и известяваме само при реално отваряне — не при link-preview ботове.
+  if (looksLikeRealVisit(req)) {
+    logAccess(profile.id, req);
+    notifyScan(profile);
+  }
   res.render('emergency', { profile, notifyActive: notifyActive(profile) });
 });
 
