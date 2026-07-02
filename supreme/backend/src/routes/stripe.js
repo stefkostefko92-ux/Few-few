@@ -10,6 +10,10 @@ const router = Router();
 // F3 — пинваме API версията: без пин ъпгрейд на акаунта мълчаливо променя
 // формата на обектите/събитията. Текуща стабилна версия (проверена на живо
 // 2026-06-27, docs.stripe.com/changelog): 2026-06-24.dahlia.
+// B1 — литералът трябва да СЪВПАДА с bundled ApiVersion на SDK, иначе типовете
+// (полета като current_period_end) се разминават с реалните обекти. stripe SDK
+// v22.3.0 носи ApiVersion 2026-06-24.dahlia (проверено:
+// node_modules/stripe/cjs/apiVersion.js) → изравнено.
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeKey
   ? new Stripe(stripeKey, { apiVersion: "2026-06-24.dahlia" })
@@ -37,6 +41,21 @@ function addMonths(date, months) {
   ).getUTCDate();
   d.setUTCDate(Math.min(day, daysInTarget));
   return d;
+}
+
+// B4 — намиране на сървъра за subscription събитие. Първо по
+// stripeSubscriptionId; ако още не е записан (out-of-order доставка:
+// subscription.updated пристига ПРЕДИ checkout.session.completed), пада на
+// sub.metadata.serverId (сетва се в subscription_data.metadata при създаване
+// на сесията). Така достъпът/статусът се прилага правилно независимо от реда.
+async function findServerForSubscription(sub) {
+  const byId = await prisma.server.findFirst({
+    where: { stripeSubscriptionId: sub.id },
+  });
+  if (byId) return byId;
+  const serverId = sub.metadata?.serverId;
+  if (!serverId) return null;
+  return prisma.server.findUnique({ where: { id: serverId } });
 }
 
 // ─── POST /api/stripe/create-checkout/:serverId ──────────────────────────────
@@ -266,6 +285,11 @@ router.post("/webhook", requireStripe, async (req, res) => {
               premiumSince: new Date(),
               stripeSubscriptionId: session.subscription,
               stripeStatus: initialStatus,
+              // B3 — „един trial на сървър" независимо от пътя: маркираме
+              // trialUsed=true при всяка успешна checkout сесия (вкл. Stripe
+              // trial). Иначе Stripe-trial → cancel → локален trial = двоен
+              // безплатен период. Единственият друг writer е trial route-ът.
+              trialUsed: true,
               // Reset archiveRetentionDays to null (forever) for premium
               archiveRetentionDays: null,
             },
@@ -299,14 +323,21 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
         await runOnce(async (tx) => {
-          // C3 — успешно плащане → ако сървърът е бил в past_due, нулираме
-          // маркера (dunning възстановен), за да не го отнеме scheduler-ът.
-          if (server.pastDueSince) {
-            await tx.server.update({
-              where: { id: server.id },
-              data: { pastDueSince: null },
-            });
-          }
+          // B2 — успешно плащане ПРОВИЗИРА достъп: платил клиент не бива да
+          // зависи само от checkout.session.completed (може да се загуби или
+          // да дойде извън ред). Сетваме isPremium=true идемпотентно в СЪЩАТА
+          // runOnce транзакция, ключирана по event.id.
+          // C3 — същевременно нулираме pastDueSince (dunning възстановен), за
+          // да не отнеме достъпа scheduler-ът.
+          await tx.server.update({
+            where: { id: server.id },
+            data: {
+              isPremium: true,
+              // premiumSince само при първо активиране (пазим оригиналната дата).
+              ...(server.premiumSince ? {} : { premiumSince: new Date() }),
+              pastDueSince: null,
+            },
+          });
 
           await tx.paymentLog.create({
             data: {
@@ -391,9 +422,8 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
       case "customer.subscription.deleted": {
         const sub = event.data.object;
-        const server = await prisma.server.findFirst({
-          where: { stripeSubscriptionId: sub.id },
-        });
+        // B4 — lookup с fallback по sub.metadata.serverId (out-of-order).
+        const server = await findServerForSubscription(sub);
         if (!server) break;
 
         const did = await runOnce(async (tx) => {
@@ -414,9 +444,8 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
       case "customer.subscription.updated": {
         const sub = event.data.object;
-        const server = await prisma.server.findFirst({
-          where: { stripeSubscriptionId: sub.id },
-        });
+        // B4 — lookup с fallback по sub.metadata.serverId (out-of-order).
+        const server = await findServerForSubscription(sub);
         if (!server) break;
 
         // ─── F5 — Политика на достъп спрямо статуса на абонамента ────────────
@@ -447,6 +476,10 @@ router.post("/webhook", requireStripe, async (req, res) => {
           await tx.server.update({
             where: { id: server.id },
             data: {
+              // B4 — статусът е автентичният sub.status (не хардкоднат
+              // „trialing"). Ако сървърът е намерен по metadata (stripeSubscriptionId
+              // още липсва при out-of-order), го записваме сега.
+              ...(server.stripeSubscriptionId ? {} : { stripeSubscriptionId: sub.id }),
               stripeStatus: sub.status,
               ...(premiumOn && !server.isPremium && {
                 isPremium: true,
@@ -498,10 +531,11 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
         const sub = await stripe.subscriptions.retrieve(server.stripeSubscriptionId, {
           expand: ["items.data"],
         });
-        // In newer Stripe API versions (2024-12+), current_period_end moved to items.data[0]
-        const periodEnd = sub.current_period_end
-          ?? sub.items?.data?.[0]?.current_period_end
-          ?? null;
+        // B1 — в API 2026-06-24.dahlia current_period_end е на ниво
+        // subscription item, НЕ на самия subscription (потвърдено в SDK v22
+        // типовете: SubscriptionItems.d.ts). Ръчният fallback към несъществуващ
+        // sub.current_period_end е премахнат — четем директно от items.data[0].
+        const periodEnd = sub.items?.data?.[0]?.current_period_end ?? null;
         subscriptionDetails = {
           status: sub.status,
           currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,

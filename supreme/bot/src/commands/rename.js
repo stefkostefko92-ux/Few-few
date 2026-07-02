@@ -1,5 +1,5 @@
 // bot/src/commands/rename.js
-import { SlashCommandBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 
 export default {
@@ -17,22 +17,22 @@ export default {
       const { data } = await api.get(`/bot/ticket/by-channel/${interaction.channelId}`);
       ticket = data;
     } catch {
-      return interaction.reply({ content: "❌ This command can only be used inside a ticket channel.", ephemeral: true });
+      return interaction.reply({ content: "❌ This command can only be used inside a ticket channel.", flags: MessageFlags.Ephemeral });
     }
-    if (!ticket) return interaction.reply({ content: "❌ No ticket found for this channel.", ephemeral: true });
+    if (!ticket) return interaction.reply({ content: "❌ No ticket found for this channel.", flags: MessageFlags.Ephemeral });
 
     // Permission check — staff only
     const panel = ticket.panel;
     const isStaff = (panel?.supportRoleIds || []).some((r) => interaction.member.roles.cache.has(r))
                     || interaction.member.permissions.has("ManageGuild");
     if (!isStaff) {
-      return interaction.reply({ content: "❌ Only support team members can rename tickets.", ephemeral: true });
+      return interaction.reply({ content: "❌ Only support team members can rename tickets.", flags: MessageFlags.Ephemeral });
     }
 
     const rawName = interaction.options.getString("name");
     const cleanName = rawName.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").slice(0, 100);
     if (!cleanName) {
-      return interaction.reply({ content: "❌ Invalid channel name.", ephemeral: true });
+      return interaction.reply({ content: "❌ Invalid channel name.", flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferReply();

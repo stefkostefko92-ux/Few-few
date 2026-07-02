@@ -64,8 +64,10 @@ db.exec(`
     emergency_contact_relation TEXT,
     emergency_contact_country TEXT,
     emergency_contact_email  TEXT,
-    notify_on_scan           INTEGER NOT NULL DEFAULT 1,
+    notify_on_scan           INTEGER NOT NULL DEFAULT 0,
     last_notified_at         TEXT,
+    last_sos_at              TEXT,
+    last_located_at          TEXT,
     additional_notes         TEXT,
     pin_hash                 TEXT,
     pin_attempts             INTEGER NOT NULL DEFAULT 0,
@@ -158,6 +160,8 @@ ensureColumn('profiles', 'emergency_contact_country', 'TEXT');
 ensureColumn('profiles', 'emergency_contact_email', 'TEXT');
 ensureColumn('profiles', 'notify_on_scan', 'INTEGER NOT NULL DEFAULT 1');
 ensureColumn('profiles', 'last_notified_at', 'TEXT');
+ensureColumn('profiles', 'last_sos_at', 'TEXT');
+ensureColumn('profiles', 'last_located_at', 'TEXT');
 ensureColumn('profiles', 'pin_attempts', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('profiles', 'pin_locked_until', 'TEXT');
 ensureColumn('sessions', 'last_seen', 'TEXT');

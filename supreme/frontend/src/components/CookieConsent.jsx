@@ -62,7 +62,7 @@ export default function CookieConsent() {
       <div className="flex items-start gap-3 mb-3">
         <Cookie className="w-5 h-5 text-cs-cyan flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <h3 className="font-display font-bold text-sm text-white mb-1">We use cookies</h3>
+          <h3 className="font-display font-bold text-sm text-cs-text mb-1">We use cookies</h3>
           <p id="cookie-consent-description" className="text-xs text-cs-muted leading-relaxed">
             We use essential cookies for authentication and session management.
             No tracking, no ads.{" "}
@@ -105,7 +105,7 @@ export default function CookieConsent() {
         </button>
         <button
           onClick={rejectNonEssential}
-          className="cs-btn-secondary text-xs flex-1 min-w-[100px]"
+          className="cs-btn-primary text-xs flex-1 min-w-[100px]"
         >
           Reject non-essential
         </button>
@@ -140,7 +140,7 @@ function PrefRow({ label, description, checked, onChange, disabled }) {
         className="mt-0.5 accent-cs-cyan"
       />
       <div className="flex-1">
-        <div className="text-xs font-semibold text-white">{label}{disabled && <span className="text-cs-dim ml-2">(required)</span>}</div>
+        <div className="text-xs font-semibold text-cs-text">{label}{disabled && <span className="text-cs-dim ml-2">(required)</span>}</div>
         <div className="text-[10px] text-cs-dim">{description}</div>
       </div>
     </label>

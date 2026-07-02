@@ -40,7 +40,7 @@ export default function AffiliatePage() {
   return (
     <div className="p-8 max-w-5xl">
       <div className="mb-8">
-        <h1 className="cs-heading font-display font-bold text-white text-3xl flex items-center gap-2">
+        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
           <Gift className="w-7 h-7 text-amber-400" /> Affiliate Program
         </h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
@@ -61,7 +61,7 @@ export default function AffiliatePage() {
             onClick={(e) => e.target.select()}
           />
           <button onClick={copyLink} className="cs-btn-primary flex items-center gap-2">
-            {copied ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
             {copied ? "Copied" : "Copy"}
           </button>
         </div>
@@ -96,13 +96,13 @@ export default function AffiliatePage() {
             {payoutRequestM.isPending ? "Requesting…" : "Request Payout"}
           </button>
           {payoutRequestM.data && (
-            <p role="status" className="text-xs text-green-400 mt-2">✓ {payoutRequestM.data.message}</p>
+            <p role="status" className="text-xs text-success mt-2">✓ {payoutRequestM.data.message}</p>
           )}
         </div>
 
         <div className="cs-card">
           <h3 className="text-sm text-cs-muted uppercase tracking-wider font-mono mb-2">Lifetime Paid</h3>
-          <div className="text-3xl font-black text-white mb-4">{formatMoney(aff?.paidEarnings || 0)}</div>
+          <div className="text-3xl font-black text-cs-text mb-4">{formatMoney(aff?.paidEarnings || 0)}</div>
           <div className="mb-4">
             <label htmlFor="paypal-email" className="text-xs text-cs-muted uppercase tracking-wider font-mono block mb-2">
               PayPal Email (for payouts)
@@ -119,7 +119,7 @@ export default function AffiliatePage() {
                 placeholder={aff?.paypalEmail ? "Enter a new email to update" : "your@paypal.com"}
                 value={paypalInput}
                 onChange={(e) => setPaypalInput(e.target.value)}
-                className="flex-1 bg-cs-surface border border-cs-border px-3 py-2 text-sm rounded text-white"
+                className="flex-1 bg-cs-surface border border-cs-border px-3 py-2 text-sm rounded text-cs-text"
               />
               <button
                 onClick={() => payoutEmailM.mutate(paypalInput)}
@@ -130,10 +130,10 @@ export default function AffiliatePage() {
               </button>
             </div>
             {payoutEmailM.isSuccess && (
-              <p role="status" className="text-xs text-green-400 mt-1">Payout email updated.</p>
+              <p role="status" className="text-xs text-success mt-1">Payout email updated.</p>
             )}
             {payoutEmailM.isError && (
-              <p role="alert" className="text-xs text-red-400 mt-1">
+              <p role="alert" className="text-xs text-danger mt-1">
                 {payoutEmailM.error?.response?.data?.error || "Failed to update email."}
               </p>
             )}
@@ -143,7 +143,7 @@ export default function AffiliatePage() {
 
       {/* ═══ Referrals table ═══ */}
       <div className="cs-card">
-        <h3 className="text-lg font-bold text-white mb-4">Recent Referrals</h3>
+        <h3 className="text-lg font-bold text-cs-text mb-4">Recent Referrals</h3>
         {aff?.referrals?.length ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -163,8 +163,8 @@ export default function AffiliatePage() {
                     </td>
                     <td className="py-2 pr-4">
                       <span className={`cs-badge ${
-                        r.status === "active" ? "text-green-400" :
-                        r.status === "churned" ? "text-red-400" : "text-amber-400"
+                        r.status === "active" ? "text-success" :
+                        r.status === "churned" ? "text-danger" : "text-amber-400"
                       }`}>
                         {r.status}
                       </span>
@@ -195,7 +195,7 @@ function StatCard({ icon: Icon, label, value, accent }) {
         <Icon className={`w-4 h-4 ${accent ? "text-amber-400" : "text-cs-muted"}`} />
         <span className="text-xs text-cs-muted uppercase tracking-wider font-mono">{label}</span>
       </div>
-      <div className={`text-2xl font-black ${accent ? "text-amber-400" : "text-white"}`}>{value}</div>
+      <div className={`text-2xl font-black ${accent ? "text-amber-400" : "text-cs-text"}`}>{value}</div>
     </div>
   );
 }

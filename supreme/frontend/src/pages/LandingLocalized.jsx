@@ -124,7 +124,7 @@ export default function LandingLocalized({ locale }) {
                 return (
                   <div key={f.title} className="cs-card hover:border-cs-cyan/50 transition-colors">
                     <Icon className="w-6 h-6 text-cs-cyan mb-3" />
-                    <h3 className="text-white font-bold mb-2">{f.title}</h3>
+                    <h3 className="text-cs-text font-bold mb-2">{f.title}</h3>
                     <p className="text-sm text-cs-muted leading-relaxed">{f.desc}</p>
                   </div>
                 );
@@ -143,7 +143,7 @@ export default function LandingLocalized({ locale }) {
             <ul className="space-y-3 text-left max-w-xl mx-auto">
               {t.euBullets.map((b) => (
                 <li key={b} className="flex items-start gap-3 text-cs-muted">
-                  <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                   <span>{b}</span>
                 </li>
               ))}
@@ -163,7 +163,7 @@ export default function LandingLocalized({ locale }) {
               {t.faq.map(({ q, a }) => (
                 <details key={q} className="cs-card group cursor-pointer hover:border-cs-cyan/50 transition-colors">
                   <summary className="flex items-center justify-between gap-4 list-none select-none">
-                    <span className="text-white font-semibold text-sm sm:text-base">{q}</span>
+                    <span className="text-cs-text font-semibold text-sm sm:text-base">{q}</span>
                     <span className="text-cs-cyan text-xl group-open:rotate-45 transition-transform flex-shrink-0">+</span>
                   </summary>
                   <p className="text-sm text-cs-muted leading-relaxed mt-4 pt-4 border-t border-cs-border/50">{a}</p>
@@ -259,12 +259,12 @@ function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false }) {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Icon className={`w-5 h-5 ${highlighted ? "text-amber-400 fill-current" : "text-cs-cyan"}`} />
-          <h3 className="text-xl font-bold text-white">{tier.name}</h3>
+          <h3 className="text-xl font-bold text-cs-text">{tier.name}</h3>
         </div>
         <p className="text-sm text-cs-muted">{tier.tagline}</p>
       </div>
       <div className="mb-6">
-        <div className="font-display text-4xl font-black text-white">{tier.price}</div>
+        <div className="font-display text-4xl font-black text-cs-text">{tier.price}</div>
         <div className={`text-xs font-mono ${highlighted ? "text-amber-400" : "text-cs-dim"}`}>
           {tier.trial || tier.per}
         </div>
@@ -272,7 +272,7 @@ function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false }) {
       <ul className="space-y-2 text-sm text-cs-text mb-8 flex-1">
         {tier.bullets.map((b) => (
           <li key={b} className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+            <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
             <span>{b}</span>
           </li>
         ))}

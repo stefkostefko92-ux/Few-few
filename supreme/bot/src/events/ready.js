@@ -1,12 +1,14 @@
 // bot/src/events/ready.js
-import { REST, Routes } from "discord.js";
+import { REST, Routes, Events } from "discord.js";
 import crypto from "crypto";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 
 const COMMAND_HASH_FILE = "/tmp/supreme-bot-commands.hash";
 
 export default {
-  name: "ready",
+  // Events.ClientReady (v15 преименува "ready" → "clientReady"); използваме
+  // енума за forward-compatibility. В v14 стойността му е "ready".
+  name: Events.ClientReady,
   once: true,
   async execute(client) {
     console.log(`✅ Logged in as ${client.user.tag}`);

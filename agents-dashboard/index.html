@@ -1105,6 +1105,11 @@ const FALLBACK = {
       ],
       "activity": [
         {
+          "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В този repo (supreme/) шаблонът за защита от cross-tenant IDOR е findFirst({id, serverI…\" (+3)"
+        },
+        {
           "date": "2026-06-26",
           "type": "learning",
           "summary": "Научи: „Helmet по подразбиране задава Strict-Transport-Security max-age=31536000; includeSubDom…\""
@@ -6083,9 +6088,20 @@ const FALLBACK = {
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: Supreme Bot billing: идемпотентността е marker-first-in-$transaction по event.id (Proce… (+3 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: В API 2026-06-24.dahlia обектът Subscription НЯМА топ-ниво current_period_end; полето е… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „В API 2026-06-24.dahlia обектът Subscription НЯМА топ-ниво current_period_end; полето е…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
@@ -7726,9 +7742,25 @@ const FALLBACK = {
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: three-mesh-bvh: computeBoundsTree() на geometry + Mesh.prototype.raycast=acceleratedRay…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: index.css @media (prefers-reduced-motion: reduce) neutralizира ВСИЧКИ animation/transit…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „index.css @media (prefers-reduced-motion: reduce) neutralizира ВСИЧКИ animation/transit…\" · 2 в карантина"
+        },
+        {
+          "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Tailwind: '@apply ... focus:outline-none' в .cs-btn (components layer) потиска глобален…\""
+        },
         {
           "date": "2026-07-02",
           "type": "quarantine",
@@ -8816,6 +8848,11 @@ const FALLBACK = {
         {
           "date": "2026-07-02",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „discord.js v14 deprecates the `ephemeral: true` reply/deferReply option in favour of `f…\" (+3)"
+        },
+        {
+          "date": "2026-07-02",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „discord.js: `ready` event е преименуван на `clientReady` — на 14.26 raw string 'ready' …\" (+3)"
         },
         {
@@ -9055,25 +9092,32 @@ const FALLBACK = {
         "WebFetch",
         "WebSearch"
       ],
-      "mission": "Пише, преглежда и одитира автоматизирани трейдинг ботове и бектест инфраструктура с риск-мениджмънт като първо правило: борсови API (CCXT, Binance/Bybit/Kraken REST+WebSocket), идемпотентност на поръчки (clientOrderId, без сляп ретрай), rate limits/backoff, reconnect+resubscribe+reconcile, precision (tick/lot/minNotional, floor, без float за пари), stop-loss на борсата, дневен loss limit, глобален max-drawdown → kill-switch, честен бектест (без look-ahead/survivorship, с такси+slippage, walk-forward), paper/testnet преди реален капитал. Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото. Регулация (ЕС: MiFID II чл. 17, MAR). НЕ гарантира печалба; НЕ дава инвестиционен съвет.",
+      "mission": "Пише, преглежда и одитира автоматизирани трейдинг ботове и бектест инфраструктура на enterprise ниво, с риск-мениджмънт като първо правило: борсови API (CCXT, Binance/Bybit/Kraken REST+WebSocket), идемпотентност на поръчки (clientOrderId, без сляп ретрай), rate limits/backoff, reconnect+resubscribe+reconcile, precision (tick/lot/minNotional, floor, без float за пари), position sizing, stop-loss на борсата, дневен loss limit, глобален max-drawdown → kill-switch, честен бектест (без look-ahead/survivorship, с такси+slippage, walk-forward), paper/testnet преди реален капитал. Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото. Регулация (ЕС: MiFID II чл. 17, MAR). НЕ гарантира печалба; НЕ дава инвестиционен съвет.",
       "capabilities": [
-        "Борсови API: CCXT, Binance/Bybit/Kraken REST + WebSocket (user-data stream)",
-        "Идемпотентност: clientOrderId + fetchOrder преди ретрай — нула дублирани поръчки",
-        "Rate limits: weight бюджети, 429/Retry-After, backoff",
+        "Борсови API: CCXT унифициран слой, Binance/Bybit/Kraken REST + WebSocket (user-data stream)",
+        "Идемпотентност: clientOrderId + проверка (fetchOrder) преди ретрай — нула дублирани поръчки",
+        "Rate limits: weight бюджети, 429/Retry-After, backoff, поръчкови vs data лимити",
         "Precision: tickSize/stepSize/minNotional, floor надолу, Decimal вместо float",
-        "Reconnection: auto-reconnect + resubscribe + heartbeat + reconcile",
-        "Риск: position sizing, задължителен stop-loss, дневен loss limit, max-drawdown kill-switch",
-        "Честен бектест: без look-ahead/survivorship, такси+slippage, walk-forward/OOS",
-        "Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото",
-        "Регулация ЕС: MiFID II чл. 17, MAR (spoofing/wash/layering)"
+        "Типове поръчки: market/limit/stop, reduce-only, post-only, OCO; margin/leverage/liquidation/funding",
+        "Reconnection: auto-reconnect + backoff + resubscribe + heartbeat + reconcile след празнина",
+        "Риск: position sizing по % риск, задължителен stop-loss, дневен loss limit, max-drawdown kill-switch",
+        "Честен бектест: без look-ahead/survivorship bias, такси+slippage+funding, walk-forward/OOS",
+        "Метрики: Sharpe/Sortino/Calmar, max drawdown, win×R; после paper/forward преди реален капитал",
+        "Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото, отделни testnet/live",
+        "Регулация ЕС: MiFID II чл. 17 (контроли/kill-switch/тестване), MAR (spoofing/wash/layering)",
+        "Учене от грешки: journal (R-multiples) + coach (expectancy, ¼-Kelly, маркер на повтарящи се грешки)",
+        "ADX режим-филтър + честотни спирачки (cooldown/лимит сделки)",
+        "Monte Carlo risk-of-ruin + портфейл с корелационни лимити (Dalio Holy Grail)"
       ],
       "knowledge": {
         "sources": 9,
         "researchToolUses": 0,
         "priorArt": [
           "docs.ccxt.com — унифициран борсов API, createOrder/precision/грешки",
-          "Binance / Bybit API docs — rate-limit weights, filters (tick/lot/minNotional)",
-          "MiFID II чл. 17 — алгоритмична търговия; MAR — пазарна злоупотреба"
+          "Binance / Bybit API docs — rate-limit weights, filters (tick/lot/minNotional), user-data stream",
+          "MiFID II (Дир. 2014/65/ЕС) чл. 17 — алгоритмична търговия: контроли, kill-switch, тестване",
+          "MAR (Регл. 596/2014) — пазарна злоупотреба: spoofing, wash trading, layering",
+          "Практики за честен бектест: look-ahead/survivorship bias, walk-forward, такси+slippage"
         ]
       },
       "evolution": [
@@ -9081,18 +9125,42 @@ const FALLBACK = {
           "version": "0.1.0",
           "date": "2026-07-01",
           "event": "Раждане",
-          "detail": "Създаден като инженер на автоматизирани трейдинг-системи (НЕ машина за пари, НЕ инвестиционен съветник). Риск-мениджмънт първо: идемпотентност на поръчки, precision, stop-loss/kill-switch, честен бектест, сигурност на ключове, MiFID II/MAR."
+          "detail": "Създаден като инженер на автоматизирани трейдинг-системи (НЕ машина за пари, НЕ инвестиционен съветник) по изрична заявка. Риск-мениджмънт като първо правило: борсови API (CCXT/Binance/Bybit REST+WebSocket), идемпотентност на поръчки, precision, stop-loss/kill-switch, честен бектест, сигурност на ключове, регулация (MiFID II/MAR). Три честни истини: няма безгрешен трейдинг; не дава инвестиционен съвет; никога реален капитал преди paper/testnet."
         },
         {
           "version": "6.0.0",
           "date": "2026-07-01",
           "event": "v6.0 — самообучаващо поколение",
-          "detail": "Вграден в цикъла на учене (read→act→verify→persist→curate); пазарно твърдение НИКОГА не е verified. Инструменти: tools/trading/trader-lint.mjs и tools/trading/backtest-check.mjs."
+          "detail": "Вграден в наложения от hooks цикъл на учене (read→act→verify→persist→curate): preload на проверени поуки, CoVe-гейт преди 'verified' (пазарно твърдение НИКОГА не е verified), auto-capture + версия. Инструменти: tools/trading/trader-lint.mjs (поръчка без clientOrderId, сляп ретрай, float пари, липсващ stop-loss/kill-switch, WS без reconnect, плътен poll цикъл, backtest look-ahead, твърд ключ) и tools/trading/backtest-check.mjs (липсващи такси/slippage/out-of-sample + look-ahead)."
         },
         {
           "version": "6.1.0",
-          "date": "2026-07-02",
+          "date": "2026-07-01",
           "event": "v6.1 — учене",
+          "detail": "Научи резултатите за 2025 (сребро +132%, злато +65%, Bitcoin −8%, Ethereum −15%; топ крипто MYX +3358% микрокап, Zcash +573%; топ акция Sandisk +596%) и извлече мисловни модели срещу recency/hindsight bias: победителят е непредвидим ex-ante, гоненето му = купуване на върха. Добавена секция „Начин на мислене“ (процес > пророчество, base rates, risk of ruin, expectancy, диверсификация, режими)."
+        },
+        {
+          "version": "6.2.0",
+          "date": "2026-07-01",
+          "event": "v6.2 — учене (великите трейдъри)",
+          "detail": "Нашите агенти проучиха известни трейдъри (Turtles/Dennis, Seykota, Parker, Dunn, Harding, Eckhardt; PTJ, Druckenmiller, Soros, Kovner, Dalio; Simons/Thorp/AQR; Douglas/Tharp/Livermore). Дестилат в treydar/docs/principles.md + секция „Уроци от великите трейдъри“ (10 закона) в дефиницията. Внедрено: fractionalKelly() sizing (Thorp), journal.js (R-multiples) + coach.js/review.js — реален цикъл „учи от грешките си“ (expectancy, маркира disposition/асиметрия/твърде стегнат стоп/сменен режим)."
+        },
+        {
+          "version": "6.3.0",
+          "date": "2026-07-01",
+          "event": "v6.3 — проф. предпазители",
+          "detail": "treydar получи: ADX режим-филтър (само силен тренд), честотни спирачки (дневен лимит сделки + cooldown след загуба срещу over/revenge trading), Monte Carlo risk-of-ruin в бектеста (оцеляването е първо), портфейлен слой (корелация/групиране/лимити — Dalio Holy Grail) + `npm run portfolio`, споделен engine.js, и CI workflow (Node 20/22: test+lint). 37/37 теста."
+        },
+        {
+          "version": "6.4.0",
+          "date": "2026-07-02",
+          "event": "v6.4 — мулти-символен портфейлен режим",
+          "detail": "treydar вече търгува портфейл на живо: SYMBOLS с ≥2 символа включва multibot.js — същите предпазители за всеки символ + портфейлните лимити на всеки вход (макс едновременни позиции, таван на общия риск, таван на риска в корелирана група — корелацията се смята на живо от затворените свещи). Dry-run стана честен paper trader (симулиран стоп, paper PnL — без фалшиви записи в дневника). Тройната спирачка вече е под тест (config.test.js). 45/45 теста."
+        },
+        {
+          "version": "6.5.0",
+          "date": "2026-07-02",
+          "event": "v6.5 — учене",
           "detail": "Научи: Binance SPOT: всички нарушения на филтри (PRICE_FILTER, LOT_SIZE, NOTIONAL, MIN_NOTIONA… (+4 още)"
         },
         {
@@ -9124,8 +9192,28 @@ const FALLBACK = {
           "summary": "Научи: „Binance SPOT: всички нарушения на филтри (PRICE_FILTER, LOT_SIZE, NOTIONAL, MIN_NOTIONA…\" (+4 още) · 2 в карантина"
         },
         {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Мулти-символен портфейлен live режим (Dalio лимитите на всеки вход) + честен paper trading в dry-run + тестове на тройната спирачка. 45 теста зелени."
+        },
+        {
           "date": "2026-07-01",
-          "type": "born",
+          "type": "learning",
+          "summary": "Вложени проф. предпазители: ADX режим-филтър, cooldown/лимит сделки, Monte Carlo risk-of-ruin, портфейл с корелационни лимити (Dalio Holy Grail), CI. 37 теста зелени."
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Проучи великите трейдъри (Turtles, PTJ, Soros, Thorp, Kovner, Dalio…) и получи механизъм да учи от грешките си: трейд дневник в R + тренер (expectancy, ¼-Kelly, маркер на повтарящи се грешки)."
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
+          "summary": "Научи: най-големите печалби 2025 бяха непредвидими (MYX +3358%, сребро +132%), а BTC/ETH загубиха — урок срещу гоненето на миналогодишния победител; нова секция „Начин на мислене“."
+        },
+        {
+          "date": "2026-07-01",
+          "type": "learning",
           "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“."
         }
       ]

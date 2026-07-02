@@ -2,6 +2,7 @@
 import axios from "axios";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "../lib/prisma.js";
+import { encrypt, decryptSafe } from "../lib/crypto.js";
 
 /**
  * Require the user to be logged in via Discord OAuth2 session.
@@ -122,7 +123,7 @@ export async function requireServerAdmin(req, res, next) {
               client_id: process.env.DISCORD_CLIENT_ID,
               client_secret: process.env.DISCORD_CLIENT_SECRET,
               grant_type: "refresh_token",
-              refresh_token: session.refreshToken,
+              refresh_token: decryptSafe(session.refreshToken),
             }),
             { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
           );
@@ -132,13 +133,14 @@ export async function requireServerAdmin(req, res, next) {
           await prisma.session.update({
             where: { id: session.id },
             data: {
-              accessToken: access_token,
-              refreshToken: refresh_token,
+              accessToken: encrypt(access_token),
+              refreshToken: encrypt(refresh_token),
               expiresAt: new Date(Date.now() + expires_in * 1000),
             },
           });
 
-          // Use the fresh token for this request
+          // Use the fresh (plaintext) token for this request; decryptSafe below
+          // passes it through unchanged.
           session.accessToken = access_token;
         } catch (refreshErr) {
           // Refresh failed (token revoked, user changed password, etc.) — force re-login
@@ -151,7 +153,7 @@ export async function requireServerAdmin(req, res, next) {
 
     // Fetch user's guilds from Discord API
     const guildsRes = await axios.get("https://discord.com/api/v10/users/@me/guilds", {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
+      headers: { Authorization: `Bearer ${decryptSafe(session.accessToken)}` },
     });
 
     const guild = guildsRes.data.find((g) => g.id === serverId);

@@ -199,10 +199,20 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
     // ReDoS защита (OWASP A05): validationRegex идва от конфигурацията на формата,
     // а `content` е необработен потребителски вход в споделен bot процес. Зъл
     // (или просто лош) шаблон + дълъг вход може да предизвика катастрофичен
-    // backtracking и да блокира event loop-а за всички сървъри. Капваме твърдо
-    // дължината на входа преди `.test()` — кратък вход прави експоненциалното
-    // връщане практически безвредно. Малформиран шаблон се хваща от try/catch.
-    const REGEX_INPUT_MAX = 1000;
+    // backtracking и да блокира event loop-а за всички сървъри.
+    //
+    // Защита на два слоя (без тежка зависимост като re2):
+    //   1) Твърд кап на входа (~64 знака) — на толкова кратък вход дори
+    //      експоненциален backtracking (напр. `(a+)+$`) свършва мигновено.
+    //   2) Отхвърляме опасни шаблони при приемане: вложени quantifier-и
+    //      (група с * / + / {n,}, последвана от * / + / {n,}) са класическият
+    //      катастрофичен backtracking. По-добре да откажем шаблона, отколкото
+    //      да блокираме event loop-а.
+    // Малформиран шаблон се хваща от try/catch.
+    const REGEX_INPUT_MAX = 64;
+    // Груб детектор за вложени quantifier-и: (...)* / (...)+ / (...){n,} следван
+    // от още един quantifier. Не е пълен ReDoS анализ, но хваща типичните капани.
+    const NESTED_QUANTIFIER = /(\([^)]*[+*}][^)]*\)|\[[^\]]*\][+*}]|[+*}])\s*[+*]|\)\s*\{\d+,?\d*\}\s*[+*{]/;
     if (question.validationRegex) {
       if (content.length > REGEX_INPUT_MAX) {
         await dmChannel.send(
@@ -211,18 +221,24 @@ async function sendTextQuestion(client, dmChannel, session, sessionKey, question
         await sendQuestion(client, dmChannel, session, sessionKey);
         return;
       }
-      try {
-        const re = new RegExp(question.validationRegex);
-        if (!re.test(content)) {
-          await dmChannel.send(
-            `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
-          );
-          await sendQuestion(client, dmChannel, session, sessionKey);
-          return;
+      if (NESTED_QUANTIFIER.test(question.validationRegex)) {
+        // Потенциално катастрофичен шаблон — не го изпълняваме върху потребителски
+        // вход. Логваме и приемаме отговора, вместо да рискуваме event loop-а.
+        console.warn(`[formSession] rejected risky validationRegex (nested quantifier) on question ${question.id}: ${question.validationRegex}`);
+      } else {
+        try {
+          const re = new RegExp(question.validationRegex);
+          if (!re.test(content)) {
+            await dmChannel.send(
+              `⚠️ ${question.validationMessage || "Answer does not match the expected format. Please try again."}`
+            );
+            await sendQuestion(client, dmChannel, session, sessionKey);
+            return;
+          }
+        } catch {
+          // Malformed regex in form config — log but accept the answer rather than block user
+          console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
         }
-      } catch {
-        // Malformed regex in form config — log but accept the answer rather than block user
-        console.warn(`[formSession] malformed validationRegex on question ${question.id}: ${question.validationRegex}`);
       }
     }
 

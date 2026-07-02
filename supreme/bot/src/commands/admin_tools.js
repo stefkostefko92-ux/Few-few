@@ -1,6 +1,6 @@
 // bot/src/commands/admin_tools.js
 // /sticky set/remove and /schedule add/list/remove
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import api from "../utils/api.js";
 
 export default {
@@ -40,7 +40,7 @@ export default {
 
   async execute(interaction) {
     if (!interaction.member.permissions.has("ManageGuild")) {
-      return interaction.reply({ content: "❌ You need Manage Server permission.", ephemeral: true });
+      return interaction.reply({ content: "❌ You need Manage Server permission.", flags: MessageFlags.Ephemeral });
     }
 
     const group = interaction.options.getSubcommandGroup();
@@ -51,7 +51,7 @@ export default {
       if (sub === "set") {
         const content = interaction.options.getString("content");
         const title = interaction.options.getString("title");
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         try {
           await api.post(`/bot/sticky`, {
             serverId: interaction.guildId,
@@ -66,7 +66,7 @@ export default {
       }
 
       if (sub === "remove") {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         try {
           await api.delete(`/bot/sticky/${interaction.channelId}`);
           await interaction.editReply("🗑️ Sticky removed.");
@@ -95,10 +95,10 @@ export default {
           sendAt = new Date(whenRaw);
         }
         if (!(sendAt instanceof Date) || isNaN(sendAt.getTime())) {
-          return interaction.reply({ content: "❌ Invalid `when` — use ISO timestamp or relative like `2h`, `1d`, `30m`.", ephemeral: true });
+          return interaction.reply({ content: "❌ Invalid `when` — use ISO timestamp or relative like `2h`, `1d`, `30m`.", flags: MessageFlags.Ephemeral });
         }
 
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         try {
           const { data } = await api.post(`/bot/schedule`, {
             serverId: interaction.guildId, channelId, content,
@@ -112,7 +112,7 @@ export default {
       }
 
       if (sub === "list") {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         try {
           const { data } = await api.get(`/bot/schedule/${interaction.guildId}`);
           if (!data?.length) return interaction.editReply("📭 No scheduled messages.");
@@ -130,9 +130,11 @@ export default {
 
       if (sub === "remove") {
         const id = interaction.options.getString("id");
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         try {
-          await api.delete(`/bot/schedule/${id}`);
+          // Backend скоупва deleteMany({id, serverId}) (cross-tenant IDOR fix) —
+          // подаваме serverId в body-то, иначе легитимното триене връща 404.
+          await api.delete(`/bot/schedule/${id}`, { data: { serverId: interaction.guildId } });
           await interaction.editReply(`🗑️ Removed.`);
         } catch (err) {
           await interaction.editReply(`❌ ${err?.response?.data?.error || err.message}`);

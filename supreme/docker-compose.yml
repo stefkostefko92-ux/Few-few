@@ -23,7 +23,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-discordbot}
       POSTGRES_USER: ${POSTGRES_USER:-bot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in supreme/.env (no insecure default)}
     ports:
       - "127.0.0.1:5435:5432"  # bind to localhost only — not public
     volumes:
@@ -66,7 +66,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-bot}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-discordbot}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-bot}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in supreme/.env}@postgres:5432/${POSTGRES_DB:-discordbot}"
       NODE_ENV: production
     env_file:
       - ./backend/.env

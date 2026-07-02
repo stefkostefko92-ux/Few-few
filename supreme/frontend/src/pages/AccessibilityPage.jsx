@@ -8,13 +8,13 @@ export default function AccessibilityPage() {
   const EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
 
   return (
-    <div className="min-h-screen bg-dark-300 text-gray-300" role="main" id="main-content">
+    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="mb-2">
-          <a href="/" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">← Back to home</a>
+          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2 mt-4">Accessibility Statement</h1>
-        <p className="text-gray-400 text-sm mb-12">Last updated: 23 June 2026</p>
+        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">Accessibility Statement</h1>
+        <p className="text-cs-muted text-sm mb-12">Last updated: 23 June 2026</p>
 
         <Seo
           title="Accessibility Statement — Supreme Bot"
@@ -28,7 +28,7 @@ export default function AccessibilityPage() {
               {COMPANY} is committed to making Supreme Bot accessible to the widest
               possible audience, regardless of ability or technology. We conform to the{" "}
               <strong>Web Content Accessibility Guidelines (WCAG) 2.1 Level AA</strong> and
-              the European standard <strong>EN 301 549</strong> as required by the European
+              the European standard <strong>EN 301 549 (V3.2.1)</strong> as required by the European
               Accessibility Act (Directive 2019/882), and we are progressively adopting the
               newer <strong>WCAG 2.2 Level AA</strong> success criteria.
             </p>
@@ -89,9 +89,10 @@ export default function AccessibilityPage() {
               <li>We aim to respond within <strong>5 business days</strong>.</li>
             </ul>
             <p>
-              If you are not satisfied with our response, you may contact the relevant
-              national enforcement body for the European Accessibility Act in your
-              EU member state.
+              If you are not satisfied with our response, you may contact the relevant national
+              enforcement body for the European Accessibility Act. In Bulgaria this is the
+              Commission for Consumer Protection (Комисия за защита на потребителите); in other
+              EU member states, your national market-surveillance authority for the Act.
             </p>
           </Section>
 
@@ -116,8 +117,8 @@ export default function AccessibilityPage() {
 function Section({ title, children }) {
   return (
     <section>
-      <h2 className="text-base font-semibold text-white mb-3">{title}</h2>
-      <div className="text-sm text-gray-400 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2">
+      <h2 className="text-base font-semibold text-cs-text mb-3">{title}</h2>
+      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2">
         {children}
       </div>
     </section>

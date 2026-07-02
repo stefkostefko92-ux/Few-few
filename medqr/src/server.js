@@ -19,6 +19,7 @@ import {
   DEFAULT_DESCRIPTION,
   LEGAL,
   GEO,
+  SITE_UPDATED,
   siteBaseUrl,
   robotsTxt,
   sitemapXml,
@@ -38,7 +39,22 @@ app.set('views', join(__dirname, 'views'));
 app.set('trust proxy', 1); // зад reverse proxy (Hetzner) за коректен protocol/IP
 app.disable('x-powered-by');
 
-const COMPANY = { name: 'CarbonStealth VCC', url: 'https://carbonstealth.eu' };
+// Данни на доставчика (импресум). ЕИК/адрес са от публичния импресум на фирмата;
+// точната правна форма (ДПК/ЕДПК) и ДДС статус се потвърждават в ТР по ЕИК.
+const COMPANY = {
+  name: 'Carbon Stealth VCC',
+  legalForm: 'дружество с променлив капитал (VCC)',
+  url: 'https://carbonstealth.eu',
+  uic: '208725180', // ЕИК
+  vat: 'BG208725180', // ДДС №
+  address: 'ул. „Самуил“ 3, 2670 Бобов дол, България',
+  addressEn: '3 Samuil St, 2670 Bobov Dol, Bulgaria',
+  manager: 'Стефан Костадинов',
+  email: 'info@carbonstealth.eu',
+  privacyEmail: 'privacy@carbonstealth.eu',
+  securityEmail: 'security@carbonstealth.eu',
+  phone: '+359 877 414 874',
+};
 
 // CSP nonce за всяка заявка (позволява нашите inline JSON-LD без 'unsafe-inline').
 app.use((req, res, next) => {
@@ -124,19 +140,22 @@ app.use((req, res, next) => {
   res.locals.allergyLabels = (csv) => medLabels(ALLERGIES, csv, lang);
   res.locals.conditionLabels = (csv) => medLabels(CONDITIONS, csv, lang);
   res.locals.company = COMPANY;
+  res.locals.updated = SITE_UPDATED;
   res.locals.user = req.user;
   res.locals.legal = LEGAL;
   res.locals.geo = GEO;
   res.locals.site = { name: SITE_NAME, locale: SITE_LOCALE, base };
-  // Езикът се адресира през ?lang=: BG е по подразбиране (чист URL = x-default),
-  // EN — с ?lang=en. canonical-ът сочи към собствения езиков вариант (self-ref),
-  // за да не се „канонизира“ EN страницата обратно към BG и да отпадне от индекса.
+  // Езикът е адресируем през ?lang=: BG е по подразбиране (чист URL = x-default),
+  // EN — с ?lang=en. canonical-ът се извежда САМО от URL-а (req.query.lang), не от
+  // резолвнатия език (cookie/Accept-Language), иначе Googlebot с Accept-Language:en
+  // на чистия „/“ би самоканонизирал BG страницата към ?lang=en. Така всеки
+  // индексируем URL сочи детерминистично към себе си.
   const urlClean = base + (req.path === '/' ? '/' : req.path);
   const urlEn = urlClean + '?lang=en';
   res.locals.meta = {
     description: DEFAULT_DESCRIPTION,
     robots: 'noindex, nofollow', // безопасно по подразбиране; публичните страници го отменят
-    canonical: lang === 'en' ? urlEn : urlClean,
+    canonical: req.query.lang === 'en' ? urlEn : urlClean,
     urlClean,
     urlEn,
     ogType: 'website',
@@ -234,6 +253,30 @@ app.get('/terms', (req, res) => {
   );
   res.render('terms', { user: req.user });
 });
+app.get('/about', (req, res) => {
+  publicPage(
+    res,
+    'За MedQR и Carbon Stealth VCC: кой стои зад услугата, мисия, къде се хостват данните и импресум. Информационна услуга, не медицинско изделие.',
+    'About MedQR and Carbon Stealth VCC: who is behind the service, our mission, where data is hosted, and the imprint. An informational service, not a medical device.'
+  );
+  res.render('about', { user: req.user });
+});
+app.get('/contact', (req, res) => {
+  publicPage(
+    res,
+    'Контакти на MedQR / Carbon Stealth VCC: имейл, телефон, адрес и канал за сигурност.',
+    'Contact MedQR / Carbon Stealth VCC: email, phone, address and a security channel.'
+  );
+  res.render('contact', { user: req.user });
+});
+app.get('/accessibility', (req, res) => {
+  publicPage(
+    res,
+    'Декларация за достъпност на MedQR: цел WCAG 2.1 AA / EN 301 549, известни ограничения и обратна връзка.',
+    'MedQR accessibility statement: WCAG 2.1 AA / EN 301 549 target, known limitations and feedback.'
+  );
+  res.render('accessibility', { user: req.user });
+});
 
 app.use(authRoutes);
 app.use(profileRoutes);
@@ -290,11 +333,15 @@ function validateEnv() {
 }
 
 const PORT = process.env.PORT || 3000;
+// В продукция слушаме само на loopback — публичният достъп минава задължително
+// през reverse proxy-то (TLS, HSTS, rate limiting, fail2ban). HOST може да го
+// override-не (напр. 0.0.0.0 при контейнер с вътрешна мрежа).
+const HOST = process.env.HOST || (prod ? '127.0.0.1' : '0.0.0.0');
 if (process.env.NODE_ENV !== 'test') {
   if (prod) validateEnv();
   retentionCleanup();
   setInterval(retentionCleanup, 24 * 60 * 60 * 1000).unref();
-  const server = app.listen(PORT, () => console.log(`MedQR слуша на http://localhost:${PORT}`));
+  const server = app.listen(PORT, HOST, () => console.log(`MedQR слуша на http://${HOST}:${PORT}`));
 
   // Плавно спиране: спираме приема на нови заявки и затваряме базата.
   const shutdown = (signal) => {

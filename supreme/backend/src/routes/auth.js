@@ -1,6 +1,7 @@
 // backend/src/routes/auth.js
 import { Router } from "express";
 import { randomBytes } from "crypto";
+import { encrypt } from "../lib/crypto.js";
 import axios from "axios";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
@@ -97,8 +98,9 @@ router.get("/callback", async (req, res) => {
     await prisma.session.create({
       data: {
         userId: user.id,
-        accessToken: access_token,
-        refreshToken: refresh_token,
+        // Discord OAuth tokens encrypted at rest (AES-256-GCM), like customBotToken.
+        accessToken: encrypt(access_token),
+        refreshToken: encrypt(refresh_token),
         expiresAt: new Date(Date.now() + expires_in * 1000),
       },
     });

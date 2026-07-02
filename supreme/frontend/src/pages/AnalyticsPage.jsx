@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
   return (
     <div className="p-8 max-w-6xl">
       <div className="mb-8">
-        <h1 className="cs-heading font-display font-bold text-white text-3xl flex items-center gap-2">
+        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
           <BarChart3 className="w-7 h-7 text-cs-cyan" /> Analytics
         </h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
@@ -38,7 +38,7 @@ export default function AnalyticsPage() {
 
       {/* ═══ Heatmap ═══ */}
       <section className="cs-card mb-6">
-        <h2 className="text-lg font-bold text-white mb-1">Ticket Activity Heatmap</h2>
+        <h2 className="text-lg font-bold text-cs-text mb-1">Ticket Activity Heatmap</h2>
         <p className="text-xs text-cs-muted mb-4">UTC · Last 90 days · {heatmap?.total ?? 0} tickets</p>
         {heatmap?.grid ? <Heatmap grid={heatmap.grid} /> : (
           <div className="h-48 animate-pulse bg-cs-surface rounded" role="status">
@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* ═══ Leaderboard ═══ */}
         <section className="cs-card">
-          <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-cs-text mb-1 flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-400" /> Staff Leaderboard
           </h2>
           <p className="text-xs text-cs-muted mb-4">30 days · Sorted by activity</p>
@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="text-cs-cyan">{s.claimed} claimed</span>
-                    <span className="text-green-400">{s.closed} closed</span>
+                    <span className="text-success">{s.closed} closed</span>
                   </div>
                 </div>
               ))}
@@ -83,7 +83,7 @@ export default function AnalyticsPage() {
 
         {/* ═══ Funnel ═══ */}
         <section className="cs-card">
-          <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-cs-text mb-1 flex items-center gap-2">
             <Users className="w-5 h-5 text-cs-cyan" /> Application Funnel
           </h2>
           <p className="text-xs text-cs-muted mb-4">90 days · Conversion stages</p>
@@ -120,7 +120,7 @@ function Kpi({ icon: Icon, label, value, accent }) {
         <Icon className={`w-4 h-4 ${accent ? "text-cs-cyan" : "text-cs-muted"}`} />
         <span className="text-xs text-cs-muted uppercase tracking-wider font-mono">{label}</span>
       </div>
-      <div className={`text-2xl font-black ${accent ? "text-cs-cyan" : "text-white"}`}>{value}</div>
+      <div className={`text-2xl font-black ${accent ? "text-cs-cyan" : "text-cs-text"}`}>{value}</div>
     </div>
   );
 }

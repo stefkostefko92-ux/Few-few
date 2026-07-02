@@ -268,7 +268,15 @@ router.get("/schedule/:serverId", async (req, res, next) => {
 
 router.delete("/schedule/:id", async (req, res, next) => {
   try {
-    await prisma.scheduledMessage.delete({ where: { id: req.params.id } });
+    // Cross-tenant IDOR guard: the /admin schedule remove command forwards a
+    // free-text id; scope the delete to the caller's guild so a ManageGuild admin
+    // of server A cannot delete server B's scheduled message by guessing its cuid.
+    const { serverId } = req.body || {};
+    if (!serverId) return res.status(400).json({ error: "serverId required" });
+    const result = await prisma.scheduledMessage.deleteMany({
+      where: { id: req.params.id, serverId },
+    });
+    if (result.count === 0) return res.status(404).json({ error: "Scheduled message not found" });
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

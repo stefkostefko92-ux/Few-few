@@ -151,17 +151,34 @@ deploy_medqr() {
     "$d"/ "$MEDQR_DIR"/
   chown -R medqr:medqr "$MEDQR_DIR"
   ( cd "$MEDQR_DIR" && sudo -u medqr npm ci --omit=dev )
+  # Консистентен snapshot на базата ПРЕДИ рестарт — миграциите се пускат при старт
+  # (db.js), затова пазим възстановима точка. Не разчитаме на cp заради WAL.
+  local db="$MEDQR_DIR/data/medqr.sqlite"
+  local dbbak="${db}.pre-$TS"
+  if [ -f "$db" ]; then
+    sudo -u medqr sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
+    log "Снимка на базата преди миграция: $dbbak"
+  fi
   systemctl restart "$MEDQR_SERVICE"
   sleep 2
   if health "$MEDQR_HEALTH_URL" "medqr"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
+    # Пазим последните няколко pre-миграционни снимки; чистим по-старите.
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
   else
     deploy_failed=1
-    warn "medqr health провал — връщам предишния код."
+    warn "medqr health провал — връщам предишния код и базата."
+    systemctl stop "$MEDQR_SERVICE" || true
+    if [ -f "$dbbak" ]; then
+      cp -a "$dbbak" "$db"
+      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+      chown medqr:medqr "$db"
+    fi
     if [ -d "${MEDQR_DIR}.bak-$TS" ]; then
       rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
-      chown -R medqr:medqr "$MEDQR_DIR"; systemctl restart "$MEDQR_SERVICE"
+      chown -R medqr:medqr "$MEDQR_DIR"
     fi
+    systemctl restart "$MEDQR_SERVICE"
   fi
 }
 

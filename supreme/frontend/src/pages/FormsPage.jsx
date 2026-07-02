@@ -211,41 +211,41 @@ export default function FormsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Forms</h1>
-          <p className="text-gray-400 text-sm mt-1">Build logic-branching questionnaires for tickets and applications</p>
+          <h1 className="text-2xl font-bold text-cs-text">Forms</h1>
+          <p className="text-cs-muted text-sm mt-1">Build logic-branching questionnaires for tickets and applications</p>
         </div>
-        <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="btn-primary flex items-center gap-2">
+        <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="cs-btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> New Form
         </button>
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="card h-20 animate-pulse bg-dark-100" />)}</div>
+        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />)}</div>
       ) : forms.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-gray-400 mb-4">No forms yet</p>
-          <button onClick={() => setEditing(true)} className="btn-primary">Create First Form</button>
+        <div className="cs-card text-center py-12">
+          <p className="text-cs-muted mb-4">No forms yet</p>
+          <button onClick={() => setEditing(true)} className="cs-btn-primary">Create First Form</button>
         </div>
       ) : (
         <div className="space-y-4">
           {forms.map((f) => (
-            <div key={f.id} className="card">
+            <div key={f.id} className="cs-card">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-white">{f.name}</h3>
-                    <span className={f.isApplication ? "badge-premium" : "badge-base"}>
+                    <h3 className="font-semibold text-cs-text">{f.name}</h3>
+                    <span className={f.isApplication ? "cs-badge-premium" : "cs-badge-muted"}>
                       {f.isApplication ? "Application" : "Ticket Form"}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 mt-0.5">{f.questions.length} questions</p>
-                  {f.description && <p className="text-xs text-gray-400 mt-1">{f.description}</p>}
+                  <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
+                  {f.description && <p className="text-xs text-cs-muted mt-1">{f.description}</p>}
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     aria-label="Edit form"
                     title="Edit form"
-                    className="text-gray-400 hover:text-white transition-colors p-1"
+                    className="text-cs-muted hover:text-white transition-colors p-1"
                     onClick={() => { setEditingId(f.id); setForm(formToState(f)); setEditing(true); }}
                   >
                     <Pencil className="w-4 h-4" />
@@ -253,7 +253,7 @@ export default function FormsPage() {
                   <button
                     aria-label="Delete form"
                     title="Delete form"
-                    className="text-red-400 hover:text-red-300 transition-colors p-1 flex-shrink-0"
+                    className="text-danger hover:text-red-300 transition-colors p-1 flex-shrink-0"
                     onClick={() => handleDelete(f)}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -264,10 +264,10 @@ export default function FormsPage() {
               {/* Questions preview */}
               <div className="mt-3 flex flex-wrap gap-1">
                 {f.questions.map((q, i) => (
-                  <span key={q.id} className="bg-dark-300 text-gray-300 text-xs px-2 py-0.5 rounded">
+                  <span key={q.id} className="bg-cs-bg text-cs-text text-xs px-2 py-0.5 rounded">
                     {i + 1}. {q.label.slice(0, 30)}{q.label.length > 30 ? "..." : ""}
                     {Object.keys(q.branches || {}).length > 0 && (
-                      <GitBranch className="w-3 h-3 inline ml-1 text-discord-400" />
+                      <GitBranch className="w-3 h-3 inline ml-1 text-cs-cyan" />
                     )}
                   </span>
                 ))}
@@ -278,7 +278,7 @@ export default function FormsPage() {
       )}
 
       {deleteMut.isError && (
-        <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg z-50">
+        <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50">
           ❌ {deleteMut.error?.response?.data?.error || "Failed to delete form"}
         </div>
       )}
@@ -295,31 +295,31 @@ export default function FormsPage() {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="label">Form Name *</span>
-                    <input className="input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Staff Application" />
+                    <span className="cs-label">Form Name *</span>
+                    <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Staff Application" />
                   </label>
                   <label className="block">
-                    <span className="label">Type</span>
-                    <select className="input" value={String(form.isApplication)} onChange={(e) => setForm((f) => ({ ...f, isApplication: e.target.value === "true" }))}>
+                    <span className="cs-label">Type</span>
+                    <select className="cs-input" value={String(form.isApplication)} onChange={(e) => setForm((f) => ({ ...f, isApplication: e.target.value === "true" }))}>
                       <option value="false">Ticket Form</option>
                       <option value="true">Application Form</option>
                     </select>
                   </label>
                 </div>
                 <label className="block">
-                  <span className="label">Description</span>
-                  <input className="input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Short description" />
+                  <span className="cs-label">Description</span>
+                  <input className="cs-input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Short description" />
                 </label>
                 {form.isApplication && (
                   <label className="block">
-                    <span className="label">Review Channel ID</span>
-                    <input className="input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder="Discord channel ID for review embeds" />
+                    <span className="cs-label">Review Channel ID</span>
+                    <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder="Discord channel ID for review embeds" />
                   </label>
                 )}
 
                 <label className="block">
-                  <span className="label">Transcript Channel ID</span>
-                  <input className="input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder="Where to post application transcripts on approve/deny (optional)" />
+                  <span className="cs-label">Transcript Channel ID</span>
+                  <input className="cs-input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder="Where to post application transcripts on approve/deny (optional)" />
                   <p className="text-xs text-cs-dim mt-1">Leave empty to disable. Post is triggered on approve/deny.</p>
                 </label>
 
@@ -388,15 +388,15 @@ export default function FormsPage() {
               {/* Questions */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-white">Questions ({form.questions.length})</h3>
-                  <button type="button" onClick={addQuestion} className="text-discord-400 hover:text-discord-300 text-sm transition-colors flex items-center gap-1">
+                  <h3 className="font-semibold text-cs-text">Questions ({form.questions.length})</h3>
+                  <button type="button" onClick={addQuestion} className="text-cs-cyan hover:text-cs-cyan text-sm transition-colors flex items-center gap-1">
                     <Plus className="w-3 h-3" /> Add Question
                   </button>
                 </div>
 
                 <div className="space-y-3">
                   {form.questions.map((q, i) => (
-                    <div key={i} className="bg-dark-300 rounded-lg border border-white/5">
+                    <div key={i} className="bg-cs-bg rounded-lg border border-white/5">
                       {/* Question header */}
                       <div className="flex items-center justify-between p-3">
                         <button
@@ -405,20 +405,20 @@ export default function FormsPage() {
                           onClick={() => setExpandedQ(expandedQ === i ? null : i)}
                           className="flex items-center gap-3 flex-1 min-w-0 text-left"
                         >
-                          <span className="w-6 h-6 rounded bg-discord-500/20 text-discord-400 text-xs flex items-center justify-center font-bold">{i + 1}</span>
-                          <span className="text-sm text-white">{q.label || "Untitled Question"}</span>
-                          <span className="text-xs text-gray-400">{q.type}</span>
+                          <span className="w-6 h-6 rounded bg-cs-cyan/20 text-cs-cyan text-xs flex items-center justify-center font-bold">{i + 1}</span>
+                          <span className="text-sm text-cs-text">{q.label || "Untitled Question"}</span>
+                          <span className="text-xs text-cs-muted">{q.type}</span>
                           {Object.keys(q.branches || {}).length > 0 && (
-                            <GitBranch className="w-3 h-3 text-discord-400" />
+                            <GitBranch className="w-3 h-3 text-cs-cyan" />
                           )}
                         </button>
                         <div className="flex items-center gap-2">
                           {form.questions.length > 1 && (
-                            <button type="button" aria-label={`Remove question ${i + 1}`} title="Remove question" onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-red-400 hover:text-red-300 transition-colors">
+                            <button type="button" aria-label={`Remove question ${i + 1}`} title="Remove question" onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-danger hover:text-red-300 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-                          {expandedQ === i ? <ChevronUp className="w-4 h-4 text-gray-400" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-gray-400" aria-hidden="true" />}
+                          {expandedQ === i ? <ChevronUp className="w-4 h-4 text-cs-muted" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-cs-muted" aria-hidden="true" />}
                         </div>
                       </div>
 
@@ -426,44 +426,44 @@ export default function FormsPage() {
                         <div className="px-3 pb-3 border-t border-white/5 pt-3 space-y-3">
                           <div className="grid grid-cols-2 gap-3">
                             <label className="block">
-                              <span className="label text-xs">Question Label *</span>
-                              <input className="input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder="What is your age?" />
+                              <span className="cs-label text-xs">Question Label *</span>
+                              <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder="What is your age?" />
                             </label>
                             <label className="block">
-                              <span className="label text-xs">Type</span>
-                              <select className="input py-1.5 text-sm" value={q.type} onChange={(e) => updateQuestion(i, "type", e.target.value)}>
+                              <span className="cs-label text-xs">Type</span>
+                              <select className="cs-input py-1.5 text-sm" value={q.type} onChange={(e) => updateQuestion(i, "type", e.target.value)}>
                                 {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                               </select>
                             </label>
                           </div>
 
                           <label className="block">
-                            <span className="label text-xs">Placeholder</span>
-                            <input className="input py-1.5 text-sm" value={q.placeholder} onChange={(e) => updateQuestion(i, "placeholder", e.target.value)} placeholder="Optional hint text" />
+                            <span className="cs-label text-xs">Placeholder</span>
+                            <input className="cs-input py-1.5 text-sm" value={q.placeholder} onChange={(e) => updateQuestion(i, "placeholder", e.target.value)} placeholder="Optional hint text" />
                           </label>
 
                           <div className="flex items-center gap-3">
-                            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                            <label className="flex items-center gap-2 text-sm text-cs-text cursor-pointer">
                               <input type="checkbox" className="rounded" checked={q.required} onChange={(e) => updateQuestion(i, "required", e.target.checked)} />
                               Required
                             </label>
                             <label className="block flex-1">
-                              <span className="label text-xs">Min Length</span>
-                              <input type="number" className="input py-1 text-sm" value={q.minLength} onChange={(e) => updateQuestion(i, "minLength", e.target.value)} placeholder="0" />
+                              <span className="cs-label text-xs">Min Length</span>
+                              <input type="number" className="cs-input py-1 text-sm" value={q.minLength} onChange={(e) => updateQuestion(i, "minLength", e.target.value)} placeholder="0" />
                             </label>
                             <label className="block flex-1">
-                              <span className="label text-xs">Max Length</span>
-                              <input type="number" className="input py-1 text-sm" value={q.maxLength} onChange={(e) => updateQuestion(i, "maxLength", e.target.value)} placeholder="1000" />
+                              <span className="cs-label text-xs">Max Length</span>
+                              <input type="number" className="cs-input py-1 text-sm" value={q.maxLength} onChange={(e) => updateQuestion(i, "maxLength", e.target.value)} placeholder="1000" />
                             </label>
                           </div>
 
                           {(q.type === "SELECT" || q.type === "MULTI_SELECT") && (
                             <label className="block">
-                              <span className="label text-xs flex items-center gap-1">
-                                <GitBranch className="w-3 h-3 text-discord-400" /> Choices (one per line — supports logic branching)
+                              <span className="cs-label text-xs flex items-center gap-1">
+                                <GitBranch className="w-3 h-3 text-cs-cyan" /> Choices (one per line — supports logic branching)
                               </span>
-                              <textarea className="input text-sm" rows={4} value={q._choicesText} onChange={(e) => updateQuestion(i, "_choicesText", e.target.value)} placeholder={"Yes\nNo\nMaybe"} />
-                              <p className="text-xs text-gray-400 mt-1">Add choices above. Logic branching (jump to a different question based on choice) can be configured after form creation.</p>
+                              <textarea className="cs-input text-sm" rows={4} value={q._choicesText} onChange={(e) => updateQuestion(i, "_choicesText", e.target.value)} placeholder={"Yes\nNo\nMaybe"} />
+                              <p className="text-xs text-cs-muted mt-1">Add choices above. Logic branching (jump to a different question based on choice) can be configured after form creation.</p>
                             </label>
                           )}
                         </div>
@@ -474,14 +474,14 @@ export default function FormsPage() {
               </div>
 
               <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => { setEditing(false); setEditingId(null); }} className="btn-ghost">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={createMut.isPending || updateMut.isPending}>
+                <button type="button" onClick={() => { setEditing(false); setEditingId(null); }} className="cs-btn-ghost">Cancel</button>
+                <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
                   {(createMut.isPending || updateMut.isPending) ? "Saving…" : editingId ? "Save Changes" : "Create Form"}
                 </button>
               </div>
 
               {(createMut.isError || updateMut.isError) && (
-                <p className="text-red-400 text-sm" role="alert">{(createMut.error || updateMut.error)?.response?.data?.error || "Operation failed"}</p>
+                <p className="text-danger text-sm" role="alert">{(createMut.error || updateMut.error)?.response?.data?.error || "Operation failed"}</p>
               )}
             </form>
       </Modal>
@@ -489,7 +489,7 @@ export default function FormsPage() {
       {actionError && (
         <div
           role="alert"
-          className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-3"
+          className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-3"
         >
           <span>❌ {actionError}</span>
           <button

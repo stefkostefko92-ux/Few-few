@@ -1,5 +1,5 @@
 // bot/src/commands/form.js
-import { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import api from "../utils/api.js";
 
 export default {
@@ -50,7 +50,7 @@ export default {
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     if (sub === "spawn") {
       const formId = interaction.options.getString("name");

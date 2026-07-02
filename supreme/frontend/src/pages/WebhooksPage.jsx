@@ -88,7 +88,7 @@ export default function WebhooksPage() {
     <div className="p-8 max-w-5xl">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="cs-heading font-display font-bold text-white text-3xl flex items-center gap-2">
+          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
             <WebhookIcon className="w-7 h-7 text-cs-cyan" /> Webhooks
           </h1>
           <p className="text-cs-muted mt-2 max-w-2xl">
@@ -105,7 +105,7 @@ export default function WebhooksPage() {
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 
       {!isLoading && isError && (
-        <div role="alert" className="cs-card text-center py-12 text-red-400">
+        <div role="alert" className="cs-card text-center py-12 text-danger">
           Couldn't load webhooks — please retry.
         </div>
       )}
@@ -122,10 +122,10 @@ export default function WebhooksPage() {
           <div key={h.id} className="cs-card flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-1">
-                <span className="text-white font-bold truncate">{h.name}</span>
+                <span className="text-cs-text font-bold truncate">{h.name}</span>
                 {h.enabled
-                  ? <span className="cs-badge text-green-400 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Active</span>
-                  : <span className="cs-badge text-red-400 flex items-center gap-1"><XCircle className="w-3 h-3" /> Disabled</span>}
+                  ? <span className="cs-badge text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Active</span>
+                  : <span className="cs-badge text-danger flex items-center gap-1"><XCircle className="w-3 h-3" /> Disabled</span>}
                 {h.lastStatus && (
                   <span className="cs-badge text-cs-dim font-mono text-xs">{h.lastStatus}</span>
                 )}
@@ -148,7 +148,7 @@ export default function WebhooksPage() {
                 })}
                 aria-label={`Delete webhook ${h.name}`}
                 title="Delete webhook"
-                className="text-red-400 hover:text-red-300 p-2"
+                className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -214,7 +214,7 @@ export default function WebhooksPage() {
           </label>
 
           {formError && (
-            <p role="alert" className="text-red-400 text-sm">{formError}</p>
+            <p role="alert" className="text-danger text-sm">{formError}</p>
           )}
 
           <div className="flex justify-end gap-2 pt-2">

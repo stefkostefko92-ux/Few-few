@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart2, Users, Server, DollarSign, FileText,
   Shield, Ban, Search, Trash2, RotateCcw, Edit, MessageSquare,
-  Star, AlertTriangle, CheckCircle,
+  Star, AlertTriangle, CheckCircle, Sparkles,
 } from "lucide-react";
 import api, {
   getAnalytics, getAdminUsers, getAdminUser,
@@ -108,7 +108,7 @@ function AnalyticsTab() {
 
       {data?.recentTickets?.length > 0 && (
         <div className="cs-card">
-          <h2 className="cs-heading font-display font-bold text-white text-xl">Tickets Over Last 30 Days</h2>
+          <h2 className="cs-heading font-display font-bold text-cs-text text-xl">Tickets Over Last 30 Days</h2>
           <SparklineChart data={data.recentTickets} />
         </div>
       )}
@@ -461,8 +461,8 @@ function ServersTab() {
                 <td>
                   {s.isPremium
                     ? s.stripeStatus === "manual"
-                      ? <span className="cs-badge-manual">✦ Manual</span>
-                      : <span className="cs-badge-premium">⭐ Premium</span>
+                      ? <span className="cs-badge-manual"><Sparkles className="w-3 h-3" aria-hidden="true" /> Manual</span>
+                      : <span className="cs-badge-premium"><Star className="w-3 h-3" aria-hidden="true" /> Premium</span>
                     : <span className="cs-badge-muted">Base</span>}
                 </td>
                 <td className="text-cs-muted font-mono text-xs">{s._count.tickets}</td>

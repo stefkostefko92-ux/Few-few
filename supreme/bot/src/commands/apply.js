@@ -1,5 +1,5 @@
 // bot/src/commands/apply.js
-import { SlashCommandBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 import { runFormSession } from "../utils/formSession.js";
 
@@ -27,7 +27,7 @@ export default {
   },
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const formId = interaction.options.getString("form");
 

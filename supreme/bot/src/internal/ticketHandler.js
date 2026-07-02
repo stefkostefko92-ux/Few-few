@@ -3,7 +3,9 @@ import { ChannelType } from "discord.js";
 import { buildStatusEmbed, buildTicketOpenEmbed } from "../utils/embed.js";
 
 export async function handleTicketClose(client, { ticketId, serverId, channelId, archiveUrl, reason }) {
-  const channel = client.channels.cache.get(channelId);
+  // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
+  const channel = client.channels.cache.get(channelId)
+    || await client.channels.fetch(channelId).catch(() => null);
   if (!channel) return;
 
   await channel.send({
@@ -19,7 +21,9 @@ export async function handleTicketClose(client, { ticketId, serverId, channelId,
 }
 
 export async function handleTicketClaim(client, { ticketId, serverId, channelId, claimerId }) {
-  const channel = client.channels.cache.get(channelId);
+  // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
+  const channel = client.channels.cache.get(channelId)
+    || await client.channels.fetch(channelId).catch(() => null);
   if (!channel) return;
 
   let claimer;

@@ -1,5 +1,5 @@
 // bot/src/commands/ticket.js
-import { SlashCommandBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api, { closeTicketApi } from "../utils/api.js";
 import { buildStatusEmbed } from "../utils/embed.js";
 
@@ -42,10 +42,38 @@ export default {
     } catch {}
 
     if (!ticket && ["add", "remove", "claim", "unclaim", "close"].includes(sub)) {
-      return interaction.reply({ content: "❌ This channel is not a ticket.", ephemeral: true });
+      return interaction.reply({ content: "❌ This channel is not a ticket.", flags: MessageFlags.Ephemeral });
     }
 
-    await interaction.deferReply({ ephemeral: ["add", "remove"].includes(sub) });
+    // ── Authz (OWASP A01) — същият модел като бутоните (interactionCreate.js:520-542).
+    // Зареждаме панела за supportRoleIds и прилагаме проверката СЪРВЪРНО, преди defer:
+    // add/remove/claim/unclaim → само support екипа; close → екип ИЛИ създателят.
+    let panel = ticket?.panel || null;
+    if (!panel && ticket?.panelId) {
+      panel = await api.get(`/bot/panel/${ticket.panelId}`).then((r) => r.data).catch(() => null);
+    }
+    const hasSupportRole = (panel?.supportRoleIds || []).some((r) =>
+      interaction.member?.roles?.cache?.has(r)
+    );
+    const isStaff = hasSupportRole || interaction.member?.permissions?.has("ManageGuild");
+    const isCreator = ticket?.creatorId && interaction.user.id === ticket.creatorId;
+
+    if (["add", "remove", "claim", "unclaim"].includes(sub) && !isStaff) {
+      return interaction.reply({
+        content: "❌ Only support team members can perform this action.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    if (sub === "close" && !isStaff && !isCreator) {
+      return interaction.reply({
+        content: "❌ Only support team members or the ticket creator can close this ticket.",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    await interaction.deferReply(
+      ["add", "remove"].includes(sub) ? { flags: MessageFlags.Ephemeral } : {}
+    );
 
     if (sub === "add") {
       const user = interaction.options.getUser("user");

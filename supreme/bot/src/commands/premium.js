@@ -1,5 +1,5 @@
 // bot/src/commands/premium.js
-import { SlashCommandBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
 
 export default {
@@ -36,7 +36,7 @@ export default {
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     if (sub === "status") {
       try {
@@ -75,6 +75,12 @@ export default {
     }
 
     else if (sub === "custombot") {
+      // White-label настройките са администраторско действие на ниво сървър —
+      // изискваме Manage Server (defer вече е ephemeral, затова editReply).
+      if (!interaction.member?.permissions?.has("ManageGuild")) {
+        return interaction.editReply("❌ You need Manage Server permission to change the white-label bot.");
+      }
+
       const name = interaction.options.getString("name");
       const avatar = interaction.options.getString("avatar");
 

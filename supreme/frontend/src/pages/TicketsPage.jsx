@@ -2,15 +2,15 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star } from "lucide-react";
 import { getTickets, closeTicket, claimTicket, exportTicketPDF } from "../api";
 import Modal from "../components/Modal";
 
 const STATUS_COLORS = {
-  OPEN: "text-green-400 bg-green-500/10",
+  OPEN: "text-success bg-green-500/10",
   CLAIMED: "text-blue-400 bg-blue-500/10",
-  CLOSED: "text-gray-400 bg-gray-500/10",
-  ARCHIVED: "text-gray-400 bg-gray-500/10",
+  CLOSED: "text-cs-muted bg-gray-500/10",
+  ARCHIVED: "text-cs-muted bg-gray-500/10",
 };
 
 const LIMIT = 20;
@@ -85,14 +85,14 @@ export default function TicketsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Tickets</h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-cs-text">Tickets</h1>
+          <p className="text-cs-muted text-sm mt-1">
             {data?.total ?? 0} total tickets
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <input
-            className="input w-52"
+            className="cs-input w-52"
             placeholder="Search by creator or ID…"
             aria-label="Search tickets by creator or ID"
             value={search}
@@ -100,7 +100,7 @@ export default function TicketsPage() {
           />
           <input
             type="date"
-            className="input w-40"
+            className="cs-input w-40"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
             title="From date"
@@ -108,14 +108,14 @@ export default function TicketsPage() {
           />
           <input
             type="date"
-            className="input w-40"
+            className="cs-input w-40"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
             title="To date"
             aria-label="To date"
           />
           <select
-            className="input w-40"
+            className="cs-input w-40"
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             aria-label="Filter tickets by status"
@@ -130,7 +130,7 @@ export default function TicketsPage() {
       </div>
 
       {pdfError && (
-        <div role="alert" className="card border border-red-500/30 text-red-400 text-sm px-4 py-3 mb-4">
+        <div role="alert" className="cs-card border border-red-500/30 text-danger text-sm px-4 py-3 mb-4">
           {pdfError}
         </div>
       )}
@@ -139,23 +139,23 @@ export default function TicketsPage() {
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="card h-14 animate-pulse bg-dark-100" />
+            <div key={i} className="cs-card h-14 animate-pulse bg-cs-panel" />
           ))}
         </div>
       ) : isError ? (
-        <div role="alert" className="card text-center py-16 text-red-400">
+        <div role="alert" className="cs-card text-center py-16 text-danger">
           Couldn't load tickets — please retry.
         </div>
       ) : tickets.length === 0 ? (
-        <div className="card text-center py-16 text-gray-400">
+        <div className="cs-card text-center py-16 text-cs-muted">
           No tickets found for this filter.
         </div>
       ) : (
         <>
-          <div className="card p-0 overflow-hidden">
+          <div className="cs-card p-0 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/5 text-gray-400 text-xs uppercase tracking-wider">
+                <tr className="border-b border-white/5 text-cs-muted text-xs uppercase tracking-wider">
                   <th className="text-left px-4 py-3">Status</th>
                   <th className="text-left px-4 py-3">#</th>
                   <th className="text-left px-4 py-3">Creator</th>
@@ -170,7 +170,7 @@ export default function TicketsPage() {
                 {tickets.map((ticket) => (
                   <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_COLORS[ticket.status]}`}>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${STATUS_COLORS[ticket.status]}`}>
                         {ticket.status}
                       </span>
                     </td>
@@ -188,23 +188,29 @@ export default function TicketsPage() {
                             alt=""
                           />
                         )}
-                        <span className="text-white">{ticket.creator?.username ?? "Unknown"}</span>
+                        <span className="text-cs-text">{ticket.creator?.username ?? "Unknown"}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-400">
-                      {ticket.assignee?.username ?? <span className="text-gray-400 italic">Unassigned</span>}
+                    <td className="px-4 py-3 text-cs-muted">
+                      {ticket.assignee?.username ?? <span className="text-cs-muted italic">Unassigned</span>}
                     </td>
-                    <td className="px-4 py-3 text-gray-400">
+                    <td className="px-4 py-3 text-cs-muted">
                       {ticket.panel?.name ?? "—"}
                     </td>
                     <td className="px-4 py-3">
                       {ticket.feedbackRating
-                        ? <span className="text-accent-gold text-sm" title={ticket.feedbackComment || ""}>
-                            {"⭐".repeat(ticket.feedbackRating)}
+                        ? <span
+                            className="inline-flex items-center gap-0.5"
+                            title={ticket.feedbackComment || ""}
+                            aria-label={`Rating: ${ticket.feedbackRating} of 5`}
+                          >
+                            {Array.from({ length: ticket.feedbackRating }).map((_, i) => (
+                              <Star key={i} className="w-3.5 h-3.5 text-cs-cyan fill-cs-cyan" aria-hidden="true" />
+                            ))}
                           </span>
-                        : <span className="text-gray-400 text-xs">—</span>}
+                        : <span className="text-cs-muted text-xs">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">
+                    <td className="px-4 py-3 text-cs-muted text-xs">
                       {new Date(ticket.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
@@ -248,7 +254,7 @@ export default function TicketsPage() {
                             onClick={() => { setClosingId(ticket.id); setCloseReason(""); }}
                             title="Close ticket"
                             aria-label="Close ticket"
-                            className="text-red-400 hover:text-red-300 transition-colors p-1"
+                            className="text-danger hover:text-red-300 transition-colors p-1"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -263,20 +269,20 @@ export default function TicketsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4 text-sm text-gray-400">
+            <div className="flex items-center justify-between mt-4 text-sm text-cs-muted">
               <span>Page {page} of {totalPages}</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
+                  className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
                 >
                   <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
+                  className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
                 >
                   Next <ChevronRight className="w-4 h-4" />
                 </button>
@@ -287,13 +293,15 @@ export default function TicketsPage() {
       )}
 
       {claimError && (
-        <div role="alert" className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-2">
-          <span>❌ {claimError}</span>
+        <div role="alert" className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-2">
+          <span className="flex items-center gap-2">
+            <XCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" /> {claimError}
+          </span>
           <button
             type="button"
             aria-label="Dismiss"
             onClick={() => setClaimError(null)}
-            className="text-red-400 hover:text-red-300"
+            className="text-danger hover:text-red-300"
           >
             <X className="w-4 h-4" />
           </button>
@@ -303,9 +311,9 @@ export default function TicketsPage() {
       {/* Close Ticket Modal */}
       <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close Ticket" maxWidth="max-w-md">
         <label className="block mb-4">
-          <span className="label">Close Reason (optional)</span>
+          <span className="cs-label">Close Reason (optional)</span>
           <input
-            className="input"
+            className="cs-input"
             placeholder="Issue resolved, user inactive, etc."
             value={closeReason}
             onChange={(e) => setCloseReason(e.target.value)}
@@ -313,9 +321,9 @@ export default function TicketsPage() {
           />
         </label>
         <div className="flex gap-3 justify-end">
-          <button className="btn-ghost" onClick={() => setClosingId(null)}>Cancel</button>
+          <button className="cs-btn-ghost" onClick={() => setClosingId(null)}>Cancel</button>
           <button
-            className="btn-danger"
+            className="cs-btn-danger"
             disabled={closeMut.isPending}
             onClick={() => closeMut.mutate({ ticketId: closingId, reason: closeReason })}
           >

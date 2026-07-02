@@ -33,7 +33,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "Създаден в ЕС, за Европа",
     euBullets: [
-      "Хостинг само в ЕС (Германия + България) — данните ви не напускат Съюза",
+      "Хостинг само в ЕС (Германия, Hetzner) — данните ви не напускат Съюза",
       "GDPR по дизайн: експорт, изтриване и оттегляне на съгласие от самото табло",
       "Регистрирана европейска компания — Carbon Stealth VCC (Карбон Стелт), ЕИК BG208725180",
     ],
@@ -50,7 +50,7 @@ export const LANDING_TRANSLATIONS = {
     pricingSub: "Плащате само за това, което ползвате. Надградете по всяко време.",
     tiers: {
       free: { name: "Безплатен", price: "0 €", per: "/ месец, завинаги", tagline: "Малки сървъри, тестване", bullets: ["1 тикет панел", "2 форми (по 5 въпроса)", "1 верификационен панел", "Неограничени анкети и раздавания", "30 дни съхранение на архиви"], cta: "Започнете безплатно" },
-      premium: { name: "Premium", price: "9,99 €", per: "/месец", badge: "Най-популярен", tagline: "Растящи общности", trial: "14 дни безплатен пробен период", bullets: ["50 панела · 50 форми · 50 въпроса", "Math captcha + изискване за възраст", "Поемане, ескалация и преименуване", "Sticky + планирани съобщения", "20 webhook интеграции", "Условна логика във формите + regex", "AI отговори (Claude)", "Неограничено съхранение на архиви"], cta: "Започнете 14-дневния пробен период" },
+      premium: { name: "Premium", price: "9,99 €", per: "/месец", badge: "Най-популярен", tagline: "Растящи общности", trial: "14 дни безплатен пробен период", bullets: ["50 панела · 50 форми · 50 въпроса", "Математическа captcha + изискване за възраст", "Поемане, ескалация и преименуване", "Закачени + планирани съобщения", "20 webhook интеграции", "Условна логика във формите + regex", "AI отговори (Claude)", "Неограничено съхранение на архиви"], cta: "Започнете 14-дневния пробен период" },
       enterprise: { name: "Enterprise", price: "По договаряне", per: "Свържете се за оферта", tagline: "Големи сървъри и брандове", bullets: ["Всичко от Premium", "White-label бот (ваше име + токен)", "Персонализиран брандинг и домейн", "Гарантиран ъптайм 99.95%", "Приоритетна поддръжка (4 ч.)"], cta: "Свържете се с нас" },
     },
     finalH: "Готови ли сте да консолидирате?",
@@ -87,7 +87,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "In der EU gebaut, für Europa",
     euBullets: [
-      "Hosting ausschließlich in der EU (Deutschland + Bulgarien) — deine Daten verlassen die Union nicht",
+      "Hosting ausschließlich in der EU (Deutschland, Hetzner) — deine Daten verlassen die Union nicht",
       "DSGVO by Design: Datenexport, Löschung und Widerruf direkt im Dashboard",
       "Eingetragenes EU-Unternehmen — Carbon Stealth VCC, EIK BG208725180",
     ],
@@ -141,7 +141,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "Hecho en la UE, para Europa",
     euBullets: [
-      "Alojamiento exclusivamente en la UE (Alemania + Bulgaria) — tus datos no salen de la Unión",
+      "Alojamiento exclusivamente en la UE (Alemania, Hetzner) — tus datos no salen de la Unión",
       "RGPD por diseño: exportación, borrado y retirada del consentimiento desde el propio panel",
       "Empresa europea registrada — Carbon Stealth VCC, EIK BG208725180",
     ],
@@ -195,7 +195,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "Conçu dans l'UE, pour l'Europe",
     euBullets: [
-      "Hébergement exclusivement dans l'UE (Allemagne + Bulgarie) — vos données ne quittent jamais l'Union",
+      "Hébergement exclusivement dans l'UE (Allemagne, Hetzner) — vos données ne quittent jamais l'Union",
       "RGPD by design : export, suppression et retrait du consentement directement depuis le tableau de bord",
       "Entreprise européenne enregistrée — Carbon Stealth VCC, EIK BG208725180",
     ],
@@ -249,7 +249,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "Costruito nell'UE, per l'Europa",
     euBullets: [
-      "Hosting esclusivamente nell'UE (Germania + Bulgaria) — i tuoi dati non lasciano mai l'Unione",
+      "Hosting esclusivamente nell'UE (Germania, Hetzner) — i tuoi dati non lasciano mai l'Unione",
       "GDPR by design: esportazione, cancellazione e revoca del consenso direttamente dalla dashboard",
       "Azienda europea registrata — Carbon Stealth VCC, EIK BG208725180",
     ],
@@ -303,7 +303,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "Gebouwd in de EU, voor Europa",
     euBullets: [
-      "Hosting uitsluitend in de EU (Duitsland + Bulgarije) — je data verlaat de Unie nooit",
+      "Hosting uitsluitend in de EU (Duitsland, Hetzner) — je data verlaat de Unie nooit",
       "AVG by design: export, verwijdering en intrekken van toestemming rechtstreeks vanuit het dashboard",
       "Geregistreerd Europees bedrijf — Carbon Stealth VCC, EIK BG208725180",
     ],
@@ -357,7 +357,7 @@ export const LANDING_TRANSLATIONS = {
     ],
     euHeading: "Stworzony w UE, dla Europy",
     euBullets: [
-      "Hosting wyłącznie w UE (Niemcy + Bułgaria) — Twoje dane nigdy nie opuszczają Unii",
+      "Hosting wyłącznie w UE (Niemcy, Hetzner) — Twoje dane nigdy nie opuszczają Unii",
       "RODO by design: eksport, usuwanie i wycofanie zgody bezpośrednio z panelu",
       "Zarejestrowana europejska firma — Carbon Stealth VCC, EIK BG208725180",
     ],

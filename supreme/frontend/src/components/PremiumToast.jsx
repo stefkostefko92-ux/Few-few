@@ -54,10 +54,10 @@ export default function PremiumToast() {
           <div className="flex-shrink-0 mt-0.5">
             {isPremium
               ? <Star className="w-5 h-5 text-amber-400 fill-current" />
-              : <AlertTriangle className="w-5 h-5 text-red-400" />}
+              : <AlertTriangle className="w-5 h-5 text-danger" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-white font-bold text-sm">{toast.title}</h4>
+            <h4 className="text-cs-text font-bold text-sm">{toast.title}</h4>
             <p className="text-cs-muted text-xs mt-1">{toast.message}</p>
             {toast.feature && (
               <p className="text-xs text-amber-300 mt-1">

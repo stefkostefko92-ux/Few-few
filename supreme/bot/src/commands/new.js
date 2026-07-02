@@ -2,7 +2,7 @@
 // Command-style ticket opening — TicketTool's $new/$ticket equivalent.
 // Opens a ticket on behalf of the invoker (or another user with a reason).
 
-import { SlashCommandBuilder, ChannelType } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, ChannelType } from "discord.js";
 import api from "../utils/api.js";
 
 export default {
@@ -33,7 +33,7 @@ export default {
   },
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const panelIdOrName = interaction.options.getString("panel");
     const reason = interaction.options.getString("reason") || "";

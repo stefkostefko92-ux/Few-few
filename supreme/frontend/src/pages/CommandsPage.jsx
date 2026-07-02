@@ -40,7 +40,7 @@ export default function CommandsPage() {
   return (
     <div className="p-8 max-w-5xl">
       <div className="mb-6">
-        <h1 className="cs-heading font-display font-bold text-white text-3xl flex items-center gap-2">
+        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
           <BookOpen className="w-7 h-7 text-cs-cyan" /> Commands
         </h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
@@ -59,7 +59,7 @@ export default function CommandsPage() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search commands, features, descriptions…"
             aria-label="Search commands, features, and descriptions"
-            className="flex-1 bg-transparent outline-none text-white placeholder-cs-dim"
+            className="flex-1 bg-transparent outline-none text-cs-text placeholder-cs-dim"
           />
           {query && (
             <button onClick={() => setQuery("")} className="text-cs-dim hover:text-white text-xs">Clear</button>
@@ -103,7 +103,7 @@ export default function CommandsPage() {
         {filtered.map((cat) => (
           <div key={cat.category} className="cs-card">
             <div className="mb-4">
-              <h2 className="cs-heading font-display text-white text-xl font-bold">
+              <h2 className="cs-heading font-display text-cs-text text-xl font-bold">
                 {cat.icon} {cat.category}
               </h2>
               <p className="text-sm text-cs-muted mt-1">{cat.description}</p>
@@ -147,7 +147,7 @@ export default function CommandsPage() {
                   <LayoutDashboard className="w-4 h-4 text-cs-cyan flex-shrink-0 mt-1" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="text-sm text-white font-bold">{feat.feature}</span>
+                      <span className="text-sm text-cs-text font-bold">{feat.feature}</span>
                       <span className="text-[10px] uppercase tracking-wider text-cs-cyan">Dashboard-only</span>
                     </div>
                     <p className="text-sm text-cs-text mt-2">{feat.description}</p>

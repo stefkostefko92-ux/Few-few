@@ -7,16 +7,16 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Split stable vendor code from app code so returning visitors keep
-        // the cached vendor chunk and the landing-page chunk stays small
-        // (Core Web Vitals / LCP). Function form — Vite 8 / Rollup 4 dropped
-        // the object form of manualChunks.
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (id.includes("lucide-react")) return "icons";
-          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|@tanstack[\\/]react-query|axios)[\\/]/.test(id)) {
-            return "vendor";
-          }
+        // Split stable vendor code from app code so returning visitors keep the
+        // cached vendor chunk and the landing-page chunk stays small (CWV/LCP).
+        // Vite 8 bundles with Rolldown (not Rollup): the object form of
+        // manualChunks is removed and the function form is deprecated, so we use
+        // Rolldown's advancedChunks.groups (test-based) — the forward-compatible API.
+        advancedChunks: {
+          groups: [
+            { name: "icons", test: /[\\/]node_modules[\\/]lucide-react[\\/]/ },
+            { name: "vendor", test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|@tanstack[\\/]react-query|axios)[\\/]/ },
+          ],
         },
       },
     },

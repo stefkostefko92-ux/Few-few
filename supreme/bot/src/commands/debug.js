@@ -1,5 +1,5 @@
 // bot/src/commands/debug.js
-import { SlashCommandBuilder, PermissionsBitField } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, PermissionsBitField } from "discord.js";
 import api from "../utils/api.js";
 
 export default {
@@ -8,7 +8,7 @@ export default {
     .setDescription("Check the bot's permissions and status in this server"),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const guild = interaction.guild;
     const me = guild.members.me;

@@ -1,5 +1,5 @@
 // bot/src/commands/panel.js
-import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
 import api, { markPanelSpawned } from "../utils/api.js";
 import { buildPanelMessage } from "../utils/embed.js";
 
@@ -29,7 +29,7 @@ export default {
 
   async execute(interaction) {
     const sub = interaction.options.getSubcommand();
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     if (sub === "spawn") {
       const panelId = interaction.options.getString("name");

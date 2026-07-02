@@ -11,7 +11,7 @@ Target: maximum Google visibility across Europe.
 | hreflang | `components/Seo.jsx` (rendered DOM) + `public/sitemap.xml` (`xhtml:link`) | Bidirectional cluster incl. `x-default` |
 | Per-route canonical/title/description | `components/Seo.jsx` on every public page | 404 page emits `noindex` |
 | Localized FAQPage JSON-LD | `LandingLocalized.jsx` | Visible FAQ keeps content parity (Google requirement) |
-| Org/Software/FAQ/LocalBusiness JSON-LD | `index.html` `@graph` | Geo coordinates for Bobov Dol / Sofia / Milano |
+| Org/Software/FAQ/LocalBusiness JSON-LD | `index.html` `@graph` | Geo coordinates for Bobov Dol / Sofia |
 | og-image.png 1200×630 + PNG favicons | `public/` | Social scrapers don't render SVG |
 | robots.txt with AI-crawler policy | `public/robots.txt` | GPTBot/ClaudeBot/PerplexityBot allowed; CCBot/Bytespider blocked |
 | llms.txt (AEO) | `public/llms.txt` | Per llmstxt.org |

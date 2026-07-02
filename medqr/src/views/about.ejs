@@ -1,0 +1,61 @@
+<%- include('partials/head', { title: (lang === 'en' ? 'About & imprint' : 'За нас и импресум') + ' — MedQR', user: user }) %>
+
+<article class="legal">
+  <h1><%= lang === 'en' ? 'About MedQR' : 'За MedQR' %></h1>
+
+  <p class="lead">
+    <%= lang === 'en'
+      ? 'MedQR is a secure emergency medical profile you carry as a QR code. In an emergency, responders scan it and instantly see the critical facts — blood type, allergies, conditions, medications and a next-of-kin contact — even when you cannot speak.'
+      : 'MedQR е защитен спешен медицински профил, който носите като QR код. При спешност екипът го сканира и веднага вижда най-важното — кръвна група, алергии, заболявания, медикаменти и близък за връзка — дори когато не можете да говорите.' %>
+  </p>
+
+  <div class="warn-banner" role="note">
+    <%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %>
+    <span><strong><%= lang === 'en' ? 'Not a medical device.' : 'Не е медицинско изделие.' %></strong>
+      <%= lang === 'en'
+        ? 'MedQR is an informational service and does not replace professional medical assessment or emergency services (call 112).'
+        : 'MedQR е информационна услуга и не замества професионална медицинска оценка или спешна помощ (обадете се на 112).' %></span>
+  </div>
+
+  <h2><%= lang === 'en' ? 'Our mission' : 'Нашата мисия' %></h2>
+  <p>
+    <%= lang === 'en'
+      ? 'The service is built first for people who cannot easily speak in an emergency — deaf and hard-of-hearing or nonverbal people — and for anyone with a condition (diabetes, epilepsy, severe allergies, heart conditions) where the right information saves time and lives. Accessibility is the core of the product, not an afterthought.'
+      : 'Услугата е създадена преди всичко за хора, които трудно говорят при спешност — глухи и трудночуващи или неговорещи — и за всеки със състояние (диабет, епилепсия, тежки алергии, сърдечни състояния), при което точната информация спестява време и живот. Достъпността е в сърцевината на продукта, не добавка.' %>
+  </p>
+
+  <h2><%= lang === 'en' ? 'Where your data lives' : 'Къде живеят данните ви' %></h2>
+  <p>
+    <%= lang === 'en'
+      ? 'Sensitive medical fields are encrypted at rest (AES-256-GCM), the connection is secured (HTTPS/HSTS), every access is logged, and data is hosted in the EU. We use only strictly necessary cookies — no tracking, ads or third parties. Health data is special-category personal data (GDPR Art. 9); see our'
+      : 'Чувствителните медицински полета се криптират в покой (AES-256-GCM), връзката е защитена (HTTPS/HSTS), всеки достъп се записва, а данните се хостват в ЕС. Използваме само строго необходими бисквитки — без проследяване, реклами или трети страни. Здравните данни са специална категория лични данни (GDPR чл. 9); вижте нашата' %>
+    <a href="/privacy"><%= lang === 'en' ? 'privacy policy' : 'политика за поверителност' %></a>.
+  </p>
+
+  <h2 id="imprint"><%= lang === 'en' ? 'Imprint (service provider)' : 'Импресум (доставчик на услугата)' %></h2>
+  <dl class="profile-view">
+    <dt><%= lang === 'en' ? 'Company' : 'Дружество' %></dt>
+    <dd><%= company.name %> — <%= company.legalForm %></dd>
+    <dt><%= lang === 'en' ? 'UIC (ЕИК)' : 'ЕИК' %></dt>
+    <dd><%= company.uic %></dd>
+    <dt><%= lang === 'en' ? 'VAT No.' : 'ДДС №' %></dt>
+    <dd><%= company.vat %></dd>
+    <dt><%= lang === 'en' ? 'Registered seat' : 'Седалище и адрес на управление' %></dt>
+    <dd><%= lang === 'en' ? company.addressEn : company.address %></dd>
+    <dt><%= lang === 'en' ? 'Represented by' : 'Представляващ' %></dt>
+    <dd><%= company.manager %></dd>
+    <dt><%= lang === 'en' ? 'Email' : 'Имейл' %></dt>
+    <dd><a href="mailto:<%= company.email %>"><%= company.email %></a></dd>
+    <dt><%= lang === 'en' ? 'Phone' : 'Телефон' %></dt>
+    <dd><a href="tel:<%= company.phone.replace(/\s/g, '') %>"><%= company.phone %></a></dd>
+    <dt><%= lang === 'en' ? 'Registered in' : 'Регистрация' %></dt>
+    <dd><%= lang === 'en' ? 'Commercial Register (Registry Agency), Bulgaria — EU' : 'Търговски регистър (Агенция по вписванията), България — ЕС' %></dd>
+  </dl>
+
+  <p class="center" style="margin-top:1.5rem">
+    <a class="btn btn-ghost" href="/contact"><%= lang === 'en' ? 'Contact us' : 'Свържете се с нас' %></a>
+    <a class="btn btn-ghost" href="/accessibility"><%= lang === 'en' ? 'Accessibility' : 'Достъпност' %></a>
+  </p>
+</article>
+
+<%- include('partials/foot') %>

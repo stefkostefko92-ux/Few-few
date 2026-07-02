@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
+  Lock, ScrollText, Shield, Building2, MessageCircle,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
@@ -184,39 +185,39 @@ export default function Login() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               <TrustCard
-                icon="🔒"
+                icon={Lock}
                 title="EU-only data residency"
-                body="Hosted in Bobov Dol, Bulgaria. GDPR-native. Your data never crosses the EU border."
+                body="Hosted in the EU (Germany, Hetzner). GDPR-native. Your data never leaves the EU."
               />
               <TrustCard
-                icon="⚡"
+                icon={Zap}
                 title="99.9% uptime SLA"
                 body="Monitored 24/7 with auto-recovery. See live status at /status — we're transparent."
               />
               <TrustCard
-                icon="📜"
+                icon={ScrollText}
                 title="Open audit logs"
                 body="Every action is logged with actor, timestamp, and context. Full transparency for staff."
               />
               <TrustCard
-                icon="🛡️"
+                icon={Shield}
                 title="No token storage in plaintext"
                 body="AES-256-GCM encryption for custom bot tokens. Hashed API keys. Security first."
               />
               <TrustCard
-                icon="🏢"
+                icon={Building2}
                 title="Registered business"
                 body="Carbon Stealth VCC · EIK BG208725180. Real company, real invoices, real support."
               />
               <TrustCard
-                icon="💬"
+                icon={MessageCircle}
                 title="Direct Discord support"
                 body="Talk to the team that built it. No ticket triage outsourced overseas."
               />
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-mono text-cs-dim border-t border-cs-border/50 pt-8">
-              <div className="flex items-center gap-2"><span className="text-green-400">●</span> All systems operational</div>
+              <div className="flex items-center gap-2"><span className="text-success">●</span> All systems operational</div>
               <div>GDPR compliant</div>
               <div>Ad-free · no telemetry</div>
               <div>Cancel anytime · no lock-in</div>
@@ -241,7 +242,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Where is my data stored?"
-                a="All data is stored in the EU (Bobov Dol, Bulgaria). We are GDPR-native — no cross-border transfers. Custom bot tokens are encrypted with AES-256-GCM. We never sell or share your data."
+                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. We are GDPR-native — no transfers outside the EU. Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
               />
               <FaqItem
                 q="Can I use my own Discord bot?"
@@ -283,12 +284,12 @@ export default function Login() {
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Zap className="w-5 h-5 text-cs-cyan" />
-                    <h3 className="text-xl font-bold text-white">Free</h3>
+                    <h3 className="text-xl font-bold text-cs-text">Free</h3>
                   </div>
                   <p className="text-sm text-cs-muted">Small servers, evaluation</p>
                 </div>
                 <div className="mb-6">
-                  <div className="font-display text-4xl font-black text-white">€0</div>
+                  <div className="font-display text-4xl font-black text-cs-text">€0</div>
                   <div className="text-xs text-cs-dim font-mono">/ month, forever</div>
                 </div>
                 <ul className="space-y-2 text-sm text-cs-text mb-8 flex-1">
@@ -311,12 +312,12 @@ export default function Login() {
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Star className="w-5 h-5 text-amber-400 fill-current" />
-                    <h3 className="text-xl font-bold text-white">Premium</h3>
+                    <h3 className="text-xl font-bold text-cs-text">Premium</h3>
                   </div>
                   <p className="text-sm text-cs-muted">Growing communities</p>
                 </div>
                 <div className="mb-6">
-                  <div className="font-display text-4xl font-black text-white">€9.99<span className="text-lg text-cs-dim">/mo</span></div>
+                  <div className="font-display text-4xl font-black text-cs-text">€9.99<span className="text-lg text-cs-dim">/mo</span></div>
                   <div className="text-xs text-amber-400 font-mono">14-day free trial</div>
                 </div>
                 <ul className="space-y-2 text-sm text-cs-text mb-8 flex-1">
@@ -342,12 +343,12 @@ export default function Login() {
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Crown className="w-5 h-5 text-cs-cyan" />
-                    <h3 className="text-xl font-bold text-white">Enterprise</h3>
+                    <h3 className="text-xl font-bold text-cs-text">Enterprise</h3>
                   </div>
                   <p className="text-sm text-cs-muted">Large servers, brands</p>
                 </div>
                 <div className="mb-6">
-                  <div className="font-display text-4xl font-black text-white">Custom</div>
+                  <div className="font-display text-4xl font-black text-cs-text">Custom</div>
                   <div className="text-xs text-cs-dim font-mono">Contact for quote</div>
                 </div>
                 <ul className="space-y-2 text-sm text-cs-text mb-8 flex-1">
@@ -452,19 +453,19 @@ function FeatureCard({ icon: Icon, title, badge, children }) {
     <div className="cs-card hover:border-cs-cyan/50 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <Icon className="w-6 h-6 text-cs-cyan" />
-        {badge && <span className="cs-badge text-[9px] text-green-400">{badge}</span>}
+        {badge && <span className="cs-badge text-[9px] text-success">{badge}</span>}
       </div>
-      <h3 className="text-white font-bold mb-2">{title}</h3>
+      <h3 className="text-cs-text font-bold mb-2">{title}</h3>
       <p className="text-sm text-cs-muted leading-relaxed">{children}</p>
     </div>
   );
 }
 
-function TrustCard({ icon, title, body }) {
+function TrustCard({ icon: Icon, title, body }) {
   return (
     <div className="cs-card hover:border-cs-cyan/50 transition-colors">
-      <div className="text-2xl mb-3">{icon}</div>
-      <h3 className="text-white font-bold mb-2 text-sm">{title}</h3>
+      <div className="mb-3"><Icon className="w-6 h-6 text-cs-cyan" aria-hidden="true" /></div>
+      <h3 className="text-cs-text font-bold mb-2 text-sm">{title}</h3>
       <p className="text-xs text-cs-muted leading-relaxed">{body}</p>
     </div>
   );
@@ -474,7 +475,7 @@ function FaqItem({ q, a }) {
   return (
     <details className="cs-card group cursor-pointer hover:border-cs-cyan/50 transition-colors">
       <summary className="flex items-center justify-between gap-4 list-none select-none">
-        <span className="text-white font-semibold text-sm sm:text-base">{q}</span>
+        <span className="text-cs-text font-semibold text-sm sm:text-base">{q}</span>
         <span className="text-cs-cyan text-xl group-open:rotate-45 transition-transform flex-shrink-0">+</span>
       </summary>
       <p className="text-sm text-cs-muted leading-relaxed mt-4 pt-4 border-t border-cs-border/50">{a}</p>
@@ -485,7 +486,7 @@ function FaqItem({ q, a }) {
 function PricingCheck({ children }) {
   return (
     <li className="flex items-start gap-2">
-      <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+      <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
       <span>{children}</span>
     </li>
   );

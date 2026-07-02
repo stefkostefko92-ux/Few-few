@@ -129,7 +129,7 @@ export default function VerificationPage() {
     <div className="p-8 max-w-5xl">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="cs-heading font-display font-bold text-white text-3xl flex items-center gap-2">
+          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
             <ShieldCheck className="w-7 h-7 text-cs-cyan" /> Verification
           </h1>
           <p className="text-cs-muted mt-2 max-w-xl">
@@ -156,10 +156,10 @@ export default function VerificationPage() {
           <div key={p.id} className="cs-card flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                <span className="text-white font-bold">{p.name}</span>
+                <span className="text-cs-text font-bold">{p.name}</span>
                 <span className="cs-badge text-cs-cyan">{p.type}</span>
                 {p.channelId && (
-                  <span className="cs-badge text-green-400">Spawned</span>
+                  <span className="cs-badge text-success">Spawned</span>
                 )}
               </div>
               <div className="text-xs text-cs-dim mt-1">
@@ -198,7 +198,7 @@ export default function VerificationPage() {
                 })}
                 aria-label="Delete panel"
                 title="Delete panel"
-                className="text-red-400 hover:text-red-300 p-2"
+                className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
