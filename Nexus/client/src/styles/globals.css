@@ -2040,3 +2040,15 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   color: #fff;
 }
 .lang-selector--compact .lang-btn { padding: 2px 5px; font-size: 0.68rem; }
+
+/* Per-action skip бутонче в cooldown ticker-а */
+.cooldown-skip-one {
+  border: 1px solid var(--border, rgba(255,255,255,.14));
+  background: rgba(0,0,0,.3);
+  color: var(--gold-1, #e8c15a);
+  font: inherit; font-size: .72rem; font-weight: 700;
+  padding: 1px 7px; margin-left: 6px;
+  border-radius: 999px; cursor: pointer;
+}
+.cooldown-skip-one:hover:not(:disabled) { background: rgba(232,193,90,.15); }
+.cooldown-skip-one:disabled { opacity: .4; cursor: default; }

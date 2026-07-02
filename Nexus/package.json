@@ -1,7 +1,7 @@
 {
   "name": "nexus-dominion",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Nexus Dominion — a high-quality browser MMORPG inspired by the classic Nexus Dominion.",
   "workspaces": [
     "server",

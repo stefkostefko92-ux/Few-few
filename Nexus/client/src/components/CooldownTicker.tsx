@@ -88,12 +88,16 @@ export default function CooldownTicker(): React.ReactElement | null {
   if (active.length === 0) return null;
 
   const gems = (character as any).gems || 0;
-  async function skip() {
-    if (skipping || gems < 1) return;
+  // Цена: 1 💎 на оставаща минута (мин 1; общият е капнат на 50 — като сървъра).
+  const costOf = (ms: number) => Math.max(1, Math.ceil(ms / 60_000));
+  const totalMs = active.reduce((sum, [, ts]) => sum + ((ts as number) - now), 0);
+  const totalCost = Math.min(50, costOf(totalMs));
+  async function skip(kind?: string) {
+    if (skipping) return;
     setSkipping(true);
     try {
-      const r = await api.post('/character/skip-cooldowns', {});
-      toast(t('cooldowns.clearedToast', { count: r.cleared }), 'success');
+      const r = await api.post('/character/skip-cooldowns', kind ? { action: kind } : {});
+      toast(t('cooldowns.clearedToast', { count: r.cleared, gems: r.gem_cost }), 'success');
       await refresh();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setSkipping(false); }
@@ -110,17 +114,25 @@ export default function CooldownTicker(): React.ReactElement | null {
               <span className="cooldown-dot" style={{ background: COLOR[kind] }} />
               <span className="cooldown-name">{LABEL_KEY[kind] ? t(LABEL_KEY[kind]) : kind}</span>
               <span className="cooldown-time">{fmt(remaining, t('cooldowns.ready'))}</span>
+              <button
+                className="cooldown-skip-one"
+                onClick={() => skip(kind)}
+                disabled={skipping || gems < costOf(remaining)}
+                title={t('cooldowns.skipOneTitle')}
+              >
+                {costOf(remaining)}💎
+              </button>
             </div>
           );
         })}
       </div>
       <button
         className="cooldown-skip"
-        onClick={skip}
-        disabled={skipping || gems < 1}
-        title={gems < 1 ? t('cooldowns.needGem') : t('cooldowns.skipTitle')}
+        onClick={() => skip()}
+        disabled={skipping || gems < totalCost}
+        title={gems < totalCost ? t('cooldowns.needGem') : t('cooldowns.skipTitle')}
       >
-        ⏱ {t('cooldowns.skip')} · 1💎
+        ⏱ {t('cooldowns.skip')} · {totalCost}💎
       </button>
     </div>
   );

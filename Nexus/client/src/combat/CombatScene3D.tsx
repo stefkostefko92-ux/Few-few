@@ -972,11 +972,17 @@ function addFaceOverlay(
     // soft blend into the head's own skin survives.
     transparent: true, alphaTest: 0.012,
     roughness: 0.74, metalness: 0.0,
-    depthWrite: false, depthTest: false,
+    // Живият бой показа: depthTest:false + renderOrder 20 рисуваше картите
+    // НАД всичко — при близък план на хореографската камера двете лица
+    // ставаха огромни бели петна през скалите/телата (и в fx=low). Картата
+    // стои 0.42R ПРЕД черепа → истинският depth test е безопасен; лек
+    // polygonOffset пази от z-fight със самата глава.
+    depthWrite: false, depthTest: true,
+    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
   });
   const face = new THREE.Mesh(geo, mat);
   face.name = 'FaceOverlay';
-  face.renderOrder = 20;
+  face.renderOrder = 2;
   face.frustumCulled = false;
   face.castShadow = false; face.receiveShadow = false;
   scene.add(face);
@@ -1003,6 +1009,9 @@ function addFaceOverlay(
     .addScaledVector(fFront, headR * 0.42); // out onto the front surface
   face.updateWorldMatrix(false, false);
   headBone.attach(face);
+  // Ref за per-frame дистанционен fade (близък план → лицето се скрива,
+  // играчът гледа реалната геометрия, не decal-а).
+  (model as any).userData.faceMesh = face;
 }
 
 /** A soft radial contact-shadow texture (dark centre → transparent edge). */
@@ -2331,6 +2340,7 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /* ----- floating HUD projection helper ----- */
     // Scratch vector reused every frame (no per-frame alloc).
     const hudProjVec = new THREE.Vector3();
+    const faceFadePos = new THREE.Vector3();
     // Scratch за спектакълния trail (нула per-frame alloc).
     const trailBaseScratch = new THREE.Vector3();
     const trailTipScratch = new THREE.Vector3();
@@ -2693,6 +2703,19 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         if (lb.root) lb.root.rotation.y = lb.rootRestY;
         const phase = (rig as any).userData.lifePhase ?? 0;
         const isHero = rig === heroRigRef.current;
+        // Лицевата карта избледнява при близък план: под ~2.8u камера-глава
+        // изчезва (гледаш реалната геометрия), над ~4.5u е плътна. Пази
+        // близките хореографски кадри чисти — без гигантски decal в лицето.
+        {
+          const fm = (rig as any).userData.faceMesh as THREE.Mesh | undefined;
+          if (fm) {
+            faceFadePos.setFromMatrixPosition(fm.matrixWorld);
+            const dCam = camera.position.distanceTo(faceFadePos);
+            const vis = THREE.MathUtils.smoothstep(dCam, 2.8, 4.5);
+            (fm.material as THREE.MeshStandardMaterial).opacity = vis;
+            fm.visible = rig.visible && vis > 0.02;
+          }
+        }
         // Head turns slightly toward the opponent: hero (rotated +45°) looks
         // right, foe looks left, so they regard each other. Kept subtle — a
         // big head-look turns the rigid face decal too far from a front camera.

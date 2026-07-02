@@ -41,14 +41,6 @@ export default function Navbar(): React.ReactElement {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  async function skipCooldowns() {
-    try {
-      const r = await api.post('/character/skip-cooldowns', {});
-      toast(t('cooldowns.clearedToast', { count: r.cleared }), 'success');
-      await refreshCharacter();
-    } catch (e: any) { toast(e.message, 'error'); }
-  }
-
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (open && menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
@@ -113,14 +105,6 @@ export default function Navbar(): React.ReactElement {
                 <AnimatedNumber value={(char as any).gems || 0} />
               </span>
             </div>
-            <button
-              className="nav-skip-cd"
-              title={t('cooldowns.skipTitle')}
-              onClick={skipCooldowns}
-              disabled={((char as any).gems || 0) < 1}
-            >
-              ⏱ {t('cooldowns.skip')} · 1💎
-            </button>
           </>
         )}
 

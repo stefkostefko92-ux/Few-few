@@ -140,7 +140,7 @@ app.get('/api/health', (_req, res) => {
   // liveness signal and traffic keeps routing to a broken instance.
   try {
     getDb().prepare('SELECT 1').get();
-    res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.0' });
+    res.json({ ok: true, name: 'Nexus Dominion', version: '0.1.1' });
   } catch (e: any) {
     res.status(503).json({ ok: false, error: 'db_unavailable' });
   }

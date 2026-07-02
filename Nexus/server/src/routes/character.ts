@@ -287,24 +287,28 @@ router.post('/skip-cooldowns', (req, res) => {
   const db = getDb();
   const char = db.prepare('SELECT * FROM characters WHERE user_id = ?').get(req.auth!.uid) as Character | undefined;
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
-  // Audit (balance landmine #3): used to charge 1 flat gem to wipe
-  // every cooldown, so the daily 3-50 gem trickle bought 60+ free
-  // skips a month and trivialised the cooldown pacing entirely. Now
-  // priced per minute of total cooldown waited, capped at 50 gems —
-  // mass skips of a 20-minute hunt + dungeon + arena stack cost ~10
-  // gems, a single 30 s skip stays 1 gem.
+  // Ценообразуване: 1 гем/минута ОСТАВАЩО чакане, мин 1, кап 50 (одит
+  // landmine #3). По заявка: тялото може да носи { action } и тогава се
+  // скипва САМО този cooldown (цена по неговия остатък) — играчът избира
+  // кое да плати, вместо „всичко или нищо".
+  const wanted = String((req.body || {}).action || '');
+  const VALID = ['hunt', 'tower', 'dungeon', 'quest', 'arena'];
+  if (wanted && !VALID.includes(wanted)) { res.status(400).json({ error: 'Unknown action.' }); return; }
   const now = Date.now();
-  const cooldowns = db
+  const cooldowns = (db
     .prepare('SELECT action_kind, next_available_at FROM character_cooldowns WHERE character_id = ? AND next_available_at > ?')
-    .all(char.id, now) as { action_kind: string; next_available_at: number }[];
+    .all(char.id, now) as { action_kind: string; next_available_at: number }[])
+    .filter((c) => !wanted || c.action_kind === wanted);
   if (cooldowns.length === 0) { res.status(400).json({ error: 'No active cooldowns to skip.' }); return; }
   const totalMs = cooldowns.reduce((s, c) => s + (c.next_available_at - now), 0);
   const gemCost = Math.min(50, Math.max(1, Math.ceil(totalMs / 60_000)));
   const debit = db
     .prepare('UPDATE characters SET gems = gems - ?, total_gems_spent = total_gems_spent + ? WHERE id = ? AND gems >= ?')
     .run(gemCost, gemCost, char.id, gemCost);
-  if (debit.changes !== 1) { res.status(400).json({ error: `Need ${gemCost} gems to skip these cooldowns.` }); return; }
-  const cleared = db.prepare('DELETE FROM character_cooldowns WHERE character_id = ?').run(char.id);
+  if (debit.changes !== 1) { res.status(400).json({ error: `Need ${gemCost} gems to skip.` }); return; }
+  const cleared = wanted
+    ? db.prepare('DELETE FROM character_cooldowns WHERE character_id = ? AND action_kind = ?').run(char.id, wanted)
+    : db.prepare('DELETE FROM character_cooldowns WHERE character_id = ?').run(char.id);
   logFromRequest(req, {
     category: 'character', action: 'skip_cooldowns',
     character_id: char.id,

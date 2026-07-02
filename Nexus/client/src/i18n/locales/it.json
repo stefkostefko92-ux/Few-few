@@ -69,11 +69,11 @@
     "signOut": "Esci"
   },
   "cooldowns": {
-    "clearedToast_one": "Hai azzerato {{count}} tempo di attesa per 1 gemma.",
-    "clearedToast_other": "Hai azzerato {{count}} tempi di attesa per 1 gemma.",
-    "skip": "Salta",
-    "skipTitle": "Spendi 1 gemma per azzerare tutti i tempi di attesa",
-    "needGem": "Serve almeno 1 gemma",
+    "clearedToast_one": "{{count}} tempo di attesa azzerato per {{gems}} 💎.",
+    "clearedToast_other": "{{count}} tempi di attesa azzerati per {{gems}} 💎.",
+    "skip": "Salta tutti",
+    "skipTitle": "Azzera TUTTI i tempi di attesa — 1 💎 per minuto rimanente (max 50)",
+    "needGem": "Gemme insufficienti",
     "onCooldown": "In attesa",
     "ready": "pronto",
     "hunt": "Caccia",
@@ -81,7 +81,8 @@
     "tower": "Torre delle Prove",
     "dungeon": "Dungeon",
     "quest": "Missioni",
-    "arena": "Arena"
+    "arena": "Arena",
+    "skipOneTitle": "Salta solo questa attesa — 1 💎 per minuto rimanente"
   },
   "sidebar": {
     "main": "Principale",
@@ -1124,8 +1125,8 @@
     "rest": "Riposa (10 EN)",
     "restToast": "Ferite curate.",
     "record": "{{wins}}V / {{losses}}S · Rating {{rating}}",
-    "howTitle": "Come funzionano ora i potenziamenti",
-    "howDesc": "Statistiche e abilità non vengono più assegnate salendo di livello. Ogni statistica si potenzia con l'oro — il primo costa 5g, il secondo 10g, il terzo 15g, ecc. Il contatore di ogni statistica cresce in modo indipendente.",
+    "howTitle": "Come funzionano i potenziamenti",
+    "howDesc": "Ogni livello concede gratis +3 punti statistica e +1 punto abilità. In più ogni statistica può essere potenziata con l’oro — ogni acquisto successivo costa di più (5g, 14g, 25g, 40g, 57g…), con contatore indipendente per statistica.",
     "attributes": "Attributi",
     "weaponSkills": "Abilità con le armi",
     "upgradesCount": "({{count}} potenziamenti)",
