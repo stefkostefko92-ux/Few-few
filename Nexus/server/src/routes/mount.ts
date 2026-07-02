@@ -71,7 +71,7 @@ const MOUNTS: MountDef[] = [
     description: 'Hooves like polished brass; mane of midday light. Standard of the realm guard.',
     gem_cost: 500,
     rarity: 'epic', tier: 4,
-    cooldown_reduction_pct: 50,
+    cooldown_reduction_pct: 42,
     phys_dmg_bonus: 22, phys_def_bonus: 18, mag_dmg_bonus: 8, mag_def_bonus: 6,
   },
   // ───── Higher tiers ─────────────────────────────────────────────────
@@ -81,7 +81,7 @@ const MOUNTS: MountDef[] = [
     description: 'A spectral beast pulled from the Shadowfell\'s edge. Its hoofprints darken the sky.',
     gem_cost: 900,
     rarity: 'epic', tier: 5,
-    cooldown_reduction_pct: 65,
+    cooldown_reduction_pct: 46,
     phys_dmg_bonus: 18, phys_def_bonus: 14, mag_dmg_bonus: 26, mag_def_bonus: 22,
   },
   {
@@ -90,19 +90,21 @@ const MOUNTS: MountDef[] = [
     description: 'Once the mount of the lost regents. Wings of beaten gold; eyes of pure judgement.',
     gem_cost: 1500,
     rarity: 'legendary', tier: 6,
-    cooldown_reduction_pct: 75,
+    cooldown_reduction_pct: 50,
     phys_dmg_bonus: 38, phys_def_bonus: 28, mag_dmg_bonus: 22, mag_def_bonus: 22,
   },
   {
-    // The best mount ships as a cheap base — its 90% cooldown reduction is
-    // the whole package at 1000 gems. Its combat-stat lines are bought
-    // separately as à-la-carte add-ons (see ADDONS), 500 gems each.
+    // Чистата „скорост" опция: капът (50%) без бойни статове, по-евтина от
+    // Griffin — статовете се докупуват à-la-carte (ADDONS, 500 гема).
+    // Баланс одит: каталогът рекламираше 65/75/90%, а engine-ът капва на
+    // 50% (cooldowns.ts) → плащаш повече, получаваш същото. Стълбицата
+    // вече е честна: всеки по-скъп mount дава реално повече.
     slug: 'mount_world_serpent',
     name: 'World Serpent',
     description: 'A bound fragment of the snake that once swallowed the sky. The realm bends to its rider.',
     gem_cost: 1000,
     rarity: 'legendary', tier: 7,
-    cooldown_reduction_pct: 90,
+    cooldown_reduction_pct: 50,
     phys_dmg_bonus: 0, phys_def_bonus: 0, mag_dmg_bonus: 0, mag_def_bonus: 0,
   },
 ];

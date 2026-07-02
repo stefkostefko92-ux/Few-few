@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { regenerateEnergy, applyXp } from '../game/progression';
+import { regenerateEnergy, applyXp, paceXpForKill } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
@@ -151,7 +151,13 @@ router.post('/hunt', (req, res) => {
   let itemRewardSlug = '';
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   if (result.winner === 'hero') {
-    const baseXp = monster.xp_reward;
+    // Баланс: изглаждане на XP кривата при раздаване. Seed數ните на
+    // act-1 (lv≤25) са ~10x над темпа, а на expansion (lv26+) — на темпа
+    // → „XP стена" на 26 (левелването пада 10x за едно ниво). Клампваме
+    // per-kill XP в лента около целта ~8 убийства/ниво, изведена от
+    // реалната крива (xpForLevel), вместо да пренаписваме стотици seed реда.
+    const paceXp = paceXpForKill(monster.level);
+    const baseXp = Math.max(Math.round(paceXp * 0.6), Math.min(Math.round(paceXp * 1.8), monster.xp_reward));
     const baseGold = Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);
     xpGain = r.xp;

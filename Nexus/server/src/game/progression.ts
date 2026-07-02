@@ -15,6 +15,17 @@ export function xpForLevel(level: number): number {
   return Math.floor(50 * Math.pow(level, 1.7));
 }
 
+/**
+ * Целеви per-kill XP за чудовище на дадено ниво: ~8 убийства на ниво,
+ * изведено от реалната крива. Ползва се от hunting за клампване на
+ * seed стойностите в темпова лента (0.6x–1.8x) — маха „XP стената" на
+ * lv26 (act-1 seed-ът беше ~10x над темпа, expansion — на темпа).
+ */
+export function paceXpForKill(monsterLevel: number): number {
+  const step = Math.max(1, xpForLevel(monsterLevel + 1) - xpForLevel(monsterLevel));
+  return Math.max(5, Math.round(step / 8));
+}
+
 export function levelFromXp(xp: number): number {
   // Invert the curve, then walk to correct any rounding drift. No upper bound.
   let lvl = Math.max(1, Math.floor(Math.pow(xp / 50, 1 / 1.7)));

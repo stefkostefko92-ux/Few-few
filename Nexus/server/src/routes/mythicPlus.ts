@@ -215,6 +215,10 @@ router.post('/claim', (req, res) => {
            total_xp_earned = total_xp_earned + ?, total_gold_earned = total_gold_earned + ?
          WHERE id = ?`,
       ).run(char.gold, char.xp, char.level, char.stat_points, char.skill_points, char.hp_max, char.mp_max, char.hp, char.mp, r.xp, r.gold, char.id);
+      // Баланс: победният claim СЪЩО сетва dungeon cooldown-а. Преди се
+      // сетваше само при wipe (:158) → печелившият chain-ваше M+ безкрайно
+      // без никакъв pacing — най-голямата дупка от одита на дейностите.
+      setCooldown(char.id, 'dungeon');
       return { tier, xp: r.xp, gold: r.gold, lvlRes, milestoneDrop };
     }).immediate();
     logFromRequest(req, {

@@ -33,8 +33,10 @@ export function parseCounts(raw: string | null | undefined): UpgradeCounts {
 /** Cost of the NEXT upgrade for a stat that has been upgraded `count` times.
  *  Audit balance #12: linear 5*(n+1) made +100 to a stat cost 25 250g and
  *  a Lv-200 hunt funded ~9 upgrades. Super-linear curve so the gold sink
- *  scales with progression: floor(5 * n^1.5). Cumulative to +100 ≈ 33 500g,
- *  to +500 ≈ 745 000g — meaningful but not a wall. */
+ *  scales with progression: floor(5 * n^1.5). Реални кумулативни цени
+ *  (одит: старите числа тук бяха грешни ~6x): +10 = 710g, +25 = 6 555g,
+ *  +50 = 36 220g, +100 = 202 459g, +500 = 11.2M g. Gold-пътят е
+ *  дългосрочна мивка; основната прогресия са 3-те точки/ниво. */
 export function nextUpgradeCost(count: number): number {
   const n = count + 1;
   return Math.max(UPGRADE_BASE_COST, Math.floor(UPGRADE_BASE_COST * Math.pow(n, 1.5)));

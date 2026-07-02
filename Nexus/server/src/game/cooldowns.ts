@@ -1,11 +1,12 @@
 /**
  * Action cooldowns — replaces the energy economy.
  *
- * Every "action" (hunt / camp / tower / dungeon / quest / arena) sets a
- * random per-player cooldown between 1 and 20 minutes. The randomness
- * means two characters who do the same thing won't be ready at the same
- * moment — pacing the realm naturally rather than gating it on a
- * regenerating energy bar.
+ * Every "action" (hunt / tower / dungeon / quest / arena) sets a random
+ * per-player cooldown from a PER-ACTION range (COOLDOWN_RANGES_MS —
+ * стъпаловидна стълбица 3–8 … 15–25 мин). The randomness means two
+ * characters who do the same thing won't be ready at the same moment;
+ * the ladder means the player's five lanes interleave so there is
+ * always a lane about to open — never a dead 20-minute window.
  *
  * Mounts (item.sub_type='mount') own a dedicated mechanical property
  * `cooldown_reduction_pct` (it is NOT a stat bonus — it lives on its own
@@ -18,12 +19,27 @@ import { getDb } from '../db';
 
 export type ActionKind = 'hunt' | 'camp' | 'tower' | 'dungeon' | 'quest' | 'arena';
 
-const MIN_COOLDOWN_MS = 60_000;       // 1 minute
-const MAX_COOLDOWN_MS = 20 * 60_000;  // 20 minutes
+// Баланс (пълен одит): вместо еднакъв random 1–20 мин за всичко — СТЪЛБИЦА
+// от диапазони по дейност. Целта е принципът „играчът ВИНАГИ има какво да
+// прави": пет застъпени писти, така че докато една чака, друга тъкмо се
+// отваря. Hunt е късата „филър" писта; dungeon е дългата (той е и
+// най-щедрият loop — виж gold_bonus кривата в seed/dungeons.ts). Общата
+// пропускливост остава ~30 действия/час (както преди: ~28/ч), но
+// разпределена без мъртви прозорци — при произволен момент очакваното
+// време до СЛЕДВАЩАТА готова дейност е ~1–3 мин, не до 20.
+export const COOLDOWN_RANGES_MS: Record<ActionKind, [number, number]> = {
+  hunt:    [3 * 60_000, 8 * 60_000],
+  arena:   [6 * 60_000, 12 * 60_000],
+  quest:   [8 * 60_000, 15 * 60_000],
+  tower:   [10 * 60_000, 18 * 60_000],
+  dungeon: [15 * 60_000, 25 * 60_000],
+  camp:    [60_000, 60_000], // не се ползва — camp има собствен таймер
+};
 // Audit (balance landmine #5): cap mount cooldown reduction at 50%, not
 // 90%. The 90% cap + 3× guild Merchant Charter combined to ~600k g/hr at
-// lv 320 with no matching gold sink. 50% keeps the World Serpent
-// premium mount aspirational without breaking the pacing of the realm.
+// lv 320 with no matching gold sink. 50% keeps premium mounts aspirational
+// without breaking the pacing of the realm. Каталогът (mount.ts) е
+// изравнен с капа — никой mount вече не рекламира недостижим процент.
 const MAX_REDUCTION_PCT = 50;
 
 /** Read the equipped mount's cooldown-reduction property, if any. */
@@ -66,9 +82,10 @@ export function assertReady(characterId: number, kind: ActionKind): void {
  */
 export function setCooldown(characterId: number, kind: ActionKind): number {
   const reductionPct = mountReductionPct(characterId);
-  const base = MIN_COOLDOWN_MS + Math.floor(Math.random() * (MAX_COOLDOWN_MS - MIN_COOLDOWN_MS + 1));
+  const [minMs, maxMs] = COOLDOWN_RANGES_MS[kind];
+  const base = minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
   const reduced = Math.round(base * (1 - reductionPct / 100));
-  const final = Math.max(15_000, reduced); // never less than 15s
+  const final = Math.max(60_000, reduced); // никога под 1 мин
   const next = Date.now() + final;
   getDb()
     .prepare(

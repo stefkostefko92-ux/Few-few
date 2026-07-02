@@ -94,7 +94,10 @@ router.post('/challenge', (req, res) => {
   let lvlRes = null as ReturnType<typeof applyXp> | null;
   let itemDropSlug: string | null = null;
   if (result.winner === 'hero') {
-    const r = applyGuildMultipliers(char.id, 10 + opp.level * 2, 25 + opp.level * 5);
+    // Баланс: злато 10+2L беше ~5x под hunt на endgame (710 vs ~3 700 при
+    // lv350) при сходен cooldown клас. 12+6L го носи до ~60% от hunt kill —
+    // арената остава XP-фокусирана (25+5L), но вече не е златна пустиня.
+    const r = applyGuildMultipliers(char.id, 12 + opp.level * 6, 25 + opp.level * 5);
     xpGain = r.xp;
     goldGain = r.gold;
     lvlRes = applyXp(char, xpGain);

@@ -489,8 +489,7 @@
     "pressOnward": "Press Onward",
     "lv": "Lv {{n}}",
     "stagesTag": "{{n}} stages",
-    "energyTag": "{{n}} EN",
-    "enter": "Enter ({{n}} EN)",
+    "enter": "Enter",
     "requiresLv": "Requires Lv {{n}}"
   },
   "quests": {

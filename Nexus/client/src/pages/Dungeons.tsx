@@ -9,7 +9,6 @@ interface DungeonDef {
   name: string;
   region: string;
   level_req: number;
-  energy_cost: number;
   stages: number;
   xp_bonus: number;
   gold_bonus: number;
@@ -179,17 +178,16 @@ export default function Dungeons(): React.ReactElement {
             <div className="muted text-sm" style={{ marginTop: 8, fontStyle: 'italic' }}>{d.intro}</div>
             <div className="flex gap-sm" style={{ marginTop: 12 }}>
               <span className="tag">{t('dungeons.stagesTag', { n: d.stages })}</span>
-              <span className="tag">{t('dungeons.energyTag', { n: d.energy_cost })}</span>
               <span className="tag gold">{t('dungeons.xpTag', { n: d.xp_bonus })}</span>
               <span className="tag gold">{t('dungeons.goldTag', { n: d.gold_bonus })}</span>
             </div>
             <button
               className="btn btn-primary"
               style={{ marginTop: 12, width: '100%' }}
-              disabled={!d.unlocked || !char || char.energy < d.energy_cost || busy}
+              disabled={!d.unlocked || !char || busy}
               onClick={() => enter(d.slug)}
             >
-              {d.unlocked ? t('dungeons.enter', { n: d.energy_cost }) : t('dungeons.requiresLv', { n: d.level_req })}
+              {d.unlocked ? t('dungeons.enter') : t('dungeons.requiresLv', { n: d.level_req })}
             </button>
           </div>
         ))}

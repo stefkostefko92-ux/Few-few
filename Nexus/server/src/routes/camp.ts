@@ -143,8 +143,13 @@ router.post('/claim', (req, res) => {
   const hours = task.duration_hr as number;
   // Skill scaling: charisma adds a small payout bump (max +20% at CHA 20)
   const chaBonus = Math.min(0.2, (char.charisma || 5) * 0.01);
-  const baseGold = Math.round(def.gold_per_hour * hours * (1 + chaBonus));
-  const baseXp   = Math.round(def.xp_per_hour * hours);
+  // Баланс: level scaling — фиксираните g/h (10–28) правеха idle пътя
+  // мъртво съдържание след ~lv30 (24ч camp < 1 hunt kill). +6%/ниво държи
+  // camp на ~25–35% от активния hunt доход на всяко ниво — смислен
+  // офлайн филър, без да конкурира активната игра.
+  const levelScale = 1 + char.level * 0.06;
+  const baseGold = Math.round(def.gold_per_hour * hours * (1 + chaBonus) * levelScale);
+  const baseXp   = Math.round(def.xp_per_hour * hours * levelScale);
   const reward = applyGuildMultipliers(char.id, baseGold, baseXp);
   const goldGain = reward.gold;
   const xpGain = reward.xp;

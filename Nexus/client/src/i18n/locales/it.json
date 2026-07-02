@@ -489,8 +489,7 @@
     "pressOnward": "Avanza",
     "lv": "Lv {{n}}",
     "stagesTag": "{{n}} fasi",
-    "energyTag": "{{n}} EN",
-    "enter": "Entra ({{n}} EN)",
+    "enter": "Entra",
     "requiresLv": "Richiede Lv {{n}}"
   },
   "quests": {

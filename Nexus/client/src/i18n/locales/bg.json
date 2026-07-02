@@ -489,8 +489,7 @@
     "pressOnward": "Напред!",
     "lv": "Ниво {{n}}",
     "stagesTag": "{{n}} етапа",
-    "energyTag": "{{n}} EN",
-    "enter": "Влез ({{n}} EN)",
+    "enter": "Влез",
     "requiresLv": "Изисква ниво {{n}}"
   },
   "quests": {
