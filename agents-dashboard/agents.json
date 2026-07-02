@@ -5970,9 +5970,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Stripe API версии: всеки акаунт има default API версия (Workbench); override per-reques…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Supreme Bot billing: идемпотентността е marker-first-in-$transaction по event.id (Proce… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Supreme Bot billing: идемпотентността е marker-first-in-$transaction по event.id (Proce…\" (+3 още)"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
