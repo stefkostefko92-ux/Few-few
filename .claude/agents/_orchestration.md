@@ -25,6 +25,10 @@
   (backend за push/deep-link/API ревю) → Правния Разбирач (privacy/EAA/бисквитки в webview) →
   SEO (web частта: manifest, service worker, Lighthouse за TWA) → Преводач (UI BG/EN/IT) →
   VPS-аджията (`.well-known/assetlinks.json` + AASA хостинг, TLS). Мобилджията е lead на пакетирането.
+- **Трейдинг бот (treydar):** Трейдъра (`trader-lint` + `backtest-check` + `npm test` + walk-forward
+  бектест) → Кодаджията (общо ревю за бъгове/сигурност) → VPS-аджията (ключове/секрети, systemd,
+  IP allowlist) → при Discord известия/панел → Дискорджията. Трейдъра е lead; **реални поръчки пуска
+  само човекът** (тройната спирачка), финансово-регулаторното (чужди пари, MiFID II) → човек/юрист.
 
 ## Принцип
 Всеки преход е през **гейт** (зелен инструмент/ревю), не през „изглежда добре".
