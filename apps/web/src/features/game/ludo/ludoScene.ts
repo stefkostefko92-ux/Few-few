@@ -10,7 +10,7 @@ import {
   Color,
   CylinderGeometry,
   DirectionalLight,
-  type Euler,
+  Euler,
   Group,
   HemisphereLight,
   LatheGeometry,
@@ -18,6 +18,7 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
+  Quaternion,
   Raycaster,
   Scene,
   TorusGeometry,
@@ -147,7 +148,7 @@ export class LudoScene {
           this.die.rotation.y += (to.y - this.die.rotation.y) * 0.25;
           this.die.rotation.z += (to.z - this.die.rotation.z) * 0.25;
         }
-        this.die.position.y = 0.6 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+        this.die.position.y = 0.69 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
       }
     }
 
@@ -185,13 +186,25 @@ export class LudoScene {
     woodTex.repeat.set(4, 4);
     const woodN = woodNormal();
     woodN.repeat.set(4, 4);
-    const base = new Mesh(
-      new BoxGeometry(N + 0.9, 0.5, N + 0.9),
-      new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.5, 0.5), roughness: 0.52, metalness: 0.08 }),
-    );
+    const woodMat = new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.5, 0.5), roughness: 0.52, metalness: 0.08 });
+    const base = new Mesh(new BoxGeometry(N + 0.9, 0.5, N + 0.9), woodMat);
     base.position.y = -0.05;
     base.receiveShadow = true;
     this.scene.add(base);
+
+    // pulled-out dice drawer at the front: the die used to hover half-sunk
+    // into the board's near edge. Now it rolls seated on a felt-lined tray.
+    const drawer = new Mesh(new BoxGeometry(2.6, 0.22, 1.6), woodMat);
+    drawer.position.set(0, 0.09, H + 1.4);
+    drawer.castShadow = true;
+    drawer.receiveShadow = true;
+    const feltPad = new Mesh(
+      new BoxGeometry(2.3, 0.04, 1.3),
+      new MeshStandardMaterial({ color: new Color("#17452c"), roughness: 0.95 }),
+    );
+    feltPad.position.set(0, 0.22, H + 1.4);
+    feltPad.receiveShadow = true;
+    this.scene.add(drawer, feltPad);
 
     // a slightly inset ivory cross "field" the track sits on, for contrast
     // against the houses. Matte: clearcoat on broad ivory faces caught the key
@@ -406,15 +419,21 @@ export class LudoScene {
     if (!this.die) {
       const faces = pipFaces();
       const mats = DICE_FACE_ORDER.map((f) => new MeshPhysicalMaterial({ map: faces[f], roughness: 0.32, clearcoat: 0.7 }));
-      this.die = new Mesh(new BoxGeometry(1, 1, 1), mats);
-      this.die.position.set(0, 0.6, H + 1);
+      this.die = new Mesh(new BoxGeometry(0.9, 0.9, 0.9), mats);
+      // seated on the drawer's felt pad (pad top 0.24 + half die height)
+      this.die.position.set(0, 0.69, H + 1.4);
       this.die.castShadow = true;
       this.scene.add(this.die);
     }
     this.die.visible = true;
     if (value !== this.prevDie) {
       this.prevDie = value;
-      const to = faceUp(value);
+      // yaw the settled cube ~30° so three faces show (a straight-on cube at
+      // this steep camera collapses into a two-face "domino" strip)
+      const q = new Quaternion()
+        .setFromEuler(faceUp(value))
+        .premultiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), 0.52));
+      const to = new Euler().setFromQuaternion(q);
       if (this.reduceMotion) this.die.rotation.copy(to);
       else this.diceAnim = { start: performance.now(), from: this.die.rotation.clone(), to };
     }
