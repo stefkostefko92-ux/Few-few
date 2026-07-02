@@ -1,6 +1,7 @@
 // execute.js — изпращане на поръчки БЕЗОПАСНО: идемпотентност (clientOrderId + reconcile),
 // precision закръгляне (floor към stepSize/tickSize + minNotional), защитен стоп след fill.
 // В dry-run само логва намерението. Мрежов провал ≠ "поръчката не мина" → reconcile преди ретрай.
+import ccxt from 'ccxt';
 import { log, audit } from './logger.js';
 
 // Уникален, но детерминистичен-по-намерение clientOrderId (буквено-цифров, макс 36 за Binance).
@@ -9,8 +10,14 @@ function makeClientId(tag) {
   return `tr-${tag}-${Date.now().toString(36)}-${rnd.toString(36)}`.slice(0, 36);
 }
 
-// Закръгля количество/цена НАДОЛУ към precision на пазара (ccxt връща стрингове — точни).
-function amt(ex, symbol, quantity) { return ex.amountToPrecision(symbol, quantity); }
+// Количество: СТРОГО НАДОЛУ (TRUNCATE) в precision режима на борсата. CCXT Manual: amountToPrecision
+// ползва борсовия rounding режим и МОЖЕ да закръгли нагоре — недопустимо за риск-размер (би отворило
+// позиция НАД сметнатия риск). Затова decimalToPrecision с изричен TRUNCATE (без padding).
+function amt(ex, market, symbol, quantity) {
+  const prec = market?.precision?.amount;
+  if (prec == null) return ex.amountToPrecision(symbol, quantity); // fallback без метаданни
+  return ex.decimalToPrecision(String(quantity), ccxt.TRUNCATE, prec, ex.precisionMode, ccxt.NO_PADDING);
+}
 function prc(ex, symbol, price) { return ex.priceToPrecision(symbol, price); }
 
 // Проверка minNotional (мин. стойност на поръчка). Връща null ако е под минимума.
@@ -35,7 +42,7 @@ async function findByClientId(ex, symbol, clientId) {
 
 // Пазарен вход (buy). Идемпотентен: при мрежова грешка НЕ праща сляпо пак — първо сверява.
 export async function marketBuy({ ex, cfg, market, symbol, quantity, price }) {
-  const qty = Number(amt(ex, symbol, quantity));
+  const qty = Number(amt(ex, market, symbol, quantity));
   if (!(qty > 0)) throw new Error('Количество след закръгляне е 0 (под stepSize).');
   if (!meetsMinNotional(market, qty, price))
     throw new Error(`Под minNotional: ${(qty * price).toFixed(2)} < ${market.limits.cost.min}.`);
@@ -64,7 +71,7 @@ export async function marketBuy({ ex, cfg, market, symbol, quantity, price }) {
 
 // Защитен стоп-лос на БОРСАТА след вход (STOP_LOSS_LIMIT за spot). Не 'ментален' стоп в паметта.
 export async function placeStopLoss({ ex, cfg, market, symbol, quantity, stopPrice }) {
-  const qty = Number(amt(ex, symbol, quantity));
+  const qty = Number(amt(ex, market, symbol, quantity));
   const stop = Number(prc(ex, symbol, stopPrice));
   // limit цена малко под стоп-цената, за да се напълни при задействане.
   const limit = Number(prc(ex, symbol, stopPrice * 0.999));
@@ -91,7 +98,7 @@ export async function placeStopLoss({ ex, cfg, market, symbol, quantity, stopPri
 
 // Изход (sell) — при сигнал за изход или ръчно затваряне. Идемпотентен като входа.
 export async function marketSell({ ex, cfg, market, symbol, quantity, price }) {
-  const qty = Number(amt(ex, symbol, quantity));
+  const qty = Number(amt(ex, market, symbol, quantity));
   if (!(qty > 0)) throw new Error('Количество за продажба е 0.');
   const clientOrderId = makeClientId('sell');
   audit('intent.sell', { symbol, qty, price, clientOrderId, live: cfg.live });
