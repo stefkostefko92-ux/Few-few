@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
+import { useMatchStore } from "../../../lib/store";
 import { PlayingCard } from "../cards/PlayingCard";
 import type { GameOverMsg, MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
@@ -62,7 +63,10 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
           MMR {delta >= 0 ? "+" : ""}
           {delta}
         </p>
-        <Button className="mt-6 w-full" onClick={() => navigate("/")}>
+        <Button className="mt-6 w-full" onClick={() => useMatchStore.getState().playAgain()}>
+          {t("game.playAgain")}
+        </Button>
+        <Button variant="ghost" className="mt-2 w-full" onClick={() => navigate("/")}>
           {t("game.backToLobby")}
         </Button>
       </div>

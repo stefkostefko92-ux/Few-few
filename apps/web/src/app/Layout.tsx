@@ -9,6 +9,7 @@ import { StoreModal } from "../features/shop/StoreModal";
 import { CosmeticsModal } from "../features/shop/CosmeticsModal";
 import { InviteWatcher } from "../features/social/InviteWatcher";
 import { LobbyWatcher } from "../features/lobby/LobbyWatcher";
+import { ErrorToasts } from "./ErrorToasts";
 
 /** Authenticated app chrome: skip-link + header + routed content + footer. */
 export function Layout() {
@@ -39,6 +40,7 @@ export function Layout() {
       <CosmeticsModal />
       <InviteWatcher />
       <LobbyWatcher />
+      <ErrorToasts />
     </div>
   );
 }

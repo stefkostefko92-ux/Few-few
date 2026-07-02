@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { isGameKey, type GameKey } from "@aso/shared";
 import { Button, Panel } from "../../ui";
-import { useAuthStore } from "../../lib/store";
+import { useAuthStore, useMatchStore } from "../../lib/store";
 import { GAME_CATALOG } from "../lobby/games";
 import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
@@ -112,6 +112,9 @@ export function GameView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  // "Play again" bumps the epoch; keying the stage remounts the game view, so
+  // useMatch cleanly re-enters the queue for a fresh match.
+  const epoch = useMatchStore((s) => s.epoch);
 
   const gameKey = game?.toUpperCase();
   const meta = GAME_CATALOG.find((g) => g.key === gameKey);
@@ -140,7 +143,7 @@ export function GameView() {
   }
 
   return (
-    <CinematicStage tone={TONE[key] ?? "default"}>
+    <CinematicStage key={epoch} tone={TONE[key] ?? "default"}>
       <Suspense
         fallback={
           <p className="py-16 text-center text-ink-muted" aria-live="polite">

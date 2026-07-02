@@ -194,7 +194,8 @@
     "leave": "Esci",
     "backToLobby": "Torna alla lobby",
     "botPlaying": "Un bot sta giocando per te.",
-    "reclaim": "Torna in gioco"
+    "reclaim": "Torna in gioco",
+    "playAgain": "Gioca ancora"
   },
   "santase": {
     "trump": "Briscola",
@@ -384,7 +385,9 @@
     "discardPhase": "Scarta",
     "knock": "Bussa",
     "discardHint": "Scegli una carta da scartare",
-    "drawHint": "Pesca dal mazzo o dagli scarti"
+    "drawHint": "Pesca dal mazzo o dagli scarti",
+    "cancelKnock": "Annulla la chiusura",
+    "knockHint": "Scegli la carta con cui chiudere"
   },
   "gofish": {
     "ocean": "Oceano",
@@ -486,7 +489,14 @@
     "checkmate": "Scacco matto!",
     "mateWin": "Scacco matto — vinci!",
     "drawn": "Patta",
-    "illegal": "Mossa illegale!"
+    "illegal": "Mossa illegale!",
+    "promoteTitle": "Promuovi il pedone a",
+    "promo": {
+      "q": "donna",
+      "r": "torre",
+      "b": "alfiere",
+      "n": "cavallo"
+    }
   },
   "fx": {
     "hit": "Colpito!",
@@ -595,5 +605,13 @@
     "turnHint": "Turno di {{name}}…",
     "mortgage": "ipoteca",
     "houses": "{{n}}🏠"
+  },
+  "errors": {
+    "generic": "Qualcosa è andato storto",
+    "lobby_full": "La stanza è piena o non disponibile",
+    "no_engine": "Questo gioco al momento non è disponibile",
+    "illegal_action": "Mossa non valida",
+    "chat_rate": "Troppo veloce. Attendi un momento.",
+    "rate_limited": "Troppi tentativi — attendi."
   }
 }

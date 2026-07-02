@@ -11,7 +11,7 @@ import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements } from "../anim/useTableFx";
 import { useMatch } from "../useMatch";
-import { GameOverPanel, fitOverlap } from "../scene/SceneShell";
+import { GameOverPanel, SceneHeader, fitOverlap } from "../scene/SceneShell";
 import "../cards/cards.css";
 
 interface Play {
@@ -390,7 +390,7 @@ function SearchingOrOver({
   const { t } = useTranslation();
   return (
     <div className="mx-auto max-w-md text-center">
-      <h1 className="mb-6 text-3xl text-brass-300">{title}</h1>
+      <SceneHeader title={title} />
       {phase === "over" && result ? (
         <GameOverPanel seat={seat} result={result} />
       ) : (
