@@ -2,6 +2,7 @@ import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { WeaponTrail, ImpactVFX, HitFlash, SPECTACLE_COLORS } from './CombatSpectacle';
 // Own the floating-HUD styles here so the health bars render correctly
 // wherever the 3D scene is mounted — including the standalone /demo/combat
 // harness, which doesn't pull in the CombatScene orchestrator's CSS.
@@ -1124,6 +1125,16 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
   // imperative handle can `.play()` into it, and the rAF tick can call
   // `.update(dt)`.
   const choreoRef = useRef<Choreographer | null>(null);
+  // Спектакълен слой (CombatSpectacle): trail-ове, импакт пакет, hit-flash.
+  // Живее в useEffect; imperative attack() го достига през този ref.
+  const spectacleRef = useRef<{
+    heroTrail: WeaponTrail | null;
+    foeTrail: WeaponTrail | null;
+    impactVfx: ImpactVFX | null;
+    hitFlash: HitFlash;
+    trailWin: { hero: number; foe: number };
+    tmp: THREE.Vector3;
+  } | null>(null);
   const bloomKickRecoverRef = useRef(0.30);
   /** Two-sine handheld micro-shake offset added to the camera anchor on
    *  top of the choreographer's tracks. Keeps every shot subtly alive
@@ -1773,6 +1784,21 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     scene.add(fxGroup);
     fxGroupRef.current = fxGroup;
 
+    /* ----- спектакълен слой (CombatSpectacle) -----
+     * СОБСТВЕН group — не fxGroup (неговият tick фейдва децата по
+     * userData.kind). Trail/импакт са зад !lite; hit-flash е евтин и
+     * върви навсякъде. */
+    const spectacleGroup = new THREE.Group();
+    scene.add(spectacleGroup);
+    spectacleRef.current = {
+      heroTrail: liteParticleBudget ? null : new WeaponTrail(spectacleGroup, SPECTACLE_COLORS[heroClass] ?? 0xffffff),
+      foeTrail: liteParticleBudget ? null : new WeaponTrail(spectacleGroup, SPECTACLE_COLORS[foeClass] ?? 0xffffff),
+      impactVfx: liteParticleBudget ? null : new ImpactVFX(spectacleGroup, 4),
+      hitFlash: new HitFlash(),
+      trailWin: { hero: 0, foe: 0 },
+      tmp: new THREE.Vector3(),
+    };
+
     /** Expanding torus shockwave on the ground. */
     function shockwave(x: number, z: number, color: number) {
       const ring = new THREE.Mesh(
@@ -2301,6 +2327,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /* ----- floating HUD projection helper ----- */
     // Scratch vector reused every frame (no per-frame alloc).
     const hudProjVec = new THREE.Vector3();
+    // Scratch за спектакълния trail (нула per-frame alloc).
+    const trailBaseScratch = new THREE.Vector3();
+    const trailTipScratch = new THREE.Vector3();
     // Scratch for the per-frame head-look-at-camera (no alloc).
     const faceLookFront = new THREE.Vector3();
     const faceLookPos = new THREE.Vector3();
@@ -2702,6 +2731,30 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       // Backend-aware render — null until createCombatBackend resolves
       // (WebGPU init takes ~50-200ms). The first few rAFs after mount
       // skip drawing; the loading background div stays visible.
+      // ── Спектакълен слой: trail-ове по оръжейната кост + импакт пакет ──
+      {
+        const sp = spectacleRef.current;
+        if (sp) {
+          for (const side of ['hero', 'foe'] as const) {
+            const trail = side === 'hero' ? sp.heroTrail : sp.foeTrail;
+            if (!trail) continue;
+            const rig = side === 'hero' ? heroRigRef.current : foeRigRef.current;
+            if (!rig) continue;
+            // Quaternius: Weapon.R кост; realistic RPM: RightHand.
+            const lbW = (rig as any).userData.lifeBones?.weapon as THREE.Object3D | undefined;
+            const hbH = (rig as any).userData.humanoidBones?.RightHand?.bone as THREE.Object3D | undefined;
+            const bone = lbW || hbH;
+            if (!bone) continue;
+            const tipLen = lbW ? 1.15 : 0.9; // меч/жезъл срещу юмрук
+            bone.updateWorldMatrix(true, false);
+            trailBaseScratch.setFromMatrixPosition(bone.matrixWorld);
+            trailTipScratch.set(0, tipLen, 0).applyMatrix4(bone.matrixWorld);
+            trail.update(trailBaseScratch, trailTipScratch, dt, now < sp.trailWin[side]);
+          }
+          if (sp.impactVfx) sp.impactVfx.update(dt);
+          sp.hitFlash.updateFlashes(dt);
+        }
+      }
       if (backend) backend.render();
       rafRef.current = requestAnimationFrame(tick);
     }
@@ -2710,6 +2763,15 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
 
     return () => {
       cancelled = true;
+      const spCleanup = spectacleRef.current;
+      if (spCleanup) {
+        spCleanup.heroTrail?.dispose();
+        spCleanup.foeTrail?.dispose();
+        spCleanup.impactVfx?.dispose();
+        spCleanup.hitFlash.dispose(); // възстановява emissive стойностите
+        spectacleRef.current = null;
+      }
+      scene.remove(spectacleGroup);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       try { choreoRef.current?.stop(); choreoRef.current = null; } catch {}
@@ -2781,11 +2843,36 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
       const cls = attacker === 'hero' ? heroClass : foeClass;
       const base = pickAttackTimeline(cls, attacker, effect);
       const timeline = crit ? applyCritModifier(base) : base;
+      // Спектакъл: отвори trail прозореца за замаха (по клас; ranger=лък,
+      // без trail) и увий onImpact с ударния пакет + hit-flash.
+      const SWING_MS: Record<string, number> = { warrior: 400, mage: 550, rogue: 380, ranger: 0 };
+      const sp = spectacleRef.current;
+      if (sp) {
+        const w = SWING_MS[cls] ?? 400;
+        if (w > 0) sp.trailWin[attacker] = performance.now() + w;
+      }
+      const spectacleImpact = () => {
+        const s2 = spectacleRef.current;
+        if (s2 && !missed && !dodged) {
+          const targetSide = attacker === 'hero' ? 'foe' : 'hero';
+          const targetRig = targetSide === 'hero' ? heroRigRef.current : foeRigRef.current;
+          const col = SPECTACLE_COLORS[cls] ?? 0xffb347;
+          const power = Math.min(1, (damageRatio || 0.3) * (crit ? 1.4 : 1.0));
+          if (targetRig) {
+            if (s2.impactVfx) {
+              s2.tmp.set(targetRig.position.x, 1.3, targetRig.position.z);
+              s2.impactVfx.spawn(s2.tmp, col, power);
+            }
+            s2.hitFlash.hitFlash(targetRig, col);
+          }
+        }
+        onImpact?.();
+      };
       choreoRef.current?.play(timeline, {
         attacker,
         damageRatio: damageRatio || 0.3,
         crit: !!crit,
-        onImpact,
+        onImpact: spectacleImpact,
       });
       if (missed || dodged) shakeRef.current = { amount: 0.05, t: 0.18 };
     },
