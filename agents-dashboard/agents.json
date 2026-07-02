@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-01",
+    "updated": "2026-07-02",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -6181,9 +6181,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Stripe API версии: всеки акаунт има default API версия (Workbench); override per-reques…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Next.js App Router webhook route: raw body за проверка на подпис се взима с await req.t… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Next.js App Router webhook route: raw body за проверка на подпис се взима с await req.t…\" (+2 още)"
+        },
         {
           "date": "2026-07-01",
           "type": "quarantine",
