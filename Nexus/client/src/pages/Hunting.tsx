@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import CombatScene from '../combat/CombatScene';
@@ -13,6 +14,7 @@ interface Region {
 }
 
 export default function Hunting(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showUnlocks = useStore((s) => s.showUnlocks);
@@ -57,16 +59,16 @@ export default function Hunting(): React.ReactElement {
           reward={{ xp: fight.xp, gold: fight.gold, itemReward: fight.itemReward || null, itemDrop: fight.itemDrop || null }}
           onClose={() => { setFight(null); }}
           onReplay={() => hunt(region!)}
-          introTitle={`Wild Encounter — ${fight.foe.name}`}
+          introTitle={t('hunting.wildEncounter', { name: fight.foe.name })}
           region={region || undefined}
         />
         <div className="panel" style={{ padding: 16 }}>
           <div className="flex between">
-            <div>{fight.success ? 'Foe down. The hunt continues.' : 'You stagger back, bruised.'}</div>
+            <div>{fight.success ? t('hunting.victoryText') : t('hunting.defeatText')}</div>
             <div className="flex gap-sm">
-              <button className="btn" onClick={() => setFight(null)}>Stop Hunting</button>
+              <button className="btn" onClick={() => setFight(null)}>{t('hunting.stopHunting')}</button>
               <button className="btn btn-primary" disabled={!char} onClick={() => hunt(region!)}>
-                Hunt Again
+                {t('hunting.huntAgain')}
               </button>
             </div>
           </div>
@@ -80,17 +82,17 @@ export default function Hunting(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Hunting Grounds</h2>
-            <div className="panel-subtitle">Repeatable encounters — random foe. Each hunt sets a random 1-20 min cooldown (reduced by mounts).</div>
+            <h2 className="panel-title">{t('hunting.title')}</h2>
+            <div className="panel-subtitle">{t('hunting.subtitle')}</div>
           </div>
         </div>
         <div className="grid-cards">
           {regions.map((r) => (
             <div key={r.region} className="card" style={{ opacity: r.unlocked ? 1 : 0.5 }}>
               <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{prettyRegion(r.region)}</strong>
-              <div className="muted text-sm">Lv {r.min_level}–{r.max_level} · {r.monster_count} foes</div>
+              <div className="muted text-sm">{t('hunting.regionInfo', { min: r.min_level, max: r.max_level, count: r.monster_count })}</div>
               <button className="btn btn-primary" style={{ marginTop: 12, width: '100%' }} disabled={!r.unlocked || !char || busy} onClick={() => hunt(r.region)}>
-                {!r.unlocked ? `Requires Lv ${r.gate}` : 'Hunt Here'}
+                {!r.unlocked ? t('hunting.requiresLv', { n: r.gate }) : t('hunting.huntHere')}
               </button>
             </div>
           ))}

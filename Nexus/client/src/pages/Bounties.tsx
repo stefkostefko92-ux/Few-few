@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
@@ -37,6 +38,7 @@ function pickMonsterSprite(slug: string): string {
 }
 
 export default function Bounties(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showLevelUp = useStore((s) => s.showLevelUp);
@@ -60,8 +62,8 @@ export default function Bounties(): React.ReactElement {
   async function claim(b: Bounty) {
     try {
       const r = await api.post('/bounties/claim', { id: b.id });
-      const trophyStr = r.trophy ? ` · ${r.trophy}× Monster Trophy` : '';
-      toast(`Bounty cleared! +${r.gold}g · +${r.xp} XP${trophyStr}`, 'success');
+      const trophyStr = r.trophy ? t('bounties.trophySuffix', { n: r.trophy }) : '';
+      toast(t('bounties.claimToast', { gold: r.gold, xp: r.xp, trophy: trophyStr }), 'success');
       if (r.levelUp) showLevelUp(r.levelUp);
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
@@ -76,17 +78,16 @@ export default function Bounties(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Bounty Board</h2>
+            <h2 className="panel-title">{t('bounties.title')}</h2>
             <div className="panel-subtitle">
-              Three contracts per day, scaled to your level. Hunting Grounds kills feed the
-              tracker automatically. Resets in <span style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>{rh}h {rm}m</span>.
+              {t('bounties.subtitle')} {t('bounties.resetsIn')} <span style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>{t('bounties.time', { h: rh, m: rm })}</span>.
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid-cards">
-        {bounties.length === 0 && <div className="muted">Loading bounties…</div>}
+        {bounties.length === 0 && <div className="muted">{t('bounties.loading')}</div>}
         {bounties.map((b) => {
           const pct = Math.min(100, (b.count_done / b.count_required) * 100);
           const ready = b.count_done >= b.count_required;
@@ -100,7 +101,7 @@ export default function Bounties(): React.ReactElement {
                 <div style={{ flex: 1 }}>
                   <div className="flex between" style={{ alignItems: 'baseline' }}>
                     <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)', fontSize: 18 }}>{b.monster_name}</strong>
-                    <span className="tag" style={{ background: `${color}22`, color, fontSize: 10 }}>{b.tier.toUpperCase()}</span>
+                    <span className="tag" style={{ background: `${color}22`, color, fontSize: 10 }}>{t(`bounties.tier.${b.tier}`)}</span>
                   </div>
                   <div className="muted text-sm" style={{ marginTop: 4, textTransform: 'capitalize' }}>{b.region.replace(/_/g, ' ')}</div>
                 </div>
@@ -110,16 +111,16 @@ export default function Bounties(): React.ReactElement {
                 <div className="bar-fill xp" style={{ width: `${pct}%`, background: color, transition: 'width .5s ease' }} />
               </div>
               <div className="flex between" style={{ marginTop: 6 }}>
-                <span className="muted text-sm">Kills</span>
+                <span className="muted text-sm">{t('bounties.kills')}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', color: ready ? 'var(--emerald-1)' : 'var(--text-2)' }}>
                   {b.count_done} / {b.count_required}
                 </span>
               </div>
 
               <div className="flex gap-sm" style={{ marginTop: 12, flexWrap: 'wrap' }}>
-                <span className="tag gold">+{b.reward.gold}g</span>
-                <span className="tag emerald">+{b.reward.xp} XP</span>
-                <span className="tag" style={{ background: 'rgba(232,90,79,.15)', color: 'var(--crimson-1)' }}>{b.reward.trophy}× Trophy</span>
+                <span className="tag gold">{t('bounties.goldTag', { n: b.reward.gold })}</span>
+                <span className="tag emerald">{t('bounties.xpTag', { n: b.reward.xp })}</span>
+                <span className="tag" style={{ background: 'rgba(232,90,79,.15)', color: 'var(--crimson-1)' }}>{t('bounties.trophyTag', { n: b.reward.trophy })}</span>
               </div>
 
               <button
@@ -128,7 +129,7 @@ export default function Bounties(): React.ReactElement {
                 onClick={() => claim(b)}
                 style={{ width: '100%', marginTop: 14 }}
               >
-                {b.claimed ? 'Claimed' : ready ? 'Claim reward' : `Hunt ${b.count_required - b.count_done} more`}
+                {b.claimed ? t('bounties.claimed') : ready ? t('bounties.claimReward') : t('bounties.huntMore', { n: b.count_required - b.count_done })}
               </button>
             </div>
           );

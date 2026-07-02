@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
@@ -8,6 +9,7 @@ import { useStore } from '../lib/store';
  * at the season vendor for cosmetics and a tier-9 trophy.
  */
 export default function Events(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [state, setState] = useState<any>(null);
@@ -24,31 +26,32 @@ export default function Events(): React.ReactElement {
     setBusy(true);
     try {
       await api.post('/events/claim', { slug });
-      toast('Reward redeemed.', 'success');
+      toast(t('events.redeemed'), 'success');
       await load();
       refresh();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setBusy(false); }
   }
 
-  if (!state) return <div className="page"><div className="muted">Loading the season…</div></div>;
+  if (!state) return <div className="page"><div className="muted">{t('events.loading')}</div></div>;
 
   if (!state.active) {
     return (
       <div className="page events-page">
         <header className="page-header">
-          <h1>Seasonal Events</h1>
+          <h1>{t('events.title')}</h1>
         </header>
         <div className="card">
-          <h2>Between seasons</h2>
+          <h2>{t('events.betweenTitle')}</h2>
           <p className="muted">
-            The realm is between events. Next season: <strong>{state.next_season.name}</strong>,
-            opens on <strong>{state.next_season.starts}</strong>.
+            <Trans
+              i18nKey="events.nextSeason"
+              values={{ name: state.next_season.name, date: state.next_season.starts }}
+              components={{ b: <strong /> }}
+            />
           </p>
           <p className="muted">
-            Four windows per year — Frostmoot in mid-winter, Bloomtide in spring, Sunhigh in
-            mid-summer, Emberfall in autumn. Each pays points against a specific enemy family
-            and unlocks cosmetics plus a tier-9 season trophy at the vendor.
+            {t('events.fourWindows')}
           </p>
         </div>
       </div>
@@ -66,22 +69,22 @@ export default function Events(): React.ReactElement {
       <section className="card">
         <p className="event-flavor">"{s.flavor}"</p>
         <div className="event-points">
-          <span className="muted">Season points:</span>
+          <span className="muted">{t('events.seasonPoints')}</span>
           <strong className="event-points-num">{state.points.toLocaleString()}</strong>
         </div>
         <div className="muted text-sm">
-          Earn points by hunting: {s.point_families.join(' / ')}. Points scale with monster level.
+          {t('events.earnPoints', { families: s.point_families.join(' / ') })}
         </div>
       </section>
 
       <section className="card">
-        <h2>Season vendor</h2>
+        <h2>{t('events.vendorTitle')}</h2>
         <div className="event-rewards">
           {state.rewards.map((r: any) => (
             <div key={r.slug} className={`event-reward ${r.owned ? 'owned' : ''}`}>
               <div className="event-reward-head">
                 <span className="tag">{r.kind}</span>
-                <span className="event-reward-cost">{r.cost.toLocaleString()} pts</span>
+                <span className="event-reward-cost">{t('events.pts', { n: r.cost.toLocaleString() })}</span>
               </div>
               <div className="event-reward-name">{r.name}</div>
               <div className="muted text-sm event-reward-flavor">{r.flavor}</div>
@@ -90,7 +93,7 @@ export default function Events(): React.ReactElement {
                 disabled={busy || r.owned || state.points < r.cost}
                 onClick={() => claim(r.slug)}
               >
-                {r.owned ? 'Owned' : (state.points < r.cost ? `Need ${(r.cost - state.points).toLocaleString()} more` : 'Redeem')}
+                {r.owned ? t('events.owned') : (state.points < r.cost ? t('events.needMore', { n: (r.cost - state.points).toLocaleString() }) : t('events.redeem'))}
               </button>
             </div>
           ))}

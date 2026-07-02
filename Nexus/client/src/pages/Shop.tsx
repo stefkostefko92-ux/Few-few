@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { Item } from '../lib/types';
@@ -6,6 +7,7 @@ import { itemSummary } from './Inventory';
 import Sprite, { spriteForItem } from '../components/Sprite';
 
 export default function Shop(): React.ReactElement {
+  const { t } = useTranslation();
   const refresh = useStore((s) => s.refreshCharacter);
   const char = useStore((s) => s.character);
   const toast = useStore((s) => s.toast);
@@ -29,7 +31,7 @@ export default function Shop(): React.ReactElement {
     try {
       await api.post('/shop/buy', { itemId: id, quantity: 1 });
       await refresh();
-      toast('Purchase complete.', 'success');
+      toast(t('shop.purchaseComplete'), 'success');
     } catch (e: any) {
       toast(e.message, 'error');
     }
@@ -40,13 +42,13 @@ export default function Shop(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">The Merchant of Oaken Hollow</h2>
-            <div className="panel-subtitle">"Coin for steel, coin for cloth. A fair exchange."</div>
+            <h2 className="panel-title">{t('shop.title')}</h2>
+            <div className="panel-subtitle">{t('shop.subtitle')}</div>
           </div>
-          <div className="tag gold" style={{ fontSize: 14 }}>{char?.gold.toLocaleString() || 0} gold</div>
+          <div className="tag gold" style={{ fontSize: 14 }}>{t('shop.goldAmount', { n: char?.gold.toLocaleString() || 0 })}</div>
         </div>
         <div className="flex gap-sm" style={{ flexWrap: 'wrap', marginBottom: 18 }}>
-          <Pill active={cat === 'all'} onClick={() => setCat('all')}>All</Pill>
+          <Pill active={cat === 'all'} onClick={() => setCat('all')}>{t('shop.all')}</Pill>
           {categories.map((c) => (
             <Pill key={c} active={cat === c} onClick={() => setCat(c)}>{prettyCategory(c)}</Pill>
           ))}
@@ -60,18 +62,18 @@ export default function Shop(): React.ReactElement {
                   <div>
                     <div className={`rarity-${it.rarity}`} style={{ fontWeight: 700 }}>{it.name}</div>
                     <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>
-                      {it.category} {it.sub_type ? `· ${it.sub_type}` : ''} · Lv {it.level_req}
+                      {it.category} {it.sub_type ? `· ${it.sub_type}` : ''} · {t('shop.lv', { n: it.level_req })}
                     </div>
                   </div>
                 </div>
                 <span className={`tag rarity-${it.rarity}`}>{it.rarity}</span>
               </div>
               <div className="muted text-sm" style={{ marginTop: 8 }}>{it.description}</div>
-              <div style={{ marginTop: 10, fontSize: 13 }}>{itemSummary(it)}</div>
+              <div style={{ marginTop: 10, fontSize: 13 }}>{itemSummary(it, t)}</div>
               <div className="flex between" style={{ marginTop: 12 }}>
-                <span className="gold">{it.buy_price} gold</span>
+                <span className="gold">{t('shop.goldAmount', { n: it.buy_price })}</span>
                 <button className="btn btn-primary btn-sm" disabled={!char || char.gold < it.buy_price} onClick={() => buy(it.id)}>
-                  Buy
+                  {t('shop.buy')}
                 </button>
               </div>
             </div>

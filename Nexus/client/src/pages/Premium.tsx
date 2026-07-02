@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
@@ -41,6 +42,7 @@ interface HistoryRow {
 }
 
 export default function Premium(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const char = useStore((s) => s.character);
@@ -72,7 +74,7 @@ export default function Premium(): React.ReactElement {
     const cancelled = params.get('cancelled');
 
     if (cancelled) {
-      toast('Purchase cancelled.', 'info');
+      toast(t('premium.toasts.purchaseCancelled'), 'info');
       navigate('/app/premium', { replace: true });
       return;
     }
@@ -81,11 +83,11 @@ export default function Premium(): React.ReactElement {
       try {
         const r = await api.post('/payments/verify', body);
         if (r.ok) {
-          toast('Purchase complete — thank you!', 'success');
+          toast(t('premium.toasts.purchaseComplete'), 'success');
           await refresh();
           await load();
         } else {
-          toast(`Payment status: ${r.status}`, 'info');
+          toast(t('premium.toasts.paymentStatus', { status: r.status }), 'info');
         }
       } catch (e: any) {
         toast(e.message, 'error');
@@ -107,7 +109,7 @@ export default function Premium(): React.ReactElement {
         window.location.assign(r.url);
         return;
       }
-      toast('No checkout URL returned.', 'error');
+      toast(t('premium.toasts.noCheckoutUrl'), 'error');
     } catch (e: any) {
       toast(e.message, 'error');
     } finally {
@@ -121,28 +123,29 @@ export default function Premium(): React.ReactElement {
         <div className="ambient-stars" />
         <div className="panel-header" style={{ position: 'relative' }}>
           <div>
-            <h2 className="panel-title">Premium Mint</h2>
+            <h2 className="panel-title">{t('premium.title')}</h2>
             <div className="panel-subtitle">
-              Earnable in-game · accelerable through the Stripe checkout below.
+              {t('premium.subtitle')}
             </div>
           </div>
           <div className="flex gap-sm" style={{ alignItems: 'center' }}>
             {char && (
               <div className="tag" style={{ background: 'rgba(194,148,255,.14)', color: 'var(--amethyst-1)', border: '1px solid rgba(194,148,255,.4)', fontFamily: 'var(--font-mono)' }}>
-                💎 {(char as any).gems?.toLocaleString() || 0} gems
+                {t('premium.gemsTag', { n: (char as any).gems?.toLocaleString() || 0 })}
               </div>
             )}
             <span className={`tag ${mode === 'stripe' ? 'emerald' : 'gold'}`}>
-              {mode === 'stripe' ? 'Live: Stripe' : 'Dev mode'}
+              {mode === 'stripe' ? t('premium.modeLive') : t('premium.modeDev')}
             </span>
           </div>
         </div>
         {mode === 'dev' && (
           <div className="card" style={{ background: 'rgba(214,161,61,.06)', borderColor: 'var(--gold-3)', position: 'relative' }}>
-            <strong style={{ color: 'var(--gold-1)' }}>Dev mode active.</strong>
+            <strong style={{ color: 'var(--gold-1)' }}>{t('premium.devModeActive')}</strong>
             <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>
-              <code>STRIPE_SECRET_KEY</code> is not set — purchases complete instantly without
-              taking real money. Set the env var in production to enable Stripe Checkout.
+              <Trans i18nKey="premium.devModeNote" components={{ code: <code /> }}>
+                <code>STRIPE_SECRET_KEY</code> is not set — purchases complete instantly without taking real money. Set the env var in production to enable Stripe Checkout.
+              </Trans>
             </p>
           </div>
         )}
@@ -164,8 +167,8 @@ export default function Premium(): React.ReactElement {
                 : undefined,
             }}
           >
-            {p.popular && <span className="tag sapphire" style={{ position: 'absolute', top: 12, right: 12 }}>Popular</span>}
-            {p.best_value && <span className="tag gold" style={{ position: 'absolute', top: 12, right: 12 }}>Best value</span>}
+            {p.popular && <span className="tag sapphire" style={{ position: 'absolute', top: 12, right: 12 }}>{t('premium.popular')}</span>}
+            {p.best_value && <span className="tag gold" style={{ position: 'absolute', top: 12, right: 12 }}>{t('premium.bestValue')}</span>}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
               <div style={{
                 width: 56, height: 56,
@@ -186,14 +189,14 @@ export default function Premium(): React.ReactElement {
                 <div style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)', fontSize: 22 }}>
                   {fmtPrice(p.price_cents, p.currency)}
                 </div>
-                <div className="muted text-sm">{(p.currency || 'eur').toUpperCase()} · one-time</div>
+                <div className="muted text-sm">{(p.currency || 'eur').toUpperCase()} · {t('premium.oneTime')}</div>
               </div>
               <button
                 className="btn btn-primary"
                 disabled={!!busy}
                 onClick={() => buy(p)}
               >
-                {busy === p.kind ? 'Opening checkout…' : 'Buy'}
+                {busy === p.kind ? t('premium.openingCheckout') : t('premium.buy')}
               </button>
             </div>
           </div>
@@ -202,21 +205,21 @@ export default function Premium(): React.ReactElement {
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Purchase History</h2>
+          <h2 className="panel-title">{t('premium.purchaseHistory')}</h2>
         </div>
         {history.length === 0 ? (
-          <div className="muted">No purchases yet.</div>
+          <div className="muted">{t('premium.noPurchases')}</div>
         ) : (
           <table className="admin-table">
             <thead>
-              <tr><th>When</th><th>Product</th><th>Status</th><th>Mode</th><th>Amount</th><th>Gems</th></tr>
+              <tr><th>{t('premium.table.when')}</th><th>{t('premium.table.product')}</th><th>{t('premium.table.status')}</th><th>{t('premium.table.mode')}</th><th>{t('premium.table.amount')}</th><th>{t('premium.table.gems')}</th></tr>
             </thead>
             <tbody>
               {history.map((h) => (
                 <tr key={h.id}>
                   <td className="muted text-sm">{new Date(h.created_at).toLocaleString()}</td>
                   <td><strong>{h.kind.replace(/_/g, ' ')}</strong></td>
-                  <td><span className={`tag ${h.status === 'completed' ? 'emerald' : h.status === 'failed' ? 'crimson' : 'gold'}`}>{h.status}</span></td>
+                  <td><span className={`tag ${h.status === 'completed' ? 'emerald' : h.status === 'failed' ? 'crimson' : 'gold'}`}>{t(`premium.status.${h.status}`, { defaultValue: h.status })}</span></td>
                   <td className="muted text-sm">{h.mode}</td>
                   <td className="gold" style={{ fontFamily: 'var(--font-mono)' }}>{fmtPrice(h.amount_cents, h.currency)}</td>
                   <td className="amethyst" style={{ fontFamily: 'var(--font-mono)' }}>{h.gems_granted > 0 ? `+${h.gems_granted}` : '—'}</td>

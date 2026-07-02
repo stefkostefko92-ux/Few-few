@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Dashboard from './Dashboard';
 import Profile from './Profile';
 import CharacterPage from './CharacterPage';
@@ -13,15 +14,16 @@ import Stats from './Stats';
  * render through here so the tab bar stays put and only the body swaps.
  */
 
-const TABS: { to: string; label: string; end?: boolean }[] = [
-  { to: '/app', label: 'Overview', end: true },
-  { to: '/app/profile', label: 'Profile' },
-  { to: '/app/character', label: 'Character' },
-  { to: '/app/inventory', label: 'Inventory' },
-  { to: '/app/stats', label: 'Statistics' },
+const TABS: { to: string; labelKey: string; end?: boolean }[] = [
+  { to: '/app', labelKey: 'hero.tabs.overview', end: true },
+  { to: '/app/profile', labelKey: 'hero.tabs.profile' },
+  { to: '/app/character', labelKey: 'hero.tabs.character' },
+  { to: '/app/inventory', labelKey: 'hero.tabs.inventory' },
+  { to: '/app/stats', labelKey: 'hero.tabs.statistics' },
 ];
 
 export default function Hero(): React.ReactElement {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
 
   let body: React.ReactElement;
@@ -35,14 +37,14 @@ export default function Hero(): React.ReactElement {
   return (
     <div className="col" style={{ gap: 18 }}>
       <div className="hero-tabs">
-        {TABS.map((t) => (
+        {TABS.map((tab) => (
           <NavLink
-            key={t.to}
-            to={t.to}
-            end={t.end}
+            key={tab.to}
+            to={tab.to}
+            end={tab.end}
             className={({ isActive }) => `hero-tab ${isActive ? 'active' : ''}`}
           >
-            {t.label}
+            {t(tab.labelKey)}
           </NavLink>
         ))}
       </div>

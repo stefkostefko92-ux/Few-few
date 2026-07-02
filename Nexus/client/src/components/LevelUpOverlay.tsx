@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   level: number;
@@ -12,6 +13,7 @@ interface Props {
  * Auto-dismisses after 3.6s, can be skipped by clicking.
  */
 export default function LevelUpOverlay({ level, statPoints, skillPoints, onDone }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const [closing, setClosing] = useState(false);
 
   useEffect(() => {
@@ -60,10 +62,10 @@ export default function LevelUpOverlay({ level, statPoints, skillPoints, onDone 
         ))}
       </div>
       <div className="levelup-card">
-        <div className="label">— Level Up —</div>
+        <div className="label">{t('levelUp.title')}</div>
         <div className="number">{level}</div>
         <div className="sub">
-          +{statPoints} stat · +{skillPoints} skill points
+          {t('levelUp.points', { statPoints, skillPoints })}
         </div>
       </div>
     </div>

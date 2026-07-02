@@ -1,38 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
 import { minAgeForCountry } from '../lib/legal';
 
-const EU_COUNTRIES: Array<{ code: string; name: string }> = [
-  { code: 'BG', name: 'Bulgaria' },
-  { code: 'IT', name: 'Italy' },
-  { code: 'AT', name: 'Austria' },
-  { code: 'BE', name: 'Belgium' },
-  { code: 'HR', name: 'Croatia' },
-  { code: 'CY', name: 'Cyprus' },
-  { code: 'CZ', name: 'Czechia' },
-  { code: 'DK', name: 'Denmark' },
-  { code: 'EE', name: 'Estonia' },
-  { code: 'FI', name: 'Finland' },
-  { code: 'FR', name: 'France' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'GR', name: 'Greece' },
-  { code: 'HU', name: 'Hungary' },
-  { code: 'IE', name: 'Ireland' },
-  { code: 'LV', name: 'Latvia' },
-  { code: 'LT', name: 'Lithuania' },
-  { code: 'LU', name: 'Luxembourg' },
-  { code: 'MT', name: 'Malta' },
-  { code: 'NL', name: 'Netherlands' },
-  { code: 'PL', name: 'Poland' },
-  { code: 'PT', name: 'Portugal' },
-  { code: 'RO', name: 'Romania' },
-  { code: 'SK', name: 'Slovakia' },
-  { code: 'SI', name: 'Slovenia' },
-  { code: 'ES', name: 'Spain' },
-  { code: 'SE', name: 'Sweden' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'XX', name: 'Other / Non-EU' },
+// Имената на държавите се превеждат при рендер (countries.<код>).
+const EU_COUNTRY_CODES: string[] = [
+  'BG', 'IT', 'AT', 'BE', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
+  'HU', 'IE', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES',
+  'SE', 'GB', 'XX',
 ];
 
 function computeAge(dob: string): number | null {
@@ -47,6 +23,7 @@ function computeAge(dob: string): number | null {
 }
 
 export default function Register(): React.ReactElement {
+  const { t } = useTranslation();
   const register = useStore((s) => s.register);
   const loading = useStore((s) => s.loading);
   const toast = useStore((s) => s.toast);
@@ -62,30 +39,39 @@ export default function Register(): React.ReactElement {
   const minAge = useMemo(() => minAgeForCountry(country), [country]);
   const age = computeAge(dob);
   const tooYoung = age !== null && age < minAge;
+  // Показваме преведено име на държавата в подсказките.
+  const countryLabel = country === 'XX' ? t('register.yourRegion') : t(`countries.${country}`);
 
   async function onSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     setErr('');
     if (!agreeTerms) {
-      setErr('You must accept the Terms of Service and Privacy Policy.');
+      setErr(t('auth.submitErrorTerms'));
       return;
     }
     if (age === null) {
-      setErr('Please enter your date of birth.');
+      setErr(t('auth.submitErrorDob'));
       return;
     }
     if (tooYoung) {
-      setErr(`Registration requires age ${minAge}+ in ${country === 'XX' ? 'your region' : country}.`);
+      setErr(t('auth.tooYoung', { minAge, country: countryLabel }));
       return;
     }
     try {
       await register(u, e, p, dob, country);
-      toast('Account created. Forge your hero!', 'success');
+      toast(t('register.successToast'), 'success');
       navigate('/create');
     } catch (ex: any) {
-      setErr(ex.message || 'Registration failed');
+      setErr(ex.message || t('register.failed'));
     }
   }
+
+  // auth.acceptTerms съдържа {{terms}} и {{privacy}} (линкове) — режем низа
+  // около сентинели, за да вградим <Link> в превода независимо от словореда.
+  const acceptParts = t('auth.acceptTerms', { terms: '\u0001', privacy: '\u0002' })
+    .split(/([\u0001\u0002])/);
+  // auth.signInPrompt съдържа {{signin}} — същият подход.
+  const [signInBefore, signInAfter] = t('auth.signInPrompt', { signin: '\u0001' }).split('\u0001');
 
   return (
     <div className="auth-shell">
@@ -96,30 +82,30 @@ export default function Register(): React.ReactElement {
           </div>
           <div>
             <h1>Nexus Dominion</h1>
-            <p>Begin your saga.</p>
+            <p>{t('register.tagline')}</p>
           </div>
         </div>
         <form className="auth-form" onSubmit={onSubmit}>
           <div className="field">
-            <label htmlFor="reg-u">Username</label>
+            <label htmlFor="reg-u">{t('auth.username')}</label>
             <input id="reg-u" value={u} onChange={(ev) => setU(ev.target.value)} required minLength={3} maxLength={20} pattern="[a-zA-Z0-9_]+" autoFocus />
           </div>
           <div className="field">
-            <label htmlFor="reg-e">Email</label>
+            <label htmlFor="reg-e">{t('auth.email')}</label>
             <input id="reg-e" type="email" value={e} onChange={(ev) => setE(ev.target.value)} required autoComplete="email" />
           </div>
           <div className="field">
-            <label htmlFor="reg-p">Password</label>
+            <label htmlFor="reg-p">{t('auth.password')}</label>
             <input id="reg-p" type="password" value={p} onChange={(ev) => setP(ev.target.value)} required minLength={8} autoComplete="new-password" />
           </div>
           <div className="field">
-            <label htmlFor="reg-country">Country of residence</label>
+            <label htmlFor="reg-country">{t('auth.country')}</label>
             <select id="reg-country" value={country} onChange={(ev) => setCountry(ev.target.value)}>
-              {EU_COUNTRIES.map((c) => (<option key={c.code} value={c.code}>{c.name}</option>))}
+              {EU_COUNTRY_CODES.map((code) => (<option key={code} value={code}>{t(`countries.${code}`)}</option>))}
             </select>
           </div>
           <div className="field">
-            <label htmlFor="reg-dob">Date of birth (used for age verification only — never displayed)</label>
+            <label htmlFor="reg-dob">{t('auth.dob')}</label>
             <input
               id="reg-dob"
               type="date"
@@ -130,11 +116,11 @@ export default function Register(): React.ReactElement {
               aria-describedby="reg-dob-help"
             />
             <small id="reg-dob-help" className="muted">
-              Minimum age in {country === 'XX' ? 'your region' : country}: {minAge}.
+              {t('auth.minAgeHint', { country: countryLabel, minAge })}
             </small>
             {tooYoung && (
               <div className="error" role="alert">
-                Registration requires age {minAge}+ in {country}. We cannot create your account.
+                {t('auth.tooYoung', { minAge, country: countryLabel })}
               </div>
             )}
           </div>
@@ -148,16 +134,24 @@ export default function Register(): React.ReactElement {
               style={{ marginTop: 4 }}
             />
             <label htmlFor="reg-terms" style={{ fontSize: '0.9em', lineHeight: 1.4 }}>
-              I have read and accept the <Link to="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</Link> and the <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>.
+              {acceptParts.map((part, i) =>
+                part === '\u0001' ? (
+                  <Link key={i} to="/terms" target="_blank" rel="noopener noreferrer">{t('auth.termsLink')}</Link>
+                ) : part === '\u0002' ? (
+                  <Link key={i} to="/privacy" target="_blank" rel="noopener noreferrer">{t('auth.privacyLink')}</Link>
+                ) : (
+                  <React.Fragment key={i}>{part}</React.Fragment>
+                ),
+              )}
             </label>
           </div>
           {err && <div className="error" role="alert">{err}</div>}
           <button className="btn btn-primary" type="submit" disabled={loading || tooYoung || !agreeTerms}>
-            {loading ? 'Forging…' : 'Create Account'}
+            {loading ? t('auth.creatingButton') : t('auth.createButton')}
           </button>
         </form>
         <div className="auth-footer">
-          Already a hero? <Link to="/login">Sign in</Link>
+          {signInBefore}<Link to="/login">{t('auth.signIn')}</Link>{signInAfter}
         </div>
       </div>
     </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
 
 export default function Login(): React.ReactElement {
+  const { t } = useTranslation();
   const login = useStore((s) => s.login);
   const loading = useStore((s) => s.loading);
   const toast = useStore((s) => s.toast);
@@ -16,10 +18,10 @@ export default function Login(): React.ReactElement {
     setErr('');
     try {
       await login(u, p);
-      toast('Welcome back, traveler.', 'success');
+      toast(t('login.welcomeToast'), 'success');
       navigate('/app');
     } catch (e: any) {
-      setErr(e.message || 'Login failed');
+      setErr(e.message || t('login.failed'));
     }
   }
 
@@ -32,25 +34,25 @@ export default function Login(): React.ReactElement {
           </div>
           <div>
             <h1>Nexus Dominion</h1>
-            <p>Enter the realm. Forge your legend.</p>
+            <p>{t('login.tagline')}</p>
           </div>
         </div>
         <form className="auth-form" onSubmit={onSubmit}>
           <div className="field">
-            <label>Username or Email</label>
+            <label>{t('login.usernameOrEmail')}</label>
             <input value={u} onChange={(e) => setU(e.target.value)} autoFocus required />
           </div>
           <div className="field">
-            <label>Password</label>
+            <label>{t('auth.password')}</label>
             <input type="password" value={p} onChange={(e) => setP(e.target.value)} required minLength={6} />
             {err && <div className="error">{err}</div>}
           </div>
           <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Signing in…' : 'Enter Nexus Dominion'}
+            {loading ? t('login.signingIn') : t('login.enterButton')}
           </button>
         </form>
         <div className="auth-footer">
-          New to the realm? <Link to="/register">Create an account</Link>
+          {t('login.newPrompt')} <Link to="/register">{t('login.createAccount')}</Link>
         </div>
       </div>
     </div>

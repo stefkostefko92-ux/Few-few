@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 
 export default function Stats(): React.ReactElement {
+  const { t } = useTranslation();
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
     api.get('/stats').then(setData).catch(() => {});
   }, []);
 
-  if (!data) return <div className="muted">Loading…</div>;
+  if (!data) return <div className="muted">{t('common.loading')}</div>;
 
   const c = data.character;
   const l = data.lifetime;
@@ -19,54 +21,54 @@ export default function Stats(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Lifetime Statistics</h2>
-            <div className="panel-subtitle">{c.name}{c.current_title && `, ${c.current_title}`} — {prettyClass(c.class)} · Lv {c.level}</div>
+            <h2 className="panel-title">{t('stats.title')}</h2>
+            <div className="panel-subtitle">{c.name}{c.current_title && `, ${c.current_title}`} — {t(`common.class.${c.class}`, { defaultValue: c.class })} · {t('common.lv')} {c.level}</div>
           </div>
-          <div className="tag gold" style={{ fontSize: 14 }}>Joined {new Date(c.created_at).toLocaleDateString()}</div>
+          <div className="tag gold" style={{ fontSize: 14 }}>{t('stats.joined', { date: new Date(c.created_at).toLocaleDateString() })}</div>
         </div>
       </div>
 
       <div className="dashboard-grid">
         <div className="panel">
-          <h3 style={{ marginBottom: 12 }}>Combat</h3>
+          <h3 style={{ marginBottom: 12 }}>{t('stats.combat')}</h3>
           <StatList rows={[
-            ['Battles fought', l.battles],
-            ['Battles won', l.battles_won],
-            ['Battles lost', l.battles_lost],
-            ['Win rate', l.battles ? `${Math.round((l.battles_won / l.battles) * 100)}%` : '—'],
-            ['Monsters slain', l.monsters_slain],
-            ['Dungeons cleared', l.dungeons_cleared],
-            ['Quests completed', l.quests_completed],
+            [t('stats.battlesFought'), l.battles],
+            [t('stats.battlesWon'), l.battles_won],
+            [t('stats.battlesLost'), l.battles_lost],
+            [t('stats.winRate'), l.battles ? `${Math.round((l.battles_won / l.battles) * 100)}%` : '—'],
+            [t('stats.monstersSlain'), l.monsters_slain],
+            [t('stats.dungeonsCleared'), l.dungeons_cleared],
+            [t('stats.questsCompleted'), l.quests_completed],
           ]} />
         </div>
         <div className="panel">
-          <h3 style={{ marginBottom: 12 }}>Wealth & XP</h3>
+          <h3 style={{ marginBottom: 12 }}>{t('stats.wealth')}</h3>
           <StatList rows={[
-            ['Current gold', c.gold.toLocaleString()],
-            ['Lifetime gold earned', l.total_gold_earned.toLocaleString()],
-            ['Lifetime XP earned', l.total_xp_earned.toLocaleString()],
-            ['Average gold / battle', l.battles ? Math.round(l.total_gold_earned / l.battles) : '—'],
-            ['Average XP / battle', l.battles ? Math.round(l.total_xp_earned / l.battles) : '—'],
+            [t('stats.currentGold'), c.gold.toLocaleString()],
+            [t('stats.lifetimeGold'), l.total_gold_earned.toLocaleString()],
+            [t('stats.lifetimeXp'), l.total_xp_earned.toLocaleString()],
+            [t('stats.avgGoldBattle'), l.battles ? Math.round(l.total_gold_earned / l.battles) : '—'],
+            [t('stats.avgXpBattle'), l.battles ? Math.round(l.total_xp_earned / l.battles) : '—'],
           ]} />
         </div>
         <div className="panel">
-          <h3 style={{ marginBottom: 12 }}>Arena</h3>
+          <h3 style={{ marginBottom: 12 }}>{t('stats.arena')}</h3>
           <StatList rows={[
-            ['Current rating', c.arena_rating],
-            ['Arena wins', l.arena_wins],
-            ['Arena losses', l.arena_losses],
-            ['Win rate', (l.arena_wins + l.arena_losses) ? `${Math.round((l.arena_wins / (l.arena_wins + l.arena_losses)) * 100)}%` : '—'],
+            [t('stats.currentRating'), c.arena_rating],
+            [t('stats.arenaWins'), l.arena_wins],
+            [t('stats.arenaLosses'), l.arena_losses],
+            [t('stats.winRate'), (l.arena_wins + l.arena_losses) ? `${Math.round((l.arena_wins / (l.arena_wins + l.arena_losses)) * 100)}%` : '—'],
           ]} />
         </div>
         <div className="panel">
-          <h3 style={{ marginBottom: 12 }}>Journey</h3>
+          <h3 style={{ marginBottom: 12 }}>{t('stats.journey')}</h3>
           <StatList rows={[
-            ['Days played', j.days_played],
-            ['Current streak', `${j.streak} days`],
-            ['Longest streak', `${j.longest_streak} days`],
-            ['Bestiary discoveries', j.bestiary_unique],
-            ['Total monster kills', j.bestiary_kills_total],
-            ['Achievements earned', j.achievements],
+            [t('stats.daysPlayed'), j.days_played],
+            [t('stats.currentStreak'), t('stats.days', { count: j.streak })],
+            [t('stats.longestStreak'), t('stats.days', { count: j.longest_streak })],
+            [t('stats.bestiaryDiscoveries'), j.bestiary_unique],
+            [t('stats.totalKills'), j.bestiary_kills_total],
+            [t('stats.achievementsEarned'), j.achievements],
           ]} />
         </div>
       </div>
@@ -86,5 +88,3 @@ function StatList({ rows }: { rows: [string, any][] }) {
     </div>
   );
 }
-
-function prettyClass(c: string) { return c[0].toUpperCase() + c.slice(1); }

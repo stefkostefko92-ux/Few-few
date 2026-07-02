@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
@@ -61,6 +62,7 @@ function StatPill({ label, value, kind }: { label: string; value: number; kind: 
 }
 
 export default function MountShop(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [data, setData] = useState<Data | null>(null);
@@ -71,35 +73,34 @@ export default function MountShop(): React.ReactElement {
   useEffect(() => { load(); }, []);
 
   async function buy(slug: string) {
-    try { await api.post('/mount/buy', { slug }); toast('Mount acquired.', 'success'); await Promise.all([load(), refresh()]); } catch (e: any) { toast(e.message, 'error'); }
+    try { await api.post('/mount/buy', { slug }); toast(t('mountShop.toasts.acquired'), 'success'); await Promise.all([load(), refresh()]); } catch (e: any) { toast(e.message, 'error'); }
   }
   async function equip(invId: number) {
-    try { await api.post('/mount/equip', { inventoryId: invId }); toast('Mounted.', 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
+    try { await api.post('/mount/equip', { inventoryId: invId }); toast(t('mountShop.toasts.mounted'), 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
   }
   async function unmount() {
-    try { await api.post('/mount/equip', { inventoryId: 0 }); toast('Dismounted.', 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
+    try { await api.post('/mount/equip', { inventoryId: 0 }); toast(t('mountShop.toasts.dismounted'), 'success'); await load(); } catch (e: any) { toast(e.message, 'error'); }
   }
   async function buyAddon(slug: string, addonKey: string) {
-    try { await api.post('/mount/addon/buy', { slug, addonKey }); toast('Upgrade installed.', 'success'); await Promise.all([load(), refresh()]); } catch (e: any) { toast(e.message, 'error'); }
+    try { await api.post('/mount/addon/buy', { slug, addonKey }); toast(t('mountShop.toasts.upgradeInstalled'), 'success'); await Promise.all([load(), refresh()]); } catch (e: any) { toast(e.message, 'error'); }
   }
 
-  if (!data) return <div className="muted">Loading…</div>;
+  if (!data) return <div className="muted">{t('mountShop.loading')}</div>;
 
   return (
     <div className="col" style={{ gap: 22 }}>
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Stables</h2>
+            <h2 className="panel-title">{t('mountShop.title')}</h2>
             <div className="panel-subtitle">
-              Mounts shorten action cooldowns (mechanical property — not a stat bonus) and stack real
-              combat stats on top: Physical / Magical Damage and Defence. Premium currency only.
+              {t('mountShop.subtitle')}
             </div>
           </div>
           <div className="flex gap-sm">
             <span className="tag" style={{ background: 'rgba(106,167,255,.15)', color: 'var(--azure-1)', fontFamily: 'var(--font-mono)' }}>💎 {data.gems}</span>
             {data.active_mount_inventory_id > 0 && (
-              <button className="btn btn-sm" onClick={unmount}>Dismount</button>
+              <button className="btn btn-sm" onClick={unmount}>{t('mountShop.dismount')}</button>
             )}
           </div>
         </div>
@@ -135,12 +136,12 @@ export default function MountShop(): React.ReactElement {
               <div className="flex between" style={{ marginTop: 12 }}>
                 <span className="tag" style={{ background: 'rgba(106,167,255,.15)', color: 'var(--azure-1)', fontFamily: 'var(--font-mono)' }}>💎 {m.gem_cost.toLocaleString()}</span>
                 {active ? (
-                  <span className="tag" style={{ background: 'rgba(255,232,138,.15)', color: 'var(--gold-1)' }}>★ Active</span>
+                  <span className="tag" style={{ background: 'rgba(255,232,138,.15)', color: 'var(--gold-1)' }}>{t('mountShop.active')}</span>
                 ) : m.owned && ownedRow ? (
-                  <button className="btn btn-sm btn-primary" onClick={() => equip(ownedRow.inv_id)}>Mount</button>
+                  <button className="btn btn-sm btn-primary" onClick={() => equip(ownedRow.inv_id)}>{t('mountShop.mount')}</button>
                 ) : (
                   <button className="btn btn-sm btn-primary" disabled={data.gems < m.gem_cost} onClick={() => buy(m.slug)}>
-                    {data.gems < m.gem_cost ? `Need ${m.gem_cost - data.gems}` : `Buy · 💎 ${m.gem_cost}`}
+                    {data.gems < m.gem_cost ? t('mountShop.needN', { n: m.gem_cost - data.gems }) : t('mountShop.buyFor', { n: m.gem_cost })}
                   </button>
                 )}
               </div>
@@ -149,19 +150,19 @@ export default function MountShop(): React.ReactElement {
               {m.addons.length > 0 && (
                 <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-1)' }}>
                   <div className="muted text-sm" style={{ marginBottom: 8, textTransform: 'uppercase', letterSpacing: '.06em' }}>
-                    Optional upgrades — buy only what you want
+                    {t('mountShop.optionalUpgrades')}
                   </div>
                   <div className="col" style={{ gap: 6 }}>
                     {m.addons.map((a) => (
                       <div key={a.key} className="flex between" style={{ alignItems: 'center' }}>
                         <span className="text-sm">{a.label} <span className="muted">+{a.amount}</span></span>
                         {a.purchased ? (
-                          <span className="tag" style={{ background: 'rgba(106,216,164,.15)', color: 'var(--emerald-1)' }}>✓ Owned</span>
+                          <span className="tag" style={{ background: 'rgba(106,216,164,.15)', color: 'var(--emerald-1)' }}>{t('mountShop.owned')}</span>
                         ) : (
                           <button
                             className="btn btn-sm"
                             disabled={!m.owned || data.gems < a.gem_cost}
-                            title={!m.owned ? 'Buy the mount first' : ''}
+                            title={!m.owned ? t('mountShop.buyMountFirst') : ''}
                             onClick={() => buyAddon(m.slug, a.key)}
                           >
                             💎 {a.gem_cost}

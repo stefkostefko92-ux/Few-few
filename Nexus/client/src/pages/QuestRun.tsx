@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { Quest, QuestResult } from '../lib/types';
 import CombatScene from '../combat/CombatScene';
 
 export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () => void }): React.ReactElement {
+  const { t } = useTranslation();
   const refresh = useStore((s) => s.refreshCharacter);
   const toast = useStore((s) => s.toast);
   const showUnlocks = useStore((s) => s.showUnlocks);
@@ -41,7 +43,7 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
       <div className="panel">
         <div style={{ textAlign: 'center', padding: 32 }}>
           <div className="muted" style={{ fontStyle: 'italic' }}>
-            The road unwinds before you…
+            {t('questRun.roadUnwinds')}
           </div>
         </div>
       </div>
@@ -51,9 +53,9 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
   if (stage === 'error') {
     return (
       <div className="panel">
-        <h2 className="panel-title">Cannot Embark</h2>
+        <h2 className="panel-title">{t('questRun.cannotEmbark')}</h2>
         <div className="muted" style={{ marginTop: 8 }}>{err}</div>
-        <button className="btn" style={{ marginTop: 16 }} onClick={onDone}>Back</button>
+        <button className="btn" style={{ marginTop: 16 }} onClick={onDone}>{t('questRun.back')}</button>
       </div>
     );
   }
@@ -63,17 +65,17 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
       <div className="panel">
         <div className="panel-header">
           <h2 className="panel-title">{quest.title}</h2>
-          <span className={`tag ${result.success ? 'emerald' : 'crimson'}`}>{result.success ? 'success' : 'partial'}</span>
+          <span className={`tag ${result.success ? 'emerald' : 'crimson'}`}>{result.success ? t('questRun.success') : t('questRun.partial')}</span>
         </div>
         <p style={{ fontStyle: 'italic' }}>{result.narrative}</p>
         <div className="panel-divider" />
         <p>{result.resultText}</p>
         <div className="reward-row" style={{ marginTop: 16, justifyContent: 'flex-start' }}>
-          {!!result.xp && <span className="reward-pill xp">+{result.xp} XP</span>}
-          {!!result.gold && <span className="reward-pill gold">+{result.gold} gold</span>}
+          {!!result.xp && <span className="reward-pill xp">{t('questRun.xpPill', { n: result.xp })}</span>}
+          {!!result.gold && <span className="reward-pill gold">{t('questRun.goldPill', { n: result.gold })}</span>}
         </div>
         <div style={{ marginTop: 18 }}>
-          <button className="btn btn-primary" onClick={onDone}>Continue</button>
+          <button className="btn btn-primary" onClick={onDone}>{t('questRun.continue')}</button>
         </div>
       </div>
     );
@@ -94,7 +96,7 @@ export default function QuestRun({ quest, onDone }: { quest: Quest; onDone: () =
           victory={result.success}
           reward={{ xp: result.xp, gold: result.gold, itemReward: result.itemReward }}
           onClose={onDone}
-          introTitle={`${result.hero.name}  vs  ${result.foe.name}`}
+          introTitle={t('questRun.vsTitle', { hero: result.hero.name, foe: result.foe.name })}
           region={quest.region}
         />
         <div className="panel" style={{ padding: 18 }}>

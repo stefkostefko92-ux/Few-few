@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
@@ -31,6 +32,7 @@ const STAT_LABEL: Record<string, string> = {
 };
 
 export default function Recipes(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [data, setData] = useState<{ gold: number; recipes: Recipe[]; tallies: Record<string, number> } | null>(null);
@@ -49,7 +51,7 @@ export default function Recipes(): React.ReactElement {
   async function brew(slug: string) {
     try {
       const r = await api.post('/recipes/brew', { slug });
-      toast(`Brewed ${r.gem}`, 'success');
+      toast(t('recipes.brewedToast', { gem: r.gem }), 'success');
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
@@ -58,7 +60,7 @@ export default function Recipes(): React.ReactElement {
     if (!socketSel.gemId || !socketSel.weaponId) return;
     try {
       const r = await api.post('/recipes/socket', { gemInventoryId: socketSel.gemId, weaponInventoryId: socketSel.weaponId });
-      toast(`Socketed: +${r.amount} ${STAT_LABEL[r.stat] || r.stat}`, 'success');
+      toast(t('recipes.socketedToast', { amount: r.amount, stat: STAT_LABEL[r.stat] || r.stat }), 'success');
       setSocketSel({ gemId: null, weaponId: null });
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
@@ -72,10 +74,11 @@ export default function Recipes(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Forge Recipe Board</h2>
+            <h2 className="panel-title">{t('recipes.title')}</h2>
             <div className="panel-subtitle">
-              Combine <strong>Monster Trophies</strong> (from the Bounty Board) with a <strong>Mythic Elixir</strong>
-              (active buff from the Trial Cache) at the anvil to brew socketable gems. Gems permanently buff weapons.
+              <Trans i18nKey="recipes.subtitle">
+                Combine <strong>Monster Trophies</strong> (from the Bounty Board) with a <strong>Mythic Elixir</strong> (active buff from the Trial Cache) at the anvil to brew socketable gems. Gems permanently buff weapons.
+              </Trans>
             </div>
           </div>
           <span className="tag gold" style={{ fontFamily: 'var(--font-mono)' }}>{data?.gold.toLocaleString() || 0}g</span>
@@ -83,8 +86,8 @@ export default function Recipes(): React.ReactElement {
       </div>
 
       <div className="panel">
-        <div className="panel-title" style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '.14em', color: 'var(--text-3)', marginBottom: 12 }}>Brew Gems</div>
-        {!data && <div className="muted">Loading…</div>}
+        <div className="panel-title" style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '.14em', color: 'var(--text-3)', marginBottom: 12 }}>{t('recipes.brewGems')}</div>
+        {!data && <div className="muted">{t('recipes.loading')}</div>}
         {data && (
           <div className="grid-cards">
             {data.recipes.map((r) => (
@@ -101,10 +104,10 @@ export default function Recipes(): React.ReactElement {
 
                 <div className="flex gap-sm" style={{ marginTop: 12, flexWrap: 'wrap' }}>
                   <span className={`tag`} style={{ background: r.trophies_owned >= r.trophies_required ? 'rgba(106,216,164,.15)' : 'rgba(232,90,79,.15)', color: r.trophies_owned >= r.trophies_required ? 'var(--emerald-1)' : 'var(--crimson-1)' }}>
-                    Trophies {r.trophies_owned}/{r.trophies_required}
+                    {t('recipes.trophies', { owned: r.trophies_owned, required: r.trophies_required })}
                   </span>
                   <span className="tag" style={{ background: r.elixir_active ? 'rgba(106,167,255,.15)' : 'rgba(124,125,131,.12)', color: r.elixir_active ? 'var(--azure-1)' : 'var(--text-3)' }}>
-                    {r.elixir_active ? `✓ ${r.elixir_stat} elixir active` : `Need ${r.elixir_stat} elixir`}
+                    {r.elixir_active ? t('recipes.elixirActive', { stat: r.elixir_stat }) : t('recipes.needElixir', { stat: r.elixir_stat })}
                   </span>
                   <span className="tag gold">{r.gold_cost}g</span>
                 </div>
@@ -115,7 +118,7 @@ export default function Recipes(): React.ReactElement {
                   onClick={() => brew(r.slug)}
                   style={{ marginTop: 12, width: '100%' }}
                 >
-                  {r.can_brew ? `Brew · ${r.gold_cost}g` : r.trophies_owned < r.trophies_required ? 'Need trophies' : !r.elixir_active ? 'Drink an elixir first' : `Need ${r.gold_cost}g`}
+                  {r.can_brew ? t('recipes.brewFor', { cost: r.gold_cost }) : r.trophies_owned < r.trophies_required ? t('recipes.needTrophies') : !r.elixir_active ? t('recipes.drinkElixirFirst') : t('recipes.needGold', { cost: r.gold_cost })}
                 </button>
               </div>
             ))}
@@ -124,13 +127,13 @@ export default function Recipes(): React.ReactElement {
       </div>
 
       <div className="panel">
-        <div className="panel-title" style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '.14em', color: 'var(--text-3)', marginBottom: 12 }}>Socket Gem into Weapon</div>
+        <div className="panel-title" style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '.14em', color: 'var(--text-3)', marginBottom: 12 }}>{t('recipes.socketTitle')}</div>
         {gems.length === 0 ? (
-          <div className="muted">No gems in your bag. Brew one above.</div>
+          <div className="muted">{t('recipes.noGems')}</div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
             <div>
-              <div className="muted text-sm" style={{ marginBottom: 6 }}>Pick a gem</div>
+              <div className="muted text-sm" style={{ marginBottom: 6 }}>{t('recipes.pickGem')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 6 }}>
                 {gems.map((g) => (
                   <div
@@ -146,7 +149,7 @@ export default function Recipes(): React.ReactElement {
               </div>
             </div>
             <div>
-              <div className="muted text-sm" style={{ marginBottom: 6 }}>Pick a weapon</div>
+              <div className="muted text-sm" style={{ marginBottom: 6 }}>{t('recipes.pickWeapon')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: 6 }}>
                 {weapons.map((w) => (
                   <div
@@ -169,7 +172,7 @@ export default function Recipes(): React.ReactElement {
           onClick={socket}
           style={{ marginTop: 16, width: '100%' }}
         >
-          {socketSel.gemId && socketSel.weaponId ? 'Socket' : 'Pick a gem and a weapon'}
+          {socketSel.gemId && socketSel.weaponId ? t('recipes.socketButton') : t('recipes.pickBoth')}
         </button>
       </div>
     </div>

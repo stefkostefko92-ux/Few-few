@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
 export default function Settings(): React.ReactElement {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const toast = useStore((s) => s.toast);
   const logout = useStore((s) => s.logout);
@@ -27,17 +29,17 @@ export default function Settings(): React.ReactElement {
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     if (next !== confirmPw) {
-      toast('Passwords do not match.', 'error');
+      toast(t('settings.pwMismatch'), 'error');
       return;
     }
     if (next.length < 6) {
-      toast('Use at least 6 characters.', 'error');
+      toast(t('settings.pwTooShort'), 'error');
       return;
     }
     setPwBusy(true);
     try {
       await api.post('/account/password', { current, next });
-      toast('Password updated.', 'success');
+      toast(t('settings.pwUpdated'), 'success');
       setCurrent(''); setNext(''); setConfirmPw('');
     } catch (ex: any) {
       toast(ex.message, 'error');
@@ -48,13 +50,13 @@ export default function Settings(): React.ReactElement {
 
   async function deleteCharacter() {
     if (deleteText !== 'DELETE') {
-      toast('Type DELETE to confirm.', 'error');
+      toast(t('settings.typeDelete'), 'error');
       return;
     }
     setDeleteBusy(true);
     try {
       await api.post('/account/delete-character', { confirm: 'DELETE' });
-      toast('Character deleted. Begin again.', 'info');
+      toast(t('settings.charDeleted'), 'info');
       await refresh();
       navigate('/create');
     } catch (ex: any) {
@@ -73,76 +75,75 @@ export default function Settings(): React.ReactElement {
     <div className="col" style={{ gap: 24 }}>
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Account</h2>
+          <h2 className="panel-title">{t('settings.account')}</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           <div className="card">
-            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>Username</div>
+            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('settings.username')}</div>
             <div style={{ fontSize: 18, color: 'var(--gold-1)' }}>{acct?.username || user?.username || '—'}</div>
           </div>
           <div className="card">
-            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>Email</div>
+            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('settings.email')}</div>
             <div style={{ fontSize: 16 }}>{acct?.email || user?.email || '—'}</div>
           </div>
           <div className="card">
-            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>Joined</div>
+            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('settings.joined')}</div>
             <div>{acct ? new Date(acct.created_at).toLocaleDateString() : '—'}</div>
           </div>
           <div className="card">
-            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>Current Hero</div>
-            <div>{char?.name || '—'} {char ? `· Lv ${char.level}` : ''}</div>
+            <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('settings.currentHero')}</div>
+            <div>{char?.name || '—'} {char ? `· ${t('common.lv')} ${char.level}` : ''}</div>
           </div>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Change Password</h2>
+          <h2 className="panel-title">{t('settings.changePassword')}</h2>
         </div>
         <form onSubmit={changePassword} style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}>
           <div className="field">
-            <label>Current password</label>
+            <label>{t('settings.currentPw')}</label>
             <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
           </div>
           <div className="field">
-            <label>New password</label>
+            <label>{t('settings.newPw')}</label>
             <input type="password" value={next} onChange={(e) => setNext(e.target.value)} required minLength={6} />
           </div>
           <div className="field">
-            <label>Confirm new password</label>
+            <label>{t('settings.confirmPw')}</label>
             <input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} required minLength={6} />
           </div>
           <button className="btn btn-primary" type="submit" disabled={pwBusy}>
-            {pwBusy ? 'Updating…' : 'Update Password'}
+            {pwBusy ? t('settings.updating') : t('settings.updatePw')}
           </button>
         </form>
       </div>
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Session</h2>
+          <h2 className="panel-title">{t('settings.session')}</h2>
         </div>
-        <p className="muted">Sign out of this device.</p>
-        <button className="btn" onClick={doLogout}>Sign Out</button>
+        <p className="muted">{t('settings.signOutDesc')}</p>
+        <button className="btn" onClick={doLogout}>{t('settings.signOut')}</button>
       </div>
 
       <div className="panel" style={{ borderColor: 'rgba(184,30,30,.5)' }}>
         <div className="panel-header">
-          <h2 className="panel-title" style={{ color: 'var(--crimson-1)' }}>Danger Zone</h2>
+          <h2 className="panel-title" style={{ color: 'var(--crimson-1)' }}>{t('settings.dangerZone')}</h2>
         </div>
         <p className="muted">
-          Deleting your character permanently wipes their progress, items, gold, and history. You will be returned to the
-          class-selection screen. <strong>This cannot be undone.</strong>
+          {t('settings.deleteWarning')} <strong>{t('settings.cannotBeUndone')}</strong>
         </p>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 12 }}>
           <input
             value={deleteText}
             onChange={(e) => setDeleteText(e.target.value)}
-            placeholder="Type DELETE to confirm"
+            placeholder={t('settings.typeDelete')}
             style={{ maxWidth: 240 }}
           />
           <button className="btn btn-danger" onClick={deleteCharacter} disabled={deleteText !== 'DELETE' || deleteBusy}>
-            {deleteBusy ? 'Deleting…' : 'Delete Character'}
+            {deleteBusy ? t('settings.deleting') : t('settings.deleteChar')}
           </button>
         </div>
       </div>

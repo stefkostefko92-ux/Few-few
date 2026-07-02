@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
+
+type Translate = (key: string, opts?: Record<string, unknown>) => string;
 
 /**
  * Weekly Realm Boss — the realm-wide endgame raid.
@@ -11,6 +14,7 @@ import { useStore } from '../lib/store';
  * contributor settles a proportional payout when the week rolls over.
  */
 export default function RealmBoss(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [state, setState] = useState<any>(null);
@@ -41,8 +45,8 @@ export default function RealmBoss(): React.ReactElement {
     try {
       const r = await api.post('/realm-boss/strike', {});
       toast(r.cleared
-        ? `KILLING BLOW! ${r.damageDealt.toLocaleString()} damage — unique drop awarded.`
-        : `Struck for ${r.damageDealt.toLocaleString()} damage.`,
+        ? t('realmBoss.killingBlowToast', { dmg: r.damageDealt.toLocaleString() })
+        : t('realmBoss.struckToast', { dmg: r.damageDealt.toLocaleString() }),
         r.cleared ? 'success' : 'info');
       const next = await api.get('/realm-boss/');
       setState(next);
@@ -56,7 +60,7 @@ export default function RealmBoss(): React.ReactElement {
     setBusy(true);
     try {
       const r = await api.post('/realm-boss/claim', { iso_week: wk });
-      toast(`Settlement claimed: +${r.gold}g · +${r.gems} gems · +${r.xp} XP`, 'success');
+      toast(t('realmBoss.settlementToast', { gold: r.gold, gems: r.gems, xp: r.xp }), 'success');
       const next = await api.get('/realm-boss/');
       setState(next);
       refresh();
@@ -64,7 +68,7 @@ export default function RealmBoss(): React.ReactElement {
     finally { setBusy(false); }
   }
 
-  if (!state) return <div className="page"><div className="muted">Loading the realm boss…</div></div>;
+  if (!state) return <div className="page"><div className="muted">{t('realmBoss.loading')}</div></div>;
   const boss = state.boss;
   const hpPct = boss.hp_max > 0 ? (boss.hp_remaining / boss.hp_max) * 100 : 0;
   const endsIn = Math.max(0, boss.ends_at - now);
@@ -76,58 +80,58 @@ export default function RealmBoss(): React.ReactElement {
   return (
     <div className="page realm-boss-page">
       <header className="page-header">
-        <h1>Realm Boss · {boss.name}</h1>
-        <span className="muted">Week {state.week}</span>
+        <h1>{t('realmBoss.pageTitle', { name: boss.name })}</h1>
+        <span className="muted">{t('realmBoss.week', { week: state.week })}</span>
       </header>
 
       <section className="card boss-card">
         <div className="boss-card-head">
           <div>
             <div className="boss-card-name">{boss.name}</div>
-            <div className="boss-card-week">{cleared ? 'Slain this week' : `Resets in ${fmtDuration(endsIn)}`}</div>
+            <div className="boss-card-week">{cleared ? t('realmBoss.slain') : t('realmBoss.resetsIn', { time: fmtDuration(endsIn, t) })}</div>
           </div>
           {!cleared && (
             <button className="btn btn-primary btn-lg" disabled={busy || strikeCooldownLeft > 0} onClick={strike}>
               {strikeCooldownLeft > 0
-                ? `Strike ready in ${fmtDuration(strikeCooldownLeft)}`
-                : 'Strike the boss'}
+                ? t('realmBoss.strikeReadyIn', { time: fmtDuration(strikeCooldownLeft, t) })
+                : t('realmBoss.strike')}
             </button>
           )}
         </div>
         <div className="boss-hp">
           <div className="boss-hp-bar"><div className="boss-hp-fill" style={{ width: `${hpPct}%` }} /></div>
           <div className="boss-hp-text">
-            {boss.hp_remaining.toLocaleString()} / {boss.hp_max.toLocaleString()} HP ({hpPct.toFixed(2)}%)
+            {t('realmBoss.hpText', { hp: boss.hp_remaining.toLocaleString(), max: boss.hp_max.toLocaleString(), pct: hpPct.toFixed(2) })}
           </div>
         </div>
         {cleared && boss.kill_blow_character_id > 0 && (
           <div className="boss-killshot">
-            <strong>Killing blow:</strong> character #{boss.kill_blow_character_id}
+            <strong>{t('realmBoss.killingBlow')}</strong> {t('realmBoss.characterNum', { id: boss.kill_blow_character_id })}
           </div>
         )}
       </section>
 
       {mine && (
         <section className="card">
-          <h2>Your contribution</h2>
+          <h2>{t('realmBoss.yourContribution')}</h2>
           <div className="contribution-grid">
-            <div><div className="muted text-sm">Damage</div><div className="contrib-num">{mine.damage.toLocaleString()}</div></div>
-            <div><div className="muted text-sm">Strikes</div><div className="contrib-num">{mine.strikes}</div></div>
-            <div><div className="muted text-sm">Status</div><div className="contrib-num">{mine.claimed_at ? 'Claimed' : (canClaim ? 'Ready to claim' : 'In progress')}</div></div>
+            <div><div className="muted text-sm">{t('realmBoss.damage')}</div><div className="contrib-num">{mine.damage.toLocaleString()}</div></div>
+            <div><div className="muted text-sm">{t('realmBoss.strikes')}</div><div className="contrib-num">{mine.strikes}</div></div>
+            <div><div className="muted text-sm">{t('realmBoss.status')}</div><div className="contrib-num">{mine.claimed_at ? t('realmBoss.claimed') : (canClaim ? t('realmBoss.readyToClaim') : t('realmBoss.inProgress'))}</div></div>
           </div>
           {canClaim && (
-            <button className="btn btn-primary" onClick={() => claim(state.week)} disabled={busy}>Claim settlement</button>
+            <button className="btn btn-primary" onClick={() => claim(state.week)} disabled={busy}>{t('realmBoss.claimSettlement')}</button>
           )}
         </section>
       )}
 
       <section className="card">
-        <h2>Top contributors</h2>
+        <h2>{t('realmBoss.topContributors')}</h2>
         {state.top_contributors.length === 0
-          ? <div className="muted">Nobody has struck yet this week. Be first.</div>
+          ? <div className="muted">{t('realmBoss.nobodyStruck')}</div>
           : (
             <table className="data-table">
-              <thead><tr><th>#</th><th>Hero</th><th>Class · Lv</th><th>Damage</th><th>Strikes</th></tr></thead>
+              <thead><tr><th>#</th><th>{t('realmBoss.thHero')}</th><th>{t('realmBoss.thClassLv')}</th><th>{t('realmBoss.thDamage')}</th><th>{t('realmBoss.thStrikes')}</th></tr></thead>
               <tbody>
                 {state.top_contributors.map((c: any, i: number) => (
                   <tr key={c.character_id}>
@@ -146,15 +150,15 @@ export default function RealmBoss(): React.ReactElement {
   );
 }
 
-function fmtDuration(ms: number): string {
-  if (ms <= 0) return '0s';
+function fmtDuration(ms: number, t: Translate): string {
+  if (ms <= 0) return t('realmBoss.durationS', { s: 0 });
   const total = Math.floor(ms / 1000);
   const d = Math.floor(total / 86400);
   const h = Math.floor((total % 86400) / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  if (d > 0) return `${d}d ${h}h`;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
+  if (d > 0) return t('realmBoss.durationDh', { d, h });
+  if (h > 0) return t('realmBoss.durationHm', { h, m });
+  if (m > 0) return t('realmBoss.durationMs', { m, s });
+  return t('realmBoss.durationS', { s });
 }

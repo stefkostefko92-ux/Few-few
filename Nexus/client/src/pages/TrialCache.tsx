@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
@@ -14,12 +15,6 @@ interface Offering {
   already_owned: boolean;
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  consumable: 'Consumables',
-  gear: 'Relic Gear',
-  cosmetic: 'Cosmetics',
-};
-
 const ICON_BY_SLUG: Record<string, string> = {
   forge_guarantee: 'icon-anvil',
   mythic_strength: 'potion-red',
@@ -31,6 +26,7 @@ const ICON_BY_SLUG: Record<string, string> = {
 };
 
 export default function TrialCache(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [tokens, setTokens] = useState(0);
@@ -50,7 +46,7 @@ export default function TrialCache(): React.ReactElement {
   async function buy(o: Offering) {
     try {
       const r = await api.post('/trial-cache/buy', { slug: o.slug });
-      toast(`Acquired: ${r.name}`, 'success');
+      toast(t('trialCache.acquired', { name: r.name }), 'success');
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
@@ -65,19 +61,18 @@ export default function TrialCache(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Trial Cache</h2>
+            <h2 className="panel-title">{t('trialCache.title')}</h2>
             <div className="panel-subtitle">
-              Currency earned only by the Tower of Trials. Spend Tokens on relic gear,
-              mythic elixirs, or an Anvil Ward — a one-shot Forge guarantee against shatter.
+              {t('trialCache.subtitle')}
             </div>
           </div>
           <div className="flex gap-sm">
             <span className="tag" style={{ background: 'rgba(255,232,138,.12)', color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>
-              ⬢ {tokens} Tokens
+              {t('trialCache.tokens', { n: tokens })}
             </span>
             {guarantees > 0 && (
               <span className="tag" style={{ background: 'rgba(106,167,255,.12)', color: 'var(--azure-1)', fontFamily: 'var(--font-mono)' }}>
-                ⚒ {guarantees} Wards
+                {t('trialCache.wards', { n: guarantees })}
               </span>
             )}
           </div>
@@ -87,7 +82,7 @@ export default function TrialCache(): React.ReactElement {
       {Object.entries(groups).map(([cat, items]) => (
         <div key={cat} className="panel">
           <div className="panel-title" style={{ fontSize: 14, textTransform: 'uppercase', letterSpacing: '.14em', color: 'var(--text-3)', marginBottom: 12 }}>
-            {CATEGORY_LABEL[cat] || cat}
+            {t(`trialCache.category.${cat}`, { defaultValue: cat })}
           </div>
           <div className="grid-cards">
             {items.map((o) => {
@@ -109,7 +104,7 @@ export default function TrialCache(): React.ReactElement {
                       ⬢ {o.cost}
                     </span>
                     <button className="btn btn-primary" disabled={!affordable || sold} onClick={() => buy(o)}>
-                      {sold ? 'Owned' : affordable ? 'Redeem' : `Need ${o.cost - tokens}`}
+                      {sold ? t('trialCache.owned') : affordable ? t('trialCache.redeem') : t('trialCache.needMore', { n: o.cost - tokens })}
                     </button>
                   </div>
                 </div>

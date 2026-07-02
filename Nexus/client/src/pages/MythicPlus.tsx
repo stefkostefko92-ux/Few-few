@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
@@ -8,6 +9,7 @@ import { useStore } from '../lib/store';
  * a loot-pool drop. Five consecutive fails pity-unlock the next tier.
  */
 export default function MythicPlus(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [state, setState] = useState<any>(null);
@@ -25,7 +27,7 @@ export default function MythicPlus(): React.ReactElement {
     setBusy(true);
     try {
       await api.post('/mythic-plus/enter', { slug, tier });
-      toast(`Entered ${slug} on Mythic+${tier}.`, 'success');
+      toast(t('mythicPlus.enteredToast', { name: slug, tier }), 'success');
       setActive(slug);
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
@@ -38,10 +40,10 @@ export default function MythicPlus(): React.ReactElement {
     try {
       const r = await api.post('/mythic-plus/strike', { slug });
       if (r.success) {
-        if (r.next_stage >= r.total_stages) toast('Final stage cleared! Claim your reward.', 'success');
-        else toast(`Stage cleared — ${r.next_stage} / ${r.total_stages}.`, 'success');
+        if (r.next_stage >= r.total_stages) toast(t('mythicPlus.finalStageCleared'), 'success');
+        else toast(t('mythicPlus.stageClearedToast', { stage: r.next_stage, total: r.total_stages }), 'success');
       } else {
-        toast(r.pity_unlocked ? 'Pity unlock — next tier opened.' : 'Wiped. The run resets.', 'info');
+        toast(r.pity_unlocked ? t('mythicPlus.pityUnlock') : t('mythicPlus.wiped'), 'info');
       }
       await load();
       refresh();
@@ -54,8 +56,8 @@ export default function MythicPlus(): React.ReactElement {
     setBusy(true);
     try {
       const r = await api.post('/mythic-plus/claim', { slug });
-      const drop = r.milestoneDrop ? ` · Drop: ${r.milestoneDrop}` : '';
-      toast(`M+${r.tier} cleared! +${r.gold}g · +${r.xp} XP${drop}`, 'success');
+      const drop = r.milestoneDrop ? t('mythicPlus.dropSuffix', { name: r.milestoneDrop }) : '';
+      toast(t('mythicPlus.claimToast', { tier: r.tier, gold: r.gold, xp: r.xp, drop }), 'success');
       setActive(null);
       await load();
       refresh();
@@ -63,19 +65,17 @@ export default function MythicPlus(): React.ReactElement {
     finally { setBusy(false); }
   }
 
-  if (!state) return <div className="page"><div className="muted">Loading Mythic+…</div></div>;
+  if (!state) return <div className="page"><div className="muted">{t('mythicPlus.loading')}</div></div>;
 
   return (
     <div className="page mythic-plus-page">
       <header className="page-header">
-        <h1>Mythic+ Dungeons</h1>
-        <span className="muted">Endless tiers. {state.tier_scale_pct}% scaling per tier.</span>
+        <h1>{t('mythicPlus.title')}</h1>
+        <span className="muted">{t('mythicPlus.scaling', { pct: state.tier_scale_pct })}</span>
       </header>
 
       <p className="muted" style={{ marginBottom: 18 }}>
-        Clear a scripted dungeon to unlock its Mythic+ track. Pick a tier and run it; each clear
-        unlocks the next tier. Five consecutive failures pity-unlock the next tier so the climb
-        never stalls. Every tenth tier guarantees a tier-9 loot-pool drop.
+        {t('mythicPlus.description')}
       </p>
 
       <div className="dungeon-grid">
@@ -86,44 +86,44 @@ export default function MythicPlus(): React.ReactElement {
           return (
             <div key={d.slug} className="card dungeon-card">
               <h3>{d.name}</h3>
-              <div className="muted text-sm">{d.region} · Lv {d.level_req}</div>
+              <div className="muted text-sm">{d.region} · {t('mythicPlus.lv', { n: d.level_req })}</div>
               <div className="mythic-stats">
-                <div><div className="muted text-sm">Best M+</div><div className="num">{d.best_tier}</div></div>
-                <div><div className="muted text-sm">Stages</div><div className="num">{d.stages}</div></div>
+                <div><div className="muted text-sm">{t('mythicPlus.bestTier')}</div><div className="num">{d.best_tier}</div></div>
+                <div><div className="muted text-sm">{t('mythicPlus.stages')}</div><div className="num">{d.stages}</div></div>
                 {d.consecutive_fails > 0 && (
-                  <div><div className="muted text-sm">Fails</div><div className="num">{d.consecutive_fails} / 5</div></div>
+                  <div><div className="muted text-sm">{t('mythicPlus.fails')}</div><div className="num">{d.consecutive_fails} / 5</div></div>
                 )}
               </div>
               {inProgress && (
                 <div className="mythic-progress">
-                  <strong>In progress · M+{d.current_tier}</strong>
-                  <div className="muted text-sm">Stage {d.current_stage} / {d.stages}</div>
+                  <strong>{t('mythicPlus.inProgressTier', { tier: d.current_tier })}</strong>
+                  <div className="muted text-sm">{t('mythicPlus.stageProgress', { stage: d.current_stage, total: d.stages })}</div>
                 </div>
               )}
               {!inProgress && (
                 <div className="mythic-tier-buttons">
-                  {[d.best_tier, d.best_tier + 1].map((t) => (
-                    t > 0 && (
-                      <button key={t} className="btn btn-sm" disabled={busy} onClick={() => enter(d.slug, t)}>
-                        Enter M+{t}
+                  {[d.best_tier, d.best_tier + 1].map((tier) => (
+                    tier > 0 && (
+                      <button key={tier} className="btn btn-sm" disabled={busy} onClick={() => enter(d.slug, tier)}>
+                        {t('mythicPlus.enterTier', { tier })}
                       </button>
                     )
                   ))}
                   {d.best_tier === 0 && (
                     <button className="btn btn-sm btn-primary" disabled={busy} onClick={() => enter(d.slug, 1)}>
-                      Enter M+1
+                      {t('mythicPlus.enterTier', { tier: 1 })}
                     </button>
                   )}
                 </div>
               )}
               {inProgress && !cleared && (
                 <button className="btn btn-primary" disabled={busy} onClick={() => strike(d.slug)}>
-                  Strike next stage
+                  {t('mythicPlus.strikeNext')}
                 </button>
               )}
               {cleared && (
                 <button className="btn btn-primary" disabled={busy} onClick={() => claim(d.slug)}>
-                  Claim reward
+                  {t('mythicPlus.claimReward')}
                 </button>
               )}
             </div>

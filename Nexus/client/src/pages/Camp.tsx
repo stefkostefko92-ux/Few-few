@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
@@ -28,6 +29,7 @@ interface Current {
 }
 
 export default function Camp(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showLevelUp = useStore((s) => s.showLevelUp);
@@ -55,7 +57,7 @@ export default function Camp(): React.ReactElement {
     if (!picked) return;
     try {
       await api.post('/camp/start', picked);
-      toast('Task started.', 'success');
+      toast(t('camp.taskStarted'), 'success');
       setPicked(null);
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
@@ -63,8 +65,8 @@ export default function Camp(): React.ReactElement {
   async function claim() {
     try {
       const r = await api.post('/camp/claim');
-      const lootStr = r.loot && r.loot.length ? ` · loot: ${r.loot.join(', ')}` : '';
-      toast(`+${r.gold}g · +${r.xp} XP${lootStr}`, 'success');
+      const lootStr = r.loot && r.loot.length ? t('camp.lootSuffix', { items: r.loot.join(', ') }) : '';
+      toast(t('camp.claimToast', { gold: r.gold, xp: r.xp, loot: lootStr }), 'success');
       if (r.levelUp) showLevelUp(r.levelUp);
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
@@ -82,8 +84,8 @@ export default function Camp(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Camp</h2>
-            <div className="panel-subtitle">Set a task. Come back later. Gold and XP accrue while you're away.</div>
+            <h2 className="panel-title">{t('camp.title')}</h2>
+            <div className="panel-subtitle">{t('camp.subtitle')}</div>
           </div>
         </div>
 
@@ -103,55 +105,55 @@ export default function Camp(): React.ReactElement {
                   <div className="bar-fill xp" style={{ width: `${pct}%`, transition: 'width 1s linear' }} />
                 </div>
                 <div className="flex between" style={{ marginTop: 8 }}>
-                  <span className="muted text-sm">{current.duration_hr}h task</span>
+                  <span className="muted text-sm">{t('camp.hourTask', { n: current.duration_hr })}</span>
                   <span style={{ fontFamily: 'var(--font-mono)', color: remaining === 0 ? 'var(--emerald-1)' : 'var(--gold-1)' }}>
-                    {remaining === 0 ? 'Ready!' : `${hrs}h ${min}m ${sec}s`}
+                    {remaining === 0 ? t('camp.ready') : t('camp.timeLeft', { h: hrs, m: min, s: sec })}
                   </span>
                 </div>
               </div>
               <button className="btn btn-primary" disabled={remaining > 0} onClick={claim}>
-                {remaining > 0 ? 'In progress' : 'Claim reward'}
+                {remaining > 0 ? t('camp.inProgress') : t('camp.claimReward')}
               </button>
             </div>
           </div>
         ) : (
-          <div className="muted">No task running. Pick one below.</div>
+          <div className="muted">{t('camp.noTask')}</div>
         )}
       </div>
 
       {!current && (
         <div className="grid-cards">
-          {tasks.map((t) => (
-            <div key={t.slug} className="card" data-tilt style={{ position: 'relative' }}>
+          {tasks.map((task) => (
+            <div key={task.slug} className="card" data-tilt style={{ position: 'relative' }}>
               <div className="flex" style={{ gap: 14, alignItems: 'flex-start' }}>
-                <Sprite name={SPRITE_BY_SLUG[t.slug] || 'camp-fire'} tone="camp" size={44} />
+                <Sprite name={SPRITE_BY_SLUG[task.slug] || 'camp-fire'} tone="camp" size={44} />
                 <div style={{ flex: 1 }}>
-                  <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{t.name}</strong>
-                  <div className="muted text-sm" style={{ marginTop: 4 }}>{t.description}</div>
+                  <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{task.name}</strong>
+                  <div className="muted text-sm" style={{ marginTop: 4 }}>{task.description}</div>
                 </div>
               </div>
               <div className="flex gap-sm" style={{ marginTop: 10, fontFamily: 'var(--font-mono)' }}>
-                <span className="tag gold">+{t.gold_per_hour}g/h</span>
-                <span className="tag emerald">+{t.xp_per_hour} XP/h</span>
+                <span className="tag gold">{t('camp.goldPerHour', { n: task.gold_per_hour })}</span>
+                <span className="tag emerald">{t('camp.xpPerHour', { n: task.xp_per_hour })}</span>
               </div>
               <div className="flex gap-sm" style={{ marginTop: 12, flexWrap: 'wrap' }}>
                 {durations.map((h) => (
                   <button
                     key={h}
-                    className={`btn btn-sm ${picked?.slug === t.slug && picked.hours === h ? 'btn-primary' : ''}`}
-                    onClick={() => setPicked({ slug: t.slug, hours: h })}
+                    className={`btn btn-sm ${picked?.slug === task.slug && picked.hours === h ? 'btn-primary' : ''}`}
+                    onClick={() => setPicked({ slug: task.slug, hours: h })}
                   >
-                    {h}h
+                    {t('camp.hours', { n: h })}
                   </button>
                 ))}
               </div>
-              {picked?.slug === t.slug && (
+              {picked?.slug === task.slug && (
                 <button
                   className="btn btn-primary"
                   style={{ marginTop: 12, width: '100%' }}
                   onClick={start}
                 >
-                  Begin {picked.hours}h task · +{t.gold_per_hour * picked.hours}g, +{t.xp_per_hour * picked.hours} XP
+                  {t('camp.beginTask', { hours: picked.hours, gold: task.gold_per_hour * picked.hours, xp: task.xp_per_hour * picked.hours })}
                 </button>
               )}
             </div>

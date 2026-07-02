@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
 import { api } from '../lib/api';
 
@@ -16,13 +17,14 @@ import { api } from '../lib/api';
  * action becomes available again — no manual reload needed.
  */
 
-const LABEL: Record<string, string> = {
-  hunt: 'Hunting',
-  camp: 'Camp',
-  tower: 'Tower of Trials',
-  dungeon: 'Dungeons',
-  quest: 'Quests',
-  arena: 'Arena',
+// Имената се превеждат при рендер — тук са само i18n ключовете.
+const LABEL_KEY: Record<string, string> = {
+  hunt: 'cooldowns.hunt',
+  camp: 'cooldowns.camp',
+  tower: 'cooldowns.tower',
+  dungeon: 'cooldowns.dungeon',
+  quest: 'cooldowns.quest',
+  arena: 'cooldowns.arena',
 };
 
 const COLOR: Record<string, string> = {
@@ -34,8 +36,8 @@ const COLOR: Record<string, string> = {
   arena:   '#d6a13d',
 };
 
-function fmt(ms: number): string {
-  if (ms <= 0) return 'ready';
+function fmt(ms: number, ready: string): string {
+  if (ms <= 0) return ready;
   const total = Math.ceil(ms / 1000);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
@@ -45,6 +47,7 @@ function fmt(ms: number): string {
 }
 
 export default function CooldownTicker(): React.ReactElement | null {
+  const { t } = useTranslation();
   const cooldowns = useStore((s) => s.cooldowns);
   const character = useStore((s) => s.character);
   const refresh = useStore((s) => s.refreshCharacter);
@@ -90,7 +93,7 @@ export default function CooldownTicker(): React.ReactElement | null {
     setSkipping(true);
     try {
       const r = await api.post('/character/skip-cooldowns', {});
-      toast(`Cleared ${r.cleared} cooldown${r.cleared === 1 ? '' : 's'} for 1 gem.`, 'success');
+      toast(t('cooldowns.clearedToast', { count: r.cleared }), 'success');
       await refresh();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setSkipping(false); }
@@ -98,15 +101,15 @@ export default function CooldownTicker(): React.ReactElement | null {
 
   return (
     <div className="cooldown-ticker" role="status" aria-live="polite">
-      <div className="cooldown-ticker-label">On cooldown</div>
+      <div className="cooldown-ticker-label">{t('cooldowns.onCooldown')}</div>
       <div className="cooldown-ticker-list">
         {active.map(([kind, ts]) => {
           const remaining = (ts as number) - now;
           return (
             <div key={kind} className="cooldown-chip" style={{ borderColor: COLOR[kind] }}>
               <span className="cooldown-dot" style={{ background: COLOR[kind] }} />
-              <span className="cooldown-name">{LABEL[kind] || kind}</span>
-              <span className="cooldown-time">{fmt(remaining)}</span>
+              <span className="cooldown-name">{LABEL_KEY[kind] ? t(LABEL_KEY[kind]) : kind}</span>
+              <span className="cooldown-time">{fmt(remaining, t('cooldowns.ready'))}</span>
             </div>
           );
         })}
@@ -115,9 +118,9 @@ export default function CooldownTicker(): React.ReactElement | null {
         className="cooldown-skip"
         onClick={skip}
         disabled={skipping || gems < 1}
-        title={gems < 1 ? 'Need at least 1 gem' : 'Spend 1 gem to clear every cooldown'}
+        title={gems < 1 ? t('cooldowns.needGem') : t('cooldowns.skipTitle')}
       >
-        ⏱ Skip · 1💎
+        ⏱ {t('cooldowns.skip')} · 1💎
       </button>
     </div>
   );

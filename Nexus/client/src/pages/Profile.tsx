@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Avatar from '../components/Avatar';
@@ -23,6 +24,7 @@ interface FrameOpt {
 }
 
 export default function Profile(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refreshChar = useStore((s) => s.refreshCharacter);
   const char = useStore((s) => s.character);
@@ -48,35 +50,35 @@ export default function Profile(): React.ReactElement {
   async function setAvatar(slug: string) {
     try {
       await api.post('/profile/cosmetics', { avatar: slug });
-      toast('Avatar updated.', 'success');
+      toast(t('profile.avatarUpdated'), 'success');
       await Promise.all([load(), refreshChar()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
   async function setFrame(slug: string) {
     try {
       await api.post('/profile/cosmetics', { frame: slug });
-      toast('Frame updated.', 'success');
+      toast(t('profile.frameUpdated'), 'success');
       await Promise.all([load(), refreshChar()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
   async function saveBio() {
     try {
       await api.post('/profile/cosmetics', { bio });
-      toast('Bio saved.', 'success');
+      toast(t('profile.bioSaved'), 'success');
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
   }
   async function rename() {
     try {
       const r = await api.post('/profile/rename', { name: newName });
-      toast(`Your name is now ${r.name}.`, 'success');
+      toast(t('profile.renamed', { name: r.name }), 'success');
       setRenameOpen(false);
       setNewName('');
       await Promise.all([load(), refreshChar()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
 
-  if (!profile || !char) return <div className="muted">Loading…</div>;
+  if (!profile || !char) return <div className="muted">{t('common.loading')}</div>;
 
   const ownedFrames = frames.filter((f) => f.unlocked);
   const lockedFrames = frames.filter((f) => !f.unlocked);
@@ -91,7 +93,7 @@ export default function Profile(): React.ReactElement {
     <div className="col" style={{ gap: 24 }}>
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Profile</h2>
+          <h2 className="panel-title">{t('profile.title')}</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 24, alignItems: 'flex-start' }}>
           <Avatar avatar={profile.avatar} frame={profile.frame_slug} size={132} />
@@ -100,28 +102,28 @@ export default function Profile(): React.ReactElement {
               <h1 style={{ color: 'var(--gold-1)' }}>{char.name}</h1>
               {profile.current_title && <span className="tag amethyst">"{profile.current_title}"</span>}
               <button className="btn btn-sm" onClick={() => setRenameOpen(true)} disabled={!canRename}>
-                Rename · {profile.rename_cost}g
+                {t('profile.renameButton', { cost: profile.rename_cost })}
               </button>
             </div>
-            <div className="muted" style={{ textTransform: 'capitalize' }}>{char.class} · Lv {char.level}</div>
+            <div className="muted" style={{ textTransform: 'capitalize' }}>{t(`common.class.${char.class}`, { defaultValue: char.class })} · {t('common.lv')} {char.level}</div>
             {!canRename && (
               <div className="muted text-sm" style={{ marginTop: 4 }}>
-                Next rename in {Math.ceil(cooldownLeft / 3_600_000)}h
+                {t('profile.nextRenameIn', { hours: Math.ceil(cooldownLeft / 3_600_000) })}
               </div>
             )}
             <div style={{ marginTop: 16 }}>
-              <label className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.08em' }}>Bio</label>
+              <label className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.08em' }}>{t('profile.bioLabel')}</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={500}
                 rows={3}
-                placeholder="Write something memorable about your hero…"
+                placeholder={t('profile.bioPlaceholder')}
                 style={{ width: '100%', marginTop: 6 }}
               />
               <div className="flex between" style={{ marginTop: 6 }}>
                 <span className="muted text-sm">{bio.length}/500</span>
-                <button className="btn btn-sm btn-primary" onClick={saveBio} disabled={bio === profile.bio}>Save Bio</button>
+                <button className="btn btn-sm btn-primary" onClick={saveBio} disabled={bio === profile.bio}>{t('profile.saveBio')}</button>
               </div>
             </div>
           </div>
@@ -132,25 +134,25 @@ export default function Profile(): React.ReactElement {
         <>
           <div className="admin-overlay" onClick={() => setRenameOpen(false)} />
           <div className="admin-editor" style={{ width: 400 }}>
-            <h3>Rename Hero</h3>
-            <p className="muted">Costs {profile.rename_cost} gold and starts a 24-hour cooldown.</p>
+            <h3>{t('profile.renameTitle')}</h3>
+            <p className="muted">{t('profile.renameDesc', { cost: profile.rename_cost })}</p>
             <div className="field" style={{ marginTop: 12 }}>
-              <label>New name</label>
+              <label>{t('profile.newName')}</label>
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Tyrian, Lyra, Vorth…"
+                placeholder={t('profile.newNamePlaceholder')}
                 pattern="[a-zA-Z][a-zA-Z0-9_]*"
                 minLength={3}
                 maxLength={20}
                 style={{ width: '100%' }}
               />
-              <div className="muted text-sm">3-20 chars, letters/numbers. Must be unique.</div>
+              <div className="muted text-sm">{t('profile.nameHint')}</div>
             </div>
             <div className="actions">
-              <button className="btn" onClick={() => setRenameOpen(false)}>Cancel</button>
+              <button className="btn" onClick={() => setRenameOpen(false)}>{t('common.cancel')}</button>
               <button className="btn btn-primary" disabled={newName.length < 3 || (char.gold < profile.rename_cost)} onClick={rename}>
-                Confirm · {profile.rename_cost}g
+                {t('profile.confirmRename', { cost: profile.rename_cost })}
               </button>
             </div>
           </div>
@@ -159,7 +161,7 @@ export default function Profile(): React.ReactElement {
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Avatars <span className="muted" style={{ fontSize: 14 }}>({ownedAvatars.length}/{avatars.length})</span></h2>
+          <h2 className="panel-title">{t('profile.avatars')} <span className="muted" style={{ fontSize: 14 }}>({ownedAvatars.length}/{avatars.length})</span></h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 14 }}>
           {[...ownedAvatars, ...lockedAvatars].map((a) => (
@@ -179,7 +181,7 @@ export default function Profile(): React.ReactElement {
                 <Avatar avatar={a.slug} frame={profile.frame_slug} size={72} />
               </div>
               <strong style={{ fontSize: 13 }}>{a.name}</strong>
-              <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>{a.class}</div>
+              <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>{a.class ? t(`common.class.${a.class}`, { defaultValue: a.class }) : ''}</div>
               {!a.unlocked && a.unlocked_by !== 'default' && (
                 <div className="text-sm" style={{ color: 'var(--text-4)', marginTop: 4 }}>🔒 {a.unlocked_by}</div>
               )}
@@ -190,7 +192,7 @@ export default function Profile(): React.ReactElement {
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Frames <span className="muted" style={{ fontSize: 14 }}>({ownedFrames.length}/{frames.length})</span></h2>
+          <h2 className="panel-title">{t('profile.frames')} <span className="muted" style={{ fontSize: 14 }}>({ownedFrames.length}/{frames.length})</span></h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 14 }}>
           {[...ownedFrames, ...lockedFrames].map((f) => (
@@ -210,7 +212,7 @@ export default function Profile(): React.ReactElement {
                 <Avatar avatar={profile.avatar} frame={f.slug} size={72} />
               </div>
               <strong style={{ fontSize: 13 }} className={`rarity-${f.rarity}`}>{f.name}</strong>
-              <div className={`rarity-pill ${f.rarity}`} style={{ marginTop: 4 }}>{f.rarity}</div>
+              <div className={`rarity-pill ${f.rarity}`} style={{ marginTop: 4 }}>{t(`common.rarity.${f.rarity}`, { defaultValue: f.rarity })}</div>
               {!f.unlocked && f.unlocked_by !== 'default' && (
                 <div className="text-sm" style={{ color: 'var(--text-4)', marginTop: 4 }}>🔒 {f.unlocked_by}</div>
               )}

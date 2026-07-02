@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { ArenaOpponent, ArenaResult } from '../lib/types';
 import CombatScene from '../combat/CombatScene';
 
 export default function Arena(): React.ReactElement {
+  const { t } = useTranslation();
   const char = useStore((s) => s.character);
   const refresh = useStore((s) => s.refreshCharacter);
   const toast = useStore((s) => s.toast);
@@ -45,7 +47,7 @@ export default function Arena(): React.ReactElement {
           victory={fight.success}
           reward={{ xp: fight.xp, ratingDelta: fight.ratingDelta }}
           onClose={() => { setFight(null); load(); }}
-          introTitle={`${fight.hero.name}  VS  ${fight.foe.name}`}
+          introTitle={t('arena.vsTitle', { hero: fight.hero.name, foe: fight.foe.name })}
         />
       </div>
     );
@@ -55,10 +57,10 @@ export default function Arena(): React.ReactElement {
     <div className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Arena of Nexus Dominion</h2>
-          <div className="panel-subtitle">Test your steel against other heroes. Rating: <span className="gold">{char?.arena_rating}</span></div>
+          <h2 className="panel-title">{t('arena.title')}</h2>
+          <div className="panel-subtitle">{t('arena.subtitle')} <span className="gold">{char?.arena_rating}</span></div>
         </div>
-        <button className="btn" onClick={load}>Refresh</button>
+        <button className="btn" onClick={load}>{t('arena.refresh')}</button>
       </div>
       <div className="grid-cards">
         {opps.map((o) => (
@@ -66,22 +68,22 @@ export default function Arena(): React.ReactElement {
             <div className="flex between">
               <div>
                 <strong style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)' }}>{o.name}</strong>
-                <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>{o.class} · Lv {o.level}</div>
+                <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>{o.class} · {t('arena.lv', { n: o.level })}</div>
               </div>
               <div className="flex gap-sm">
-                {(o as any).is_npc ? <span className="tag">Trainer</span> : null}
-                <div className="tag">{o.arena_rating} ELO</div>
+                {(o as any).is_npc ? <span className="tag">{t('arena.trainer')}</span> : null}
+                <div className="tag">{t('arena.elo', { n: o.arena_rating })}</div>
               </div>
             </div>
             <div className="muted text-sm" style={{ marginTop: 8 }}>
-              {o.wins}W / {o.losses}L
+              {t('arena.winsLosses', { w: o.wins, l: o.losses })}
             </div>
             <button className="btn btn-primary" style={{ marginTop: 12 }} disabled={!char || char.energy < 5} onClick={() => challenge(o.id)}>
-              Challenge (5 EN)
+              {t('arena.challenge')}
             </button>
           </div>
         ))}
-        {opps.length === 0 && <div className="muted">No worthy opponents nearby. Grow stronger.</div>}
+        {opps.length === 0 && <div className="muted">{t('arena.noOpponents')}</div>}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
@@ -8,6 +9,7 @@ import { useStore } from '../lib/store';
  * stock per faction.
  */
 export default function Factions(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const [state, setState] = useState<any>(null);
@@ -32,20 +34,20 @@ export default function Factions(): React.ReactElement {
     setBusy(true);
     try {
       await api.post(`/faction/${activeVendor}/vendor/buy`, { slug: itemSlug });
-      toast(`Bought ${itemSlug}.`, 'success');
+      toast(t('factions.bought', { item: itemSlug }), 'success');
       await openVendor(activeVendor);
       refresh();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setBusy(false); }
   }
 
-  if (!state) return <div className="page"><div className="muted">Loading factions…</div></div>;
+  if (!state) return <div className="page"><div className="muted">{t('factions.loading')}</div></div>;
 
   return (
     <div className="page factions-page">
       <header className="page-header">
-        <h1>Factions</h1>
-        <span className="muted">Hit the matching enemy family to climb each track.</span>
+        <h1>{t('factions.title')}</h1>
+        <span className="muted">{t('factions.subtitle')}</span>
       </header>
 
       <div className="faction-grid">
@@ -57,18 +59,18 @@ export default function Factions(): React.ReactElement {
               <div className="muted faction-motto">"{f.motto}"</div>
               <div className="faction-tier">
                 <span className="tag emerald">{f.tier_name}</span>
-                <span className="muted">Tier {f.tier} / 5</span>
+                <span className="muted">{t('factions.tierOf', { tier: f.tier })}</span>
               </div>
               <div className="rep-bar">
                 <div className="rep-bar-fill" style={{ width: `${Math.min(100, pct)}%` }} />
               </div>
               <div className="rep-text">
-                <strong>{f.rep.toLocaleString()}</strong> rep
+                <strong>{f.rep.toLocaleString()}</strong> {t('factions.repLabel')}
                 {f.next_tier_rep && (
-                  <span className="muted"> · {(f.next_tier_rep - f.rep).toLocaleString()} to {f.next_tier_name}</span>
+                  <span className="muted"> · {t('factions.toNext', { amount: (f.next_tier_rep - f.rep).toLocaleString(), tier: f.next_tier_name })}</span>
                 )}
               </div>
-              <button className="btn" onClick={() => openVendor(f.slug)}>Open vendor</button>
+              <button className="btn" onClick={() => openVendor(f.slug)}>{t('factions.openVendor')}</button>
             </div>
           );
         })}
@@ -77,15 +79,15 @@ export default function Factions(): React.ReactElement {
       {activeVendor && vendorState && (
         <section className="card vendor-card">
           <div className="vendor-head">
-            <h2>{state.factions.find((f: any) => f.slug === activeVendor)?.name} · Vendor</h2>
-            <button className="btn btn-sm" onClick={() => setActiveVendor(null)}>Close</button>
+            <h2>{t('factions.vendorTitle', { name: state.factions.find((f: any) => f.slug === activeVendor)?.name })}</h2>
+            <button className="btn btn-sm" onClick={() => setActiveVendor(null)}>{t('common.close')}</button>
           </div>
-          <div className="muted vendor-rep">Your rep: <strong>{vendorState.rep.toLocaleString()}</strong> ({vendorState.tier_name})</div>
+          <div className="muted vendor-rep">{t('factions.yourRep')} <strong>{vendorState.rep.toLocaleString()}</strong> ({vendorState.tier_name})</div>
           <table className="data-table">
-            <thead><tr><th>Item</th><th>Unlock</th><th>Cost</th><th></th></tr></thead>
+            <thead><tr><th>{t('factions.th.item')}</th><th>{t('factions.th.unlock')}</th><th>{t('factions.th.cost')}</th><th></th></tr></thead>
             <tbody>
               {vendorState.stock.map((s: any) => {
-                const tierName = state.tiers.find((t: any) => t.tier === s.tier)?.name || 'Stranger';
+                const tierName = state.tiers.find((ti: any) => ti.tier === s.tier)?.name || 'Stranger';
                 return (
                   <tr key={s.slug}>
                     <td>
@@ -96,7 +98,7 @@ export default function Factions(): React.ReactElement {
                     <td>{s.gold > 0 ? `${s.gold}g` : `${s.gems} 💎`}</td>
                     <td>
                       <button className="btn btn-sm btn-primary" disabled={busy || !s.unlocked} onClick={() => buy(s.slug)}>
-                        {s.unlocked ? 'Buy' : 'Locked'}
+                        {s.unlocked ? t('factions.buy') : t('factions.locked')}
                       </button>
                     </td>
                   </tr>

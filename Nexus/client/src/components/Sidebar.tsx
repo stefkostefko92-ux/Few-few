@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   IconHome,
   IconScroll,
@@ -21,94 +22,105 @@ import Avatar from './Avatar';
 import { useStore } from '../lib/store';
 
 interface SectionDef {
-  heading: string;
-  items: { to: string; label: string; icon: any; end?: boolean; badgeKey?: 'mail' }[];
+  // Стабилен id за collapse състоянието; текстът идва от i18n ключа.
+  id: string;
+  headingKey: string;
+  items: { to: string; labelKey: string; icon: any; end?: boolean; badgeKey?: 'mail' }[];
 }
 
 const SECTIONS: SectionDef[] = [
   {
-    heading: 'Main',
+    id: 'main',
+    headingKey: 'sidebar.main',
     items: [
       // Overview / Profile / Character / Inventory / Statistics are now tabs
       // inside the one Hero page.
-      { to: '/app', label: 'Hero', icon: IconHome, end: true },
+      { to: '/app', labelKey: 'sidebar.hero', icon: IconHome, end: true },
     ],
   },
   {
-    heading: 'Adventure',
+    id: 'adventure',
+    headingKey: 'sidebar.adventure',
     items: [
       // World Map + Quests are merged into the one Realm page (two tabs).
-      { to: '/app/world', label: 'Realm · Map & Quests', icon: IconMap },
-      { to: '/app/bounties', label: 'Bounty Board', icon: IconSkull },
-      { to: '/app/hunting', label: 'Hunting Grounds', icon: IconBolt },
-      { to: '/app/camp', label: 'Camp · Idle Tasks', icon: IconFlame },
-      { to: '/app/tower', label: 'Tower of Trials', icon: IconCrown },
-      { to: '/app/trial-cache', label: 'Trial Cache', icon: IconStar },
-      { to: '/app/dungeons', label: 'Dungeons', icon: IconCrown },
-      { to: '/app/forge', label: 'The Forge', icon: IconBolt },
-      { to: '/app/recipes', label: 'Recipe Board', icon: IconStar },
-      { to: '/app/arena', label: 'Arena', icon: IconSword },
-      { to: '/app/history', label: 'Battle History', icon: IconSword },
+      { to: '/app/world', labelKey: 'sidebar.realm', icon: IconMap },
+      { to: '/app/bounties', labelKey: 'sidebar.bounties', icon: IconSkull },
+      { to: '/app/hunting', labelKey: 'sidebar.hunting', icon: IconBolt },
+      { to: '/app/camp', labelKey: 'sidebar.camp', icon: IconFlame },
+      { to: '/app/tower', labelKey: 'sidebar.tower', icon: IconCrown },
+      { to: '/app/trial-cache', labelKey: 'sidebar.trialCache', icon: IconStar },
+      { to: '/app/dungeons', labelKey: 'sidebar.dungeons', icon: IconCrown },
+      { to: '/app/forge', labelKey: 'sidebar.forge', icon: IconBolt },
+      { to: '/app/recipes', labelKey: 'sidebar.recipes', icon: IconStar },
+      { to: '/app/arena', labelKey: 'sidebar.arena', icon: IconSword },
+      { to: '/app/history', labelKey: 'sidebar.history', icon: IconSword },
     ],
   },
   {
-    heading: 'Daily',
+    id: 'daily',
+    headingKey: 'sidebar.daily',
     items: [
-      { to: '/app/battlepass', label: 'Battle Pass', icon: IconStar },
-      { to: '/app/daily', label: 'Daily Tribute', icon: IconStar },
-      { to: '/app/wheel', label: 'Wheel of Fortune', icon: IconCoin },
+      { to: '/app/battlepass', labelKey: 'sidebar.battlePass', icon: IconStar },
+      { to: '/app/daily', labelKey: 'sidebar.dailyTribute', icon: IconStar },
+      { to: '/app/wheel', labelKey: 'sidebar.wheel', icon: IconCoin },
     ],
   },
   {
-    heading: 'Endgame',
+    id: 'endgame',
+    headingKey: 'sidebar.endgame',
     items: [
-      { to: '/app/realm-boss', label: 'Realm Boss', icon: IconSkull },
-      { to: '/app/factions', label: 'Factions', icon: IconCrown },
-      { to: '/app/events', label: 'Seasonal Events', icon: IconFlame },
-      { to: '/app/mythic-plus', label: 'Mythic+ Dungeons', icon: IconCrown },
+      { to: '/app/realm-boss', labelKey: 'sidebar.realmBoss', icon: IconSkull },
+      { to: '/app/factions', labelKey: 'sidebar.factions', icon: IconCrown },
+      { to: '/app/events', labelKey: 'sidebar.events', icon: IconFlame },
+      { to: '/app/mythic-plus', labelKey: 'sidebar.mythicPlus', icon: IconCrown },
     ],
   },
   {
-    heading: 'Society',
+    id: 'society',
+    headingKey: 'sidebar.society',
     items: [
-      { to: '/app/guild', label: 'Guild', icon: IconCrown },
-      { to: '/app/mail', label: 'Mail', icon: IconMail, badgeKey: 'mail' },
-      { to: '/app/leaderboard', label: 'Hall of Fame', icon: IconCrown },
+      { to: '/app/guild', labelKey: 'sidebar.guild', icon: IconCrown },
+      { to: '/app/mail', labelKey: 'sidebar.mail', icon: IconMail, badgeKey: 'mail' },
+      { to: '/app/leaderboard', labelKey: 'sidebar.leaderboard', icon: IconCrown },
     ],
   },
   {
-    heading: 'Town',
+    id: 'town',
+    headingKey: 'sidebar.town',
     items: [
-      { to: '/app/shop', label: 'NPC Merchant', icon: IconCoin },
-      { to: '/app/market', label: 'Player Market', icon: IconBag },
-      { to: '/app/auction', label: 'Auction House', icon: IconCrown },
-      { to: '/app/stables', label: 'Stables', icon: IconBolt },
-      { to: '/app/premium', label: 'Premium Mint', icon: IconStar },
+      { to: '/app/shop', labelKey: 'sidebar.shop', icon: IconCoin },
+      { to: '/app/market', labelKey: 'sidebar.market', icon: IconBag },
+      { to: '/app/auction', labelKey: 'sidebar.auction', icon: IconCrown },
+      { to: '/app/stables', labelKey: 'sidebar.stables', icon: IconBolt },
+      { to: '/app/premium', labelKey: 'sidebar.premium', icon: IconStar },
     ],
   },
   {
-    heading: 'Lore',
+    id: 'lore',
+    headingKey: 'sidebar.lore',
     items: [
-      { to: '/app/achievements', label: 'Achievements', icon: IconStar },
-      { to: '/app/bestiary', label: 'Bestiary', icon: IconSkull },
+      { to: '/app/achievements', labelKey: 'sidebar.achievements', icon: IconStar },
+      { to: '/app/bestiary', labelKey: 'sidebar.bestiary', icon: IconSkull },
     ],
   },
   {
-    heading: 'Account',
+    id: 'account',
+    headingKey: 'sidebar.account',
     items: [
-      { to: '/app/help', label: 'How to Play', icon: IconScroll },
-      { to: '/app/settings', label: 'Settings', icon: IconUser },
+      { to: '/app/help', labelKey: 'sidebar.help', icon: IconScroll },
+      { to: '/app/settings', labelKey: 'sidebar.settings', icon: IconUser },
     ],
   },
 ];
 
 export default function Sidebar(): React.ReactElement {
+  const { t } = useTranslation();
   const char = useStore((s) => s.character);
   const unreadMail = useStore((s) => s.unreadMail);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
-  function toggle(heading: string) {
-    setCollapsed((c) => ({ ...c, [heading]: !c[heading] }));
+  function toggle(id: string) {
+    setCollapsed((c) => ({ ...c, [id]: !c[id] }));
   }
 
   // Close the mobile drawer whenever the user picks a link (the body class
@@ -134,12 +146,12 @@ export default function Sidebar(): React.ReactElement {
       )}
       {SECTIONS.map((sec, si) => (
         <div
-          key={sec.heading}
-          className={`sidebar-section ${collapsed[sec.heading] ? 'collapsed' : ''}`}
+          key={sec.id}
+          className={`sidebar-section ${collapsed[sec.id] ? 'collapsed' : ''}`}
           style={{ ['--si' as any]: si }}
         >
-          <div className="sidebar-heading" onClick={() => toggle(sec.heading)}>
-            <span>{sec.heading}</span>
+          <div className="sidebar-heading" onClick={() => toggle(sec.id)}>
+            <span>{t(sec.headingKey)}</span>
             <IconChevron className="chev" size={10} />
           </div>
           <div className="items">
@@ -153,7 +165,7 @@ export default function Sidebar(): React.ReactElement {
                 className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
               >
                 <it.icon />
-                <span>{it.label}</span>
+                <span>{t(it.labelKey)}</span>
                 {it.badgeKey === 'mail' && unreadMail > 0 && <span className="badge">{unreadMail}</span>}
               </NavLink>
             ))}
@@ -163,7 +175,7 @@ export default function Sidebar(): React.ReactElement {
 
       {char && (
         <div className="sidebar-section">
-          <div className="sidebar-heading"><span>Vitals</span></div>
+          <div className="sidebar-heading"><span>{t('sidebar.vitals')}</span></div>
           <div className="sidebar-vitals">
             <Bar label="HP" value={char.hp} max={char.hp_max} kind="hp" />
             <Bar label="MP" value={char.mp} max={char.mp_max} kind="mp" />

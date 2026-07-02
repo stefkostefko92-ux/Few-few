@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
 interface Segment { kind: string; label: string }
 
+type Translate = (key: string, opts?: Record<string, unknown>) => string;
+
 const COLORS = ['#d6a13d', '#1f8b54', '#2b58c4', '#6f3fb6', '#b6261b', '#1f8b54', '#d6a13d', '#ffb159'];
 
 export default function Wheel(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showUnlocks = useStore((s) => s.showUnlocks);
@@ -37,8 +41,8 @@ export default function Wheel(): React.ReactElement {
       const finalRotation = 360 * 6 + (360 - (target * sweep) - sweep / 2);
       setRotation(finalRotation);
       await new Promise((res) => setTimeout(res, 4200));
-      toast(`${r.label}: ${describeReward(r)}`, 'success');
-      if (r.levelUp) toast(`Level Up! → ${r.levelUp.toLevel}`, 'success');
+      toast(`${r.label}: ${describeReward(r, t)}`, 'success');
+      if (r.levelUp) toast(t('wheel.levelUpToast', { level: r.levelUp.toLevel }), 'success');
       showUnlocks(r.unlocked);
       setLastResult(r);
       setCanSpin(false);
@@ -57,8 +61,8 @@ export default function Wheel(): React.ReactElement {
     <div className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Wheel of Fortune</h2>
-          <div className="panel-subtitle">{canSpin ? 'One spin awaits, hero.' : 'Come back tomorrow for another spin.'}</div>
+          <h2 className="panel-title">{t('wheel.title')}</h2>
+          <div className="panel-subtitle">{canSpin ? t('wheel.subtitleCanSpin') : t('wheel.subtitleComeBack')}</div>
         </div>
       </div>
       <div className="wheel-stage">
@@ -86,17 +90,17 @@ export default function Wheel(): React.ReactElement {
               <span style={{ fontSize: 10 }}>{seg.label.split(' ').slice(0, 2).join(' ')}</span>
             </div>
           ))}
-          <div className="wheel-hub">Spin</div>
+          <div className="wheel-hub">{t('wheel.hub')}</div>
         </div>
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
           <button className="btn btn-primary" disabled={!canSpin || spinning} onClick={spin}>
-            {spinning ? 'Spinning…' : canSpin ? 'Spin the Wheel' : 'Locked Until Tomorrow'}
+            {spinning ? t('wheel.spinning') : canSpin ? t('wheel.spinButton') : t('wheel.locked')}
           </button>
         </div>
         {lastResult && (
           <div className="card" style={{ marginTop: 16, textAlign: 'center' }}>
             <strong style={{ color: 'var(--gold-1)' }}>{lastResult.label}</strong>
-            <div className="muted">{describeReward(lastResult)}</div>
+            <div className="muted">{describeReward(lastResult, t)}</div>
           </div>
         )}
       </div>
@@ -113,11 +117,11 @@ function iconFor(kind: string) {
   return '🎁';
 }
 
-function describeReward(r: any): string {
+function describeReward(r: any, t: Translate): string {
   const parts: string[] = [];
-  if (r.goldDelta > 0) parts.push(`+${r.goldDelta} gold`);
-  if (r.xpDelta > 0) parts.push(`+${r.xpDelta} XP`);
-  if (r.energyDelta > 0) parts.push(`+${r.energyDelta} energy`);
-  if (r.itemSlug) parts.push(`Item: ${r.itemSlug.replace(/_/g, ' ')}`);
+  if (r.goldDelta > 0) parts.push(t('wheel.goldReward', { n: r.goldDelta }));
+  if (r.xpDelta > 0) parts.push(t('wheel.xpReward', { n: r.xpDelta }));
+  if (r.energyDelta > 0) parts.push(t('wheel.energyReward', { n: r.energyDelta }));
+  if (r.itemSlug) parts.push(t('wheel.itemReward', { name: r.itemSlug.replace(/_/g, ' ') }));
   return parts.join('  ·  ');
 }

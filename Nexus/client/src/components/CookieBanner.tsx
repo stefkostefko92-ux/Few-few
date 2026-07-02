@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 /**
  * GDPR / ePrivacy compliant cookie banner.
@@ -61,6 +62,7 @@ export function openCookieBanner(): void {
 }
 
 export default function CookieBanner(): React.ReactElement | null {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [pref, setPref] = useState(false);
@@ -89,48 +91,52 @@ export default function CookieBanner(): React.ReactElement | null {
   }
 
   if (!visible) return null;
+
+  // cookies.intro съдържа {{policy}} (линк) — режем низа около сентинел,
+  // за да вградим <Link> вътре в превода.
+  const [introBefore, introAfter] = t('cookies.intro', { policy: '\u0001' }).split('\u0001');
+
   return (
     <div className="cookie-banner" role="dialog" aria-modal="false" aria-labelledby="cookie-banner-title">
       <div className="cookie-banner-text">
-        <strong id="cookie-banner-title">We respect your choices.</strong> Necessary cookies keep
-        you logged in and the site running. Other categories are off by default — you opt in below.
-        Read the details in our <Link to="/privacy">Privacy Policy</Link>.
+        <strong id="cookie-banner-title">{t('cookies.title')}</strong> {introBefore}
+        <Link to="/privacy">{t('cookies.policyLink')}</Link>{introAfter}
       </div>
 
       {showDetails && (
         <div className="cookie-banner-categories" style={{ display: 'grid', gap: 8, margin: '10px 0' }}>
           <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <input type="checkbox" checked readOnly disabled aria-label="Necessary (always on)" />
-            <span><strong>Necessary</strong> — auth session, CSRF token. Always on.</span>
+            <input type="checkbox" checked readOnly disabled aria-label={t('cookies.necessary')} />
+            <span><strong>{t('cookies.necessary')}</strong> — {t('cookies.necessaryDesc')}</span>
           </label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <input type="checkbox" checked={pref} onChange={(e) => setPref(e.target.checked)} aria-label="Preferences" />
-            <span><strong>Preferences</strong> — language, region, UI density.</span>
+            <input type="checkbox" checked={pref} onChange={(e) => setPref(e.target.checked)} aria-label={t('cookies.preferences')} />
+            <span><strong>{t('cookies.preferences')}</strong> — {t('cookies.preferencesDesc')}</span>
           </label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <input type="checkbox" checked={ana} onChange={(e) => setAna(e.target.checked)} aria-label="Analytics" />
-            <span><strong>Analytics</strong> — anonymised page metrics + error reports (Sentry, EU region).</span>
+            <input type="checkbox" checked={ana} onChange={(e) => setAna(e.target.checked)} aria-label={t('cookies.analytics')} />
+            <span><strong>{t('cookies.analytics')}</strong> — {t('cookies.analyticsDesc')}</span>
           </label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <input type="checkbox" checked={mkt} onChange={(e) => setMkt(e.target.checked)} aria-label="Marketing" />
-            <span><strong>Marketing</strong> — none active right now; toggle has no effect until a campaign is configured.</span>
+            <input type="checkbox" checked={mkt} onChange={(e) => setMkt(e.target.checked)} aria-label={t('cookies.marketing')} />
+            <span><strong>{t('cookies.marketing')}</strong> — {t('cookies.marketingDesc')}</span>
           </label>
         </div>
       )}
 
       <div className="cookie-banner-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {/* Equal-weight Reject / Accept (same className, no primary on one only) */}
-        <button className="btn btn-sm" onClick={() => decide(ALL_OFF)} type="button">Reject all</button>
+        <button className="btn btn-sm" onClick={() => decide(ALL_OFF)} type="button">{t('cookies.rejectAll')}</button>
         {showDetails ? (
           <button
             className="btn btn-sm"
             onClick={() => decide({ ...ALL_OFF, preferences: pref, analytics: ana, marketing: mkt })}
             type="button"
-          >Save my choice</button>
+          >{t('cookies.saveChoice')}</button>
         ) : (
-          <button className="btn btn-sm" onClick={() => setShowDetails(true)} type="button">Customise</button>
+          <button className="btn btn-sm" onClick={() => setShowDetails(true)} type="button">{t('cookies.customise')}</button>
         )}
-        <button className="btn btn-sm" onClick={() => decide(ALL_ON)} type="button">Accept all</button>
+        <button className="btn btn-sm" onClick={() => decide(ALL_ON)} type="button">{t('cookies.acceptAll')}</button>
       </div>
     </div>
   );

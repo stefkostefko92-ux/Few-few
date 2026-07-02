@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { InventoryItem } from '../lib/types';
@@ -6,29 +7,8 @@ import Sprite, { spriteForItem } from '../components/Sprite';
 import '../styles/inventory.css';
 
 const SLOT_ORDER = ['weapon', 'offhand', 'helm', 'amulet', 'armor', 'gloves', 'boots', 'ring'] as const;
-type SlotKey = (typeof SLOT_ORDER)[number];
 
-const SLOT_LABEL: Record<SlotKey, string> = {
-  weapon: 'Weapon',
-  offhand: 'Offhand',
-  helm: 'Helm',
-  amulet: 'Amulet',
-  armor: 'Armor',
-  gloves: 'Gloves',
-  boots: 'Boots',
-  ring: 'Ring',
-};
-
-const CATEGORIES = [
-  { key: 'all',     label: 'All' },
-  { key: 'weapon',  label: 'Weapons' },
-  { key: 'armor',   label: 'Armor' },
-  { key: 'helm',    label: 'Helms' },
-  { key: 'shield',  label: 'Shields' },
-  { key: 'ring',    label: 'Rings' },
-  { key: 'amulet',  label: 'Amulets' },
-  { key: 'potion',  label: 'Potions' },
-] as const;
+const CATEGORY_KEYS = ['all', 'weapon', 'armor', 'helm', 'shield', 'ring', 'amulet', 'potion'] as const;
 
 const ICON_BY_CATEGORY: Record<string, string> = {
   weapon: '⚔', shield: '🛡', armor: '🧥', helm: '⛑', amulet: '📿',
@@ -38,6 +18,7 @@ const ICON_BY_CATEGORY: Record<string, string> = {
 interface Buff { stat: string; percent: number; expires_at: number }
 
 export default function Inventory(): React.ReactElement {
+  const { t } = useTranslation();
   const refresh = useStore((s) => s.refreshCharacter);
   const char = useStore((s) => s.character);
   const toast = useStore((s) => s.toast);
@@ -94,7 +75,7 @@ export default function Inventory(): React.ReactElement {
     if (!sellPriceFor) return;
     try {
       await api.post('/market/sell', { inventoryId: sellPriceFor.inv_id, priceGold: listPrice });
-      toast(`Listed for ${listPrice}g.`, 'success');
+      toast(t('inventory.toasts.listedFor', { price: listPrice }), 'success');
       setSellPriceFor(null);
       await load();
     } catch (e: any) { toast(e.message, 'error'); }
@@ -105,8 +86,8 @@ export default function Inventory(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Inventory</h2>
-            <div className="panel-subtitle">{equipped.length} equipped · {bag.length} in bag</div>
+            <h2 className="panel-title">{t('inventory.title')}</h2>
+            <div className="panel-subtitle">{t('inventory.subtitle', { equipped: equipped.length, bag: bag.length })}</div>
           </div>
           <div className="flex gap-sm">
             <span className="tag gold" style={{ fontFamily: 'var(--font-mono)' }}>{char?.gold.toLocaleString() || 0}g</span>
@@ -131,7 +112,7 @@ export default function Inventory(): React.ReactElement {
       <div className="inv-shell">
         {/* Equipment doll */}
         <div className="equip-doll">
-          <h3>Equipment</h3>
+          <h3>{t('inventory.equipment')}</h3>
           <div className="doll-grid">
             {SLOT_ORDER.map((slot) => {
               const it = equipped.find((e) => e.slot === slot);
@@ -140,7 +121,7 @@ export default function Inventory(): React.ReactElement {
                   key={slot}
                   className={`slot s-${slot} ${it ? `rarity-${it.rarity}` : ''}`}
                   data-empty={it ? '0' : '1'}
-                  data-label={SLOT_LABEL[slot]}
+                  data-label={t(`inventory.slots.${slot}`)}
                   onMouseEnter={(e) => it && tip(it, e)}
                   onMouseLeave={() => setHover({ item: null, x: 0, y: 0 })}
                   onMouseMove={(e) => it && tip(it, e)}
@@ -156,15 +137,15 @@ export default function Inventory(): React.ReactElement {
         {/* Bag */}
         <div className="bag-panel">
           <div className="bag-tabs">
-            {CATEGORIES.map((c) => {
-              const n = c.key === 'all' ? bag.length : bag.filter((i) => i.category === c.key).length;
+            {CATEGORY_KEYS.map((key) => {
+              const n = key === 'all' ? bag.length : bag.filter((i) => i.category === key).length;
               return (
                 <div
-                  key={c.key}
-                  className={`bag-tab ${tab === c.key ? 'active' : ''}`}
-                  onClick={() => setTab(c.key)}
+                  key={key}
+                  className={`bag-tab ${tab === key ? 'active' : ''}`}
+                  onClick={() => setTab(key)}
                 >
-                  {c.label}
+                  {t(`inventory.categories.${key}`)}
                   <span className="count">{n}</span>
                 </div>
               );
@@ -172,7 +153,7 @@ export default function Inventory(): React.ReactElement {
           </div>
           {filtered.length === 0 ? (
             <div className="muted" style={{ padding: 32, textAlign: 'center' }}>
-              Nothing here. Hunt or visit the merchant.
+              {t('inventory.emptyBag')}
             </div>
           ) : (
             <div className="bag-grid">
@@ -187,7 +168,7 @@ export default function Inventory(): React.ReactElement {
                 >
                   <span><Sprite {...spriteForItem(it)} size={36} enchant={it.enchant_count} /></span>
                   {it.quantity > 1 && <span className="qty">×{it.quantity}</span>}
-                  {it.soul_bound ? <span className="badge-bound">BOUND</span> : null}
+                  {it.soul_bound ? <span className="badge-bound">{t('inventory.bound')}</span> : null}
                 </div>
               ))}
             </div>
@@ -199,7 +180,7 @@ export default function Inventory(): React.ReactElement {
         <div className="item-tip" style={{ left: hover.x, top: hover.y }}>
           <div className={`name rarity-${hover.item.rarity}`}>{hover.item.name}</div>
           <div className="meta">
-            {hover.item.category}{hover.item.sub_type ? ` · ${hover.item.sub_type}` : ''} · Lv {hover.item.level_req} · {hover.item.rarity}
+            {hover.item.category}{hover.item.sub_type ? ` · ${hover.item.sub_type}` : ''} · {t('inventory.lv', { n: hover.item.level_req })} · {hover.item.rarity}
           </div>
           {hover.item.description && <div className="desc">"{hover.item.description}"</div>}
           {(() => {
@@ -229,21 +210,21 @@ export default function Inventory(): React.ReactElement {
             };
             return (
               <div className="stats">
-                {hover.item.atk_max > 0 && <D k="atk_max" label="Attack" v={`${hover.item.atk_min}-${hover.item.atk_max}`} e={eq('atk_max')} />}
-                {hover.item.defense > 0 && <D k="defense" label="Defense" v={`+${hover.item.defense}`} e={eq('defense')} />}
-                {hover.item.hp_bonus > 0 && <D k="hp_bonus" label="HP" v={`+${hover.item.hp_bonus}`} e={eq('hp_bonus')} />}
-                {hover.item.mp_bonus > 0 && <D k="mp_bonus" label="MP" v={`+${hover.item.mp_bonus}`} e={eq('mp_bonus')} />}
-                {hover.item.str_bonus > 0 && <D k="str_bonus" label="Strength" v={`+${hover.item.str_bonus}`} e={eq('str_bonus')} />}
-                {hover.item.dex_bonus > 0 && <D k="dex_bonus" label="Dexterity" v={`+${hover.item.dex_bonus}`} e={eq('dex_bonus')} />}
-                {hover.item.con_bonus > 0 && <D k="con_bonus" label="Constitution" v={`+${hover.item.con_bonus}`} e={eq('con_bonus')} />}
-                {hover.item.int_bonus > 0 && <D k="int_bonus" label="Intelligence" v={`+${hover.item.int_bonus}`} e={eq('int_bonus')} />}
-                {hover.item.wis_bonus > 0 && <D k="wis_bonus" label="Wisdom" v={`+${hover.item.wis_bonus}`} e={eq('wis_bonus')} />}
-                {hover.item.cha_bonus > 0 && <D k="cha_bonus" label="Charisma" v={`+${hover.item.cha_bonus}`} e={eq('cha_bonus')} />}
-                {hover.item.heal_hp > 0 && <Stat k="Restores" v={`${hover.item.heal_hp} HP`} />}
-                {hover.item.heal_mp > 0 && <Stat k="Restores" v={`${hover.item.heal_mp} MP`} />}
+                {hover.item.atk_max > 0 && <D k="atk_max" label={t('inventory.stats.attack')} v={`${hover.item.atk_min}-${hover.item.atk_max}`} e={eq('atk_max')} />}
+                {hover.item.defense > 0 && <D k="defense" label={t('inventory.stats.defense')} v={`+${hover.item.defense}`} e={eq('defense')} />}
+                {hover.item.hp_bonus > 0 && <D k="hp_bonus" label={t('inventory.stats.hp')} v={`+${hover.item.hp_bonus}`} e={eq('hp_bonus')} />}
+                {hover.item.mp_bonus > 0 && <D k="mp_bonus" label={t('inventory.stats.mp')} v={`+${hover.item.mp_bonus}`} e={eq('mp_bonus')} />}
+                {hover.item.str_bonus > 0 && <D k="str_bonus" label={t('inventory.stats.strength')} v={`+${hover.item.str_bonus}`} e={eq('str_bonus')} />}
+                {hover.item.dex_bonus > 0 && <D k="dex_bonus" label={t('inventory.stats.dexterity')} v={`+${hover.item.dex_bonus}`} e={eq('dex_bonus')} />}
+                {hover.item.con_bonus > 0 && <D k="con_bonus" label={t('inventory.stats.constitution')} v={`+${hover.item.con_bonus}`} e={eq('con_bonus')} />}
+                {hover.item.int_bonus > 0 && <D k="int_bonus" label={t('inventory.stats.intelligence')} v={`+${hover.item.int_bonus}`} e={eq('int_bonus')} />}
+                {hover.item.wis_bonus > 0 && <D k="wis_bonus" label={t('inventory.stats.wisdom')} v={`+${hover.item.wis_bonus}`} e={eq('wis_bonus')} />}
+                {hover.item.cha_bonus > 0 && <D k="cha_bonus" label={t('inventory.stats.charisma')} v={`+${hover.item.cha_bonus}`} e={eq('cha_bonus')} />}
+                {hover.item.heal_hp > 0 && <Stat k={t('inventory.stats.restores')} v={`${hover.item.heal_hp} HP`} />}
+                {hover.item.heal_mp > 0 && <Stat k={t('inventory.stats.restores')} v={`${hover.item.heal_mp} MP`} />}
                 {eqSlot && (
                   <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,.08)', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.1em' }}>
-                    vs equipped: {eqSlot.name}
+                    {t('inventory.vsEquipped', { name: eqSlot.name })}
                   </div>
                 )}
               </div>
@@ -251,12 +232,11 @@ export default function Inventory(): React.ReactElement {
           })()}
           {hover.item.enchant_count && hover.item.enchant_count > 0 ? (() => {
             const bonuses: Record<string, number> = JSON.parse(hover.item.enchant_bonuses_json || '{}');
-            const ENCHANT_LABEL = ['', 'Silver', 'Emerald', 'Azure', 'Arcane', 'Mythic'];
             return (
               <>
                 <div className="divider" />
                 <div className="enchant-line">
-                  <span className={`enchant-badge e${hover.item.enchant_count}`}>{ENCHANT_LABEL[hover.item.enchant_count]} +{hover.item.enchant_count}</span>
+                  <span className={`enchant-badge e${hover.item.enchant_count}`}>{t(`inventory.enchantTiers.${hover.item.enchant_count}`)} +{hover.item.enchant_count}</span>
                   {Object.entries(bonuses).map(([k, v]) => (
                     <span key={k} className="enchant-bonus">+{v} {k.replace('_bonus', '').replace('atk_max', 'attack')}</span>
                   ))}
@@ -267,11 +247,11 @@ export default function Inventory(): React.ReactElement {
           {hover.item.soul_bound ? (
             <>
               <div className="divider" />
-              <div className="actions-hint" style={{ color: 'var(--amethyst-1)' }}>Soul-bound — cannot be re-listed.</div>
+              <div className="actions-hint" style={{ color: 'var(--amethyst-1)' }}>{t('inventory.soulBound')}</div>
             </>
           ) : null}
           <div className="divider" />
-          <div className="actions-hint">Sell · {hover.item.sell_price}g</div>
+          <div className="actions-hint">{t('inventory.sellHint', { price: hover.item.sell_price })}</div>
         </div>
       )}
 
@@ -287,11 +267,11 @@ export default function Inventory(): React.ReactElement {
             </div>
             <div style={{ height: 1, background: 'var(--border-1)', margin: '2px 0' }} />
             {actions.item.equipped ? (
-              <button onClick={() => act('/inventory/unequip', { inventoryId: actions.item.inv_id }, 'Unequipped')}>Unequip</button>
+              <button onClick={() => act('/inventory/unequip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.unequipped'))}>{t('inventory.actions.unequip')}</button>
             ) : actions.item.category === 'potion' ? (
-              <button onClick={() => act('/inventory/use', { inventoryId: actions.item.inv_id }, 'Used')}>Use</button>
+              <button onClick={() => act('/inventory/use', { inventoryId: actions.item.inv_id }, t('inventory.toasts.used'))}>{t('inventory.actions.use')}</button>
             ) : (
-              <button onClick={() => act('/inventory/equip', { inventoryId: actions.item.inv_id }, 'Equipped')}>Equip</button>
+              <button onClick={() => act('/inventory/equip', { inventoryId: actions.item.inv_id }, t('inventory.toasts.equipped'))}>{t('inventory.actions.equip')}</button>
             )}
             {!actions.item.equipped && !actions.item.soul_bound && actions.item.category !== 'potion' && (
               <button
@@ -301,15 +281,15 @@ export default function Inventory(): React.ReactElement {
                   setActions(null);
                 }}
               >
-                List on Marketplace
+                {t('inventory.actions.list')}
               </button>
             )}
             {!actions.item.equipped && (
-              <button className="danger" onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, `Sold for ${actions.item.sell_price}g`)}>
-                Sell to Merchant ({actions.item.sell_price}g)
+              <button className="danger" onClick={() => act('/inventory/sell', { inventoryId: actions.item.inv_id }, t('inventory.toasts.soldFor', { price: actions.item.sell_price }))}>
+                {t('inventory.actions.sell', { price: actions.item.sell_price })}
               </button>
             )}
-            <button onClick={() => setActions(null)}>Cancel</button>
+            <button onClick={() => setActions(null)}>{t('inventory.actions.cancel')}</button>
           </div>
         </>
       )}
@@ -318,12 +298,14 @@ export default function Inventory(): React.ReactElement {
         <>
           <div className="admin-overlay" onClick={() => setSellPriceFor(null)} />
           <div className="admin-editor" style={{ width: 380 }}>
-            <h3>List on Marketplace</h3>
+            <h3>{t('inventory.actions.list')}</h3>
             <p className="muted">
-              Set a price for <strong>{sellPriceFor.name}</strong>. The market takes a 5% fee on sale.
+              <Trans i18nKey="inventory.listDialog.body" values={{ name: sellPriceFor.name }}>
+                Set a price for <strong>{'{{name}}'}</strong>. The market takes a 5% fee on sale.
+              </Trans>
             </p>
             <div className="field">
-              <label>Price (gold)</label>
+              <label>{t('inventory.listDialog.priceLabel')}</label>
               <input
                 type="number"
                 min={1}
@@ -333,12 +315,12 @@ export default function Inventory(): React.ReactElement {
                 style={{ width: '100%', fontFamily: 'var(--font-mono)' }}
               />
               <div className="muted text-sm" style={{ marginTop: 6 }}>
-                You'll receive {Math.max(0, listPrice - Math.ceil(listPrice * 0.05))}g after the 5% fee.
+                {t('inventory.listDialog.feeNote', { net: Math.max(0, listPrice - Math.ceil(listPrice * 0.05)) })}
               </div>
             </div>
             <div className="actions">
-              <button className="btn" onClick={() => setSellPriceFor(null)}>Cancel</button>
-              <button className="btn btn-primary" onClick={listOnMarket}>List for {listPrice}g</button>
+              <button className="btn" onClick={() => setSellPriceFor(null)}>{t('inventory.actions.cancel')}</button>
+              <button className="btn btn-primary" onClick={listOnMarket}>{t('inventory.listDialog.confirm', { price: listPrice })}</button>
             </div>
           </div>
         </>
@@ -358,7 +340,7 @@ function Stat({ k, v }: { k: string; v: string }) {
 
 function cap(s: string) { return s[0].toUpperCase() + s.slice(1); }
 
-export function itemSummary(it: any): string {
+export function itemSummary(it: any, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const parts: string[] = [];
   if (it.atk_min || it.atk_max) parts.push(`ATK ${it.atk_min}-${it.atk_max}`);
   if (it.defense) parts.push(`DEF +${it.defense}`);
@@ -369,7 +351,7 @@ export function itemSummary(it: any): string {
   if (it.con_bonus) parts.push(`CON +${it.con_bonus}`);
   if (it.int_bonus) parts.push(`INT +${it.int_bonus}`);
   if (it.wis_bonus) parts.push(`WIS +${it.wis_bonus}`);
-  if (it.heal_hp) parts.push(`Heal +${it.heal_hp} HP`);
-  if (it.heal_mp) parts.push(`Restore +${it.heal_mp} MP`);
+  if (it.heal_hp) parts.push(t('inventory.summary.heal', { n: it.heal_hp }));
+  if (it.heal_mp) parts.push(t('inventory.summary.restore', { n: it.heal_mp }));
   return parts.join('  ·  ');
 }

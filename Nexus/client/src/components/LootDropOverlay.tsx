@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Sprite from './Sprite';
 import type { ItemLike } from '../lib/itemTypes';
 
@@ -19,6 +20,7 @@ const RARITY_COLOR: Record<string, string> = {
 };
 
 export default function LootDropOverlay({ item, onDone }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in');
   // Audit NIT #15: keep the latest onDone in a ref so changing it
   // doesn't restart the 2.6 s timeline. The fade timers are wall-clock
@@ -74,13 +76,14 @@ export default function LootDropOverlay({ item, onDone }: Props): React.ReactEle
         <Sprite name={item.icon} tier={item.tier} rarity={rarity as any} size={72} />
         <div>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.18em', color: color }}>
-            Loot Acquired
+            {t('lootDrop.acquired')}
           </div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: color, marginTop: 4 }}>
             {item.name}
           </div>
           <div className="muted" style={{ fontSize: 12, marginTop: 4, textTransform: 'uppercase', letterSpacing: '.1em' }}>
-            {rarity} · Tier {item.tier || 1}
+            {/* Рядкостта е фиксиран enum — превежда се; при непознат ключ пада на суровата стойност. */}
+            {t(`rarity.${rarity}`, { defaultValue: rarity })} · {t('lootDrop.tier', { tier: item.tier || 1 })}
           </div>
         </div>
       </div>

@@ -1,23 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { Quest } from '../lib/types';
 import QuestRun from './QuestRun';
 
-const REGION_LORE: Record<string, { name: string; lore: string }> = {
-  whispering_woods: { name: 'Whispering Woods', lore: 'Moss-clad oaks, scampering creatures, the road from Oaken Hollow.' },
-  mistmoor_hills: { name: 'Mistmoor Hills', lore: 'Heather and fog. Orcs ride the high passes.' },
-  crystal_caverns: { name: 'Crystal Caverns', lore: 'A labyrinth of glittering ore and ancient stone.' },
-  ashen_wastes: { name: 'Ashen Wastes', lore: 'Burned plains where revenants drift, and drakes wheel above.' },
-  shadowfell: { name: 'The Shadowfell', lore: 'The Shadow Lord\'s domain. The realm\'s final test.' },
+const REGION_KEY: Record<string, string> = {
+  whispering_woods: 'whisperingWoods',
+  mistmoor_hills: 'mistmoorHills',
+  crystal_caverns: 'crystalCaverns',
+  ashen_wastes: 'ashenWastes',
+  shadowfell: 'shadowfell',
 };
 
 export default function Quests(): React.ReactElement {
+  const { t } = useTranslation();
   const char = useStore((s) => s.character);
   const toast = useStore((s) => s.toast);
   const [quests, setQuests] = useState<Quest[]>([]);
   const [region, setRegion] = useState<string>('all');
   const [active, setActive] = useState<Quest | null>(null);
+
+  const regionName = (r: string): string => (REGION_KEY[r] ? t(`quests.regions.${REGION_KEY[r]}.name`) : r);
 
   async function load() {
     try {
@@ -47,20 +51,20 @@ export default function Quests(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Quest Board</h2>
-            <div className="panel-subtitle">Choose your path. Earn coin, gear, and glory.</div>
+            <h2 className="panel-title">{t('quests.title')}</h2>
+            <div className="panel-subtitle">{t('quests.subtitle')}</div>
           </div>
           <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
-            <button className={`btn btn-sm ${region === 'all' ? 'btn-primary' : ''}`} onClick={() => setRegion('all')}>All</button>
+            <button className={`btn btn-sm ${region === 'all' ? 'btn-primary' : ''}`} onClick={() => setRegion('all')}>{t('quests.all')}</button>
             {regions.map((r) => (
               <button key={r} className={`btn btn-sm ${region === r ? 'btn-primary' : ''}`} onClick={() => setRegion(r)}>
-                {REGION_LORE[r]?.name || r}
+                {regionName(r)}
               </button>
             ))}
           </div>
         </div>
-        {region !== 'all' && REGION_LORE[region] && (
-          <div className="card" style={{ marginBottom: 16, fontStyle: 'italic' }}>{REGION_LORE[region].lore}</div>
+        {region !== 'all' && REGION_KEY[region] && (
+          <div className="card" style={{ marginBottom: 16, fontStyle: 'italic' }}>{t(`quests.regions.${REGION_KEY[region]}.lore`)}</div>
         )}
         <div className="grid-cards">
           {filtered.map((q) => {
@@ -72,16 +76,16 @@ export default function Quests(): React.ReactElement {
                   <div>
                     <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{q.title}</strong>
                     <div className="muted text-sm" style={{ textTransform: 'uppercase', letterSpacing: '.08em' }}>
-                      {REGION_LORE[q.region]?.name || q.region} · Lv {q.level_req}
+                      {regionName(q.region)} · {t('quests.lv', { n: q.level_req })}
                     </div>
                   </div>
-                  <div className="tag">{q.energy_cost} EN</div>
+                  <div className="tag">{t('quests.energyTag', { n: q.energy_cost })}</div>
                 </div>
                 <div className="muted text-sm" style={{ marginTop: 8 }}>{q.intro}</div>
                 <div className="flex gap-sm" style={{ marginTop: 12 }}>
-                  <span className="tag gold">+{q.xp_reward} XP</span>
-                  <span className="tag gold">+{q.gold_reward}g</span>
-                  {q.item_reward && <span className="tag sapphire">drop chance</span>}
+                  <span className="tag gold">{t('quests.xpTag', { n: q.xp_reward })}</span>
+                  <span className="tag gold">{t('quests.goldTag', { n: q.gold_reward })}</span>
+                  {q.item_reward && <span className="tag sapphire">{t('quests.dropChance')}</span>}
                 </div>
                 <div style={{ marginTop: 14 }}>
                   <button
@@ -89,13 +93,13 @@ export default function Quests(): React.ReactElement {
                     disabled={locked || tooTired}
                     onClick={() => setActive(q)}
                   >
-                    {locked ? `Requires Lv ${q.level_req}` : tooTired ? 'Too Tired' : 'Embark'}
+                    {locked ? t('quests.requiresLv', { n: q.level_req }) : tooTired ? t('quests.tooTired') : t('quests.embark')}
                   </button>
                 </div>
               </div>
             );
           })}
-          {filtered.length === 0 && <div className="muted">No quests here right now.</div>}
+          {filtered.length === 0 && <div className="muted">{t('quests.empty')}</div>}
         </div>
       </div>
     </div>

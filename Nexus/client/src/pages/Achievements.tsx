@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import type { Achievement } from '../lib/types';
 
 export default function Achievements(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const [list, setList] = useState<Achievement[]>([]);
   const [earned, setEarned] = useState(0);
@@ -21,11 +23,11 @@ export default function Achievements(): React.ReactElement {
   }
   useEffect(() => { load(); }, []);
 
-  async function setTitle(t: string) {
+  async function setTitle(title: string) {
     try {
-      await api.post('/achievements/title', { title: t });
-      setCurrentTitle(t);
-      toast(t ? `Title set: "${t}"` : 'Title cleared', 'success');
+      await api.post('/achievements/title', { title });
+      setCurrentTitle(title);
+      toast(title ? t('achievements.titleSet', { title }) : t('achievements.titleCleared'), 'success');
     } catch (e: any) {
       toast(e.message, 'error');
     }
@@ -38,8 +40,8 @@ export default function Achievements(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Achievements</h2>
-            <div className="panel-subtitle">{earned} / {total} unlocked · {pct}%</div>
+            <h2 className="panel-title">{t('achievements.title')}</h2>
+            <div className="panel-subtitle">{t('achievements.progress', { earned, total, pct })}</div>
           </div>
         </div>
         <div className="bar" style={{ height: 14 }}>
@@ -50,20 +52,20 @@ export default function Achievements(): React.ReactElement {
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Active Title</h2>
+          <h2 className="panel-title">{t('achievements.activeTitle')}</h2>
         </div>
         <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
-          <button className={`btn btn-sm ${currentTitle === '' ? 'btn-primary' : ''}`} onClick={() => setTitle('')}>None</button>
-          {titles.length === 0 && <span className="muted">Earn achievements to unlock titles.</span>}
-          {titles.map((t) => (
-            <button key={t} className={`btn btn-sm ${currentTitle === t ? 'btn-primary' : ''}`} onClick={() => setTitle(t)}>{t}</button>
+          <button className={`btn btn-sm ${currentTitle === '' ? 'btn-primary' : ''}`} onClick={() => setTitle('')}>{t('achievements.none')}</button>
+          {titles.length === 0 && <span className="muted">{t('achievements.earnHint')}</span>}
+          {titles.map((title) => (
+            <button key={title} className={`btn btn-sm ${currentTitle === title ? 'btn-primary' : ''}`} onClick={() => setTitle(title)}>{title}</button>
           ))}
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">All Achievements</h2>
+          <h2 className="panel-title">{t('achievements.all')}</h2>
         </div>
         <div className="grid-cards">
           {list.map((a) => (
@@ -82,7 +84,7 @@ export default function Achievements(): React.ReactElement {
               </div>
               {a.unlocked && a.unlocked_at && (
                 <div className="muted text-sm" style={{ marginTop: 8 }}>
-                  Unlocked {new Date(a.unlocked_at).toLocaleDateString()}
+                  {t('achievements.unlockedOn', { date: new Date(a.unlocked_at).toLocaleDateString() })}
                 </div>
               )}
             </div>

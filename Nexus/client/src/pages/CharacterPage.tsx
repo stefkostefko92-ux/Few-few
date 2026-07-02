@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../lib/store';
 import { api } from '../lib/api';
 import { spriteFor } from '../combat/sprites';
@@ -10,24 +11,25 @@ interface CostInfo {
 }
 
 const ATTR = [
-  { key: 'strength',     label: 'Strength',     desc: 'Raw melee damage.' },
-  { key: 'dexterity',    label: 'Dexterity',    desc: 'Crit, dodge, ranged.' },
-  { key: 'constitution', label: 'Constitution', desc: 'Health pool.' },
-  { key: 'intelligence', label: 'Intelligence', desc: 'Spell power, mana.' },
-  { key: 'wisdom',       label: 'Wisdom',       desc: 'Mana, resistance.' },
-  { key: 'charisma',     label: 'Charisma',     desc: 'Quest reward bonuses.' },
+  { key: 'strength',     labelKey: 'characterPage.attr.strength',     descKey: 'characterPage.attrDesc.strength' },
+  { key: 'dexterity',    labelKey: 'characterPage.attr.dexterity',    descKey: 'characterPage.attrDesc.dexterity' },
+  { key: 'constitution', labelKey: 'characterPage.attr.constitution', descKey: 'characterPage.attrDesc.constitution' },
+  { key: 'intelligence', labelKey: 'characterPage.attr.intelligence', descKey: 'characterPage.attrDesc.intelligence' },
+  { key: 'wisdom',       labelKey: 'characterPage.attr.wisdom',       descKey: 'characterPage.attrDesc.wisdom' },
+  { key: 'charisma',     labelKey: 'characterPage.attr.charisma',     descKey: 'characterPage.attrDesc.charisma' },
 ] as const;
 
 const SKILLS = [
-  { key: 'skill_sword',   label: 'Sword' },
-  { key: 'skill_axe',     label: 'Axe' },
-  { key: 'skill_bow',     label: 'Bow' },
-  { key: 'skill_staff',   label: 'Staff' },
-  { key: 'skill_magic',   label: 'Magic' },
-  { key: 'skill_stealth', label: 'Stealth' },
+  { key: 'skill_sword',   labelKey: 'characterPage.skill.sword' },
+  { key: 'skill_axe',     labelKey: 'characterPage.skill.axe' },
+  { key: 'skill_bow',     labelKey: 'characterPage.skill.bow' },
+  { key: 'skill_staff',   labelKey: 'characterPage.skill.staff' },
+  { key: 'skill_magic',   labelKey: 'characterPage.skill.magic' },
+  { key: 'skill_stealth', labelKey: 'characterPage.skill.stealth' },
 ] as const;
 
 export default function CharacterPage(): React.ReactElement {
+  const { t } = useTranslation();
   const char = useStore((s) => s.character);
   const refresh = useStore((s) => s.refreshCharacter);
   const toast = useStore((s) => s.toast);
@@ -44,11 +46,16 @@ export default function CharacterPage(): React.ReactElement {
   }
   useEffect(() => { load(); }, [char?.id]);
 
+  function statLabel(stat: string): string {
+    const meta = [...ATTR, ...SKILLS].find((s) => s.key === stat);
+    return meta ? t(meta.labelKey) : stat.replace(/_/g, ' ');
+  }
+
   async function upgrade(stat: string, count = 1) {
     setBusy(stat);
     try {
       const r = await api.post('/character/upgrade-stat', { stat, count });
-      toast(`+${r.gained} ${stat.replace(/_/g, ' ')} for ${r.gold_spent}g`, 'success');
+      toast(t('characterPage.upgradeToast', { gained: r.gained, stat: statLabel(stat), gold: r.gold_spent }), 'success');
       await Promise.all([refresh(), load()]);
     } catch (e: any) {
       toast(e.message, 'error');
@@ -61,24 +68,24 @@ export default function CharacterPage(): React.ReactElement {
     try {
       await api.post('/character/rest', {});
       await refresh();
-      toast('Wounds tended.', 'success');
+      toast(t('characterPage.restToast'), 'success');
     } catch (e: any) {
       toast(e.message, 'error');
     }
   }
 
-  if (!char) return <div className="muted">Loading…</div>;
+  if (!char) return <div className="muted">{t('common.loading')}</div>;
 
   return (
     <div className="col" style={{ gap: 24 }}>
       <div className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Character</h2>
+          <h2 className="panel-title">{t('characterPage.title')}</h2>
           <div className="flex gap-sm">
             <span className="tag gold" style={{ fontFamily: 'var(--font-mono)' }}>
-              {char.gold.toLocaleString()} gold
+              {t('characterPage.goldAmount', { gold: char.gold.toLocaleString() })}
             </span>
-            <button className="btn" onClick={rest}>Rest (10 EN)</button>
+            <button className="btn" onClick={rest}>{t('characterPage.rest')}</button>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 24 }}>
@@ -86,20 +93,18 @@ export default function CharacterPage(): React.ReactElement {
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
               <div style={{ transform: 'scale(.82) translateY(-2%)' }}>{spriteFor(char.class)}</div>
             </div>
-            <div className="badge-level">Lv {char.level}</div>
+            <div className="badge-level">{t('common.lv')} {char.level}</div>
           </div>
           <div>
             <h1 style={{ color: 'var(--gold-1)' }}>
               {char.name}
               {char.current_title && <span style={{ color: 'var(--amethyst-1)', fontSize: 18, marginLeft: 8 }}>, {char.current_title}</span>}
             </h1>
-            <div className="muted">{cap(char.class)} · {char.wins}W / {char.losses}L · Rating {char.arena_rating}</div>
+            <div className="muted">{t(`common.class.${char.class}`, { defaultValue: char.class })} · {t('characterPage.record', { wins: char.wins, losses: char.losses, rating: char.arena_rating })}</div>
             <div className="card" style={{ marginTop: 14, background: 'rgba(214,161,61,.06)' }}>
-              <strong style={{ color: 'var(--gold-1)' }}>How upgrades work now</strong>
+              <strong style={{ color: 'var(--gold-1)' }}>{t('characterPage.howTitle')}</strong>
               <div className="muted text-sm" style={{ marginTop: 4 }}>
-                Stats and skills are no longer granted on level-up. Each stat is upgraded with
-                gold — the first costs 5g, the second 10g, the third 15g, etc. Per-stat counter
-                scales independently.
+                {t('characterPage.howDesc')}
               </div>
             </div>
           </div>
@@ -109,7 +114,7 @@ export default function CharacterPage(): React.ReactElement {
       <div className="row" style={{ gap: 18, flexWrap: 'wrap' }}>
         <div className="panel grow" style={{ minWidth: 280 }}>
           <div className="panel-header">
-            <h3 style={{ margin: 0 }}>Attributes</h3>
+            <h3 style={{ margin: 0 }}>{t('characterPage.attributes')}</h3>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {ATTR.map((s) => {
@@ -122,24 +127,24 @@ export default function CharacterPage(): React.ReactElement {
                   <div className="flex between" style={{ alignItems: 'center', gap: 12 }}>
                     <div style={{ flex: 1 }}>
                       <div className="flex" style={{ gap: 10, alignItems: 'baseline' }}>
-                        <strong>{s.label}</strong>
+                        <strong>{t(s.labelKey)}</strong>
                         <span className="value" style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)', fontSize: 18 }}>
                           {cur}
                         </span>
                         {cost && cost.upgrades > 0 && (
                           <span className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                            ({cost.upgrades} upgrades)
+                            {t('characterPage.upgradesCount', { count: cost.upgrades })}
                           </span>
                         )}
                       </div>
-                      <div className="muted text-sm">{s.desc}</div>
+                      <div className="muted text-sm">{t(s.descKey)}</div>
                     </div>
                     <div className="flex gap-sm" style={{ flexShrink: 0 }}>
                       <button
                         className="btn btn-sm"
                         disabled={!canAfford || busy === s.key}
                         onClick={() => upgrade(s.key, 1)}
-                        title={`+1 ${s.label} for ${next}g`}
+                        title={t('characterPage.plusOneTitle', { stat: t(s.labelKey), cost: next })}
                       >
                         +1 · <span style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-mono)', marginLeft: 4 }}>{next}g</span>
                       </button>
@@ -147,7 +152,7 @@ export default function CharacterPage(): React.ReactElement {
                         className="btn btn-sm btn-primary"
                         disabled={char.gold < computeBatchCost(cost?.upgrades || 0, 5) || busy === s.key}
                         onClick={() => upgrade(s.key, 5)}
-                        title={`+5 ${s.label} for ${computeBatchCost(cost?.upgrades || 0, 5)}g`}
+                        title={t('characterPage.plusFiveTitle', { stat: t(s.labelKey), cost: computeBatchCost(cost?.upgrades || 0, 5) })}
                       >
                         +5 · <span style={{ fontFamily: 'var(--font-mono)', marginLeft: 4 }}>{computeBatchCost(cost?.upgrades || 0, 5)}g</span>
                       </button>
@@ -161,7 +166,7 @@ export default function CharacterPage(): React.ReactElement {
 
         <div className="panel grow" style={{ minWidth: 280 }}>
           <div className="panel-header">
-            <h3 style={{ margin: 0 }}>Weapon Skills</h3>
+            <h3 style={{ margin: 0 }}>{t('characterPage.weaponSkills')}</h3>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {SKILLS.map((s) => {
@@ -174,11 +179,11 @@ export default function CharacterPage(): React.ReactElement {
                   <div className="flex between" style={{ alignItems: 'center', gap: 12 }}>
                     <div style={{ flex: 1 }}>
                       <div className="flex" style={{ gap: 10, alignItems: 'baseline' }}>
-                        <strong>{s.label}</strong>
+                        <strong>{t(s.labelKey)}</strong>
                         <span style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)', fontSize: 18 }}>{cur}</span>
                         {cost && cost.upgrades > 0 && (
                           <span className="muted text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                            ({cost.upgrades} upgrades)
+                            {t('characterPage.upgradesCount', { count: cost.upgrades })}
                           </span>
                         )}
                       </div>
@@ -209,8 +214,6 @@ export default function CharacterPage(): React.ReactElement {
     </div>
   );
 }
-
-function cap(s: string) { return s[0].toUpperCase() + s.slice(1); }
 
 function computeBatchCost(currentCount: number, n: number): number {
   let total = 0;

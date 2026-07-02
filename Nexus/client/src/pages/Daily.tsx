@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 
@@ -24,6 +25,7 @@ interface DailyQuest {
 }
 
 export default function Daily(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showUnlocks = useStore((s) => s.showUnlocks);
@@ -51,8 +53,8 @@ export default function Daily(): React.ReactElement {
     setBusy(true);
     try {
       const r = await api.post('/daily/claim');
-      toast(`+${r.reward.gold} gold, +${r.reward.xp} XP. Streak: ${r.streak}`, 'success');
-      if (r.levelUp) toast(`Level Up! → ${r.levelUp.toLevel}`, 'success');
+      toast(t('daily.claimToast', { gold: r.reward.gold, xp: r.reward.xp, streak: r.streak }), 'success');
+      if (r.levelUp) toast(t('daily.levelUpToast', { level: r.levelUp.toLevel }), 'success');
       showUnlocks(r.unlocked);
       await Promise.all([load(), refresh()]);
     } catch (e: any) {
@@ -65,7 +67,7 @@ export default function Daily(): React.ReactElement {
   async function claimQuest(slug: string) {
     try {
       const r = await api.post('/daily/quests/claim', { questSlug: slug });
-      toast(`Daily bonus: +${r.bonusGold}g, +${r.bonusXp} XP`, 'success');
+      toast(t('daily.bonusToast', { gold: r.bonusGold, xp: r.bonusXp }), 'success');
       showUnlocks(r.unlocked);
       await Promise.all([load(), refresh()]);
     } catch (e: any) {
@@ -73,7 +75,7 @@ export default function Daily(): React.ReactElement {
     }
   }
 
-  if (!data) return <div className="muted">Loading…</div>;
+  if (!data) return <div className="muted">{t('daily.loading')}</div>;
 
   const hours = Math.max(0, Math.floor((resetAt - Date.now()) / 3_600_000));
   const minutes = Math.max(0, Math.floor(((resetAt - Date.now()) % 3_600_000) / 60_000));
@@ -83,12 +85,12 @@ export default function Daily(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Daily Tribute</h2>
+            <h2 className="panel-title">{t('daily.title')}</h2>
             <div className="panel-subtitle">
-              Resets in <strong>{hours}h {minutes}m</strong>. Don't break the streak.
+              <Trans i18nKey="daily.resetsIn" values={{ hours, minutes }} components={{ b: <strong /> }} />
             </div>
           </div>
-          <div className="tag gold" style={{ fontSize: 14 }}>🔥 {data.streak}-day streak</div>
+          <div className="tag gold" style={{ fontSize: 14 }}>{t('daily.streakBadge', { n: data.streak })}</div>
         </div>
         <div className="streak-row">
           {[1,2,3,4,5,6,7].map((d) => {
@@ -97,27 +99,29 @@ export default function Daily(): React.ReactElement {
             const isClaimed = !data.canClaim && (((data.streak - 1) % 7) + 1) >= d;
             return (
               <div key={d} className={`streak-cell ${isCurrent ? 'current' : ''} ${isClaimed ? 'claimed' : ''}`}>
-                <div className="streak-day">Day {d}</div>
+                <div className="streak-day">{t('daily.day', { n: d })}</div>
                 <div style={{ fontSize: 22 }}>{d === 7 ? '🎁' : '💰'}</div>
-                <div className="text-sm gold">+{rewardForDay(d).gold}g</div>
-                <div className="text-sm muted">+{rewardForDay(d).xp} xp</div>
+                <div className="text-sm gold">{t('daily.goldShort', { n: rewardForDay(d).gold })}</div>
+                <div className="text-sm muted">{t('daily.xpShort', { n: rewardForDay(d).xp })}</div>
               </div>
             );
           })}
         </div>
         <div style={{ marginTop: 16 }}>
           <button className="btn btn-primary" onClick={claim} disabled={!data.canClaim || busy}>
-            {data.canClaim ? `Claim Day ${data.streakOnClaim} reward` : 'Already claimed today'}
+            {data.canClaim ? t('daily.claimDay', { n: data.streakOnClaim }) : t('daily.alreadyClaimed')}
           </button>
-          <span className="muted" style={{ marginLeft: 12 }}>Longest streak: {data.longest_streak}</span>
+          <span className="muted" style={{ marginLeft: 12 }}>{t('daily.longestStreak', { n: data.longest_streak })}</span>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Daily Quests</h2>
-            <div className="panel-subtitle">Complete these quests today for <strong>2× rewards</strong>.</div>
+            <h2 className="panel-title">{t('daily.questsTitle')}</h2>
+            <div className="panel-subtitle">
+              <Trans i18nKey="daily.questsSubtitle" components={{ b: <strong /> }} />
+            </div>
           </div>
         </div>
         <div className="grid-cards">
@@ -127,19 +131,19 @@ export default function Daily(): React.ReactElement {
                 <div>
                   <strong style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-display)' }}>{q.title}</strong>
                   <div className="muted text-sm" style={{ textTransform: 'capitalize' }}>
-                    {q.region.replace(/_/g, ' ')} · Lv {q.level_req}
+                    {q.region.replace(/_/g, ' ')} · {t('daily.lv', { n: q.level_req })}
                   </div>
                 </div>
-                {q.completed && <span className="tag emerald">claimed</span>}
+                {q.completed && <span className="tag emerald">{t('daily.claimedTag')}</span>}
               </div>
               <div className="flex gap-sm" style={{ marginTop: 10 }}>
-                <span className="tag gold">+{q.bonus_xp} XP</span>
-                <span className="tag gold">+{q.bonus_gold}g</span>
+                <span className="tag gold">{t('daily.xpTag', { n: q.bonus_xp })}</span>
+                <span className="tag gold">{t('daily.goldTag', { n: q.bonus_gold })}</span>
               </div>
               <div className="flex gap-sm" style={{ marginTop: 12 }}>
-                <Link to="/app/quests" className="btn btn-sm">Go to Quest</Link>
+                <Link to="/app/quests" className="btn btn-sm">{t('daily.goToQuest')}</Link>
                 <button className="btn btn-sm btn-primary" disabled={q.completed} onClick={() => claimQuest(q.slug)}>
-                  Claim Bonus
+                  {t('daily.claimBonus')}
                 </button>
               </div>
             </div>
@@ -150,10 +154,10 @@ export default function Daily(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Wheel of Fortune</h2>
-            <div className="panel-subtitle">One spin per day. Coin, XP, potions, or the royal jackpot.</div>
+            <h2 className="panel-title">{t('daily.wheelTitle')}</h2>
+            <div className="panel-subtitle">{t('daily.wheelSubtitle')}</div>
           </div>
-          <Link to="/app/wheel" className="btn btn-primary">{wheelInfo?.canSpin ? 'Spin Now' : 'Visit Wheel'}</Link>
+          <Link to="/app/wheel" className="btn btn-primary">{wheelInfo?.canSpin ? t('daily.spinNow') : t('daily.visitWheel')}</Link>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 /**
  * First-time-player onboarding tour. Shows once per character (flagged in
@@ -9,34 +10,36 @@ import { Link } from 'react-router-dom';
 
 const STORAGE_KEY = 'nd_onboarding_done';
 
+// Текстовете се превеждат при рендер — тук са само i18n ключовете.
 const STEPS = [
   {
-    title: 'Welcome, Hero',
-    body: 'Nexus Dominion is a turn-based fantasy MMORPG. Your first task: hunt a monster to gain XP, gold, and your first piece of loot.',
-    cta: 'Start hunting',
+    titleKey: 'onboarding.step1Title',
+    bodyKey: 'onboarding.step1Body',
+    ctaKey: 'onboarding.step1Cta',
     href: '/app/hunting',
   },
   {
-    title: 'Equip your loot',
-    body: 'Items dropped during combat land in your bag. Click any equipment piece to equip it — hover to compare stats against what you wear now.',
-    cta: 'Open inventory',
+    titleKey: 'onboarding.step2Title',
+    bodyKey: 'onboarding.step2Body',
+    ctaKey: 'onboarding.step2Cta',
     href: '/app/inventory',
   },
   {
-    title: 'Explore the Realm',
-    body: 'Fifteen regions await, from Whispering Woods to the Eternal Throne at Lv 350. Each region drops gear from its tier.',
-    cta: 'View map',
+    titleKey: 'onboarding.step3Title',
+    bodyKey: 'onboarding.step3Body',
+    ctaKey: 'onboarding.step3Cta',
     href: '/app/quests',
   },
   {
-    title: 'Sharpen at the Forge',
-    body: 'Once you have a few pieces, pour gold into the Forge to enchant them — better odds at lower tiers.',
-    cta: 'Finish tour',
+    titleKey: 'onboarding.step4Title',
+    bodyKey: 'onboarding.step4Body',
+    ctaKey: 'onboarding.step4Cta',
     href: '/app/forge',
   },
 ];
 
 export default function OnboardingTour(): React.ReactElement | null {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [open, setOpen] = useState(false);
 
@@ -81,7 +84,7 @@ export default function OnboardingTour(): React.ReactElement | null {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--gold-2)' }}>
-            Step {step + 1} of {STEPS.length}
+            {t('onboarding.stepOf', { current: step + 1, total: STEPS.length })}
           </div>
           <button
             onClick={dismiss}
@@ -89,16 +92,16 @@ export default function OnboardingTour(): React.ReactElement | null {
               background: 'transparent', border: 'none', color: 'var(--text-3)',
               cursor: 'pointer', fontSize: 12, padding: 4,
             }}
-            aria-label="Skip tour"
+            aria-label={t('onboarding.skipTour')}
           >
-            Skip ✕
+            {t('onboarding.skip')} ✕
           </button>
         </div>
         <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--gold-1)', margin: '0 0 10px', fontSize: 24 }}>
-          {s.title}
+          {t(s.titleKey)}
         </h2>
         <p style={{ lineHeight: 1.6, fontSize: 14, margin: '0 0 22px' }}>
-          {s.body}
+          {t(s.bodyKey)}
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -115,17 +118,17 @@ export default function OnboardingTour(): React.ReactElement | null {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             {step > 0 && (
-              <button className="btn btn-sm" onClick={() => setStep(step - 1)}>Back</button>
+              <button className="btn btn-sm" onClick={() => setStep(step - 1)}>{t('onboarding.back')}</button>
             )}
             {step < STEPS.length - 1 ? (
               <>
                 <Link className="btn btn-sm btn-primary" to={s.href} onClick={() => setStep(step + 1)}>
-                  {s.cta} →
+                  {t(s.ctaKey)} →
                 </Link>
               </>
             ) : (
               <Link className="btn btn-sm btn-primary" to={s.href} onClick={dismiss}>
-                {s.cta} →
+                {t(s.ctaKey)} →
               </Link>
             )}
           </div>

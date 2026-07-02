@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite from '../components/Sprite';
@@ -42,25 +43,14 @@ function fmtReward(r: Reward): React.ReactElement[] {
   return out;
 }
 
-const KIND_LABEL: Record<string, string> = {
-  hunt_kill: 'Hunting',
-  bounty_claim: 'Bounty',
-  tower_clear: 'Tower',
-  tower_vault: 'Tower Vault',
-  forge_enchant: 'Forge',
-  forge_high_enchant: 'Forge',
-  arena_win: 'Arena',
-  camp_claim: 'Camp',
-  daily_claim: 'Daily',
-  wheel_spin: 'Wheel',
-  guild_donate: 'Guild',
-  quest_complete: 'Quest',
-  market_sale: 'Market',
-  dungeon_clear: 'Dungeon',
-  trial_token_earned: 'Trial',
-};
+const TASK_KINDS = [
+  'hunt_kill', 'bounty_claim', 'tower_clear', 'tower_vault', 'forge_enchant', 'forge_high_enchant',
+  'arena_win', 'camp_claim', 'daily_claim', 'wheel_spin', 'guild_donate', 'quest_complete',
+  'market_sale', 'dungeon_clear', 'trial_token_earned',
+];
 
 export default function BattlePass(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const showLevelUp = useStore((s) => s.showLevelUp);
@@ -83,7 +73,7 @@ export default function BattlePass(): React.ReactElement {
   async function claim(task: Task, track: 'free' | 'premium') {
     try {
       const r = await api.post('/battlepass/claim', { id: task.id, track });
-      toast(`Claimed: ${task.text}`, 'success');
+      toast(t('battlePass.claimedToast', { task: task.text }), 'success');
       if (r.levelUp) showLevelUp(r.levelUp);
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
@@ -91,14 +81,14 @@ export default function BattlePass(): React.ReactElement {
   async function unlockPremium() {
     try {
       await api.post('/battlepass/unlock-premium', {});
-      toast('Premium track unlocked!', 'success');
+      toast(t('battlePass.premiumUnlockedToast'), 'success');
       await Promise.all([load(), refresh()]);
     } catch (e: any) { toast(e.message, 'error'); }
   }
 
-  const completedCount = useMemo(() => status?.tasks.filter((t) => t.done >= t.required).length ?? 0, [status]);
+  const completedCount = useMemo(() => status?.tasks.filter((task) => task.done >= task.required).length ?? 0, [status]);
 
-  if (!status) return <div className="muted">Loading…</div>;
+  if (!status) return <div className="muted">{t('battlePass.loading')}</div>;
 
   const ms = Math.max(0, status.resets_at - now);
   const days = Math.floor(ms / 86_400_000);
@@ -109,21 +99,29 @@ export default function BattlePass(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Battle Pass · {status.month_key}</h2>
+            <h2 className="panel-title">{t('battlePass.title')} · {status.month_key}</h2>
             <div className="panel-subtitle">
-              50 tasks drawn from every loop in the game — hunt, climb, forge, donate, brew, brawl.
-              Resets in <span style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }}>{days}d {hours}h</span>.
-              Completed: <strong style={{ color: 'var(--emerald-1)' }}>{completedCount}/50</strong>
+              {t('battlePass.subtitle')}{' '}
+              <Trans
+                i18nKey="battlePass.resetsIn"
+                values={{ days, hours }}
+                components={{ time: <span style={{ color: 'var(--gold-1)', fontFamily: 'var(--font-mono)' }} /> }}
+              />{' '}
+              <Trans
+                i18nKey="battlePass.completed"
+                values={{ count: completedCount }}
+                components={{ done: <strong style={{ color: 'var(--emerald-1)' }} /> }}
+              />
             </div>
           </div>
           <div className="flex gap-sm">
             {status.premium_unlocked ? (
               <span className="tag" style={{ background: 'linear-gradient(135deg, rgba(255,232,138,.2), rgba(255,177,89,.2))', color: 'var(--gold-1)', fontFamily: 'var(--font-display)', letterSpacing: '.12em' }}>
-                ★ PREMIUM ACTIVE
+                {t('battlePass.premiumActive')}
               </span>
             ) : (
               <button className="btn btn-primary" onClick={unlockPremium}>
-                Unlock Premium · 💎 {status.premium_unlock_cost}
+                {t('battlePass.unlockPremium', { cost: status.premium_unlock_cost })}
               </button>
             )}
           </div>
@@ -139,51 +137,51 @@ export default function BattlePass(): React.ReactElement {
           <thead>
             <tr>
               <th style={{ width: 50 }}>#</th>
-              <th style={{ width: 90 }}>Loop</th>
-              <th>Task</th>
-              <th style={{ width: 120 }}>Progress</th>
-              <th style={{ width: 280 }}>Free reward</th>
-              <th style={{ width: 280 }}>Premium reward</th>
+              <th style={{ width: 90 }}>{t('battlePass.table.loop')}</th>
+              <th>{t('battlePass.table.task')}</th>
+              <th style={{ width: 120 }}>{t('battlePass.table.progress')}</th>
+              <th style={{ width: 280 }}>{t('battlePass.table.freeReward')}</th>
+              <th style={{ width: 280 }}>{t('battlePass.table.premiumReward')}</th>
             </tr>
           </thead>
           <tbody>
-            {status.tasks.map((t, i) => {
-              const ready = t.done >= t.required;
-              const pct = Math.min(100, (t.done / t.required) * 100);
+            {status.tasks.map((task, i) => {
+              const ready = task.done >= task.required;
+              const pct = Math.min(100, (task.done / task.required) * 100);
               return (
-                <tr key={t.id}>
+                <tr key={task.id}>
                   <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>{i + 1}</td>
-                  <td><span className="tag" style={{ fontSize: 10 }}>{KIND_LABEL[t.kind] || t.kind}</span></td>
-                  <td>{t.text}</td>
+                  <td><span className="tag" style={{ fontSize: 10 }}>{TASK_KINDS.includes(task.kind) ? t(`battlePass.kinds.${task.kind}`) : task.kind}</span></td>
+                  <td>{task.text}</td>
                   <td>
                     <div className="bp-progress">
                       <div className="bp-progress-fill" style={{ width: `${pct}%`, background: ready ? 'var(--emerald-1)' : 'var(--azure-1)' }} />
                     </div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: ready ? 'var(--emerald-1)' : 'var(--text-3)', marginTop: 2 }}>
-                      {t.done} / {t.required}
+                      {task.done} / {task.required}
                     </div>
                   </td>
                   <td>
                     <div className="flex gap-sm" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
-                      {fmtReward(t.free)}
+                      {fmtReward(task.free)}
                       <button
                         className="btn btn-sm"
-                        disabled={!ready || t.claimed.free}
-                        onClick={() => claim(t, 'free')}
+                        disabled={!ready || task.claimed.free}
+                        onClick={() => claim(task, 'free')}
                       >
-                        {t.claimed.free ? '✓' : 'Claim'}
+                        {task.claimed.free ? '✓' : t('battlePass.claim')}
                       </button>
                     </div>
                   </td>
                   <td>
                     <div className="flex gap-sm" style={{ flexWrap: 'wrap', alignItems: 'center', opacity: status.premium_unlocked ? 1 : 0.4 }}>
-                      {fmtReward(t.premium)}
+                      {fmtReward(task.premium)}
                       <button
                         className="btn btn-sm btn-primary"
-                        disabled={!ready || t.claimed.premium || !status.premium_unlocked}
-                        onClick={() => claim(t, 'premium')}
+                        disabled={!ready || task.claimed.premium || !status.premium_unlocked}
+                        onClick={() => claim(task, 'premium')}
                       >
-                        {t.claimed.premium ? '✓' : status.premium_unlocked ? 'Claim' : '🔒'}
+                        {task.claimed.premium ? '✓' : status.premium_unlocked ? t('battlePass.claim') : '🔒'}
                       </button>
                     </div>
                   </td>

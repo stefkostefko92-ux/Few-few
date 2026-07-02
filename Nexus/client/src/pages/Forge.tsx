@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import Sprite, { spriteForItem } from '../components/Sprite';
@@ -15,6 +16,7 @@ interface ForgeStatus {
 }
 
 export default function Forge(): React.ReactElement {
+  const { t } = useTranslation();
   const toast = useStore((s) => s.toast);
   const refresh = useStore((s) => s.refreshCharacter);
   const char = useStore((s) => s.character);
@@ -61,9 +63,9 @@ export default function Forge(): React.ReactElement {
       <div className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">The Forge</h2>
+            <h2 className="panel-title">{t('forge.title')}</h2>
             <div className="panel-subtitle">
-              Pour gold into the anvil's fire. Better rarity, kinder odds — but no enchant is free.
+              {t('forge.subtitle')}
             </div>
           </div>
           <span className="tag gold" style={{ fontFamily: 'var(--font-mono)' }}>{char?.gold.toLocaleString() || 0}g</span>
@@ -73,9 +75,9 @@ export default function Forge(): React.ReactElement {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 22 }}>
         {/* Left: pick item */}
         <div className="panel">
-          <div className="panel-title" style={{ fontSize: 16 }}>Bag</div>
+          <div className="panel-title" style={{ fontSize: 16 }}>{t('forge.bag')}</div>
           {bag.length === 0 ? (
-            <div className="muted">No enchantable items. Equipment in your bag (not equipped) can be enchanted.</div>
+            <div className="muted">{t('forge.noEnchantable')}</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))', gap: 8 }}>
               {bag.map((it) => (
@@ -105,29 +107,29 @@ export default function Forge(): React.ReactElement {
         <div className="panel">
           {!status ? (
             <div className="muted" style={{ textAlign: 'center', padding: 30 }}>
-              Select an item from your bag to inspect odds and pour the fire.
+              {t('forge.selectItem')}
             </div>
           ) : (
             <div className="col" style={{ gap: 14 }}>
               <div style={{ textAlign: 'center' }}>
                 <h3 className={`rarity-${status.item.rarity}`} style={{ margin: 0 }}>{status.item.name}</h3>
-                <div className="muted text-sm">Tier {status.item.tier} · {status.item.rarity}</div>
+                <div className="muted text-sm">{t('forge.tier', { n: status.item.tier })} · {status.item.rarity}</div>
               </div>
               <div className="card" style={{ padding: 16, textAlign: 'center', background: 'radial-gradient(circle at center, rgba(255,177,89,.12), transparent 70%)' }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--gold-1)' }}>
-                  Enchants: {status.enchants} / {status.max_enchants}
+                  {t('forge.enchants', { n: status.enchants, max: status.max_enchants })}
                 </div>
                 <div style={{ marginTop: 10 }} className="flex gap-sm" >
-                  <span className="tag" style={{ background: 'rgba(106,216,164,.15)', color: 'var(--emerald-1)' }}>Minor {status.weights.small}%</span>
-                  <span className="tag" style={{ background: 'rgba(106,167,255,.15)', color: 'var(--azure-1)' }}>Strong {status.weights.medium}%</span>
-                  <span className="tag" style={{ background: 'rgba(194,148,255,.15)', color: '#c294ff' }}>Greater {status.weights.greater}%</span>
-                  <span className="tag" style={{ background: 'rgba(232,90,79,.18)', color: 'var(--crimson-1)' }}>Shatter {status.weights.shatter}%</span>
+                  <span className="tag" style={{ background: 'rgba(106,216,164,.15)', color: 'var(--emerald-1)' }}>{t('forge.odds.minor', { pct: status.weights.small })}</span>
+                  <span className="tag" style={{ background: 'rgba(106,167,255,.15)', color: 'var(--azure-1)' }}>{t('forge.odds.strong', { pct: status.weights.medium })}</span>
+                  <span className="tag" style={{ background: 'rgba(194,148,255,.15)', color: '#c294ff' }}>{t('forge.odds.greater', { pct: status.weights.greater })}</span>
+                  <span className="tag" style={{ background: 'rgba(232,90,79,.18)', color: 'var(--crimson-1)' }}>{t('forge.odds.shatter', { pct: status.weights.shatter })}</span>
                 </div>
               </div>
 
               {Object.keys(status.bonuses).length > 0 && (
                 <div className="card" style={{ padding: 12 }}>
-                  <div className="muted text-sm" style={{ marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.08em' }}>Existing enchants</div>
+                  <div className="muted text-sm" style={{ marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.08em' }}>{t('forge.existingEnchants')}</div>
                   <div className="flex gap-sm" style={{ flexWrap: 'wrap' }}>
                     {Object.entries(status.bonuses).map(([k, v]) => (
                       <span key={k} className="tag gold">+{v} {k.replace('_bonus', '').replace('atk_max', 'attack')}</span>
@@ -149,10 +151,10 @@ export default function Forge(): React.ReactElement {
                 style={{ width: '100%', fontSize: 16 }}
               >
                 {status.enchants >= status.max_enchants
-                  ? 'Fully enchanted'
+                  ? t('forge.fullyEnchanted')
                   : status.can_afford
-                    ? `Strike the anvil · ${status.cost}g`
-                    : `Need ${status.cost}g`}
+                    ? t('forge.strike', { cost: status.cost })
+                    : t('forge.needGold', { cost: status.cost })}
               </button>
             </div>
           )}

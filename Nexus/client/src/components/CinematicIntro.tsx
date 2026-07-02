@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Cinematic intro: the first-impression hook before the marketing page.
@@ -18,17 +19,20 @@ import React, { useEffect, useRef, useState } from 'react';
 // the sky", "something older than gods listens"). Rewritten with the
 // restraint of an actual cold open: concrete, grounded, no em-dashes,
 // the world implied rather than declared.
-const LINES: { text: string; ms: number }[] = [
-  { text: 'The road north is open again.', ms: 3400 },
-  { text: 'Six kingdoms paid for it. None will say with what.', ms: 4600 },
-  { text: 'You start at Aedric, with a sword borrowed from the watch and a name nobody knows yet.', ms: 6800 },
-  { text: 'There is a tower at the end of the road. Climb it, and the realm learns your name.', ms: 6000 },
-  { text: 'Welcome to Nexus.', ms: 3000 },
+// Редовете идват от i18n каталога (intro.line1..line5) — ключове, не текст,
+// за да следват избрания език.
+const LINES: { key: string; ms: number }[] = [
+  { key: 'intro.line1', ms: 3400 },
+  { key: 'intro.line2', ms: 4600 },
+  { key: 'intro.line3', ms: 6800 },
+  { key: 'intro.line4', ms: 6000 },
+  { key: 'intro.line5', ms: 3000 },
 ];
 
 interface Props { onDone: () => void }
 
 export default function CinematicIntro({ onDone }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const [idx, setIdx] = useState(0);
   const [closing, setClosing] = useState(false);
   const timerRef = useRef<number | null>(null);
@@ -86,7 +90,7 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
         return;
       }
       setIdx(i);
-      speak(LINES[i].text);
+      speak(t(LINES[i].key));
       timerRef.current = window.setTimeout(() => walk(i + 1), LINES[i].ms);
     }
 
@@ -167,11 +171,11 @@ export default function CinematicIntro({ onDone }: Props): React.ReactElement {
 
       <div className="ci-narration" aria-live="polite">
         <div className="ci-line" key={idx}>
-          {LINES[idx]?.text || ''}
+          {LINES[idx] ? t(LINES[idx].key) : ''}
         </div>
       </div>
 
-      <button ref={skipBtnRef} className="ci-skip" onClick={(e) => { e.stopPropagation(); finish(); }} aria-label="Skip intro narration">
+      <button ref={skipBtnRef} className="ci-skip" onClick={(e) => { e.stopPropagation(); finish(); }} aria-label={t('intro.skipAria')}>
         Skip · <kbd>Esc</kbd>
       </button>
     </div>
