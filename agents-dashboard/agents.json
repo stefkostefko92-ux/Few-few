@@ -4790,9 +4790,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: RPM аватарите се експортират в МЕТРИ с root scale 1 (не cm/×100 като Mixamo FBX); sampl…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: QuickSurface 2026 работи на Siemens Parasolid kernel и има variable-radius fillet, 3-fa… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface 2026 работи на Siemens Parasolid kernel и има variable-radius fillet, 3-fa…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
