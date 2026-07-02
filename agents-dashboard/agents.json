@@ -5986,9 +5986,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: Supreme Bot billing: идемпотентността е marker-first-in-$transaction по event.id (Proce… (+3 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: В API 2026-06-24.dahlia обектът Subscription НЯМА топ-ниво current_period_end; полето е… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „В API 2026-06-24.dahlia обектът Subscription НЯМА топ-ниво current_period_end; полето е…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
