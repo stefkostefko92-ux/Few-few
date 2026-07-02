@@ -171,6 +171,15 @@ router.post("/:serverId", requireServerAdmin, async (req, res, next) => {
 
 router.put("/:serverId/:formId", requireServerAdmin, async (req, res, next) => {
   try {
+    // Cross-tenant IDOR guard: requireServerAdmin authorizes the caller only for
+    // the URL serverId — confirm the form actually belongs to it before mutating
+    // (same pattern as the GET handler and panels.js/panelBelongsToServer).
+    const owned = await prisma.form.findFirst({
+      where: { id: req.params.formId, serverId: req.params.serverId },
+      select: { id: true },
+    });
+    if (!owned) return res.status(404).json({ error: "Form not found", code: "NOT_FOUND" });
+
     const parsed = createFormSchema.partial().safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
 
@@ -235,6 +244,14 @@ router.put("/:serverId/:formId", requireServerAdmin, async (req, res, next) => {
 
 router.delete("/:serverId/:formId", requireServerAdmin, async (req, res, next) => {
   try {
+    // Cross-tenant IDOR guard: confirm the form belongs to this server before
+    // any count/cascade-delete (requireServerAdmin only checks the URL serverId).
+    const owned = await prisma.form.findFirst({
+      where: { id: req.params.formId, serverId: req.params.serverId },
+      select: { id: true },
+    });
+    if (!owned) return res.status(404).json({ error: "Form not found", code: "NOT_FOUND" });
+
     // Check for applications first — forms with submissions shouldn't silently
     // drop user data. If force=true query param, delete applications too.
     const appCount = await prisma.application.count({

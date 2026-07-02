@@ -3,7 +3,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import axios from "axios";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
-import { encrypt, decrypt } from "../lib/crypto.js";
+import { encrypt, decrypt, decryptSafe } from "../lib/crypto.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { getServerTier } from "../lib/premium.js";
 
@@ -37,7 +37,7 @@ router.get("/", async (req, res, next) => {
     let guildsRes;
     try {
       guildsRes = await axios.get("https://discord.com/api/v10/users/@me/guilds", {
-        headers: { Authorization: `Bearer ${session.accessToken}` },
+        headers: { Authorization: `Bearer ${decryptSafe(session.accessToken)}` },
       });
     } catch (discordErr) {
       if (discordErr?.response?.status === 401) {

@@ -242,6 +242,14 @@ router.post("/:serverId/:panelId/spawn", requireServerAdmin, async (req, res, ne
   if (!channelId) return res.status(400).json({ error: "channelId required" });
 
   try {
+    // Cross-tenant IDOR guard: confirm the panel belongs to this server before
+    // spawning/updating it (requireServerAdmin only checks the URL serverId).
+    const owned = await prisma.verificationPanel.findFirst({
+      where: { id: req.params.panelId, serverId: req.params.serverId },
+      select: { id: true },
+    });
+    if (!owned) return res.status(404).json({ error: "Verification panel not found", code: "NOT_FOUND" });
+
     const result = await notifyBot("VERIFICATION_SPAWN", {
       panelId: req.params.panelId,
       serverId: req.params.serverId,

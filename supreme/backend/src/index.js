@@ -1,18 +1,9 @@
 // backend/src/index.js
 import "dotenv/config";
+// Sentry.init runs inside instrument.js, imported FIRST so OpenTelemetry
+// auto-instrumentation patches express/pg/prisma before they are imported below.
+import "./instrument.js";
 import * as Sentry from "@sentry/node";
-
-// ─── Sentry Error Monitoring ──────────────────────────────────────────────────
-// Optional: set SENTRY_DSN in .env to enable production error tracking.
-// If not set, errors are only logged to console.
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || "development",
-    tracesSampleRate: 0.1, // 10% of requests traced for performance monitoring
-  });
-  console.log("✅ Sentry error monitoring active");
-}
 
 import express from "express";
 import cors from "cors";
@@ -140,7 +131,10 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests — please slow down" },
-  skip: (req) => req.path === "/api/health", // never limit health checks
+  // Never limit health checks; never throttle the Stripe webhook — it is
+  // signature-verified + idempotent, and 429s would make Stripe retry (a burst
+  // of events from few egress IPs could otherwise trip the per-IP limit).
+  skip: (req) => req.path === "/api/health" || req.path === "/api/stripe/webhook",
 });
 
 // Stricter limiter for auth endpoints to prevent brute force / OAuth abuse

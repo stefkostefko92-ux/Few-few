@@ -44,3 +44,20 @@ export function decrypt(ciphertext) {
   decipher.setAuthTag(Buffer.from(authTagHex, "hex"));
   return decipher.update(Buffer.from(encryptedHex, "hex")) + decipher.final("utf8");
 }
+
+/**
+ * Decrypt if the value looks like our iv:authTag:ciphertext format; otherwise
+ * return it unchanged. Lets us roll out encryption of an existing column WITHOUT
+ * a migration — legacy plaintext rows keep working and get re-encrypted on their
+ * next write. Fail-open on any decrypt error (returns the raw value) so a read
+ * path (e.g. token refresh) is never broken by an unexpected value.
+ */
+export function decryptSafe(value) {
+  if (!value) return value;
+  if (value.split(":").length !== 3) return value; // not our format → legacy plaintext
+  try {
+    return decrypt(value);
+  } catch {
+    return value;
+  }
+}
