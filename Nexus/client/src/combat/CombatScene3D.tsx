@@ -486,15 +486,16 @@ function poseHumanoid(
 
   if (st > 0.001) {
     const stanceW = st;
-    // Arms hang down by the sides with a light forward bias + slight elbow bend
-    // → a relaxed ready stance, not a presenting gesture.
-    const down = 82 * HB_D * stanceW, fwd = 8 * HB_D * stanceW;
+    // RPM bind-ът е A-ПОЗА (ръцете вече са ~60° надолу), не T-поза — затова
+    // стойката добавя само леко отпускане: малко надолу-навътре + лек лакът.
+    // 82° тук пращаше ръцете напред-нагоре в „зомби" жест.
+    const down = 26 * HB_D * stanceW, fwd = 3 * HB_D * stanceW;
     hbAxis(hb.LeftArm, _hbX, HB_AXIS.ARM_DOWN_L * down);
     hbAxis(hb.RightArm, _hbX, HB_AXIS.ARM_DOWN_R * down);
     hbAxis(hb.LeftArm, _hbZ, HB_AXIS.ARM_FWD_L * fwd);
     hbAxis(hb.RightArm, _hbZ, HB_AXIS.ARM_FWD_R * fwd);
-    hbAxis(hb.LeftForeArm, _hbZ, HB_AXIS.FOREARM_BEND_L * 28 * HB_D * stanceW);
-    hbAxis(hb.RightForeArm, _hbZ, HB_AXIS.FOREARM_BEND_R * 28 * HB_D * stanceW);
+    hbAxis(hb.LeftForeArm, _hbZ, HB_AXIS.FOREARM_BEND_L * 12 * HB_D * stanceW);
+    hbAxis(hb.RightForeArm, _hbZ, HB_AXIS.FOREARM_BEND_R * 12 * HB_D * stanceW);
     hbEuler(hb.Spine1, 3 * HB_D * stanceW, HB_AXIS.PUNCH_DIR * 5 * HB_D * stanceW, 0);
   }
 
