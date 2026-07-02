@@ -111,12 +111,19 @@ function landingSnapshot(t) {
     `<div><h3>${esc(x.name)} — ${esc(x.price)}</h3><ul>${
       x.bullets.map((b) => `<li>${esc(b)}</li>`).join("")
     }</ul></div>`;
+  // Free-vs-Premium comparison as a real <table> so non-JS AEO crawlers can quote it.
+  const compare = t.compare
+    ? `<section><h2>${esc(t.compare.heading)}</h2><table><thead><tr><th>${esc(t.compare.colCap)}</th><th>${esc(t.compare.colFree)}</th><th>${esc(t.compare.colPremium)}</th></tr></thead><tbody>${
+        t.compare.rows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
+      }</tbody></table></section>`
+    : "";
   return `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
     <p>${esc(t.eyebrow)}</p>
     <h1>${esc(t.h1a)} ${esc(t.h1b)}</h1>
     <p>${esc(t.sub)}</p>
     <section><h2>${esc(t.featuresHeading)}</h2><p>${esc(t.featuresSub)}</p><ul>${features}</ul></section>
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
+    ${compare}
     <section><h2>${esc(t.faqHeading)}</h2>${faq}</section>
     <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.enterprise)}</section>
   </div>`;

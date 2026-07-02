@@ -173,6 +173,39 @@ export default function LandingLocalized({ locale }) {
           </div>
         </section>
 
+        {/* COMPARE — Free vs Premium (content parity with prerender + Login.jsx EN) */}
+        {t.compare && (
+          <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+            <div className="max-w-3xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
+                  {t.compare.heading}
+                </h2>
+              </div>
+              <div className="cs-card overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-cs-border text-left">
+                      <th className="py-3 pr-4 text-cs-muted font-semibold">{t.compare.colCap}</th>
+                      <th className="py-3 px-4 text-cs-muted font-semibold">{t.compare.colFree}</th>
+                      <th className="py-3 pl-4 text-cs-cyan font-semibold">{t.compare.colPremium}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.compare.rows.map(([cap, free, prem]) => (
+                      <tr key={cap} className="border-b border-cs-border/40">
+                        <td className="py-3 pr-4 text-cs-text font-medium">{cap}</td>
+                        <td className="py-3 px-4 text-cs-muted">{free}</td>
+                        <td className="py-3 pl-4 text-cs-text">{prem}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* PRICING */}
         <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
