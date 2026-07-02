@@ -43,6 +43,9 @@ class SnakeView @JvmOverloads constructor(
     /** Известява за изяждане (Activity → лек хаптик). */
     var onEat: ((bonus: Boolean) -> Unit)? = null
 
+    /** Известява, че играта тръгна след READY/PAUSED (Activity → скрива подсказката). */
+    var onStarted: (() -> Unit)? = null
+
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { isAntiAlias = false }
     private var running = false
     private var lastFrameNanos = 0L
@@ -92,9 +95,13 @@ class SnakeView @JvmOverloads constructor(
         invalidate()
     }
 
-    /** Подава посока (от swipe или екранен бутон); стартира при първи вход. */
+    /** Подава посока (от swipe или екранен бутон); стартира при първи вход.
+     *  От PAUSED също се тръгва с вход — играчът решава кога да продължи. */
     fun onDirection(dir: Direction) {
-        if (engine.state == GameState.READY) engine.start()
+        if (engine.state == GameState.READY || engine.state == GameState.PAUSED) {
+            engine.start()
+            onStarted?.invoke()
+        }
         engine.setDirection(dir)
     }
 
@@ -134,7 +141,7 @@ class SnakeView @JvmOverloads constructor(
                         onEat?.invoke(true)
                         onScoreChanged?.invoke(engine.score, engine.level)
                     }
-                    TickResult.DIED -> {
+                    TickResult.DIED, TickResult.WON -> {
                         running = false
                         onGameOver?.invoke(engine.score)
                     }
@@ -265,6 +272,14 @@ class SnakeView @JvmOverloads constructor(
         /** Цикъл на мигане 600 ms (1.67 Hz — под прага 3/сек на WCAG 2.3.1). */
         const val BLINK_CYCLE_MS = 600L
         const val BLINK_VISIBLE_MS = 400L
+    }
+
+    override fun onDetachedFromWindow() {
+        // Защита при откачане от йерархията: спираме loop-а и пускаме bitmap-а.
+        pauseLoop()
+        bgBitmap?.recycle()
+        bgBitmap = null
+        super.onDetachedFromWindow()
     }
 
     override fun performClick(): Boolean {

@@ -2,8 +2,8 @@
 <resources>
     <!-- Огледало на eu.carbonstealth.snake.render.LcdTheme за нуждите на XML.
          Ако смениш едното, смени и другото. -->
-    <color name="lcd_background">#9CB23B</color>
-    <color name="lcd_background_light">#C7F0D8</color>
-    <color name="lcd_pixel">#0F1C0A</color>
-    <color name="letterbox">#141414</color>
+    <color name="lcd_background">#9EAD86</color>
+    <color name="lcd_background_light">#A7B98C</color>
+    <color name="lcd_pixel">#232B1B</color>
+    <color name="letterbox">#33373D</color>
 </resources>

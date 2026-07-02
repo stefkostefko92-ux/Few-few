@@ -25,10 +25,12 @@
             </intent-filter>
         </activity>
 
+        <!-- Разширени configChanges: смяна на тъмен режим/шрифт/език по време на
+             игра не бива да пресъздава Activity-то (би загубило текущата игра). -->
         <activity
             android:name=".GameActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize|keyboardHidden" />
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode|fontScale|density|locale|layoutDirection" />
     </application>
 </manifest>

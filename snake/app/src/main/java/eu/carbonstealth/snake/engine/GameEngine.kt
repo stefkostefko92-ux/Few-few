@@ -148,7 +148,8 @@ class GameEngine(
                 maybeLevelUp()
                 spawnFood()
                 maybeSpawnBonus()
-                result = TickResult.ATE_FOOD
+                // Ако няма къде да падне нова храна, полето е пълно → победа.
+                result = if (state == GameState.GAME_OVER) TickResult.WON else TickResult.ATE_FOOD
                 // Опашката НЕ се маха → растеж.
             }
             willEatBonus -> {
@@ -274,5 +275,5 @@ class GameEngine(
     }
 }
 
-/** Крайният резултат от един [GameEngine.tick]. */
-enum class TickResult { NONE, MOVED, ATE_FOOD, ATE_BONUS, DIED }
+/** Крайният резултат от един [GameEngine.tick]. WON = запълнено поле (победа). */
+enum class TickResult { NONE, MOVED, ATE_FOOD, ATE_BONUS, DIED, WON }
