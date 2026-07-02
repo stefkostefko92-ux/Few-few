@@ -63,16 +63,30 @@
         "@id": "<%= site.base %>/#organization",
         "name": "<%= company.name %>",
         "url": "<%= company.url %>",
-        "logo": { "@type": "ImageObject", "url": "<%= site.base %>/favicon.svg" },
+        "logo": { "@type": "ImageObject", "url": "<%= site.base %>/icon-512.png" },
         "brand": { "@type": "Brand", "name": "MedQR" },
         "areaServed": { "@type": "Country", "name": "Bulgaria" },
-        "address": { "@type": "PostalAddress", "addressCountry": "BG" },
+        "vatID": "<%= company.vat %>",
+        "taxID": "<%= company.uic %>",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ul. Samuil 3",
+          "addressLocality": "Bobov Dol",
+          "postalCode": "2670",
+          "addressCountry": "BG"
+        },
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer support",
-          "email": "support@carbonstealth.eu",
+          "email": "<%= company.email %>",
+          "telephone": "<%= company.phone %>",
           "availableLanguage": ["bg", "en"]
         },
+        "knowsAbout": [
+          "emergency medical information",
+          "QR and NFC medical profiles",
+          "accessibility for deaf and hard-of-hearing people"
+        ],
         "sameAs": ["<%= company.url %>"]
       },
       {
@@ -83,7 +97,19 @@
         "description": "<%= meta.description %>",
         "inLanguage": "<%= lang %>",
         "publisher": { "@id": "<%= site.base %>/#organization" }
-      }
+      }<% if (typeof medicalPage !== 'undefined' && medicalPage) { %>,
+      {
+        "@type": "MedicalWebPage",
+        "@id": "<%= meta.canonical %>#webpage",
+        "url": "<%= meta.canonical %>",
+        "name": "<%= typeof title !== 'undefined' ? title : site.name %>",
+        "inLanguage": "<%= lang %>",
+        "about": { "@type": "MedicalCondition", "name": "Emergency medical information" },
+        "audience": { "@type": "MedicalAudience", "audienceType": "Patient" },
+        "lastReviewed": "<%= updated %>",
+        "reviewedBy": { "@id": "<%= site.base %>/#organization" },
+        "isPartOf": { "@id": "<%= site.base %>/#website" }
+      }<% } %>
     ]
   }
   </script>

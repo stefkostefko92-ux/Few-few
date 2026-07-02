@@ -28,9 +28,12 @@ export const GEO = {
 // влизане в сила като lastmod.
 export const PUBLIC_PAGES = [
   { path: '/', changefreq: 'weekly', priority: '1.0', lastmod: SITE_UPDATED },
+  { path: '/about', changefreq: 'monthly', priority: '0.7', lastmod: SITE_UPDATED },
+  { path: '/contact', changefreq: 'yearly', priority: '0.5', lastmod: SITE_UPDATED },
   { path: '/privacy', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
   { path: '/cookies', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
   { path: '/terms', changefreq: 'yearly', priority: '0.5', lastmod: LEGAL.effective },
+  { path: '/accessibility', changefreq: 'yearly', priority: '0.4', lastmod: SITE_UPDATED },
 ];
 
 export function siteBaseUrl(req) {
@@ -136,14 +139,17 @@ export function llmsTxt(base) {
 - Данните се криптират в покой (AES-256-GCM); връзката е по HTTPS.
 - Достъпът е чрез дълъг непредвидим токен, по избор защитен с PIN; всеки достъп се записва.
 - GDPR-съвместимо: изрично съгласие, износ и изтриване на данните, двуфакторна автентикация.
-- Администратор на данните: CarbonStealth VCC. Хостинг: Hetzner (Германия, ЕС).
+- Администратор на данните: Carbon Stealth VCC (ЕИК 208725180, Бобов дол, България — ЕС). Хостинг: Hetzner (Германия, ЕС).
 - Не е медицинско изделие и не замества професионална медицинска оценка.
 
 ## Страници
 - [Начало](${base}/): какво е MedQR и как работи.
+- [За нас и импресум](${base}/about): доставчик, мисия, данни на фирмата.
+- [Контакти](${base}/contact): имейл, телефон, адрес, канал за сигурност.
 - [Политика за поверителност](${base}/privacy): какви данни се обработват и на какво основание.
 - [Политика за бисквитки](${base}/cookies): използват се само строго необходими бисквитки.
 - [Общи условия](${base}/terms): условия за ползване на услугата.
+- [Декларация за достъпност](${base}/accessibility): WCAG 2.1 AA / EN 301 549.
 `;
 }
 

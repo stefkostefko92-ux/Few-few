@@ -1,0 +1,12 @@
+# Ротация на лога от бекъп скрипта на MedQR.
+# Инсталация: cp medqr/deploy/logrotate/medqr-backup /etc/logrotate.d/medqr-backup
+# (Логовете на приложението се управляват от journald/systemd, а на Caddy — от Caddy.)
+/var/log/medqr-backup.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 medqr medqr
+}

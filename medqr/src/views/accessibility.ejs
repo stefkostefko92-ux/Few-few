@@ -1,0 +1,48 @@
+<%- include('partials/head', { title: (lang === 'en' ? 'Accessibility statement' : 'Декларация за достъпност') + ' — MedQR', user: user }) %>
+
+<article class="legal">
+  <h1><%= lang === 'en' ? 'Accessibility statement' : 'Декларация за достъпност' %></h1>
+
+  <p class="lead">
+    <%= lang === 'en'
+      ? 'Accessibility is the core purpose of MedQR — it exists so people who cannot easily hear or speak get the right help in an emergency. We are committed to making the service usable by everyone.'
+      : 'Достъпността е основната цел на MedQR — услугата съществува, за да получат правилна помощ хората, които трудно чуват или говорят при спешност. Ангажирани сме услугата да е използваема от всеки.' %>
+  </p>
+
+  <h2><%= lang === 'en' ? 'Conformance target' : 'Целево ниво на съответствие' %></h2>
+  <p>
+    <%= lang === 'en'
+      ? 'We aim to conform to WCAG 2.1 level AA and EN 301 549 (the harmonised European standard referenced by the European Accessibility Act, Directive 2019/882). The service is largely conformant; we test with keyboard, screen readers and reduced-motion settings.'
+      : 'Стремим се към съответствие с WCAG 2.1 ниво AA и EN 301 549 (хармонизираният европейски стандарт по Европейския акт за достъпност, Директива 2019/882). Услугата е в голяма степен съответстваща; тестваме с клавиатура, екранни четци и режим „намалено движение“.' %>
+  </p>
+
+  <h2><%= lang === 'en' ? 'Measures we take' : 'Мерки, които прилагаме' %></h2>
+  <ul>
+    <li><%= lang === 'en' ? 'Full keyboard operation and visible focus.' : 'Пълно управление с клавиатура и видим фокус.' %></li>
+    <li><%= lang === 'en' ? 'Semantic structure, landmarks, skip link and labelled controls.' : 'Семантична структура, ориентири, връзка за прескачане и етикетирани контроли.' %></li>
+    <li><%= lang === 'en' ? 'Text and control contrast meeting AA.' : 'Контраст на текст и контроли на ниво AA.' %></li>
+    <li><%= lang === 'en' ? 'Seizure-safe emergency signalling (no flashing above safe limits; a steady mode under reduced-motion).' : 'Безопасно за припадъци спешно сигнализиране (без мигане над безопасните граници; постоянен режим при „намалено движение“).' %></li>
+    <li><%= lang === 'en' ? 'A built-in communication aid (text-to-speech, ready phrases, body map) for deaf/nonverbal users.' : 'Вграден помощник за общуване (четене на глас, готови фрази, карта на тялото) за глухи/неговорещи потребители.' %></li>
+    <li><%= lang === 'en' ? 'Bilingual interface (Bulgarian / English).' : 'Двуезичен интерфейс (български / английски).' %></li>
+  </ul>
+
+  <h2><%= lang === 'en' ? 'Known limitations' : 'Известни ограничения' %></h2>
+  <ul>
+    <li><%= lang === 'en' ? 'Some third-party assistive-technology combinations may behave inconsistently in the communication dialog; we are improving this.' : 'Някои комбинации с помощни технологии на трети страни може да се държат непоследователно в диалога за общуване; работим по подобрения.' %></li>
+    <li><%= lang === 'en' ? 'Per-field inline error messages are being expanded across all forms.' : 'Индивидуалните съобщения за грешка по поле се разширяват по всички форми.' %></li>
+  </ul>
+
+  <h2><%= lang === 'en' ? 'Feedback' : 'Обратна връзка' %></h2>
+  <p>
+    <%= lang === 'en'
+      ? 'If you meet a barrier or need content in another format, tell us and we will help and fix it:'
+      : 'Ако срещнете пречка или ви трябва съдържание в друг формат, кажете ни — ще помогнем и ще го отстраним:' %>
+    <a href="mailto:<%= company.email %>"><%= company.email %></a>.
+  </p>
+
+  <p class="muted small">
+    <%= lang === 'en' ? 'This statement was last reviewed on ' : 'Тази декларация е последно прегледана на ' %><%= updated %>.
+  </p>
+</article>
+
+<%- include('partials/foot') %>

@@ -40,7 +40,8 @@ const cookieHeader = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
 const csrf = () => jar.get('csrf');
 
 async function req(path, { method = 'GET', body, csrfToken } = {}) {
-  const headers = {};
+  // Реален браузър (не link-preview бот) — иначе /e/:token не известява близкия.
+  const headers = { 'user-agent': 'Mozilla/5.0 (test-browser)' };
   if (jar.size) headers.cookie = cookieHeader();
   let payload;
   if (body) {
@@ -237,7 +238,13 @@ try {
   await req(`/e/${rawProfile.emergency_token}`); // повторно отваряне
   await settle();
   assert.equal(notif(), 1, 'повторното отваряне не дублира известието');
-  ok('близкият се уведомява при отваряне (с анти-спам прозорец)');
+  // Link-preview бот (WhatsApp) не бива да задейства фалшиво „спешно" известие.
+  await fetch(`${base}/e/${rawProfile.emergency_token}`, {
+    headers: { 'user-agent': 'WhatsApp/2.23 A' },
+  });
+  await settle();
+  assert.equal(notif(), 1, 'бот за link-preview не задейства известие');
+  ok('близкият се уведомява при отваряне (без дублиране и без бот preview)');
 
   // 11в. Споделяне на местоположение (JSON + CSRF заглавие), с радиус на точност
   const locRes = await fetch(`${base}/e/${rawProfile.emergency_token}/locate`, {
