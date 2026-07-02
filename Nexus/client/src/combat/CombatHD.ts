@@ -125,6 +125,12 @@ function canUseWebGPU(): boolean {
 
 function liteCriteria(): boolean {
   if (typeof window === 'undefined') return false;
+  // Ръчен лост: ?fx=low (или localStorage nd_fx='low') форсира лекия път —
+  // спасителен изход при графичен проблем на конкретна машина + бисектиране.
+  try {
+    if (new URLSearchParams(window.location.search).get('fx') === 'low') return true;
+    if (window.localStorage.getItem('nd_fx') === 'low') return true;
+  } catch { /* SSR/приватен режим */ }
   if (window.matchMedia('(pointer: coarse)').matches) return true;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
   if (window.innerWidth < 900) return true;

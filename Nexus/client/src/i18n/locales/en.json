@@ -707,10 +707,10 @@
   },
   "tower": {
     "title": "Tower of Trials",
-    "subtitle": "Endless floors. Every fifth is a Vault — double rewards. Fall, and the climb resets.",
+    "subtitle": "Endless floors. Every fifth is a Vault — double rewards. Fall, and you hold your floor — try it again.",
     "vaultSuffix": " · VAULT BONUS!",
     "clearedToast": "Floor {{floor}} cleared · +{{gold}}g · +{{xp}} XP{{vault}}",
-    "fellToast": "Fell on floor {{floor}}. Best: {{best}}. Try again.",
+    "fellToast": "Fell on floor {{floor}}. Best: {{best}}. The floor is yours to retry.",
     "bestTag": "Best · F{{n}}",
     "energyTag": "EN · {{n}}",
     "nextGate": "Next gate",

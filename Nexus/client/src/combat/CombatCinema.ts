@@ -33,13 +33,15 @@ export interface CinemaUniforms {
 }
 
 export const CINEMA_DEFAULTS: CinemaUniforms = {
-  grain: 0.045,
-  contrast: 1.14,
-  saturation: 1.12,
+  // Живият деплой: 0.045 grain + 0.42 vignette четяха като шум/тунел на
+  // реален монитор (SwiftShader кадрите ги подценяваха). По-леки defaults.
+  grain: 0.024,
+  contrast: 1.12,
+  saturation: 1.10,
   lift: new THREE.Color(0.02, 0.04, 0.06),  // cool shadows
   gain: new THREE.Color(0.06, 0.03, 0.0),   // warm highlights
-  sharpen: 0.32,
-  vignette: 0.42,
+  sharpen: 0.28,
+  vignette: 0.28,
 };
 
 const CinemaShader = {

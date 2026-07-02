@@ -176,8 +176,11 @@ router.post('/climb', (req, res) => {
       if (drop.refundGold > 0) { goldGain += drop.refundGold; char.gold += drop.refundGold; }
     }
   } else {
-    newFloor = 0;
-    runSeed = 0;
+    // Баланс (по заявка на собственика): падането НЕ нулира кулата — оставаш
+    // на етажа, на който падна, и опитваш пак; cooldown-ът е цената на
+    // провала. Нов seed, за да не е повторният опит същият гарнитур.
+    // (newFloor остава текущият етаж.)
+    runSeed = Math.floor(Math.random() * 1_000_000);
     runEnded = true;
   }
 

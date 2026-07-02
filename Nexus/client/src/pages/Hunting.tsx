@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useStore } from '../lib/store';
 import CombatScene from '../combat/CombatScene';
@@ -24,10 +25,20 @@ export default function Hunting(): React.ReactElement {
   const [region, setRegion] = useState<string | null>(null);
   const [fight, setFight] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [searchParams] = useSearchParams();
+  // „Влез в региона" от картата на света (?region=...): стартираме лов там
+  // веднага (веднъж) — това Е влизането в гората, не празен списък.
+  const autoEntered = useRef(false);
 
   async function load() {
     const r = await api.get('/hunting/regions');
     setRegions(r.regions);
+    const want = searchParams.get('region');
+    if (want && !autoEntered.current) {
+      autoEntered.current = true;
+      const target = (r.regions as Region[]).find((x) => x.region === want);
+      if (target?.unlocked) hunt(want);
+    }
   }
   useEffect(() => { load(); }, []);
 

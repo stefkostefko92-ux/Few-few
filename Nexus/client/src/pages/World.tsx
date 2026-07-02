@@ -103,7 +103,7 @@ export default function World(): React.ReactElement {
                 <div className="realm-pin-meta">{t('common.lv')} {r.level}</div>
                 <div className="realm-pin-lore">{t(`world.regions.${r.slug}.lore`)}</div>
                 {!locked ? (
-                  <Link to="/app/quests" className="btn btn-sm btn-primary realm-pin-cta">{t('world.enter')}</Link>
+                  <Link to={`/app/hunting?region=${r.slug}`} className="btn btn-sm btn-primary realm-pin-cta">{t('world.enter')}</Link>
                 ) : (
                   <div className="realm-pin-cta locked">{t('world.requiresLv', { level: r.minLevel })}</div>
                 )}

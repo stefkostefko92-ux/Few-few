@@ -707,10 +707,10 @@
   },
   "tower": {
     "title": "Torre delle Prove",
-    "subtitle": "Piani infiniti. Ogni quinto è un Caveau — ricompense doppie. Se cadi, la scalata si azzera.",
+    "subtitle": "Piani infiniti. Ogni quinto è un Caveau — ricompense doppie. Se cadi, mantieni il tuo piano — riprova.",
     "vaultSuffix": " · BONUS CAVEAU!",
     "clearedToast": "Piano {{floor}} superato · +{{gold}}g · +{{xp}} XP{{vault}}",
-    "fellToast": "Caduto al piano {{floor}}. Record: {{best}}. Riprova.",
+    "fellToast": "Caduto al piano {{floor}}. Record: {{best}}. Il piano ti aspetta — riprova.",
     "bestTag": "Record · P{{n}}",
     "energyTag": "EN · {{n}}",
     "nextGate": "Prossimo varco",

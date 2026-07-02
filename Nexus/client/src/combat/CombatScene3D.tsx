@@ -1151,6 +1151,8 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
      * and the particle pool size below can share the decision) ----- */
     const liteParticleBudget =
       typeof window !== 'undefined' && (
+        new URLSearchParams(window.location.search).get('fx') === 'low' ||
+        (() => { try { return window.localStorage.getItem('nd_fx') === 'low'; } catch { return false; } })() ||
         window.matchMedia('(pointer: coarse)').matches ||
         window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
         window.innerWidth < 900
@@ -1469,7 +1471,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           new THREE.MeshBasicMaterial({
             color: shaftColor,
             transparent: true,
-            opacity: 0.05 + Math.random() * 0.03,
+            // Живият деплой (реално GPU + bloom) показа, че по-плътните
+            // конуси избухват в бяло — дръж ги едва доловими.
+            opacity: 0.022 + Math.random() * 0.014,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
             side: THREE.DoubleSide,
