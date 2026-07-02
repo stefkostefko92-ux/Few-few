@@ -264,8 +264,25 @@ async function main(): Promise<void> {
       const parsed = resyncSchema.safeParse(payload);
       if (!parsed.success) return;
       const room = matchmaker.getRoom(parsed.data.matchId);
-      if (room) room.resync(userId);
-      else io.serverSideEmit("op:resync", { matchId: parsed.data.matchId, userId });
+      if (room) {
+        room.resync(userId);
+        return;
+      }
+      io.serverSideEmit("op:resync", { matchId: parsed.data.matchId, userId });
+      // The room may already be reaped (finished matches are dropped ~1s after
+      // GAME_OVER). A client that missed the final broadcast would otherwise be
+      // stuck on a zombie table — rebuild the verdict from the DB and resend it.
+      void prisma.match
+        .findUnique({ where: { id: parsed.data.matchId }, include: { players: true } })
+        .then((match) => {
+          if (!match?.endedAt || match.players.length === 0) return; // live elsewhere / unknown
+          io.to(userRoom(userId)).emit(SOCKET_EVENTS.GAME_OVER, {
+            matchId: match.id,
+            score: match.players.map((p) => ({ seat: p.seat, result: p.result ?? "draw" })),
+            ratingDeltas: Object.fromEntries(match.players.map((p) => [p.seat, p.mmrDelta])),
+          });
+        })
+        .catch((err) => logger.warn({ err }, "resync DB fallback failed"));
     });
 
     socket.on(SOCKET_EVENTS.GAME_RECLAIM, (payload: unknown) => {

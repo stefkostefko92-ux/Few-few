@@ -35,6 +35,10 @@ interface MatchState {
   disconnected: number[];
   /** Seats currently played by a bot substitute (timed out / dropped). */
   substituted: number[];
+  /** Bumped by "play again" — GameView keys the view on it, so the whole match
+   *  subtree remounts and useMatch re-enters the queue. */
+  epoch: number;
+  playAgain: () => void;
   setMatch: (m: { matchId: string; seat: number; players: MatchPlayerInfo[]; game: GameKey }) => void;
   setPhase: (phase: MatchPhase) => void;
   setLive: (turn: number | null, turnEndsAt: number) => void;
@@ -53,6 +57,8 @@ export const useMatchStore = create<MatchState>((set) => ({
   turnEndsAt: 0,
   disconnected: [],
   substituted: [],
+  epoch: 0,
+  playAgain: () => set((s) => ({ epoch: s.epoch + 1 })),
   setMatch: ({ matchId, seat, players, game }) =>
     set({ matchId, seat, players, game, phase: "playing", disconnected: [], substituted: [] }),
   setPhase: (phase) => set({ phase }),

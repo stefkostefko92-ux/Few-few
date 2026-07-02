@@ -194,7 +194,8 @@
     "leave": "Leave",
     "backToLobby": "Back to lobby",
     "botPlaying": "A bot is playing for you.",
-    "reclaim": "Return to the game"
+    "reclaim": "Return to the game",
+    "playAgain": "Play again"
   },
   "santase": {
     "trump": "Trump",
@@ -384,7 +385,9 @@
     "discardPhase": "Discard",
     "knock": "Knock",
     "discardHint": "Pick a card to discard",
-    "drawHint": "Draw from stock or discard"
+    "drawHint": "Draw from stock or discard",
+    "cancelKnock": "Cancel knock",
+    "knockHint": "Pick the card to knock with"
   },
   "gofish": {
     "ocean": "Ocean",
@@ -486,7 +489,14 @@
     "checkmate": "Checkmate!",
     "mateWin": "Checkmate — you win!",
     "drawn": "Draw",
-    "illegal": "Illegal move!"
+    "illegal": "Illegal move!",
+    "promoteTitle": "Promote the pawn to",
+    "promo": {
+      "q": "queen",
+      "r": "rook",
+      "b": "bishop",
+      "n": "knight"
+    }
   },
   "fx": {
     "hit": "Hit!",
@@ -595,5 +605,13 @@
     "turnHint": "{{name}}'s turn…",
     "mortgage": "mortgage",
     "houses": "{{n}}🏠"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "lobby_full": "The room is full or unavailable",
+    "no_engine": "This game is currently unavailable",
+    "illegal_action": "Illegal move",
+    "chat_rate": "Too fast. Wait a moment.",
+    "rate_limited": "Too many attempts — wait."
   }
 }

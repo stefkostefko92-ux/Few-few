@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
@@ -45,6 +45,12 @@ export function RummyView({ title }: { title: string }) {
     [legal],
   );
   const inDiscardPhase = state?.phase === "DISCARD";
+  // Knock mode: the engine offers KNOCK per eligible card — let the player PICK
+  // the card (mirrors discard) instead of auto-firing an arbitrary one.
+  const [knockMode, setKnockMode] = useState(false);
+  useEffect(() => {
+    if (!myTurn) setKnockMode(false);
+  }, [myTurn]);
 
   const dealtRef = useRef(false);
   useEffect(() => {
@@ -56,8 +62,9 @@ export function RummyView({ title }: { title: string }) {
   }, [state, seat, dealIn]);
 
   function onDiscard(card: string, node: HTMLElement | null) {
-    const a = discardFor.get(card);
+    const a = knockMode ? knockFor.get(card) : discardFor.get(card);
     if (!a) return;
+    setKnockMode(false);
     playCard(node);
     playCue("flip");
     m.send(a);
@@ -124,7 +131,7 @@ export function RummyView({ title }: { title: string }) {
                       card={card}
                       index={i}
                       count={(state.hands[seat] ?? []).length}
-                      playable={myTurn && inDiscardPhase && discardFor.has(card)}
+                      playable={myTurn && inDiscardPhase && (knockMode ? knockFor.has(card) : discardFor.has(card))}
                       onPlay={onDiscard}
                     />
                   ))}
@@ -139,20 +146,17 @@ export function RummyView({ title }: { title: string }) {
               value={inDiscardPhase ? t("rummy.discardPhase") : t("rummy.drawPhase")}
               highlight={myTurn}
             />
-            {/* Knock is offered per-card; surface the best one as a button. */}
+            {/* Knock: toggle a pick mode, then click the card to knock with. */}
             {myTurn && knockFor.size > 0 ? (
-              <Button
-                onClick={() => {
-                  const first = [...knockFor.values()][0];
-                  if (first) m.send(first);
-                }}
-              >
-                {t("rummy.knock")}
+              <Button variant={knockMode ? "felt" : "brass"} onClick={() => setKnockMode((v) => !v)}>
+                {knockMode ? t("rummy.cancelKnock") : t("rummy.knock")}
               </Button>
             ) : null}
           </div>
           {myTurn && inDiscardPhase ? (
-            <p className="mt-2 text-center text-xs text-ink-muted">{t("rummy.discardHint")}</p>
+            <p className="mt-2 text-center text-xs text-ink-muted">
+              {knockMode ? t("rummy.knockHint") : t("rummy.discardHint")}
+            </p>
           ) : null}
         </>
       ) : null}

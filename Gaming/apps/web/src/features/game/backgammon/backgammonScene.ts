@@ -11,8 +11,8 @@ import {
   Color,
   CylinderGeometry,
   DirectionalLight,
-  DoubleSide,
   type Euler,
+  ExtrudeGeometry,
   Group,
   HemisphereLight,
   Mesh,
@@ -22,13 +22,15 @@ import {
   Raycaster,
   Scene,
   Shape,
-  ShapeGeometry,
   Vector2,
 } from "three";
 import {
+  clothNormal,
+  contactShadow,
   DICE_FACE_ORDER,
   disposeObject,
   faceUp,
+  grooveNormal,
   pipFaces,
   woodNormal,
   woodTexture,
@@ -90,8 +92,10 @@ export class BackgammonScene {
     const d = this.depth * 0.54;
     const aspect = 1 / SCENE_RATIO;
     this.camera = new OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 200);
-    this.camera.position.set(0, W * 1.25, this.depth * 1.35);
-    this.camera.lookAt(0, 0, 0);
+    // ~35° elevation (was ~54° near-top-down): checker stacks and the extruded
+    // points read as physical objects instead of paper cutouts.
+    this.camera.position.set(0, W * 0.82, this.depth * 1.85);
+    this.camera.lookAt(0, 0.1, 0);
 
     this.scene.add(new AmbientLight(0xffffff, 0.34));
     this.scene.add(new HemisphereLight(0xfff3d8, 0x20180f, 0.45));
@@ -140,7 +144,7 @@ export class BackgammonScene {
           d.rotation.y += (to.y - d.rotation.y) * 0.25;
           d.rotation.z += (to.z - d.rotation.z) * 0.25;
         }
-        d.position.y = 0.5 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+        d.position.y = 0.53 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
       });
     }
     return true;
@@ -160,9 +164,17 @@ export class BackgammonScene {
     frame.receiveShadow = true;
     this.scene.add(frame);
 
+    // felt bed with a visible weave (was a dead-flat green plane)
+    const feltN = clothNormal();
+    feltN.repeat.set(30, 18);
     const bed = new Mesh(
       new BoxGeometry(W, 0.12, D),
-      new MeshStandardMaterial({ color: new Color("#15402a"), roughness: 0.95 }),
+      new MeshStandardMaterial({
+        color: new Color("#17452c"),
+        roughness: 0.92,
+        normalMap: feltN,
+        normalScale: new Vector2(0.35, 0.35),
+      }),
     );
     bed.position.y = 0.02;
     bed.receiveShadow = true;
@@ -175,24 +187,58 @@ export class BackgammonScene {
     bar.receiveShadow = true;
     this.scene.add(bar);
 
-    // 24 point triangles + invisible pick zones
+    // brass corner brackets + bar hinges — it's a physical Табла box, lean in
+    const brass = new MeshPhysicalMaterial({
+      color: new Color("#d9b25f"),
+      metalness: 0.95,
+      roughness: 0.28,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.2,
+    });
+    for (const sx of [-1, 1]) {
+      for (const sz of [-1, 1]) {
+        const corner = new Mesh(new BoxGeometry(0.55, 0.1, 0.55), brass);
+        corner.position.set(sx * (W / 2 + RAIL - 0.32), 0.02, sz * (D / 2 + RAIL - 0.32));
+        corner.castShadow = true;
+        this.scene.add(corner);
+      }
+      const hinge = new Mesh(new BoxGeometry(BARW * 0.7, 0.06, 0.5), brass);
+      hinge.position.set(0, 0.3, sx * (D / 2 - 0.35));
+      hinge.castShadow = true;
+      this.scene.add(hinge);
+    }
+
+    // 24 inlaid-veneer points (extruded, bevelled — not paper cutouts)
+    const matOx = new MeshPhysicalMaterial({
+      color: new Color("#7a2f1f"),
+      roughness: 0.5,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.35,
+    });
+    const matCream = new MeshPhysicalMaterial({
+      color: new Color("#e8dcc0"),
+      roughness: 0.5,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.35,
+    });
     for (let i = 0; i < 24; i++) {
       const p = place(i);
-      const tone = i % 2 === 0 ? "#b9472e" : "#e6dcc6";
       const shape = new Shape();
-      shape.moveTo(-PW / 2, 0);
-      shape.lineTo(PW / 2, 0);
+      shape.moveTo(-PW / 2 + 0.05, 0);
+      shape.lineTo(PW / 2 - 0.05, 0);
       shape.lineTo(0, PLEN * 0.92);
-      shape.lineTo(-PW / 2, 0);
+      shape.lineTo(-PW / 2 + 0.05, 0);
       const tri = new Mesh(
-        new ShapeGeometry(shape),
-        new MeshStandardMaterial({ color: new Color(tone), roughness: 0.7, side: DoubleSide }),
+        new ExtrudeGeometry(shape, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.02, bevelSegments: 2 }),
+        i % 2 === 0 ? matOx : matCream,
       );
       tri.rotation.x = -Math.PI / 2;
       // top row: base at far edge pointing inward (−z); bottom: near edge (+z)
       const baseZ = p.top ? -(D / 2 - 0.1) : D / 2 - 0.1;
-      tri.position.set(p.x, 0.09, baseZ);
+      tri.position.set(p.x, 0.085, baseZ);
       tri.rotation.z = p.top ? Math.PI : 0;
+      tri.castShadow = true;
+      tri.receiveShadow = true;
       this.scene.add(tri);
 
       const hit = new Mesh(
@@ -213,16 +259,20 @@ export class BackgammonScene {
     this.hitZones.push(barHit);
   }
 
-  /** World position of the k-th checker (0-based) stacked on point i. */
-  private checkerPos(i: number, k: number): [number, number, number] {
+  /** World position of the k-th checker (0-based) of `count` on point i. */
+  private checkerPos(i: number, k: number, count: number): [number, number, number] {
     const p = place(i);
     const D = 2 * PLEN;
     const r = PW * 0.42;
     const startZ = p.top ? -(D / 2 - 0.1 - r) : D / 2 - 0.1 - r;
-    const step = (p.top ? 1 : -1) * r * 1.9;
+    // A full 5-row at 1.9r reaches past the mid-line and interpenetrates the
+    // FACING point's row (white/black caps z-fight into a pinwheel). Fan the
+    // row tighter when it's full so both sides stay on their own half.
+    const step = (p.top ? 1 : -1) * r * (count >= 5 ? 1.5 : 1.9);
     const stack = Math.min(k, 4);
-    const lift = k >= 5 ? 0.16 * (k - 4) : 0; // pile up beyond 5
-    return [p.x, 0.18 + lift, startZ + stack * step];
+    const lift = k >= 5 ? 0.23 * (k - 4) : 0; // pile up beyond 5 (0.23 > checker height, no interpenetration z-fight)
+    // 0.27 = extruded point top (~0.155) + half checker height (0.11)
+    return [p.x, 0.27 + lift, startZ + stack * step];
   }
 
   setState(state: BgState, mySeat: number, highlight?: { from: Set<PointId>; targets: Set<number> }): void {
@@ -230,8 +280,27 @@ export class BackgammonScene {
     disposeObject(this.checkerLayer);
     this.checkerLayer.clear();
     const geo = new CylinderGeometry(PW * 0.42, PW * 0.42, 0.22, 30);
-    const matW = new MeshPhysicalMaterial({ color: new Color(WHITE), roughness: 0.32, metalness: 0.05, clearcoat: 0.8, clearcoatRoughness: 0.2 });
-    const matB = new MeshPhysicalMaterial({ color: new Color(BLACK), roughness: 0.2, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.12 });
+    // Turned-groove faces (concentric rings) so checkers read as lathed wood,
+    // not flat pucks; ivory + ebony in the brass identity (no more orange).
+    const grooves = grooveNormal();
+    const matW = new MeshPhysicalMaterial({
+      color: new Color(WHITE),
+      roughness: 0.32,
+      metalness: 0.05,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.2,
+      normalMap: grooves,
+      normalScale: new Vector2(0.5, 0.5),
+    });
+    const matB = new MeshPhysicalMaterial({
+      color: new Color(BLACK),
+      roughness: 0.2,
+      metalness: 0.2,
+      clearcoat: 1,
+      clearcoatRoughness: 0.12,
+      normalMap: grooves,
+      normalScale: new Vector2(0.5, 0.5),
+    });
 
     for (let i = 0; i < 24; i++) {
       const v = state.points[i] ?? 0;
@@ -240,19 +309,25 @@ export class BackgammonScene {
       const mat = v > 0 ? matW : matB;
       for (let k = 0; k < count; k++) {
         const c = new Mesh(geo, mat);
-        const [x, y, z] = this.checkerPos(i, k);
+        const [x, y, z] = this.checkerPos(i, k, count);
         c.position.set(x, y, z);
         c.castShadow = true;
-        c.receiveShadow = true;
+        // receiveShadow OFF: the normal-mapped triangle-fan cap self-shadows
+        // into a star-shaped acne under the steep key; contact discs ground it.
+        // ground it on the point surface (soft AO disc); 0.157 sits between the
+        // point top (~0.155) and the checker base (0.16) — no co-planar z-fight
+        const ground = contactShadow(PW * 0.52, 0.28);
+        ground.position.y = 0.157 - y;
+        c.add(ground);
         this.checkerLayer.add(c);
       }
     }
-    // bar checkers (centre, stacked vertically)
+    // bar checkers (centre, resting on the bar top)
     const bars: [number, MeshStandardMaterial][] = [[state.bar[0], matW], [state.bar[1], matB]];
     bars.forEach(([n, mat], side) => {
       for (let k = 0; k < n; k++) {
         const c = new Mesh(geo, mat);
-        c.position.set(0, 0.18, (side === 0 ? -1 : 1) * (1 + k * 0.42));
+        c.position.set(0, 0.4, (side === 0 ? -1 : 1) * (1 + k * 0.42));
         c.castShadow = true;
         this.checkerLayer.add(c);
       }
@@ -279,7 +354,8 @@ export class BackgammonScene {
       new MeshStandardMaterial({ color: new Color(color), emissive: new Color(color), emissiveIntensity: 0.5, transparent: true, opacity: 0.35 }),
     );
     const baseZ = p.top ? -(D / 2 - 0.1) : D / 2 - 0.1;
-    ring.position.set(p.x, 0.12, baseZ + (p.top ? PLEN / 2 : -PLEN / 2) * 0.9);
+    // 0.17: above the extruded point tops so the glow stays visible.
+    ring.position.set(p.x, 0.17, baseZ + (p.top ? PLEN / 2 : -PLEN / 2) * 0.9);
     this.hiLayer.add(ring);
   }
 
@@ -299,7 +375,7 @@ export class BackgammonScene {
     }
     this.dice.forEach((d, n) => {
       d.visible = n < values.length;
-      d.position.set((n - (values.length - 1) / 2) * 1.3, 0.5, 0);
+      d.position.set((n - (values.length - 1) / 2) * 1.3, 0.53, 0);
     });
     const key = values.join(",");
     if (key !== this.prevDice) {

@@ -7,7 +7,7 @@ import { Button } from "../../../ui";
 import { PlayingCard } from "../cards/PlayingCard";
 import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
 import { useMatch } from "../useMatch";
-import { GameOverPanel, ScorePill, fitOverlap } from "../scene/SceneShell";
+import { GameOverPanel, SceneHeader, ScorePill, fitOverlap } from "../scene/SceneShell";
 import "../cards/cards.css";
 
 interface KentState {
@@ -64,7 +64,7 @@ export function KentView({ title }: { title: string }) {
   if (!state) {
     return (
       <div className="mx-auto max-w-md text-center">
-        <h1 className="mb-6 text-3xl text-brass-300">{title}</h1>
+        <SceneHeader title={title} />
         {phase === "over" && result ? (
           <GameOverPanel seat={seat} result={result} />
         ) : (
@@ -87,7 +87,7 @@ export function KentView({ title }: { title: string }) {
 
   return (
     <div className="mx-auto w-full max-w-[min(94vw,1240px)]">
-      <h1 className="mb-4 text-center text-3xl text-brass-300">{title}</h1>
+      <SceneHeader title={title} />
 
       <div ref={tableRef} style={{ position: "relative" }}>
         <Announcements banners={banners} />

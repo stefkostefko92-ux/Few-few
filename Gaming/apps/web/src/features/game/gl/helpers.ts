@@ -8,7 +8,10 @@ import {
   CanvasTexture,
   Color,
   Euler,
+  Mesh,
+  MeshBasicMaterial,
   type Object3D,
+  PlaneGeometry,
   PMREMGenerator,
   RepeatWrapping,
   type Scene,
@@ -164,6 +167,56 @@ export function paperNormal(): CanvasTexture {
     1.0,
   );
   return cloneTex(_paperN);
+}
+let _grooveN: CanvasTexture | null = null;
+/** Concentric turned-groove normal map (checker/coin faces). Disposable clone. */
+export function grooveNormal(): CanvasTexture {
+  _grooveN ??= heightToNormal(
+    heightCanvas(128, (u, v) => {
+      const r = Math.hypot(u - 0.5, v - 0.5) * 2; // 0 centre → 1 edge
+      // Flat plateau at the centre: the cylinder cap is a triangle fan whose
+      // tangents pivot at the pole — a perturbed normal there renders as a
+      // star-shaped seam artifact. Grooves fade in past r≈0.2.
+      const fadeIn = Math.max(0, Math.min(1, (r - 0.12) / 0.1));
+      return 0.5 + 0.22 * Math.sin(r * Math.PI * 2 * 7) * fadeIn * Math.min(1, (1 - r) * 4);
+    }),
+    1.8,
+  );
+  return cloneTex(_grooveN);
+}
+
+/* ── contact shadows ─────────────────────────────────────────────────────── */
+let _contactCanvas: HTMLCanvasElement | null = null;
+function contactCanvas(): HTMLCanvasElement {
+  if (_contactCanvas) return _contactCanvas;
+  const { c, ctx } = makeCanvas(64, 64);
+  const g = ctx.createRadialGradient(32, 32, 4, 32, 32, 30);
+  g.addColorStop(0, "rgba(0,0,0,1)");
+  g.addColorStop(0.55, "rgba(0,0,0,0.55)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 64, 64);
+  _contactCanvas = c;
+  return c;
+}
+
+/**
+ * A soft radial contact-shadow disc (the cheapest possible AO substitute) to
+ * ground a piece/checker/token on its surface. Add as a child of the object
+ * (works under any Y-rotation — the gradient is radially symmetric) or place
+ * in the scene at surface height. `radius` ≈ 1.2–1.5× the object footprint.
+ * Each call wraps the shared canvas in a fresh CanvasTexture so disposeObject
+ * on a rebuilt layer can't kill other discs' GPU textures.
+ */
+export function contactShadow(radius: number, opacity = 0.35): Mesh {
+  const tex = new CanvasTexture(contactCanvas());
+  const disc = new Mesh(
+    new PlaneGeometry(radius * 2, radius * 2),
+    new MeshBasicMaterial({ map: tex, transparent: true, opacity, depthWrite: false }),
+  );
+  disc.rotation.x = -Math.PI / 2;
+  disc.renderOrder = 1; // draw after opaque surfaces so the blend reads correctly
+  return disc;
 }
 
 /** Procedural walnut colour texture (per-call; cheap, no caching needed). */

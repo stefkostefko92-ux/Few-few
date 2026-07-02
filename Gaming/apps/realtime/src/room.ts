@@ -50,6 +50,7 @@ export class GameRoom {
   private readonly rng: SeededRng;
   private state: unknown;
   private done = false;
+  private lastOver: { matchId: string; score: SeatScore[]; ratingDeltas: Record<number, number> } | null = null;
   private botLoopRunning = false;
 
   // Live-play resilience (§8.3): per-turn clock + disconnect tracking.
@@ -131,7 +132,13 @@ export class GameRoom {
 
   resync(userId: string): void {
     const seat = this.seatOf(userId);
-    if (seat) this.sendStateTo(seat);
+    if (!seat) return;
+    this.sendStateTo(seat);
+    // A player who missed the final broadcast (tab in background at match end)
+    // must still get the verdict — otherwise they reconnect to a zombie table.
+    if (this.done && this.lastOver && seat.userId) {
+      this.io.to(userRoom(seat.userId)).emit(SOCKET_EVENTS.GAME_OVER, this.lastOver);
+    }
   }
 
   /** Handle a human action. Rejects anything not in that seat's legal set. */
@@ -370,13 +377,10 @@ export class GameRoom {
 
     const resultBySeat = new Map(score.map((s) => [s.seat, s.result]));
 
+    this.lastOver = { matchId: this.matchId, score, ratingDeltas };
     for (const s of this.seats) {
       if (!s.userId) continue;
-      this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.GAME_OVER, {
-        matchId: this.matchId,
-        score,
-        ratingDeltas,
-      });
+      this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.GAME_OVER, this.lastOver);
       // Advance quests + leaderboards (S6). Fire-and-forget. matchId lets the
       // API make progression idempotent per (match, user).
       void notifyMatchResult({

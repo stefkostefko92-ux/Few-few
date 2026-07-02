@@ -11,11 +11,13 @@ interface Props {
   onMove: (action: ChessAction) => void;
   /** Player clicked an illegal destination for the selected piece. */
   onIllegal?: () => void;
+  /** Called with all promotion variants of a move so the view shows a picker. */
+  onPromote?: (options: ChessAction[]) => void;
 }
 
 /** WebGL 3D chess board. Mirrors ChessBoard's select/target/move logic, but
  *  renders a three.js scene and picks squares by raycast. Lazy-loads three. */
-export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove, onMove, onIllegal }: Props) {
+export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove, onMove, onIllegal, onPromote }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
 
   const movableFrom = useMemo(() => new Set(legalActions.map((a) => a.from)), [legalActions]);
@@ -29,8 +31,13 @@ export function ChessBoard3D({ fen, legalActions, myTurn, orientation, lastMove,
     if (!myTurn) return;
     if (selected && targets.includes(square)) {
       const options = legalActions.filter((a) => a.from === selected && a.to === square);
-      const chosen = options.find((a) => a.promotion === "q") ?? options[0];
-      if (chosen) onMove(chosen);
+      if (options.length > 1 && onPromote) {
+        // Pawn promotion: let the player pick the piece (underpromotion incl.).
+        onPromote(options);
+      } else {
+        const chosen = options.find((a) => a.promotion === "q") ?? options[0];
+        if (chosen) onMove(chosen);
+      }
       setSelected(null);
       return;
     }

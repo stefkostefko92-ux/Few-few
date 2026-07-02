@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
@@ -26,6 +26,11 @@ export function ChessView({ title }: { title: string }) {
   const useGL = useMemo(webglSupported, []);
 
   const myTurn = turn === seat && legal.length > 0;
+  // Pawn-promotion picker: the board hands us all variants of the move.
+  const [promo, setPromo] = useState<ChessAction[] | null>(null);
+  useEffect(() => {
+    if (!myTurn) setPromo(null); // stale picker if the clock played for us
+  }, [myTurn]);
   const opponent = players.find((p) => p.seat !== seat)?.displayName ?? t("game.opponent");
   const Board = useGL ? ChessBoard3D : ChessBoard;
 
@@ -73,7 +78,27 @@ export function ChessView({ title }: { title: string }) {
               lastMove={state.lastMove}
               onMove={(a) => m.send(a)}
               onIllegal={onIllegal}
+              onPromote={setPromo}
             />
+            {promo ? (
+              <div className="mt-3 flex items-center justify-center gap-2" role="group" aria-label={t("chess.promoteTitle")}>
+                <span className="text-sm text-ink-300">{t("chess.promoteTitle")}:</span>
+                {promo.map((a) => (
+                  <button
+                    key={a.promotion}
+                    type="button"
+                    onClick={() => {
+                      m.send(a);
+                      setPromo(null);
+                    }}
+                    className="rounded-card border border-brass-400/30 bg-felt-800 px-3 py-1.5 text-2xl leading-none text-ink-100 hover:border-brass-300"
+                    aria-label={t(`chess.promo.${a.promotion ?? "q"}`)}
+                  >
+                    {{ q: "♛", r: "♜", b: "♝", n: "♞" }[a.promotion ?? "q"]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <Badge tone="felt">{user?.displayName ?? t("game.you")}</Badge>

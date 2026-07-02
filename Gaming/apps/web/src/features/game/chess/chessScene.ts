@@ -26,7 +26,7 @@ import {
   Vector3,
   type BufferGeometry,
 } from "three";
-import { disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
+import { contactShadow, disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
 import { RenderCore } from "../gl/render.js";
 import { parseFen, type Orientation } from "./types.js";
 
@@ -92,7 +92,7 @@ function knightHead(): BufferGeometry {
 /** Polished marble (white) / obsidian (black) with a clear-coat sheen. */
 function pieceMaterial(white: boolean): MeshPhysicalMaterial {
   return white
-    ? new MeshPhysicalMaterial({ color: new Color("#f1e7d0"), roughness: 0.4, metalness: 0, clearcoat: 0.7, clearcoatRoughness: 0.25 })
+    ? new MeshPhysicalMaterial({ color: new Color("#efe0c2"), roughness: 0.32, metalness: 0, clearcoat: 0.7, clearcoatRoughness: 0.25 })
     : new MeshPhysicalMaterial({ color: new Color("#1b1916"), roughness: 0.22, metalness: 0.18, clearcoat: 1, clearcoatRoughness: 0.12 });
 }
 
@@ -113,12 +113,13 @@ export class ChessScene {
     this.scene.background = new Color("#0e2117");
 
     const span = HALF + RAIL;
-    const d = span * 1.12;
+    // Tight framing: the board fills the canvas instead of floating in margin.
+    const d = span * 0.94;
     const aspect = 1 / SCENE_RATIO;
     this.camera = new OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 200);
     const zside = orientation === "white" ? 1 : -1;
     this.camera.position.set(0, span * 1.5, span * 1.95 * zside);
-    this.camera.lookAt(0, -0.5, 0);
+    this.camera.lookAt(0, -0.5, -0.55); // aim a touch toward the far rail so the tight crop stays symmetric
 
     this.scene.add(new AmbientLight(0xffffff, 0.36));
     this.scene.add(new HemisphereLight(0xfff3d8, 0x20180f, 0.45));
@@ -202,6 +203,11 @@ export class ChessScene {
     const node = new Mesh(bodyGeo(type).clone(), mat);
     node.castShadow = true;
     node.scale.setScalar(0.95);
+    // Soft contact disc under the base grounds the piece on the board (radially
+    // symmetric, so the knight's Y-rotation doesn't matter).
+    const ground = contactShadow(0.44, 0.32);
+    ground.position.y = 0.006;
+    node.add(ground);
     if (type === "Q" || type === "P" || type === "B") {
       const ball = new Mesh(new SphereGeometry(type === "P" ? 0.12 : 0.1, 18, 14), mat);
       ball.position.y = type === "P" ? 0.5 : type === "B" ? 0.86 : 0.96;
