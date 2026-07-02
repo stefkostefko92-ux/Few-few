@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
+import LanguageSelector from '../components/LanguageSelector';
 import '../styles/landing.css';
 
 // Per-locale page titles + descriptions. Picked up at mount based on
@@ -92,6 +93,7 @@ export default function Landing(): React.ReactElement {
           <a href="#roadmap">Roadmap</a>
         </nav>
         <div className="landing-nav-cta">
+          <LanguageSelector />
           <Link to="/login" className="btn btn-ghost">Sign In</Link>
           <Link to="/register" className="btn btn-primary">Play Free</Link>
         </div>

@@ -2012,3 +2012,31 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
     padding: 14px;
   }
 }
+
+/* ── Избор на език (LanguageSelector) ─────────────────────────────── */
+.lang-selector {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+}
+.lang-btn {
+  border: 0;
+  background: transparent;
+  color: var(--text-dim, #9aa3b2);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.lang-btn:hover { color: var(--text, #e8ecf3); }
+.lang-btn.active {
+  background: var(--accent, #7c5cff);
+  color: #fff;
+}
+.lang-selector--compact .lang-btn { padding: 2px 5px; font-size: 0.68rem; }

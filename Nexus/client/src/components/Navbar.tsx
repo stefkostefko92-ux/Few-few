@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import Logo from './Logo';
 import Avatar from './Avatar';
 import AnimatedNumber from './AnimatedNumber';
+import LanguageSelector from './LanguageSelector';
 import {
   IconHome,
   IconScroll,
@@ -119,6 +120,8 @@ export default function Navbar(): React.ReactElement {
             </button>
           </>
         )}
+
+        <LanguageSelector compact />
 
         <div className="nav-profile" ref={menuRef} onClick={() => setOpen((o) => !o)}>
           {char ? (
