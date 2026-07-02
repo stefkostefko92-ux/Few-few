@@ -69,8 +69,10 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   const mine = result.score.find((s) => s.seat === seat)?.result;
   const delta = result.ratingDeltas[seat] ?? 0;
   const won = mine === "win";
-  // A regrouped party room (created server-side after a lobby match) waits.
-  const lobbyWaiting = useLobbyStore((s) => s.lobby !== null);
+  // A regrouped party room for THIS game waits (an unrelated parked lobby must
+  // not swallow the "play again" button).
+  const game = useMatchStore((s) => s.game);
+  const lobbyWaiting = useLobbyStore((s) => s.lobby !== null && s.lobby.game === game);
   useEffect(() => {
     playCue(won ? "win" : "loss");
   }, [won]);

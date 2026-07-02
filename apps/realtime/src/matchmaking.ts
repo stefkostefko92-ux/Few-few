@@ -119,9 +119,12 @@ export class Matchmaker {
       mode: lobby.mode,
       visibility: lobby.visibility,
       hostUserId: lobby.hostUserId,
-      members: seats
-        .filter((s) => s.userId !== null)
-        .map((s) => ({ userId: s.userId!, displayName: s.displayName })),
+      members: seats.map((s) => ({
+        userId: s.userId,
+        displayName: s.displayName,
+        seat: s.seat,
+        isBot: s.isBot,
+      })),
       config: lobby.config,
     });
     room.start();
@@ -151,6 +154,15 @@ export class Matchmaker {
     await redis.hset(JOINED_HASH, joinedField(q, userId), Date.now().toString());
     await redis.sadd(ACTIVE_SET, queueKey(q));
     return true;
+  }
+
+  /** True if the user currently sits in any matchmaking queue. */
+  async isQueued(userId: string): Promise<boolean> {
+    const keys = await redis.smembers(ACTIVE_SET);
+    for (const key of keys) {
+      if ((await redis.zscore(key, userId)) !== null) return true;
+    }
+    return false;
   }
 
   async leaveAllQueues(userId: string): Promise<void> {
