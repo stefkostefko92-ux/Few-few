@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
@@ -70,7 +71,9 @@ export async function destroySession(): Promise<void> {
   store.delete(COOKIE);
 }
 
-export async function getSessionUser(): Promise<SessionUser | null> {
+// cache(): в рамките на ЕДНА заявка (layout + страница + действия) проверката
+// до базата се прави веднъж, не по веднъж на всяко извикване.
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const store = await cookies();
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
@@ -94,7 +97,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     name: user.name,
     role: user.role as Role,
   };
-}
+});
 
 // За използване в admin server компоненти/действия.
 export async function requireUser(): Promise<SessionUser> {

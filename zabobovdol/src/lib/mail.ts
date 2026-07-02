@@ -27,6 +27,15 @@ function getTransporter(): nodemailer.Transporter | null {
 
 export type MailResult = { sent: boolean; reason?: string };
 
+// Позволяваме точно ЕДИН адрес в replyTo: запетая/точка и запетая биха били
+// изтълкувани от nodemailer като списък с получатели (header injection през
+// потребителския имейл).
+function safeReplyTo(v?: string): string | undefined {
+  if (!v) return undefined;
+  const s = v.trim();
+  return /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(s) ? s : undefined;
+}
+
 // Изпраща имейл, ако е конфигуриран SMTP. Никога не хвърля грешка нагоре —
 // сигналът се запазва в базата дори когато изпращането не успее.
 export async function sendMail(opts: {
@@ -43,7 +52,7 @@ export async function sendMail(opts: {
       to: opts.to,
       subject: opts.subject,
       text: opts.text,
-      replyTo: opts.replyTo,
+      replyTo: safeReplyTo(opts.replyTo),
     });
     return { sent: true };
   } catch (err) {

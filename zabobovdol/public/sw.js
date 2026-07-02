@@ -8,7 +8,7 @@
 //  • Статични ресурси (икони, manifest): „кеш първо“.
 //  • POST/API и всичко извън GET: само мрежа (не се кешира).
 
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `zbd-${VERSION}`;
 
 // Опитваме да предзаредим ключовите страници; ако някоя липсва, не проваляме
@@ -63,8 +63,12 @@ self.addEventListener("fetch", (event) => {
       (async () => {
         try {
           const fresh = await fetch(req);
-          const cache = await caches.open(CACHE);
-          cache.put(req, fresh.clone());
+          // Кешираме само успешни отговори — 404/500 страница не бива да
+          // замества добрия офлайн резерв.
+          if (fresh.ok) {
+            const cache = await caches.open(CACHE);
+            cache.put(req, fresh.clone());
+          }
           return fresh;
         } catch {
           const cache = await caches.open(CACHE);

@@ -184,6 +184,28 @@ export function quickIntent(q: string): ChatAnswer | null {
   return null;
 }
 
+// Глобален ДНЕВЕН таван на извикванията към външния AI доставчик. Per-IP
+// лимитът се заобикаля от разпределени ботове (мобилни мрежи, ботнет) — този
+// брояч в базата пази от неограничена сметка. Над тавана чатът тихо пада към
+// правилата (отговорите от съдържанието на сайта продължават да работят).
+const DAILY_AI_LIMIT = Number(process.env.CHAT_DAILY_AI_LIMIT || 1000);
+
+async function aiBudgetAvailable(): Promise<boolean> {
+  if (!Number.isFinite(DAILY_AI_LIMIT) || DAILY_AI_LIMIT <= 0) return true;
+  const key = `chat_ai_${new Date().toISOString().slice(0, 10)}`;
+  try {
+    const c = await prisma.counter.upsert({
+      where: { key },
+      create: { key, value: 1 },
+      update: { value: { increment: 1 } },
+    });
+    return c.value <= DAILY_AI_LIMIT;
+  } catch {
+    // Проблем с брояча не бива да събаря чата.
+    return true;
+  }
+}
+
 // ───────────────────────── Поточен отговор ─────────────────────────
 
 
@@ -210,7 +232,7 @@ export async function* streamAnswer(
   const hits = await search(q, 8);
 
   const ai = await getAiConfig();
-  if (ai.effective !== "rules") {
+  if (ai.effective !== "rules" && (await aiBudgetAvailable())) {
     try {
       if (ai.effective === "gemini") yield* streamWithGemini(q, history, hits, ai);
       else yield* streamWithClaude(q, history, hits, ai);

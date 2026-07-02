@@ -1,12 +1,23 @@
 # Продукционен стек за zabobovdol.carbonstealth.eu на VPS: приложение + база + reverse proxy.
 # Стартиране: docker compose up -d --build
+
+# Ротация на логовете — без нея Docker логовете растат неограничено и пълнят диска.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-zabobovdol}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zabobovdol}
+      # Без стойност по подразбиране — деплоят спира с ясна грешка, ако .env
+      # не задава парола (scripts/setup-env.sh я генерира автоматично).
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задай POSTGRES_PASSWORD в .env (scripts/setup-env.sh го прави автоматично)}
       POSTGRES_DB: ${POSTGRES_DB:-zabobovdol}
       TZ: UTC
     volumes:
@@ -20,15 +31,24 @@ services:
   app:
     build: .
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       db:
         condition: service_healthy
+    # Проверка на живо: приложение + база (иначе забил процес минава за жив).
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     environment:
       NODE_ENV: production
       TZ: UTC
-      DATABASE_URL: postgresql://${POSTGRES_USER:-zabobovdol}:${POSTGRES_PASSWORD:-zabobovdol}@db:5432/${POSTGRES_DB:-zabobovdol}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-zabobovdol}:${POSTGRES_PASSWORD:?Задай POSTGRES_PASSWORD в .env}@db:5432/${POSTGRES_DB:-zabobovdol}?schema=public
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://zabobovdol.carbonstealth.eu}
-      AUTH_SECRET: ${AUTH_SECRET}
+      # Fail-fast: без AUTH_SECRET деплоят спира тук, а не чак при админ вход.
+      AUTH_SECRET: ${AUTH_SECRET:?Задай AUTH_SECRET (поне 32 знака) в .env}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@carbonstealth.eu}
       # Без стойност по подразбиране — задайте силна парола в .env.
       # Сийдът отказва да създаде администратор със слаба/празна парола.
@@ -39,6 +59,7 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-8}
+      CHAT_DAILY_AI_LIMIT: ${CHAT_DAILY_AI_LIMIT:-1000}
       MUNICIPALITY_EMAIL: ${MUNICIPALITY_EMAIL:-obshtina@bobovdol.egov.bg}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -62,6 +83,7 @@ services:
   backup:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       db:
         condition: service_healthy
@@ -70,7 +92,7 @@ services:
       BACKUP_DIRECT: "1"
       DB_HOST: db
       POSTGRES_USER: ${POSTGRES_USER:-zabobovdol}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zabobovdol}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задай POSTGRES_PASSWORD в .env}
       POSTGRES_DB: ${POSTGRES_DB:-zabobovdol}
       BACKUP_DIR: /backups
       BACKUP_TIME: ${BACKUP_TIME:-00:00}
@@ -86,6 +108,7 @@ services:
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       - app
     ports:
