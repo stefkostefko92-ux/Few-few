@@ -144,7 +144,6 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     return () => clearInterval(id);
     // Keyed to shotNo (not the state object): re-broadcasts of the SAME shot
     // (resync / reclaim / reconnect) must not kill the running animation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.shotNo]);
 
   const myTurn = !!state && state.phase === "PLAY" && state.turn === seat && !animating;

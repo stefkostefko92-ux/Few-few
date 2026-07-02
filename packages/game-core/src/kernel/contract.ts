@@ -60,6 +60,12 @@ export interface GameEngine<S, A, E extends GameEvent = GameEvent> {
   score(state: S): SeatScore[];
   /** Hide other seats' private info before broadcasting to `seat` (§7.2). */
   redact(state: S, seat: Seat): S;
+  /**
+   * Optionally redact a broadcast EVENT for a specific seat (e.g. Кент's
+   * secret SIGNAL must reach only the partner). Return null to drop the event
+   * for that seat entirely; omit the hook to broadcast events verbatim.
+   */
+  redactEvent?(event: E, seat: Seat): E | null;
 }
 
 /** Thrown by `reduce` when an action is not legal in the given state. */

@@ -101,7 +101,6 @@ export function useTrickDisplay({
     }
     // an empty state trick is NOT mirrored: right after TRICK the display
     // intentionally holds the full trick while state is already empty
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateKey]);
 
   useEffect(() => () => clearHold(), [clearHold]);
@@ -142,7 +141,6 @@ export function TrickCardSlot({
     if (flownRef.current) return;
     flownRef.current = true;
     flight.flyIn(ref.current, originFor(play));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <span ref={ref} className="aso-trick-card" style={{ display: "inline-block" }}>

@@ -27,7 +27,6 @@ function BattleCard({ card, from, flight }: { card: string; from: SeatPos; fligh
   const ref = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     flight.flyIn(ref.current, from);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <span ref={ref} className="aso-trick-card" style={{ display: "inline-block" }}>
