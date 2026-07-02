@@ -4325,6 +4325,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „platform (Next.js multi-tenant) има cron endpoint /api/cron/publish (насрочено публикув…\" (+3)"
+        },
+        {
           "date": "2026-07-01",
           "type": "learning",
           "summary": "Научи: „platform (Docker Compose) cron контрактът е POST /api/cron/health и POST /api/cron/prun…\" (+1 още) · 1 в карантина"
