@@ -59,10 +59,24 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     // exactly one matchId and drop everything else, or foreign-shaped states
     // crash the view.
     const boundId = { current: adopting ? existing.matchId : null };
+    // Set once the bound match finishes: a NEW match (e.g. the regrouped party
+    // room restarting while this player still reads the verdict) may then
+    // rebind instead of being dropped — otherwise the view stays frozen on the
+    // finished match and the player idles into bot substitution.
+    const boundOver = { current: false };
 
     const onFound = (m: MatchFoundMsg) => {
       if (m.game !== gameKey) return; // another game's match
-      if (boundId.current && boundId.current !== m.matchId) return; // already bound
+      if (boundId.current && boundId.current !== m.matchId) {
+        if (!boundOver.current) return; // live match — ignore foreign ones
+        // rebind: reset the finished match's residue before adopting the new one
+        boundOver.current = false;
+        setState(null);
+        setLegal([]);
+        setTurn(null);
+        setTerminal(false);
+        setResult(null);
+      }
       boundId.current = m.matchId;
       setMatchId(m.matchId);
       setSeat(m.seat);
@@ -82,6 +96,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
     };
     const onOver = (o: GameOverMsg) => {
       if (o.matchId !== boundId.current) return;
+      boundOver.current = true;
       setResult(o);
       setPhase("over");
       useMatchStore.getState().setPhase("over");

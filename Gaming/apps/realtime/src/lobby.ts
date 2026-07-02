@@ -13,6 +13,7 @@ import {
   type LobbyVisibility,
 } from "@aso/shared";
 import { RandomBot } from "./bot.js";
+import { redis } from "./redis.js";
 import type { RoomSeat } from "./room.js";
 import { logger } from "./logger.js";
 
@@ -199,7 +200,8 @@ export interface LobbyReturnInfo {
   mode: string;
   visibility: LobbyVisibility;
   hostUserId: string;
-  members: { userId: string; displayName: string }[];
+  /** Every seat (humans AND bots), positional, so teams/bots reconstruct. */
+  members: { userId: string | null; displayName: string; seat: number; isBot: boolean }[];
   config: unknown;
 }
 
@@ -207,6 +209,8 @@ export interface LobbyReturnInfo {
 export interface LobbyLauncher {
   startFromLobby(lobby: Lobby): Promise<string>;
   activeMatchIdForUser(userId: string): string | undefined;
+  /** True if the user currently sits in any matchmaking queue. */
+  isQueued(userId: string): Promise<boolean>;
 }
 
 /**
@@ -364,14 +368,45 @@ export class LobbyManager {
   }
 
   /** Recreate the pre-game room for a party whose match just ended, so "one
-   *  more?" is one click instead of re-assembling from scratch. Members who
-   *  already sit in another lobby are skipped. */
-  regroup(info: LobbyReturnInfo): void {
-    const free = info.members.filter((m) => !this.lobbyForUser(m.userId));
-    if (free.length === 0) return;
-    const host = free.find((m) => m.userId === info.hostUserId) ?? free[0]!;
-    const lobby = new Lobby(info.game, info.mode, info.visibility, host.userId, host.displayName, info.config);
-    for (const m of free) if (m.userId !== host.userId) lobby.join(m.userId, m.displayName);
+   *  more?" is one click. Only members who are ONLINE, not in another lobby and
+   *  not already queued elsewhere are seated (an offline "member" would leave a
+   *  zombie lobby that nothing ever reaps); bots and seat positions (teams) are
+   *  reconstructed from the snapshot. */
+  async regroup(info: LobbyReturnInfo): Promise<void> {
+    const humans = info.members.filter((m) => !m.isBot && m.userId !== null);
+    const alive = new Set<string>();
+    for (const m of humans) {
+      const id = m.userId!;
+      if (this.lobbyForUser(id)) continue; // already parked in another room
+      const online = await redis.exists(`presence:online:${id}`).catch(() => 0);
+      if (online !== 1) continue; // disconnected during/after the match
+      if (await this.launcher.isQueued(id).catch(() => false)) continue; // clicked "play again"
+      alive.add(id);
+    }
+    if (alive.size === 0) return;
+    const hostMember =
+      humans.find((m) => m.userId === info.hostUserId && alive.has(m.userId)) ??
+      humans.find((m) => m.userId !== null && alive.has(m.userId))!;
+    const lobby = new Lobby(
+      info.game,
+      info.mode,
+      info.visibility,
+      hostMember.userId!,
+      hostMember.displayName,
+      info.config,
+    );
+    // Positional reconstruction: same seats → same teams; bots come back too.
+    for (let i = 0; i < lobby.slots.length; i++) {
+      lobby.slots[i] = { userId: null, displayName: "", isBot: false, connected: false };
+    }
+    for (const m of info.members) {
+      if (m.seat >= lobby.slots.length) continue;
+      if (m.isBot) {
+        lobby.slots[m.seat] = { userId: null, displayName: m.displayName, isBot: true, connected: true };
+      } else if (m.userId !== null && alive.has(m.userId)) {
+        lobby.slots[m.seat] = { userId: m.userId, displayName: m.displayName, isBot: false, connected: true };
+      }
+    }
     this.lobbies.set(lobby.id, lobby);
     this.broadcast(lobby);
   }

@@ -135,12 +135,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  max-width: 150px;
+  max-width: 190px;
   padding: 5px 14px;
   border-radius: 999px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   background: linear-gradient(180deg, rgba(20, 26, 24, 0.7), rgba(8, 11, 10, 0.78));
   border: 1px solid rgba(217, 178, 95, 0.28);
   color: var(--ink-100);
@@ -150,6 +149,13 @@
   box-shadow:
     0 6px 16px -6px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.aso-seat__name {
+  /* the NAME truncates with an ellipsis; badges (card counts) stay intact */
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .aso-seat__plate[data-active="true"] {
   border-color: var(--brass-300);
