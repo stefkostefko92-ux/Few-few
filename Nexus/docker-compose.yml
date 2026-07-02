@@ -28,7 +28,10 @@ services:
       # the CORS allow-list above.
       - "127.0.0.1:4000:4000"
     volumes:
-      - nexus-dominion_data:/app/data
+      # Прод (autodeploy): NEXUS_DATA_DIR=/opt/nexus/state/data → bind mount,
+      # базата живее в state директорията (прости файлови бекъпи + restore).
+      # Локално (без променливата): named volume nexus-dominion_data.
+      - ${NEXUS_DATA_DIR:-nexus-dominion_data}:/app/data
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/api/health"]
       interval: 30s
@@ -36,22 +39,22 @@ services:
       retries: 3
       start_period: 10s
 
-  # Optional: reverse proxy with TLS. Comment out if you already run one.
-  caddy:
-    image: caddy:2-alpine
-    container_name: nexus-dominion-caddy
-    restart: unless-stopped
-    depends_on:
-      - nexus-dominion
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
+  # Вграденият Caddy е ИЗКЛЮЧЕН за прод: на VPS-а хостовият nginx вече държи
+  # :80/:443 (сблъсък на портове). TLS терминира хостовият reverse proxy →
+  # proxy_pass http://127.0.0.1:4000. За standalone тест разкоментирай.
+  # caddy:
+  #   image: caddy:2-alpine
+  #   container_name: nexus-dominion-caddy
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - nexus-dominion
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
 
 volumes:
   nexus-dominion_data:
-  caddy_data:
-  caddy_config:

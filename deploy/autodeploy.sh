@@ -210,6 +210,15 @@ deploy_nexus() {
   # docker-compose.yml + server pick them up at their canonical paths.
   ln -sfn "$NEXUS_STATE_DIR/data" "$NEXUS_DIR/source/server/data"
   [ -f "$NEXUS_STATE_DIR/.env" ] && ln -sfn "$NEXUS_STATE_DIR/.env" "$NEXUS_DIR/source/server/.env"
+  # Compose интерполира ${VAR:?} от .env в СВОЯТА директория (project root),
+  # не от server/.env → без този symlink `up` гърми на JWT_SECRET.
+  [ -f "$NEXUS_STATE_DIR/.env" ] && ln -sfn "$NEXUS_STATE_DIR/.env" "$NEXUS_DIR/source/.env"
+  # Данните на bind mount в state (прости бекъпи; named volume иначе крие
+  # базата в /var/lib/docker/volumes). Добавяме NEXUS_DATA_DIR еднократно.
+  if [ -f "$NEXUS_STATE_DIR/.env" ] && ! grep -q '^NEXUS_DATA_DIR=' "$NEXUS_STATE_DIR/.env"; then
+    printf '\n# Път до SQLite данните (bind mount в docker-compose.yml)\nNEXUS_DATA_DIR=%s\n' \
+      "$NEXUS_STATE_DIR/data" >> "$NEXUS_STATE_DIR/.env"
+  fi
   ( cd "$NEXUS_DIR/source" && docker compose build && docker compose up -d --remove-orphans )
   sleep 5
   if health "$NEXUS_HEALTH_URL" "nexus"; then

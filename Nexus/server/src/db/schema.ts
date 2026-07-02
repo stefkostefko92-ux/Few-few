@@ -4,6 +4,9 @@ export function applySchema(db: Database.Database): void {
   db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
+    -- Изчакай до 5s при заключена база (напр. по време на .backup), вместо
+    -- незабавен SQLITE_BUSY към играча.
+    PRAGMA busy_timeout = 5000;
 
     CREATE TABLE IF NOT EXISTS users (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,

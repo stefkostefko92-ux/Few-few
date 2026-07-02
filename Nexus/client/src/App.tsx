@@ -57,6 +57,9 @@ const MythicPlus = React.lazy(() => import('./pages/MythicPlus'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
 const CombatDemo = React.lazy(() => import('./pages/CombatDemo'));
+// QA harness страницата (/demo/combat) е достъпна само в dev или с ?debug=1 —
+// не е за реални играчи в продукция (mock данни, window.__combatDemo хук).
+const demoEnabled = import.meta.env.DEV || new URLSearchParams(window.location.search).has('debug');
 import LevelUpOverlay from './components/LevelUpOverlay';
 import CooldownTicker from './components/CooldownTicker';
 import PageBackdrop from './components/PageBackdrop';
@@ -204,7 +207,9 @@ export default function App(): React.ReactElement {
           <Route path="/create" element={<CharacterCreate />} />
           <Route path="/terms" element={<Suspense fallback={<LazyFallback />}><Terms /></Suspense>} />
           <Route path="/privacy" element={<Suspense fallback={<LazyFallback />}><Privacy /></Suspense>} />
-          <Route path="/demo/combat" element={<Suspense fallback={<LazyFallback />}><CombatDemo /></Suspense>} />
+          {demoEnabled && (
+            <Route path="/demo/combat" element={<Suspense fallback={<LazyFallback />}><CombatDemo /></Suspense>} />
+          )}
           <Route path="/admin/*" element={
             <AdminGate>
               <Navbar />

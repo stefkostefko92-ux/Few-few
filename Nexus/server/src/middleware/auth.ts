@@ -70,7 +70,7 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
   }
   const token = header.slice('Bearer '.length);
   try {
-    const decoded = jwt.verify(token, jwtSecret()) as AuthPayload & { tv?: number };
+    const decoded = jwt.verify(token, jwtSecret(), { algorithms: ['HS256'] }) as AuthPayload & { tv?: number };
     // Token-version check — bump users.token_version when password
     // changes / reset / explicit logout to invalidate all old JWTs
     // immediately. Audit finding #6.

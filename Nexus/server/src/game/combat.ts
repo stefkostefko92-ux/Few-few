@@ -70,7 +70,10 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
   // landing hit deals ≥ 1 damage (floor below) and dodge is capped at
   // 0.75, so any real fight terminates by death long before this guard —
   // it exists purely so a pathological build can't DoS the server.
-  const SAFETY_ROUNDS = 100_000;
+  // Одит: 100k рунда позволяваха ~100ms блокиране на event loop-а + ~15MB
+  // rounds_json на бой (два endgame танка). Никой легитимен двубой не
+  // надхвърля няколкостотин рунда; tie-break-ът поема останалото.
+  const SAFETY_ROUNDS = 2_000;
   while (H.hp > 0 && F.hp > 0 && index < SAFETY_ROUNDS) {
     index++;
     const attacker = heroTurn ? H : F;

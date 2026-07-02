@@ -7,4 +7,8 @@ client/dist
 .gitignore
 *.md
 .env*
-deploy
+# НЕ изключвай deploy/ изцяло — Dockerfile прави COPY deploy/entrypoint.sh
+# (first-boot seed). Изключваме само ненужното за образа.
+deploy/nginx.conf
+deploy/Caddyfile
+deploy/nexus-dominion.service

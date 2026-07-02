@@ -25,8 +25,13 @@ function allowedSet(): Set<string> {
 }
 
 function detectCountry(req: Request): string {
-  const headerCountry = (req.headers['x-country-code'] as string) || '';
-  if (headerCountry) return headerCountry.toUpperCase().slice(0, 2);
+  // Одит: клиентският X-Country-Code се подправя тривиално → вярваме му само
+  // зад изричен флаг (тест/доверен proxy, който сам го поставя). Продукция:
+  // CF-IPCountry (поставен от edge-а) + nginx strip-ва входящия header.
+  if (process.env.TRUST_COUNTRY_HEADER === '1') {
+    const headerCountry = (req.headers['x-country-code'] as string) || '';
+    if (headerCountry) return headerCountry.toUpperCase().slice(0, 2);
+  }
   const cf = (req.headers['cf-ipcountry'] as string) || '';
   if (cf) return cf.toUpperCase().slice(0, 2);
   // Localhost / private — default to allow during dev.
