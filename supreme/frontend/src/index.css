@@ -86,7 +86,10 @@
            transition-all duration-200
            cursor-pointer select-none
            rounded-xl
-           border focus:outline-none;
+           border
+           focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-cs-cyan
+           focus-visible:ring-offset-2 focus-visible:ring-offset-cs-black;
   }
 
   .cs-btn-primary {

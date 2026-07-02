@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, Shield, X, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ExternalLink, Shield, X, XCircle, ChevronLeft, ChevronRight, FileText, Star } from "lucide-react";
 import { getTickets, closeTicket, claimTicket, exportTicketPDF } from "../api";
 import Modal from "../components/Modal";
 
@@ -170,7 +170,7 @@ export default function TicketsPage() {
                 {tickets.map((ticket) => (
                   <tr key={ticket.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_COLORS[ticket.status]}`}>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-xl ${STATUS_COLORS[ticket.status]}`}>
                         {ticket.status}
                       </span>
                     </td>
@@ -199,8 +199,14 @@ export default function TicketsPage() {
                     </td>
                     <td className="px-4 py-3">
                       {ticket.feedbackRating
-                        ? <span className="text-accent-gold text-sm" title={ticket.feedbackComment || ""}>
-                            {"⭐".repeat(ticket.feedbackRating)}
+                        ? <span
+                            className="inline-flex items-center gap-0.5"
+                            title={ticket.feedbackComment || ""}
+                            aria-label={`Rating: ${ticket.feedbackRating} of 5`}
+                          >
+                            {Array.from({ length: ticket.feedbackRating }).map((_, i) => (
+                              <Star key={i} className="w-3.5 h-3.5 text-cs-cyan fill-cs-cyan" aria-hidden="true" />
+                            ))}
                           </span>
                         : <span className="text-gray-400 text-xs">—</span>}
                     </td>
@@ -288,7 +294,9 @@ export default function TicketsPage() {
 
       {claimError && (
         <div role="alert" className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-2">
-          <span>❌ {claimError}</span>
+          <span className="flex items-center gap-2">
+            <XCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" /> {claimError}
+          </span>
           <button
             type="button"
             aria-label="Dismiss"

@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Ticket, FileText, Layout, Star, Users,
-  ShieldCheck, Zap, LineChart, Key, BookOpen, Webhook, Settings,
+  ShieldCheck, Zap, LineChart, Key, BookOpen, Webhook, Settings, Bot,
 } from "lucide-react";
 import { getServer, getServerStats } from "../api";
 
@@ -21,19 +21,22 @@ export default function ServerHome() {
     enabled: !!server,
   });
 
+  // Монохромна дисциплина: cyan-accent за всичко + gold само за Premium (семантично)
+  // и неутрален muted за Settings. Макс 3 семантични цвята вместо 12-цветна дъга.
+  const ACCENT = "bg-cs-cyanGlow text-cs-cyan";
   const navCards = [
-    { to: "panels", icon: <Layout className="w-6 h-6" />, label: "Panels", desc: "Visual button panels for tickets", color: "bg-blue-500/10 text-blue-400" },
-    { to: "forms", icon: <FileText className="w-6 h-6" />, label: "Forms", desc: "Logic-branching questionnaires", color: "bg-purple-500/10 text-purple-400" },
-    { to: "tickets", icon: <Ticket className="w-6 h-6" />, label: "Tickets", desc: "View & manage support tickets", color: "bg-green-500/10 text-green-400" },
-    { to: "applications", icon: <Users className="w-6 h-6" />, label: "Applications", desc: "Review member applications", color: "bg-yellow-500/10 text-yellow-400" },
-    { to: "verification", icon: <ShieldCheck className="w-6 h-6" />, label: "Verification", desc: "Gate new members with verification", color: "bg-teal-500/10 text-teal-400" },
-    { to: "automation", icon: <Zap className="w-6 h-6" />, label: "Automation", desc: "Triggers, rules & auto-actions", color: "bg-pink-500/10 text-pink-400" },
-    { to: "analytics", icon: <LineChart className="w-6 h-6" />, label: "Analytics", desc: "Ticket & member insights", color: "bg-cyan-500/10 text-cyan-400" },
-    { to: "apikeys", icon: <Key className="w-6 h-6" />, label: "API Keys", desc: "Programmatic access tokens", color: "bg-indigo-500/10 text-indigo-400" },
-    { to: "commands", icon: <BookOpen className="w-6 h-6" />, label: "Commands", desc: "Configure slash commands", color: "bg-emerald-500/10 text-emerald-400" },
-    { to: "webhooks", icon: <Webhook className="w-6 h-6" />, label: "Webhooks", desc: "Outbound event notifications", color: "bg-rose-500/10 text-rose-400" },
-    { to: "premium", icon: <Star className="w-6 h-6" />, label: "Premium", desc: "Subscription & advanced features", color: "bg-orange-500/10 text-orange-400" },
-    { to: "settings", icon: <Settings className="w-6 h-6" />, label: "Settings", desc: "General bot configuration", color: "bg-gray-500/10 text-gray-300" },
+    { to: "panels", icon: <Layout className="w-6 h-6" />, label: "Panels", desc: "Visual button panels for tickets", color: ACCENT },
+    { to: "forms", icon: <FileText className="w-6 h-6" />, label: "Forms", desc: "Logic-branching questionnaires", color: ACCENT },
+    { to: "tickets", icon: <Ticket className="w-6 h-6" />, label: "Tickets", desc: "View & manage support tickets", color: ACCENT },
+    { to: "applications", icon: <Users className="w-6 h-6" />, label: "Applications", desc: "Review member applications", color: ACCENT },
+    { to: "verification", icon: <ShieldCheck className="w-6 h-6" />, label: "Verification", desc: "Gate new members with verification", color: ACCENT },
+    { to: "automation", icon: <Zap className="w-6 h-6" />, label: "Automation", desc: "Triggers, rules & auto-actions", color: ACCENT },
+    { to: "analytics", icon: <LineChart className="w-6 h-6" />, label: "Analytics", desc: "Ticket & member insights", color: ACCENT },
+    { to: "apikeys", icon: <Key className="w-6 h-6" />, label: "API Keys", desc: "Programmatic access tokens", color: ACCENT },
+    { to: "commands", icon: <BookOpen className="w-6 h-6" />, label: "Commands", desc: "Configure slash commands", color: ACCENT },
+    { to: "webhooks", icon: <Webhook className="w-6 h-6" />, label: "Webhooks", desc: "Outbound event notifications", color: ACCENT },
+    { to: "premium", icon: <Star className="w-6 h-6" />, label: "Premium", desc: "Subscription & advanced features", color: "bg-premium/10 text-premium" },
+    { to: "settings", icon: <Settings className="w-6 h-6" />, label: "Settings", desc: "General bot configuration", color: "bg-cs-panel text-cs-muted" },
   ];
 
   if (serverLoading) {
@@ -66,9 +69,9 @@ export default function ServerHome() {
   if (serverError) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-64 text-center" role="alert">
-        <p className="text-2xl mb-2" aria-hidden="true">🤖</p>
+        <Bot className="w-10 h-10 text-cs-cyan mb-3" aria-hidden="true" />
         <h2 className="text-lg font-semibold text-white mb-2">Bot not set up for this server</h2>
-        <p className="text-gray-400 text-sm">The bot hasn't been added to this server yet, or hasn't synced.</p>
+        <p className="text-cs-muted text-sm">The bot hasn't been added to this server yet, or hasn't synced.</p>
         <a
           href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=8&scope=bot+applications.commands&guild_id=${serverId}`}
           target="_blank"
@@ -95,9 +98,13 @@ export default function ServerHome() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white">{server?.name}</h1>
-            {server?.isPremium && <span className="badge-premium">⭐ Premium</span>}
+            {server?.isPremium && (
+              <span className="badge-premium">
+                <Star className="w-3 h-3" aria-hidden="true" /> Premium
+              </span>
+            )}
           </div>
-          <p className="text-gray-400 text-sm">Server ID: {serverId}</p>
+          <p className="text-cs-muted text-sm">Server ID: {serverId}</p>
         </div>
       </div>
 
@@ -110,10 +117,10 @@ export default function ServerHome() {
         </div>
       ) : stats ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Tickets" value={stats.ticketCount} color="text-blue-400" />
-          <StatCard label="Open Tickets" value={stats.openTickets} color="text-yellow-400" />
-          <StatCard label="Closed (7 Days)" value={stats.closedThisWeek} color="text-green-400" />
-          <StatCard label="Applications" value={stats.applications} color="text-purple-400" />
+          <StatCard label="Total Tickets" value={stats.ticketCount} color="text-cs-cyan" />
+          <StatCard label="Open Tickets" value={stats.openTickets} color="text-cs-cyan" />
+          <StatCard label="Closed (7 Days)" value={stats.closedThisWeek} color="text-cs-cyan" />
+          <StatCard label="Applications" value={stats.applications} color="text-cs-cyan" />
         </div>
       ) : null}
 
@@ -142,8 +149,8 @@ export default function ServerHome() {
 
 function StatCard({ label, value, color }) {
   return (
-    <div className="card">
-      <p className="text-sm text-gray-400">{label}</p>
+    <div className="cs-card">
+      <p className="text-sm text-cs-muted">{label}</p>
       <p className={`text-3xl font-bold mt-1 ${color}`}>{value ?? "—"}</p>
     </div>
   );
