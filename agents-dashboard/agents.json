@@ -2424,6 +2424,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В platform/ хостнатите публични сайтове се обслужват през rewrite в middleware.ts към /…\" (+1)"
+        },
+        {
           "date": "2026-07-01",
           "type": "learning",
           "summary": "Научи: „Next.js App Router: root layout metadata.robots {index:false} се наследява надолу по дъ…\" (+2 още)"
