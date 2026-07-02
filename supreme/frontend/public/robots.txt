@@ -21,20 +21,43 @@ Disallow: /archive/
 Disallow: /public/
 
 # ─── Traditional search engines (explicit allow) ────────────────────────────
+# NOTE: a specific user-agent group REPLACES the "*" group for that bot — the
+# Disallow rules above are NOT inherited. Every explicit group must repeat the
+# auth-gated Disallow, or these crawlers would index /dashboard + /api.
 User-agent: Googlebot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Slurp
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: YandexBot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — OpenAI ───────────────────────────────────────────────────
 User-agent: GPTBot
@@ -92,6 +115,10 @@ Disallow: /api/
 # ─── AI crawlers — Apple ────────────────────────────────────────────────────
 User-agent: Applebot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Applebot-Extended
 Allow: /
@@ -117,6 +144,10 @@ Disallow: /api/
 
 User-agent: FacebookBot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — Other ────────────────────────────────────────────────────
 User-agent: MistralAI-User
@@ -131,6 +162,10 @@ Disallow: /api/
 
 User-agent: Amazonbot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: cohere-ai
 Allow: /
@@ -139,6 +174,10 @@ Disallow: /api/
 
 User-agent: YouBot
 Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── Blocked: aggressive scrapers / non-compliant ──────────────────────────
 # Bytespider has documented history of ignoring robots.txt; block at edge too

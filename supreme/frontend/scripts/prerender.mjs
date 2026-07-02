@@ -63,6 +63,8 @@ function withHead(template, { title, description, path, lang }) {
     `$1${esc(description)}$2`, "twitter:description");
   h = replaceOnce(h, /(<meta property="og:title" content=")[\s\S]*?("\s*\/>)/,
     `$1${esc(title)}$2`, "og:title");
+  h = replaceOnce(h, /(<meta name="twitter:title" content=")[\s\S]*?("\s*\/>)/,
+    `$1${esc(title)}$2`, "twitter:title");
   h = replaceOnce(h, /(<link rel="canonical" href=")[^"]*(")/, `$1${url}$2`, "canonical");
   h = replaceOnce(h, /(<meta property="og:url" content=")[^"]*(")/, `$1${url}$2`, "og:url");
   h = replaceOnce(h, /(<meta property="og:locale" content=")[^"]*(")/,
@@ -195,7 +197,8 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   ];
   const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
   const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
-    + `<div><h3>Premium — €9.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies, round-robin assignment, white-label bot</li><li>Webhooks, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`;
+    + `<div><h3>Premium — €9.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies, round-robin assignment, white-label bot</li><li>Webhooks, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
+    + `<div><h3>Enterprise — custom</h3><ul><li>Everything in Premium</li><li>Custom branding and domain</li><li>Priority support and onboarding</li><li>Contact us for a quote</li></ul></div>`;
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
     <p>One bot. Everything you need.</p>
     <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
