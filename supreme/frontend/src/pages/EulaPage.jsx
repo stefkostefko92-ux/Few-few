@@ -181,9 +181,10 @@ export default function EulaPage() {
               </tr>
             </thead>
             <tbody className="text-gray-400">
-              <Tr><Td>Ticket panels</Td><Td>Up to 3 panels</Td></Tr>
+              <Tr><Td>Ticket panels</Td><Td>1 panel</Td></Tr>
               <Tr><Td>Forms</Td><Td>Up to 2 forms</Td></Tr>
-              <Tr><Td>Questions per form</Td><Td>Up to 10 questions</Td></Tr>
+              <Tr><Td>Questions per form</Td><Td>Up to 5 questions</Td></Tr>
+              <Tr><Td>Verification panels</Td><Td>1 panel</Td></Tr>
               <Tr><Td>Ticket transcript retention</Td><Td>30 days after ticket closure (then automatically deleted)</Td></Tr>
               <Tr><Td>AI auto-replies</Td><Td>Not available</Td></Tr>
               <Tr><Td>Round-Robin assignment</Td><Td>Not available</Td></Tr>
@@ -345,7 +346,7 @@ export default function EulaPage() {
           <li>TLS 1.2+ encryption of all data in transit;</li>
           <li>Rate limiting on all API endpoints (global, authentication, and bot-specific);</li>
           <li>HTTP security headers (helmet.js: X-Frame-Options, X-Content-Type-Options, CSP);</li>
-          <li>Session cookies with HttpOnly, Secure, and SameSite=Strict attributes;</li>
+          <li>Session cookies with HttpOnly, Secure, and SameSite=Lax attributes;</li>
           <li>Discord OAuth2 token auto-refresh to avoid session expiry;</li>
           <li>Audit logging of all administrative actions;</li>
           <li>Optional error monitoring via Sentry with configurable data scrubbing.</li>

@@ -105,7 +105,7 @@ export default function CookieConsent() {
         </button>
         <button
           onClick={rejectNonEssential}
-          className="cs-btn-secondary text-xs flex-1 min-w-[100px]"
+          className="cs-btn-primary text-xs flex-1 min-w-[100px]"
         >
           Reject non-essential
         </button>

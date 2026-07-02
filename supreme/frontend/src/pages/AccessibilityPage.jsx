@@ -28,7 +28,7 @@ export default function AccessibilityPage() {
               {COMPANY} is committed to making Supreme Bot accessible to the widest
               possible audience, regardless of ability or technology. We conform to the{" "}
               <strong>Web Content Accessibility Guidelines (WCAG) 2.1 Level AA</strong> and
-              the European standard <strong>EN 301 549</strong> as required by the European
+              the European standard <strong>EN 301 549 (V3.2.1)</strong> as required by the European
               Accessibility Act (Directive 2019/882), and we are progressively adopting the
               newer <strong>WCAG 2.2 Level AA</strong> success criteria.
             </p>
@@ -89,9 +89,10 @@ export default function AccessibilityPage() {
               <li>We aim to respond within <strong>5 business days</strong>.</li>
             </ul>
             <p>
-              If you are not satisfied with our response, you may contact the relevant
-              national enforcement body for the European Accessibility Act in your
-              EU member state.
+              If you are not satisfied with our response, you may contact the relevant national
+              enforcement body for the European Accessibility Act. In Bulgaria this is the
+              Commission for Consumer Protection (Комисия за защита на потребителите); in other
+              EU member states, your national market-surveillance authority for the Act.
             </p>
           </Section>
 

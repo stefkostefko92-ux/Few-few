@@ -186,7 +186,7 @@ export default function Login() {
               <TrustCard
                 icon="🔒"
                 title="EU-only data residency"
-                body="Hosted in Bobov Dol, Bulgaria. GDPR-native. Your data never crosses the EU border."
+                body="Hosted in the EU (Germany, Hetzner). GDPR-native. Your data never leaves the EU."
               />
               <TrustCard
                 icon="⚡"
@@ -241,7 +241,7 @@ export default function Login() {
               />
               <FaqItem
                 q="Where is my data stored?"
-                a="All data is stored in the EU (Bobov Dol, Bulgaria). We are GDPR-native — no cross-border transfers. Custom bot tokens are encrypted with AES-256-GCM. We never sell or share your data."
+                a="All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. We are GDPR-native — no transfers outside the EU. Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data."
               />
               <FaqItem
                 q="Can I use my own Discord bot?"

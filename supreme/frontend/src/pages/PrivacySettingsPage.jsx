@@ -51,7 +51,7 @@ export default function PrivacySettingsPage() {
     try {
       await api.post("/gdpr/delete-account", { confirmDiscordId: user.id });
       setConfirmOpen(false);
-      setMessage({ type: "success", text: "Account anonymized. Redirecting..." });
+      setMessage({ type: "success", text: "Account deleted. Redirecting..." });
       setTimeout(() => { window.location.href = "/"; }, 2000);
     } catch (err) {
       setConfirmOpen(false);
@@ -157,13 +157,15 @@ export default function PrivacySettingsPage() {
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white mb-1">Delete account</h2>
             <p className="text-sm text-cs-muted mb-3">
-              Article 17 (right to erasure). Permanently anonymize your account.
-              Personal data (username, avatar, tokens, email) will be removed.
+              Article 17 (right to erasure). Permanently delete your personal data.
+              Your profile (username, avatar, tokens, email) is removed.
             </p>
             <p className="text-xs text-red-400 mb-4">
               <strong>Retained for legal obligations:</strong> Transaction records (invoices,
-              audit logs with your ID) are retained for 7 years per EU tax law. Your Discord
-              user ID remains in anonymized form but is no longer linkable to an active account.
+              audit logs) are retained for 7 years per EU tax law. A non-identifying internal
+              reference to your Discord user ID is kept only for record integrity (this is
+              pseudonymized data, no longer linkable to an active account) — a permitted
+              limitation under Article 17(3).
             </p>
             <p className="text-xs text-cs-dim mb-3">
               Before proceeding, cancel any active Premium subscriptions via your server's
@@ -195,7 +197,7 @@ export default function PrivacySettingsPage() {
       <ConfirmDialog
         open={confirmOpen}
         title="Delete your account?"
-        message="This action cannot be undone. Your personal data will be permanently anonymized. Continue with account deletion?"
+        message="This action cannot be undone. Your personal data will be permanently deleted (a non-identifying reference is kept only for record integrity). Continue with account deletion?"
         confirmLabel="Permanently delete"
         cancelLabel="Cancel"
         destructive

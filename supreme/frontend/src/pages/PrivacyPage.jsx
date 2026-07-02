@@ -110,7 +110,7 @@ export default function PrivacyPage() {
               </Tr>
               <Tr>
                 <Td>Audit logs</Td>
-                <Td>Action type, actor ID, timestamp, target resource ID</Td>
+                <Td>Action type, actor ID, timestamp, target resource ID, and (for security/abuse events) IP address</Td>
                 <Td>Security audit trail; fraud prevention; compliance</Td>
                 <Td>Art. 6(1)(f) — legitimate interest (security)</Td>
                 <Td>2 years (records tied to GDPR requests or abuse reports are kept longer where legally required)</Td>
@@ -323,8 +323,8 @@ export default function PrivacyPage() {
       <S title="8. Data Retention">
         <p>We retain personal data only as long as necessary for the stated purpose:</p>
         <ul>
-          <li><strong>Account data</strong> — Until you request deletion or your account is inactive for 24 months;</li>
-          <li><strong>Discord OAuth2 tokens</strong> — Automatically refreshed; expired tokens deleted hourly;</li>
+          <li><strong>Account data</strong> — Until you request deletion (you can delete your account at any time from the dashboard);</li>
+          <li><strong>Discord OAuth2 tokens</strong> — Encrypted at rest; automatically refreshed; expired sessions are cleaned up regularly and revoked on logout or account deletion;</li>
           <li><strong>Ticket transcripts (Free tier)</strong> — 30 days after ticket closure, then automatically purged;</li>
           <li><strong>Ticket transcripts (Premium)</strong> — Indefinitely until manually deleted or subscription lapses;</li>
           <li><strong>Application data</strong> — Until deleted by the server operator;</li>

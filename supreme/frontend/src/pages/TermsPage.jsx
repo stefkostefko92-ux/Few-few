@@ -127,10 +127,23 @@ export default function TermsPage() {
           violations of these Terms.
         </p>
         <p>
-          EU/EEA consumers have statutory withdrawal rights under Directive 2011/83/EU. By
-          accessing Premium features immediately after purchase, you expressly acknowledge that
-          the 14-day statutory withdrawal right does not apply once the digital service has
-          begun, in accordance with Article 16(m) of that Directive.
+          <strong>Right of withdrawal (EU/EEA consumers).</strong> If you are a consumer in the
+          EU/EEA you have a 14-day right of withdrawal for the Premium subscription under Directive
+          2011/83/EU. Because Premium is a digital <em>service</em> (not one-off digital content),
+          Article 16(a) applies: the right is lost only once the service has been{" "}
+          <strong>fully performed</strong>, and only if, before it begins, you (i) gave your{" "}
+          <strong>express prior consent</strong> to start immediately and (ii) acknowledged that
+          you thereby lose the right. We collect exactly this consent through a separate,
+          unticked checkbox at checkout. If you withdraw during the period after the service has
+          begun but before full performance, you owe only an amount{" "}
+          <strong>proportionate</strong> to what was provided (Article 14(3)); we refund the rest.
+        </p>
+        <p>
+          To withdraw, email{" "}
+          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+          with an unequivocal statement, or use the model withdrawal form:{" "}
+          <em>“I hereby give notice that I withdraw from my contract for the Supreme Bot Premium
+          subscription, ordered on [date], account/server [id]. Name, address, date.”</em>
         </p>
       </S>
 
