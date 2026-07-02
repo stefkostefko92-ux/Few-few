@@ -121,7 +121,12 @@ export function ScorePill({ label, value, highlight }: { label: string; value: R
         color: highlight ? "var(--brass-100)" : "var(--ink-300)",
       }}
     >
-      {label}: <span className="tnum font-bold">{value}</span>
+      {label}
+      {value !== "" && value !== null && value !== undefined ? (
+        <>
+          : <span className="tnum font-bold">{value}</span>
+        </>
+      ) : null}
     </div>
   );
 }

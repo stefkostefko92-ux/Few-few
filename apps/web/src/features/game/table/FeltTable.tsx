@@ -61,7 +61,7 @@ export function Seat({ pos, name, active, badge, children }: SeatProps) {
       {pos === "bottom" ? children : null}
       <div className="aso-seat__plate" data-active={active ? "true" : undefined}>
         <span className="aso-seat__avatar">{initial}</span>
-        <span>{name}</span>
+        <span className="aso-seat__name">{name}</span>
         {badge}
       </div>
       {pos !== "bottom" ? children : null}
