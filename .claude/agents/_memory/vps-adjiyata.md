@@ -30,4 +30,8 @@
 - **2026-06-25:** Let's Encrypt вече издава 6/45-дневни сертификати — задължи ARI авто-подновяване; Docker ≥29.5.1 заради docker cp TOCTOU.
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-02:** medqr nginx медиен път няма cert bootstrap (за разлика от zabobovdol init-letsencrypt.sh) — nginx.conf сочи /etc/letsencrypt/live/... което липсва при 1-во пускане → nginx не тръгва; Caddyfile е самодостатъчен (авто-ACME) и е препоръчаният път. _(medqr; high; "file:/home/user/Few-few/medqr/deploy/nginx/medqr.conf:18-19")_
+- **2026-07-02:** medqr fail2ban jail е закоментиран и failregex е за combined/текст, но Caddyfile логва format json → fail2ban не парсва JSON, нула банове; при nginx logpath сочи caddy пътя. _(medqr; high; "file:/home/user/Few-few/medqr/deploy/fail2ban/medqr.conf:13-25")_
+- **2026-07-02:** deploy/autodeploy.sh deploy_medqr() бекъпва само кода (.bak-$TS), data/ е изключена от rsync и НЕ се снима преди миграциите при systemctl restart → миграция върху жива SQLite без pre-migration snapshot, rollback не връща данните. _(medqr; high; "file:/home/user/Few-few/deploy/autodeploy.sh:139-158")_
+- **2026-07-02:** medqr src/server.js:297 прави app.listen(PORT, cb) без host → връзва 0.0.0.0, а DEPLOY.md/CLAUDE.md изискват само localhost; ufw е единствената защита. Трябва app.listen(PORT,'127.0.0.1'). _(medqr; high; "file:/home/user/Few-few/medqr/src/server.js:297")_
 - **2026-06-26:** OpenSSH releasenotes (openssh.com/releasenotes.html) не върна съдържание през агентското прокси на 2026-06-26 — текущата OpenSSH версия НЕ е потвърдена този ден; остава 'за проверка', не приемай за факт. _("оценка на OpenSSH версия/CVE на хоста"; unverified; "openssh.com/releasenotes.html върна празно през прокси (живо опит 2026-06-26)")_

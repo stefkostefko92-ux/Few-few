@@ -2143,6 +2143,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „medqr src/server.js:297 прави app.listen(PORT, cb) без host → връзва 0.0.0.0, а DEPLOY.…\" (+3)"
+        },
+        {
           "date": "2026-06-26",
           "type": "learning",
           "summary": "Научи: „unattended-upgrades: dpkg-reconfigure --priority=low unattended-upgrades пише /etc/apt/…\""
