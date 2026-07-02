@@ -4161,9 +4161,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Compose network с internal: true създава външно изолирана мрежа (без външна свързаност)…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Docker Compose интерполира ${VAR:?} от .env в директорията на compose файла (project di… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Docker Compose интерполира ${VAR:?} от .env в директорията на compose файла (project di…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
