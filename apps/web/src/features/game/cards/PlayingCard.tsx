@@ -139,7 +139,49 @@ export const PlayingCard = memo(function PlayingCard({
   );
 });
 
-/** Stylised court card: a brass-framed monogram with the suit — ar-deco feel. */
+/** One half of a two-headed art-deco court figure (line art, suit-tinted). */
+function CourtMotif({ rank, suit, color }: { rank: string; suit: SuitChar; color: string }) {
+  return (
+    <g stroke={color} fill="none" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round">
+      {rank === "K" ? (
+        <>
+          {/* crown: three rays + tip orbs + jewelled band */}
+          <path d="M27 42 L27 16 L39 34 L50 10 L61 34 L73 16 L73 42 Z" />
+          <circle cx="27" cy="13" r="3" fill={color} stroke="none" />
+          <circle cx="50" cy="7" r="3.4" fill={color} stroke="none" />
+          <circle cx="73" cy="13" r="3" fill={color} stroke="none" />
+          <path d="M27 42 H73 V50 H27 Z" />
+          <path d="M50 43 l5 3.5 -5 3.5 -5 -3.5 Z" fill={color} stroke="none" />
+        </>
+      ) : rank === "Q" ? (
+        <>
+          {/* art-deco fan + diadem orbs */}
+          <path d="M18 50 A32 32 0 0 1 82 50" />
+          <path d="M31 50 A19 19 0 0 1 69 50" />
+          <path d="M50 50 L50 18 M50 50 L30 25 M50 50 L70 25 M50 50 L21 38 M50 50 L79 38" />
+          <circle cx="50" cy="15" r="3" fill={color} stroke="none" />
+          <circle cx="27" cy="22" r="2.6" fill={color} stroke="none" />
+          <circle cx="73" cy="22" r="2.6" fill={color} stroke="none" />
+        </>
+      ) : (
+        <>
+          {/* halberd + plumed cap */}
+          <path d="M30 50 L66 12" />
+          <path d="M66 12 L82 20 L62 28 Z" fill={color} stroke="none" />
+          <path d="M56 26 L72 34" strokeWidth={2.6} />
+          <path d="M22 30 A20 20 0 0 1 50 16" strokeWidth={2.6} />
+          <path d="M24 24 l-5 -7 M31 20 l-3 -8 M39 17 l-1 -8" strokeWidth={2.2} />
+        </>
+      )}
+      <g transform="translate(41,54) scale(0.18)">
+        <SuitGlyph suit={suit} size={100} color={color} />
+      </g>
+    </g>
+  );
+}
+
+/** Two-headed art-deco court figure (crown/fan/halberd line art, like real
+ *  mirrored courts) inside the brass frame — replaces the plain monogram. */
 function CourtArt({
   rank,
   suit,
@@ -151,14 +193,17 @@ function CourtArt({
   color: string;
   size: "sm" | "md" | "lg";
 }) {
-  const mono = size === "lg" ? 40 : size === "md" ? 30 : 22;
+  void size; // the SVG scales with the frame
   return (
     <span className="aso-card__court">
       <span className="aso-card__court-frame" aria-hidden />
-      <span className="aso-card__court-mono" style={{ color, fontSize: mono }}>
-        {RANK_LABEL[rank]}
-      </span>
-      <SuitGlyph suit={suit} size={size === "lg" ? 26 : 20} color={color} />
+      <svg viewBox="0 0 100 148" style={{ position: "relative", zIndex: 1, width: "84%", height: "92%" }} aria-hidden>
+        <CourtMotif rank={rank} suit={suit} color={color} />
+        <g transform="rotate(180 50 74)">
+          <CourtMotif rank={rank} suit={suit} color={color} />
+        </g>
+        <line x1="16" y1="74" x2="84" y2="74" stroke={color} strokeWidth={1.4} opacity={0.45} />
+      </svg>
     </span>
   );
 }
