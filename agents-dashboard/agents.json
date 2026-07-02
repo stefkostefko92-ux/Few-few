@@ -8735,6 +8735,11 @@
         {
           "date": "2026-07-02",
           "type": "quarantine",
+          "summary": "Хипотеза → карантина: „discord.js v14 deprecates the `ephemeral: true` reply/deferReply option in favour of `f…\" (+3)"
+        },
+        {
+          "date": "2026-07-02",
+          "type": "quarantine",
           "summary": "Хипотеза → карантина: „discord.js: `ready` event е преименуван на `clientReady` — на 14.26 raw string 'ready' …\" (+3)"
         },
         {
