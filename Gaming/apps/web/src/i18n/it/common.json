@@ -248,6 +248,8 @@
     "purchaseSuccess": "Grazie! Acquisto completato.",
     "purchaseCancel": "Acquisto annullato.",
     "unavailable": "I pagamenti non sono attivi al momento.",
+    "comingSoon": "Il negozio apre presto — intanto dai un'occhiata ai prodotti. Tutti i giochi sono completamente gratuiti.",
+    "soon": "presto",
     "error": "Qualcosa è andato storto. Riprova.",
     "grantGems": "+{{n}} gemme",
     "grantChips": "+{{n}} fiche",

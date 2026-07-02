@@ -253,6 +253,8 @@
     "purchaseSuccess": "Thank you! Purchase complete.",
     "purchaseCancel": "Purchase cancelled.",
     "unavailable": "Payments are not enabled right now.",
+    "comingSoon": "The shop opens soon — browse the products in the meantime. All games are completely free.",
+    "soon": "soon",
     "error": "Something went wrong. Try again.",
     "grantGems": "+{{n}} gems",
     "grantChips": "+{{n}} chips",

@@ -9,9 +9,11 @@ import { env } from "../env.js";
 
 export const shopRouter: Router = Router();
 
-/** GET /api/shop/catalog — public product list + VIP perk table. */
+/** GET /api/shop/catalog — public product list + VIP perk table.
+ *  `billingEnabled:false` (Stripe not configured) tells the client to render
+ *  the catalog as a "coming soon" preview instead of offering checkout. */
 shopRouter.get("/catalog", (_req, res) => {
-  res.json({ products: CATALOG, vipPerks: VIP_PERKS });
+  res.json({ products: CATALOG, vipPerks: VIP_PERKS, billingEnabled: stripeEnabled() });
 });
 
 shopRouter.use(requireAuth);

@@ -108,7 +108,11 @@ export const api = {
 
   // Shop (S5)
   catalog: () =>
-    request<{ products: ProductView[]; vipPerks: Record<VipTier, VipPerks> }>("/shop/catalog"),
+    request<{
+      products: ProductView[];
+      vipPerks: Record<VipTier, VipPerks>;
+      billingEnabled: boolean;
+    }>("/shop/catalog"),
   checkout: (sku: string) =>
     request<{ url: string | null }>("/shop/checkout", {
       method: "POST",
