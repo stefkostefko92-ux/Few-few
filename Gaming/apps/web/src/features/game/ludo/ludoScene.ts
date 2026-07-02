@@ -22,11 +22,13 @@ import {
   Scene,
   TorusGeometry,
   Vector2,
+  Vector3,
 } from "three";
 import {
   contactShadow,
   DICE_FACE_ORDER,
   disposeObject,
+  easeInOut,
   faceUp,
   pipFaces,
   woodNormal,
@@ -38,6 +40,8 @@ import { BASE, CENTER, HOME, N, SEAT_COLORS, TRACK, tokenCoord } from "./board.j
 
 const SCENE_RATIO = 0.84;
 const DICE_MS = 760;
+const HOP_MS = 230; // per-cell pawn hop
+const TOKEN_Y = 0.24;
 const H = (N - 1) / 2; // 5
 
 const gx = (col: number) => col - H;
@@ -66,6 +70,11 @@ export class LudoScene {
   private ray = new Raycaster();
   private tokenLayer = new Group();
   private pawnGeo: LatheGeometry;
+  // Persistent pawns keyed `${seat}:${token}` so moves can animate instead of
+  // the whole layer being rebuilt (which teleported every pawn).
+  private tokenMap = new Map<string, Group>();
+  private prevProg = new Map<string, number>();
+  private walks = new Map<string, { pts: Vector3[]; from: Vector3; seg: number; t: number }>();
   private die: Mesh | null = null;
   private diceAnim: { start: number; from: Euler; to: Euler } | null = null;
   private prevDie = -1;
@@ -120,7 +129,10 @@ export class LudoScene {
     const now = performance.now();
     const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
     this.lastFrame = now;
+    let active = false;
+
     if (this.diceAnim && this.die) {
+      active = true;
       const t = (now - this.diceAnim.start) / DICE_MS;
       if (t >= 1) {
         this.die.rotation.copy(this.diceAnim.to);
@@ -137,9 +149,33 @@ export class LudoScene {
         }
         this.die.position.y = 0.6 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
       }
-      return true;
     }
-    return false;
+
+    // pawn hops: cell-by-cell arcs along the token's own path
+    for (const [id, w] of this.walks) {
+      const g = this.tokenMap.get(id);
+      if (!g) {
+        this.walks.delete(id);
+        continue;
+      }
+      active = true;
+      w.t += dt / HOP_MS;
+      while (w.t >= 1 && w.seg < w.pts.length - 1) {
+        w.seg += 1;
+        w.t -= 1;
+      }
+      const to = w.pts[w.seg]!;
+      const from = w.seg === 0 ? w.from : w.pts[w.seg - 1]!;
+      if (w.seg >= w.pts.length - 1 && w.t >= 1) {
+        g.position.copy(to);
+        this.walks.delete(id);
+      } else {
+        const tt = Math.min(w.t, 1);
+        g.position.lerpVectors(from, to, easeInOut(tt));
+        g.position.y = TOKEN_Y + Math.sin(Math.PI * tt) * 0.34;
+      }
+    }
+    return active;
   }
 
   private build(): void {
@@ -195,23 +231,28 @@ export class LudoScene {
       const cells = BASE[s]!;
       const cx = cells.reduce((a, [c]) => a + c, 0) / 4;
       const cr = cells.reduce((a, [, r]) => a + r, 0) / 4;
+      // Stack sits clear of the wood base top (y=0.20): rim 0.06–0.22, plate
+      // 0.09–0.25, slots 0.25–0.31 — the old heights were coplanar with the
+      // base and z-fought (plates half-swallowed, rims invisible).
       const rim = new Mesh(
-        new BoxGeometry(3.7, 0.18, 3.7),
+        new BoxGeometry(3.8, 0.16, 3.8),
         new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.5, clearcoat: 0.2, clearcoatRoughness: 0.45 }),
       );
-      rim.position.set(gx(cx), 0.05, gz(cr));
+      rim.position.set(gx(cx), 0.14, gz(cr));
+      rim.castShadow = true;
       rim.receiveShadow = true;
-      const plate = new Mesh(new BoxGeometry(3.2, 0.22, 3.2), houseMat(s));
-      plate.position.set(gx(cx), 0.09, gz(cr));
+      const plate = new Mesh(new BoxGeometry(3.2, 0.16, 3.2), houseMat(s));
+      plate.position.set(gx(cx), 0.17, gz(cr));
       plate.receiveShadow = true;
       this.scene.add(rim, plate);
-      // base slots — ringed wells in the full seat color
+      // base slots — darkened wells (a full-colour disc read as a squashed pawn)
+      const wellColor = new Color(SEAT_COLORS[s]!).lerp(new Color("#000000"), 0.28);
       for (const [c, r] of cells) {
         const slot = new Mesh(
-          new CylinderGeometry(0.36, 0.36, 0.1, 24),
-          new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.45, clearcoat: 0.25, clearcoatRoughness: 0.4 }),
+          new CylinderGeometry(0.36, 0.36, 0.06, 24),
+          new MeshPhysicalMaterial({ color: wellColor, roughness: 0.55, clearcoat: 0.15, clearcoatRoughness: 0.5 }),
         );
-        slot.position.set(gx(c), 0.21, gz(r));
+        slot.position.set(gx(c), 0.28, gz(r));
         slot.receiveShadow = true;
         this.scene.add(slot);
       }
@@ -245,7 +286,7 @@ export class LudoScene {
     this.scene.add(goal);
   }
 
-  private buildToken(seat: number, movable: boolean): Group {
+  private buildToken(seat: number): Group {
     const mat = new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[seat]!), roughness: 0.28, metalness: 0.1, clearcoat: 0.9, clearcoatRoughness: 0.18 });
     const g = new Group();
     const body = new Mesh(this.pawnGeo, mat);
@@ -255,37 +296,94 @@ export class LudoScene {
     const ground = contactShadow(0.36, 0.3);
     ground.position.y = 0.085;
     g.add(body, ground);
-    if (movable) {
-      // glow in the seat colour (white emissive washed the lacquer to chalk)
-      mat.emissive = new Color(SEAT_COLORS[seat]!);
-      mat.emissiveIntensity = 0.28;
+    return g;
+  }
+
+  /** Toggle the "your move" affordance: seat-colour glow + gold ring. */
+  private setMovable(g: Group, seat: number, on: boolean): void {
+    const mat = (g.children[0] as Mesh).material as MeshPhysicalMaterial;
+    mat.emissive = new Color(on ? SEAT_COLORS[seat]! : "#000000");
+    mat.emissiveIntensity = on ? 0.28 : 0;
+    const existing = g.getObjectByName("hi-ring") as Mesh | undefined;
+    if (on && !existing) {
       const ring = new Mesh(
         new TorusGeometry(0.42, 0.05, 12, 28),
         new MeshStandardMaterial({ color: new Color("#fff7d6"), emissive: new Color("#e8c531"), emissiveIntensity: 0.8 }),
       );
+      ring.name = "hi-ring";
       ring.rotation.x = Math.PI / 2;
       ring.position.y = 0.1;
       g.add(ring);
+    } else if (!on && existing) {
+      existing.geometry.dispose();
+      (existing.material as MeshStandardMaterial).dispose();
+      g.remove(existing);
     }
-    return g;
   }
 
   setState(progress: number[][], seats: number, mySeat: number, movable: Set<number>, die: number | null): void {
-    disposeObject(this.tokenLayer);
-    this.tokenLayer.clear();
-    const onCell = new Map<string, number>();
+    // Two-pass fan layout: count cell occupancy first so a lone pawn sits
+    // dead-centre on its cell/slot and only shared cells fan out.
+    const coords = new Map<string, readonly [number, number]>();
+    const counts = new Map<string, number>();
     for (let s = 0; s < seats; s++) {
       for (let tk = 0; tk < 4; tk++) {
-        const [c, r] = tokenCoord(s, progress[s]![tk]!, tk);
+        const cr = tokenCoord(s, progress[s]![tk]!, tk);
+        coords.set(`${s}:${tk}`, cr);
+        const k = `${cr[0]},${cr[1]}`;
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+    }
+
+    const placed = new Map<string, number>();
+    for (let s = 0; s < seats; s++) {
+      for (let tk = 0; tk < 4; tk++) {
+        const id = `${s}:${tk}`;
+        const [c, r] = coords.get(id)!;
         const k = `${c},${r}`;
-        const stack = onCell.get(k) ?? 0;
-        onCell.set(k, stack + 1);
-        const canMove = s === mySeat && movable.has(tk);
-        const g = this.buildToken(s, canMove);
-        const off = stack; // fan multiple tokens on one cell
-        g.position.set(gx(c) + (off % 2) * 0.26 - 0.13, 0.24, gz(r) + Math.floor(off / 2) * 0.26 - 0.13);
-        g.userData.tk = { seat: s, token: tk } as LudoToken;
-        this.tokenLayer.add(g);
+        const idx = placed.get(k) ?? 0;
+        placed.set(k, idx + 1);
+        const fan = counts.get(k)! > 1;
+        const target = new Vector3(
+          gx(c) + (fan ? (idx % 2) * 0.26 - 0.13 : 0),
+          TOKEN_Y,
+          gz(r) + (fan ? Math.floor(idx / 2) * 0.26 - 0.13 : 0),
+        );
+
+        let g = this.tokenMap.get(id);
+        if (!g) {
+          g = this.buildToken(s);
+          g.userData.tk = { seat: s, token: tk } as LudoToken;
+          g.position.copy(target);
+          this.tokenMap.set(id, g);
+          this.tokenLayer.add(g);
+        }
+        this.setMovable(g, s, s === mySeat && movable.has(tk));
+
+        const prog = progress[s]![tk]!;
+        const prev = this.prevProg.get(id);
+        if (prev !== undefined && prev !== prog && !this.reduceMotion) {
+          // hop cell-by-cell along the token's own path for forward moves;
+          // base entries/exits and captures arc back in a single hop
+          const pts: Vector3[] = [];
+          if (prev >= 0 && prog > prev && prog - prev <= 6) {
+            for (let p = prev + 1; p <= prog; p++) {
+              const [cc, rr] = tokenCoord(s, p, tk);
+              pts.push(new Vector3(gx(cc), TOKEN_Y, gz(rr)));
+            }
+            pts[pts.length - 1] = target;
+          } else {
+            pts.push(target);
+          }
+          this.walks.set(id, { pts, from: g.position.clone(), seg: 0, t: 0 });
+        } else if (this.walks.has(id)) {
+          // walk in flight — retarget its landing cell (fan may have shifted)
+          const w = this.walks.get(id)!;
+          w.pts[w.pts.length - 1] = target;
+        } else {
+          g.position.copy(target);
+        }
+        this.prevProg.set(id, prog);
       }
     }
     this.syncDie(die);
