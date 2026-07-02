@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Игрален екран: HUD (точки/ниво) горе, SnakeView в средата, D-pad долу,
+     и оверлей за „Край на играта“. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/letterbox">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- HUD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lcd_background"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/scoreText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/lcd_pixel"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/levelHud"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/lcd_pixel"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <!-- Игрално поле -->
+        <eu.carbonstealth.snake.SnakeView
+            android:id="@+id/snakeView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/board_description"
+            android:focusable="true" />
+
+        <!-- D-pad (опционални екранни стрелки). Всяка има contentDescription. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lcd_background"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/btnUp"
+                android:layout_width="72dp"
+                android:layout_height="56dp"
+                android:text="▲"
+                android:textSize="22sp"
+                android:contentDescription="@string/dir_up" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnLeft"
+                    android:layout_width="72dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="72dp"
+                    android:text="◀"
+                    android:textSize="22sp"
+                    android:contentDescription="@string/dir_left" />
+
+                <Button
+                    android:id="@+id/btnRight"
+                    android:layout_width="72dp"
+                    android:layout_height="56dp"
+                    android:text="▶"
+                    android:textSize="22sp"
+                    android:contentDescription="@string/dir_right" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnDown"
+                android:layout_width="72dp"
+                android:layout_height="56dp"
+                android:text="▼"
+                android:textSize="22sp"
+                android:contentDescription="@string/dir_down" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Оверлей „Край на играта“ (скрит докато трае играта). -->
+    <LinearLayout
+        android:id="@+id/gameOverOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CC141414"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/gameOverTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_over"
+            android:textColor="@color/lcd_background_light"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/gameOverScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/lcd_background_light"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/newRecord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/new_record"
+            android:textColor="@color/lcd_background"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnPlayAgain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:minWidth="180dp"
+            android:minHeight="56dp"
+            android:text="@string/play_again" />
+
+        <Button
+            android:id="@+id/btnMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minWidth="180dp"
+            android:minHeight="56dp"
+            android:text="@string/back_to_menu" />
+    </LinearLayout>
+</FrameLayout>

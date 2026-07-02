@@ -1,0 +1,56 @@
+name: snake CI
+
+# Path-filtered CI за нативната Android игра „Змия“.
+# Пуска се само при промяна в snake/ (както другите продукти в монорепото).
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["snake/**", ".github/workflows/snake.yml"]
+  pull_request:
+    paths: ["snake/**", ".github/workflows/snake.yml"]
+
+defaults:
+  run:
+    working-directory: snake
+
+jobs:
+  quality:
+    name: Lint, unit тестове, debug build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Направи gradlew изпълним
+        run: chmod +x ./gradlew
+
+      # JVM unit тестове за GameEngine (чиста логика) + Android Lint.
+      - name: Lint и тестове
+        run: ./gradlew lint testDebugUnitTest --stacktrace
+
+      # Сглобяване на debug APK — доказва, че целият проект се компилира.
+      - name: Debug build
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Качи debug APK
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snake-debug-apk
+          path: snake/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+
+      - name: Качи lint отчета
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snake-lint-report
+          path: snake/app/build/reports/lint-results-*.html
+          if-no-files-found: ignore
