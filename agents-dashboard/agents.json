@@ -1010,9 +1010,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Helmet по подразбиране задава Strict-Transport-Security max-age=31536000; includeSubDom…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: В Express + better-sqlite3 (синхронен драйвер) route handler БЕЗ `await` в тялото се из… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „В Express + better-sqlite3 (синхронен драйвер) route handler БЕЗ `await` в тялото се из…\" (+2 още)"
+        },
         {
           "date": "2026-07-02",
           "type": "quarantine",
