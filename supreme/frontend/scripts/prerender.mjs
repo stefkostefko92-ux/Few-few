@@ -200,9 +200,9 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     + `<div><h3>Premium — €9.99 / server / month</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies, round-robin assignment, white-label bot</li><li>Webhooks, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
     + `<div><h3>Enterprise — custom</h3><ul><li>Everything in Premium</li><li>Custom branding and domain</li><li>Priority support and onboarding</li><li>Contact us for a quote</li></ul></div>`;
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
-    <p>One bot. Everything you need.</p>
+    <p>One bot replaces six. Built in the EU.</p>
     <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
-    <p>Multi-tenant Discord bot management by Carbon Stealth VCC: ticket panels, logic-branching application forms, verification, polls, giveaways, scheduled messages, webhooks, AI auto-replies, white-label bots and Stripe subscriptions — all from a modern web dashboard. EU-hosted, GDPR-compliant.</p>
+    <p>Six bots. Six bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and Claude-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
     <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
     <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>
     <section><h2>Frequently asked questions</h2>${faqHtml}</section>
