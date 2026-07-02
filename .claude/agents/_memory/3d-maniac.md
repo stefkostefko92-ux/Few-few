@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-07-02:** RPM аватарите се експортират в МЕТРИ с root scale 1 (не cm/×100 като Mixamo FBX); sample male bind ръст 1.873 m. Default позата е A-поза (ръце надолу-навън ~60° от хоризонтала), не T-поза. _("Ready Player Me GLB аватари"; verified; "GLB POSITION accessor min/max + Armature node scale=None, rpm-sample-male.glb")_
 - **2026-06-26:** Open3D filter_smooth_taubin (Taubin 1995) прилага два пъти filter_smooth_laplacian на итерация и ИЗБЯГВА свиване на мрежата, за разлика от чистия filter_smooth_laplacian, който свива обема — за изглаждане на скан-шум без загуба на размер ползвай Taubin _(Open3D Taubin vs Laplacian; verified; https://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html)_
 - **2026-06-26:** Open3D compute_vertex_normals() осреднява нормалите на съседните лица за ГЛАДКО (smooth) shading, докато compute_triangle_normals() дава per-triangle (FLAT) нормали — извикват се преди рендиране; за scan-to-CAD smooth нормали са нужни преди Poisson/визуализация _(Open3D vertex vs triangle normals; verified; https://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html)_
 - **2026-06-26:** trimesh.transformations: 4x4 хомогенни матрици се композират M = T @ R @ S и се прилагат ОТДЯСНО-НАЛЯВО (scale първо, после rotate, накрая translate; column-vector); decompose_matrix вади scale/shear/euler/translate/perspective _(transform T@R@S order; verified; https://trimesh.org/trimesh.transformations.html)_
@@ -54,3 +55,5 @@
 - **2026-06-25:** QuickSurface 2026 е на Parasolid kernel (G2 lofts, surface flattening); metrology скан цели ~0.02 mm.
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-02:** Стандартен орязан RPM GLB експорт носи само 2 morph targets (mouthOpen, mouthSmile) на EyeLeft/EyeRight/Wolf3D_Head/Teeth/Beard — НЕ пълните 52 ARKit blendshapes; за лицева анимация трябва изричен ARKit/Oculus Visemes експорт флаг. _("RPM facial animation pipeline"; unverified; "mesh.extras.targetNames в rpm-sample-male.glb")_
+- **2026-07-02:** RPM/Wolf3D (и Mixamo) хуманоидни кости имат локална Y ос ПО дължината на костта (bone-вектор ≈ локална Y) — въртене около Y е усукване, махът е около локалните X/Z. Проверено числено: за LeftArm/RightArm/Fore локална Y = нормализиран bone-вектор с точност 1e-3. _("RPM/Mixamo humanoid rigs; procedural bone posing в three.js"; unverified; "GLB skeleton analysis rpm-sample-male.glb (pygltflib, world bind matrices + omega×r + пълна кватернион симулация)")_
