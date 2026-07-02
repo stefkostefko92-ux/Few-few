@@ -7640,9 +7640,20 @@
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: three-mesh-bvh: computeBoundsTree() на geometry + Mesh.prototype.raycast=acceleratedRay…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: index.css @media (prefers-reduced-motion: reduce) neutralizира ВСИЧКИ animation/transit…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „index.css @media (prefers-reduced-motion: reduce) neutralizира ВСИЧКИ animation/transit…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-02",
           "type": "quarantine",
