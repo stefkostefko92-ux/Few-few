@@ -1,9 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseBlocks, renderInline } from "@/lib/blocks";
+import { safeJsonLd } from "@/lib/seo";
 
 const img = (url: string) => [
   { id: "1", type: "image", url, alt: "x", align: "center", rounded: false },
+];
+
+const btn = (href: string) => [
+  { id: "1", type: "button", label: "x", href, align: "center", variant: "primary" },
 ];
 
 test("качен относителен адрес /uploads/<uuid>.<ext> е валиден (не трие страницата)", () => {
@@ -33,4 +38,27 @@ test("renderInline остава escape-first (без XSS)", () => {
   const html = renderInline("<script>alert(1)</script> **удебелен**");
   assert.ok(!html.includes("<script>"));
   assert.ok(html.includes("<strong>удебелен</strong>"));
+});
+
+test("href на бутон приема mailto:/tel:/#котва/вътрешен път", () => {
+  assert.equal(parseBlocks(btn("mailto:info@site.bg")).length, 1);
+  assert.equal(parseBlocks(btn("tel:+359888123456")).length, 1);
+  assert.equal(parseBlocks(btn("#kontakti")).length, 1);
+  assert.equal(parseBlocks(btn("/contact")).length, 1);
+  assert.equal(parseBlocks(btn("https://example.com")).length, 1);
+});
+
+test("href на бутон отхвърля javascript: и протокол-относителен //хост", () => {
+  assert.equal(parseBlocks(btn("javascript:alert(1)")).length, 0);
+  assert.equal(parseBlocks(btn("//evil.com")).length, 0);
+  assert.equal(parseBlocks(btn("data:text/html,<script>")).length, 0);
+});
+
+test("safeJsonLd екранира </script> (без DOM breakout)", () => {
+  const out = safeJsonLd({ name: "</script><script>alert(1)</script>" });
+  assert.ok(!out.includes("</script>"));
+  assert.ok(!out.includes("<script>"));
+  assert.ok(out.includes("\\u003c")); // „<" е екранирано
+  // остава валиден JSON
+  assert.equal(JSON.parse(out).name, "</script><script>alert(1)</script>");
 });

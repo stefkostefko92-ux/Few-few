@@ -2,7 +2,7 @@ import type { Site, Page } from "@prisma/client";
 import { parseBlocks } from "@/lib/blocks";
 import { BlockView } from "@/components/blocks/BlockView";
 import { SiteChrome } from "@/components/blocks/SiteChrome";
-import { siteJsonLd } from "@/lib/seo";
+import { siteJsonLd, safeJsonLd } from "@/lib/seo";
 import { availableLocales, resolveLocale } from "@/lib/locale";
 import { loadSiteNav } from "@/lib/site-nav";
 
@@ -57,7 +57,7 @@ export async function PublicSiteView({
     <div lang={locale}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <SiteChrome
         siteName={site.name}

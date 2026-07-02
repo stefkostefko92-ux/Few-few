@@ -36,13 +36,15 @@ const align = z.enum(["left", "center", "right"]);
 // Относителни адреси на КАЧЕНИ файлове (/uploads/<uuid>.<ext>) — виж lib/uploads.
 const UPLOADED_PATH = /^\/uploads\/[a-f0-9-]{36}\.(png|jpg|jpeg|webp|gif)$/;
 
-const httpOrEmpty = z
+// Строг адрес за МЕДИЯ (снимка/видео/карта): само празно, наш качен файл или
+// http(s). Без вътрешни пътища — медията идва от качване или външен хост.
+const httpSrc = z
   .string()
   .trim()
   .max(2000)
   .refine((u) => {
     if (u === "") return true;
-    if (UPLOADED_PATH.test(u)) return true; // наш качен файл (относителен път)
+    if (UPLOADED_PATH.test(u)) return true;
     try {
       return /^https?:$/.test(new URL(u).protocol);
     } catch {
@@ -50,23 +52,44 @@ const httpOrEmpty = z
     }
   }, "Само http(s) адреси или качени файлове.");
 
+// Безопасен адрес за ВРЪЗКА (href). Приема реалните неща, които потребител
+// въвежда (http(s), mailto:, tel:, #котва, вътрешен /път, наш качен файл), но
+// НИКОГА javascript:/data:/протокол-относителен //хост (рендира се като href без
+// санитиране от React). Празно = ок.
+const safeHref = z
+  .string()
+  .trim()
+  .max(2000)
+  .refine((u) => {
+    if (u === "") return true;
+    if (UPLOADED_PATH.test(u)) return true; // наш качен файл (относителен път)
+    if (u.startsWith("#")) return true; // котва в страницата
+    if (u.startsWith("/") && !u.startsWith("//")) return true; // вътрешен път (не //хост)
+    try {
+      const proto = new URL(u).protocol;
+      return proto === "http:" || proto === "https:" || proto === "mailto:" || proto === "tel:";
+    } catch {
+      return false;
+    }
+  }, "Позволени са http(s), mailto:, tel:, вътрешни адреси (/…, #…) или качени файлове.");
+
 const blockSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string(), type: z.literal("heading"), level: z.union([z.literal(1), z.literal(2), z.literal(3)]), text: z.string().max(300), align }),
   z.object({ id: z.string(), type: z.literal("text"), text: z.string().max(8000), align }),
-  z.object({ id: z.string(), type: z.literal("image"), url: httpOrEmpty, alt: z.string().max(300), align, rounded: z.boolean() }),
-  z.object({ id: z.string(), type: z.literal("button"), label: z.string().max(120), href: httpOrEmpty, align, variant: z.enum(["primary", "ghost"]) }),
-  z.object({ id: z.string(), type: z.literal("hero"), title: z.string().max(200), subtitle: z.string().max(400), align, buttonLabel: z.string().max(120), buttonHref: httpOrEmpty }),
-  z.object({ id: z.string(), type: z.literal("gallery"), images: z.array(z.object({ url: httpOrEmpty, alt: z.string().max(300) })).max(24) }),
+  z.object({ id: z.string(), type: z.literal("image"), url: httpSrc, alt: z.string().max(300), align, rounded: z.boolean() }),
+  z.object({ id: z.string(), type: z.literal("button"), label: z.string().max(120), href: safeHref, align, variant: z.enum(["primary", "ghost"]) }),
+  z.object({ id: z.string(), type: z.literal("hero"), title: z.string().max(200), subtitle: z.string().max(400), align, buttonLabel: z.string().max(120), buttonHref: safeHref }),
+  z.object({ id: z.string(), type: z.literal("gallery"), images: z.array(z.object({ url: httpSrc, alt: z.string().max(300) })).max(24) }),
   z.object({ id: z.string(), type: z.literal("columns"), left: z.string().max(4000), right: z.string().max(4000) }),
   z.object({ id: z.string(), type: z.literal("columns3"), col1: z.string().max(3000), col2: z.string().max(3000), col3: z.string().max(3000) }),
-  z.object({ id: z.string(), type: z.literal("cta"), title: z.string().max(200), subtitle: z.string().max(400), buttonLabel: z.string().max(120), buttonHref: httpOrEmpty }),
+  z.object({ id: z.string(), type: z.literal("cta"), title: z.string().max(200), subtitle: z.string().max(400), buttonLabel: z.string().max(120), buttonHref: safeHref }),
   z.object({ id: z.string(), type: z.literal("stats"), items: z.array(z.object({ value: z.string().max(40), label: z.string().max(120) })).max(6) }),
-  z.object({ id: z.string(), type: z.literal("socials"), links: z.array(z.object({ platform: z.string().max(20), url: httpOrEmpty })).max(8) }),
+  z.object({ id: z.string(), type: z.literal("socials"), links: z.array(z.object({ platform: z.string().max(20), url: safeHref })).max(8) }),
   z.object({ id: z.string(), type: z.literal("faq"), items: z.array(z.object({ q: z.string().max(300), a: z.string().max(2000) })).max(30) }),
   z.object({ id: z.string(), type: z.literal("testimonials"), items: z.array(z.object({ quote: z.string().max(600), author: z.string().max(120), role: z.string().max(120) })).max(20) }),
-  z.object({ id: z.string(), type: z.literal("pricing"), plans: z.array(z.object({ name: z.string().max(80), price: z.string().max(40), period: z.string().max(40), features: z.array(z.string().max(160)).max(15), href: httpOrEmpty })).max(6) }),
-  z.object({ id: z.string(), type: z.literal("video"), url: httpOrEmpty }),
-  z.object({ id: z.string(), type: z.literal("map"), url: httpOrEmpty }),
+  z.object({ id: z.string(), type: z.literal("pricing"), plans: z.array(z.object({ name: z.string().max(80), price: z.string().max(40), period: z.string().max(40), features: z.array(z.string().max(160)).max(15), href: safeHref })).max(6) }),
+  z.object({ id: z.string(), type: z.literal("video"), url: httpSrc }),
+  z.object({ id: z.string(), type: z.literal("map"), url: httpSrc }),
   z.object({ id: z.string(), type: z.literal("form"), title: z.string().max(160), buttonLabel: z.string().max(80), successMessage: z.string().max(300) }),
   z.object({ id: z.string(), type: z.literal("divider") }),
   z.object({ id: z.string(), type: z.literal("spacer"), size: z.enum(["sm", "md", "lg"]) }),
@@ -77,6 +100,15 @@ export const blocksSchema = z.array(blockSchema).max(200);
 export function parseBlocks(input: unknown): Block[] {
   const res = blocksSchema.safeParse(input);
   return res.success ? (res.data as Block[]) : [];
+}
+
+// Строг вариант за ЗАПИС: при невалиден блок връща провал вместо празен масив,
+// за да не се презапише страницата с [] (тиха загуба на съдържание).
+export function parseBlocksStrict(
+  input: unknown,
+): { ok: true; data: Block[] } | { ok: false } {
+  const res = blocksSchema.safeParse(input);
+  return res.success ? { ok: true, data: res.data as Block[] } : { ok: false };
 }
 
 // --- Фабрика за нов блок (стойности по подразбиране) ---

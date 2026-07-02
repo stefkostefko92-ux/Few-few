@@ -24,6 +24,17 @@ export function pageUrl(siteSlug: string, pageSlug: string): string {
   return pageSlug ? `${BASE}/site/${siteSlug}/${pageSlug}` : `${BASE}/site/${siteSlug}`;
 }
 
+// Безопасна сериализация за вграждане в <script type="application/ld+json">.
+// JSON.stringify НЕ екранира „<“, затова стойност със „</script>“ (напр. име на
+// сайт или заглавие на страница от потребител) би затворила тага и останалото би
+// се изпълнило като HTML → stored XSS. Екранираме < > & като \uXXXX (валиден JSON).
+export function safeJsonLd(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
 // JSON-LD граф (WebSite + Organization + WebPage + BreadcrumbList) за AI цитиране.
 export function siteJsonLd(args: {
   siteName: string;

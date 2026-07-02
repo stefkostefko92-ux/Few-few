@@ -7,7 +7,7 @@ import { getSiteForUser } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
-import { parseBlocks, type Block } from "@/lib/blocks";
+import { parseBlocks, parseBlocksStrict, type Block } from "@/lib/blocks";
 import { generatePageBlocks } from "@/lib/ai/generate";
 import { assistText } from "@/lib/ai/assist";
 import { resolveProvider } from "@/lib/ai/generate";
@@ -208,8 +208,11 @@ export async function saveDraftAction(
 ): Promise<PageActionResult> {
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
-  const clean = parseBlocks(blocks); // валидира и изчиства чрез Zod
-  await prisma.page.update({ where: { id: pageId }, data: draftData(asLoc(locale), clean) });
+  const parsed = parseBlocksStrict(blocks); // валидира чрез Zod, без тихо изтриване
+  if (!parsed.ok) {
+    return { error: "Има невалиден блок — проверете адресите на връзките." };
+  }
+  await prisma.page.update({ where: { id: pageId }, data: draftData(asLoc(locale), parsed.data) });
   revalidatePath(`/dashboard/sites/${slug}/pages/${pageId}`);
   return { ok: "Черновата е запазена." };
 }
@@ -223,7 +226,11 @@ export async function publishPageAction(
   const ctx = await pageForUser(slug, pageId, "manage");
   if (!ctx) return { error: "Нямате достъп." };
   const loc = asLoc(locale);
-  const clean = parseBlocks(blocks);
+  const parsed = parseBlocksStrict(blocks);
+  if (!parsed.ok) {
+    return { error: "Има невалиден блок — проверете адресите на връзките." };
+  }
+  const clean = parsed.data;
   await prisma.page.update({
     where: { id: pageId },
     data: publishData(loc, clean, ctx.page.publishedAt),
