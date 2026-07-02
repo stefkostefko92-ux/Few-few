@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "@/components/icons";
 import { submitDumpReport, type DumpState } from "./actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: DumpState = { ok: false };
 
@@ -126,6 +127,8 @@ export function DumpReportForm() {
         </Link>
         .
       </p>
+
+      <PrivacyNote />
 
       <button type="submit" className="btn-primary" disabled={pending}>
         {pending ? "Изпращане…" : "Изпрати сигнала"}

@@ -102,12 +102,6 @@ export default function CookiesPage() {
             <tbody>
               <tr>
                 <td>
-                  <code>zbd_cookie_consent_v1</code>
-                </td>
-                <td>Запомня, че сте видели съобщението за бисквитки.</td>
-              </tr>
-              <tr>
-                <td>
                   <code>zbd_visitor_no</code>
                 </td>
                 <td>Пази поредния номер на посетителя за началния екран.</td>

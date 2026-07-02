@@ -18,6 +18,13 @@ const schema = z.object({
     .default("")
     .refine((v) => v === "" || /^https?:\/\//i.test(v), "Линкът трябва да започва с http(s)://"),
   contact: z.string().trim().max(120).optional().default(""),
+  // Декларация за изобразените лица (чл. 6/чл. 14 GDPR) — задължителна.
+  peopleConsent: z.literal("on", {
+    errorMap: () => ({
+      message:
+        "Потвърдете, че на снимката няма разпознаваеми хора или че те са съгласни.",
+    }),
+  }),
   website: z.string().max(0).optional().default(""), // honeypot
 });
 
@@ -35,6 +42,7 @@ export async function submitPhoto(
     author: formData.get("author"),
     imageUrl: formData.get("imageUrl") ?? "",
     contact: formData.get("contact") ?? "",
+    peopleConsent: formData.get("peopleConsent"),
     website: formData.get("website") ?? "",
   });
   if (!parsed.success) {
@@ -55,8 +63,13 @@ export async function submitPhoto(
     return { ok: false, error: "Качете снимка или поставете линк към нея." };
   }
 
-  const existing = await prisma.galleryPhoto.findMany({ select: { slug: true } });
-  const slug = uniqueSlug(slugify(d.title), new Set(existing.map((e) => e.slug)));
+  // Четем само slug-овете със същия префикс (не цялата галерия).
+  const base = slugify(d.title);
+  const existing = await prisma.galleryPhoto.findMany({
+    where: { slug: { startsWith: base } },
+    select: { slug: true },
+  });
+  const slug = uniqueSlug(base, new Set(existing.map((e) => e.slug)));
 
   const created = await prisma.galleryPhoto.create({
     data: {

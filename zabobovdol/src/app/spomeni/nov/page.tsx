@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { PageHero } from "@/components/ui";
 import { submitMemory, type MemoryState } from "./actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: MemoryState = { ok: false };
 
@@ -88,6 +89,8 @@ export default function NewMemoryPage() {
             Споделяйте само спомени, които искате да са публични. Имате стара
             снимка? Споменете в текста и ще я добавим след връзка с вас.
           </p>
+
+          <PrivacyNote />
 
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Изпращане…" : "Споделете спомена"}

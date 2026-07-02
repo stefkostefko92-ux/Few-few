@@ -6,6 +6,7 @@ import { CheckCircle2 } from "@/components/icons";
 import { PageHero } from "@/components/ui";
 import { submitPhoto, type PhotoState } from "./actions";
 import { SITE } from "@/lib/site";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: PhotoState = { ok: false };
 
@@ -150,6 +151,24 @@ export default function NewPhotoPage() {
               да я споделите. Снимките се преглеждат преди да се покажат публично.
             </p>
           </div>
+
+          {/* Лични данни на изобразените лица (чл. 6 и чл. 14 GDPR): изисква се
+              изрично потвърждение преди публикуване. */}
+          <label className="flex items-start gap-3 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="peopleConsent"
+              required
+              className="mt-1 h-5 w-5 shrink-0 accent-brand-700"
+            />
+            <span>
+              Потвърждавам, че на снимката <strong>няма разпознаваеми хора</strong>,
+              или че <strong>изобразените лица са съгласни</strong> тя да бъде
+              публикувана. *
+            </span>
+          </label>
+
+          <PrivacyNote />
 
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Изпращане…" : "Изпрати снимката"}
