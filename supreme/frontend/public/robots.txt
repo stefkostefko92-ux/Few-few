@@ -64,53 +64,73 @@ User-agent: GPTBot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — Anthropic ────────────────────────────────────────────────
 User-agent: ClaudeBot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Claude-Web
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Claude-User
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Claude-SearchBot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: anthropic-ai
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — Google ───────────────────────────────────────────────────
 User-agent: Google-Extended
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: GoogleOther
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — Apple ────────────────────────────────────────────────────
 User-agent: Applebot
@@ -124,23 +144,31 @@ User-agent: Applebot-Extended
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — Perplexity ───────────────────────────────────────────────
 User-agent: PerplexityBot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Perplexity-User
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 # ─── AI crawlers — Meta ─────────────────────────────────────────────────────
 User-agent: Meta-ExternalAgent
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: FacebookBot
 Allow: /
@@ -154,11 +182,15 @@ User-agent: MistralAI-User
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: DuckAssistBot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: Amazonbot
 Allow: /
@@ -171,6 +203,8 @@ User-agent: cohere-ai
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
+Disallow: /archive/
+Disallow: /public/
 
 User-agent: YouBot
 Allow: /

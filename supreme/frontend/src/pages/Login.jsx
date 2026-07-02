@@ -133,7 +133,7 @@ export default function Login() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
-                Unlimited panel-based tickets with claim, escalate, rename, two-step close, rich transcripts, and archive links.
+                Unlimited ticket volume via button panels — claim, escalate, rename, two-step close, rich transcripts, and archive links.
               </FeatureCard>
               <FeatureCard icon={FileText} title="Forms & Applications" badge="Free">
                 Multi-step questionnaires with validation, review workflow, and application approval — replaces Appy.bot entirely.

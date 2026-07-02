@@ -16,16 +16,24 @@ Pricing: Free tier (1 panel, 2 forms with up to 5 questions, 1 verification pane
 - [Cookie Policy](https://supreme.carbonstealth.eu/cookies): Cookie usage details and consent management options
 - [End-User License Agreement](https://supreme.carbonstealth.eu/eula): Software license terms governing customer use
 
+## Positioning
+
+Supreme Bot consolidates six single-purpose Discord bots into one dashboard: it replaces
+TicketTool, Appy.bot, GiveawayBot, sticky-message bots, poll bots and webhook relays — one
+subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
+server per month with a 14-day trial (no credit card).
+
 ## Features
 
-- [Ticket System](https://supreme.carbonstealth.eu/#features-tickets): Visual button panels, automatic channel creation, round-robin staff assignment, persistent HTML transcripts that survive Discord channel deletion
-- [Application Forms](https://supreme.carbonstealth.eu/#features-forms): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
-- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features-whitelabel): Premium feature allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
-- [AI Auto-Replies](https://supreme.carbonstealth.eu/#features-ai): Premium feature using Anthropic Claude for context-aware first-response replies; EU AI Act Article 50 disclosure compliant
-- [Verification System](https://supreme.carbonstealth.eu/#features-verification): Captcha-based bot/troll prevention with account age requirements and auto-role on success
-- [Automation Engine](https://supreme.carbonstealth.eu/#features-automation): If-this-then-that workflows with event triggers, action chains, and conditional logic
-- [Public REST API](https://supreme.carbonstealth.eu/#features-api): Bearer-token authentication for building custom integrations and dashboards
-- [Webhook Integrations](https://supreme.carbonstealth.eu/#features-webhooks): HMAC-signed outgoing webhooks on every platform event
+- [Ticket System](https://supreme.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
+- [Application Forms](https://supreme.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
+- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features): Premium feature allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
+- [AI Auto-Replies](https://supreme.carbonstealth.eu/#features): Premium feature using Anthropic Claude to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
+- [Verification System](https://supreme.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
+- [Polls & Giveaways](https://supreme.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll
+- [Sticky & Scheduled Messages](https://supreme.carbonstealth.eu/#features): Auto-reposting sticky messages and one-shot or recurring (daily/weekly/monthly) scheduled posts
+- [Public REST API](https://supreme.carbonstealth.eu/#features): Bearer-token authentication for building custom integrations and dashboards
+- [Webhook Integrations](https://supreme.carbonstealth.eu/#features): HMAC-signed outgoing webhooks on every platform event (Premium)
 
 ## Compliance and infrastructure
 
