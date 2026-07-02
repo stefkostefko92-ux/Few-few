@@ -1016,9 +1016,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: В Express + better-sqlite3 (синхронен драйвер) route handler БЕЗ `await` в тялото се из… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Spec-driven разработка: versioned spec + plan markdown на фийчър ПРЕДИ имплементация (к…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Spec-driven разработка: versioned spec + plan markdown на фийчър ПРЕДИ имплементация (к…\""
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
