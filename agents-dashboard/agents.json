@@ -1022,9 +1022,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: Spec-driven разработка: versioned spec + plan markdown на фийчър ПРЕДИ имплементация (к…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: В Nexus setCooldown (game/cooldowns.ts:83) прави UPSERT (INSERT ... ON CONFLICT(charact… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „В Nexus setCooldown (game/cooldowns.ts:83) прави UPSERT (INSERT ... ON CONFLICT(charact…\" (+1 още)"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
