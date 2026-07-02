@@ -3,13 +3,16 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseBlocks } from "@/lib/blocks";
 import { PublicSiteView } from "@/components/PublicSiteView";
-import { blocksToPlainText, pageUrl } from "@/lib/seo";
+import { blocksToPlainText, pageUrl, publicSiteOrigin } from "@/lib/seo";
 import { availableLocales, resolveLocale, langAlternates, LOCALE_OG } from "@/lib/locale";
 
 export const dynamic = "force-dynamic";
 
 async function loadPage(siteSlug: string, pageSlug: string) {
-  const site = await prisma.site.findUnique({ where: { slug: siteSlug } });
+  // Само публикуван сайт (без индексиране на чернова/непусната работа).
+  const site = await prisma.site.findFirst({
+    where: { slug: siteSlug, published: true },
+  });
   if (!site) return null;
   const page = await prisma.page.findFirst({
     where: { siteId: site.id, slug: pageSlug, status: "PUBLISHED" },
@@ -47,7 +50,11 @@ export async function generateMetadata({
   const title = `${pageTitle} · ${data.site.name}`;
   const description =
     data.page.seoDescription || blocksToPlainText(blocks).slice(0, 155) || undefined;
-  const bgUrl = pageUrl(data.site.slug, data.page.slug);
+  // Собствен хост е каноничен; /site/<slug>/<page> е преглед → canonical към хоста + noindex.
+  const host = publicSiteOrigin(data.site);
+  const bgUrl = host
+    ? `${host}/${data.page.slug}`
+    : pageUrl(data.site.slug, data.page.slug);
   const url = locale === "bg" ? bgUrl : `${bgUrl}?lang=${locale}`;
 
   return {
@@ -58,7 +65,7 @@ export async function generateMetadata({
       canonical: url,
       languages: langAlternates(bgUrl, locales),
     },
-    robots: { index: true, follow: true },
+    robots: host ? { index: false, follow: true } : { index: true, follow: true },
     openGraph: {
       type: "website",
       url,

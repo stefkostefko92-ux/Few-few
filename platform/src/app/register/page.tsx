@@ -42,7 +42,9 @@ export default function RegisterPage() {
             </p>
             <p className="text-center text-[11px] text-ink-600">
               С регистрацията приемате{" "}
-              <Link href="/legal/usloviya" className="underline">Общите условия</Link>.
+              <Link href="/legal/usloviya" className="underline">Общите условия</Link>
+              {" "}и{" "}
+              <Link href="/legal/poveritelnost" className="underline">Политиката за поверителност</Link>.
             </p>
           </form>
         </div>

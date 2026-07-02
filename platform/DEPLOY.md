@@ -1,9 +1,12 @@
 # Деплой на platform
 
-Продукционен модел: **Docker Compose зад reverse proxy** (nginx/Caddy на хоста
-поема TLS), точно като `zabobovdol`. Приложението (`web`) слуша само на
-`127.0.0.1:${HTTP_PORT}` (по подразбиране 3000); базата (`db`) е във вътрешна мрежа,
-без публикуван порт.
+Продукционен модел: **Docker Compose зад reverse proxy**. За разлика от
+`zabobovdol`/`medqr` (фиксиран домейн зад nginx), platform е **multi-tenant** и
+проксито е **Caddy** заради per-domain On-Demand TLS (виж „Reverse proxy" по-долу).
+Приложението (`web`) слуша само на `127.0.0.1:${HTTP_PORT}`. **По подразбиране в
+`.env.example` портът е `3100`**, а не 3000 — при съвместен хост порт 3000 е зает
+от `medqr`, затова platform ползва уникален порт. Базата (`db`) е във вътрешна
+мрежа, без публикуван порт.
 
 ## Файлове
 
@@ -45,7 +48,7 @@ FORCE=1 bash deploy/gen-secrets.sh  # регенерира ги (внимава�
 | `CRON_TOKEN` | Секрет за периодичните здравни проверки (`/api/cron/health`). |
 | `OWNER_EMAIL` / `OWNER_PASSWORD` / `OWNER_NAME` | Начален собственик — ползва се само при първо сийдване (парола ≥10 знака). |
 | `NEXT_PUBLIC_SITE_URL` | Публичният HTTPS адрес на панела. |
-| `HTTP_BIND` / `HTTP_PORT` | Къде да слуша `web` на хоста (по подр. `127.0.0.1:3000`). |
+| `HTTP_BIND` / `HTTP_PORT` | Къде да слуша `web` на хоста. По подр. `127.0.0.1:3100` (уникален порт — 3000 е за `medqr`). Caddyfile чете същия `HTTP_PORT`. |
 
 ### По избор (не са задължителни — панелът работи и без тях)
 
@@ -101,7 +104,7 @@ MAIL_FROM="Платформа <no-reply@carbonstealth.eu>"
 cd platform
 cp .env.example .env          # попълни тайните (виж таблицата), chmod 600 .env
 docker compose up -d --build  # билд + вдигане; entrypoint прави db push + сийд (1-ви път)
-curl -fsS http://127.0.0.1:3000/api/health   # → {"status":"ok",...}
+curl -fsS http://127.0.0.1:3100/api/health   # → {"status":"ok",...}  (порт = HTTP_PORT)
 ```
 
 Автоматизирано през `deploy/autodeploy.sh` (`platform` е в `PROJECTS`): пренася
@@ -114,24 +117,45 @@ FORCE_SEED=1 docker compose up -d --build   # или ръчно:
 docker compose exec web npm run db:seed
 ```
 
-## Reverse proxy (nginx на хоста)
+## Reverse proxy (Caddy на хоста) — multi-tenant On-Demand TLS
 
-Панелът слуша само на localhost — проксирайте домейна към него. TLS (Let's Encrypt)
-се поема от външния nginx/Caddy, не от този стек.
+**Проксито е Caddy, не nginx+certbot.** Причина: platform обслужва **произволен,
+динамично растящ** брой клиентски домейни/поддомейни (клиент заема наш поддомейн
+или свързва собствен домейн направо от панела). С nginx+certbot трябва ръчно да
+създаваш server-блок и да пускаш certbot за **всеки** нов домейн. Caddy издава
+сертификата при **първото TLS ръкостискане** (On-Demand TLS) — нула ръчни стъпки
+на нов домейн. (`zabobovdol`/`medqr` остават на nginx, защото са с фиксиран домейн.)
 
-```nginx
-server {
-  server_name platform.carbonstealth.eu;
-  location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-  # TLS блокът се добавя от certbot --nginx.
-}
+Готов конфиг: **`deploy/Caddyfile`**. Ключово:
+- Глобален `on_demand_tls { ask http://127.0.0.1:${HTTP_PORT}/api/tls-check }` —
+  преди издаване Caddy пита приложението дали домейнът е наш. `/api/tls-check`
+  връща 200 само за платформен хост, наш **публикуван** поддомейн или **потвърден**
+  собствен домейн; иначе 403 → отказ. Rate-limit-ът е в самия ask endpoint (429 при
+  заливане). Забележка: старите `interval`/`burst` под `on_demand_tls` са премахнати
+  в Caddy 2.9+ — единственият gate е `ask`.
+- Специфичен блок за `platform.carbonstealth.eu` (нормален ACME) + catch-all
+  `https://` блок с `tls { on_demand }` за клиентските сайтове.
+
+```bash
+sudo install -m 644 deploy/Caddyfile /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile   # синтаксис
+sudo systemctl reload caddy                         # презареждане без прекъсване
 ```
+
+Caddy чете `HTTP_PORT` от средата (`{$HTTP_PORT:3100}`); подай го през
+`/etc/systemd/system/caddy.service.d/override.conf` или `Environment=` (същата
+стойност като в `platform/.env`).
+
+### DNS изисквания (еднократно)
+
+| Запис | Тип | Стойност | За какво |
+| --- | --- | --- | --- |
+| `platform.carbonstealth.eu` | A (+ AAAA) | `<IP на сървъра>` | Панелът/маркетингът. |
+| `*.carbonstealth.site` | A (+ AAAA) | `<IP на сървъра>` | **Wildcard** за всички наши клиентски поддомейни (`<sub>.carbonstealth.site`). Без него On-Demand не може да издаде сертификат за поддомейните. |
+| собствен домейн на клиент | A / CNAME | сочи към нас | Клиентът го добавя при своя регистратор (виж `deploy/DOMAINS.md §3`). |
+
+On-Demand TLS ползва ACME HTTP-01/TLS-ALPN per домейн — **не** изисква DNS-01
+плъгин. (DNS-01 wildcard сертификат е алтернатива — `deploy/DOMAINS.md §4.2`.)
 
 ## Качени изображения (том `uploads`)
 
@@ -149,6 +173,7 @@ server {
 | Endpoint | Какво прави | Препоръчан график |
 | --- | --- | --- |
 | `POST /api/cron/health` | Здравна проверка на активните свързани сайтове. | на 5 мин |
+| `POST /api/cron/publish` | Насрочено публикуване: страници, чието `publishAt` е настъпило (draft → published). | на 2 мин |
 | `POST /api/cron/prune` | Изчистване по давност (GDPR): одит логове, health, заявки. | дневно 03:30 |
 
 Ръчна проверка:
@@ -158,7 +183,7 @@ curl -X POST -H "Authorization: Bearer $CRON_TOKEN" \
   https://platform.carbonstealth.eu/api/cron/health
 ```
 
-**Готови units:** `deploy/systemd/platform-cron-{health,prune}.{service,timer}`.
+**Готови units:** `deploy/systemd/platform-cron-{health,publish,prune}.{service,timer}`.
 Инсталация:
 
 ```bash
@@ -172,7 +197,8 @@ BASE_URL=https://platform.carbonstealth.eu
 EOF
 sudo cp deploy/systemd/platform-cron-*.{service,timer} /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now platform-cron-health.timer platform-cron-prune.timer
+sudo systemctl enable --now \
+  platform-cron-health.timer platform-cron-publish.timer platform-cron-prune.timer
 systemctl list-timers 'platform-*'          # проверка
 ```
 

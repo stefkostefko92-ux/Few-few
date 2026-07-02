@@ -13,9 +13,13 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # --- Здравна проверка на свързаните сайтове: на всеки 5 минути ---
 */5 * * * * root set -a; . /etc/platform/cron.env; set +a; curl -fsS --max-time 60 -X POST -H "Authorization: Bearer $CRON_TOKEN" "$BASE_URL/api/cron/health" >/dev/null 2>&1
 
+# --- Насрочено публикуване на страници: на всеки 2 минути ---
+*/2 * * * * root set -a; . /etc/platform/cron.env; set +a; curl -fsS --max-time 60 -X POST -H "Authorization: Bearer $CRON_TOKEN" "$BASE_URL/api/cron/publish" >/dev/null 2>&1
+
 # --- Изчистване по давност (GDPR): дневно в 03:30 ---
 30 3 * * * root set -a; . /etc/platform/cron.env; set +a; curl -fsS --max-time 120 -X POST -H "Authorization: Bearer $CRON_TOKEN" "$BASE_URL/api/cron/prune" >> /var/log/platform-prune.log 2>&1
 
 # --- Криптиран бекъп (Postgres + качвания): дневно в 03:15 ---
 # AGE_RECIPIENT се чете от /etc/platform/backup.env; коригирай пътя до проекта.
+# Бекъпите се пишат в /var/backups/platform (извън релийзите — виж README-backup.md).
 15 3 * * * root set -a; . /etc/platform/backup.env; set +a; cd /opt/few-few/current/platform && bash deploy/backup.sh >> /var/log/platform-backup.log 2>&1

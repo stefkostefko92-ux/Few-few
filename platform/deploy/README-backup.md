@@ -31,14 +31,21 @@ GPG алтернатива: `GPG_RECIPIENT=<fingerprint/имейл>` и част
 
 ```bash
 cd /opt/few-few/current/platform          # там, където е docker-compose.yml
+sudo install -d -m 700 /var/backups/platform   # веднъж — стабилната директория
 AGE_RECIPIENT="age1..." bash deploy/backup.sh
-# → backups/platform-db-YYYYMMDD-HHMMSS.sql.gz.age        (+ .sha256)
-# → backups/platform-uploads-YYYYMMDD-HHMMSS.tar.gz.age   (+ .sha256)
+# → /var/backups/platform/platform-db-YYYYMMDD-HHMMSS.sql.gz.age        (+ .sha256)
+# → /var/backups/platform/platform-uploads-YYYYMMDD-HHMMSS.tar.gz.age   (+ .sha256)
 ```
 
-Параметри (env): `BACKUP_DIR` (по подр. `platform/backups`), `BACKUP_RETENTION`
+Параметри (env): `BACKUP_DIR` (по подр. **`/var/backups/platform`**), `BACKUP_RETENTION`
 (по подр. 31 копия на артефакт), `BACKUP_DB_SERVICE`, `BACKUP_UPLOADS_VOLUME`
 (ако не се засече автоматично), `BACKUP_HELPER_IMAGE` (по подр. `busybox`).
+
+> **Защо бекъпите са ИЗВЪН папката на проекта:** `autodeploy.sh` разгръща всеки
+> релийз в нова папка под `/opt/few-few/releases/` и ротира старите. Ако бекъпите
+> стояха в `platform/backups/`, ротацията на релийзите щеше да ги трие заедно с
+> кода. Затова по подразбиране пишем в `/var/backups/platform` — извън дървото на
+> релийзите. Ако смениш `BACKUP_DIR`, дръж го пак извън `/opt/few-few/releases/`.
 
 ## Автоматизиране
 
@@ -51,10 +58,10 @@ AGE_RECIPIENT="age1..." bash deploy/backup.sh
 ```bash
 # базата:
 AGE_IDENTITY=~/keys/platform-backup.key \
-  bash deploy/restore.sh --db backups/platform-db-YYYYMMDD-HHMMSS.sql.gz.age
+  bash deploy/restore.sh --db /var/backups/platform/platform-db-YYYYMMDD-HHMMSS.sql.gz.age
 # качванията:
 AGE_IDENTITY=~/keys/platform-backup.key \
-  bash deploy/restore.sh --uploads backups/platform-uploads-YYYYMMDD-HHMMSS.tar.gz.age
+  bash deploy/restore.sh --uploads /var/backups/platform/platform-uploads-YYYYMMDD-HHMMSS.tar.gz.age
 # и двете наведнъж — подай --db и --uploads
 ```
 

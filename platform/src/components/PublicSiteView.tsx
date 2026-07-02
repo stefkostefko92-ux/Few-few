@@ -2,7 +2,7 @@ import type { Site, Page } from "@prisma/client";
 import { parseBlocks } from "@/lib/blocks";
 import { BlockView } from "@/components/blocks/BlockView";
 import { SiteChrome } from "@/components/blocks/SiteChrome";
-import { siteJsonLd, safeJsonLd } from "@/lib/seo";
+import { siteJsonLd, safeJsonLd, publicSiteOrigin } from "@/lib/seo";
 import { availableLocales, resolveLocale } from "@/lib/locale";
 import { loadSiteNav } from "@/lib/site-nav";
 
@@ -47,6 +47,8 @@ export async function PublicSiteView({
 
   const nav = await loadSiteNav(site.id, hrefBase, locale, page.slug);
   const jsonLd = siteJsonLd({
+    origin: publicSiteOrigin(site),
+    locale,
     siteName: site.name,
     siteSlug: site.slug,
     pageTitle,

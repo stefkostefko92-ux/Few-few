@@ -14,6 +14,9 @@ export function LegalFooter() {
         <Link href="/legal/biskvitki" className="hover:text-ink-300">
           Бисквитки
         </Link>
+        <Link href="/legal/dpa" className="hover:text-ink-300">
+          Обработване на данни
+        </Link>
       </nav>
       <p className="mt-2">© {new Date().getFullYear()} Carbon Stealth VCC</p>
     </footer>

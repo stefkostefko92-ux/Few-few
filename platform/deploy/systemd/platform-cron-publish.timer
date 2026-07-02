@@ -1,0 +1,12 @@
+# Насрочено публикуване — на всеки 2 минути (за да тръгват публикациите навреме).
+[Unit]
+Description=platform — таймер за насрочено публикуване
+
+[Timer]
+OnCalendar=*:0/2
+Persistent=true
+RandomizedDelaySec=20
+Unit=platform-cron-publish.service
+
+[Install]
+WantedBy=timers.target

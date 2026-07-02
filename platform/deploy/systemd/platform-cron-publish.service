@@ -1,0 +1,20 @@
+# Насрочено публикуване на страници (POST /api/cron/publish): копира draft →
+# published за страници, чието publishAt е настъпило. Пази се със същия $CRON_TOKEN.
+# Виж platform/src/app/api/cron/publish/route.ts.
+# Инсталация — виж коментара в platform-cron-health.service (същият EnvironmentFile).
+[Unit]
+Description=platform — насрочено публикуване (cron)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/platform/cron.env
+ExecStart=/usr/bin/curl -fsS --max-time 60 -X POST \
+  -H "Authorization: Bearer ${CRON_TOKEN}" \
+  ${BASE_URL}/api/cron/publish
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true

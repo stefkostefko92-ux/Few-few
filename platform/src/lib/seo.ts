@@ -1,7 +1,22 @@
 import type { Block } from "@/lib/blocks";
+import { PLATFORM_APEX } from "@/lib/domains";
 
 const BASE =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://platform.carbonstealth.eu";
+
+// Каноничният публичен адрес на сайта, ако има зададен хост: потвърден собствен
+// домейн или наш поддомейн. Ако още няма хост → null (тогава /site/<slug> е
+// единственият публичен адрес). Ползва се, за да сочи canonical към хоста и да
+// НЕ индексираме дублиращия /site/<slug> път, когато сайтът си има домейн.
+export function publicSiteOrigin(site: {
+  subdomain: string | null;
+  customDomain: string | null;
+  domainVerified: boolean;
+}): string | null {
+  if (site.customDomain && site.domainVerified) return `https://${site.customDomain}`;
+  if (site.subdomain) return `https://${site.subdomain}.${PLATFORM_APEX}`;
+  return null;
+}
 
 // Чист текст от блоковете — за meta description (без markdown/HTML).
 export function blocksToPlainText(blocks: Block[]): string {
@@ -36,14 +51,23 @@ export function safeJsonLd(value: unknown): string {
 }
 
 // JSON-LD граф (WebSite + Organization + WebPage + BreadcrumbList) за AI цитиране.
+// `origin` е каноничният хост на сайта (поддомейн/домейн); ако липсва, ползваме
+// платформения /site/<slug> адрес. `locale` задава inLanguage (по подразбиране bg).
 export function siteJsonLd(args: {
   siteName: string;
   siteSlug: string;
   pageTitle: string;
   pageSlug: string;
+  origin?: string | null;
+  locale?: "bg" | "en" | "it";
 }) {
-  const siteUrl = `${BASE}/site/${args.siteSlug}`;
-  const url = pageUrl(args.siteSlug, args.pageSlug);
+  const lang = args.locale ?? "bg";
+  const siteUrl = args.origin ?? `${BASE}/site/${args.siteSlug}`;
+  const url = args.origin
+    ? args.pageSlug
+      ? `${args.origin}/${args.pageSlug}`
+      : `${args.origin}/`
+    : pageUrl(args.siteSlug, args.pageSlug);
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -52,7 +76,7 @@ export function siteJsonLd(args: {
         "@id": `${siteUrl}#website`,
         url: siteUrl,
         name: args.siteName,
-        inLanguage: "bg",
+        inLanguage: lang,
         publisher: { "@id": `${siteUrl}#org` },
       },
       {
@@ -67,7 +91,7 @@ export function siteJsonLd(args: {
         url,
         name: args.pageTitle,
         isPartOf: { "@id": `${siteUrl}#website` },
-        inLanguage: "bg",
+        inLanguage: lang,
       },
       {
         "@type": "BreadcrumbList",

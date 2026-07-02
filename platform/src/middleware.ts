@@ -7,26 +7,21 @@ import { isPlatformHost } from "@/lib/domains";
 // допълнително проверява сесията и достъпа до конкретния сайт на сървъра.
 const PROTECTED = ["/dashboard", "/admin"];
 
-// Пътища, които НЕ се пренасочват към хост-обслужването (статика, API, самите
-// платформени раздели, качените файлове, well-known за верификация/ACME).
-function isReserved(pathname: string): boolean {
+// Инфраструктурни пътища, които се обслужват НЕЗАВИСИМО от хоста (статика, API,
+// качени файлове, well-known за ACME, host-aware robots/sitemap). Всичко ОСТАНАЛО
+// на клиентски хост се пренасочва към /hosted — така платформените раздели
+// (/legal, /login, /dashboard, /site …) НЕ изтичат на чужд домейн.
+function isInfraPath(pathname: string): boolean {
   return (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/hosted") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/uploads") ||
-    pathname.startsWith("/site") ||
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/forgot") ||
-    pathname.startsWith("/reset") ||
-    pathname.startsWith("/legal") ||
     pathname.startsWith("/.well-known") ||
     pathname === "/favicon.ico" ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml"
+    pathname === "/robots.txt" || // route-ът е host-aware
+    pathname === "/sitemap.xml" || // route-ът е host-aware
+    pathname === "/llms.txt" // route-ът е host-aware
   );
 }
 
@@ -53,9 +48,9 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const host = req.headers.get("host") || "";
 
-  // Публичен сайт по собствен домейн/поддомейн → пренаписваме към /_host,
+  // Публичен сайт по собствен домейн/поддомейн → пренаписваме към /hosted,
   // като пазим оригиналния Host (за резолюция) и пътя.
-  if (!isPlatformHost(host) && !isReserved(pathname)) {
+  if (!isPlatformHost(host) && !isInfraPath(pathname)) {
     const url = req.nextUrl.clone();
     url.pathname = `/hosted${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);

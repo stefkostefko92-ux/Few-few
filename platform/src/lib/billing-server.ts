@@ -48,25 +48,31 @@ export async function createCheckoutSession(
 
   try {
     const customerId = await ensureCustomer(stripe, site, contactEmail);
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      line_items: [{ price, quantity: 1 }],
-      // ДДС по местоназначение (изисква включен Stripe Tax в акаунта).
-      automatic_tax: { enabled: true },
-      customer_update: { address: "auto" },
-      billing_address_collection: "required",
-      // Право на отказ при дигитални услуги — съгласието се събира с отделна
-      // отметка в UI преди този бутон (виж billing страницата).
-      subscription_data: {
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: "subscription",
+        customer: customerId,
+        line_items: [{ price, quantity: 1 }],
+        // ДДС по местоназначение (изисква включен Stripe Tax в акаунта).
+        automatic_tax: { enabled: true },
+        customer_update: { address: "auto" },
+        billing_address_collection: "required",
+        // Право на отказ при дигитални услуги — съгласието се събира с отделна
+        // отметка в UI преди този бутон (виж billing страницата).
+        subscription_data: {
+          metadata: { siteId: site.id, siteSlug: site.slug },
+        },
+        // Връзка обратно към сайта (webhook-ът чете client_reference_id/metadata).
+        client_reference_id: site.id,
         metadata: { siteId: site.id, siteSlug: site.slug },
+        success_url: `${baseUrl()}/dashboard/sites/${site.slug}/billing?checkout=success`,
+        cancel_url: `${baseUrl()}/dashboard/sites/${site.slug}/billing?checkout=cancel`,
       },
-      // Връзка обратно към сайта (webhook-ът чете client_reference_id/metadata).
-      client_reference_id: site.id,
-      metadata: { siteId: site.id, siteSlug: site.slug },
-      success_url: `${baseUrl()}/dashboard/sites/${site.slug}/billing?checkout=success`,
-      cancel_url: `${baseUrl()}/dashboard/sites/${site.slug}/billing?checkout=cancel`,
-    });
+      // Idempotency-Key: детерминистичен в 60-секунден прозорец. Пази от дубли
+      // при мрежов ретрай/двоен клик (една сесия на сайт в прозореца), но пуска
+      // нова сесия след прозореца (напр. след отказ и повторен опит по-късно).
+      { idempotencyKey: `checkout:${site.id}:${Math.floor(Date.now() / 60_000)}` },
+    );
     if (!session.url) return { error: "Stripe не върна адрес за плащане." };
     return { url: session.url };
   } catch (err) {
@@ -83,10 +89,15 @@ export async function createPortalSession(
   if (!stripe) return { error: "Билингът не е настроен (липсва STRIPE_SECRET_KEY)." };
   if (!site.stripeCustomerId) return { error: "Няма Stripe клиент за този сайт." };
   try {
-    const session = await stripe.billingPortal.sessions.create({
-      customer: site.stripeCustomerId,
-      return_url: `${baseUrl()}/dashboard/sites/${site.slug}/billing`,
-    });
+    const session = await stripe.billingPortal.sessions.create(
+      {
+        customer: site.stripeCustomerId,
+        return_url: `${baseUrl()}/dashboard/sites/${site.slug}/billing`,
+      },
+      // Idempotency-Key: детерминистичен в 60-секунден прозорец — дедуп при
+      // ретрай/двоен клик, но не блокира последващи легитимни отваряния.
+      { idempotencyKey: `portal:${site.stripeCustomerId}:${Math.floor(Date.now() / 60_000)}` },
+    );
     return { url: session.url };
   } catch (err) {
     console.error("Stripe portal: грешка", err);
@@ -248,15 +259,57 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       break;
     }
 
+    case "invoice.paid": {
+      // Defense-in-depth при подновяване: успешно платена фактура потвърждава,
+      // че абонаментът върви. Дублира customer.subscription.updated (active), но
+      // ако то се забави/пропусне, тук премахваме евентуален PAST_DUE и
+      // придвижваме planRenewsAt напред. Идемпотентно по event.id.
+      const invoice = event.data.object as Stripe.Invoice;
+      const customerId =
+        typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id ?? null;
+      // В тази API версия абонаментът е под parent.subscription_details.
+      const subRef = invoice.parent?.subscription_details?.subscription ?? null;
+      const subId = typeof subRef === "string" ? subRef : subRef?.id ?? null;
+
+      if (subId && stripe) {
+        // Изтегли реалния статус/период от Stripe — не се доверяваме на нищо
+        // от клиента; premium се решава от isPremiumStatus през subFields.
+        const sub = await stripe.subscriptions.retrieve(subId);
+        const f = subFields(sub);
+        const res = await applyOnce(event.id, event.type, customerId, null, f);
+        if (res.applied && res.siteId) {
+          await logAudit(null, {
+            action: "UPDATE",
+            entity: "Site",
+            entityId: res.siteId,
+            summary: `Билинг: платена фактура (invoice.paid) — статус „${sub.status}"`,
+          });
+        }
+      } else {
+        // Без subscription (напр. еднократна фактура) — само маркирай event-а
+        // като обработен, без да пипаме достъпа.
+        await prisma.webhookEvent
+          .create({ data: { id: event.id, type: event.type } })
+          .catch(() => {
+            /* дубликат при ретрай — ок */
+          });
+      }
+      break;
+    }
+
     case "invoice.payment_failed": {
       const invoice = event.data.object as Stripe.Invoice;
       const customerId =
         typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id ?? null;
-      // Не отнемаме веднага (dunning тече); отбелязваме PAST_DUE. Достъпът
-      // остава, докато Smart Retries не изчерпи опитите → subscription.deleted.
+      // M1 — dunning политиката е в ЕДНА точка: isPremiumStatus(). Тук НЕ
+      // зашиваме `premium: true`, защото Stripe не гарантира реда на доставка и
+      // това би се борило с мапинга при customer.subscription.updated
+      // (past_due). Отбелязваме PAST_DUE и оставяме isPremiumStatus да реши
+      // достъпа (по подразбиране PAST_DUE → без премиум). Ако решим да даваме
+      // гратис по време на dunning, се сменя САМО isPremiumStatus в billing.ts.
       const res = await applyOnce(event.id, event.type, customerId, null, {
         billingStatus: "PAST_DUE",
-        premium: true,
+        premium: isPremiumStatus("PAST_DUE"),
       });
       if (res.applied && res.siteId) {
         await logAudit(null, {

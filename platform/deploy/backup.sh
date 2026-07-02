@@ -46,7 +46,12 @@ load_env "$ROOT_DIR/.env"
 load_env "$ROOT_DIR/.backup.env"    # по избор: тук дръж само AGE_RECIPIENT
 
 # --- Параметри (по подразбиране съвпадат с docker-compose.yml) ---
-BACKUP_DIR="${BACKUP_DIR:-$ROOT_DIR/backups}"
+# ВАЖНО: по подразбиране пишем ИЗВЪН дървото на проекта (/var/backups/platform).
+# autodeploy разгръща всеки релийз в нова папка под /opt/few-few/releases/ и ротира
+# старите — ако бекъпите стоят в platform/backups/, ротацията на релийзите ще ги
+# трие заедно с кода. Стабилна, независима от релийзите директория е задължителна.
+# Подмени с BACKUP_DIR в EnvironmentFile (/etc/platform/backup.env), ако трябва.
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/platform}"
 RETENTION="${BACKUP_RETENTION:-31}"          # колко най-нови копия (на артефакт) да пазим
 DB_SERVICE="${BACKUP_DB_SERVICE:-db}"
 POSTGRES_USER="${POSTGRES_USER:-platform}"

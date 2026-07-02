@@ -2,9 +2,16 @@
 # AGE_RECIPIENT (публичен ключ) идва от EnvironmentFile; частният ключ НЕ е на
 # сървъра. Пуска се от хоста, защото ползва `docker compose exec`.
 #
+# СТАБИЛНА BACKUP_DIR (важно): бекъпите ТРЯБВА да се пишат ИЗВЪН дървото на релийза.
+# backup.sh по подразбиране пише в /var/backups/platform; autodeploy ротира старите
+# релийзи под /opt/few-few/releases/ и би изтрил бекъпи, ако стояха в platform/backups/.
+# Ако сменяш пътя, задай BACKUP_DIR в backup.env (пак извън /opt/few-few/releases/).
+#
 # Инсталация:
 #   sudo cp platform-backup.* /etc/systemd/system/
+#   sudo install -d -m 700 /var/backups/platform          # стабилна директория за бекъпи
 #   # /etc/platform/backup.env (mode 600) с ред: AGE_RECIPIENT=age1...публичен...
+#   #   (по избор: BACKUP_DIR=/var/backups/platform, BACKUP_RETENTION=31)
 #   sudo systemctl daemon-reload && sudo systemctl enable --now platform-backup.timer
 #   sudo systemctl start platform-backup.service   # пробно пускане
 [Unit]

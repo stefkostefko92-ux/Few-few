@@ -1,0 +1,73 @@
+# Caddyfile за platform — multi-tenant reverse proxy с On-Demand TLS.
+#
+# ЗАЩО Caddy (а не nginx+certbot):
+#   Платформата обслужва ПРОИЗВОЛЕН брой клиентски домейни/поддомейни, които се
+#   появяват динамично (клиент въвежда собствен домейн или заема наш поддомейн в
+#   панела). С nginx+certbot трябва да пресъздаваш server-блок и да пускаш certbot
+#   за ВСЕКИ нов домейн ръчно. Caddy издава сертификат при първото TLS ръкостискане
+#   (On-Demand TLS) — нула ръчни стъпки на нов домейн. Затова тук е Caddy, а не
+#   nginx (за разлика от zabobovdol/medqr, които са с фиксиран домейн зад nginx).
+#
+# КАК se пази от злоупотреба (задължително при catch-all On-Demand):
+#   Преди да издаде сертификат за домейн X, Caddy пита `ask` endpoint-а
+#   (/api/tls-check?domain=X). Приложението връща 200 САМО за:
+#     - платформен хост (isPlatformHost), или
+#     - наш публикуван поддомейн (<sub>.carbonstealth.site, Site.published=true), или
+#     - потвърден собствен домейн (customDomain + domainVerified + published).
+#   За всичко друго връща 403 → Caddy отказва издаване. Виж
+#   platform/src/app/api/tls-check/route.ts.
+#
+# RATE LIMIT: gate-ът е в самия ask endpoint — /api/tls-check прави per-IP лимит
+#   (60 заявки/мин) и връща 429 при заливане (route.ts:17). ВНИМАНИЕ: старите
+#   `interval`/`burst` под `on_demand_tls` са ПРЕМАХНАТИ в Caddy 2.9+ — единственият
+#   поддържан контрол е `ask` (+ `permission`). Не ги добавяй — чупят конфига.
+#
+# DNS изисквания (еднократно, за платформата):
+#   Wildcard за нашите поддомейни:  *.carbonstealth.site   A     <IP-на-сървъра>
+#                                    (*.carbonstealth.site   AAAA  <IPv6>, ако има)
+#   Панел:                           platform.carbonstealth.eu  A  <IP-на-сървъра>
+#   Собствен домейн на клиент: клиентът насочва своя A/CNAME към нас (виж DOMAINS.md §3).
+#   Забележка: On-Demand TLS ползва ACME HTTP-01/TLS-ALPN за всеки домейн поотделно;
+#   не изисква DNS-01 плъгин. (DNS-01 wildcard сертификат е алтернатива — виж DOMAINS.md §4.2.)
+#
+# Портът към контейнера `web` идва от platform/.env (HTTP_PORT, подр. 3100 при
+# съвместен хост с medqr, който заема 3000). Caddy чете env: {$HTTP_PORT:3100}.
+#
+# Тест на синтаксиса:  caddy validate --config platform/deploy/Caddyfile
+# Презареждане:        caddy reload  --config /etc/caddy/Caddyfile
+
+{
+	# Имейл за ACME (Let's Encrypt) регистрация и известия за изтичащи сертификати.
+	email admin@carbonstealth.eu
+
+	# On-Demand TLS: питай приложението преди да издадеш сертификат за домейн от
+	# TLS ръкостискането. Задължително в продукция (иначе всеки може да те накара
+	# да издаваш сертификати за чужди домейни). Пътят е локален plain-HTTP към web.
+	on_demand_tls {
+		ask http://127.0.0.1:{$HTTP_PORT:3100}/api/tls-check
+	}
+}
+
+# --- Панелът / маркетинг хостът (фиксиран домейн → нормален ACME, НЕ on-demand) ---
+platform.carbonstealth.eu {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:{$HTTP_PORT:3100} {
+		# Caddy подава X-Forwarded-For/-Proto/-Host автоматично; приложението
+		# чете последния XFF (добавен от този доверен proxy) за rate-limit.
+		header_up X-Forwarded-Proto https
+	}
+}
+
+# --- Клиентски сайтове: наши поддомейни + потвърдени собствени домейни ---
+# Catch-all за всеки друг хост на 443. On-Demand TLS издава сертификата при първото
+# ръкостискане, само ако ask endpoint-ът е одобрил домейна (иначе 403 → отказ).
+# По-специфичният блок за platform.carbonstealth.eu по-горе печели за този хост.
+https:// {
+	tls {
+		on_demand
+	}
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:{$HTTP_PORT:3100} {
+		header_up X-Forwarded-Proto https
+	}
+}

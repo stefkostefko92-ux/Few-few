@@ -6,6 +6,7 @@ import {
   openPortalAction,
   type BillingResult,
 } from "@/app/dashboard/sites/[slug]/billing/actions";
+import { CONSENT_CLAUSE_16M } from "@/lib/billing";
 
 type Init = {
   slug: string;
@@ -83,18 +84,15 @@ export function BillingPanel({ init }: { init: Init }) {
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
             />
-            <span>
-              Съгласявам се услугата (премиум функциите) да започне веднага и
-              потвърждавам, че с това{" "}
-              <b>губя 14-дневното право на отказ</b> за вече предоставената
-              дигитална услуга (чл. 16, б. „м“ от Дир. 2011/83/ЕС).
-            </span>
+            {/* Точният текст съвпада с CONSENT_CLAUSE_16M, който сървърът записва
+                дословно в одит лога като доказателство за информираното съгласие. */}
+            <span>{CONSENT_CLAUSE_16M}</span>
           </label>
 
           <button
             className="btn-primary px-3 py-1.5 text-xs disabled:opacity-50"
             disabled={pending || !consent}
-            onClick={() => go(() => startCheckoutAction(init.slug))}
+            onClick={() => go(() => startCheckoutAction(init.slug, consent))}
           >
             {pending ? "Пренасочване…" : "Направи премиум"}
           </button>
