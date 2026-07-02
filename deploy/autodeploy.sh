@@ -225,7 +225,15 @@ deploy_nexus() {
     ( cd "$NEXUS_DIR/source" && bash scripts/release-gate.sh ) \
       || die "nexus release gate провал — деплоят е спрян (виж ✗ редовете)."
   fi
-  ( cd "$NEXUS_DIR/source" && docker compose build && docker compose up -d --remove-orphans )
+  ( cd "$NEXUS_DIR/source" && docker compose build )
+  # Bind mount-ът е root:root на хоста, а контейнерът върви като 'app'
+  # (Dockerfile USER app) → без chown ПЪРВИЯТ boot не може да създаде
+  # SQLite базата и умира тихо (открито на живия деплой 02.07). Взимаме
+  # uid/gid на 'app' от самия образ; идемпотентно.
+  app_uid=$(docker run --rm --entrypoint sh nexus-dominion:latest -c 'id -u app' 2>/dev/null || echo 100)
+  app_gid=$(docker run --rm --entrypoint sh nexus-dominion:latest -c 'id -g app' 2>/dev/null || echo 101)
+  chown -R "$app_uid:$app_gid" "$NEXUS_STATE_DIR/data"
+  ( cd "$NEXUS_DIR/source" && docker compose up -d --remove-orphans )
   sleep 5
   if health "$NEXUS_HEALTH_URL" "nexus"; then
     rm -rf "$NEXUS_DIR/source.bak-$TS"
