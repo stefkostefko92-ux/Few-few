@@ -16,6 +16,22 @@ export async function currentPrice(ex, symbol) {
   return t.last ?? t.close;
 }
 
+// Портфейлен капитал за мулти-символен режим: quote (обща за всички символи, валидирано в config)
+// + стойността на всеки държан base по текущата му цена. prices: { [symbol]: price }.
+export async function readPortfolioEquity(ex, symbols, prices) {
+  const quote = symbols[0].split('/')[1];
+  const bal = await ex.fetchBalance();
+  let equity = (bal[quote]?.free ?? 0) + (bal[quote]?.used ?? 0);
+  const baseTotals = {};
+  for (const s of symbols) {
+    const base = s.split('/')[0];
+    const total = bal[base]?.total ?? 0;
+    baseTotals[s] = total;
+    equity += total * (prices[s] ?? 0);
+  }
+  return { equity, baseTotals };
+}
+
 // Капитал в quote валута (напр. USDT): свободен quote + стойност на държания base по текуща цена.
 // Ботът е spot и само-long, така че base количеството е "позицията".
 export async function readEquity(ex, symbol, price) {

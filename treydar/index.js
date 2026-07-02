@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { loadConfig, describeMode } from './src/config.js';
 import { startBot } from './src/bot.js';
+import { startMultiBot } from './src/multibot.js';
 import { log } from './src/logger.js';
 
 // Малък .env зареждач (без външна зависимост). Не пипа вече зададени env променливи.
@@ -29,10 +30,12 @@ try {
 
 const stratDesc = cfg.strategy === 'sma'
   ? `SMA ${cfg.smaFast}/${cfg.smaSlow}`
-  : `trend EMA ${cfg.emaFast}/${cfg.emaSlow}/тренд ${cfg.emaTrend} · RSI<${cfg.rsiOverbought} · ATR×${cfg.atrMult}${cfg.useTrailing ? ' · trailing' : ''}`;
+  : `trend EMA ${cfg.emaFast}/${cfg.emaSlow}/тренд ${cfg.emaTrend} · RSI<${cfg.rsiOverbought} · ATR×${cfg.atrMult}${cfg.adxMin > 0 ? ` · ADX≥${cfg.adxMin}` : ''}${cfg.useTrailing ? ' · trailing' : ''}`;
+const multi = cfg.symbols.length >= 2; // SYMBOLS с ≥2 символа → портфейлен режим
 log.info(`Режим: ${describeMode(cfg)}`);
-log.info(`Пазар: ${cfg.symbol} · ${cfg.timeframe} · стратегия: ${stratDesc}`);
-log.info(`Риск: ${cfg.riskPctPerTrade}%/сделка · стоп ${cfg.stopLossPct}% · дневен лимит ${cfg.dailyLossLimitPct}% · max DD ${cfg.maxDrawdownPct}%`);
+log.info(`Пазар: ${multi ? cfg.symbols.join(', ') : cfg.symbol} · ${cfg.timeframe} · стратегия: ${stratDesc}`);
+log.info(`Риск: ${cfg.riskPctPerTrade}%/сделка · дневен лимит ${cfg.dailyLossLimitPct}% · max DD ${cfg.maxDrawdownPct}%${multi ? ` · портфейл: ≤${cfg.maxConcurrent} позиции, общ ≤${cfg.maxPortfolioRiskPct}%, група ≤${cfg.maxGroupRiskPct}%` : ''}`);
 if (cfg.realMoney) log.warn('РАБОТИШ С РЕАЛНИ ПАРИ. Загубите са реални. Не е инвестиционен съвет.');
 
-startBot(cfg).catch((e) => { log.error(`Фатално: ${e.message}`); process.exit(1); });
+const run = multi ? startMultiBot : startBot;
+run(cfg).catch((e) => { log.error(`Фатално: ${e.message}`); process.exit(1); });

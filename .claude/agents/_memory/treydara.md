@@ -97,5 +97,12 @@
   (некорелирани потоци сваля риска); (5) engine.js споделен симулационен двигател; (6) CI workflow treydar.
   37/37 теста, линт чист _(treydar pro guards; verified; treydar/src/{portfolio,engine,metrics,indicators,risk}.js + .github/workflows/treydar.yml)_
 
+- **2026-07-02:** Мулти-символен режим в treydar (multibot.js): портфейлните лимити се проверяват на
+  ВСЕКИ вход (canOpenPosition: макс едновременни, общ риск, риск в корелирана група — корелация на живо
+  от затворени свещи); всички символи споделят една quote валута (валидирано в config). Поука от
+  прегледа: dry-run журналираше фалшиви стоп-изходи (борсовият баланс е 0 без реални поръчки) → paper
+  позициите трябва да живеят в state със симулиран стоп, иначе тровят статистиката на тренера
+  _(multibot + dry-run journal fix; verified; treydar/src/multibot.js + treydar/src/bot.js)_
+
 ## Карантина (непроверени хипотези — НЕ факт)
 - _(празно)_

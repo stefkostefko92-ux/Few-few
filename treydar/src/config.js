@@ -70,6 +70,17 @@ export function loadConfig(env = process.env) {
   if (cfg.strategy === 'trend' && cfg.emaFast >= cfg.emaSlow)
     throw new Error(`Конфиг грешка: EMA_FAST (${cfg.emaFast}) трябва да е < EMA_SLOW (${cfg.emaSlow}).`);
 
+  // Мулти-символен режим: всеки символ е BASE/QUOTE и всички споделят ЕДНА quote валута
+  // (капиталът и риск-лимитите се смятат в нея).
+  if (cfg.symbols.length) {
+    for (const s of cfg.symbols)
+      if (!/^[A-Z0-9]+\/[A-Z0-9]+$/i.test(s))
+        throw new Error(`Конфиг грешка: SYMBOLS съдържа невалиден символ "${s}" (очакван формат BASE/QUOTE).`);
+    const quotes = new Set(cfg.symbols.map((s) => s.split('/')[1].toUpperCase()));
+    if (quotes.size > 1)
+      throw new Error(`Конфиг грешка: SYMBOLS трябва да споделят една quote валута (намерени: ${[...quotes].join(', ')}).`);
+  }
+
   if (cfg.live && (!cfg.apiKey || !cfg.apiSecret))
     throw new Error('TRADING_LIVE=true, но липсват BINANCE_API_KEY/SECRET.');
 

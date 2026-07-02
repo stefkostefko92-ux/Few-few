@@ -23,8 +23,8 @@ export async function runOnce(ex, cfg, market, state) {
     ({ equity, baseTotal } = await readEquity(ex, cfg.symbol, price));
   } catch (e) {
     if (cfg.live) throw e; // на живо липсващият баланс е фатален — не гадаем
-    equity = cfg.paperEquity; baseTotal = 0;
-    log.warn(`DRY-RUN: балансът не е четен (${e.message}) → paper капитал $${equity}`);
+    equity = cfg.paperEquity + (state.paperPnl ?? 0); baseTotal = 0;
+    log.warn(`DRY-RUN: балансът не е четен (${e.message}) → paper капитал $${equity.toFixed(2)}`);
   }
   rollDay(state, equity);
   updateEquityPeak(state, equity);
@@ -32,31 +32,37 @@ export async function runOnce(ex, cfg, market, state) {
   const ctx = prepare(candles, cfg);
   const i = closes.length - 1;                 // последна ЗАТВОРЕНА свещ
   const sig = signalAt(ctx, i);
-  const hasPosition = baseTotal * price > (market?.limits?.cost?.min ?? 0);
 
-  audit('tick', { price, equity, signal: sig, hasPosition, killed: state.killed });
-  log.info(`tick: price=${price} equity=${equity.toFixed(2)} signal=${sig ?? '—'} pos=${hasPosition}`);
-
-  // Позицията е затворена ОТВЪН (стопът на борсата се е напълнил, или ръчна продажба):
-  // запиши сделката в дневника като изход по стоп, за да учи ботът от нея.
-  if (!hasPosition && state.position) {
+  // Затваряне на позиция „отвън":
+  //  • live: борсата е източник на истината — базовият актив е изчезнал (стопът се е напълнил).
+  //  • dry-run: няма реална позиция на борсата — симулираме стопа, ако цената е под него.
+  const minCost = market?.limits?.cost?.min ?? 0;
+  if (state.position && (cfg.live ? baseTotal * price <= minCost : price <= state.position.stopPrice)) {
     const rec = tradeRecord({
       symbol: cfg.symbol, entry: state.position.entry, exit: state.position.stopPrice,
       qty: state.position.qty, stopPrice: state.position.stopPrice, exitReason: 'stop',
     });
     recordTrade(rec);
     audit('trade.closed', rec);
+    if (!cfg.live) state.paperPnl = (state.paperPnl ?? 0) + rec.pnlQuote;
     if (rec.rMultiple <= 0) state.lastLossMs = Date.now(); // cooldown срещу revenge trading
     log.info(`Позицията е затворена (стоп) → записана в дневника: ${rec.rMultiple}R`);
     state.position = null;
     saveState(state);
   }
 
+  // Имаме ли позиция: live → по реалния баланс; dry-run → по паметта (paper позиция).
+  const hasPosition = cfg.live ? baseTotal * price > minCost : !!state.position;
+
+  audit('tick', { price, equity, signal: sig, hasPosition, killed: state.killed });
+  log.info(`tick: price=${price} equity=${equity.toFixed(2)} signal=${sig ?? '—'} pos=${hasPosition}`);
+
   // Изход: сигнал за изход → продавам, махам стопа и записвам сделката в дневника.
   if (hasPosition && sig === 'exit') {
     log.info('Сигнал за ИЗХОД → продавам и махам стопа.');
     await cancelAllOpen({ ex, cfg, symbol: cfg.symbol });
-    await marketSell({ ex, cfg, market, symbol: cfg.symbol, quantity: baseTotal, price });
+    const sellQty = cfg.live ? baseTotal : state.position?.qty ?? 0;
+    if (sellQty > 0) await marketSell({ ex, cfg, market, symbol: cfg.symbol, quantity: sellQty, price });
     if (state.position) {
       const rec = tradeRecord({
         symbol: cfg.symbol, entry: state.position.entry, exit: price,
@@ -64,6 +70,7 @@ export async function runOnce(ex, cfg, market, state) {
       });
       recordTrade(rec);
       audit('trade.closed', rec);
+      if (!cfg.live) state.paperPnl = (state.paperPnl ?? 0) + rec.pnlQuote;
       if (rec.rMultiple <= 0) state.lastLossMs = Date.now();
       log.info(`Изход по сигнал → записан в дневника: ${rec.rMultiple}R`);
     }
@@ -78,7 +85,8 @@ export async function runOnce(ex, cfg, market, state) {
     if (newStop > (state.position.stopPrice ?? 0) * 1.001) {
       log.info(`Trailing: качвам стоп ${(state.position.stopPrice ?? 0).toFixed(2)} → ${newStop.toFixed(2)}`);
       await cancelAllOpen({ ex, cfg, symbol: cfg.symbol });
-      await placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: baseTotal, stopPrice: newStop });
+      const trailQty = cfg.live ? baseTotal : state.position.qty;
+      await placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: trailQty, stopPrice: newStop });
       state.position.stopPrice = newStop;
       saveState(state);
     }

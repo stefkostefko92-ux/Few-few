@@ -13,7 +13,9 @@ const DEFAULT = {
   dayStartEquity: null,
   dayKey: null,        // YYYY-MM-DD за нулиране на дневния лимит
   killed: false,
-  position: null,      // { qty, entry, stopClientId } или null
+  position: null,      // едно-символен режим: { qty, entry, stopPrice } или null
+  positions: {},       // мулти-символен режим: { [symbol]: { qty, entry, stopPrice, riskPct } }
+  paperPnl: 0,         // натрупан paper PnL в dry-run (за приблизителен paper капитал)
   dayTradeCount: 0,    // брой входове днес (за дневния лимит сделки)
   lastLossMs: null,    // timestamp на последната губеща сделка (за cooldown)
 };
