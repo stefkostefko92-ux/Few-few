@@ -1,18 +1,23 @@
 # Реалистични персонажи (Ready Player Me / Mixamo)
 
-> ⚠️ **САМО ЗА РАЗРАБОТКА.** `warrior.glb` и `mage.glb`
-> тук са един и същ **RPM sample аватар под НЕкомерсиален лиценз (CC BY-NC)**.
-> **ЗАБРАНЕНИ са в публичен/комерсиален билд.** Преди пускане: изтрий ги или
-> замени с (i) собствени RPM аватари като регистриран RPM Developer/Partner,
-> или (ii) CC0/комерсиално-чист асет. Виж `docs/REALISTIC-CHARACTERS.md`.
+> ⚠️ **Лицензен гейт (автоматичен).** RPM sample аватарът е **CC BY-NC
+> (некомерсиален)** и е забранен в публичен билд. `scripts/release-gate.sh`
+> (пуска се от CI и от autodeploy) **фейлва деплоя**, ако: (а) тук има GLB с
+> хеша на sample-а, или (б) GLB, който не е одобрен в `APPROVED-ASSETS.txt`.
+> Виж `docs/REALISTIC-CHARACTERS.md` за лицензната таблица.
 
 Сложи тук GLB с **истинско лице** на име `warrior.glb`, `mage.glb`, `ranger.glb`,
 `rogue.glb`. Боят автоматично ги предпочита пред нискополигоналните Quaternius
 ригове (`../<cls>.glb`) — без промяна в кода (`CombatScene3D.tryLoadRig`).
 
-`warrior.glb` и `mage.glb` тук са **ПЛЕЙСХОЛДЪРИ** (един и същ RPM sample —
-сватбен господин), за да видиш реалистичния рендер веднага в `/demo/combat`.
-Замени ги със свои аватари.
+За dev преглед: `bash scripts/fetch-realistic-characters.sh` сваля sample-а
+локално (не го committ-вай — gate-ът ще спре деплоя).
+
+## Одобряване на собствен асет (за продукция)
+
+1. Провери лиценза (собствен RPM аватар като регистриран Developer / купен /
+   CC0). 2. Добави ред в `APPROVED-ASSETS.txt`: `<sha256>  <име>.glb`
+   (`sha256sum <файл>`). 3. Committ-ни двата файла — gate-ът ще пусне.
 
 ## Как да направиш свои (CDN-ите на RPM/Mixamo са блокирани в CI, но ти имаш достъп)
 

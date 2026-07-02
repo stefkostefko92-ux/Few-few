@@ -219,10 +219,27 @@ deploy_nexus() {
     printf '\n# Път до SQLite данните (bind mount в docker-compose.yml)\nNEXUS_DATA_DIR=%s\n' \
       "$NEXUS_STATE_DIR/data" >> "$NEXUS_STATE_DIR/.env"
   fi
+  # Автоматичен release gate — блокира деплой с PLACEHOLDER правни данни,
+  # некомерсиални асети или .dockerignore↔Dockerfile несъответствие.
+  if [ -f "$NEXUS_DIR/source/scripts/release-gate.sh" ]; then
+    ( cd "$NEXUS_DIR/source" && bash scripts/release-gate.sh ) \
+      || die "nexus release gate провал — деплоят е спрян (виж ✗ редовете)."
+  fi
   ( cd "$NEXUS_DIR/source" && docker compose build && docker compose up -d --remove-orphans )
   sleep 5
   if health "$NEXUS_HEALTH_URL" "nexus"; then
     rm -rf "$NEXUS_DIR/source.bak-$TS"
+    # Самоинсталиране на systemd единиците (идемпотентно): стартиране на
+    # стека при boot + дневен бекъп таймер. Никакви ръчни стъпки.
+    if command -v systemctl >/dev/null; then
+      install -m 644 "$NEXUS_DIR/source/deploy/nexus-dominion.service" /etc/systemd/system/nexus.service
+      install -m 644 "$NEXUS_DIR/source/deploy/nexus-backup.service"   /etc/systemd/system/nexus-backup.service
+      install -m 644 "$NEXUS_DIR/source/deploy/nexus-backup.timer"     /etc/systemd/system/nexus-backup.timer
+      systemctl daemon-reload
+      systemctl enable nexus.service >/dev/null 2>&1 || true
+      systemctl enable --now nexus-backup.timer >/dev/null 2>&1 || true
+      log "nexus systemd: boot unit + дневен бекъп таймер инсталирани."
+    fi
   else
     deploy_failed=1
     warn "nexus health провал — връщам предишния код."

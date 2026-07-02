@@ -3,33 +3,37 @@
  * and JSON-LD. Single source of truth so changes (new VAT number, new
  * support address, new hosting region) ripple to every legal artefact.
  *
- * The values below are placeholders the operator MUST replace before
- * the platform handles a single live payment. Search this file for
- * `PLACEHOLDER` and fill each one in with the real company record.
+ * Данните са от публичния импресум на Carbon Stealth VCC (same operator
+ * record as medqr/zabobovdol; ЕИК/ДДС от Търговския регистър).
  */
 export const OPERATOR = {
   legalName: 'Carbon Stealth VCC',
+  legalForm: 'дружество с променлив капитал (VCC)',
   tradingName: 'Nexus Dominion',
   address: {
-    street: 'PLACEHOLDER — registered office street',
-    postal: '1000',
-    city: 'Sofia',
-    country: 'Bulgaria',
+    street: 'ул. „Самуил“ 3',
+    postal: '2670',
+    city: 'Бобов дол',
+    country: 'България',
   },
-  vat: 'PLACEHOLDER-VAT-NUMBER',
-  registry: 'PLACEHOLDER-EIK / Companies House registration',
-  representative: 'PLACEHOLDER — legal representative full name',
+  vat: 'BG208725180',
+  registry: 'ЕИК 208725180',
+  representative: 'Стефан Костадинов',
   hosting: {
-    name: 'PLACEHOLDER-HOST',
-    region: 'EU',
+    name: 'Hetzner Online GmbH',
+    region: 'EU (Германия/Финландия)',
   },
+  // Само реално съществуващи пощи от фирмения запис (info/privacy/security) —
+  // непотвърдени кутии (support@/dpo@/legal@) биха гълтали писма на играчи.
   email: {
-    support: 'support@carbonstealth.eu',
+    support: 'info@carbonstealth.eu',
     privacy: 'privacy@carbonstealth.eu',
-    dpo: 'dpo@carbonstealth.eu',
-    legal: 'legal@carbonstealth.eu',
-    abuse: 'abuse@carbonstealth.eu',
+    dpo: 'privacy@carbonstealth.eu',
+    legal: 'info@carbonstealth.eu',
+    abuse: 'security@carbonstealth.eu',
   },
+  phone: '+359 877 414 874',
+  companyUrl: 'https://carbonstealth.eu',
   publicBaseUrl: 'https://nexus.carbonstealth.eu',
 } as const;
 
