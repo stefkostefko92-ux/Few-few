@@ -452,7 +452,9 @@ export class MagnatScene {
 
     const params = defaultGfxParams();
     params.exposure = 1.08;
-    params.bloom = { enabled: true, strength: 0.06, radius: 0.4, threshold: 1.35 };
+    // 1.35 sits just above the lit ivory tiles' HDR luminance (~1.3) — below it
+    // the whole ring washes out. Windows at emissive 2.2 still burn through.
+    params.bloom = { enabled: true, strength: 0.06, radius: 0.45, threshold: 1.35 };
     params.ao = { enabled: true, radius: 0.6, intensity: 1.0 };
     this.core = new RenderCore({
       canvas,
@@ -792,7 +794,9 @@ export class MagnatScene {
       roughnessMap: tex("glass_rough.jpg"),
       emissiveMap: tex("glass_emission.jpg", true),
       emissive: new Color("#ffeccb"),
-      emissiveIntensity: 1.35,
+      // Above the 1.35 bloom threshold so lit windows glow softly at dusk
+      // (2.2+ halos the whole ring — 40 towers bleed onto the tiles).
+      emissiveIntensity: 1.9,
       color: new Color("#2b3440"),
       metalness: 0.9,
       roughness: 1,
@@ -808,7 +812,9 @@ export class MagnatScene {
     const geo = new BoxGeometry(w, h, d);
     const uv = geo.attributes.uv!;
     const repX = Math.max(1, Math.round(w / 0.95));
-    const repY = Math.max(1, Math.round(floors / 4));
+    // /2 (not /4): halved UV density so individual windows read at table scale
+    // instead of collapsing into barcode stripes.
+    const repY = Math.max(1, Math.round(floors / 2));
     for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * repX, uv.getY(i) * repY);
     uv.needsUpdate = true;
     return geo;
