@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-06-26",
+    "updated": "2026-07-02",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -7595,6 +7595,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Tailwind @apply focus:outline-none вътре в @layer components компилира до .клас:focus{o…\""
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
