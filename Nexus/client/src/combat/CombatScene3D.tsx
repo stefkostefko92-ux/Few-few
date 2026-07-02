@@ -1148,7 +1148,9 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
     /* ----- scene + camera ----- */
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(pal.sky);
-    scene.fog = new THREE.Fog(pal.fog, 6, 22);
+    // По-стегната мъгла = по-силна въздушна перспектива: задните скали се
+    // разтварят към хоризонта и сцената получава дълбочина на план-слоеве.
+    scene.fog = new THREE.Fog(pal.fog, 6, 18);
 
     const camera = new THREE.PerspectiveCamera(42, mount.clientWidth / mount.clientHeight, 0.1, 100);
     camera.position.set(0, 2.4, 8.0);
@@ -1236,6 +1238,24 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
         haze.addColorStop(0.5, hexA(pal.ambient, 0.16));
         haze.addColorStop(1, hexA(pal.ambient, 0));
         ctx.fillStyle = haze; ctx.fillRect(0, c.height * 0.62, c.width, c.height * 0.20);
+        // Cloud wisps — soft elongated streaks in the upper sky. Additive,
+        // ambient-tinted; sun-side ones catch more light (cinematic depth cue).
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 14; i++) {
+          const cx0 = Math.random() * c.width;
+          const cy0 = c.height * (0.10 + Math.random() * 0.38);
+          const w = c.width * (0.08 + Math.random() * 0.16);
+          const h = c.height * (0.012 + Math.random() * 0.03);
+          const sunBias = Math.max(0, 1 - Math.abs(cx0 - sunX) / (c.width * 0.4));
+          const a = 0.05 + Math.random() * 0.06 + sunBias * 0.08;
+          const cg = ctx.createRadialGradient(cx0, cy0, 0, cx0, cy0, w);
+          cg.addColorStop(0, hexA(pal.ambient, a));
+          cg.addColorStop(1, hexA(pal.ambient, 0));
+          ctx.save(); ctx.translate(cx0, cy0); ctx.scale(1, h / w); ctx.translate(-cx0, -cy0);
+          ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(cx0, cy0, w, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+        ctx.globalCompositeOperation = 'source-over';
         // Layered ridgelines for parallax depth.
         for (let layer = 0; layer < 3; layer++) {
           ctx.fillStyle = `rgba(0,0,0,${0.16 + layer * 0.13})`;
@@ -1251,6 +1271,20 @@ const CombatScene3D = React.forwardRef<CombatScene3DHandle, Props>(({ heroClass,
           }
           ctx.lineTo(c.width, c.height); ctx.closePath(); ctx.fill();
         }
+        // Фин dither шум върху цялото небе — убива gradient banding-а (той
+        // е главната причина небето да чете „плоско/на ленти" на 8-bit екран).
+        const noise = ctx.createImageData(c.width, c.height);
+        const nd = noise.data;
+        for (let i = 0; i < nd.length; i += 4) {
+          const v = (Math.random() - 0.5) * 10;
+          nd[i] = 128 + v; nd[i + 1] = 128 + v; nd[i + 2] = 128 + v; nd[i + 3] = 14;
+        }
+        const nc = document.createElement('canvas');
+        nc.width = c.width; nc.height = c.height;
+        nc.getContext('2d')!.putImageData(noise, 0, 0);
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.drawImage(nc, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
         const t = new THREE.CanvasTexture(c);
         t.colorSpace = THREE.SRGBColorSpace;
         t.wrapS = THREE.RepeatWrapping;

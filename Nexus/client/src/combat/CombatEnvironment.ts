@@ -250,6 +250,17 @@ export function buildRegionEnvironment(
         if (m.isMesh) {
           m.castShadow = !isGroundFx;
           m.receiveShadow = true;
+          // Per-instance тонална вариация (материалите не са споделени, виж
+          // dispose по-долу): лек hue/lightness/roughness jitter, за да не
+          // четат N-те копия на един prop като щамповани — плюс IBL отговор.
+          const mats = Array.isArray(m.material) ? m.material : [m.material];
+          for (const mm of mats) {
+            const std = mm as THREE.MeshStandardMaterial;
+            if (!std || !(std as any).isMeshStandardMaterial) continue;
+            std.color.offsetHSL((Math.random() - 0.5) * 0.03, (Math.random() - 0.5) * 0.08, (Math.random() - 0.5) * 0.07);
+            if (std.roughness !== undefined) std.roughness = Math.min(1, Math.max(0.35, std.roughness + (Math.random() - 0.5) * 0.2));
+            std.envMapIntensity = 0.9 + Math.random() * 0.4;
+          }
         }
       });
       group.add(mesh);
