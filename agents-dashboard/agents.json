@@ -7756,6 +7756,11 @@
       "activity": [
         {
           "date": "2026-07-02",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Автентична Nokia 3310 LCD палитра (community, не музейно точна): фон/off #9EAD86, включ…\" (+1)"
+        },
+        {
+          "date": "2026-07-02",
           "type": "learning",
           "summary": "Научи: „@colorsandfonts/mcp е готов MCP сървър за палитри/шрифтове (инсталация: npx -y @colorsa…\""
         },
