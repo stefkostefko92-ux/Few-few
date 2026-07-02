@@ -1,9 +1,21 @@
-// test/extras.test.js — ADX, честотни спирачки, Monte Carlo risk-of-ruin.
+// test/extras.test.js — ADX, честотни спирачки, Monte Carlo risk-of-ruin, precision floor.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import ccxt from 'ccxt';
 import { adx } from '../src/indicators.js';
 import { tradingAllowedByFrequency } from '../src/risk.js';
 import { monteCarloRuin } from '../src/metrics.js';
+
+// Поука от CCXT Manual (проверена на живо): amountToPrecision ползва борсовия rounding режим и МОЖЕ
+// да закръгли НАГОРЕ. execute.js затова ползва decimalToPrecision с изричен TRUNCATE — доказваме,
+// че реалната ccxt примитива при Binance (TICK_SIZE) реже строго надолу, никога нагоре.
+test('ccxt: Binance е TICK_SIZE и decimalToPrecision(TRUNCATE) никога не закръгля нагоре', () => {
+  const ex = new ccxt.binance();
+  assert.equal(ex.precisionMode, ccxt.TICK_SIZE);
+  assert.equal(ex.decimalToPrecision('0.12349999', ccxt.TRUNCATE, 0.0001, ex.precisionMode, ccxt.NO_PADDING), '0.1234');
+  assert.equal(ex.decimalToPrecision('1.9999', ccxt.TRUNCATE, 0.001, ex.precisionMode, ccxt.NO_PADDING), '1.999');
+  assert.equal(ex.decimalToPrecision('7', ccxt.TRUNCATE, 0.5, ex.precisionMode, ccxt.NO_PADDING), '7');
+});
 
 test('adx: висок при силен тренд, между 0 и 100', () => {
   const candles = Array.from({ length: 60 }, (_, i) => {
