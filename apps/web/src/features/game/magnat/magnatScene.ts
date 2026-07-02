@@ -221,9 +221,20 @@ function plaqueTexture(): CanvasTexture {
   const c = document.createElement("canvas");
   c.width = c.height = W;
   const ctx = c.getContext("2d")!;
-  ctx.fillStyle = "#f4efe2"; ctx.fillRect(0, 0, W, W / 3);
-  ctx.fillStyle = "#2faa55"; ctx.fillRect(0, W / 3, W, W / 3);
-  ctx.fillStyle = "#cc2b2b"; ctx.fillRect(0, (2 * W) / 3, W, W / 3);
+  // Muted tricolour — an inlaid felt banner, not a printed flag; the pure
+  // white/green/red stripes read neon under the key light + ACES.
+  ctx.fillStyle = "#ded5bd"; ctx.fillRect(0, 0, W, W / 3);
+  ctx.fillStyle = "#2e6e44"; ctx.fillRect(0, W / 3, W, W / 3);
+  ctx.fillStyle = "#9e3a30"; ctx.fillRect(0, (2 * W) / 3, W, W / 3);
+  // soft edge vignette so the inlay sits into the felt instead of floating
+  const vg = ctx.createRadialGradient(W / 2, W / 2, W * 0.32, W / 2, W / 2, W * 0.72);
+  vg.addColorStop(0, "rgba(10,20,14,0)");
+  vg.addColorStop(1, "rgba(10,20,14,0.34)");
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, W, W);
+  ctx.strokeStyle = "rgba(233,205,130,0.55)";
+  ctx.lineWidth = 7;
+  ctx.strokeRect(10, 10, W - 20, W - 20);
   ctx.save();
   ctx.translate(W / 2, W / 2);
   ctx.rotate(-Math.PI / 4);
@@ -433,7 +444,7 @@ export class MagnatScene {
     // Business-Tour-style 3/4 view: a perspective camera elevated and pulled
     // toward the near (Старт) edge, so developed properties rise as a skyline.
     this.camera = new PerspectiveCamera(38, 1 / SCENE_RATIO, 0.1, 200);
-    this.camera.position.set(0, H * 2.1, H * 2.55);
+    this.camera.position.set(0, H * 2.18, H * 2.66);
     this.camera.lookAt(0, -1.5, -0.6);
 
     this.scene.add(new AmbientLight(0xffffff, 0.32));
@@ -807,14 +818,12 @@ export class MagnatScene {
     });
   }
 
-  /** A box whose UVs tile the facade per floor (so windows keep real scale). */
-  private facadeBox(w: number, h: number, d: number, floors: number): BoxGeometry {
+  /** A box whose UVs map the facade photo so one modelled floor covers one
+   *  photo floor. Each facade photo holds a different number of floors/window
+   *  columns, so the caller passes the fractional repeats directly. */
+  private facadeBox(w: number, h: number, d: number, repX: number, repY: number): BoxGeometry {
     const geo = new BoxGeometry(w, h, d);
     const uv = geo.attributes.uv!;
-    const repX = Math.max(1, Math.round(w / 0.95));
-    // /2 (not /4): halved UV density so individual windows read at table scale
-    // instead of collapsing into barcode stripes.
-    const repY = Math.max(1, Math.round(floors / 2));
     for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * repX, uv.getY(i) * repY);
     uv.needsUpdate = true;
     return geo;
@@ -828,14 +837,23 @@ export class MagnatScene {
    */
   private buildTower(count: number, hotel: boolean): Group {
     const g = new Group();
-    const floors = hotel ? 13 : 3 + count * 2; // 5 · 7 · 9 · 11 · (hotel 13)
-    const floorH = 0.34;
+    // Tempered skyline: tall enough to read as development, short enough that
+    // the near edge never walls off the board (was 5·7·9·11·13 at 0.34/floor).
+    const floors = hotel ? 10 : 2 + count * 2; // 4 · 6 · 8 · 10 · (hotel 10)
+    const floorH = 0.3;
     const w = hotel ? 1.16 : 0.98;
     const d = hotel ? 1.16 : 0.92;
-    const facade = hotel || count >= 2 ? this.matGlass : this.matOffice;
+    const glassy = hotel || count >= 2;
+    const facade = glassy ? this.matGlass : this.matOffice;
+    // Floors/window-columns held by one texture tile: the office photo shows
+    // ~6.5 floors × 7 columns, the glass high-rise photo ~40 floors × 26
+    // columns. Mapping modelled floors onto photo floors keeps windows at real
+    // scale — integer per-2-floor repeats turned the glass into micro-stripes.
+    const texFloors = glassy ? 40 : 6.5;
+    const texCols = glassy ? 26 : 7;
 
     // podium / lobby
-    const podH = 0.5;
+    const podH = 0.4;
     const podium = new Mesh(new BoxGeometry(w * 1.08, podH, d * 1.08), this.matConcrete);
     podium.position.y = podH / 2;
     podium.castShadow = podium.receiveShadow = true;
@@ -847,7 +865,8 @@ export class MagnatScene {
 
     const shaft = (fl: number, ww: number, dd: number, y0: number): number => {
       const h = fl * floorH;
-      const box = new Mesh(this.facadeBox(ww, h, dd, fl), facade);
+      const cols = Math.max(3, Math.round(ww * 7)); // ~7 window columns per unit width
+      const box = new Mesh(this.facadeBox(ww, h, dd, cols / texCols, fl / texFloors), facade);
       box.position.y = y0 + h / 2;
       box.castShadow = box.receiveShadow = true;
       g.add(box);
@@ -864,20 +883,20 @@ export class MagnatScene {
 
     // rooftop plant + antenna on taller towers
     if (floors >= 7 || hotel) {
-      const mech = new Mesh(new BoxGeometry(w * 0.36, 0.3, d * 0.36), this.matConcrete);
-      mech.position.set(-w * 0.16, y + 0.15, -d * 0.1);
+      const mech = new Mesh(new BoxGeometry(w * 0.36, 0.26, d * 0.36), this.matConcrete);
+      mech.position.set(-w * 0.16, y + 0.13, -d * 0.1);
       mech.castShadow = true;
       g.add(mech);
-      const antenna = new Mesh(new BoxGeometry(0.05, hotel ? 1.7 : 1.0, 0.05), this.matSteel);
-      antenna.position.set(w * 0.16, y + (hotel ? 0.85 : 0.5), d * 0.1);
+      const antenna = new Mesh(new BoxGeometry(0.05, hotel ? 1.1 : 0.7, 0.05), this.matSteel);
+      antenna.position.set(w * 0.16, y + (hotel ? 0.55 : 0.35), d * 0.1);
       antenna.castShadow = true;
       g.add(antenna);
     }
     // hotel landmark crown
     if (hotel) {
-      const crown = new Mesh(new ConeGeometry(w * 0.4, 1.0, 4), this.matCrown);
+      const crown = new Mesh(new ConeGeometry(w * 0.4, 0.8, 4), this.matCrown);
       crown.rotation.y = Math.PI / 4;
-      crown.position.y = y + 0.5;
+      crown.position.y = y + 0.4;
       crown.castShadow = true;
       g.add(crown);
     }

@@ -53,7 +53,9 @@ const PLEN = 4.2; // point (triangle) length
 const BARW = 1.4; // centre bar width
 const HALF = 6 * PW; // half playfield width (6 points)
 const RAIL = 0.9;
-const SCENE_RATIO = 0.62;
+// 0.52 (was 0.62): the projected board is a wide landscape (~17 × ~7 world
+// units); a taller canvas just banked empty felt above and below it.
+const SCENE_RATIO = 0.52;
 const WHITE = "#efe6d2";
 const BLACK = "#23211e";
 const DICE_MS = 760;
@@ -89,12 +91,14 @@ export class BackgammonScene {
 
     const W = 2 * HALF + BARW + 2 * RAIL;
     this.depth = 2 * PLEN + 2 * RAIL + 1.2;
-    const d = this.depth * 0.54;
+    // Tight frustum (was ×0.54): the table fills the frame instead of floating
+    // as a small strip — width fits with ~7% margin at this canvas aspect.
+    const d = this.depth * 0.42;
     const aspect = 1 / SCENE_RATIO;
     this.camera = new OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 200);
-    // ~35° elevation (was ~54° near-top-down): checker stacks and the extruded
-    // points read as physical objects instead of paper cutouts.
-    this.camera.position.set(0, W * 0.82, this.depth * 1.85);
+    // ~39° elevation: stacks still read as physical objects, and the steeper
+    // look projects the board taller so it fills the tighter frame.
+    this.camera.position.set(0, W * 0.92, this.depth * 1.7);
     this.camera.lookAt(0, 0.1, 0);
 
     this.scene.add(new AmbientLight(0xffffff, 0.34));
