@@ -12,12 +12,16 @@ FROM base AS build
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/config/package.json packages/config/
 COPY packages/shared/package.json packages/shared/
+# game-core: web's dev showcase (src/dev) imports the engines, and tsc
+# typechecks those files — the workspace link + build must exist here too.
+COPY packages/game-core/package.json packages/game-core/
 COPY apps/web/package.json apps/web/
 # Install with dev deps (vite/tsc) — do NOT set NODE_ENV=production here.
 RUN pnpm install --frozen-lockfile
 COPY . .
 # NODE_ENV=production only for the build step → vite base becomes /app/.
-RUN pnpm --filter @aso/shared build && NODE_ENV=production pnpm --filter @aso/web build
+RUN pnpm --filter @aso/shared build && pnpm --filter @aso/game-core build \
+  && NODE_ENV=production pnpm --filter @aso/web build
 
 # ---- static server ----
 FROM nginx:1.27-alpine AS runner
