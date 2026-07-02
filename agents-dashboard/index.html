@@ -74,6 +74,33 @@
   footer { margin-top: 40px; color: var(--mut); font-size: 12.5px; text-align: center; }
   code { background: var(--panel2); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
 .ava svg{ width:40px; height:40px; display:block; }
+  /* CLAUDE.md изглед */
+  #docswrap { margin-top: 34px; }
+  #docswrap > summary { cursor: pointer; list-style: none; font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+  #docswrap > summary::-webkit-details-marker { display: none; }
+  #docswrap > summary::before { content: "▸ "; color: var(--accent); }
+  #docswrap[open] > summary::before { content: "▾ "; }
+  .doctabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .doctab { font: inherit; font-size: 12px; color: var(--mut); background: var(--panel2); border: 1px solid var(--line);
+            padding: 4px 11px; border-radius: 999px; cursor: pointer; }
+  .doctab.on { color: #0c0f14; background: var(--accent); border-color: var(--accent); font-weight: 600; }
+  .docmeta { color: var(--mut); font-size: 11.5px; margin-bottom: 14px; }
+  .md-doc { font-size: 13.5px; }
+  .md-doc .md-h1 { font-size: 20px; margin: 0 0 10px; }
+  .md-doc .md-h2 { font-size: 16px; margin: 20px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 5px; }
+  .md-doc .md-h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--mut); margin: 15px 0 6px; }
+  .md-doc .md-h4, .md-doc .md-h5, .md-doc .md-h6 { font-size: 13px; margin: 12px 0 5px; }
+  .md-doc .md-p { margin: 8px 0; }
+  .md-doc .md-ul { margin: 8px 0; padding-left: 20px; } .md-doc .md-ul li { margin: 3px 0; }
+  .md-doc .md-code { background: #05080a; border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+                     overflow: auto; font-size: 12px; line-height: 1.5; white-space: pre; margin: 10px 0; }
+  .md-doc .md-table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 12.5px; display: block; overflow: auto; }
+  .md-doc .md-table th, .md-doc .md-table td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+  .md-doc .md-table th { background: var(--panel2); color: var(--txt); white-space: nowrap; }
+  .md-doc .md-bq { border-left: 3px solid var(--accent); margin: 10px 0; padding: 6px 12px; color: var(--mut);
+                   background: var(--panel); border-radius: 6px; }
+  .md-doc .md-hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+  .md-doc a { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -86,6 +113,15 @@
   <div class="stats" id="stats"></div>
   <div class="grid" id="grid"></div>
 
+  <details id="docswrap">
+    <summary>📖 CLAUDE.md · инструкции за агентите</summary>
+    <div class="card" style="--ac:var(--accent);">
+      <div class="doctabs" id="docstabs"></div>
+      <div class="docmeta">генерирано: <span id="docsgen">—</span> · източник: живите <code>CLAUDE.md</code> файлове в репото (root + per-product)</div>
+      <div class="md-doc" id="docsbody"></div>
+    </div>
+  </details>
+
   <details id="globalwrap">
     <summary>Поток на дейността</summary>
     <div class="card" style="--ac:var(--accent);"><div class="feed" id="globalfeed"></div></div>
@@ -97,6 +133,7 @@
   </footer>
 </div>
 
+<script src="./docs.js"></script>
 <script>
 // Вграден снимков фалбек — за да работи и при отваряне директно като файл (file://).
 // Каноничният източник е agents.json; ако fetch успее, той надделява.
@@ -1112,20 +1149,9 @@ const FALLBACK = {
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Helmet по подразбиране задава Strict-Transport-Security max-age=31536000; includeSubDom…"
-        },
-        {
-          "version": "10.0.0",
-          "date": "2026-07-02",
-          "event": "v10.0 — учене",
-          "detail": "Научи: В Express + better-sqlite3 (синхронен драйвер) route handler БЕЗ `await` в тялото се из… (+2 още)"
         }
       ],
       "activity": [
-        {
-          "date": "2026-07-02",
-          "type": "learning",
-          "summary": "Научи: „В Express + better-sqlite3 (синхронен драйвер) route handler БЕЗ `await` в тялото се из…\" (+2 още)"
-        },
         {
           "date": "2026-07-02",
           "type": "quarantine",
@@ -4274,20 +4300,9 @@ const FALLBACK = {
           "date": "2026-06-26",
           "event": "v10.0 — учене",
           "detail": "Научи: Compose network с internal: true създава външно изолирана мрежа (без външна свързаност)…"
-        },
-        {
-          "version": "10.0.0",
-          "date": "2026-07-02",
-          "event": "v10.0 — учене",
-          "detail": "Научи: Docker Compose интерполира ${VAR:?} от .env в директорията на compose файла (project di… (+1 още)"
         }
       ],
       "activity": [
-        {
-          "date": "2026-07-02",
-          "type": "learning",
-          "summary": "Научи: „Docker Compose интерполира ${VAR:?} от .env в директорията на compose файла (project di…\" (+1 още) · 1 в карантина"
-        },
         {
           "date": "2026-06-26",
           "type": "learning",
@@ -9498,6 +9513,64 @@ function render(data){
 
 fetch("./agents.json").then(r=>{ if(!r.ok) throw 0; return r.json(); })
   .then(render).catch(()=> render(FALLBACK));
+
+// ── CLAUDE.md изглед ─────────────────────────────────────────────────────────
+function mdEsc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function mdInline(s){
+  s = mdEsc(s);
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return s;
+}
+function mdToHtml(src){
+  const L = src.split("\n"); let out = "", i = 0;
+  const cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  while (i < L.length){
+    const ln = L[i];
+    if (/^```/.test(ln)){ let code = ""; i++; while (i < L.length && !/^```/.test(L[i])){ code += L[i] + "\n"; i++; } i++; out += '<pre class="md-code">' + mdEsc(code.replace(/\n$/, "")) + "</pre>"; continue; }
+    if (/^\s*\|.*\|\s*$/.test(ln) && i+1 < L.length && /^\s*\|[-:| ]+\|\s*$/.test(L[i+1])){
+      out += '<table class="md-table"><thead><tr>' + cells(ln).map(c => "<th>" + mdInline(c) + "</th>").join("") + "</tr></thead><tbody>";
+      i += 2;
+      while (i < L.length && /^\s*\|.*\|\s*$/.test(L[i])){ out += "<tr>" + cells(L[i]).map(c => "<td>" + mdInline(c) + "</td>").join("") + "</tr>"; i++; }
+      out += "</tbody></table>"; continue;
+    }
+    let m;
+    if ((m = ln.match(/^(#{1,6})\s+(.*)$/))){ const lv = m[1].length; out += "<h" + lv + ' class="md-h md-h' + lv + '">' + mdInline(m[2]) + "</h" + lv + ">"; i++; continue; }
+    if (/^\s*---+\s*$/.test(ln)){ out += '<hr class="md-hr">'; i++; continue; }
+    if (/^\s*>\s?/.test(ln)){ let q = ""; while (i < L.length && /^\s*>\s?/.test(L[i])){ q += L[i].replace(/^\s*>\s?/, "") + " "; i++; } out += '<blockquote class="md-bq">' + mdInline(q) + "</blockquote>"; continue; }
+    if (/^\s*[-*]\s+/.test(ln)){
+      out += '<ul class="md-ul">';
+      while (i < L.length){
+        if (!/^\s*[-*]\s+/.test(L[i])) break;
+        let item = L[i].replace(/^\s*[-*]\s+/, ""); i++;
+        while (i < L.length && /^\s+\S/.test(L[i]) && !/^\s*[-*]\s+/.test(L[i])){ item += " " + L[i].trim(); i++; } // сгъни пренесени редове
+        out += "<li>" + mdInline(item) + "</li>";
+      }
+      out += "</ul>"; continue;
+    }
+    if (/^\s*$/.test(ln)){ i++; continue; }
+    let p = ln; i++;
+    while (i < L.length && !/^\s*$/.test(L[i]) && !/^(#{1,6}\s|```|\s*[-*]\s|\s*>|\s*\|)/.test(L[i])){ p += " " + L[i]; i++; }
+    out += '<p class="md-p">' + mdInline(p) + "</p>";
+  }
+  return out;
+}
+function renderDocs(){
+  const docs = window.__DOCS__;
+  const wrap = document.getElementById("docswrap");
+  if (!docs || !docs.files || !docs.files.length){ if (wrap) wrap.style.display = "none"; return; }
+  document.getElementById("docsgen").textContent = docs.generated || "—";
+  const tabs = document.getElementById("docstabs"), body = document.getElementById("docsbody");
+  const show = f => { body.innerHTML = mdToHtml(f.content); };
+  docs.files.forEach((f, idx) => {
+    const b = el("button", "doctab" + (idx === 0 ? " on" : ""), f.path + ` · ${f.lines}р.`);
+    b.onclick = () => { [...tabs.children].forEach(c => c.classList.remove("on")); b.classList.add("on"); show(f); };
+    tabs.appendChild(b);
+  });
+  show(docs.files[0]);
+}
+renderDocs();
 </script>
 </body>
 </html>
