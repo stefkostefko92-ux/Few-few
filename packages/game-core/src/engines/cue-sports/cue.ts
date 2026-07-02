@@ -18,7 +18,47 @@ import {
 
 export type { CueState, CueAction, CueEvent, CueVariant, Group };
 
+/**
+ * Engine-level extras carried on top of the shared CueState. They serialize
+ * with the rest of the state (cue sports are open information, `redact` is a
+ * pass-through), so clients and the realtime host can read them without
+ * widening the shared wire type.
+ */
+export interface CueStateExtras {
+  /** Real-time length of the last shot's animation in ms (frames are 60 fps).
+   *  The realtime host uses it to pace bots / the turn clock. */
+  lastShotMs?: number;
+  /** 9-ball: the shot about to be played may be declared a push-out. */
+  pushAvail?: boolean;
+  /** 9-ball: a push-out was just played — the player to move may PASS back. */
+  pushDecision?: boolean;
+  /** Snooker: the striker potted the last red — next is a colour of choice
+   *  (it re-spots), before the ordered end-game begins. */
+  freeColour?: boolean;
+  /** Snooker: a foul left the incoming striker snookered — free ball (any
+   *  first contact counts as the ball "on"). */
+  freeBall?: boolean;
+}
+export type CueStateX = CueState & CueStateExtras;
+
+/** SHOOT may carry a 9-ball push-out declaration; PASS declines a push-out. */
+export type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" };
+
+type ShotRes = ReturnType<typeof runShot>;
+
 const R = TABLE.ballR;
+/** Pool: the break must be played from behind the head string. */
+const HEAD_STRING_X = 0.5;
+/** Snooker: ball-in-hand is restricted to the "D" (matches the drawn arc). */
+const BAULK_X = 0.42;
+const D_RADIUS = 0.18;
+const D_SPOT: [number, number] = [BAULK_X, TABLE.h / 2];
+/** Pool foot spot (the rack apex) — where the 8 re-spots after a break pot. */
+const FOOT_SPOT: [number, number] = [1.35, TABLE.h / 2];
+
+const inBaulkD = (x: number, y: number): boolean =>
+  x <= BAULK_X + 1e-9 && (x - BAULK_X) ** 2 + (y - TABLE.h / 2) ** 2 <= D_RADIUS * D_RADIUS + 1e-9;
+
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 const isRed = (id: number): boolean => id >= 11 && id <= 25;
 const isColour = (id: number): boolean => id >= 2 && id <= 7;
@@ -27,7 +67,7 @@ const clone = (b: Ball): Ball => ({ ...b });
 const cloneAll = (bs: Ball[]): Ball[] => bs.map(clone);
 const live = (bs: Ball[]): Ball[] => bs.filter((b) => !b.potted);
 
-function initial(variant: CueVariant): CueState {
+function initial(variant: CueVariant): CueStateX {
   const balls = variant === "EIGHTBALL" ? rackEightBall() : variant === "NINEBALL" ? rackNineBall() : rackSnooker();
   return {
     variant,
@@ -92,6 +132,8 @@ function placeCue(balls: Ball[], spot: [number, number]): void {
 
 interface Outcome {
   foul: boolean;
+  /** Machine code translated by the client (i18n key `cue.foul.<code>`), or a
+   *  literal `+N` points string for snooker breaks, or "". Never prose. */
   reason: string;
   continueTurn: boolean;
   winner: Seat | null;
@@ -101,31 +143,29 @@ interface Outcome {
 
 // ── Per-variant rules ────────────────────────────────────────────────────────
 
-function rulesEightBall(state: CueState, balls: Ball[], r: ReturnType<typeof runShot>): Outcome {
+function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes): Outcome {
   const shooter = state.turn;
+  const breakShot = state.shotNo === 0;
   const pottedObj = r.potted;
   const eightPotted = pottedObj.includes(8);
   const myGroupBalls = (g: Group) =>
     g === "solids" ? [1, 2, 3, 4, 5, 6, 7] : g === "stripes" ? [9, 10, 11, 12, 13, 14, 15] : [];
-  let group: Group = state.groups[shooter] ?? null;
-  let open = state.open;
-
-  // Assign groups on the first legal pot while the table is open.
-  if (open && !r.cueScratch && pottedObj.some((p) => p !== 8)) {
-    const first = pottedObj.find((p) => p !== 8)!;
-    group = first <= 7 ? "solids" : "stripes";
-    open = false;
-  }
+  const group: Group = state.groups[shooter] ?? null;
+  const open = state.open;
 
   const onEight = !open && group !== null && myGroupBalls(group).every((id) => !live(balls).some((b) => b.id === id));
   const firstHitEight = r.firstContact === 8;
   const noRail = pottedObj.length === 0 && !r.cushionAfterContact && r.firstContact !== null;
 
-  if (eightPotted) {
+  if (eightPotted && breakShot) {
+    // The 8 on the break is NOT a loss: re-spot it on the foot spot and judge
+    // the rest of the shot by the normal rules (a scratch stays a plain foul).
+    respot(balls, 8, FOOT_SPOT);
+  } else if (eightPotted) {
     const legalEight = onEight && firstHitEight && !r.cueScratch;
     return {
       foul: false,
-      reason: legalEight ? "Осмицата е вкарана!" : "Осмицата е вкарана нередовно — загуба.",
+      reason: legalEight ? "eightWin" : "eightLoss",
       continueTurn: false,
       winner: legalEight ? shooter : other(shooter),
       points: 0,
@@ -133,31 +173,42 @@ function rulesEightBall(state: CueState, balls: Ball[], r: ReturnType<typeof run
     };
   }
 
-  // Foul checks.
+  // Foul checks — judged against the PRE-shot groups: a foul never assigns
+  // groups, and on an open table only the 8 is an illegal first contact.
   let foul = false;
   let reason = "";
   if (r.cueScratch) {
     foul = true;
-    reason = "Фал: бялата падна.";
+    reason = "scratch";
   } else if (r.firstContact === null) {
     foul = true;
-    reason = "Фал: не уцели топка.";
+    reason = "noContact";
   } else if (!open && group && !myGroupBalls(group).includes(r.firstContact) && !(onEight && firstHitEight)) {
     foul = true;
-    reason = "Фал: уцели чужда топка.";
-  } else if (open && firstHitEight) {
+    reason = "wrongBall";
+  } else if (open && firstHitEight && !breakShot) {
     foul = true;
-    reason = "Фал: уцели осмицата при отворена маса.";
+    reason = "eightFirstOpen";
   } else if (noRail) {
     foul = true;
-    reason = "Фал: нито топка в джоб, нито борд.";
+    reason = "noRail";
+  }
+
+  // Groups lock on the first LEGAL pot while the table is open — a foul keeps
+  // the table open (reduce mirrors this decision onto `state.groups`).
+  let effGroup = group;
+  let effOpen = open;
+  if (open && !foul && pottedObj.some((p) => p !== 8)) {
+    const first = pottedObj.find((p) => p !== 8)!;
+    effGroup = first <= 7 ? "solids" : "stripes";
+    effOpen = false;
   }
 
   const pottedMine =
-    !foul && pottedObj.some((p) => (open ? p !== 8 : myGroupBalls(group).includes(p)));
+    !foul && pottedObj.some((p) => (effOpen ? p !== 8 : myGroupBalls(effGroup).includes(p)));
   return {
     foul,
-    reason: foul ? reason : pottedMine ? "Продължава." : "",
+    reason: foul ? reason : eightPotted && breakShot ? "eightBreakRespot" : pottedMine ? "continues" : "",
     continueTurn: pottedMine,
     winner: null,
     points: 0,
@@ -165,41 +216,63 @@ function rulesEightBall(state: CueState, balls: Ball[], r: ReturnType<typeof run
   };
 }
 
-function rulesNineBall(state: CueState, balls: Ball[], r: ReturnType<typeof runShot>): Outcome {
+function rulesNineBall(
+  state: CueStateX,
+  balls: Ball[],
+  r: ShotRes,
+  pushOut: boolean,
+): Outcome & { pushed?: boolean } {
   const shooter = state.turn;
-  const onTable = live(balls).filter((b) => b.id >= 1 && b.id <= 9).map((b) => b.id);
   const lowestBefore = Math.min(...[1, 2, 3, 4, 5, 6, 7, 8, 9].filter((id) =>
     state.balls.some((b) => b.id === id && !b.potted),
   ));
   const ninePotted = r.potted.includes(9);
   const noRail = r.potted.length === 0 && !r.cushionAfterContact && r.firstContact !== null;
 
+  if (pushOut) {
+    // Push-out (the shot right after the break, declared by the shooter): no
+    // lowest-ball or rail requirement — only a scratch fouls. The 9 comes back
+    // if potted; other balls stay down. The opponent then plays or passes back.
+    if (ninePotted) respot(balls, 9, SNOOKER_SPOTS[6]!);
+    if (r.cueScratch) {
+      return { foul: true, reason: "scratch", continueTurn: false, winner: null, points: 0, pointsToOpponent: false };
+    }
+    return {
+      foul: false,
+      reason: "pushOut",
+      continueTurn: false,
+      winner: null,
+      points: 0,
+      pointsToOpponent: false,
+      pushed: true,
+    };
+  }
+
   let foul = false;
   let reason = "";
   if (r.cueScratch) {
     foul = true;
-    reason = "Фал: бялата падна.";
+    reason = "scratch";
   } else if (r.firstContact === null) {
     foul = true;
-    reason = "Фал: не уцели топка.";
+    reason = "noContact";
   } else if (r.firstContact !== lowestBefore) {
     foul = true;
-    reason = "Фал: трябва първо най-малката.";
+    reason = "lowestFirst";
   } else if (noRail) {
     foul = true;
-    reason = "Фал: нито топка в джоб, нито борд.";
+    reason = "noRail";
   }
 
   if (ninePotted && !foul) {
-    return { foul: false, reason: "Деветката е вкарана — победа!", continueTurn: false, winner: shooter, points: 0, pointsToOpponent: false };
+    return { foul: false, reason: "nineWin", continueTurn: false, winner: shooter, points: 0, pointsToOpponent: false };
   }
   if (ninePotted && foul) respot(balls, 9, SNOOKER_SPOTS[6]!); // re-spot the 9 at the foot
 
   const pottedAny = !foul && r.potted.length > 0;
-  void onTable;
   return {
     foul,
-    reason: foul ? reason : pottedAny ? "Продължава." : "",
+    reason: foul ? reason : pottedAny ? "continues" : "",
     continueTurn: pottedAny,
     winner: null,
     points: 0,
@@ -207,52 +280,120 @@ function rulesNineBall(state: CueState, balls: Ball[], r: ReturnType<typeof runS
   };
 }
 
-type SnookerOutcome = Outcome & { nextExpect?: "red" | "colour" };
+type SnookerOutcome = Outcome & {
+  nextExpect?: "red" | "colour";
+  /** The striker just potted the last red legally → colour of choice next. */
+  freeColourNext?: boolean;
+  /** The foul left the incoming striker snookered → free ball next. */
+  freeBallNext?: boolean;
+  /** Force ball-in-hand for the incoming striker (re-spotted black). */
+  cueInHand?: boolean;
+};
 
-function rulesSnooker(state: CueState, balls: Ball[], r: ReturnType<typeof runShot>): SnookerOutcome {
+/** Balls "on" for the incoming striker after a foul: reds while any remain,
+ *  else the lowest colour. */
+function ballsOn(balls: Ball[]): Ball[] {
+  const reds = live(balls).filter((b) => isRed(b.id));
+  if (reds.length) return reds;
+  const colours = live(balls).filter((b) => isColour(b.id));
+  if (!colours.length) return [];
+  const lo = Math.min(...colours.map((b) => b.id));
+  return colours.filter((b) => b.id === lo);
+}
+
+/** Straight-line visibility: can the cue reach the centre or either edge of
+ *  `t` without another ball blocking the corridor? (coarse, cushions ignored) */
+function canSee(balls: Ball[], cue: Ball, t: Ball): boolean {
+  const dx = t.x - cue.x;
+  const dy = t.y - cue.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 1e-6) return true;
+  const px = -dy / d;
+  const py = dx / d;
+  for (const off of [0, 1.8 * R, -1.8 * R]) {
+    if (pathClear(balls, cue.x, cue.y, t.x + px * off, t.y + py * off, [t.id])) return true;
+  }
+  return false;
+}
+
+/** After a foul: is the incoming striker snookered on every ball "on"? */
+function snookeredAfterFoul(balls: Ball[]): boolean {
+  const cue = balls.find((b) => b.id === 0 && !b.potted);
+  if (!cue) return false;
+  const on = ballsOn(balls);
+  if (!on.length) return false;
+  return !on.some((t) => canSee(balls, cue, t));
+}
+
+function rulesSnooker(state: CueStateX, balls: Ball[], r: ShotRes): SnookerOutcome {
   const shooter = state.turn;
   const redsLeft = state.balls.some((b) => isRed(b.id) && !b.potted);
   const expect = state.expect ?? "red";
+  // "Colour of choice" right after the striker potted the last red.
+  const freeColour = state.freeColour === true && !redsLeft && expect === "colour";
+  // Free ball: a foul left this striker snookered — any first contact is "on".
+  const freeBall = state.freeBall === true;
   const pottedReds = r.potted.filter(isRed);
   const pottedColours = r.potted.filter(isColour);
   const fc = r.firstContact;
 
+  const coloursLeft = [2, 3, 4, 5, 6, 7].filter((id) => state.balls.some((b) => b.id === id && !b.potted));
+  const lowestColour = coloursLeft.length ? Math.min(...coloursLeft) : 7;
+  // Value of the ball "on" — every foul costs at least max(4, ballOn).
+  const ballOn = expect === "red" ? 1 : !redsLeft && !freeColour ? lowestColour : 4;
+
   let foul = false;
   let reason = "";
   let foulValue = 4;
-
   const setFoul = (why: string, v: number) => {
-    if (foul) return;
+    if (!foul) reason = why;
     foul = true;
-    reason = why;
-    foulValue = Math.max(foulValue, v);
+    foulValue = Math.max(foulValue, v, ballOn);
   };
 
-  if (r.cueScratch) setFoul("Фал: бялата падна.", 4);
-  if (fc === null) setFoul("Фал: не уцели топка.", 4);
+  if (r.cueScratch) setFoul("scratch", 4);
+  if (fc === null) setFoul("noContact", 4);
 
-  // End-game: no reds — colours in ascending order.
-  if (!redsLeft && expect === "colour") {
-    const lowestColour = Math.min(...[2, 3, 4, 5, 6, 7].filter((id) => state.balls.some((b) => b.id === id && !b.potted)));
-    if (fc !== null && fc !== lowestColour) setFoul("Фал: грешна топка.", Math.max(4, value(fc)));
-    if (pottedReds.length) setFoul("Фал: няма червени.", 4);
-    if (pottedColours.some((c) => c !== lowestColour)) setFoul("Фал: грешна топка в джоба.", Math.max(...pottedColours.map(value), 4));
-  } else if (expect === "red") {
-    if (fc !== null && !isRed(fc)) setFoul("Фал: трябваше червена.", Math.max(4, value(fc)));
-    if (pottedColours.length) setFoul("Фал: вкара цветна вместо червена.", Math.max(...pottedColours.map(value), 4));
+  if (freeBall) {
+    // Any first contact counts as the ball "on"; only scratch/no-contact foul.
+  } else if (freeColour || (redsLeft && expect === "colour")) {
+    // A colour of choice: any colour may be struck / potted (one at a time).
+    if (fc !== null && !isColour(fc)) setFoul("needColour", 4);
+    if (pottedReds.length) setFoul("redPotted", 4);
+    if (pottedColours.length > 1) setFoul("multiColour", Math.max(...pottedColours.map(value)));
+  } else if (!redsLeft && expect === "colour") {
+    // End-game: no reds — colours in ascending order.
+    if (fc !== null && fc !== lowestColour) setFoul("wrongBall", Math.max(4, value(fc)));
+    if (pottedReds.length) setFoul("wrongPot", 4);
+    if (pottedColours.some((c) => c !== lowestColour)) setFoul("wrongPot", Math.max(...pottedColours.map(value), 4));
   } else {
-    // expect colour (reds remain): may hit any colour.
-    if (fc !== null && !isColour(fc)) setFoul("Фал: трябваше цветна.", 4);
-    if (pottedReds.length) setFoul("Фал: вкара червена.", 4);
-    if (pottedColours.length > 1) setFoul("Фал: повече от една цветна.", Math.max(...pottedColours.map(value), 4));
+    // On a red.
+    if (fc !== null && !isRed(fc)) setFoul("needRed", Math.max(4, value(fc)));
+    if (pottedColours.length) setFoul("colourPotted", Math.max(...pottedColours.map(value), 4));
   }
 
   if (foul) {
+    // Every colour potted on a foul stroke returns to its spot (reds stay
+    // down, unscored) — the frame must keep its full ball set.
+    for (const c of pottedColours) respot(balls, c, SNOOKER_SPOTS[c]!);
+    let freeBallNext = false;
     if (r.cueScratch) {
-      // Ball-in-hand in the baulk D (approx).
-      placeCue(balls, [0.42, TABLE.h / 2]);
+      // Ball-in-hand: default D spot; the striker may re-place within the D.
+      placeCue(balls, D_SPOT);
+    } else {
+      // Snookered on all balls "on" after the foul → the incoming striker
+      // gets a free ball.
+      freeBallNext = snookeredAfterFoul(balls);
     }
-    return { foul: true, reason, continueTurn: false, winner: null, points: foulValue, pointsToOpponent: true };
+    return {
+      foul: true,
+      reason,
+      continueTurn: false,
+      winner: null,
+      points: foulValue,
+      pointsToOpponent: true,
+      freeBallNext,
+    };
   }
 
   // Legal shot — score pots + advance the expectation, re-spotting colours
@@ -261,7 +402,32 @@ function rulesSnooker(state: CueState, balls: Ball[], r: ReturnType<typeof runSh
   let nextExpect: "red" | "colour" = expect;
   let pottedSomething = false;
 
-  if (redsLeft && expect === "red") {
+  if (freeBall && expect === "red") {
+    // Free ball while on reds: every pot counts as a red; colours come back up.
+    pts += pottedReds.length + pottedColours.length;
+    for (const c of pottedColours) respot(balls, c, SNOOKER_SPOTS[c]!);
+    if (r.potted.length > 0) {
+      pottedSomething = true;
+      nextExpect = "colour";
+    }
+  } else if (freeBall && !redsLeft && !freeColour && expect === "colour") {
+    // Free ball in the end-game: any colour pots for the ball-on's value; the
+    // ball on itself stays down, other colours are re-spotted.
+    for (const c of pottedColours) {
+      pts += value(lowestColour);
+      if (c !== lowestColour) respot(balls, c, SNOOKER_SPOTS[c]!);
+    }
+    if (pottedColours.length) pottedSomething = true;
+  } else if (freeColour) {
+    // Colour of choice after the last red: scores its own value and returns.
+    if (pottedColours.length === 1) {
+      const c = pottedColours[0]!;
+      pts += value(c);
+      pottedSomething = true;
+      respot(balls, c, SNOOKER_SPOTS[c]!);
+    }
+    nextExpect = "colour";
+  } else if (redsLeft && expect === "red") {
     pts += pottedReds.length;
     if (pottedReds.length > 0) {
       pottedSomething = true;
@@ -281,13 +447,33 @@ function rulesSnooker(state: CueState, balls: Ball[], r: ReturnType<typeof runSh
     pottedSomething = true;
   }
 
+  // The striker who legally pots the LAST red is on a colour of choice next.
+  const redsNow = balls.some((b) => isRed(b.id) && !b.potted);
+  const freeColourNext = pottedSomething && redsLeft && !redsNow && expect === "red";
+
   // Win when the table is cleared.
   const cleared = !balls.some((b) => b.id !== 0 && !b.potted);
   if (cleared) {
     const s0 = state.scores[0] + (shooter === 0 ? pts : 0);
     const s1 = state.scores[1] + (shooter === 1 ? pts : 0);
-    const winner = s0 === s1 ? null : s0 > s1 ? 0 : 1;
-    return { foul: false, reason: "Масата е изчистена!", continueTurn: false, winner, points: pts, pointsToOpponent: false, nextExpect };
+    if (s0 === s1) {
+      // A frame can't end level: re-spot the black, ball-in-hand from the D,
+      // and play on until someone pots it (or fouls).
+      respot(balls, 7, SNOOKER_SPOTS[7]!);
+      placeCue(balls, D_SPOT);
+      return {
+        foul: false,
+        reason: "respotBlack",
+        continueTurn: false,
+        winner: null,
+        points: pts,
+        pointsToOpponent: false,
+        nextExpect: "colour",
+        cueInHand: true,
+      };
+    }
+    const winner: Seat = s0 > s1 ? 0 : 1;
+    return { foul: false, reason: "cleared", continueTurn: false, winner, points: pts, pointsToOpponent: false, nextExpect };
   }
 
   return {
@@ -298,6 +484,7 @@ function rulesSnooker(state: CueState, balls: Ball[], r: ReturnType<typeof runSh
     points: pts,
     pointsToOpponent: false,
     nextExpect,
+    freeColourNext,
   };
 }
 
@@ -313,7 +500,7 @@ const POOL_POCKETS: [number, number][] = [
 ];
 
 /** Object balls this seat is allowed to pot right now. */
-function legalTargets(state: CueState): Ball[] {
+function legalTargets(state: CueStateX): Ball[] {
   const objs = live(state.balls).filter((b) => b.id !== 0);
   if (objs.length === 0) return [];
   if (state.variant === "NINEBALL") {
@@ -321,10 +508,11 @@ function legalTargets(state: CueState): Ball[] {
     return objs.filter((b) => b.id === lo);
   }
   if (state.variant === "SNOOKER") {
+    if (state.freeBall) return objs; // free ball: everything is "on"
     const reds = objs.filter((b) => isRed(b.id));
     if (state.expect === "red") return reds.length ? reds : objs;
-    if (reds.length) return objs.filter((b) => isColour(b.id)); // any colour
     const colours = objs.filter((b) => isColour(b.id));
+    if (reds.length || state.freeColour) return colours; // any colour
     const lo = Math.min(...colours.map((b) => b.id));
     return colours.filter((b) => b.id === lo);
   }
@@ -358,7 +546,7 @@ function pathClear(balls: Ball[], cx: number, cy: number, gx: number, gy: number
  * along the target→pocket line). Ranked by cut angle + clear path; the best few
  * are returned so RandomBot picks a sensible (if imperfect) pot.
  */
-function candidateShots(state: CueState): CueAction[] {
+function candidateShots(state: CueStateX): CueAction[] {
   const cue = live(state.balls).find((b) => b.id === 0);
   const targets = legalTargets(state);
   if (!cue || targets.length === 0) return [{ type: "SHOOT", angle: 0, power: 0.6 }];
@@ -399,7 +587,7 @@ function candidateShots(state: CueState): CueAction[] {
 
 // ── Engine factory ───────────────────────────────────────────────────────────
 
-export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueAction, CueEvent> {
+export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueActionX, CueEvent> {
   return {
     init: () => initial(variant),
 
@@ -410,18 +598,35 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueActi
 
     validate(state, seat, action) {
       if (state.phase === "DONE" || seat !== state.turn) return false;
-      if (!action || action.type !== "SHOOT") return false;
+      if (!action) return false;
+      // 9-ball: PASS hands a push-out back to the player who pushed.
+      if (action.type === "PASS") return variant === "NINEBALL" && state.pushDecision === true;
+      if (action.type !== "SHOOT") return false;
       if (!Number.isFinite(action.angle)) return false;
       if (!(action.power > 0) || action.power > 1) return false;
+      // A push-out may only be declared on the shot right after the break.
+      if (action.pushOut === true && !(variant === "NINEBALL" && state.pushAvail === true)) return false;
       if (action.cueX !== undefined || action.cueY !== undefined) {
         if (!state.ballInHand) return false;
         if (!Number.isFinite(action.cueX) || !Number.isFinite(action.cueY)) return false;
-        if (!placementOk(state.balls, action.cueX!, action.cueY!, 0)) return false;
+        const x = action.cueX!;
+        const y = action.cueY!;
+        if (!placementOk(state.balls, x, y, 0)) return false;
+        // Snooker: in-hand only from the "D"; pool: break from behind the line.
+        if (variant === "SNOOKER" && !inBaulkD(x, y)) return false;
+        if (variant !== "SNOOKER" && state.shotNo === 0 && x > HEAD_STRING_X) return false;
       }
       return true;
     },
 
     reduce(state, action) {
+      // 9-ball PASS: the opponent declines to play after a push-out — the shot
+      // goes back to the pusher. No physics, no new shot to animate.
+      if (action.type === "PASS") {
+        const next: CueStateX = { ...state, turn: other(state.turn), pushDecision: false, message: "", lastShotMs: 0 };
+        return { state: next, events: [] };
+      }
+
       const events: CueEvent[] = [];
       const balls = cloneAll(state.balls);
 
@@ -448,9 +653,10 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueActi
       }
 
       const shooter = state.turn;
+      const pushOut = variant === "NINEBALL" && state.pushAvail === true && action.pushOut === true;
       const out =
         variant === "EIGHTBALL" ? rulesEightBall(state, balls, r)
-        : variant === "NINEBALL" ? rulesNineBall(state, balls, r)
+        : variant === "NINEBALL" ? rulesNineBall(state, balls, r, pushOut)
         : rulesSnooker(state, balls, r);
 
       events.push({
@@ -468,16 +674,20 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueActi
         placeCue(balls, [0.5, TABLE.h / 2]);
       }
 
-      const next: CueState = {
+      const next: CueStateX = {
         ...state,
         balls,
         shotNo: state.shotNo + 1,
         lastShot: { angle: action.angle, power: action.power, before },
+        // Real-time animation length (frames play back at 60 fps) — the
+        // realtime host paces bots / the turn clock with it.
+        lastShotMs: Math.round((r.frames.length * 1000) / 60),
         message: out.reason,
       };
 
-      // 8-ball group assignment side-effect.
-      if (variant === "EIGHTBALL" && state.open && !r.cueScratch) {
+      // 8-ball group assignment side-effect (legal shots only — a foul keeps
+      // the table open).
+      if (variant === "EIGHTBALL" && state.open && !r.cueScratch && !out.foul) {
         const firstObj = r.potted.find((p) => p !== 8);
         if (firstObj !== undefined) {
           const g: Group = firstObj <= 7 ? "solids" : "stripes";
@@ -486,9 +696,15 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueActi
         }
       }
 
+      // 9-ball push-out bookkeeping.
+      if (variant === "NINEBALL") {
+        next.pushAvail = state.shotNo === 0 && out.winner === null;
+        next.pushDecision = (out as { pushed?: boolean }).pushed === true && out.winner === null;
+      }
+
       // Snooker scoring + expectation.
       if (variant === "SNOOKER") {
-        const so = out as Outcome & { nextExpect?: "red" | "colour" };
+        const so = out as SnookerOutcome;
         const credit = (seat: Seat, pts: number): [number, number] =>
           seat === 0 ? [state.scores[0] + pts, state.scores[1]] : [state.scores[0], state.scores[1] + pts];
         if (out.pointsToOpponent) {
@@ -501,6 +717,8 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueActi
         }
         const redsLeftNow = next.balls.some((b) => isRed(b.id) && !b.potted);
         next.expect = redsLeftNow ? (so.nextExpect ?? "red") : "colour";
+        next.freeColour = so.freeColourNext === true;
+        next.freeBall = so.freeBallNext === true;
       } else if (out.foul) {
         events.push({ type: "FOUL", seat: shooter, reason: out.reason });
       }
@@ -515,7 +733,8 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueState, CueActi
         next.ballInHand = false;
       } else {
         next.turn = other(shooter);
-        next.ballInHand = variant !== "SNOOKER" ? out.foul : r.cueScratch;
+        next.ballInHand =
+          variant !== "SNOOKER" ? out.foul : r.cueScratch || (out as SnookerOutcome).cueInHand === true;
       }
 
       return { state: next, events };

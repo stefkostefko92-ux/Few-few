@@ -251,6 +251,26 @@ function tradableBy(s: MagnatState, seat: Seat, i: number): boolean {
   return true;
 }
 
+/** Minimal shape of any action: a non-null object with a string `type`. */
+function isActionShape(a: unknown): boolean {
+  return typeof a === "object" && a !== null && typeof (a as { type?: unknown }).type === "string";
+}
+
+/**
+ * Structural guard for a client-supplied trade bundle. TRADE_OFFER payloads
+ * reach validate()/reduce() as raw socket input, so every field must be
+ * shape-checked BEFORE any board lookup — `{ tiles: [999] }` or a missing
+ * bundle used to TypeError straight out of the socket handler (P0: one
+ * malformed packet could take down the whole realtime node).
+ */
+function isBundleShape(b: unknown): b is TradeBundle {
+  if (typeof b !== "object" || b === null) return false;
+  const { cash, tiles } = b as { cash?: unknown; tiles?: unknown };
+  if (typeof cash !== "number" || !Number.isInteger(cash) || cash < 0) return false;
+  if (!Array.isArray(tiles) || tiles.length > BOARD_SIZE) return false;
+  return tiles.every((i) => typeof i === "number" && Number.isInteger(i) && i >= 0 && i < BOARD_SIZE);
+}
+
 function validBundle(s: MagnatState, owner: Seat, b: TradeBundle): boolean {
   if (!Number.isInteger(b.cash) || b.cash < 0 || b.cash > s.cash[owner]!) return false;
   const seen = new Set<number>();
@@ -261,9 +281,12 @@ function validBundle(s: MagnatState, owner: Seat, b: TradeBundle): boolean {
   return true;
 }
 
-function canOffer(s: MagnatState, seat: Seat, to: number, give: TradeBundle, want: TradeBundle): boolean {
+/** Full TRADE_OFFER validation over untrusted input: shapes first, rules after. */
+function canOffer(s: MagnatState, seat: Seat, to: unknown, give: unknown, want: unknown): boolean {
   if (!s.config.trading || s.phase !== "MANAGE" || seat !== s.turn) return false;
+  if (typeof to !== "number" || !Number.isInteger(to)) return false;
   if (to === seat || to < 0 || to >= s.seats || s.bankrupt[to]) return false;
+  if (!isBundleShape(give) || !isBundleShape(want)) return false;
   if (give.tiles.length === 0 && want.tiles.length === 0 && give.cash === 0 && want.cash === 0) return false;
   return validBundle(s, seat, give) && validBundle(s, to, want);
 }
@@ -379,7 +402,9 @@ function applyCard(s: MagnatState, seat: Seat, card: Card, events: MagnatEvent[]
       }
       return { jailed: false };
     case "go":
-      s.cash[seat]! += GO_SALARY;
+      // Landing on Старт via the card pays the salary AND the configured
+      // exact-landing bonus, matching a dice landing (advance()).
+      s.cash[seat]! += GO_SALARY + s.config.goBonus;
       s.pos[seat] = 0;
       return { jailed: false };
   }
@@ -538,6 +563,9 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
 
   validate(state, seat, action) {
     if (state.done || seat !== state.turn || state.bankrupt[seat]) return false;
+    // Raw socket input: reject anything that isn't an action-shaped object
+    // before touching its fields (a string/null/number here used to throw).
+    if (!isActionShape(action)) return false;
     const a = action as MagnatAction;
     if (a.type === "BID") {
       return (
@@ -545,7 +573,9 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
         !!state.auction &&
         state.auction.live[seat] === true &&
         Number.isInteger(a.amount) &&
-        a.amount > state.auction.high &&
+        // Same minimum raise the UI/bot use (high + 10) — otherwise a modified
+        // client could grind the auction with +1 micro-bids honest clients can't.
+        a.amount >= state.auction.high + 10 &&
         a.amount <= state.cash[seat]!
       );
     }
@@ -558,6 +588,9 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
 
   reduce(state, action, rng: SeededRng) {
     if (state.done) throw new IllegalActionError("Game over");
+    // Same raw-input guard as validate(): reduce must never TypeError on a
+    // malformed action — IllegalActionError is the contract for bad input.
+    if (!isActionShape(action)) throw new IllegalActionError("Malformed action");
     const seat = state.turn;
     if (state.bankrupt[seat]) throw new IllegalActionError("Bankrupt");
     const s = clone(state);
@@ -603,13 +636,21 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
           if (doubles) {
             s.inJail[seat] = false;
             s.jailTurns[seat] = 0;
+            pushLog(s, `Играч ${seat + 1} хвърли чифт и излиза от затвора`);
           } else {
             s.jailTurns[seat]!++;
             if (s.jailTurns[seat]! >= 3) {
+              // Third failed attempt: pay the fine and move on the rolled sum.
               feeToBank(s, seat, JAIL_FINE, events);
+              events.push({ type: "JAIL_FEE", seat, amount: JAIL_FINE });
+              pushLog(s, `Играч ${seat + 1} плаща ${JAIL_FINE} и излиза от затвора`);
               s.inJail[seat] = false;
               s.jailTurns[seat] = 0;
             } else {
+              // Failed attempt 1 or 2: surface it (event + log) — previously the
+              // turn just skipped with zero feedback and looked like a bug.
+              events.push({ type: "JAIL_STAY", seat, dice: [d1, d2], attempt: s.jailTurns[seat]! });
+              pushLog(s, `Играч ${seat + 1} хвърли ${d1}+${d2} — остава в затвора (${s.jailTurns[seat]}/3)`);
               endTurn(s);
               return finish();
             }
@@ -670,12 +711,14 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       case "BID": {
         if (s.phase !== "AUCTION" || !s.auction || !s.auction.live[seat]) throw new IllegalActionError("Not bidding");
         const amt = action.amount;
-        if (!Number.isInteger(amt) || amt <= s.auction.high || amt > s.cash[seat]!) {
+        // Enforce the same minimum raise as legalActions/validate (high + 10).
+        if (!Number.isInteger(amt) || amt < s.auction.high + 10 || amt > s.cash[seat]!) {
           throw new IllegalActionError("Bad bid");
         }
         s.auction.high = amt;
         s.auction.highBidder = seat;
-        events.push({ type: "AUCTION_BID", seat, amount: amt });
+        events.push({ type: "AUCTION_BID", seat, amount: amt, tile: s.auction.tile });
+        pushLog(s, `Търг: играч ${seat + 1} наддава ${amt} за ${tile(s.auction.tile).name}`);
         // uncontested (everyone else already passed) → they win immediately.
         if (s.auction.live.filter(Boolean).length <= 1) resolveAuction(s, events);
         else s.turn = nextLiveBidder(s, seat);
@@ -696,10 +739,19 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
       }
       case "TRADE_OFFER": {
         if (!canOffer(s, seat, action.to, action.give, action.want)) throw new IllegalActionError("Bad trade");
-        s.trade = { from: seat, to: action.to, give: action.give, want: action.want, resumeTurn: seat };
+        // Rebuild the bundles from the validated fields only — never store the
+        // raw client object (it may carry extra junk that would be broadcast).
+        s.trade = {
+          from: seat,
+          to: action.to,
+          give: { cash: action.give.cash, tiles: [...action.give.tiles] },
+          want: { cash: action.want.cash, tiles: [...action.want.tiles] },
+          resumeTurn: seat,
+        };
         s.phase = "TRADE";
         s.turn = action.to;
         events.push({ type: "TRADE_OFFER", from: seat, to: action.to });
+        pushLog(s, `Играч ${seat + 1} предлага сделка на играч ${action.to + 1}`);
         return finish();
       }
       case "TRADE_ACCEPT": {

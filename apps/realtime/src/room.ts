@@ -187,7 +187,11 @@ export class GameRoom {
     // A session may set its own per-turn time (e.g. Магнат house rules); else env default.
     const cfgSec = (this.state as { config?: { turnSeconds?: number } }).config?.turnSeconds;
     const baseMs = typeof cfgSec === "number" && cfgSec > 0 ? cfgSec * 1000 : TURN_MS;
-    const delay = this.disconnected.has(seat.seat) ? DISCONNECTED_TURN_MS : baseMs;
+    // Cue games: the previous shot's animation locks the client UI — extend the
+    // clock by its real-time length so the striker keeps their full aiming time.
+    const animMs =
+      GAME_ENGINE[this.game] === "cue-sport" ? ((this.state as { lastShotMs?: number }).lastShotMs ?? 0) : 0;
+    const delay = (this.disconnected.has(seat.seat) ? DISCONNECTED_TURN_MS : baseMs) + animMs;
     this.turnEndsAt = Date.now() + delay;
     this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), delay);
   }
@@ -301,9 +305,16 @@ export class GameRoom {
     this.state = state;
     for (const s of this.seats) {
       if (s.userId) {
+        // Per-seat event redaction (e.g. Кент's secret SIGNAL reaches only the
+        // partner). Engines without the hook broadcast events verbatim.
+        const forSeat = this.engine.redactEvent
+          ? (events as unknown[])
+              .map((ev) => this.engine.redactEvent!(ev as never, s.seat))
+              .filter((ev) => ev !== null)
+          : events;
         this.io.to(userRoom(s.userId)).emit(SOCKET_EVENTS.GAME_EVENTS, {
           matchId: this.matchId,
-          events,
+          events: forSeat,
         });
       }
     }
@@ -329,9 +340,14 @@ export class GameRoom {
         const seat = this.currentSeat();
         if (!seat || !this.isBotDriven(seat)) break;
         // Cue sports: a 2–3s "aiming" pause before the AI shoots so it feels
-        // human; other games get a short beat to let the move animate.
+        // human — but never shorter than the PREVIOUS shot's animation, which
+        // clients replay in real time (the cue engine stores its length as
+        // `lastShotMs`; fall back conservatively when absent mid-match).
+        // Other games get a short beat to let the move animate.
         const isCue = GAME_ENGINE[this.game] === "cue-sport";
-        const botDelay = isCue ? 2000 + Math.floor(Math.random() * 1000) : 350;
+        const cueState = this.state as { lastShotMs?: number; shotNo?: number };
+        const animMs = isCue ? cueState.lastShotMs ?? ((cueState.shotNo ?? 0) > 0 ? 3500 : 0) : 0;
+        const botDelay = isCue ? Math.max(2000 + Math.floor(Math.random() * 1000), animMs + 800) : 350;
         await new Promise((r) => setTimeout(r, botDelay));
         if (this.done || this.engine.isTerminal(this.state)) break;
         // Recompute against the CURRENT state after the await (it may have moved

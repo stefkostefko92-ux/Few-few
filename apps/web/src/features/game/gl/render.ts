@@ -298,13 +298,23 @@ export class RenderCore implements GfxControllable {
       pass: (s: Scene, c: Camera) => { getTextureNode: (k?: string) => unknown; setMRT: (m: unknown) => void };
       mrt: (o: Record<string, unknown>) => unknown;
       output: unknown;
-      transformedNormalView?: unknown;
-      normalView?: unknown;
+      normalView: unknown;
+      vec3: (x: unknown) => unknown;
+      vec4: (x: unknown, w: number) => unknown;
     };
-    const { pass, mrt, output } = tslAny;
-    const normalNode = tslAny.transformedNormalView ?? tslAny.normalView;
+    const { pass, mrt, output, vec3, vec4 } = tslAny;
+    const normalNode = tslAny.normalView;
     const { bloom } = (await import("three/addons/tsl/display/BloomNode.js")) as { bloom: (n: unknown, s?: number, r?: number, t?: number) => { strength: { value: number }; radius: { value: number }; threshold: { value: number } } };
-    const { ao } = (await import("three/addons/tsl/display/GTAONode.js")) as { ao: (d: unknown, n: unknown, c: Camera) => { getTextureNode: () => { mul: (x: unknown) => unknown } } };
+    // GTAONode renders into a RedFormat target: sampling yields vec4(ao,0,0,1).
+    // The type bakes in the ONLY correct composition — broadcast .r over RGB —
+    // because a raw vec4 multiply zeroes G/B and turns the whole frame red.
+    const { ao } = (await import("three/addons/tsl/display/GTAONode.js")) as {
+      ao: (d: unknown, n: unknown, c: Camera) => {
+        radius: { value: number };
+        scale: { value: number };
+        getTextureNode: () => { r: unknown };
+      };
+    };
 
     const params = this.params;
     const post = new PostProcessing(this.renderer as never) as unknown as {
@@ -315,6 +325,7 @@ export class RenderCore implements GfxControllable {
     };
 
     let bloomNode: { strength: { value: number }; radius: { value: number }; threshold: { value: number } } | null = null;
+    let aoNode: { radius: { value: number }; scale: { value: number } } | null = null;
 
     const build = () => {
       const scenePass = pass(this.scene, this.camera);
@@ -325,8 +336,12 @@ export class RenderCore implements GfxControllable {
 
       let node: unknown = color;
       if (params.ao.enabled) {
-        const aoNode = ao(depth, normal, this.camera);
-        node = aoNode.getTextureNode().mul(color);
+        const gtao = ao(depth, normal, this.camera);
+        gtao.radius.value = params.ao.radius;
+        gtao.scale.value = params.ao.intensity;
+        aoNode = gtao;
+        // color × broadcast(ao.r): the official GTAONode composition.
+        node = (color as { mul: (x: unknown) => unknown }).mul(vec4(vec3(gtao.getTextureNode().r), 1));
       }
       if (params.bloom.enabled) {
         bloomNode = bloom(node, params.bloom.strength, params.bloom.radius, params.bloom.threshold);
@@ -349,6 +364,10 @@ export class RenderCore implements GfxControllable {
           bloomNode.strength.value = params.bloom.strength;
           bloomNode.radius.value = params.bloom.radius;
           bloomNode.threshold.value = params.bloom.threshold;
+        }
+        if (aoNode) {
+          aoNode.radius.value = params.ao.radius;
+          aoNode.scale.value = params.ao.intensity;
         }
       },
       rebuild: build,

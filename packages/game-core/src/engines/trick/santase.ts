@@ -49,8 +49,8 @@ export interface SantaseState {
   closed: boolean;
   /** Seat that closed the talon (null if never closed). */
   closedBy: Seat | null;
-  /** Whether the closer had already taken a trick when they closed. */
-  closerHadTrick: boolean;
+  /** Whether the OPPONENT had a trick when the talon was closed (penalty 2 vs 3). */
+  oppHadTrickAtClose: boolean;
   /** Game points the winner earned in the LAST finished deal (1/2/3). */
   gamePoints: number;
   lastTrickWinner: Seat | null;
@@ -121,7 +121,7 @@ function freshDeal(state: SantaseState, rng: SeededRng): void {
   state.wonTrick = [false, false];
   state.closed = false;
   state.closedBy = null;
-  state.closerHadTrick = false;
+  state.oppHadTrickAtClose = false;
   state.lastTrickWinner = null;
   state.firstLeader = other(state.firstLeader);
   state.leader = state.firstLeader;
@@ -181,7 +181,8 @@ function finishClosed(
     return finish(state, closer, events, rng);
   }
   // Closer failed → opponent wins with a penalty.
-  const penalty = state.closerHadTrick ? 2 : 3;
+  // 3 точки, ако противникът е бил без взятка при затварянето; иначе 2.
+  const penalty = state.oppHadTrickAtClose ? 2 : 3;
   return settle(state, opp, Math.max(penalty, normalGamePoints(state.points[closer] ?? 0)), events, rng);
 }
 
@@ -201,7 +202,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       wonTrick: [false, false],
       closed: false,
       closedBy: null,
-      closerHadTrick: false,
+      oppHadTrickAtClose: false,
       gamePoints: 1,
       lastTrickWinner: null,
       matchPoints: [0, 0],
@@ -222,7 +223,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     if (onLead) {
       const canDraw = state.stock.length >= 1 && state.trumpCard !== null && !state.closed;
       if (canDraw) actions.push({ type: "CLOSE" });
-      if (canDraw && hand.includes(`J${state.trump}`)) actions.push({ type: "EXCHANGE" });
+      if (canDraw && hand.includes(`9${state.trump}`)) actions.push({ type: "EXCHANGE" });
       for (const card of hand) {
         actions.push({ type: "PLAY", card });
         if (state.wonTrick[seat] && hasMarriagePartner(hand, card)) {
@@ -278,10 +279,12 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     const events: SantaseEvent[] = [];
 
     if (action.type === "EXCHANGE") {
-      const jack = `J${next.trump}`;
-      next.hands[seat] = next.hands[seat]!.filter((c) => c !== jack);
+      // 24-картово Сантасе: разменя се ДЕВЕТКАТА на коза (не Валето — това е
+      // правилото на 20-картовия Schnapsen).
+      const nine = `9${next.trump}`;
+      next.hands[seat] = next.hands[seat]!.filter((c) => c !== nine);
       next.hands[seat]!.push(next.trumpCard!);
-      next.trumpCard = jack;
+      next.trumpCard = nine;
       events.push({ type: "EXCHANGE", seat });
       return { state: next, events };
     }
@@ -289,7 +292,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     if (action.type === "CLOSE") {
       next.closed = true;
       next.closedBy = seat;
-      next.closerHadTrick = next.wonTrick[seat] ?? false;
+      next.oppHadTrickAtClose = next.wonTrick[other(seat)] ?? false;
       events.push({ type: "CLOSE", seat });
       return { state: next, events };
     }
@@ -348,6 +351,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     if (next.hands[0]!.length === 0 && next.hands[1]!.length === 0) {
       // Hands exhausted. If closed and the closer never reached 66, they failed.
       if (next.closed) return finishClosed(next, events, rng);
+      // Открита игра: последната взятка носи +10 точки.
+      next.points[winner] = (next.points[winner] ?? 0) + 10;
       return finish(next, next.lastTrickWinner ?? winner, events, rng);
     }
 
@@ -355,6 +360,39 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
   },
 
   isTerminal: (state) => state.done,
+
+  /** Heuristic bot: exchanges the trump nine, closes only near 66, announces
+   *  marriages, wins valuable tricks cheaply and leads low otherwise. */
+  bot(state, seat, _rng) {
+    if (state.done || seat !== state.turn) return null;
+    const acts = santaseEngine.legalActions(state, seat);
+    if (acts.length === 0) return null;
+    const exchange = acts.find((a) => a.type === "EXCHANGE");
+    if (exchange) return exchange;
+    const close = acts.find((a) => a.type === "CLOSE");
+    if (close && (state.points[seat] ?? 0) >= 56) return close;
+    const plays = acts.filter((a): a is Extract<SantaseAction, { type: "PLAY" }> => a.type === "PLAY");
+    if (plays.length === 0) return null;
+    const val = (c: Card) => VALUE[rankOf(c)] ?? 0;
+    if (state.trick.length === 0) {
+      const marriage = plays.find((a) => a.marriage);
+      if (marriage) return marriage;
+      // lead cheap, keep trumps for later
+      return plays.reduce((m, a) =>
+        val(a.card) + (suitOf(a.card) === state.trump ? 5 : 0) <
+        val(m.card) + (suitOf(m.card) === state.trump ? 5 : 0)
+          ? a
+          : m,
+      );
+    }
+    const led = state.trick[0]!;
+    const winners = plays.filter((a) => beats(a.card, led.card, suitOf(led.card), state.trump));
+    if (winners.length > 0 && val(led.card) >= 4) {
+      // take valuable tricks with the cheapest winning card
+      return winners.reduce((m, a) => (val(a.card) < val(m.card) ? a : m));
+    }
+    return plays.reduce((m, a) => (val(a.card) < val(m.card) ? a : m));
+  },
 
   score(state): SeatScore[] {
     const winner = state.winner ?? 0;

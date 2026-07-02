@@ -26,13 +26,13 @@ export interface GfxParams {
 }
 
 /**
- * Backend preference. Defaults to "auto" (WebGPU when available, else WebGL2),
- * but `?renderer=webgl` forces the WebGL2 path — handy on machines whose WebGPU
- * driver is flaky, and for deterministic testing.
+ * Backend preference. Defaults to the battle-tested WebGL2 path; WebGPU is
+ * opt-in via `?renderer=webgpu` until its TSL post graph has real-browser
+ * mileage (the untested graph shipped a red-tinted board to prod Chrome).
  */
 function rendererPref(): "auto" | "webgl" {
-  if (typeof location === "undefined") return "auto";
-  return new URLSearchParams(location.search).get("renderer") === "webgl" ? "webgl" : "auto";
+  if (typeof location === "undefined") return "webgl";
+  return new URLSearchParams(location.search).get("renderer") === "webgpu" ? "auto" : "webgl";
 }
 
 /**

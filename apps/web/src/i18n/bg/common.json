@@ -209,10 +209,16 @@
     "match": "Мач",
     "dealNo": "Раздаване",
     "toEleven": "до 11",
-    "marriage": "Белот",
-    "trumpMarriage": "Коз белот",
+    "marriage": "20",
+    "trumpMarriage": "40",
     "quiet": "Без анонс",
-    "quietOn": "Без анонс ✓"
+    "quietOn": "Без анонс ✓",
+    "twenty": "20!",
+    "forty": "40!",
+    "closedBy": "{{name}} затваря талона",
+    "exchangedBy": "{{name}} разменя деветката на коза",
+    "dealEnd": "{{name}} взима раздаването (+{{n}})",
+    "closedTag": "Затворен талон"
   },
   "belote": {
     "yourTeam": "Твой отбор",
@@ -241,7 +247,8 @@
     "dealPoints": "Това раздаване",
     "lastDeal": "Раздаване",
     "valat": "Валат!",
-    "inside": "Вътре"
+    "inside": "Вътре",
+    "redeal": "Ново раздаване"
   },
   "wallet": {
     "chips": "Чипове",
@@ -362,7 +369,19 @@
     "call": "Плащам",
     "raise": "Вдигам",
     "fold": "Пас",
-    "notice": "Социална игра с виртуални чипове — не е хазарт за реални пари."
+    "notice": "Социална игра с виртуални чипове — не е хазарт за реални пари.",
+    "check": "Чек",
+    "continue": "Продължи",
+    "handNo": "Ръка {{n}}/{{max}}",
+    "svara": "СВАРА!",
+    "svaraBanner": "СВАРА! Потът от {{pot}} остава",
+    "join": "Влез в сварата ({{fee}})",
+    "skip": "Оставам извън",
+    "waitingJoin": "Свара! Изчакване на решенията…",
+    "winsPot": "{{name}} печели пота ({{pot}})",
+    "raisesTo": "{{name}} вдига на {{to}}",
+    "joins": "{{name}} влиза в сварата ({{fee}})",
+    "newHand": "Ръка {{n}}"
   },
   "bridge": {
     "auction": "Анонс",
@@ -383,7 +402,8 @@
   "war": {
     "flip": "Обърни",
     "battle": "ВОЙНА",
-    "cards": "{{n}} карти"
+    "cards": "Карти: {{n}}",
+    "tookPile": "{{name}} взима {{n}} карти"
   },
   "rummy": {
     "stock": "Тесте",
@@ -394,8 +414,20 @@
     "knock": "Чукни",
     "discardHint": "Избери карта за изхвърляне",
     "drawHint": "Тегли от тестето или изхвърлените",
-    "cancelKnock": "Отказ от обявяване",
-    "knockHint": "Избери картата, с която обявяваш"
+    "cancelKnock": "Отказ от чукане",
+    "knockHint": "Избери картата, с която чукаш",
+    "match": "Мач",
+    "dealNo": "Ръка",
+    "toHundred": "до 100 т.",
+    "knockBanner": "{{name}} чука с {{pts}} т.",
+    "ginBanner": "Джин! {{name}} затваря без мъртви точки",
+    "undercutBanner": "Ъндъркът! {{name}} подсича",
+    "dealWonBanner": "{{name}} печели ръката: +{{pts}} т.",
+    "deadHandBanner": "Мъртва ръка — никой не взима точки",
+    "matchBanner": "{{name}} печели мача",
+    "deadwood": "Мъртви точки",
+    "layoffs": "Долагания",
+    "continue": "Продължи"
   },
   "gofish": {
     "ocean": "Море",
@@ -433,7 +465,10 @@
       "largeStraight": "Голяма кента",
       "chance": "Шанс",
       "yahtzee": "Покер"
-    }
+    },
+    "upper": "Сбор 1–6",
+    "bonus": "Бонус (63+)",
+    "pickCategory": "Избери категория"
   },
   "bingo": {
     "draw": "Тегли",
@@ -447,7 +482,10 @@
   "ludo": {
     "base": "старт",
     "home": "дом",
-    "pickToken": "Избери пионка"
+    "pickToken": "Избери пионка",
+    "noMove": "Няма ход — пропускаш",
+    "noMoveRetry": "Няма ход — хвърли отново",
+    "noMoveOther": "{{name}} няма ход"
   },
   "domino": {
     "empty": "Постави първото домино",
@@ -457,7 +495,10 @@
     "target": "до",
     "lastRound": "Последен кръг",
     "out": "изигра всичко",
-    "blocked": "блокирано"
+    "blocked": "блокирано",
+    "pass": "Пас",
+    "boneyard": "Казан",
+    "tie": "равенство"
   },
   "cue": {
     "power": "Сила",
@@ -494,7 +535,9 @@
     "target": "до",
     "lastCall": "Последно Купе",
     "correct": "вярно ✓",
-    "wrong": "напразно ✗"
+    "wrong": "напразно ✗",
+    "callStop": "Стоп Кент!",
+    "roundWon": "Кръг за {{team}}"
   },
   "chess": {
     "check": "Шах!",
@@ -530,7 +573,18 @@
     "fold": "Фолд",
     "raise": "Вдигам!",
     "winPot": "печели пота",
-    "youWinPot": "Печелиш пота!"
+    "youWinPot": "Печелиш пота!",
+    "passBy": "{{name}} пасува",
+    "wentOut": "{{name}} изигра всичко!",
+    "roundPoints": "{{name}} +{{points}} т.",
+    "roundTie": "Блокада с равенство — никой не взима точки",
+    "asks": "{{from}} пита {{to}} за {{rank}}",
+    "took": "{{name}} взе {{count}}!",
+    "fishes": "{{name}} бърка в морето",
+    "luckyFish": "{{name}} извади поисканото — играе пак!",
+    "oppBookBy": "Комплект за {{name}}!",
+    "sunk": "Потопи кораб!",
+    "sunkYou": "Потопиха ти кораб!"
   },
   "rooms": {
     "title": "Стаи",
@@ -616,7 +670,26 @@
     "onField": "на поле {{tile}}",
     "turnHint": "Ред е на {{name}}…",
     "mortgage": "ипотека",
-    "houses": "{{n}}🏠"
+    "houses": "{{n}}🏠",
+    "rentBanner": "{{from}} плаща {{amount}} наем на {{to}}",
+    "jailStayYou": "🎲 {{d1}}+{{d2}} — не хвърли чифт, оставаш в затвора (опит {{attempt}}/3)",
+    "jailStay": "{{name}} не хвърли чифт и остава в затвора ({{attempt}}/3)",
+    "jailFee": "{{name}} плаща {{amount}} и излиза от затвора",
+    "jailBanner": "{{name}} отива в затвора",
+    "auctionStartBanner": "Търг за {{tile}}",
+    "bidBanner": "{{name}} наддава {{amount}} за {{tile}}",
+    "auctionWonBanner": "{{name}} печели {{tile}} за {{amount}}",
+    "auctionPassedBanner": "{{tile}} остава непродаден",
+    "potBanner": "{{name}} прибира джакпота от {{amount}}",
+    "bankruptBanner": "{{name}} банкрутира",
+    "tradeDoneBanner": "Сделка: {{from}} ↔ {{to}}",
+    "tradeRejectedBanner": "{{name}} отказа сделката",
+    "cardDrawn": "{{name}} тегли карта",
+    "auctionPill": "Търг: {{tile}}",
+    "auctionLeader": "водещ {{name}} {{amount}}",
+    "potPill": "Паркинг джакпот: {{amount}}",
+    "gojfCard": "Карта „Излизане от затвора“",
+    "tradeWaiting": "Изчакваш отговор от {{name}}…"
   },
   "errors": {
     "generic": "Нещо се обърка",

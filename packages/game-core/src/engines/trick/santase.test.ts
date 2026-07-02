@@ -69,7 +69,8 @@ describe("santase engine", () => {
     // Seat 0 closes immediately on lead (has taken no trick yet).
     const closed = santaseEngine.reduce(s, { type: "CLOSE" }, new SeededRng("c")).state;
     expect(closed.closedBy).toBe(0);
-    expect(closed.closerHadTrick).toBe(false);
+    // Penalty severity depends on the OPPONENT's tricks at the moment of closing.
+    expect(closed.oppHadTrickAtClose).toBe(false);
     // Drive the rest with random legal play; seat 0 almost never reaches 66
     // having closed blind on turn 1, so the opponent should take the penalty.
     let st = closed;

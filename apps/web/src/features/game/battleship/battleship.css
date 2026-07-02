@@ -1,5 +1,41 @@
 /* Морски бой grids (§4.15 'Командна зала'). */
+.bs-board {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+}
+.bs-corner {
+  grid-row: 1;
+  grid-column: 1;
+}
+/* Coordinate rails: А–К (без Й) on top, 1–10 down the left — морски бой се
+   играе по координати ('Б-7'). */
+.bs-coords {
+  display: grid;
+  color: var(--brass-300);
+  font-size: 0.68rem;
+  font-weight: 600;
+  user-select: none;
+}
+.bs-coords > span {
+  display: grid;
+  place-items: center;
+}
+.bs-coords--top {
+  grid-row: 1;
+  grid-column: 2;
+  grid-template-columns: repeat(10, 1fr);
+  padding-bottom: 2px;
+}
+.bs-coords--left {
+  grid-row: 2;
+  grid-column: 1;
+  grid-template-rows: repeat(10, 1fr);
+  padding-right: 4px;
+}
 .bs-grid {
+  grid-row: 2;
+  grid-column: 2;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   width: min(44vw, 42vh, 420px);
@@ -30,12 +66,26 @@
 }
 .bs-cell--miss {
   color: rgba(180, 210, 230, 0.6);
-  animation: bs-miss 240ms ease-out;
 }
 .bs-cell--hit {
   color: var(--suit-red);
   background: radial-gradient(circle, rgba(194, 54, 47, 0.4), transparent 70%);
   text-shadow: 0 0 8px var(--loss);
+}
+/* Hit cells of a fully sunk ship go dark — the kill is visually settled. */
+.bs-cell--sunk,
+.bs-cell--ship.bs-cell--sunk {
+  color: rgba(240, 200, 190, 0.85);
+  background: linear-gradient(180deg, #3a1210, #1c0806);
+  box-shadow: inset 0 0 0 1px rgba(194, 54, 47, 0.45);
+  text-shadow: none;
+}
+/* Pop animations run only on the freshly struck cell (event-driven), so a
+   resync/remount never replays every old marker at once. */
+.bs-cell--fresh.bs-cell--miss {
+  animation: bs-miss 240ms ease-out;
+}
+.bs-cell--fresh.bs-cell--hit {
   animation: bs-hit 340ms var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15));
 }
 @keyframes bs-hit {

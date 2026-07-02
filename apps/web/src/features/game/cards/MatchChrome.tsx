@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Panel } from "../../../ui";
+import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import type { GameOverMsg } from "@aso/shared";
 import type { MatchPhase } from "../useMatch";
 
@@ -20,6 +21,10 @@ export function MatchChrome({ title, phase, seat, result, children }: Props) {
 
   const myResult = result?.score.find((s) => s.seat === seat)?.result;
   const myDelta = result?.ratingDeltas[seat] ?? 0;
+  // A regrouped party room for THIS game waits (an unrelated parked lobby must
+  // not swallow the "play again" button) — mirrors GameOverPanel.
+  const game = useMatchStore((s) => s.game);
+  const lobbyWaiting = useLobbyStore((s) => s.lobby !== null && s.lobby.game === game);
 
   return (
     <div className="mx-auto flex w-full max-w-[min(94vw,1240px)] flex-col items-center gap-6">
@@ -52,7 +57,16 @@ export function MatchChrome({ title, phase, seat, result, children }: Props) {
             MMR {myDelta >= 0 ? "+" : ""}
             {myDelta}
           </p>
-          <Button className="mt-6 w-full" onClick={() => navigate("/")}>
+          {lobbyWaiting ? (
+            <Button className="mt-6 w-full" onClick={() => navigate("/rooms")}>
+              {t("game.backToRoom")}
+            </Button>
+          ) : (
+            <Button className="mt-6 w-full" onClick={() => useMatchStore.getState().playAgain()}>
+              {t("game.playAgain")}
+            </Button>
+          )}
+          <Button variant="ghost" className="mt-2 w-full" onClick={() => navigate("/")}>
             {t("game.backToLobby")}
           </Button>
         </Panel>

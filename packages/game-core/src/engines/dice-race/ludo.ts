@@ -11,8 +11,10 @@ import type { SeededRng } from "../../kernel/rng.js";
  * Не се сърди човече (Ludo) — 2–4p dice race (§4.10). Each player has 4 tokens.
  * Roll a die; a 6 lets a token leave home (and grants another roll). Tokens
  * travel a shared 40-cell main track then a 4-cell private home column. Landing
- * on an opponent sends it back home ("изяждане"). First to bring all 4 tokens
- * home wins.
+ * on an opponent sends it back home ("изяждане"). A player whose unfinished
+ * tokens are all in the base gets up to three throws to find a 6. A roll with
+ * no legal move stays visible (NO_MOVE event + die kept in state) until the
+ * player rolls again or passes. First to bring all 4 tokens home wins.
  *
  * Track model: positions are -1 (home/base), 0..39 (main loop, seat-relative
  * entry offset), 40..43 (home column), 44 = finished. We store ABSOLUTE main
@@ -23,6 +25,8 @@ const TOKENS = 4;
 const MAIN = 40;
 const HOME_COL = 4;
 const FINISH = MAIN + HOME_COL; // 44 (progress index meaning "home")
+/** Throws allowed in one turn while every unfinished token sits in the base. */
+const BASE_ATTEMPTS = 3;
 
 export interface LudoState {
   // progress[seat][token]: -1 base, 0..39 steps on main path (seat-relative),
@@ -30,8 +34,10 @@ export interface LudoState {
   progress: number[][];
   turn: Seat;
   seats: number;
-  die: number | null; // current unconsumed roll
+  die: number | null; // current unconsumed roll (kept visible on a no-move roll)
   rolledSix: boolean;
+  /** Rolls taken this turn — caps the "three throws for a six" base rule. */
+  attempts: number;
   winner: Seat | null;
   done: boolean;
 }
@@ -39,6 +45,7 @@ export interface LudoState {
 export type LudoAction = { type: "ROLL" } | { type: "MOVE"; token: number } | { type: "PASS" };
 export type LudoEvent =
   | { type: "ROLL"; seat: Seat; die: number }
+  | { type: "NO_MOVE"; seat: Seat; die: number; retry: boolean }
   | { type: "MOVE"; seat: Seat; token: number; to: number }
   | { type: "CAPTURE"; seat: Seat; victim: Seat; token: number }
   | { type: "PASS"; seat: Seat }
@@ -60,6 +67,7 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
       seats,
       die: null,
       rolledSix: false,
+      attempts: 0,
       winner: null,
       done: false,
     };
@@ -69,7 +77,10 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
     if (state.done || seat !== state.turn) return [];
     if (state.die === null) return [{ type: "ROLL" }];
     const moves = movableTokens(state, seat).map((token) => ({ type: "MOVE" as const, token }));
-    return moves.length > 0 ? moves : [{ type: "PASS" }];
+    if (moves.length > 0) return moves;
+    // Rolled but stuck: a 6 (or a remaining base attempt) grants another throw,
+    // otherwise the turn ends with an explicit PASS — the die stays visible.
+    return canRollAgain(state, seat) ? [{ type: "ROLL" }] : [{ type: "PASS" }];
   },
 
   reduce(state, action, rng: SeededRng) {
@@ -79,20 +90,27 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
     const events: LudoEvent[] = [];
 
     if (action.type === "ROLL") {
-      if (next.die !== null) throw new IllegalActionError("Already rolled");
+      if (next.die !== null) {
+        // Only a stuck roll with a re-throw right (6 / base attempts) may re-roll.
+        if (movableTokens(next, seat).length > 0 || !canRollAgain(next, seat)) {
+          throw new IllegalActionError("Already rolled");
+        }
+      }
       const die = rng.die();
       next.die = die;
       next.rolledSix = die === 6;
+      next.attempts += 1;
       events.push({ type: "ROLL", seat, die });
       if (movableTokens(next, seat).length === 0) {
-        // No legal move — turn passes (unless a 6 with all tokens home/finished).
-        endTurn(next, seat);
+        // Keep the die in state so everyone SEES the dead roll; the turn ends
+        // via PASS (or continues via ROLL when a re-throw is granted).
+        events.push({ type: "NO_MOVE", seat, die, retry: canRollAgain(next, seat) });
       }
       return { state: next, events };
     }
 
     if (action.type === "PASS") {
-      if (next.die === null || movableTokens(next, seat).length > 0) {
+      if (next.die === null || movableTokens(next, seat).length > 0 || canRollAgain(next, seat)) {
         throw new IllegalActionError("Cannot pass now");
       }
       events.push({ type: "PASS", seat });
@@ -132,7 +150,9 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
       return { state: { ...next, winner: seat, done: true, die: null }, events };
     }
 
-    // Rolling a 6 grants another roll; otherwise turn passes.
+    // Rolling a 6 grants another roll; otherwise turn passes. A consumed move
+    // resets the base-attempt budget (e.g. the last runner just finished).
+    next.attempts = 0;
     if (next.rolledSix) {
       next.die = null;
       next.rolledSix = false;
@@ -140,6 +160,43 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
       endTurn(next, seat);
     }
     return { state: next, events };
+  },
+
+  /** Simple priorities: finish > capture > leave base on a 6 > push the leader. */
+  bot(state, seat) {
+    if (state.done || seat !== state.turn) return null;
+    if (state.die === null) return { type: "ROLL" };
+    const movable = movableTokens(state, seat);
+    if (movable.length === 0) return canRollAgain(state, seat) ? { type: "ROLL" } : { type: "PASS" };
+
+    const die = state.die;
+    const destOf = (t: number): number => {
+      const cur = state.progress[seat]![t]!;
+      return cur === -1 ? 0 : cur + die;
+    };
+    const captures = (t: number): boolean => {
+      const abs = absCell(seat, destOf(t));
+      if (abs === null) return false;
+      for (let s = 0; s < state.seats; s++) {
+        if (s === seat) continue;
+        for (let tk = 0; tk < TOKENS; tk++) {
+          if (absCell(s, state.progress[s]![tk]!) === abs) return true;
+        }
+      }
+      return false;
+    };
+
+    const finish = movable.find((t) => destOf(t) === FINISH);
+    if (finish !== undefined) return { type: "MOVE", token: finish };
+    const capture = movable.find(captures);
+    if (capture !== undefined) return { type: "MOVE", token: capture };
+    const fromBase = movable.find((t) => state.progress[seat]![t]! === -1);
+    if (fromBase !== undefined) return { type: "MOVE", token: fromBase };
+    let lead = movable[0]!;
+    for (const t of movable) {
+      if (state.progress[seat]![t]! > state.progress[seat]![lead]!) lead = t;
+    }
+    return { type: "MOVE", token: lead };
   },
 
   isTerminal: (s) => s.done,
@@ -173,9 +230,22 @@ function movableTokens(state: LudoState, seat: Seat): number[] {
   return out;
 }
 
+/** Every unfinished token still in the base (the "three throws" situation). */
+function allInBase(state: LudoState, seat: Seat): boolean {
+  return state.progress[seat]!.every((p) => p === -1 || p >= FINISH);
+}
+
+/** After a dead roll: a 6 always re-throws; an all-in-base player gets up to
+ *  BASE_ATTEMPTS throws per turn to find a 6. */
+function canRollAgain(state: LudoState, seat: Seat): boolean {
+  if (state.rolledSix) return true;
+  return allInBase(state, seat) && state.attempts < BASE_ATTEMPTS;
+}
+
 function endTurn(state: LudoState, seat: Seat): void {
   state.die = null;
   state.rolledSix = false;
+  state.attempts = 0;
   state.turn = (seat + 1) % state.seats;
 }
 

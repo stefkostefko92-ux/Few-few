@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../lib/store";
 
-const STAFF = new Set(["MODERATOR", "ADMIN", "OWNER"]);
+const STAFF = new Set(["MODERATOR", "SUPPORT", "ADMIN", "OWNER"]);
 
 /** Gate routes to staff roles. Assumes it sits inside <RequireAuth>. */
 export function RequireRole() {

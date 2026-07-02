@@ -1,4 +1,6 @@
 import { useMemo, useRef } from "react";
+import { useCardFlight } from "../anim/useCardFlight";
+import { useGameEvents } from "../useGameEvents";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { useTableFx, Announcements } from "../anim/useTableFx";
@@ -23,7 +25,8 @@ interface KentState {
 type KentAction =
   | { type: "PASS"; card: string }
   | { type: "SIGNAL"; seat: number }
-  | { type: "CALL_KUPE"; seat: number };
+  | { type: "CALL_KUPE"; seat: number }
+  | { type: "CALL_STOP"; seat: number };
 
 function relativePos(seat: number, mySeat: number): SeatPos {
   const d = (seat - mySeat + 4) % 4;
@@ -42,9 +45,12 @@ export function KentView({ title }: { title: string }) {
   );
   const signalAction = legal.find((a) => a.type === "SIGNAL");
   const kupeAction = legal.find((a) => a.type === "CALL_KUPE");
+  const stopAction = legal.find((a) => a.type === "CALL_STOP");
 
   const tableRef = useRef<HTMLDivElement>(null);
+  const flight = useCardFlight(tableRef);
   const myTeamForFx = seat % 2;
+  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
   const { banners } = useTableFx({
     matchId: m.matchId,
     seat,
@@ -55,11 +61,33 @@ export function KentView({ title }: { title: string }) {
           text: `${t("kent.callKupe")} ${ev.correct ? "✓" : "✗"}`,
           tone: ev.winningTeam === myTeamForFx ? "win" : "loss",
         };
+      if (ev.type === "STOP_KENT")
+        return {
+          text: `${t("kent.callStop")} ${ev.correct ? "✓" : "✗"}`,
+          tone: ev.winningTeam === myTeamForFx ? "win" : "loss",
+        };
+      if (ev.type === "ROUND" && typeof ev.winningTeam === "number")
+        return {
+          text: t("kent.roundWon", { team: ev.winningTeam === myTeamForFx ? t("belote.yourTeam") : t("belote.theirTeam") }),
+          tone: ev.winningTeam === myTeamForFx ? "win" : "loss",
+        };
+      if (ev.type === "REDEAL") return { text: t("belote.redeal"), tone: "brass" };
       return null;
     },
   });
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // The simultaneous SWAP: four face-down cards visibly slide to the left
+  // neighbour (the whole point of the round — it was a teleport before).
+  useGameEvents(m.matchId, (events) => {
+    for (const raw of events) {
+      const ev = raw as { type?: string };
+      if (ev.type === "SWAP") {
+        playCue("flip");
+        const order: SeatPos[] = ["bottom", "left", "top", "right"];
+        order.forEach((from, i) => flight.flyGhost(from, order[(i + 1) % 4]!));
+      }
+    }
+  });
 
   if (!state) {
     return (
@@ -138,13 +166,28 @@ export function KentView({ title }: { title: string }) {
             {myHand.map((card, i) => {
               const action = passMap.get(card);
               const canPass = myTurn && !!action && !iPassed;
+              const slot: { el: HTMLElement | null } = { el: null };
               return (
-                <div key={`${card}-${i}`} style={{ marginLeft: i ? -fitOverlap(myHand.length, "md") : 0 }}>
+                <div
+                  key={`${card}-${i}`}
+                  ref={(el) => {
+                    slot.el = el;
+                  }}
+                  style={{ marginLeft: i ? -fitOverlap(myHand.length, "md") : 0 }}
+                >
                   <PlayingCard
                     card={card}
                     size="md"
                     dimmed={!canPass}
-                    onClick={canPass ? () => { playCue("flip"); m.send(action); } : undefined}
+                    onClick={
+                      canPass
+                        ? () => {
+                            playCue("flip");
+                            flight.flyGhost(slot.el, "left");
+                            m.send(action);
+                          }
+                        : undefined
+                    }
                   />
                 </div>
               );
@@ -166,6 +209,11 @@ export function KentView({ title }: { title: string }) {
         ) : null}
         {kupeAction ? (
           <Button onClick={() => { playCue("deal"); m.send(kupeAction); }}>{t("kent.callKupe")}</Button>
+        ) : null}
+        {stopAction ? (
+          <Button variant="felt" onClick={() => { playCue("deal"); m.send(stopAction); }}>
+            ✋ {t("kent.callStop")}
+          </Button>
         ) : null}
       </div>
 

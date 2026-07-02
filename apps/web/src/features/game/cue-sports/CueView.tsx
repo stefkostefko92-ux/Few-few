@@ -13,6 +13,16 @@ import "./cue-table.css";
 
 type RBall = { id: number; x: number; y: number };
 
+// Engine extras serialized on top of the shared CueState (see game-core cue.ts).
+type CueStateX = CueState & {
+  lastShotMs?: number;
+  pushAvail?: boolean;
+  pushDecision?: boolean;
+  freeColour?: boolean;
+  freeBall?: boolean;
+};
+type CueActionX = (CueAction & { pushOut?: boolean }) | { type: "PASS" };
+
 const POCKETS: [number, number][] = [
   [0, 0],
   [TABLE.w / 2, 0],
@@ -21,6 +31,11 @@ const POCKETS: [number, number][] = [
   [TABLE.w / 2, TABLE.h],
   [TABLE.w, TABLE.h],
 ];
+
+// Pool head string (break line) + snooker "D" — mirror the engine's limits.
+const HEAD_STRING_X = 0.5;
+const BAULK_X = 0.42;
+const D_RADIUS = 0.18;
 
 const POOL_HUES = ["#e8b923", "#1f4fb0", "#c0241f", "#5a2a7a", "#e07a1f", "#1f8a3a", "#7a1f2a"];
 const SNOOKER_HUES: Record<number, string> = {
@@ -47,7 +62,7 @@ const isStripe = (id: number, variant: CueVariant): boolean => variant !== "SNOO
 export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const m = useMatch<CueState, CueAction>(game);
+  const m = useMatch<CueStateX, CueActionX>(game);
   const { state, seat, phase, result } = m;
   const felt = useEquippedCosmetic(game, "CUE");
   const cloth = felt?.colors ?? { a: "#1a6e3a", b: "#0c3a1f" };
@@ -59,6 +74,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const [power, setPower] = useState(0.55);
   const [placing, setPlacing] = useState(false);
   const [placedCue, setPlacedCue] = useState<{ x: number; y: number } | null>(null);
+  const [pushArmed, setPushArmed] = useState(false);
 
   // Shot animation driven purely off state.shotNo (+ state.lastShot.before).
   const [frameBalls, setFrameBalls] = useState<RBall[] | null>(null);
@@ -71,8 +87,26 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
       (p[0] - x) ** 2 + (p[1] - y) ** 2 < (best[0] - x) ** 2 + (best[1] - y) ** 2 ? p : best,
     );
 
+  // Reset per-match residue when this mounted view rebinds to a NEW match
+  // (regrouped party rooms reuse the mount) — otherwise seenShot from the old
+  // match suppresses every animation of the new one.
   useEffect(() => {
-    if (!state || !state.lastShot || state.shotNo <= seenShot.current) return;
+    seenShot.current = 0;
+    setFrameBalls(null);
+    setPlacedCue(null);
+    setPlacing(false);
+    setPushArmed(false);
+  }, [m.matchId]);
+
+  useEffect(() => {
+    if (!state) return;
+    // Joining/resuming mid-match: adopt the current shot count silently instead
+    // of replaying a stale shot (shotNo 1 — a live break — still animates).
+    if (seenShot.current === 0 && state.shotNo > 1) {
+      seenShot.current = state.shotNo;
+      return;
+    }
+    if (!state.lastShot || state.shotNo <= seenShot.current) return;
     seenShot.current = state.shotNo;
     const variant = state.variant;
     const { before, angle: a, power: p } = state.lastShot;
@@ -108,10 +142,20 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
       i += 1;
     }, 1000 / 60);
     return () => clearInterval(id);
-  }, [state]);
+    // Keyed to shotNo (not the state object): re-broadcasts of the SAME shot
+    // (resync / reclaim / reconnect) must not kill the running animation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.shotNo]);
 
   const myTurn = !!state && state.phase === "PLAY" && state.turn === seat && !animating;
   const ballInHand = !!state && state.ballInHand && myTurn;
+  const pushAvail = game === "NINEBALL" && !!state?.pushAvail;
+  const pushDecision = game === "NINEBALL" && !!state?.pushDecision;
+
+  // A fresh shot / turn change drops any armed push-out declaration.
+  useEffect(() => {
+    setPushArmed(false);
+  }, [state?.shotNo, state?.turn]);
 
   const liveBalls: RBall[] = animating
     ? (frameBalls ?? [])
@@ -150,6 +194,9 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   function placementOk(x: number, y: number): boolean {
     const r = TABLE.ballR;
     if (x < r || x > TABLE.w - r || y < r || y > TABLE.h - r) return false;
+    // Snooker: in-hand only inside the "D"; pool: the break stays behind the line.
+    if (game === "SNOOKER" && (x > BAULK_X || (x - BAULK_X) ** 2 + (y - TABLE.h / 2) ** 2 > D_RADIUS ** 2)) return false;
+    if (game !== "SNOOKER" && state?.shotNo === 0 && x > HEAD_STRING_X) return false;
     return !(state?.balls ?? []).some(
       (b) => !b.potted && b.id !== 0 && (b.x - x) ** 2 + (b.y - y) ** 2 < (2 * r) ** 2,
     );
@@ -162,11 +209,12 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
 
   function shoot() {
     if (!myTurn) return;
-    const action: CueAction = { type: "SHOOT", angle, power };
+    const action: CueAction & { pushOut?: boolean } = { type: "SHOOT", angle, power };
     if (placedCue) {
       action.cueX = placedCue.x;
       action.cueY = placedCue.y;
     }
+    if (pushArmed && pushAvail) action.pushOut = true;
     m.send(action);
   }
 
@@ -212,8 +260,52 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const scoreLine = (s: number) =>
     game === "SNOOKER" && state ? String(state.scores[s as 0 | 1]) : groupLabel(s);
 
+  // Engine messages travel as machine codes → i18n (cue.foul.*). Snooker break
+  // points arrive as a literal "+N" and render as-is.
+  const msgText = state?.message
+    ? state.message.startsWith("+")
+      ? state.message
+      : t(`cue.foul.${state.message}`)
+    : "";
+
+  // Status line under the table: base turn hint + target info + last message.
+  const hintParts: string[] = [];
+  if (state) {
+    const base = !myTurn
+      ? animating
+        ? ""
+        : t("game.opponentTurn")
+      : ballInHand
+        ? placing
+          ? `${t("cue.placeHint")}${
+              game === "SNOOKER" ? ` (${t("cue.placeHintD")})` : state.shotNo === 0 ? ` (${t("cue.placeHintBreak")})` : ""
+            }`
+          : t("cue.yourTurnBih")
+        : t("cue.yourTurn");
+    if (base) hintParts.push(base);
+    // Snooker: the target is core information for BOTH players (reading the
+    // break), so it shows regardless of whose turn it is.
+    if (game === "SNOOKER" && state.expect) {
+      if (state.freeBall) hintParts.push(t("cue.freeBall"));
+      hintParts.push(
+        state.freeColour ? t("cue.expectFreeColour") : state.expect === "red" ? t("cue.expectRed") : t("cue.expectColour"),
+      );
+    }
+    // 9-ball: the ball that must be struck first.
+    if (game === "NINEBALL" && state.phase === "PLAY") {
+      const next = state.balls.filter((b) => !b.potted && b.id > 0).reduce((lo, b) => Math.min(lo, b.id), 10);
+      if (next < 10) hintParts.push(`${t("cue.expectBall")} ${next}`);
+    }
+    if (msgText) hintParts.push(msgText);
+  }
+
+  // Hold the verdict until the deciding shot has finished animating — the
+  // winning ball must be seen to drop before the modal (and win/loss sound).
+  const displayResult = animating ? null : result;
+  const displayPhase = animating && phase === "over" ? ("playing" as const) : phase;
+
   return (
-    <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
+    <Scene title={title} phase={displayPhase} ready={!!state} seat={seat} result={displayResult}>
       {state ? (
         <div className="flex flex-col items-center gap-3">
           <ScorePill label={oppName} value={scoreLine(seat === 0 ? 1 : 0)} />
@@ -250,10 +342,20 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 {/* baulk line + D for snooker flavour */}
                 {game === "SNOOKER" ? (
                   <g stroke="rgba(255,255,255,.18)" strokeWidth={0.004} fill="none">
-                    <line x1={0.42} y1={0} x2={0.42} y2={TABLE.h} />
-                    <path d={`M 0.42 ${TABLE.h / 2 - 0.18} A 0.18 0.18 0 0 0 0.42 ${TABLE.h / 2 + 0.18}`} />
+                    <line x1={BAULK_X} y1={0} x2={BAULK_X} y2={TABLE.h} />
+                    <path d={`M ${BAULK_X} ${TABLE.h / 2 - D_RADIUS} A ${D_RADIUS} ${D_RADIUS} 0 0 0 ${BAULK_X} ${TABLE.h / 2 + D_RADIUS}`} />
                   </g>
-                ) : null}
+                ) : (
+                  /* pool head string — the break is placed behind this line */
+                  <line
+                    x1={HEAD_STRING_X}
+                    y1={0}
+                    x2={HEAD_STRING_X}
+                    y2={TABLE.h}
+                    stroke="rgba(255,255,255,.12)"
+                    strokeWidth={0.004}
+                  />
+                )}
 
                 {/* pockets */}
                 {POCKETS.map(([px, py], i) => (
@@ -277,15 +379,49 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 {liveBalls.map((b) => {
                   const color = ballColor(b.id, game);
                   const r = TABLE.ballR;
+                  const stripe = isStripe(b.id, game);
                   return (
                     <g key={b.id}>
-                      <circle cx={b.x} cy={b.y} r={r} fill={color} stroke="rgba(0,0,0,.35)" strokeWidth={0.003} />
-                      {isStripe(b.id, game) ? (
-                        <rect x={b.x - r} y={b.y - r * 0.42} width={r * 2} height={r * 0.84} fill="#f4f1e8" opacity={0.92} clipPathUnits="userSpaceOnUse" />
+                      {/* stripes match the GL texture: white ball + colour band */}
+                      <circle
+                        cx={b.x}
+                        cy={b.y}
+                        r={r}
+                        fill={stripe ? "#f4f1e8" : color}
+                        stroke="rgba(0,0,0,.35)"
+                        strokeWidth={0.003}
+                      />
+                      {stripe ? (
+                        <>
+                          <clipPath id={`aso-cue-ball-${b.id}`}>
+                            <circle cx={b.x} cy={b.y} r={r} />
+                          </clipPath>
+                          <rect
+                            x={b.x - r}
+                            y={b.y - r * 0.42}
+                            width={r * 2}
+                            height={r * 0.84}
+                            fill={color}
+                            clipPath={`url(#aso-cue-ball-${b.id})`}
+                          />
+                        </>
                       ) : null}
-                      {/* tiny number disc for pool */}
+                      {/* numbered disc for pool */}
                       {game !== "SNOOKER" && b.id !== 0 ? (
-                        <circle cx={b.x} cy={b.y} r={r * 0.42} fill="#fffdf6" opacity={0.95} />
+                        <>
+                          <circle cx={b.x} cy={b.y} r={r * 0.42} fill="#fffdf6" opacity={0.95} />
+                          <text
+                            x={b.x}
+                            y={b.y}
+                            fontSize={r * 0.56}
+                            fontWeight={700}
+                            fill="#1c1c1c"
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                          >
+                            {b.id}
+                          </text>
+                        </>
                       ) : null}
                       {/* highlight cue */}
                       {b.id === 0 ? (
@@ -322,23 +458,24 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
               <Button onClick={shoot} disabled={!myTurn} title={t("cue.shootKey")}>
                 {t("cue.shoot")} <kbd className="aso-kbd">Space</kbd>
               </Button>
+              {myTurn && pushAvail ? (
+                <Button
+                  variant="ghost"
+                  aria-pressed={pushArmed}
+                  className={pushArmed ? "!text-brass-100" : undefined}
+                  onClick={() => setPushArmed((v) => !v)}
+                >
+                  {t("cue.pushOut")}
+                </Button>
+              ) : null}
+              {myTurn && pushDecision ? (
+                <Button variant="ghost" onClick={() => m.send({ type: "PASS" })}>
+                  {t("cue.pushPass")}
+                </Button>
+              ) : null}
             </div>
 
-            <p className="aso-cue__hint">
-              {!myTurn
-                ? animating
-                  ? ""
-                  : t("game.opponentTurn")
-                : ballInHand
-                  ? placing
-                    ? t("cue.placeHint")
-                    : t("cue.yourTurnBih")
-                  : t("cue.yourTurn")}
-              {game === "SNOOKER" && myTurn && state.expect
-                ? ` · ${state.expect === "red" ? t("cue.expectRed") : t("cue.expectColour")}`
-                : ""}
-              {state.message ? ` · ${state.message}` : ""}
-            </p>
+            <p className="aso-cue__hint">{hintParts.join(" · ")}</p>
 
             {ballInHand && !placing ? (
               <div className="mt-2 text-center">

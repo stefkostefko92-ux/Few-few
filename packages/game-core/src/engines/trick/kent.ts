@@ -53,13 +53,15 @@ export interface KentState {
 export type KentAction =
   | { type: "PASS"; card: Card }
   | { type: "SIGNAL"; seat: Seat }
-  | { type: "CALL_KUPE"; seat: Seat };
+  | { type: "CALL_KUPE"; seat: Seat }
+  | { type: "CALL_STOP"; seat: Seat };
 
 export type KentEvent =
   | { type: "PASS"; seat: Seat }
   | { type: "SWAP"; round: number }
   | { type: "SIGNAL"; seat: Seat }
   | { type: "KUPE"; caller: Seat; correct: boolean; winningTeam: number }
+  | { type: "STOP_KENT"; caller: Seat; correct: boolean; winningTeam: number }
   | { type: "ROUND"; winningTeam: number; matchScore: [number, number] }
   | { type: "REDEAL"; round: number }
   | { type: "RESULT"; team: number };
@@ -131,8 +133,19 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
   legalActions(state, seat) {
     if (state.done) return [];
     const actions: KentAction[] = [];
-    // Anyone may shout „Купе!" at any time.
-    actions.push({ type: "CALL_KUPE", seat });
+    // „Кент!" се вика с ОСНОВАНИЕ: собствен Кент или сигнал от партньора.
+    // (Отворено за всички чупеше turn-модела: заместващият бот избираше
+    // произволно измежду действията и спамеше фалшиви викове.)
+    if (isKent(state.hands[seat]!) || state.signaled[partner(seat as Seat)]) {
+      actions.push({ type: "CALL_KUPE", seat });
+    }
+    // „Стоп Кент!" срещу противниците — достъпно щом противник е подал знак
+    // (дигиталният еквивалент на „видях намигването": появата на бутона е
+    // уловимият знак; сигналът остава скрит в state-а).
+    const oppSignaled = [0, 1, 2, 3].some(
+      (s) => team(s as Seat) !== team(seat as Seat) && state.signaled[s],
+    );
+    if (oppSignaled) actions.push({ type: "CALL_STOP", seat });
     // The holder of a Kent may flash the secret signal (once per round).
     if (isKent(state.hands[seat]!) && !state.signaled[seat]) actions.push({ type: "SIGNAL", seat });
     // The seat on turn passes one card (if they haven't chosen yet this round).
@@ -160,6 +173,17 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
       const winningTeam = correct ? team(caller) : 1 - team(caller);
       next.lastRound = { caller, correct, winningTeam };
       events.push({ type: "KUPE", caller, correct, winningTeam });
+      settleRound(next, winningTeam, events, rng);
+      return { state: next, events };
+    }
+
+    if (action.type === "CALL_STOP") {
+      // „Стоп Кент!": хващаш противниците с готов Кент преди да са го обявили.
+      const caller = action.seat;
+      const correct = teamHasKent(next, 1 - team(caller));
+      const winningTeam = correct ? team(caller) : 1 - team(caller);
+      next.lastRound = { caller, correct, winningTeam };
+      events.push({ type: "STOP_KENT", caller, correct, winningTeam });
       settleRound(next, winningTeam, events, rng);
       return { state: next, events };
     }
@@ -217,12 +241,12 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
     return { state: next, events };
   },
 
-  /** Bot: collect toward the most-held rank; signal/call when its team has Kent. */
+  /** Bot: collect toward the most-held rank; signal/call ONLY on information a
+   *  human in that seat would have (own hand + partner's signal — no peeking). */
   bot(state, seat, _rng) {
     if (state.done) return null;
-    const myTeam = team(seat);
-    // If my team already completed a Kent, call it (the partner usually calls).
-    if (teamHasKent(state, myTeam)) return { type: "CALL_KUPE", seat };
+    if (isKent(state.hands[seat]!) && state.signaled[seat]) return { type: "CALL_KUPE", seat };
+    if (state.signaled[partner(seat as Seat)]) return { type: "CALL_KUPE", seat };
     // If a Kent is in hand, signal once (faithful flavour; harmless if called next).
     if (isKent(state.hands[seat]!) && !state.signaled[seat]) return { type: "SIGNAL", seat };
     if (seat === state.turn && state.pending[seat] === null) {
@@ -255,5 +279,12 @@ export const kentEngine: GameEngine<KentState, KentAction, KentEvent> = {
     const signaled = state.signaled.map((v, i) => (i === seat || i === p ? v : false));
     const pending = state.pending.map((c, i) => (i === seat ? c : c === null ? null : HIDDEN));
     return { ...state, hands, signaled, pending };
+  },
+
+  /** The SIGNAL event is a team secret: only the signaller and the partner may
+   *  ever receive it (the state redaction alone still leaked it via events). */
+  redactEvent(event, seat) {
+    if (event.type === "SIGNAL" && event.seat !== seat && partner(event.seat) !== seat) return null;
+    return event;
   },
 };

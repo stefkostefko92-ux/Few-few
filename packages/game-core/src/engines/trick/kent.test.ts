@@ -21,14 +21,41 @@ describe("kent engine — раздаване и подаване", () => {
     expect(s.matchScore).toEqual([0, 0]);
   });
 
-  it("offers PASS only to the seat on turn, plus CALL_KUPE to everyone", () => {
+  it("offers PASS only to the seat on turn; КЕНТ is callable only with grounds", () => {
     const s = init();
     const onTurn = kentEngine.legalActions(s, s.turn);
     expect(onTurn.filter((a) => a.type === "PASS")).toHaveLength(4);
-    expect(onTurn.some((a) => a.type === "CALL_KUPE")).toBe(true);
-    const other = kentEngine.legalActions(s, (s.turn + 1) % 4);
-    expect(other.every((a) => a.type !== "PASS")).toBe(true);
-    expect(other.some((a) => a.type === "CALL_KUPE")).toBe(true);
+    // Без собствен Кент и без сигнал от партньора викът не се предлага —
+    // отворен за всички той позволяваше безнаказан спам от заместващи ботове.
+    for (const seat of [0, 1, 2, 3] as const) {
+      const acts = kentEngine.legalActions(s, seat);
+      const hasKent = s.hands[seat]!.every((c) => c[0] === s.hands[seat]![0]![0]);
+      expect(acts.some((a) => a.type === "CALL_KUPE")).toBe(hasKent);
+      expect(acts.some((a) => a.type === "CALL_STOP")).toBe(false);
+    }
+  });
+
+  it("СТОП КЕНТ appears for opponents once a signal is flashed and wins on a catch", () => {
+    // Craft a state where seat 0 holds a Kent and has signalled.
+    const s = init();
+    const st = {
+      ...s,
+      hands: [
+        ["AS", "AH", "AD", "AC"],
+        s.hands[1]!,
+        s.hands[2]!,
+        s.hands[3]!,
+      ],
+      signaled: [true, false, false, false],
+    };
+    // Partner (seat 2) may call Кент; opponents (1, 3) get Стоп Кент.
+    expect(kentEngine.legalActions(st, 2).some((a) => a.type === "CALL_KUPE")).toBe(true);
+    expect(kentEngine.legalActions(st, 1).some((a) => a.type === "CALL_STOP")).toBe(true);
+    expect(kentEngine.legalActions(st, 3).some((a) => a.type === "CALL_STOP")).toBe(true);
+    const { state: after, events } = kentEngine.reduce(st, { type: "CALL_STOP", seat: 1 }, new SeededRng("s"));
+    const stop = events.find((e) => e.type === "STOP_KENT");
+    expect(stop && "correct" in stop && stop.correct).toBe(true);
+    expect(after.matchScore[1]).toBe(1); // team {1,3} catches team {0,2}
   });
 
   it("after all four pass, cards move one seat to the left simultaneously", () => {

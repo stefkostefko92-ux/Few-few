@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
@@ -23,8 +23,9 @@ interface LudoState {
   progress: number[][]; // [seat][token]: -1 base .. 44 finished
   turn: number;
   seats: number;
-  die: number | null;
+  die: number | null; // stays set on a dead roll so everyone sees what fell
   rolledSix: boolean;
+  attempts: number; // rolls taken this turn ("three throws for a six")
 }
 type LudoAction = { type: "ROLL" } | { type: "MOVE"; token: number } | { type: "PASS" };
 
@@ -44,6 +45,8 @@ export function LudoView({ title }: { title: string }) {
   const m = useMatch<LudoState, LudoAction>("LUDO");
   const { state, legal, seat, phase, result, players } = m;
 
+  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+
   // Opponent-visible action announcements.
   const { banners } = useGameAnnouncements({
     matchId: m.matchId,
@@ -54,6 +57,19 @@ export function LudoView({ title }: { title: string }) {
         return { text: t("fx.capture"), tone: "brass" };
       }
       if (ev.type === "ROLL" && ev.die === 6) return { text: t("fx.six"), tone: "brass" };
+      // A roll with no legal move: the die stays on the board, and the banner
+      // says whether the turn is skipped or a re-throw was granted.
+      if (ev.type === "NO_MOVE") {
+        if (ev.seat !== seat) {
+          return {
+            text: t("ludo.noMoveOther", { name: nameFor(ev.seat as number), defaultValue: "{{name}} няма ход" }),
+            tone: "brass",
+          };
+        }
+        return ev.retry
+          ? { text: t("ludo.noMoveRetry", { defaultValue: "Няма ход — хвърли отново" }), tone: "brass" }
+          : { text: t("ludo.noMove", { defaultValue: "Няма ход — пропускаш" }), tone: "brass" };
+      }
       return null;
     },
   });
@@ -83,7 +99,20 @@ export function LudoView({ title }: { title: string }) {
     return at;
   }, [state, seat, myTurn, movable]);
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // The 2D fallback die tumbles briefly whenever a new roll lands (keyed on
+  // attempts + turn so a re-throw of the same face still animates).
+  const [dieRolling, setDieRolling] = useState(false);
+  const prevRoll = useRef("");
+  useEffect(() => {
+    if (!state) return;
+    const rollKey = state.die === null ? "" : `${state.die}|${state.attempts ?? 0}|${state.turn}`;
+    const changed = rollKey !== "" && rollKey !== prevRoll.current;
+    prevRoll.current = rollKey;
+    if (!changed) return;
+    setDieRolling(true);
+    const timer = setTimeout(() => setDieRolling(false), 600);
+    return () => clearTimeout(timer);
+  }, [state]);
 
   function moveToken(token: number) {
     if (!movable.has(token)) return;
@@ -228,7 +257,7 @@ export function LudoView({ title }: { title: string }) {
           )}
 
           <div className="ludo-controls">
-            {state.die && !useGL ? <Die value={state.die} /> : null}
+            {state.die && !useGL ? <Die value={state.die} rolling={dieRolling} /> : null}
             {rollAction ? (
               <Button onClick={() => { playCue("flip"); m.send(rollAction); }}>{t("backgammon.roll")}</Button>
             ) : null}

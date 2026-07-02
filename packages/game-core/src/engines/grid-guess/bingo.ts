@@ -11,19 +11,21 @@ import type { SeededRng } from "../../kernel/rng.js";
  * Бинго (Bingo) — N-player broadcast draw (§4.17). Each player gets a 5x5 card
  * (center free). A shared, pre-seeded draw order reveals numbers 1..75; the
  * only action is DRAW (any seat may advance, or a bot/host). A player wins when
- * a full row, column, or diagonal is marked. Cards are public (no advantage in
- * hiding), so redact is a no-op.
+ * a full row, column, or diagonal is marked; simultaneous bingos on the same
+ * ball all win. Cards are public, but the FUTURE draw order is not: redact
+ * strips `drawOrder` so no client can precompute the winner (§7.2).
  */
 
 const FREE = -1;
 
 export interface BingoState {
   cards: number[][]; // per seat: 25 cells (index 12 = FREE)
-  drawOrder: number[]; // pre-seeded full sequence of 75 numbers
+  drawOrder: number[]; // pre-seeded full sequence of 75 numbers (server-only; redacted)
   drawn: number[]; // numbers drawn so far
   pos: number; // index into drawOrder
   seats: number;
-  winner: Seat | null;
+  winners: Seat[]; // every seat that completed a line on the winning ball
+  winner: Seat | null; // first winner (kept for compatibility)
   done: boolean;
 }
 
@@ -65,6 +67,7 @@ export const bingoEngine: GameEngine<BingoState, BingoAction, BingoEvent> = {
       drawn: [],
       pos: 0,
       seats,
+      winners: [],
       winner: null,
       done: false,
     };
@@ -88,19 +91,22 @@ export const bingoEngine: GameEngine<BingoState, BingoAction, BingoEvent> = {
     next.pos += 1;
     const events: BingoEvent[] = [{ type: "DRAW", number }];
 
-    // Check every seat for a completed line (lowest seat wins ties).
+    // Check every seat for a completed line — simultaneous bingos ALL win
+    // (real bingo splits the prize; no seat-order tiebreak).
     const drawnSet = new Set(next.drawn);
+    const winners: Seat[] = [];
     for (let seat = 0; seat < next.seats; seat++) {
-      if (hasBingo(next.cards[seat]!, drawnSet)) {
-        events.push({ type: "WIN", seat });
-        return { state: { ...next, winner: seat, done: true }, events };
-      }
+      if (hasBingo(next.cards[seat]!, drawnSet)) winners.push(seat);
+    }
+    if (winners.length > 0) {
+      for (const seat of winners) events.push({ type: "WIN", seat });
+      return { state: { ...next, winners, winner: winners[0]!, done: true }, events };
     }
     if (next.pos >= next.drawOrder.length) {
-      // Exhausted with no winner (extremely unlikely) -> most marks wins.
-      const winner = mostMarks(next, drawnSet);
-      events.push({ type: "WIN", seat: winner });
-      return { state: { ...next, winner, done: true }, events };
+      // Exhausted with no bingo (extremely unlikely) -> most marks wins (ties share).
+      const most = mostMarks(next, drawnSet);
+      for (const seat of most) events.push({ type: "WIN", seat });
+      return { state: { ...next, winners: most, winner: most[0] ?? 0, done: true }, events };
     }
     return { state: next, events };
   },
@@ -108,15 +114,17 @@ export const bingoEngine: GameEngine<BingoState, BingoAction, BingoEvent> = {
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winner = state.winner ?? 0;
+    const winners = new Set(state.winners.length > 0 ? state.winners : [state.winner ?? 0]);
     return state.cards.map((_, seat) => ({
       seat,
-      result: seat === winner ? "win" : "loss",
-      points: seat === winner ? 1 : 0,
+      result: winners.has(seat) ? "win" : "loss",
+      points: winners.has(seat) ? 1 : 0,
     }));
   },
 
-  redact: (s) => s, // cards are public
+  // Cards and drawn balls are public, but the pre-seeded FUTURE sequence must
+  // never leave the server — a client could otherwise precompute the winner.
+  redact: (s) => ({ ...s, drawOrder: [] }),
 };
 
 function marked(card: number[], cell: number, drawn: Set<number>): boolean {
@@ -127,17 +135,12 @@ function hasBingo(card: number[], drawn: Set<number>): boolean {
   return LINES.some((line) => line.every((cell) => marked(card, cell, drawn)));
 }
 
-function mostMarks(state: BingoState, drawn: Set<number>): Seat {
-  let best = 0;
-  let bestN = -1;
-  for (let s = 0; s < state.seats; s++) {
-    const n = state.cards[s]!.filter((_, cell) => marked(state.cards[s]!, cell, drawn)).length;
-    if (n > bestN) {
-      bestN = n;
-      best = s;
-    }
-  }
-  return best;
+function mostMarks(state: BingoState, drawn: Set<number>): Seat[] {
+  const counts = state.cards.map(
+    (card) => card.filter((_, cell) => marked(card, cell, drawn)).length,
+  );
+  const bestN = Math.max(...counts);
+  return counts.flatMap((n, s) => (n === bestN ? [s] : []));
 }
 
 function buildLines(): number[][] {

@@ -17,6 +17,11 @@ const envSchema = z.object({
   // Empty string => host-only cookies (localhost dev).
   COOKIE_DOMAIN: z.string().optional().default(""),
 
+  // First-run owner bootstrap (§14): at boot, the account registered with this
+  // email is promoted to OWNER (idempotent no-op otherwise). Removes the need
+  // for manual SQL to reach the admin panel on a fresh database.
+  BOOTSTRAP_OWNER_EMAIL: z.string().optional().default(""),
+
   // Comma-separated CORS whitelist — never "*" on prod.
   CORS_ORIGINS: z.string().default("http://localhost:4502,http://localhost:5173"),
 

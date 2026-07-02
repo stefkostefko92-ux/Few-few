@@ -22,8 +22,28 @@ type Piece = "w" | "W" | "b" | "B" | null;
 interface DraughtsState {
   board: Piece[];
   turn: number;
+  /** Mid-capture chain: the only piece allowed to act. */
+  chainFrom: number | null;
 }
 type DraughtsAction = { type: "MOVE"; from: number; to: number };
+
+/** True when a move jumps over at least one piece (walk the diagonal between). */
+function isCaptureMove(board: Piece[], from: number, to: number): boolean {
+  let r = Math.floor(from / 8);
+  let c = from % 8;
+  const tr = Math.floor(to / 8);
+  const tc = to % 8;
+  const dr = Math.sign(tr - r);
+  const dc = Math.sign(tc - c);
+  r += dr;
+  c += dc;
+  while ((r !== tr || c !== tc) && r >= 0 && r < 8 && c >= 0 && c < 8) {
+    if (board[r * 8 + c]) return true;
+    r += dr;
+    c += dc;
+  }
+  return false;
+}
 
 export function DraughtsView({ title }: { title: string }) {
   const { t } = useTranslation();
@@ -32,11 +52,12 @@ export function DraughtsView({ title }: { title: string }) {
   const { state, legal, seat, phase, result, players } = m;
 
   // Opponent-visible action announcements.
-  const { banners } = useGameAnnouncements({
+  const { banners, announce } = useGameAnnouncements({
     matchId: m.matchId,
     toBanner: (ev) => {
       if (ev.type === "MOVE" && typeof ev.captured === "number") return ev.seat === seat ? { text: t("fx.take"), tone: "win" } : { text: t("fx.lostPiece"), tone: "loss" };
       if (ev.type === "KING") return ev.seat === seat ? { text: t("fx.king"), tone: "win" } : { text: t("fx.oppKing"), tone: "brass" };
+      if (ev.type === "DRAW") return { text: t("game.draw"), tone: "brass" };
       return null;
     },
   });
@@ -48,6 +69,24 @@ export function DraughtsView({ title }: { title: string }) {
     () => (from === null ? [] : legal.filter((a) => a.from === from).map((a) => a.to)),
     [legal, from],
   );
+
+  // Auto-select when only one piece may act (mid-chain continuation, or a
+  // single movable piece) so the player never hunts for the forced piece.
+  useEffect(() => {
+    if (!myTurn || legal.length === 0) return;
+    const only = legal[0]!.from;
+    if (legal.every((a) => a.from === only)) setFrom(only);
+  }, [legal, myTurn]);
+
+  // Mid-chain banner: "continue capturing!" once per chain.
+  const chainCell = state?.chainFrom ?? null;
+  const prevChain = useRef<number | null>(null);
+  useEffect(() => {
+    if (chainCell !== null && prevChain.current === null && myTurn) {
+      announce(t("fx.chain", "Продължи взимането!"), "brass");
+    }
+    prevChain.current = chainCell;
+  }, [chainCell, myTurn, announce, t]);
 
   // Seat 0 = white (bottom). Flip the board for black so "my" pieces are near me.
   const flip = seat === 1;
@@ -66,6 +105,13 @@ export function DraughtsView({ title }: { title: string }) {
       }
       setFrom(null);
       return;
+    }
+    // Clicking one of my pieces that is NOT allowed to move while a capture is
+    // mandatory elsewhere: explain instead of silently dropping the selection.
+    const piece = state.board[i];
+    const mine = !!piece && (seat === 0 ? piece === "w" || piece === "W" : piece === "b" || piece === "B");
+    if (mine && !movable.has(i) && legal.some((a) => isCaptureMove(state.board, a.from, a.to))) {
+      announce(t("fx.mustCapture", "Задължително взимане!"), "brass", "error");
     }
     setFrom(movable.has(i) ? i : null);
   }

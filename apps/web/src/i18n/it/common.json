@@ -209,10 +209,16 @@
     "match": "Partita",
     "dealNo": "Mano",
     "toEleven": "a 11",
-    "marriage": "Matrimonio",
-    "trumpMarriage": "Matrimonio atout",
+    "marriage": "20",
+    "trumpMarriage": "40",
     "quiet": "Senza annuncio",
-    "quietOn": "Senza annuncio ✓"
+    "quietOn": "Senza annuncio ✓",
+    "twenty": "20!",
+    "forty": "40!",
+    "closedBy": "{{name}} chiude il tallone",
+    "exchangedBy": "{{name}} scambia il nove di briscola",
+    "dealEnd": "{{name}} vince la mano (+{{n}})",
+    "closedTag": "Tallone chiuso"
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -241,7 +247,8 @@
     "dealPoints": "Questa mano",
     "lastDeal": "Mano",
     "valat": "Cappotto!",
-    "inside": "Dentro"
+    "inside": "Dentro",
+    "redeal": "Nuova smazzata"
   },
   "shop": {
     "disclaimer": "Il denaro acquista solo cosmetici, comfort e fiche d'ingresso. Le fiche non vengono mai riconvertite in denaro.",
@@ -362,7 +369,19 @@
     "call": "Vedo",
     "raise": "Rilancio",
     "fold": "Passo",
-    "notice": "Gioco sociale con fiche virtuali — non è gioco d'azzardo con denaro reale."
+    "notice": "Gioco sociale con fiche virtuali — non è gioco d'azzardo con denaro reale.",
+    "check": "Check",
+    "continue": "Continua",
+    "handNo": "Mano {{n}}/{{max}}",
+    "svara": "SVARA!",
+    "svaraBanner": "SVARA! Il piatto di {{pot}} resta in gioco",
+    "join": "Entra nella svara ({{fee}})",
+    "skip": "Resto fuori",
+    "waitingJoin": "Svara! In attesa delle decisioni…",
+    "winsPot": "{{name}} vince il piatto ({{pot}})",
+    "raisesTo": "{{name}} rilancia a {{to}}",
+    "joins": "{{name}} entra nella svara ({{fee}})",
+    "newHand": "Mano {{n}}"
   },
   "bridge": {
     "auction": "Asta",
@@ -383,7 +402,8 @@
   "war": {
     "flip": "Gira",
     "battle": "GUERRA",
-    "cards": "{{n}} carte"
+    "cards": "Carte: {{n}}",
+    "tookPile": "{{name}} prende {{n}} carte"
   },
   "rummy": {
     "stock": "Mazzo",
@@ -394,8 +414,20 @@
     "knock": "Bussa",
     "discardHint": "Scegli una carta da scartare",
     "drawHint": "Pesca dal mazzo o dagli scarti",
-    "cancelKnock": "Annulla la chiusura",
-    "knockHint": "Scegli la carta con cui chiudere"
+    "cancelKnock": "Annulla la bussata",
+    "knockHint": "Scegli la carta con cui bussare",
+    "match": "Partita",
+    "dealNo": "Mano",
+    "toHundred": "a 100 punti",
+    "knockBanner": "{{name}} bussa con {{pts}}",
+    "ginBanner": "Gin! {{name}} chiude senza punti morti",
+    "undercutBanner": "Undercut! {{name}} batte chi ha bussato",
+    "dealWonBanner": "{{name}} vince la mano: +{{pts}}",
+    "deadHandBanner": "Mano morta — nessuno segna",
+    "matchBanner": "{{name}} vince la partita",
+    "deadwood": "Punti morti",
+    "layoffs": "Carte attaccate",
+    "continue": "Continua"
   },
   "gofish": {
     "ocean": "Oceano",
@@ -433,7 +465,10 @@
       "largeStraight": "Scala grande",
       "chance": "Chance",
       "yahtzee": "Yahtzee"
-    }
+    },
+    "upper": "Somma 1–6",
+    "bonus": "Bonus (63+)",
+    "pickCategory": "Scegli una categoria"
   },
   "bingo": {
     "draw": "Estrai",
@@ -447,7 +482,10 @@
   "ludo": {
     "base": "base",
     "home": "casa",
-    "pickToken": "Scegli una pedina"
+    "pickToken": "Scegli una pedina",
+    "noMove": "Nessuna mossa — salti il turno",
+    "noMoveRetry": "Nessuna mossa — tira di nuovo",
+    "noMoveOther": "{{name}} non ha mosse"
   },
   "domino": {
     "empty": "Posiziona il primo domino",
@@ -457,7 +495,10 @@
     "target": "a",
     "lastRound": "Ultimo round",
     "out": "esaurito",
-    "blocked": "bloccato"
+    "blocked": "bloccato",
+    "pass": "Passo",
+    "boneyard": "Pozzo",
+    "tie": "parità"
   },
   "cue": {
     "power": "Potenza",
@@ -494,7 +535,9 @@
     "target": "a",
     "lastCall": "Ultimo Kupe",
     "correct": "giusto ✓",
-    "wrong": "errato ✗"
+    "wrong": "errato ✗",
+    "callStop": "Stop Kent!",
+    "roundWon": "Round per {{team}}"
   },
   "chess": {
     "check": "Scacco!",
@@ -530,7 +573,18 @@
     "fold": "Passo",
     "raise": "Rilancio!",
     "winPot": "vince il piatto",
-    "youWinPot": "Vinci il piatto!"
+    "youWinPot": "Vinci il piatto!",
+    "passBy": "{{name}} passa",
+    "wentOut": "{{name}} ha chiuso!",
+    "roundPoints": "{{name}} +{{points}} punti",
+    "roundTie": "Blocco in parità — nessun punto",
+    "asks": "{{from}} chiede {{rank}} a {{to}}",
+    "took": "{{name}} ne prende {{count}}!",
+    "fishes": "{{name}} pesca dal mare",
+    "luckyFish": "{{name}} pesca proprio quella — gioca ancora!",
+    "oppBookBy": "Quartetto per {{name}}!",
+    "sunk": "Nave affondata!",
+    "sunkYou": "Ti hanno affondato una nave!"
   },
   "rooms": {
     "title": "Stanze",
@@ -616,7 +670,26 @@
     "onField": "su {{tile}}",
     "turnHint": "Turno di {{name}}…",
     "mortgage": "ipoteca",
-    "houses": "{{n}}🏠"
+    "houses": "{{n}}🏠",
+    "rentBanner": "{{from}} paga {{amount}} di affitto a {{to}}",
+    "jailStayYou": "🎲 {{d1}}+{{d2}} — niente doppio, resti in prigione (tentativo {{attempt}}/3)",
+    "jailStay": "{{name}} non ha fatto doppio e resta in prigione ({{attempt}}/3)",
+    "jailFee": "{{name}} paga {{amount}} ed esce di prigione",
+    "jailBanner": "{{name}} va in prigione",
+    "auctionStartBanner": "Asta per {{tile}}",
+    "bidBanner": "{{name}} offre {{amount}} per {{tile}}",
+    "auctionWonBanner": "{{name}} vince {{tile}} per {{amount}}",
+    "auctionPassedBanner": "{{tile}} resta invenduto",
+    "potBanner": "{{name}} incassa il jackpot di {{amount}}",
+    "bankruptBanner": "{{name}} è in bancarotta",
+    "tradeDoneBanner": "Scambio: {{from}} ↔ {{to}}",
+    "tradeRejectedBanner": "{{name}} ha rifiutato lo scambio",
+    "cardDrawn": "{{name}} pesca una carta",
+    "auctionPill": "Asta: {{tile}}",
+    "auctionLeader": "in testa {{name}} {{amount}}",
+    "potPill": "Jackpot parcheggio: {{amount}}",
+    "gojfCard": "Carta \"Esci di prigione\"",
+    "tradeWaiting": "In attesa della risposta di {{name}}…"
   },
   "errors": {
     "generic": "Qualcosa è andato storto",

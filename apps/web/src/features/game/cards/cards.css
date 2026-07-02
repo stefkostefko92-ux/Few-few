@@ -33,6 +33,12 @@
     transform: translateY(0) scale(1) rotate(0);
   }
 }
+/* Flight clones and trick-centre cards manage their own motion (GSAP flyIn /
+   collect) — the global mount pop would double-animate them. */
+.aso-flight-layer .aso-card,
+.aso-trick-card .aso-card {
+  animation: none;
+}
 .aso-card:nth-child(2) { animation-delay: 0.035s; }
 .aso-card:nth-child(3) { animation-delay: 0.07s; }
 .aso-card:nth-child(4) { animation-delay: 0.105s; }
