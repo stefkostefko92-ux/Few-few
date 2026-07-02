@@ -19,6 +19,25 @@ import { REGION_BANDS } from '../seed/monsters';
 import type { Character, Monster, Item, InventoryEntry } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 
+// APEX boss → signature legendary (само оттук). Модулна константа — ползва
+// се и от XP клампа (APEX е изключен от него: премийната XP награда е
+// умишлена, виж по-долу).
+const APEX_DROPS: Record<string, string> = {
+  // Mid-tier (lv 50-200)
+  'emberreach_apex_khalad':     'khalad_fang',
+  'hammerhand_apex_gorvak':     'gorvak_mace',
+  'conclave_apex_vex':          'vex_staff',
+  'saltmarsh_apex_sunken_king': 'sunken_king_trident',
+  'frostvale_apex_snowtooth':   'snowtooth_axe',
+  'blackspire_apex_azhtek':     'azhtek_armor',
+  // Endgame divine bands (lv 230-350)
+  'stormpeaks_apex_karna':      'karna_blade',
+  'voidshade_apex_caethra':     'caethra_crown',
+  'mooncradle_apex_selan':      'selan_mantle',
+  'worldspine_apex_vhastar':    'vhastar_ring',
+  'throne_apex_unname':         'unname_blade',
+};
+
 const router = Router();
 router.use(authRequired);
 
@@ -156,8 +175,13 @@ router.post('/hunt', (req, res) => {
     // → „XP стена" на 26 (левелването пада 10x за едно ниво). Клампваме
     // per-kill XP в лента около целта ~8 убийства/ниво, изведена от
     // реалната крива (xpForLevel), вместо да пренаписваме стотици seed реда.
+    // APEX боссовете са ИЗКЛЮЧЕНИ от клампа — големият им xp_reward е
+    // умишлена премия (веднъж на регион), не seed аномалия.
+    const isApex = !!APEX_DROPS[monster.slug];
     const paceXp = paceXpForKill(monster.level);
-    const baseXp = Math.max(Math.round(paceXp * 0.6), Math.min(Math.round(paceXp * 1.8), monster.xp_reward));
+    const baseXp = isApex
+      ? monster.xp_reward
+      : Math.max(Math.round(paceXp * 0.6), Math.min(Math.round(paceXp * 1.8), monster.xp_reward));
     const baseGold = Math.floor(monster.gold_min + Math.random() * (monster.gold_max - monster.gold_min + 1));
     const r = applyGuildMultipliers(char.id, baseGold, baseXp);
     xpGain = r.xp;
@@ -170,21 +194,6 @@ router.post('/hunt', (req, res) => {
     // signature item that ONLY drops here. If the hero already owns the
     // piece (in bag or equipped), the drop falls back to the normal
     // random roll so the kill still feels rewarding.
-    const APEX_DROPS: Record<string, string> = {
-      // Mid-tier (lv 50-200)
-      'emberreach_apex_khalad':     'khalad_fang',
-      'hammerhand_apex_gorvak':     'gorvak_mace',
-      'conclave_apex_vex':          'vex_staff',
-      'saltmarsh_apex_sunken_king': 'sunken_king_trident',
-      'frostvale_apex_snowtooth':   'snowtooth_axe',
-      'blackspire_apex_azhtek':     'azhtek_armor',
-      // Endgame divine bands (lv 230-350)
-      'stormpeaks_apex_karna':      'karna_blade',
-      'voidshade_apex_caethra':     'caethra_crown',
-      'mooncradle_apex_selan':      'selan_mantle',
-      'worldspine_apex_vhastar':    'vhastar_ring',
-      'throne_apex_unname':         'unname_blade',
-    };
     const apexSlug = APEX_DROPS[monster.slug];
     if (apexSlug) {
       const apexItem = db.prepare('SELECT id FROM items WHERE slug = ?').get(apexSlug) as { id: number } | undefined;

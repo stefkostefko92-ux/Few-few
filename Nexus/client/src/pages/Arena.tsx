@@ -78,7 +78,7 @@ export default function Arena(): React.ReactElement {
             <div className="muted text-sm" style={{ marginTop: 8 }}>
               {t('arena.winsLosses', { w: o.wins, l: o.losses })}
             </div>
-            <button className="btn btn-primary" style={{ marginTop: 12 }} disabled={!char || char.energy < 5} onClick={() => challenge(o.id)}>
+            <button className="btn btn-primary" style={{ marginTop: 12 }} disabled={!char} onClick={() => challenge(o.id)}>
               {t('arena.challenge')}
             </button>
           </div>

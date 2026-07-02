@@ -31,12 +31,10 @@ router.get('/', (req, res) => {
       name: d.name,
       region: d.region,
       level_req: d.level_req,
-      energy_cost: d.energy_cost,
       stages: d.stages.length,
       xp_bonus: d.xp_bonus,
       gold_bonus: d.gold_bonus,
       intro: d.intro,
-      cooldown_hours: d.cooldown_hours,
       unlocked: ch.level >= d.level_req,
     })),
     active: active

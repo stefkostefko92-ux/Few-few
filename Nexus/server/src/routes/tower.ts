@@ -22,7 +22,8 @@ router.use(authRequired);
  * grow with `floor`. Winning advances the run to floor+1. Losing ends the
  * run, banks your best floor, and lets you start again from 1.
  *
- * Stamina cost: 5 energy per attempt. Climbing is server-authoritative —
+ * Pacing: action cooldown (стълбицата в game/cooldowns.ts), НЕ енергия.
+ * Climbing is server-authoritative —
  * we never trust the client's "I'm on floor X" claim.
  *
  * Rewards (only on win):

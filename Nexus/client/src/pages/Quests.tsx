@@ -69,7 +69,6 @@ export default function Quests(): React.ReactElement {
         <div className="grid-cards">
           {filtered.map((q) => {
             const locked = !!char && char.level < q.level_req;
-            const tooTired = !!char && char.energy < q.energy_cost;
             return (
               <div key={q.id} className="card" style={{ opacity: locked ? .55 : 1 }}>
                 <div className="flex between">
@@ -79,7 +78,6 @@ export default function Quests(): React.ReactElement {
                       {regionName(q.region)} · {t('quests.lv', { n: q.level_req })}
                     </div>
                   </div>
-                  <div className="tag">{t('quests.energyTag', { n: q.energy_cost })}</div>
                 </div>
                 <div className="muted text-sm" style={{ marginTop: 8 }}>{q.intro}</div>
                 <div className="flex gap-sm" style={{ marginTop: 12 }}>
@@ -90,10 +88,10 @@ export default function Quests(): React.ReactElement {
                 <div style={{ marginTop: 14 }}>
                   <button
                     className="btn btn-primary"
-                    disabled={locked || tooTired}
+                    disabled={locked}
                     onClick={() => setActive(q)}
                   >
-                    {locked ? t('quests.requiresLv', { n: q.level_req }) : tooTired ? t('quests.tooTired') : t('quests.embark')}
+                    {locked ? t('quests.requiresLv', { n: q.level_req }) : t('quests.embark')}
                   </button>
                 </div>
               </div>

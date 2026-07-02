@@ -8,8 +8,6 @@ interface Status {
   current_floor: number;
   next_floor: number;
   best_floor: number;
-  energy: number;
-  energy_cost: number;
   next_reward: { gold: number; xp: number; vault: boolean };
 }
 interface Leader {
@@ -68,7 +66,6 @@ export default function Tower(): React.ReactElement {
           {status && (
             <div className="flex gap-sm">
               <span className="tag gold">{t('tower.bestTag', { n: status.best_floor })}</span>
-              <span className="tag" style={{ background: 'var(--surface-2)' }}>{t('tower.energyTag', { n: status.energy })}</span>
             </div>
           )}
         </div>
@@ -90,11 +87,10 @@ export default function Tower(): React.ReactElement {
                   {t('tower.reward', { gold: status.next_reward.gold, xp: status.next_reward.xp })}{status.next_reward.vault ? t('tower.doubled') : ''}
                 </div>
                 <div className="muted text-sm">
-                  {t('tower.cost', { n: status.energy_cost })}
                 </div>
               </div>
-              <button className="btn btn-primary" onClick={climb} disabled={climbing || status.energy < status.energy_cost} style={{ fontSize: 16 }}>
-                {climbing ? t('tower.climbing') : status.energy < status.energy_cost ? t('tower.needEnergy') : t('tower.climb')}
+              <button className="btn btn-primary" onClick={climb} disabled={climbing} style={{ fontSize: 16 }}>
+                {climbing ? t('tower.climbing') : t('tower.climb')}
               </button>
             </div>
           </div>
