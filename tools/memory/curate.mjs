@@ -16,7 +16,7 @@ import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const MEM_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".claude", "agents", "_memory");
-const MAX_PER_SECTION = 60;
+const MAX_PER_SECTION = 80; // 10.0-агентите легитимно държат 60+ проверени поуки — не архивирай истинско знание
 const SIM_THRESHOLD = 0.6; // Jaccard над това → вероятно дублат/противоречие
 const STALE_DAYS = 45; // време-чувствителна поука по-стара от това → флаг за повторна проверка
 const WRITE = process.argv.includes("--write");

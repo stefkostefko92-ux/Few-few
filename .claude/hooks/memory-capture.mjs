@@ -186,8 +186,15 @@ function updateDashboard(agentId, entry, evoDetail) {
       const s = h.indexOf("const FALLBACK = {");
       if (s === -1) return;
       const b = h.indexOf("{", s);
-      let d = 0, i = b, e = -1;
-      for (; i < h.length; i++) { const c = h[i]; if (c === "{") d++; else if (c === "}") { d--; if (d === 0) { e = i; break; } } }
+      // String-aware скоба-матчер: скоби ВЪТРЕ в JSON низове (напр. поука с "{id}")
+      // не бива да броят — иначе parse гърми тихо и FALLBACK замръзва (реален бъг).
+      let d = 0, i = b, e = -1, inStr = false, esc = false;
+      for (; i < h.length; i++) {
+        const c = h[i];
+        if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
+        if (c === '"') { inStr = true; continue; }
+        if (c === "{") d++; else if (c === "}") { d--; if (d === 0) { e = i; break; } }
+      }
       if (e === -1) return;
       const fb = JSON.parse(h.slice(b, e + 1));
       if (applyUpdate(fb, agentId, entry, evoDetail)) {
