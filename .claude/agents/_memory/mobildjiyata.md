@@ -7,6 +7,8 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-07-02:** medqr NFC функцията в app.js е Web NFC (NDEFReader, write) — само Chrome/Android, НЕ на iOS WKWebView; продуктовата сърцевина (спешен таг) липсва на iPhone → Core NFC нативно е задължително за 4.2 на iOS. _("medqr"; verified; "medqr/public/app.js:426-445")_
+- **2026-07-02:** Google Play target API изискване към 02.07.2026 е все още API 35 (Android 15) за нови апове и ъпдейти (developer.android.com/google/play/requirements/target-sdk); Android 16/API 36 много вероятно става минимум ~31.08.2026 по формулата '1г. от последен major' — потвърди точната дата преди submit. _("Google Play target API"; verified; "https://developer.android.com/google/play/requirements/target-sdk")_
 - **2026-06-26:** zabobovdol има пълна, коректна assetlinks инфраструктура (src/lib/assetlinks.ts: parseFingerprints поддържа множество отпечатъци, buildAssetlinks с delegate_permission/common.handle_all_urls); сервира се на /.well-known/assetlinks.json; README коректно инструктира да се добави Play App signing key fingerprint, не upload key-а. fingerprints:[] в twa-manifest.json е празно докато не се попълни след билд. _(zabobovdol; verified; "zabobovdol/src/lib/assetlinks.ts:10-49, zabobovdol/android/twa-manifest.json:64, zabobovdol/android/README.md:104-108")_
 - **2026-06-26:** medqr SOS екранът има визуален flash + navigator.vibrate до TTS звука (добра a11y основа за глухи), НО navigator.vibrate не работи на iOS WKWebView — за EN 301 549 на iPhone трябва @capacitor/haptics нативно. _(medqr; verified; "medqr/public/app.js:171,289,320")_
 - **2026-06-26:** medqr/src/server.js сервира само security.txt и manifest.webmanifest на .well-known — НЕ сервира assetlinks.json нито apple-app-site-association, значи QR/NFC връзките /e/<token> не се отварят като App/Universal Links. _(medqr; verified; "medqr/src/server.js:151-155")_
@@ -65,5 +67,7 @@
   (Източник: developer.android.com/topic/performance/vitals.)
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-02:** medqr/mobile assets са с коректни размери: icon-only.png 1024x1024, splash.png/splash-dark.png 2732x2732 — готови за capacitor-assets generate. _("medqr"; unverified; "medqr/mobile/assets/ (file dimensions)")_
+- **2026-07-02:** medqr/mobile/www/index.html е само <meta http-equiv=refresh> redirect към живия сайт — ако сървърът е недостъпен при App Review, обвивката изглежда счупена → риск Apple 2.1 completeness освен 4.2. _("medqr"; unverified; "medqr/mobile/www/index.html")_
 - **2026-06-26:** Дали predictive back / edge-to-edge enforcement засяга специфично TWA/WebView back навигацията и инсетите не е документирано на behavior-changes-16 — остава за отделна проверка на реален Android 16 билд (хипотеза, не факт). _("android-16, twa, webview"; unverified; "няма (липсва в behavior-changes-16; нужен реален TWA билд тест)")_
 - **2026-06-26:** EU DMA (юни 2026): sideloading + алт. магазини активни; преходът CTF→Core Technology Commission още НЕ е приключил, Apple преговаря/обжалва → не цитирай фиксирани такси без жива проверка. _("eu-dma"; unverified; "https://developer.apple.com/support/dma-and-apps-in-the-eu/")_

@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-06-26",
+    "updated": "2026-07-02",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -3299,9 +3299,20 @@
           "date": "2026-06-26",
           "event": "v6.15 — учене",
           "detail": "Научи: medqr/mobile е Capacitor 6 обвивка с server.url към живия сайт и САМО един нативен плъг… (+3 още)"
+        },
+        {
+          "version": "6.16.0",
+          "date": "2026-07-02",
+          "event": "v6.16 — учене",
+          "detail": "Научи: Google Play target API изискване към 02.07.2026 е все още API 35 (Android 15) за нови а… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Google Play target API изискване към 02.07.2026 е все още API 35 (Android 15) за нови а…\" (+1 още) · 2 в карантина"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
