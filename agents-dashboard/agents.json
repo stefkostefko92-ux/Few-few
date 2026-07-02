@@ -1028,9 +1028,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: В Nexus setCooldown (game/cooldowns.ts:83) прави UPSERT (INSERT ... ON CONFLICT(charact… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Threat-model за публичните ни ендпойнти: съществуват автономни AI-пентест MCP фреймуърц…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Threat-model за публичните ни ендпойнти: съществуват автономни AI-пентест MCP фреймуърц…\""
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
