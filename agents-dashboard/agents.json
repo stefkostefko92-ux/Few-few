@@ -4211,9 +4211,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: Docker Compose интерполира ${VAR:?} от .env в директорията на compose файла (project di… (+1 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: Приеми автоматизиран AI-driven recon срещу инфраструктурата ни (фреймуърци като HexStri…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Приеми автоматизиран AI-driven recon срещу инфраструктурата ни (фреймуърци като HexStri…\""
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
