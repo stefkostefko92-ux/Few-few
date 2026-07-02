@@ -1,9 +1,9 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
-import { useMatchStore } from "../../../lib/store";
+import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import { WinConfetti } from "./WinConfetti";
 import { PlayingCard } from "../cards/PlayingCard";
 import type { GameOverMsg, MatchFoundMsg } from "@aso/shared";
@@ -11,27 +11,53 @@ import "../cards/cards.css";
 
 type Phase = "searching" | "playing" | "over";
 
-/** Title bar + leave button shared by every game scene. */
+/** Title bar + leave button shared by every game scene. Leaving mid-match is
+ *  a forfeit, so the button arms first ("Сигурен?") and disarms after 3s. */
 export function SceneHeader({ title }: { title: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const id = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(id);
+  }, [armed]);
+  const live = useMatchStore.getState().phase === "playing";
   return (
     <div className="mb-4 flex items-center justify-between">
       <h1 className="text-3xl text-brass-300">{title}</h1>
-      <Button variant="ghost" onClick={() => navigate("/")}>
-        {t("game.leave")}
+      <Button
+        variant="ghost"
+        className={armed ? "!text-loss" : undefined}
+        onClick={() => {
+          if (live && !armed) {
+            setArmed(true);
+            return;
+          }
+          navigate("/");
+        }}
+      >
+        {armed ? t("game.leaveConfirm") : t("game.leave")}
       </Button>
     </div>
   );
 }
 
-/** Centered searching spinner. */
+/** Centered searching spinner with elapsed time + the bot-fallback hint. */
 export function Searching() {
   const { t } = useTranslation();
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setSecs((v) => v + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
   return (
     <div className="flex flex-col items-center gap-4 rounded-panel border border-brass-400/15 bg-felt-800/80 px-10 py-12">
       <span className="size-8 animate-spin rounded-full border-2 border-brass-300 border-t-transparent" />
-      <p className="text-ink-300">{t("game.searching")}</p>
+      <p className="text-ink-300">
+        {t("game.searching")} <span className="tnum text-ink-muted">{secs}s</span>
+      </p>
+      {secs >= 3 ? <p className="text-xs text-ink-muted">{t("game.botsSoon")}</p> : null}
     </div>
   );
 }
@@ -43,6 +69,8 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   const mine = result.score.find((s) => s.seat === seat)?.result;
   const delta = result.ratingDeltas[seat] ?? 0;
   const won = mine === "win";
+  // A regrouped party room (created server-side after a lobby match) waits.
+  const lobbyWaiting = useLobbyStore((s) => s.lobby !== null);
   useEffect(() => {
     playCue(won ? "win" : "loss");
   }, [won]);
@@ -65,9 +93,15 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
           MMR {delta >= 0 ? "+" : ""}
           {delta}
         </p>
-        <Button className="mt-6 w-full" onClick={() => useMatchStore.getState().playAgain()}>
-          {t("game.playAgain")}
-        </Button>
+        {lobbyWaiting ? (
+          <Button className="mt-6 w-full" onClick={() => navigate("/rooms")}>
+            {t("game.backToRoom")}
+          </Button>
+        ) : (
+          <Button className="mt-6 w-full" onClick={() => useMatchStore.getState().playAgain()}>
+            {t("game.playAgain")}
+          </Button>
+        )}
         <Button variant="ghost" className="mt-2 w-full" onClick={() => navigate("/")}>
           {t("game.backToLobby")}
         </Button>

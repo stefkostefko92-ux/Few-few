@@ -98,11 +98,22 @@ export function FourPlayerTrick({
             badge={seatBadge?.(s)}
           >
             <div style={{ display: "flex" }}>
-              {/* compact face-down fan (cap the shown count so a 13-card hand
-                  never runs into the centre trick on small screens) */}
-              {Array.from({ length: Math.min(state.hands[s]?.length ?? 0, 8) }).map((_, i) => (
-                <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -40 : 0 }} />
-              ))}
+              {/* Face-down fan, capped so 13 cards never hit the centre trick.
+                  If redact left this hand OPEN (bridge dummy after the lead),
+                  show the real cards — uncapped, tighter overlap. */}
+              {(() => {
+                const cards = state.hands[s] ?? [];
+                const revealed = cards.some((c) => c !== "?");
+                const shown = revealed ? cards : cards.slice(0, 8);
+                return shown.map((card, i) => (
+                  <PlayingCard
+                    key={i}
+                    card={revealed ? card : "?"}
+                    size="sm"
+                    style={{ marginLeft: i ? (revealed ? -44 : -40) : 0 }}
+                  />
+                ));
+              })()}
             </div>
           </Seat>
         ))}

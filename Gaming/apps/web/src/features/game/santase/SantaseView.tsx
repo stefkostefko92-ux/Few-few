@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { Button } from "../../../ui";
@@ -61,16 +61,25 @@ export function SantaseView({ title }: { title: string }) {
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const opp = seat === 0 ? 1 : 0;
 
-  // Prefer the marriage variant of a card when it's offered (always beneficial).
+  // Prefer the marriage variant of a card when offered — unless the player has
+  // armed "play quietly" (tactically legal: keep the announce for later).
+  const [noAnnounce, setNoAnnounce] = useState(false);
+  const hasMarriageChoice = useMemo(
+    () => legal.some((a) => a.type === "PLAY" && a.marriage) && legal.some((a) => a.type === "PLAY" && !a.marriage),
+    [legal],
+  );
   const playFor = useMemo(() => {
     const map = new Map<string, SantaseAction>();
     for (const a of legal) {
       if (a.type !== "PLAY") continue;
       const cur = map.get(a.card);
-      if (!cur || a.marriage) map.set(a.card, a);
+      if (!cur || (noAnnounce ? !a.marriage : a.marriage)) map.set(a.card, a);
     }
     return map;
-  }, [legal]);
+  }, [legal, noAnnounce]);
+  useEffect(() => {
+    if (!myTurn) setNoAnnounce(false);
+  }, [myTurn]);
   const closeAction = legal.find((a) => a.type === "CLOSE");
   const exchangeAction = legal.find((a) => a.type === "EXCHANGE");
 
@@ -183,6 +192,11 @@ export function SantaseView({ title }: { title: string }) {
             {closeAction ? (
               <Button variant="felt" onClick={() => m.send(closeAction)}>
                 {t("santase.close")}
+              </Button>
+            ) : null}
+            {hasMarriageChoice ? (
+              <Button variant={noAnnounce ? "brass" : "ghost"} onClick={() => setNoAnnounce((v) => !v)}>
+                {noAnnounce ? t("santase.quietOn") : t("santase.quiet")}
               </Button>
             ) : null}
             {exchangeAction ? (

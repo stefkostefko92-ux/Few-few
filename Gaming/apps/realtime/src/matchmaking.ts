@@ -4,7 +4,7 @@ import { prisma, type GameKey } from "@aso/db";
 import { GAME_ENGINES, generateSeed, type AnyEngine } from "@aso/game-core";
 import { MAGNAT_PRESETS, STARTING_MMR, isGameKey, seatsFor } from "@aso/shared";
 import { GameRoom, type RoomSeat } from "./room.js";
-import type { Lobby } from "./lobby.js";
+import type { Lobby, LobbyReturnInfo } from "./lobby.js";
 import { RandomBot } from "./bot.js";
 import { redis } from "./redis.js";
 import { env } from "./env.js";
@@ -57,6 +57,10 @@ const mmrWindow = (waitedMs: number): number => 100 + Math.floor(waitedMs / 1000
  */
 export class Matchmaker {
   private readonly rooms = new Map<string, GameRoom>();
+  /** matchId → party snapshot, so the lobby layer can regroup after the match. */
+  private readonly lobbyReturns = new Map<string, LobbyReturnInfo>();
+  /** Set by index.ts: called when a lobby-started match is reaped. */
+  onLobbyMatchEnded?: (info: LobbyReturnInfo) => void;
   private readonly nodeId = randomUUID();
   private timer?: NodeJS.Timeout;
 
@@ -109,6 +113,17 @@ export class Matchmaker {
     for (const s of seats) if (s.userId) this.activeRoomForUser(s.userId)?.resign(s.userId);
     const room = new GameRoom(this.io, match.id, lobby.game, seats, seed, lobby.config);
     this.rooms.set(match.id, room);
+    // Snapshot the party so the lobby can be recreated when the match ends.
+    this.lobbyReturns.set(match.id, {
+      game: lobby.game,
+      mode: lobby.mode,
+      visibility: lobby.visibility,
+      hostUserId: lobby.hostUserId,
+      members: seats
+        .filter((s) => s.userId !== null)
+        .map((s) => ({ userId: s.userId!, displayName: s.displayName })),
+      config: lobby.config,
+    });
     room.start();
     logger.info(
       { matchId: match.id, game: lobby.game, lobbyId: lobby.id, seats: seats.length },
@@ -166,8 +181,20 @@ export class Matchmaker {
   }
 
   private async tick(): Promise<void> {
-    // Reap finished local rooms on every node.
-    for (const [id, room] of this.rooms) if (room.isDone) this.rooms.delete(id);
+    // Reap finished local rooms on every node (regrouping lobby parties).
+    for (const [id, room] of this.rooms) {
+      if (!room.isDone) continue;
+      this.rooms.delete(id);
+      const back = this.lobbyReturns.get(id);
+      if (back) {
+        this.lobbyReturns.delete(id);
+        try {
+          this.onLobbyMatchEnded?.(back);
+        } catch (err) {
+          logger.warn({ err, matchId: id }, "lobby regroup failed");
+        }
+      }
+    }
 
     // Only the leader forms matches (avoids double-matching across nodes).
     if (!(await this.isLeader())) return;

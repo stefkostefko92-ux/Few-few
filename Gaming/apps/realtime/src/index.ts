@@ -176,6 +176,9 @@ async function main(): Promise<void> {
     return u?.displayName ?? "Играч";
   };
   const lobbies = new LobbyManager(io, matchmaker, displayNameOf);
+  // A lobby-started match that just ended → recreate the room so the party
+  // can play again with one click.
+  matchmaker.onLobbyMatchEnded = (info) => lobbies.regroup(info);
 
   // Live gauges for Prometheus (sampled on each /metrics scrape).
   registerRealtimeGauges({
