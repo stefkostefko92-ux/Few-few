@@ -9045,7 +9045,16 @@ const FALLBACK = {
       "file": ".claude/agents/treydara.md",
       "model": "opus",
       "status": "active",
-      "tools": ["Read","Write","Edit","Bash","Grep","Glob","WebFetch","WebSearch"],
+      "tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebFetch",
+        "WebSearch"
+      ],
       "mission": "Пише, преглежда и одитира автоматизирани трейдинг ботове и бектест инфраструктура с риск-мениджмънт като първо правило: борсови API (CCXT, Binance/Bybit/Kraken REST+WebSocket), идемпотентност на поръчки (clientOrderId, без сляп ретрай), rate limits/backoff, reconnect+resubscribe+reconcile, precision (tick/lot/minNotional, floor, без float за пари), stop-loss на борсата, дневен loss limit, глобален max-drawdown → kill-switch, честен бектест (без look-ahead/survivorship, с такси+slippage, walk-forward), paper/testnet преди реален капитал. Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото. Регулация (ЕС: MiFID II чл. 17, MAR). НЕ гарантира печалба; НЕ дава инвестиционен съвет.",
       "capabilities": [
         "Борсови API: CCXT, Binance/Bybit/Kraken REST + WebSocket (user-data stream)",
@@ -9058,17 +9067,46 @@ const FALLBACK = {
         "Сигурност: ключове без withdrawal, IP allowlist, тайни извън репото",
         "Регулация ЕС: MiFID II чл. 17, MAR (spoofing/wash/layering)"
       ],
-      "knowledge": { "sources": 9, "researchToolUses": 0, "priorArt": [
-        "docs.ccxt.com — унифициран борсов API, createOrder/precision/грешки",
-        "Binance / Bybit API docs — rate-limit weights, filters (tick/lot/minNotional)",
-        "MiFID II чл. 17 — алгоритмична търговия; MAR — пазарна злоупотреба"
-      ] },
+      "knowledge": {
+        "sources": 9,
+        "researchToolUses": 0,
+        "priorArt": [
+          "docs.ccxt.com — унифициран борсов API, createOrder/precision/грешки",
+          "Binance / Bybit API docs — rate-limit weights, filters (tick/lot/minNotional)",
+          "MiFID II чл. 17 — алгоритмична търговия; MAR — пазарна злоупотреба"
+        ]
+      },
       "evolution": [
-        { "version": "0.1.0", "date": "2026-07-01", "event": "Раждане", "detail": "Създаден като инженер на автоматизирани трейдинг-системи (НЕ машина за пари, НЕ инвестиционен съветник). Риск-мениджмънт първо: идемпотентност на поръчки, precision, stop-loss/kill-switch, честен бектест, сигурност на ключове, MiFID II/MAR." },
-        { "version": "6.0.0", "date": "2026-07-01", "event": "v6.0 — самообучаващо поколение", "detail": "Вграден в цикъла на учене (read→act→verify→persist→curate); пазарно твърдение НИКОГА не е verified. Инструменти: tools/trading/trader-lint.mjs и tools/trading/backtest-check.mjs." }
+        {
+          "version": "0.1.0",
+          "date": "2026-07-01",
+          "event": "Раждане",
+          "detail": "Създаден като инженер на автоматизирани трейдинг-системи (НЕ машина за пари, НЕ инвестиционен съветник). Риск-мениджмънт първо: идемпотентност на поръчки, precision, stop-loss/kill-switch, честен бектест, сигурност на ключове, MiFID II/MAR."
+        },
+        {
+          "version": "6.0.0",
+          "date": "2026-07-01",
+          "event": "v6.0 — самообучаващо поколение",
+          "detail": "Вграден в цикъла на учене (read→act→verify→persist→curate); пазарно твърдение НИКОГА не е verified. Инструменти: tools/trading/trader-lint.mjs и tools/trading/backtest-check.mjs."
+        },
+        {
+          "version": "6.1.0",
+          "date": "2026-07-02",
+          "event": "v6.1 — учене",
+          "detail": "Научи: Binance SPOT: всички нарушения на филтри (PRICE_FILTER, LOT_SIZE, NOTIONAL, MIN_NOTIONA… (+4 още)"
+        }
       ],
       "activity": [
-        { "date": "2026-07-01", "type": "born", "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“." }
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „Binance SPOT: всички нарушения на филтри (PRICE_FILTER, LOT_SIZE, NOTIONAL, MIN_NOTIONA…\" (+4 още) · 2 в карантина"
+        },
+        {
+          "date": "2026-07-01",
+          "type": "born",
+          "summary": "Роден: инженерна безгрешност (коректно изпълнение + риск-контрол), НЕ пазарна; всяка доставка завършва с „не е инвестиционен съвет; риск от загуба на целия капитал“."
+        }
       ]
     }
   ]
