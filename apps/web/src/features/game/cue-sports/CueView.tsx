@@ -202,8 +202,15 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     : null;
 
   const oppName = m.players.find((p) => p.seat !== seat)?.displayName ?? t("game.opponent");
+  // 8-ball: show each player's assigned group once the table is no longer open;
+  // snooker: show the score (+ what the striker must hit next, below).
+  const groupLabel = (s: number) => {
+    if (!state || game !== "EIGHTBALL" || state.open) return "";
+    const g = state.groups[s as 0 | 1];
+    return g === "solids" ? t("cue.solids") : g === "stripes" ? t("cue.stripes") : "";
+  };
   const scoreLine = (s: number) =>
-    game === "SNOOKER" && state ? String(state.scores[s as 0 | 1]) : "";
+    game === "SNOOKER" && state ? String(state.scores[s as 0 | 1]) : groupLabel(s);
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
@@ -327,6 +334,9 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                     ? t("cue.placeHint")
                     : t("cue.yourTurnBih")
                   : t("cue.yourTurn")}
+              {game === "SNOOKER" && myTurn && state.expect
+                ? ` · ${state.expect === "red" ? t("cue.expectRed") : t("cue.expectColour")}`
+                : ""}
               {state.message ? ` · ${state.message}` : ""}
             </p>
 

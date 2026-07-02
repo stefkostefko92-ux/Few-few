@@ -34,7 +34,10 @@ export function LobbyWatcher() {
     const onState = (snap: LobbySnapshot) => {
       const had = useLobbyStore.getState().lobby;
       useLobbyStore.getState().setLobby(snap);
-      if (!had && pathRef.current !== "/rooms") navigate("/rooms");
+      // Don't yank the player off a game view (e.g. the post-match regrouped
+      // room arrives while they're reading the verdict) — the game-over panel
+      // offers "back to the room" instead.
+      if (!had && pathRef.current !== "/rooms" && !pathRef.current.startsWith("/play")) navigate("/rooms");
     };
     const onClosed = (msg: LobbyClosedMsg) => {
       const cur = useLobbyStore.getState().lobby;

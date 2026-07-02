@@ -147,7 +147,8 @@
   },
   "live": {
     "opponentDropped": "{{name}} dropped — bot is covering",
-    "yourTurnTimer": "Your turn: {{s}}s"
+    "yourTurnTimer": "Your turn: {{s}}s",
+    "opponentTurnTimer": "{{name}} thinking · {{s}}s"
   },
   "verify": {
     "title": "Email verification",
@@ -195,7 +196,10 @@
     "backToLobby": "Back to lobby",
     "botPlaying": "A bot is playing for you.",
     "reclaim": "Return to the game",
-    "playAgain": "Play again"
+    "playAgain": "Play again",
+    "botsSoon": "If no players join, bots will fill in shortly.",
+    "leaveConfirm": "Sure? (forfeit)",
+    "backToRoom": "Back to the room"
   },
   "santase": {
     "trump": "Trump",
@@ -206,7 +210,9 @@
     "dealNo": "Deal",
     "toEleven": "to 11",
     "marriage": "Marriage",
-    "trumpMarriage": "Trump marriage"
+    "trumpMarriage": "Trump marriage",
+    "quiet": "No announce",
+    "quietOn": "No announce ✓"
   },
   "belote": {
     "yourTeam": "Your team",
@@ -458,7 +464,11 @@
     "yourTurnBih": "Ball in hand — place and shoot",
     "placeCue": "Place cue ball",
     "placeHint": "Click to place the cue ball",
-    "shootKey": "Shoot with the Space key"
+    "shootKey": "Shoot with the Space key",
+    "solids": "solids",
+    "stripes": "stripes",
+    "expectRed": "target: red",
+    "expectColour": "target: colour"
   },
   "net": {
     "reconnecting": "Connection lost — reconnecting…"

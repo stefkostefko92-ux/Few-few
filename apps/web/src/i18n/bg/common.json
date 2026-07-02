@@ -147,7 +147,8 @@
   },
   "live": {
     "opponentDropped": "{{name}} се разпадна — ботът поема",
-    "yourTurnTimer": "Твой ход: {{s}} сек"
+    "yourTurnTimer": "Твой ход: {{s}} сек",
+    "opponentTurnTimer": "{{name}} мисли · {{s}}s"
   },
   "verify": {
     "title": "Потвърждение на имейл",
@@ -195,7 +196,10 @@
     "backToLobby": "Към лобито",
     "botPlaying": "Ботът играе вместо теб.",
     "reclaim": "Върни се в играта",
-    "playAgain": "Нова игра"
+    "playAgain": "Нова игра",
+    "botsSoon": "Ако няма играчи, ботове ще се включат след няколко секунди.",
+    "leaveConfirm": "Сигурен? (предаване)",
+    "backToRoom": "Обратно в стаята"
   },
   "santase": {
     "trump": "Коз",
@@ -206,7 +210,9 @@
     "dealNo": "Раздаване",
     "toEleven": "до 11",
     "marriage": "Белот",
-    "trumpMarriage": "Коз белот"
+    "trumpMarriage": "Коз белот",
+    "quiet": "Без анонс",
+    "quietOn": "Без анонс ✓"
   },
   "belote": {
     "yourTeam": "Твой отбор",
@@ -458,7 +464,11 @@
     "yourTurnBih": "Бяла в ръка — постави и удари",
     "placeCue": "Постави бялата",
     "placeHint": "Кликни, за да поставиш бялата",
-    "shootKey": "Стреляй с клавиш Space"
+    "shootKey": "Стреляй с клавиш Space",
+    "solids": "плътни",
+    "stripes": "раирани",
+    "expectRed": "цел: червена",
+    "expectColour": "цел: цветна"
   },
   "net": {
     "reconnecting": "Връзката прекъсна — повторно свързване…"

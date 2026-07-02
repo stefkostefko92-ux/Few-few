@@ -18,15 +18,16 @@ export function MatchStatus() {
 
   const [now, setNow] = useState(() => Date.now());
   const myTurn = phase === "playing" && turn === mySeat && turnEndsAt > 0;
+  const clockRunning = phase === "playing" && turnEndsAt > 0;
 
-  // Tick while it's your turn; reset `now` immediately so the first frame
-  // doesn't show a stale value carried over from a previous turn.
+  // Tick while any turn clock runs (yours or the opponent's); reset `now`
+  // immediately so the first frame doesn't show a stale value.
   useEffect(() => {
-    if (!myTurn) return;
+    if (!clockRunning) return;
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
-  }, [myTurn]);
+  }, [clockRunning]);
 
   if (phase !== "playing") return null;
 
@@ -46,6 +47,16 @@ export function MatchStatus() {
           </div>
         );
       })}
+
+      {/* Opponent's clock: the table isn't hung — someone else is thinking. */}
+      {!myTurn && clockRunning && turn !== null && turn !== mySeat ? (
+        <div className="rounded-full border border-brass-400/20 bg-felt-900/80 px-4 py-1.5 text-sm text-ink-muted shadow-lift backdrop-blur">
+          ⏳ {t("live.opponentTurnTimer", {
+            name: players.find((p) => p.seat === turn)?.displayName ?? t("game.opponent"),
+            s: secsLeft,
+          })}
+        </div>
+      ) : null}
 
       {myTurn && secsLeft <= 15 ? (
         <div

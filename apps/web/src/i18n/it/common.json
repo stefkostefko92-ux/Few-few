@@ -147,7 +147,8 @@
   },
   "live": {
     "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
-    "yourTurnTimer": "Il tuo turno: {{s}}s"
+    "yourTurnTimer": "Il tuo turno: {{s}}s",
+    "opponentTurnTimer": "{{name}} sta pensando · {{s}}s"
   },
   "verify": {
     "title": "Verifica email",
@@ -195,7 +196,10 @@
     "backToLobby": "Torna alla lobby",
     "botPlaying": "Un bot sta giocando per te.",
     "reclaim": "Torna in gioco",
-    "playAgain": "Gioca ancora"
+    "playAgain": "Gioca ancora",
+    "botsSoon": "Se non arrivano giocatori, i bot entreranno a breve.",
+    "leaveConfirm": "Sicuro? (abbandono)",
+    "backToRoom": "Torna alla stanza"
   },
   "santase": {
     "trump": "Briscola",
@@ -206,7 +210,9 @@
     "dealNo": "Mano",
     "toEleven": "a 11",
     "marriage": "Matrimonio",
-    "trumpMarriage": "Matrimonio atout"
+    "trumpMarriage": "Matrimonio atout",
+    "quiet": "Senza annuncio",
+    "quietOn": "Senza annuncio ✓"
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -458,7 +464,11 @@
     "yourTurnBih": "Palla in mano — posiziona e tira",
     "placeCue": "Posiziona la bianca",
     "placeHint": "Clicca per posizionare la bianca",
-    "shootKey": "Tira con il tasto Spazio"
+    "shootKey": "Tira con il tasto Spazio",
+    "solids": "piene",
+    "stripes": "spezzate",
+    "expectRed": "obiettivo: rossa",
+    "expectColour": "obiettivo: colorata"
   },
   "net": {
     "reconnecting": "Connessione persa — riconnessione…"

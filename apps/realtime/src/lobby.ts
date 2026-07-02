@@ -193,6 +193,16 @@ export class Lobby {
   }
 }
 
+/** Snapshot taken at match start so the party can regroup afterwards. */
+export interface LobbyReturnInfo {
+  game: GameKey;
+  mode: string;
+  visibility: LobbyVisibility;
+  hostUserId: string;
+  members: { userId: string; displayName: string }[];
+  config: unknown;
+}
+
 /** What the lobby layer needs from the matchmaker to launch a game. */
 export interface LobbyLauncher {
   startFromLobby(lobby: Lobby): Promise<string>;
@@ -351,6 +361,19 @@ export class LobbyManager {
     );
     const entries = await Promise.all(open.map(async (l) => l.listEntry(await this.nameOf(l.hostUserId))));
     return entries;
+  }
+
+  /** Recreate the pre-game room for a party whose match just ended, so "one
+   *  more?" is one click instead of re-assembling from scratch. Members who
+   *  already sit in another lobby are skipped. */
+  regroup(info: LobbyReturnInfo): void {
+    const free = info.members.filter((m) => !this.lobbyForUser(m.userId));
+    if (free.length === 0) return;
+    const host = free.find((m) => m.userId === info.hostUserId) ?? free[0]!;
+    const lobby = new Lobby(info.game, info.mode, info.visibility, host.userId, host.displayName, info.config);
+    for (const m of free) if (m.userId !== host.userId) lobby.join(m.userId, m.displayName);
+    this.lobbies.set(lobby.id, lobby);
+    this.broadcast(lobby);
   }
 
   async start(userId: string, lobbyId: string): Promise<void> {
