@@ -72,7 +72,10 @@ test('combat: high dodge prevents most damage but stays hittable', () => {
   // never literally unhittable (a value ≥ 1.0 used to make the fight a
   // pure timer). A very evasive foe should dodge the large majority of
   // swings but still take some hits over a long fight.
-  const hero = actor({ name: 'Hero', side: 'hero', atk_min: 5, atk_max: 5 });
+  // Герой с много HP: боят свършва чак когато foe-то падне (~400 замаха при
+  // 75% dodge), а не със смъртта на героя след ~10 — иначе има ~5% шанс
+  // ВСИЧКИ малкото замахи да са dodge-нати и тестът да е flaky.
+  const hero = actor({ name: 'Hero', side: 'hero', atk_min: 5, atk_max: 5, hp: 100000, hp_max: 100000 });
   const elusiveFoe = actor({ name: 'Wind', side: 'foe', dodge_chance: 1.0, hp: 500, hp_max: 500 });
   const r = simulateCombat(hero, elusiveFoe);
   const heroOffense = r.rounds.filter((rd) => rd.attacker === 'hero');
