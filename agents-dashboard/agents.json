@@ -7723,9 +7723,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: Nexus CombatScene3D.tsx — fxGroup има собствен tick който фейдва ВСИЧКИ деца по userDat… (+2 още)"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: @colorsandfonts/mcp е готов MCP сървър за палитри/шрифтове (инсталация: npx -y @colorsa…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „@colorsandfonts/mcp е готов MCP сървър за палитри/шрифтове (инсталация: npx -y @colorsa…\""
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
