@@ -7646,9 +7646,20 @@
           "date": "2026-07-02",
           "event": "v10.0 — учене",
           "detail": "Научи: index.css @media (prefers-reduced-motion: reduce) neutralizира ВСИЧКИ animation/transit…"
+        },
+        {
+          "version": "10.0.0",
+          "date": "2026-07-02",
+          "event": "v10.0 — учене",
+          "detail": "Научи: supreme/frontend/src/pages/Login.jsx е client-side SPA route чиито crawlable content се…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-02",
+          "type": "learning",
+          "summary": "Научи: „supreme/frontend/src/pages/Login.jsx е client-side SPA route чиито crawlable content се…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
