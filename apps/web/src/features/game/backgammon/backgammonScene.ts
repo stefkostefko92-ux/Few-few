@@ -23,12 +23,14 @@ import {
   Scene,
   Shape,
   Vector2,
+  Vector3,
 } from "three";
 import {
   clothNormal,
   contactShadow,
   DICE_FACE_ORDER,
   disposeObject,
+  easeInOut,
   faceUp,
   grooveNormal,
   pipFaces,
@@ -59,6 +61,7 @@ const SCENE_RATIO = 0.52;
 const WHITE = "#efe6d2";
 const BLACK = "#23211e";
 const DICE_MS = 760;
+const GLIDE_MS = 300; // checker move animation
 
 const colX = (col: number): number =>
   col < 6 ? -BARW / 2 - (6 - col - 0.5) * PW : BARW / 2 + (col - 6 + 0.5) * PW;
@@ -84,6 +87,10 @@ export class BackgammonScene {
   private lastFrame = 0;
   private reduceMotion = false;
   private depth: number;
+  // previous position snapshot + in-flight checker glides (mover and any hit)
+  private prevPts: number[] | null = null;
+  private prevBar: [number, number] = [0, 0];
+  private moveAnims: { mesh: Mesh; from: Vector3; to: Vector3; start: number }[] = [];
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -125,33 +132,51 @@ export class BackgammonScene {
     });
   }
 
-  /** Per-frame hook from RenderCore: tumble the dice toward their faces. */
+  /** Per-frame hook from RenderCore: dice tumble + checker glides. */
   private frame(): boolean {
     const now = performance.now();
     const dt = this.lastFrame ? Math.min(now - this.lastFrame, 50) : 16;
     this.lastFrame = now;
-    if (!this.diceAnim) return false;
-    const t = (now - this.diceAnim.start) / DICE_MS;
-    if (t >= 1) {
-      this.dice.forEach((d, n) => this.diceAnim!.to[n] && d.rotation.copy(this.diceAnim!.to[n]!));
-      this.diceAnim = null;
-    } else {
-      const spin = t < 0.7;
-      this.dice.forEach((d, n) => {
-        const to = this.diceAnim!.to[n];
-        if (!to) return;
-        if (spin) {
-          d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
-          d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
-        } else {
-          d.rotation.x += (to.x - d.rotation.x) * 0.25;
-          d.rotation.y += (to.y - d.rotation.y) * 0.25;
-          d.rotation.z += (to.z - d.rotation.z) * 0.25;
+    let active = false;
+
+    if (this.diceAnim) {
+      active = true;
+      const t = (now - this.diceAnim.start) / DICE_MS;
+      if (t >= 1) {
+        this.dice.forEach((d, n) => this.diceAnim!.to[n] && d.rotation.copy(this.diceAnim!.to[n]!));
+        this.diceAnim = null;
+      } else {
+        const spin = t < 0.7;
+        this.dice.forEach((d, n) => {
+          const to = this.diceAnim!.to[n];
+          if (!to) return;
+          if (spin) {
+            d.rotation.x += (0.5 + n * 0.12) * (dt / 16);
+            d.rotation.y += (0.62 - n * 0.1) * (dt / 16);
+          } else {
+            d.rotation.x += (to.x - d.rotation.x) * 0.25;
+            d.rotation.y += (to.y - d.rotation.y) * 0.25;
+            d.rotation.z += (to.z - d.rotation.z) * 0.25;
+          }
+          d.position.y = 0.53 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+        });
+      }
+    }
+
+    if (this.moveAnims.length > 0) {
+      active = true;
+      this.moveAnims = this.moveAnims.filter((a) => {
+        const t = (now - a.start) / GLIDE_MS;
+        if (t >= 1) {
+          a.mesh.position.copy(a.to);
+          return false;
         }
-        d.position.y = 0.53 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+        a.mesh.position.lerpVectors(a.from, a.to, easeInOut(t));
+        a.mesh.position.y += Math.sin(Math.PI * t) * 0.7; // arc over the board
+        return true;
       });
     }
-    return true;
+    return active;
   }
 
   private build(): void {
@@ -306,6 +331,8 @@ export class BackgammonScene {
       normalScale: new Vector2(0.5, 0.5),
     });
 
+    const tops = new Map<number, Mesh>(); // topmost checker per point (glide targets)
+    const barTops: (Mesh | null)[] = [null, null];
     for (let i = 0; i < 24; i++) {
       const v = state.points[i] ?? 0;
       if (v === 0) continue;
@@ -324,6 +351,7 @@ export class BackgammonScene {
         ground.position.y = 0.157 - y;
         c.add(ground);
         this.checkerLayer.add(c);
+        if (k === count - 1) tops.set(i, c);
       }
     }
     // bar checkers (centre, resting on the bar top)
@@ -334,8 +362,54 @@ export class BackgammonScene {
         c.position.set(0, 0.4, (side === 0 ? -1 : 1) * (1 + k * 0.42));
         c.castShadow = true;
         this.checkerLayer.add(c);
+        if (k === n - 1) barTops[side] = c;
       }
     });
+
+    // Glide the moved checker (and a hit blot heading to the bar) from where it
+    // stood to where it landed — the layer rebuild alone teleports everything.
+    this.moveAnims = [];
+    if (this.prevPts && !this.reduceMotion) {
+      const cnt = (v: number, side: number) => (side === 0 ? Math.max(v, 0) : Math.max(-v, 0));
+      for (const side of [0, 1] as const) {
+        const srcs: number[] = [];
+        const dsts: number[] = [];
+        for (let i = 0; i < 24; i++) {
+          const before = cnt(this.prevPts[i] ?? 0, side);
+          const after = cnt(state.points[i] ?? 0, side);
+          if (after > before) dsts.push(i);
+          if (after < before) srcs.push(i);
+        }
+        const barDelta = state.bar[side] - this.prevBar[side];
+        // ordinary move / bar re-entry → glide the top checker at the target
+        if (dsts.length === 1) {
+          const mesh = tops.get(dsts[0]!);
+          let from: Vector3 | null = null;
+          if (srcs.length === 1) {
+            const n = cnt(this.prevPts[srcs[0]!] ?? 0, side);
+            from = new Vector3(...this.checkerPos(srcs[0]!, n - 1, n));
+          } else if (barDelta < 0) {
+            from = new Vector3(0, 0.4, (side === 0 ? -1 : 1) * (1 + (this.prevBar[side] - 1) * 0.42));
+          }
+          if (mesh && from) {
+            this.moveAnims.push({ mesh, from, to: mesh.position.clone(), start: performance.now() });
+            mesh.position.copy(from);
+          }
+        }
+        // hit blot → glide it from its point onto the bar
+        if (barDelta > 0 && srcs.length === 1 && dsts.length === 0) {
+          const mesh = barTops[side];
+          const n = cnt(this.prevPts[srcs[0]!] ?? 0, side);
+          if (mesh) {
+            const from = new Vector3(...this.checkerPos(srcs[0]!, n - 1, n));
+            this.moveAnims.push({ mesh, from, to: mesh.position.clone(), start: performance.now() });
+            mesh.position.copy(from);
+          }
+        }
+      }
+    }
+    this.prevPts = state.points.slice();
+    this.prevBar = [state.bar[0], state.bar[1]];
 
     // highlights (movable origins + targets)
     disposeObject(this.hiLayer);

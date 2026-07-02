@@ -23,7 +23,7 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { disposeObject, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
+import { disposeObject, easeInOut, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
 import { RenderCore } from "../gl/render.js";
 
 type Piece = "w" | "W" | "b" | "B" | null;
@@ -34,6 +34,7 @@ const HALF = 4 * SQ;
 const RAIL = 0.7;
 const SCENE_RATIO = 0.82;
 const POP_MS = 320;
+const MOVE_MS = 280; // man glide between squares
 
 function pieceMaterial(white: boolean): MeshPhysicalMaterial {
   return white
@@ -51,6 +52,7 @@ export class DraughtsScene {
   private hiLayer = new Group();
   private prev: Piece[] = [];
   private pops: { g: Group; born: number }[] = [];
+  private glide: { g: Group; from: Vector3; to: Vector3; start: number; lift: number } | null = null;
   private reduceMotion = false;
 
   constructor(canvas: HTMLCanvasElement, width: number, orientation: Orientation) {
@@ -89,10 +91,10 @@ export class DraughtsScene {
     });
   }
 
-  /** Per-frame hook from RenderCore: advance the piece pop-in. Returns true while
-   *  animating so the loop renders at full rate (else it idles to save power). */
+  /** Per-frame hook from RenderCore: piece pop-ins + the move glide. Returns
+   *  true while animating so the loop renders at full rate (else it idles). */
   private frame(): boolean {
-    if (this.pops.length === 0) return false;
+    if (this.pops.length === 0 && !this.glide) return false;
     const now = performance.now();
     this.pops = this.pops.filter((p) => {
       const t = (now - p.born) / POP_MS;
@@ -103,6 +105,16 @@ export class DraughtsScene {
       p.g.scale.setScalar(Math.max(0.01, easeOutBack(t)));
       return true;
     });
+    if (this.glide) {
+      const t = (now - this.glide.start) / MOVE_MS;
+      if (t >= 1) {
+        this.glide.g.position.copy(this.glide.to);
+        this.glide = null;
+      } else {
+        this.glide.g.position.lerpVectors(this.glide.from, this.glide.to, easeInOut(t));
+        this.glide.g.position.y += Math.sin(Math.PI * t) * this.glide.lift;
+      }
+    }
     return true;
   }
 
@@ -163,9 +175,32 @@ export class DraughtsScene {
   }
 
   setState(board: Piece[], highlight?: { selected: number | null; targets: Set<number> }): void {
+    // Detect a single-man move (same colour left one square, arrived on one) so
+    // it glides there instead of popping in — jumps lift in an arc over the
+    // captured man. Anything else (promotion mid-air, multi-diffs) pops as before.
+    let move: { from: number; to: number } | null = null;
+    if (this.prev.length === 64 && !this.reduceMotion) {
+      const colorOf = (p: Piece) => (p === "w" || p === "W" ? "w" : p === "b" || p === "B" ? "b" : null);
+      const srcs: number[] = [];
+      const dsts: number[] = [];
+      for (let i = 0; i < 64; i++) {
+        const a = this.prev[i] ?? null;
+        const b = board[i] ?? null;
+        if (a && !b) srcs.push(i);
+        if (b && colorOf(a) !== colorOf(b)) dsts.push(i);
+      }
+      if (dsts.length === 1) {
+        const dst = dsts[0]!;
+        const c = colorOf(board[dst]!);
+        const from = srcs.filter((i) => colorOf(this.prev[i]!) === c);
+        if (from.length === 1) move = { from: from[0]!, to: dst };
+      }
+    }
+
     disposeObject(this.pieceLayer);
     this.pieceLayer.clear();
     this.pops = [];
+    this.glide = null;
 
     for (let i = 0; i < 64; i++) {
       const piece = board[i];
@@ -174,7 +209,14 @@ export class DraughtsScene {
       const [x, z] = this.cellWorld(i);
       g.position.set(x, 0, z);
       this.pieceLayer.add(g);
-      // pop a piece that just appeared or changed (move/capture/promotion)
+      if (move && i === move.to) {
+        const [fx, fz] = this.cellWorld(move.from);
+        const jump = Math.abs(Math.floor(move.from / 8) - Math.floor(move.to / 8)) >= 2;
+        this.glide = { g, from: new Vector3(fx, 0, fz), to: g.position.clone(), start: performance.now(), lift: jump ? 0.55 : 0.12 };
+        g.position.set(fx, 0, fz);
+        continue;
+      }
+      // pop a piece that just appeared or changed (capture/promotion)
       if (!this.reduceMotion && this.prev.length === 64 && this.prev[i] !== piece) {
         g.scale.setScalar(0.01);
         this.pops.push({ g, born: performance.now() });
