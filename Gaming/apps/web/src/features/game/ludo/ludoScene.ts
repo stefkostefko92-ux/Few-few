@@ -13,22 +13,26 @@ import {
   type Euler,
   Group,
   HemisphereLight,
+  LatheGeometry,
   Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   OrthographicCamera,
   Raycaster,
   Scene,
-  SphereGeometry,
   TorusGeometry,
   Vector2,
 } from "three";
 import {
+  contactShadow,
   DICE_FACE_ORDER,
   disposeObject,
   faceUp,
   pipFaces,
+  woodNormal,
+  woodTexture,
 } from "../gl/helpers.js";
+import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
 import { BASE, CENTER, HOME, N, SEAT_COLORS, TRACK, tokenCoord } from "./board.js";
 
@@ -44,6 +48,16 @@ export interface LudoToken {
   token: number;
 }
 
+/** Classic turned Ludo pawn: base disc → waisted stem → collar → ball head. */
+function pawnGeometry(): LatheGeometry {
+  const pts = [
+    [0.0, 0.0], [0.3, 0.0], [0.31, 0.05], [0.25, 0.09], [0.13, 0.26],
+    [0.105, 0.38], [0.17, 0.44], [0.12, 0.5], [0.16, 0.58], [0.185, 0.66],
+    [0.15, 0.74], [0.09, 0.8], [0.0, 0.83],
+  ].map(([r, y]) => new Vector2(r!, y!));
+  return new LatheGeometry(pts, 28);
+}
+
 export class LudoScene {
   private core!: RenderCore;
   private lastFrame = 0;
@@ -51,8 +65,7 @@ export class LudoScene {
   private camera: OrthographicCamera;
   private ray = new Raycaster();
   private tokenLayer = new Group();
-  private pegGeo: CylinderGeometry;
-  private headGeo: SphereGeometry;
+  private pawnGeo: LatheGeometry;
   private die: Mesh | null = null;
   private diceAnim: { start: number; from: Euler; to: Euler } | null = null;
   private prevDie = -1;
@@ -61,8 +74,7 @@ export class LudoScene {
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     this.scene.background = new Color("#0e2117");
-    this.pegGeo = new CylinderGeometry(0.26, 0.34, 0.5, 24);
-    this.headGeo = new SphereGeometry(0.26, 20, 16);
+    this.pawnGeo = pawnGeometry();
 
     const span = H + 1.3;
     const d = span * 1.12;
@@ -73,7 +85,9 @@ export class LudoScene {
 
     this.scene.add(new AmbientLight(0xffffff, 0.36));
     this.scene.add(new HemisphereLight(0xfff3d8, 0x20180f, 0.45));
-    const key = new DirectionalLight(0xfff1d4, 1.95);
+    // 1.55 (was 1.95): the ivory track under a hotter key crossed the bloom
+    // threshold and the whole cross haloed like neon.
+    const key = new DirectionalLight(0xfff1d4, 1.55);
     key.position.set(span, span * 2.6, span);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -84,13 +98,18 @@ export class LudoScene {
 
     this.scene.add(this.tokenLayer);
     this.build();
+    const params = defaultGfxParams();
+    params.exposure = 1.0;
+    // Same tuning as Магнат: 1.35 sits just above the lit ivory tiles' HDR
+    // luminance, so only genuine highlights (gold ring, die spec) glow.
+    params.bloom = { enabled: params.bloom.enabled, strength: 0.06, radius: 0.45, threshold: 1.35 };
     this.core = new RenderCore({
       canvas,
       scene: this.scene,
       camera: this.camera,
       width,
       ratio: SCENE_RATIO,
-      exposure: 1.0,
+      params,
       onFrame: () => this.frame(),
     });
   }
@@ -124,17 +143,24 @@ export class LudoScene {
   }
 
   private build(): void {
-    // board base — dark walnut so white track tiles and saturated houses pop
+    // board base — real walnut (grain map + normal) like the Табла frame, so
+    // the board reads as a physical object instead of a flat brown slab
+    const woodTex = woodTexture();
+    woodTex.repeat.set(4, 4);
+    const woodN = woodNormal();
+    woodN.repeat.set(4, 4);
     const base = new Mesh(
-      new BoxGeometry(N + 0.6, 0.5, N + 0.6),
-      new MeshPhysicalMaterial({ color: new Color("#3a2817"), roughness: 0.55, clearcoat: 0.35, clearcoatRoughness: 0.5 }),
+      new BoxGeometry(N + 0.9, 0.5, N + 0.9),
+      new MeshStandardMaterial({ map: woodTex, normalMap: woodN, normalScale: new Vector2(0.5, 0.5), roughness: 0.52, metalness: 0.08 }),
     );
     base.position.y = -0.05;
     base.receiveShadow = true;
     this.scene.add(base);
 
-    // a slightly inset ivory cross "field" the track sits on, for contrast against the houses
-    const fieldMat = new MeshPhysicalMaterial({ color: new Color("#f4ecd8"), roughness: 0.6, clearcoat: 0.2 });
+    // a slightly inset ivory cross "field" the track sits on, for contrast
+    // against the houses. Matte: clearcoat on broad ivory faces caught the key
+    // as a sheet highlight and pushed the whole cross over the bloom threshold.
+    const fieldMat = new MeshPhysicalMaterial({ color: new Color("#e9dfc6"), roughness: 0.72, clearcoat: 0.06, clearcoatRoughness: 0.6 });
     const armWide = 3;
     const vBar = new Mesh(new BoxGeometry(armWide, 0.1, N - 0.4), fieldMat);
     vBar.position.set(gx(5), 0.16, 0);
@@ -145,9 +171,9 @@ export class LudoScene {
     this.scene.add(vBar, hBar);
 
     const tileGeo = new BoxGeometry(0.9, 0.16, 0.9);
-    const trackMat = new MeshPhysicalMaterial({ color: new Color("#f4efe2"), roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.3 });
+    const trackMat = new MeshPhysicalMaterial({ color: new Color("#efe6d2"), roughness: 0.62, clearcoat: 0.12, clearcoatRoughness: 0.5 });
     const homeMat = (s: number) =>
-      new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.4, clearcoat: 0.5, clearcoatRoughness: 0.3 });
+      new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.52, clearcoat: 0.2, clearcoatRoughness: 0.45 });
     // start cells (where each seat enters) get a bright seat-colored tile
     const startCell = new Map<string, number>();
     for (const s of [0, 1, 2, 3]) {
@@ -157,7 +183,7 @@ export class LudoScene {
     const houseMat = (s: number) => {
       const c = new Color(SEAT_COLORS[s]!);
       c.lerp(new Color("#ffffff"), 0.35); // pastel quadrant
-      return new MeshPhysicalMaterial({ color: c, roughness: 0.45, clearcoat: 0.5, clearcoatRoughness: 0.35 });
+      return new MeshPhysicalMaterial({ color: c, roughness: 0.58, clearcoat: 0.15, clearcoatRoughness: 0.5 });
     };
 
     const trackSet = new Set(TRACK.map(([c, r]) => `${c},${r}`));
@@ -171,7 +197,7 @@ export class LudoScene {
       const cr = cells.reduce((a, [, r]) => a + r, 0) / 4;
       const rim = new Mesh(
         new BoxGeometry(3.7, 0.18, 3.7),
-        new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.4, clearcoat: 0.5 }),
+        new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.5, clearcoat: 0.2, clearcoatRoughness: 0.45 }),
       );
       rim.position.set(gx(cx), 0.05, gz(cr));
       rim.receiveShadow = true;
@@ -183,7 +209,7 @@ export class LudoScene {
       for (const [c, r] of cells) {
         const slot = new Mesh(
           new CylinderGeometry(0.36, 0.36, 0.1, 24),
-          new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.35, clearcoat: 0.6 }),
+          new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[s]!), roughness: 0.45, clearcoat: 0.25, clearcoatRoughness: 0.4 }),
         );
         slot.position.set(gx(c), 0.21, gz(r));
         slot.receiveShadow = true;
@@ -220,24 +246,25 @@ export class LudoScene {
   }
 
   private buildToken(seat: number, movable: boolean): Group {
-    const mat = new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[seat]!), roughness: 0.3, metalness: 0.15, clearcoat: 0.9, clearcoatRoughness: 0.18 });
+    const mat = new MeshPhysicalMaterial({ color: new Color(SEAT_COLORS[seat]!), roughness: 0.28, metalness: 0.1, clearcoat: 0.9, clearcoatRoughness: 0.18 });
     const g = new Group();
-    const body = new Mesh(this.pegGeo, mat);
-    body.position.y = 0.35;
-    const head = new Mesh(this.headGeo, mat);
-    head.position.y = 0.66;
+    const body = new Mesh(this.pawnGeo, mat);
+    body.position.y = 0.08; // group sits at tile centre plane; tile top = +0.08
     body.castShadow = true;
-    head.castShadow = true;
-    g.add(body, head);
+    // soft AO disc grounds the pawn on the tile (matches Табла checkers)
+    const ground = contactShadow(0.36, 0.3);
+    ground.position.y = 0.085;
+    g.add(body, ground);
     if (movable) {
-      (body.material as MeshPhysicalMaterial).emissive = new Color("#ffffff");
-      (body.material as MeshPhysicalMaterial).emissiveIntensity = 0.3;
+      // glow in the seat colour (white emissive washed the lacquer to chalk)
+      mat.emissive = new Color(SEAT_COLORS[seat]!);
+      mat.emissiveIntensity = 0.28;
       const ring = new Mesh(
         new TorusGeometry(0.42, 0.05, 12, 28),
         new MeshStandardMaterial({ color: new Color("#fff7d6"), emissive: new Color("#e8c531"), emissiveIntensity: 0.8 }),
       );
       ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.16;
+      ring.position.y = 0.1;
       g.add(ring);
     }
     return g;
@@ -305,7 +332,6 @@ export class LudoScene {
   destroy(): void {
     this.core.dispose();
     disposeObject(this.scene);
-    this.pegGeo.dispose();
-    this.headGeo.dispose();
+    this.pawnGeo.dispose();
   }
 }
