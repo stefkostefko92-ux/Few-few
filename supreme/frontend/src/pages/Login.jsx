@@ -5,6 +5,7 @@ import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
   Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight,
   Lock, ScrollText, Shield, Building2, MessageCircle,
+  Layers, Shuffle, Database, Palette, Minus,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
@@ -36,8 +37,15 @@ export default function Login() {
         lang="en"
         hreflang
       />
-      <div aria-hidden className="absolute inset-0 grid-bg opacity-30" />
-      <div aria-hidden className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-cs-cyan/10 rounded-full blur-[120px] animate-pulse-slow" />
+      {/* Decorative animated backdrop — aria-hidden, pure CSS (no WebGL on the
+          critical path). All motion is gated behind prefers-reduced-motion in
+          index.css; the static state is an intentional aurora + grid poster.
+          The hero H1 is plain text (the LCP element) and is never animated, so
+          it paints immediately. */}
+      <div aria-hidden className="hero-backdrop absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="hero-aurora" />
+        <div className="grid-bg hero-grid-mask absolute inset-0" />
+      </div>
       <div aria-hidden className="absolute top-0 left-0 right-0 h-px bg-cs-cyan/40" />
 
       <div className="relative z-10 min-h-screen flex flex-col">
@@ -63,43 +71,50 @@ export default function Login() {
         </header>
 
         {/* HERO */}
-        <section className="px-6 sm:px-8 pt-16 pb-24 flex items-center justify-center">
-          <div className="w-full max-w-4xl text-center">
-            <div className="cs-eyebrow mb-4 justify-center flex">→ All-in-One Discord SaaS Platform</div>
-            <h1 className="font-display font-black text-5xl sm:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
-              One bot.<br />
-              <span className="text-cs-cyan">Everything you need.</span>
-            </h1>
-            <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-10 text-pretty max-w-2xl mx-auto">
-              Tickets, applications, verification, polls, giveaways, scheduled messages, webhooks, and AI.
-              Replace TicketTool, Appy.bot, GiveawayBot, and half a dozen other bots — with one brutally minimal dashboard.
-            </p>
+        <section className="px-6 sm:px-8 pt-16 pb-24">
+          <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+            {/* Left column — copy. The H1 here is the LCP element: plain text,
+                fully opaque, no entrance animation, so it paints on first frame. */}
+            <div className="text-center lg:text-left">
+              <div className="cs-eyebrow mb-4 inline-flex">→ One bot replaces six. Built in the EU.</div>
+              <h1 className="font-display font-black text-5xl sm:text-6xl xl:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
+                Six bots. Six bills.<br />
+                <span className="text-cs-cyan">One dashboard.</span>
+              </h1>
+              <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-8 text-pretty max-w-2xl mx-auto lg:mx-0">
+                Tickets, applications, verification, giveaways, scheduled messages, webhooks and Claude-powered replies — for Discord communities that outgrew a folder full of single-purpose bots.
+              </p>
 
-            {error && (
-              <div className="mb-6 max-w-md mx-auto border border-danger/40 bg-danger/5 px-4 py-3 text-left">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-danger mb-1">✕ Auth Error</div>
-                <div className="text-sm text-cs-text">
-                  {error === "blacklisted"   ? "You have been blacklisted from this platform."
-                  : error === "oauth_failed" ? "Discord authentication failed. Please try again."
-                  : error === "no_code"      ? "OAuth flow incomplete. Please try again."
-                  : "An error occurred. Please try again."}
+              {error && (
+                <div className="mb-6 max-w-md mx-auto lg:mx-0 border border-danger/40 bg-danger/5 px-4 py-3 text-left">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-danger mb-1">✕ Auth Error</div>
+                  <div className="text-sm text-cs-text">
+                    {error === "blacklisted"   ? "You have been blacklisted from this platform."
+                    : error === "oauth_failed" ? "Discord authentication failed. Please try again."
+                    : error === "no_code"      ? "OAuth flow incomplete. Please try again."
+                    : "An error occurred. Please try again."}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
-                <DiscordIcon />
-                <span>Start free with Discord</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </button>
-              <a href="#pricing" className="text-cs-muted hover:text-cs-cyan transition-colors text-sm font-mono uppercase tracking-wider">
-                See Pricing →
-              </a>
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3">
+                <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+                  <DiscordIcon />
+                  <span>Start free with Discord</span>
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </button>
+                <a href="#pricing" className="cs-btn-secondary text-base px-8 py-4">
+                  See what Premium unlocks →
+                </a>
+              </div>
+              <p className="text-xs text-cs-dim mt-6 font-mono leading-relaxed">
+                Free forever on the base tier · 14-day Premium trial, no card · Cancel anytime · EU-hosted, GDPR-native
+              </p>
             </div>
-            <p className="text-xs text-cs-dim mt-6 font-mono">
-              14-day Premium trial · No credit card required · Cancel anytime
-            </p>
+
+            {/* Right column — the "6 → 1" convergence motif. Purely decorative
+                (aria-hidden): six single-purpose bots funnel into one core. */}
+            <HeroConverge />
           </div>
         </section>
 
@@ -142,8 +157,75 @@ export default function Login() {
                 HMAC-signed event delivery for tickets, applications, giveaways, verification — plug into your stack.
               </FeatureCard>
               <FeatureCard icon={Sparkles} title="AI Auto-Replies">
-                Claude-powered first-response suggestions reduce staff load by ~40% on common questions.
+                Claude drafts the first reply to common questions; your staff review and send — assistive, with a human in the loop.
               </FeatureCard>
+            </div>
+          </div>
+        </section>
+
+        {/* PREMIUM UPSELL */}
+        <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-14">
+              <div className="cs-eyebrow mb-4 justify-center flex">→ Why teams upgrade</div>
+              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
+                Free gets you running. <span className="text-cs-cyan">Premium gets you scaling.</span>
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 mb-16">
+              <OutcomeBullet icon={Sparkles} title="Answer first, triage later.">
+                Claude-powered auto-replies draft the first response to common questions — so staff pick up conversations that are already moving.
+              </OutcomeBullet>
+              <OutcomeBullet icon={Layers} title="Never re-explain your setup.">
+                50 panels, 50 forms, 50 questions each, plus conditional branching and regex validation.
+              </OutcomeBullet>
+              <OutcomeBullet icon={Shuffle} title="Route work fairly, automatically.">
+                Round-robin assignment, claim / escalate / rename and inactivity auto-close.
+              </OutcomeBullet>
+              <OutcomeBullet icon={Database} title="Keep the paper trail forever.">
+                Unlimited transcript retention and CSV export (Free keeps 30 days).
+              </OutcomeBullet>
+              <OutcomeBullet icon={Palette} title="Ship it under your own brand.">
+                White-label bot — your bot's name, avatar and token (encrypted).
+              </OutcomeBullet>
+              <OutcomeBullet icon={Webhook} title="Wire Supreme into your stack.">
+                20 HMAC-signed webhook integrations.
+              </OutcomeBullet>
+            </div>
+
+            {/* Scannable Free-vs-Premium comparison */}
+            <div className="cs-card !p-0 overflow-hidden mb-10">
+              <table className="cs-table w-full">
+                <thead>
+                  <tr>
+                    <th>Capability</th>
+                    <th>Free</th>
+                    <th className="!text-cs-cyan">Premium</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <CompareRow label="Ticket panels"          free="1 panel"              premium="50 panels" />
+                  <CompareRow label="Forms"                   free="2 forms · 5 questions" premium="50 forms · 50 questions" />
+                  <CompareRow label="Form logic"              free="—"                    premium="Branching + regex" />
+                  <CompareRow label="Verification"            free="Button only"          premium="+ Math captcha + age gate" />
+                  <CompareRow label="Ticket workflow"         free="Basic open/close"     premium="Claim · escalate · round-robin" />
+                  <CompareRow label="AI replies"              free="—"                    premium="Claude-powered" />
+                  <CompareRow label="Webhooks"                free="—"                    premium="20 integrations" />
+                  <CompareRow label="Transcript retention"    free="30 days"              premium="Unlimited" />
+                  <CompareRow label="Price"                   free="€0, forever"          premium="€9.99 / server / mo · 14-day trial" />
+                </tbody>
+              </table>
+            </div>
+
+            <div className="text-center">
+              <button onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
+                <span>Start your 14-day Premium trial</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </button>
+              <p className="text-xs text-cs-dim mt-4 max-w-lg mx-auto font-mono leading-relaxed">
+                Full Premium, no credit card. Reverts to Free automatically if you don't subscribe — nothing to cancel, nothing charged.
+              </p>
             </div>
           </div>
         </section>
@@ -237,8 +319,12 @@ export default function Login() {
 
             <div className="space-y-3">
               <FaqItem
-                q="How does the 14-day free trial work?"
-                a="Click 'Start Free Trial' on any server — no credit card required. You get full Premium access for 14 days. If you don't subscribe, features automatically revert to the Free tier when the trial ends. You can also cancel the trial early at any time."
+                q="Will I be charged for the 14-day trial?"
+                a="No. Starting a trial needs no credit card, and nothing is charged during or after it unless you actively choose to subscribe. If you don't subscribe, the server reverts to the Free tier automatically when the trial ends — there is nothing to cancel and nothing is billed. Your panels, forms and settings stay exactly as you left them."
+              />
+              <FaqItem
+                q="How is pricing calculated?"
+                a="Premium is billed per server — €9.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade."
               />
               <FaqItem
                 q="Where is my data stored?"
@@ -249,8 +335,8 @@ export default function Login() {
                 a="Yes — Premium subscribers can upload their own bot token for a white-label experience. Your bot keeps your brand name, avatar, and server presence."
               />
               <FaqItem
-                q="What happens if I cancel?"
-                a="No lock-in. Cancel anytime from the dashboard. Your server automatically reverts to the Free tier. All your data (panels, forms, applications, transcripts) stays accessible so you can export or resubscribe."
+                q="What happens if I cancel — can I take my data?"
+                a="No lock-in. Cancel anytime from the dashboard; the server reverts to the Free tier. All your data (panels, forms, applications, transcripts) stays accessible, and you can export transcripts to CSV whenever you want — GDPR data portability, EU-hosted. Nothing is deleted just because you downgrade."
               />
               <FaqItem
                 q="Do you support multiple servers?"
@@ -286,7 +372,7 @@ export default function Login() {
                     <Zap className="w-5 h-5 text-cs-cyan" />
                     <h3 className="text-xl font-bold text-cs-text">Free</h3>
                   </div>
-                  <p className="text-sm text-cs-muted">Small servers, evaluation</p>
+                  <p className="text-sm text-cs-muted">Get a real ticket + application flow live today. €0, forever.</p>
                 </div>
                 <div className="mb-6">
                   <div className="font-display text-4xl font-black text-cs-text">€0</div>
@@ -301,20 +387,20 @@ export default function Login() {
                   <PricingCheck>/help + full dashboard</PricingCheck>
                 </ul>
                 <button onClick={handleLogin} className="cs-btn-secondary w-full">
-                  Get Started Free
+                  Get started free
                 </button>
               </div>
 
               <div className="cs-card flex flex-col border-2 border-amber-500/50 bg-amber-500/5 relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-amber-500 text-black text-[10px] font-bold uppercase tracking-wider">
-                  Most Popular
+                  Recommended
                 </div>
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-1">
                     <Star className="w-5 h-5 text-amber-400 fill-current" />
                     <h3 className="text-xl font-bold text-cs-text">Premium</h3>
                   </div>
-                  <p className="text-sm text-cs-muted">Growing communities</p>
+                  <p className="text-sm text-cs-muted">For servers where support is a job, not a side task.</p>
                 </div>
                 <div className="mb-6">
                   <div className="font-display text-4xl font-black text-cs-text">€9.99<span className="text-lg text-cs-dim">/mo</span></div>
@@ -330,13 +416,17 @@ export default function Login() {
                   <PricingCheck>20 webhook integrations</PricingCheck>
                   <PricingCheck>Conditional form branching + regex</PricingCheck>
                   <PricingCheck>AI auto-replies (Claude-powered)</PricingCheck>
+                  <PricingCheck>White-label bot (your name + token)</PricingCheck>
                   <PricingCheck>Round-robin assignment</PricingCheck>
                   <PricingCheck>Unlimited transcript retention</PricingCheck>
                   <PricingCheck>CSV exports · Panel duplicate</PricingCheck>
                 </ul>
                 <button onClick={handleLogin} className="cs-btn-primary w-full bg-amber-500 hover:bg-amber-400 text-black border-amber-500">
-                  Start 14-Day Trial
+                  Start 14-day trial — no card
                 </button>
+                <p className="text-[11px] text-cs-dim font-mono mt-3 text-center leading-relaxed">
+                  The tier with AI replies, webhooks, white-label and unlimited history.
+                </p>
               </div>
 
               <div className="cs-card flex flex-col">
@@ -345,15 +435,14 @@ export default function Login() {
                     <Crown className="w-5 h-5 text-cs-cyan" />
                     <h3 className="text-xl font-bold text-cs-text">Enterprise</h3>
                   </div>
-                  <p className="text-sm text-cs-muted">Large servers, brands</p>
+                  <p className="text-sm text-cs-muted">Custom domain, a dedicated SLA and priority support — your brand, our engine.</p>
                 </div>
                 <div className="mb-6">
                   <div className="font-display text-4xl font-black text-cs-text">Custom</div>
                   <div className="text-xs text-cs-dim font-mono">Contact for quote</div>
                 </div>
                 <ul className="space-y-2 text-sm text-cs-text mb-8 flex-1">
-                  <PricingCheck>Everything in Premium</PricingCheck>
-                  <PricingCheck>White-label bot (your name + token)</PricingCheck>
+                  <PricingCheck>Everything in Premium (incl. white-label bot)</PricingCheck>
                   <PricingCheck>Custom branding (logo + templates)</PricingCheck>
                   <PricingCheck>Custom domain</PricingCheck>
                   <PricingCheck>Multi-region hosting</PricingCheck>
@@ -365,7 +454,7 @@ export default function Login() {
                 </ul>
                 <a href="mailto:discord@carbonstealth.eu?subject=Supreme Bot Enterprise Inquiry"
                    className="cs-btn-secondary w-full text-center">
-                  Contact Sales
+                  Talk to us
                 </a>
               </div>
             </div>
@@ -489,6 +578,111 @@ function PricingCheck({ children }) {
       <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
       <span>{children}</span>
     </li>
+  );
+}
+
+/* Outcome-oriented bullet for the Premium upsell section. */
+function OutcomeBullet({ icon: Icon, title, children }) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex-shrink-0 w-10 h-10 rounded-lg border border-cs-cyan/30 bg-cs-cyan/5 flex items-center justify-center">
+        <Icon className="w-5 h-5 text-cs-cyan" aria-hidden="true" />
+      </div>
+      <div>
+        <h3 className="text-cs-text font-bold mb-1.5 text-base">{title}</h3>
+        <p className="text-sm text-cs-muted leading-relaxed">{children}</p>
+      </div>
+    </div>
+  );
+}
+
+/* One row of the scannable Free-vs-Premium table. A free value of "—" renders
+   as an explicit "None" so the gap reads clearly. */
+function CompareRow({ label, free, premium }) {
+  return (
+    <tr>
+      <td className="text-cs-text font-medium">{label}</td>
+      <td className="text-cs-muted">
+        {free === "—" ? (
+          <span className="inline-flex items-center gap-1 text-cs-dim">
+            <Minus className="w-3.5 h-3.5" aria-hidden="true" /> None
+          </span>
+        ) : (
+          free
+        )}
+      </td>
+      <td className="text-cs-text">
+        <span className="inline-flex items-center gap-1.5">
+          <Check className="w-3.5 h-3.5 text-success flex-shrink-0" aria-hidden="true" />
+          {premium}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+/* Hero "6 → 1" convergence motif — six single-purpose bots funnel into one
+   Supreme core. Purely decorative (aria-hidden): a screen reader skips it and
+   loses nothing, since the headline + copy already state the value. All motion
+   is CSS-only and gated behind prefers-reduced-motion in index.css. */
+function HeroConverge() {
+  const replaced = [
+    { icon: Ticket,        label: "Ticket bot" },
+    { icon: FileText,      label: "Application bot" },
+    { icon: ShieldCheck,   label: "Verify bot" },
+    { icon: Gift,          label: "Giveaway bot" },
+    { icon: CalendarClock, label: "Scheduler bot" },
+    { icon: Webhook,       label: "Webhook relay" },
+  ];
+  const funnelTops = [20, 76, 132, 188, 244, 300];
+
+  return (
+    <div aria-hidden className="hero-converge relative mx-auto w-full max-w-md lg:max-w-none">
+      <div className="cs-card !p-6 sm:!p-7 bg-cs-surface/70 backdrop-blur-sm">
+        <div className="flex items-center justify-between mb-4">
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-dim">Before · six bots</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cs-cyan">After · one</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
+          {replaced.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="hero-chip flex items-center gap-2 px-3 py-2 rounded-lg border border-cs-border bg-cs-bg/60"
+            >
+              <Icon className="w-4 h-4 text-cs-dim flex-shrink-0" />
+              <span className="text-xs text-cs-muted truncate">{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Funnel: six signals converge to a single point. */}
+        <div className="hero-funnel relative h-14 my-1.5">
+          <svg viewBox="0 0 320 56" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+            {funnelTops.map((x, i) => (
+              <path
+                key={x}
+                d={`M ${x} 2 C ${x} 30 160 26 160 54`}
+                className="hero-flow"
+                style={{ animationDelay: `${i * 0.4}s` }}
+              />
+            ))}
+            <circle cx="160" cy="54" r="2.5" className="hero-core-dot" />
+          </svg>
+        </div>
+
+        {/* The one core. */}
+        <div className="hero-converge-core rounded-xl border border-cs-cyan/50 bg-cs-cyan/5 px-4 py-3.5 flex items-center gap-3">
+          <SupremeLogo size={40} />
+          <div className="min-w-0">
+            <div className="font-display font-black text-cs-text text-lg leading-none">Supreme Bot</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-cs-cyan mt-1.5">
+              One dashboard · one bill
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

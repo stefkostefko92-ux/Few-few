@@ -436,3 +436,70 @@ html, body {
   main .label { font-size: 0.75rem !important; }
   main .font-mono { font-size: 0.7rem !important; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Landing hero — decorative backdrop + "6 → 1" convergence motif             */
+/*                                                                             */
+/* Serious enterprise SaaS: refined, restrained, GPU-cheap. Everything here is */
+/* aria-hidden decoration behind the content. The animated states are wrapped  */
+/* in `prefers-reduced-motion: no-preference`, so the DEFAULT (reduced-motion)  */
+/* state is a fully-static, intentional poster — belt-and-suspenders with the  */
+/* app-wide reduced-motion neutralizer above. No effect flashes >3×/s          */
+/* (WCAG 2.3.1): every animation is ≥2.4s, opacity/transform/box-shadow only.  */
+/* The hero H1 (the LCP element) is never targeted here — it paints instantly. */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.hero-aurora {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 50% at 20% 25%, rgba(0, 229, 255, 0.14), transparent 70%),
+    radial-gradient(35% 45% at 82% 18%, rgba(139, 92, 246, 0.12), transparent 70%),
+    radial-gradient(45% 55% at 65% 88%, rgba(236, 72, 153, 0.08), transparent 70%);
+  filter: blur(18px);
+  will-change: transform;
+}
+
+.hero-grid-mask {
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(120% 78% at 50% 0%, #000 28%, transparent 74%);
+          mask-image: radial-gradient(120% 78% at 50% 0%, #000 28%, transparent 74%);
+}
+
+/* Funnel connectors — dashed cyan "signals". Static by default (intentional
+   dashed lines); the flow animation is added only when motion is welcome. */
+.hero-funnel path {
+  fill: none;
+  stroke: rgba(0, 229, 255, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 3 7;
+}
+.hero-core-dot {
+  fill: #00e5ff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-aurora {
+    animation: hero-aurora-drift 26s ease-in-out infinite alternate;
+  }
+  .hero-funnel path.hero-flow {
+    animation: hero-flow-dash 2.6s linear infinite;
+  }
+  .hero-converge-core {
+    animation: hero-core-glow 4s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-aurora-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  100% { transform: translate3d(2%, 2%, 0) scale(1.08); }
+}
+
+@keyframes hero-flow-dash {
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes hero-core-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.35), 0 0 26px rgba(0, 229, 255, 0.12); }
+  50%      { box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.65), 0 0 42px rgba(0, 229, 255, 0.28); }
+}
