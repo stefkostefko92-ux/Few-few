@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ (API 31) правила за cloud backup и device transfer.
+     Няма чувствителни данни → позволяваме всичко по подразбиране. -->
+<data-extraction-rules>
+    <cloud-backup />
+    <device-transfer />
+</data-extraction-rules>

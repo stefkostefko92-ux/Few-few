@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Фон на иконата: жълто-зелен LCD с фина решетка от точки. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#9CB23B"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Фини LCD точки (декоративни). -->
+    <path
+        android:fillColor="#1A0F1C0A"
+        android:pathData="M18,18h3v3h-3z M36,18h3v3h-3z M54,18h3v3h-3z M72,18h3v3h-3z M90,18h3v3h-3z
+                          M18,36h3v3h-3z M90,36h3v3h-3z
+                          M18,54h3v3h-3z M90,54h3v3h-3z
+                          M18,72h3v3h-3z M90,72h3v3h-3z
+                          M18,90h3v3h-3z M36,90h3v3h-3z M54,90h3v3h-3z M72,90h3v3h-3z M90,90h3v3h-3z" />
+</vector>

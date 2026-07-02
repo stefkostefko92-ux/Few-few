@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Змия</string>
+
+    <!-- Заглавен екран -->
+    <string name="title_tagline">Класическа „Змия“ в стил Nokia</string>
+    <string name="play">Играй</string>
+    <string name="level_label">Ниво: %1$d</string>
+    <string name="high_score_label">Рекорд: %1$d</string>
+
+    <!-- Игрален екран -->
+    <string name="score_label">Точки: %1$d</string>
+    <string name="hud_level">Ниво %1$d</string>
+    <string name="tap_to_start">Плъзни, за да започнеш</string>
+    <string name="paused">Пауза</string>
+
+    <!-- Край на играта -->
+    <string name="game_over">Край на играта</string>
+    <string name="new_record">Нов рекорд!</string>
+    <string name="final_score">Точки: %1$d</string>
+    <string name="play_again">Отново</string>
+    <string name="back_to_menu">Меню</string>
+
+    <!-- Управление (за екранните четци / TalkBack) -->
+    <string name="dir_up">Нагоре</string>
+    <string name="dir_down">Надолу</string>
+    <string name="dir_left">Наляво</string>
+    <string name="dir_right">Надясно</string>
+    <string name="board_description">Игрално поле „Змия“. Плъзни по екрана, за да смениш посоката.</string>
+</resources>

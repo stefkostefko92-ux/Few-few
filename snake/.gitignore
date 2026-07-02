@@ -1,0 +1,15 @@
+# Android / Gradle артефакти — не влизат в репото.
+local.properties
+.gradle/
+build/
+app/build/
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Captures
+captures/

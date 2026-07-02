@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Snake</string>
+
+    <!-- Title screen -->
+    <string name="title_tagline">Classic Nokia-style Snake</string>
+    <string name="play">Play</string>
+    <string name="level_label">Level: %1$d</string>
+    <string name="high_score_label">Best: %1$d</string>
+
+    <!-- Game screen -->
+    <string name="score_label">Score: %1$d</string>
+    <string name="hud_level">Level %1$d</string>
+    <string name="tap_to_start">Swipe to start</string>
+    <string name="paused">Paused</string>
+
+    <!-- Game over -->
+    <string name="game_over">Game over</string>
+    <string name="new_record">New record!</string>
+    <string name="final_score">Score: %1$d</string>
+    <string name="play_again">Again</string>
+    <string name="back_to_menu">Menu</string>
+
+    <!-- Controls (for screen readers / TalkBack) -->
+    <string name="dir_up">Up</string>
+    <string name="dir_down">Down</string>
+    <string name="dir_left">Left</string>
+    <string name="dir_right">Right</string>
+    <string name="board_description">Snake game board. Swipe on the screen to change direction.</string>
+</resources>

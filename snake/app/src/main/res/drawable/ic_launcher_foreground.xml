@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Преден план: тъмен пикселен змийски мотив (буквата „S“ от блокчета)
+     в безопасната зона на адаптивната икона (66x66 в центъра на 108x108). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group android:translateX="27" android:translateY="27">
+        <!-- Всяко блокче е 9x9 пиксела в решетка 6x6 (0..54). Тъмен LCD пиксел. -->
+        <path
+            android:fillColor="#0F1C0A"
+            android:pathData="
+                M9,0h27v9h-27z
+                M0,9h9v9h-9z
+                M9,18h27v9h-27z
+                M27,27h9v9h-9z
+                M0,36h27v9h-27z M27,36h9v9h-9z
+                M0,45h27v9h-27z
+                M36,9h9v9h-9z" />
+    </group>
+</vector>

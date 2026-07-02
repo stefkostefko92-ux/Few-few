@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Основна тема без ActionBar — цял екран за LCD усещане. -->
+    <style name="Theme.Zmiya" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:statusBarColor">@color/lcd_pixel</item>
+        <item name="android:windowBackground">@color/letterbox</item>
+        <item name="colorAccent">@color/lcd_pixel</item>
+    </style>
+</resources>
