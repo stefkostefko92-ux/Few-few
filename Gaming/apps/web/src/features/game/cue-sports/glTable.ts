@@ -188,10 +188,11 @@ export class GLTable {
     this.fh = cssWidth / (TABLE.w + 2 * RAIL);
     this.scene.background = new Color("#0a1410");
 
-    this.camera = new PerspectiveCamera(30, (TABLE.w + 2 * RAIL) / (TABLE.h + 2 * RAIL), 0.05, 60);
-    // Near-overhead, gently tilted toward the near (−Z) long rail so the balls
+    this.camera = new PerspectiveCamera(34, (TABLE.w + 2 * RAIL) / (TABLE.h + 2 * RAIL), 0.05, 60);
+    // Closer + lower than before (drama: balls occupy real pixels, the phenolic
+    // clearcoat reads), gently tilted toward the near (−Z) long rail so the balls
     // gain height/parallax while the whole table stays readable for aiming.
-    this.camera.position.set(0, 2.95, -1.18);
+    this.camera.position.set(0, 2.35, -1.5);
     this.camera.lookAt(0, 0, 0.04);
 
     // lighting: soft fill + an overhead "billiard lamp" key for crisp shadows
@@ -268,13 +269,14 @@ export class GLTable {
     // felt slab (top surface at y = 0)
     const feltTex = feltTexture(scene.cloth.a, scene.cloth.b);
     const clothN = clothNormal();
-    clothN.repeat.set(8, 4);
+    // fine weave: 8×4 of the 128px sine reads as Lego studs at table scale
+    clothN.repeat.set(20, 10);
     const felt = new Mesh(
       new BoxGeometry(W, 0.04, H),
       new MeshPhysicalMaterial({
         map: feltTex,
         normalMap: clothN,
-        normalScale: new Vector2(0.4, 0.4),
+        normalScale: new Vector2(0.25, 0.25),
         roughness: 0.95,
         sheen: 1,
         sheenColor: new Color(scene.cloth.a),
@@ -312,6 +314,25 @@ export class GLTable {
     bar(oW, RAIL, 0, H / 2 + RAIL / 2); // bottom
     bar(RAIL, oH, -W / 2 - RAIL / 2, 0); // left
     bar(RAIL, oH, W / 2 + RAIL / 2, 0); // right
+
+    // mother-of-pearl diamond sights inlaid in the rails (real-table detail)
+    // matte bone inlays — glossy ivory catches the key light and reads as LEDs
+    const sightMat = new MeshStandardMaterial({ color: new Color("#c9bc9a"), roughness: 0.7, metalness: 0 });
+    const sightGeo = new CylinderGeometry(0, 0.013, 0.008, 4);
+    const sight = (x: number, z: number) => {
+      const m = new Mesh(sightGeo, sightMat);
+      m.position.set(x, railH - 0.006, z);
+      m.rotation.y = Math.PI / 4;
+      this.staticLayer.add(m);
+    };
+    for (const f of [-0.375, -0.25, -0.125, 0.125, 0.25, 0.375]) {
+      sight(W * f, -H / 2 - RAIL / 2);
+      sight(W * f, H / 2 + RAIL / 2);
+    }
+    for (const f of [-0.25, 0, 0.25]) {
+      sight(-W / 2 - RAIL / 2, H * f);
+      sight(W / 2 + RAIL / 2, H * f);
+    }
 
     // cushions (cloth-coloured bars, raised, inset to leave pocket gaps)
     const cushMat = new MeshPhysicalMaterial({

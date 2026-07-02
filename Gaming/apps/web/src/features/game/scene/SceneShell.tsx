@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { useMatchStore } from "../../../lib/store";
+import { WinConfetti } from "./WinConfetti";
 import { PlayingCard } from "../cards/PlayingCard";
 import type { GameOverMsg, MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
@@ -47,6 +48,7 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   }, [won]);
   return (
     <div className="cine-over" role="dialog" aria-modal="true">
+      {won ? <WinConfetti /> : null}
       <div className={`cine-over__card cine-over__card--${mine ?? "draw"}`}>
         {won ? (
           <div className="cine-over__sparks" aria-hidden>
