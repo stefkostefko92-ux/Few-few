@@ -22,6 +22,7 @@ export function StoreModal() {
   const close = useStoreModal((s) => s.closeStore);
 
   const [products, setProducts] = useState<ProductView[]>([]);
+  const [billingEnabled, setBillingEnabled] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,10 @@ export function StoreModal() {
     setError(null);
     api
       .catalog()
-      .then((c) => setProducts(c.products))
+      .then((c) => {
+        setProducts(c.products);
+        setBillingEnabled(c.billingEnabled !== false);
+      })
       .catch(() => setError(t("shop.error")))
       .finally(() => setLoading(false));
   }, [open, products.length, t]);
@@ -70,6 +74,12 @@ export function StoreModal() {
     <Modal open={open} onClose={close} title={heading}>
       <p className="-mt-2 mb-4 text-xs text-ink-muted">{t("shop.disclaimer")}</p>
 
+      {!billingEnabled ? (
+        <p className="mb-3 rounded-card border border-brass-400/30 bg-felt-800/60 px-3 py-2 text-center text-sm text-ink-100">
+          {t("shop.comingSoon")}
+        </p>
+      ) : null}
+
       {error ? (
         <p role="alert" className="mb-3 rounded-card bg-loss/10 px-3 py-2 text-sm text-loss">
           {error}
@@ -82,8 +92,22 @@ export function StoreModal() {
         </p>
       ) : null}
 
-      <Section label={`🪙 ${t("shop.kind.CHIP_PACK")}`} items={chips} busy={busy} onBuy={buy} t={t} />
-      <Section label={`💎 ${t("shop.kind.GEMS")}`} items={gems} busy={busy} onBuy={buy} t={t} />
+      <Section
+        label={`🪙 ${t("shop.kind.CHIP_PACK")}`}
+        items={chips}
+        busy={busy}
+        onBuy={buy}
+        enabled={billingEnabled}
+        t={t}
+      />
+      <Section
+        label={`💎 ${t("shop.kind.GEMS")}`}
+        items={gems}
+        busy={busy}
+        onBuy={buy}
+        enabled={billingEnabled}
+        t={t}
+      />
 
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-brass-400/15 pt-4">
         <Badge tone="vip">VIP</Badge>
@@ -106,12 +130,14 @@ function Section({
   items,
   busy,
   onBuy,
+  enabled,
   t,
 }: {
   label: string;
   items: ProductView[];
   busy: string | null;
   onBuy: (sku: string) => void;
+  enabled: boolean;
   t: (k: string, o?: Record<string, unknown>) => string;
 }) {
   if (!items.length) return null;
@@ -131,8 +157,13 @@ function Section({
                 {p.grantChips ? t("shop.grantChips", { n: p.grantChips }) : null}
               </div>
             </div>
-            <Button loading={busy === p.sku} onClick={() => onBuy(p.sku)} className="shrink-0">
-              {eur(p.priceCents)}
+            <Button
+              loading={busy === p.sku}
+              disabled={!enabled}
+              onClick={() => onBuy(p.sku)}
+              className="shrink-0"
+            >
+              {enabled ? eur(p.priceCents) : t("shop.soon")}
             </Button>
           </li>
         ))}

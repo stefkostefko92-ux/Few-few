@@ -30,6 +30,7 @@ export function Shop() {
   const setUser = useAuthStore((s) => s.setUser);
   const [products, setProducts] = useState<ProductView[]>([]);
   const [vipPerks, setVipPerks] = useState<VipPerksMap | null>(null);
+  const [billingEnabled, setBillingEnabled] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [params] = useSearchParams();
@@ -40,6 +41,7 @@ export function Shop() {
       .then((c) => {
         setProducts(c.products);
         setVipPerks(c.vipPerks);
+        setBillingEnabled(c.billingEnabled !== false);
       })
       .catch(() => undefined);
   }, []);
@@ -82,6 +84,12 @@ export function Shop() {
       <h1 className="mb-2 text-4xl text-brass-300">{t("nav.shop")}</h1>
       <p className="mb-6 text-sm text-ink-muted">{t("shop.disclaimer")}</p>
 
+      {!billingEnabled ? (
+        <Panel className="mb-6 border-brass-400/40 py-3 text-center text-ink-100">
+          {t("shop.comingSoon")}
+        </Panel>
+      ) : null}
+
       {notice ? (
         <Panel className="mb-6 border-brass-400/40 py-3 text-center text-ink-100">{notice}</Panel>
       ) : null}
@@ -114,8 +122,13 @@ export function Shop() {
                       </ul>
                     ) : null}
                   </div>
-                  <Button loading={busy === p.sku} onClick={() => void buy(p.sku)} className="w-full">
-                    {eur(p.priceCents)}
+                  <Button
+                    loading={busy === p.sku}
+                    disabled={!billingEnabled}
+                    onClick={() => void buy(p.sku)}
+                    className="w-full"
+                  >
+                    {billingEnabled ? eur(p.priceCents) : `${eur(p.priceCents)} · ${t("shop.soon")}`}
                   </Button>
                 </Panel>
               </li>
