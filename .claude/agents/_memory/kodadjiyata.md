@@ -7,6 +7,9 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-07-02:** medqr гейтове зелени при този одит: eslint чист, node test/smoke.test.js 30/30, npm audit --omit=dev 0 уязвимости, prettier чист. _(medqr; verified; "npm run lint / npm test / npm audit --omit=dev (2026-07-02)")_
+- **2026-07-02:** medqr: /e/:token/locate НЕ проверява profile.pin_hash и игнорира notify_on_scan (за разлика от медицинския изглед) — token-holder може да прати имейл със спешно известие/локация към контакта дори при PIN-заключен профил. _(medqr; verified; /home/user/Few-few/medqr/src/routes/emergency.js:91-111)_
+- **2026-07-02:** medqr: спешният GET /e/:token (routes/emergency.js) праща имейл до близкия при всяко зареждане — side-effecting GET, който link-preview unfurler-и (WhatsApp/Signal/Slack) задействат въпреки robots.txt Disallow; дедупът (10 мин) не спира първия фалшив сигнал. _(medqr; verified; /home/user/Few-few/medqr/src/routes/emergency.js:27-44)_
 - **2026-06-26:** better-sqlite3 bound parameters НЕ са позволени вътре в module arguments на virtual table (CREATE VIRTUAL TABLE) — не сглобявай тези аргументи от потребителски вход _(better-sqlite3 virtual table; verified; https://raw.githubusercontent.com/WiseLibs/better-sqlite3/master/docs/api.md)_
 - **2026-06-26:** better-sqlite3 db.exec(string) изпълнява суров multi-statement SQL — по-бавно и по-малко сигурно от prepared statements; ползвай само за SQL от файл, не за потребителски вход _(better-sqlite3 exec; verified; https://raw.githubusercontent.com/WiseLibs/better-sqlite3/master/docs/api.md)_
 - **2026-06-26:** better-sqlite3 .transaction() НЕ работи с async функции — async връща след първия await, transaction-ът commit-ва преди async кода; дръж транзакцията в синхронен код _(better-sqlite3 транзакции; verified; https://raw.githubusercontent.com/WiseLibs/better-sqlite3/master/docs/api.md)_
