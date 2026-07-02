@@ -14,6 +14,7 @@ subdirectory.
 | `zabobovdol/`  | За Бобов дол  | Next.js 15 (App Router) · React 19 · TypeScript · Prisma · PostgreSQL · Tailwind | https://zabobovdol.carbonstealth.eu |
 | `medqr/`       | MedQR         | Node.js · Express · EJS · SQLite (better-sqlite3) — plain JS (ESM) | https://medqr.carbonstealth.eu      |
 | `supreme/`     | Supreme Bot   | Express · discord.js v14 · React 18 + Vite · Prisma · PostgreSQL · Redis · Docker — plain JS (ESM) | https://supreme.carbonstealth.eu    |
+| `treydar/`     | Трейдъра      | Node.js · CCXT — spot трейдинг бот за Binance, plain JS (ESM); риск-мениджмънт първо, НЕ инвестиционен съвет | — (локален/self-hosted)             |
 
 There is **no root-level `package.json`** — `cd` into the project you are
 changing and run its scripts there. The root `.gitignore` only ignores
@@ -205,12 +206,13 @@ test/                smoke.test.js + webauthn.e2e.mjs
 
 ## Custom agents — `.claude/agents/`
 
-This repo ships **15 purpose-built Claude Code subagents** (one markdown file each, Bulgarian
+This repo ships **16 purpose-built Claude Code subagents** (one markdown file each, Bulgarian
 system prompt, least-privilege `tools`). Invoke with the Agent tool (e.g. *"пусни Кодаджията
 върху промените"*); several run in parallel. Each carries **durable verified memory** and a
 **harness-enforced self-learning loop** (`SubagentStart`/`SubagentStop` hooks → `_memory/<id>.md`;
 verified-only, source-or-nothing, secrets hard-dropped). The live **dashboard** is `agents-dashboard/`.
-All fifteen have reached **v10.0** (mastery) via genuine verified learning.
+The core fifteen have reached **v10.0** (mastery) via genuine verified learning; **Трейдъра**
+(`treydara`) is the newest (v6.0) — an honest trading-systems engineer, *not* a profit oracle.
 
 **Full roster, the self-learning loop (v6→v10 + v7 hardening), the per-agent `tools/<area>/` hands,
 the dashboard, and authoring conventions live in [`.claude/agents/README.md`](.claude/agents/README.md).**
