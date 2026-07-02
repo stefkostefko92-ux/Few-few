@@ -73,6 +73,9 @@ export async function generateMetadata({
       description,
       siteName: data.site.name,
       locale: LOCALE_OG[locale],
+      // Логото на сайта като OG изображение (относителните /uploads/… се
+      // резолват през metadataBase).
+      images: data.site.logoUrl ? [data.site.logoUrl] : undefined,
     },
     twitter: { card: "summary_large_image", title, description },
   };

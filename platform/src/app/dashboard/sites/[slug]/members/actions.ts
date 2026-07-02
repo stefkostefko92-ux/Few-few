@@ -75,6 +75,22 @@ export async function inviteMemberAction(
   return { ok: `Изпратена е покана до ${email}.` };
 }
 
+// Мениджър НЕ може да маха/понижава друг мениджър (превземане между равни) —
+// това може само платформеният OWNER. VIEWER-и се управляват от всеки мениджър.
+async function canActOnMember(
+  actor: { id: string; role: string },
+  siteId: string,
+  targetUserId: string,
+): Promise<boolean> {
+  if (actor.role === "OWNER") return true;
+  if (actor.id === targetUserId) return true; // може да напусне/понижи себе си
+  const target = await prisma.membership.findUnique({
+    where: { userId_siteId: { userId: targetUserId, siteId } },
+    select: { role: true },
+  });
+  return target?.role !== "MANAGER";
+}
+
 export async function changeMemberRoleAction(
   slug: string,
   userId: string,
@@ -83,6 +99,7 @@ export async function changeMemberRoleAction(
   const user = await requireUser();
   const found = await getSiteForUser(user, slug, "manage");
   if (!found) return;
+  if (!(await canActOnMember(user, found.site.id, userId))) return;
   const r = role === "MANAGER" ? "MANAGER" : "VIEWER";
   await prisma.membership.updateMany({
     where: { siteId: found.site.id, userId },
@@ -95,6 +112,9 @@ export async function removeMemberAction(slug: string, userId: string): Promise<
   const user = await requireUser();
   const found = await getSiteForUser(user, slug, "manage");
   if (!found) return { error: "Нямате достъп." };
+  if (!(await canActOnMember(user, found.site.id, userId))) {
+    return { error: "Само собственикът на платформата може да премахне мениджър." };
+  }
   await prisma.membership.deleteMany({ where: { siteId: found.site.id, userId } });
   revalidatePath(`/dashboard/sites/${slug}/members`);
   return { ok: "Премахнат." };

@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify } from "jose";
@@ -43,11 +44,24 @@ export async function verifyPassword(
   return bcrypt.compare(plain, hash);
 }
 
+// „Версия на паролата" — къс отпечатък на bcrypt хеша. Влиза в JWT-то, за да
+// станат невалидни ВСИЧКИ стари сесии при смяна/нулиране на паролата (иначе
+// компрометирана сесия живее до 8 ч. след reset). Не издава нищо за паролата.
+function passwordVersion(passwordHash: string): string {
+  return createHash("sha256").update(passwordHash).digest("hex").slice(0, 16);
+}
+
 export async function createSession(user: SessionUser): Promise<void> {
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { passwordHash: true },
+  });
+  if (!dbUser) throw new Error("Потребителят не е намерен.");
   const token = await new SignJWT({
     email: user.email,
     name: user.name,
     role: user.role,
+    pv: passwordVersion(dbUser.passwordHash),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
@@ -83,9 +97,18 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     // роля. Membership-достъпът и без това се чете свежо от базата.
     const dbUser = await prisma.user.findUnique({
       where: { id: String(payload.sub) },
-      select: { id: true, email: true, name: true, role: true, active: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        active: true,
+        passwordHash: true,
+      },
     });
     if (!dbUser || !dbUser.active) return null;
+    // Токен, издаден преди смяна на паролата, е невалиден (виж passwordVersion).
+    if (payload.pv !== passwordVersion(dbUser.passwordHash)) return null;
     return {
       id: dbUser.id,
       email: dbUser.email,

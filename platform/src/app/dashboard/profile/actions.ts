@@ -1,6 +1,6 @@
 "use server";
 
-import { requireUser, hashPassword, verifyPassword } from "@/lib/auth";
+import { requireUser, hashPassword, verifyPassword, createSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encryptSecret, decryptSecret } from "@/lib/crypto";
 import { generateTotpSecret, verifyTotp, otpauthUri } from "@/lib/totp";
@@ -31,7 +31,10 @@ export async function changePasswordAction(
   }
   const passwordHash = await hashPassword(parsed.data.next);
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
-  return { ok: "Паролата е сменена успешно." };
+  // Смяната инвалидира всички сесии (нова „версия на паролата" в JWT) —
+  // преиздаваме текущата, за да остане потребителят логнат само тук.
+  await createSession(user);
+  return { ok: "Паролата е сменена успешно. Другите ви сесии са прекратени." };
 }
 
 // Започва настройка на 2FA: генерира тайна, пази я криптирана (изключена още),
