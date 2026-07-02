@@ -1,5 +1,5 @@
 // bot/src/commands/poll.js
-import {
+import { MessageFlags,
   SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from "discord.js";
 import api from "../utils/api.js";
@@ -21,7 +21,7 @@ export default {
 
     const options = optionsRaw.split(",").map((o) => o.trim()).filter(Boolean).slice(0, 9);
     if (options.length < 2) {
-      return interaction.reply({ content: "❌ Provide at least 2 options separated by commas.", ephemeral: true });
+      return interaction.reply({ content: "❌ Provide at least 2 options separated by commas.", flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferReply();

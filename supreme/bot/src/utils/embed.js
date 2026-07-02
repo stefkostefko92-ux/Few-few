@@ -77,28 +77,48 @@ export function buildPanelMessage(panel) {
 export function buildReviewEmbed(application, formName, user, questions) {
   const answers = application.answers || {};
 
+  const title = `📋 New Application — ${formName}`;
+  const authorName = user.discriminator && user.discriminator !== "0" ? `${user.username}#${user.discriminator}` : user.username;
+  const footerText = `Application ID: ${application.id}`;
+
   const embed = new EmbedBuilder()
-    .setTitle(`📋 New Application — ${formName}`)
+    .setTitle(title)
     .setColor(0xffd700)
     .setAuthor({
-      name: user.discriminator && user.discriminator !== "0" ? `${user.username}#${user.discriminator}` : user.username,
+      name: authorName,
       iconURL: user.avatar
         ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
         : undefined,
     })
     .setTimestamp()
-    .setFooter({ text: `Application ID: ${application.id}` });
+    .setFooter({ text: footerText });
 
+  // Discord embed лимити: макс 25 полета И сумарно ≤6000 знака (title + author.name
+  // + footer.text + всички field.name + field.value). Ако надхвърлим тихо, цялото
+  // review съобщение изчезва. Акумулираме дължината и спираме при ~5900 (буфер за
+  // бележката), като добавяме поле-индикатор колко въпроса са пропуснати.
+  const TOTAL_CAP = 5900;
+  let total = title.length + authorName.length + footerText.length;
   let fieldCount = 0;
+  let skipped = 0;
   for (const q of questions) {
-    if (fieldCount >= 25) break; // Discord embed field limit
     const answer = answers[q.id];
-    const value = String(answer ?? "").trim();
-    embed.addFields({
-      name: q.label.slice(0, 256),
-      value: (value || "*No answer*").slice(0, 1024),
-    });
+    const name = q.label.slice(0, 256);
+    const value = (String(answer ?? "").trim() || "*No answer*").slice(0, 1024);
+    // Резервираме ~120 знака за евентуалната "и още N…" бележка.
+    if (fieldCount >= 24 || total + name.length + value.length > TOTAL_CAP - 120) {
+      skipped = questions.length - fieldCount;
+      break;
+    }
+    embed.addFields({ name, value });
+    total += name.length + value.length;
     fieldCount++;
+  }
+  if (skipped > 0) {
+    embed.addFields({
+      name: "⚠️ Truncated",
+      value: `+${skipped} more answer(s) omitted — view the full submission in the dashboard.`,
+    });
   }
 
   const approveBtn = new ButtonBuilder()

@@ -1,5 +1,5 @@
 // bot/src/commands/help.js
-import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
 import { COMMAND_CATALOG } from "../utils/commandsCatalog.js";
 
 export default {
@@ -21,13 +21,13 @@ export default {
     if (filterCategory) {
       const cat = COMMAND_CATALOG.find((c) => c.category === filterCategory);
       if (!cat) {
-        return interaction.reply({ content: "❌ Category not found.", ephemeral: true });
+        return interaction.reply({ content: "❌ Category not found.", flags: MessageFlags.Ephemeral });
       }
-      return interaction.reply({ embeds: [buildCategoryEmbed(cat)], components: [buildSelect(filterCategory)], ephemeral: true });
+      return interaction.reply({ embeds: [buildCategoryEmbed(cat)], components: [buildSelect(filterCategory)], flags: MessageFlags.Ephemeral });
     }
 
     // Default: overview embed with all categories
-    return interaction.reply({ embeds: [buildOverviewEmbed()], components: [buildSelect()], ephemeral: true });
+    return interaction.reply({ embeds: [buildOverviewEmbed()], components: [buildSelect()], flags: MessageFlags.Ephemeral });
   },
 };
 

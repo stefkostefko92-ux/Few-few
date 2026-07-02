@@ -14,6 +14,7 @@ import {
   GatewayIntentBits,
   Partials,
   Collection,
+  Events,
 } from "discord.js";
 import api, { logTicketMessage, getServer } from "./utils/api.js";
 import { getTranslator, SUPPORTED_LANGUAGES } from "./i18n/index.js";
@@ -633,7 +634,9 @@ app.post("/internal/ai-reply", async (req, res) => {
   if (!channelId || !content) return res.status(400).json({ error: "channelId and content required" });
 
   try {
-    const channel = client.channels.cache.get(channelId);
+    // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
     if (!channel) return res.status(404).json({ error: "Channel not found" });
 
     // EU AI Act Article 50 — разкритието трябва да е на езика на сървъра.
@@ -717,8 +720,9 @@ app.listen(BOT_API_PORT, () => {
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
-client.once("ready", async () => {
+client.once(Events.ClientReady, async () => {
   // After main client is ready, boot white-label clients for Premium servers
+  // (Events.ClientReady — forward-compatible за discord.js v15).
   await bootAllCustomClients(client);
 });
 

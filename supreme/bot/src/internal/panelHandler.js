@@ -20,7 +20,8 @@ export async function handlePanelUpdate(client, { panelId, serverId }) {
   const panel = await getPanel(panelId);
   if (!panel.channelId || !panel.messageId) return;
 
-  const channel = client.channels.cache.get(panel.channelId);
+  const channel = client.channels.cache.get(panel.channelId)
+    || await client.channels.fetch(panel.channelId).catch(() => null);
   if (!channel) return;
 
   const msg = await channel.messages.fetch(panel.messageId).catch(() => null);

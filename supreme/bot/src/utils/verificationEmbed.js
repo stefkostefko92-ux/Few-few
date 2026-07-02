@@ -51,12 +51,16 @@ export function buildVerificationMessage(panel) {
   if (panel.imageUrl)    embed.setImage(panel.imageUrl);
   if (panel.thumbnailUrl)embed.setThumbnail(panel.thumbnailUrl);
 
-  // Typing indicators for method
+  // Type hint за метода.
+  // REACTION НЕ се предлага в UI: реакционната верификация би изисквала
+  // GuildMessageReactions intent + MessageReaction/User partials + постоянен
+  // messageReactionAdd listener — по-тежко и по-чупливо от бутона, който вече
+  // работи. Затова REACTION панелите рендерират същия бутон (виж handleVerificationStart)
+  // и не подканваме потребителя да „реагира", за да няма подвеждащ текст.
   const typeHint = {
     BUTTON:   "Click the button below to verify.",
     MATH:     "Click the button, then solve the simple math problem.",
-    REACTION: "React to this message to verify.",
-  }[panel.type] || "Click to verify.";
+  }[panel.type] || "Click the button below to verify.";
   embed.setFooter({ text: typeHint });
 
   const btn = new ButtonBuilder()

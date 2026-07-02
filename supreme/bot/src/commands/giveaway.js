@@ -1,5 +1,5 @@
 // bot/src/commands/giveaway.js
-import {
+import { MessageFlags,
   SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } from "discord.js";
 import api from "../utils/api.js";
@@ -32,7 +32,7 @@ export default {
     const sub = interaction.options.getSubcommand();
 
     if (!interaction.member.permissions.has("ManageGuild")) {
-      return interaction.reply({ content: "❌ You need Manage Server permission.", ephemeral: true });
+      return interaction.reply({ content: "❌ You need Manage Server permission.", flags: MessageFlags.Ephemeral });
     }
 
     if (sub === "start") {
@@ -66,7 +66,7 @@ export default {
 
     else if (sub === "end" || sub === "reroll") {
       const giveawayId = interaction.options.getString("giveaway_id");
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       try {
         const { data } = await api.post(`/bot/giveaway/${giveawayId}/${sub}`, {
           actorId: interaction.user.id,

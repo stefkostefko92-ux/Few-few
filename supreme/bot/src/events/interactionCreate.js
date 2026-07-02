@@ -1,8 +1,31 @@
 // bot/src/events/interactionCreate.js
-import { ActionRowBuilder, ButtonBuilder, ChannelType } from "discord.js";
+import { MessageFlags, ActionRowBuilder, ButtonBuilder, ChannelType } from "discord.js";
 import api, { isBlacklisted, getPanel, createTicket } from "../utils/api.js";
 import { buildTicketOpenEmbed, buildStatusEmbed } from "../utils/embed.js";
 import { runFormSession } from "../utils/formSession.js";
+
+// ─── Blacklist TTL кеш ──────────────────────────────────────────────────────
+// Всяка slash команда проверява blacklist статуса срещу backend-а. Синхронният
+// hop яде от 3-секундния бюджет за отговор на interaction. Кешираме резултата за
+// кратко (както ticketChannelCache в index.js) — при промяна в dashboard-а
+// ефектът се вижда след TTL-а. Кешираме и hit, и miss.
+const blacklistCache = new Map(); // userId → { blacklisted, expiresAt }
+const BLACKLIST_CACHE_TTL = 60 * 1000; // 1 минута
+
+async function isBlacklistedCached(userId) {
+  const now = Date.now();
+  const cached = blacklistCache.get(userId);
+  if (cached && cached.expiresAt > now) return cached.blacklisted;
+  const blacklisted = await isBlacklisted(userId);
+  blacklistCache.set(userId, { blacklisted, expiresAt: now + BLACKLIST_CACHE_TTL });
+  return blacklisted;
+}
+
+// Периодично почистване, за да не расте Map-ът безкрайно.
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of blacklistCache) if (v.expiresAt <= now) blacklistCache.delete(k);
+}, BLACKLIST_CACHE_TTL).unref();
 
 export default {
   name: "interactionCreate",
@@ -17,12 +40,12 @@ export default {
         // Fail-open: a backend outage must not disable every command.
         let blacklisted = false;
         try {
-          blacklisted = await isBlacklisted(interaction.user.id);
+          blacklisted = await isBlacklistedCached(interaction.user.id);
         } catch { /* backend unreachable — allow the command */ }
         if (blacklisted) {
           return interaction.reply({
             content: "❌ You have been blacklisted from using this bot.",
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
         }
 
@@ -100,7 +123,7 @@ export default {
         const selected = interaction.values[0];
         const cat = COMMAND_CATALOG.find((c) => c.category === selected);
         if (!cat) {
-          return interaction.reply({ content: "❌ Category not found.", ephemeral: true });
+          return interaction.reply({ content: "❌ Category not found.", flags: MessageFlags.Ephemeral });
         }
         const { default: helpCmd } = await import("../commands/help.js");
         // Re-render the same embed the /help command would produce for this category
@@ -152,7 +175,7 @@ export default {
       if (interaction.isModalSubmit()) {
         await interaction.reply({
           content: "❌ This form is no longer active. Please start over.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         }).catch(() => {});
         return;
       }
@@ -163,7 +186,7 @@ export default {
         const Sentry = await import("@sentry/node");
         Sentry.captureException(err);
       }
-      const errMsg = { content: "❌ An error occurred. Please try again.", ephemeral: true };
+      const errMsg = { content: "❌ An error occurred. Please try again.", flags: MessageFlags.Ephemeral };
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(errMsg).catch(() => {});
       } else {
@@ -176,7 +199,7 @@ export default {
 // ─── Panel Button Click ───────────────────────────────────────────────────────
 
 async function handlePanelButtonClick(interaction, panelId, buttonId) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   let panel;
   try {
@@ -199,7 +222,7 @@ async function handlePanelButtonClick(interaction, panelId, buttonId) {
 // ─── Form Direct Button (spawned by /form spawn) ─────────────────────────────
 
 async function handleFormDirectClick(interaction, formId) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   let serverData;
   try {
@@ -445,11 +468,11 @@ async function handleAppReview(interaction, appId, action) {
   if (!interaction.member.permissions.has("ManageGuild")) {
     return interaction.reply({
       content: "❌ You need Manage Server permission to review applications.",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     await api.post(`/bot/application/${appId}/review`, {
@@ -504,7 +527,7 @@ function isTicketStaff(interaction, panel) {
 function denyTicketAction(interaction) {
   return interaction.reply({
     content: "❌ Only support team members can perform this action.",
-    ephemeral: true,
+    flags: MessageFlags.Ephemeral,
   });
 }
 
@@ -513,7 +536,7 @@ async function handleTicketAction(interaction, action, ticketId) {
     // Look up the ticket + its panel (for config)
     const { data: ticket } = await api.get(`/bot/ticket/${ticketId}`).catch(() => ({ data: null }));
     if (!ticket) {
-      return interaction.reply({ content: "❌ This ticket no longer exists.", ephemeral: true });
+      return interaction.reply({ content: "❌ This ticket no longer exists.", flags: MessageFlags.Ephemeral });
     }
     const panel = ticket.panel || (ticket.panelId ? await api.get(`/bot/panel/${ticket.panelId}`).then(r => r.data).catch(() => null) : null);
 
@@ -541,13 +564,13 @@ async function handleTicketAction(interaction, action, ticketId) {
         return handleTicketReopen(interaction, ticket, panel);
       case "delete":        return handleTicketDelete(interaction, ticket, panel);
       default:
-        return interaction.reply({ content: "❌ Unknown ticket action.", ephemeral: true });
+        return interaction.reply({ content: "❌ Unknown ticket action.", flags: MessageFlags.Ephemeral });
     }
   } catch (err) {
     console.error("[ticket-action]", action, err?.response?.data || err?.message);
     return interaction.reply({
       content: `❌ Error: ${err?.response?.data?.error || err.message}`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     }).catch(() => {});
   }
 }
@@ -580,7 +603,7 @@ async function handleTicketClosePrompt(interaction, ticket, panel) {
 }
 
 async function handleTicketCloseFinalize(interaction, ticket, panel) {
-  await interaction.deferReply({ ephemeral: true }).catch(() => {});
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   console.log(`[ticket:close] 🔵 START — ticketId=${ticket.id}`);
 
   // Call backend to close (sets status=CLOSED, closedAt, closeReason, generates transcript)
@@ -756,17 +779,21 @@ async function handleTicketCloseFinalize(interaction, ticket, panel) {
 }
 
 async function handleTicketClaim(interaction, ticket, panel) {
+  // Проверката за права остава ПРЕДИ defer (ephemeral отказ).
   if (!isTicketStaff(interaction, panel)) {
-    return interaction.reply({ content: "❌ Only support team members can claim tickets.", ephemeral: true });
+    return interaction.reply({ content: "❌ Only support team members can claim tickets.", flags: MessageFlags.Ephemeral });
   }
+
+  // Defer преди backend заявката — claim обявата е публична, затова defer публичен.
+  await interaction.deferReply().catch(() => {});
 
   try {
     await api.post(`/bot/ticket/${ticket.id}/claim`, { userId: interaction.user.id });
   } catch (err) {
-    return interaction.reply({ content: `❌ ${err?.response?.data?.error || err.message}`, ephemeral: true });
+    return interaction.editReply({ content: `❌ ${err?.response?.data?.error || err.message}` });
   }
 
-  await interaction.reply({
+  await interaction.editReply({
     embeds: [{
       description: `👋 Ticket claimed by <@${interaction.user.id}>`,
       color: 0x00e5ff,
@@ -797,7 +824,7 @@ async function handleTicketTranscript(interaction, ticket, panel) {
 }
 
 async function handleTicketReopen(interaction, ticket, panel) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
     await api.post(`/bot/ticket/${ticket.id}/reopen`, { reopenerId: interaction.user.id });
@@ -843,7 +870,7 @@ async function handleTicketReopen(interaction, ticket, panel) {
 async function handleTicketDelete(interaction, ticket, panel) {
   // Only staff can delete
   if (!isTicketStaff(interaction, panel)) {
-    return interaction.reply({ content: "❌ Only support team members can delete tickets.", ephemeral: true });
+    return interaction.reply({ content: "❌ Only support team members can delete tickets.", flags: MessageFlags.Ephemeral });
   }
 
   await interaction.reply({
@@ -874,12 +901,16 @@ async function handleTicketDelete(interaction, ticket, panel) {
 // ─── Feedback rating (post-close DM) ──────────────────────────────────────────
 async function handleFeedback(interaction, ticketId, rating) {
   if (rating < 1 || rating > 5) return;
+  // deferUpdate ack-ва компонента веднага (type 6, без "loading" визуализация),
+  // за да не изтече 3-секундният бюджет преди backend заявката. После editReply
+  // редактира съобщението с бутоните.
+  await interaction.deferUpdate().catch(() => {});
   try {
     await api.post(`/bot/ticket/${ticketId}/feedback`, {
       rating,
       userId: interaction.user.id,
     });
-    await interaction.update({
+    await interaction.editReply({
       embeds: [{
         description: `Thanks for your feedback! You rated **${rating} / 5** ${"⭐".repeat(rating)}`,
         color: 0x4ade80,
@@ -887,7 +918,7 @@ async function handleFeedback(interaction, ticketId, rating) {
       components: [],
     });
   } catch (err) {
-    await interaction.reply({ content: `❌ ${err?.response?.data?.error || err.message}`, ephemeral: true });
+    await interaction.followUp({ content: `❌ ${err?.response?.data?.error || err.message}`, flags: MessageFlags.Ephemeral });
   }
 }
 
@@ -904,7 +935,7 @@ async function handleVerificationStart(interaction, panelId) {
     const { data } = await api.get(`/verification/bot/${panelId}`);
     panel = data;
   } catch {
-    return interaction.reply({ content: "❌ Verification panel not found.", ephemeral: true });
+    return interaction.reply({ content: "❌ Verification panel not found.", flags: MessageFlags.Ephemeral });
   }
 
   // Anti-bot: minimum account age
@@ -914,7 +945,7 @@ async function handleVerificationStart(interaction, panelId) {
     if (accountAge < requiredMs) {
       return interaction.reply({
         content: `❌ Your account must be at least **${panel.minAccountAgeDays} days old** to verify here.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   }
@@ -965,7 +996,7 @@ async function handleVerificationMathSubmit(interaction, panelId) {
   if (!challenge || challenge.expiresAt <= Date.now()) {
     return interaction.reply({
       content: "⏰ Verification challenge expired. Please click Verify again.",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
@@ -977,13 +1008,20 @@ async function handleVerificationMathSubmit(interaction, panelId) {
     const { data } = await api.get(`/verification/bot/${panelId}`);
     panel = data;
   } catch {
-    return interaction.reply({ content: "❌ Verification panel not found.", ephemeral: true });
+    return interaction.reply({ content: "❌ Verification panel not found.", flags: MessageFlags.Ephemeral });
   }
 
   await completeVerification(interaction, panel, correct, userAnswer);
 }
 
 async function completeVerification(interaction, panel, success, answer) {
+  // Defer преди backend заявката + прилагането на ролите (може да отнеме >3s).
+  // Извиква се от бутон (BUTTON/REACTION) и от modal submit (MATH) — и двата
+  // очакват отговор до 3s, затова ack-ваме ephemeral веднага, после editReply.
+  if (!interaction.deferred && !interaction.replied) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
+  }
+
   // Log attempt to backend + fetch role instructions
   let result;
   try {
@@ -995,18 +1033,14 @@ async function completeVerification(interaction, panel, success, answer) {
     result = data;
   } catch (err) {
     if (err?.response?.status === 429) {
-      return interaction.reply({
-        content: `❌ ${err.response.data.error}`,
-        ephemeral: true,
-      });
+      return interaction.editReply({ content: `❌ ${err.response.data.error}` });
     }
-    return interaction.reply({ content: `❌ ${err?.message || "Error"}`, ephemeral: true });
+    return interaction.editReply({ content: `❌ ${err?.message || "Error"}` });
   }
 
   if (!success) {
-    return interaction.reply({
+    return interaction.editReply({
       content: result.failureMessage || "❌ Incorrect answer. Please try again.",
-      ephemeral: true,
     });
   }
 
@@ -1029,7 +1063,7 @@ async function completeVerification(interaction, panel, success, answer) {
   const successMsg = result.successMessage
     || `✅ You're verified, <@${interaction.user.id}>!${added.length ? ` Roles granted: ${added.length}` : ""}`;
 
-  await interaction.reply({ content: successMsg, ephemeral: true });
+  await interaction.editReply({ content: successMsg });
 
   // DM
   if (result.dmSuccess) {
@@ -1089,7 +1123,7 @@ export function checkVerificationGate(interaction, panel) {
 // ─── Poll + Giveaway handlers (v1.8) ─────────────────────────────────────────
 
 async function handlePollVote(interaction, pollId, optionIdx) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   try {
     const { data } = await api.post(`/bot/poll/${pollId}/vote`, {
       userId: interaction.user.id,
@@ -1109,7 +1143,7 @@ async function handlePollVote(interaction, pollId, optionIdx) {
 }
 
 async function handleGiveawayEnter(interaction, giveawayId) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   try {
     const { data } = await api.post(`/bot/giveaway/${giveawayId}/enter`, {
       userId: interaction.user.id,

@@ -6,7 +6,9 @@ export async function handleApplicationReviewed(client, {
 }) {
   if (!reviewChannelId || !reviewMessageId) return;
 
-  const channel = client.channels.cache.get(reviewChannelId);
+  // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
+  const channel = client.channels.cache.get(reviewChannelId)
+    || await client.channels.fetch(reviewChannelId).catch(() => null);
   if (!channel) return;
 
   const msg = await channel.messages.fetch(reviewMessageId).catch(() => null);
