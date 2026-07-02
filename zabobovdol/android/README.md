@@ -102,7 +102,8 @@ keytool -list -v -keystore android.keystore -alias android
 1. Създайте приложение в [Google Play Console](https://play.google.com/console)
    (еднократна такса $25 за разработчиков акаунт).
 2. Качете `app-release-bundle.aab`.
-3. Включете **Play App Signing** (препоръчано от Google).
+3. **Play App Signing** е **задължителен** за нови приложения (Google
+   преподписва пакета с production ключ).
 4. Play Console показва **още един** SHA‑256 (App signing key certificate) —
    **задължително добавете и него** в админ панела (всеки отпечатък на нов ред).
    Без този отпечатък инсталираното от Play приложение ще показва **URL лента**
