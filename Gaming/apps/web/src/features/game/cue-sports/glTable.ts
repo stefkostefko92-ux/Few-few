@@ -342,7 +342,10 @@ export class GLTable {
       sheenColor: new Color(scene.cloth.a),
       sheenRoughness: 0.8,
     });
-    const cushH = R * 1.7;
+    // 0.09 (was R*1.7≈0.049): crest above the 0.06 rail top — at the old height
+    // the cloth cushions sat entirely inside the wood and balls appeared to
+    // rebound off bare rail.
+    const cushH = 0.09;
     const cushT = RAIL * 0.55; // thickness
     const gap = TABLE.pocketR * 1.7; // clearance around each pocket
     const cushion = (w: number, d: number, x: number, z: number) => {

@@ -90,7 +90,7 @@ export function SvaraView({ title }: { title: string }) {
                   active={state.turn === s}
                   badge={<ChipStack amount={state.chips[s] ?? 0} size="sm" />}
                 >
-                  <div style={{ display: "flex", opacity: state.folded[s] ? 0.35 : 1 }}>
+                  <div style={{ display: "flex", opacity: state.folded[s] ? 0.35 : 1, transition: "opacity 300ms ease" }}>
                     {Array.from({ length: state.hands[s]?.length ?? 3 }).map((_, i) => (
                       <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -26 : 0 }} />
                     ))}
@@ -108,7 +108,7 @@ export function SvaraView({ title }: { title: string }) {
                 active={myTurn}
                 badge={<ChipStack amount={state.chips[seat] ?? 0} size="sm" />}
               >
-                <div className="aso-myhand" style={{ display: "flex", opacity: state.folded[seat] ? 0.4 : 1 }}>
+                <div className="aso-myhand" style={{ display: "flex", opacity: state.folded[seat] ? 0.4 : 1, transition: "opacity 300ms ease" }}>
                   {(state.hands[seat] ?? []).map((card, i) => (
                     <PlayingCard key={`${card}-${i}`} card={card} size="md" style={{ marginLeft: i ? -20 : 0 }} />
                   ))}

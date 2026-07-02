@@ -44,7 +44,6 @@ export function DominoTile({
       onClick={onClick}
       aria-label={t("a11y.domino", { a, b })}
       className={cn("dom-tile", vertical && "dom-tile--v", playable && "dom-tile--playable")}
-      style={{ transition: "transform 140ms cubic-bezier(.2,.9,.25,1.15)" }}
     >
       <Half value={a} />
       <Half value={b} />

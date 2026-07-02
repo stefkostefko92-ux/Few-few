@@ -106,12 +106,14 @@ export function RummyView({ title }: { title: string }) {
                   <div style={{ textAlign: "center" }}>
                     {top ? (
                       <PlayingCard
+                        key={`${top}-${state.discard.length}`}
                         card={top}
                         size="md"
                         onClick={drawDiscard ? () => { playCue("flip"); m.send(drawDiscard); } : undefined}
                       />
                     ) : (
-                      <div style={{ width: 72, height: 102, borderRadius: 10, border: "1px dashed rgba(217,178,95,.3)" }} />
+                      /* 88×124 = md card size, so the first discard doesn't shift the layout */
+                      <div style={{ width: 88, height: 124, borderRadius: 10, border: "1px dashed rgba(217,178,95,.3)" }} />
                     )}
                     <p className="mt-1 text-xs text-ink-muted">{t("rummy.discard")}</p>
                   </div>

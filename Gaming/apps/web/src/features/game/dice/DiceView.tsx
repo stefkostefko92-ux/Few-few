@@ -115,7 +115,7 @@ export function DiceView({ title }: { title: string }) {
                   <th>{t("dice.category")}</th>
                   {state.scores.map((_, s) => (
                     <th key={s} className={cn(s === seat && "dice-me")}>
-                      {players.find((p) => p.seat === s)?.displayName?.slice(0, 6) ?? `#${s}`}
+                      {players.find((p) => p.seat === s)?.displayName ?? `#${s}`}
                     </th>
                   ))}
                 </tr>

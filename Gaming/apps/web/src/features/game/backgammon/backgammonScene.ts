@@ -11,7 +11,7 @@ import {
   Color,
   CylinderGeometry,
   DirectionalLight,
-  type Euler,
+  Euler,
   ExtrudeGeometry,
   Group,
   HemisphereLight,
@@ -20,6 +20,7 @@ import {
   MeshStandardMaterial,
   OrthographicCamera,
   Raycaster,
+  Quaternion,
   Scene,
   Shape,
   Vector2,
@@ -37,6 +38,7 @@ import {
   woodNormal,
   woodTexture,
 } from "../gl/helpers.js";
+import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
 
 export interface BgState {
@@ -121,13 +123,17 @@ export class BackgammonScene {
 
     this.scene.add(this.checkerLayer, this.hiLayer);
     this.build();
+    const params = defaultGfxParams();
+    // 1.35/0.06 (portal-wide tuning): the ivory checkers/points under the 1.9
+    // key cross the default 1.3 threshold and halo.
+    params.bloom = { enabled: params.bloom.enabled, strength: 0.06, radius: 0.45, threshold: 1.35 };
     this.core = new RenderCore({
       canvas,
       scene: this.scene,
       camera: this.camera,
       width,
       ratio: SCENE_RATIO,
-      exposure: 1.0,
+      params,
       onFrame: () => this.frame(),
     });
   }
@@ -158,7 +164,7 @@ export class BackgammonScene {
             d.rotation.y += (to.y - d.rotation.y) * 0.25;
             d.rotation.z += (to.z - d.rotation.z) * 0.25;
           }
-          d.position.y = 0.53 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
+          d.position.y = 0.74 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.4 * (1 - t);
         });
       }
     }
@@ -453,12 +459,23 @@ export class BackgammonScene {
     }
     this.dice.forEach((d, n) => {
       d.visible = n < values.length;
-      d.position.set((n - (values.length - 1) / 2) * 1.3, 0.53, 0);
+      // seated ON the centre bar (top 0.29 + half die 0.45), in a column along
+      // it — side by side they straddled the bar edge and sank into the wood
+      d.position.set(0, 0.74, (n - (values.length - 1) / 2) * 1.3);
     });
     const key = values.join(",");
     if (key !== this.prevDice) {
       this.prevDice = key;
-      const to = values.map((v) => faceUp(v)) as [Euler, Euler];
+      // yaw each settled cube differently (~26°/-18°): straight-on cubes at
+      // this elevation collapse into two-face "domino" strips, and two thrown
+      // dice never land aligned anyway
+      const yawed = (v: number, yaw: number): Euler => {
+        const q = new Quaternion()
+          .setFromEuler(faceUp(v))
+          .premultiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), yaw));
+        return new Euler().setFromQuaternion(q);
+      };
+      const to = values.map((v, n) => yawed(v, n === 0 ? 0.45 : -0.32)) as [Euler, Euler];
       if (this.reduceMotion) this.dice.forEach((d, n) => to[n] && d.rotation.copy(to[n]!));
       else this.diceAnim = { start: performance.now(), from: [this.dice[0]!.rotation.clone(), this.dice[1]!.rotation.clone()], to };
     }

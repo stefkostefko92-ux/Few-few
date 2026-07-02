@@ -23,7 +23,8 @@ import {
   Vector2,
   Vector3,
 } from "three";
-import { disposeObject, easeInOut, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
+import { contactShadow, disposeObject, easeInOut, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
+import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
 
 type Piece = "w" | "W" | "b" | "B" | null;
@@ -60,7 +61,8 @@ export class DraughtsScene {
     this.scene.background = new Color("#0e2117");
 
     const span = HALF + RAIL;
-    const d = span * 1.12;
+    // 0.98 (was 1.12): the board fills the frame like chess instead of floating
+    const d = span * 0.98;
     const aspect = 1 / SCENE_RATIO;
     this.camera = new OrthographicCamera(-d * aspect, d * aspect, d, -d, 0.1, 200);
     const zside = orientation === "white" ? 1 : -1;
@@ -80,13 +82,18 @@ export class DraughtsScene {
 
     this.scene.add(this.pieceLayer, this.hiLayer);
     this.build();
+    const params = defaultGfxParams();
+    params.exposure = 0.98;
+    // 1.35/0.06 (portal-wide tuning): ivory men + light squares under the 1.95
+    // key cross the default 1.3 threshold and halo.
+    params.bloom = { enabled: params.bloom.enabled, strength: 0.06, radius: 0.45, threshold: 1.35 };
     this.core = new RenderCore({
       canvas,
       scene: this.scene,
       camera: this.camera,
       width,
       ratio: SCENE_RATIO,
-      exposure: 0.98,
+      params,
       onFrame: () => this.frame(),
     });
   }
@@ -154,20 +161,24 @@ export class DraughtsScene {
     const king = piece === "W" || piece === "B";
     const mat = pieceMaterial(white);
     const g = new Group();
+    // 0.26: disc bottom lands exactly on the square top (0.16) — no air gap
     const disc = new Mesh(new CylinderGeometry(0.4, 0.42, 0.2, 36), mat);
-    disc.position.y = 0.28;
+    disc.position.y = 0.26;
     disc.castShadow = true;
-    g.add(disc);
+    // soft AO disc grounds the man (matches chess pieces)
+    const ground = contactShadow(0.5, 0.3);
+    ground.position.y = 0.165;
+    g.add(disc, ground);
     if (king) {
       const top = new Mesh(new CylinderGeometry(0.36, 0.4, 0.18, 36), mat);
-      top.position.y = 0.47;
+      top.position.y = 0.45;
       top.castShadow = true;
       const crown = new Mesh(
         new TorusGeometry(0.26, 0.05, 12, 28),
         new MeshPhysicalMaterial({ color: new Color("#e7c97a"), metalness: 1, roughness: 0.3 }),
       );
       crown.rotation.x = Math.PI / 2;
-      crown.position.y = 0.58;
+      crown.position.y = 0.56;
       crown.castShadow = true;
       g.add(top, crown);
     }

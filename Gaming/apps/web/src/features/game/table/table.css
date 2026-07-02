@@ -149,6 +149,11 @@
   box-shadow:
     0 6px 16px -6px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  /* the turn glow fades in instead of snapping on every turn change */
+  transition:
+    border-color var(--dur-fast, 140ms) ease,
+    box-shadow var(--dur-fast, 140ms) ease,
+    color var(--dur-fast, 140ms) ease;
 }
 .aso-seat__name {
   /* the NAME truncates with an ellipsis; badges (card counts) stay intact */
