@@ -33,7 +33,7 @@ export default function AutomationPage() {
   return (
     <div className="p-8 max-w-6xl">
       <div className="mb-6">
-        <h1 className="cs-heading font-display font-bold text-white text-3xl">Automation</h1>
+        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">Automation</h1>
         <p className="text-cs-muted mt-2 max-w-2xl">
           Manage polls, giveaways, sticky messages, scheduled posts, and webhook integrations.
           Everything here can also be triggered by slash commands in Discord — see <strong>Commands</strong> for the full list.
@@ -92,10 +92,10 @@ function PollsTab() {
         <div key={p.id} className="cs-card flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-white font-bold">{p.question}</span>
+              <span className="text-cs-text font-bold">{p.question}</span>
               {p.closedAt
                 ? <span className="cs-badge text-cs-dim">Closed</span>
-                : <span className="cs-badge text-green-400">Active</span>}
+                : <span className="cs-badge text-success">Active</span>}
               {p.multiChoice && <span className="cs-badge text-cs-cyan">Multi-choice</span>}
             </div>
             <p className="text-xs text-cs-muted mt-1">
@@ -111,7 +111,7 @@ function PollsTab() {
               onClick={() => setConfirmState({ title: "Delete Poll", message: "Delete this poll?", onConfirm: () => deleteM.mutate(p.id) })}
               aria-label="Delete poll"
               title="Delete poll"
-              className="text-red-400 hover:text-red-300 p-2"
+              className="text-danger hover:text-red-300 p-2"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -156,7 +156,7 @@ function GiveawaysTab() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-white font-bold">🎉 {g.prize}</span>
+                <span className="text-cs-text font-bold">🎉 {g.prize}</span>
                 {g.endedAt
                   ? <span className="cs-badge text-cs-dim">Ended</span>
                   : <span className="cs-badge text-amber-400">Active</span>}
@@ -166,7 +166,7 @@ function GiveawaysTab() {
                 {g.endedAt ? ` Ended ${new Date(g.endedAt).toLocaleString()}` : ` Ends ${new Date(g.endsAt).toLocaleString()}`}
               </p>
               {g.endedAt && g.winnerIds?.length > 0 && (
-                <p className="text-xs text-green-400 mt-1">
+                <p className="text-xs text-success mt-1">
                   🏆 Winners: {g.winnerIds.map((id) => `<@${id}>`).join(", ")}
                 </p>
               )}
@@ -189,7 +189,7 @@ function GiveawaysTab() {
                 onClick={() => setConfirmState({ title: "Delete Giveaway", message: "Delete this giveaway?", destructive: true, onConfirm: () => deleteM.mutate(g.id) })}
                 aria-label="Delete giveaway"
                 title="Delete giveaway"
-                className="text-red-400 hover:text-red-300 p-2"
+                className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -228,7 +228,7 @@ function StickyTab() {
   return (
     <div className="space-y-6">
       <form onSubmit={(e) => { e.preventDefault(); saveM.mutate(form); }} className="cs-card space-y-3">
-        <h3 className="text-white font-bold">Set Sticky Message</h3>
+        <h3 className="text-cs-text font-bold">Set Sticky Message</h3>
         <label className="block">
           <span className="cs-label">Channel ID</span>
           <input required className="cs-input font-mono text-xs" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })} />
@@ -261,14 +261,14 @@ function StickyTab() {
           <div key={s.id} className="cs-card flex items-start justify-between">
             <div className="flex-1">
               <p className="text-xs text-cs-dim font-mono">Channel: {s.channelId}</p>
-              {s.embedTitle && <p className="text-white font-bold mt-1">{s.embedTitle}</p>}
+              {s.embedTitle && <p className="text-cs-text font-bold mt-1">{s.embedTitle}</p>}
               <p className="text-sm text-cs-text mt-1 line-clamp-2">{s.content}</p>
             </div>
             <button
               onClick={() => setConfirmState({ title: "Delete Sticky", message: "Delete this sticky message?", onConfirm: () => deleteM.mutate(s.channelId) })}
               aria-label="Delete sticky message"
               title="Delete sticky message"
-              className="text-red-400 p-2"
+              className="text-danger p-2"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -310,7 +310,7 @@ function ScheduledTab() {
         e.preventDefault();
         createM.mutate({ ...form, recurrence: form.recurrence || null, sendAt: new Date(form.sendAt).toISOString() });
       }} className="cs-card space-y-3">
-        <h3 className="text-white font-bold">Schedule New Message</h3>
+        <h3 className="text-cs-text font-bold">Schedule New Message</h3>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">Channel ID</span>
@@ -357,10 +357,10 @@ function ScheduledTab() {
                 <span className="font-mono text-xs text-cs-dim">#{m.channelId.slice(-6)}</span>
                 {m.sentAt
                   ? <span className="cs-badge text-cs-dim">Sent</span>
-                  : <span className="cs-badge text-green-400">Pending</span>}
+                  : <span className="cs-badge text-success">Pending</span>}
                 {m.recurrence && <span className="cs-badge text-cs-cyan">{m.recurrence}</span>}
               </div>
-              {m.embedTitle && <p className="text-white font-bold mt-1">{m.embedTitle}</p>}
+              {m.embedTitle && <p className="text-cs-text font-bold mt-1">{m.embedTitle}</p>}
               <p className="text-sm text-cs-text mt-1 line-clamp-2">{m.content}</p>
               <p className="text-xs text-cs-muted mt-1">{new Date(m.sendAt).toLocaleString()}</p>
             </div>
@@ -368,7 +368,7 @@ function ScheduledTab() {
               onClick={() => setConfirmState({ title: "Delete Scheduled Message", message: "Delete this scheduled message?", onConfirm: () => deleteM.mutate(m.id) })}
               aria-label="Delete scheduled message"
               title="Delete scheduled message"
-              className="text-red-400 p-2"
+              className="text-danger p-2"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -447,9 +447,9 @@ function WebhooksTab() {
           <div key={h.id} className="cs-card flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-white font-bold">{h.name}</span>
+                <span className="text-cs-text font-bold">{h.name}</span>
                 {h.enabled
-                  ? <span className="cs-badge text-green-400">Enabled</span>
+                  ? <span className="cs-badge text-success">Enabled</span>
                   : <span className="cs-badge text-cs-dim">Disabled</span>}
                 {h.failCount > 0 && <span className="cs-badge text-amber-400">{h.failCount} fails</span>}
               </div>
@@ -465,7 +465,7 @@ function WebhooksTab() {
                 onClick={() => setConfirmState({ title: "Delete Webhook", message: `Delete "${h.name}"? This cannot be undone.`, onConfirm: () => deleteM.mutate(h.id) })}
                 aria-label={`Delete webhook ${h.name}`}
                 title="Delete webhook"
-                className="text-red-400 p-2"
+                className="text-danger p-2"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -514,7 +514,7 @@ function WebhooksTab() {
           </label>
 
           {formError && (
-            <p role="alert" className="text-red-400 text-sm">{formError}</p>
+            <p role="alert" className="text-danger text-sm">{formError}</p>
           )}
 
           <div className="flex justify-end gap-2 pt-2">
@@ -548,6 +548,6 @@ function Empty({ msg }) {
 
 function ErrorCard({ msg }) {
   return (
-    <div role="alert" className="cs-card text-center py-10 text-red-400">{msg}</div>
+    <div role="alert" className="cs-card text-center py-10 text-danger">{msg}</div>
   );
 }

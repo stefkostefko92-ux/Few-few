@@ -19,8 +19,8 @@ export default function EulaPage() {
         path="/eula"
       />
 
-      <div className="bg-discord-500/10 border border-discord-500/20 rounded-lg p-4 mb-8 text-sm text-gray-300">
-        <strong className="text-white">Important:</strong> This End User License Agreement ("EULA")
+      <div className="bg-cs-cyan/10 border border-cs-cyan/20 rounded-lg p-4 mb-8 text-sm text-cs-text">
+        <strong className="text-cs-text">Important:</strong> This End User License Agreement ("EULA")
         governs your right to access and use the {COMPANY} software platform. Please read it carefully.
         By authenticating via Discord OAuth2, subscribing to any plan, or using any feature of the
         Service, you agree to be legally bound by this EULA. If you do not agree, you must not use
@@ -30,20 +30,20 @@ export default function EulaPage() {
       <S title="1. Definitions">
         <p>For the purposes of this EULA, the following terms have the meanings set out below:</p>
         <ul>
-          <li><strong className="text-gray-300">"Agreement"</strong> means this End User License Agreement, together with the Terms of Service, Privacy Policy, and Cookie Policy, all of which are incorporated herein by reference.</li>
-          <li><strong className="text-gray-300">"Licensor"</strong> means <strong>{COMPANY}</strong>, registered in {COUNTRY}.</li>
-          <li><strong className="text-gray-300">"Licensee"</strong> or <strong>"you"</strong> means the individual or legal entity accessing the Service, including in the capacity of a Discord server administrator.</li>
-          <li><strong className="text-gray-300">"Service"</strong> means the {COMPANY} software-as-a-service platform, including the web dashboard, Discord bot, backend API, all associated software, documentation, and content.</li>
-          <li><strong className="text-gray-300">"Software"</strong> means the underlying proprietary code, algorithms, database schemas, and infrastructure constituting the Service.</li>
-          <li><strong className="text-gray-300">"Discord Server"</strong> means any Discord guild to which you have connected the Service's bot.</li>
-          <li><strong className="text-gray-300">"End Users"</strong> means the members of your Discord Server(s) who interact with the bot, including by submitting tickets or applications.</li>
-          <li><strong className="text-gray-300">"User Content"</strong> means all data, messages, form answers, configurations, and other content created by you or your End Users through the Service.</li>
-          <li><strong className="text-gray-300">"Premium Features"</strong> means features accessible only to Licensees with an active Premium subscription, as described in Section 7.</li>
-          <li><strong className="text-gray-300">"Subscription Term"</strong> means the period during which you have an active, paid Premium subscription.</li>
-          <li><strong className="text-gray-300">"Free Tier"</strong> means the no-cost access to the Service subject to the limitations described in Section 6.</li>
-          <li><strong className="text-gray-300">"White-label Bot"</strong> means the Premium feature permitting a Licensee to operate the bot under a custom Discord application token, name, and avatar.</li>
-          <li><strong className="text-gray-300">"API"</strong> means the application programming interface exposed by the backend service at port 3000.</li>
-          <li><strong className="text-gray-300">"Effective Date"</strong> means the date on which you first authenticate via Discord OAuth2 or begin using the Service, whichever is earlier.</li>
+          <li><strong className="text-cs-text">"Agreement"</strong> means this End User License Agreement, together with the Terms of Service, Privacy Policy, and Cookie Policy, all of which are incorporated herein by reference.</li>
+          <li><strong className="text-cs-text">"Licensor"</strong> means <strong>{COMPANY}</strong>, registered in {COUNTRY}.</li>
+          <li><strong className="text-cs-text">"Licensee"</strong> or <strong>"you"</strong> means the individual or legal entity accessing the Service, including in the capacity of a Discord server administrator.</li>
+          <li><strong className="text-cs-text">"Service"</strong> means the {COMPANY} software-as-a-service platform, including the web dashboard, Discord bot, backend API, all associated software, documentation, and content.</li>
+          <li><strong className="text-cs-text">"Software"</strong> means the underlying proprietary code, algorithms, database schemas, and infrastructure constituting the Service.</li>
+          <li><strong className="text-cs-text">"Discord Server"</strong> means any Discord guild to which you have connected the Service's bot.</li>
+          <li><strong className="text-cs-text">"End Users"</strong> means the members of your Discord Server(s) who interact with the bot, including by submitting tickets or applications.</li>
+          <li><strong className="text-cs-text">"User Content"</strong> means all data, messages, form answers, configurations, and other content created by you or your End Users through the Service.</li>
+          <li><strong className="text-cs-text">"Premium Features"</strong> means features accessible only to Licensees with an active Premium subscription, as described in Section 7.</li>
+          <li><strong className="text-cs-text">"Subscription Term"</strong> means the period during which you have an active, paid Premium subscription.</li>
+          <li><strong className="text-cs-text">"Free Tier"</strong> means the no-cost access to the Service subject to the limitations described in Section 6.</li>
+          <li><strong className="text-cs-text">"White-label Bot"</strong> means the Premium feature permitting a Licensee to operate the bot under a custom Discord application token, name, and avatar.</li>
+          <li><strong className="text-cs-text">"API"</strong> means the application programming interface exposed by the backend service at port 3000.</li>
+          <li><strong className="text-cs-text">"Effective Date"</strong> means the date on which you first authenticate via Discord OAuth2 or begin using the Service, whichever is earlier.</li>
         </ul>
       </S>
 
@@ -65,7 +65,7 @@ export default function EulaPage() {
           itself except as expressly set out in Section 8.
         </p>
         <p>
-          <strong className="text-gray-300">No ownership transfer.</strong> The licence granted
+          <strong className="text-cs-text">No ownership transfer.</strong> The licence granted
           hereunder does not constitute a sale or transfer of any intellectual property rights in
           the Software. The Licensor retains all rights not expressly granted.
         </p>
@@ -94,20 +94,20 @@ export default function EulaPage() {
 
       <S title="4. Intellectual Property">
         <p>
-          <strong className="text-gray-300">4.1 Ownership of Software.</strong>{" "}
+          <strong className="text-cs-text">4.1 Ownership of Software.</strong>{" "}
           The Service, including all Software, code, algorithms, designs, databases, user interface
           elements, documentation, and all updates and modifications thereto, is and shall remain the
           exclusive intellectual property of the Licensor. The Service is protected by copyright,
           trade secret, and other applicable intellectual property laws.
         </p>
         <p>
-          <strong className="text-gray-300">4.2 Trademarks.</strong>{" "}
+          <strong className="text-cs-text">4.2 Trademarks.</strong>{" "}
           "{COMPANY}", the {COMPANY} logo, and all related names, logos, product and service names,
           designs, and slogans are trademarks of the Licensor. You must not use such marks without
           the prior written permission of the Licensor.
         </p>
         <p>
-          <strong className="text-gray-300">4.3 User Content Licence.</strong>{" "}
+          <strong className="text-cs-text">4.3 User Content Licence.</strong>{" "}
           You retain all right, title, and interest in User Content. By using the Service, you grant
           the Licensor a worldwide, royalty-free, non-exclusive licence to host, store, process,
           display, and transmit User Content solely to the extent necessary to provide the Service.
@@ -115,14 +115,14 @@ export default function EulaPage() {
           subject to any legal retention obligations.
         </p>
         <p>
-          <strong className="text-gray-300">4.4 Feedback.</strong>{" "}
+          <strong className="text-cs-text">4.4 Feedback.</strong>{" "}
           If you submit suggestions, ideas, enhancement requests, recommendations, or other
           feedback about the Service ("Feedback"), you grant the Licensor a perpetual, irrevocable,
           royalty-free, worldwide licence to use, incorporate, and exploit such Feedback in any
           manner without any obligation to you.
         </p>
         <p>
-          <strong className="text-gray-300">4.5 Third-Party Components.</strong>{" "}
+          <strong className="text-cs-text">4.5 Third-Party Components.</strong>{" "}
           The Service incorporates certain open-source and third-party components, each of which is
           subject to its own licence terms. These licences do not affect your rights under this
           EULA, but you acknowledge that the Licensor has no control over such third-party software.
@@ -135,7 +135,7 @@ export default function EulaPage() {
           You agree to use the Service only for lawful purposes and in accordance with this Agreement.
         </p>
         <p>
-          <strong className="text-gray-300">5.1 Prohibited Content.</strong>{" "}
+          <strong className="text-cs-text">5.1 Prohibited Content.</strong>{" "}
           You must not use the Service to store, transmit, or facilitate:
         </p>
         <ul>
@@ -147,20 +147,20 @@ export default function EulaPage() {
           <li>Content that constitutes illegal surveillance or stalking.</li>
         </ul>
         <p>
-          <strong className="text-gray-300">5.2 Security.</strong>{" "}
+          <strong className="text-cs-text">5.2 Security.</strong>{" "}
           You are responsible for maintaining the security of your Discord account credentials and
           any custom bot token you store in the Service. You must notify the Licensor immediately
           upon becoming aware of any unauthorised access to your account or any security vulnerability
           in the Service.
         </p>
         <p>
-          <strong className="text-gray-300">5.3 Responsibility for End Users.</strong>{" "}
+          <strong className="text-cs-text">5.3 Responsibility for End Users.</strong>{" "}
           If you operate a Discord Server with the Service, you are responsible for ensuring that
           your End Users comply with this Acceptable Use Policy. You must take prompt action to
           remove any content that violates this policy and to prevent repeat violations.
         </p>
         <p>
-          <strong className="text-gray-300">5.4 Enforcement.</strong>{" "}
+          <strong className="text-cs-text">5.4 Enforcement.</strong>{" "}
           The Licensor reserves the right, but has no obligation, to monitor your use of the
           Service for compliance with this policy. The Licensor may, at its sole discretion,
           remove User Content and/or suspend or terminate access for violations.
@@ -180,7 +180,7 @@ export default function EulaPage() {
                 <Th>Free Tier Limit</Th>
               </tr>
             </thead>
-            <tbody className="text-gray-400">
+            <tbody className="text-cs-muted">
               <Tr><Td>Ticket panels</Td><Td>1 panel</Td></Tr>
               <Tr><Td>Forms</Td><Td>Up to 2 forms</Td></Tr>
               <Tr><Td>Questions per form</Td><Td>Up to 5 questions</Td></Tr>
@@ -195,7 +195,7 @@ export default function EulaPage() {
           </table>
         </div>
         <p className="mt-3">
-          <strong className="text-gray-300">No SLA on Free Tier.</strong> The Licensor makes no
+          <strong className="text-cs-text">No SLA on Free Tier.</strong> The Licensor makes no
           service level commitments for Free Tier users. The Service may be modified, suspended,
           or discontinued for Free Tier users with 14 days' prior notice.
         </p>
@@ -203,7 +203,7 @@ export default function EulaPage() {
 
       <S title="7. Premium Subscription — Rights and Restrictions">
         <p>
-          <strong className="text-gray-300">7.1 Premium Features.</strong>{" "}
+          <strong className="text-cs-text">7.1 Premium Features.</strong>{" "}
           An active Premium subscription unlocks the following features, in addition to all Free
           Tier features with the applicable limits removed:
         </p>
@@ -217,37 +217,37 @@ export default function EulaPage() {
           <li>White-label bot (custom token, name, avatar — subject to Section 8).</li>
         </ul>
         <p>
-          <strong className="text-gray-300">7.2 Subscription Term and Renewal.</strong>{" "}
+          <strong className="text-cs-text">7.2 Subscription Term and Renewal.</strong>{" "}
           Premium subscriptions are billed monthly per Discord server. Subscriptions auto-renew
           at the end of each billing period unless cancelled. The Licensor uses Stripe, Inc. as
           its payment processor.
         </p>
         <p>
-          <strong className="text-gray-300">7.3 Free Trial.</strong>{" "}
+          <strong className="text-cs-text">7.3 Free Trial.</strong>{" "}
           New Premium subscriptions may begin with a 14-day free trial period. During the trial,
           all Premium Features are accessible. No charge is made during the trial. If the trial
           is not cancelled before it ends, a monthly charge commences automatically.
         </p>
         <p>
-          <strong className="text-gray-300">7.4 Price Changes.</strong>{" "}
+          <strong className="text-cs-text">7.4 Price Changes.</strong>{" "}
           The Licensor may change the subscription price with at least 30 days' notice. Your
           continued use of the Premium subscription after the effective date of a price change
           constitutes acceptance of the new price.
         </p>
         <p>
-          <strong className="text-gray-300">7.5 Downgrade.</strong>{" "}
+          <strong className="text-cs-text">7.5 Downgrade.</strong>{" "}
           Upon cancellation or expiry of a Premium subscription, your Discord server reverts to
           the Free Tier. Premium-only User Content (e.g., transcripts retained beyond 30 days)
           will be subject to the Free Tier retention policy, meaning transcripts older than 30 days
           will be deleted during the next scheduled cleanup cycle.
         </p>
         <p>
-          <strong className="text-gray-300">7.6 Refunds.</strong>{" "}
+          <strong className="text-cs-text">7.6 Refunds.</strong>{" "}
           Refunds are governed by the Refund Policy in the Terms of Service. Premium subscriptions
           carry a 7-day money-back guarantee for first-time purchases only.
         </p>
         <p>
-          <strong className="text-gray-300">7.7 Payment Failure.</strong>{" "}
+          <strong className="text-cs-text">7.7 Payment Failure.</strong>{" "}
           If a payment fails, the Licensor's payment processor will retry according to its standard
           schedule. If payment cannot be collected after the retry period, the subscription will be
           downgraded to the Free Tier without further notice.
@@ -260,33 +260,33 @@ export default function EulaPage() {
           functionality under a custom Discord application. The following special terms apply:
         </p>
         <p>
-          <strong className="text-gray-300">8.1 Your Discord Application.</strong>{" "}
+          <strong className="text-cs-text">8.1 Your Discord Application.</strong>{" "}
           You must create and register your own Discord Application at{" "}
           <a href="https://discord.com/developers" target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">discord.com/developers</a>{" "}
+            className="text-cs-cyan hover:underline">discord.com/developers</a>{" "}
           and supply your bot token to the Service. Your Discord Application is subject to
           Discord's Developer Terms of Service, which you are solely responsible for complying with.
         </p>
         <p>
-          <strong className="text-gray-300">8.2 Token Security.</strong>{" "}
+          <strong className="text-cs-text">8.2 Token Security.</strong>{" "}
           Your custom bot token is encrypted at rest using AES-256-GCM before storage in the
           Service's database. The Licensor takes reasonable measures to protect your token, but
           you remain responsible for the security of your Discord Application and for rotating
           the token if you believe it has been compromised.
         </p>
         <p>
-          <strong className="text-gray-300">8.3 Underlying Software.</strong>{" "}
+          <strong className="text-cs-text">8.3 Underlying Software.</strong>{" "}
           The White-label Bot is powered by the Licensor's Software running on the Licensor's
           infrastructure. You are purchasing a customised interface, not a separate software licence
           or a copy of the underlying code. All restrictions in Section 3 continue to apply.
         </p>
         <p>
-          <strong className="text-gray-300">8.4 Termination.</strong>{" "}
+          <strong className="text-cs-text">8.4 Termination.</strong>{" "}
           Upon termination of your Premium subscription, the White-label Bot will be automatically
           shut down. The Licensor will destroy any stored copy of your bot token within 30 days.
         </p>
         <p>
-          <strong className="text-gray-300">8.5 Discord Compliance.</strong>{" "}
+          <strong className="text-cs-text">8.5 Discord Compliance.</strong>{" "}
           You are solely responsible for ensuring that your White-label Bot and its usage comply
           with Discord's Terms of Service, Monetization Policy, and Developer Policy. The Licensor
           accepts no responsibility for any action taken by Discord against your application.
@@ -295,28 +295,28 @@ export default function EulaPage() {
 
       <S title="9. AI Auto-Reply Feature — Special Terms">
         <p>
-          <strong className="text-gray-300">9.1 Anthropic Processing.</strong>{" "}
+          <strong className="text-cs-text">9.1 Anthropic Processing.</strong>{" "}
           When the AI auto-reply feature is enabled, newly submitted ticket messages are sent to
           Anthropic PBC ("Anthropic") for processing via their API. By enabling this feature, you
           acknowledge and consent to this data transfer. Anthropic processes data subject to their
           API Data Usage Policies and a Standard Contractual Clause arrangement.
         </p>
         <p>
-          <strong className="text-gray-300">9.2 Operator Responsibility.</strong>{" "}
+          <strong className="text-cs-text">9.2 Operator Responsibility.</strong>{" "}
           If you enable AI auto-replies, you must inform your Discord Server members that their
           initial ticket messages may be processed by an AI service. You are responsible for
           compliance with any applicable consumer protection, data protection, or AI transparency
           laws in your jurisdiction.
         </p>
         <p>
-          <strong className="text-gray-300">9.3 No Guarantee of Accuracy.</strong>{" "}
+          <strong className="text-cs-text">9.3 No Guarantee of Accuracy.</strong>{" "}
           AI-generated responses are produced by a language model and may be inaccurate, incomplete,
           or inappropriate. The Licensor provides no warranty regarding the accuracy, quality, or
           suitability of AI-generated content. You should configure the feature with an appropriate
           system prompt and monitor outputs.
         </p>
         <p>
-          <strong className="text-gray-300">9.4 Disable at Any Time.</strong>{" "}
+          <strong className="text-cs-text">9.4 Disable at Any Time.</strong>{" "}
           You may disable AI auto-replies at any time from the Settings page. Disabling the feature
           immediately prevents future ticket messages from being sent to Anthropic.
         </p>
@@ -324,21 +324,21 @@ export default function EulaPage() {
 
       <S title="10. Data, Privacy, and Security">
         <p>
-          <strong className="text-gray-300">10.1 Controller/Processor Relationship.</strong>{" "}
+          <strong className="text-cs-text">10.1 Controller/Processor Relationship.</strong>{" "}
           In respect of data submitted by your End Users (ticket messages, application form answers,
           Discord user IDs), you act as the data controller and the Licensor acts as data processor.
           The Licensor will process such data only on your behalf and in accordance with a Data
           Processing Agreement (DPA) available upon request.
         </p>
         <p>
-          <strong className="text-gray-300">10.2 Your Obligations as Controller.</strong>{" "}
+          <strong className="text-cs-text">10.2 Your Obligations as Controller.</strong>{" "}
           You are responsible for: (a) establishing and communicating a lawful basis for processing
           End User data under GDPR Article 6; (b) providing End Users with appropriate privacy
           notices; (c) handling data subject requests from End Users; and (d) ensuring you have
           authority to deploy the bot and collect the data it processes.
         </p>
         <p>
-          <strong className="text-gray-300">10.3 Security Measures.</strong>{" "}
+          <strong className="text-cs-text">10.3 Security Measures.</strong>{" "}
           The Licensor implements the following technical and organisational security measures:
         </p>
         <ul>
@@ -352,16 +352,16 @@ export default function EulaPage() {
           <li>Optional error monitoring via Sentry with configurable data scrubbing.</li>
         </ul>
         <p>
-          <strong className="text-gray-300">10.4 Breach Notification.</strong>{" "}
+          <strong className="text-cs-text">10.4 Breach Notification.</strong>{" "}
           In the event of a personal data breach affecting End User data for which you are the
           controller, the Licensor will notify you within 72 hours of becoming aware, as required
           by GDPR Article 33.
         </p>
         <p>
-          <strong className="text-gray-300">10.5 Data Retention and Deletion.</strong>{" "}
+          <strong className="text-cs-text">10.5 Data Retention and Deletion.</strong>{" "}
           Retention periods are described in the Privacy Policy. You may request deletion of
           your account and associated User Content by contacting{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
           Financial records are retained for 7 years as required by law.
         </p>
       </S>
@@ -374,20 +374,20 @@ export default function EulaPage() {
         </p>
         <ul>
           <li>
-            <strong className="text-gray-300">Discord, Inc.</strong> — Authentication (OAuth2),
+            <strong className="text-cs-text">Discord, Inc.</strong> — Authentication (OAuth2),
             bot operation, message delivery. Subject to Discord's Terms of Service and Privacy Policy.
             The Licensor is an independent operator and not affiliated with Discord.
           </li>
           <li>
-            <strong className="text-gray-300">Stripe, Inc.</strong> — Payment processing.
+            <strong className="text-cs-text">Stripe, Inc.</strong> — Payment processing.
             The Licensor does not store payment card data. Stripe is PCI DSS Level 1 certified.
           </li>
           <li>
-            <strong className="text-gray-300">Anthropic, L.L.C.</strong> — AI auto-reply generation
+            <strong className="text-cs-text">Anthropic, L.L.C.</strong> — AI auto-reply generation
             (Premium, opt-in only). Subject to Anthropic's Usage Policies and API Terms.
           </li>
           <li>
-            <strong className="text-gray-300">Sentry (Functional Software, Inc.)</strong> — Error
+            <strong className="text-cs-text">Sentry (Functional Software, Inc.)</strong> — Error
             monitoring (optional, requires SENTRY_DSN configuration). Subject to Sentry's Privacy Policy.
           </li>
         </ul>
@@ -399,27 +399,27 @@ export default function EulaPage() {
 
       <S title="12. Service Availability and Support">
         <p>
-          <strong className="text-gray-300">12.1 Uptime.</strong>{" "}
+          <strong className="text-cs-text">12.1 Uptime.</strong>{" "}
           The Licensor will use commercially reasonable efforts to maintain the Service's availability.
           No specific uptime guarantee (SLA) is offered under the Free Tier. Premium subscribers
           may negotiate an SLA by contacting support.
         </p>
         <p>
-          <strong className="text-gray-300">12.2 Maintenance.</strong>{" "}
+          <strong className="text-cs-text">12.2 Maintenance.</strong>{" "}
           The Licensor may take the Service offline for scheduled maintenance. Where possible,
           maintenance windows will be announced via the Support Server in advance.
         </p>
         <p>
-          <strong className="text-gray-300">12.3 Support.</strong>{" "}
+          <strong className="text-cs-text">12.3 Support.</strong>{" "}
           Community support is available via the{" "}
           <a href={SUPPORT} target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">Support Server</a>.
+            className="text-cs-cyan hover:underline">Support Server</a>.
           Email support is available at{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
           Response times are provided on a best-effort basis and are not guaranteed.
         </p>
         <p>
-          <strong className="text-gray-300">12.4 Updates.</strong>{" "}
+          <strong className="text-cs-text">12.4 Updates.</strong>{" "}
           The Licensor may update, modify, or add to the Service at any time. Updates may include
           changes to features, APIs, or infrastructure. The Licensor will provide reasonable notice
           of material changes that adversely affect existing functionality.
@@ -447,21 +447,21 @@ export default function EulaPage() {
 
       <S title="14. Limitation of Liability">
         <p>
-          <strong className="text-gray-300">14.1 Exclusion of Indirect Damages.</strong>{" "}
+          <strong className="text-cs-text">14.1 Exclusion of Indirect Damages.</strong>{" "}
           TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR SHALL NOT BE LIABLE FOR
           ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR ANY LOSS
           OF PROFITS, REVENUE, DATA, GOODWILL, BUSINESS OPPORTUNITIES, OR ANTICIPATED SAVINGS,
           EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
         </p>
         <p>
-          <strong className="text-gray-300">14.2 Cap on Liability.</strong>{" "}
+          <strong className="text-cs-text">14.2 Cap on Liability.</strong>{" "}
           THE LICENSOR'S TOTAL CUMULATIVE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR
           RELATING TO THIS AGREEMENT SHALL NOT EXCEED THE GREATER OF: (a) THE TOTAL FEES YOU
           PAID TO THE LICENSOR IN THE 12 MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO
           THE CLAIM, OR (b) EUR 50.
         </p>
         <p>
-          <strong className="text-gray-300">14.3 Exceptions.</strong>{" "}
+          <strong className="text-cs-text">14.3 Exceptions.</strong>{" "}
           Nothing in this EULA excludes or limits the Licensor's liability for:
         </p>
         <ul>
@@ -470,7 +470,7 @@ export default function EulaPage() {
           <li>Any liability that cannot be excluded under applicable law.</li>
         </ul>
         <p>
-          <strong className="text-gray-300">14.4 Essential Basis.</strong>{" "}
+          <strong className="text-cs-text">14.4 Essential Basis.</strong>{" "}
           You acknowledge that the limitations in this Section 14 reflect a reasonable allocation
           of risk and form an essential basis of the bargain between you and the Licensor. Without
           these limitations, the Licensor would not be able to offer the Service at the current price.
@@ -502,20 +502,20 @@ export default function EulaPage() {
 
       <S title="16. Term and Termination">
         <p>
-          <strong className="text-gray-300">16.1 Term.</strong>{" "}
+          <strong className="text-cs-text">16.1 Term.</strong>{" "}
           This Agreement is effective from the Effective Date and continues until terminated in
           accordance with this Section.
         </p>
         <p>
-          <strong className="text-gray-300">16.2 Termination by You.</strong>{" "}
+          <strong className="text-cs-text">16.2 Termination by You.</strong>{" "}
           You may terminate this Agreement at any time by ceasing to use the Service. To request
           deletion of your account and associated data, contact{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
           If you have an active Premium subscription, cancellation takes effect at the end of the
           current billing period.
         </p>
         <p>
-          <strong className="text-gray-300">16.3 Termination by Licensor.</strong>{" "}
+          <strong className="text-cs-text">16.3 Termination by Licensor.</strong>{" "}
           The Licensor may suspend or terminate your access to the Service immediately and without
           prior notice if:
         </p>
@@ -527,7 +527,7 @@ export default function EulaPage() {
           <li>The Licensor discontinues the Service.</li>
         </ul>
         <p>
-          <strong className="text-gray-300">16.4 Effects of Termination.</strong>{" "}
+          <strong className="text-cs-text">16.4 Effects of Termination.</strong>{" "}
           Upon termination: (a) all licences granted hereunder cease immediately; (b) you must
           cease all use of the Service; (c) any outstanding payment obligations remain due;
           (d) User Content will be retained for 30 days following termination then deleted,
@@ -535,7 +535,7 @@ export default function EulaPage() {
           for 7 years.
         </p>
         <p>
-          <strong className="text-gray-300">16.5 Survival.</strong>{" "}
+          <strong className="text-cs-text">16.5 Survival.</strong>{" "}
           Sections 3, 4, 5, 9.3, 10, 13, 14, 15, 16.4, 17, 18, and 19 survive termination
           of this Agreement.
         </p>
@@ -553,25 +553,25 @@ export default function EulaPage() {
 
       <S title="18. Governing Law and Dispute Resolution">
         <p>
-          <strong className="text-gray-300">18.1 Governing Law.</strong>{" "}
+          <strong className="text-cs-text">18.1 Governing Law.</strong>{" "}
           This Agreement is governed by and construed in accordance with the laws of {COUNTRY},
           without regard to its conflict-of-laws provisions. The UN Convention on Contracts for
           the International Sale of Goods does not apply.
         </p>
         <p>
-          <strong className="text-gray-300">18.2 Informal Resolution.</strong>{" "}
+          <strong className="text-cs-text">18.2 Informal Resolution.</strong>{" "}
           Before initiating formal legal proceedings, you agree to contact the Licensor at{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>{" "}
           and attempt to resolve any dispute informally for at least 30 days.
         </p>
         <p>
-          <strong className="text-gray-300">18.3 Jurisdiction.</strong>{" "}
+          <strong className="text-cs-text">18.3 Jurisdiction.</strong>{" "}
           If informal resolution fails, disputes shall be subject to the exclusive jurisdiction
           of the courts of {COUNTRY}. Nothing in this section prevents either party from seeking
           emergency injunctive relief from any competent court.
         </p>
         <p>
-          <strong className="text-gray-300">18.4 EU Consumer Rights.</strong>{" "}
+          <strong className="text-cs-text">18.4 EU Consumer Rights.</strong>{" "}
           If you are a consumer in the EU, you may refer disputes to an alternative dispute
           resolution (ADR) body. The European Commission's Online Dispute Resolution platform
           was discontinued on 20 July 2025, so it is no longer available. Consumers in Bulgaria
@@ -579,64 +579,64 @@ export default function EulaPage() {
           (КЗП), and consumers elsewhere in the EU may use the European Consumer Centres Network
           (ECC-Net) at{" "}
           <a href="https://www.eccnet.eu/" target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">eccnet.eu</a>.
+            className="text-cs-cyan hover:underline">eccnet.eu</a>.
           EU consumer law rights are not affected by this Agreement.
         </p>
       </S>
 
       <S title="19. General Provisions">
         <p>
-          <strong className="text-gray-300">19.1 Entire Agreement.</strong>{" "}
+          <strong className="text-cs-text">19.1 Entire Agreement.</strong>{" "}
           This EULA, together with the Terms of Service, Privacy Policy, and Cookie Policy,
           constitutes the entire agreement between you and the Licensor regarding the Service
           and supersedes all prior and contemporaneous agreements, representations, and
           understandings.
         </p>
         <p>
-          <strong className="text-gray-300">19.2 Amendments.</strong>{" "}
+          <strong className="text-cs-text">19.2 Amendments.</strong>{" "}
           The Licensor may amend this EULA at any time. Material changes will be notified
           via the dashboard or Support Server at least 14 days before taking effect. Continued
           use of the Service after the effective date constitutes acceptance.
         </p>
         <p>
-          <strong className="text-gray-300">19.3 Severability.</strong>{" "}
+          <strong className="text-cs-text">19.3 Severability.</strong>{" "}
           If any provision of this Agreement is found invalid, illegal, or unenforceable,
           the remaining provisions shall continue in full force and effect. The invalid provision
           shall be replaced with a valid provision that most closely achieves the original intent.
         </p>
         <p>
-          <strong className="text-gray-300">19.4 Waiver.</strong>{" "}
+          <strong className="text-cs-text">19.4 Waiver.</strong>{" "}
           No waiver by the Licensor of any breach of this Agreement shall be deemed a waiver
           of any subsequent breach. Failure to enforce any right under this Agreement does not
           constitute a waiver of that right.
         </p>
         <p>
-          <strong className="text-gray-300">19.5 Assignment.</strong>{" "}
+          <strong className="text-cs-text">19.5 Assignment.</strong>{" "}
           You may not assign, transfer, or sublicense your rights under this Agreement without
           the Licensor's prior written consent. The Licensor may assign this Agreement in
           connection with a merger, acquisition, or sale of all or substantially all of its assets.
         </p>
         <p>
-          <strong className="text-gray-300">19.6 Force Majeure.</strong>{" "}
+          <strong className="text-cs-text">19.6 Force Majeure.</strong>{" "}
           The Licensor shall not be liable for any delay or failure to perform resulting from causes
           beyond its reasonable control, including acts of God, war, terrorism, labour disputes,
           government actions, Discord platform outages, or internet infrastructure failures.
         </p>
         <p>
-          <strong className="text-gray-300">19.7 No Agency.</strong>{" "}
+          <strong className="text-cs-text">19.7 No Agency.</strong>{" "}
           Nothing in this Agreement creates a partnership, joint venture, agency, franchise, or
           employment relationship between you and the Licensor.
         </p>
         <p>
-          <strong className="text-gray-300">19.8 Notices.</strong>{" "}
+          <strong className="text-cs-text">19.8 Notices.</strong>{" "}
           All notices under this Agreement shall be in writing. Notices to the Licensor shall be
           sent to{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
           The Licensor may send notices to you via the dashboard notification system, email
           registered with Stripe, or the Support Server.
         </p>
         <p>
-          <strong className="text-gray-300">19.9 Language.</strong>{" "}
+          <strong className="text-cs-text">19.9 Language.</strong>{" "}
           This Agreement is drafted in English. In the event of any conflict between the English
           version and any translated version, the English version shall prevail.
         </p>
@@ -647,10 +647,10 @@ export default function EulaPage() {
           For any questions about this EULA, or to report a violation, contact the Licensor:
         </p>
         <ul>
-          <li>Email: <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a></li>
-          <li>Support Server: <a href={SUPPORT} target="_blank" rel="noopener noreferrer" className="text-discord-400 hover:underline">{SUPPORT}</a></li>
+          <li>Email: <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a></li>
+          <li>Support Server: <a href={SUPPORT} target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">{SUPPORT}</a></li>
         </ul>
-        <p className="mt-4 text-xs text-gray-400">
+        <p className="mt-4 text-xs text-cs-muted">
           This EULA was last reviewed by the Licensor's legal team on 27 June 2026.
           It covers the {COMPANY} platform as deployed with Node.js, React, Discord.js v14,
           PostgreSQL, Redis, Stripe, and Anthropic integrations.
@@ -662,13 +662,13 @@ export default function EulaPage() {
 
 function LegalPage({ title, updated, children }) {
   return (
-    <div className="min-h-screen bg-dark-300 text-gray-300" role="main" id="main-content">
+    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="mb-2">
-          <a href="/" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">← Back to home</a>
+          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2 mt-4">{title}</h1>
-        <p className="text-gray-400 text-sm mb-12">Last updated: {updated}</p>
+        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">{title}</h1>
+        <p className="text-cs-muted text-sm mb-12">Last updated: {updated}</p>
         <div>{children}</div>
       </div>
     </div>
@@ -678,15 +678,15 @@ function LegalPage({ title, updated, children }) {
 function S({ title, children }) {
   return (
     <section className="mb-10">
-      <h2 className="text-base font-semibold text-white mb-3 pb-1 border-b border-white/5">{title}</h2>
-      <div className="text-sm text-gray-400 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-gray-400">
+      <h2 className="text-base font-semibold text-cs-text mb-3 pb-1 border-b border-white/5">{title}</h2>
+      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-cs-muted">
         {children}
       </div>
     </section>
   );
 }
 function Th({ children }) {
-  return <th className="text-left py-2 px-3 text-gray-400 font-semibold border-b border-white/5">{children}</th>;
+  return <th className="text-left py-2 px-3 text-cs-muted font-semibold border-b border-white/5">{children}</th>;
 }
 function Td({ children }) {
   return <td className="py-2 px-3 border-b border-white/5 align-top">{children}</td>;

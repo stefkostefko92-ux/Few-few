@@ -92,7 +92,7 @@ export default function StatusPage() {
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="cs-card !p-4">
                 <div className="text-xs text-cs-muted uppercase tracking-wider font-mono">Total Servers</div>
-                <div className="text-2xl font-black text-white mt-1">{data.stats.totalServers}</div>
+                <div className="text-2xl font-black text-cs-text mt-1">{data.stats.totalServers}</div>
               </div>
               <div className="cs-card !p-4">
                 <div className="text-xs text-cs-muted uppercase tracking-wider font-mono">Active (24h)</div>
@@ -158,7 +158,7 @@ function ServiceRow({ icon: Icon, name, description, status, latency }) {
       <div className="flex items-center gap-3 flex-1">
         <Icon className="w-5 h-5 text-cs-cyan flex-shrink-0" />
         <div>
-          <div className="text-white font-bold">{name}</div>
+          <div className="text-cs-text font-bold">{name}</div>
           <div className="text-xs text-cs-muted">{description}</div>
         </div>
       </div>

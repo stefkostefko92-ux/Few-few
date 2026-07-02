@@ -56,7 +56,7 @@ export function PremiumLockCard({ feature, description }) {
   return (
     <div className="cs-card border-amber-500/30 bg-amber-500/5 text-center py-10">
       <Lock className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-      <h3 className="text-white font-bold text-lg mb-2">Premium Feature</h3>
+      <h3 className="text-cs-text font-bold text-lg mb-2">Premium Feature</h3>
       <p className="text-cs-muted text-sm max-w-md mx-auto mb-4">
         {description || `${feature} is available with a Premium subscription.`}
       </p>

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Hash, Bot, Zap, RefreshCw } from "lucide-react";
+import { Save, Hash, Bot, Zap, RefreshCw, Star } from "lucide-react";
 import { getServer, updateServer } from "../api";
 
 export default function SettingsPage() {
@@ -56,7 +56,7 @@ export default function SettingsPage() {
     return (
       <div className="p-8 space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="card h-16 animate-pulse bg-dark-100" />
+          <div key={i} className="cs-card h-16 animate-pulse bg-cs-panel" />
         ))}
       </div>
     );
@@ -97,22 +97,22 @@ export default function SettingsPage() {
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Server Settings</h1>
-        <p className="text-gray-400 text-sm mt-1">Configure bot behaviour for this server</p>
+        <h1 className="text-2xl font-bold text-cs-text">Server Settings</h1>
+        <p className="text-cs-muted text-sm mt-1">Configure bot behaviour for this server</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* ── General ─────────────────────────────────────────────────── */}
-        <div className="card space-y-4">
-          <h2 className="font-semibold text-white">General</h2>
+        <div className="cs-card space-y-4">
+          <h2 className="font-semibold text-cs-text">General</h2>
 
           <label className="block">
-            <span className="label">Log Channel ID</span>
+            <span className="cs-label">Log Channel ID</span>
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
               <input
-                className="input pl-9"
+                className="cs-input pl-9"
                 placeholder="Discord channel ID for bot activity logs"
                 value={form.logChannelId}
                 onChange={(e) => set("logChannelId", e.target.value)}
@@ -121,11 +121,11 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="label">Archive Channel ID</span>
+            <span className="cs-label">Archive Channel ID</span>
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
               <input
-                className="input pl-9"
+                className="cs-input pl-9"
                 placeholder="Channel where ticket transcripts are posted on close"
                 value={form.archiveChannelId}
                 onChange={(e) => set("archiveChannelId", e.target.value)}
@@ -137,14 +137,14 @@ export default function SettingsPage() {
         {/* ── AI Auto-Replies (Premium) ─────────────────────────────── */}
         <div
           aria-disabled={!isPremium}
-          className={`card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
+          className={`cs-card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-400" />
-              <h2 className="font-semibold text-white">AI Auto-Replies</h2>
+              <h2 className="font-semibold text-cs-text">AI Auto-Replies</h2>
             </div>
-            {!isPremium && <span className="badge-base text-xs">⭐ Premium Only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -156,16 +156,16 @@ export default function SettingsPage() {
               disabled={!isPremium}
               tabIndex={isPremium ? undefined : -1}
             />
-            <span className="text-sm text-gray-300">
+            <span className="text-sm text-cs-text">
               Send an AI-generated initial response when a ticket is opened
             </span>
           </label>
 
           {form.aiRepliesEnabled && (
             <label className="block">
-              <span className="label">Custom System Prompt (optional)</span>
+              <span className="cs-label">Custom System Prompt (optional)</span>
               <textarea
-                className="input text-sm"
+                className="cs-input text-sm"
                 rows={4}
                 maxLength={1000}
                 placeholder={`Leave blank to use the default prompt.\n\nExample: "You are a support agent for Acme Corp. Always ask for the user's order number first."`}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
                 disabled={!isPremium}
                 tabIndex={isPremium ? undefined : -1}
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-cs-muted mt-1">
                 {form.aiRepliesPrompt.length}/1000 characters
               </p>
             </label>
@@ -184,14 +184,14 @@ export default function SettingsPage() {
         {/* ── Round-Robin Assignment (Premium) ─────────────────────── */}
         <div
           aria-disabled={!isPremium}
-          className={`card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
+          className={`cs-card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <RefreshCw className="w-5 h-5 text-blue-400" />
-              <h2 className="font-semibold text-white">Round-Robin Assignment</h2>
+              <h2 className="font-semibold text-cs-text">Round-Robin Assignment</h2>
             </div>
-            {!isPremium && <span className="badge-base text-xs">⭐ Premium Only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -203,18 +203,18 @@ export default function SettingsPage() {
               disabled={!isPremium}
               tabIndex={isPremium ? undefined : -1}
             />
-            <span className="text-sm text-gray-300">
+            <span className="text-sm text-cs-text">
               Automatically assign new tickets to staff members in rotation
             </span>
           </label>
 
           {form.roundRobinEnabled && (
             <label className="block">
-              <span className="label">Support Role ID</span>
+              <span className="cs-label">Support Role ID</span>
               <div className="relative">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
                 <input
-                  className="input pl-9"
+                  className="cs-input pl-9"
                   placeholder="Discord role ID — members of this role will receive tickets"
                   value={form.roundRobinRoleId}
                   onChange={(e) => set("roundRobinRoleId", e.target.value)}
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                   tabIndex={isPremium ? undefined : -1}
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-cs-muted mt-1">
                 The bot must have permission to view members of this role.
               </p>
             </label>
@@ -232,20 +232,20 @@ export default function SettingsPage() {
         {/* ── White-label Bot (Premium) ─────────────────────────────── */}
         <div
           aria-disabled={!isPremium}
-          className={`card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
+          className={`cs-card space-y-4 ${!isPremium ? "opacity-50 pointer-events-none" : ""}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-purple-400" />
-              <h2 className="font-semibold text-white">White-label Bot</h2>
+              <h2 className="font-semibold text-cs-text">White-label Bot</h2>
             </div>
-            {!isPremium && <span className="badge-base text-xs">⭐ Premium Only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium Only</span>}
           </div>
 
           <label className="block">
-            <span className="label">Custom Bot Name</span>
+            <span className="cs-label">Custom Bot Name</span>
             <input
-              className="input"
+              className="cs-input"
               placeholder="My Awesome Bot"
               value={form.customBotName}
               onChange={(e) => set("customBotName", e.target.value)}
@@ -255,9 +255,9 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="label">Custom Bot Avatar URL</span>
+            <span className="cs-label">Custom Bot Avatar URL</span>
             <input
-              className="input"
+              className="cs-input"
               placeholder="https://example.com/avatar.png"
               value={form.customBotAvatar}
               onChange={(e) => set("customBotAvatar", e.target.value)}
@@ -267,9 +267,9 @@ export default function SettingsPage() {
           </label>
 
           <label className="block">
-            <span className="label">Custom Bot Token</span>
+            <span className="cs-label">Custom Bot Token</span>
             <input
-              className="input font-mono text-sm"
+              className="cs-input font-mono text-sm"
               type="password"
               placeholder="Paste new token to update (leave blank to keep existing)"
               value={form.customBotToken}
@@ -278,7 +278,7 @@ export default function SettingsPage() {
               disabled={!isPremium}
               tabIndex={isPremium ? undefined : -1}
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-cs-muted mt-1">
               ⚠️ Token is stored securely server-side. The name and avatar update
               immediately — full white-label token support requires a dedicated bot instance.
             </p>
@@ -287,7 +287,7 @@ export default function SettingsPage() {
 
         {/* ─── v1.6 Welcomer + Autorole (appy.bot parity) ─── */}
         <div className="cs-card space-y-4">
-          <h2 className="cs-heading font-display font-bold text-white text-xl flex items-center gap-2">
+          <h2 className="cs-heading font-display font-bold text-cs-text text-xl flex items-center gap-2">
             👋 Welcomer &amp; Autorole
           </h2>
           <p className="text-sm text-cs-muted">
@@ -365,19 +365,19 @@ export default function SettingsPage() {
         </div>
 
         {mutation.isError && (
-          <p role="alert" className="text-red-400 text-sm">
+          <p role="alert" className="text-danger text-sm">
             {mutation.error?.response?.data?.error || "Failed to save settings"}
           </p>
         )}
 
         {mutation.isSuccess && (
-          <p role="status" className="text-green-400 text-sm">Settings saved successfully</p>
+          <p role="status" className="text-success text-sm">Settings saved successfully</p>
         )}
 
         <div className="flex justify-end">
           <button
             type="submit"
-            className="btn-primary flex items-center gap-2"
+            className="cs-btn-primary flex items-center gap-2"
             disabled={mutation.isPending}
           >
             <Save className="w-4 h-4" />

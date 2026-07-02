@@ -29,7 +29,7 @@ export default function NotFoundPage() {
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-xl text-center">
           <AlertCircle className="w-16 h-16 text-cs-cyan mx-auto mb-6" />
-          <h1 className="text-5xl font-display font-black text-white mb-4">
+          <h1 className="text-5xl font-display font-black text-cs-text mb-4">
             404
           </h1>
           <h2 className="text-xl font-semibold text-cs-text mb-3">

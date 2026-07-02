@@ -44,22 +44,22 @@ export default function ServerHome() {
       <div className="p-8">
         {/* Header skeleton */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-dark-100 animate-pulse" />
+          <div className="w-16 h-16 rounded-full bg-cs-panel animate-pulse" />
           <div className="space-y-2">
-            <div className="h-7 w-48 bg-dark-100 rounded animate-pulse" />
-            <div className="h-4 w-32 bg-dark-100 rounded animate-pulse" />
+            <div className="h-7 w-48 bg-cs-panel rounded animate-pulse" />
+            <div className="h-4 w-32 bg-cs-panel rounded animate-pulse" />
           </div>
         </div>
         {/* Stats skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card h-20 animate-pulse bg-dark-100" />
+            <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />
           ))}
         </div>
         {/* Nav cards skeleton */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="card h-20 animate-pulse bg-dark-100" />
+            <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />
           ))}
         </div>
       </div>
@@ -70,13 +70,13 @@ export default function ServerHome() {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-64 text-center" role="alert">
         <Bot className="w-10 h-10 text-cs-cyan mb-3" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-white mb-2">Bot not set up for this server</h2>
+        <h2 className="text-lg font-semibold text-cs-text mb-2">Bot not set up for this server</h2>
         <p className="text-cs-muted text-sm">The bot hasn't been added to this server yet, or hasn't synced.</p>
         <a
           href={`https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=8&scope=bot+applications.commands&guild_id=${serverId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-primary mt-4 inline-flex items-center gap-2"
+          className="cs-btn-primary mt-4 inline-flex items-center gap-2"
         >
           Invite Bot to Server
         </a>
@@ -91,15 +91,15 @@ export default function ServerHome() {
         {server?.icon ? (
           <img src={server.icon} alt={server.name} className="w-16 h-16 rounded-full" />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-discord-500/20 flex items-center justify-center">
-            <span className="text-2xl font-bold text-discord-400">{server?.name?.[0]}</span>
+          <div className="w-16 h-16 rounded-full bg-cs-cyan/20 flex items-center justify-center">
+            <span className="text-2xl font-bold text-cs-cyan">{server?.name?.[0]}</span>
           </div>
         )}
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">{server?.name}</h1>
+            <h1 className="text-2xl font-bold text-cs-text">{server?.name}</h1>
             {server?.isPremium && (
-              <span className="badge-premium">
+              <span className="cs-badge-premium">
                 <Star className="w-3 h-3" aria-hidden="true" /> Premium
               </span>
             )}
@@ -112,7 +112,7 @@ export default function ServerHome() {
       {statsLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card h-20 animate-pulse bg-dark-100" />
+            <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />
           ))}
         </div>
       ) : stats ? (
@@ -125,20 +125,20 @@ export default function ServerHome() {
       ) : null}
 
       {/* Navigation cards */}
-      <h2 className="text-lg font-semibold text-white mb-4">Manage this server</h2>
+      <h2 className="text-lg font-semibold text-cs-text mb-4">Manage this server</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {navCards.map((card) => (
           <Link
             key={card.to}
             to={card.to}
-            className="card hover:border-white/10 hover:bg-dark-100 transition-all flex items-start gap-4"
+            className="cs-card hover:border-white/10 hover:bg-cs-panel transition-all flex items-start gap-4"
           >
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${card.color}`} aria-hidden="true">
               {card.icon}
             </div>
             <div>
-              <h3 className="font-semibold text-white">{card.label}</h3>
-              <p className="text-sm text-gray-400 mt-0.5">{card.desc}</p>
+              <h3 className="font-semibold text-cs-text">{card.label}</h3>
+              <p className="text-sm text-cs-muted mt-0.5">{card.desc}</p>
             </div>
           </Link>
         ))}

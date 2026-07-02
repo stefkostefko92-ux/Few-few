@@ -58,7 +58,7 @@ export default function TrialBanner() {
           <div className="flex items-center gap-3 flex-1">
             <Star className="w-5 h-5 text-amber-400 fill-current flex-shrink-0" />
             <div>
-              <div className="text-sm text-white font-bold">
+              <div className="text-sm text-cs-text font-bold">
                 Try Premium free for 14 days
               </div>
               <div className="text-xs text-cs-muted">
@@ -101,7 +101,7 @@ export default function TrialBanner() {
               ? <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
               : <Clock className="w-4 h-4 text-cs-cyan flex-shrink-0" />}
             <div className="text-sm">
-              <span className="text-white font-bold">
+              <span className="text-cs-text font-bold">
                 {urgent ? "Trial ending soon: " : "Premium trial active: "}
               </span>
               <span className={urgent ? "text-amber-300" : "text-cs-muted"}>
@@ -123,7 +123,7 @@ export default function TrialBanner() {
             <button
               onClick={() => setConfirmCancel(true)}
               disabled={cancelMut.isPending}
-              className="px-3 py-1 rounded-full bg-transparent border border-cs-border text-cs-muted hover:text-red-400 hover:border-red-500/50 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40"
+              className="px-3 py-1 rounded-full bg-transparent border border-cs-border text-cs-muted hover:text-danger hover:border-red-500/50 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40"
               title="End trial early"
             >
               {cancelMut.isPending ? "Cancelling…" : "Cancel Trial"}
@@ -142,7 +142,7 @@ export default function TrialBanner() {
           onCancel={() => setConfirmCancel(false)}
         />
         {cancelError && (
-          <p role="alert" className="max-w-7xl mx-auto mt-2 text-xs text-red-400">{cancelError}</p>
+          <p role="alert" className="max-w-7xl mx-auto mt-2 text-xs text-danger">{cancelError}</p>
         )}
       </div>
     );
@@ -154,9 +154,9 @@ export default function TrialBanner() {
       <div className="bg-red-500/10 border-b border-red-500/30 px-4 py-2">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3 flex-1">
-            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-danger flex-shrink-0" />
             <div className="text-sm">
-              <span className="text-white font-bold">Your Premium trial has ended.</span>
+              <span className="text-cs-text font-bold">Your Premium trial has ended.</span>
               <span className="text-cs-muted ml-2">Premium features are now locked.</span>
             </div>
           </div>

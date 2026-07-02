@@ -15,8 +15,8 @@ export default function PrivacyPage() {
         path="/privacy"
       />
 
-      <div className="bg-discord-500/10 border border-discord-500/20 rounded-lg p-4 mb-8 text-sm text-gray-300">
-        <strong className="text-white">Summary:</strong> We collect only the data necessary to run the
+      <div className="bg-cs-cyan/10 border border-cs-cyan/20 rounded-lg p-4 mb-8 text-sm text-cs-text">
+        <strong className="text-cs-text">Summary:</strong> We collect only the data necessary to run the
         Service. We do not sell your data. We do not serve ads. We use Discord, Stripe, and optionally
         Anthropic to provide our features. You can request deletion of your data at any time.
       </div>
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           Contact for data protection matters:{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>
         </p>
         <p>
           Where we process personal data of your Discord server members on your behalf (e.g.,
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
                 <Th>Retention</Th>
               </tr>
             </thead>
-            <tbody className="text-gray-400">
+            <tbody className="text-cs-muted">
               <Tr>
                 <Td>Identity</Td>
                 <Td>Discord user ID, username, avatar hash, discriminator</Td>
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
                 <Th>Safeguards</Th>
               </tr>
             </thead>
-            <tbody className="text-gray-400">
+            <tbody className="text-cs-muted">
               <Tr>
                 <Td>Hetzner Online GmbH</Td>
                 <Td>Infrastructure hosting; database; backups</Td>
@@ -247,7 +247,7 @@ export default function PrivacyPage() {
                 <Th>What it means</Th>
               </tr>
             </thead>
-            <tbody className="text-gray-400">
+            <tbody className="text-cs-muted">
               <Tr>
                 <Td>Access</Td>
                 <Td>Art. 15</Td>
@@ -293,7 +293,7 @@ export default function PrivacyPage() {
         </div>
         <p className="mt-3">
           To exercise any right, contact us at{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
           We will respond within <strong>30 days</strong> as required by Article 12 GDPR.
           We may need to verify your identity before processing your request.
         </p>
@@ -314,7 +314,7 @@ export default function PrivacyPage() {
           infringement. A list of supervisory authorities is available at:{" "}
           <a href="https://edpb.europa.eu/about-edpb/about-edpb/members_en"
             target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">
+            className="text-cs-cyan hover:underline">
             edpb.europa.eu
           </a>.
         </p>
@@ -341,7 +341,7 @@ export default function PrivacyPage() {
           data from children under 13. If we become aware that we have collected data from a
           child under 13 without parental consent, we will delete it promptly. If you believe
           we have collected such data, contact us at{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
         </p>
         <p>
           In the EU, processing of children's data for online services is lawful only where the
@@ -378,7 +378,7 @@ export default function PrivacyPage() {
       <S title="12. Cookies">
         <p>
           We use cookies. For full details, see our{" "}
-          <a href="/cookies" className="text-discord-400 hover:underline">Cookie Policy</a>.
+          <a href="/cookies" className="text-cs-cyan hover:underline">Cookie Policy</a>.
           In summary, we use only one strictly necessary session cookie. We do not use advertising
           or tracking cookies.
         </p>
@@ -404,8 +404,8 @@ export default function PrivacyPage() {
           our Data Protection contact:
         </p>
         <ul>
-          <li>Email: <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a></li>
-          <li>Support: <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="text-discord-400 hover:underline">Support Server</a></li>
+          <li>Email: <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a></li>
+          <li>Support: <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">Support Server</a></li>
         </ul>
         <p>
           We aim to respond to all data subject requests within 30 days. For complex requests,
@@ -418,13 +418,13 @@ export default function PrivacyPage() {
 
 function LegalPage({ title, updated, children }) {
   return (
-    <div className="min-h-screen bg-dark-300 text-gray-300" role="main" id="main-content">
+    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="mb-2">
-          <a href="/" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">← Back to home</a>
+          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2 mt-4">{title}</h1>
-        <p className="text-gray-400 text-sm mb-12">Last updated: {updated}</p>
+        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">{title}</h1>
+        <p className="text-cs-muted text-sm mb-12">Last updated: {updated}</p>
         <div>{children}</div>
       </div>
     </div>
@@ -434,15 +434,15 @@ function LegalPage({ title, updated, children }) {
 function S({ title, children }) {
   return (
     <section className="mb-10">
-      <h2 className="text-base font-semibold text-white mb-3 pb-1 border-b border-white/5">{title}</h2>
-      <div className="text-sm text-gray-400 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-gray-400">
+      <h2 className="text-base font-semibold text-cs-text mb-3 pb-1 border-b border-white/5">{title}</h2>
+      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-cs-muted">
         {children}
       </div>
     </section>
   );
 }
 function Th({ children }) {
-  return <th className="text-left py-2 px-3 text-gray-400 font-semibold border-b border-white/5">{children}</th>;
+  return <th className="text-left py-2 px-3 text-cs-muted font-semibold border-b border-white/5">{children}</th>;
 }
 function Td({ children }) {
   return <td className="py-2 px-3 border-b border-white/5 align-top">{children}</td>;

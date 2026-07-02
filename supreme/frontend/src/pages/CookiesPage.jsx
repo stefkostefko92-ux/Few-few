@@ -14,8 +14,8 @@ export default function CookiesPage() {
         path="/cookies"
       />
 
-      <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-8 text-sm text-gray-300">
-        <strong className="text-white">Short version:</strong> We use exactly <strong>one cookie</strong>,
+      <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-8 text-sm text-cs-text">
+        <strong className="text-cs-text">Short version:</strong> We use exactly <strong>one cookie</strong>,
         which is strictly necessary for login to work. We do not use advertising cookies, tracking
         cookies, or analytics cookies. We show a consent banner and remember your choice in your
         browser's local storage (a single strictly-necessary entry) so we don't ask again.
@@ -49,9 +49,9 @@ export default function CookiesPage() {
                 <Th>Legal basis</Th>
               </tr>
             </thead>
-            <tbody className="text-gray-400">
+            <tbody className="text-cs-muted">
               <Tr>
-                <Td><code className="bg-dark-100 px-1 rounded">sid</code></Td>
+                <Td><code className="bg-cs-panel px-1 rounded">sid</code></Td>
                 <Td>Strictly necessary, HTTP-only, Secure</Td>
                 <Td>{COMPANY} (first-party)</Td>
                 <Td>
@@ -99,7 +99,7 @@ export default function CookiesPage() {
         </p>
         <p>
           Your choice is stored in your browser's <strong>local storage</strong> under the key{" "}
-          <code className="bg-dark-100 px-1 rounded text-xs">supreme-bot-cookie-consent</code> so
+          <code className="bg-cs-panel px-1 rounded text-xs">supreme-bot-cookie-consent</code> so
           that we do not ask again on every visit. This entry is itself strictly necessary (it
           records your consent decision), stays on your device, is never transmitted to our
           servers, and reappears if we materially change this policy.
@@ -121,7 +121,7 @@ export default function CookiesPage() {
                 <Th>Cookies set?</Th>
               </tr>
             </thead>
-            <tbody className="text-gray-400">
+            <tbody className="text-cs-muted">
               <Tr>
                 <Td>Discord CDN (avatar images)</Td>
                 <Td>Discord, Inc.</Td>
@@ -155,7 +155,7 @@ export default function CookiesPage() {
         <p>
           We use <strong>localStorage</strong> (persistent browser storage) for exactly one
           strictly-necessary purpose: the key{" "}
-          <code className="bg-dark-100 px-1 rounded text-xs">supreme-bot-cookie-consent</code>{" "}
+          <code className="bg-cs-panel px-1 rounded text-xs">supreme-bot-cookie-consent</code>{" "}
           described in section 3, which records your cookie-consent choice so the banner is not
           shown on every visit. It stores only your consent decision, a version number, and a
           timestamp — no personal data — and is never sent to our servers. We do not use
@@ -166,32 +166,32 @@ export default function CookiesPage() {
       <S title="6. How to Control and Delete Cookies">
         <p>
           You can control cookies through your browser settings. Note that deleting the
-          session cookie (<code className="bg-dark-100 px-1 rounded text-xs">sid</code>) will
+          session cookie (<code className="bg-cs-panel px-1 rounded text-xs">sid</code>) will
           log you out of the Service.
         </p>
         <p>Browser cookie management guides:</p>
         <ul>
           <li>
             <a href="https://support.google.com/chrome/answer/95647" target="_blank"
-              rel="noopener noreferrer" className="text-discord-400 hover:underline">
+              rel="noopener noreferrer" className="text-cs-cyan hover:underline">
               Google Chrome
             </a>
           </li>
           <li>
             <a href="https://support.mozilla.org/kb/enhanced-tracking-protection-firefox-desktop"
-              target="_blank" rel="noopener noreferrer" className="text-discord-400 hover:underline">
+              target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">
               Mozilla Firefox
             </a>
           </li>
           <li>
             <a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac"
-              target="_blank" rel="noopener noreferrer" className="text-discord-400 hover:underline">
+              target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">
               Safari (macOS)
             </a>
           </li>
           <li>
             <a href="https://support.microsoft.com/en-us/windows/delete-and-manage-cookies"
-              target="_blank" rel="noopener noreferrer" className="text-discord-400 hover:underline">
+              target="_blank" rel="noopener noreferrer" className="text-cs-cyan hover:underline">
               Microsoft Edge
             </a>
           </li>
@@ -222,10 +222,10 @@ export default function CookiesPage() {
       <S title="9. Contact">
         <p>
           For questions about our use of cookies, contact us at{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>{" "}
           or via our{" "}
           <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">Support Server</a>.
+            className="text-cs-cyan hover:underline">Support Server</a>.
         </p>
       </S>
     </LegalPage>
@@ -234,13 +234,13 @@ export default function CookiesPage() {
 
 function LegalPage({ title, updated, children }) {
   return (
-    <div className="min-h-screen bg-dark-300 text-gray-300" role="main" id="main-content">
+    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="mb-2">
-          <a href="/" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">← Back to home</a>
+          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2 mt-4">{title}</h1>
-        <p className="text-gray-400 text-sm mb-12">Last updated: {updated}</p>
+        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">{title}</h1>
+        <p className="text-cs-muted text-sm mb-12">Last updated: {updated}</p>
         <div>{children}</div>
       </div>
     </div>
@@ -250,15 +250,15 @@ function LegalPage({ title, updated, children }) {
 function S({ title, children }) {
   return (
     <section className="mb-10">
-      <h2 className="text-base font-semibold text-white mb-3 pb-1 border-b border-white/5">{title}</h2>
-      <div className="text-sm text-gray-400 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-gray-400">
+      <h2 className="text-base font-semibold text-cs-text mb-3 pb-1 border-b border-white/5">{title}</h2>
+      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-cs-muted">
         {children}
       </div>
     </section>
   );
 }
 function Th({ children }) {
-  return <th className="text-left py-2 px-3 text-gray-400 font-semibold border-b border-white/5">{children}</th>;
+  return <th className="text-left py-2 px-3 text-cs-muted font-semibold border-b border-white/5">{children}</th>;
 }
 function Td({ children }) {
   return <td className="py-2 px-3 border-b border-white/5 align-top">{children}</td>;

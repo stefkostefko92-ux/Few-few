@@ -60,7 +60,7 @@ export default function TermsPage() {
         </ul>
         <p>
           The Free Tier and Premium Tier features are described on the{" "}
-          <a href="/pricing" className="text-discord-400 hover:underline">Pricing page</a>.
+          <a href="/pricing" className="text-cs-cyan hover:underline">Pricing page</a>.
           Feature availability may change with reasonable prior notice.
         </p>
       </S>
@@ -140,7 +140,7 @@ export default function TermsPage() {
         </p>
         <p>
           To withdraw, email{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>{" "}
           with an unequivocal statement, or use the model withdrawal form:{" "}
           <em>“I hereby give notice that I withdraw from my contract for the Supreme Bot Premium
           subscription, ordered on [date], account/server [id]. Name, address, date.”</em>
@@ -168,7 +168,7 @@ export default function TermsPage() {
           described below.
         </p>
 
-        <h3 className="text-sm font-semibold text-white mt-5 mb-2">7.1 Notices and content moderation (Digital Services Act)</h3>
+        <h3 className="text-sm font-semibold text-cs-text mt-5 mb-2">7.1 Notices and content moderation (Digital Services Act)</h3>
         <p>
           As a hosting service under Regulation (EU) 2022/2065 (the Digital Services Act), we
           operate a notice-and-action mechanism:
@@ -177,7 +177,7 @@ export default function TermsPage() {
           <li>
             <strong>Report illegal or infringing content</strong> — anyone may notify us of content
             they consider illegal by emailing{" "}
-            <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+            <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>{" "}
             with the location (e.g. a link or transcript reference) and an explanation. We
             acknowledge notices and act in a timely, diligent and non-arbitrary manner.
           </li>
@@ -189,18 +189,18 @@ export default function TermsPage() {
           <li>
             <strong>Appeal</strong> — if you believe a moderation decision was wrong, you may
             challenge it within 6 months by replying to our statement of reasons or emailing{" "}
-            <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>.
+            <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>.
             Appeals are reviewed by a person (not solely automated means), and we will reverse a
             decision that proves unfounded.
           </li>
           <li>
             <strong>Point of contact</strong> — for users and authorities, our single point of
             contact under Articles 11–12 DSA is{" "}
-            <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>,
+            <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>,
             in English or Bulgarian.
           </li>
         </ul>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-cs-muted">
           As a micro/small enterprise we are exempt from certain DSA obligations (e.g. Articles 15
           and 19 transparency reporting), but the notice-and-action, statement-of-reasons and
           point-of-contact duties above still apply.
@@ -217,9 +217,9 @@ export default function TermsPage() {
         </p>
         <p>
           By using the Service, you agree to our{" "}
-          <a href="/privacy" className="text-discord-400 hover:underline">Privacy Policy</a>{" "}
+          <a href="/privacy" className="text-cs-cyan hover:underline">Privacy Policy</a>{" "}
           and{" "}
-          <a href="/cookies" className="text-discord-400 hover:underline">Cookie Policy</a>.
+          <a href="/cookies" className="text-cs-cyan hover:underline">Cookie Policy</a>.
           If you are a data controller processing data of EU/EEA data subjects via our Service,
           you are responsible for ensuring you have a lawful basis for that processing and for
           complying with the GDPR. Upon request, we will provide a Data Processing Agreement (DPA).
@@ -344,7 +344,7 @@ export default function TermsPage() {
           conciliation commissions of the Commission for Consumer Protection (КЗП); consumers
           elsewhere in the EU may use the European Consumer Centres Network (ECC-Net) at{" "}
           <a href="https://www.eccnet.eu/" target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">
+            className="text-cs-cyan hover:underline">
             eccnet.eu
           </a>.
         </p>
@@ -385,10 +385,10 @@ export default function TermsPage() {
       <S title="18. Contact">
         <p>
           For questions, complaints, or requests regarding these Terms, contact us at{" "}
-          <a href={`mailto:${EMAIL}`} className="text-discord-400 hover:underline">{EMAIL}</a>{" "}
+          <a href={`mailto:${EMAIL}`} className="text-cs-cyan hover:underline">{EMAIL}</a>{" "}
           or via our{" "}
           <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer"
-            className="text-discord-400 hover:underline">Support Server</a>.
+            className="text-cs-cyan hover:underline">Support Server</a>.
         </p>
       </S>
     </LegalPage>
@@ -397,13 +397,13 @@ export default function TermsPage() {
 
 function LegalPage({ title, updated, children }) {
   return (
-    <div className="min-h-screen bg-dark-300 text-gray-300" role="main" id="main-content">
+    <div className="min-h-screen bg-cs-bg text-cs-text" role="main" id="main-content">
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="mb-2">
-          <a href="/" className="text-sm text-gray-400 hover:text-gray-300 transition-colors">← Back to home</a>
+          <a href="/" className="text-sm text-cs-muted hover:text-cs-text transition-colors">← Back to home</a>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2 mt-4">{title}</h1>
-        <p className="text-gray-400 text-sm mb-12">Last updated: {updated}</p>
+        <h1 className="text-3xl font-bold text-cs-text mb-2 mt-4">{title}</h1>
+        <p className="text-cs-muted text-sm mb-12">Last updated: {updated}</p>
         <div className="space-y-0">{children}</div>
       </div>
     </div>
@@ -413,8 +413,8 @@ function LegalPage({ title, updated, children }) {
 function S({ title, children }) {
   return (
     <section className="mb-8">
-      <h2 className="text-base font-semibold text-white mb-3 mt-6">{title}</h2>
-      <div className="text-sm text-gray-400 leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-gray-400">
+      <h2 className="text-base font-semibold text-cs-text mb-3 mt-6">{title}</h2>
+      <div className="text-sm text-cs-muted leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:space-y-1 [&_ul]:my-2 [&_ul]:text-cs-muted">
         {children}
       </div>
     </section>

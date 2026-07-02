@@ -53,7 +53,7 @@ export default function ApiKeysPage() {
     <div className="p-8 max-w-4xl">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="cs-heading font-display font-bold text-white text-3xl flex items-center gap-2">
+          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
             <Key className="w-7 h-7 text-cs-cyan" /> API Keys
           </h1>
           <p className="text-cs-muted mt-2 max-w-2xl">
@@ -70,9 +70,9 @@ export default function ApiKeysPage() {
       {newlyCreated && (
         <div className="cs-card mb-6 border-2 border-green-500/50 bg-green-500/10" role="status">
           <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-6 h-6 text-green-400 flex-shrink-0" aria-hidden="true" />
+            <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0" aria-hidden="true" />
             <div className="flex-1">
-              <h2 className="text-white font-bold">Key created: {newlyCreated.name}</h2>
+              <h2 className="text-cs-text font-bold">Key created: {newlyCreated.name}</h2>
               <p className="text-xs text-amber-400 mt-1 mb-3">
                 ⚠️ {newlyCreated.warning}
               </p>
@@ -159,10 +159,10 @@ export default function ApiKeysPage() {
           <div key={k.id} className="cs-card flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-white font-bold">{k.name}</span>
+                <span className="text-cs-text font-bold">{k.name}</span>
                 {k.expiresAt && new Date(k.expiresAt) < new Date()
-                  ? <span className="cs-badge text-red-400">Expired</span>
-                  : <span className="cs-badge text-green-400">Active</span>}
+                  ? <span className="cs-badge text-danger">Expired</span>
+                  : <span className="cs-badge text-success">Active</span>}
               </div>
               <code className="text-xs font-mono text-cs-dim">{k.keyPrefix}…</code>
               <div className="flex items-center gap-4 text-xs text-cs-muted mt-1 flex-wrap">
@@ -173,7 +173,7 @@ export default function ApiKeysPage() {
             </div>
             <button
               onClick={() => setConfirmRevoke(k)}
-              className="text-red-400 hover:text-red-300 p-2"
+              className="text-danger hover:text-red-300 p-2"
               aria-label={`Revoke API key ${k.name}`}
               title="Revoke key"
             >
@@ -185,7 +185,7 @@ export default function ApiKeysPage() {
 
       {/* ═══ API docs teaser ═══ */}
       <div className="cs-card mt-8 bg-cs-surface">
-        <h2 className="text-white font-bold mb-2">Quick start</h2>
+        <h2 className="text-cs-text font-bold mb-2">Quick start</h2>
         <pre className="text-xs font-mono bg-cs-black p-3 rounded overflow-x-auto text-cs-cyan">{`curl ${window.location.origin}/public/v1/tickets \\
   -H "Authorization: Bearer bpk_live_..."`}</pre>
         <p className="text-xs text-cs-dim mt-2">Rate limit: 300 req/min per key.</p>

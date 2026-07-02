@@ -87,7 +87,7 @@ function ServerCard({ server, onActivate, inviteUrl }) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-cs-text truncate">{server.name}</span>
             {server.isPremium && (
-              <span className="badge-premium">
+              <span className="cs-badge-premium">
                 <Star className="w-3 h-3" aria-hidden="true" /> Premium
               </span>
             )}
@@ -106,7 +106,7 @@ function ServerCard({ server, onActivate, inviteUrl }) {
         <div className="flex items-center gap-2 flex-wrap">
           <p className="font-semibold text-cs-text truncate">{server.name}</p>
           {server.isPremium && (
-            <span className="badge-premium">
+            <span className="cs-badge-premium">
               <Star className="w-3 h-3" aria-hidden="true" /> Premium
             </span>
           )}

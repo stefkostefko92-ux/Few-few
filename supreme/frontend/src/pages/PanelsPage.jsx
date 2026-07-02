@@ -11,7 +11,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 
 const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
 const STYLE_COLORS = {
-  PRIMARY: "bg-discord-500",
+  PRIMARY: "bg-cs-cyan",
   SECONDARY: "bg-gray-500",
   SUCCESS: "bg-green-600",
   DANGER: "bg-red-600",
@@ -187,10 +187,10 @@ export default function PanelsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Panels</h1>
-          <p className="text-gray-400 text-sm mt-1">Create visual button panels for ticket creation</p>
+          <h1 className="text-2xl font-bold text-cs-text">Panels</h1>
+          <p className="text-cs-muted text-sm mt-1">Create visual button panels for ticket creation</p>
         </div>
-        <button onClick={openNew} className="btn-primary flex items-center gap-2">
+        <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> New Panel
         </button>
       </div>
@@ -199,24 +199,24 @@ export default function PanelsPage() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="card h-20 animate-pulse bg-dark-100" />
+            <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />
           ))}
         </div>
       ) : panels.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-gray-400 mb-4">No panels yet</p>
-          <button onClick={openNew} className="btn-primary">Create First Panel</button>
+        <div className="cs-card text-center py-12">
+          <p className="text-cs-muted mb-4">No panels yet</p>
+          <button onClick={openNew} className="cs-btn-primary">Create First Panel</button>
         </div>
       ) : (
         <div className="space-y-4">
           {panels.map((panel) => (
-            <div key={panel.id} className="card">
+            <div key={panel.id} className="cs-card">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-4 h-4 rounded-sm flex-shrink-0" style={{ background: panel.color }} />
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-white truncate">{panel.name}</h3>
-                    <p className="text-sm text-gray-400 truncate">{panel.title}</p>
+                    <h3 className="font-semibold text-cs-text truncate">{panel.name}</h3>
+                    <p className="text-sm text-cs-muted truncate">{panel.title}</p>
                   </div>
                 </div>
 
@@ -224,7 +224,7 @@ export default function PanelsPage() {
                   {/* Button previews */}
                   <div className="hidden sm:flex gap-1">
                     {panel.buttons.map((b) => (
-                      <span key={b.id} className={`text-xs text-white px-2 py-0.5 rounded ${STYLE_COLORS[b.style] || "bg-gray-600"}`}>
+                      <span key={b.id} className={`text-xs text-cs-text px-2 py-0.5 rounded ${STYLE_COLORS[b.style] || "bg-gray-600"}`}>
                         {b.emoji} {b.label}
                       </span>
                     ))}
@@ -235,12 +235,12 @@ export default function PanelsPage() {
                     <input
                       placeholder="Channel ID"
                       aria-label="Channel ID to post panel in"
-                      className="input text-xs w-28 py-1"
+                      className="cs-input text-xs w-28 py-1"
                       value={spawnInputs[panel.id] || ""}
                       onChange={(e) => setSpawnInputs((s) => ({ ...s, [panel.id]: e.target.value }))}
                     />
                     <button
-                      className="btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
+                      className="cs-btn-primary py-1 px-2 text-xs flex items-center gap-1 disabled:opacity-40"
                       disabled={!spawnInputs[panel.id] || spawnMut.isPending}
                       onClick={() => spawnMut.mutate({ panelId: panel.id, channelId: spawnInputs[panel.id] })}
                     >
@@ -252,7 +252,7 @@ export default function PanelsPage() {
                     aria-label="Edit panel"
                     title="Edit panel"
                     onClick={() => openEdit(panel)}
-                    className="text-gray-400 hover:text-white transition-colors p-1"
+                    className="text-cs-muted hover:text-white transition-colors p-1"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -270,7 +270,7 @@ export default function PanelsPage() {
                   <button
                     aria-label="Delete panel"
                     title="Delete panel"
-                    className="text-red-400 hover:text-red-300 transition-colors p-1"
+                    className="text-danger hover:text-red-300 transition-colors p-1"
                     onClick={() => setConfirmState({
                       title: "Delete panel",
                       message: `Delete panel "${panel.name}"?`,
@@ -283,7 +283,7 @@ export default function PanelsPage() {
               </div>
 
               {panel.channelId && (
-                <p className="text-xs text-green-400 mt-2">✅ Active in channel <code className="text-xs">{panel.channelId}</code></p>
+                <p className="text-xs text-success mt-2">✅ Active in channel <code className="text-xs">{panel.channelId}</code></p>
               )}
             </div>
           ))}
@@ -291,7 +291,7 @@ export default function PanelsPage() {
       )}
 
       {deleteMut.isError && (
-        <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg z-50">
+        <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50">
           ❌ {deleteMut.error?.response?.data?.error || "Failed to delete panel"}
         </div>
       )}
@@ -306,46 +306,46 @@ export default function PanelsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="label">Internal Name *</span>
-                  <input className="input" required value={form.name}
+                  <span className="cs-label">Internal Name *</span>
+                  <input className="cs-input" required value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     placeholder="Support Panel" />
                 </label>
                 <label className="block">
-                  <span className="label">Embed Color</span>
-                  <input type="color" className="input h-10 cursor-pointer" value={form.color}
+                  <span className="cs-label">Embed Color</span>
+                  <input type="color" className="cs-input h-10 cursor-pointer" value={form.color}
                     onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} />
                 </label>
               </div>
 
               <label className="block">
-                <span className="label">Embed Title *</span>
-                <input className="input" required value={form.title}
+                <span className="cs-label">Embed Title *</span>
+                <input className="cs-input" required value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="🎫 Support Tickets" />
               </label>
 
               <label className="block">
-                <span className="label">Embed Description</span>
-                <textarea className="input" rows={2} value={form.description}
+                <span className="cs-label">Embed Description</span>
+                <textarea className="cs-input" rows={2} value={form.description}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder="Click a button below to open a ticket." />
               </label>
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
-                  <span className="label">Ticket Naming Template</span>
-                  <input className="input" value={form.namingTemplate}
+                  <span className="cs-label">Ticket Naming Template</span>
+                  <input className="cs-input" value={form.namingTemplate}
                     onChange={(e) => setForm((f) => ({ ...f, namingTemplate: e.target.value }))}
                     placeholder="ticket-{username}" />
-                  <p className="text-xs text-gray-400 mt-1">{"Variables: {username}, {id}, {count}"}</p>
+                  <p className="text-xs text-cs-muted mt-1">{"Variables: {username}, {id}, {count}"}</p>
                 </label>
                 <label className="block">
-                  <span className="label">Max Open Tickets / User</span>
-                  <input type="number" className="input" min={1} max={10}
+                  <span className="cs-label">Max Open Tickets / User</span>
+                  <input type="number" className="cs-input" min={1} max={10}
                     value={form.maxOpenPerUser}
                     onChange={(e) => setForm((f) => ({ ...f, maxOpenPerUser: Number(e.target.value) }))} />
-                  <p className="text-xs text-gray-400 mt-1">How many open tickets one user can have</p>
+                  <p className="text-xs text-cs-muted mt-1">How many open tickets one user can have</p>
                 </label>
               </div>
 
@@ -550,26 +550,26 @@ export default function PanelsPage() {
               {/* Buttons */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="label">Buttons ({form.buttons.length}/5)</span>
+                  <span className="cs-label">Buttons ({form.buttons.length}/5)</span>
                   <button type="button" onClick={addButton}
                     disabled={form.buttons.length >= 5}
-                    className="text-discord-400 hover:text-discord-300 text-sm transition-colors disabled:opacity-40">
+                    className="text-cs-cyan hover:text-cs-cyan text-sm transition-colors disabled:opacity-40">
                     + Add Button
                   </button>
                 </div>
                 <div className="space-y-2">
                   {form.buttons.map((btn, i) => (
-                    <div key={i} className="bg-dark-300 rounded-lg p-3 space-y-2">
+                    <div key={i} className="bg-cs-bg rounded-lg p-3 space-y-2">
                       <div className="flex gap-2 flex-wrap items-center">
-                        <input className="input w-16 py-1 text-sm" value={btn.emoji}
+                        <input className="cs-input w-16 py-1 text-sm" value={btn.emoji}
                           aria-label={`Button ${i + 1} emoji`}
                           onChange={(e) => updateButton(i, "emoji", e.target.value)}
                           placeholder="🎫" />
-                        <input className="input flex-1 min-w-[100px] py-1 text-sm" value={btn.label}
+                        <input className="cs-input flex-1 min-w-[100px] py-1 text-sm" value={btn.label}
                           aria-label={`Button ${i + 1} label`}
                           onChange={(e) => updateButton(i, "label", e.target.value)}
                           placeholder="Button Label" required />
-                        <select className="input py-1 text-sm w-28" value={btn.style}
+                        <select className="cs-input py-1 text-sm w-28" value={btn.style}
                           aria-label={`Button ${i + 1} style`}
                           onChange={(e) => updateButton(i, "style", e.target.value)}>
                           {BUTTON_STYLES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -578,16 +578,16 @@ export default function PanelsPage() {
                           <button type="button" onClick={() => removeButton(i)}
                             aria-label={`Remove button ${i + 1}`}
                             title="Remove button"
-                            className="text-red-400 hover:text-red-300 transition-colors">
+                            className="text-danger hover:text-red-300 transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
                       <div className="flex gap-2 items-center">
-                        <label className="text-xs text-gray-400 whitespace-nowrap" htmlFor={`button-action-${i}`}>Action:</label>
+                        <label className="text-xs text-cs-muted whitespace-nowrap" htmlFor={`button-action-${i}`}>Action:</label>
                         <select
                           id={`button-action-${i}`}
-                          className="input py-1 text-sm flex-1"
+                          className="cs-input py-1 text-sm flex-1"
                           value={btn.formId || ""}
                           onChange={(e) => updateButton(i, "formId", e.target.value)}
                         >
@@ -614,14 +614,14 @@ export default function PanelsPage() {
               </div>
 
               {mutError && (
-                <p className="text-red-400 text-sm">
+                <p className="text-danger text-sm">
                   ❌ {mutError?.response?.data?.error || "Operation failed"}
                 </p>
               )}
 
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setEditing(null)} className="btn-ghost">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={isPending}>
+                <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">Cancel</button>
+                <button type="submit" className="cs-btn-primary" disabled={isPending}>
                   {isPending ? "Saving…" : editing === "new" ? "Create Panel" : "Save Changes"}
                 </button>
               </div>
