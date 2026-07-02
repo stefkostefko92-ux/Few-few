@@ -68,13 +68,14 @@ export function WarView({ title }: { title: string }) {
 
             <TableCenter>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <PlayingCard card={state.table[opp] ?? "?"} size="lg" />
+                {/* keyed by card+pile so each flip remounts → deal-in animation */}
+                <PlayingCard key={`${state.table[opp] ?? "?"}-${pileLen}`} card={state.table[opp] ?? "?"} size="lg" />
                 {pileLen > 2 ? (
                   <span className="aso-announce" style={{ position: "static", transform: "none" }}>
                     {t("war.battle")} · {pileLen}
                   </span>
                 ) : null}
-                <PlayingCard card={state.table[seat] ?? "?"} size="lg" />
+                <PlayingCard key={`${state.table[seat] ?? "?"}-${pileLen}`} card={state.table[seat] ?? "?"} size="lg" />
               </div>
             </TableCenter>
 

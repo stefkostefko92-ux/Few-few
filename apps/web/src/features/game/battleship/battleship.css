@@ -30,9 +30,23 @@
 }
 .bs-cell--miss {
   color: rgba(180, 210, 230, 0.6);
+  animation: bs-miss 240ms ease-out;
 }
 .bs-cell--hit {
   color: var(--suit-red);
   background: radial-gradient(circle, rgba(194, 54, 47, 0.4), transparent 70%);
   text-shadow: 0 0 8px var(--loss);
+  animation: bs-hit 340ms var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15));
+}
+@keyframes bs-hit {
+  0% {
+    transform: scale(1.5);
+    background: rgba(194, 54, 47, 0.7);
+  }
+}
+@keyframes bs-miss {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
 }

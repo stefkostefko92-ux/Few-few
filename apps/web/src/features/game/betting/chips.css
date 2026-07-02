@@ -59,6 +59,24 @@
   font-weight: 700;
   color: var(--brass-100);
 }
+.pot__amount--bump {
+  display: inline-block;
+  animation: pot-bump 220ms var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15));
+}
+@keyframes pot-bump {
+  35% {
+    transform: scale(1.12);
+  }
+}
+.chip {
+  animation: chip-drop 180ms ease-out backwards;
+}
+@keyframes chip-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
 
 /* Betting-game regulatory notice (§11.4). */
 .betting-notice {

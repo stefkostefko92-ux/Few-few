@@ -117,7 +117,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cine__grain,
-  .cine--enter {
+  .cine--enter,
+  .cine--warm .cine__spot {
     animation: none;
   }
 }

@@ -22,7 +22,8 @@ export function Pot({ amount, label }: { amount: number; label: string }) {
   return (
     <div className="pot">
       <ChipStack amount={amount} />
-      <span className="pot__amount tnum">
+      {/* keyed by amount so every pot change replays the bump */}
+      <span key={amount} className="pot__amount pot__amount--bump tnum">
         {label}: {amount.toLocaleString(i18n.language)}
       </span>
     </div>

@@ -26,6 +26,7 @@ import {
   type Object3D,
   PerspectiveCamera,
   PlaneGeometry,
+  Quaternion,
   RepeatWrapping,
   Scene,
   SRGBColorSpace,
@@ -532,7 +533,7 @@ export class MagnatScene {
             d.rotation.y += (to.y - d.rotation.y) * k;
             d.rotation.z += (to.z - d.rotation.z) * k;
           }
-          d.position.y = 0.55 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.5 * (1 - t);
+          d.position.y = 0.61 + Math.abs(Math.sin(t * Math.PI * 3)) * 0.5 * (1 - t);
         });
       }
     }
@@ -760,7 +761,15 @@ export class MagnatScene {
 
   /** Spin both dice and settle them on the rolled values. */
   private rollDice(values: [number, number]): void {
-    const to: [Euler, Euler] = [faceUp(values[0]), faceUp(values[1])];
+    // yaw each settled cube differently so three faces show (axis-aligned
+    // cubes read as flat "domino" strips from the 3/4 camera)
+    const yawed = (v: number, yaw: number): Euler => {
+      const q = new Quaternion()
+        .setFromEuler(faceUp(v))
+        .premultiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), yaw));
+      return new Euler().setFromQuaternion(q);
+    };
+    const to: [Euler, Euler] = [yawed(values[0], 0.45), yawed(values[1], -0.32)];
     if (this.reduceMotion || this.dice.length < 2) {
       this.dice.forEach((d, n) => d.rotation.copy(to[n]!));
       this.diceAnim = null;
@@ -943,7 +952,8 @@ export class MagnatScene {
       for (let n = 0; n < 2; n++) {
         const mats = order.map((f) => new MeshStandardMaterial({ map: faces[f], roughness: 0.45, metalness: 0.05 }));
         const die = new Mesh(new BoxGeometry(1.1, 1.1, 1.1), mats);
-        die.position.set(n === 0 ? -1.5 : 1.5, 0.55, 2.6);
+        // 0.61 = plaque plane (0.06) + half die — at 0.55 the plaque sliced the die bottoms
+        die.position.set(n === 0 ? -1.5 : 1.5, 0.61, 2.6);
         die.castShadow = true;
         this.scene.add(die);
         this.dice.push(die);

@@ -46,6 +46,8 @@
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    /* clamp infinite loops (grain/flicker) — 0.001ms × infinite still churns paint */
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
 }

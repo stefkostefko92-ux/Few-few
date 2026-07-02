@@ -27,6 +27,7 @@ import {
   type BufferGeometry,
 } from "three";
 import { contactShadow, disposeObject, easeInOut, woodNormal, woodTexture } from "../gl/helpers.js";
+import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
 import { parseFen, type Orientation } from "./types.js";
 
@@ -134,12 +135,17 @@ export class ChessScene {
 
     this.scene.add(this.pieceLayer, this.hiLayer);
     this.build();
+    const params = defaultGfxParams();
+    // 1.35/0.06 (portal-wide tuning): marble pieces + light squares under the
+    // 1.95 key cross the default 1.3 threshold and halo.
+    params.bloom = { enabled: params.bloom.enabled, strength: 0.06, radius: 0.45, threshold: 1.35 };
     this.core = new RenderCore({
       canvas,
       scene: this.scene,
       camera: this.camera,
       width,
       ratio: SCENE_RATIO,
+      params,
       onFrame: (now) => this.frame(now),
     });
   }

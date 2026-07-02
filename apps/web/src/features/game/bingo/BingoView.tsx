@@ -48,11 +48,11 @@ export function BingoView({ title }: { title: string }) {
         <div className="bingo-layout">
           {/* The draw display. */}
           <div className="bingo-drum">
-            <div className="bingo-ball">{last ?? "—"}</div>
+            <div key={last ?? "-"} className="bingo-ball">{last ?? "—"}</div>
             <p className="mt-2 text-sm text-ink-300">{t("bingo.drawn", { n: state.drawn.length })}</p>
             <div className="bingo-recent">
-              {state.drawn.slice(-8).reverse().map((n, i) => (
-                <span key={i} className="bingo-recent-ball">{n}</span>
+              {state.drawn.slice(-8).reverse().map((n) => (
+                <span key={n} className="bingo-recent-ball">{n}</span>
               ))}
             </div>
             {canDraw ? (

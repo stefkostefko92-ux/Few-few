@@ -94,7 +94,9 @@ export function DominoView({ title }: { title: string }) {
             {state.line.length === 0 ? (
               <span className="text-sm text-ink-muted">{t("domino.empty")}</span>
             ) : (
-              state.line.map((tile, i) => <DominoTile key={`${tile}-${i}`} tile={tile} />)
+              // key by the tile itself (dominoes are unique) — an index key made a
+              // left-end play shift every key and re-animate the whole line
+              state.line.map((tile) => <DominoTile key={tile} tile={tile} />)
             )}
           </div>
 

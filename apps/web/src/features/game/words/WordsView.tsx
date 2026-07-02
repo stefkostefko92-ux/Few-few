@@ -40,7 +40,10 @@ export function WordsView({ title }: { title: string }) {
             {state.lives.map((lives, s) => (
               <div key={s} className={cn("words-player", s === state.turn && "words-player--active")}>
                 <span>{players.find((p) => p.seat === s)?.displayName ?? `#${s}`}</span>
-                <span className="words-lives">{"♥".repeat(Math.max(0, lives))}</span>
+                {/* keyed by count: losing a life replays the shake */}
+                <span key={lives} className={cn("words-lives", lives < 2 && "aso-shake")}>
+                  {"♥".repeat(Math.max(0, lives))}
+                </span>
               </div>
             ))}
           </div>

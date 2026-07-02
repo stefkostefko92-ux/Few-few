@@ -30,7 +30,11 @@ export function BattleshipView({ title }: { title: string }) {
   const { banners } = useGameAnnouncements({
     matchId: m.matchId,
     toBanner: (ev) => {
-      if (ev.type === "FIRE" && ev.hit) return ev.seat === seat ? { text: t("fx.fireHit"), tone: "win" } : { text: t("fx.fireHitYou"), tone: "loss" };
+      if (ev.type === "FIRE" && ev.hit) {
+        // the hit cue rides the server event — at fire() time the result isn't known yet
+        if (ev.seat === seat) playCue("win");
+        return ev.seat === seat ? { text: t("fx.fireHit"), tone: "win" } : { text: t("fx.fireHitYou"), tone: "loss" };
+      }
       return null;
     },
   });
@@ -47,7 +51,7 @@ export function BattleshipView({ title }: { title: string }) {
 
   function fire(cell: number) {
     if (!myTurn || !fireable.has(cell)) return;
-    playCue(myHits.has(cell) ? "win" : "flip");
+    playCue("flip");
     m.send({ type: "FIRE", cell });
   }
 

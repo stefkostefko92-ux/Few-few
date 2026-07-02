@@ -94,6 +94,13 @@
   text-align: center;
   border-bottom: 1px solid rgba(217, 178, 95, 0.08);
 }
+/* long player names shrink to an ellipsis instead of a hard slice ("АСО Бо") */
+.dice-table th {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .dice-table td:first-child,
 .dice-table th:first-child {
   text-align: left;
