@@ -258,7 +258,11 @@ export class LudoScene {
       }
     }
 
-    // track + home tiles
+    // track + home tiles, each set in a near-black bezel: a slightly wider,
+    // slightly shorter box under the tile shows as a dark outline ring from
+    // the play camera — every square reads individually framed.
+    const bezelGeo = new BoxGeometry(0.98, 0.15, 0.98);
+    const bezelMat = new MeshStandardMaterial({ color: new Color("#17130e"), roughness: 0.85, metalness: 0.05 });
     for (let row = 0; row < N; row++) {
       for (let col = 0; col < N; col++) {
         const k = `${col},${row}`;
@@ -268,10 +272,13 @@ export class LudoScene {
         else if (startCell.has(k)) mat = homeMat(startCell.get(k)!);
         else if (trackSet.has(k)) mat = trackMat;
         if (!mat) continue;
+        const bezel = new Mesh(bezelGeo, bezelMat);
+        bezel.position.set(gx(col), 0.235, gz(row));
+        bezel.receiveShadow = true;
         const tile = new Mesh(tileGeo, mat);
         tile.position.set(gx(col), 0.24, gz(row));
         tile.receiveShadow = true;
-        this.scene.add(tile);
+        this.scene.add(bezel, tile);
       }
     }
 
