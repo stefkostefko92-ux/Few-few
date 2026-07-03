@@ -1,6 +1,6 @@
 // АВТО-ГЕНЕРИРАН от tools/docs/collect-claude-md.mjs — не редактирай ръчно.
 window.__DOCS__ = {
-  "generated": "2026-07-02",
+  "generated": "2026-07-03",
   "files": [
     {
       "path": "CLAUDE.md",
