@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1→v5.0), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-02",
+    "updated": "2026-07-03",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1038,6 +1038,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „GAME_EVENTS и GAME_STATE пристигат в един tick: React флъшва setState (MessageChannel ma…“ (+7 още)"
+        },
+        {
           "date": "2026-07-02",
           "type": "learning",
           "summary": "Научи: „Threat-model за публичните ни ендпойнти: съществуват автономни AI-пентест MCP фреймуърц…\""
@@ -1704,6 +1709,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „Сантасе с 24 карти (с деветки): разменя се ДЕВЕТКАТА на коза, не Валето (Валето е Schnap…“ (+5 още)"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
@@ -2966,6 +2976,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „Термините на игрите са част от правилата: Сантасе обявява \"20\"/\"40\" (не \"Белот\"/\"Коз бел…“ (+1 още)"
+        },
+        {
           "date": "2026-07-02",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „Правилото 'формален Lei/vous' важи само за гражданско/медицинско UI (medqr, zabobovdol)…\" (+2)"
@@ -4221,6 +4236,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „Build-from-source Dockerfile на pnpm workspace: COPY-вай package.json на ВСЯКА workspace…“ (+3 още)"
+        },
+        {
           "date": "2026-07-02",
           "type": "learning",
           "summary": "Научи: „Приеми автоматизиран AI-driven recon срещу инфраструктурата ни (фреймуърци като HexStri…\""
@@ -4865,6 +4885,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „WebGPU TSL GTAONode рендерира в RedFormat таргет: семплирането дава vec4(ao,0,0,1) и сур…“ (+5 още)"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
@@ -6104,6 +6129,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „Мек старт на магазина: GET /shop/catalog връща billingEnabled=stripeEnabled(); клиентът…“"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
@@ -7776,6 +7806,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-03",
+          "type": "learning",
+          "summary": "Научи: „Език на карточното движение: играната карта лети ~300ms back.out(1.2) с ±14° ротация от…“ (+3 още)"
+        },
         {
           "date": "2026-07-02",
           "type": "learning",
