@@ -110,7 +110,9 @@ function sleepMs(ms) {
   Atomics.wait(sab, 0, 0, ms);
 }
 
-const MAX_EVOLUTION = 80;
+// Без таван на timeline-а: цялата еволюция на ученето се пази (агентите нямат
+// лимит на това, което научават — виж bumpVersion + curate MAX_PER_SECTION).
+const MAX_EVOLUTION = Infinity;
 function cmpVer(a, b) {
   const pa = String(a).split(".").map((n) => parseInt(n, 10) || 0);
   const pb = String(b).split(".").map((n) => parseInt(n, 10) || 0);
@@ -123,14 +125,14 @@ function latestVersion(a) {
   return best;
 }
 // Схема „учене ролва в major": всеки 10 проверени поуки = +1 major.
-// minor е цифра 0–9; 10-ото учене ролва в следващ major (6.9 → 7.0 → … → 10.0).
-// Капва на 10.0 = максимална зрялост (целта). 10 учения = +1.0.
+// minor е цифра 0–9; 10-ото учене ролва в следващ major (6.9 → 7.0 → …).
+// БЕЗ таван — ученето е неограничено: 10.0 → 10.1 → … → 11.0 → … нагоре без край.
+// Зрелостта расте вечно, защото знанието на агентите няма лимит.
 function bumpVersion(v) {
   const p = String(v).split(".").map((n) => parseInt(n, 10) || 0);
   let maj = p[0] || 0;
   let min = (p[1] || 0) + 1;
   if (min > 9) { maj += 1; min = 0; }
-  if (maj > 10 || (maj === 10 && min > 0)) { maj = 10; min = 0; } // таван 10.0
   return `${maj}.${min}.0`;
 }
 
