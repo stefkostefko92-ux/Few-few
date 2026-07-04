@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span class="logo">⚔️</span>
+    <h1 data-i18n="extName">Tanoth Master Bot</h1>
+  </header>
+
+  <div id="no-game" class="banner hidden" data-i18n="popupNoGame">
+    Open Tanoth in a tab to control the bot.
+  </div>
+
+  <section class="status-card">
+    <div class="status-row">
+      <span class="dot" id="dot"></span>
+      <span id="status-text" data-i18n="uiIdle">Idle</span>
+    </div>
+    <div class="char" id="char"></div>
+    <div class="license" id="license"></div>
+  </section>
+
+  <div class="controls">
+    <button id="btn-start" class="btn start" data-i18n="uiStart">Start</button>
+    <button id="btn-pause" class="btn pause" data-i18n="uiPause">Pause</button>
+    <button id="btn-stop" class="btn stop" data-i18n="uiStop">Stop</button>
+  </div>
+
+  <section id="subscribe" class="subscribe hidden">
+    <p class="warn" data-i18n="legalBanWarning"></p>
+    <div class="plans">
+      <button id="pay-monthly" class="btn pay">€<span id="price-m">4</span> / <span data-i18n="uiMonth">month</span></button>
+      <button id="pay-lifetime" class="btn pay alt">€<span id="price-l">20</span> <span data-i18n="uiLifetime">lifetime</span></button>
+    </div>
+    <div class="pay-note" data-i18n="uiRevolutNote">Pay via Revolut, then paste your key below</div>
+    <label class="consent"><input type="checkbox" id="consent"> <span data-i18n="legalConsent"></span></label>
+    <input id="key" class="key" data-i18n-ph="uiKeyPlaceholder" placeholder="License key">
+    <button id="btn-activate" class="btn activate" data-i18n="uiActivate">Activate</button>
+    <div id="pay-msg" class="pay-msg"></div>
+    <div class="legal"><span id="merchant"></span> · <a id="open-terms" data-i18n="legalTerms"></a> · <a id="open-privacy" data-i18n="legalPrivacy"></a></div>
+  </section>
+
+  <section class="stats" id="stats"></section>
+
+  <footer>
+    <a id="open-options" data-i18n="uiOptions">Settings</a>
+    <a id="open-stats" data-i18n="uiStats">Stats</a>
+    <a id="show-panel" data-i18n="popupShowPanel">Show panel</a>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+// Runs in the page context. Reads window.flashvars.sessionID and posts XML-RPC
+// calls to <world>/xmlrpc, and exposes a replay bridge to the content script.
+(function () {
+  'use strict';
+
+  const SRC_PAGE = 'tanoth-bot-inject';
+  const SRC_CONTENT = 'tanoth-bot-content';
+
+  // Re-entry guard. After an extension reload the old page-world instance
+  // survives; a second copy would execute every XML-RPC request twice (the
+  // bridge dedupes responses, but the fetch side effects would both fire).
+  // The old instance keeps serving the new content script, so just re-announce.
+  if (window.__tanothBotInjected) {
+    window.postMessage({ source: SRC_PAGE, type: 'inject-ready' }, location.origin);
+    return;
+  }
+  window.__tanothBotInjected = true;
+
+  const ctx = {
+    url: null,            // resolved /xmlrpc gateway
+    sessionId: null,      // flashvars.sessionID (or sniffed)
+    methods: {}           // learned methodName -> last param template (xml)
+  };
+
+  /* --------------------------- context discovery -------------------------- */
+
+  function deriveGatewayFromLocation() {
+    const href = location.href;
+    if (href.includes('/main/client')) return href.split('#')[0].split('?')[0].replace('/main/client', '/xmlrpc');
+    return location.origin + '/xmlrpc';
+  }
+
+  function readSession() {
+    try {
+      if (window.flashvars && window.flashvars.sessionID) return String(window.flashvars.sessionID);
+    } catch (_) {}
+    return ctx.sessionId; // possibly sniffed earlier
+  }
+
+  function refreshContext() {
+    const before = JSON.stringify({ u: ctx.url, s: !!ctx.sessionId });
+    if (!ctx.url) ctx.url = deriveGatewayFromLocation();
+    const sid = readSession();
+    if (sid) ctx.sessionId = sid;
+    if (JSON.stringify({ u: ctx.url, s: !!ctx.sessionId }) !== before) postContext();
+  }
+
+  function postContext() {
+    post({
+      type: 'context',
+      payload: { url: ctx.url, hasSession: !!ctx.sessionId, methods: Object.keys(ctx.methods) }
+    });
+  }
+
+  /* ------------------------------ XML-RPC -------------------------------- */
+
+  function escapeXml(s) {
+    return String(s).replace(/[<>&'"]/g, (c) =>
+      ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
+  }
+
+  // params: array of { type: 'string'|'int'|'i4'|'double'|'boolean', value }
+  function buildMethodCall(method, params) {
+    const sid = readSession();
+    const all = [{ type: 'string', value: sid != null ? sid : '' }].concat(params || []);
+    const body = all.map((p) => {
+      const t = p.type === 'int' ? 'i4' : p.type;
+      return `<param><value><${t}>${escapeXml(p.value)}</${t}></value></param>`;
+    }).join('');
+    return `<?xml version="1.0"?><methodCall><methodName>${method}</methodName><params>${body}</params></methodCall>`;
+  }
+
+  async function callXmlRpc(method, params) {
+    refreshContext();
+    if (!ctx.url) throw new Error('NO_GATEWAY');
+    if (!ctx.sessionId) throw new Error('NO_SESSION');
+    const xml = buildMethodCall(method, params);
+    const resp = await origFetch(ctx.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml' },
+      credentials: 'include',
+      body: xml
+    });
+    const text = await resp.text();
+    if (!resp.ok) throw new Error('HTTP_' + resp.status);
+    return { status: resp.status, xml: sanitizeXml(text) };
+  }
+
+  function sanitizeXml(s) {
+    // Strip control chars that break DOMParser (matches the reference client).
+    return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F]/g, '');
+  }
+
+  /* ------------------------------ sniffing ------------------------------- */
+
+  function observe(url, body) {
+    try {
+      if (typeof body !== 'string') return;
+      const m = body.match(/<methodName>\s*([\w.:_]+)\s*<\/methodName>/);
+      if (!m) return;
+      const method = m[1];
+      ctx.methods[method] = true;
+      if (!ctx.url && /xmlrpc/i.test(url)) ctx.url = url.split('#')[0];
+      if (!ctx.sessionId) {
+        // First string param of a methodCall is the session id. Capture only
+        // token-safe chars so XML entities can't end up double-escaped later.
+        const sm = body.match(/<params>\s*<param>\s*<value>\s*<string>([\w-]+)<\/string>/);
+        if (sm) ctx.sessionId = sm[1];
+      }
+      postContext();
+    } catch (_) {}
+  }
+
+  const origFetch = window.fetch;
+  window.fetch = function (input, init) {
+    try {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      const body = init && init.body;
+      if (/xmlrpc/i.test(url)) observe(url, typeof body === 'string' ? body : null);
+    } catch (_) {}
+    return origFetch.apply(this, arguments);
+  };
+
+  // Patch the prototype methods (observe only). Subclassing / replacing the
+  // constructor would lose XMLHttpRequest's static constants and break the
+  // game's own `instanceof XMLHttpRequest` checks, so we don't do that.
+  const xhrProto = window.XMLHttpRequest.prototype;
+  const origOpen = xhrProto.open;
+  const origSend = xhrProto.send;
+  xhrProto.open = function (method, url) { this.__tbUrl = url; return origOpen.apply(this, arguments); };
+  xhrProto.send = function (body) {
+    try { if (/xmlrpc/i.test(this.__tbUrl || '')) observe(this.__tbUrl, typeof body === 'string' ? body : null); } catch (_) {}
+    return origSend.apply(this, arguments);
+  };
+
+  /* ------------------------------- bridge -------------------------------- */
+
+  function post(message) {
+    window.postMessage(Object.assign({ source: SRC_PAGE }, message), location.origin);
+  }
+
+  window.addEventListener('message', async (ev) => {
+    if (ev.source !== window) return;
+    if (ev.origin !== location.origin) return;   // only same-origin page messages
+    const m = ev.data;
+    if (!m || m.source !== SRC_CONTENT) return;
+
+    if (m.type === 'xmlrpc') {
+      try {
+        const result = await callXmlRpc(m.method, m.params);
+        post({ type: 'xmlrpc-response', id: m.id, ok: true, result });
+      } catch (e) {
+        post({ type: 'xmlrpc-response', id: m.id, ok: false, error: String(e && e.message || e) });
+      }
+    } else if (m.type === 'get-context') {
+      refreshContext();
+      postContext();
+    }
+  });
+
+  // Announce readiness FIRST so the content bridge marks the channel ready
+  // before any context (which can trigger auto-start) arrives.
+  post({ type: 'inject-ready' });
+
+  // Keep trying to read flashvars - it may be set slightly after load.
+  refreshContext();
+  let tries = 0;
+  const iv = setInterval(() => {
+    refreshContext();
+    if ((ctx.sessionId && ctx.url) || ++tries > 40) clearInterval(iv);
+  }, 500);
+})();

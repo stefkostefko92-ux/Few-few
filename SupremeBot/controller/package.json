@@ -1,0 +1,19 @@
+{
+  "name": "tanoth-bot-controller",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted multi-account controller for Tanoth Master Bot",
+  "bin": { "tanoth-controller": "controller.mjs" },
+  "scripts": {
+    "setup": "node controller.mjs setup",
+    "run": "node controller.mjs run",
+    "dry": "node controller.mjs run --dry-run",
+    "list": "node controller.mjs list",
+    "postinstall": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0"
+  },
+  "engines": { "node": ">=18" }
+}
