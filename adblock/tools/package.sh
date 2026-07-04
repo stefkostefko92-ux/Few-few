@@ -4,8 +4,9 @@
 # can never be left out of the package by mistake.
 set -euo pipefail
 
-root="$(git rev-parse --show-toplevel)"
-cd "$root"
+# Base is the extension folder (this script lives in <ext>/tools/), so the build
+# lands in <ext>/dist/ even inside a monorepo.
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 mkdir -p dist
 ver="$(node -p "require('./package.json').version" 2>/dev/null || echo dev)"
 out="dist/the-best-ads-block-$ver.zip"
