@@ -397,4 +397,17 @@ await test('map with endless encounters does NOT starve training/autosell', asyn
   assert.ok(e.count('sellItem') > 0, 'autosell was NOT starved by map');
 });
 
+await test('fixed actionIntervalSec paces actions (programmable Next action)', async () => {
+  const e = freshEngine({
+    settings: { general: { enabled: true, humanize: true, actionIntervalSec: 10 }, adventures: { enabled: false } }
+  });
+  let acted = 0;
+  e.TB.Scheduler.register({ id: 'counter', priority: 99, tick: () => async () => { acted++; } });
+  e.TB.Scheduler.start();
+  await e.advance(65000);
+  // ~10s spacing over 65s -> a handful of actions, nowhere near the spam rate.
+  assert.ok(acted >= 4 && acted <= 9, `paced ~10s apart, got ${acted}`);
+  assert.ok(e.TB.Scheduler.status().nextAt > e.nowMs(), 'nextAt exposed for the panel countdown');
+});
+
 console.log(`\n${pass} engine checks passed.`);
