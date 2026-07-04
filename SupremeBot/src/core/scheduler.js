@@ -17,6 +17,7 @@
   let nextBreakAt = 0;
   let currentAction = null;
   let lastAction = null;     // id of the most recent module that acted
+  let nextAt = 0;            // epoch ms of the next scheduler evaluation
 
   const statusListeners = new Set();
 
@@ -40,6 +41,7 @@
         onBreak: Date.now() < onBreakUntil,
         currentAction,
         lastAction,
+        nextAt,
         consecutiveErrors,
         nextBreakAt
       };
@@ -201,6 +203,7 @@
     }
     if (!breaksEnabled()) onBreakUntil = 0;          // disabling breaks ends any current one
     if (Date.now() < onBreakUntil || maybeTakeBreak()) {
+      nextAt = Date.now() + 5000;
       loopHandle = setTimeout(() => loop(gen), 5000);
       return;
     }
@@ -220,9 +223,20 @@
         currentAction = mod.id;
         lastAction = mod.id;
         emitStatus();
+        const logMark = Logger.history ? Logger.history().length : 0;
         try {
           await action();
           consecutiveErrors = 0;
+          // Optional per-action webhook: report exactly what was just done,
+          // reusing the module's own success/info log line.
+          const wh = Storage.section('webhooks') || {};
+          const gen = Storage.section('general') || {};
+          if (gen.notifications && wh.notifyEachAction && TB.notify) {
+            const news = (Logger.history ? Logger.history().slice(logMark) : [])
+              .filter((e) => e.level === 'success' || e.level === 'info');
+            const last = news[news.length - 1];
+            TB.notify({ message: last ? last.msg : I18n.t('mod_' + mod.id), level: 'info' });
+          }
         } catch (e) {
           // Transient transport / session errors shouldn't trip the error-stop;
           // they recover on their own (or via auto-login).
@@ -252,16 +266,20 @@
     // wake (e.g. a map/pvp cooldown end), sleep exactly until then so it resends
     // the moment the cooldown is over rather than on the next idle poll.
     const g = Storage.section('general') || {};
+    // A fixed, user-programmed interval between actions overrides the humanized
+    // delay entirely (0 = auto: humanize / spam as before).
+    const fixed = Math.max(0, Number(g.actionIntervalSec) || 0) * 1000;
     let delay;
     if (acted) {
-      delay = humanDelay();
+      delay = fixed > 0 ? Math.max(300, fixed) : humanDelay();
     } else {
-      delay = g.humanize ? Math.max(8000, humanDelay() * 2) : 2000;
+      delay = fixed > 0 ? Math.max(300, fixed) : (g.humanize ? Math.max(8000, humanDelay() * 2) : 2000);
       if (wakeAt) {
         const floor = g.humanize ? 800 : 200;
         delay = Math.min(delay, Math.max(floor, wakeAt - Date.now()));
       }
     }
+    nextAt = Date.now() + delay;
     loopHandle = setTimeout(() => loop(gen), delay);
   }
 

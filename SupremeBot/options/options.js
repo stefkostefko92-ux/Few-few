@@ -64,6 +64,7 @@ const SCHEMA = [
     { k: 'humanize', type: 'bool' },
     { k: 'minActionDelayMs', type: 'number', min: 300, max: 60000, step: 100 },
     { k: 'maxActionDelayMs', type: 'number', min: 500, max: 120000, step: 100 },
+    { k: 'actionIntervalSec', type: 'number', min: 0, max: 86400 },
     { k: 'pauseAfterErrors', type: 'number', min: 0, max: 50 },
     { k: 'keepGoldReserve', type: 'number', min: 0 },
     { k: 'notifications', type: 'bool' },
@@ -151,7 +152,8 @@ const SCHEMA = [
     { k: 'discordThreadId', type: 'text' },
     { k: 'discordMention', type: 'text' },
     { k: 'discordFooter', type: 'text' },
-    { k: 'statusMinutes', type: 'number', min: 0, max: 1440 }
+    { k: 'statusMinutes', type: 'number', min: 0, max: 1440 },
+    { k: 'notifyEachAction', type: 'bool' }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },
