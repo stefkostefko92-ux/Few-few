@@ -304,6 +304,26 @@ function record(count, bytes) {
   }, 1000);
 }
 
+// Smart Detection hits arrive from every frame (content.js is all_frames), so
+// serialise the read-modify-write through one chain to avoid lost updates.
+let smartChain = Promise.resolve();
+function recordSmart(host, items) {
+  smartChain = smartChain
+    .then(async () => {
+      const { smartBlocked = 0, smartLog = [] } = await chrome.storage.local.get([
+        "smartBlocked",
+        "smartLog",
+      ]);
+      const now = Date.now();
+      const entries = items.map((it) => ({ host, w: it.w, h: it.h, reason: it.reason, time: now }));
+      await chrome.storage.local.set({
+        smartBlocked: smartBlocked + items.length,
+        smartLog: entries.concat(smartLog).slice(0, 50),
+      });
+    })
+    .catch(() => {});
+}
+
 const DEBUG_COUNTING = !!chrome.declarativeNetRequest.onRuleMatchedDebug;
 
 if (DEBUG_COUNTING) {
@@ -462,33 +482,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
       return true;
 
-    case "importSettings":
-      chrome.storage.local.set(msg.data || {}, async () => {
+    case "importSettings": {
+      // Only accept known setting keys from the imported file.
+      const clean = {};
+      for (const k of Object.keys(DEFAULTS)) {
+        if (msg.data && k in msg.data) clean[k] = msg.data[k];
+      }
+      chrome.storage.local.set(clean, async () => {
         await applyState();
         await syncAllowRules();
         await syncUserRules();
         sendResponse({ ok: true });
       });
       return true;
+    }
 
     case "smartHit": {
       const items = Array.isArray(msg.items) ? msg.items : [];
-      const n = items.length || msg.n || 1;
-      chrome.storage.local.get(["smartBlocked", "smartLog"], (d) => {
-        const now = Date.now();
-        const entries = items.map((it) => ({
-          host: msg.host || "",
-          w: it.w,
-          h: it.h,
-          reason: it.reason,
-          time: now,
-        }));
-        const log = entries.concat(d.smartLog || []).slice(0, 50);
-        chrome.storage.local.set({
-          smartBlocked: (d.smartBlocked || 0) + n,
-          smartLog: log,
-        });
-      });
+      if (items.length) recordSmart(msg.host || "", items);
       return false;
     }
 

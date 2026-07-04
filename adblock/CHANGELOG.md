@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.7.1
+
+- Anti-adblock: only reset the page's scroll/position after an actual wall is
+  removed, so ordinary sites are never re-laid-out.
+- Smart Detection counter is now updated through a serialised chain, so hits
+  from many frames can't lose updates.
+- YouTube: only reload for the enforcement bypass when the flag can be
+  persisted, and guard it in memory too, so a blocked sessionStorage can't loop.
+- Import settings only accepts known setting keys.
+
 ## 3.7.0
 
 - YouTube videos always load now. If YouTube detects the ad removal on a

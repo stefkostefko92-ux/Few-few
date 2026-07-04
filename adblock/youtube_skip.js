@@ -7,6 +7,7 @@
   let adActive = false;
   let prevMuted = false;
   let prevRate = 1;
+  let bypassReloaded = false; // guards the enforcement reload against loops
 
   const SKIP = [
     ".ytp-ad-skip-button",
@@ -72,17 +73,24 @@
       "ytd-enforcement-message-view-model, ytd-enforcement-message-desktop-renderer"
     );
     if (enf) {
-      let bypassing = false;
+      let bypassing = bypassReloaded;
       try {
-        bypassing = sessionStorage.getItem("tbab_yt_bypass") === "1";
+        bypassing = bypassing || sessionStorage.getItem("tbab_yt_bypass") === "1";
       } catch {}
 
       if (!bypassing) {
+        // Only reload if we can persist the bypass; otherwise a reload would
+        // just loop (the reloaded page would re-detect enforcement).
+        let persisted = false;
         try {
           sessionStorage.setItem("tbab_yt_bypass", "1");
+          persisted = true;
         } catch {}
-        location.reload();
-        return;
+        bypassReloaded = true;
+        if (persisted) {
+          location.reload();
+          return;
+        }
       }
 
       const dialog =

@@ -20,13 +20,20 @@
   function cleanup() {
     if (!active) return;
 
+    let removed = false;
     for (const el of document.querySelectorAll("div, section, aside, dialog, [role='dialog']")) {
       const s = getComputedStyle(el);
       const floating = s.position === "fixed" || s.position === "sticky";
       const elevated = parseInt(s.zIndex || "0", 10) > 1000;
-      if ((floating || elevated) && isWall(el)) el.remove();
+      if ((floating || elevated) && isWall(el)) {
+        el.remove();
+        removed = true;
+      }
     }
 
+    // Only touch the page's scroll/layout after we actually removed a wall,
+    // so we never force overflow/position on ordinary sites.
+    if (!removed) return;
     for (const n of [document.documentElement, document.body]) {
       if (!n) continue;
       n.style.setProperty("overflow", "auto", "important");
