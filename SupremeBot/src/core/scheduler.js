@@ -16,6 +16,7 @@
   let wakeAt = 0;            // earliest module-requested re-evaluation time (epoch ms)
   let nextBreakAt = 0;
   let currentAction = null;
+  let lastAction = null;     // id of the most recent module that acted
 
   const statusListeners = new Set();
 
@@ -38,6 +39,7 @@
         running, paused,
         onBreak: Date.now() < onBreakUntil,
         currentAction,
+        lastAction,
         consecutiveErrors,
         nextBreakAt
       };
@@ -57,11 +59,7 @@
         Logger.error(I18n.t('logLicenseRequired'));
         if (TB.Panel && TB.Panel.showPaywall) TB.Panel.showPaywall();
         const g = Storage.section('general') || {};
-        if (g?.notifications) {
-          chrome.runtime.sendMessage({
-            type: 'NOTIFY', title: I18n.t('extName'), message: I18n.t('notifyLicenseRequired'), level: 'error'
-          }).catch(() => {});
-        }
+        if (g?.notifications) TB.notify?.({ message: I18n.t('notifyLicenseRequired'), level: 'error' });
         return;
       }
       running = true;
@@ -74,6 +72,8 @@
       Logger.success(I18n.t('logEngineStarted'));
       emitStatus();
       kickLoop();
+      const g = Storage.section('general') || {};
+      if (g?.notifications && g?.notifyOnStart) TB.notify?.({ message: I18n.t('notifyStarted'), level: 'success' });
     },
 
     stop(reason) {
@@ -87,10 +87,7 @@
       emitStatus();
       const g = Storage.section('general');
       if (g?.notifications && g?.notifyOnStop) {
-        chrome.runtime.sendMessage({
-          type: 'NOTIFY', title: I18n.t('extName'), level: 'warn',
-          message: I18n.t('notifyStopped') + (reason ? `: ${reason}` : '')
-        }).catch(() => {});
+        TB.notify?.({ message: I18n.t('notifyStopped') + (reason ? `: ${reason}` : ''), level: 'warn' });
       }
     },
 
@@ -221,6 +218,7 @@
       if (!alive()) return;
       if (typeof action === 'function') {
         currentAction = mod.id;
+        lastAction = mod.id;
         emitStatus();
         try {
           await action();

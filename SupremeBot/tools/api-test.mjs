@@ -88,6 +88,20 @@ await test('getUserAttributes computes costs via floor((bought*incr+base)*factor
   assert.equal(c.DEX, 30);    // floor((0+15)*2)
 });
 
+await test('getUserAttributes captures character name / guild / level into State', async () => {
+  const a = makeApi();
+  a.setXml(resp(
+    m('name', 'string', 'Ragnar') + m('guildname', 'string', 'Wolves') + m('level', 'i4', 42) +
+    m('attributeCostBase', 'i4', 15) + m('attributeCostFactor', 'double', '2.0') + m('attributeCostIncrement', 'i4', 5) +
+    `<member><name>attributes</name><value><struct>${m('str_bought','i4',0)}</struct></value></member>`
+  ));
+  await a.TB.Api.getUserAttributes();
+  const s = a.TB.State.get();
+  assert.equal(s.name, 'Ragnar');
+  assert.equal(s.guild, 'Wolves');
+  assert.equal(s.level, 42);
+});
+
 await test('getUserAttributes tolerates <int> type tags (not just <i4>)', async () => {
   const a = makeApi();
   a.setXml(resp(
