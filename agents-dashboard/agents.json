@@ -1735,6 +1735,11 @@
       "activity": [
         {
           "date": "2026-07-04",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „bg_ ресурсите на монорепо Few-few ползват qbx_core exports (exports.qbx_core:GetPlayer,…\" (+1)"
+        },
+        {
+          "date": "2026-07-04",
           "type": "learning",
           "summary": "Научи: „Радиус blip-овете (AddBlipForRadius) в GTA V приемат палитрен SetBlipColour index, не с…\" · 1 в карантина"
         },
