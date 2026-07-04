@@ -1,0 +1,179 @@
+/* Tanoth Master Bot - in-game overlay panel.
+   "Carbon stealth" palette: matte carbon-black surfaces, graphite borders and a
+   single restrained emerald accent. Scoped under #tanoth-bot-panel with an
+   all-properties reset on the host so the game's CSS can't bleed in. */
+
+#tanoth-bot-panel {
+  all: initial;
+  --bg: #0b0c0e;
+  --surface: #121316;
+  --surface-2: #181a1f;
+  --raised: #1f2228;
+  --border: #2a2e35;
+  --text: #d9dbe0;
+  --muted: #868c96;
+  --accent: #27e08a;
+  --accent-dim: #1f9d63;
+  --danger: #cf524c;
+  --warn: #c79234;
+
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  width: 322px;
+  z-index: 2147483600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+  user-select: none;
+}
+#tanoth-bot-panel.tb-light {
+  --bg: #eef0f4; --surface: #f6f7f9; --surface-2: #eceef3; --raised: #e2e5ec;
+  --border: #d2d6de; --text: #1b1f2a; --muted: #5c636f;
+}
+#tanoth-bot-panel.tb-left { right: auto; left: 16px; }
+#tanoth-bot-panel.tb-collapsed .tb-body { display: none; }
+#tanoth-bot-panel * { box-sizing: border-box; }
+
+#tanoth-bot-panel .tb-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 13px; cursor: move;
+  background: linear-gradient(180deg, var(--raised), var(--surface));
+  border-bottom: 1px solid var(--border);
+  color: var(--text); font-weight: 600; letter-spacing: .2px;
+  position: relative;
+}
+#tanoth-bot-panel .tb-header::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+  opacity: .5;
+}
+#tanoth-bot-panel .tb-header .tb-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--danger); flex: 0 0 auto;
+}
+#tanoth-bot-panel.tb-running .tb-header .tb-dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+#tanoth-bot-panel.tb-paused .tb-header .tb-dot { background: var(--warn); }
+#tanoth-bot-panel .tb-title { flex: 1 1 auto; }
+#tanoth-bot-panel .tb-icon-btn {
+  cursor: pointer; background: var(--raised); border: 1px solid var(--border); color: var(--text);
+  width: 22px; height: 22px; border-radius: 6px; line-height: 1; font-size: 14px;
+}
+#tanoth-bot-panel .tb-icon-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+#tanoth-bot-panel .tb-body { padding: 12px; }
+
+#tanoth-bot-panel .tb-license {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 11px; padding: 6px 9px; margin-bottom: 10px; border-radius: 7px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--muted);
+}
+#tanoth-bot-panel .tb-license b { color: var(--text); font-weight: 600; }
+#tanoth-bot-panel .tb-license.tb-lic-expired { border-color: var(--danger); color: #e8b3b0; }
+#tanoth-bot-panel .tb-license .tb-link { cursor: pointer; color: var(--accent); text-decoration: none; }
+
+#tanoth-bot-panel .tb-controls { display: flex; gap: 8px; margin-bottom: 10px; }
+#tanoth-bot-panel .tb-btn {
+  flex: 1; cursor: pointer; border: 1px solid var(--border); border-radius: 8px; padding: 9px;
+  font-weight: 600; font-size: 13px; color: var(--text); background: var(--raised);
+}
+#tanoth-bot-panel .tb-btn:hover { border-color: var(--muted); }
+#tanoth-bot-panel .tb-btn.tb-start { background: var(--accent-dim); border-color: transparent; color: #06140d; }
+#tanoth-bot-panel .tb-btn.tb-start:hover { background: var(--accent); }
+#tanoth-bot-panel .tb-btn.tb-stop { color: #f0c4c2; }
+#tanoth-bot-panel .tb-btn.tb-pause { color: #e8cd97; }
+#tanoth-bot-panel .tb-btn:disabled { opacity: .4; cursor: default; }
+
+#tanoth-bot-panel .tb-status {
+  font-size: 12px; color: var(--muted); margin-bottom: 10px; min-height: 16px;
+}
+#tanoth-bot-panel .tb-status b { color: var(--accent); font-weight: 600; }
+
+#tanoth-bot-panel .tb-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 10px;
+}
+#tanoth-bot-panel .tb-stat { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+#tanoth-bot-panel .tb-stat b { font-weight: 600; color: var(--text); }
+
+#tanoth-bot-panel .tb-modules { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+#tanoth-bot-panel .tb-chip {
+  cursor: pointer; font-size: 11px; padding: 4px 9px; border-radius: 13px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); opacity: .8;
+}
+#tanoth-bot-panel .tb-chip.tb-on { opacity: 1; color: var(--accent); border-color: var(--accent-dim); }
+
+#tanoth-bot-panel .tb-inputs { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+#tanoth-bot-panel .tb-input {
+  width: 100%; padding: 6px 8px; border-radius: 6px; font-size: 11px;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+}
+#tanoth-bot-panel .tb-input:focus { outline: none; border-color: var(--accent-dim); }
+#tanoth-bot-panel .tb-input::placeholder { color: var(--muted); }
+
+#tanoth-bot-panel .tb-log {
+  height: 132px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 8px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+}
+#tanoth-bot-panel .tb-log .tb-line { margin: 0 0 2px; white-space: pre-wrap; word-break: break-word; color: var(--text); }
+#tanoth-bot-panel .tb-log .tb-err { color: var(--danger); }
+#tanoth-bot-panel .tb-log .tb-warn { color: var(--warn); }
+#tanoth-bot-panel .tb-log .tb-ok { color: var(--accent); }
+#tanoth-bot-panel .tb-log .tb-time { color: var(--muted); opacity: .7; }
+
+#tanoth-bot-panel .tb-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; font-size: 11px; color: var(--muted);
+}
+#tanoth-bot-panel .tb-footer a { color: var(--muted); cursor: pointer; text-decoration: none; }
+#tanoth-bot-panel .tb-footer a:hover { color: var(--accent); }
+
+/* Paywall overlay */
+#tanoth-bot-panel .tb-paywall {
+  display: none; padding: 14px; text-align: center;
+}
+#tanoth-bot-panel.tb-locked .tb-controls,
+#tanoth-bot-panel.tb-locked .tb-modules,
+#tanoth-bot-panel.tb-locked .tb-stats { opacity: .35; pointer-events: none; }
+#tanoth-bot-panel.tb-show-paywall .tb-paywall { display: block; }
+#tanoth-bot-panel .tb-paywall h3 { margin: 0 0 4px; font-size: 14px; color: var(--text); }
+#tanoth-bot-panel .tb-paywall p { margin: 0 0 10px; font-size: 12px; color: var(--muted); }
+#tanoth-bot-panel .tb-paywall .tb-price { font-size: 22px; color: var(--accent); font-weight: 700; }
+#tanoth-bot-panel .tb-paywall .tb-plans { display: flex; gap: 8px; margin: 8px 0; }
+#tanoth-bot-panel .tb-paywall .tb-pay {
+  flex: 1; cursor: pointer; border: none; border-radius: 8px; padding: 11px;
+  font-weight: 700; font-size: 12px; color: #06140d; background: var(--accent);
+}
+#tanoth-bot-panel .tb-paywall .tb-pay.tb-pay-alt { background: #d9a93a; }
+#tanoth-bot-panel .tb-paywall .tb-pay:hover { filter: brightness(1.08); }
+#tanoth-bot-panel .tb-paywall .tb-key {
+  width: 100%; margin-top: 6px; padding: 9px 10px; border-radius: 7px;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text); font-size: 12px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+#tanoth-bot-panel .tb-paywall .tb-activate {
+  width: 100%; margin-top: 6px; cursor: pointer; border: 1px solid var(--border);
+  border-radius: 7px; padding: 9px; font-weight: 600; font-size: 12px; color: var(--text); background: var(--raised);
+}
+#tanoth-bot-panel .tb-paywall .tb-activate:hover { border-color: var(--accent-dim); color: var(--accent); }
+#tanoth-bot-panel .tb-paywall .tb-pay-msg { font-size: 11px; min-height: 14px; margin-top: 6px; }
+#tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-err { color: var(--danger); }
+#tanoth-bot-panel .tb-paywall .tb-pay-msg.tb-ok { color: var(--accent); }
+
+/* Re-open tab shown when the panel is hidden entirely. */
+#tanoth-bot-fab {
+  all: initial; position: fixed; top: 80px; right: 0; z-index: 2147483600;
+  cursor: pointer; background: #121316; color: #27e08a; border: 1px solid #2a2e35; border-right: none;
+  font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .3px;
+  padding: 9px 11px; border-radius: 9px 0 0 9px; box-shadow: -3px 4px 14px rgba(0,0,0,.5);
+}
+
+/* Legal / consent block in the paywall */
+#tanoth-bot-panel .tb-warn { color: #e6b400; font-size: 11px; line-height: 1.35; margin: 6px 0; }
+#tanoth-bot-panel .tb-consent { display: flex; gap: 6px; align-items: flex-start; font-size: 11px; line-height: 1.35; margin: 8px 0; cursor: pointer; }
+#tanoth-bot-panel .tb-consent input { margin-top: 2px; }
+#tanoth-bot-panel .tb-legal { font-size: 10px; opacity: 0.75; margin-top: 8px; }
+#tanoth-bot-panel .tb-legal a { color: inherit; text-decoration: underline; cursor: pointer; }

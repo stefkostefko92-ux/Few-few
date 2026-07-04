@@ -1,0 +1,128 @@
+// Boots the content-side subsystems and relays popup/service-worker messages.
+(function () {
+  'use strict';
+  const TB = window.TanothBot;
+  const { Storage, Bridge, Api, Scheduler, Logger, State, Stats, I18n, Panel, License } = TB;
+
+  async function boot() {
+    await Storage.load();
+    await License.load();
+    const settings = Storage.get();
+
+    // Inject the page-world XML-RPC client and bring up the bridge.
+    Bridge.init();
+
+    // Mount the in-game panel once the DOM is ready.
+    if (document.body) Panel.mount();
+    else document.addEventListener('DOMContentLoaded', () => Panel.mount());
+
+    // Once the gateway + session are discovered, mark logged in, pull the first
+    // resource snapshot and optionally auto-start the engine.
+    let primed = false;
+    Bridge.onContext((ctx) => {
+      if (!primed && ctx && ctx.url && ctx.hasSession) {
+        primed = true;
+        State.patch({ loggedIn: true });
+        Logger.success(I18n.t('logProtocolReady'));
+        Api.refresh().catch(() => {});
+        if ((Storage.section('general') || {}).startOnLoad) {
+          Logger.info(I18n.t('logAutoStart'));
+          Scheduler.start();
+        }
+      }
+    });
+
+    TB.ready = true;
+    Logger.info(I18n.t('logBooted', [TB.VERSION]));
+
+    // Keep gold / bloodstones / running-task state fresh for every module and
+    // the panel. Without this, modules see a stale gold value (e.g. right after
+    // an adventure reward) and wrongly decide "not enough gold". Only polls
+    // while the engine is actually running, so an idle Tanoth tab stays quiet.
+    setInterval(() => {
+      if (Bridge.ready() && Scheduler.isRunning()) Api.refresh().catch(() => {});
+    }, 30000);
+
+    // Orphan check: when the extension is reloaded/updated, this copy of the
+    // content script survives with dead chrome.* APIs while a fresh copy boots.
+    // Stop the old engine so two bots never automate the same tab in parallel.
+    const orphanCheck = setInterval(() => {
+      let dead = false;
+      try { dead = !(chrome.runtime && chrome.runtime.id); } catch (_) { dead = true; }
+      if (!dead) return;
+      clearInterval(orphanCheck);
+      try { Scheduler.stop('reload'); } catch (_) {}
+    }, 10000);
+  }
+
+  /* ---------------------- popup / service-worker bridge ------------------- */
+
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    switch (msg?.type) {
+      case 'HEARTBEAT':
+        Scheduler.heartbeat();
+        License.load().then((lic) => {
+          // Stop automating the moment entitlement lapses.
+          if (!lic.entitled && Scheduler.isRunning()) Scheduler.stop(I18n.t('reasonLicenseLapsed'));
+        });
+        sendResponse({ ok: true });
+        return false;
+
+      case 'LICENSE_UPDATED':
+        License._set(msg.license);
+        sendResponse({ ok: true });
+        return false;
+
+      case 'SETTINGS_UPDATED':
+        Storage._set(msg.settings);
+        if ((Storage.section('general') || {}).enabled === false && Scheduler.isRunning()) {
+          Scheduler.stop(I18n.t('logMasterOff'));
+        }
+        Panel.refreshModules();
+        sendResponse({ ok: true });
+        return false;
+
+      case 'GET_STATUS':
+        sendResponse({
+          ok: true,
+          status: Scheduler.status(),
+          state: {
+            loggedIn: State.get().loggedIn,
+            name: State.get().name,
+            level: State.get().level,
+            gold: State.get().gold,
+            bloodstones: State.get().bloodstones
+          },
+          session: Stats.session(),
+          protocolReady: Bridge.ready()
+        });
+        return false;
+
+      case 'CONTROL':
+        handleControl(msg.action);
+        sendResponse({ ok: true, status: Scheduler.status() });
+        return false;
+
+      default:
+        return false;
+    }
+  });
+
+  function handleControl(action) {
+    switch (action) {
+      case 'start': Scheduler.start(); break;
+      case 'stop': Scheduler.stop(I18n.t('reasonManual')); break;
+      case 'pause': Scheduler.pause(); break;
+      case 'resume': Scheduler.resume(); break;
+      case 'showPanel': {
+        const fab = document.getElementById('tanoth-bot-fab');
+        const panel = document.getElementById('tanoth-bot-panel');
+        if (panel) panel.style.display = '';
+        if (fab) fab.remove();
+        break;
+      }
+    }
+  }
+
+  boot().catch((e) => Logger.error('boot failed', e.message));
+})();

@@ -1,0 +1,32 @@
+# systemd unit for a non-Docker deploy.
+#   sudo useradd -r -s /usr/sbin/nologin tanoth
+#   sudo mkdir -p /opt/tanoth-license /var/lib/tanoth-license
+#   sudo cp license-server.mjs /opt/tanoth-license/
+#   sudo chown -R tanoth:tanoth /var/lib/tanoth-license
+#   echo 'LICENSE_SECRET=...same as the extension...' | sudo tee /etc/tanoth-license.env
+#   sudo chmod 600 /etc/tanoth-license.env    # the secret must not be world-readable
+#   sudo cp tanoth-license.service /etc/systemd/system/
+#   sudo systemctl enable --now tanoth-license
+# Then put nginx/Caddy in front for HTTPS (see DEPLOY.md).
+[Unit]
+Description=Tanoth License Server
+After=network.target
+
+[Service]
+Type=simple
+User=tanoth
+Group=tanoth
+WorkingDirectory=/opt/tanoth-license
+Environment=PORT=8787
+Environment=LICENSE_DB=/var/lib/tanoth-license/bindings.json
+EnvironmentFile=/etc/tanoth-license.env
+ExecStart=/usr/bin/node /opt/tanoth-license/license-server.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tanoth-license
+
+[Install]
+WantedBy=multi-user.target

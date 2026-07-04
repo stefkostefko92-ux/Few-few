@@ -1,0 +1,43 @@
+# Tanoth license server + Caddy (automatic HTTPS via Let's Encrypt).
+#
+#   1) Point a DNS A-record (e.g. license.example.com) at this host.
+#   2) Edit Caddyfile with that domain.
+#   3) Create a .env file next to this with:
+#        LICENSE_SECRET=<the SAME secret as src/shared/payment.js>
+#        LICENSE_ALLOW_ORIGIN=        # optional; usually leave empty
+#   4) docker compose up -d --build
+#
+# The extension then sets LICENSE_SERVER_URL = "https://license.example.com".
+
+services:
+  license:
+    build: .
+    environment:
+      - LICENSE_SECRET=${LICENSE_SECRET:?set LICENSE_SECRET in .env}
+      - PORT=8787
+      - HOST=0.0.0.0                  # inside the container; Caddy fronts it
+      - LICENSE_DB=/data/bindings.json
+      - LICENSE_ADMIN_TOKEN=${LICENSE_ADMIN_TOKEN:-}
+      - LICENSE_ALLOW_ORIGIN=${LICENSE_ALLOW_ORIGIN:-}
+    volumes:
+      - license-data:/data
+    restart: unless-stopped
+    expose:
+      - "8787"
+
+  caddy:
+    image: caddy:2
+    depends_on: [license]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+
+volumes:
+  license-data:
+  caddy-data:
+  caddy-config:
