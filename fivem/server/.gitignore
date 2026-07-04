@@ -1,0 +1,15 @@
+# Третостранни ресурси — теглят се от setup.sh, НЕ се комитват (отделни проекти/лицензи)
+resources/[standalone]/
+resources/[qbx]/
+
+# Тайни на сървъра — НИКОГА в репото
+server.secret.cfg
+*.secret.cfg
+
+# FXServer runtime боклук
+cache/
+*.log
+server-icon.png
+
+# Изключения: НАШИТЕ ресурси в [bg] СЕ комитват (не ги игнорирай)
+!resources/[bg]/
