@@ -12,7 +12,8 @@
 
 ## Стек (планиран, не финализиран)
 
-- **Engine:** Unreal Engine **5.6** (C++ core + Blueprints за геймплей итерация).
+- **Engine:** Unreal Engine **5.8** (C++ core + Blueprints за геймплей итерация). *(Нова линия —
+  сверявай версийно-специфичните API спрямо официалната 5.8 документация.)*
 - **Voxel/terrain:** Voxel Plugin 2 ($349) ИЛИ собствен chunk/greedy-meshing engine —
   **отворено архитектурно решение**, виж `docs/03-tehnologia-ue5.md`.
 - **Мултиплейър:** server-authoritative, dedicated servers; **co-op мащаб (≤~16–64), НЕ MMO.**
@@ -53,7 +54,7 @@
 
 ## Код на играта
 
-UE 5.6 проектът е в **[`game/`](./game/)** — заложен скелет + първи voxel spike (собствен C++
+UE 5.8 проектът е в **[`game/`](./game/)** — заложен скелет + първи voxel spike (собствен C++
 chunk engine: `game/Source/Demiurg/Voxel/`). Виж [`game/README.md`](./game/README.md) за
 отваряне/компилиране/тест. **Кодът още не е компилиран в редактор** — писан е в среда без UE.
 
@@ -64,7 +65,7 @@ chunk engine: `game/Source/Demiurg/Voxel/`). Виж [`game/README.md`](./game/RE
 
 ## Команди
 
-UE workflow (когато има UE 5.6 машина): Generate project files → build **Development Editor** →
+UE workflow (когато има UE 5.8 машина): Generate project files → build **Development Editor** →
 отвори `game/Demiurg.uproject`. По-късно: `RunUAT BuildCookRun` (Win64 Shipping), dedicated
 server билд, тестове. CI е path-filtered — добави workflow само за `demiurg/` (поне compile check).
 **Git LFS** е задължителен за бинарни асети (`game/.gitattributes`).

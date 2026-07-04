@@ -1,16 +1,17 @@
-# demiurg/game — Unreal Engine 5.6 проект (voxel спайк)
+# demiurg/game — Unreal Engine 5.8 проект (voxel спайк)
 
 Скелет на играта + **първият voxel spike** (собственият C++ chunk engine — кандидат от
 [`../docs/07`](../docs/07-faza1-tehnicheski-plan.md) §1). Целта на спайка: докажи, че кубично
 копаене/строене през chunk-ове с face culling е стабилно и се усеща добре.
 
 > ⚠ **Кодът НЕ е компилиран** — писан е в среда без Unreal Engine (Linux CI контейнер). Писан е
-> срещу UE **5.6** API и трябва да се отвори/компилира в редактора от разработчик. Възможни са
-> дребни корекции (напр. реда на триъгълниците за посоката на лицата — виж по-долу).
+> срещу UE **5.8** API и трябва да се отвори/компилира в редактора от разработчик. Възможни са
+> дребни корекции (напр. реда на триъгълниците за посоката на лицата — виж по-долу). UE 5.8 е
+> нова линия — при разлики в API спрямо примерите, сверявай с официалната 5.8 документация.
 
 ## Изисквания
 
-- **Unreal Engine 5.6** (Epic Games Launcher или от source).
+- **Unreal Engine 5.8** (Epic Games Launcher или от source).
 - Windows + Visual Studio 2022 (workload „Game development with C++“), или Rider.
 - **Git LFS**: `git lfs install` веднъж, преди да добавяш `.uasset/.umap` (виж `.gitattributes`).
 
@@ -45,7 +46,7 @@ PlayerController/Pawn:
 ## Структура
 
 ```
-Demiurg.uproject          конфигурация на проекта (UE 5.6, ProceduralMesh + EnhancedInput)
+Demiurg.uproject          конфигурация на проекта (UE 5.8, ProceduralMesh + EnhancedInput)
 Config/                   DefaultEngine.ini (Lumen), DefaultGame.ini
 Source/
   Demiurg.Target.cs       Game target

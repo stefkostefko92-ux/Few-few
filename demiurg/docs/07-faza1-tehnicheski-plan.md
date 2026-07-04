@@ -32,13 +32,13 @@ streaming“ във всеки кандидат, после заключи:
 > ✅ **Собственият C++ chunk прототип вече е заложен в репото** → [`../game/`](../game/)
 > (`Source/Demiurg/Voxel/`): `VoxelChunk` (chunk данни + face-culling meshing през
 > `ProceduralMeshComponent`), `VoxelWorld` (спавн на мрежа chunk-ове + `EditBlockAtWorld`
-> копай/постави), `VoxelTypes` (блокове/константи). Отвори в UE 5.6, компилирай и оцени —
+> копай/постави), `VoxelTypes` (блокове/константи). Отвори в UE 5.8, компилирай и оцени —
 > инструкции в [`../game/README.md`](../game/README.md). Това покрива „собствен engine“
 > кандидата на спайка; сравни го с Easy Voxels: Cubic, преди да заключиш.
 
 ## 2. UE5 setup (седмица 1)
 
-- **UE 5.6**, C++ проект (не blueprint-only) — voxel ядрото е C++, геймплей итерация в Blueprints.
+- **UE 5.8**, C++ проект (не blueprint-only) — voxel ядрото е C++, геймплей итерация в Blueprints.
 - **Конфигурация:** World Partition ON; Lumen ON (software fallback за low-end); Nanite само за
   статичен далечен декор (не за voxel chunks — виж `03` §1).
 - **Контрол на версиите (важно!):** UE проектът носи големи бинарни асети. Кореновият
