@@ -81,7 +81,7 @@ export default function Hunting(): React.ReactElement {
         <div className="panel-header">
           <div>
             <h2 className="panel-title">Hunting Grounds</h2>
-            <div className="panel-subtitle">Repeatable encounters — random foe. Each hunt sets a random 1-20 min cooldown (reduced by mounts).</div>
+            <div className="panel-subtitle">Repeatable encounters — random foe. Each hunt sets a random 1-10 min cooldown (reduced by mounts).</div>
           </div>
         </div>
         <div className="grid-cards">

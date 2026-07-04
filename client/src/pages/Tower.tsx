@@ -7,8 +7,6 @@ interface Status {
   current_floor: number;
   next_floor: number;
   best_floor: number;
-  energy: number;
-  energy_cost: number;
   next_reward: { gold: number; xp: number; vault: boolean };
 }
 interface Leader {
@@ -66,7 +64,6 @@ export default function Tower(): React.ReactElement {
           {status && (
             <div className="flex gap-sm">
               <span className="tag gold">Best · F{status.best_floor}</span>
-              <span className="tag" style={{ background: 'var(--surface-2)' }}>EN · {status.energy}</span>
             </div>
           )}
         </div>
@@ -87,12 +84,9 @@ export default function Tower(): React.ReactElement {
                 <div className="muted text-sm" style={{ marginTop: 6 }}>
                   Reward: +{status.next_reward.gold}g · +{status.next_reward.xp} XP{status.next_reward.vault ? ' (×2)' : ''}
                 </div>
-                <div className="muted text-sm">
-                  Cost: {status.energy_cost} energy
-                </div>
               </div>
-              <button className="btn btn-primary" onClick={climb} disabled={climbing || status.energy < status.energy_cost} style={{ fontSize: 16 }}>
-                {climbing ? 'Climbing…' : status.energy < status.energy_cost ? 'Need energy' : 'Climb'}
+              <button className="btn btn-primary" onClick={climb} disabled={climbing} style={{ fontSize: 16 }}>
+                {climbing ? 'Climbing…' : 'Climb'}
               </button>
             </div>
           </div>

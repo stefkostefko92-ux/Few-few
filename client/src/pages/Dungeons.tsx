@@ -177,17 +177,16 @@ export default function Dungeons(): React.ReactElement {
             <div className="muted text-sm" style={{ marginTop: 8, fontStyle: 'italic' }}>{d.intro}</div>
             <div className="flex gap-sm" style={{ marginTop: 12 }}>
               <span className="tag">{d.stages} stages</span>
-              <span className="tag">{d.energy_cost} EN</span>
               <span className="tag gold">+{d.xp_bonus} XP</span>
               <span className="tag gold">+{d.gold_bonus}g</span>
             </div>
             <button
               className="btn btn-primary"
               style={{ marginTop: 12, width: '100%' }}
-              disabled={!d.unlocked || !char || char.energy < d.energy_cost || busy}
+              disabled={!d.unlocked || !char || busy}
               onClick={() => enter(d.slug)}
             >
-              {d.unlocked ? `Enter (${d.energy_cost} EN)` : `Requires Lv ${d.level_req}`}
+              {d.unlocked ? 'Enter' : `Requires Lv ${d.level_req}`}
             </button>
           </div>
         ))}

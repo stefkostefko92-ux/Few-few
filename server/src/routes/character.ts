@@ -291,7 +291,7 @@ router.post('/skip-cooldowns', (req, res) => {
   // every cooldown, so the daily 3-50 gem trickle bought 60+ free
   // skips a month and trivialised the cooldown pacing entirely. Now
   // priced per minute of total cooldown waited, capped at 50 gems —
-  // mass skips of a 20-minute hunt + dungeon + arena stack cost ~10
+  // mass skips of a 10-minute hunt + dungeon + arena stack cost ~10
   // gems, a single 30 s skip stays 1 gem.
   const now = Date.now();
   const cooldowns = db

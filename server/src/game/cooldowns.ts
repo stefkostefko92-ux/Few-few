@@ -2,7 +2,7 @@
  * Action cooldowns — replaces the energy economy.
  *
  * Every "action" (hunt / camp / tower / dungeon / quest / arena) sets a
- * random per-player cooldown between 1 and 20 minutes. The randomness
+ * random per-player cooldown between 1 and 10 minutes. The randomness
  * means two characters who do the same thing won't be ready at the same
  * moment — pacing the realm naturally rather than gating it on a
  * regenerating energy bar.
@@ -19,7 +19,7 @@ import { getDb } from '../db';
 export type ActionKind = 'hunt' | 'camp' | 'tower' | 'dungeon' | 'quest' | 'arena';
 
 const MIN_COOLDOWN_MS = 60_000;       // 1 minute
-const MAX_COOLDOWN_MS = 20 * 60_000;  // 20 minutes
+const MAX_COOLDOWN_MS = 10 * 60_000;  // 10 minutes (owner-mandated ceiling)
 // Audit (balance landmine #5): cap mount cooldown reduction at 50%, not
 // 90%. The 90% cap + 3× guild Merchant Charter combined to ~600k g/hr at
 // lv 320 with no matching gold sink. 50% keeps the World Serpent

@@ -4,7 +4,8 @@ import type { Character, CharacterClass } from '../types/domain';
 // The live curve is the formula below — uncapped.
 export const XP_TABLE = (() => {
   const arr = [0];
-  for (let lvl = 1; lvl <= 100; lvl++) arr.push(Math.floor(50 * Math.pow(lvl, 1.7)));
+  // Level 1 is the origin (0 XP) so this table matches xpForLevel(1) === 0.
+  for (let lvl = 1; lvl <= 100; lvl++) arr.push(lvl === 1 ? 0 : Math.floor(50 * Math.pow(lvl, 1.7)));
   return arr;
 })();
 

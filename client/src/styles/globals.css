@@ -741,7 +741,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   transform: translateX(0);
 }
 .sidebar-item:hover svg {
-  transform: translateX(2px) rotate(-3deg) scale(1.08);
+  transform: scale(1.08);
   color: var(--gold-2);
 }
 
@@ -762,16 +762,12 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   width: 3px;
   background: linear-gradient(180deg, var(--gold-1), var(--gold-3));
   border-radius: 3px;
-  box-shadow: 0 0 14px rgba(214,161,61,.6);
-  animation: sidebar-pill-in .35s var(--ease-back), sidebar-pill-breathe 3.6s ease-in-out 0.45s infinite;
+  box-shadow: 0 0 10px rgba(214,161,61,.45);
+  animation: sidebar-pill-in .3s var(--ease-back);
 }
 @keyframes sidebar-pill-in {
   0% { transform: scaleY(0); }
   100% { transform: scaleY(1); }
-}
-@keyframes sidebar-pill-breathe {
-  0%, 100% { box-shadow: 0 0 10px rgba(214,161,61,.45); }
-  50%      { box-shadow: 0 0 22px rgba(214,161,61,.85), 0 0 36px rgba(214,161,61,.3); }
 }
 
 /* Sidebar stagger-in: each nav item fades up with an index-derived delay.
@@ -788,26 +784,7 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Sweeping shimmer pass over the active item every few seconds — premium
-   "this is selected" cue without being noisy. */
-.sidebar-item.active {
-  background: linear-gradient(110deg, transparent 0%, rgba(214,161,61,.18) 50%, transparent 100%);
-  background-size: 220% 100%;
-  background-position: 200% 0;
-  animation: sidebar-item-shimmer 4.8s ease-in-out infinite;
-}
-@keyframes sidebar-item-shimmer {
-  0%, 70% { background-position: 200% 0; }
-  100%    { background-position: -100% 0; }
-}
-
-/* Hero card "rim breathe" — the avatar frame quietly pulses gold. */
-.sidebar-hero { animation: sidebar-hero-breathe 5.2s ease-in-out infinite; }
-@keyframes sidebar-hero-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 transparent, inset 0 0 0 1px rgba(214,161,61,.18); }
-  50%      { box-shadow: 0 0 24px rgba(214,161,61,.18), inset 0 0 0 1px rgba(214,161,61,.45); }
-}
-.sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 8px rgba(214,161,61,.5)); }
+.sidebar-item.active svg { color: var(--gold-1); filter: drop-shadow(0 0 6px rgba(214,161,61,.4)); }
 
 .sidebar-item svg {
   width: 18px;
@@ -827,11 +804,6 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   padding: 2px 7px;
   border-radius: 999px;
   box-shadow: 0 4px 10px rgba(184,30,30,.45), inset 0 1px 0 rgba(255,255,255,.25);
-  animation: badge-bob 2.5s ease-in-out infinite;
-}
-@keyframes badge-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
 }
 
 /* Vitals card inside sidebar */
@@ -1589,7 +1561,20 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 6;
-  cursor: default;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.realm-pin:hover,
+.realm-pin:focus-visible { z-index: 8; }
+.realm-pin:focus-visible .realm-pin-seal {
+  transform: scale(1.18);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, .9),
+    0 0 20px var(--pin-color, #ffd34d),
+    0 6px 14px rgba(0, 0, 0, .6);
 }
 .realm-pin-seal {
   position: relative;
@@ -1628,7 +1613,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
 .realm-pin.locked .realm-pin-seal {
   filter: grayscale(.8) brightness(.55);
 }
-.realm-pin:hover .realm-pin-seal {
+.realm-pin:hover .realm-pin-seal,
+.realm-pin:focus-visible .realm-pin-seal {
   transform: scale(1.18);
   filter: brightness(1.1);
 }
@@ -1664,7 +1650,8 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   border-left: 1px solid var(--pin-color, #ffd34d);
   border-top: 1px solid var(--pin-color, #ffd34d);
 }
-.realm-pin:hover .realm-pin-card {
+.realm-pin:hover .realm-pin-card,
+.realm-pin:focus-visible .realm-pin-card {
   opacity: 1;
   transform: translate(-50%, 0);
   pointer-events: auto;
@@ -1697,16 +1684,29 @@ body.mobile-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) 
   width: 100%;
   text-align: center;
   display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #2a1a08;
+  background: linear-gradient(180deg, #ffe08a, #d6a13d);
+  border: 1px solid rgba(40, 22, 8, .5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .35);
+  transition: filter .18s, transform .18s;
+}
+.realm-pin:hover .realm-pin-cta:not(.locked),
+.realm-pin:focus-visible .realm-pin-cta:not(.locked) {
+  filter: brightness(1.08);
 }
 .realm-pin-cta.locked {
   color: rgba(214, 161, 61, .55);
-  border: 1px solid rgba(214, 161, 61, .3);
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .1em;
   background: transparent;
+  border: 1px solid rgba(214, 161, 61, .3);
+  box-shadow: none;
+  font-size: 11px;
+  letter-spacing: .1em;
 }
 
 @media (max-width: 800px) {

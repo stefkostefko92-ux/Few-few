@@ -11,7 +11,8 @@ export default function Help(): React.ReactElement {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
           <Step n={1} title="Read the quest board">
-            Open <Link to="/app/quests">Quests</Link>. Each quest costs Energy and rewards XP and gold.
+            Open <Link to="/app/quests">Quests</Link>. Each quest rewards XP and gold, then sets a short
+            action cooldown (up to 10 minutes) before your next adventure — no energy required.
             Hover over a card to see its rewards, region, and minimum level.
           </Step>
           <Step n={2} title="Win the fight">

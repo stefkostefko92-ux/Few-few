@@ -82,7 +82,7 @@ export function grantDrop(
 
 /** Unified drop probabilities by source. Tuned so the drop-per-hour
  *  rate is roughly comparable across all activities — hunting is the
- *  baseline (~22% per ~5-12min cooldown = ~1-2 drops/hr), tower and
+ *  baseline (~22% per ~1-10min cooldown, avg ~5.5min = ~2-3 drops/hr), tower and
  *  arena trade slower combat cadence for higher per-fight chance. */
 export const DROP_RATES = {
   hunt:    0.22,

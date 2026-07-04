@@ -85,12 +85,19 @@ export default function CooldownTicker(): React.ReactElement | null {
   if (active.length === 0) return null;
 
   const gems = (character as any).gems || 0;
+  // Mirror the server price (routes/character.ts /skip-cooldowns): one gem
+  // per minute of total remaining cooldown, min 1, capped at 50. Showing a
+  // flat "1💎" under-quoted the real cost and let players click a skip they
+  // could not afford (the server then 429'd).
+  const totalRemainingMs = active.reduce((s, [, ts]) => s + Math.max(0, (ts as number) - now), 0);
+  const gemCost = Math.min(50, Math.max(1, Math.ceil(totalRemainingMs / 60_000)));
   async function skip() {
-    if (skipping || gems < 1) return;
+    if (skipping || gems < gemCost) return;
     setSkipping(true);
     try {
       const r = await api.post('/character/skip-cooldowns', {});
-      toast(`Cleared ${r.cleared} cooldown${r.cleared === 1 ? '' : 's'} for 1 gem.`, 'success');
+      const spent = r.gem_cost ?? gemCost;
+      toast(`Cleared ${r.cleared} cooldown${r.cleared === 1 ? '' : 's'} for ${spent} gem${spent === 1 ? '' : 's'}.`, 'success');
       await refresh();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setSkipping(false); }
@@ -114,10 +121,10 @@ export default function CooldownTicker(): React.ReactElement | null {
       <button
         className="cooldown-skip"
         onClick={skip}
-        disabled={skipping || gems < 1}
-        title={gems < 1 ? 'Need at least 1 gem' : 'Spend 1 gem to clear every cooldown'}
+        disabled={skipping || gems < gemCost}
+        title={gems < gemCost ? `Need ${gemCost} gem${gemCost === 1 ? '' : 's'}` : `Spend ${gemCost} gem${gemCost === 1 ? '' : 's'} to clear every cooldown`}
       >
-        ⏱ Skip · 1💎
+        ⏱ Skip · {gemCost}💎
       </button>
     </div>
   );

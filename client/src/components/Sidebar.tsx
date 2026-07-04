@@ -177,14 +177,17 @@ export default function Sidebar(): React.ReactElement {
   );
 }
 
+// Mirror the server curve exactly (server/src/game/progression.ts):
+// xpForLevel(1) === 0, and floor(50 * level^1.7) for level >= 2. Using the
+// raw formula at level 1 over-counted the base by 50 XP and shrank the bar.
+function xpForLevel(level: number): number {
+  return level <= 1 ? 0 : Math.floor(50 * Math.pow(level, 1.7));
+}
 function xpInLevel(level: number, xp: number): number {
-  const xpAt = Math.floor(50 * Math.pow(level, 1.7));
-  return Math.max(0, xp - xpAt);
+  return Math.max(0, xp - xpForLevel(level));
 }
 function xpToNext(level: number): number {
-  const xpAt = Math.floor(50 * Math.pow(level, 1.7));
-  const xpNext = Math.floor(50 * Math.pow(level + 1, 1.7));
-  return xpNext - xpAt;
+  return xpForLevel(level + 1) - xpForLevel(level);
 }
 
 function Bar({
