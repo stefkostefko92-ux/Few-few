@@ -29,6 +29,13 @@ streaming“ във всеки кандидат, после заключи:
 малък собствен greedy-mesh прототип като резервен вариант/учебен. Заключи tech до края на
 седмица 2. Критерии: стабилен re-mesh < 100 ms, collision, save-friendly данни за chunk.
 
+> ✅ **Собственият C++ chunk прототип вече е заложен в репото** → [`../game/`](../game/)
+> (`Source/Demiurg/Voxel/`): `VoxelChunk` (chunk данни + face-culling meshing през
+> `ProceduralMeshComponent`), `VoxelWorld` (спавн на мрежа chunk-ове + `EditBlockAtWorld`
+> копай/постави), `VoxelTypes` (блокове/константи). Отвори в UE 5.6, компилирай и оцени —
+> инструкции в [`../game/README.md`](../game/README.md). Това покрива „собствен engine“
+> кандидата на спайка; сравни го с Easy Voxels: Cubic, преди да заключиш.
+
 ## 2. UE5 setup (седмица 1)
 
 - **UE 5.6**, C++ проект (не blueprint-only) — voxel ядрото е C++, геймплей итерация в Blueprints.

@@ -51,8 +51,20 @@
   дух), **kodadjiyata** (ревю на код), **pravniyat-razbirach** + **prodavacha** (право/
   монетизация в ЕС), **dizayner** (визуален WOW за маркетинг сайт), **socialdjiyata** (GTM).
 
+## Код на играта
+
+UE 5.6 проектът е в **[`game/`](./game/)** — заложен скелет + първи voxel spike (собствен C++
+chunk engine: `game/Source/Demiurg/Voxel/`). Виж [`game/README.md`](./game/README.md) за
+отваряне/компилиране/тест. **Кодът още не е компилиран в редактор** — писан е в среда без UE.
+
+- Voxel данни/константи: `VoxelTypes.h` (ChunkSize=32, BlockSize=100 uu).
+- Chunk mesh: `VoxelChunk.{h,cpp}` — face culling през `ProceduralMeshComponent` (greedy meshing
+  и async re-mesh са TODO, маркирани в кода).
+- Свят/редакция: `VoxelWorld.{h,cpp}` — `EditBlockAtWorld()` за копай/постави.
+
 ## Команди
 
-Все още няма. Когато започне разработка, тук ще влязат `build`/`cook`/`package`/`test`
-командите (UE `RunUAT BuildCookRun`, dedicated server билд, автоматизирани тестове).
-CI е path-filtered в репото — добави workflow, който се пуска само при промени в `demiurg/`.
+UE workflow (когато има UE 5.6 машина): Generate project files → build **Development Editor** →
+отвори `game/Demiurg.uproject`. По-късно: `RunUAT BuildCookRun` (Win64 Shipping), dedicated
+server билд, тестове. CI е path-filtered — добави workflow само за `demiurg/` (поне compile check).
+**Git LFS** е задължителен за бинарни асети (`game/.gitattributes`).

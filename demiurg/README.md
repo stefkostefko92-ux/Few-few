@@ -60,12 +60,19 @@
 | [`06-gdd-mvp.md`](./docs/06-gdd-mvp.md) | **Game Design Document + дефиниция на брутално малкия MVP** (заключена посока) |
 | [`07-faza1-tehnicheski-plan.md`](./docs/07-faza1-tehnicheski-plan.md) | **Технически план на Фаза 1** — voxel spike, UE5 setup, седмични milestones |
 
+## Код на играта (`game/`)
+
+UE 5.6 проектът е заложен в **[`game/`](./game)** — скелет + първи **voxel spike** (собствен C++
+chunk engine: chunk данни, face-culling meshing, копай/постави). Отвори в UE 5.6 и компилирай —
+инструкции в [`game/README.md`](./game/README.md). *(Кодът още не е компилиран в редактор — писан
+е в среда без UE; възможни дребни корекции.)*
+
 ## Следваща стъпка
 
-Посоката е заключена (виж `06`). Следва **избор на voxel технология чрез 1–2 седмичен spike**
-(Easy Voxels: Cubic vs собствен C++ chunk engine vs Voxel Plugin 2) и старт на Фаза 1 по
-седмичния план в [`docs/07`](./docs/07-faza1-tehnicheski-plan.md). Първата задача е да докажем,
-че **кубичното voxel ядро е стабилно и забавно за 1 играч**.
+Посоката е заключена (виж `06`). Тече **voxel tech spike**: сравни заложения собствен C++ chunk
+engine (`game/`) с **Easy Voxels: Cubic** и **Voxel Plugin 2**, заключи технологията, после
+карай по седмичния план в [`docs/07`](./docs/07-faza1-tehnicheski-plan.md). Първата задача е да
+докажем, че **кубичното voxel ядро е стабилно и забавно за 1 играч**.
 
 ## Лиценз
 
