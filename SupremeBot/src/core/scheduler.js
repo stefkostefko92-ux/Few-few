@@ -60,8 +60,7 @@
       if (TB.License && !TB.License.entitled()) {
         Logger.error(I18n.t('logLicenseRequired'));
         if (TB.Panel && TB.Panel.showPaywall) TB.Panel.showPaywall();
-        const g = Storage.section('general') || {};
-        if (g?.notifications) TB.notify?.({ message: I18n.t('notifyLicenseRequired'), level: 'error' });
+        TB.notify?.({ message: I18n.t('notifyLicenseRequired'), level: 'error' });
         return;
       }
       running = true;
@@ -75,7 +74,7 @@
       emitStatus();
       kickLoop();
       const g = Storage.section('general') || {};
-      if (g?.notifications && g?.notifyOnStart) TB.notify?.({ message: I18n.t('notifyStarted'), level: 'success' });
+      if (g?.notifyOnStart) TB.notify?.({ message: I18n.t('notifyStarted'), level: 'success' });
     },
 
     stop(reason) {
@@ -88,7 +87,7 @@
       Logger.warn(I18n.t('logEngineStopped') + (reason ? ` (${reason})` : ''));
       emitStatus();
       const g = Storage.section('general');
-      if (g?.notifications && g?.notifyOnStop) {
+      if (g?.notifyOnStop) {
         TB.notify?.({ message: I18n.t('notifyStopped') + (reason ? `: ${reason}` : ''), level: 'warn' });
       }
     },
@@ -230,12 +229,13 @@
           // Optional per-action webhook: report exactly what was just done,
           // reusing the module's own success/info log line.
           const wh = Storage.section('webhooks') || {};
-          const gen = Storage.section('general') || {};
-          if (gen.notifications && wh.notifyEachAction && TB.notify) {
+          if (wh.notifyEachAction && TB.notify) {
             const news = (Logger.history ? Logger.history().slice(logMark) : [])
               .filter((e) => e.level === 'success' || e.level === 'info');
             const last = news[news.length - 1];
-            TB.notify({ message: last ? last.msg : I18n.t('mod_' + mod.id), level: 'info' });
+            // desktop:false -> per-action goes to the webhooks only, never a
+            // Chrome popup (that would be far too spammy).
+            TB.notify({ message: last ? last.msg : I18n.t('mod_' + mod.id), level: 'info', desktop: false });
           }
         } catch (e) {
           // Transient transport / session errors shouldn't trip the error-stop;

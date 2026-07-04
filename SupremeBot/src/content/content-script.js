@@ -35,6 +35,7 @@
         title: opts.title || I18n.t('extName'),
         message: opts.message,
         level: opts.level,
+        desktop: opts.desktop,          // false -> webhooks only, no Chrome popup
         fields: fields.concat(opts.fields || [])
       }).catch(() => {});
     } catch (_) {}
@@ -87,17 +88,17 @@
     let lastStatusAt = 0;
     setInterval(() => {
       if (!Bridge.ready() || !Scheduler.isRunning()) return;
-      const g = Storage.section('general') || {};
       const w = Storage.section('webhooks') || {};
       const mins = Number(w.statusMinutes) || 0;
-      if (!g.notifications || mins <= 0) return;
+      if (mins <= 0) return;
       if (Date.now() - lastStatusAt < mins * 60000) return;
       lastStatusAt = Date.now();
       const st = State.get();
       const fields = [];
       if (st.gold != null) fields.push({ name: I18n.t('nfGold'), value: String(st.gold), inline: true });
       if (st.freeAdventures != null) fields.push({ name: I18n.t('statAdventures'), value: String(st.freeAdventures), inline: true });
-      TB.notify({ message: I18n.t('notifyStatus'), level: 'info', fields });
+      // Periodic status is a webhook-only report (no Chrome popups).
+      TB.notify({ message: I18n.t('notifyStatus'), level: 'info', desktop: false, fields });
     }, 60000);
 
     // Orphan check: when the extension is reloaded/updated, this copy of the
