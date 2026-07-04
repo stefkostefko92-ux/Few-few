@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS = {
     notifications: true,            // desktop notifications on key events
     notifyOnLevelUp: true,
     notifyOnStop: true,
+    notifyOnStart: true,            // notify when the engine starts (not only on stop)
     keepGoldReserve: 0,             // never spend below this much gold (global)
     theme: 'dark',                  // panel theme: 'dark' | 'light'
     panelPosition: 'right'          // 'right' | 'left'
@@ -135,7 +136,8 @@ export const DEFAULT_SETTINGS = {
     discordUseEmbeds: true,          // rich embeds (off = plain text)
     discordThreadId: '',             // post into this thread / forum thread id
     discordMention: '',              // ping prefix, e.g. <@&ROLE_ID>, <@USER_ID>, @here
-    discordFooter: ''                // custom embed footer text
+    discordFooter: '',               // custom embed footer text
+    statusMinutes: 0                 // periodic "what the hero is doing" report (0 = off)
   },
 
   /* ---- Scheduler ---- */

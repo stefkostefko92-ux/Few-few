@@ -69,6 +69,7 @@ const SCHEMA = [
     { k: 'notifications', type: 'bool' },
     { k: 'notifyOnLevelUp', type: 'bool' },
     { k: 'notifyOnStop', type: 'bool' },
+    { k: 'notifyOnStart', type: 'bool' },
     { k: 'theme', type: 'select', options: ['dark', 'light'] },
     { k: 'panelPosition', type: 'select', options: ['right', 'left'] }
   ] },
@@ -149,7 +150,8 @@ const SCHEMA = [
     { k: 'discordUseEmbeds', type: 'bool' },
     { k: 'discordThreadId', type: 'text' },
     { k: 'discordMention', type: 'text' },
-    { k: 'discordFooter', type: 'text' }
+    { k: 'discordFooter', type: 'text' },
+    { k: 'statusMinutes', type: 'number', min: 0, max: 1440 }
   ] },
   { id: 'autologin', fields: [
     { k: 'enabled', type: 'bool' },

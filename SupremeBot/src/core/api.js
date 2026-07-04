@@ -81,25 +81,34 @@
     Logger.warn(`[api] ${label}: unexpected fields -> ${names.join(', ') || '(none)'}`);
   }
 
-  // Track the character level when a response carries it; bump the level-up
-  // counter and (optionally) notify on an increase.
-  function noteLevel(doc) {
+  // Track character identity (name / guild / level) whenever a response carries
+  // it - the GetUserAttributes VO includes name + guildname. Also bump the
+  // level-up counter and (optionally) notify on an increase, enriched with the
+  // character/server/activity context via TB.notify.
+  function noteCharacter(doc) {
+    const patch = {};
+    const nm = findValue(doc, 'name', 'string');
+    if (nm && nm !== String(State.get().name || '')) patch.name = nm;
+    const guild = findValue(doc, 'guildname', 'string');
+    if (guild != null && guild !== String(State.get().guild || '')) patch.guild = guild;
+
     const lvl = num(findValue(doc, 'level', 'i4'));
-    if (lvl == null || lvl <= 0) return;
     const prev = Number(State.get().level) || 0;
-    if (lvl === prev) return;
-    State.patch({ level: lvl });
-    if (prev > 0 && lvl > prev) {
+    if (lvl != null && lvl > 0 && lvl !== prev) patch.level = lvl;
+    if (Object.keys(patch).length) State.patch(patch);
+
+    if (lvl != null && prev > 0 && lvl > prev) {
       TB.Stats?.bump({ levelUps: lvl - prev });
       const g = TB.Storage?.section('general') || {};
       if (g.notifications && g.notifyOnLevelUp) {
-        chrome.runtime.sendMessage({
-          type: 'NOTIFY', title: TB.I18n.t('extName'), message: TB.I18n.t('notifyLevelUp', [String(lvl)]),
+        TB.notify?.({
+          message: TB.I18n.t('notifyLevelUp', [String(lvl)]),
           level: 'success', fields: [{ name: 'Level', value: String(lvl), inline: true }]
-        }).catch(() => {});
+        });
       }
     }
   }
+  const noteLevel = noteCharacter;   // back-compat alias for existing callers
 
   // True only if `name` is a DIRECT <member> child of `node`. Needed because
   // findValue() searches descendants, so the outer response <struct> would
