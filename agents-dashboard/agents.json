@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-07-03",
+    "updated": "2026-07-04",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -1718,9 +1718,36 @@
           "date": "2026-07-03",
           "event": "v10.6 — учене без таван",
           "detail": "Таванът 10.0 премахнат: 6 проверени поуки от ревизията на игрите вдигат зрелостта нагоре (ученето вече е неограничено)."
+        },
+        {
+          "version": "10.7.0",
+          "date": "2026-07-04",
+          "event": "v10.7 — учене",
+          "detail": "Научи: Към юли 2026 препоръчаният FXServer артефакт е ~build 25770 (Recommended channel, април… (+1 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-04",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Радиус blip-овете (AddBlipForRadius) в GTA V приемат палитрен SetBlipColour index, не с…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-04",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „bg_ ресурсите на монорепо Few-few ползват qbx_core exports (exports.qbx_core:GetPlayer,…\" (+1)"
+        },
+        {
+          "date": "2026-07-04",
+          "type": "learning",
+          "summary": "Научи: „Радиус blip-овете (AddBlipForRadius) в GTA V приемат палитрен SetBlipColour index, не с…\" · 1 в карантина"
+        },
+        {
+          "date": "2026-07-04",
+          "type": "learning",
+          "summary": "Научи: „Към юли 2026 препоръчаният FXServer артефакт е ~build 25770 (Recommended channel, април…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-03",
           "type": "learning",
@@ -5560,6 +5587,11 @@
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-04",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „FiveM монетизацията е ToS-заключена: ВСИЧКО минава задължително през Tebex (официален п…\" (+2)"
+        },
         {
           "date": "2026-06-26",
           "type": "learning",
