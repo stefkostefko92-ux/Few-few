@@ -1,0 +1,22 @@
+# Unreal Engine — генерирани/локални директории (никога в git)
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+Script/
+.vs/
+.vscode/
+.idea/
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.xcodeproj
+*.xcworkspace
+
+# UE генерира тези project files локално — не се комитват
+*.sln
+*.workspace
