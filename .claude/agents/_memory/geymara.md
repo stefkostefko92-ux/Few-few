@@ -7,6 +7,7 @@
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 
 ## Проверени поуки (verified)
+- **2026-07-04:** Радиус blip-овете (AddBlipForRadius) в GTA V приемат палитрен SetBlipColour index, не суров RGB; за да оцветиш по конфиг RGB мапваш към най-близкия стандартен blip index (1 червено,2 зелено,3 синьо,5 жълто). _("FiveM клиентски blip оцветяване"; verified; "docs.fivem.net SET_BLIP_COLOUR (стандартни индекси); имплементация в bg_territory/client/main.lua")_
 - **2026-07-04:** 2026 популярни анти-чийтове: WaveShield, FiveGuard, Fiveuxe; техните 99.9%/15000+ числа са маркетинг. txAdmin не е пълен анти-чийт. Server-authoritative код остава първи слой. _("FiveM сигурност"; verified; "xgamingserver.com/blog/fivem-anticheat-guide + docs.fivem.net/server-security (WebSearch 2026-07-04)")_
 - **2026-07-04:** Към юли 2026 препоръчаният FXServer артефакт е ~build 25770 (Recommended channel, април 2026); overextended/ox_core все още няма стабилен v1.0 (breaking changes гарантирани, репо активно към 28.06.2026). _("FiveM версии/артефакти"; verified; "runtime.fivem.net артефакти + github.com/overextended/ox_core (WebSearch 2026-07-04)")_
 - **2026-07-03:** Сантасе с 24 карти (с деветки): разменя се ДЕВЕТКАТА на коза, не Валето (Валето е Schnapsen/20 карти); анонсите са "20"/"40"; наказанието при неуспешно затваряне зависи от взятките на ОПОНЕНТА при затварянето (без взятка → 3 т.); последната взятка в открита игра носи +10. _("Сантасе/66 правила"; verified; "packages/game-core/src/engines/trick/santase.ts (EXCHANGE 9, oppHadTrickAtClose, +10)")_
@@ -65,5 +66,6 @@
 - **2026-06-25:** Lua 5.3 е премахнат — не добавяй `lua54 'yes'`; CommunityOx е архивиран → ползвай overextended.
 
 ## Карантина (непроверени — НЕ са факт)
+- **2026-07-04:** В bg_* монорепо конвенцията (Балкан/Qbox) ресурсите включват '@bg_core/shared/config.lua' и ползват exports.bg_core:GetPlayerFaction/Notify/RateLimit + qbx_core; манифестите пазят 'lua54 yes' за консистентност макар флагът да е остарял. _("Few-few/fivem bg_* ресурси"; unverified; "fivem/server/resources/[bg]/bg_core/{fxmanifest.lua,shared/config.lua,server/main.lua}")_
 - **2026-07-04:** Вендор блогове (XGamingServer и подобни) твърдят ESX ползва по-малко CPU от Qbox/QBCore — това противоречи на общностния консенсус и е маркетинг, не бенчмарк; не го цитирай като факт. _("FiveM рамки/производителност"; unverified; "xgamingserver.com/blog/fivem-esx-vs-qbcore (WebSearch 2026-07-04) — отбелязан като оспорен")_
 - **2026-06-26:** qbx_core releases страницата показва ~v1.21–v1.23, но годината в UI е съмнителна (възможна display грешка) — потвърди точния таг/дата на живо преди да цитираш число. _("qbox-version"; unverified; "https://github.com/Qbox-project/qbx_core/releases")_
