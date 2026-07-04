@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "The Best ads block",
+    "description": "Extension name."
+  },
+  "extDescription": {
+    "message": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
+    "description": "Extension description."
+  }
+}

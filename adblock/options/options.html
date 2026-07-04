@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="carbon">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../theme.js"></script>
+  <link rel="stylesheet" href="options.css" />
+  <title>The Best ads block Settings</title>
+</head>
+<body>
+  <header>
+    <img class="logo" src="../icons/icon48.png" alt="" width="30" height="30" />
+    <div>
+      <h1>The Best Ads Block</h1>
+      <span class="tagline">Carbon Stealth Edition · Settings</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card stat-grid">
+      <div class="stat">
+        <div class="stat-num" id="blockedTotal">0</div>
+        <div class="stat-lbl">Ads blocked</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="savedData">0</div>
+        <div class="stat-lbl">Data saved</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="savedTime">0</div>
+        <div class="stat-lbl">Time saved</div>
+      </div>
+    </section>
+    <button id="resetStats" class="btn ghost wide">Reset statistics</button>
+
+    <section class="card">
+      <h2>Appearance</h2>
+      <label class="row">
+        <div>
+          <div class="row-title">Theme</div>
+          <div class="row-sub">Carbon Stealth (dark) or light</div>
+        </div>
+        <select id="theme" class="select">
+          <option value="carbon">Carbon Stealth</option>
+          <option value="light">Light</option>
+        </select>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Sync across devices</div>
+          <div class="row-sub">Keep settings, allowlist and filters in sync on every Chrome you're signed into</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="syncToggle" /><span class="slider"></span></label>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Extra protection</h2>
+      <label class="row">
+        <div>
+          <div class="row-title">Smart Detection <span class="badge-new">unique</span></div>
+          <div class="row-sub">Catches ads no filter list knows yet, cross-origin frames sized to standard ad slots are blocked on sight, no rules needed. <b id="smartCount">0</b> caught so far.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featSmart" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">YouTube ad blocking</div>
+          <div class="row-sub">Remove video ads on YouTube. Turn off if videos won't play.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featYoutube" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Cookie / consent banners</div>
+          <div class="row-sub">Automatically dismiss "Accept cookies" prompts</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featCookies" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Anti-adblock bypass</div>
+          <div class="row-sub">Hide "disable your adblocker" walls and restore the page</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featAab" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Meta sponsored posts</div>
+          <div class="row-sub">Hide "Sponsored" posts on Facebook &amp; Instagram</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featMeta" /><span class="slider"></span></label>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Smart Detection log</h2>
+      <p class="row-sub">Live log of ads caught heuristically (no filter list), newest first.</p>
+      <ul id="smartLog" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Allowlisted sites</h2>
+      <p class="row-sub">Ads are <b>not</b> blocked on these domains.</p>
+      <div class="add-row">
+        <input type="text" id="allowInput" placeholder="e.g. example.com" />
+        <button id="allowAdd" class="btn">Add</button>
+      </div>
+      <ul id="allowList" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>My filters</h2>
+      <p class="row-sub">
+        One rule per line. <code>domain.com</code> blocks a domain;
+        <code>##.selector</code> hides an element everywhere;
+        <code>site.com##.selector</code> hides it only on that site.
+        Lines starting with <code>!</code> are comments.
+      </p>
+      <textarea id="userFilters" class="editor" spellcheck="false"
+        placeholder="! example&#10;ads.example.com&#10;##.sticky-ad&#10;news.com##.promoted"></textarea>
+      <button id="saveFilters" class="btn">Save filters</button>
+      <span id="filtersSaved" class="saved-hint"></span>
+    </section>
+
+    <section class="card">
+      <h2>Hidden elements</h2>
+      <p class="row-sub">Elements you hid manually with the picker, grouped by site.</p>
+      <ul id="customList" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Backup</h2>
+      <div class="add-row">
+        <button id="exportBtn" class="btn ghost">Export settings</button>
+        <button id="importBtn" class="btn ghost">Import settings</button>
+        <input type="file" id="importFile" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
+      <div class="promo-text">
+        <strong>Carbon Stealth</strong>
+        <span>Discover our gear and tools, carbonstealth.eu</span>
+      </div>
+      <span class="promo-go">→</span>
+    </a>
+
+    <section class="card donate">
+      <h2>Support development</h2>
+      <p class="row-sub">The Best Ads Block is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
+      <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 Donate via Revolut</a>
+    </section>
+  </main>
+
+  <footer>The Best Ads Block v3.7.0 · made by Carbon Stealth</footer>
+
+  <script src="options.js"></script>
+</body>
+</html>

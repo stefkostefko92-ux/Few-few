@@ -1,0 +1,14 @@
+{
+  "name": "the-best-ads-block",
+  "version": "3.7.0",
+  "description": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.",
+  "private": true,
+  "homepage": "https://carbonstealth.eu",
+  "license": "MIT",
+  "author": "Carbon Stealth",
+  "scripts": {
+    "rules": "python3 tools/generate_rules.py",
+    "icons": "python3 tools/generate_icons.py",
+    "zip": "cd \"$(git rev-parse --show-toplevel)\" && zip -r dist/the-best-ads-block.zip . -x '*.git*' 'dist/*' 'tools/*' '*.md' 'package.json'"
+  }
+}

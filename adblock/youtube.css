@@ -1,0 +1,45 @@
+/* Hide YouTube's in-page ad surfaces (home, feed, search, overlays, premium nags). */
+
+#masthead-ad,
+ytd-display-ad-renderer,
+ytd-rich-item-renderer:has(ytd-display-ad-renderer),
+ytd-rich-item-renderer:has(ytd-ad-slot-renderer),
+ytd-ad-slot-renderer,
+ytd-in-feed-ad-layout-renderer,
+ytd-banner-promo-renderer,
+ytd-statement-banner-renderer,
+ytd-promoted-sparkles-web-renderer,
+ytd-promoted-video-renderer,
+ytd-compact-promoted-video-renderer,
+ytd-action-companion-ad-renderer,
+ytd-player-legacy-desktop-watch-ads-renderer,
+ytd-search-pyv-renderer,
+ytd-promoted-sparkles-text-search-renderer,
+.ytp-ad-overlay-container,
+.ytp-ad-overlay-slot,
+.ytp-ad-image-overlay,
+.ytp-ad-text-overlay,
+.video-ads.ytp-ad-module,
+ytd-mealbar-promo-renderer,
+ytmusic-mealbar-promo-renderer,
+tp-yt-paper-dialog:has(ytd-enforcement-message-view-model),
+ytd-popup-container:has(ytd-enforcement-message-view-model),
+.ytd-enforcement-message-view-model,
+ytd-enforcement-message-view-model {
+  display: none !important;
+}
+
+.ad-showing video {
+  display: block !important;
+}
+
+/* When the anti-adblock dialog is up, also drop its click-blocking backdrop
+   and restore scrolling (the JS layer removes them too, this avoids a flash). */
+html:has(ytd-enforcement-message-view-model) tp-yt-iron-overlay-backdrop,
+html:has(ytd-enforcement-message-desktop-renderer) tp-yt-iron-overlay-backdrop {
+  display: none !important;
+}
+html:has(ytd-enforcement-message-view-model),
+html:has(ytd-enforcement-message-view-model) body {
+  overflow: auto !important;
+}
