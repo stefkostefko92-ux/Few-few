@@ -270,12 +270,15 @@
 
     const status = root.querySelector('[data-el="status"]');
     const returnAt = TB.State.get().adventureReturnAt || 0;
-    const waiting = returnAt > Date.now();
+    // "Next action in" = soonest of the game busy-timer and the scheduler's own
+    // next tick (which reflects the programmed action interval / humanized delay).
+    const nexts = [returnAt, st.nextAt || 0].filter((t) => t > Date.now());
+    const nextAt = nexts.length ? Math.min.apply(null, nexts) : 0;
     if (!st.running) status.textContent = I18n.t('uiIdle');
     else if (st.onBreak) status.textContent = I18n.t('uiOnBreak');
     else if (st.paused) status.textContent = I18n.t('uiPaused');
     else if (st.currentAction) status.innerHTML = I18n.t('uiRunningAction', [I18n.t('mod_' + st.currentAction)]);
-    else if (waiting) status.innerHTML = I18n.t('uiNextIn', [`<b>${fmtDuration(returnAt - Date.now())}</b>`]);
+    else if (nextAt) status.innerHTML = I18n.t('uiNextIn', [`<b>${fmtDuration(nextAt - Date.now())}</b>`]);
     else status.textContent = I18n.t('uiRunning');
   }
 
