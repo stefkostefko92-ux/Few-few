@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.7.0
+
+- YouTube videos always load now. If YouTube detects the ad removal on a
+  flagged account and refuses to play, the extension reloads once with ad
+  removal disabled for that tab, so the clip plays (with ads, which auto-skip
+  still handles) instead of showing a blank player. Normal accounts keep full
+  ad blocking with no reload.
+
 ## 3.6.2
 
 - Fix a regression that broke all cosmetic filtering: the Smart Detection

@@ -64,26 +64,37 @@
       } catch {}
     }
 
-    // Anti-adblock enforcement dialog: hiding only the dialog leaves YouTube's
-    // full-page backdrop, which swallows every click and locks scrolling. So
-    // when an enforcement message is present, remove the dialog AND its
-    // backdrop, and restore page interaction.
+    // Anti-adblock enforcement: YouTube detected our ad removal and refused to
+    // play the video. Reload once without ad removal so the clip actually
+    // loads (with ads, which we still auto-skip). If we're already bypassing,
+    // just clear the click-blocking backdrop and restore the page.
     const enf = document.querySelector(
       "ytd-enforcement-message-view-model, ytd-enforcement-message-desktop-renderer"
     );
     if (enf) {
+      let bypassing = false;
+      try {
+        bypassing = sessionStorage.getItem("tbab_yt_bypass") === "1";
+      } catch {}
+
+      if (!bypassing) {
+        try {
+          sessionStorage.setItem("tbab_yt_bypass", "1");
+        } catch {}
+        location.reload();
+        return;
+      }
+
       const dialog =
         enf.closest("ytd-popup-container, tp-yt-paper-dialog") || enf;
       try {
         dialog.remove();
       } catch {}
-      document
-        .querySelectorAll("tp-yt-iron-overlay-backdrop")
-        .forEach((b) => {
-          try {
-            b.remove();
-          } catch {}
-        });
+      document.querySelectorAll("tp-yt-iron-overlay-backdrop").forEach((b) => {
+        try {
+          b.remove();
+        } catch {}
+      });
       const html = document.documentElement;
       const body = document.body;
       html.style.removeProperty("overflow");
