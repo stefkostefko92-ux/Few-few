@@ -25,6 +25,7 @@ file holds only what is true across all products. Keep it that way.
 | `panev/` | Panev Ascensori — сайт + e-commerce | Express · SQLite · Stripe | IT |
 | `kebab/` | Uylas Kebap Center — сайт | static | IT |
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
+| `demiurg/` | Демиург *(раб.)* — voxel/sandbox PC игра (.exe) | Unreal Engine 5 · C++ · Steam | 🔬 фаза на проучване (pre-production) |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
