@@ -15,10 +15,14 @@
 
 ## Каква е идеята (в едно изречение)
 
-**Premium (еднократно купувана) PC игра за Steam с зрял тон (16+), красива UE5 графика
-(Lumen), Minecraft-подобен voxel sandbox с истинска RPG/икономическа дълбочина и co-op,
-чиято дълготрайност идва от Steam Workshop UGC — а не от опит да пресъздадем платформения
-мрежов ефект на Roblox.**
+**Premium (еднократно купувана) PC игра за Steam, зрял тон (16+), красива UE5 графика,
+истински кубичен voxel survival-craft в стилизиран феодално-японски свят (samurai/geisha),
+чиято дълготрайност идва от co-op и Steam Workshop модове — а не от опит да пресъздадем
+платформения мрежов ефект на Roblox.**
+
+> **✅ Заключени решения** (собственик): истински voxel · 16+ · брутално малък MVP първо ·
+> samurai/geisha сигнатура. Детайлите — в
+> [`docs/06-gdd-mvp.md`](./docs/06-gdd-mvp.md) и [`docs/07-faza1-tehnicheski-plan.md`](./docs/07-faza1-tehnicheski-plan.md).
 
 ## Защо точно тази посока (кратката теза)
 
@@ -52,13 +56,16 @@
 | [`02-pazar-minecraft-roblox.md`](./docs/02-pazar-minecraft-roblox.md) | Модели на Minecraft vs Roblox, кое е преносимо, пазарни пропуски 2025, конкуренти, реалистични очаквания |
 | [`03-tehnologia-ue5.md`](./docs/03-tehnologia-ue5.md) | UE5 архитектура: версия, voxel, Nanite/Lumen ограничения, мултиплейър, UGC pipeline, пакетиране `.exe`, лиценз |
 | [`04-biznes-pravo-goto-market.md`](./docs/04-biznes-pravo-goto-market.md) | Монетизация, live-ops, go-to-market (wishlists/TikTok), право на ЕС (GDPR-K, DSA, PEGI, loot box, ДДС), безопасност на деца |
-| [`05-koncepcia-i-roadmap.md`](./docs/05-koncepcia-i-roadmap.md) | Синтез: концепция на играта, MVP обхват, roadmap, екип, бюджет, следващи стъпки |
+| [`05-koncepcia-i-roadmap.md`](./docs/05-koncepcia-i-roadmap.md) | Синтез: обща концепция, roadmap, екип, бюджет |
+| [`06-gdd-mvp.md`](./docs/06-gdd-mvp.md) | **Game Design Document + дефиниция на брутално малкия MVP** (заключена посока) |
+| [`07-faza1-tehnicheski-plan.md`](./docs/07-faza1-tehnicheski-plan.md) | **Технически план на Фаза 1** — voxel spike, UE5 setup, седмични milestones |
 
 ## Следваща стъпка
 
-Виж **„Следващи стъпки“** в [`docs/05-koncepcia-i-roadmap.md`](./docs/05-koncepcia-i-roadmap.md#следващи-стъпки).
-Първото решение не е техническо, а **продуктово**: потвърждаваме ли нишата и обхвата,
-преди да напишем и ред C++.
+Посоката е заключена (виж `06`). Следва **избор на voxel технология чрез 1–2 седмичен spike**
+(Easy Voxels: Cubic vs собствен C++ chunk engine vs Voxel Plugin 2) и старт на Фаза 1 по
+седмичния план в [`docs/07`](./docs/07-faza1-tehnicheski-plan.md). Първата задача е да докажем,
+че **кубичното voxel ядро е стабилно и забавно за 1 играч**.
 
 ## Лиценз
 
