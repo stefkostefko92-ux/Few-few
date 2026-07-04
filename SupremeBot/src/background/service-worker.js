@@ -133,10 +133,15 @@ async function handleMessage(msg, sender) {
     case 'STATS_DELTA':
       return applyStatsDelta(msg.delta);
 
-    case 'NOTIFY':
-      raiseNotification(msg.title, msg.message);
+    case 'NOTIFY': {
+      // Two independent channels: a Chrome desktop popup (only when the desktop
+      // toggle is on) and the Telegram/Discord webhooks (gated by their own
+      // config). So you can send everything to Discord WITHOUT any Chrome popups.
+      const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+      if (settings.general?.notifications && msg.desktop !== false) raiseNotification(msg.title, msg.message);
       await sendWebhooks(msg.title, msg.message, msg.level, msg.fields);   // awaited so the SW survives the fetch
       return { ok: true };
+    }
 
     case 'TEST_WEBHOOK':
       return { ok: true, sent: await sendWebhooks(

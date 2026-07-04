@@ -100,7 +100,7 @@
     if (lvl != null && prev > 0 && lvl > prev) {
       TB.Stats?.bump({ levelUps: lvl - prev });
       const g = TB.Storage?.section('general') || {};
-      if (g.notifications && g.notifyOnLevelUp) {
+      if (g.notifyOnLevelUp) {
         TB.notify?.({
           message: TB.I18n.t('notifyLevelUp', [String(lvl)]),
           level: 'success', fields: [{ name: 'Level', value: String(lvl), inline: true }]
