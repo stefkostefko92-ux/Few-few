@@ -16,7 +16,7 @@ file holds only what is true across all products. Keep it that way.
 |-----|---------|-------|-------|
 | `zabobovdol/` | За Бобов дол — граждански портал | Next.js 15 · React 19 · TS · Prisma · PostgreSQL · Tailwind | BG · zabobovdol.carbonstealth.eu |
 | `medqr/` | MedQR — спешен мед. профил (QR/NFC) | Express · EJS · SQLite · plain JS ESM | BG/EN · medqr.carbonstealth.eu |
-| `supreme/` | Supreme Bot — Discord SaaS | Express · discord.js v14 · React 18+Vite · Prisma · PostgreSQL · Redis · Docker · plain JS ESM | supreme.carbonstealth.eu |
+| `SupremeDiscordBot/` | Supreme Bot — Discord SaaS | Express · discord.js v14 · React 18+Vite · Prisma · PostgreSQL · Redis · Docker · plain JS ESM | supreme.carbonstealth.eu |
 | `treydar/` | Трейдъра — spot трейдинг бот (Binance) | Node · CCXT · plain JS ESM | self-hosted · риск-първо, **НЕ** инвест. съвет |
 | `Gaming/` | АСО — premium browser gaming portal | TS monorepo (`apps/api·marketing·web`) | multi-lang |
 | `Minyor/` | ФК „Миньор“ Бобов дол — клубен сайт | Next.js · React · TS · Prisma | BG |
@@ -41,7 +41,7 @@ hooks, rules).
   typecheck/format + test + build — listed in the product's `CLAUDE.md`/`README`).
   CI is **path-filtered**: each workflow runs only when its subdir changes.
 - **Match the surrounding style.** Strict TS + Zod + `@/*` alias in the Next apps;
-  plain ESM JS + Prettier in medqr/supreme/treydar/panev. Avoid unjustified `any`.
+  plain ESM JS + Prettier in medqr/SupremeDiscordBot/treydar/panev. Avoid unjustified `any`.
 - **Commits: Bulgarian, conventional, descriptive** (e.g. „Печатна брошура А5…“),
   matching existing history. Feature branch → PR → `main`.
 - **Proprietary, EU-hosted.** GDPR + security are primary requirements, not
