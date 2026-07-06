@@ -6184,9 +6184,20 @@
           "date": "2026-07-03",
           "event": "v10.1 — учене без таван",
           "detail": "Таванът 10.0 премахнат: 1 проверени поуки от ревизията на игрите вдигат зрелостта нагоре (ученето вече е неограничено)."
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST…\" (+2 още)"
+        },
         {
           "date": "2026-07-03",
           "type": "learning",
