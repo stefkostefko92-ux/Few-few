@@ -4957,9 +4957,20 @@
           "date": "2026-07-06",
           "event": "v10.9 — учене",
           "detail": "Научи: QuickSurface Mesh Selection има три реални инструмента за боядисване на региони преди p… (+3 още)"
+        },
+        {
+          "version": "11.0.0",
+          "date": "2026-07-06",
+          "event": "v11.0 — учене",
+          "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA…\" (+4 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
