@@ -4924,9 +4924,20 @@
           "date": "2026-07-06",
           "event": "v10.8 — учене",
           "detail": "Научи: QuickSurface 2026 е на Siemens Parasolid kernel → експорт Parasolid (.x_t) към SOLIDWOR… (+10 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-06",
+          "event": "v10.9 — учене",
+          "detail": "Научи: QuickSurface Mesh Selection има три реални инструмента за боядисване на региони преди p… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „QuickSurface Mesh Selection има три реални инструмента за боядисване на региони преди p…\" (+3 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
