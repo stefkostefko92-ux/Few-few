@@ -4410,6 +4410,11 @@
       "activity": [
         {
           "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „CSPos/store деплой е medqr-моделът (systemd + nginx + rsync от релийз): user cspos, /op…\" (+2)"
+        },
+        {
+          "date": "2026-07-06",
           "type": "learning",
           "summary": "Научи: „Let's Encrypt ACME профили: classic=90 дни (default, избира се автоматично), tlsserver=…\" (+12 още)"
         },
