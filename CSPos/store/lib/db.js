@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS licenses (
   stripeSessionId       TEXT UNIQUE,          -- идемпотентност: 1 лиценз на Checkout сесия
   stripePaymentIntentId TEXT,                 -- за refund/chargeback → revoke (lifetime)
   periodEnd     INTEGER,                      -- unix ms; NULL = lifetime
+  emailSentAt   INTEGER,                      -- ключът е изпратен по имейл (идемпотентно)
   createdAt     INTEGER NOT NULL,
   revokedAt     INTEGER
 );
@@ -60,3 +61,6 @@ export function claimEvent(eventId, type) {
     return false; // вече обработено
   }
 }
+
+// съществуващи бази отпреди колоната emailSentAt
+try { db.exec("ALTER TABLE licenses ADD COLUMN emailSentAt INTEGER"); } catch { /* вече я има */ }

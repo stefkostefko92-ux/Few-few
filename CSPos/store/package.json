@@ -4,7 +4,9 @@
   "description": "Carbon Stealth POS — лицензионен магазин: Stripe Checkout, активационни ключове, моментална доставка.",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
@@ -15,6 +17,7 @@
   "dependencies": {
     "better-sqlite3": "^11.3.0",
     "express": "^4.19.2",
+    "nodemailer": "^9.0.3",
     "stripe": "^17.0.0"
   }
 }

@@ -17,6 +17,7 @@ import fs from "node:fs";
 import { db, claimEvent } from "./lib/db.js";
 import { generateKey, normalizeKey, hashKey, signLicenseBlob } from "./lib/license.js";
 import { PLANS, MAX_SEATS, GRACE_DAYS, isValidPlan } from "./lib/plans.js";
+import { sendLicenseEmail } from "./lib/mail.js";
 
 const {
   STRIPE_SECRET_KEY,
@@ -201,7 +202,8 @@ async function handleEvent(event) {
             typeof obj.subscription === "string" ? obj.subscription : obj.subscription.id
           )
         : null;
-      upsertLicenseFromSession(obj, sub);
+      const lic = upsertLicenseFromSession(obj, sub);
+      if (lic) void sendLicenseEmail(lic, BASE_URL);
       break;
     }
     case "invoice.paid": {
@@ -282,6 +284,7 @@ app.get("/api/session-status", limiter(60, 60_000), async (req, res) => {
         : null;
       lic = upsertLicenseFromSession(session, sub);
     }
+    if (lic) void sendLicenseEmail(lic, BASE_URL);
     res.json({
       status: "ready",
       key: lic.keyPlain,
