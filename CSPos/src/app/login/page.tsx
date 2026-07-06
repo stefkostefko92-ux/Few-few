@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Storefront, Backspace, SignIn, User } from "@phosphor-icons/react";
 import { apiJson } from "@/components/ui";
+import { APP_VERSION } from "@/lib/constants";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -81,6 +82,7 @@ export default function LoginPage() {
             Carbon Stealth <span className="text-brand-600">POS</span>
           </h1>
           <p className="text-ink-400 mt-1">Касова система за хранителни магазини</p>
+          <p className="text-ink-500 text-xs mt-1">версия {APP_VERSION}</p>
         </div>
 
         <div className="card p-6 space-y-5">

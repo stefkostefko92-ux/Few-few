@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS licenses (
   seats         INTEGER NOT NULL,             -- брой каси
   status        TEXT NOT NULL,                -- active | past_due | canceled | revoked
   email         TEXT,
+  buyerEik      TEXT,                        -- ЕИК на купувача (за списъка на клиентите към НАП)
   stripeCustomerId      TEXT,
   stripeSubscriptionId  TEXT,
   stripeSessionId       TEXT UNIQUE,          -- идемпотентност: 1 лиценз на Checkout сесия
@@ -64,3 +65,4 @@ export function claimEvent(eventId, type) {
 
 // съществуващи бази отпреди колоната emailSentAt
 try { db.exec("ALTER TABLE licenses ADD COLUMN emailSentAt INTEGER"); } catch { /* вече я има */ }
+try { db.exec("ALTER TABLE licenses ADD COLUMN buyerEik TEXT"); } catch { /* вече я има */ }

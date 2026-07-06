@@ -70,3 +70,7 @@ export const SESSION_TTL_HOURS = 14; // една дълга смяна
  * алармата за изчерпващи се наличности (нямат реален склад).
  */
 export const SERVICE_PLU_MIN = 990;
+
+/** Наименование и версия на софтуера — идентификация по Прил. № 29 Н-18. */
+export const APP_NAME = "Carbon Stealth POS";
+export const APP_VERSION = "1.0.0";

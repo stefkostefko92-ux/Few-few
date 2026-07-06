@@ -128,6 +128,15 @@ app.post("/api/checkout", limiter(10, 15 * 60_000), async (req, res) => {
         automatic_tax: { enabled: true },
         tax_id_collection: { enabled: true }, // B2B ЗДДС № → reverse charge
         billing_address_collection: "required",
+        // ЕИК на купувача — за списъка на клиентите на СУПТО към НАП (чл. 52и Н-18)
+        custom_fields: [
+          {
+            key: "eik",
+            label: { type: "custom", custom: "ЕИК / Булстат на фирмата (за НАП)" },
+            type: "text",
+            optional: true,
+          },
+        ],
         ...(isSub
           ? { subscription_data: { metadata: { plan } } }
           : { customer_creation: "always", invoice_creation: { enabled: true } }),
@@ -174,6 +183,7 @@ function upsertLicenseFromSession(session, sub) {
     seats,
     status: "active",
     email: session.customer_details?.email ?? null,
+    buyerEik: session.custom_fields?.find((f) => f.key === "eik")?.text?.value ?? null,
     stripeCustomerId: typeof session.customer === "string" ? session.customer : session.customer?.id ?? null,
     stripeSubscriptionId: typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null,
     stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null,
@@ -181,9 +191,9 @@ function upsertLicenseFromSession(session, sub) {
     createdAt: Date.now(),
   };
   db.prepare(
-    `INSERT INTO licenses (id, keyHash, keyPlain, plan, seats, status, email,
+    `INSERT INTO licenses (id, keyHash, keyPlain, plan, seats, status, email, buyerEik,
        stripeCustomerId, stripeSubscriptionId, stripeSessionId, stripePaymentIntentId, periodEnd, createdAt)
-     VALUES (@id, @keyHash, @keyPlain, @plan, @seats, @status, @email,
+     VALUES (@id, @keyHash, @keyPlain, @plan, @seats, @status, @email, @buyerEik,
        @stripeCustomerId, @stripeSubscriptionId, @sessionId, @stripePaymentIntentId, @periodEnd, @createdAt)
      ON CONFLICT(stripeSessionId) DO NOTHING`
   ).run({ ...lic, sessionId: session.id });
