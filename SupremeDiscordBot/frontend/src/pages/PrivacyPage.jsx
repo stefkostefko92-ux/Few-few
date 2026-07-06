@@ -95,6 +95,13 @@ export default function PrivacyPage() {
                 <Td>Until server operator deletes or account is removed</Td>
               </Tr>
               <Tr>
+                <Td>Server activity logs (optional, off by default)</Td>
+                <Td>Member actions the server operator chooses to log — voice mute/deaf/join, role &amp; nickname changes, timeouts, bans/kicks (no message content)</Td>
+                <Td>Server moderation and audit trail, enabled and configured by the server operator</Td>
+                <Td>Processed on behalf of the server operator (controller) under Art. 28 — the operator enables the feature and determines the legal basis and member notice</Td>
+                <Td>30 days, then automatically deleted</Td>
+              </Tr>
+              <Tr>
                 <Td>Billing data</Td>
                 <Td>Stripe customer ID, subscription ID, payment status, invoice amounts</Td>
                 <Td>Process payments; manage subscription state; provide invoices</Td>

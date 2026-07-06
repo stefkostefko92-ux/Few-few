@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, Hash, Bot, Zap, RefreshCw, Star } from "lucide-react";
-import { getServer, updateServer } from "../api";
+import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity } from "lucide-react";
+import { getServer, updateServer, getEventLog } from "../api";
 
 export default function SettingsPage() {
   const { serverId } = useParams();
@@ -40,6 +40,12 @@ export default function SettingsPage() {
         welcomerDmMessage:  server.welcomerDmMessage || "",
         autoroleIds:        (server.autoroleIds || []).join(","),
         autoroleBotIds:     (server.autoroleBotIds || []).join(","),
+        // Server event logging
+        eventLogEnabled:       server.eventLogEnabled || false,
+        eventLogChannelId:     server.eventLogChannelId || "",
+        eventLogCat_voice:      (server.eventLogCategories || []).includes("voice"),
+        eventLogCat_members:    (server.eventLogCategories || []).includes("members"),
+        eventLogCat_moderation: (server.eventLogCategories || []).includes("moderation"),
       });
     }
   }, [server]);
@@ -79,6 +85,14 @@ export default function SettingsPage() {
       welcomerDmMessage:  form.welcomerDmMessage || null,
       autoroleIds:        csvToArr(form.autoroleIds),
       autoroleBotIds:     csvToArr(form.autoroleBotIds),
+      // Server event logging (all tiers)
+      eventLogEnabled:    form.eventLogEnabled,
+      eventLogChannelId:  form.eventLogChannelId || null,
+      eventLogCategories: [
+        form.eventLogCat_voice && "voice",
+        form.eventLogCat_members && "members",
+        form.eventLogCat_moderation && "moderation",
+      ].filter(Boolean),
       ...(server.isPremium && {
         customBotName: form.customBotName || null,
         customBotAvatar: form.customBotAvatar || null,
@@ -132,6 +146,67 @@ export default function SettingsPage() {
               />
             </div>
           </label>
+        </div>
+
+        {/* ── Server Event Logging ──────────────────────────────────── */}
+        <div className="cs-card space-y-4">
+          <div className="flex items-center gap-2">
+            <Activity className="w-5 h-5 text-cs-cyan" />
+            <h2 className="font-semibold text-cs-text">Server Activity Logging</h2>
+          </div>
+          <p className="text-sm text-cs-muted">
+            Log member actions in this server (voice mute/deaf/join, role &amp; nickname changes,
+            timeouts, bans/kicks). Events are posted to a channel and kept for 30 days in the
+            dashboard. You are the data controller for this activity — enable it only with a lawful
+            basis and tell your members.
+          </p>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded accent-cs-cyan"
+              checked={form.eventLogEnabled}
+              onChange={(e) => set("eventLogEnabled", e.target.checked)}
+            />
+            <span className="text-sm text-cs-text">Enable activity logging</span>
+          </label>
+
+          {form.eventLogEnabled && (
+            <div className="pl-6 space-y-3">
+              <label className="block">
+                <span className="cs-label">Log Channel ID</span>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cs-muted" />
+                  <input
+                    className="cs-input pl-9 font-mono text-xs"
+                    placeholder="Discord channel ID where events are posted"
+                    value={form.eventLogChannelId}
+                    onChange={(e) => set("eventLogChannelId", e.target.value)}
+                  />
+                </div>
+              </label>
+              <div>
+                <span className="cs-label">Categories to log</span>
+                <div className="flex flex-col gap-2 mt-1">
+                  {[
+                    ["eventLogCat_voice", "Voice — mute / deaf / join / leave / move"],
+                    ["eventLogCat_members", "Members — roles / nickname / timeout / join / leave"],
+                    ["eventLogCat_moderation", "Moderation — ban / unban / kick"],
+                  ].map(([key, label]) => (
+                    <label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-cs-text">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 rounded accent-cs-cyan"
+                        checked={form[key]}
+                        onChange={(e) => set(key, e.target.checked)}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── AI Auto-Replies (Premium) ─────────────────────────────── */}
@@ -385,6 +460,84 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+
+      {server?.eventLogEnabled && <EventLogViewer serverId={serverId} />}
+    </div>
+  );
+}
+
+const CATEGORY_STYLE = {
+  voice: "text-cs-cyan",
+  members: "text-success",
+  moderation: "text-danger",
+};
+
+// Human-readable label for an action string (e.g. "voice_server_mute" → "Server mute").
+function actionLabel(action) {
+  return action
+    .replace(/^voice_/, "").replace(/^member_/, "").replace(/_/g, " ")
+    .replace(/\bself\b/, "self").trim()
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+function EventLogViewer({ serverId }) {
+  const [category, setCategory] = useState("");
+  const { data, isLoading } = useQuery({
+    queryKey: ["event-log", serverId, category],
+    queryFn: () => getEventLog(serverId, { limit: 50, ...(category && { category }) }),
+    refetchInterval: 15_000,
+  });
+  const items = data?.items || [];
+
+  return (
+    <div className="cs-card mt-8">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Activity className="w-5 h-5 text-cs-cyan" />
+          <h2 className="font-semibold text-cs-text">Recent Activity</h2>
+          {data?.total != null && <span className="text-xs text-cs-dim">({data.total} logged)</span>}
+        </div>
+        <div className="flex gap-1 text-xs font-mono">
+          {["", "voice", "members", "moderation"].map((c) => (
+            <button
+              key={c || "all"}
+              onClick={() => setCategory(c)}
+              className={`px-2 py-1 rounded ${category === c ? "bg-cs-cyanGlow text-cs-cyan" : "text-cs-muted hover:text-cs-text"}`}
+            >
+              {c || "all"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="h-24 animate-pulse bg-cs-panel rounded-xl" />
+      ) : items.length === 0 ? (
+        <p className="text-sm text-cs-muted py-6 text-center">No activity logged yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-left text-cs-muted border-b border-cs-border">
+                <th className="py-2 pr-3">When</th>
+                <th className="py-2 pr-3">Action</th>
+                <th className="py-2 pr-3">Member</th>
+                <th className="py-2 pr-3">By</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((e) => (
+                <tr key={e.id} className="border-b border-cs-border/40">
+                  <td className="py-2 pr-3 text-cs-dim whitespace-nowrap">{new Date(e.createdAt).toLocaleString()}</td>
+                  <td className={`py-2 pr-3 font-medium ${CATEGORY_STYLE[e.category] || "text-cs-text"}`}>{actionLabel(e.action)}</td>
+                  <td className="py-2 pr-3 font-mono text-cs-text">{e.targetTag || e.targetId}</td>
+                  <td className="py-2 pr-3 font-mono text-cs-muted">{e.actorId && e.actorId !== e.targetId ? (e.actorTag || e.actorId) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
