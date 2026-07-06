@@ -178,8 +178,8 @@ function showSuccess(data) {
   document.getElementById('loading-state').style.display = 'none';
   document.getElementById('success-state').style.display = 'block';
 
-  const nome   = data.customerName || data.metadata?.cliente_nome || '';
-  const email  = data.customerEmail || '';
+  const nome   = '';
+  const email  = '';
   const totale = ((data.amountTotal || 0) / 100).toFixed(2);
   const items  = data.lineItems || [];
 

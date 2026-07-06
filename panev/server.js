@@ -13,7 +13,9 @@ const cors         = require('cors');
 const compression  = require('compression');
 const path         = require('path');
 const cookieParser = require('cookie-parser');
-const stripe       = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy');
+const crypto       = require('crypto');
+const stripe       = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy',
+                       { apiVersion: '2024-04-10' }); // pin — event/object shape must not drift on account upgrade
 
 const db   = require('./lib/db');
 const auth = require('./lib/auth');
@@ -159,7 +161,11 @@ app.use((req, res, next) => {
   // otherwise bypass the blocklist and disclose the SQLite DB (hashes + PII).
   const blocked = [/^\/data\b/i, /^\/scripts\b/i, /^\/lib\b/i, /^\/node_modules\b/i,
                    /^\/\.env/i, /^\/package(-lock)?\.json$/i, /\.db(-journal|-wal|-shm)?$/i,
-                   /^\/\.git\b/i];
+                   /^\/\.git\b/i,
+                   // root source / config must not be served (README leaks admin creds,
+                   // server.js/contact.php/*.sh are recon surface). .htaccess covers this
+                   // under Apache; the app runs under Node behind Nginx, so enforce here.
+                   /^\/README\.md$/i, /^\/server\.js$/i, /\.php$/i, /\.sh$/i, /^\/\.htaccess$/i];
   if (blocked.some(r => r.test(req.path))) return res.status(404).send('Not found');
   next();
 });
@@ -690,6 +696,10 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       payment_intent_data: { metadata },
       metadata,
       locale: 'it',
+    }, {
+      // Guard against duplicate sessions if the request is retried after a network blip.
+      idempotencyKey: 'co_' + auth.clientIp(req) + '_' + crypto.createHash('sha256')
+        .update(JSON.stringify(lineItems) + (safeInfo.email || '')).digest('hex').slice(0, 32),
     });
 
     res.json({ url: session.url, sessionId: session.id });
@@ -803,7 +813,7 @@ app.post('/api/contact', contactLimiter, (req, res) => {
 // ─────────────────────────────────────────────────────────────
 //  Stripe webhook
 // ─────────────────────────────────────────────────────────────
-function handleStripeWebhook(req, res) {
+async function handleStripeWebhook(req, res) {
   const sig    = req.headers['stripe-signature'];
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -830,23 +840,29 @@ function handleStripeWebhook(req, res) {
       case 'checkout.session.completed': {
         const s = event.data.object;
 
-        // Already stored? (idempotency)
-        const existing = db.getOrderByStripeSession(s.id);
-        if (existing) {
+        // Only record a paid session (async methods can complete unpaid).
+        if (s.payment_status && s.payment_status !== 'paid' && s.payment_status !== 'no_payment_required') {
+          console.warn(`[webhook] session ${s.id} completata ma payment_status=${s.payment_status} — skip`);
+          break;
+        }
+
+        // Idempotency: skip if already stored.
+        if (db.getOrderByStripeSession(s.id)) {
           console.log(`[webhook] Order già presente per session ${s.id}, skip`);
           break;
         }
 
-        // Retrieve line items for the order record
-        stripe.checkout.sessions.retrieve(s.id, { expand: ['line_items'] }).then(full => {
-          const items = (full.line_items?.data || []).map(li => ({
-            name:  li.description || '—',
-            price: (li.price?.unit_amount || 0) / 100,
-            qty:   li.quantity,
-          }));
-
+        // MUST finish the DB write BEFORE returning 2xx: if this throws we return
+        // 500 so Stripe retries (otherwise a failed insert = a paid order lost).
+        const full = await stripe.checkout.sessions.retrieve(s.id, { expand: ['line_items'] });
+        const items = (full.line_items?.data || []).map(li => ({
+          name:  li.description || '—',
+          price: (li.price?.unit_amount || 0) / 100,
+          qty:   li.quantity,
+        }));
+        try {
           db.insertOrder({
-            id: 'ORD-' + Date.now().toString(36),
+            id: 'ORD-' + db.genId(),
             stripeSessionId: s.id,
             stripePaymentId: s.payment_intent,
             cliente: s.metadata?.cliente_nome || s.customer_details?.name || '',
@@ -860,19 +876,33 @@ function handleStripeWebhook(req, res) {
             stato:   'Confermato',
             pagamento: 'Stripe',
           });
-          console.log(`[webhook] ✓ Ordine salvato — ${s.id} — €${((s.amount_total||0)/100).toFixed(2)} — ${s.customer_email}`);
-        }).catch(e => console.error('[webhook] save order failed:', e.message));
-
+        } catch (e) {
+          // UNIQUE(stripe_session_id) → a concurrent delivery already inserted it: treat as done.
+          if (/UNIQUE|constraint/i.test(e.message) && db.getOrderByStripeSession(s.id)) {
+            console.log(`[webhook] Order inserito concorrentemente per ${s.id}, ok`);
+            break;
+          }
+          throw e;
+        }
+        console.log(`[webhook] ✓ Ordine salvato — ${s.id} — €${((s.amount_total||0)/100).toFixed(2)}`);
         break;
       }
       case 'payment_intent.payment_failed':
         console.warn(`[webhook] ✗ Pagamento fallito: ${event.data.object.id}`);
         break;
+      case 'charge.refunded':
+      case 'charge.dispute.created':
+        // Order status is keyed by session, not payment_intent; log for manual
+        // reconciliation (refund/dispute flow is out of scope for the quote-first UI).
+        console.warn(`[webhook] ${event.type} — payment_intent ${event.data.object.payment_intent}`);
+        break;
       default:
         console.log(`[webhook] Evento ignorato: ${event.type}`);
     }
   } catch (err) {
-    console.error('[webhook]', err.message);
+    // Return 5xx so Stripe retries — do NOT swallow into a 200.
+    console.error('[webhook] elaborazione fallita, richiedo retry:', err.message);
+    return res.status(500).send('Webhook processing failed');
   }
 
   res.json({ received: true });

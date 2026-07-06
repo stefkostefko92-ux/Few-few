@@ -1526,7 +1526,7 @@
           <div class="product-thumb">
             ${p.image ? `<picture>
               <source srcset="${p.image.replace(/\.(png|jpg|jpeg)$/i, '.webp')}" type="image/webp">
-              <img src="${p.image}" alt="${escHtml(p.name)}" loading="lazy" decoding="async" class="product-thumb-svg-bg" style="object-fit:contain;padding:10px;width:100%;height:100%">
+              <img src="${escHtml(p.image)}" alt="${escHtml(p.name)}" loading="lazy" decoding="async" class="product-thumb-svg-bg" style="object-fit:contain;padding:10px;width:100%;height:100%">
             </picture>` : `<div class="product-thumb-placeholder">${p.icon || '🔩'}</div>`}
             ${p.badge ? `<span class="product-badge">${escHtml(p.badge)}</span>` : ''}
           </div>
@@ -1597,7 +1597,7 @@
     }
     const imgEl = document.getElementById('pm-img');
     if (p.image) {
-      imgEl.innerHTML = `<img loading="lazy" src="${p.image}" alt="${escHtml(p.name)}" style="object-fit:contain;width:100%;height:100%;background:#fff;padding:12px">`;
+      imgEl.innerHTML = `<img loading="lazy" src="${escHtml(p.image)}" alt="${escHtml(p.name)}" style="object-fit:contain;width:100%;height:100%;background:#fff;padding:12px">`;
     } else {
       imgEl.innerHTML = p.icon || '📦';
       imgEl.style.fontSize = '5rem';

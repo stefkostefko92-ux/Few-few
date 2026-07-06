@@ -11,8 +11,11 @@ const bcrypt = require('bcryptjs');
 const db     = require('../lib/db');
 
 // ── Default admin ─────────────────────────────────────────────
-const ADMIN_EMAIL    = process.env.ADMIN_EMAIL    || 'info@panevascensori.it';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Panev2024!';
+// No hardcoded default password: use ADMIN_PASSWORD if set, else generate a
+// random one and print it ONCE. This stops shipping a repo-known credential.
+const ADMIN_EMAIL    = process.env.ADMIN_EMAIL || 'info@panevascensori.it';
+const ADMIN_PW_FROM_ENV = !!process.env.ADMIN_PASSWORD;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || require('crypto').randomBytes(12).toString('base64url');
 
 function seedAdmin() {
   const existing = db.getAdminByEmail(ADMIN_EMAIL);
@@ -23,7 +26,11 @@ function seedAdmin() {
   const hash = bcrypt.hashSync(ADMIN_PASSWORD, 12);
   db.createAdmin(ADMIN_EMAIL, hash, 'Amministratore');
   console.log(`[seed] ✓ Admin creato: ${ADMIN_EMAIL}`);
-  console.log(`[seed]   Password iniziale: ${ADMIN_PASSWORD}`);
+  if (ADMIN_PW_FROM_ENV) {
+    console.log(`[seed]   Password: (da ADMIN_PASSWORD nell'ambiente)`);
+  } else {
+    console.log(`[seed]   Password generata (mostrata UNA volta): ${ADMIN_PASSWORD}`);
+  }
   console.log(`[seed]   ⚠  CAMBIARE dopo il primo login da /admin/impostazioni.html`);
 }
 
