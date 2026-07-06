@@ -376,70 +376,154 @@ class Illustration(Flowable):
         c.setLineWidth(0.8)
         c.rect(0, 0, w, h, fill=0, stroke=1)
 
-    # — герб —
+    # — герб (официалният герб на Бобов дол) —
     def d_gerb(self, c, w, h):
-        _parchment(c, 0, 0, w, h)
+        GOLD_H = colors.HexColor('#e9b820')
+        RED_H = colors.HexColor('#c01818')
+        BLUE_H = colors.HexColor('#1c2f80')
+        LINE_H = colors.HexColor('#3a2c10')
         cx = w / 2
-        top = h - 46
-        sw, sh = 96, 116
-        # кръстосани кирки над щита
-        c.setStrokeColor(colors.HexColor('#4a3421'))
-        c.setLineWidth(2.0)
-        c.line(cx - 26, top + 6, cx + 26, top + 34)
-        c.line(cx - 26, top + 34, cx + 26, top + 6)
-        c.setFillColor(colors.HexColor('#5f6670'))
-        for ex, ey, ang in ((cx + 26, top + 34, 25), (cx - 26, top + 34, -25)):
+        top = h * 0.66          # горен ръб на щита
+        hw = w * 0.215          # полуширина на щита
+        straight = h * 0.27     # прав участък на стените
+        r = hw                  # радиус на полукръглото дъно
+        ccy = top - straight    # център на дъгата
+
+        def shield(inset):
+            p = c.beginPath()
+            p.moveTo(cx - hw + inset, top - inset)
+            p.lineTo(cx + hw - inset, top - inset)
+            p.lineTo(cx + hw - inset, ccy)
+            p.arcTo(cx - hw + inset, ccy - (r - inset) * 2 + (r - inset),
+                    cx + hw - inset, ccy + (r - inset),
+                    startAng=0, extent=-180)
+            p.lineTo(cx - hw + inset, top - inset)
+            p.close()
+            return p
+
+        # крепостна корона („Царичина“) над щита
+        c.setFillColor(GOLD_H)
+        c.setStrokeColor(LINE_H)
+        c.setLineWidth(1.1)
+        cb = top + 2            # основа на короната
+        p = c.beginPath()
+        p.moveTo(cx - hw * 0.92, cb)
+        p.lineTo(cx + hw * 0.92, cb)
+        p.lineTo(cx + hw * 1.08, cb + h * 0.055)
+        p.lineTo(cx - hw * 1.08, cb + h * 0.055)
+        p.close()
+        c.drawPath(p, fill=1, stroke=1)
+        mtop = cb + h * 0.055
+        for mx, mw_, mh_ in ((cx - hw * 0.98, hw * 0.52, h * 0.050),
+                             (cx - hw * 0.30, hw * 0.60, h * 0.068),
+                             (cx + hw * 0.46, hw * 0.52, h * 0.050)):
+            c.rect(mx, mtop - 1, mw_, mh_ + 1, fill=1, stroke=1)
+        # прозорчета в короната
+        c.setFillColor(LINE_H)
+        for wx in (cx - hw * 0.42, cx + hw * 0.30):
+            c.rect(wx, mtop + 1.5, hw * 0.12, h * 0.016, fill=1, stroke=0)
+
+        # щит: златен кант + синьо поле
+        c.setFillColor(GOLD_H)
+        c.setLineWidth(1.4)
+        c.drawPath(shield(0), fill=1, stroke=1)
+        c.setFillColor(BLUE_H)
+        c.drawPath(shield(hw * 0.075), fill=1, stroke=0)
+        ins = hw * 0.075
+
+        # червено поле в средата
+        red_top = top - h * 0.075
+        red_bot = top - h * 0.26
+        c.setFillColor(RED_H)
+        c.rect(cx - hw + ins, red_bot, (hw - ins) * 2, red_top - red_bot,
+               fill=1, stroke=0)
+
+        # надпис БОБОВ ДОЛ върху синята лента
+        c.setFillColor(GOLD_H)
+        c.setFont('Book-Bold', hw * 0.245)
+        c.drawCentredString(cx, top - h * 0.055, 'БОБОВ ДОЛ')
+
+        # три светкавици върху червеното поле
+        bw = hw * 0.13
+        for bx in (cx - hw * 0.52, cx, cx + hw * 0.52):
+            ty = red_top - h * 0.022
+            by = red_bot + h * 0.030
+            midy = (ty + by) / 2
+            p = c.beginPath()
+            p.moveTo(bx - bw * 0.2, ty)
+            p.lineTo(bx + bw, ty)
+            p.lineTo(bx + bw * 0.25, midy + h * 0.008)
+            p.lineTo(bx + bw * 0.95, midy + h * 0.008)
+            p.lineTo(bx - bw * 0.1, by)
+            p.lineTo(bx + bw * 0.18, midy - h * 0.004)
+            p.lineTo(bx - bw * 0.55, midy - h * 0.004)
+            p.close()
+            c.drawPath(p, fill=1, stroke=0)
+            # връх-стрелка
+            p = c.beginPath()
+            p.moveTo(bx - bw * 0.75, by + h * 0.012)
+            p.lineTo(bx + bw * 0.30, by + h * 0.012)
+            p.lineTo(bx - bw * 0.45, by - h * 0.030)
+            p.close()
+            c.drawPath(p, fill=1, stroke=0)
+
+        # зъбно колело (долу вляво)
+        gx, gy = cx - hw * 0.44, ccy - r * 0.42
+        grad = hw * 0.36
+        import math
+        for ang in range(60, 300, 30):
+            a = math.radians(ang)
+            tx = gx + math.cos(a) * grad
+            ty = gy + math.sin(a) * grad
             c.saveState()
-            c.translate(ex, ey)
+            c.translate(tx, ty)
             c.rotate(ang)
-            c.rect(-3, -2, 14, 5, fill=1, stroke=0)
+            c.setFillColor(GOLD_H)
+            c.rect(-grad * 0.09, -grad * 0.13, grad * 0.26, grad * 0.26,
+                   fill=1, stroke=0)
             c.restoreState()
-        # щит (класическа форма)
-        c.setFillColor(CREAM)
-        c.setStrokeColor(BROWN)
+        c.setFillColor(GOLD_H)
+        c.circle(gx, gy, grad, fill=1, stroke=0)
+        c.setFillColor(BLUE_H)
+        c.circle(gx, gy, grad * 0.62, fill=1, stroke=0)
+
+        # кръстосани чукове (в средата на долното поле)
+        hx, hy = cx + hw * 0.10, ccy - r * 0.28
+        for ang in (-42, 42):
+            c.saveState()
+            c.translate(hx, hy)
+            c.rotate(ang)
+            c.setFillColor(GOLD_H)
+            c.setStrokeColor(BLUE_H)
+            c.setLineWidth(0.8)
+            c.rect(-hw * 0.045, -hw * 0.52, hw * 0.09, hw * 0.74,
+                   fill=1, stroke=1)                      # дръжка
+            c.rect(-hw * 0.16, hw * 0.22, hw * 0.32, hw * 0.24,
+                   fill=1, stroke=1)                      # глава
+            c.restoreState()
+
+        # житен клас (долу вдясно, изцяло в синьото поле)
+        sx0, sy0 = cx + hw * 0.46, red_bot - r * 0.10
+        sx1, sy1 = cx + hw * 0.58, ccy - r * 0.62
+        c.setStrokeColor(GOLD_H)
         c.setLineWidth(1.4)
         p = c.beginPath()
-        p.moveTo(cx - sw / 2, top)
-        p.lineTo(cx + sw / 2, top)
-        p.lineTo(cx + sw / 2, top - sh * 0.55)
-        p.curveTo(cx + sw / 2, top - sh * 0.85, cx + sw * 0.22, top - sh * 0.97, cx, top - sh)
-        p.curveTo(cx - sw * 0.22, top - sh * 0.97, cx - sw / 2, top - sh * 0.85, cx - sw / 2, top - sh * 0.55)
-        p.close()
-        c.drawPath(p, fill=1, stroke=1)
-        # зелен хълм в средата на щита
-        c.setFillColor(colors.HexColor('#3f5d33'))
-        c.ellipse(cx - 36, top - sh * 0.72, cx + 36, top - sh * 0.36, fill=1, stroke=0)
-        # входът на мината върху хълма
-        c.setFillColor(colors.HexColor('#171310'))
-        p = c.beginPath()
-        p.moveTo(cx - 13, top - sh * 0.54)
-        p.lineTo(cx - 13, top - sh * 0.40)
-        p.curveTo(cx - 13, top - sh * 0.30, cx + 13, top - sh * 0.30, cx + 13, top - sh * 0.40)
-        p.lineTo(cx + 13, top - sh * 0.54)
-        p.close()
-        c.drawPath(p, fill=1, stroke=0)
-        # синя вълниста лента (реката) в основата
-        c.setFillColor(colors.HexColor('#2e4a6b'))
-        c.rect(cx - sw * 0.32, top - sh * 0.82, sw * 0.64, 10, fill=1, stroke=0)
-        # лента с мото
-        by = top - sh - 34
-        c.setFillColor(PARCH2)
-        c.setStrokeColor(BROWN)
-        c.setLineWidth(0.9)
-        p = c.beginPath()
-        p.moveTo(cx - 92, by)
-        p.lineTo(cx + 92, by)
-        p.lineTo(cx + 82, by + 11)
-        p.lineTo(cx + 92, by + 22)
-        p.lineTo(cx - 92, by + 22)
-        p.lineTo(cx - 82, by + 11)
-        p.close()
-        c.drawPath(p, fill=1, stroke=1)
-        c.setFillColor(BROWN)
-        c.setFont('Book-Bold', 10.5)
-        c.drawCentredString(cx, by + 6.5, 'LABORE  ET  CARBONE')
-        c.setFont('Book', 8.5)
-        c.drawCentredString(cx, by - 16, 'A · D ·  MDLXXVI')
+        p.moveTo(sx0, sy0)
+        p.curveTo(sx0 + hw * 0.08, sy0 - r * 0.18,
+                  sx1 + hw * 0.03, sy1 + r * 0.18, sx1, sy1)
+        c.drawPath(p, fill=0, stroke=1)
+        c.setFillColor(GOLD_H)
+        for i in range(5):
+            t = i / 4.0
+            zx = sx0 + (sx1 - sx0) * t + hw * 0.04 * math.sin(t * 3)
+            zy = sy0 + (sy1 - sy0) * t
+            for side in (-1, 1):
+                c.saveState()
+                c.translate(zx, zy)
+                c.rotate(side * 38)
+                c.ellipse(-hw * 0.028, -hw * 0.085, hw * 0.028, hw * 0.085,
+                          fill=1, stroke=0)
+                c.restoreState()
 
     # — карта на общината —
     def d_map(self, c, w, h):
@@ -1030,10 +1114,12 @@ def build():
     story.append(Spacer(1, 8))
     story.append(para('Герб', S['parttag']))
     story.append(Spacer(1, 4))
-    story.append(Illustration('gerb', 280, 280))
-    story.append(para('„Labore et Carbone“ — С труд и с въглища. Годината под '
-                      'щита — MDLXXVI (1576) — белязва първото записано '
-                      'споменаване на селището.', S['caption']))
+    story.append(Illustration('gerb', 280, 300))
+    story.append(para('Гербът на Бобов дол — полукръгъл щит с крепостната '
+                      'корона на „Царичина“. Трите светкавици на червено поле '
+                      'символизират електропроизводството; кръстосаните '
+                      'чукове — минния труд; зъбното колело — ремонта на '
+                      'машините; житният клас — земеделието.', S['caption']))
     # карта
     story.append(PageBreak())
     story.append(Spacer(1, 8))
