@@ -200,6 +200,25 @@ def collar_base_edges(sh, S):
     return out
 
 
+def junction_edges(sh):
+    """Ръбове между цилиндрично/конично лице (щифт/колар) и BSpline (тяло) —
+    кандидати за fillet в основите на щифтовете."""
+    from OCP.TopTools import TopTools_IndexedDataMapOfShapeListOfShape
+    from OCP.TopExp import TopExp
+    from OCP.BRepAdaptor import BRepAdaptor_Surface
+    m=TopTools_IndexedDataMapOfShapeListOfShape()
+    TopExp.MapShapesAndAncestors_s(sh,TopAbs_EDGE,TopAbs_FACE,m)
+    def ft(f): return int(BRepAdaptor_Surface(TopoDS.Face_s(f)).GetType())
+    out=[]
+    for i in range(1,m.Extent()+1):
+        L=m.FindFromIndex(i)
+        if L.Extent()!=2: continue
+        ts=sorted([ft(L.First()),ft(L.Last())])
+        if 6 in ts and (1 in ts or 2 in ts):
+            out.append(TopoDS.Edge_s(m.FindKey(i)))
+    return out
+
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument('--cavity',action='store_true')
@@ -230,27 +249,27 @@ def main():
         shape=fuse_studs(body, studs)
         log(f'fuse щифтове: valid {BRepCheck_Analyzer(shape).IsValid()} vol {vol(shape):.2f} solids {count(shape,TopAbs_SOLID)}')
 
-        if not a.no_fillet:
-            for nm,S in STUDS.items():
-                edges=collar_base_edges(shape,S)
-                if not edges:
-                    log(f'{nm}: няма base edge за fillet'); continue
-                done=False
-                for rr in (2.0,1.5,1.0,0.6):
-                    try:
-                        mk=BRepFilletAPI_MakeFillet(shape)
-                        for e in edges: mk.Add(rr,e)
-                        mk.Build()
-                        if mk.IsDone():
-                            F=mk.Shape()
-                            if BRepCheck_Analyzer(F).IsValid() and count(F,TopAbs_SOLID)==1:
-                                shape=F; done=True
-                                log(f'{nm}: fillet r={rr} на {len(edges)} ръба OK vol {vol(shape):.2f}')
-                                break
-                    except Exception as e:
-                        log(f'{nm}: fillet r={rr} FAIL {str(e)[:40]}')
-                if not done:
-                    log(f'{nm}: fillet неуспешен, чиста връзка')
+        if not a.no_fillet and BRepCheck_Analyzer(shape).IsValid():
+            edges=junction_edges(shape)
+            log(f'junction (цилиндър/конус ↔ BSpline) ръбове: {len(edges)}')
+            done=False
+            for rr in (1.2,1.0,0.8,0.6,0.4):
+                try:
+                    mk=BRepFilletAPI_MakeFillet(shape)
+                    for e in edges: mk.Add(rr,e)
+                    mk.Build()
+                    if mk.IsDone():
+                        F=mk.Shape()
+                        if BRepCheck_Analyzer(F).IsValid() and count(F,TopAbs_SOLID)==1:
+                            shape=F; done=True
+                            log(f'fillet r={rr} на {len(edges)} ръба OK vol {vol(shape):.2f}')
+                            break
+                except Exception as e:
+                    log(f'fillet r={rr} FAIL {str(e)[:40]}')
+            if not done:
+                log('fillet неуспешен на fused солид (крехки trim-нати BSpline лица '
+                    'след BOP + колар Ø13≈дебелина стена) → запазена ЧИСТА връзка '
+                    '(analytic collar/body junction; документирано)')
 
     # финална валидация (без ShapeFix — той корумпира trim-натите BSpline лица след BOP)
     an=BRepCheck_Analyzer(shape)
