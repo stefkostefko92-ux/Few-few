@@ -20,6 +20,11 @@ import { buildReviewEmbed, buildTicketOpenEmbed } from "./embed.js";
 import { sessionStore } from "./sessionStore.js";
 // sessionStore: Redis-backed with in-memory fallback (see sessionStore.js)
 
+// Timeout на per-question collector-ите. Изравнен с обещаните 15 мин И с Redis
+// TTL-а на сесията (SESSION_TTL = 900s в sessionStore.js) — преди select/text
+// колекторите изтичаха на 5/10 мин, преди самата сесия.
+const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 минути
+
 /**
  * Start a form session for a user. Sends questions via DM one at a time.
  *
@@ -133,7 +138,7 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
     filter: (i) =>
       i.user.id === session.userId &&
       i.customId.startsWith(`form_select:${sessionKey}`),
-    time: 5 * 60 * 1000,
+    time: SESSION_TIMEOUT_MS,
     max: 1,
   });
 
@@ -156,7 +161,7 @@ async function sendSelectQuestion(client, dmChannel, session, sessionKey, questi
 async function sendTextQuestion(client, dmChannel, session, sessionKey, question) {
   const collector = dmChannel.createMessageCollector({
     filter: (m) => m.author.id === session.userId,
-    time: 10 * 60 * 1000,
+    time: SESSION_TIMEOUT_MS,
     max: 1,
   });
 

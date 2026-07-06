@@ -53,12 +53,17 @@ export function buildPollMessage(poll, counts) {
   const total = counts.reduce((a, b) => a + b, 0);
   const numberEmoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
+  // При затворена анкета маркираме печелившата опция (най-много гласове, >0).
+  // При равенство маркираме всички водачи.
+  const maxCount = counts.length ? Math.max(...counts) : 0;
   const lines = poll.options.map((opt, i) => {
     const pct = total > 0 ? Math.round((counts[i] / total) * 100) : 0;
     const barLen = 20;
     const filled = Math.round((pct / 100) * barLen);
     const bar = "█".repeat(filled) + "░".repeat(barLen - filled);
-    return `${numberEmoji[i]} **${opt}**\n\`${bar}\` ${counts[i]} vote${counts[i] === 1 ? "" : "s"} (${pct}%)`;
+    const isWinner = poll.closedAt && maxCount > 0 && counts[i] === maxCount;
+    const label = isWinner ? `👑 **${opt}**` : `**${opt}**`;
+    return `${numberEmoji[i]} ${label}\n\`${bar}\` ${counts[i]} vote${counts[i] === 1 ? "" : "s"} (${pct}%)`;
   }).join("\n\n");
 
   const embed = new EmbedBuilder()

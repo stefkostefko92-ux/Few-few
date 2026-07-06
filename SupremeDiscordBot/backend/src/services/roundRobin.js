@@ -63,22 +63,34 @@ export async function pickNextAssignee(serverId, botToken) {
  * Uses the bot token (not user OAuth2) to call the Discord API.
  */
 async function fetchRoleMembers(guildId, roleId, botToken) {
+  const members = [];
+  let after = "0";
+  // Paginate with the `after` cursor — a single limit=1000 call misses staff in
+  // guilds with >1000 members (list is ordered by user id). Cap the pages so a
+  // huge guild can't stall the ticket-create path.
+  const MAX_PAGES = 10; // up to 10k members
   try {
-    // Fetch all guild members (up to 1000)
-    const res = await axios.get(
-      `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`,
-      {
-        headers: { Authorization: `Bot ${botToken}` },
-        timeout: 8000,
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const res = await axios.get(
+        `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000&after=${after}`,
+        { headers: { Authorization: `Bot ${botToken}` }, timeout: 8000 }
+      );
+      const batch = res.data || [];
+      for (const m of batch) {
+        if (!m.user.bot && m.roles.includes(roleId)) members.push(m.user.id);
       }
-    );
-
-    // Filter to members who have the target role and are not bots
-    return res.data
-      .filter((m) => !m.user.bot && m.roles.includes(roleId))
-      .map((m) => m.user.id);
+      if (batch.length < 1000) break;               // last page
+      after = batch[batch.length - 1].user.id;      // next cursor
+    }
+    return members;
   } catch (err) {
-    console.error("[Round-Robin] Failed to fetch role members:", err.message);
-    return [];
+    // 403 here almost always means the privileged GUILD_MEMBERS intent is not
+    // enabled for this (possibly white-label) application — make it diagnosable.
+    if (err?.response?.status === 403) {
+      console.error("[Round-Robin] 403 fetching members — enable the GUILD_MEMBERS privileged intent for this bot application.");
+    } else {
+      console.error("[Round-Robin] Failed to fetch role members:", err.message);
+    }
+    return members; // return whatever was collected before the error
   }
 }

@@ -8,6 +8,8 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { notifyBot } from "../services/botNotifier.js";
 import { requirePremium, getServerTier, BASE_LIMITS, PREMIUM_LIMITS } from "../lib/premium.js";
+import { pickRandom } from "../lib/shuffle.js";
+import { pushPollUpdate } from "../lib/pollUpdate.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
@@ -37,10 +39,8 @@ router.post("/:serverId/polls/:id/close", requireServerAdmin, async (req, res, n
       where: { id: req.params.id },
       data: { closedAt: new Date() },
     });
-    // Tell bot to update the Discord message
-    if (poll.messageId) {
-      notifyBot("POLL_UPDATE", { pollId: poll.id, channelId: poll.channelId, messageId: poll.messageId }).catch(() => {});
-    }
+    // Tell bot to re-render the Discord message in its closed state (with final counts)
+    pushPollUpdate(poll.id).catch(() => {});
     res.json(poll);
   } catch (err) { next(err); }
 });
@@ -78,8 +78,7 @@ router.post("/:serverId/giveaways/:id/end", requireServerAdmin, async (req, res,
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
     if (g.endedAt) return res.status(400).json({ error: "Already ended" });
 
-    const shuffled = [...g.entries].sort(() => Math.random() - 0.5);
-    const winners = shuffled.slice(0, g.winnerCount).map((e) => e.userId);
+    const winners = pickRandom(g.entries, g.winnerCount).map((e) => e.userId);
 
     const updated = await prisma.giveaway.update({
       where: { id: g.id },
@@ -104,8 +103,7 @@ router.post("/:serverId/giveaways/:id/reroll", requireServerAdmin, async (req, r
     if (!g) return res.status(404).json({ error: "Giveaway not found" });
 
     const eligible = g.entries.filter((e) => !g.winnerIds.includes(e.userId));
-    const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-    const winners = shuffled.slice(0, g.winnerCount).map((e) => e.userId);
+    const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
 
     const updated = await prisma.giveaway.update({
       where: { id: g.id },

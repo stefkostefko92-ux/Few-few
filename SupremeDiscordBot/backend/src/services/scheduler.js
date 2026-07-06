@@ -5,6 +5,8 @@
 
 import cron from "node-cron";
 import { prisma } from "../lib/prisma.js";
+import { pickRandom } from "../lib/shuffle.js";
+import { pushPollUpdate } from "../lib/pollUpdate.js";
 
 // ─── Job 1: Archive cleanup ───────────────────────────────────────────────────
 // Runs daily at 03:00 UTC.
@@ -172,12 +174,28 @@ cron.schedule("* * * * *", async () => {
     if (!due.length) return;
     const { notifyBot } = await import("./botNotifier.js");
     for (const g of due) {
-      const shuffled = [...g.entries].sort(() => Math.random() - 0.5);
-      const winners = shuffled.slice(0, g.winnerCount).map(e => e.userId);
+      const winners = pickRandom(g.entries, g.winnerCount).map(e => e.userId);
       await prisma.giveaway.update({ where: { id: g.id }, data: { endedAt: new Date(), winnerIds: winners } });
       await notifyBot("GIVEAWAY_ENDED", { giveawayId: g.id, channelId: g.channelId, messageId: g.messageId, prize: g.prize, winners }).catch(()=>{});
     }
   } catch (err) { console.error("[Scheduler] giveaway end:", err.message); }
+});
+
+// ─── Job 5b: Poll auto-close ───────────────────
+// The /poll duration_hours option sets closesAt; without this job it was dead
+// (polls never closed). Closes due polls and re-renders the Discord message.
+cron.schedule("* * * * *", async () => {
+  try {
+    const due = await prisma.poll.findMany({
+      where: { closedAt: null, closesAt: { lte: new Date() } },
+      select: { id: true },
+    });
+    if (!due.length) return;
+    for (const p of due) {
+      await prisma.poll.update({ where: { id: p.id }, data: { closedAt: new Date() } });
+      await pushPollUpdate(p.id);
+    }
+  } catch (err) { console.error("[Scheduler] poll close:", err.message); }
 });
 
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────

@@ -242,7 +242,20 @@ router.post("/ticket/create", async (req, res, next) => {
 
     // ── 3. Atomic counter increment + ticket create (v1.5) ──────────────────
     // Use a transaction to ensure counter is never duplicated under concurrency.
-    const [ticket, updatedPanel] = await prisma.$transaction(async (tx) => {
+    let ticket, updatedPanel;
+    try {
+      [ticket, updatedPanel] = await prisma.$transaction(async (tx) => {
+      // Race-safe open-limit: the count above is a fast path — two concurrent
+      // panel clicks could both pass it. Take a per-(server,user) advisory lock
+      // so concurrent creates serialize, then re-count inside the lock (the lock
+      // is held until this tx commits, so the waiter sees the committed ticket).
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${serverId + ":" + creatorId}))`;
+      const openNow = await tx.ticket.count({
+        where: { serverId, creatorId, status: { in: ["OPEN", "CLAIMED"] } },
+      });
+      if (openNow >= maxOpen) {
+        const e = new Error("MAX_TICKETS_REACHED"); e.code = "MAX_TICKETS_REACHED"; throw e;
+      }
       let nextNumber = null;
       if (panelId) {
         const bumped = await tx.panel.update({
@@ -265,7 +278,16 @@ router.post("/ticket/create", async (req, res, next) => {
         },
       });
       return [created, { ticketCounter: nextNumber }];
-    });
+      });
+    } catch (e) {
+      if (e.code === "MAX_TICKETS_REACHED") {
+        return res.status(429).json({
+          error: "You already have the maximum number of open tickets. Please wait for one to be resolved.",
+          code: "MAX_TICKETS_REACHED",
+        });
+      }
+      throw e;
+    }
 
     // ── 4. AI auto-reply (Premium, async — don't block the response) ───────
     if (channelId) {
@@ -892,6 +914,37 @@ router.post("/application/:appId/review", async (req, res, next) => {
         targetId: application.id,
         metadata: { note: note || null, via: "discord_button" },
       },
+    });
+
+    // Grant/remove roles + DM the applicant. The Discord-button path previously
+    // only changed status, so approvals granted no role and sent no notification —
+    // this mirrors the dashboard review path (applications.js APPLICATION_APPLY_OUTCOME).
+    const form = application.form;
+    const rolesToAdd    = action === "approve" ? (form.acceptRoleIds || []) : (form.denyRoleIds || []);
+    const rolesToRemove = action === "approve" ? (form.removeRoleIds || []) : [];
+    const customMessage = action === "approve" ? form.acceptMessage : form.denyMessage;
+    let dmMessage;
+    if (customMessage) {
+      dmMessage = customMessage
+        .replaceAll("{user}", application.user?.id ? `<@${application.user.id}>` : "")
+        .replaceAll("{username}", application.user?.username || "")
+        .replaceAll("{server}", application.serverId)
+        .replaceAll("{note}", note || "");
+    } else {
+      const statusEmoji = action === "approve" ? "✅" : "❌";
+      const statusWord  = action === "approve" ? "approved" : "denied";
+      dmMessage = `${statusEmoji} Your application to **${form.name}** has been ${statusWord}.`;
+      if (note) dmMessage += `\n\n**Reason from staff:**\n> ${note.split("\n").join("\n> ")}`;
+    }
+    import("../services/botNotifier.js").then(({ notifyBot }) => {
+      notifyBot("APPLICATION_APPLY_OUTCOME", {
+        serverId: application.serverId,
+        userId: application.userId,
+        rolesToAdd,
+        rolesToRemove,
+        dmMessage,
+        action,
+      }).catch((e) => console.warn("[bot review] apply-outcome failed:", e.message));
     });
 
     res.json(updated);

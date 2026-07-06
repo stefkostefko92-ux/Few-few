@@ -5,6 +5,8 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { fireWebhooks } from "../services/webhooks.js";
+import { notifyBot } from "../services/botNotifier.js";
+import { pickRandom } from "../lib/shuffle.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -59,8 +61,15 @@ router.post("/poll/:id/vote", async (req, res, next) => {
     if (poll.closedAt) return res.status(400).json({ error: "Poll is closed" });
     if (option < 0 || option >= poll.options.length) return res.status(400).json({ error: "Invalid option" });
 
-    // Single-choice: remove user's previous votes for this poll
+    // Single-choice: clicking the SAME option again removes the vote (toggle off);
+    // clicking a different option switches. Previously re-clicking just re-voted.
     if (!poll.multiChoice) {
+      const prev = await prisma.pollVote.findFirst({ where: { pollId: poll.id, userId } });
+      if (prev && prev.option === option) {
+        await prisma.pollVote.delete({ where: { id: prev.id } });
+        const counts = await recountPoll(poll.id, poll.options.length);
+        return res.json({ toggled: "off", counts });
+      }
       await prisma.pollVote.deleteMany({ where: { pollId: poll.id, userId } });
     } else {
       // Multi-choice: toggle — if already voted for this option, remove
@@ -176,18 +185,25 @@ async function pickGiveawayWinners(giveawayId, reroll = false) {
     ? g.entries.filter((e) => !g.winnerIds.includes(e.userId))
     : g.entries;
 
-  // Shuffle
-  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
-  const winners = shuffled.slice(0, g.winnerCount).map((e) => e.userId);
+  // Fair winner selection (Fisher–Yates, not a biased sort-shuffle)
+  const winners = pickRandom(eligible, g.winnerCount).map((e) => e.userId);
 
   await prisma.giveaway.update({
     where: { id: giveawayId },
     data: { endedAt: g.endedAt || new Date(), winnerIds: winners },
   });
 
-  // Fire webhook
+  // Fire external webhooks (customer integrations)
   fireWebhooks(g.serverId, "GIVEAWAY_ENDED", {
     giveawayId, prize: g.prize, winners, entryCount: g.entries.length,
+  }).catch(() => {});
+
+  // Update the public Discord message + announce winners in the channel.
+  // Previously missing on the /giveaway end + reroll command path, so manual
+  // ends never announced publicly (unlike the scheduler auto-end and dashboard).
+  notifyBot("GIVEAWAY_ENDED", {
+    giveawayId, channelId: g.channelId, messageId: g.messageId,
+    prize: g.prize, winners, reroll,
   }).catch(() => {});
 
   return winners;

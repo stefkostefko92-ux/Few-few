@@ -16,7 +16,7 @@ import {
   Collection,
   Events,
 } from "discord.js";
-import api, { logTicketMessage, getServer } from "./utils/api.js";
+import api, { getServer } from "./utils/api.js";
 import { getTranslator, SUPPORTED_LANGUAGES } from "./i18n/index.js";
 import { readdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -78,138 +78,13 @@ for (const file of eventFiles) {
   }
 }
 
-// ─── Message Logging (for ticket transcripts) ────────────────────────────────
-// Log messages in ticket channels to the DB transcript
-
-// Cache of Discord channel IDs that are active tickets (expires after 10 min)
-const ticketChannelCache = new Map(); // channelId → { ticketId, expiresAt }
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
-
-// Sticky lookups are cached too — without this every guild message triggers a
-// backend GET, which hammers the API rate limiter at scale.
-const stickyCache = new Map(); // channelId → { sticky, expiresAt }
-const STICKY_CACHE_TTL = 60 * 1000; // 1 minute — dashboard edits propagate quickly
-
-// Periodic sweep so entries for channels that never get another message don't
-// accumulate forever (slow memory leak on large bots).
-setInterval(() => {
-  const now = Date.now();
-  for (const [k, v] of ticketChannelCache) if (v.expiresAt <= now) ticketChannelCache.delete(k);
-  for (const [k, v] of stickyCache) if (v.expiresAt <= now) stickyCache.delete(k);
-}, CACHE_TTL).unref();
-
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) return;
-  if (!message.guildId) return;
-
-  // ═══ v1.8 Sticky Messages ═══
-  // Check if this channel has a sticky message. If so, delete previous
-  // sticky post and re-send at the bottom of the channel.
-  try {
-    let sticky;
-    const cachedSticky = stickyCache.get(message.channelId);
-    if (cachedSticky && cachedSticky.expiresAt > Date.now()) {
-      sticky = cachedSticky.sticky; // null = confirmed no sticky for this channel
-    } else {
-      ({ data: sticky } = await api.get(`/bot/sticky/channel/${message.channelId}`).catch(() => ({ data: null })));
-      stickyCache.set(message.channelId, { sticky: sticky || null, expiresAt: Date.now() + STICKY_CACHE_TTL });
-    }
-    if (sticky && sticky.enabled && sticky.content) {
-      // Delete previous sticky post
-      if (sticky.currentMessageId) {
-        try {
-          const old = await message.channel.messages.fetch(sticky.currentMessageId);
-          await old.delete();
-        } catch { /* already gone */ }
-      }
-      // Post fresh sticky
-      const embed = {
-        description: sticky.content,
-        color: parseInt((sticky.embedColor || "#00e5ff").replace("#", ""), 16),
-      };
-      if (sticky.embedTitle) embed.title = sticky.embedTitle;
-      embed.footer = { text: "📌 Sticky" };
-      const msg = await message.channel.send({ embeds: [embed] }).catch(() => null);
-      if (msg) {
-        sticky.currentMessageId = msg.id; // keep the cached copy in sync
-        await api.patch(`/bot/sticky/channel/${message.channelId}`, { currentMessageId: msg.id }).catch(() => {});
-      }
-    }
-  } catch { /* non-fatal */ }
-
-  try {
-    const now = Date.now();
-    let ticketId;  // undefined = not yet resolved; null = confirmed not a ticket
-
-    const cached = ticketChannelCache.get(message.channelId);
-    if (cached && cached.expiresAt > now) {
-      ticketId = cached.ticketId; // hit: null = not a ticket, string = ticket ID
-    } else {
-      if (cached) ticketChannelCache.delete(message.channelId); // expired entry
-
-      // Cache miss — query API
-      let ticket = null;
-      let apiError = null;
-      try {
-        const res = await api.get(`/bot/ticket/by-channel/${message.channelId}`);
-        ticket = res.data;
-      } catch (err) {
-        apiError = err?.response?.status || err.message;
-        // 404 = not a ticket channel, that's expected for non-ticket channels
-        // 401/500/network = real problem, should log
-        if (apiError !== 404) {
-          console.error(`[msg-log] API error looking up channel ${message.channelId}:`, apiError, err?.response?.data);
-        }
-      }
-
-      ticketId = ticket?.id ?? null;
-      // Cache both hits AND misses to prevent repeat queries for non-ticket channels
-      // Cache misses for shorter time if there was a non-404 error (retry sooner)
-      const ttl = (apiError && apiError !== 404) ? 30 * 1000 : CACHE_TTL;
-      ticketChannelCache.set(message.channelId, { ticketId, expiresAt: now + ttl });
-    }
-
-    if (!ticketId) return; // null = confirmed not a ticket
-
-    const attachments = [...message.attachments.values()].map((a) => a.url);
-    const authorTag = message.author.discriminator && message.author.discriminator !== "0"
-      ? `${message.author.username}#${message.author.discriminator}`
-      : message.author.username;
-
-    try {
-      await logTicketMessage(
-        ticketId,
-        message.author.id,
-        authorTag,
-        message.content || "[attachment only]",
-        attachments
-      );
-      // Uncomment for debugging: console.log(`[msg-log] ✓ ticket=${ticketId} by=${authorTag}`);
-    } catch (err) {
-      console.error(`[msg-log] ❌ Failed to log message for ticket ${ticketId}:`, err?.response?.status, err?.response?.data || err.message);
-    }
-  } catch (err) {
-    console.error(`[msg-log] ❌ Unexpected error:`, err.message);
-    if (process.env.SENTRY_DSN) Sentry.captureException(err);
-  }
-});
-
-// When a ticket channel is deleted from Discord, close the ticket in DB
-// This handles the case where staff manually delete the channel instead of using /ticket close
-client.on("channelDelete", async (channel) => {
-  ticketChannelCache.delete(channel.id);
-  stickyCache.delete(channel.id);
-
-  // Always ask the API — the deleted channel may be a ticket we never cached
-  try {
-    await api.post(`/bot/ticket/by-channel/${channel.id}/close-if-open`, {
-      reason: "Discord channel was deleted",
-      closedById: null,
-    });
-  } catch {
-    // Silently ignore — channel may not have been a ticket
-  }
-});
+// ─── Message Logging & channel cleanup ───────────────────────────────────────
+// Логиката на messageCreate (тикет transcript + sticky repost) и channelDelete
+// (auto-close на тикет при изтрит канал) е изнесена в event модули под
+// bot/src/events/ (messageCreate.js, channelDelete.js), за да се закачат И на
+// главния клиент (event-loop-а по-горе), И на всеки white-label клиент през
+// clientManager.loadEventModules. Споделените кешове живеят в
+// utils/ticketCaches.js. Затова тук няма inline handler-и.
 
 // ─── Internal HTTP Server (receives events from backend) ─────────────────────
 
@@ -559,6 +434,57 @@ app.post("/internal/application-apply-outcome", async (req, res) => {
 
     res.json({ ok: true, ...result });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Poll closed (scheduler auto-close или ръчно затваряне през dashboard) ─────
+// Backend праща крайните бройки; ботът пресъздава poll embed-а в ЗАТВОРЕНО
+// състояние (финални проценти, highlight на печелившата опция) и маха vote
+// бутоните. requireBotSecret е закачен и глобално по-горе (app.use) — тук е
+// повторен изрично, за да е самодокументиращо, че route-ът е авторизиран.
+app.post("/internal/poll-update", requireBotSecret, async (req, res) => {
+  const { channelId, messageId, question, options, multiChoice } = req.body;
+  if (!channelId || !messageId || !question || !Array.isArray(options)) {
+    return res.status(400).json({ error: "channelId, messageId, question, options[] required" });
+  }
+  try {
+    // Fallback към REST fetch — кешът може да е студен след рестарт/sharding.
+    const channel = client.channels.cache.get(channelId)
+      || await client.channels.fetch(channelId).catch(() => null);
+    if (!channel) {
+      console.warn(`[poll-update] channel ${channelId} not found`);
+      return res.status(404).json({ error: "Channel not found" });
+    }
+
+    const msg = await channel.messages.fetch(messageId).catch(() => null);
+    if (!msg) {
+      // Fail-safe: 404 от Discord (изтрито съобщение) → логни, не крашвай.
+      console.warn(`[poll-update] message ${messageId} not found in channel ${channelId}`);
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // ПРЕизползваме poll-embed builder-а от /poll (commands/poll.js) за
+    // консистентен стил. Адаптираме payload-а към очаквания формат:
+    //   options: [{ label, votes }] → poll.options (string[]) + counts (number[]).
+    // `closedAt` (truthy) кара builder-а да рендира closed състояние (сив цвят,
+    // "Poll closed" footer, highlight на печелившата) и да върне components: []
+    // → vote бутоните изчезват.
+    const { buildPollMessage } = await import("./commands/poll.js");
+    const pollLike = {
+      question,
+      options: options.map((o) => o.label),
+      multiChoice: !!multiChoice,
+      closesAt: null,                      // без "Closes in ..." при затворена анкета
+      closedAt: new Date().toISOString(),  // маркира closed → маха бутоните
+    };
+    const counts = options.map((o) => Number(o.votes) || 0);
+    const { embeds, components } = buildPollMessage(pollLike, counts);
+    await msg.edit({ embeds, components });
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[poll-update]", err.message);
     res.status(500).json({ error: err.message });
   }
 });
