@@ -401,9 +401,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: European Accessibility Act (Дир. 2019/882) е в сила от 28.06.2025 — задължителна достъп… (+13 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-06",
+          "event": "v10.4 — учене",
+          "detail": "Научи: Античийт (echo.ac) правно основание е смесено 'consent + legitimate interest'; echo.ac … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Античийт (echo.ac) правно основание е смесено 'consent + legitimate interest'; echo.ac …\" (+2 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -1137,9 +1148,20 @@
           "date": "2026-07-06",
           "event": "v11.1 — учене",
           "detail": "Научи: SupremeDiscordBot: две паралелни ревю-имплементации за applications — dashboard пътят (… (+1 още)"
+        },
+        {
+          "version": "11.2.0",
+          "date": "2026-07-06",
+          "event": "v11.2 — учене",
+          "detail": "Научи: echo.ac ползва непроменен публичен GitHub tool 'ntfsDump.exe' като Prefetch collector →…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „echo.ac ползва непроменен публичен GitHub tool 'ntfsDump.exe' като Prefetch collector →…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -1852,9 +1874,20 @@
           "date": "2026-07-06",
           "event": "v10.8 — учене",
           "detail": "Научи: ox_lib lib.callback: default timeout е ConVar ox:callbackTimeout = 300000ms (5 мин). Вт… (+3 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-06",
+          "event": "v10.9 — учене",
+          "detail": "Научи: FiveM cheat екосистемата се дели на 2 класа с различна защита: usermode Lua executor/mo… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „FiveM cheat екосистемата се дели на 2 класа с различна защита: usermode Lua executor/mo…\" (+2 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -4511,9 +4544,20 @@
           "date": "2026-07-06",
           "event": "v10.5 — учене",
           "detail": "Научи: В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde… (+1 още)"
+        },
+        {
+          "version": "10.7.0",
+          "date": "2026-07-06",
+          "event": "v10.7 — учене",
+          "detail": "Научи: FiveM api.github.com директните извиквания се прихващат от GitHub MCP proxy ('access no… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „FiveM api.github.com директните извиквания се прихващат от GitHub MCP proxy ('access no…\" (+1 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -6556,9 +6600,20 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST… (+2 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-06",
+          "event": "v10.4 — учене",
+          "detail": "Научи: echo.ac и detect.ac са client-side/screenshare-first и game-agnostic (не FiveM server-s…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „echo.ac и detect.ac са client-side/screenshare-first и game-agnostic (не FiveM server-s…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -9478,9 +9533,20 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId … (+8 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-06",
+          "event": "v10.3 — учене",
+          "detail": "Научи: Discord docs хостът се е преместил: discord.com/developers/docs/* → 301 към docs.discor… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Discord docs хостът се е преместил: discord.com/developers/docs/* → 301 към docs.discor…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
