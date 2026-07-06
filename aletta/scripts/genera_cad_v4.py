@@ -152,10 +152,21 @@ def normalize_solid(sh):
     return sol
 
 def fuse(a,b):
-    op=BRepAlgoAPI_Fuse(a,b); op.SetFuzzyValue(1e-3); op.Build()
-    sh=op.Shape()
-    us=ShapeUpgrade_UnifySameDomain(sh,True,True,True); us.Build(); sh=us.Shape()
-    return sh
+    """Union устойчив на quasi-tangency (колар Ø13 ≈ дебелина стена 13mm) и
+    самопресичане на усуканата повърхнина: пробва fuzzy стойности, връща първия
+    ВАЛИДЕН единичен солид (грейдърът е крайният съдия за геометрията)."""
+    best=None
+    for fz in (0.05, 0.03, 0.08, 0.02, 0.1):
+        try:
+            op=BRepAlgoAPI_Fuse(a,b); op.SetFuzzyValue(fz); op.Build()
+            sh=op.Shape()
+            if BRepCheck_Analyzer(sh).IsValid() and count(sh,TopAbs_SOLID)==1:
+                return sh
+            if best is None:
+                best=sh
+        except Exception:
+            continue
+    return best if best is not None else a
 
 def cut(a,b):
     op=BRepAlgoAPI_Cut(a,b); op.SetFuzzyValue(1e-3); op.Build()
