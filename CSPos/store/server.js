@@ -27,6 +27,7 @@ const {
   DOWNLOAD_URL, // напр. подписан CDN/Release линк; или локален файл:
   DOWNLOAD_FILE, // напр. ./data/Carbon Stealth POS Setup 1.0.0.exe
   PORT = 8790,
+  HOST = "127.0.0.1", // зад nginx; смени само ако проксито е на друга машина
   NODE_ENV,
 } = process.env;
 
@@ -412,4 +413,4 @@ app.post("/api/portal", limiter(10, 60_000), async (req, res) => {
   res.json({ url: portal.url });
 });
 
-app.listen(PORT, () => console.log(`Carbon Stealth POS store на порт ${PORT}`));
+app.listen(PORT, HOST, () => console.log(`Carbon Stealth POS store на ${HOST}:${PORT}`));
