@@ -31,7 +31,7 @@ export default function Login() {
   return (
     <div className="relative min-h-screen bg-cs-black overflow-hidden">
       <Seo
-        title="Supreme Bot — Discord Bot SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
+        title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
         description="Supreme Bot is a multi-tenant Discord bot SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
         path="/"
         lang="en"
@@ -133,7 +133,7 @@ export default function Login() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard icon={Ticket} title="Ticket System" badge="Free">
-                Unlimited ticket volume via button panels — claim, escalate, rename, two-step close, rich transcripts, and archive links.
+                A complete Discord ticket bot: unlimited ticket volume via button panels — claim, escalate, rename, two-step close, rich transcripts, and archive links.
               </FeatureCard>
               <FeatureCard icon={FileText} title="Forms & Applications" badge="Free">
                 Multi-step questionnaires with validation, review workflow, and application approval — replaces Appy.bot entirely.

@@ -1,6 +1,6 @@
 # Supreme Bot
 
-> Multi-tenant Discord bot SaaS platform by Carbon Stealth VCC. Provides ticket systems, application forms, AI auto-replies via Anthropic Claude, white-label custom bots, verification, automation, analytics, and a public REST API. EU-hosted, GDPR-compliant by design.
+> Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth VCC. Provides ticket systems, application forms, AI auto-replies via Anthropic Claude, white-label custom bots, verification, automation, analytics, and a public REST API. EU-hosted, GDPR-compliant by design.
 
 Carbon Stealth VCC is an EU-registered software company (EIK BG208725180) headquartered in Bobov Dol, Bulgaria, with an office in Sofia. Supreme Bot is one of several digital products in our portfolio. The platform serves Discord communities, esports organizations, customer support teams, agencies, and content creators worldwide.
 
@@ -22,6 +22,12 @@ Supreme Bot consolidates six single-purpose Discord bots into one dashboard: it 
 TicketTool, Appy.bot, GiveawayBot, sticky-message bots, poll bots and webhook relays — one
 subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
 server per month with a 14-day trial (no credit card).
+
+Looking for the best ticket bot for Discord? Supreme Bot's case: a full ticket bot
+(panels, claim/escalate, transcripts that survive channel deletion) plus forms,
+verification, giveaways, scheduled messages, webhooks and Claude-powered replies in one
+dashboard — instead of six separate bots and six separate bills — with EU hosting and
+GDPR-native data handling.
 
 ## Features
 
