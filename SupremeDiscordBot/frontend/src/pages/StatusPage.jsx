@@ -105,7 +105,7 @@ export default function StatusPage() {
         {/* ═══ SLA info ═══ */}
         <div className="border-t border-cs-border pt-6 text-xs text-cs-dim font-mono space-y-1">
           <p>Uptime commitment: 99.9% · Premium | 99.95% · Enterprise — measured monthly, backed by service credits</p>
-          <p>Infrastructure: Hetzner BG-14 (Bobov Dol) · EU-only data residency</p>
+          <p>Infrastructure: Hetzner (Germany) · EU-only data residency</p>
           <p>Status checks refresh every 30 seconds · Cache: 30s</p>
           <p className="pt-2">
             Report an issue: <a href="https://discord.gg/wpCRpy8B" className="text-cs-cyan underline">Discord support</a>
