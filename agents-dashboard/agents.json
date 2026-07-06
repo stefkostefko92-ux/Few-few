@@ -1051,9 +1051,20 @@
           "date": "2026-07-03",
           "event": "v10.8 — учене без таван",
           "detail": "Таванът 10.0 премахнат: 8 проверени поуки от ревизията на игрите вдигат зрелостта нагоре (ученето вече е неограничено)."
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-06",
+          "event": "v10.9 — учене",
+          "detail": "Научи: panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta…\" (+1 още)"
+        },
         {
           "date": "2026-07-03",
           "type": "learning",
