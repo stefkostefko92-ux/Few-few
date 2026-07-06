@@ -640,6 +640,14 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Carrello non valido' });
     }
 
+    // B2B-only sale: require a Partita IVA. Prices are shown IVA esclusa, so
+    // consumer e-commerce rules (IVA-inclusive pricing, 14-day recesso) do not
+    // apply. This keeps the (currently quote-first) checkout unambiguously B2B.
+    const piva = String(customerInfo?.piva || customerInfo?.partitaIva || '').replace(/\s/g, '');
+    if (!/^(IT)?[0-9]{11}$/i.test(piva)) {
+      return res.status(400).json({ error: 'Partita IVA obbligatoria: la vendita online è riservata ai clienti B2B.' });
+    }
+
     // Validate items against DB (don't trust client prices)
     const lineItems = [];
     for (const clientItem of items) {
@@ -694,6 +702,7 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       line_items: lineItems,
       customer_email: validateEmail(safeInfo.email) ? safeInfo.email : undefined,
       billing_address_collection: 'required',
+      tax_id_collection: { enabled: true }, // B2B — collect/validate VAT id
       shipping_address_collection: { allowed_countries: ['IT', 'SM', 'VA'] },
       success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${BASE_URL}/carrello.html?cancelled=1`,
