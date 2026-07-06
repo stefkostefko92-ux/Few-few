@@ -159,7 +159,10 @@ export async function logServerEvent(client, guild, evt) {
       try {
         const logChannel = client.channels.cache.get(config.channelId)
           || await client.channels.fetch(config.channelId).catch(() => null);
-        if (logChannel?.isTextBased?.()) {
+        // Guard: only log to a channel that belongs to THIS guild — otherwise an
+        // admin could point eventLogChannelId at a channel in another server where
+        // the bot is present and relay this guild's activity there.
+        if (logChannel?.isTextBased?.() && logChannel.guildId === guild.id) {
           await logChannel.send({
             embeds: [buildEventEmbed({ category, action, actorId, targetId, channelId, metadata })],
             // allowedMentions guard: <@id>/<@&id> в embed-а НЕ бива да пингват —
