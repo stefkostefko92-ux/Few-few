@@ -4283,9 +4283,20 @@
           "date": "2026-07-03",
           "event": "v10.4 — учене без таван",
           "detail": "Таванът 10.0 премахнат: 4 проверени поуки от ревизията на игрите вдигат зрелостта нагоре (ученето вече е неограничено)."
+        },
+        {
+          "version": "10.5.0",
+          "date": "2026-07-06",
+          "event": "v10.5 — учене",
+          "detail": "Научи: В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde…\" (+1 още)"
+        },
         {
           "date": "2026-07-03",
           "type": "learning",
