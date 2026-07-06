@@ -109,7 +109,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 npm run db:seed
 ```
 Questo crea:
-- Admin `info@panevascensori.it` / `<impostare ADMIN_PASSWORD>` (**da cambiare al primo login**)
+- Admin `info@panevascensori.it` / password casuale generata al primo `db:seed` e mostrata una volta nei log (**da cambiare al primo login**)
 - 27 staffe seed (10 brevettate + 17 contrapeso)
 
 ### 3. Avvia il server
@@ -229,7 +229,7 @@ Il carrello attualmente invia **richieste di preventivo** (B2B-friendly per staf
 
 - **URL:** `https://www.panevascensori.it/admin/login.html`
 - **Email:** `info@panevascensori.it`
-- **Password default:** `<impostare ADMIN_PASSWORD>` — **cambiarla dal primo accesso** (Impostazioni → Cambia Password)
+- **Password:** generata casualmente al primo seed e mostrata una volta nei log (oppure imposta `ADMIN_PASSWORD` in `.env`) — **cambiarla dal primo accesso** (Impostazioni → Cambia Password)
 
 Protezioni attive:
 - bcrypt 12 round per password
@@ -279,7 +279,7 @@ curl https://www.panevascensori.it/api/products | jq '.count'
 # Login
 curl -c /tmp/cookies -X POST https://www.panevascensori.it/api/admin/login \
      -H 'Content-Type: application/json' \
-     -d '{"email":"info@panevascensori.it","password":"<impostare ADMIN_PASSWORD>"}'
+     -d '{"email":"info@panevascensori.it","password":"LA_TUA_PASSWORD"}'
 # Deve restituire {"ok":true,"user":{...}}
 
 # Admin area

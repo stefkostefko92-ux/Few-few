@@ -225,6 +225,10 @@ app.use((req, res, next) => {
 //  Static files
 // ─────────────────────────────────────────────────────────────
 const fs = require('fs');
+// Serve /.well-known (security.txt, ai.txt) — the main static uses dotfiles:'deny',
+// which would otherwise 404 the RFC 9116 canonical location.
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), { maxAge: '1d' }));
+
 // Transparent WebP content-negotiation: if the client accepts image/webp and a
 // .webp sibling of the requested .png/.jpg exists, serve it instead (≈50% smaller).
 app.use((req, res, next) => {
@@ -1217,7 +1221,7 @@ app.use((err, req, res, next) => {
 // ─────────────────────────────────────────────────────────────
 //  Startup
 // ─────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = app.listen(PORT, '127.0.0.1', () => {
   const productCount = db.countProducts();
   console.log('\n  ╔══════════════════════════════════════════════╗');
   console.log('  ║   🛗  Panev Ascensori — Server avviato       ║');
@@ -1239,3 +1243,14 @@ app.listen(PORT, () => {
     console.warn('  ⚠  Genera: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"\n');
   }
 });
+
+// Graceful shutdown (PM2/systemd send SIGTERM/SIGINT): stop accepting, close DB.
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, () => {
+    console.log(`[shutdown] ${sig} — chiusura in corso…`);
+    server.close(() => { try { db.raw.close(); } catch {} process.exit(0); });
+    setTimeout(() => process.exit(0), 10000).unref(); // hard cap
+  });
+}
+process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', e));
+process.on('uncaughtException', (e) => { console.error('[uncaughtException]', e); process.exit(1); });
