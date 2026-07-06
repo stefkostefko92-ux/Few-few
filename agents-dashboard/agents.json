@@ -401,9 +401,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: European Accessibility Act (Дир. 2019/882) е в сила от 28.06.2025 — задължителна достъп… (+13 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-06",
+          "event": "v10.4 — учене",
+          "detail": "Научи: Античийт (echo.ac) правно основание е смесено 'consent + legitimate interest'; echo.ac … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Античийт (echo.ac) правно основание е смесено 'consent + legitimate interest'; echo.ac …\" (+2 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
