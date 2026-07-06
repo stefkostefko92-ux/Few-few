@@ -1137,9 +1137,20 @@
           "date": "2026-07-06",
           "event": "v11.1 — учене",
           "detail": "Научи: SupremeDiscordBot: две паралелни ревю-имплементации за applications — dashboard пътят (… (+1 още)"
+        },
+        {
+          "version": "11.2.0",
+          "date": "2026-07-06",
+          "event": "v11.2 — учене",
+          "detail": "Научи: echo.ac ползва непроменен публичен GitHub tool 'ntfsDump.exe' като Prefetch collector →…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „echo.ac ползва непроменен публичен GitHub tool 'ntfsDump.exe' като Prefetch collector →…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
