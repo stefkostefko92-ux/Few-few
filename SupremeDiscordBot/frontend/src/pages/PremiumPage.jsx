@@ -237,7 +237,11 @@ export default function PremiumPage() {
                     className="mt-0.5 w-6 h-6 flex-shrink-0 accent-yellow-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-dark-300"
                   />
                   <span>
-                    I expressly request that the Premium subscription starts immediately. I understand that once the service is activated I lose my 14-day right of withdrawal for this billing period (Art. 16(m) Directive 2011/83/EU).
+                    I expressly request that the Premium subscription (a digital service) starts
+                    immediately. I understand that if I withdraw before it is fully performed I owe a
+                    proportionate amount for what was provided, and that my 14-day right of withdrawal
+                    is lost only once the service has been fully performed (Art. 16(a) &amp; 14(3),
+                    Directive 2011/83/EU).
                   </span>
                 </label>
 

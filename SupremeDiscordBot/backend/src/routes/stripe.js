@@ -505,6 +505,44 @@ router.post("/webhook", requireStripe, async (req, res) => {
         }
         break;
       }
+
+      case "charge.dispute.created": {
+        // Chargeback — reclaim access immediately (funds are being pulled back).
+        // Requires this event to be enabled on the Stripe webhook endpoint.
+        const dispute = event.data.object;
+        let customerId = dispute.customer || null;
+        if (!customerId && dispute.charge) {
+          try { customerId = (await stripe.charges.retrieve(dispute.charge)).customer; } catch { /* best effort */ }
+        }
+        const server = customerId
+          ? await prisma.server.findFirst({ where: { stripeCustomerId: customerId } })
+          : null;
+        if (!server) break;
+        await runOnce(async (tx) => {
+          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, stripeStatus: "disputed" } });
+          await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_DISPUTE", targetId: server.id, metadata: { disputeId: dispute.id } } });
+        });
+        console.log(`⚠️ Server ${server.id} Premium revoked — chargeback/dispute`);
+        break;
+      }
+
+      case "charge.refunded": {
+        // Full refund → revoke access. Partial refund (e.g. proportional consumer
+        // withdrawal under Art. 14(3)) → keep access. Requires the charge.refunded
+        // event enabled on the Stripe webhook endpoint.
+        const charge = event.data.object;
+        if (charge.amount_refunded < charge.amount) break; // partial refund → keep access
+        const server = charge.customer
+          ? await prisma.server.findFirst({ where: { stripeCustomerId: charge.customer } })
+          : null;
+        if (!server) break;
+        await runOnce(async (tx) => {
+          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, stripeStatus: "refunded" } });
+          await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_REFUND", targetId: server.id, metadata: { chargeId: charge.id } } });
+        });
+        console.log(`↩️ Server ${server.id} Premium revoked — full refund`);
+        break;
+      }
     }
 
     res.json({ received: true });
