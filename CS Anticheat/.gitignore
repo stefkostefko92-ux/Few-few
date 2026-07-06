@@ -1,0 +1,13 @@
+# CS Anticheat — игнорирани артефакти
+
+# Компилирани бинарки на скенера (build артефакти, не се комитват)
+client/*.exe
+client/dist/
+
+# Backend
+server/node_modules/
+server/data/
+server/.env
+
+# Локални доклади
+*-report.json

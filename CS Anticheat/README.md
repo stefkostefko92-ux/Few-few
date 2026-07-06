@@ -3,8 +3,8 @@
 Нов **FiveM античийт** на Carbon Stealth VCC — цел: да надмине двата титана в
 бранша, **echo.ac** и **detect.ac**. Проприетарен, EU-hosted, GDPR-first.
 
-> Статус: **Фаза 0 — разузнаването приключи.** 7 досиета + синтез готови.
-> Още няма продуктов код. Следва фаза 1 (MVP) — виж roadmap-а в синтеза.
+> Статус: **Фаза 1 в ход — MVP скелет готов.** Клиентски `.exe` скенер (Go) +
+> backend/панел (Node) работят end-to-end. Разузнаването (Фаза 0) е завършено.
 
 ## Защо
 
@@ -19,6 +19,12 @@ overhead и **нулева GDPR прозрачност**. Има място за
 ```
 CS Anticheat/
 ├── README.md                      ← този файл
+├── CLAUDE.md                      ← насоки за разработка (компоненти, gate, roadmap)
+├── client/                        ← Screenshare скенер (Go → Windows .exe)
+│   ├── main.go · internal/…       (scan модули, hwid, report, ui)
+│   └── build.sh                   → dist/CSAnticheat.exe
+├── server/                        ← Backend + панел (Node ESM + Express)
+│   └── src/ (index·store·discord·view)
 └── research/                      ← Фаза 0: разузнаване (готово)
     ├── 00-synthesis.md               ★ Синтез — теза, threat model, архитектура, roadmap
     ├── 01-fivem-cheat-landscape.md   Геймъра — cheat екосистема (враг intel)
