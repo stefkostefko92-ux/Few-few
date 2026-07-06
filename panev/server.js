@@ -92,9 +92,9 @@ function validPassword(pw) {
 function securityHeaders(req, res, next) {
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://fonts.googleapis.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self'",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.stripe.com https://www.google-analytics.com https://www.googletagmanager.com",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
@@ -225,6 +225,10 @@ app.use((req, res, next) => {
 //  Static files
 // ─────────────────────────────────────────────────────────────
 const fs = require('fs');
+// Serve /.well-known (security.txt, ai.txt) — the main static uses dotfiles:'deny',
+// which would otherwise 404 the RFC 9116 canonical location.
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known'), { maxAge: '1d' }));
+
 // Transparent WebP content-negotiation: if the client accepts image/webp and a
 // .webp sibling of the requested .png/.jpg exists, serve it instead (≈50% smaller).
 app.use((req, res, next) => {
@@ -252,6 +256,10 @@ app.use(express.static(path.join(__dirname), {
     }
     if (filePath.endsWith('.svg') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
       res.setHeader('Cache-Control', 'public, max-age=604800');
+    }
+    if (filePath.endsWith('.woff2')) {
+      // Hashed filenames → safe to cache aggressively.
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
     if (filePath.includes(path.sep + 'admin' + path.sep)) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -500,12 +508,12 @@ function renderProductPage(p) {
 <meta name="twitter:description" content="${escHtml(desc)}">
 <meta name="twitter:image" content="${escHtml(img)}">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="/fonts/Inter-latin-6ab57b19.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Fraunces-latin-8f90dc37.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" type="image/webp" href="/${escHtml((p.image || 'img/og-prodotti.jpg').replace(/\.(png|jpe?g)$/i, '.webp'))}" fetchpriority="high">
 <link rel="preload" href="/css/style.css" as="style">
 <link rel="preload" href="/js/app.js" as="script">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/css/style.css">
 
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
@@ -636,6 +644,14 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Carrello non valido' });
     }
 
+    // B2B-only sale: require a Partita IVA. Prices are shown IVA esclusa, so
+    // consumer e-commerce rules (IVA-inclusive pricing, 14-day recesso) do not
+    // apply. This keeps the (currently quote-first) checkout unambiguously B2B.
+    const piva = String(customerInfo?.piva || customerInfo?.partitaIva || '').replace(/\s/g, '');
+    if (!/^(IT)?[0-9]{11}$/i.test(piva)) {
+      return res.status(400).json({ error: 'Partita IVA obbligatoria: la vendita online è riservata ai clienti B2B.' });
+    }
+
     // Validate items against DB (don't trust client prices)
     const lineItems = [];
     for (const clientItem of items) {
@@ -690,6 +706,7 @@ app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
       line_items: lineItems,
       customer_email: validateEmail(safeInfo.email) ? safeInfo.email : undefined,
       billing_address_collection: 'required',
+      tax_id_collection: { enabled: true }, // B2B — collect/validate VAT id
       shipping_address_collection: { allowed_countries: ['IT', 'SM', 'VA'] },
       success_url: `${BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${BASE_URL}/carrello.html?cancelled=1`,
@@ -1204,7 +1221,7 @@ app.use((err, req, res, next) => {
 // ─────────────────────────────────────────────────────────────
 //  Startup
 // ─────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = app.listen(PORT, '127.0.0.1', () => {
   const productCount = db.countProducts();
   console.log('\n  ╔══════════════════════════════════════════════╗');
   console.log('  ║   🛗  Panev Ascensori — Server avviato       ║');
@@ -1226,3 +1243,14 @@ app.listen(PORT, () => {
     console.warn('  ⚠  Genera: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"\n');
   }
 });
+
+// Graceful shutdown (PM2/systemd send SIGTERM/SIGINT): stop accepting, close DB.
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, () => {
+    console.log(`[shutdown] ${sig} — chiusura in corso…`);
+    server.close(() => { try { db.raw.close(); } catch {} process.exit(0); });
+    setTimeout(() => process.exit(0), 10000).unref(); // hard cap
+  });
+}
+process.on('unhandledRejection', (e) => console.error('[unhandledRejection]', e));
+process.on('uncaughtException', (e) => { console.error('[uncaughtException]', e); process.exit(1); });

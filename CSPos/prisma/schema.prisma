@@ -1,0 +1,415 @@
+// „Касата“ — модел на данните
+// SQLite (offline-first): касата работи и без интернет.
+// Пари: цели int в евроценти (България е в еврозоната от 01.01.2026).
+// Количества: цели int в хилядни (qtyMilli = 1000 → 1 бр. / 1.000 кг) — без float грешки.
+
+generator client {
+  provider = "prisma-client-js"
+  // native = машината за билд; windows = за десктоп .exe опаковката (Electron)
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Потребители и сесии ────────────────────────────────────────────────────
+
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  // Код на оператора във фискалното устройство (1–30 по Н-18) и в УНП
+  operatorCode Int       @unique
+  pinHash      String // bcrypt на 4–8 цифрен ПИН
+  role         String    @default("CASHIER") // ADMIN | MANAGER | CASHIER
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  shifts        Shift[]
+  sales         Sale[]
+  cashMovements CashMovement[]
+  deliveries    Delivery[]
+  stocktakes    Stocktake[]
+  writeOffs     WriteOff[]
+  auditLogs     AuditLog[]
+  invoices      Invoice[]
+}
+
+// ─── Номенклатура ───────────────────────────────────────────────────────────
+
+model Category {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  color      String      @default("#4a5a7d") // цвят на бързия бутон в POS екрана
+  icon       String      @default("Package") // име на Phosphor икона
+  sort       Int         @default(0)
+  active     Boolean     @default(true)
+  products   Product[]
+  promotions Promotion[]
+}
+
+
+// Данъчни групи по чл. 27 от Наредба Н-18 (ставките са в Setting, конфигурируеми)
+
+model Product {
+  id          String   @id @default(cuid())
+  plu         Int      @unique // кратък номер за бързо набиране и тегловни баркодове
+  name        String
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  unit        String   @default("PCS") // PCS (брой) | KG (тегловна — везна)
+  vatGroup    String   @default("B") // А/Б/В/Г по чл. 27 Н-18: A|B|C|D
+  priceCents  Int // продажна цена в евроценти (с ДДС)
+  costCents   Int      @default(0) // последна доставна цена (без ДДС)
+  stockMilli  Int      @default(0) // наличност в хилядни (бр./кг)
+  minStockMilli Int    @default(0) // праг за предупреждение „изчерпва се“
+  favorite    Boolean  @default(false) // бърз бутон на POS екрана
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  barcodes       Barcode[]
+  saleItems      SaleItem[]
+  deliveryItems  DeliveryItem[]
+  stocktakeItems StocktakeItem[]
+  writeOffItems  WriteOffItem[]
+  stockMovements StockMovement[]
+  promotions     Promotion[]
+
+  @@index([categoryId])
+  @@index([name])
+}
+
+model Barcode {
+  id        String  @id @default(cuid())
+  code      String  @unique // EAN-13/EAN-8/произволен
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+// ─── Промоции (ценови листи) ────────────────────────────────────────────────
+// Промоция за конкретна стока ИЛИ за цяла категория, валидна в период (дати)
+// и по избор в часови диапазон (happy hour), с опционален праг за количество.
+// POS автоматично прилага най-изгодната активна промоция за реда.
+
+model Promotion {
+  id         String    @id @default(cuid())
+  name       String
+  // Обхват: точно едно от двете (стока или категория)
+  productId  String?
+  product    Product?  @relation(fields: [productId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  // Тип: PERCENT (% отстъпка) | PRICE (фиксирана промо цена) | MXN (M за N)
+  kind       String
+  percent    Int? // отстъпка в промили (150 = 15%) при kind=PERCENT
+  priceCents Int? // промо цена (с ДДС) при kind=PRICE
+  buyQty     Int? // при kind=MXN: на всеки buyQty броя (напр. 3)
+  payQty     Int? // …плащаш само payQty (напр. 2) → „3 за 2“
+
+  // Период на валидност (по дата)
+  startDate  DateTime
+  endDate    DateTime
+  // Happy hour: минути от полунощ [startMinute, endMinute); null = цял ден
+  startMinute Int?
+  endMinute   Int?
+  // Активира се само при поне толкова количество (millis); 0 = винаги
+  minQtyMilli Int      @default(0)
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([categoryId])
+  @@index([active])
+}
+
+// ─── Клиентски карти (лоялност) ────────────────────────────────────────────
+
+model Customer {
+  id               String   @id @default(cuid())
+  cardNumber       String   @unique
+  name             String
+  phone            String? // по избор — минимизация на данните (GDPR)
+  discountPermille Int      @default(0) // отстъпка в промили (25 = 2.5%)
+  balanceCents     Int      @default(0) // вересия: неплатено задължение в евроценти
+  creditLimitCents Int      @default(0) // таван на вересията (0 = без лимит)
+  marketingConsent Boolean  @default(false) // GDPR чл. 6(1)(a): съгласие за маркетинг
+  consentAt        DateTime? // кога е дадено съгласието
+  anonymizedAt     DateTime? // GDPR чл. 17: анонимизиран (данните за контакт са изтрити)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  sales            Sale[]
+}
+
+// ─── Смени и каса ───────────────────────────────────────────────────────────
+
+model Shift {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  openedAt          DateTime  @default(now())
+  closedAt          DateTime?
+  openingCashCents  Int // начална касова наличност
+  closingCashCents  Int? // преброена при закриване
+  expectedCashCents Int? // очаквана по системата при закриване
+  zReportNumber     String? // номер на дневния финансов отчет от ФУ
+  note              String?
+
+  sales         Sale[]
+  cashMovements CashMovement[]
+
+  @@index([userId])
+  @@index([openedAt])
+}
+
+
+model CashMovement {
+  id          String           @id @default(cuid())
+  shiftId     String
+  shift       Shift            @relation(fields: [shiftId], references: [id])
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
+  type        String // IN (служебно въведени) | OUT (служебно изведени)
+  amountCents Int
+  reason      String
+  fiscalDocNo String? // номер на служебния бон от ФУ
+  createdAt   DateTime         @default(now())
+
+  @@index([shiftId])
+}
+
+// ─── Продажби ───────────────────────────────────────────────────────────────
+
+
+
+
+model Sale {
+  id     String     @id @default(cuid())
+  // УНП — уникален номер на продажбата: <инд. № ФУ>-<код оператор>-<7-цифрен пореден>
+  unp    String     @unique
+  number Int        @unique // вътрешен пореден номер
+  status String     @default("COMPLETED") // COMPLETED | STORNO
+
+  shiftId    String
+  shift      Shift     @relation(fields: [shiftId], references: [id])
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  subtotalCents Int // сума преди отстъпка (с ДДС)
+  discountCents Int @default(0)
+  totalCents    Int // крайна сума (с ДДС)
+  totalBgnCents Int // информативно: сумата в лв. по курс 1.95583 (двойно обозначаване)
+
+  paymentType String // CASH | CARD | MIXED
+  cashCents   Int         @default(0) // платено в брой
+  cardCents   Int         @default(0) // платено с карта
+  changeCents Int         @default(0) // ресто
+
+  fiscalReceiptNo String? // номер на фискалния бон от ФУ
+  fiscalDeviceSn  String? // сериен номер на ФУ, издало бона
+  terminalRef     String? // референция от ПОС терминала (RRN/Auth code)
+
+  // Сторно връзки
+  stornoOfId   String?       @unique
+  stornoOf     Sale?         @relation("StornoLink", fields: [stornoOfId], references: [id])
+  stornoBy     Sale?         @relation("StornoLink")
+  stornoReason String? // OPERATOR_ERROR | RETURN | TAX_BASE_CUT (чл. 31 Н-18)
+
+  createdAt DateTime   @default(now())
+  items     SaleItem[]
+  invoice   Invoice?
+
+  @@index([shiftId])
+  @@index([createdAt])
+}
+
+// ─── Фактури (чл. 114 ЗДДС) ─────────────────────────────────────────────────
+// Издава се към приключена продажба; последователна възходяща номерация без
+// пропуски. Сумите се снемат от продажбата; купувачът се въвежда при издаване.
+
+model Invoice {
+  id     String @id @default(cuid())
+  number Int    @unique // 10-разряден пореден номер (чл. 114, ал. 1, т. 2)
+
+  saleId String @unique
+  sale   Sale   @relation(fields: [saleId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Получател (купувач)
+  buyerName    String
+  buyerEik     String? // ЕИК/Булстат
+  buyerVat     String? // ЗДДС номер
+  buyerAddress String?
+  buyerMol     String? // МОЛ / получил фактурата
+
+  // Снимка на сумите към момента на издаване
+  netCents      Int // данъчна основа (без ДДС)
+  vatCents      Int // начислен ДДС
+  totalCents    Int // обща сума (с ДДС)
+  totalBgnCents Int // информативно в лева по курс 1.95583
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model SaleItem {
+  id     String @id @default(cuid())
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  // Снимка на момента на продажбата — цените в каталога се менят
+  nameSnapshot     String
+  unitPriceCents   Int
+  qtyMilli         Int // 1000 = 1 бр. / 1.000 кг
+  vatGroup         String // A|B|C|D
+  vatRatePermille  Int // ставка в промили към момента (200 = 20%)
+  discountPermille Int      @default(0)
+  totalCents       Int // редова сума с ДДС след отстъпка
+  vatCents         Int // включен ДДС в реда
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+// ─── Склад ──────────────────────────────────────────────────────────────────
+
+model Supplier {
+  id         String     @id @default(cuid())
+  name       String
+  eik        String? // ЕИК/Булстат
+  vatNumber  String? // ЗДДС номер
+  phone      String?
+  email      String?
+  note       String?
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  deliveries Delivery[]
+}
+
+model Delivery {
+  id             String         @id @default(cuid())
+  supplierId     String
+  supplier       Supplier       @relation(fields: [supplierId], references: [id])
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  docNumber      String // номер на фактура/стокова разписка
+  totalCostCents Int // общо доставна стойност (без ДДС)
+  note           String?
+  createdAt      DateTime       @default(now())
+  items          DeliveryItem[]
+
+  @@index([supplierId])
+  @@index([createdAt])
+}
+
+model DeliveryItem {
+  id             String   @id @default(cuid())
+  deliveryId     String
+  delivery       Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  qtyMilli       Int
+  unitCostCents  Int // доставна цена за единица (без ДДС)
+  expiryDate     DateTime? // срок на годност на партидата
+  batchNumber    String?
+
+  @@index([deliveryId])
+}
+
+model Stocktake {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+  note        String?
+  items       StocktakeItem[]
+}
+
+model StocktakeItem {
+  id            String    @id @default(cuid())
+  stocktakeId   String
+  stocktake     Stocktake @relation(fields: [stocktakeId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id])
+  expectedMilli Int // по системата
+  countedMilli  Int // преброено
+
+  @@index([stocktakeId])
+}
+
+model WriteOff {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  reason    String // изтекъл срок, повреда, липса…
+  createdAt DateTime       @default(now())
+  items     WriteOffItem[]
+}
+
+model WriteOffItem {
+  id         String   @id @default(cuid())
+  writeOffId String
+  writeOff   WriteOff @relation(fields: [writeOffId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  qtyMilli   Int
+
+  @@index([writeOffId])
+}
+
+
+// Единна складова книга — всяка промяна на наличност минава оттук (одитна следа)
+model StockMovement {
+  id        String            @id @default(cuid())
+  productId String
+  product   Product           @relation(fields: [productId], references: [id])
+  type      String // SALE|STORNO|DELIVERY|STOCKTAKE|WRITEOFF|MANUAL
+  qtyMilliDelta Int // +постъпление / −изписване
+  refId     String? // id на продажба/доставка/ревизия/брак
+  note      String?
+  createdAt DateTime          @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
+}
+
+// ─── Настройки и одит ───────────────────────────────────────────────────────
+
+// key → JSON стойност: данни за търговеца (име, ЕИК, ЗДДС №, адрес, обект),
+// ДДС ставки по групи, конфигурация на ФУ и ПОС терминал, двойно обозначаване…
+model Setting {
+  key       String   @id
+  value     String // JSON
+  updatedAt DateTime @updatedAt
+}
+
+// Одиторска следа в стил СУПТО: без изтриване, само добавяне
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String // напр. SALE_COMPLETED, STORNO, PRICE_CHANGE, LOGIN, SHIFT_OPEN…
+  entity    String?
+  entityId  String?
+  detail    String? // JSON с подробности
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+}

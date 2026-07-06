@@ -1,0 +1,141 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Supreme Bot — Production Docker Compose
+#
+# Port map (chosen to avoid conflicts with existing services on the VPS):
+#   - Frontend (nginx-unprivileged): 127.0.0.1:8080 → 8080 — the ONLY published
+#     port; put your host nginx/Caddy in front of it for SSL termination
+#   - Backend:   internal only (no host port, reached via frontend nginx)
+#   - Bot:       internal only (no host port)
+#   - Postgres:  127.0.0.1:5435 → 5432 (avoid other postgres instances)
+#   - Redis:     127.0.0.1:6381 → 6379 (avoid 6379/6380)
+#
+# All inter-service traffic stays on the Docker bridge network and all host
+# bindings are localhost-only — nothing is reachable from the internet except
+# through your SSL-terminating host proxy.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+  # ─── PostgreSQL Database ────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: supremebot_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discordbot}
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in supreme/.env (no insecure default)}
+    ports:
+      - "127.0.0.1:5435:5432"  # bind to localhost only — not public
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-bot} -d $${POSTGRES_DB:-discordbot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - supremebot
+
+  # ─── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: supremebot_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:6381:6379"  # bind to localhost only
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - supremebot
+
+  # ─── Backend API ────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: supremebot_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-bot}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in supreme/.env}@postgres:5432/${POSTGRES_DB:-discordbot}"
+      NODE_ENV: production
+    env_file:
+      - ./backend/.env
+    expose:
+      - "3000"  # internal only — nginx proxies to this
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - supremebot
+
+  # ─── Discord Bot ────────────────────────────────────────────────────────────
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: supremebot_bot
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./bot/.env
+    expose:
+      - "3001"  # internal only — only backend calls it
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - supremebot
+
+  # ─── Frontend + nginx reverse proxy (single container) ─────────────────────
+  # Serves the built React SPA AND proxies /api/* to backend.
+  # This is the ONLY container with public host ports.
+  # Uses nginx-unprivileged (runs as non-root, listens on port 8080 internal).
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: supremebot_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      # Localhost-only: exposing 0.0.0.0 would let clients bypass the SSL proxy
+      # (plain HTTP, no X-Forwarded-Proto → secure session cookie never set).
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - supremebot
+
+networks:
+  supremebot:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

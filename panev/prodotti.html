@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- ═══ SECURITY ═══ -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.stripe.com https://www.google-analytics.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'self'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https: blob:; connect-src 'self' https://api.stripe.com https://www.google-analytics.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'self'; base-uri 'self'; form-action 'self'">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="format-detection" content="telephone=no">
@@ -43,13 +43,12 @@
   <link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/prodotti">
 
   <!-- ═══ PERFORMANCE / RESOURCE HINTS ═══ -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://www.google-analytics.com">
   <link rel="preload" href="css/style.css" as="style">
   <link rel="preload" href="js/app.js" as="script">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/Inter-latin-6ab57b19.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Fraunces-latin-8f90dc37.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="css/style.css">
 
   <script type="application/ld+json">
@@ -95,33 +94,33 @@
     "url": "https://www.panevascensori.it/prodotti",
     "numberOfItems": 27,
     "itemListElement": [
-      {"@type":"ListItem","position":1,"item":{"@type":"Product","name":"Staffa Porta A 65.170.7","sku":"COD-A-65-170-7","description":"Staffa angolare brevettata SX/DX, 5mm, 65x170mm, 7 asole. Brevetto N. 202023000002112.","brand":{"@type":"Brand","name":"Panev Ascensori SAS"},"material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"13.03","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31","seller":{"@type":"Organization","name":"Panev Ascensori SAS"}}}},
-      {"@type":"ListItem","position":2,"item":{"@type":"Product","name":"Staffa Porta B 65.320","sku":"COD-B-65-320","description":"Staffa dritta brevettata SX/DX, 5mm, 65x320mm. Brevetto N. 202023000002112.","brand":{"@type":"Brand","name":"Panev Ascensori SAS"},"material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"11.21","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":3,"item":{"@type":"Product","name":"Staffa Porta B 65.220","sku":"COD-B-65-220","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.98","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":4,"item":{"@type":"Product","name":"Staffa Porta A 45.170.7","sku":"COD-A-45-170-7","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"11.87","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":5,"item":{"@type":"Product","name":"Staffa Porta B 45.320","sku":"COD-B-45-320","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.93","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":6,"item":{"@type":"Product","name":"Staffa Porta B 45.220","sku":"COD-B-45-220","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.72","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":7,"item":{"@type":"Product","name":"Staffa Porta A 37.150.7","sku":"COD-A-37-150-7","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"11.43","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":8,"item":{"@type":"Product","name":"Staffa Porta B 37.320","sku":"COD-B-37-320","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.79","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":9,"item":{"@type":"Product","name":"Staffa Porta B 37.220","sku":"COD-B-37-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.52","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":10,"item":{"@type":"Product","name":"Staffa Porta A 37.170.2","sku":"COD-A-37-170-2","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.23","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":11,"item":{"@type":"Product","name":"Supporto SU 220.160","sku":"COD-SU-220-160","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.40","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":12,"item":{"@type":"Product","name":"Supporto SU 220.180","sku":"COD-SU-220-180","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.79","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":13,"item":{"@type":"Product","name":"Supporto SU 220.200","sku":"COD-SU-220-200","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"11.05","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":14,"item":{"@type":"Product","name":"Supporto SD 150.160","sku":"COD-SD-150-160","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.23","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":15,"item":{"@type":"Product","name":"Supporto SD 150.180","sku":"COD-SD-150-180","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.49","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":16,"item":{"@type":"Product","name":"Supporto SD 150.200","sku":"COD-SD-150-200","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.75","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":17,"item":{"@type":"Product","name":"Supporto SD 220.160","sku":"COD-SD-220-160","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.40","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":18,"item":{"@type":"Product","name":"Supporto SD 220.180","sku":"COD-SD-220-180","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.66","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":19,"item":{"@type":"Product","name":"Supporto SD 220.200","sku":"COD-SD-220-200","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.92","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":20,"item":{"@type":"Product","name":"Supporto SC 80.200","sku":"COD-SC-80-200","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.75","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":21,"item":{"@type":"Product","name":"Supporto SC 80.220","sku":"COD-SC-80-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.40","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":22,"item":{"@type":"Product","name":"Supporto SC 90.200","sku":"COD-SC-90-200","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.01","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":23,"item":{"@type":"Product","name":"Supporto SC 90.220","sku":"COD-SC-90-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.79","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":24,"item":{"@type":"Product","name":"Staffa Guide SG 80.150","sku":"COD-SG-80-150","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.49","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":25,"item":{"@type":"Product","name":"Staffa Guide SG 80.170","sku":"COD-SG-80-170","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.62","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":26,"item":{"@type":"Product","name":"Staffa Guide SG 80.190","sku":"COD-SG-80-190","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.62","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}},
-      {"@type":"ListItem","position":27,"item":{"@type":"Product","name":"Staffa Guide SG 80.220","sku":"COD-SG-80-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.75","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2025-12-31"}}}
+      {"@type":"ListItem","position":1,"item":{"@type":"Product","name":"Staffa Porta A 65.170.7","sku":"COD-A-65-170-7","description":"Staffa angolare brevettata SX/DX, 5mm, 65x170mm, 7 asole. Brevetto N. 202023000002112.","brand":{"@type":"Brand","name":"Panev Ascensori SAS"},"material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"13.03","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31","seller":{"@type":"Organization","name":"Panev Ascensori SAS"}}}},
+      {"@type":"ListItem","position":2,"item":{"@type":"Product","name":"Staffa Porta B 65.320","sku":"COD-B-65-320","description":"Staffa dritta brevettata SX/DX, 5mm, 65x320mm. Brevetto N. 202023000002112.","brand":{"@type":"Brand","name":"Panev Ascensori SAS"},"material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"11.21","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":3,"item":{"@type":"Product","name":"Staffa Porta B 65.220","sku":"COD-B-65-220","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.98","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":4,"item":{"@type":"Product","name":"Staffa Porta A 45.170.7","sku":"COD-A-45-170-7","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"11.87","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":5,"item":{"@type":"Product","name":"Staffa Porta B 45.320","sku":"COD-B-45-320","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.93","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":6,"item":{"@type":"Product","name":"Staffa Porta B 45.220","sku":"COD-B-45-220","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.72","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":7,"item":{"@type":"Product","name":"Staffa Porta A 37.150.7","sku":"COD-A-37-150-7","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"11.43","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":8,"item":{"@type":"Product","name":"Staffa Porta B 37.320","sku":"COD-B-37-320","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.79","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":9,"item":{"@type":"Product","name":"Staffa Porta B 37.220","sku":"COD-B-37-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.52","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":10,"item":{"@type":"Product","name":"Staffa Porta A 37.170.2","sku":"COD-A-37-170-2","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.23","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":11,"item":{"@type":"Product","name":"Supporto SU 220.160","sku":"COD-SU-220-160","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.40","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":12,"item":{"@type":"Product","name":"Supporto SU 220.180","sku":"COD-SU-220-180","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.79","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":13,"item":{"@type":"Product","name":"Supporto SU 220.200","sku":"COD-SU-220-200","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"11.05","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":14,"item":{"@type":"Product","name":"Supporto SD 150.160","sku":"COD-SD-150-160","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.23","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":15,"item":{"@type":"Product","name":"Supporto SD 150.180","sku":"COD-SD-150-180","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.49","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":16,"item":{"@type":"Product","name":"Supporto SD 150.200","sku":"COD-SD-150-200","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"9.75","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":17,"item":{"@type":"Product","name":"Supporto SD 220.160","sku":"COD-SD-220-160","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.40","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":18,"item":{"@type":"Product","name":"Supporto SD 220.180","sku":"COD-SD-220-180","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.66","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":19,"item":{"@type":"Product","name":"Supporto SD 220.200","sku":"COD-SD-220-200","material":"Ferro sp.5mm","offers":{"@type":"Offer","price":"10.92","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":20,"item":{"@type":"Product","name":"Supporto SC 80.200","sku":"COD-SC-80-200","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.75","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":21,"item":{"@type":"Product","name":"Supporto SC 80.220","sku":"COD-SC-80-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.40","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":22,"item":{"@type":"Product","name":"Supporto SC 90.200","sku":"COD-SC-90-200","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.01","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":23,"item":{"@type":"Product","name":"Supporto SC 90.220","sku":"COD-SC-90-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"10.79","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":24,"item":{"@type":"Product","name":"Staffa Guide SG 80.150","sku":"COD-SG-80-150","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.49","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":25,"item":{"@type":"Product","name":"Staffa Guide SG 80.170","sku":"COD-SG-80-170","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.62","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":26,"item":{"@type":"Product","name":"Staffa Guide SG 80.190","sku":"COD-SG-80-190","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.62","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}},
+      {"@type":"ListItem","position":27,"item":{"@type":"Product","name":"Staffa Guide SG 80.220","sku":"COD-SG-80-220","material":"Ferro sp.4mm","offers":{"@type":"Offer","price":"9.75","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceValidUntil":"2026-12-31"}}}
     ]
   }
   </script>
@@ -1357,6 +1356,11 @@
     </div>
 
     <h2 class="sr-only">Ordinamento risultati</h2>
+    <!-- B2B notice -->
+    <div class="b2b-notice" role="note">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span>Vendita riservata a operatori professionali con <strong>Partita IVA</strong> (B2B). Tutti i prezzi sono <strong>IVA esclusa</strong>.</span>
+    </div>
     <!-- Sort Bar -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
       <div id="results-count" style="font-size:0.82rem;color:var(--gray-400);">Caricamento...</div>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="theme-color" content="#00e5ff" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Mobile / PWA -->
+  <meta name="application-name" content="Supreme Bot" />
+  <meta name="apple-mobile-web-app-title" content="Supreme Bot" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- Performance: preconnect to critical origins.
+       Fonts are self-hosted (@fontsource) — no Google Fonts preconnect needed. -->
+  <link rel="preconnect" href="https://cdn.discordapp.com" />
+  <link rel="dns-prefetch" href="https://discord.com" />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- PRIMARY META                                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <title>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform | Tickets, Forms, Applications | Carbon Stealth</title>
+  <meta name="description" content="Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard. Built for Discord communities, agencies, and game servers." />
+  <meta name="keywords" content="discord ticket bot, ticket bot, best ticket bot, best discord ticket bot, supreme bot, discord bot, ticket system, application forms, discord saas, white-label bot, discord dashboard, ticket tool, appy bot, discord moderation, discord premium bot, carbon stealth, bulgarian software" />
+  <meta name="author" content="Carbon Stealth VCC" />
+  <meta name="publisher" content="Carbon Stealth VCC" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="bingbot" content="index, follow" />
+  <meta name="rating" content="general" />
+  <meta name="distribution" content="global" />
+  <meta name="revisit-after" content="7 days" />
+  <link rel="canonical" href="https://supreme.carbonstealth.eu/" />
+  <!-- hreflang: localized landing pages live at /bg /de /es /fr /it /nl /pl.
+       Alternates are injected per-route by components/Seo.jsx (rendered DOM)
+       and declared statically in sitemap.xml — keep all three in sync. -->
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- GEO TAGS — Carbon Stealth HQ in Bobov Dol, BG.                  -->
+  <!-- An additional office in Sofia (BG) is declared as a separate    -->
+  <!-- LocalBusiness entity in the JSON-LD @graph below.               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <meta name="geo.region" content="BG-10" />
+  <meta name="geo.placename" content="Bobov Dol, Kyustendil, Bulgaria" />
+  <meta name="geo.position" content="42.3539;23.0050" />
+  <meta name="ICBM" content="42.3539, 23.0050" />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- OPEN GRAPH / FACEBOOK                                           -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Supreme Bot by Carbon Stealth" />
+  <meta property="og:url" content="https://supreme.carbonstealth.eu/" />
+  <meta property="og:title" content="Supreme Bot — Discord Ticket Bot &amp; SaaS Platform" />
+  <meta property="og:description" content="Multi-tenant Discord bot management: tickets, forms, applications, AI auto-replies, white-label bots, Stripe subscriptions. Built by Carbon Stealth VCC." />
+  <meta property="og:image" content="https://supreme.carbonstealth.eu/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Supreme Bot Dashboard — Discord Bot SaaS by Carbon Stealth" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="bg_BG" />
+  <meta property="og:locale:alternate" content="de_DE" />
+  <meta property="og:locale:alternate" content="es_ES" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:locale:alternate" content="it_IT" />
+  <meta property="og:locale:alternate" content="nl_NL" />
+  <meta property="og:locale:alternate" content="pl_PL" />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- TWITTER / X                                                     -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@CarbonStealth" />
+  <meta name="twitter:creator" content="@CarbonStealth" />
+  <meta name="twitter:title" content="Supreme Bot — Discord Ticket Bot &amp; SaaS Platform" />
+  <meta name="twitter:description" content="Manage Discord tickets, forms, and applications from a modern web dashboard. White-label bots, AI replies, Stripe billing." />
+  <meta name="twitter:image" content="https://supreme.carbonstealth.eu/og-image.png" />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- FAVICONS                                                        -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+  <link rel="apple-touch-icon" href="/favicon-192.png" />
+  <link rel="mask-icon" href="/favicon.svg" color="#00e5ff" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- JSON-LD STRUCTURED DATA — Organization + WebSite + Software     -->
+  <!-- + Service + LocalBusiness (Bobov Dol, Sofia) +                  -->
+  <!-- BreadcrumbList + WebPage (speakable) + FAQPage (for AEO)        -->
+  <!--                                                                 -->
+  <!-- Note: Google deprecated FAQPage rich results on 2026-05-07      -->
+  <!-- (now restricted to gov/health sites). FAQPage schema retained   -->
+  <!-- because AI engines (ChatGPT, Claude, Perplexity) and other      -->
+  <!-- search engines (Bing, DuckDuckGo) still parse it for AEO.       -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["Organization", "ProfessionalService"],
+        "@id": "https://carbonstealth.eu/#organization",
+        "name": "Carbon Stealth VCC",
+        "legalName": "Carbon Stealth VCC",
+        "alternateName": ["Carbon Stealth", "Карбон Стелт", "CarbonStealth", "Carbon Stealth Agency"],
+        "url": "https://carbonstealth.eu/",
+        "logo": "https://carbonstealth.eu/logo.svg",
+        "image": "https://carbonstealth.eu/logo.svg",
+        "slogan": "Изработка на уебсайтове и софтуер — Web & software development across Europe.",
+        "description": "Carbon Stealth (Карбон Стелт) is a digital solutions agency headquartered in Bobov Dol, Bulgaria, with an office in Sofia. We deliver website development (изработка на website), custom software, ERP, mobile apps, game development, and SEO/GEO/AEO for clients across Bulgaria and the European Union.",
+        "knowsAbout": [
+          "Website development",
+          "Изработка на уебсайт",
+          "Изработка на website в България",
+          "Web design",
+          "Custom software development",
+          "ERP systems",
+          "Mobile app development",
+          "Game development",
+          "SEO",
+          "GEO (Generative Engine Optimization)",
+          "AEO (Answer Engine Optimization)",
+          "Discord bot development"
+        ],
+        "knowsLanguage": ["bg", "it", "en", "de", "es", "fr", "nl", "pl"],
+        "makesOffer": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Website development / Изработка на website в България",
+              "serviceType": "Web design and development",
+              "areaServed": [
+                { "@type": "Country", "name": "Bulgaria" },
+                { "@type": "Country", "name": "Italy" },
+                { "@type": "Country", "name": "European Union" }
+              ]
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Custom software, ERP and mobile development",
+              "serviceType": "Software development"
+            }
+          }
+        ],
+        "foundingDate": "2020",
+        "taxID": "208725180",
+        "vatID": "BG208725180",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ul. Samuil 3",
+          "addressLocality": "Bobov Dol",
+          "postalCode": "2670",
+          "addressRegion": "Kyustendil",
+          "addressCountry": "BG"
+        },
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "email": "discord@carbonstealth.eu",
+            "contactType": "customer support",
+            "availableLanguage": ["en", "bg", "it"]
+          },
+          {
+            "@type": "ContactPoint",
+            "telephone": "+359-877-414-874",
+            "contactType": "customer support",
+            "areaServed": "BG",
+            "availableLanguage": "bg"
+          },
+          {
+            "@type": "ContactPoint",
+            "telephone": "+39-379-296-9699",
+            "contactType": "customer support",
+            "areaServed": "IT",
+            "availableLanguage": "it"
+          }
+        ],
+        "sameAs": [
+          "https://carbonstealth.eu/",
+          "https://discord.gg/wpCRpy8B"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://supreme.carbonstealth.eu/#website",
+        "url": "https://supreme.carbonstealth.eu/",
+        "name": "Supreme Bot",
+        "description": "Discord Bot SaaS Platform by Carbon Stealth",
+        "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://supreme.carbonstealth.eu/#software",
+        "name": "Supreme Bot",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "Discord Bot Management",
+        "operatingSystem": "Web Browser",
+        "url": "https://supreme.carbonstealth.eu/",
+        "keywords": "discord ticket bot, ticket bot, supreme bot, discord bot, ticket system, application forms, verification bot, giveaway bot, white-label discord bot, carbon stealth",
+        "description": "Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform for ticket systems, application forms, AI auto-replies, round-robin assignment, white-label bots, and Stripe subscriptions.",
+        "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+        "offers": {
+          "@type": "AggregateOffer",
+          "lowPrice": "0",
+          "highPrice": "9.99",
+          "priceCurrency": "EUR",
+          "offerCount": 2,
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Free",
+              "price": "0",
+              "priceCurrency": "EUR",
+              "description": "1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, persistent HTML transcripts that survive Discord channel deletion (kept 30 days after the ticket is closed), full audit logs",
+              "category": "free"
+            },
+            {
+              "@type": "Offer",
+              "name": "Premium",
+              "price": "9.99",
+              "priceCurrency": "EUR",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "9.99",
+                "priceCurrency": "EUR",
+                "billingDuration": "P1M",
+                "referenceQuantity": {
+                  "@type": "QuantitativeValue",
+                  "value": 1,
+                  "unitCode": "MON"
+                }
+              },
+              "description": "Up to 50 panels, 50 forms and 50 questions per form. AI auto-replies powered by Anthropic Claude, round-robin assignment, white-label bot with custom token, advanced analytics, priority support, 14-day free trial without credit card",
+              "category": "subscription"
+            }
+          ]
+        },
+        "featureList": [
+          "Discord OAuth2 login",
+          "Ticket panels with buttons",
+          "Logic-branching application forms",
+          "Verification and anti-bot (button, math captcha, account-age gate)",
+          "Live polls",
+          "Giveaways with role gating and reroll",
+          "Sticky messages",
+          "Scheduled and recurring messages",
+          "Persistent HTML ticket transcripts",
+          "White-label bot with custom token",
+          "AES-256-GCM encryption for bot tokens",
+          "AI auto-replies powered by Anthropic Claude",
+          "Round-robin ticket assignment",
+          "Stripe subscription billing",
+          "Webhook integrations with HMAC signatures",
+          "Public REST API with bearer authentication",
+          "GDPR-compliant data export and deletion",
+          "Real-time service status page",
+          "Audit logs and analytics dashboard"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://supreme.carbonstealth.eu/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is Supreme Bot?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Supreme Bot is a multi-tenant Discord bot SaaS platform built by Carbon Stealth VCC. It provides ticket systems, application forms, panel buttons, AI auto-replies, white-label bots, and Stripe subscription billing through a modern web dashboard. It is designed for Discord communities, gaming servers, support teams, and agencies."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does Supreme Bot cost?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Supreme Bot has a free tier with 1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, and persistent HTML transcripts (30-day retention). The Premium tier costs 9.99 EUR per server per month and includes up to 50 panels, 50 forms and 50 questions per form, AI auto-replies powered by Anthropic Claude, round-robin ticket assignment, white-label bot with custom name, avatar, and token, advanced analytics, and priority support. Premium includes a 14-day free trial with no credit card required."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is Supreme Bot secure?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Supreme Bot uses AES-256-GCM encryption for custom bot tokens stored in the database, Discord OAuth2 for user authentication (no passwords stored), HTTP-only secure cookies with SameSite protection, rate limiting on all endpoints, HSTS headers, Helmet.js security middleware, full GDPR compliance with self-service data export and deletion, and EU-hosted infrastructure with data residency in Germany (Hetzner)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use my own bot token with Supreme Bot?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Premium subscribers can provide their own Discord bot token through the dashboard. This allows servers to use their own branded bot with a custom name and avatar — called a white-label bot. Tokens are encrypted with AES-256-GCM before being stored and are never exposed back to users."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I install the Supreme Bot in my Discord server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Visit the Supreme Bot dashboard at supreme.carbonstealth.eu, log in with your Discord account, then click the invite link to add the bot to any Discord server where you have Manage Server permission. The bot registers slash commands automatically and is ready to use in under 60 seconds."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the AI auto-reply feature work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Premium servers can enable AI auto-replies, which use Anthropic Claude to generate a friendly initial response when a new support ticket is created. The AI response includes a prominent disclosure per EU AI Act Article 50 informing the user that they are interacting with an AI. Server owners can provide their own system prompt to control the AI's tone and behavior. The feature is opt-in and can be disabled per panel."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where is Supreme Bot hosted?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Supreme Bot infrastructure is hosted in the European Union with data residency in Germany (Hetzner) and operational headquarters in Bulgaria. This guarantees GDPR compliance and EU data sovereignty for all customer data."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to my ticket transcripts when a Discord channel is deleted?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When a ticket is closed, the full conversation is archived as HTML and remains accessible via a private link. Premium retains transcripts indefinitely; the Free tier keeps them for 30 days after a ticket is closed. In both cases the transcript survives Discord channel deletion, server reset, and bot removal."
+            }
+          }
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://supreme.carbonstealth.eu/#breadcrumbs",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Carbon Stealth",
+            "item": "https://carbonstealth.eu/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Supreme Bot",
+            "item": "https://supreme.carbonstealth.eu/"
+          }
+        ]
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://carbonstealth.eu/#bobov-dol",
+        "name": "Carbon Stealth VCC — Bobov Dol HQ",
+        "image": "https://carbonstealth.eu/logo.svg",
+        "url": "https://carbonstealth.eu/",
+        "email": "admin@carbonstealth.eu",
+        "telephone": "+359-877-414-874",
+        "priceRange": "€€",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ul. Samuil 3",
+          "addressLocality": "Bobov Dol",
+          "addressRegion": "Kyustendil",
+          "postalCode": "2670",
+          "addressCountry": "BG"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 42.3539,
+          "longitude": 23.0050
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "18:00"
+          }
+        ],
+        "areaServed": [
+          { "@type": "Country", "name": "Bulgaria" },
+          { "@type": "Country", "name": "Italy" },
+          { "@type": "Country", "name": "European Union" }
+        ],
+        "parentOrganization": { "@id": "https://carbonstealth.eu/#organization" }
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://carbonstealth.eu/#sofia",
+        "name": "Carbon Stealth VCC — Sofia Office",
+        "image": "https://carbonstealth.eu/logo.svg",
+        "url": "https://carbonstealth.eu/",
+        "email": "admin@carbonstealth.eu",
+        "telephone": "+359-877-414-874",
+        "priceRange": "€€",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Sofia",
+          "addressRegion": "Sofia City",
+          "postalCode": "1000",
+          "addressCountry": "BG"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 42.6977,
+          "longitude": 23.3219
+        },
+        "areaServed": { "@type": "Country", "name": "Bulgaria" },
+        "parentOrganization": { "@id": "https://carbonstealth.eu/#organization" }
+      },
+      {
+        "@type": "Service",
+        "@id": "https://supreme.carbonstealth.eu/#service",
+        "serviceType": "Discord Bot Management SaaS",
+        "name": "Supreme Bot — Discord Bot Management",
+        "provider": { "@id": "https://carbonstealth.eu/#organization" },
+        "areaServed": [
+          { "@type": "Country", "name": "Bulgaria" },
+          { "@type": "Country", "name": "Italy" },
+          { "@type": "Country", "name": "European Union" },
+          { "@type": "Country", "name": "United States" },
+          { "@type": "Country", "name": "United Kingdom" }
+        ],
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Discord communities, esports organizations, gaming servers, support teams, agencies, content creators"
+        },
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Supreme Bot Tiers",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Free Tier",
+                "description": "1 ticket panel, 2 application forms (up to 5 questions each), persistent transcripts (kept 30 days after closure)"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Premium Tier",
+                "description": "Up to 50 panels, AI auto-replies, white-label bot, advanced analytics"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://supreme.carbonstealth.eu/#webpage",
+        "url": "https://supreme.carbonstealth.eu/",
+        "name": "Supreme Bot — Discord Bot SaaS Platform",
+        "isPartOf": { "@id": "https://supreme.carbonstealth.eu/#website" },
+        "about": { "@id": "https://supreme.carbonstealth.eu/#software" },
+        "breadcrumb": { "@id": "https://supreme.carbonstealth.eu/#breadcrumbs" },
+        "speakable": {
+          "@type": "SpeakableSpecification",
+          "cssSelector": ["h1", "h2", ".speakable", "[data-speakable]"]
+        },
+        "inLanguage": "en"
+      }
+    ]
+  }
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- MICROSOFT / TILE                                                -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <meta name="msapplication-TileColor" content="#00e5ff" />
+</head>
+<body>
+  <!-- No-JS fallback for search engines that don't render SPA content well.
+       Contains the key facts in plain HTML for crawlers + accessibility. -->
+  <noscript>
+    <div style="max-width:720px;margin:48px auto;padding:24px;background:#000;color:#f0f0eb;border:1px solid #00e5ff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
+      <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
+      <p>Supreme Bot is a multi-tenant Discord bot management dashboard by Carbon Stealth VCC. It requires JavaScript to run.</p>
+      <p>Features include ticket panels, logic-branching application forms, AI auto-replies, white-label bots, and Stripe subscription billing.</p>
+      <p>Visit <a href="https://carbonstealth.eu" style="color:#00e5ff;">carbonstealth.eu</a> for more Carbon Stealth products.</p>
+      <p>Contact: discord@carbonstealth.eu</p>
+    </div>
+  </noscript>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

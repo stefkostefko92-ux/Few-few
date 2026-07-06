@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- ═══ SECURITY ═══ -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.stripe.com https://www.google-analytics.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'self'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https: blob:; connect-src 'self' https://api.stripe.com https://www.google-analytics.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'self'; base-uri 'self'; form-action 'self'">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="format-detection" content="telephone=no">
@@ -26,13 +26,12 @@
   <link rel="alternate" hreflang="it" href="https://www.panevascensori.it/privacy">
   <link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/privacy">
   <!-- ═══ PERFORMANCE / RESOURCE HINTS ═══ -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://www.google-analytics.com">
   <link rel="preload" href="css/style.css" as="style">
   <link rel="preload" href="js/app.js" as="script">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/Inter-latin-6ab57b19.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Fraunces-latin-8f90dc37.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="css/style.css">
   <script type="application/ld+json">
   {
@@ -58,7 +57,7 @@
       }
     ]
   },
-  "dateModified": "2026-04-02"
+  "dateModified": "2026-07-06"
 }
   </script>
   <meta name="twitter:card" content="summary">
@@ -118,7 +117,7 @@
   "url": "https://www.panevascensori.it/privacy",
   "name": "Privacy Policy GDPR — Panev Ascensori SAS",
   "inLanguage": "it-IT",
-  "dateModified": "2026-03-18",
+  "dateModified": "2026-07-06",
   "isPartOf": {
     "@id": "https://www.panevascensori.it/#website"
   },
@@ -204,7 +203,7 @@
   <div class="container">
     <p class="eyebrow">Trasparenza e rispetto dei dati</p>
     <h1 class="display-2">Informativa Privacy</h1>
-    <p class="page-hero-sub">Ai sensi dell'Art. 13 del Regolamento UE 2016/679 (GDPR) — Ultimo aggiornamento: 1 marzo 2025</p>
+    <p class="page-hero-sub">Ai sensi dell'Art. 13 del Regolamento UE 2016/679 (GDPR) — Ultimo aggiornamento: 6 luglio 2026</p>
   </div>
 </section>
 
@@ -342,6 +341,7 @@
             <li><strong>Stripe, Inc.</strong> (elaborazione pagamenti) — DPA disponibile su <a href="https://stripe.com/it/privacy" target="_blank" rel="noopener">stripe.com/it/privacy</a></li>
             <li><strong>Google Ireland Ltd.</strong> (statistiche anonime, Google Analytics 4 — solo previo consenso) — con possibile trasferimento a Google LLC (USA) su base DPF/SCC. Attualmente non attivo.</li>
             <li><strong>Aruba S.p.A.</strong> (hosting posta elettronica e PEC)</li>
+            <li><strong>OpenStreetMap Foundation</strong> (Regno Unito — Paese con decisione di adeguatezza) — mappa nella pagina Contatti; riceve l'indirizzo IP al caricamento delle tile</li>
             <li><strong>Provider di hosting e infrastruttura IT</strong> (server, backup, CDN)</li>
             <li><strong>Software di posta elettronica</strong> e CRM interni</li>
             <li><strong>Consulenti fiscali e commercialisti</strong> per adempimenti contabili</li>
@@ -474,7 +474,7 @@
         </section>
 
         <div class="legal-footer-note">
-          <p>Informativa aggiornata al <strong>1 marzo 2025</strong> — Panev Ascensori SAS</p>
+          <p>Informativa aggiornata al <strong>6 luglio 2026</strong> — Panev Ascensori SAS</p>
           <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem">
             <a href="/cookie" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1rem">Cookie Policy →</a>
             <a href="/termini" class="btn btn-outline" style="font-size:.82rem;padding:.5rem 1rem">Termini e Condizioni →</a>

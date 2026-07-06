@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus supreme}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -48,8 +48,8 @@ FORCE_SEED="${FORCE_SEED:-0}"
 # supreme (Supreme Bot — Docker Compose модел) — frontend nginx е единственият
 # публикуван порт (127.0.0.1:8080), останалите services са вътрешни. backend
 # контейнерът пуска `prisma migrate deploy` сам в entrypoint-а. Тайните живеят
-# на сървъра в supreme/.env (корен, postgres), supreme/backend/.env, supreme/bot/.env
-# и supreme/frontend/.env (build-time VITE_*); пренасят се при всеки деплой.
+# на сървъра в SupremeDiscordBot/.env (корен, postgres), SupremeDiscordBot/backend/.env, SupremeDiscordBot/bot/.env
+# и SupremeDiscordBot/frontend/.env (build-time VITE_*); пренасят се при всеки деплой.
 SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
@@ -104,7 +104,7 @@ else
   SRC="$REL"
 fi
 shopt -u nullglob dotglob
-[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/supreme" ] || die "Архивът не прилича на това репо ($SRC)."
+[ -d "$SRC/zabobovdol" ] || [ -d "$SRC/medqr" ] || [ -d "$SRC/SupremeDiscordBot" ] || die "Архивът не прилича на това репо ($SRC)."
 ok "Разопаковано в $SRC"
 
 deploy_failed=0
@@ -261,8 +261,8 @@ deploy_nexus() {
 
 # ── 3d) supreme — Supreme Bot, Docker Compose ─────────────────────────────────
 deploy_supreme() {
-  local d="$SRC/supreme"
-  [ -d "$d" ] || { warn "Няма supreme/ в архива — пропускам."; return; }
+  local d="$SRC/SupremeDiscordBot"
+  [ -d "$d" ] || { warn "Няма SupremeDiscordBot/ в архива — пропускам."; return; }
   log "Разгръщам Supreme Bot (Docker Compose)…"
   command -v docker >/dev/null || die "Липсва docker — инсталирай го преди да продължиш."
   # Пренеси съществуващите .env файлове (тайните живеят на сървъра, не в архива).
@@ -270,8 +270,8 @@ deploy_supreme() {
   # (frontend ползва build-time VITE_* — затова трябва да е на място ПРЕДИ билда).
   local f
   for f in .env backend/.env bot/.env frontend/.env; do
-    if [ -f "$CURRENT_LINK/supreme/$f" ] && [ ! -f "$d/$f" ]; then
-      cp -a "$CURRENT_LINK/supreme/$f" "$d/$f"; ok "Пренесох supreme/$f"
+    if [ -f "$CURRENT_LINK/SupremeDiscordBot/$f" ] && [ ! -f "$d/$f" ]; then
+      cp -a "$CURRENT_LINK/SupremeDiscordBot/$f" "$d/$f"; ok "Пренесох SupremeDiscordBot/$f"
     fi
   done
   ( cd "$d"
@@ -282,7 +282,7 @@ deploy_supreme() {
   )
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
-  health "$SUPREME_HEALTH_URL" "supreme" || deploy_failed=1
+  health "$SUPREME_HEALTH_URL" "SupremeDiscordBot" || deploy_failed=1
 }
 
 # ── Health check ──────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ for p in $PROJECTS; do
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
     nexus)      deploy_nexus ;;
-    supreme)    deploy_supreme ;;
+    SupremeDiscordBot)    deploy_supreme ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

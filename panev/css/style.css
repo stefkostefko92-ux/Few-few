@@ -4,7 +4,6 @@
    Riferimenti: Pagani, Molteni&C, Domus magazine, Dezeen
    ================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
@@ -7200,3 +7199,17 @@ select:disabled {
   font: inherit; color: inherit; cursor: pointer; text-align: left;
 }
 .footer-cookie-link:hover { color: var(--panev-blue); text-decoration: underline; }
+
+/* B2B sale notice (products / cart) */
+.b2b-notice {
+  display: flex; align-items: center; gap: .6rem;
+  background: rgba(22,40,97,.06);
+  border: 1px solid var(--panev-blue-20, rgba(22,40,97,.2));
+  border-radius: 8px;
+  padding: .7rem 1rem;
+  margin: 0 0 24px;
+  font-size: .82rem;
+  color: var(--text-secondary);
+}
+.b2b-notice svg { color: var(--panev-blue); flex-shrink: 0; }
+.b2b-notice strong { color: var(--panev-blue); }
