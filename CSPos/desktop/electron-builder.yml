@@ -1,0 +1,42 @@
+appId: eu.carbonstealth.pos
+productName: Carbon Stealth POS
+copyright: © Carbon Stealth VCC
+
+directories:
+  output: dist
+  buildResources: build
+
+# Пакетираме само Electron обвивката; целият Next standalone сървър влиза като
+# extraResources (разпакетиран), защото стартира собствен Node процес и има
+# нативен Prisma engine (.node) — не може да тича от вътре в asar.
+files:
+  - main.js
+  - preload.js
+  - package.json
+
+extraResources:
+  - from: server
+    to: server
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.png # electron-builder генерира .ico от PNG-а (≥256px)
+  # artifactName → „Carbon Stealth POS Setup 1.0.0.exe“
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  # българският NSIS език няма някои multiuser низове → пада на английски (ОК);
+  # без това warning-ите се третират като грешки и билдът пада
+  warningsAsErrors: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Carbon Stealth POS
+  installerLanguages:
+    - bg_BG
+    - en_US
+  artifactName: "${productName} Setup ${version}.${ext}"

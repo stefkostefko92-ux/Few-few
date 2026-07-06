@@ -1,0 +1,20 @@
+# зависимости
+node_modules/
+
+# next.js
+.next/
+out/
+
+# среда и тайни — никога в репото
+.env
+.env.local
+.env.production
+
+# база данни (локална SQLite)
+prisma/*.db
+prisma/*.db-journal
+
+# разни
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store

@@ -1,0 +1,24 @@
+{
+  "name": "carbon-stealth-pos-desktop",
+  "productName": "Carbon Stealth POS",
+  "version": "1.0.0",
+  "description": "Carbon Stealth POS — десктоп касова система (Windows .exe).",
+  "author": "Carbon Stealth VCC",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git"
+  },
+  "scripts": {
+    "prepare-app": "node prepare.mjs",
+    "start": "electron .",
+    "dist:win": "node prepare.mjs && electron-builder --win --publish never --config electron-builder.yml",
+    "dist:win:portable": "node prepare.mjs && electron-builder --win portable --publish never --config electron-builder.yml"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

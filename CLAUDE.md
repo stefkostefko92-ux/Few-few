@@ -25,6 +25,7 @@ file holds only what is true across all products. Keep it that way.
 | `panev/` | Panev Ascensori — сайт + e-commerce | Express · SQLite · Stripe | IT |
 | `kebab/` | Uylas Kebap Center — сайт | static | IT |
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
+| `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,
