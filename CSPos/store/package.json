@@ -1,0 +1,20 @@
+{
+  "name": "cspos-store",
+  "version": "1.0.0",
+  "description": "Carbon Stealth POS — лицензионен магазин: Stripe Checkout, активационни ключове, моментална доставка.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "setup:stripe": "node scripts/setup-stripe.mjs",
+    "keys:generate": "node scripts/generate-signing-keys.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "express": "^4.19.2",
+    "stripe": "^17.0.0"
+  }
+}
