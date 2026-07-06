@@ -314,24 +314,8 @@ router.get("/:serverId/eventlog-config", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Bot writes one activity event. Fire-and-forget from the bot; keep it cheap.
-router.post("/event-log", async (req, res, next) => {
-  const { serverId, category, action, actorId, actorTag, targetId, targetTag, channelId, metadata } = req.body || {};
-  if (!serverId || !category || !action || !targetId) {
-    return res.status(400).json({ error: "serverId, category, action and targetId are required" });
-  }
-  try {
-    await prisma.serverEventLog.create({
-      data: {
-        serverId, category, action,
-        actorId: actorId || null, actorTag: actorTag || null,
-        targetId, targetTag: targetTag || null,
-        channelId: channelId || null,
-        metadata: metadata ?? undefined,
-      },
-    });
-    res.json({ ok: true });
-  } catch (err) { next(err); }
-});
+// Note: activity events are posted by the bot to the server's own Discord log
+// channel only — they are NOT persisted in our database (owner decision), so
+// there is no /event-log write endpoint or dashboard viewer.
 
 export default router;

@@ -198,16 +198,6 @@ cron.schedule("* * * * *", async () => {
   } catch (err) { console.error("[Scheduler] poll close:", err.message); }
 });
 
-// ─── Job 5c: Server event-log retention (30 days) ───────────────────
-// Activity logs are high-volume; prune aggressively (privacy + storage).
-cron.schedule("30 4 * * *", async () => {
-  try {
-    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const del = await prisma.serverEventLog.deleteMany({ where: { createdAt: { lt: cutoff } } });
-    if (del.count) console.log(`[Scheduler] Pruned ${del.count} server event logs > 30 days`);
-  } catch (err) { console.error("[Scheduler] event-log retention:", err.message); }
-});
-
 // ─── Job 6: Scheduled messages (v1.8) ────────────────────
 cron.schedule("* * * * *", async () => {
   try {

@@ -1,6 +1,7 @@
 // bot/src/utils/serverEventLog.js
 // Споделен util за "Server Event Logging" — логва действия на членове (глас,
-// членове, модерация; БЕЗ съдържание на съобщения) в конфигуриран канал + DB.
+// членове, модерация; БЕЗ съдържание на съобщения) САМО в конфигуриран Discord
+// канал. НЕ се пази в базата и НЕ се показва в dashboard-а (по желание на owner-а).
 //
 // Ползва се от event модулите под /events/ (voiceStateUpdate, guildMemberUpdate,
 // guildBanAdd/Remove, guildMemberAdd/Remove), затова се закача И на главния
@@ -172,23 +173,8 @@ export async function logServerEvent(client, guild, evt) {
         console.warn(`[event-log] failed to post embed to ${config.channelId}: ${err?.message}`);
       }
     }
-
-    // (б) Прати към backend за DB запис (endpoint се имплементира паралелно).
-    try {
-      await api.post("/bot/event-log", {
-        serverId: guild.id,
-        category,
-        action,
-        actorId: actorId ?? null,
-        actorTag: actorTag ?? null,
-        targetId: targetId ?? null,
-        targetTag: targetTag ?? null,
-        channelId: channelId ?? null,
-        metadata: metadata ?? null,
-      });
-    } catch (err) {
-      console.warn(`[event-log] DB persist failed for ${guild.id}/${action}: ${err?.response?.status || err?.message}`);
-    }
+    // Events are relayed to the server's own log channel only — NOT stored in
+    // our database and NOT shown in the dashboard (by owner request).
   } catch (err) {
     // Твърд fail-safe: каквото и да се обърка, не чупим извикващия event handler.
     console.warn(`[event-log] unexpected error: ${err?.message}`);

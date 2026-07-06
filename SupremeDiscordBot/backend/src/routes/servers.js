@@ -194,27 +194,6 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
   }
 });
 
-// ─── GET /api/servers/:serverId/event-log ─────────────────────────────────────
-// Paginated server activity log (voice / members / moderation).
-router.get("/:serverId/event-log", requireServerAdmin, async (req, res, next) => {
-  try {
-    const take = Math.min(Number(req.query.limit) || 50, 200);
-    const skip = Math.max(Number(req.query.offset) || 0, 0);
-    const { category, action, targetId } = req.query;
-    const where = {
-      serverId: req.params.serverId,
-      ...(category && ["voice", "members", "moderation"].includes(category) && { category }),
-      ...(action && { action: String(action) }),
-      ...(targetId && { targetId: String(targetId) }),
-    };
-    const [items, total] = await Promise.all([
-      prisma.serverEventLog.findMany({ where, orderBy: { createdAt: "desc" }, take, skip }),
-      prisma.serverEventLog.count({ where }),
-    ]);
-    res.json({ items, total, limit: take, offset: skip });
-  } catch (err) { next(err); }
-});
-
 // ─── GET /api/servers/:serverId/stats ─────────────────────────────────────────
 
 router.get("/:serverId/stats", requireServerAdmin, async (req, res, next) => {

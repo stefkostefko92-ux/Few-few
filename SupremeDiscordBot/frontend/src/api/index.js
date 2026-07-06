@@ -43,8 +43,6 @@ export const getServers = () => api.get("/servers").then((r) => r.data);
 export const getServer = (id) => api.get(`/servers/${id}`).then((r) => r.data);
 export const getServerStats = (id) => api.get(`/servers/${id}/stats`).then((r) => r.data);
 export const updateServer = (id, data) => api.patch(`/servers/${id}`, data).then((r) => r.data);
-export const getEventLog = (id, params = {}) =>
-  api.get(`/servers/${id}/event-log`, { params }).then((r) => r.data);
 
 // ─── Panels ───────────────────────────────────────────────────────────────────
 export const getPanels = (serverId) => api.get(`/panels/${serverId}`).then((r) => r.data);

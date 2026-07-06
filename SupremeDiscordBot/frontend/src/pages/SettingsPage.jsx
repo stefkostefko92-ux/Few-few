@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save, Hash, Bot, Zap, RefreshCw, Star, Activity } from "lucide-react";
-import { getServer, updateServer, getEventLog } from "../api";
+import { getServer, updateServer } from "../api";
 
 export default function SettingsPage() {
   const { serverId } = useParams();
@@ -156,9 +156,9 @@ export default function SettingsPage() {
           </div>
           <p className="text-sm text-cs-muted">
             Log member actions in this server (voice mute/deaf/join, role &amp; nickname changes,
-            timeouts, bans/kicks). Events are posted to a channel and kept for 30 days in the
-            dashboard. You are the data controller for this activity — enable it only with a lawful
-            basis and tell your members.
+            timeouts, bans/kicks) to a Discord channel. Events are posted only to the channel you
+            choose — they are not stored by us or shown in the dashboard. You are the data
+            controller for this activity — enable it only with a lawful basis and tell your members.
           </p>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -460,84 +460,6 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
-
-      {server?.eventLogEnabled && <EventLogViewer serverId={serverId} />}
-    </div>
-  );
-}
-
-const CATEGORY_STYLE = {
-  voice: "text-cs-cyan",
-  members: "text-success",
-  moderation: "text-danger",
-};
-
-// Human-readable label for an action string (e.g. "voice_server_mute" → "Server mute").
-function actionLabel(action) {
-  return action
-    .replace(/^voice_/, "").replace(/^member_/, "").replace(/_/g, " ")
-    .replace(/\bself\b/, "self").trim()
-    .replace(/^\w/, (c) => c.toUpperCase());
-}
-
-function EventLogViewer({ serverId }) {
-  const [category, setCategory] = useState("");
-  const { data, isLoading } = useQuery({
-    queryKey: ["event-log", serverId, category],
-    queryFn: () => getEventLog(serverId, { limit: 50, ...(category && { category }) }),
-    refetchInterval: 15_000,
-  });
-  const items = data?.items || [];
-
-  return (
-    <div className="cs-card mt-8">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-cs-cyan" />
-          <h2 className="font-semibold text-cs-text">Recent Activity</h2>
-          {data?.total != null && <span className="text-xs text-cs-dim">({data.total} logged)</span>}
-        </div>
-        <div className="flex gap-1 text-xs font-mono">
-          {["", "voice", "members", "moderation"].map((c) => (
-            <button
-              key={c || "all"}
-              onClick={() => setCategory(c)}
-              className={`px-2 py-1 rounded ${category === c ? "bg-cs-cyanGlow text-cs-cyan" : "text-cs-muted hover:text-cs-text"}`}
-            >
-              {c || "all"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="h-24 animate-pulse bg-cs-panel rounded-xl" />
-      ) : items.length === 0 ? (
-        <p className="text-sm text-cs-muted py-6 text-center">No activity logged yet.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-cs-muted border-b border-cs-border">
-                <th className="py-2 pr-3">When</th>
-                <th className="py-2 pr-3">Action</th>
-                <th className="py-2 pr-3">Member</th>
-                <th className="py-2 pr-3">By</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((e) => (
-                <tr key={e.id} className="border-b border-cs-border/40">
-                  <td className="py-2 pr-3 text-cs-dim whitespace-nowrap">{new Date(e.createdAt).toLocaleString()}</td>
-                  <td className={`py-2 pr-3 font-medium ${CATEGORY_STYLE[e.category] || "text-cs-text"}`}>{actionLabel(e.action)}</td>
-                  <td className="py-2 pr-3 font-mono text-cs-text">{e.targetTag || e.targetId}</td>
-                  <td className="py-2 pr-3 font-mono text-cs-muted">{e.actorId && e.actorId !== e.targetId ? (e.actorTag || e.actorId) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
