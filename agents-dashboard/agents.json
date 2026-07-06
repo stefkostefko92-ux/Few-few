@@ -370,6 +370,24 @@
           "version": "10.1.0",
           "date": "2026-07-06",
           "event": "v10.1 — учене",
+          "detail": "Научи: European Accessibility Act (Дир. 2019/882) е в сила от 28.06.2025 — задължителна достъп… (+13 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: kebab/ показва еталонния консент-модел за static сайт — self-hosted шрифтове (css/fonts… (+2 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-06",
+          "event": "v10.3 — учене",
+          "detail": "Научи: Impl. Decision (EU) 2018/1523 е моделът за декларация за достъпност на ПУБЛИЧНИЯ сектор… (+5 още)"
+        },
+        {
+          "version": "10.1.0",
+          "date": "2026-07-06",
+          "event": "v10.1 — учене",
           "detail": "Научи: Панев (panevascensori.it) зарежда Google Fonts от fonts.googleapis.com/gstatic на всяка… (+2 още)"
         },
         {
@@ -389,17 +407,17 @@
         {
           "date": "2026-07-06",
           "type": "learning",
+          "summary": "Научи: „Impl. Decision (EU) 2018/1523 е моделът за декларация за достъпност на ПУБЛИЧНИЯ сектор…\" (+5 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „kebab/ показва еталонния консент-модел за static сайт — self-hosted шрифтове (css/fonts…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
           "summary": "Научи: „European Accessibility Act (Дир. 2019/882) е в сила от 28.06.2025 — задължителна достъп…\" (+13 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-07-06",
-          "type": "learning",
-          "summary": "Научи: „При self-host на един трети ресурс (шрифтове) провери ВСИЧКИ страници за други останали…\" (+2 още)"
-        },
-        {
-          "date": "2026-07-06",
-          "type": "learning",
-          "summary": "Научи: „Панев (panevascensori.it) зарежда Google Fonts от fonts.googleapis.com/gstatic на всяка…\" (+2 още)"
         },
         {
           "date": "2026-07-02",
@@ -685,6 +703,16 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/pravniyat-razbirach.md."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „При self-host на един трети ресурс (шрифтове) провери ВСИЧКИ страници за други останали…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Панев (panevascensori.it) зарежда Google Fonts от fonts.googleapis.com/gstatic на всяка…\" (+2 още)"
         }
       ]
     },
@@ -1078,6 +1106,18 @@
           "version": "10.9.0",
           "date": "2026-07-06",
           "event": "v10.9 — учене",
+          "detail": "Научи: OWASP Top 10:2025 (официален релийз) пренарежда: A01 Broken Access Control, A02 Securit… (+6 още)"
+        },
+        {
+          "version": "11.0.0",
+          "date": "2026-07-06",
+          "event": "v11.0 — учене",
+          "detail": "Научи: React 19 taint API (experimental_taintObjectReference за обекти / experimental_taintUni… (+4 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-06",
+          "event": "v10.9 — учене",
           "detail": "Научи: panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta… (+1 още)"
         },
         {
@@ -1103,22 +1143,12 @@
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „SupremeDiscordBot: две паралелни ревю-имплементации за applications — dashboard пътят (…\" (+1 още)"
+          "summary": "Научи: „React 19 taint API (experimental_taintObjectReference за обекти / experimental_taintUni…\" (+4 още)"
         },
         {
           "date": "2026-07-06",
           "type": "learning",
           "summary": "Научи: „OWASP Top 10:2025 (официален релийз) пренарежда: A01 Broken Access Control, A02 Securit…\" (+6 още) · 1 в карантина"
-        },
-        {
-          "date": "2026-07-06",
-          "type": "learning",
-          "summary": "Научи: „panev prod boot гейтовете минават на живо: NODE_ENV=production с JWT_SECRET<32 или липс…\" (+2 още)"
-        },
-        {
-          "date": "2026-07-06",
-          "type": "learning",
-          "summary": "Научи: „panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta…\" (+1 още)"
         },
         {
           "date": "2026-07-03",
@@ -1439,6 +1469,21 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/kodadjiyata.md."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „SupremeDiscordBot: две паралелни ревю-имплементации за applications — dashboard пътят (…\" (+1 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „panev prod boot гейтовете минават на живо: NODE_ENV=production с JWT_SECRET<32 или липс…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „panev (Node/Express статичен сайт): express.static(__dirname) сервира и server.js/conta…\" (+1 още)"
         }
       ]
     },
@@ -1801,9 +1846,20 @@
           "date": "2026-07-06",
           "event": "v10.7 — учене",
           "detail": "Научи: Entity lockdown се задава per routing bucket чрез sv_entityLockdown с три режима: 'stri… (+3 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-06",
+          "event": "v10.8 — учене",
+          "detail": "Научи: ox_lib lib.callback: default timeout е ConVar ox:callbackTimeout = 300000ms (5 мин). Вт… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „ox_lib lib.callback: default timeout е ConVar ox:callbackTimeout = 300000ms (5 мин). Вт…\" (+3 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -2442,30 +2498,42 @@
           "version": "10.1.0",
           "date": "2026-07-06",
           "event": "v10.1 — учене",
-          "detail": "Научи: panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123… (+2 още)"
+          "detail": "Научи: FAQ rich results са премахнати от Google Search на 7 май 2026; докладването в Search Co… (+7 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: zabobovdol IndexNow (submitToIndexNow) се вика САМО ръчно от admin/settings-actions.ts:… (+3 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-06",
+          "event": "v10.3 — учене",
+          "detail": "Научи: MerchantReturnPolicy изисква returnPolicyCountry (ISO 3166-1 alpha-2) като задължително… (+7 още)"
         },
         {
           "version": "10.1.0",
           "date": "2026-07-06",
           "event": "v10.1 — учене",
-          "detail": "Научи: FAQ rich results са премахнати от Google Search на 7 май 2026; докладването в Search Co… (+7 още)"
+          "detail": "Научи: panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „FAQ rich results са премахнати от Google Search на 7 май 2026; докладването в Search Co…\" (+7 още) · 2 в карантина"
+          "summary": "Научи: „MerchantReturnPolicy изисква returnPolicyCountry (ISO 3166-1 alpha-2) като задължително…\" (+7 още) · 1 в карантина"
         },
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123…\" (+2 още)"
+          "summary": "Научи: „zabobovdol IndexNow (submitToIndexNow) се вика САМО ръчно от admin/settings-actions.ts:…\" (+3 още)"
         },
         {
           "date": "2026-07-06",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „В panev/ sitemap.xml е ръчно поддържан с чисти URL (/brevetto), /faq, /en и en hreflang…\" (+2)"
+          "type": "learning",
+          "summary": "Научи: „FAQ rich results са премахнати от Google Search на 7 май 2026; докладването в Search Co…\" (+7 още) · 2 в карантина"
         },
         {
           "date": "2026-07-02",
@@ -2751,6 +2819,16 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/seo.md."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123…\" (+2 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В panev/ sitemap.xml е ръчно поддържан с чисти URL (/brevetto), /faq, /en и en hreflang…\" (+2)"
         }
       ]
     },
@@ -3111,9 +3189,20 @@
           "date": "2026-07-06",
           "event": "v10.3 — учене",
           "detail": "Научи: IT caporali «…» са основни за формално/литературно/издателско; virgolette inglesi \\\"…\\\"… (+7 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-06",
+          "event": "v10.4 — учене",
+          "detail": "Научи: CLDR 48 plural категории се различават: bg=one/other, en=one/other, но it=one/MANY/othe… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „CLDR 48 plural категории се различават: bg=one/other, en=one/other, но it=one/MANY/othe…\" (+6 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -3748,9 +3837,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: prisma.<model>.upsert({ where, update, create }) прави seed идемпотентен (1 или N пуска… (+7 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Interactive $transaction дефолти: timeout 5000ms, maxWait 2000ms. Голям seed в една тра… (+5 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Interactive $transaction дефолти: timeout 5000ms, maxWait 2000ms. Голям seed в една тра…\" (+5 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -4398,25 +4498,31 @@
           "version": "10.5.0",
           "date": "2026-07-06",
           "event": "v10.5 — учене",
-          "detail": "Научи: В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde… (+1 още)"
+          "detail": "Научи: Let's Encrypt ACME профили: classic=90 дни (default, избира се автоматично), tlsserver=… (+12 още)"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-06",
+          "event": "v10.6 — учене",
+          "detail": "Научи: OWASP Coraza е Go WAF, чете ModSecurity SecLang и е 100% съвместим с OWASP CRS. Зрялост… (+5 още)"
         },
         {
           "version": "10.5.0",
           "date": "2026-07-06",
           "event": "v10.5 — учене",
-          "detail": "Научи: Let's Encrypt ACME профили: classic=90 дни (default, избира се автоматично), tlsserver=… (+12 още)"
+          "detail": "Научи: В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde… (+1 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „Let's Encrypt ACME профили: classic=90 дни (default, избира се автоматично), tlsserver=…\" (+12 още)"
+          "summary": "Научи: „OWASP Coraza е Go WAF, чете ModSecurity SecLang и е 100% съвместим с OWASP CRS. Зрялост…\" (+5 още) · 1 в карантина"
         },
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde…\" (+1 още)"
+          "summary": "Научи: „Let's Encrypt ACME профили: classic=90 дни (default, избира се автоматично), tlsserver=…\" (+12 още)"
         },
         {
           "date": "2026-07-03",
@@ -4702,6 +4808,11 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/vps-adjiyata.md + deploy/autodeploy.sh."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „В .env файл, source-ван от bash (set -a; source .env под set -euo pipefail), placeholde…\" (+1 още)"
         }
       ]
     },
@@ -5076,6 +5187,36 @@
           "version": "10.7.0",
           "date": "2026-07-06",
           "event": "v10.7 — учене",
+          "detail": "Научи: QuickSurface 2026 е на Siemens Parasolid kernel → експорт Parasolid (.x_t) към SOLIDWOR… (+10 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-06",
+          "event": "v10.8 — учене",
+          "detail": "Научи: QuickSurface Mesh Selection има три реални инструмента за боядисване на региони преди p… (+3 още)"
+        },
+        {
+          "version": "10.9.0",
+          "date": "2026-07-06",
+          "event": "v10.9 — учене",
+          "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
+        },
+        {
+          "version": "11.0.0",
+          "date": "2026-07-06",
+          "event": "v11.0 — учене",
+          "detail": "Научи: build123d версии/дати (от PyPI): 0.11.0=2026-06-17, 0.11.1=latest 2026-07-02, 0.10.0=20… (+8 още)"
+        },
+        {
+          "version": "11.1.0",
+          "date": "2026-07-06",
+          "event": "v11.1 — учене",
+          "detail": "Научи: Boehm knot insertion: нови de Boor точки d⁽¹⁾ᵢ = αᵢ·dᵢ + (1−αᵢ)·dᵢ₋₁ с αᵢ=(ū−uᵢ)/(uᵢ₊ₚ−… (+6 още)"
+        },
+        {
+          "version": "10.7.0",
+          "date": "2026-07-06",
+          "event": "v10.7 — учене",
           "detail": "Научи: Официален ред на QuickSurface reverse engineering pipeline: Import (STL/OBJ/PLY + polyg… (+8 още)"
         },
         {
@@ -5095,15 +5236,14 @@
           "date": "2026-07-06",
           "event": "v11.0 — учене",
           "detail": "Научи: QS резба поток (Helix→Sweep): Surfacing>Helix, дефинирай ос чрез Pick на цилиндрично CA… (+4 още)"
-        },
-        {
-          "version": "11.0.0",
-          "date": "2026-07-06",
-          "event": "v11.0 — учене",
-          "detail": "Научи: build123d версии/дати (от PyPI): 0.11.0=2026-06-17, 0.11.1=latest 2026-07-02, 0.10.0=20… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Boehm knot insertion: нови de Boor точки d⁽¹⁾ᵢ = αᵢ·dᵢ + (1−αᵢ)·dᵢ₋₁ с αᵢ=(ū−uᵢ)/(uᵢ₊ₚ−…\" (+6 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -5123,11 +5263,6 @@
           "date": "2026-07-06",
           "type": "learning",
           "summary": "Научи: „QuickSurface 2026 е на Siemens Parasolid kernel → експорт Parasolid (.x_t) към SOLIDWOR…\" (+10 още) · 2 в карантина"
-        },
-        {
-          "date": "2026-07-06",
-          "type": "learning",
-          "summary": "Научи: „Официален ред на QuickSurface reverse engineering pipeline: Import (STL/OBJ/PLY + polyg…\" (+8 още)"
         },
         {
           "date": "2026-07-03",
@@ -5408,6 +5543,11 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/3d-maniac.md."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Официален ред на QuickSurface reverse engineering pipeline: Import (STL/OBJ/PLY + polyg…\" (+8 още)"
         }
       ]
     },
@@ -5777,9 +5917,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: EU AI Act чл. 50 влиза в сила 02.08.2026 (чл. 113); чл. 50(2) изисква ПРОВАЙДЪРИ на GPA… (+4 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: YouTube Data API v3 е преструктурирал quota: videos.insert и search.list имат ОТДЕЛНИ q… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „YouTube Data API v3 е преструктурирал quota: videos.insert и search.list имат ОТДЕЛНИ q…\" (+1 още) · 3 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -6392,25 +6543,36 @@
           "version": "10.2.0",
           "date": "2026-07-06",
           "event": "v10.2 — учене",
-          "detail": "Научи: panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST… (+2 още)"
+          "detail": "Научи: Текуща (и най-нова major) Stripe API версия е 2026-06-24.dahlia. Пинвай литерала и пров… (+12 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-06",
+          "event": "v10.3 — учене",
+          "detail": "Научи: SCA exemptions точни прагове (Stripe): Low-value <30 EUR (25 GBP), кумулативно 100 EUR … (+7 още)"
         },
         {
           "version": "10.2.0",
           "date": "2026-07-06",
           "event": "v10.2 — учене",
-          "detail": "Научи: Текуща (и най-нова major) Stripe API версия е 2026-06-24.dahlia. Пинвай литерала и пров… (+12 още)"
+          "detail": "Научи: panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST… (+2 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „Текуща (и най-нова major) Stripe API версия е 2026-06-24.dahlia. Пинвай литерала и пров…\" (+12 още) · 1 в карантина"
+          "summary": "Научи: „SCA exemptions точни прагове (Stripe): Low-value <30 EUR (25 GBP), кумулативно 100 EUR …\" (+7 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „panev/ (Express+SQLite+Stripe) — паричният път е спящ: UI carrello.html е quote-only (P…\" (+3)"
         },
         {
           "date": "2026-07-06",
           "type": "learning",
-          "summary": "Научи: „panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST…\" (+2 още)"
+          "summary": "Научи: „Текуща (и най-нова major) Stripe API версия е 2026-06-24.dahlia. Пинвай литерала и пров…\" (+12 още) · 1 в карантина"
         },
         {
           "date": "2026-07-03",
@@ -6656,6 +6818,11 @@
           "date": "2026-06-25",
           "type": "born",
           "summary": "Дефиницията записана в .claude/agents/prodavacha.md."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „panev (IT B2B, Node/Express/SQLite/Stripe): активният checkout е 'preventivo' през POST…\" (+2 още)"
         }
       ]
     },
@@ -6972,9 +7139,25 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: Google Play target API 35 (Android 15) задължителен за нови апове И ъпдейти от 31.08.20… (+9 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Capacitor 7 изисква Node 20+, Xcode 16+, iOS deployment target 14.0, JDK 21, minSdk 23.… (+7 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Capacitor 7 изисква Node 20+, Xcode 16+, iOS deployment target 14.0, JDK 21, minSdk 23.…\" (+7 още)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Capacitor 6 генерира targetSdkVersion/compileSdkVersion 34; Capacitor 7 вдига на 35 (+ …\" (+2)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -7518,9 +7701,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: K2 Plus активното нагряване на камерата работи само в диапазон 40 < T ≤ 60 °C (макс 60 … (+9 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Композитна форма на FDM = печатай ПАТЕРН (PLA/ABS), запечатай с епоксиден coating resin… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Композитна форма на FDM = печатай ПАТЕРН (PLA/ABS), запечатай с епоксиден coating resin…\" (+6 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -8120,9 +8314,20 @@
           "date": "2026-07-06",
           "event": "v10.5 — учене",
           "detail": "Научи: Three.js r183 въведе RenderPipeline — node-based замяна на post-processing; PostProcess… (+7 още)"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-06",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Three.js TSL compute: instancedArray(count,'vec3') прави GPU storage buffer персистиращ… (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Three.js TSL compute: instancedArray(count,'vec3') прави GPU storage buffer персистиращ…\" (+6 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -8720,9 +8925,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: MV2 край: Chrome 138 е ПОСЛЕДНАТА версия с MV2 (само през enterprise политика Extension… (+16 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: DNR redirect action има 4 взаимно изключващи се ключа: url, extensionPath (започва с /)… (+8 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „DNR redirect action има 4 взаимно изключващи се ключа: url, extensionPath (започва с /)…\" (+8 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
@@ -9256,18 +9472,19 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: Components v2: message flag IS_COMPONENTS_V2 = 1<<15 (32768), задава се per-message и е… (+10 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId … (+8 още)"
         }
       ],
       "activity": [
         {
           "date": "2026-07-06",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „discord.js event модул с { name, once, execute } получава клиента през аргумента на съб…\" (+1)"
-        },
-        {
-          "date": "2026-07-06",
-          "type": "quarantine",
-          "summary": "Хипотеза → карантина: „Supreme Bot: notifyBot(event) мапва към /internal/{event-lowercase-hyphenated} в бота (…\" (+2)"
+          "type": "learning",
+          "summary": "Научи: „Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId …\" (+8 още)"
         },
         {
           "date": "2026-07-06",
@@ -9498,6 +9715,16 @@
           "date": "2026-06-26",
           "type": "born",
           "summary": "Създаден — специалист по Discord (ботове, webhooks, interactions). Дефиниция в .claude/agents/diskordjiyata.md, инструмент tools/discord/discord-lint.mjs."
+        },
+        {
+          "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „discord.js event модул с { name, once, execute } получава клиента през аргумента на съб…\" (+1)"
+        },
+        {
+          "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „Supreme Bot: notifyBot(event) мапва към /internal/{event-lowercase-hyphenated} в бота (…\" (+2)"
         }
       ]
     },
@@ -9603,9 +9830,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: CCXT 2026 е активна серия v4.5.x (v4.5.64 на 2026-07-03), rolling ~2-3 релийза/седмица;… (+8 още)"
+        },
+        {
+          "version": "10.2.0",
+          "date": "2026-07-06",
+          "event": "v10.2 — учене",
+          "detail": "Научи: Binance WS session.logon приема САМО Ed25519 ключове (не HMAC/RSA). След успешен logon … (+6 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Binance WS session.logon приема САМО Ed25519 ключове (не HMAC/RSA). След успешен logon …\" (+6 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
