@@ -2,7 +2,7 @@
 
 **GDPR Article 30 compliance document**  
 **Controller/Processor:** Carbon Stealth VCC  
-**EIK:** BG208725180  
+**EIK:** 208725180 · **VAT (ЗДДС):** BG208725180  
 **Address:** ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria  
 **Contact:** privacy@carbonstealth.eu  
 **Last updated:** 2026-04-22  
@@ -13,7 +13,7 @@
 ## Entity Information
 
 - **Legal name:** Carbon Stealth VCC (Veggie Company Company)
-- **Registration:** EIK BG208725180, Bulgaria
+- **Registration:** EIK 208725180, VAT BG208725180, Bulgaria
 - **Representative:** Stefan Lyubomirov Kostadinov (Managing Director)
 - **Data Protection Officer:** Not yet appointed (threshold Article 37 not yet met; volunteer designation planned)
 - **DPO email:** privacy@carbonstealth.eu (interim)

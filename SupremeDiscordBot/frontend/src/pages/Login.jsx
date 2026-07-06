@@ -32,7 +32,7 @@ export default function Login() {
     <div className="relative min-h-screen bg-cs-black overflow-hidden">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
-        description="Supreme Bot is a multi-tenant Discord bot SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
+        description="Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
         path="/"
         lang="en"
         hreflang
@@ -289,7 +289,7 @@ export default function Login() {
               <TrustCard
                 icon={Building2}
                 title="Registered business"
-                body="Carbon Stealth VCC · EIK BG208725180. Real company, real invoices, real support."
+                body="Carbon Stealth VCC · EIK 208725180 · VAT BG208725180. Real company, real invoices, real support."
               />
               <TrustCard
                 icon={MessageCircle}
@@ -489,7 +489,7 @@ export default function Login() {
                 <div className="flex flex-col leading-tight">
                   <SupremeWordmark className="text-base" />
                   <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-cs-dim mt-1">
-                    © 2026 {COMPANY_NAME} · EIK / VAT BG208725180 · EU-hosted
+                    © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
                   </span>
                   <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
                     Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}

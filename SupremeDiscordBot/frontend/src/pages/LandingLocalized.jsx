@@ -248,7 +248,7 @@ export default function LandingLocalized({ locale }) {
                 <div className="flex flex-col leading-tight">
                   <SupremeWordmark className="text-base" />
                   <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-cs-dim mt-1">
-                    © 2026 {COMPANY_NAME} · EIK / VAT BG208725180 · EU-hosted
+                    © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
                   </span>
                   <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
                     Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}

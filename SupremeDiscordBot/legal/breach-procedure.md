@@ -1,7 +1,7 @@
 # Personal Data Breach Notification Procedure
 
 **GDPR Articles 33 & 34 compliance document**  
-**Controller:** Carbon Stealth VCC (EIK BG208725180)  
+**Controller:** Carbon Stealth VCC (EIK 208725180, VAT BG208725180)  
 **Last updated:** 2026-04-22  
 **Version:** 1.0  
 **Owner:** Managing Director (Stefan Lyubomirov Kostadinov, acting as interim DPO)
@@ -145,7 +145,7 @@ Three categories:
 
 **Controller identification:**
 - Legal name: Carbon Stealth VCC
-- Registration: EIK BG208725180
+- Registration: EIK 208725180, VAT BG208725180
 - Address: ul. Samuil 3, Bobov Dol, Kyustendil Province, Bulgaria
 - Contact: [Stefan Lyubomirov Kostadinov, privacy@carbonstealth.eu, +39 XXX XXX XXXX]
 

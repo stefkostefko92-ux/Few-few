@@ -35,7 +35,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Хостинг само в ЕС (Германия, Hetzner) — данните ви не напускат Съюза",
       "GDPR по дизайн: експорт, изтриване и оттегляне на съгласие от самото табло",
-      "Регистрирана европейска компания — Carbon Stealth VCC (Карбон Стелт), ЕИК BG208725180",
+      "Регистрирана европейска компания — Carbon Stealth VCC (Карбон Стелт), ЕИК 208725180",
     ],
     faqHeading: "Чести въпроси",
     faq: [
@@ -107,7 +107,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Hosting ausschließlich in der EU (Deutschland, Hetzner) — deine Daten verlassen die Union nicht",
       "DSGVO by Design: Datenexport, Löschung und Widerruf direkt im Dashboard",
-      "Eingetragenes EU-Unternehmen — Carbon Stealth VCC, EIK BG208725180",
+      "Eingetragenes EU-Unternehmen — Carbon Stealth VCC, EIK 208725180",
     ],
     faqHeading: "Häufige Fragen",
     faq: [
@@ -179,7 +179,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Alojamiento exclusivamente en la UE (Alemania, Hetzner) — tus datos no salen de la Unión",
       "RGPD por diseño: exportación, borrado y retirada del consentimiento desde el propio panel",
-      "Empresa europea registrada — Carbon Stealth VCC, EIK BG208725180",
+      "Empresa europea registrada — Carbon Stealth VCC, EIK 208725180",
     ],
     faqHeading: "Preguntas frecuentes",
     faq: [
@@ -251,7 +251,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Hébergement exclusivement dans l'UE (Allemagne, Hetzner) — vos données ne quittent jamais l'Union",
       "RGPD by design : export, suppression et retrait du consentement directement depuis le tableau de bord",
-      "Entreprise européenne enregistrée — Carbon Stealth VCC, EIK BG208725180",
+      "Entreprise européenne enregistrée — Carbon Stealth VCC, EIK 208725180",
     ],
     faqHeading: "Questions fréquentes",
     faq: [
@@ -323,7 +323,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Hosting esclusivamente nell'UE (Germania, Hetzner) — i tuoi dati non lasciano mai l'Unione",
       "GDPR by design: esportazione, cancellazione e revoca del consenso direttamente dalla dashboard",
-      "Azienda europea registrata — Carbon Stealth VCC, EIK BG208725180",
+      "Azienda europea registrata — Carbon Stealth VCC, EIK 208725180",
     ],
     faqHeading: "Domande frequenti",
     faq: [
@@ -395,7 +395,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Hosting uitsluitend in de EU (Duitsland, Hetzner) — je data verlaat de Unie nooit",
       "AVG by design: export, verwijdering en intrekken van toestemming rechtstreeks vanuit het dashboard",
-      "Geregistreerd Europees bedrijf — Carbon Stealth VCC, EIK BG208725180",
+      "Geregistreerd Europees bedrijf — Carbon Stealth VCC, EIK 208725180",
     ],
     faqHeading: "Veelgestelde vragen",
     faq: [
@@ -467,7 +467,7 @@ export const LANDING_TRANSLATIONS = {
     euBullets: [
       "Hosting wyłącznie w UE (Niemcy, Hetzner) — Twoje dane nigdy nie opuszczają Unii",
       "RODO by design: eksport, usuwanie i wycofanie zgody bezpośrednio z panelu",
-      "Zarejestrowana europejska firma — Carbon Stealth VCC, EIK BG208725180",
+      "Zarejestrowana europejska firma — Carbon Stealth VCC, EIK 208725180",
     ],
     faqHeading: "Często zadawane pytania",
     faq: [

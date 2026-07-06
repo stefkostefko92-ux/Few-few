@@ -238,7 +238,7 @@ export default function Layout() {
                   </a>
                 </span>
                 <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
-                  Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria · EIK / VAT BG208725180 ·{" "}
+                  Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria · EIK 208725180 · VAT BG208725180 ·{" "}
                   <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
                 </span>
               </div>

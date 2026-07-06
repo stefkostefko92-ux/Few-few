@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Effective Date:** 2026-04-22  
 **Controller:** [Customer Name] ("Customer")  
-**Processor:** Carbon Stealth VCC, EIK BG208725180, ul. Samuil 3, Bobov Dol, Bulgaria ("Supreme Bot")
+**Processor:** Carbon Stealth VCC, EIK 208725180, VAT BG208725180, ul. Samuil 3, Bobov Dol, Bulgaria ("Supreme Bot")
 
 ---
 
@@ -151,4 +151,4 @@ For questions regarding this DPA: **dpo@carbonstealth.eu** (or privacy@carbonste
 
 ---
 
-*Document prepared for Carbon Stealth VCC, EIK BG208725180. Not a substitute for legal counsel. Customer should have their own legal team review before execution.*
+*Document prepared for Carbon Stealth VCC, EIK 208725180, VAT BG208725180. Not a substitute for legal counsel. Customer should have their own legal team review before execution.*
