@@ -131,6 +131,8 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     welcomerDmEnabled, welcomerDmMessage,
     autoroleIds, autoroleBotIds,
     stickyMessagesEnabled,
+    // Server event logging
+    eventLogEnabled, eventLogChannelId, eventLogCategories,
   } = req.body;
 
   try {
@@ -172,6 +174,12 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
         ...(Array.isArray(autoroleIds) && { autoroleIds }),
         ...(Array.isArray(autoroleBotIds) && { autoroleBotIds }),
         ...(stickyMessagesEnabled !== undefined && { stickyMessagesEnabled: Boolean(stickyMessagesEnabled) }),
+        // Server event logging (free feature — no premium gate)
+        ...(eventLogEnabled !== undefined && { eventLogEnabled: Boolean(eventLogEnabled) }),
+        ...(eventLogChannelId !== undefined && { eventLogChannelId: eventLogChannelId || null }),
+        ...(Array.isArray(eventLogCategories) && {
+          eventLogCategories: eventLogCategories.filter((c) => ["voice", "members", "moderation"].includes(c)),
+        }),
       },
     });
 
@@ -184,6 +192,27 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// ─── GET /api/servers/:serverId/event-log ─────────────────────────────────────
+// Paginated server activity log (voice / members / moderation).
+router.get("/:serverId/event-log", requireServerAdmin, async (req, res, next) => {
+  try {
+    const take = Math.min(Number(req.query.limit) || 50, 200);
+    const skip = Math.max(Number(req.query.offset) || 0, 0);
+    const { category, action, targetId } = req.query;
+    const where = {
+      serverId: req.params.serverId,
+      ...(category && ["voice", "members", "moderation"].includes(category) && { category }),
+      ...(action && { action: String(action) }),
+      ...(targetId && { targetId: String(targetId) }),
+    };
+    const [items, total] = await Promise.all([
+      prisma.serverEventLog.findMany({ where, orderBy: { createdAt: "desc" }, take, skip }),
+      prisma.serverEventLog.count({ where }),
+    ]);
+    res.json({ items, total, limit: take, offset: skip });
+  } catch (err) { next(err); }
 });
 
 // ─── GET /api/servers/:serverId/stats ─────────────────────────────────────────

@@ -38,6 +38,12 @@ const SHARED_INTENTS = [
   // Привилегирован intent (1<<1): нужен за разрешаване на ролите на члена при
   // authz/verification и за GuildMember събития. Dev Portal + review при 10000+.
   GatewayIntentBits.GuildMembers,
+  // Непривилегирован intent (1<<7): Server Event Logging на гласови действия
+  // (voiceStateUpdate). Без него white-label ботът не вижда VOICE_STATE_UPDATE.
+  GatewayIntentBits.GuildVoiceStates,
+  // Непривилегирован intent (1<<2): Server Event Logging на модерация
+  // (guildBanAdd/Remove). Без него white-label ботът не вижда GUILD_BAN_*.
+  GatewayIntentBits.GuildModeration,
   GatewayIntentBits.DirectMessages,
 ];
 

@@ -297,4 +297,41 @@ router.delete("/schedule/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ══════════════════════════════ SERVER EVENT LOG ═════════════════════════════
+// Per-guild config the bot reads (cached) before deciding whether to log an event.
+router.get("/:serverId/eventlog-config", async (req, res, next) => {
+  try {
+    const s = await prisma.server.findUnique({
+      where: { id: req.params.serverId },
+      select: { eventLogEnabled: true, eventLogChannelId: true, eventLogCategories: true },
+    });
+    if (!s) return res.json({ enabled: false, channelId: null, categories: [] });
+    res.json({
+      enabled: s.eventLogEnabled,
+      channelId: s.eventLogChannelId,
+      categories: s.eventLogCategories || [],
+    });
+  } catch (err) { next(err); }
+});
+
+// Bot writes one activity event. Fire-and-forget from the bot; keep it cheap.
+router.post("/event-log", async (req, res, next) => {
+  const { serverId, category, action, actorId, actorTag, targetId, targetTag, channelId, metadata } = req.body || {};
+  if (!serverId || !category || !action || !targetId) {
+    return res.status(400).json({ error: "serverId, category, action and targetId are required" });
+  }
+  try {
+    await prisma.serverEventLog.create({
+      data: {
+        serverId, category, action,
+        actorId: actorId || null, actorTag: actorTag || null,
+        targetId, targetTag: targetTag || null,
+        channelId: channelId || null,
+        metadata: metadata ?? undefined,
+      },
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 export default router;

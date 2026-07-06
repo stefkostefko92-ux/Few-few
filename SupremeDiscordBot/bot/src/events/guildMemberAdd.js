@@ -8,12 +8,23 @@
 
 import api from "../utils/api.js";
 import { interpolate } from "../utils/variables.js";
+import { logServerEvent } from "../utils/serverEventLog.js";
 
 export default {
   name: "guildMemberAdd",
   once: false,
   async execute(member) {
     if (!member?.guild?.id) return;
+
+    // ─── Server Event Logging (category "members", action "member_join") ──────
+    // Fail-safe util — не хвърля; не пипаме welcomer/autorole логиката отдолу.
+    logServerEvent(member.client, member.guild, {
+      category: "members",
+      action: "member_join",
+      targetId: member.id,
+      targetTag: member.user?.tag || member.user?.username || null,
+      actorId: member.id,
+    });
 
     let server;
     try {

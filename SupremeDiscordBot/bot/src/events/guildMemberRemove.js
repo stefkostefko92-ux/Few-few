@@ -3,12 +3,44 @@
 // enabled, and auto-close their open tickets.
 
 import api from "../utils/api.js";
+import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
 
 export default {
   name: "guildMemberRemove",
   once: false,
   async execute(member) {
     if (!member?.id || !member?.guild?.id) return;
+
+    // ─── Server Event Logging (category "members") ────────────────────────────
+    // Best-effort разграничаване kick vs. доброволно напускане: ако има audit
+    // log запис MemberKick за този target в последните ~5s → member_kick (с
+    // актьор + reason), иначе member_leave. Отделен try/catch — не бива да чупи
+    // ticket auto-close логиката отдолу.
+    try {
+      const targetTag = member.user?.tag || member.user?.username || null;
+      const kick = await fetchAuditActor(member.guild, AuditLogEvent.MemberKick, member.id, 5000);
+      if (kick) {
+        await logServerEvent(member.client, member.guild, {
+          category: "members",
+          action: "member_kick",
+          targetId: member.id,
+          targetTag,
+          actorId: kick.executorId,
+          actorTag: kick.executorTag,
+          metadata: kick.reason ? { reason: kick.reason } : null,
+        });
+      } else {
+        await logServerEvent(member.client, member.guild, {
+          category: "members",
+          action: "member_leave",
+          targetId: member.id,
+          targetTag,
+          actorId: member.id,
+        });
+      }
+    } catch (err) {
+      console.warn(`[guildMemberRemove] event-log error: ${err?.message}`);
+    }
 
     try {
       const { data: tickets } = await api.get(`/bot/user/${member.id}/open-tickets/${member.guild.id}`)

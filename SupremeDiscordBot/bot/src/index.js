@@ -46,6 +46,14 @@ export const client = new Client({
     // authz проверки (supportRoleIds), verification (min account age / role assign)
     // и за GuildMember събития. Изисква включване в Dev Portal + review при 10000+.
     GatewayIntentBits.GuildMembers,
+    // Непривилегирован intent (1<<7): нужен за Server Event Logging на гласови
+    // действия (voiceStateUpdate → join/leave/move, server/self mute+deaf,
+    // streaming, camera). Без него не получаваме VOICE_STATE_UPDATE събития.
+    GatewayIntentBits.GuildVoiceStates,
+    // Непривилегирован intent (1<<2): нужен за Server Event Logging на модерация
+    // (guildBanAdd/guildBanRemove → member_ban/member_unban). Без него не
+    // получаваме GUILD_BAN_* събития.
+    GatewayIntentBits.GuildModeration,
     GatewayIntentBits.DirectMessages,
   ],
   partials: [Partials.Channel],

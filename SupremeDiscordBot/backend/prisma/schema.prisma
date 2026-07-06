@@ -115,6 +115,12 @@ model Server {
   autoroleIds           String[]  @default([]) // Roles given to new members
   autoroleBotIds        String[]  @default([]) // Roles given to bots on join
   stickyMessagesEnabled Boolean   @default(false)
+
+  // Server event logging (member/voice/moderation activity) — per-server opt-in
+  eventLogEnabled    Boolean  @default(false)
+  eventLogChannelId  String?
+  eventLogCategories String[] @default(["voice", "members", "moderation"])
+
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -127,8 +133,31 @@ model Server {
   verificationPanels VerificationPanel[]
   auditLogs          AuditLog[]
   paymentLogs        PaymentLog[]
+  eventLogs          ServerEventLog[]
 
   @@map("servers")
+}
+
+// Server activity log — one row per tracked member/voice/moderation action.
+// High-volume + activity data, so it's separate from AuditLog (platform actions)
+// and pruned aggressively by a retention job.
+model ServerEventLog {
+  id        String   @id @default(cuid())
+  serverId  String
+  category  String // voice | members | moderation
+  action    String // voice_server_mute, voice_self_deaf, role_add, nickname_change, timeout_add, member_ban, member_kick, member_join, member_leave, ...
+  actorId   String? // who performed it (moderator); equals targetId for self-actions
+  actorTag  String?
+  targetId  String // the affected member
+  targetTag String?
+  channelId String? // relevant channel (e.g. voice channel)
+  metadata  Json? // before/after, role ids, reason, etc.
+  createdAt DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, createdAt])
+  @@map("server_event_logs")
 }
 
 model ServerMember {
