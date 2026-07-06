@@ -30,6 +30,10 @@
   `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
   Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
+- **cspos-store** (Carbon Stealth POS — лицензионен магазин): rsync в `/opt/cspos-store/app`
+  (без `data/`, `.env`), `npm ci --omit=dev`, снимка на `store.db`, `systemctl restart cspos-store`;
+  при провал — автоматичен rollback към предишния код и базата. Health на `127.0.0.1:8790/api/plans`.
+  Тайните (`/opt/cspos-store/.env`) и данните (`/opt/cspos-store/data/`) стоят на сървъра.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -38,7 +42,7 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot cspos-store` | кои проекти да се разгръщат тук |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
@@ -46,10 +50,11 @@
 
 ## Важно
 
-- **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env` и четирите
-  `SupremeDiscordBot/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
-  Скриптът пренася съществуващите `.env` при всеки деплой.
+- **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env`, четирите
+  `SupremeDiscordBot/*.env` (корен, `backend/`, `bot/`, `frontend/`) и `/opt/cspos-store/.env`
+  живеят на сървъра (права 600). Скриптът пренася/пази съществуващите `.env` при всеки деплой.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
 - Първоначалната настройка на сървъра (юзъри, `ufw`, systemd unit, Nginx/Caddy, TLS) се
-  прави веднъж — виж `zabobovdol/DEPLOY.md` и `medqr/deploy/DEPLOY.md`.
+  прави веднъж — виж `zabobovdol/DEPLOY.md`, `medqr/deploy/DEPLOY.md` и
+  `CSPos/store/deploy/DEPLOY.md`.
 - Поддържа се от агента **„VPS-аджията“** (`.claude/agents/vps-adjiyata.md`).

@@ -1,0 +1,50 @@
+[Unit]
+Description=Carbon Stealth POS — лицензионен магазин (Stripe Checkout + активации)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cspos
+Group=cspos
+# Кодът е в app/; данните (SQLite + подписващ ключ + инсталатор) са в ../data.
+WorkingDirectory=/opt/cspos-store/app
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=3
+
+# Конфигурация и тайни (права 600): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, BASE_URL…
+EnvironmentFile=/opt/cspos-store/.env
+
+# --- Sandboxing / hardening (цел: systemd-analyze security < 5) ---
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+# Единствено data/ е записваем (store.db + WAL, license-signing.key, .exe).
+# app/data е symlink към този път — systemd резолвва реалната директория.
+ReadWritePaths=/opt/cspos-store/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+# Портът е 8790 (> 1024) → не е нужен CAP_NET_BIND_SERVICE.
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

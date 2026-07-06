@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot cspos-store}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -31,6 +31,14 @@ KEEP_RELEASES="${KEEP_RELEASES:-5}"
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
 MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
+
+# cspos-store (Carbon Stealth POS — лицензионен магазин; systemd модел като medqr).
+# Кодът е в $CSPOS_DIR/app; тайните ($CSPOS_DIR/.env, права 600) и данните
+# ($CSPOS_DIR/data: store.db + license-signing.key + инсталатора .exe) живеят на
+# сървъра, извън release дървото, и се пренасят при всеки деплой.
+CSPOS_DIR="${CSPOS_DIR:-/opt/cspos-store}"
+CSPOS_SERVICE="${CSPOS_SERVICE:-cspos-store}"
+CSPOS_HEALTH_URL="${CSPOS_HEALTH_URL:-http://127.0.0.1:8790/api/plans}"
 
 # Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
 # behind nginx/Caddy. State (server/data + server/.env) lives outside
@@ -285,6 +293,58 @@ deploy_supreme() {
   health "$SUPREME_HEALTH_URL" "SupremeDiscordBot" || deploy_failed=1
 }
 
+# ── 3e) cspos-store — Carbon Stealth POS лицензионен магазин, systemd ──────────
+deploy_cspos_store() {
+  local d="$SRC/CSPos/store"
+  [ -d "$d" ] || { warn "Няма CSPos/store/ в архива — пропускам."; return; }
+  log "Разгръщам cspos-store (systemd)…"
+  id cspos >/dev/null 2>&1 || die "Липсва системен юзър cspos (виж CSPos/store/deploy/DEPLOY.md)."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  local app="$CSPOS_DIR/app" data="$CSPOS_DIR/data"
+  # Данните живеят на сървъра, извън release дървото; никога не се пипат от rsync.
+  mkdir -p "$data"
+  [ -f "$CSPOS_DIR/.env" ] || warn "Няма $CSPOS_DIR/.env — попълни го от CSPos/store/.env.example (права 600) преди старт."
+  # Бекъп на текущия код (data/ и .env остават непокътнати — извън rsync).
+  [ -d "$app" ] && cp -a "$app" "${app}.bak-$TS"
+  mkdir -p "$app"
+  rsync -a --delete \
+    --exclude data/ --exclude node_modules/ --exclude .env \
+    "$d"/ "$app"/
+  # Приложението чете ./data относително спрямо WorkingDirectory ($app) —
+  # закачаме persistent data/ през symlink (идемпотентно), както при nexus.
+  ln -sfn "$data" "$app/data"
+  chown -R cspos:cspos "$CSPOS_DIR"
+  ( cd "$app" && sudo -u cspos npm ci --omit=dev )
+  # Консистентна снимка на базата ПРЕДИ рестарт (WAL → .backup, не cp).
+  local db="$data/store.db"
+  local dbbak="${db}.pre-$TS"
+  if [ -f "$db" ]; then
+    sudo -u cspos sqlite3 "$db" ".backup '$dbbak'" 2>/dev/null || cp -a "$db" "$dbbak"
+    log "Снимка на базата преди рестарт: $dbbak"
+  fi
+  systemctl restart "$CSPOS_SERVICE"
+  sleep 2
+  if health "$CSPOS_HEALTH_URL" "cspos-store"; then
+    rm -rf "${app}.bak-$TS"
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+  else
+    deploy_failed=1
+    warn "cspos-store health провал — връщам предишния код и базата."
+    systemctl stop "$CSPOS_SERVICE" || true
+    if [ -f "$dbbak" ]; then
+      cp -a "$dbbak" "$db"
+      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+      chown cspos:cspos "$db"
+    fi
+    if [ -d "${app}.bak-$TS" ]; then
+      rsync -a --delete --exclude data/ "${app}.bak-$TS"/ "$app"/
+      ln -sfn "$data" "$app/data"
+      chown -R cspos:cspos "$CSPOS_DIR"
+    fi
+    systemctl restart "$CSPOS_SERVICE"
+  fi
+}
+
 # ── Health check ──────────────────────────────────────────────────────────────
 health() {
   local url="$1" name="$2" i
@@ -301,6 +361,7 @@ for p in $PROJECTS; do
     medqr)      deploy_medqr ;;
     nexus)      deploy_nexus ;;
     SupremeDiscordBot)    deploy_supreme ;;
+    cspos-store)          deploy_cspos_store ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done
