@@ -2375,6 +2375,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-06",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „В panev/ sitemap.xml е ръчно поддържан с чисти URL (/brevetto), /faq, /en и en hreflang…\" (+2)"
+        },
+        {
           "date": "2026-07-02",
           "type": "quarantine",
           "summary": "Хипотеза → карантина: „В SPA с build-time prerender (Vite + scripts/prerender.mjs), съдържание рендирано само …\" (+1)"
