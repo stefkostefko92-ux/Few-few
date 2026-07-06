@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carbon Stealth POS — цени и лицензи</title>
+<style>
+  :root{--ink:#17203a;--soft:#5c6b85;--brand:#f5a623;--brand-deep:#d98e0b;--line:rgba(23,32,58,.1)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Inter","Segoe UI",system-ui,sans-serif;color:var(--ink);min-height:100vh;
+    background:linear-gradient(180deg,#eef1f8,#e6ebf4);position:relative}
+  body::before{content:"";position:fixed;inset:-20% -10%;z-index:0;pointer-events:none;background:
+    radial-gradient(46% 40% at 80% 8%,rgba(252,176,73,.4),transparent 62%),
+    radial-gradient(40% 42% at 12% 22%,rgba(56,132,248,.28),transparent 60%),
+    radial-gradient(44% 46% at 62% 92%,rgba(139,92,246,.24),transparent 60%)}
+  .wrap{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:3rem 1.25rem 4rem}
+  h1{font-size:clamp(1.8rem,4.5vw,2.6rem);margin:.2rem 0;letter-spacing:-.02em}
+  h1 b{color:var(--brand-deep)}
+  .lead{color:var(--soft);max-width:38rem}
+  .seats{display:flex;align-items:center;gap:.8rem;margin:1.6rem 0;font-weight:600}
+  .seats input{width:5.5rem;font-size:1.2rem;font-weight:700;text-align:center;padding:.5rem;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.7)}
+  .grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:.6rem}
+  .card{background:rgba(255,255,255,.55);backdrop-filter:blur(14px) saturate(1.5);border:1px solid rgba(255,255,255,.7);
+    border-radius:22px;padding:1.4rem;box-shadow:inset 0 1px 1px rgba(255,255,255,.9),0 14px 34px -18px rgba(23,32,58,.3);display:flex;flex-direction:column}
+  .card.hot{outline:2px solid var(--brand);position:relative}
+  .card.hot::after{content:"Най-изгоден";position:absolute;top:-11px;right:14px;background:var(--brand);color:#231a05;font-size:.72rem;font-weight:800;padding:.2rem .6rem;border-radius:999px}
+  .plan{font-weight:800;font-size:1.05rem}
+  .price{font-size:2rem;font-weight:900;margin:.5rem 0 0}
+  .per{color:var(--soft);font-size:.85rem;margin:0 0 .8rem}
+  ul{margin:.2rem 0 1.2rem;padding-left:1.15rem;color:var(--soft);font-size:.9rem;line-height:1.65}
+  .total{margin-top:auto;font-size:.9rem;color:var(--soft)}
+  .total b{color:var(--ink)}
+  button{margin-top:.7rem;width:100%;padding:.85rem;border:0;border-radius:16px;font-size:1rem;font-weight:800;cursor:pointer;
+    background:linear-gradient(180deg,#ffd873,#f5a623);color:#231a05;box-shadow:0 10px 26px -10px rgba(217,142,11,.6)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .waiver{display:flex;gap:.6rem;align-items:flex-start;margin:1.6rem 0 0;padding:1rem 1.1rem;border-radius:16px;
+    background:rgba(255,255,255,.5);border:1px solid var(--line);font-size:.88rem;color:var(--soft);max-width:46rem}
+  .waiver input{margin-top:.2rem;width:1.1rem;height:1.1rem;accent-color:var(--brand)}
+  .note{font-size:.8rem;color:var(--soft);margin-top:1.2rem}
+  .err{color:#dc2650;font-weight:600;margin-top:.8rem;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Carbon Stealth <b>POS</b> — лицензи</h1>
+  <p class="lead">Пълна касова система за хранителни магазини: фискални устройства, ПОС терминали,
+    склад, промоции, отчети. Всички планове включват обновявания. Цените са на каса, без ДДС.</p>
+
+  <div class="seats">
+    <label for="seats">Брой каси:</label>
+    <input id="seats" type="number" min="1" max="20" value="1" inputmode="numeric">
+  </div>
+
+  <div class="grid" id="plans"></div>
+
+  <label class="waiver">
+    <input type="checkbox" id="waiver">
+    <span>Изрично се съгласявам изпълнението (сваляне и активиране на софтуера) да започне
+    веднага след плащането и потвърждавам, че с това <b>губя правото си на 14-дневен отказ</b>
+    (чл. 57, т. 13 от Закона за защита на потребителите).</span>
+  </label>
+  <p class="err" id="err"></p>
+  <p class="note">Плащането се обработва от Stripe. Веднага след него получавате лицензен ключ и
+    линк за сваляне. Абонаментите се управляват самостоятелно (смяна на карта, брой каси, отказ).</p>
+</div>
+<script>
+const fmt = c => (c/100).toLocaleString("bg-BG",{style:"currency",currency:"EUR"});
+let PLANS = {};
+const seatsEl = document.getElementById("seats");
+const waiverEl = document.getElementById("waiver");
+const err = document.getElementById("err");
+
+function seatCount(){ return Math.min(Math.max(parseInt(seatsEl.value,10)||1,1),20); }
+
+function render(){
+  const n = seatCount();
+  const box = document.getElementById("plans");
+  box.innerHTML = "";
+  const meta = {
+    monthly:{per:"на каса / месец",feats:["Всички функции","Обновявания включени","Отказ по всяко време"]},
+    yearly:{per:"на каса / година",feats:["Всички функции","Обновявания включени","≈ 2 месеца безплатно"],hot:true},
+    lifetime:{per:"на каса / еднократно",feats:["Всички функции","Обновявания включени","Без месечни такси"]},
+  };
+  for (const [id,p] of Object.entries(PLANS)){
+    const m = meta[id]; if(!m) continue;
+    const el = document.createElement("div");
+    el.className = "card" + (m.hot ? " hot" : "");
+    el.innerHTML = `<div class="plan">${p.label}</div>
+      <p class="price">${fmt(p.unitAmount)}</p><p class="per">${m.per}</p>
+      <ul>${m.feats.map(f=>`<li>${f}</li>`).join("")}</ul>
+      <p class="total">Общо за <b>${n} ${n===1?"каса":"каси"}</b>: <b>${fmt(p.unitAmount*n)}</b>${p.interval?` / ${p.interval==="month"?"месец":"година"}`:""} <small>без ДДС</small></p>
+      <button data-plan="${id}">Купи сега</button>`;
+    box.appendChild(el);
+  }
+  box.querySelectorAll("button").forEach(b => b.addEventListener("click", () => buy(b)));
+}
+
+async function buy(btn){
+  err.style.display = "none";
+  if (!waiverEl.checked){
+    err.textContent = "Моля, отбележете съгласието за незабавна доставка (изисква се по закон).";
+    err.style.display = "block";
+    waiverEl.focus();
+    return;
+  }
+  btn.disabled = true;
+  try{
+    const r = await fetch("/api/checkout",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({plan:btn.dataset.plan,seats:seatCount(),waiver:true})});
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error||"Грешка");
+    location.href = d.url;
+  }catch(e){
+    err.textContent = e.message; err.style.display = "block"; btn.disabled = false;
+  }
+}
+
+seatsEl.addEventListener("input", render);
+fetch("/api/plans").then(r=>r.json()).then(d=>{PLANS=d.plans;render();});
+</script>
+</body>
+</html>

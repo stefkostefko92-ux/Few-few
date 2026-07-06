@@ -13,7 +13,7 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     // desktop/ е отделен Electron проект (CommonJS); scripts/ са билд помощници
-    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "desktop/**", "scripts/**"],
+    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "desktop/**", "scripts/**", "store/**"],
   },
 ];
 
