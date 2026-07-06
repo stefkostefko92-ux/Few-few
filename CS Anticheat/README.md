@@ -3,8 +3,8 @@
 Нов **FiveM античийт** на Carbon Stealth VCC — цел: да надмине двата титана в
 бранша, **echo.ac** и **detect.ac**. Проприетарен, EU-hosted, GDPR-first.
 
-> Статус: **Фаза 0 — дълбоко разузнаване** (research). Още няма продуктов код.
-> Продуктовата архитектура се пише след като разузнаването приключи.
+> Статус: **Фаза 0 — разузнаването приключи.** 7 досиета + синтез готови.
+> Още няма продуктов код. Следва фаза 1 (MVP) — виж roadmap-а в синтеза.
 
 ## Защо
 
@@ -19,7 +19,8 @@ overhead и **нулева GDPR прозрачност**. Има място за
 ```
 CS Anticheat/
 ├── README.md                      ← този файл
-└── research/                      ← Фаза 0: разузнаване (пише се от агентите)
+└── research/                      ← Фаза 0: разузнаване (готово)
+    ├── 00-synthesis.md               ★ Синтез — теза, threat model, архитектура, roadmap
     ├── 01-fivem-cheat-landscape.md   Геймъра — cheat екосистема (враг intel)
     ├── 02-echo-ac.md                 Кодаджията — echo.ac security teardown
     ├── 03-detect-ac.md               Кодаджията — detect.ac security teardown
@@ -35,9 +36,17 @@ CS Anticheat/
 през своята лупа и с активния self-learning loop (`SubagentStop → _memory`), така
 че наученото остава в паметта на агента за следващите фази.
 
-## Следващи фази (след разузнаването)
+## Следващи фази (roadmap — детайли в `research/00-synthesis.md`)
 
-1. **Синтез** — обединяване на 7-те доклада в продуктова архитектура + threat model.
-2. **MVP** — server-side detection resource + backend ingestion + панел + Discord alerts.
-3. **Детекция дълбочина** — client integrity, screenshot, HWID мрежа, behavioral/ML.
-4. **Комерсиализация** — Stripe billing, планове, onboarding, GDPR артефакти.
+1. ✅ **Синтез** — теза, threat model, defense-in-depth архитектура (готово).
+2. **MVP** — config hardening + server-authoritative resource + backend ingestion + панел + Discord alerts.
+3. **Детекция дълбочина** — behavioral AI, client integrity, heartbeat, hash-ната HWID ban мрежа.
+4. **Комерсиализация** — Stripe billing, планове, onboarding, GDPR артефакти (connect notice, DPA, DPIA, appeal).
+
+## Централен извод
+
+echo.ac и detect.ac са **forensic „screenshare" скенери, не real-time античийтове** —
+структурно не спират активен aimbot/ESP, тривиално се заобикалят (trace cleaners,
+DMA/kernel слепота) и имат нулева GDPR прозрачност. Дупката: **FiveM-native,
+real-time, server-authoritative** античийт с behavioral AI, споделена ban мрежа и
+честен EU/GDPR модел като конкурентно предимство.
