@@ -9511,9 +9511,20 @@
           "date": "2026-07-06",
           "event": "v10.2 — учене",
           "detail": "Научи: Discord Activities = web app в iframe + Embedded App SDK (commands/events). instanceId … (+8 още)"
+        },
+        {
+          "version": "10.3.0",
+          "date": "2026-07-06",
+          "event": "v10.3 — учене",
+          "detail": "Научи: Discord docs хостът се е преместил: discord.com/developers/docs/* → 301 към docs.discor… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-06",
+          "type": "learning",
+          "summary": "Научи: „Discord docs хостът се е преместил: discord.com/developers/docs/* → 301 към docs.discor…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
