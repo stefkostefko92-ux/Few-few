@@ -23,6 +23,19 @@ When adding a locale: update `LANDING_LOCALES` in `components/Seo.jsx`,
 the hreflang blocks in `public/sitemap.xml`, and the footer links in
 `Login.jsx` / `LandingLocalized.jsx`.
 
+## Automatic search-engine submission (built in — nothing to do)
+
+Every deploy (`deploy.sh` step 5, and `update.sh`) runs `scripts/indexnow-ping.sh`,
+which POSTs all sitemap URLs to **IndexNow** (`api.indexnow.org`). One ping notifies
+**Bing, Yandex, Seznam and Naver** simultaneously — Bing's own indexing API is IndexNow
+(the legacy sitemap-ping endpoints were retired in 2023). Ownership is proven by the
+public key file `/<key>.txt` served from `frontend/public/`. The ping is fail-safe:
+it never blocks a deploy.
+
+**Google does not participate in IndexNow** — it discovers via `sitemap.xml` after the
+one-time Search Console setup below. There is no "auto-submit to Google" API; anyone
+claiming otherwise is selling snake oil.
+
 ## Manual steps for the owner (cannot be done from code)
 
 1. **Google Search Console** — <https://search.google.com/search-console>

@@ -17,7 +17,7 @@ docker compose up -d --build
 
 echo -e "${YELLOW}Waiting for backend (migrations run automatically)...${NC}"
 TRIES=0
-until [ "$(docker inspect -f '{{.State.Health.Status}}' botpanel_backend 2>/dev/null)" = "healthy" ]; do
+until [ "$(docker inspect -f '{{.State.Health.Status}}' supremebot_backend 2>/dev/null)" = "healthy" ]; do
   TRIES=$((TRIES+1))
   if [ $TRIES -gt 60 ]; then
     echo "Backend unhealthy — check: docker compose logs backend"
@@ -25,6 +25,9 @@ until [ "$(docker inspect -f '{{.State.Health.Status}}' botpanel_backend 2>/dev/
   fi
   sleep 2
 done
+
+# Уведоми търсачките за свежото съдържание (IndexNow → Bing/Yandex/Seznam/Naver).
+bash "$(dirname "$0")/scripts/indexnow-ping.sh" || true
 
 echo -e "${GREEN}✅ Update complete${NC}"
 echo ""

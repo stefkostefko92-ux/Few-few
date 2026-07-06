@@ -62,7 +62,7 @@ echo -e "${GREEN}  ✓ Services starting${NC}"
 # ─── 3. Wait for backend health (migrations run automatically in entrypoint)
 echo -e "\n${YELLOW}[3/4] Waiting for backend to become healthy (migrations run automatically)...${NC}"
 TRIES=0
-until [ "$(docker inspect -f '{{.State.Health.Status}}' botpanel_backend 2>/dev/null)" = "healthy" ]; do
+until [ "$(docker inspect -f '{{.State.Health.Status}}' supremebot_backend 2>/dev/null)" = "healthy" ]; do
   TRIES=$((TRIES+1))
   if [ $TRIES -gt 60 ]; then
     echo -e "${RED}Backend unhealthy after 2 min. Check: docker compose logs backend${NC}"
@@ -75,13 +75,19 @@ done
 echo -e "${GREEN}  ✓ Backend healthy (schema migrated)${NC}"
 
 # ─── 4. Register Discord slash commands ──────────────────────────────────────
-echo -e "\n${YELLOW}[4/4] Registering Discord slash commands...${NC}"
+echo -e "\n${YELLOW}[4/5] Registering Discord slash commands...${NC}"
 docker compose exec -T bot node src/deploy-commands.js && \
   echo -e "${GREEN}  ✓ Slash commands registered${NC}" || \
   echo -e "${YELLOW}  ⚠ Slash commands failed (check BOT_TOKEN and DISCORD_CLIENT_ID)${NC}"
 
+# ─── 5. Уведоми търсачките (IndexNow → Bing/Yandex/Seznam/Naver) ─────────────
+# Автоматично при всеки deploy — свежото съдържание се индексира веднага.
+# Fail-safe: неуспешен ping не проваля деплоя.
+echo -e "\n${YELLOW}[5/5] Notifying search engines (IndexNow)...${NC}"
+bash "$(dirname "$0")/scripts/indexnow-ping.sh" || true
+
 echo -e "\n${BLUE}═══════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  ✅ BotPanel is live!${NC}"
+echo -e "${GREEN}  ✅ Supreme Bot is live!${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════${NC}"
 echo ""
 echo "  Frontend available on: http://localhost:8080"

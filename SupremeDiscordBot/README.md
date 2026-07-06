@@ -25,9 +25,9 @@ These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100
 
 ```bash
 # 1. Upload from your local machine
-scp -r discord-saas-bot/ root@178.104.77.242:/opt/botpanel
+scp -r discord-saas-bot/ root@178.104.77.242:/opt/supremebot
 ssh root@178.104.77.242
-cd /opt/botpanel
+cd /opt/supremebot
 
 # 2. Create all .env files
 cp .env.example               .env
@@ -125,7 +125,7 @@ The deploy script will:
 
 ## Host Nginx Reverse Proxy (for SSL)
 
-Put this in front of the container's `:8080`. Example `/etc/nginx/sites-available/botpanel.conf`:
+Put this in front of the container's `:8080`. Example `/etc/nginx/sites-available/supreme.conf`:
 
 ```nginx
 server {
@@ -156,7 +156,7 @@ server {
 }
 ```
 
-Then: `sudo ln -s ../sites-available/botpanel.conf /etc/nginx/sites-enabled/ && sudo nginx -t && sudo systemctl reload nginx`.
+Then: `sudo ln -s ../sites-available/supreme.conf /etc/nginx/sites-enabled/ && sudo nginx -t && sudo systemctl reload nginx`.
 
 ---
 

@@ -18,7 +18,7 @@ services:
   # ─── PostgreSQL Database ────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: botpanel_postgres
+    container_name: supremebot_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-discordbot}
@@ -35,12 +35,12 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - botpanel
+      - supremebot
 
   # ─── Redis ──────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: botpanel_redis
+    container_name: supremebot_redis
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
     ports:
@@ -53,14 +53,14 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - botpanel
+      - supremebot
 
   # ─── Backend API ────────────────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: botpanel_backend
+    container_name: supremebot_backend
     restart: unless-stopped
     depends_on:
       postgres:
@@ -79,14 +79,14 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - botpanel
+      - supremebot
 
   # ─── Discord Bot ────────────────────────────────────────────────────────────
   bot:
     build:
       context: ./bot
       dockerfile: Dockerfile
-    container_name: botpanel_bot
+    container_name: supremebot_bot
     restart: unless-stopped
     depends_on:
       backend:
@@ -104,7 +104,7 @@ services:
       retries: 5
       start_period: 20s
     networks:
-      - botpanel
+      - supremebot
 
   # ─── Frontend + nginx reverse proxy (single container) ─────────────────────
   # Serves the built React SPA AND proxies /api/* to backend.
@@ -114,7 +114,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: botpanel_frontend
+    container_name: supremebot_frontend
     restart: unless-stopped
     depends_on:
       backend:
@@ -130,10 +130,10 @@ services:
       retries: 3
       start_period: 15s
     networks:
-      - botpanel
+      - supremebot
 
 networks:
-  botpanel:
+  supremebot:
     driver: bridge
 
 volumes:

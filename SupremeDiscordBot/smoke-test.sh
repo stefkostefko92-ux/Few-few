@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# BotPanel — Production Smoke Test Suite
+# Supreme Bot — Production Smoke Test Suite
 # ═══════════════════════════════════════════════════════════════════════════════
 # Validates critical endpoints after deploy. Run from VPS host after
 # `docker compose up -d` completes.
@@ -64,7 +64,7 @@ assert_json_field() {
 
 echo ""
 echo "$(cyan "═══════════════════════════════════════════════════════════════")"
-echo "$(cyan "  BotPanel Smoke Test — $BASE_URL")"
+echo "$(cyan "  Supreme Bot Smoke Test — $BASE_URL")"
 echo "$(cyan "═══════════════════════════════════════════════════════════════")"
 echo ""
 
