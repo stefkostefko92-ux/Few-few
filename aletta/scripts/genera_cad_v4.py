@@ -151,22 +151,31 @@ def normalize_solid(sh):
         sol.Reverse()
     return sol
 
-def fuse(a,b):
-    """Union устойчив на quasi-tangency (колар Ø13 ≈ дебелина стена 13mm) и
-    самопресичане на усуканата повърхнина: пробва fuzzy стойности, връща първия
-    ВАЛИДЕН единичен солид (грейдърът е крайният съдия за геометрията)."""
-    best=None
-    for fz in (0.05, 0.03, 0.08, 0.02, 0.1):
-        try:
-            op=BRepAlgoAPI_Fuse(a,b); op.SetFuzzyValue(fz); op.Build()
-            sh=op.Shape()
-            if BRepCheck_Analyzer(sh).IsValid() and count(sh,TopAbs_SOLID)==1:
-                return sh
-            if best is None:
-                best=sh
-        except Exception:
-            continue
-    return best if best is not None else a
+def largest_solid(sh):
+    """Извлича солида с най-голям обем (BOP оставя нищожни sliver-солиди
+    при fuzzy union — те се изхвърлят)."""
+    from OCP.TopExp import TopExp_Explorer as TE
+    ex=TE(sh,TopAbs_SOLID); best=None; bv=-1; kept=0; tot=0
+    while ex.More():
+        s=TopoDS.Solid_s(ex.Current()); v=vol(s); tot+=1
+        if v>bv: bv, best=v, s
+        if v>0.5: kept+=1
+        ex.Next()
+    return best, bv, tot, kept
+
+def fuse_studs(body, studs):
+    """Едновременен union body ∪ {щифтове} с fuzzy (устойчив на quasi-tangency
+    колар Ø13 ≈ дебелина стена 13mm), после взима най-големия солид."""
+    from OCP.TopTools import TopTools_ListOfShape
+    args=TopTools_ListOfShape(); args.Append(body)
+    tools=TopTools_ListOfShape()
+    for s in studs: tools.Append(s)
+    op=BRepAlgoAPI_Fuse(); op.SetArguments(args); op.SetTools(tools)
+    op.SetFuzzyValue(1e-2); op.Build()
+    r=op.Shape()
+    best, bv, tot, kept = largest_solid(r)
+    log(f'  union: {tot} солида (запазени >0.5cm³: {kept}), най-голям {bv:.2f}')
+    return best
 
 def cut(a,b):
     op=BRepAlgoAPI_Cut(a,b); op.SetFuzzyValue(1e-3); op.Build()
@@ -213,11 +222,13 @@ def main():
 
     shape=body
     if not a.no_studs:
+        studs=[]
         for nm,S in STUDS.items():
             st=make_stud(S)
             log(f'{nm}: valid {BRepCheck_Analyzer(st).IsValid()} vol {vol(st):.2f}')
-            shape=fuse(shape,st)
-            log(f'fuse {nm}: valid {BRepCheck_Analyzer(shape).IsValid()} vol {vol(shape):.2f} solids {count(shape,TopAbs_SOLID)}')
+            studs.append(st)
+        shape=fuse_studs(body, studs)
+        log(f'fuse щифтове: valid {BRepCheck_Analyzer(shape).IsValid()} vol {vol(shape):.2f} solids {count(shape,TopAbs_SOLID)}')
 
         if not a.no_fillet:
             for nm,S in STUDS.items():
@@ -241,8 +252,7 @@ def main():
                 if not done:
                     log(f'{nm}: fillet неуспешен, чиста връзка')
 
-    # финален ремонт/валидация
-    sf=ShapeFix_Shape(shape); sf.Perform(); shape=sf.Shape()
+    # финална валидация (без ShapeFix — той корумпира trim-натите BSpline лица след BOP)
     an=BRepCheck_Analyzer(shape)
     log(f'ФИНАЛ: valid {an.IsValid()} solids {count(shape,TopAbs_SOLID)} '
         f'faces {count(shape,TopAbs_FACE)} vol {vol(shape):.2f}')
@@ -257,7 +267,7 @@ def main():
     from OCP.BRepTools import BRepTools
     BRepTools.Write_s(shape,a.out+'.brep')
     log(f'STEP+BREP → {a.out}')
-    BRepMesh_IncrementalMesh(shape,0.04,False,0.25,True)
+    BRepMesh_IncrementalMesh(shape,0.05,False,0.25,True)
     StlAPI_Writer().Write(shape,a.stl)
     log(f'STL → {a.stl}')
 
