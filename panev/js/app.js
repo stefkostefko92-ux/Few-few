@@ -461,6 +461,7 @@ function renderFooter() {
               <li><a href="/faq">Domande frequenti</a></li>
               <li><a href="/privacy">Privacy Policy</a></li>
               <li><a href="/cookie">Cookie Policy</a></li>
+              <li><button type="button" class="footer-cookie-link" onclick="riapriBannerCookie()">Gestisci cookie</button></li>
               <li><a href="/termini">Termini e Condizioni</a></li>
             </ul>
           </div>

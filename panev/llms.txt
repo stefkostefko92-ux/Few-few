@@ -1,7 +1,7 @@
 # Panev Ascensori SAS — llms.txt
 # https://www.panevascensori.it/
 # Formato: https://llmstxt.org
-# Aggiornato: 2026-04-20
+# Aggiornato: 2026-07-06
 
 > Panev Ascensori SAS è un produttore italiano di staffe brevettate (UIBM N. 202023000002112) per porte di ascensori e montacarichi. Offre anche servizi di installazione, manutenzione e modernizzazione di ascensori in tutta Italia dal 2013. Sede legale a Vittuone (MI) e sede operativa a Cornaredo (MI), Lombardia.
 
@@ -34,7 +34,7 @@
 
 - [Homepage](https://www.panevascensori.it/): Panoramica azienda, brevetto, servizi, prodotti in evidenza
 - [Brevetto](https://www.panevascensori.it/brevetto.html): Dettagli del brevetto UIBM N. 202023000002112, design del sistema forato-snodato-asolato
-- [Catalogo](https://www.panevascensori.it/catalogo.html): Catalogo PDF con 26 tavole CAD, codici, disegni e dimensioni
+- [Catalogo](https://www.panevascensori.it/catalogo.html): Catalogo PDF con 27 codici, codici, disegni e dimensioni
 - [Prodotti](https://www.panevascensori.it/prodotti.html): Shop con 27 staffe, filtro per categoria, preventivo via form
 - [Servizi](https://www.panevascensori.it/servizi.html): Installazione, manutenzione, modernizzazione, certificazione
 - [Chi Siamo](https://www.panevascensori.it/chi-siamo.html): Storia azienda, team, certificazioni
@@ -91,7 +91,7 @@ Staffe Guide SG (abbinano ai supporti SU/SD/SC, Ferro sp.4mm):
 - SG 80 190 — si abbina a SU/SD 200mm, SC 80/90 200mm — **9,62 €**
 - SG 80 220 — si abbina a SC 80/90 220mm — **9,75 €**
 
-**Tutti i prezzi sono IVA esclusa (22%), in vigore 2023/2024. Made in Italy.**
+**Tutti i prezzi sono IVA esclusa (22%), in vigore 2025. Made in Italy.**
 
 ## Servizi
 

@@ -78,7 +78,7 @@
       "name": "Per quanto tempo vengono conservati i cookie su panevascensori.it?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Il cookie di consenso GDPR viene conservato per 13 mesi (limite EDPB). I cookie di sessione scadono alla chiusura del browser. I cookie Google Analytics hanno durata di 24 mesi per il cookie _ga e 1 minuto per _gid. Nessun cookie supera i 13 mesi."
+        "text": "Il cookie di consenso GDPR viene conservato per 13 mesi (limite EDPB). I cookie di sessione scadono alla chiusura del browser. I cookie Google Analytics 4 (_ga e _ga_*) sono configurati con durata di 13 mesi. Nessun cookie supera i 13 mesi."
       }
     }
   ]
@@ -312,7 +312,7 @@
                 <tr>
                   <td><strong>Google Analytics 4</strong><br><small>(Google Ireland Ltd.)</small></td>
                   <td><code>_ga</code>, <code>_ga_*</code></td>
-                  <td>2 anni / 2 anni</td>
+                  <td>13 mesi</td>
                   <td>Misurazione dell'audience: pagine viste, durata sessione, fonte di traffico, dispositivo. IP anonimizzato. Nessun dato inviato a Google Ads.</td>
                   <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy</a></td>
                 </tr>
@@ -340,6 +340,7 @@
           <p>I cookie di Stripe (già elencati nella sezione 3) sono gli unici cookie di terza parte presenti. Stripe è un fornitore di servizi di pagamento certificato PCI-DSS Level 1 e opera come Responsabile del trattamento ai sensi dell'art. 28 GDPR sulla base del Data Processing Agreement siglato con Panev Ascensori.</p>
           <p>Per ulteriori informazioni: <a href="https://stripe.com/it/privacy" target="_blank" rel="noopener">stripe.com/it/privacy</a> e <a href="https://stripe.com/it/cookie-settings" target="_blank" rel="noopener">stripe.com/it/cookie-settings</a>.</p>
           <p>Il sito <strong>non incorpora</strong> plugin di social media (Facebook, Instagram, LinkedIn, X/Twitter) che impostino cookie di profilazione. I link ai profili social nel footer sono semplici link HTML e non generano cookie.</p>
+          <p>La sola pagina <a href="/contatti">Contatti</a> include una mappa <strong>OpenStreetMap</strong> (libreria Leaflet). La mappa non imposta cookie, ma il caricamento delle tile comporta una comunicazione tecnica dell'indirizzo IP a OpenStreetMap Foundation. Non viene effettuata alcuna profilazione.</p>
         </section>
 
         <section id="tabella">
@@ -354,8 +355,8 @@
                 <tr><td><code>pa_admin_auth</code></td><td>Tecnico</td><td>No</td><td>Sessione</td><td>No</td></tr>
                 <tr><td><code>__stripe_mid</code></td><td>Tecnico/Pagamento</td><td>No (necessario)</td><td>12 mesi</td><td>Stripe, Inc.</td></tr>
                 <tr><td><code>__stripe_sid</code></td><td>Tecnico/Pagamento</td><td>No (necessario)</td><td>30 minuti</td><td>Stripe, Inc.</td></tr>
-                <tr><td><code>_ga</code></td><td>Analitico</td><td>Sì</td><td>2 anni</td><td>Google Ireland Ltd.</td></tr>
-                <tr><td><code>_ga_*</code></td><td>Analitico</td><td>Sì</td><td>2 anni</td><td>Google Ireland Ltd.</td></tr>
+                <tr><td><code>_ga</code></td><td>Analitico</td><td>Sì</td><td>13 mesi</td><td>Google Ireland Ltd.</td></tr>
+                <tr><td><code>_ga_*</code></td><td>Analitico</td><td>Sì</td><td>13 mesi</td><td>Google Ireland Ltd.</td></tr>
                 <tr><td><code>pa_sess</code></td><td>Analitico</td><td>Sì</td><td>30 minuti</td><td>No</td></tr>
               </tbody>
             </table>

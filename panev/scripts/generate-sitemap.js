@@ -16,17 +16,21 @@ const BASE_URL = process.env.BASE_URL?.replace(/\/$/, '') || 'https://www.paneva
 const TODAY = new Date().toISOString().slice(0, 10);
 
 // ── Static pages ──────────────────────────────────────────────
+// Use CLEAN URLs (the server 301-redirects .html → clean), match the published
+// sitemap.xml so regenerating never re-introduces redirecting URLs or drops pages.
 const STATIC = [
-  { loc: '/',                  priority: '1.0',  changefreq: 'weekly',  image: 'img/og-home.jpg' },
-  { loc: '/brevetto.html',     priority: '0.95', changefreq: 'monthly', image: 'img/og-brevetto.jpg' },
-  { loc: '/prodotti.html',     priority: '0.90', changefreq: 'weekly',  image: 'img/og-prodotti.jpg' },
-  { loc: '/catalogo.html',     priority: '0.85', changefreq: 'monthly', image: 'img/sistema-overview.png' },
-  { loc: '/servizi.html',      priority: '0.80', changefreq: 'monthly', image: 'img/og-servizi.jpg' },
-  { loc: '/contatti.html',     priority: '0.75', changefreq: 'monthly', image: 'img/og-contatti.jpg' },
-  { loc: '/chi-siamo.html',    priority: '0.65', changefreq: 'monthly', image: 'img/og-chi-siamo.jpg' },
-  { loc: '/privacy.html',      priority: '0.20', changefreq: 'yearly' },
-  { loc: '/cookie.html',       priority: '0.20', changefreq: 'yearly' },
-  { loc: '/termini.html',      priority: '0.20', changefreq: 'yearly' },
+  { loc: '/',              priority: '1.0',  changefreq: 'weekly',  image: 'img/og-home.jpg', en: '/en' },
+  { loc: '/brevetto',      priority: '0.95', changefreq: 'monthly', image: 'img/og-brevetto.jpg' },
+  { loc: '/prodotti',      priority: '0.90', changefreq: 'weekly',  image: 'img/og-prodotti.jpg' },
+  { loc: '/catalogo',      priority: '0.85', changefreq: 'monthly', image: 'img/sistema-overview.png' },
+  { loc: '/servizi',       priority: '0.80', changefreq: 'monthly', image: 'img/og-servizi.jpg' },
+  { loc: '/contatti',      priority: '0.75', changefreq: 'monthly', image: 'img/og-contatti.jpg' },
+  { loc: '/chi-siamo',     priority: '0.65', changefreq: 'monthly', image: 'img/og-chi-siamo.jpg' },
+  { loc: '/faq',           priority: '0.60', changefreq: 'monthly' },
+  { loc: '/en',            priority: '0.50', changefreq: 'monthly' },
+  { loc: '/privacy',       priority: '0.20', changefreq: 'yearly' },
+  { loc: '/cookie',        priority: '0.20', changefreq: 'yearly' },
+  { loc: '/termini',       priority: '0.20', changefreq: 'yearly' },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -40,14 +44,15 @@ function esc(s) {
     .replace(/'/g, '&apos;');
 }
 
-function urlEntry(loc, priority, changefreq, extras = '') {
+function urlEntry(loc, priority, changefreq, extras = '', enHref = '') {
   const url = loc.startsWith('http') ? loc : BASE_URL + loc;
   const displayLoc = loc === '/' ? BASE_URL + '/' : url;
+  const enLink = enHref ? `    <xhtml:link rel="alternate" hreflang="en"        href="${esc(BASE_URL + enHref)}"/>\n` : '';
   return `  <url>
     <loc>${esc(displayLoc)}</loc>
     <xhtml:link rel="alternate" hreflang="it"        href="${esc(displayLoc)}"/>
     <xhtml:link rel="alternate" hreflang="it-IT"     href="${esc(displayLoc)}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${esc(displayLoc)}"/>
+${enLink}    <xhtml:link rel="alternate" hreflang="x-default" href="${esc(displayLoc)}"/>
     <lastmod>${TODAY}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
@@ -89,7 +94,7 @@ for (const p of STATIC) {
     img = imageBlock(p.image, titleMap[p.loc] || 'Panev Ascensori',
       'Panev Ascensori SAS — Produttore staffe brevettate per ascensori e montacarichi, Made in Italy dal 2013');
   }
-  xml += urlEntry(p.loc, p.priority, p.changefreq, img) + '\n\n';
+  xml += urlEntry(p.loc, p.priority, p.changefreq, img, p.en) + '\n\n';
 }
 
 // Per-product URLs (27 products)

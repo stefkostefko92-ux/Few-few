@@ -7193,3 +7193,10 @@ select:disabled {
   border-bottom: 1px solid transparent;
 }
 .product-scheda:hover { border-bottom-color: var(--panev-blue); }
+
+/* Footer "manage cookies" control — styled to match footer links */
+.footer-cookie-link {
+  background: none; border: none; padding: 0; margin: 0;
+  font: inherit; color: inherit; cursor: pointer; text-align: left;
+}
+.footer-cookie-link:hover { color: var(--panev-blue); text-decoration: underline; }
