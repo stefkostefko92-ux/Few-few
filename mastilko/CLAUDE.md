@@ -45,9 +45,12 @@ npm run lint && npm run typecheck && npm test   # качествена порт�
 
 ## Структура
 
-- `src/app/{etiketi,vizitki,cv}/page.tsx` — сървърни обвивки с metadata;
+- `src/app/{etiketi,vizitki,cv,pismo}/page.tsx` — сървърни обвивки с metadata;
   редакторите са клиентски: `src/components/studios/*Studio.tsx`.
 - Общи парчета: `AiAssist` (AI бутон + предложения), `PrintBar`,
-  `SheetPreview`, `ThemePicker`, `useLocalState` (localStorage персистенция).
+  `SheetPreview`, `ThemePicker`, `useLocalState` (localStorage персистенция),
+  `ProjectFile` (свали/качи проект като JSON), `QrImage` (QR изцяло в
+  браузъра — пакет qrcode, НИКОГА външна услуга; vCard логика в
+  `src/lib/vcard.ts`, тествана).
 - Правни страници: `/poveritelnost`, `/usloviya` — при промяна в обработката
   на данни ги обнови (и мини Правния Разбирач).

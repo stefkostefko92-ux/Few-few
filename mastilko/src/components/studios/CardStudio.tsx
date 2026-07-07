@@ -3,8 +3,11 @@
 import { CARD, cardGrid } from "@/lib/print";
 import { themeById, type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
+import { vCard } from "@/lib/vcard";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
+import ProjectFile from "@/components/ProjectFile";
+import QrImage from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import ThemePicker from "@/components/ThemePicker";
 
@@ -19,6 +22,8 @@ interface CardState {
   themeId: string;
   layout: "lenta" | "klasik" | "linia" | "ramka" | "gorna" | "duo";
   cutLines: boolean;
+  /** QR код с контактите (vCard) в долния десен ъгъл. */
+  qr: boolean;
 }
 
 const INITIAL: CardState = {
@@ -32,6 +37,7 @@ const INITIAL: CardState = {
   themeId: "tera",
   layout: "lenta",
   cutLines: true,
+  qr: false,
 };
 
 const LAYOUTS: Array<{ id: CardState["layout"]; name: string }> = [
@@ -46,7 +52,42 @@ const LAYOUTS: Array<{ id: CardState["layout"]; name: string }> = [
 /** Размерна единица: на листа — mm; в големия преглед — px (mm × mult). */
 type Unit = (v: number) => string;
 
+/** Обвивка: шаблонът + (по желание) QR с vCard в долния десен ъгъл. */
 function CardFace({
+  s,
+  theme,
+  u,
+  qrText,
+}: {
+  s: CardState;
+  theme: WarmTheme;
+  u: Unit;
+  qrText: string;
+}) {
+  return (
+    <div style={{ position: "relative", width: u(CARD.w), height: u(CARD.h) }}>
+      <CardFaceInner s={s} theme={theme} u={u} />
+      {s.qr && qrText && (
+        <QrImage
+          text={qrText}
+          style={{
+            position: "absolute",
+            right: u(3),
+            bottom: s.layout === "linia" ? u(6.5) : u(3),
+            width: u(11),
+            height: u(11),
+            background: "#FFFFFF",
+            padding: u(0.7),
+            borderRadius: u(1),
+            boxSizing: "border-box",
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function CardFaceInner({
   s,
   theme,
   u,
@@ -412,6 +453,8 @@ export default function CardStudio() {
 
   const set = (patch: Partial<CardState>) => setS({ ...s, ...patch });
 
+  const qrText = s.qr && s.name.trim() ? vCard(s) : "";
+
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
       {/* Контроли */}
@@ -468,6 +511,22 @@ export default function CardStudio() {
             />
             Тънки линии за рязане на листа
           </label>
+
+          <label className="flex items-start gap-2 text-sm font-semibold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={s.qr}
+              onChange={(e) => set({ qr: e.target.checked })}
+              className="mt-0.5 h-4 w-4 accent-tera"
+            />
+            <span>
+              QR код с контактите (vCard)
+              <span className="block text-xs font-normal text-ink-faint">
+                Сканираш с камерата и контактът влиза в телефона. Генерира се
+                в твоя браузър — нищо не се изпраща навън.
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -497,7 +556,7 @@ export default function CardStudio() {
           <p className="field-label">Преглед отблизо</p>
           <div className="overflow-x-auto rounded-xl">
             <div className="w-fit shadow-lift" style={{ borderRadius: 6 }}>
-              <CardFace s={s} theme={theme} u={px} />
+              <CardFace s={s} theme={theme} u={px} qrText={qrText} />
             </div>
           </div>
         </div>
@@ -521,11 +580,17 @@ export default function CardStudio() {
                     : "none",
                 }}
               >
-                <CardFace s={s} theme={theme} u={mm} />
+                <CardFace s={s} theme={theme} u={mm} qrText={qrText} />
               </div>
             );
           })}
         </SheetPreview>
+
+        <ProjectFile
+          state={s}
+          filename="mastilko-vizitki"
+          onLoad={(data) => setS({ ...INITIAL, ...data })}
+        />
       </div>
     </div>
   );

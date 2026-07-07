@@ -25,8 +25,15 @@ const TOOLS = [
     href: "/cv",
     emoji: "📄",
     title: "Автобиография (CV)",
-    text: "Чист, професионален шаблон на български. Попълваш стъпка по стъпка, а AI помага с описанията.",
+    text: "Модерен, класически или Europass шаблон. Попълваш стъпка по стъпка, а AI помага с описанията.",
     accent: "bg-gora-pale text-gora-dark",
+  },
+  {
+    href: "/pismo",
+    emoji: "✉️",
+    title: "Мотивационно писмо",
+    text: "Най-трудната част от кандидатстването — AI пише чернова по 2–3 неща за теб, ти я правиш своя.",
+    accent: "bg-paper-deep text-ink-soft",
   },
 ];
 
@@ -97,8 +104,9 @@ export default function HomePage() {
       <section className="mx-auto max-w-3xl px-4 pb-12">
         <p className="card-warm p-5 text-center text-ink-soft">
           <strong className="text-ink">Мастилко е безплатен онлайн инструмент на български</strong>{" "}
-          за създаване на етикети за печат (11 стандартни размера, вкл. 70 × 36 mm),
-          визитки (90 × 54 mm, 10 на лист) и автобиографии — вкл. Europass шаблон.
+          за създаване на етикети за печат (11 стандартни размера, вкл. 70 × 36 mm,
+          със списъци, номерация и QR код), визитки (90 × 54 mm, 10 на лист, с
+          vCard QR), автобиографии — вкл. Europass шаблон — и мотивационни писма.
           Работи в браузъра, без регистрация; резултатът се принтира на А4 с точни
           размери в милиметри или се запазва като PDF.
         </p>
@@ -106,7 +114,7 @@ export default function HomePage() {
 
       {/* Инструменти */}
       <section className="mx-auto max-w-6xl px-4">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {TOOLS.map((t) => (
             <Link
               key={t.href}

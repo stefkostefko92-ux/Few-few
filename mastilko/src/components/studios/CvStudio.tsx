@@ -4,6 +4,7 @@ import { themeById } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
+import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import ThemePicker from "@/components/ThemePicker";
 
@@ -365,6 +366,12 @@ export default function CvStudio() {
             </div>
           ))}
         </div>
+
+        <ProjectFile
+          state={s}
+          filename="mastilko-cv"
+          onLoad={(data) => setS({ ...INITIAL, ...data })}
+        />
       </div>
 
       {/* Преглед + печат */}

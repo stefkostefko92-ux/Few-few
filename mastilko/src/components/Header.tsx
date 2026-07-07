@@ -5,6 +5,7 @@ const NAV = [
   { href: "/etiketi", label: "Етикети" },
   { href: "/vizitki", label: "Визитки" },
   { href: "/cv", label: "CV" },
+  { href: "/pismo", label: "Писмо" },
 ];
 
 export default function Header() {

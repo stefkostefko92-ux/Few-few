@@ -17,6 +17,7 @@ export default function Footer() {
             <li><Link className="hover:text-tera-dark" href="/etiketi">Етикети за печат</Link></li>
             <li><Link className="hover:text-tera-dark" href="/vizitki">Визитки</Link></li>
             <li><Link className="hover:text-tera-dark" href="/cv">Автобиография (CV)</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/pismo">Мотивационно писмо</Link></li>
           </ul>
         </nav>
         <nav aria-label="Правна информация" className="text-sm">
