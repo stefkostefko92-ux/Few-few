@@ -1,19 +1,28 @@
 /* tokens.css — АСО design tokens (concept §3.2). Single source of truth.
    Tailwind theme (tailwind.config.js) references these CSS variables. */
 :root {
-  /* Surfaces — dark felt */
-  --felt-900: #0c1f17; /* darkest felt */
-  --felt-800: #123026;
-  --felt-700: #18402f; /* active table */
-  --felt-glow: #1f5a40; /* halo under cards */
-  --charcoal-900: #0b0e0d;
-  --wood-800: #2a1c12; /* table edge (wood) */
+  /* Surfaces — deep cosmos indigo (palette derived from the galaxy hero art).
+     Hue ~230° navy base, keeping the old felt L-steps so contrast holds. */
+  --felt-900: #0b0f24; /* darkest — deep space */
+  --felt-800: #141a38;
+  --felt-700: #1e2750; /* active surface */
+  --felt-glow: #3a4a86; /* indigo halo under cards */
+  --charcoal-900: #070a18; /* near-black indigo */
+  --wood-800: #2a1c12; /* table edge (wood) — unchanged */
 
-  /* Brass / accents */
+  /* Brass / gold accents — matches the golden core of the galaxy */
   --brass-400: #d9b25f;
   --brass-300: #e7c87b;
   --brass-100: #f4e3b6;
   --brass-glow: rgba(217, 178, 95, 0.35);
+
+  /* Cosmic accents — the shield's cyan gem + the nebula violet */
+  --cyan-400: #57cbe6;
+  --cyan-300: #86dcef;
+  --cyan-glow: rgba(87, 203, 230, 0.35);
+  --violet-400: #9a86e0;
+  --violet-300: #b6a6ec;
+  --violet-glow: rgba(154, 134, 224, 0.3);
 
   /* Suits / semantics */
   --suit-red: #c2362f;

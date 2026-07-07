@@ -7,14 +7,11 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0c1f17",
-  "theme_color": "#0c1f17",
+  "background_color": "#0b0f24",
+  "theme_color": "#0b0f24",
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
-      "purpose": "any maskable"
-    }
+    { "src": "/logo-mark-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/logo-mark-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "/logo-mark-512-maskable.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
   ]
 }

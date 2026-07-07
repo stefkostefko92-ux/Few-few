@@ -16,7 +16,7 @@ export function organizationLd(): Json {
     name: SITE.name,
     url: SITE.url,
     description: SITE.description,
-    logo: `${SITE.url}/icon.svg`,
+    logo: `${SITE.url}/logo-mark.png`,
     sameAs: [SITE.org.url],
     parentOrganization: {
       "@type": "Organization",
