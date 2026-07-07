@@ -35,7 +35,7 @@ export default function SettingsPage() {
         welcomerEnabled:    server.welcomerEnabled || false,
         welcomerChannelId:  server.welcomerChannelId || "",
         welcomerMessage:    server.welcomerMessage || "",
-        welcomerEmbedColor: server.welcomerEmbedColor || "#00e5ff",
+        welcomerEmbedColor: server.welcomerEmbedColor || "#33b1ff",
         welcomerDmEnabled:  server.welcomerDmEnabled || false,
         welcomerDmMessage:  server.welcomerDmMessage || "",
         autoroleIds:        (server.autoroleIds || []).join(","),

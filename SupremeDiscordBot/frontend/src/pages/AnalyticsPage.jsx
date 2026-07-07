@@ -145,7 +145,7 @@ function Heatmap({ grid }) {
               const intensity = val / maxVal;
               const bg = intensity === 0
                 ? "rgba(255,255,255,0.04)"
-                : `rgba(0, 229, 255, ${Math.max(0.15, intensity)})`;
+                : `rgba(51, 177, 255, ${Math.max(0.15, intensity)})`;
               return (
                 <div
                   key={`${d}-${h}`}

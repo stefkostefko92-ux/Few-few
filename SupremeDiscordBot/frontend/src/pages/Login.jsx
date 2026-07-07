@@ -689,9 +689,9 @@ function HeroConverge() {
 function Logo() {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="flex-shrink-0">
-      <rect x="1" y="1" width="30" height="30" stroke="#00e5ff" strokeWidth="1.5"/>
-      <path d="M16 4 L28 16 L16 28 L4 16 Z" stroke="#00e5ff" strokeWidth="1.5" fill="#00e5ff" fillOpacity="0.15"/>
-      <circle cx="16" cy="16" r="3" fill="#00e5ff"/>
+      <rect x="1" y="1" width="30" height="30" stroke="#33b1ff" strokeWidth="1.5"/>
+      <path d="M16 4 L28 16 L16 28 L4 16 Z" stroke="#33b1ff" strokeWidth="1.5" fill="#33b1ff" fillOpacity="0.15"/>
+      <circle cx="16" cy="16" r="3" fill="#33b1ff"/>
     </svg>
   );
 }

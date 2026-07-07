@@ -47,13 +47,13 @@
   ::-webkit-scrollbar       { @apply w-1.5 h-1.5; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #2a2a36; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #00e5ff; }
+  ::-webkit-scrollbar-thumb:hover { background: #33b1ff; }
 
-  ::selection { background: #00e5ff; color: #000; }
+  ::selection { background: #33b1ff; color: #000; }
 
   /* Focus ring matches cyan accent */
   :focus-visible {
-    outline: 2px solid #00e5ff;
+    outline: 2px solid #33b1ff;
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -220,7 +220,7 @@
   .cs-modal-lg { @apply max-w-2xl; }
 
   /* ─── Utility text ─── */
-  .cs-text-cyan   { color: #00e5ff; }
+  .cs-text-cyan   { color: #33b1ff; }
   .cs-text-muted  { @apply text-cs-muted; }
   .cs-text-dim    { @apply text-cs-dim; }
   .cs-mono        { @apply font-mono; }
@@ -257,7 +257,7 @@
   .scanline-bg::before {
     content: "";
     @apply pointer-events-none absolute inset-0;
-    background: linear-gradient(180deg, transparent 0%, rgba(0, 229, 255, 0.015) 50%, transparent 100%);
+    background: linear-gradient(180deg, transparent 0%, rgba(51, 177, 255, 0.015) 50%, transparent 100%);
     background-size: 100% 4px;
     mix-blend-mode: overlay;
   }
@@ -298,8 +298,8 @@
 }
 
 @keyframes supreme-crown-glow {
-  0%, 100% { filter: drop-shadow(0 0 3px rgba(0, 229, 255, 0.6)); }
-  50%      { filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.9)); }
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(240, 194, 76, 0.75)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(51, 177, 255, 0.9)); }
 }
 
 .supreme-logo-animated .supreme-ring-outer {
@@ -321,19 +321,21 @@
   animation: supreme-pulse 2s ease-in-out infinite;
 }
 
-/* Supreme wordmark — gradient text */
+/* Supreme wordmark — gold→royal-blue, echoing the brand banner (gold text,
+   blue energy). "SUPREME" is molten gold; "BOT" is bright silver-white. */
 .supreme-wordmark-supreme {
-  background: linear-gradient(90deg, #00e5ff 0%, #8b5cf6 60%, #ec4899 100%);
+  background: linear-gradient(96deg, #f7d878 0%, #f0c24c 42%, #e0a93a 68%, #33b1ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+  text-shadow: 0 0 22px rgba(240, 194, 76, 0.45);
   letter-spacing: -0.02em;
 }
 .supreme-wordmark-bot {
-  color: #ffffff;
+  color: #f4f4f0;
   margin-left: 0.25em;
   letter-spacing: -0.02em;
+  text-shadow: 0 0 18px rgba(51, 177, 255, 0.35);
 }
 
 /* Honor prefers-reduced-motion — neutralize all motion app-wide (WCAG 2.3.3) */
@@ -453,9 +455,9 @@ html, body {
   position: absolute;
   inset: -20%;
   background:
-    radial-gradient(40% 50% at 20% 25%, rgba(0, 229, 255, 0.14), transparent 70%),
+    radial-gradient(40% 50% at 20% 25%, rgba(51, 177, 255, 0.16), transparent 70%),
     radial-gradient(35% 45% at 82% 18%, rgba(139, 92, 246, 0.12), transparent 70%),
-    radial-gradient(45% 55% at 65% 88%, rgba(236, 72, 153, 0.08), transparent 70%);
+    radial-gradient(45% 55% at 65% 88%, rgba(240, 194, 76, 0.10), transparent 70%);
   filter: blur(18px);
   will-change: transform;
 }
@@ -470,12 +472,12 @@ html, body {
    dashed lines); the flow animation is added only when motion is welcome. */
 .hero-funnel path {
   fill: none;
-  stroke: rgba(0, 229, 255, 0.4);
+  stroke: rgba(51, 177, 255, 0.4);
   stroke-width: 1;
   stroke-dasharray: 3 7;
 }
 .hero-core-dot {
-  fill: #00e5ff;
+  fill: #33b1ff;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -500,6 +502,6 @@ html, body {
 }
 
 @keyframes hero-core-glow {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.35), 0 0 26px rgba(0, 229, 255, 0.12); }
-  50%      { box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.65), 0 0 42px rgba(0, 229, 255, 0.28); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(51, 177, 255, 0.35), 0 0 26px rgba(51, 177, 255, 0.12); }
+  50%      { box-shadow: 0 0 0 1px rgba(51, 177, 255, 0.65), 0 0 42px rgba(51, 177, 255, 0.28); }
 }

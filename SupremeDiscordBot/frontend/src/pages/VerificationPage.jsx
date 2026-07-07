@@ -35,7 +35,7 @@ const defaultForm = () => ({
   name: "",
   title: "✅ Verify to access the server",
   description: "Click the button below to verify you're not a bot.",
-  color: "#00e5ff",
+  color: "#33b1ff",
   type: "BUTTON",
   buttonLabel: "Verify",
   buttonEmoji: "",

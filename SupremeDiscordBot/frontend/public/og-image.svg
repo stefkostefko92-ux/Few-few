@@ -1,53 +1,62 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00e5ff"/>
-      <stop offset="50%" stop-color="#8b5cf6"/>
-      <stop offset="100%" stop-color="#ec4899"/>
+      <stop offset="0%" stop-color="#f7d878"/>
+      <stop offset="45%" stop-color="#f0c24c"/>
+      <stop offset="100%" stop-color="#33b1ff"/>
     </linearGradient>
-    <radialGradient id="glow1" cx="50%" cy="50%">
-      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f9e08a"/>
+      <stop offset="55%" stop-color="#f0c24c"/>
+      <stop offset="100%" stop-color="#d8a638"/>
+    </linearGradient>
+    <radialGradient id="glowGold" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#f0c24c" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#f0c24c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBlue" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#33b1ff" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#33b1ff" stop-opacity="0"/>
     </radialGradient>
     <filter id="blur">
       <feGaussianBlur stdDeviation="3"/>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1a1a" stroke-width="1"/>
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1b2a" stroke-width="1"/>
     </pattern>
   </defs>
 
-  <!-- Background -->
-  <rect width="1200" height="630" fill="#000"/>
+  <!-- Background — deep cosmic navy -->
+  <rect width="1200" height="630" fill="#0a0b12"/>
   <rect width="1200" height="630" fill="url(#grid)"/>
-  <circle cx="900" cy="200" r="280" fill="url(#glow1)"/>
-  <circle cx="200" cy="500" r="220" fill="url(#glow1)" opacity="0.6"/>
+  <circle cx="900" cy="200" r="300" fill="url(#glowBlue)"/>
+  <circle cx="220" cy="500" r="240" fill="url(#glowGold)" opacity="0.8"/>
 
   <!-- Logo mark (left side) -->
   <g transform="translate(140, 180) scale(3.8)">
     <circle cx="32" cy="32" r="28" stroke="url(#grad)" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.7"/>
-    <circle cx="32" cy="32" r="22" stroke="#00e5ff" stroke-width="0.8" stroke-dasharray="1 3" opacity="0.5"/>
-    <polygon points="32,8 52,20 52,44 32,56 12,44 12,20" stroke="url(#grad)" stroke-width="2" fill="#00e5ff" fill-opacity="0.1" filter="url(#blur)"/>
-    <path d="M 18 18 L 22 10 L 26 16 L 32 6 L 38 16 L 42 10 L 46 18 L 42 22 L 22 22 Z" fill="url(#grad)" stroke="#fff" stroke-width="0.5"/>
+    <circle cx="32" cy="32" r="22" stroke="#33b1ff" stroke-width="0.8" stroke-dasharray="1 3" opacity="0.5"/>
+    <polygon points="32,8 52,20 52,44 32,56 12,44 12,20" stroke="url(#grad)" stroke-width="2" fill="#33b1ff" fill-opacity="0.1" filter="url(#blur)"/>
+    <path d="M 18 18 L 22 10 L 26 16 L 32 6 L 38 16 L 42 10 L 46 18 L 42 22 L 22 22 Z" fill="url(#gold)" stroke="#fff5d6" stroke-width="0.5"/>
     <circle cx="32" cy="12" r="1.5" fill="#fff"/>
-    <path d="M 30 26 L 36 26 L 32 36 L 38 36 L 28 50 L 30 40 L 26 40 Z" fill="#fff" stroke="url(#grad)" stroke-width="0.8"/>
+    <path d="M 32 24 L 34.2 31.8 L 42 34 L 34.2 36.2 L 32 44 L 29.8 36.2 L 22 34 L 29.8 31.8 Z" fill="#fff8e6" stroke="url(#gold)" stroke-width="0.8"/>
   </g>
 
   <!-- Text (right side) -->
   <g transform="translate(560, 220)">
     <text font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="88" letter-spacing="-3">
       <tspan x="0" y="0" fill="url(#grad)">SUPREME</tspan>
-      <tspan x="0" y="96" fill="#fff">BOT</tspan>
+      <tspan x="0" y="96" fill="#f4f4f0">BOT</tspan>
     </text>
-    <text x="0" y="168" font-family="ui-monospace, monospace" font-size="24" fill="#8a8a8a" letter-spacing="8">
+    <text x="0" y="168" font-family="ui-monospace, monospace" font-size="24" fill="#8a8a94" letter-spacing="8">
       DISCORD BOT SAAS PLATFORM
     </text>
     <rect x="0" y="200" width="280" height="2" fill="url(#grad)"/>
-    <text x="0" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#c0c0c0">
+    <text x="0" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#c0c0c8">
       Tickets · Forms · AI · White-label
     </text>
-    <text x="0" y="280" font-family="ui-monospace, monospace" font-size="16" fill="#00e5ff" letter-spacing="3">
+    <text x="0" y="280" font-family="ui-monospace, monospace" font-size="16" fill="#f0c24c" letter-spacing="3">
       BY CARBON STEALTH VCC · EU
     </text>
   </g>
