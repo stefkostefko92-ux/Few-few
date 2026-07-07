@@ -1,7 +1,7 @@
 // MedQR service worker — офлайн достъп до съществените екрани.
 // Сценарий: няма сигнал (метро, сграда, планина). Запазено копие на личния
 // SOS екран, таблото, спешния изглед и статичните ресурси работи и офлайн.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL = `medqr-shell-${VERSION}`;
 const RUNTIME = `medqr-runtime-${VERSION}`;
 const PRIVATE = `medqr-private-${VERSION}`; // чувствителни лични екрани — чистят се при изход
@@ -46,7 +46,7 @@ self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'clear-private') caches.delete(PRIVATE);
 });
 
-const STATIC_RE = /\.(?:css|js|woff2|svg|png|webmanifest)$/;
+const STATIC_RE = /\.(?:css|js|woff2|svg|png|jpe?g|webmanifest)$/;
 const PRIVATE_RE = /^\/(sos|dashboard|e\/)/;
 
 // Записът в кеша задължително минава през waitUntil, за да не бъде прекъснат

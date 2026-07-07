@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 72" role="img" aria-label="MedQR — спешен медицински профил">
   <defs>
     <linearGradient id="lqTile" gradientUnits="userSpaceOnUse" x1="8" y1="4" x2="72" y2="68">
-      <stop offset="0" stop-color="#16a6cb"/>
-      <stop offset="0.55" stop-color="#0b6e8c"/>
-      <stop offset="1" stop-color="#074a5e"/>
+      <stop offset="0" stop-color="#22507e"/>
+      <stop offset="0.55" stop-color="#153a5e"/>
+      <stop offset="1" stop-color="#0c2743"/>
     </linearGradient>
   </defs>
 
@@ -33,7 +33,7 @@
   <!-- Словесен знак -->
   <g font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
     <text x="88" y="44" font-size="38" font-weight="800" letter-spacing="-1">
-      <tspan fill="#08566d">Med</tspan><tspan fill="#0b6e8c">QR</tspan>
+      <tspan fill="#1a3f66">Med</tspan><tspan fill="#2e9e6e">QR</tspan>
     </text>
     <text x="90" y="61" font-size="12.5" font-weight="500" letter-spacing="0.2" fill="#5b6b7b">Спешен медицински профил</text>
   </g>
