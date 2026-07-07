@@ -1,5 +1,6 @@
 "use client";
 
+import { z } from "zod";
 import { themeById } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
@@ -22,6 +23,23 @@ interface PismoState {
   body: string;
   themeId: string;
 }
+
+// Валидация на качен проект-файл (виж бележката в LabelStudio).
+const ProjectSchema = z
+  .object({
+    name: z.string().max(100),
+    phone: z.string().max(100),
+    email: z.string().max(100),
+    city: z.string().max(100),
+    date: z.string().max(100),
+    company: z.string().max(100),
+    position: z.string().max(100),
+    recipient: z.string().max(100),
+    strengths: z.string().max(600),
+    body: z.string().max(4000),
+    themeId: z.string().max(20),
+  })
+  .partial();
 
 /** „г-жа Мария…“ → „Уважаема г-жо Мария…,“; „г-н…“ → „Уважаеми г-н…,“. */
 function greeting(recipient: string): string {
@@ -142,7 +160,7 @@ export default function PismoStudio() {
         <ProjectFile
           state={s}
           filename="mastilko-pismo"
-          onLoad={(data) => setS({ ...INITIAL, ...data })}
+          onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>
 

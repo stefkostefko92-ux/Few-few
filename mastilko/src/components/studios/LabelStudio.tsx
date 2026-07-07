@@ -1,12 +1,13 @@
 "use client";
 
+import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
 import { themeById } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
-import QrImage from "@/components/QrImage";
+import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import ThemePicker from "@/components/ThemePicker";
 
@@ -26,6 +27,24 @@ interface LabelState {
   cutLines: boolean;
   aiDesc: string;
 }
+
+// Валидация на качен проект-файл: грешен тип стойност иначе сменя правилно
+// типизираните подразбирания и чупи рендера (напр. listText: 5 → .split гърми).
+const ProjectSchema = z
+  .object({
+    presetId: z.string().max(20),
+    themeId: z.string().max(20),
+    mode: z.enum(["same", "list"]),
+    text1: z.string().max(60),
+    text2: z.string().max(80),
+    listText: z.string().max(4000),
+    numbering: z.boolean(),
+    numberStart: z.number().int().min(0).max(99999),
+    qrUrl: z.string().max(300),
+    cutLines: z.boolean(),
+    aiDesc: z.string().max(300),
+  })
+  .partial();
 
 const INITIAL: LabelState = {
   presetId: "70x36",
@@ -81,6 +100,8 @@ export default function LabelStudio() {
       ? s.qrUrl.trim()
       : `https://${s.qrUrl.trim()}`
     : "";
+  // Един QR за целия лист — не по един на клетка.
+  const qrSrc = useQrDataUrl(qrText);
 
   const radius =
     preset.shape === "circle" ? "50%" : preset.shape === "round" ? "50% / 45%" : "2.5mm";
@@ -262,7 +283,7 @@ export default function LabelStudio() {
         <ProjectFile
           state={s}
           filename="mastilko-etiketi"
-          onLoad={(data) => setS({ ...INITIAL, ...data })}
+          onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>
 
@@ -304,9 +325,9 @@ export default function LabelStudio() {
                   overflow: "hidden",
                 }}
               >
-                {qrText && (
+                {qrSrc && (
                   <QrImage
-                    text={qrText}
+                    src={qrSrc}
                     style={{
                       width: `${qrSize}mm`,
                       height: `${qrSize}mm`,

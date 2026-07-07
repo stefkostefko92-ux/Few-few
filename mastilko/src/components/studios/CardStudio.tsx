@@ -1,5 +1,6 @@
 "use client";
 
+import { z } from "zod";
 import { CARD, cardGrid } from "@/lib/print";
 import { themeById, type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
@@ -7,7 +8,7 @@ import { vCard } from "@/lib/vcard";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
-import QrImage from "@/components/QrImage";
+import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
 import ThemePicker from "@/components/ThemePicker";
 
@@ -40,6 +41,23 @@ const INITIAL: CardState = {
   qr: false,
 };
 
+// Валидация на качен проект-файл (виж бележката в LabelStudio).
+const ProjectSchema = z
+  .object({
+    name: z.string().max(60),
+    role: z.string().max(60),
+    company: z.string().max(60),
+    phone: z.string().max(60),
+    email: z.string().max(60),
+    website: z.string().max(60),
+    slogan: z.string().max(60),
+    themeId: z.string().max(20),
+    layout: z.enum(["lenta", "klasik", "linia", "ramka", "gorna", "duo"]),
+    cutLines: z.boolean(),
+    qr: z.boolean(),
+  })
+  .partial();
+
 const LAYOUTS: Array<{ id: CardState["layout"]; name: string }> = [
   { id: "lenta", name: "Лента отляво" },
   { id: "klasik", name: "Класик (центрирано)" },
@@ -57,19 +75,19 @@ function CardFace({
   s,
   theme,
   u,
-  qrText,
+  qrSrc,
 }: {
   s: CardState;
   theme: WarmTheme;
   u: Unit;
-  qrText: string;
+  qrSrc: string | null;
 }) {
   return (
     <div style={{ position: "relative", width: u(CARD.w), height: u(CARD.h) }}>
       <CardFaceInner s={s} theme={theme} u={u} />
-      {s.qr && qrText && (
+      {s.qr && qrSrc && (
         <QrImage
-          text={qrText}
+          src={qrSrc}
           style={{
             position: "absolute",
             right: u(3),
@@ -453,7 +471,8 @@ export default function CardStudio() {
 
   const set = (patch: Partial<CardState>) => setS({ ...s, ...patch });
 
-  const qrText = s.qr && s.name.trim() ? vCard(s) : "";
+  // Един QR за целия лист + близкия преглед — не по един на визитка.
+  const qrSrc = useQrDataUrl(s.qr && s.name.trim() ? vCard(s) : "");
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
@@ -556,7 +575,7 @@ export default function CardStudio() {
           <p className="field-label">Преглед отблизо</p>
           <div className="overflow-x-auto rounded-xl">
             <div className="w-fit shadow-lift" style={{ borderRadius: 6 }}>
-              <CardFace s={s} theme={theme} u={px} qrText={qrText} />
+              <CardFace s={s} theme={theme} u={px} qrSrc={qrSrc} />
             </div>
           </div>
         </div>
@@ -580,7 +599,7 @@ export default function CardStudio() {
                     : "none",
                 }}
               >
-                <CardFace s={s} theme={theme} u={mm} qrText={qrText} />
+                <CardFace s={s} theme={theme} u={mm} qrSrc={qrSrc} />
               </div>
             );
           })}
@@ -589,7 +608,7 @@ export default function CardStudio() {
         <ProjectFile
           state={s}
           filename="mastilko-vizitki"
-          onLoad={(data) => setS({ ...INITIAL, ...data })}
+          onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>
     </div>

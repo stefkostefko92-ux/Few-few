@@ -3,19 +3,19 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 
-interface Props {
-  /** Съдържание на QR кода (vCard, URL…). */
-  text: string;
-  style?: React.CSSProperties;
-  className?: string;
-}
-
 // QR кодът се генерира ИЗЦЯЛО в браузъра (пакет qrcode) — нищо не се праща
 // към външни услуги, в духа на „данните остават при теб“.
-export default function QrImage({ text, style, className }: Props) {
+// Генерирай ВЕДНЪЖ в редактора с useQrDataUrl и подай готовия src на
+// клетките — иначе всяка от 24-те клетки на листа смята същия QR наново.
+
+export function useQrDataUrl(text: string): string | null {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!text) {
+      setUrl(null);
+      return;
+    }
     let alive = true;
     QRCode.toDataURL(text, {
       width: 512,
@@ -30,8 +30,19 @@ export default function QrImage({ text, style, className }: Props) {
     };
   }, [text]);
 
-  if (!url) return null;
+  return url;
+}
+
+interface Props {
+  /** Готов data: URL от useQrDataUrl. */
+  src: string | null;
+  style?: React.CSSProperties;
+  className?: string;
+}
+
+export default function QrImage({ src, style, className }: Props) {
+  if (!src) return null;
   // data: URL — next/image няма какво да оптимизира тук.
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} alt="QR код" style={style} className={className} />;
+  return <img src={src} alt="QR код" style={style} className={className} />;
 }

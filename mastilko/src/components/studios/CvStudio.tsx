@@ -1,5 +1,6 @@
 "use client";
 
+import { z } from "zod";
 import { themeById } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
@@ -44,6 +45,49 @@ interface CvState {
   digitalSkills: string;
   driving: string;
 }
+
+// Валидация на качен проект-файл (виж бележката в LabelStudio).
+const ProjectSchema = z
+  .object({
+    name: z.string().max(100),
+    title: z.string().max(100),
+    phone: z.string().max(100),
+    email: z.string().max(100),
+    city: z.string().max(100),
+    website: z.string().max(100),
+    summary: z.string().max(1000),
+    jobs: z
+      .array(
+        z.object({
+          id: z.number().int(),
+          role: z.string().max(100),
+          company: z.string().max(100),
+          period: z.string().max(60),
+          desc: z.string().max(1000),
+        }),
+      )
+      .max(20),
+    schools: z
+      .array(
+        z.object({
+          id: z.number().int(),
+          degree: z.string().max(100),
+          school: z.string().max(100),
+          period: z.string().max(60),
+        }),
+      )
+      .max(20),
+    skills: z.string().max(500),
+    languages: z.string().max(300),
+    themeId: z.string().max(20),
+    layout: z.enum(["klasik", "moderen", "europass"]),
+    birthDate: z.string().max(120),
+    nationality: z.string().max(120),
+    motherTongue: z.string().max(120),
+    digitalSkills: z.string().max(200),
+    driving: z.string().max(120),
+  })
+  .partial();
 
 const INITIAL: CvState = {
   name: "",
@@ -370,7 +414,7 @@ export default function CvStudio() {
         <ProjectFile
           state={s}
           filename="mastilko-cv"
-          onLoad={(data) => setS({ ...INITIAL, ...data })}
+          onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })}
         />
       </div>
 
