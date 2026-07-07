@@ -17,8 +17,8 @@
     </div>
 
     <div class="vcard-actions">
-      <a class="btn btn-big" href="/p/<%= profile.slug %>/vizitka.vcf">💾 Запази контакта</a>
-      <% if (profile.phone) { %><a class="btn" href="tel:<%= profile.phone.replace(/\s+/g, '') %>">📞 Обади се</a><% } %>
+      <a class="btn btn-big" href="/p/<%= profile.slug %>/vizitka.vcf"><span aria-hidden="true">💾</span> Запази контакта</a>
+      <% if (profile.phone) { %><a class="btn" href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><span aria-hidden="true">📞</span> Обади се</a><% } %>
     </div>
 
     <ul class="vcard-list">
@@ -44,5 +44,9 @@
     </div>
   </article>
   <p class="made-with muted small">Направено с <a href="/">Vizitka</a> — винаги актуалната визитка.</p>
+  <p class="report muted small">
+    Проблем с тази визитка (злоупотреба, представяне за друг)?
+    <a href="mailto:<%= company.email %>?subject=Сигнал за визитка /p/<%= profile.slug %>">Подай сигнал</a>.
+  </p>
 </section>
 <%- include('partials/foot') %>

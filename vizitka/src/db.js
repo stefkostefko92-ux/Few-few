@@ -45,7 +45,7 @@ db.exec(`
     instagram TEXT NOT NULL DEFAULT '',
     linkedin TEXT NOT NULL DEFAULT '',
     photo TEXT NOT NULL DEFAULT '',      -- име на файл в data/uploads
-    is_public INTEGER NOT NULL DEFAULT 1,
+    is_public INTEGER NOT NULL DEFAULT 0, -- privacy-by-default (чл. 25(2) ОРЗД)
     theme TEXT NOT NULL DEFAULT 'blue',  -- цветова тема на визитката
     views INTEGER NOT NULL DEFAULT 0,    -- брой преглеждания (без собственика)
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))

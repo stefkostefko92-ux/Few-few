@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import './db.js';
 import { attachUser } from './auth.js';
 import { baseUrl } from './config.js';
-import { COMPANY, robotsTxt, sitemapXml } from './seo.js';
+import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
 import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
@@ -77,12 +77,16 @@ app.use((req, res, next) => {
   res.locals.csrfToken = req.session?.csrf_token || '';
   res.locals.currentPath = req.path;
   res.locals.company = COMPANY;
+  res.locals.siteBase = baseUrl(req);
   next();
 });
 
-app.get('/', (req, res) => res.render('home', { title: null }));
+app.get('/', (req, res) =>
+  res.render('home', { title: null, faq: FAQ, jsonLd: siteJsonLd(baseUrl(req)) })
+);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(baseUrl(req))));
 app.get('/sitemap.xml', (req, res) => res.type('application/xml').send(sitemapXml(baseUrl(req))));
+app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(req))));
 app.get('/privacy', (req, res) => res.render('privacy', { title: 'Политика за поверителност' }));
 app.get('/terms', (req, res) => res.render('terms', { title: 'Общи условия' }));
 app.use(authRoutes);

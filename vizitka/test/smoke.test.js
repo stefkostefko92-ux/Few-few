@@ -76,6 +76,14 @@ await test('таблото се отваря след вход', async () => {
   assert.equal(slug, 'ivan-testov');
 });
 
+await test('новият профил е скрит по подразбиране (privacy-by-default)', async () => {
+  const ownerJar = new Map(jar);
+  jar.clear();
+  const anonView = await request('/p/ivan-testov');
+  assert.equal(anonView.status, 404, 'нов профил не трябва да е публичен без избор');
+  for (const [k, v] of ownerJar) jar.set(k, v);
+});
+
 await test('редакцията на профила записва данните', async () => {
   const res = await request('/profile', {
     method: 'POST',
@@ -164,6 +172,19 @@ await test('правни страници, robots и sitemap отговарят'
   const sitemap = await request('/sitemap.xml');
   assert.equal(sitemap.status, 200);
   assert.match(await sitemap.text(), /ivan-testov/);
+  const llms = await request('/llms.txt');
+  assert.equal(llms.status, 200);
+  assert.match(await llms.text(), /Vizitka/);
+});
+
+await test('canonical и OG тагове присъстват', async () => {
+  const home = await (await request('/')).text();
+  assert.match(home, /<link rel="canonical"/);
+  assert.match(home, /property="og:site_name" content="Vizitka"/);
+  assert.match(home, /Често задавани въпроси/);
+  const card = await (await request('/p/ivan-testov')).text();
+  assert.match(card, /BreadcrumbList/);
+  assert.match(card, /Подай сигнал/);
 });
 
 await test('QR кодът е валиден PNG', async () => {

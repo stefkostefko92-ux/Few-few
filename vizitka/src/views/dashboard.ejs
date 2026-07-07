@@ -3,7 +3,7 @@
   <h1>Моята визитка</h1>
   <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
   <% if (passwordChanged) { %><p class="alert alert-ok">Паролата е сменена. Останалите ти сесии са прекратени.</p><% } %>
-  <% if (error) { %><p class="alert alert-error"><%= error %></p><% } %>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
 
   <div class="dash-grid">
     <div class="dash-side">
@@ -13,7 +13,7 @@
         <p><a class="btn btn-small" href="/p/<%= profile.slug %>/qr.png" download="vizitka-qr.png">Свали QR (PNG)</a></p>
       </div>
       <div class="link-box">
-        <label class="small">Публичен адрес</label>
+        <label class="small" for="public-url">Публичен адрес</label>
         <input type="text" readonly value="<%= publicUrl %>" id="public-url">
         <button type="button" class="btn btn-small" data-copy="#public-url">Копирай линка</button>
         <p><a href="/p/<%= profile.slug %>" target="_blank" rel="noopener">Виж визитката →</a></p>
@@ -25,7 +25,7 @@
       </div>
 
       <div class="photo-box">
-        <label class="small">Снимка / лого</label>
+        <label class="small" for="photo-input">Снимка / лого</label>
         <% if (profile.photo) { %>
           <img class="avatar" src="/photo/<%= profile.photo %>" alt="Снимка на профила" width="120" height="120">
         <% } else { %>
@@ -33,7 +33,7 @@
         <% } %>
         <form method="post" action="/profile/photo" enctype="multipart/form-data">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
+          <input type="file" name="photo" id="photo-input" accept="image/jpeg,image/png,image/webp" required>
           <button type="submit" class="btn btn-small">Качи снимка</button>
           <p class="muted small">JPG, PNG или WebP, до 2 MB.</p>
         </form>

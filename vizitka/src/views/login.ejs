@@ -1,7 +1,7 @@
 <%- include('partials/head') %>
 <section class="auth-card">
   <h1>Вход</h1>
-  <% if (error) { %><p class="alert alert-error"><%= error %></p><% } %>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
   <form method="post" action="/login">
     <label>Имейл
       <input type="email" name="email" required maxlength="254" autocomplete="email" value="<%= values.email || '' %>">

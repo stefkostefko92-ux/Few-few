@@ -38,7 +38,9 @@ src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
 src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
 src/themes.js        цветови теми на визитката (CSS клас theme-<id>)
-src/seo.js           COMPANY (импресум), robots, sitemap, JSON-LD Person/Organization
+src/seo.js           COMPANY (импресум), robots (AI-ботове без /p/), sitemap, llms.txt,
+                     FAQ, JSON-LD (сайт: WebSite+Organization+FAQPage; визитка:
+                     Person/Organization+BreadcrumbList)
 src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
 src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
@@ -68,6 +70,10 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
 - `data/` не влиза в git; секрети — само на сървъра (systemd `EnvironmentFile`, 600).
 - **Правни страници** (`/privacy`, `/terms`) са обвързани с реалното поведение на
   приложението — промениш ли какви данни се пазят/бисквитки, обнови и тях.
+- **Privacy-by-default (чл. 25(2) ОРЗД):** новият профил е СКРИТ (`is_public=0`) и
+  без предварително попълнен имейл — потребителят публикува съзнателно от таблото.
+  Не връщай „публично по подразбиране“. DSA: „Подай сигнал“ на всяка визитка +
+  notice-and-action процес в ОУ.
 - Roadmap (не е имплементирано): забравена парола (имейл), изтриване на акаунт от
   UI (сега — по заявка на privacy@), NFC, няколко визитки на акаунт, дневна
   разбивка на статистиката.

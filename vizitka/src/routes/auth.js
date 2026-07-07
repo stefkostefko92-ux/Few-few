@@ -51,9 +51,11 @@ router.post('/register', authLimiter, (req, res) => {
   const info = db
     .prepare('INSERT INTO users (email, password_hash) VALUES (?, ?)')
     .run(email, hashPassword(password));
+  // Privacy-by-default: профилът тръгва СКРИТ и без предварително попълнен имейл —
+  // потребителят сам решава какво да публикува от таблото (чл. 25(2) ОРЗД).
   db.prepare(
-    'INSERT INTO profiles (user_id, slug, type, display_name, contact_email) VALUES (?, ?, ?, ?, ?)'
-  ).run(info.lastInsertRowid, uniqueSlug(name), type, name, email);
+    'INSERT INTO profiles (user_id, slug, type, display_name, is_public) VALUES (?, ?, ?, ?, 0)'
+  ).run(info.lastInsertRowid, uniqueSlug(name), type, name);
 
   createSession(res, Number(info.lastInsertRowid));
   res.redirect('/dashboard');

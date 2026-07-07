@@ -4,21 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка' %></title>
-  <% const meta = typeof pageMeta !== 'undefined' && pageMeta ? pageMeta : null; %>
-  <meta name="description" content="<%= meta?.description || 'Създай професионален профил (личен или фирмен), получи QR код и споделяй визитка, която винаги е актуална.' %>">
+  <%
+    const meta = typeof pageMeta !== 'undefined' && pageMeta ? pageMeta : null;
+    const pageTitle = title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка';
+    const pageDesc = meta?.description || 'Създай професионален профил (личен или фирмен), получи QR код и споделяй визитка, която винаги е актуална.';
+    const canonical = meta?.url || siteBase + (currentPath === '/' ? '/' : currentPath);
+  %>
+  <meta name="description" content="<%= pageDesc %>">
   <meta name="keywords" content="<%= meta?.keywords || 'дигитална визитка, QR визитка, електронна визитна картичка, QR код визитка, vCard, професионален профил, фирмена визитка, дигитална визитна картичка, България' %>">
-  <% if (meta) { %>
-  <meta property="og:type" content="profile">
-  <meta property="og:title" content="<%= title %> · Vizitka">
-  <meta property="og:description" content="<%= meta.description %>">
-  <meta property="og:url" content="<%= meta.url %>">
-  <% if (meta.image) { %><meta property="og:image" content="<%= meta.image %>"><% } %>
-  <% } %>
+  <link rel="canonical" href="<%= canonical %>">
+  <meta property="og:site_name" content="Vizitka">
+  <meta property="og:type" content="<%= meta ? 'profile' : 'website' %>">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= pageDesc %>">
+  <meta property="og:url" content="<%= canonical %>">
+  <meta property="og:image" content="<%= meta?.image || siteBase + '/logo.png' %>">
+  <meta name="twitter:card" content="summary_large_image">
   <% if (/^\/(dashboard|login|register)/.test(currentPath)) { %><meta name="robots" content="noindex"><% } %>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+<a class="skip-link" href="#main">Към съдържанието</a>
 <header class="nav">
   <a class="brand" href="/"><img src="/logo.png" alt="Vizitka" class="brand-logo"></a>
   <nav>
@@ -34,4 +41,4 @@
     <% } %>
   </nav>
 </header>
-<main>
+<main id="main">

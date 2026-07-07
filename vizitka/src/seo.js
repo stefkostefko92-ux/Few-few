@@ -22,49 +22,139 @@ export function robotsTxt(base) {
     'Disallow: /dashboard',
     'Disallow: /login',
     'Disallow: /register',
-    'Disallow: /photo/',
     'Allow: /',
     '',
+    // AI-обучаващи ботове: търсещите/извличащите са добре дошли (видимост в AI
+    // отговори), но обучението върху личните профили спираме — лични данни.
+    ...['GPTBot', 'ClaudeBot', 'CCBot', 'Google-Extended'].flatMap((bot) => [
+      `User-agent: ${bot}`,
+      'Disallow: /p/',
+      '',
+    ]),
     `Sitemap: ${base}/sitemap.xml`,
     '',
   ].join('\n');
 }
 
+// Карта за LLM асистенти (Claude, Perplexity четат llms.txt; Google/OpenAI — не).
+export function llmsTxt(base) {
+  return `# Vizitka
+
+> Vizitka е безплатна дигитална визитка с постоянен QR код: създаваш професионален
+> профил (личен или фирмен) със снимка и контакти, а сканиращият винаги вижда
+> актуалните данни. Услуга на ${COMPANY.name} (${COMPANY.url}), хоствана в ЕС,
+> на български език.
+
+## Страници
+
+- [Начало](${base}/): какво е Vizitka, как работи, често задавани въпроси
+- [Политика за поверителност](${base}/privacy): какви данни се обработват и защо
+- [Общи условия](${base}/terms): правила на услугата
+
+## Как работи
+
+- Публичните визитки живеят на ${base}/p/<адрес> — съдържанието им се управлява от
+  собственика и е публично по негово решение.
+- Всяка визитка предлага vCard (.vcf) файл и QR код (PNG) на същия адрес.
+
+## Контакт
+
+- ${COMPANY.email} (общи въпроси) · ${COMPANY.privacyEmail} (лични данни)
+`;
+}
+
 const xmlEsc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 // Статичните страници + публичните визитки (публикувани по избор на потребителя).
+// Google игнорира <priority>, затова не го генерираме.
 export function sitemapXml(base) {
-  const urls = [
-    { loc: `${base}/`, priority: '1.0' },
-    { loc: `${base}/privacy`, priority: '0.3' },
-    { loc: `${base}/terms`, priority: '0.3' },
-  ];
+  const urls = [{ loc: `${base}/` }, { loc: `${base}/privacy` }, { loc: `${base}/terms` }];
   const profiles = db
     .prepare('SELECT slug, updated_at FROM profiles WHERE is_public = 1 ORDER BY updated_at DESC')
     .all();
   for (const p of profiles) {
-    urls.push({
-      loc: `${base}/p/${p.slug}`,
-      lastmod: p.updated_at.slice(0, 10),
-      priority: '0.7',
-    });
+    urls.push({ loc: `${base}/p/${p.slug}`, lastmod: p.updated_at.slice(0, 10) });
   }
   const body = urls
     .map(
       (u) =>
         `  <url><loc>${xmlEsc(u.loc)}</loc>` +
         (u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : '') +
-        `<priority>${u.priority}</priority></url>`
+        `</url>`
     )
     .join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }
 
-// JSON-LD (schema.org Person/Organization) за публичната визитка.
-export function cardJsonLd(profile, publicUrl, base) {
-  const data = {
+// Често задавани въпроси — рендират се на началната И влизат във FAQPage схемата.
+export const FAQ = [
+  {
+    q: 'Какво е Vizitka?',
+    a: 'Vizitka е безплатна дигитална визитка с постоянен QR код. Създаваш професионален профил — личен или фирмен — със снимка, телефон, имейл и социални мрежи, а всеки, който сканира кода, вижда винаги актуалните ти данни.',
+  },
+  {
+    q: 'Какво става, когато сменя телефона или длъжността си?',
+    a: 'Редактираш профила си от таблото и готово — QR кодът остава същият, затова всички вече отпечатани визитки, стикери и табели продължават да водят към новите данни. Нищо не се преиздава.',
+  },
+  {
+    q: 'Как посетителят записва контакта ми?',
+    a: 'С бутона „Запази контакта“ на визитката се сваля vCard (.vcf) файл — телефонът го отваря и записва името, номера, имейла и снимката ти в указателя за секунди.',
+  },
+  {
+    q: 'Мога ли да направя фирмена визитка?',
+    a: 'Да. При регистрация (или по-късно от таблото) избираш вид профил „Фирмен“ — визитката и vCard файлът се представят като организация, с лого вместо портретна снимка.',
+  },
+  {
+    q: 'Мога ли временно да скрия визитката си?',
+    a: 'Да. От таблото изключваш „Визитката е публична“ — адресът и QR кодът спират да показват данните ти, докато не я включиш отново.',
+  },
+];
+
+// Entity-схема за самия сайт (WebSite + Organization + FAQPage) — за началната.
+export function siteJsonLd(base) {
+  return JSON.stringify({
     '@context': 'https://schema.org',
-    '@type': profile.type === 'company' ? 'Organization' : 'Person',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${base}/#website`,
+        name: 'Vizitka',
+        url: `${base}/`,
+        inLanguage: 'bg',
+        description:
+          'Дигитална визитка с постоянен QR код — професионален профил (личен или фирмен), който винаги е актуален.',
+        publisher: { '@id': `${base}/#organization` },
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${base}/#organization`,
+        name: COMPANY.name,
+        url: COMPANY.url,
+        logo: `${base}/logo.png`,
+        email: COMPANY.email,
+        address: COMPANY.address,
+        sameAs: [COMPANY.url],
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': `${base}/#faq`,
+        mainEntity: FAQ.map(({ q, a }) => ({
+          '@type': 'Question',
+          name: q,
+          acceptedAnswer: { '@type': 'Answer', text: a },
+        })),
+      },
+    ],
+  });
+}
+
+// JSON-LD (schema.org Person/Organization + BreadcrumbList) за публичната визитка.
+export function cardJsonLd(profile, publicUrl, base) {
+  const isCompany = profile.type === 'company';
+  const data = {
+    '@type': isCompany ? 'Organization' : 'Person',
+    '@id': `${publicUrl}#${isCompany ? 'org' : 'person'}`,
+    mainEntityOfPage: publicUrl,
     name: profile.display_name,
     url: publicUrl,
   };
@@ -80,5 +170,17 @@ export function cardJsonLd(profile, publicUrl, base) {
     Boolean
   );
   if (sameAs.length) data.sameAs = sameAs;
-  return JSON.stringify(data);
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      data,
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Начало', item: `${base}/` },
+          { '@type': 'ListItem', position: 2, name: profile.display_name, item: publicUrl },
+        ],
+      },
+    ],
+  });
 }
