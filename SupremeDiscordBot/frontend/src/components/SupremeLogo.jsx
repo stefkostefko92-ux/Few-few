@@ -1,36 +1,30 @@
 // frontend/src/components/SupremeLogo.jsx
-// Supreme Bot — brand mark is the actual logo artwork (cosmic winged sentinel),
-// framed to a rounded square. Static raster, safe in SSR / prerenders.
+// Supreme Bot — the logo is the full brand artwork (winged sentinel + the
+// "SUPREME BOT" wordmark). Shown whole, never cropped. `size` is the height;
+// width scales with the artwork's aspect ratio. Static raster, SSR-safe.
 
 export default function SupremeLogo({ size = 40, className = "", animated = true }) {
   return (
     <img
-      src="/logo-mark.png"
-      width={size}
-      height={size}
+      src="/logo-full.jpg"
       alt="Supreme Bot"
       loading="eager"
       decoding="async"
-      className={`supreme-logo ${animated ? "supreme-logo-animated" : ""} ${className}`}
+      className={`supreme-logo ${className}`}
       style={{
-        width: size,
         height: size,
-        objectFit: "cover",
-        borderRadius: "22%",
-        filter: "drop-shadow(0 0 8px rgba(240, 194, 76, 0.45))",
+        width: "auto",
+        borderRadius: Math.round(size * 0.16),
+        boxShadow: "0 0 0 1px rgba(240,194,76,0.18), 0 0 18px rgba(240,194,76,0.18)",
       }}
     />
   );
 }
 
 /**
- * SupremeWordmark — brand text with gold→royal-blue gradient (matches the logo)
+ * SupremeWordmark — the wordmark now lives inside the logo artwork itself,
+ * so this renders nothing (kept for import compatibility across pages).
  */
-export function SupremeWordmark({ className = "" }) {
-  return (
-    <span className={`supreme-wordmark font-display font-black tracking-tight-3 ${className}`}>
-      <span className="supreme-wordmark-supreme">SUPREME</span>
-      <span className="supreme-wordmark-bot">BOT</span>
-    </span>
-  );
+export function SupremeWordmark() {
+  return null;
 }

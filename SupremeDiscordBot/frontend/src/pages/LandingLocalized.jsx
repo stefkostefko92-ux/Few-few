@@ -54,7 +54,7 @@ export default function LandingLocalized({ locale }) {
   if (!t) return null;
 
   return (
-    <div className="relative min-h-screen bg-cs-black overflow-hidden">
+    <div className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title={t.title}
         description={t.description}
@@ -71,7 +71,7 @@ export default function LandingLocalized({ locale }) {
         {/* HEADER */}
         <header className="px-6 sm:px-8 py-6 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group">
-            <SupremeLogo size={44} />
+            <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
               <div className="font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">

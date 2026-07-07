@@ -23,15 +23,31 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  html { background: #06070e; }
   html, body, #root {
     width: 100%;
     min-height: 100vh;
-    background: #000;
   }
   body {
-    @apply bg-cs-black text-cs-text font-sans;
+    @apply text-cs-text font-sans;
+    background: transparent;
     overflow-x: hidden;
     letter-spacing: -0.01em;
+  }
+
+  /* ─── Cosmic site background ───────────────────────────────────────────────
+     The brand nebula, fixed behind ALL content, dimmed by a dark scrim so text
+     stays readable. Public pages (landing, status, 404) render on transparent
+     roots so this shows through; the dashboard keeps an opaque bg over it. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(180deg, rgba(7, 8, 16, 0.70) 0%, rgba(7, 8, 16, 0.82) 55%, rgba(7, 8, 16, 0.92) 100%),
+      url("/bg-cosmos.jpg") center center / cover no-repeat;
+    pointer-events: none;
   }
 
   h1, h2, h3, h4, h5 {

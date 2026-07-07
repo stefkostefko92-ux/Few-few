@@ -23,7 +23,7 @@ export default function StatusPage() {
   const OverallIcon = overallConfig.icon;
 
   return (
-    <div className="min-h-screen bg-cs-black flex flex-col">
+    <div className="min-h-screen bg-transparent flex flex-col">
       <Seo
         title="Service Status — Supreme Bot"
         description="Real-time service status for Supreme Bot: uptime and component health for the database, Discord bot, API, and web dashboard."

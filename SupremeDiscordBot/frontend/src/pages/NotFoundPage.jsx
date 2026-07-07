@@ -10,7 +10,7 @@ import Seo from "../components/Seo";
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-cs-black flex flex-col">
+    <div className="min-h-screen bg-transparent flex flex-col">
       <Seo
         title="Page Not Found — Supreme Bot"
         description="The page you are looking for does not exist."

@@ -29,7 +29,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen bg-cs-black overflow-hidden">
+    <div className="relative min-h-screen bg-transparent overflow-hidden">
       <Seo
         title="Supreme Bot — Discord Ticket Bot & SaaS Platform | Tickets, Forms, Applications | Carbon Stealth"
         description="Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth. Manage tickets, application forms, panels, white-label bots, AI auto-replies, and Stripe subscriptions — all through a modern web dashboard."
@@ -52,7 +52,7 @@ export default function Login() {
         {/* HEADER */}
         <header className="px-6 sm:px-8 py-6 flex items-center justify-between">
           <a href="https://carbonstealth.eu" className="flex items-center gap-3 group" target="_blank" rel="noopener">
-            <SupremeLogo size={44} />
+            <SupremeLogo size={52} />
             <div>
               <SupremeWordmark className="text-lg leading-none" />
               <div className="font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
