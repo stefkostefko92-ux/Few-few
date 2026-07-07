@@ -26,6 +26,7 @@ file holds only what is true across all products. Keep it that way.
 | `kebab/` | Uylas Kebap Center — сайт | static | IT |
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
 | `CSPos/` | Carbon Stealth POS — касова система за хранителни магазини | Next.js 15 · React 19 · TS · Prisma · SQLite · Tailwind · Electron (.exe) | BG · Н-18/СУПТО/евро · фискални у-ва + ПОС терминали · тъч |
+| `mastilko/` | Мастилко — безплатни етикети, визитки и CV за печат | Next.js 15 · React 19 · TS · Tailwind · Gemini Flash | BG · без база (localStorage) · mastilko.carbonstealth.eu |
 
 Non-product dirs: `agents-dashboard/` (live agent dashboard → Netlify), `tools/`
 (agents' "hands" — real scripts), `deploy/` (autodeploy), `.claude/` (agents,

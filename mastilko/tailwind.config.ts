@@ -1,0 +1,52 @@
+import type { Config } from "tailwindcss";
+
+// Топла „хартиена“ палитра: крем хартия, мастилено кафяво, теракота, мед.
+const config: Config = {
+  content: ["./src/**/*.{ts,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        paper: {
+          DEFAULT: "#FAF4E8",
+          warm: "#F3E9D7",
+          deep: "#EADDC5",
+        },
+        ink: {
+          DEFAULT: "#3A2E28",
+          soft: "#5C4C43",
+          faint: "#8A776B",
+        },
+        tera: {
+          DEFAULT: "#C25E3F",
+          dark: "#A34A2E",
+          light: "#E08963",
+          pale: "#F7DFD3",
+        },
+        med: {
+          DEFAULT: "#DE9A32",
+          dark: "#B87B1E",
+          pale: "#F9EBCF",
+        },
+        gora: {
+          DEFAULT: "#6F7D5C",
+          dark: "#55613F",
+          pale: "#E6EBDC",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
+      },
+      boxShadow: {
+        soft: "0 2px 10px rgba(58, 46, 40, 0.08), 0 12px 32px rgba(58, 46, 40, 0.07)",
+        lift: "0 4px 16px rgba(58, 46, 40, 0.12), 0 20px 48px rgba(58, 46, 40, 0.10)",
+      },
+      borderRadius: {
+        blob: "1.75rem",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
