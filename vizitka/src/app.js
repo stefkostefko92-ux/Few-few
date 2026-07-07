@@ -1,0 +1,87 @@
+// Vizitka — Express приложение (експортва app; server.js слуша).
+import express from 'express';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+import './db.js';
+import { attachUser } from './auth.js';
+import authRoutes from './routes/auth.js';
+import dashboardRoutes from './routes/dashboard.js';
+import publicRoutes from './routes/public.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const prod = process.env.NODE_ENV === 'production';
+const app = express();
+
+app.set('view engine', 'ejs');
+app.set('views', join(__dirname, 'views'));
+app.set('trust proxy', 1); // зад reverse proxy (Hetzner) за коректен protocol/IP
+app.disable('x-powered-by');
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        styleSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: prod ? [] : null,
+      },
+    },
+    hsts: { maxAge: 63072000, includeSubDomains: true, preload: true },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
+
+// Принудителен HTTPS в продукция (зад прокси, по X-Forwarded-Proto).
+if (prod) {
+  app.use((req, res, next) => {
+    if (req.secure) return next();
+    res.redirect(308, `https://${req.headers.host}${req.originalUrl}`);
+  });
+}
+
+app.use(express.urlencoded({ extended: false, limit: '64kb', parameterLimit: 100 }));
+app.use(cookieParser());
+app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 0 }));
+
+// Автентикираните страници не се кешират никъде.
+app.use((req, res, next) => {
+  if (/^\/(dashboard|login|register|logout|profile)/.test(req.path))
+    res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
+app.use(attachUser);
+
+// Общи locals за изгледите.
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  res.locals.csrfToken = req.session?.csrf_token || '';
+  res.locals.currentPath = req.path;
+  next();
+});
+
+app.get('/', (req, res) => res.render('home', { title: null }));
+app.use(authRoutes);
+app.use(dashboardRoutes);
+app.use(publicRoutes);
+
+app.use((req, res) => res.status(404).render('404', { title: 'Страницата не е намерена' }));
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) return;
+  res.status(500).send('Възникна грешка. Опитай отново.');
+});
+
+export default app;

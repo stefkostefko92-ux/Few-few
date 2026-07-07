@@ -1,0 +1,47 @@
+<%- include('partials/head') %>
+<section class="card-page">
+  <% if (isOwner && !profile.is_public) { %>
+    <p class="alert alert-warn">Визитката е скрита — виждаш я само ти. Включи „публична“ от таблото.</p>
+  <% } %>
+  <article class="vcard">
+    <div class="vcard-top">
+      <% if (profile.photo) { %>
+        <img class="avatar avatar-big" src="/photo/<%= profile.photo %>" alt="Снимка на <%= profile.display_name %>" width="140" height="140">
+      <% } else { %>
+        <div class="avatar avatar-big avatar-empty" aria-hidden="true"><%= profile.display_name.slice(0, 1).toUpperCase() %></div>
+      <% } %>
+      <h1><%= profile.display_name %></h1>
+      <% if (profile.headline) { %><p class="headline"><%= profile.headline %></p><% } %>
+      <% if (profile.type === 'personal' && profile.company) { %><p class="muted"><%= profile.company %></p><% } %>
+    </div>
+
+    <div class="vcard-actions">
+      <a class="btn btn-big" href="/p/<%= profile.slug %>/vizitka.vcf">💾 Запази контакта</a>
+      <% if (profile.phone) { %><a class="btn" href="tel:<%= profile.phone.replace(/\s+/g, '') %>">📞 Обади се</a><% } %>
+    </div>
+
+    <ul class="vcard-list">
+      <% if (profile.phone) { %><li><span>Телефон</span><a href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><%= profile.phone %></a></li><% } %>
+      <% if (profile.contact_email) { %><li><span>Имейл</span><a href="mailto:<%= profile.contact_email %>"><%= profile.contact_email %></a></li><% } %>
+      <% if (profile.website) { %><li><span>Уеб</span><a href="<%= profile.website %>" rel="noopener nofollow" target="_blank"><%= profile.website.replace(/^https?:\/\//, '') %></a></li><% } %>
+      <% if (profile.address) { %><li><span>Адрес</span><span><%= profile.address %></span></li><% } %>
+    </ul>
+
+    <% if (profile.bio) { %><p class="bio"><%= profile.bio %></p><% } %>
+
+    <% if (profile.facebook || profile.instagram || profile.linkedin) { %>
+      <div class="socials">
+        <% if (profile.facebook) { %><a href="<%= profile.facebook %>" rel="noopener nofollow" target="_blank">Facebook</a><% } %>
+        <% if (profile.instagram) { %><a href="<%= profile.instagram %>" rel="noopener nofollow" target="_blank">Instagram</a><% } %>
+        <% if (profile.linkedin) { %><a href="<%= profile.linkedin %>" rel="noopener nofollow" target="_blank">LinkedIn</a><% } %>
+      </div>
+    <% } %>
+
+    <div class="vcard-qr">
+      <img src="/p/<%= profile.slug %>/qr.png" alt="QR код към тази визитка" width="140" height="140">
+      <p class="muted small">Сподели визитката: дай този QR за сканиране.</p>
+    </div>
+  </article>
+  <p class="made-with muted small">Направено с <a href="/">Vizitka</a> — винаги актуалната визитка.</p>
+</section>
+<%- include('partials/foot') %>

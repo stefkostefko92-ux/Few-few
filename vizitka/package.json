@@ -1,0 +1,47 @@
+{
+  "name": "vizitka",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "description": "Vizitka — винаги актуалната дигитална визитка: професионален профил (личен/фирмен) с QR код",
+  "author": "CarbonStealth VCC (https://carbonstealth.eu)",
+  "homepage": "https://vizitka.carbonstealth.eu",
+  "keywords": [
+    "business-card",
+    "digital-card",
+    "qr-code",
+    "vcard",
+    "profile"
+  ],
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node test/smoke.test.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,mjs,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,json,css,md}\""
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.8.1",
+    "cookie-parser": "^1.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "multer": "^1.4.5-lts.1",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.4"
+  }
+}
