@@ -19,6 +19,8 @@ export default {
           100: "var(--brass-100)",
         },
         suit: { red: "var(--suit-red)", black: "var(--suit-black)" },
+        cyan: { 400: "var(--cyan-400)", 300: "var(--cyan-300)" },
+        violet: { 400: "var(--violet-400)", 300: "var(--violet-300)" },
         ink: {
           100: "var(--ink-100)",
           300: "var(--ink-300)",

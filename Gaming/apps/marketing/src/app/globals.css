@@ -1,16 +1,19 @@
 /* Marketing layer — Premium Nocturnal Tabletop, mirrored from the app tokens
    (§3.2) but self-contained so the SSG build has no Vite/Tailwind dependency. */
 :root {
-  --felt-900: #0c1f17;
-  --felt-800: #123026;
-  --felt-700: #18402f;
-  --charcoal-900: #0b0e0d;
+  /* Deep cosmos indigo — mirrors apps/web/src/styles/tokens.css */
+  --felt-900: #0b0f24;
+  --felt-800: #141a38;
+  --felt-700: #1e2750;
+  --charcoal-900: #070a18;
   --brass-400: #d9b25f;
   --brass-300: #e7c87b;
   --brass-100: #f4e3b6;
+  --cyan-400: #57cbe6;
+  --violet-400: #9a86e0;
   --ink-100: #f6f1e4;
   --ink-300: #cdbfa3;
-  --ink-muted: #8a8169;
+  --ink-muted: #9aa0b8;
   --r-panel: 20px;
   color-scheme: dark;
 }
@@ -22,10 +25,15 @@
 }
 
 body {
-  background-color: var(--felt-900);
+  background-color: var(--charcoal-900);
   background-image:
-    radial-gradient(120% 80% at 12% -10%, rgba(217, 178, 95, 0.06), transparent 60%),
-    radial-gradient(120% 80% at 100% 110%, rgba(31, 90, 64, 0.18), transparent 55%);
+    radial-gradient(120% 80% at 12% -10%, rgba(231, 200, 123, 0.08), transparent 60%),
+    radial-gradient(120% 80% at 100% 110%, rgba(154, 134, 224, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(7, 10, 24, 0.86), rgba(7, 10, 24, 0.93)),
+    url("/bg-cosmos.png");
+  background-size: auto, auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--ink-100);
   font-family: "Manrope", system-ui, -apple-system, sans-serif;

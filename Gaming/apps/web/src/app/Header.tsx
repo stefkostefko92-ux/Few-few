@@ -28,8 +28,15 @@ export function Header() {
   return (
     <header className="flex items-center justify-between gap-4 border-b border-brass-400/10 px-4 py-3 sm:px-8">
       <div className="flex items-center gap-6">
-        <Link to="/" className="font-display text-2xl tracking-wide text-brass-300">
-          {t("brand")}
+        <Link to="/" className="flex items-center gap-2.5" aria-label={t("brand")}>
+          <img
+            src="/logo-mark.png"
+            alt=""
+            width={38}
+            height={38}
+            className="h-9 w-9 drop-shadow-[0_0_10px_rgba(120,150,220,0.45)]"
+          />
+          <span className="font-display text-2xl tracking-wide text-brass-300">{t("brand")}</span>
         </Link>
         {user ? (
           <nav className="hidden items-center gap-4 sm:flex">
