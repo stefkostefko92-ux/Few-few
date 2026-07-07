@@ -27,12 +27,20 @@ router.get('/p/:slug', (req, res) => {
   if (!isOwner && profile.is_public) {
     db.prepare('UPDATE profiles SET views = views + 1 WHERE id = ?').run(profile.id);
   }
+  const description = [profile.headline, profile.company, profile.phone]
+    .filter(Boolean)
+    .join(' · ');
   res.render('card', {
     title: profile.display_name,
     profile,
     isOwner,
     publicUrl,
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
+    pageMeta: {
+      description: description || `Дигитална визитка на ${profile.display_name}`,
+      url: publicUrl,
+      image: profile.photo ? `${baseUrl(req)}/photo/${profile.photo}` : null,
+    },
   });
 });
 
