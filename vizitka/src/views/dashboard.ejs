@@ -2,6 +2,7 @@
 <section class="dash">
   <h1>Моята визитка</h1>
   <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
+  <% if (passwordChanged) { %><p class="alert alert-ok">Паролата е сменена. Останалите ти сесии са прекратени.</p><% } %>
   <% if (error) { %><p class="alert alert-error"><%= error %></p><% } %>
 
   <div class="dash-grid">
@@ -16,6 +17,11 @@
         <input type="text" readonly value="<%= publicUrl %>" id="public-url">
         <button type="button" class="btn btn-small" data-copy="#public-url">Копирай линка</button>
         <p><a href="/p/<%= profile.slug %>" target="_blank" rel="noopener">Виж визитката →</a></p>
+      </div>
+
+      <div class="stats-box">
+        <p class="stat-number"><%= profile.views %></p>
+        <p class="muted small">преглеждания на визитката<br>(сканирания и посещения, без твоите)</p>
       </div>
 
       <div class="photo-box">
@@ -74,6 +80,14 @@
         <textarea name="bio" maxlength="600" rows="4"><%= profile.bio %></textarea>
       </label>
 
+      <label>Цветова тема на визитката
+        <select name="theme">
+          <% for (const t of themes) { %>
+            <option value="<%= t.id %>" <%= profile.theme === t.id ? 'selected' : '' %>><%= t.label %></option>
+          <% } %>
+        </select>
+      </label>
+
       <fieldset>
         <legend>Социални мрежи (пълни линкове)</legend>
         <label>Facebook <input type="url" name="facebook" maxlength="200" value="<%= profile.facebook %>"></label>
@@ -94,5 +108,19 @@
       <button type="submit" class="btn btn-big">Запази промените</button>
     </form>
   </div>
+
+  <details class="settings">
+    <summary>Настройки на акаунта — смяна на парола</summary>
+    <form method="post" action="/settings/password" class="dash-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Текуща парола
+        <input type="password" name="current_password" required autocomplete="current-password">
+      </label>
+      <label>Нова парола (мин. 8 знака)
+        <input type="password" name="new_password" required minlength="8" maxlength="200" autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn">Смени паролата</button>
+    </form>
+  </details>
 </section>
 <%- include('partials/foot') %>

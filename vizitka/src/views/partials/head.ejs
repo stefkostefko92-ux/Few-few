@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка' %></title>
   <meta name="description" content="Създай професионален профил (личен или фирмен), получи QR код и споделяй визитка, която винаги е актуална.">
+  <% if (/^\/(dashboard|login|register)/.test(currentPath)) { %><meta name="robots" content="noindex"><% } %>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>

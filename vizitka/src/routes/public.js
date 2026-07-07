@@ -1,10 +1,12 @@
 // Публична визитка: /p/<slug> + QR код, vCard и снимки.
 import { Router } from 'express';
 import QRCode from 'qrcode';
+import fs from 'node:fs';
 import { join } from 'node:path';
 import db, { UPLOADS_DIR } from '../db.js';
 import { buildVCard } from '../vcard.js';
 import { baseUrl } from '../config.js';
+import { cardJsonLd } from '../seo.js';
 
 const router = Router();
 
@@ -19,11 +21,18 @@ function findVisibleProfile(req, slug) {
 router.get('/p/:slug', (req, res) => {
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).render('404', { title: 'Няма такава визитка' });
+  const isOwner = profile.user_id === req.user?.id;
+  const publicUrl = `${baseUrl(req)}/p/${profile.slug}`;
+  // Броим само чуждите преглеждания на публична визитка.
+  if (!isOwner && profile.is_public) {
+    db.prepare('UPDATE profiles SET views = views + 1 WHERE id = ?').run(profile.id);
+  }
   res.render('card', {
     title: profile.display_name,
     profile,
-    isOwner: profile.user_id === req.user?.id,
-    publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
+    isOwner,
+    publicUrl,
+    jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
   });
 });
 
@@ -45,9 +54,17 @@ router.get('/p/:slug/qr.png', async (req, res) => {
 router.get('/p/:slug/vizitka.vcf', (req, res) => {
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).end();
+  // Вграждаме снимката base64 — контактът работи офлайн, без връзка към сървъра.
+  let photo = null;
+  if (profile.photo) {
+    const path = join(UPLOADS_DIR, profile.photo);
+    if (fs.existsSync(path)) {
+      photo = { buffer: fs.readFileSync(path), ext: profile.photo.split('.').pop() };
+    }
+  }
   res.type('text/vcard; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="${profile.slug}.vcf"`);
-  res.send(buildVCard(profile, baseUrl(req)));
+  res.send(buildVCard(profile, baseUrl(req), photo));
 });
 
 // Качените снимки — само валидирани имена от uploads директорията.

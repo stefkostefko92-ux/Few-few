@@ -29,21 +29,30 @@ goes into the QR code and vCard), optional `DATA_DIR` (default `./data`). See
 ## Layout
 
 ```
-src/app.js           Express app (helmet CSP, HSTS, no-store за auth страници) — export
+src/app.js           Express app (helmet CSP+nonce, HSTS, no-store за auth страници;
+                     /robots.txt /sitemap.xml /privacy /terms) — export
 src/server.js        listen (PORT, default 3100)
-src/db.js            SQLite схема (users, sessions, profiles) + DATA_DIR/UPLOADS_DIR
+src/db.js            SQLite схема (users, sessions, profiles) + леки ALTER миграции
 src/auth.js          сесии (httpOnly cookie, sha256 токен в БД), bcrypt пароли
 src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
-src/vcard.js         vCard 3.0 генератор („Запази контакта“)
+src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
+src/themes.js        цветови теми на визитката (CSS клас theme-<id>)
+src/seo.js           COMPANY (импресум), robots, sitemap, JSON-LD Person/Organization
 src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
-src/routes/auth.js   /register /login /logout (+ rate limit)
-src/routes/dashboard.js  /dashboard, /profile (редакция), /profile/photo (multer)
-src/routes/public.js /p/:slug, /p/:slug/qr.png, /p/:slug/vizitka.vcf, /photo/:file
-src/views/           EJS (home, register, login, dashboard, card, 404 + partials)
-public/              styles.css, app.js (CSP-safe клиентска логика)
-test/smoke.test.js   пълен поток: регистрация→редакция→визитка→QR→vCard→CSRF
+src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
+src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
+src/routes/public.js /p/:slug (брояч views), qr.png, vizitka.vcf, /photo/:file
+src/views/           EJS (home, register, login, dashboard, card, privacy, terms, 404)
+public/              styles.css (вкл. теми), app.js (CSP-safe клиентска логика)
+test/smoke.test.js   пълен поток: регистрация→редакция→тема→views→визитка→QR→vCard→
+                     CSRF→правни/SEO→смяна на парола
+deploy/              systemd unit (hardened), nginx conf, DEPLOY.md (autodeploy модел)
 ```
+
+CI: `.github/workflows/vizitka.yml` (path-filtered, Node 20+22 — lint, format, test).
+Deploy: през `deploy/autodeploy.sh` в корена (`deploy_vizitka`, systemd модел като
+medqr — rsync без `data/`, npm ci, снимка на базата, health check + rollback).
 
 ## Conventions (important)
 
@@ -57,5 +66,8 @@ test/smoke.test.js   пълен поток: регистрация→редак�
 - **Слъгът е обещание.** QR кодът сочи `/p/<slug>` — предупреждаваме потребителя,
   че смяна на слъга чупи отпечатани кодове. Не добавяй redirect магия без план.
 - `data/` не влиза в git; секрети — само на сървъра (systemd `EnvironmentFile`, 600).
-- Roadmap (не е имплементирано): забравена парола (имейл), NFC, теми/цветове,
-  няколко визитки на акаунт, статистика на сканиранията, vCard с вградена снимка.
+- **Правни страници** (`/privacy`, `/terms`) са обвързани с реалното поведение на
+  приложението — промениш ли какви данни се пазят/бисквитки, обнови и тях.
+- Roadmap (не е имплементирано): забравена парола (имейл), изтриване на акаунт от
+  UI (сега — по заявка на privacy@), NFC, няколко визитки на акаунт, дневна
+  разбивка на статистиката.

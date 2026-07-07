@@ -2,7 +2,13 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import db from '../db.js';
-import { hashPassword, verifyPassword, createSession, destroySession } from '../auth.js';
+import {
+  hashPassword,
+  verifyPassword,
+  createSession,
+  destroySession,
+  requireAuth,
+} from '../auth.js';
 import { csrfProtect } from '../csrf.js';
 import { uniqueSlug } from '../slug.js';
 
@@ -71,6 +77,26 @@ router.post('/login', authLimiter, (req, res) => {
   }
   createSession(res, user.id);
   res.redirect('/dashboard');
+});
+
+// Смяна на парола от таблото (изисква текущата парола).
+router.post('/settings/password', requireAuth, csrfProtect, authLimiter, (req, res) => {
+  const current = String(req.body.current_password || '');
+  const next = String(req.body.new_password || '');
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!verifyPassword(current, user.password_hash)) {
+    return res.status(400).send('Грешна текуща парола. Върни се и опитай пак.');
+  }
+  if (next.length < 8 || next.length > 200) {
+    return res.status(400).send('Новата парола трябва да е поне 8 знака. Върни се и опитай пак.');
+  }
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
+    hashPassword(next),
+    req.user.id
+  );
+  // Инвалидираме всички други сесии — само текущата остава.
+  db.prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?').run(req.user.id, req.session.id);
+  res.redirect('/dashboard?pw=1');
 });
 
 router.post('/logout', csrfProtect, (req, res) => {

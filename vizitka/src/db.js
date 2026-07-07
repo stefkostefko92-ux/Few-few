@@ -46,11 +46,25 @@ db.exec(`
     linkedin TEXT NOT NULL DEFAULT '',
     photo TEXT NOT NULL DEFAULT '',      -- име на файл в data/uploads
     is_public INTEGER NOT NULL DEFAULT 1,
+    theme TEXT NOT NULL DEFAULT 'blue',  -- цветова тема на визитката
+    views INTEGER NOT NULL DEFAULT 0,    -- брой преглеждания (без собственика)
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
   CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 `);
+
+// Леки миграции: добавяне на колони върху съществуваща база (idempotent).
+const profileCols = new Set(
+  db
+    .prepare('PRAGMA table_info(profiles)')
+    .all()
+    .map((c) => c.name)
+);
+if (!profileCols.has('theme'))
+  db.exec("ALTER TABLE profiles ADD COLUMN theme TEXT NOT NULL DEFAULT 'blue'");
+if (!profileCols.has('views'))
+  db.exec('ALTER TABLE profiles ADD COLUMN views INTEGER NOT NULL DEFAULT 0');
 
 // Периодично чистене на изтекли сесии.
 export function purgeExpiredSessions() {

@@ -9,6 +9,7 @@ import { requireAuth } from '../auth.js';
 import { csrfProtect } from '../csrf.js';
 import { isValidSlug } from '../slug.js';
 import { baseUrl } from '../config.js';
+import { THEMES, normalizeTheme } from '../themes.js';
 
 const router = Router();
 
@@ -33,8 +34,10 @@ router.get('/dashboard', requireAuth, (req, res) => {
   res.render('dashboard', {
     title: 'Моята визитка',
     profile,
+    themes: THEMES,
     publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
     saved: req.query.saved === '1',
+    passwordChanged: req.query.pw === '1',
     error: null,
   });
 });
@@ -62,6 +65,7 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
       .slice(0, max);
   const type = req.body.type === 'company' ? 'company' : 'personal';
   const isPublic = req.body.is_public === '1' ? 1 : 0;
+  const theme = normalizeTheme(req.body.theme);
   const slug = String(req.body.slug || '')
     .trim()
     .toLowerCase();
@@ -69,9 +73,11 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
   const fail = (error) =>
     res.status(400).render('dashboard', {
       title: 'Моята визитка',
-      profile: { ...profile, ...fields, type, is_public: isPublic, slug },
+      profile: { ...profile, ...fields, type, is_public: isPublic, theme, slug },
+      themes: THEMES,
       publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
       saved: false,
+      passwordChanged: false,
       error,
     });
 
@@ -92,9 +98,9 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
        slug = @slug, type = @type, display_name = @display_name, headline = @headline,
        company = @company, phone = @phone, contact_email = @contact_email, website = @website,
        address = @address, bio = @bio, facebook = @facebook, instagram = @instagram,
-       linkedin = @linkedin, is_public = @is_public, updated_at = datetime('now')
+       linkedin = @linkedin, is_public = @is_public, theme = @theme, updated_at = datetime('now')
      WHERE user_id = @user_id`
-  ).run({ ...fields, slug, type, is_public: isPublic, user_id: req.user.id });
+  ).run({ ...fields, slug, type, is_public: isPublic, theme, user_id: req.user.id });
 
   res.redirect('/dashboard?saved=1');
 });

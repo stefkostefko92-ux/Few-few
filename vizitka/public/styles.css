@@ -333,6 +333,25 @@ legend {
   color: #fff;
   padding: 2rem 1.5rem 1.5rem;
 }
+/* Цветови теми на визитката (theme-<id> от src/themes.js) */
+.vcard-top.theme-blue {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+.vcard-top.theme-emerald {
+  background: linear-gradient(135deg, #059669, #0d9488);
+}
+.vcard-top.theme-sunset {
+  background: linear-gradient(135deg, #ea580c, #db2777);
+}
+.vcard-top.theme-ocean {
+  background: linear-gradient(135deg, #0284c7, #0891b2);
+}
+.vcard-top.theme-graphite {
+  background: linear-gradient(135deg, #1f2937, #4b5563);
+}
+.vcard-top.theme-rose {
+  background: linear-gradient(135deg, #e11d48, #9d174d);
+}
 .vcard-top h1 {
   margin: 0.8rem 0 0.2rem;
   font-size: 1.6rem;
@@ -398,6 +417,48 @@ legend {
 }
 .made-with {
   text-align: center;
+}
+
+/* Статистика в таблото */
+.stat-number {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0.2rem 0 0;
+  color: var(--brand);
+}
+.stats-box .muted {
+  margin-top: 0.2rem;
+}
+
+/* Настройки на акаунта */
+.settings {
+  margin-top: 2rem;
+}
+.settings summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+.settings .dash-form {
+  max-width: 420px;
+  margin-top: 0.8rem;
+}
+
+/* Правни страници */
+.legal {
+  max-width: 720px;
+  margin: 1.5rem auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+}
+.legal h2 {
+  font-size: 1.15rem;
+  margin: 1.4rem 0 0.4rem;
+}
+.legal li {
+  margin: 0.3rem 0;
 }
 
 .footer {

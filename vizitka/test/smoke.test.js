@@ -114,6 +114,58 @@ await test('публичната визитка се вижда', async () => {
   assert.match(html, /Запази контакта/);
 });
 
+await test('смяната на тема се отразява на визитката', async () => {
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      headline: 'Електротехник',
+      phone: '+359 888 123 456',
+      contact_email: 'ivan@example.com',
+      website: 'https://example.com',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      theme: 'sunset',
+      bio: 'Тестово описание.',
+    }),
+  });
+  assert.equal(res.status, 302);
+  const card = await request('/p/ivan-testov');
+  assert.match(await card.text(), /theme-sunset/);
+});
+
+await test('преглежданията се броят само за чужди посещения', async () => {
+  const before = Number(
+    (await (await request('/dashboard')).text()).match(/class="stat-number">(\d+)</)?.[1]
+  );
+  await request('/p/ivan-testov'); // собственикът — не се брои
+  const ownerJar = new Map(jar);
+  jar.clear();
+  await request('/p/ivan-testov'); // анонимен — брои се
+  jar.clear();
+  for (const [k, v] of ownerJar) jar.set(k, v);
+  const after = Number(
+    (await (await request('/dashboard')).text()).match(/class="stat-number">(\d+)</)?.[1]
+  );
+  assert.equal(after, before + 1);
+});
+
+await test('правни страници, robots и sitemap отговарят', async () => {
+  for (const path of ['/privacy', '/terms']) {
+    const res = await request(path);
+    assert.equal(res.status, 200, path);
+  }
+  const robots = await request('/robots.txt');
+  assert.equal(robots.status, 200);
+  assert.match(await robots.text(), /Disallow: \/dashboard/);
+  const sitemap = await request('/sitemap.xml');
+  assert.equal(sitemap.status, 200);
+  assert.match(await sitemap.text(), /ivan-testov/);
+});
+
 await test('QR кодът е валиден PNG', async () => {
   const res = await request('/p/ivan-testov/qr.png');
   assert.equal(res.status, 200);
@@ -171,6 +223,34 @@ await test('вход с вярна парола работи', async () => {
   });
   assert.equal(res.status, 302);
   assert.equal(res.headers.get('location'), '/dashboard');
+});
+
+await test('смяна на парола + вход с новата', async () => {
+  const html = await (await request('/dashboard')).text();
+  const freshCsrf = html.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const change = await request('/settings/password', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: freshCsrf,
+      current_password: 'tainaparola1',
+      new_password: 'novaparola22',
+    }),
+  });
+  assert.equal(change.status, 302);
+  jar.clear();
+  const oldPw = await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'ivan@example.com', password: 'tainaparola1' }),
+  });
+  assert.equal(oldPw.status, 401, 'старата парола не трябва да работи');
+  const newPw = await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'ivan@example.com', password: 'novaparola22' }),
+  });
+  assert.equal(newPw.status, 302);
 });
 
 server.close();

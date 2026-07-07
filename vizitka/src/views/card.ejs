@@ -1,10 +1,11 @@
 <%- include('partials/head') %>
+<% if (jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script><% } %>
 <section class="card-page">
   <% if (isOwner && !profile.is_public) { %>
     <p class="alert alert-warn">Визитката е скрита — виждаш я само ти. Включи „публична“ от таблото.</p>
   <% } %>
   <article class="vcard">
-    <div class="vcard-top">
+    <div class="vcard-top theme-<%= profile.theme %>">
       <% if (profile.photo) { %>
         <img class="avatar avatar-big" src="/photo/<%= profile.photo %>" alt="Снимка на <%= profile.display_name %>" width="140" height="140">
       <% } else { %>
