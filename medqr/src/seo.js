@@ -52,8 +52,8 @@ Allow: /cookies
 Allow: /terms
 Allow: /llms.txt
 Allow: /manifest.webmanifest
-Allow: /og-image.jpg
-Allow: /favicon.svg
+Allow: /logo.jpg
+Allow: /logo.png
 Allow: /.well-known/security.txt
 Disallow: /dashboard
 Disallow: /profile
@@ -178,7 +178,6 @@ export function webManifest() {
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
       { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
     ],
     shortcuts: [
       {

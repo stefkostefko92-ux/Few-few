@@ -33,8 +33,8 @@
   <meta property="og:url" content="<%= meta.canonical %>">
   <meta property="og:image" content="<%= meta.ogImage %>">
   <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="698">
   <meta property="og:image:alt" content="<%= t('og.image_alt') %>">
 
   <!-- Twitter -->
@@ -44,8 +44,8 @@
   <meta name="twitter:image" content="<%= meta.ogImage %>">
   <meta name="twitter:image:alt" content="<%= t('og.image_alt') %>">
 
-  <meta name="theme-color" content="#1a3f66">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#eef1f5">
+  <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
 
@@ -118,9 +118,10 @@
   <%- include('icons') %>
   <a class="skip-link" href="#main"><%= t('common.skip') %></a>
   <header class="site-header">
-    <a class="brand" href="/">
-      <span class="brand-mark"><%- include('icon', { name: 'logo' }) %></span>
-      <span class="brand-name">Med<span class="brand-q">QR</span></span>
+    <a class="brand" href="/" aria-label="MedQR — начало">
+      <img class="brand-logo" src="/logo.jpg"
+           srcset="/logo-sm.jpg 640w, /logo.jpg 1280w" sizes="220px"
+           width="1280" height="698" alt="MedQR — Спешен медицински профил">
     </a>
     <nav>
       <span class="lang-switch" aria-label="<%= t('lang.switch') %>">

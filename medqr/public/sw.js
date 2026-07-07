@@ -1,7 +1,7 @@
 // MedQR service worker — офлайн достъп до съществените екрани.
 // Сценарий: няма сигнал (метро, сграда, планина). Запазено копие на личния
 // SOS екран, таблото, спешния изглед и статичните ресурси работи и офлайн.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const SHELL = `medqr-shell-${VERSION}`;
 const RUNTIME = `medqr-runtime-${VERSION}`;
 const PRIVATE = `medqr-private-${VERSION}`; // чувствителни лични екрани — чистят се при изход
@@ -11,7 +11,6 @@ const SHELL_ASSETS = [
   '/styles.css',
   '/app.js',
   '/manifest.webmanifest',
-  '/favicon.svg',
   '/icon-192.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
