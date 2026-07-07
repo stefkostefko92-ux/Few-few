@@ -6,6 +6,7 @@
   <title><%= title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка' %></title>
   <% const meta = typeof pageMeta !== 'undefined' && pageMeta ? pageMeta : null; %>
   <meta name="description" content="<%= meta?.description || 'Създай професионален профил (личен или фирмен), получи QR код и споделяй визитка, която винаги е актуална.' %>">
+  <meta name="keywords" content="<%= meta?.keywords || 'дигитална визитка, QR визитка, електронна визитна картичка, QR код визитка, vCard, професионален профил, фирмена визитка, дигитална визитна картичка, България' %>">
   <% if (meta) { %>
   <meta property="og:type" content="profile">
   <meta property="og:title" content="<%= title %> · Vizitka">

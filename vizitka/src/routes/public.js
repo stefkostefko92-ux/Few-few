@@ -38,6 +38,9 @@ router.get('/p/:slug', (req, res) => {
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
     pageMeta: {
       description: description || `Дигитална визитка на ${profile.display_name}`,
+      keywords: [profile.display_name, profile.headline, profile.company, 'дигитална визитка', 'контакти']
+        .filter(Boolean)
+        .join(', '),
       url: publicUrl,
       image: profile.photo ? `${baseUrl(req)}/photo/${profile.photo}` : null,
     },
