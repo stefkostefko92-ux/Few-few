@@ -52,7 +52,7 @@ Allow: /cookies
 Allow: /terms
 Allow: /llms.txt
 Allow: /manifest.webmanifest
-Allow: /og-image.png
+Allow: /og-image.jpg
 Allow: /favicon.svg
 Allow: /.well-known/security.txt
 Disallow: /dashboard
@@ -172,7 +172,7 @@ export function webManifest() {
     scope: '/',
     display: 'standalone',
     background_color: '#f5f7fa',
-    theme_color: '#0b6e8c',
+    theme_color: '#1a3f66',
     lang: 'bg',
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

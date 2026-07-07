@@ -159,7 +159,7 @@ app.use((req, res, next) => {
     urlClean,
     urlEn,
     ogType: 'website',
-    ogImage: base + '/og-image.png',
+    ogImage: base + '/og-image.jpg',
   };
   next();
 });
