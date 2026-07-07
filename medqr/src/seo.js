@@ -53,6 +53,7 @@ Allow: /terms
 Allow: /llms.txt
 Allow: /manifest.webmanifest
 Allow: /logo.jpg
+Allow: /hero.jpg
 Allow: /logo.png
 Allow: /.well-known/security.txt
 Disallow: /dashboard

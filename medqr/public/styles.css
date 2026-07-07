@@ -200,7 +200,7 @@ a {
 /* Цялото лого (непроменено) — само мащабирано до височината на хедъра. */
 .brand-logo {
   display: block;
-  height: 54px;
+  height: 56px;
   width: auto;
 }
 .site-header nav {
