@@ -23,7 +23,7 @@ export default function PoveritelnostPage() {
           <p className="mt-2">
             Мастилко (mastilko.carbonstealth.eu) се поддържа от{" "}
             <strong>Carbon Stealth VCC</strong> — вижте{" "}
-            <a className="text-tera underline" href="https://carbonstealth.eu" rel="noopener">
+            <a className="text-tera-dark underline" href="https://carbonstealth.eu" rel="noopener">
               carbonstealth.eu
             </a>{" "}
             за данни за контакт с администратора на лични данни. Сайтът се
@@ -50,12 +50,32 @@ export default function PoveritelnostPage() {
             <strong>ти натиснеш</strong> такъв бутон, въведеният от теб текст
             (напр. описание на етикет или текст от CV) се изпраща през нашия
             сървър към Google Gemini API, за да получиш предложение. Не
-            изпращаме нищо автоматично и не пазим копие. Обработката се
-            основава на твоето действие (чл. 6, пар. 1, б. „а“ и „б“ GDPR).
-            Съветваме да не включваш чувствителни лични данни в AI заявките.
-            Повече: {" "}
+            изпращаме нищо автоматично и ние не пазим копие. Правното
+            основание е твоето <strong>съгласие</strong> (чл. 6, пар. 1,
+            б. „а“ GDPR), изразено с натискането на бутона; оттегляш го, като
+            просто не ползваш AI бутоните — всичко останало в сайта работи
+            без тях.
+          </p>
+          <p className="mt-2">
+            <strong>Трансфер извън ЕС:</strong> получател е Google LLC (САЩ) —
+            трансферът се основава на решението за адекватност по{" "}
+            <strong>EU–US Data Privacy Framework</strong>, по който Google LLC
+            е сертифицирана, и на Стандартните договорни клаузи на Google.
+            Google обработва текста съгласно{" "}
             <a
-              className="text-tera underline"
+              className="text-tera-dark underline"
+              href="https://ai.google.dev/gemini-api/terms"
+              rel="noopener noreferrer"
+            >
+              условията на Gemini API
+            </a>{" "}
+            — в зависимост от плана на услугата Google може да използва
+            заявките за подобряване на продуктите си, включително преглед от
+            хора. Затова: <strong>не въвеждай в AI полетата лични данни</strong>{" "}
+            (свои или на други хора) — опиши професията или продукта общо,
+            без имена и контакти. Повече:{" "}
+            <a
+              className="text-tera-dark underline"
               href="https://policies.google.com/privacy"
               rel="noopener noreferrer"
             >
@@ -78,9 +98,12 @@ export default function PoveritelnostPage() {
           <h2>Сървърни логове</h2>
           <p className="mt-2">
             Както всеки уеб сървър, нашият пази кратковременни технически
-            логове (IP адрес, час, заявен адрес) единствено за сигурност и
-            диагностика (чл. 6, пар. 1, б. „е“ GDPR — легитимен интерес). Те се
-            изтриват автоматично и не се използват за профилиране.
+            логове (IP адрес, час, заявен адрес) единствено за сигурност,
+            диагностика и предотвратяване на злоупотреба — напр. ограничаване
+            на броя AI заявки (чл. 6, пар. 1, б. „е“ GDPR — легитимен
+            интерес). Изтриват се автоматично <strong>до 30 дни</strong> и не
+            се използват за профилиране. Хостингът е при европейски доставчик
+            (Hetzner, ЕС) като обработващ по чл. 28 GDPR.
           </p>
         </div>
 
@@ -88,9 +111,10 @@ export default function PoveritelnostPage() {
           <h2>Твоите права</h2>
           <p className="mt-2">
             По GDPR имаш право на достъп, коригиране, изтриване, ограничаване,
-            преносимост и възражение, както и право на жалба до Комисията за
-            защита на личните данни (
-            <a className="text-tera underline" href="https://www.cpdp.bg" rel="noopener noreferrer">
+            преносимост и възражение, право да оттеглиш съгласието си по всяко
+            време (без това да засяга дотогавашната обработка), както и право
+            на жалба до Комисията за защита на личните данни (
+            <a className="text-tera-dark underline" href="https://www.cpdp.bg" rel="noopener noreferrer">
               cpdp.bg
             </a>
             ). Понеже не съхраняваме твое съдържание, повечето права се

@@ -27,7 +27,7 @@ body {
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-ink/15
       bg-white/70 px-5 py-2.5 font-semibold text-ink-soft transition
-      hover:border-tera hover:text-tera focus-visible:outline focus-visible:outline-2
+      hover:border-tera-dark hover:text-tera-dark focus-visible:outline focus-visible:outline-2
       focus-visible:outline-offset-2 focus-visible:outline-tera disabled:opacity-50;
   }
   .card-warm {

@@ -14,18 +14,18 @@ export default function Footer() {
         <nav aria-label="Инструменти" className="text-sm">
           <p className="mb-2 font-semibold text-ink">Инструменти</p>
           <ul className="space-y-1.5 text-ink-soft">
-            <li><Link className="hover:text-tera" href="/etiketi">Етикети за печат</Link></li>
-            <li><Link className="hover:text-tera" href="/vizitki">Визитки</Link></li>
-            <li><Link className="hover:text-tera" href="/cv">Автобиография (CV)</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/etiketi">Етикети за печат</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/vizitki">Визитки</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/cv">Автобиография (CV)</Link></li>
           </ul>
         </nav>
         <nav aria-label="Правна информация" className="text-sm">
           <p className="mb-2 font-semibold text-ink">Информация</p>
           <ul className="space-y-1.5 text-ink-soft">
-            <li><Link className="hover:text-tera" href="/poveritelnost">Поверителност</Link></li>
-            <li><Link className="hover:text-tera" href="/usloviya">Условия за ползване</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/poveritelnost">Поверителност</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/usloviya">Условия за ползване</Link></li>
             <li>
-              <a className="hover:text-tera" href="https://carbonstealth.eu" rel="noopener">
+              <a className="hover:text-tera-dark" href="https://carbonstealth.eu" rel="noopener">
                 Carbon Stealth VCC
               </a>
             </li>

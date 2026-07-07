@@ -14,7 +14,8 @@ const config: Config = {
         ink: {
           DEFAULT: "#3A2E28",
           soft: "#5C4C43",
-          faint: "#8A776B",
+          // ≥ 4.5:1 върху paper (#FAF4E8) — WCAG 2.1 AA за нормален текст
+          faint: "#6E5A4C",
         },
         tera: {
           DEFAULT: "#C25E3F",

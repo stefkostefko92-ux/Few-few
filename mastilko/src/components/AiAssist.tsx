@@ -31,7 +31,8 @@ export default function AiAssist({ mode, input, label, onPick, single }: Props) 
     }
     setBusy(true);
     try {
-      const text = await askAi(mode, input);
+      // Сървърът приема до 2000 знака — режем тихо, за да няма неясно 400.
+      const text = await askAi(mode, input.slice(0, 2000));
       if (single) {
         onPick(text.trim());
         setSuggestions([]);
@@ -47,37 +48,47 @@ export default function AiAssist({ mode, input, label, onPick, single }: Props) 
 
   return (
     <div className="no-print">
-      <button type="button" onClick={run} disabled={busy} className="btn-secondary text-sm">
+      <button
+        type="button"
+        onClick={run}
+        disabled={busy}
+        aria-busy={busy}
+        className="btn-secondary text-sm"
+      >
         <span aria-hidden>✨</span>
         {busy ? "Мастилко мисли…" : label}
       </button>
       <p className="mt-1 text-xs text-ink-faint">
         Подсказките ползват Google Gemini — въведеният текст се изпраща към
-        Google само когато натиснеш бутона.
+        Google само когато натиснеш бутона. Не включвай лични данни (имена,
+        телефони).
       </p>
       {error && (
         <p role="alert" className="mt-2 text-sm font-semibold text-tera-dark">
           {error}
         </p>
       )}
-      {suggestions.length > 0 && (
-        <ul className="mt-2 space-y-1.5">
-          {suggestions.map((s, i) => (
-            <li key={i}>
-              <button
-                type="button"
-                onClick={() => {
-                  onPick(s);
-                  setSuggestions([]);
-                }}
-                className="w-full rounded-xl border border-tera/30 bg-tera-pale/60 px-3 py-2 text-left text-sm transition hover:border-tera hover:bg-tera-pale"
-              >
-                {s}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Постоянен aria-live регион — иначе първата поява не се обявява. */}
+      <div aria-live="polite">
+        {suggestions.length > 0 && (
+          <ul aria-label="Предложения от AI" className="mt-2 space-y-1.5">
+            {suggestions.map((s, i) => (
+              <li key={i}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onPick(s);
+                    setSuggestions([]);
+                  }}
+                  className="w-full rounded-xl border border-tera/30 bg-tera-pale/60 px-3 py-2 text-left text-sm transition hover:border-tera hover:bg-tera-pale"
+                >
+                  {s}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

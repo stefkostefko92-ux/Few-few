@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description:
     "Създай етикети за буркани, кутии и продукти — избираш размер, цвят и текст, принтираш цял лист А4. Безплатно, на български, без регистрация.",
   alternates: { canonical: "/etiketi" },
+  openGraph: { title: "Безплатни етикети за печат" },
 };
 
 export default function EtiketiPage() {

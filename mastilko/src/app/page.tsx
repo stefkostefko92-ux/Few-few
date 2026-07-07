@@ -69,7 +69,7 @@ export default function HomePage() {
           className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-tera-pale blur-3xl"
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 text-center sm:pt-20">
-          <Logo className="mx-auto h-36 w-36 drop-shadow-lg sm:h-44 sm:w-44" />
+          <Logo priority className="mx-auto h-36 w-36 drop-shadow-lg sm:h-44 sm:w-44" />
           <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
             Етикети, визитки и CV —{" "}
             <span className="text-tera">топло и безплатно</span>
@@ -93,6 +93,17 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Отговор-отпред: какво е Мастилко (за хора, търсачки и AI асистенти) */}
+      <section className="mx-auto max-w-3xl px-4 pb-12">
+        <p className="card-warm p-5 text-center text-ink-soft">
+          <strong className="text-ink">Мастилко е безплатен онлайн инструмент на български</strong>{" "}
+          за създаване на етикети за печат (11 стандартни размера, вкл. 70 × 36 mm),
+          визитки (90 × 54 mm, 10 на лист) и автобиографии — вкл. Europass шаблон.
+          Работи в браузъра, без регистрация; резултатът се принтира на А4 с точни
+          размери в милиметри или се запазва като PDF.
+        </p>
+      </section>
+
       {/* Инструменти */}
       <section className="mx-auto max-w-6xl px-4">
         <div className="grid gap-6 md:grid-cols-3">
@@ -110,7 +121,7 @@ export default function HomePage() {
               </span>
               <h2 className="font-display mt-4 text-2xl font-bold">{t.title}</h2>
               <p className="mt-2 flex-1 text-ink-soft">{t.text}</p>
-              <span className="mt-4 font-semibold text-tera transition group-hover:translate-x-1">
+              <span className="mt-4 font-semibold text-tera-dark transition group-hover:translate-x-1">
                 Започни →
               </span>
             </Link>
@@ -178,20 +189,50 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebApplication",
-            name: "Мастилко",
-            url: "https://mastilko.carbonstealth.eu",
-            applicationCategory: "DesignApplication",
-            operatingSystem: "Web",
-            inLanguage: "bg",
-            offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-            description:
-              "Безплатно създаване на етикети за печат, визитки и автобиографии (CV) на български език, направо в браузъра.",
-            publisher: {
-              "@type": "Organization",
-              name: "Carbon Stealth VCC",
-              url: "https://carbonstealth.eu",
-            },
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://carbonstealth.eu/#org",
+                name: "Carbon Stealth VCC",
+                url: "https://carbonstealth.eu",
+                sameAs: ["https://github.com/stefkostefko92-ux"],
+                knowsAbout: [
+                  "етикети за печат",
+                  "визитки",
+                  "автобиография CV",
+                  "Europass",
+                ],
+              },
+              {
+                "@type": "WebSite",
+                "@id": "https://mastilko.carbonstealth.eu/#site",
+                name: "Мастилко",
+                url: "https://mastilko.carbonstealth.eu",
+                inLanguage: "bg",
+                publisher: { "@id": "https://carbonstealth.eu/#org" },
+              },
+              {
+                "@type": "WebApplication",
+                name: "Мастилко",
+                url: "https://mastilko.carbonstealth.eu",
+                applicationCategory: "DesignApplication",
+                operatingSystem: "Web",
+                inLanguage: "bg",
+                isAccessibleForFree: true,
+                offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+                description:
+                  "Безплатно създаване на етикети за печат, визитки и автобиографии (CV, вкл. Europass) на български език, направо в браузъра.",
+                publisher: { "@id": "https://carbonstealth.eu/#org" },
+              },
+              {
+                "@type": "FAQPage",
+                mainEntity: FAQ.map((f) => ({
+                  "@type": "Question",
+                  name: f.q,
+                  acceptedAnswer: { "@type": "Answer", text: f.a },
+                })),
+              },
+            ],
           }),
         }}
       />

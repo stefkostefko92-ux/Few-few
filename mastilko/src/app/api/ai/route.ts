@@ -17,6 +17,19 @@ const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 10;
 const hits = new Map<string, number[]>();
 
+// Глобален предпазител, независим от IP — X-Forwarded-For е клиентски
+// контролиран, така че само per-IP лимит не пази безплатната Gemini квота.
+const GLOBAL_MAX_PER_WINDOW = 120;
+let globalHits: number[] = [];
+
+function globalLimited(): boolean {
+  const now = Date.now();
+  globalHits = globalHits.filter((t) => now - t < WINDOW_MS);
+  if (globalHits.length >= GLOBAL_MAX_PER_WINDOW) return true;
+  globalHits.push(now);
+  return false;
+}
+
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
@@ -63,7 +76,7 @@ export async function POST(req: NextRequest) {
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (rateLimited(ip)) {
+  if (rateLimited(ip) || globalLimited()) {
     return NextResponse.json(
       { error: "Прекалено много заявки — опитай пак след минута." },
       { status: 429 },

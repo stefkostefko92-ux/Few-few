@@ -35,7 +35,13 @@ interface CvState {
   skills: string;
   languages: string;
   themeId: string;
-  layout: "klasik" | "moderen";
+  layout: "klasik" | "moderen" | "europass";
+  // Полета по стандарта Europass (ползват се в Europass шаблона)
+  birthDate: string;
+  nationality: string;
+  motherTongue: string;
+  digitalSkills: string;
+  driving: string;
 }
 
 const INITIAL: CvState = {
@@ -52,7 +58,21 @@ const INITIAL: CvState = {
   languages: "",
   themeId: "gora",
   layout: "moderen",
+  birthDate: "",
+  nationality: "",
+  motherTongue: "",
+  digitalSkills: "",
+  driving: "",
 };
+
+// Стандартното синьо на Europass — шаблонът е унифициран за целия ЕС.
+const EUROPASS_BLUE = "#0E4194";
+
+/** „английски (B2)“ → { name: „английски“, level: „B2“ } за Europass таблицата. */
+function parseLanguage(entry: string): { name: string; level: string } {
+  const m = entry.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  return m ? { name: m[1]!.trim(), level: m[2]!.trim() } : { name: entry, level: "" };
+}
 
 function splitList(s: string): string[] {
   return s.split(/[,;]+/).map((x) => x.trim()).filter(Boolean);
@@ -306,12 +326,44 @@ export default function CvStudio() {
             >
               <option value="moderen">Модерен (с цветна лента)</option>
               <option value="klasik">Класически (една колона)</option>
+              <option value="europass">Europass (стандарт на ЕС)</option>
             </select>
           </div>
-          <div>
-            <span className="field-label">Акцентен цвят</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          {s.layout !== "europass" && (
+            <div>
+              <span className="field-label">Акцентен цвят</span>
+              <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
+            </div>
+          )}
+        </div>
+
+        <div className="card-warm space-y-4 p-5">
+          <h2 className="font-display text-lg font-bold">Данни за Europass</h2>
+          <p className="text-sm text-ink-soft">
+            Стандартът Europass на ЕС включва и тези полета (по желание) —
+            показват се в Europass шаблона.
+          </p>
+          {(
+            [
+              ["birthDate", "Дата на раждане", "напр. 15.03.1992 г."],
+              ["nationality", "Гражданство", "напр. българско"],
+              ["motherTongue", "Майчин език", "напр. български"],
+              ["digitalSkills", "Дигитални умения", "напр. MS Office, Canva, имейл"],
+              ["driving", "Свидетелство за управление на МПС", "напр. категория B"],
+            ] as const
+          ).map(([key, label, placeholder]) => (
+            <div key={key}>
+              <label htmlFor={`cv-${key}`} className="field-label">{label}</label>
+              <input
+                id={`cv-${key}`}
+                className="field-input"
+                maxLength={120}
+                value={s[key]}
+                onChange={(e) => set({ [key]: e.target.value })}
+                placeholder={placeholder}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -319,7 +371,9 @@ export default function CvStudio() {
       <div className="space-y-4">
         <PrintBar summary="Автобиография на лист А4 (може и няколко страници)" />
         <SheetPreview fixedHeight={false}>
-          {s.layout === "moderen" ? (
+          {s.layout === "europass" ? (
+            <EuropassCv s={s} skills={skills} languages={languages} />
+          ) : s.layout === "moderen" ? (
             <div style={{ display: "flex", minHeight: "297mm" }}>
               {/* Странична лента */}
               <div
@@ -425,6 +479,202 @@ export default function CvStudio() {
           )}
         </SheetPreview>
       </div>
+    </div>
+  );
+}
+
+/** Ред от Europass мрежата: син етикет вляво, съдържание с вертикална линия. */
+function EpRow({
+  label,
+  children,
+  first,
+}: {
+  label: string;
+  children: React.ReactNode;
+  first?: boolean;
+}) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "48mm 1fr" }}>
+      <div
+        style={{
+          color: EUROPASS_BLUE,
+          fontWeight: 700,
+          fontSize: "3mm",
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+          textAlign: "right",
+          paddingRight: "4mm",
+          paddingTop: first ? 0 : "6mm",
+          lineHeight: 1.3,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          borderLeft: "0.35mm solid #9AB0D8",
+          paddingLeft: "4mm",
+          paddingTop: first ? 0 : "6mm",
+          paddingBottom: "1mm",
+          fontSize: "3.2mm",
+          lineHeight: 1.5,
+          breakInside: "avoid",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function EuropassCv({
+  s,
+  skills,
+  languages,
+}: {
+  s: CvState;
+  skills: string[];
+  languages: string[];
+}) {
+  const contact = [
+    s.phone && ["Телефон", s.phone],
+    s.email && ["Имейл", s.email],
+    s.city && ["Град", s.city],
+    s.website && ["Уеб", s.website],
+    s.birthDate && ["Дата на раждане", s.birthDate],
+    s.nationality && ["Гражданство", s.nationality],
+  ].filter(Boolean) as Array<[string, string]>;
+
+  const langRows = languages.map(parseLanguage);
+  const filledJobs = s.jobs.filter((j) => j.role || j.company || j.desc);
+  const filledSchools = s.schools.filter((e) => e.degree || e.school);
+  const cellStyle: React.CSSProperties = {
+    border: "0.2mm solid #9AB0D8",
+    padding: "1mm 2.5mm",
+    textAlign: "left",
+  };
+
+  return (
+    <div style={{ padding: "12mm 12mm 14mm 8mm", color: "#1B1B1B", minHeight: "297mm" }}>
+      <EpRow first label="Автобиография">
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: "6.4mm",
+            color: EUROPASS_BLUE,
+            lineHeight: 1.15,
+          }}
+        >
+          {s.name || "Твоето име"}
+        </div>
+        {s.title && (
+          <div style={{ fontSize: "3.4mm", marginTop: "1mm" }}>{s.title}</div>
+        )}
+      </EpRow>
+
+      {contact.length > 0 && (
+        <EpRow label="Лична информация">
+          {contact.map(([k, v]) => (
+            <div key={k}>
+              <span style={{ fontWeight: 700 }}>{k}: </span>
+              {v}
+            </div>
+          ))}
+        </EpRow>
+      )}
+
+      {s.summary && <EpRow label="Професионален профил">{s.summary}</EpRow>}
+
+      {filledJobs.length > 0 && (
+        <EpRow label="Трудов стаж">
+          {filledJobs.map((j) => (
+            <div key={j.id} style={{ marginBottom: "3.5mm", breakInside: "avoid" }}>
+              {j.period && (
+                <div style={{ color: EUROPASS_BLUE, fontWeight: 700, fontSize: "2.9mm" }}>
+                  {j.period}
+                </div>
+              )}
+              <div style={{ fontWeight: 700 }}>
+                {j.role}
+                {j.company && (
+                  <span style={{ fontWeight: 400 }}> — {j.company}</span>
+                )}
+              </div>
+              {j.desc && <div style={{ marginTop: "0.6mm" }}>{j.desc}</div>}
+            </div>
+          ))}
+        </EpRow>
+      )}
+
+      {filledSchools.length > 0 && (
+        <EpRow label="Образование и обучение">
+          {filledSchools.map((e) => (
+            <div key={e.id} style={{ marginBottom: "2.5mm", breakInside: "avoid" }}>
+              {e.period && (
+                <div style={{ color: EUROPASS_BLUE, fontWeight: 700, fontSize: "2.9mm" }}>
+                  {e.period}
+                </div>
+              )}
+              <div style={{ fontWeight: 700 }}>
+                {e.degree}
+                {e.school && <span style={{ fontWeight: 400 }}> — {e.school}</span>}
+              </div>
+            </div>
+          ))}
+        </EpRow>
+      )}
+
+      {(s.motherTongue || langRows.length > 0 || skills.length > 0 || s.digitalSkills || s.driving) && (
+        <EpRow label="Лични умения">
+          {s.motherTongue && (
+            <div style={{ marginBottom: "2mm" }}>
+              <span style={{ fontWeight: 700 }}>Майчин език: </span>
+              {s.motherTongue}
+            </div>
+          )}
+          {langRows.length > 0 && (
+            <div style={{ marginBottom: "2.5mm" }}>
+              <div style={{ fontWeight: 700, marginBottom: "1mm" }}>Чужди езици</div>
+              <table style={{ borderCollapse: "collapse", fontSize: "3mm", width: "100%" }}>
+                <thead>
+                  <tr style={{ color: EUROPASS_BLUE }}>
+                    <th style={cellStyle}>Език</th>
+                    <th style={cellStyle}>Ниво (ОЕЕР)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {langRows.map((l) => (
+                    <tr key={l.name}>
+                      <td style={cellStyle}>{l.name}</td>
+                      <td style={cellStyle}>{l.level || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {skills.length > 0 && (
+            <div style={{ marginBottom: "2mm" }}>
+              <span style={{ fontWeight: 700 }}>Умения: </span>
+              {skills.join(", ")}
+            </div>
+          )}
+          {s.digitalSkills && (
+            <div style={{ marginBottom: "2mm" }}>
+              <span style={{ fontWeight: 700 }}>Дигитални умения: </span>
+              {s.digitalSkills}
+            </div>
+          )}
+          {s.driving && (
+            <div>
+              <span style={{ fontWeight: 700 }}>
+                Свидетелство за управление на МПС:{" "}
+              </span>
+              {s.driving}
+            </div>
+          )}
+        </EpRow>
+      )}
     </div>
   );
 }
