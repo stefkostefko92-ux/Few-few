@@ -1,6 +1,7 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+// Умишлено .mjs, не .ts: next.config.ts изисква пакета typescript ПРИ СТАРТ,
+// а деплоят прунва dev зависимостите (npm prune --omit=dev) → сървисът гърми.
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   poweredByHeader: false,
   async headers() {
     return [

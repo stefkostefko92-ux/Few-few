@@ -1,0 +1,55 @@
+# systemd unit за Мастилко — инсталира се автоматично от deploy/autodeploy.sh
+# (копие в /etc/systemd/system/mastilko.service). Слуша на 127.0.0.1:3200 зад
+# Nginx (виж deploy/nginx-mastilko.conf). Тайните са в /opt/mastilko/.env (600).
+
+[Unit]
+Description=Мастилко — безплатни етикети, визитки и CV (mastilko.carbonstealth.eu)
+After=network.target
+
+[Service]
+Type=simple
+User=mastilko
+Group=mastilko
+WorkingDirectory=/opt/mastilko
+Environment=NODE_ENV=production
+Environment=PORT=3200
+Environment=HOSTNAME=127.0.0.1
+Environment=NEXT_TELEMETRY_DISABLED=1
+EnvironmentFile=-/opt/mastilko/.env
+ExecStart=/usr/bin/env node /opt/mastilko/node_modules/next/dist/bin/next start --port 3200 --hostname 127.0.0.1
+Restart=on-failure
+RestartSec=3
+
+# Втвърдяване — least privilege (цел: systemd-analyze security < 5)
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+# '-' = толерирай липсващ път (systemd 255 иначе гърми с 226/NAMESPACE);
+# autodeploy така или иначе прави mkdir -p след всеки билд.
+ReadWritePaths=-/opt/mastilko/.next/cache
+ProtectHome=true
+ProtectProc=invisible
+ProcSubset=pid
+ProtectClock=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+# AF_UNIX е нужен на Node (вътрешни IPC/DNS); БЕЗ IPAddressDeny — /api/ai
+# вика Gemini навън.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallFilter=~@mount @swap @reboot @obsolete
+SystemCallArchitectures=native
+LockPersonality=true
+MemoryDenyWriteExecute=false
+CapabilityBoundingSet=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
