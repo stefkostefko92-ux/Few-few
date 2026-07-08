@@ -5,6 +5,7 @@ import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
+import BackgroundDecor from "@/components/BackgroundDecor";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
@@ -126,7 +127,7 @@ export default function LabelStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} hideDecor />
+          <StyleControls value={s} onChange={set} />
 
           <fieldset>
             <legend className="field-label">Съдържание</legend>
@@ -322,6 +323,7 @@ export default function LabelStudio() {
                   overflow: "hidden",
                 }}
               >
+                <BackgroundDecor decor={s.decor} color={theme.accent} />
                 {qrSrc && (
                   <QrImage
                     src={qrSrc}
@@ -330,11 +332,13 @@ export default function LabelStudio() {
                       height: `${qrSize}mm`,
                       flexShrink: 0,
                       borderRadius: "1mm",
+                      position: "relative",
                     }}
                   />
                 )}
                 <div
                   style={{
+                    position: "relative",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
