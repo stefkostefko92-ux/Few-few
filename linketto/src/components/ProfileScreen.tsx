@@ -7,7 +7,8 @@ import { prisma } from '@/lib/db';
 import { bestLocale, dirFor, LOCALE_NAMES } from '@/i18n/locales';
 import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
 import { brandFor, isSensitiveUrl } from '@/lib/brands';
-import { BrandIcon } from '@/components/brand-icons';
+import { BrandIcon, BRAND_COLORS } from '@/components/brand-icons';
+import { ShareButton } from '@/components/ShareButton';
 import {
   backgroundCss,
   buttonCss,
@@ -38,6 +39,30 @@ const THEME_CLASSES: Record<string, string> = {
   mono: 'bg-white text-slate-900',
   dusk: 'bg-gradient-to-b from-rose-950 via-slate-900 to-slate-950 text-white',
 };
+
+// Поздравът над името — на езика, на който посетителят гледа профила.
+const GREETING_BY_LOCALE: Record<string, string> = {
+  bg: 'Здравей',
+  en: 'Hello',
+  it: 'Ciao',
+  es: 'Hola',
+  de: 'Hallo',
+  fr: 'Bonjour',
+};
+
+// Звезди за сцената „звездно небе“: [top, left, размер px, ритъм, закъснение]
+const PF_STARS = [
+  ['6%', '10%', 2, '4.4s', '0s'],
+  ['14%', '82%', 3, '5.6s', '1.2s'],
+  ['24%', '28%', 2, '6.1s', '2.4s'],
+  ['10%', '58%', 2, '4.9s', '0.6s'],
+  ['34%', '90%', 2, '5.2s', '1.7s'],
+  ['44%', '8%', 3, '6.6s', '0.3s'],
+  ['58%', '46%', 2, '4.6s', '2.8s'],
+  ['66%', '14%', 2, '5.8s', '1.5s'],
+  ['76%', '76%', 3, '4.7s', '3.2s'],
+  ['88%', '34%', 2, '6.3s', '0.9s'],
+] as const;
 
 export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
   return prisma.profile.findUnique({
@@ -180,24 +205,107 @@ export async function ProfileScreen({
       link.translations[0]
     )?.title;
 
+  // Социално доказателство без бисквитки: посещения този месец.
+  let monthViews: number | null = null;
+  if (styleCfg.showViews) {
+    const monthStart = new Date();
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
+    monthViews = await prisma.clickEvent.count({
+      where: {
+        profileId: profile.id,
+        linkId: null,
+        createdAt: { gte: monthStart },
+      },
+    });
+  }
+  const greeting = GREETING_BY_LOCALE[viewLocale] ?? GREETING_BY_LOCALE.en;
+  const shareUrl = `${process.env.PUBLIC_BASE_URL ?? ''}/u/${slug}`;
+  // Стъпаловиден вход: всеки видим блок пристига с малко закъснение.
+  let riseIndex = 0;
+  const rise = () =>
+    ({ '--delay': `${Math.min(riseIndex++ * 0.08, 1.2)}s` }) as React.CSSProperties;
+
   return (
     <main
       lang={viewLocale}
       dir={dirFor(viewLocale)}
-      className={`flex min-h-screen flex-col items-center px-6 py-16 ${themeClass}`}
+      className={`relative flex min-h-screen flex-col items-center px-6 py-16 ${themeClass}`}
       style={{
         ...backgroundCss(styleCfg),
         color: baseTextColor,
         fontFamily: fontFamily(styleCfg),
       }}
     >
+      {/* Жива сцена върху фона — по избор от стиловия енджин */}
+      {styleCfg.bgEffect !== 'none' && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+        >
+          {styleCfg.bgEffect === 'gradient' && (
+            <div
+              className="pf-gradient absolute inset-0"
+              style={
+                {
+                  '--g1': styleCfg.bgColor1,
+                  '--g2': styleCfg.bgColor2,
+                } as React.CSSProperties
+              }
+            />
+          )}
+          {styleCfg.bgEffect === 'aurora' && (
+            <>
+              <div
+                className="animate-aurora absolute -top-40 left-[-12%] h-[36rem] w-[36rem] rounded-full blur-3xl"
+                style={{ backgroundColor: accent, opacity: 0.35 }}
+              />
+              <div
+                className="animate-aurora-slow absolute -bottom-52 right-[-12%] h-[38rem] w-[38rem] rounded-full blur-3xl"
+                style={{ backgroundColor: '#8b5cf6', opacity: 0.3 }}
+              />
+            </>
+          )}
+          {styleCfg.bgEffect === 'stars' && (
+            <>
+              {PF_STARS.map(([top, left, size, dur, delay]) => (
+                <span
+                  key={`${top}-${left}`}
+                  className="star"
+                  style={
+                    {
+                      top,
+                      left,
+                      width: size,
+                      height: size,
+                      '--dur': dur,
+                      '--delay': delay,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+              <span className="comet" style={{ top: '12%', left: '4%' }} />
+            </>
+          )}
+        </div>
+      )}
       <div
-        className={`w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
+        className={`relative w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
           styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-3xl'
         } px-5 py-10 sm:px-10 ${
           styleCfg.align === 'start' ? 'text-start' : 'text-center'
         }`}
       >
+        <ShareButton
+          url={shareUrl}
+          qrSrc={`/u/${slug}/qr`}
+          labels={{
+            share: t('share'),
+            copy: t('copyLink'),
+            copied: t('copied'),
+            scan: t('scanQr'),
+          }}
+        />
         {styleCfg.avatarUrl && (
           // eslint-disable-next-line @next/next/no-img-element -- външен URL по избор на потребителя
           <img
@@ -205,27 +313,83 @@ export async function ProfileScreen({
             alt=""
             width={96}
             height={96}
-            className={`mb-5 h-24 w-24 object-cover shadow-xl ring-4 ring-white/25 ${avatarShapeClass} ${
+            className={`pf-pop pf-ring mb-5 h-24 w-24 object-cover shadow-xl ${avatarShapeClass} ${
               styleCfg.align === 'start' ? '' : 'mx-auto'
             }`}
+            style={{ '--ring': accent } as React.CSSProperties}
           />
         )}
-        <h1 className="text-3xl font-bold tracking-tight">{translation.displayName}</h1>
+        <p
+          className="pf-greet text-sm font-semibold uppercase tracking-[0.25em] opacity-60"
+          style={{ color: accent }}
+        >
+          {greeting}
+        </p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight">{translation.displayName}</h1>
         {translation.bio && (
           <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed opacity-75">{translation.bio}</p>
         )}
 
+        {(available.length > 1 || monthViews !== null) && (
+          <div
+            className={`mt-3 flex flex-wrap gap-2 text-xs font-medium ${
+              styleCfg.align === 'start' ? '' : 'justify-center'
+            }`}
+          >
+            {available.length > 1 && (
+              <span
+                className="rounded-full border px-3 py-1"
+                style={{
+                  borderColor: `${accent}66`,
+                  backgroundColor: `${accent}1a`,
+                }}
+              >
+                {t('speaksLangs', { count: available.length })}
+              </span>
+            )}
+            {monthViews !== null && (
+              <span
+                className="rounded-full border px-3 py-1"
+                style={{
+                  borderColor: `${accent}66`,
+                  backgroundColor: `${accent}1a`,
+                }}
+              >
+                {t('viewsBadge', {
+                  count: new Intl.NumberFormat(viewLocale, {
+                    notation: 'compact',
+                  }).format(monthViews),
+                })}
+              </span>
+            )}
+          </div>
+        )}
+
         {available.length > 1 && (
-          <nav aria-label="Language" className="mt-4 flex justify-center gap-2">
+          <nav
+            aria-label="Language"
+            className={`mt-4 flex flex-wrap gap-2 ${
+              styleCfg.align === 'start' ? '' : 'justify-center'
+            }`}
+          >
             {available.map((loc) => (
               <a
                 key={loc}
                 href={`/u/${slug}?hl=${loc}`}
-                className={`rounded-full border px-3 py-1 text-xs transition ${
+                className={`rounded-full border px-3.5 py-1.5 text-xs transition-all duration-300 ${
                   loc === viewLocale
-                    ? `font-semibold ${isLightBg ? 'border-black/20 bg-black/10' : 'border-white/40 bg-white/15'}`
-                    : 'border-transparent opacity-60 hover:opacity-100'
+                    ? 'font-semibold'
+                    : 'border-transparent opacity-60 hover:-translate-y-0.5 hover:opacity-100'
                 }`}
+                style={
+                  loc === viewLocale
+                    ? {
+                        borderColor: accent,
+                        backgroundColor: `${accent}26`,
+                        boxShadow: `0 0 16px ${accent}55`,
+                      }
+                    : undefined
+                }
               >
                 {LOCALE_NAMES[loc as keyof typeof LOCALE_NAMES] ?? loc}
               </a>
@@ -250,7 +414,7 @@ export async function ProfileScreen({
             switch (link.kind) {
               case 'HEADER':
                 return (
-                  <li key={link.id} className={`pt-4 ${gridSpan}`}>
+                  <li key={link.id} className={`pf-rise pt-4 ${gridSpan}`} style={rise()}>
                     <div className="flex items-center gap-3">
                       <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
                       <h2 className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
@@ -262,7 +426,7 @@ export async function ProfileScreen({
                 );
               case 'PHONE':
                 return (
-                  <li key={link.id}>
+                  <li key={link.id} className="pf-rise" style={rise()}>
                     <a
                       href={link.url ?? '#'}
                       className={btnClass}
@@ -279,7 +443,7 @@ export async function ProfileScreen({
                 const src = link.url ? videoEmbedSrc(link.url) : null;
                 if (!src) return null;
                 return (
-                  <li key={link.id} className={gridSpan}>
+                  <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
                       className={`overflow-hidden border ${boxShape}`}
                       style={{ borderColor: accentFor(meta) }}
@@ -297,7 +461,7 @@ export async function ProfileScreen({
               }
               case 'MUSIC':
                 return (
-                  <li key={link.id} className={gridSpan}>
+                  <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
                       className={`border px-6 py-3 text-center ${boxShape} ${shadowClass}`}
                       style={buttonCss(styleCfg, accentFor(meta))}
@@ -329,7 +493,7 @@ export async function ProfileScreen({
                 );
               case 'FORM':
                 return (
-                  <li key={link.id} className={gridSpan}>
+                  <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
                     <div
                       className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
                       style={buttonCss(styleCfg, accentFor(meta))}
@@ -391,36 +555,76 @@ export async function ProfileScreen({
                   </li>
                 );
               // LINK, MAP, APP, TIP, VCARD — бутон през click redirect-а
-              default:
+              default: {
+                const featured = meta?.featured === true;
+                const brandColor = brand ? BRAND_COLORS[brand] : undefined;
+                const icon = brand ? (
+                  <BrandIcon
+                    brand={brand}
+                    className={featured ? 'h-6 w-6 shrink-0' : 'h-4 w-4 shrink-0'}
+                  />
+                ) : link.kind === 'MAP' ? (
+                  <MapPinIcon className="h-4 w-4 shrink-0" />
+                ) : link.kind === 'APP' ? (
+                  <SmartphoneIcon className="h-4 w-4 shrink-0" />
+                ) : link.kind === 'TIP' ? (
+                  <HeartIcon className="h-4 w-4 shrink-0" />
+                ) : link.kind === 'VCARD' ? (
+                  <UserRoundPlusIcon className="h-4 w-4 shrink-0" />
+                ) : null;
+                const badge = sensitive && (
+                  <span className="rounded border border-current px-1 text-[10px] font-bold leading-4 opacity-80">
+                    18+
+                  </span>
+                );
+                // Spotlight: голяма карта с дишащо сияние в акцента на блока.
+                if (featured) {
+                  return (
+                    <li
+                      key={link.id}
+                      className={`pf-rise ${gridSpan}`}
+                      style={rise()}
+                    >
+                      <a
+                        href={clickHref}
+                        className={`pf-spot block border px-6 py-6 text-center text-lg font-bold transition-all duration-200 hover:-translate-y-1 ${shapeClass}`}
+                        style={
+                          {
+                            ...buttonCss(styleCfg, accentFor(meta)),
+                            '--spot': accentFor(meta),
+                          } as React.CSSProperties
+                        }
+                      >
+                        <span className="inline-flex items-center gap-2.5">
+                          {icon}
+                          {title}
+                          {badge}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                }
                 return (
-                  <li key={link.id}>
+                  <li key={link.id} className="pf-rise" style={rise()}>
                     <a
                       href={clickHref}
-                      className={btnClass}
-                      style={buttonCss(styleCfg, accentFor(meta))}
+                      className={`${btnClass}${brandColor ? ' pf-brand' : ''}`}
+                      style={
+                        {
+                          ...buttonCss(styleCfg, accentFor(meta)),
+                          ...(brandColor ? { '--brand': brandColor } : {}),
+                        } as React.CSSProperties
+                      }
                     >
                       <span className="inline-flex items-center gap-2">
-                        {brand ? (
-                          <BrandIcon brand={brand} className="h-4 w-4 shrink-0" />
-                        ) : link.kind === 'MAP' ? (
-                          <MapPinIcon className="h-4 w-4 shrink-0" />
-                        ) : link.kind === 'APP' ? (
-                          <SmartphoneIcon className="h-4 w-4 shrink-0" />
-                        ) : link.kind === 'TIP' ? (
-                          <HeartIcon className="h-4 w-4 shrink-0" />
-                        ) : link.kind === 'VCARD' ? (
-                          <UserRoundPlusIcon className="h-4 w-4 shrink-0" />
-                        ) : null}
+                        {icon}
                         {title}
-                        {sensitive && (
-                          <span className="rounded border border-current px-1 text-[10px] font-bold leading-4 opacity-80">
-                            18+
-                          </span>
-                        )}
+                        {badge}
                       </span>
                     </a>
                   </li>
                 );
+              }
             }
           })}
         </ul>

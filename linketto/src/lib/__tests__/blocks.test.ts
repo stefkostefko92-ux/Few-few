@@ -141,3 +141,21 @@ test('isBlockVisible: прозорец от/до', () => {
   assert.ok(!isBlockVisible({ showFrom: future, showUntil: null }, now));
   assert.ok(!isBlockVisible({ showFrom: null, showUntil: past }, now));
 });
+
+test('parseBlockInput: spotlight (featured) влиза в meta само при поискване', () => {
+  const featured = parseBlockInput({
+    kind: 'LINK',
+    url: 'https://example.com',
+    extra1: '',
+    extra2: '',
+    featured: true,
+  });
+  assert.equal(featured?.meta?.featured, true);
+  const plain = parseBlockInput({
+    kind: 'LINK',
+    url: 'https://example.com',
+    extra1: '',
+    extra2: '',
+  });
+  assert.equal(plain?.meta?.featured, undefined);
+});

@@ -134,6 +134,7 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
   };
   const parsed = styleSchema.safeParse({
     bgStyle: field('bgStyle'),
+    bgEffect: field('bgEffect'),
     bgColor1: field('bgColor1'),
     bgColor2: field('bgColor2'),
     bgImageUrl: field('bgImageUrl'),
@@ -148,6 +149,7 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
     avatarShape: field('avatarShape'),
     bgOverlay: field('bgOverlay'),
     hideBadge: formData.get('hideBadge') === 'on',
+    showViews: formData.get('showViews') === 'on',
   });
   if (!parsed.success) {
     redirect(`/${uiLocale}/dashboard?error=style`);
@@ -254,6 +256,7 @@ export async function addLinkAction(formData: FormData): Promise<void> {
     extra1: String(formData.get('extra1') ?? ''),
     extra2: String(formData.get('extra2') ?? ''),
     color: String(formData.get('color') ?? ''),
+    featured: formData.get('featured') === 'on',
   });
   if (!input || !title) {
     redirect(`/${uiLocale}/dashboard?error=block`);

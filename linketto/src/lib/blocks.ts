@@ -36,6 +36,8 @@ export interface BlockMeta {
   org?: string;
   /** Пер-блок акцентен цвят (hex) — приоритет над цвета на профила. */
   color?: string;
+  /** Spotlight: блокът се рендира открояващо (голяма карта със сияние). */
+  featured?: boolean;
 }
 
 const httpUrl = z
@@ -66,6 +68,7 @@ export function parseBlockInput(raw: {
   extra1: string;
   extra2: string;
   color?: string;
+  featured?: boolean;
 }): BlockInput | null {
   const kind = raw.kind as BlockKindId;
   if (!BLOCK_KINDS.includes(kind)) return null;
@@ -75,6 +78,9 @@ export function parseBlockInput(raw: {
   const color = (raw.color ?? '').trim();
   if (/^#[0-9a-fA-F]{6}$/.test(color)) {
     base.meta = { ...(base.meta ?? {}), color };
+  }
+  if (raw.featured) {
+    base.meta = { ...(base.meta ?? {}), featured: true };
   }
   return base;
 }

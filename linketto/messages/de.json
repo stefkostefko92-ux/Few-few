@@ -229,7 +229,14 @@
     "uploadBg": "Hintergrundfoto hochladen",
     "uploadAvatar": "Avatar hochladen",
     "uploadButton": "Hochladen",
-    "errorUpload": "Upload fehlgeschlagen — wir akzeptieren JPG/PNG/WebP bis 8 MB."
+    "errorUpload": "Upload fehlgeschlagen — wir akzeptieren JPG/PNG/WebP bis 8 MB.",
+    "styleEffect": "Lebendige Szene (Hintergrundeffekt)",
+    "styleEffect_none": "Keiner",
+    "styleEffect_aurora": "Aurora",
+    "styleEffect_stars": "Sternenhimmel",
+    "styleEffect_gradient": "Lebendiger Verlauf",
+    "styleShowViews": "Abzeichen mit den Besuchen dieses Monats im Profil anzeigen",
+    "featuredLabel": "Diesen Block hervorheben (Spotlight)"
   },
   "profile": {
     "poweredBy": "Erstellt mit Linketto",
@@ -245,7 +252,13 @@
     "adultTitle": "Inhalte für Erwachsene (18+)",
     "adultBody": "Dieser Link führt zu einer Plattform mit Inhalten, die nur für Erwachsene bestimmt sind. Fahre nur fort, wenn du über 18 bist.",
     "adultConfirm": "Weiter — ich bin über 18",
-    "adultBack": "Zurück zum Profil"
+    "adultBack": "Zurück zum Profil",
+    "speaksLangs": "Ich spreche {count} Sprachen",
+    "viewsBadge": "{count} Besuche diesen Monat",
+    "share": "Teilen",
+    "copyLink": "Link kopieren",
+    "copied": "Kopiert!",
+    "scanQr": "Mit dem Handy scannen"
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",

@@ -443,3 +443,103 @@ body {
 .marquee-band:hover .animate-marquee-reverse {
   animation-play-state: paused;
 }
+
+
+/* ── Публичният профил е жив ──────────────────────────────────────────── */
+
+/* Стъпаловиден вход на блоковете (--delay per блок от JSX) */
+@keyframes pf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pf-rise {
+  animation: pf-rise 0.7s ease-out both;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Аватарът изскача меко и носи пулсиращ пръстен в акцентния цвят */
+@keyframes pf-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.pf-pop {
+  animation: pf-pop 0.8s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+@keyframes pf-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--ring, #38bdf8) 45%, transparent),
+      0 0 18px color-mix(in srgb, var(--ring, #38bdf8) 35%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--ring, #38bdf8) 80%, transparent),
+      0 0 42px color-mix(in srgb, var(--ring, #38bdf8) 75%, transparent);
+  }
+}
+.pf-ring {
+  animation: pf-ring 4s ease-in-out 0.8s infinite;
+}
+
+/* Поздравът над името плува леко */
+.pf-greet {
+  display: inline-block;
+  animation: float-soft 5s ease-in-out infinite;
+}
+
+/* Hover сияние в официалния цвят на платформата (--brand от JSX) */
+.pf-brand {
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+}
+.pf-brand:hover {
+  box-shadow: 0 10px 34px -8px color-mix(in srgb, var(--brand) 80%, transparent);
+}
+
+/* Spotlight блок: голяма карта с дишащо сияние в акцента (--spot) */
+@keyframes pf-spot {
+  0%,
+  100% {
+    box-shadow: 0 0 18px color-mix(in srgb, var(--spot, #38bdf8) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 44px color-mix(in srgb, var(--spot, #38bdf8) 80%, transparent);
+  }
+}
+.pf-spot {
+  animation: pf-spot 3.8s ease-in-out infinite;
+}
+
+/* Жива сцена „дишащ градиент“ (--g1/--g2 от стила на профила) */
+@keyframes pf-gradient-move {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.pf-gradient {
+  background: linear-gradient(120deg, var(--g1), var(--g2), var(--g1));
+  background-size: 300% 300%;
+  animation: pf-gradient-move 14s ease-in-out infinite;
+}

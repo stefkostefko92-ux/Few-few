@@ -52,3 +52,11 @@ test('buttonCss: solid смята четим цвят на текста', () => 
   const outline = buttonCss(parseStyle({ buttonFill: 'outline' }), '#112233');
   assert.equal(outline.backgroundColor, 'transparent');
 });
+
+test('parseStyle: живата сцена и броячът на посещения', () => {
+  assert.equal(parseStyle(null).bgEffect, 'none');
+  assert.equal(parseStyle(null).showViews, false);
+  assert.equal(parseStyle({ bgEffect: 'stars' }).bgEffect, 'stars');
+  assert.equal(parseStyle({ bgEffect: 'disco' }).bgEffect, 'none');
+  assert.equal(parseStyle({ showViews: true }).showViews, true);
+});

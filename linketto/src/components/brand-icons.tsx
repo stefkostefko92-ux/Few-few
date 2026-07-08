@@ -82,3 +82,36 @@ export function BrandIcon({
     </svg>
   );
 }
+
+// Официалните бранд цветове (пак от simple-icons) — за сиянието при hover.
+export const BRAND_COLORS: Record<string, string> = {
+  applemusic: '#FA243C',
+  bluesky: '#1185FE',
+  buymeacoffee: '#FFDD00',
+  discord: '#5865F2',
+  facebook: '#0866FF',
+  github: '#181717',
+  instagram: '#FF0069',
+  kick: '#53FC19',
+  kofi: '#FF6433',
+  mastodon: '#6364FF',
+  medium: '#000000',
+  onlyfans: '#00AFF0',
+  patreon: '#000000',
+  paypal: '#002991',
+  pinterest: '#BD081C',
+  reddit: '#FF4500',
+  snapchat: '#FFFC00',
+  soundcloud: '#FF5500',
+  spotify: '#1ED760',
+  substack: '#FF6719',
+  telegram: '#26A5E4',
+  threads: '#000000',
+  tiktok: '#000000',
+  tumblr: '#36465D',
+  twitch: '#9146FF',
+  vimeo: '#1AB7EA',
+  whatsapp: '#25D366',
+  x: '#000000',
+  youtube: '#FF0000',
+};

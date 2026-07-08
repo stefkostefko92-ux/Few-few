@@ -19,6 +19,8 @@ const imageRef = z
 
 export const styleSchema = z.object({
   bgStyle: z.enum(['theme', 'solid', 'gradient', 'image']).default('theme'),
+  // Жива сцена върху фона: aurora петна, звездно небе или дишащ градиент.
+  bgEffect: z.enum(['none', 'aurora', 'stars', 'gradient']).default('none'),
   bgColor1: hex.default('#1e1b4b'),
   bgColor2: hex.default('#020617'),
   bgImageUrl: imageRef.optional(),
@@ -35,6 +37,8 @@ export const styleSchema = z.object({
   avatarShape: z.enum(['circle', 'rounded', 'square']).default('circle'),
   // Скриване на Linketto баджа — само платени планове (пази се в action-а).
   hideBadge: z.boolean().default(false),
+  // Бадж „N посещения този месец“ — социално доказателство без бисквитки.
+  showViews: z.boolean().default(false),
 });
 
 export type ProfileStyle = z.infer<typeof styleSchema>;

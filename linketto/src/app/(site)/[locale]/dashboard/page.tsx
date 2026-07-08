@@ -331,6 +331,22 @@ export default async function DashboardPage({
                       </select>
                     </label>
                     <label className="block text-sm font-medium">
+                      {t('styleEffect')}
+                      <select
+                        name="bgEffect"
+                        defaultValue={styleCfg.bgEffect}
+                        className={selectClass}
+                      >
+                        {(['none', 'aurora', 'stars', 'gradient'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleEffect_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
                       {t('styleBgColor1')}
                       <input
                         type="color"
@@ -509,6 +525,15 @@ export default async function DashboardPage({
                         className="h-4 w-4"
                       />
                       {t('styleHideBadge')}
+                    </label>
+                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="showViews"
+                        defaultChecked={styleCfg.showViews}
+                        className="h-4 w-4"
+                      />
+                      {t('styleShowViews')}
                     </label>
                     <button
                       type="submit"
@@ -800,6 +825,10 @@ export default async function DashboardPage({
                     name="showUntil"
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
+                </label>
+                <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
+                  <input type="checkbox" name="featured" className="h-4 w-4" />
+                  {t('featuredLabel')}
                 </label>
                 <p className="text-xs text-slate-500 sm:col-span-2">
                   {t('addBlockHint')} {t('scheduleHint')}

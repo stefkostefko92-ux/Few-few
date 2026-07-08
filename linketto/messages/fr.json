@@ -229,7 +229,14 @@
     "uploadBg": "Téléverser une photo de fond",
     "uploadAvatar": "Téléverser un avatar",
     "uploadButton": "Téléverser",
-    "errorUpload": "Le téléversement a échoué — nous acceptons JPG/PNG/WebP jusqu’à 8 Mo."
+    "errorUpload": "Le téléversement a échoué — nous acceptons JPG/PNG/WebP jusqu’à 8 Mo.",
+    "styleEffect": "Scène vivante (effet d'arrière-plan)",
+    "styleEffect_none": "Aucun",
+    "styleEffect_aurora": "Aurore",
+    "styleEffect_stars": "Ciel étoilé",
+    "styleEffect_gradient": "Dégradé vivant",
+    "styleShowViews": "Afficher sur le profil le badge des visites de ce mois-ci",
+    "featuredLabel": "Mettre ce bloc en avant (spotlight)"
   },
   "profile": {
     "poweredBy": "Créé avec Linketto",
@@ -245,7 +252,13 @@
     "adultTitle": "Contenu pour adultes (18+)",
     "adultBody": "Ce lien mène à une plateforme dont le contenu est réservé aux adultes. Ne continuez que si vous avez plus de 18 ans.",
     "adultConfirm": "Continuer — j'ai plus de 18 ans",
-    "adultBack": "Retour au profil"
+    "adultBack": "Retour au profil",
+    "speaksLangs": "Je parle {count} langues",
+    "viewsBadge": "{count} visites ce mois-ci",
+    "share": "Partager",
+    "copyLink": "Copier le lien",
+    "copied": "Copié !",
+    "scanQr": "Scannez avec votre téléphone"
   },
   "legal": {
     "privacyTitle": "Politique de confidentialité",

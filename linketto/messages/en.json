@@ -229,7 +229,14 @@
     "uploadBg": "Upload a background photo",
     "uploadAvatar": "Upload an avatar",
     "uploadButton": "Upload",
-    "errorUpload": "Upload failed — we accept JPG/PNG/WebP up to 8 MB."
+    "errorUpload": "Upload failed — we accept JPG/PNG/WebP up to 8 MB.",
+    "styleEffect": "Live scene (background effect)",
+    "styleEffect_none": "None",
+    "styleEffect_aurora": "Aurora",
+    "styleEffect_stars": "Starry sky",
+    "styleEffect_gradient": "Living gradient",
+    "styleShowViews": "Show this month's visits badge on the profile",
+    "featuredLabel": "Spotlight this block (large glowing card)"
   },
   "profile": {
     "poweredBy": "Made with Linketto",
@@ -245,7 +252,13 @@
     "adultTitle": "Adult content (18+)",
     "adultBody": "This link leads to a platform with content intended for adults only. Continue only if you are over 18.",
     "adultConfirm": "Continue — I am over 18",
-    "adultBack": "Back to profile"
+    "adultBack": "Back to profile",
+    "speaksLangs": "I speak {count} languages",
+    "viewsBadge": "{count} visits this month",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "scanQr": "Scan with your phone"
   },
   "legal": {
     "privacyTitle": "Privacy Policy",

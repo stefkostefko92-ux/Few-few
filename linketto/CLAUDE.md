@@ -84,7 +84,12 @@ DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowl
 DEFAULT_STYLE, прощаващ parseStyle — невалидно поле пада към подразбирането;
 backgroundCss/buttonCss/fontFamily/readableOn). Нова стилова опция = поле в
 styleSchema + контрола в дашборда — БЕЗ миграция. hideBadge е само за платени
-планове (пази се в updateStyleAction). Пер-блок цвят: meta.color.
+планове (пази се в updateStyleAction). Пер-блок цвят: meta.color; spotlight:
+meta.featured (голяма карта със сияние). bgEffect = жива сцена на фона
+(aurora/stars/gradient, чист CSS в globals.css „Публичният профил е жив“);
+showViews = бадж „N посещения този месец“ (брои ClickEvent с linkId null —
+без бисквитки). Бранд сияние при hover: BRAND_COLORS в brand-icons.tsx.
+„Сподели“ = ShareButton.tsx (client; Web Share API, fallback QR + копиране).
 
 Магазин (Stripe Connect Express): User.stripeAccountId + stripeChargesEnabled
 (отключва се само от account.updated webhook-а). Product/ProductTranslation/

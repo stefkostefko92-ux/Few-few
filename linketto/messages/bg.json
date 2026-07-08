@@ -229,7 +229,14 @@
     "uploadBg": "Качи снимка за фон",
     "uploadAvatar": "Качи аватар",
     "uploadButton": "Качи",
-    "errorUpload": "Качването не успя — приемаме JPG/PNG/WebP до 8 MB."
+    "errorUpload": "Качването не успя — приемаме JPG/PNG/WebP до 8 MB.",
+    "styleEffect": "Жива сцена (ефект на фона)",
+    "styleEffect_none": "Без",
+    "styleEffect_aurora": "Аврора",
+    "styleEffect_stars": "Звездно небе",
+    "styleEffect_gradient": "Жив градиент",
+    "styleShowViews": "Бадж с посещенията този месец на профила",
+    "featuredLabel": "Открой блока (spotlight — голяма карта със сияние)"
   },
   "profile": {
     "poweredBy": "Създадено с Linketto",
@@ -245,7 +252,13 @@
     "adultTitle": "Съдържание за пълнолетни (18+)",
     "adultBody": "Този линк води към платформа със съдържание, предназначено само за лица над 18 години. Продължи само ако си пълнолетен.",
     "adultConfirm": "Продължи — над 18 съм",
-    "adultBack": "Назад към профила"
+    "adultBack": "Назад към профила",
+    "speaksLangs": "Говоря {count} езика",
+    "viewsBadge": "{count} посещения този месец",
+    "share": "Сподели",
+    "copyLink": "Копирай линка",
+    "copied": "Копирано!",
+    "scanQr": "Сканирай с телефона"
   },
   "legal": {
     "privacyTitle": "Политика за поверителност",
