@@ -79,7 +79,7 @@ function cellContent(s: LabelState, lines: string[], i: number): CellContent | n
 }
 
 export default function LabelStudio() {
-  const [s, setS] = useLocalState<LabelState>("mastilko-labels", INITIAL);
+  const [s, setS] = useLocalState<LabelState>("mastilko-labels", INITIAL, (r) => ProjectSchema.parse(r));
   const preset = LABEL_PRESETS.find((p) => p.id === s.presetId) ?? LABEL_PRESETS[0]!;
   const theme = themeById(s.themeId);
   // Правоъгълните се режат по общи линии (без междина); кръгли/овални — с 3 mm.

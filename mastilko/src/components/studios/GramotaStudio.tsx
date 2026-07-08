@@ -46,7 +46,7 @@ const ProjectSchema = z
 const KINDS = ["ГРАМОТА", "СЕРТИФИКАТ", "ДИПЛОМА", "БЛАГОДАРСТВЕНО ПИСМО"];
 
 export default function GramotaStudio() {
-  const [s, setS] = useLocalState<GramotaState>("mastilko-gramota", INITIAL);
+  const [s, setS] = useLocalState<GramotaState>("mastilko-gramota", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const set = (patch: Partial<GramotaState>) => setS({ ...s, ...patch });
 

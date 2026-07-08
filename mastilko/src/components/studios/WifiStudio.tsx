@@ -55,7 +55,7 @@ const SIZES: Record<number, { w: number; h: number; cols: number }> = {
 };
 
 export default function WifiStudio() {
-  const [s, setS] = useLocalState<WifiState>("mastilko-wifi", INITIAL);
+  const [s, setS] = useLocalState<WifiState>("mastilko-wifi", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const set = (patch: Partial<WifiState>) => setS({ ...s, ...patch });
 

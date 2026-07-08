@@ -64,7 +64,7 @@ const INITIAL: PismoState = {
 };
 
 export default function PismoStudio() {
-  const [s, setS] = useLocalState<PismoState>("mastilko-pismo", INITIAL);
+  const [s, setS] = useLocalState<PismoState>("mastilko-pismo", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const set = (patch: Partial<PismoState>) => setS({ ...s, ...patch });
 

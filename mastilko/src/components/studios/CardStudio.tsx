@@ -520,7 +520,7 @@ function CardFaceInner({
 }
 
 export default function CardStudio() {
-  const [s, setS] = useLocalState<CardState>("mastilko-cards", INITIAL);
+  const [s, setS] = useLocalState<CardState>("mastilko-cards", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const grid = cardGrid();
   const px: Unit = (v) => `${v * 3.4}px`;

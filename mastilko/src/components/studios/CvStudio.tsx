@@ -124,7 +124,7 @@ function splitList(s: string): string[] {
 }
 
 export default function CvStudio() {
-  const [s, setS] = useLocalState<CvState>("mastilko-cv", INITIAL);
+  const [s, setS] = useLocalState<CvState>("mastilko-cv", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const set = (patch: Partial<CvState>) => setS({ ...s, ...patch });
 

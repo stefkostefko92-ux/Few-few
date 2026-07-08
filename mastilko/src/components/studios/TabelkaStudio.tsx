@@ -44,7 +44,7 @@ const PRESETS: Array<{ label: string; v: Partial<TabelkaState> }> = [
 ];
 
 export default function TabelkaStudio() {
-  const [s, setS] = useLocalState<TabelkaState>("mastilko-tabelka", INITIAL);
+  const [s, setS] = useLocalState<TabelkaState>("mastilko-tabelka", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const set = (patch: Partial<TabelkaState>) => setS({ ...s, ...patch });
 

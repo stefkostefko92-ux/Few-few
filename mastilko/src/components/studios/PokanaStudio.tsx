@@ -79,7 +79,7 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
 }
 
 export default function PokanaStudio() {
-  const [s, setS] = useLocalState<PokanaState>("mastilko-pokana", INITIAL);
+  const [s, setS] = useLocalState<PokanaState>("mastilko-pokana", INITIAL, (r) => ProjectSchema.parse(r));
   const theme = themeById(s.themeId);
   const set = (patch: Partial<PokanaState>) => setS({ ...s, ...patch });
   const mm = (v: number) => `${v}mm`;
