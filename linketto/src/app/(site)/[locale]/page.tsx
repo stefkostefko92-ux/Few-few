@@ -19,17 +19,17 @@ import type { Locale } from '@/i18n/locales';
 import { PLANS } from '@/lib/plans';
 
 // Авторските икони на бранда (public/icons) в бели кръгли плочки с
-// пулсиращо сияние. Гридът е нарочно „счупен“ — всяка карта има свой
-// наклон и отместване, а иконата изскача наполовина извън картата.
+// пулсиращо сияние. Самите полета „плуват“: всяка карта има свой наклон
+// (--tilt), отместване, ритъм и закъснение — редът е нарочно счупен.
 const FEATURES = [
-  ['Lang', '/icons/feature-megaphone.png', 'lg:-rotate-2 lg:-translate-y-1'],
-  ['Ai', '/icons/feature-bookgear.png', 'lg:rotate-1 lg:translate-y-9'],
-  ['Fee', '/icons/feature-money.png', 'lg:rotate-2 lg:-translate-y-5'],
-  ['Qr', '/icons/feature-network.png', 'lg:-rotate-1 lg:translate-y-6'],
-  ['Analytics', '/icons/feature-growth.png', 'lg:rotate-1 lg:translate-y-3'],
-  ['Trust', '/icons/feature-hands.png', 'lg:-rotate-2 lg:-translate-y-7'],
-  ['Eu', '/icons/feature-handshake.png', 'lg:rotate-2 lg:translate-y-8'],
-  ['Domain', '/icons/feature-mask.png', 'lg:-rotate-1 lg:-translate-y-3'],
+  ['Lang', '/icons/feature-megaphone.png', '', '-2.5deg', '0s', '6.5s'],
+  ['Ai', '/icons/feature-bookgear.png', 'lg:mt-12', '1.5deg', '0.8s', '7.5s'],
+  ['Fee', '/icons/feature-money.png', 'lg:-mt-6', '3deg', '1.6s', '7s'],
+  ['Qr', '/icons/feature-network.png', 'lg:mt-8', '-1.5deg', '2.4s', '8s'],
+  ['Analytics', '/icons/feature-growth.png', 'lg:mt-2', '2deg', '0.4s', '7.2s'],
+  ['Trust', '/icons/feature-hands.png', 'lg:-mt-9', '-3deg', '1.2s', '6.8s'],
+  ['Eu', '/icons/feature-handshake.png', 'lg:mt-10', '2.5deg', '2s', '7.8s'],
+  ['Domain', '/icons/feature-mask.png', 'lg:-mt-3', '-2deg', '2.8s', '6.6s'],
 ] as const;
 
 const PLAN_ORDER = ['free', 'pro', 'business', 'founder'] as const;
@@ -248,16 +248,21 @@ export default async function HomePage({
           >
             {t('featuresTitle')}
           </h2>
-          <div className="mt-20 grid gap-x-5 gap-y-14 pb-10 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(([key, iconSrc, twist], index) => (
+          <div className="mt-14 grid items-start gap-x-5 gap-y-10 pb-10 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURES.map(([key, iconSrc, offset, tilt, delay, dur], index) => (
               <div
                 key={key}
-                className={`reveal group relative rounded-2xl border border-slate-200 bg-white px-6 pb-6 pt-12 shadow-sm transition duration-300 hover:rotate-0 hover:border-linketto-500/40 hover:shadow-xl lg:hover:translate-y-0 ${twist}`}
+                className={`reveal card-drift group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:border-linketto-500/40 hover:shadow-xl ${offset}`}
+                style={
+                  {
+                    '--tilt': tilt,
+                    '--delay': delay,
+                    '--dur': dur,
+                  } as React.CSSProperties
+                }
               >
                 <span
-                  className={`icon-pulse absolute -top-8 flex h-16 w-16 items-center justify-center rounded-full bg-white ring-1 ring-sky-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 ${
-                    index % 2 === 0 ? 'left-6' : 'right-6'
-                  }`}
+                  className="icon-pulse flex h-16 w-16 items-center justify-center rounded-full bg-white ring-1 ring-sky-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110"
                   style={{ animationDelay: `${index * 0.45}s` }}
                 >
                   <Image
@@ -268,7 +273,7 @@ export default async function HomePage({
                     className="h-11 w-11"
                   />
                 </span>
-                <h3 className="mt-2 font-semibold text-slate-900">
+                <h3 className="mt-4 font-semibold text-slate-900">
                   {t(`feature${key}Title`)}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
@@ -315,7 +320,7 @@ export default async function HomePage({
             {tPricing('processingNote')}
           </p>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {PLAN_ORDER.map((planKey) => {
+            {PLAN_ORDER.map((planKey, index) => {
               const def = PLANS[planKey.toUpperCase() as keyof typeof PLANS];
               const highlight = planKey === 'pro';
               return (
@@ -324,8 +329,17 @@ export default async function HomePage({
                   className={`reveal relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-lg ${
                     highlight
                       ? 'border-linketto-600 shadow-lg shadow-linketto-600/10 ring-2 ring-linketto-600'
-                      : 'border-slate-200'
+                      : 'card-drift border-slate-200'
                   }`}
+                  style={
+                    highlight
+                      ? undefined
+                      : ({
+                          '--tilt': ['-1.2deg', '0deg', '1.2deg', '-0.8deg'][index],
+                          '--delay': `${index * 0.9}s`,
+                          '--dur': '8.5s',
+                        } as React.CSSProperties)
+                  }
                 >
                   {highlight && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-linketto-600 to-violet-600 px-3 py-0.5 text-xs font-semibold text-white">

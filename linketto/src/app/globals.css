@@ -252,3 +252,20 @@ body {
 .icon-pulse {
   animation: circle-glow 3.6s ease-in-out infinite;
 }
+
+
+/* Плуващи полета: картите се носят във въздуха, всяка със свой наклон,
+   ритъм и закъснение (--tilt/--delay/--dur идват от JSX) */
+@keyframes card-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(var(--tilt, 0deg));
+  }
+}
+.card-drift {
+  animation: card-drift var(--dur, 7s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
