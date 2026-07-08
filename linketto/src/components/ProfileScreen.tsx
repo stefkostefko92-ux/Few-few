@@ -93,20 +93,37 @@ export type LoadedProfile = NonNullable<
 export function profileMetadata(
   profile: LoadedProfile | null,
 ): Metadata {
-  if (!profile || !profile.published) return { title: 'Linketto' };
+  if (!profile || !profile.published) {
+    return { title: 'Linketto', robots: { index: false } };
+  }
   const fallback = profile.translations[0];
   const main =
     profile.translations.find((t) => t.locale === profile.defaultLocale) ??
     fallback;
+  const path = `/u/${profile.slug}`;
   const languages: Record<string, string> = {};
   for (const translation of profile.translations) {
-    languages[translation.locale] =
-      `/u/${profile.slug}?hl=${translation.locale}`;
+    languages[translation.locale] = `${path}?hl=${translation.locale}`;
   }
+  languages['x-default'] = path;
+  const title = `${main?.displayName ?? profile.slug} · Linketto`;
+  const style = parseStyle(profile.style);
+  // Профили с 18+ линкове не се индексират (защита на непълнолетни).
+  const hasSensitive = profile.links.some((link) => isSensitiveUrl(link.url));
   return {
-    title: main?.displayName ?? profile.slug,
+    title,
     description: main?.bio ?? undefined,
-    alternates: { languages },
+    ...(hasSensitive ? { robots: { index: false } } : {}),
+    alternates: { canonical: path, languages },
+    openGraph: {
+      type: 'profile',
+      siteName: 'Linketto',
+      title: main?.displayName ?? profile.slug,
+      description: main?.bio ?? undefined,
+      url: path,
+      ...(style.avatarUrl ? { images: [{ url: style.avatarUrl }] } : {}),
+    },
+    twitter: { card: 'summary' },
   };
 }
 
@@ -221,6 +238,25 @@ export async function ProfileScreen({
   }
   const greeting = GREETING_BY_LOCALE[viewLocale] ?? GREETING_BY_LOCALE.en;
   const shareUrl = `${process.env.PUBLIC_BASE_URL ?? ''}/u/${slug}`;
+
+  // GEO: създателят като субект — Person/ProfilePage JSON-LD, sameAs от
+  // публичните линкове (само истински http(s) цели, без tel:/vcard).
+  const sameAs = profile.links
+    .filter((link) => link.active && link.url?.startsWith('http'))
+    .map((link) => link.url as string)
+    .slice(0, 20);
+  const personJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    inLanguage: viewLocale,
+    mainEntity: {
+      '@type': 'Person',
+      name: translation.displayName,
+      description: translation.bio ?? undefined,
+      url: shareUrl,
+      ...(sameAs.length > 0 ? { sameAs } : {}),
+    },
+  };
   // Стъпаловиден вход: всеки видим блок пристига с малко закъснение.
   let riseIndex = 0;
   const rise = () =>
@@ -237,6 +273,10 @@ export async function ProfileScreen({
         fontFamily: fontFamily(styleCfg),
       }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+      />
       {/* Жива сцена върху фона — по избор от стиловия енджин */}
       {styleCfg.bgEffect !== 'none' && (
         <div
@@ -542,6 +582,16 @@ export async function ProfileScreen({
                               {t('formError')}
                             </p>
                           )}
+                          {/* чл. 13 ОРЗД: информация в момента на събиране */}
+                          <p className="text-[11px] leading-snug opacity-60">
+                            {t('formConsent')}{' '}
+                            <a
+                              href={`/${viewLocale}/privacy`}
+                              className="underline"
+                            >
+                              {t('formPrivacyLink')}
+                            </a>
+                          </p>
                           <button
                             type="submit"
                             className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
@@ -642,6 +692,10 @@ export async function ProfileScreen({
                   {t('shopError')}
                 </p>
               )}
+              {/* Дир. 2011/83 чл. 6а: ролята на платформата е разкрита. */}
+              <p className="mt-2 text-center text-[11px] leading-snug opacity-55">
+                {t('shopSellerNote')}
+              </p>
               <ul className="mt-4 space-y-3">
                 {profile.products.map((product) => {
                   const productTitle =
@@ -672,6 +726,18 @@ export async function ProfileScreen({
                             €{(product.priceCents / 100).toFixed(2)}
                           </span>
                         </button>
+                        {/* ЗЗП чл. 57, т. 13 / Дир. 2011/83 чл. 16(м):
+                            изрично съгласие за незабавна доставка =
+                            загуба на 14-дневния отказ */}
+                        <label className="mt-1.5 flex items-start gap-2 text-[11px] leading-snug opacity-70">
+                          <input
+                            type="checkbox"
+                            name="waiver"
+                            required
+                            className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                          />
+                          {t('shopWaiver')}
+                        </label>
                       </form>
                     </li>
                   );
@@ -690,6 +756,16 @@ export async function ProfileScreen({
             </Link>
           </p>
         )}
+        {/* DSA чл. 16: път за сигнали — дискретен, но винаги наличен */}
+        <p className={`${styleCfg.hideBadge ? 'mt-12' : 'mt-3'} text-center`}>
+          <a
+            href={`/u/${slug}/report?hl=${viewLocale}`}
+            rel="nofollow"
+            className="text-[11px] opacity-40 transition hover:underline hover:opacity-80"
+          >
+            {t('report')}
+          </a>
+        </p>
       </div>
     </main>
   );

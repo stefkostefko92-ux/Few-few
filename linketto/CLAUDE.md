@@ -76,6 +76,15 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 Насрочване: Link.showFrom/showUntil + isBlockVisible() — проверява се и при
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
+SEO: src/lib/seo.ts (SITE_URL, pageMetadata → canonical+hreflang за 6-те
+локала, siteJsonLd/faqJsonLd). Профилите: profileMetadata (OG, canonical,
+noindex при 18+ линк) + ProfilePage/Person JSON-LD. sitemap.ts (hreflang
+alternates, без 18+ профили), robots.ts (AI ботове изрично allow),
+public/llms.txt. Правно: DSA сигнали = /u/[slug]/report (модел Report,
+actions/report.ts, категории в src/lib/report.ts); чл. 13 бележка под FORM
+блока; чекбокс waiver при покупка (валидира се в shop.ts); ContactMessage
+се чисти след 12 мес.; legal.* текстовете са пълни (одитирани 2026-07-08).
+
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →
 DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
 Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).

@@ -1,15 +1,33 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/seo';
+
+// GEO решение (собственикът иска цитиране от AI отговор-машините из цяла
+// Европа): търсещите И обучаващите AI ботове са изрично допуснати.
+const AI_BOTS = [
+  'OAI-SearchBot',
+  'PerplexityBot',
+  'Claude-SearchBot',
+  'Bingbot',
+  'GPTBot',
+  'ClaudeBot',
+  'Google-Extended',
+];
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
+  const disallow = [
+    '/api/',
+    '/*/dashboard',
+    '/*/login',
+    '/*/register',
+    '/u/*/l/', // click redirect-и — не са съдържание
+    '/u/*/delivery',
+    '/d/', // собствените домейни се индексират на своя host, не тук
+  ];
   return {
     rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: ['/api/', '/*/dashboard', '/*/login', '/*/register'],
-      },
+      { userAgent: '*', allow: '/', disallow },
+      { userAgent: AI_BOTS, allow: '/', disallow },
     ],
-    sitemap: `${base}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

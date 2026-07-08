@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { dirFor, isLocale } from '@/i18n/locales';
 import { fontVariables } from '@/app/fonts';
+import { SITE_URL } from '@/lib/seo';
 import '../../globals.css';
 
 export async function generateMetadata({
@@ -12,9 +13,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
+  const tSeo = await getTranslations({ locale, namespace: 'seo' });
   return {
-    title: { default: t('appName'), template: `%s · ${t('appName')}` },
-    description: t('tagline'),
+    metadataBase: new URL(SITE_URL),
+    title: { default: tSeo('metaTitle'), template: `%s · ${t('appName')}` },
+    description: tSeo('metaDescription'),
+    keywords: tSeo('keywords'),
+    applicationName: t('appName'),
   };
 }
 

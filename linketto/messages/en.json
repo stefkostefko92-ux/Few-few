@@ -44,7 +44,18 @@
     "manifestoQuote": "We will never show “BANNED” to your visitors. We moderate transparently — with notice, a human response and the right to appeal. The reputation you build stays yours.",
     "manifestoBy": "A promise from the Carbon Stealth team",
     "ctaTitle": "Speak to the whole world from one link.",
-    "ctaButton": "Start free in 60 seconds"
+    "ctaButton": "Start free in 60 seconds",
+    "faqTitle": "Frequently asked questions",
+    "faq1q": "What is Linketto?",
+    "faq1a": "Linketto is a link in bio page: one link that gathers all your links, products and contacts. The unique part: your page speaks every visitor’s language — build it once and it shows in 6+ languages.",
+    "faq2q": "How is Linketto better than Linktree?",
+    "faq2a": "Four things: your profile is multilingual (Linktree is English-only), it is hosted in the EU with GDPR by default, analytics are cookie-free with no personal data, and sales commissions are 8/4/0/0% by plan — versus 12% and 9% at Linktree.",
+    "faq3q": "How much does Linketto cost?",
+    "faq3a": "The Free plan is genuinely free — unlimited links and 2 language versions. Pro is €4/mo (all languages, custom domain), Business is €9/mo (0% commission, API), and Founder is a one-time €49 — Pro forever with 0% commission.",
+    "faq4q": "How does the multilingual profile work?",
+    "faq4a": "Visitors automatically see your profile in their language (from their browser settings) or pick one on the page. You write in your language and the built-in AI translation fills in the rest with one click — your manual translations are never overwritten.",
+    "faq5q": "Can I sell digital products?",
+    "faq5a": "Yes. Connect your Stripe account from the dashboard and add products priced in euro. Buyers pay on your page and the secret delivery link unlocks only after a confirmed payment. The commission follows your plan (8/4/0/0%) plus a 1.9% + €0.30 processing fee."
   },
   "pricing": {
     "title": "Simple, honest pricing",
@@ -258,19 +269,48 @@
     "share": "Share",
     "copyLink": "Copy link",
     "copied": "Copied!",
-    "scanQr": "Scan with your phone"
+    "scanQr": "Scan with your phone",
+    "report": "Report this profile",
+    "formConsent": "By sending you agree that your message (name, email, text) is delivered to the profile owner and stored by Linketto for up to 12 months.",
+    "formPrivacyLink": "Privacy",
+    "shopWaiver": "I agree to the content being delivered immediately and acknowledge that I thereby lose my 14-day right of withdrawal.",
+    "shopSellerNote": "The purchase contract is between you and the creator; Linketto is the platform."
   },
   "legal": {
     "privacyTitle": "Privacy Policy",
-    "privacyBody": "Linketto is a service of Carbon Stealth VCC (company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu). We process only the data needed to run the service: your email and (hashed) password, and the content you choose to publish. Our analytics are cookieless and store no personal data about visitors — we do not keep IP addresses. Data is stored in the European Union. You have the right to access, rectify, erase and port your data under the GDPR — contact us at info@carbonstealth.eu. (Draft — subject to legal review before launch.)",
+    "privacyBody": "Controller: Carbon Stealth VCC, company ID BG208725180, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu.\n\nIn short: we collect only what the service needs; we never sell data; we use no advertising or tracking technologies; profile visitors receive no cookies; data stays in the EU and leaves it only to Stripe (payments) and — on your explicit action — to Google (AI translation).\n\nWhat we process and why · Account: email, hashed password, chosen language — to run the service (Art. 6(1)(b) GDPR, contract). Profile content: names, descriptions, links, images — published by you. Contact-form messages: name, email, text — delivered to the profile owner (Art. 6(1)(f), legitimate interest — communication you requested). Purchases: buyer email and amount — for delivery and accounting (Art. 6(1)(b) and legal obligation). Analytics: cookie-free, no IPs, no personal data — we only count views and clicks (Art. 6(1)(f)).\n\nRecipients and transfers · Stripe Payments Europe Ltd processes payments; transfers to Stripe Inc (USA) rely on the EU-US Data Privacy Framework and Standard Contractual Clauses. Google (Gemini API): only when you press \"Translate with AI\" yourself, we send the name and description you entered for translation (US transfer under DPF + SCC). An EU hosting provider. Nobody else. We never sell data or use it for advertising.\n\nRetention · Account: while it exists + 30 days. Contact-form messages: 12 months. Purchase records: 10 years (accounting law). Analytics events: up to 13 months.\n\nYour rights · Access, rectification, erasure, restriction (Art. 18), portability, objection (Art. 21) and withdrawal of consent at any time (Art. 7(3)) — write to info@carbonstealth.eu. You may lodge a complaint with the Bulgarian Commission for Personal Data Protection (CPDP, www.cpdp.bg) or your local supervisory authority. We do not use automated decision-making under Art. 22.\n\nCookies · We use one session httpOnly cookie, strictly necessary for signing in. Details in the Cookie policy.\n\nChanges · We will notify you at your account email about material changes.",
     "termsTitle": "Terms of Service",
-    "termsBody": "By using Linketto you agree not to publish illegal content, malicious links or misleading information. In case of a violation we notify you first and you have the right to appeal; profiles are not suspended without notice, except for severe abuse requiring immediate action under the law. Paid plans are billed via Stripe; you can cancel at any time and your plan stays active until the end of the paid period. The service is provided by Carbon Stealth VCC. Shop sales carry a payment processing fee (1.9% + €0.30) in addition to the plan commission. (Draft — subject to legal review before launch.)"
+    "termsBody": "Linketto is a service of Carbon Stealth VCC (ID BG208725180, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu).\n\nContent and moderation · Illegal content, impersonation, phishing, malicious links and misleading information are prohibited. Anyone can report a profile via the \"Report\" link on every public profile or at info@carbonstealth.eu (point of contact under Regulation (EU) 2022/2065 — DSA). We handle reports diligently and without arbitrariness. If we act against your content, you receive a statement of reasons and may appeal to us; you may also complain to your Digital Services Coordinator. Profiles are not suspended without prior notice, except for grave abuse requiring immediate action by law. We never show \"BANNED\" to your visitors.\n\nPlans and payments · Paid plans are billed via Stripe; you can cancel at any time and the plan stays active until the end of the paid period. The Founder plan is a one-time payment and is never revoked.\n\nShop · Linketto is a platform: the purchase contract is concluded between the buyer and the creator (seller). Sales carry a commission according to the seller's plan (8/4/0/0%) plus a payment processing fee of 1.9% + €0.30. Digital content is delivered immediately after a confirmed payment — that is why at checkout you give express consent and acknowledge losing the 14-day right of withdrawal (Art. 16(m), Directive 2011/83/EU). If the seller is not a trader, EU consumer rights do not apply to the purchase.\n\nLiability · You are responsible for the content you publish and the products you sell. We are not liable for the content of external sites your links lead to.\n\nGoverning law · Bulgarian law; Bulgarian courts have jurisdiction, without prejudice to mandatory consumer rights in your country.",
+    "cookiesTitle": "Cookie policy",
+    "cookiesBody": "Linketto uses a single cookie — a session cookie, httpOnly, strictly necessary to sign in to your account. It does not track your behaviour and is never shared.\n\nVisitors of public profiles receive no cookies at all. Our analytics are cookie-free: we count views and clicks without IP addresses, without user agents and without any personal data.\n\nBecause we use no advertising, analytics or tracking cookies, no consent banner is required (strictly necessary cookies under the ePrivacy rules). Payments are processed on Stripe’s pages, which sets its own cookies under its own policy.\n\nQuestions: info@carbonstealth.eu."
   },
   "footer": {
     "company": "A Carbon Stealth VCC product",
     "legalLine": "Company ID BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
     "privacy": "Privacy",
     "terms": "Terms",
-    "contact": "info@carbonstealth.eu"
+    "contact": "info@carbonstealth.eu",
+    "cookies": "Cookies"
+  },
+  "seo": {
+    "metaTitle": "Linketto — multilingual link in bio: all your links, in every language",
+    "metaDescription": "Linketto is the multilingual link in bio page: all your links in one place, in every visitor's language. EU-hosted, cookie-free analytics, commissions from 0%. A Carbon Stealth product.",
+    "keywords": "Linketto, Carbon Stealth, share links, link in bio, linktree alternative, bio link, link in bio page, creator landing page, multilingual profile, digital business card, sell digital products, all links in one place"
+  },
+  "report": {
+    "title": "Report the profile “{name}”",
+    "intro": "If this profile hosts illegal content, impersonates someone or spreads scam links, describe the problem — we review every report.",
+    "categoryLabel": "Category",
+    "category_impersonation": "Impersonation",
+    "category_phishing": "Phishing / scam",
+    "category_illegal": "Illegal content",
+    "category_adult": "Unlabelled 18+ content",
+    "category_other": "Other",
+    "messageLabel": "Describe the problem",
+    "emailLabel": "Email for follow-up (optional)",
+    "legalNote": "Reports are handled under Regulation (EU) 2022/2065 (DSA). Your email is used only to reply about this report.",
+    "send": "Send report",
+    "sent": "Thank you! Your report was received and will be reviewed.",
+    "back": "Back to the profile"
   }
 }

@@ -1,7 +1,9 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { faqJsonLd, pageMetadata, siteJsonLd } from '@/lib/seo';
 import {
   CheckIcon,
   ClapperboardIcon,
@@ -86,6 +88,22 @@ const MARQUEE =
 const PLATFORM_MARQUEE =
   'YouTube · Instagram · TikTok · X · Twitch · Kick · Discord · Spotify · Snapchat · Threads · Facebook · Telegram · ';
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const tSeo = await getTranslations({ locale, namespace: 'seo' });
+  return pageMetadata(locale as Locale, '', {
+    title: tSeo('metaTitle'),
+    description: tSeo('metaDescription'),
+    keywords: tSeo('keywords').split(', '),
+  });
+}
+
+const FAQ_KEYS = ['faq1', 'faq2', 'faq3', 'faq4', 'faq5'] as const;
+
 export default async function HomePage({
   params,
 }: {
@@ -94,6 +112,26 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations('home');
   const tPricing = await getTranslations('pricing');
+  const tSeo = await getTranslations('seo');
+
+  const faqItems = FAQ_KEYS.map((key) => ({
+    q: t(`${key}q`),
+    a: t(`${key}a`),
+  }));
+  const jsonLd = [
+    ...siteJsonLd({
+      locale: locale as Locale,
+      description: tSeo('metaDescription'),
+      plans: PLAN_ORDER.map((planKey) => {
+        const def = PLANS[planKey.toUpperCase() as keyof typeof PLANS];
+        return {
+          name: tPricing(`${planKey}.name`),
+          priceEur: def.priceCents / 100,
+        };
+      }),
+    }),
+    faqJsonLd(faqItems),
+  ];
 
   const TRUST = [
     [ServerIcon, t('trustEu')],
@@ -112,6 +150,10 @@ export default async function HomePage({
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div aria-hidden className="scroll-progress" />
       <SiteHeader locale={locale as Locale} />
       <main>
@@ -445,6 +487,35 @@ export default async function HomePage({
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* ── FAQ: отговори отпред — за хора и за AI (AEO) ───────────── */}
+        <section
+          aria-labelledby="faq-title"
+          className="mx-auto max-w-3xl px-6 pb-20"
+        >
+          <h2
+            id="faq-title"
+            className="h2-draw text-center text-3xl font-bold tracking-tight text-slate-900"
+          >
+            {t('faqTitle')}
+          </h2>
+          <div className="mt-10 space-y-4">
+            {faqItems.map((item, index) => (
+              <details
+                key={item.q}
+                className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-linketto-500/40 hover:shadow-md"
+                open={index === 0}
+              >
+                <summary className="cursor-pointer list-none font-semibold text-slate-900 marker:content-none">
+                  {item.q}
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  {item.a}
+                </p>
+              </details>
+            ))}
           </div>
         </section>
 

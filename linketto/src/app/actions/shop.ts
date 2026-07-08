@@ -59,6 +59,12 @@ export async function startProductPurchaseAction(
   const productId = String(formData.get('productId') ?? '');
   const back = `/u/${slug}${hl ? `?hl=${encodeURIComponent(hl)}` : ''}`;
 
+  // ЗЗП чл. 57, т. 13: без изрично съгласие за незабавна доставка
+  // (= отказ от 14-дневното право) покупка не се стартира.
+  if (formData.get('waiver') !== 'on') {
+    redirect(`${back}${hl ? '&' : '?'}shopError=1`);
+  }
+
   const product = await prisma.product.findFirst({
     where: {
       id: productId,

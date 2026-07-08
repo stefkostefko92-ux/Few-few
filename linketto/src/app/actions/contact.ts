@@ -20,6 +20,14 @@ export async function submitContactAction(formData: FormData): Promise<void> {
   if (String(formData.get('website') ?? '') !== '') {
     redirect(back); // honeypot — тихо игнориране
   }
+  // Срок на съхранение (чл. 13 ОРЗД): съобщения по-стари от 12 месеца
+  // се чистят при всяко ново изпращане — без отделен cron.
+  await prisma.contactMessage
+    .deleteMany({
+      where: { createdAt: { lt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) } },
+    })
+    .catch(() => undefined);
+
   const parsed = messageSchema.safeParse({
     name: formData.get('name') ?? undefined,
     email: formData.get('email') ?? '',

@@ -132,6 +132,19 @@ CREATE TABLE "ContactMessage" (
 );
 
 -- CreateTable
+CREATE TABLE "Report" (
+    "id" TEXT NOT NULL,
+    "profileId" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "email" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "resolvedAt" TIMESTAMP(3),
+
+    CONSTRAINT "Report_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "LinkTranslation" (
     "id" TEXT NOT NULL,
     "linkId" TEXT NOT NULL,
@@ -197,6 +210,9 @@ CREATE INDEX "Purchase_profileId_createdAt_idx" ON "Purchase"("profileId", "crea
 CREATE INDEX "ContactMessage_profileId_createdAt_idx" ON "ContactMessage"("profileId", "createdAt");
 
 -- CreateIndex
+CREATE INDEX "Report_profileId_createdAt_idx" ON "Report"("profileId", "createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "LinkTranslation_linkId_locale_key" ON "LinkTranslation"("linkId", "locale");
 
 -- CreateIndex
@@ -228,6 +244,9 @@ ALTER TABLE "Purchase" ADD CONSTRAINT "Purchase_productId_fkey" FOREIGN KEY ("pr
 
 -- AddForeignKey
 ALTER TABLE "ContactMessage" ADD CONSTRAINT "ContactMessage_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Report" ADD CONSTRAINT "Report_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LinkTranslation" ADD CONSTRAINT "LinkTranslation_linkId_fkey" FOREIGN KEY ("linkId") REFERENCES "Link"("id") ON DELETE CASCADE ON UPDATE CASCADE;

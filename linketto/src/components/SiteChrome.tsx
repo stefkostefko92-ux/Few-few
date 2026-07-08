@@ -114,6 +114,12 @@ export async function SiteFooter({
           >
             {t('terms')}
           </Link>
+          <Link
+            href={`/${locale}/cookies`}
+            className="transition hover:text-white"
+          >
+            {t('cookies')}
+          </Link>
           <a
             href="mailto:info@carbonstealth.eu"
             className="transition hover:text-white"

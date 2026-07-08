@@ -62,6 +62,7 @@ model Profile {
   links         Link[]
   clicks        ClickEvent[]
   messages      ContactMessage[]
+  reports       Report[]
   products      Product[]
 }
 
@@ -165,6 +166,20 @@ model ContactMessage {
   message   String
   locale    String?
   createdAt DateTime @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+// DSA чл. 16: сигнали „уведомяване и действие" за публични профили.
+model Report {
+  id         String    @id @default(cuid())
+  profileId  String
+  profile    Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  category   String
+  message    String
+  email      String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
 
   @@index([profileId, createdAt])
 }

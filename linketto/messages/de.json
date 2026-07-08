@@ -44,7 +44,18 @@
     "manifestoQuote": "Wir zeigen deinen Besuchern niemals „BANNED“. Wir moderieren transparent — mit Vorankündigung, menschlicher Antwort und Widerspruchsrecht. Der Ruf, den du aufbaust, bleibt deiner.",
     "manifestoBy": "Ein Versprechen des Carbon-Stealth-Teams",
     "ctaTitle": "Sprich mit der ganzen Welt über einen Link.",
-    "ctaButton": "Starte kostenlos in 60 Sekunden"
+    "ctaButton": "Starte kostenlos in 60 Sekunden",
+    "faqTitle": "Häufige Fragen",
+    "faq1q": "Was ist Linketto?",
+    "faq1a": "Linketto ist eine Link-in-Bio-Seite: ein Link, der alle deine Links, Produkte und Kontakte bündelt. Das Besondere: deine Seite spricht die Sprache jedes Besuchers — einmal erstellt, erscheint sie in 6+ Sprachen.",
+    "faq2q": "Was macht Linketto besser als Linktree?",
+    "faq2a": "Vier Dinge: dein Profil ist mehrsprachig (Linktree ist nur auf Englisch), es wird in der EU mit DSGVO als Standard gehostet, die Analytik kommt ohne Cookies und ohne persönliche Daten aus, und die Verkaufsprovisionen liegen je nach Plan bei 8/4/0/0% — gegenüber 12% und 9% bei Linktree.",
+    "faq3q": "Was kostet Linketto?",
+    "faq3a": "Der Free-Plan ist wirklich kostenlos — unbegrenzte Links und 2 Sprachversionen. Pro kostet 4 €/Monat (alle Sprachen, eigene Domain), Business 9 €/Monat (0% Provision, API) und Founder ist eine Einmalzahlung von 49 € — Pro für immer mit 0% Provision.",
+    "faq4q": "Wie funktioniert das mehrsprachige Profil?",
+    "faq4a": "Besucher sehen dein Profil automatisch in ihrer Sprache (aus den Browsereinstellungen) oder wählen sie auf der Seite. Du schreibst in deiner Sprache, die eingebaute KI-Übersetzung füllt die übrigen mit einem Klick aus — deine manuellen Übersetzungen werden nie überschrieben.",
+    "faq5q": "Kann ich digitale Produkte verkaufen?",
+    "faq5a": "Ja. Verbinde dein Stripe-Konto im Dashboard und füge Produkte mit Euro-Preisen hinzu. Käufer zahlen auf deiner Seite, der geheime Lieferlink wird erst nach bestätigter Zahlung freigeschaltet. Die Provision folgt deinem Plan (8/4/0/0%) plus 1,9% + 0,30 € Bearbeitungsgebühr."
   },
   "pricing": {
     "title": "Einfache, faire Preise",
@@ -258,19 +269,48 @@
     "share": "Teilen",
     "copyLink": "Link kopieren",
     "copied": "Kopiert!",
-    "scanQr": "Mit dem Handy scannen"
+    "scanQr": "Mit dem Handy scannen",
+    "report": "Dieses Profil melden",
+    "formConsent": "Mit dem Senden stimmst du zu, dass deine Nachricht (Name, E-Mail, Text) dem Profilinhaber zugestellt und von Linketto bis zu 12 Monate gespeichert wird.",
+    "formPrivacyLink": "Datenschutz",
+    "shopWaiver": "Ich stimme der sofortigen Lieferung des Inhalts zu und bestätige, dass ich dadurch mein 14-tägiges Widerrufsrecht verliere.",
+    "shopSellerNote": "Der Kaufvertrag besteht zwischen dir und dem Creator; Linketto ist die Plattform."
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",
-    "privacyBody": "Linketto ist ein Dienst der Carbon Stealth VCC (ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgarien, info@carbonstealth.eu). Wir verarbeiten nur die für den Dienst nötigen Daten: deine E-Mail und dein (gehashtes) Passwort sowie die Inhalte, die du selbst veröffentlichst. Unsere Analytik kommt ohne Cookies aus und speichert keine personenbezogenen Daten der Besucher — wir speichern keine IP-Adressen. Die Daten werden in der Europäischen Union gespeichert. Du hast nach DSGVO das Recht auf Auskunft, Berichtigung, Löschung und Übertragbarkeit — schreib uns an info@carbonstealth.eu. (Entwurf — vor dem Start rechtlich zu prüfen.)",
+    "privacyBody": "Verantwortlicher: Carbon Stealth VCC, ID BG208725180, Samuil-Str. 3, 2670 Bobov Dol, Bulgarien, info@carbonstealth.eu.\n\nKurz gesagt: Wir erheben nur, was der Dienst braucht; wir verkaufen niemals Daten; wir nutzen keine Werbe- oder Tracking-Technologien; Profilbesucher erhalten keine Cookies; Daten bleiben in der EU und verlassen sie nur zu Stripe (Zahlungen) und — auf deine ausdrückliche Aktion — zu Google (KI-Übersetzung).\n\nWas wir verarbeiten und warum · Konto: E-Mail, gehashtes Passwort, gewählte Sprache — zum Betrieb des Dienstes (Art. 6(1)(b) DSGVO, Vertrag). Profilinhalte: Namen, Beschreibungen, Links, Bilder — von dir veröffentlicht. Kontaktformular-Nachrichten: Name, E-Mail, Text — an den Profilinhaber zugestellt (Art. 6(1)(f), berechtigtes Interesse — von dir gewünschte Kommunikation). Käufe: Käufer-E-Mail und Betrag — für Lieferung und Buchhaltung (Art. 6(1)(b) und rechtliche Pflicht). Analytik: ohne Cookies, ohne IPs, ohne persönliche Daten — wir zählen nur Aufrufe und Klicks (Art. 6(1)(f)).\n\nEmpfänger und Übermittlungen · Stripe Payments Europe Ltd verarbeitet Zahlungen; Übermittlungen an Stripe Inc (USA) stützen sich auf das EU-US Data Privacy Framework und Standardvertragsklauseln. Google (Gemini API): nur wenn du selbst „Mit KI übersetzen“ drückst, senden wir den von dir eingegebenen Namen und die Beschreibung zur Übersetzung (US-Übermittlung unter DPF + SVK). Ein Hosting-Anbieter in der EU. Sonst niemand. Wir verkaufen niemals Daten und nutzen sie nicht für Werbung.\n\nSpeicherdauer · Konto: solange es besteht + 30 Tage. Kontaktformular-Nachrichten: 12 Monate. Kaufbelege: 10 Jahre (Buchhaltungsrecht). Analytik-Ereignisse: bis zu 13 Monate.\n\nDeine Rechte · Auskunft, Berichtigung, Löschung, Einschränkung (Art. 18), Übertragbarkeit, Widerspruch (Art. 21) und jederzeitiger Widerruf der Einwilligung (Art. 7(3)) — schreibe an info@carbonstealth.eu. Du kannst dich bei der bulgarischen CPDP (www.cpdp.bg) oder deiner örtlichen Aufsichtsbehörde beschweren. Automatisierte Entscheidungen nach Art. 22 setzen wir nicht ein.\n\nCookies · Wir verwenden ein einziges Sitzungscookie (httpOnly), unbedingt erforderlich für die Anmeldung. Details in der Cookie-Richtlinie.\n\nÄnderungen · Über wesentliche Änderungen informieren wir dich an deine Konto-E-Mail.",
     "termsTitle": "Nutzungsbedingungen",
-    "termsBody": "Mit der Nutzung von Linketto verpflichtest du dich, keine illegalen Inhalte, schädlichen Links oder irreführenden Informationen zu veröffentlichen. Bei Verstößen benachrichtigen wir dich zuerst, und du hast ein Widerspruchsrecht; Profile werden nicht ohne Vorankündigung gesperrt, außer bei schwerem Missbrauch, der gesetzlich sofortiges Handeln erfordert. Bezahlpläne werden über Stripe abgerechnet; du kannst jederzeit kündigen, der Plan bleibt bis zum Ende des bezahlten Zeitraums aktiv. Der Dienst wird von Carbon Stealth VCC bereitgestellt. Auf Verkäufe über den Shop fällt zusätzlich zur Plan-Provision eine Zahlungsabwicklungsgebühr (1,9 % + €0,30) an. (Entwurf — vor dem Start rechtlich zu prüfen.)"
+    "termsBody": "Linketto ist ein Dienst der Carbon Stealth VCC (ID BG208725180, Samuil-Str. 3, 2670 Bobov Dol, Bulgarien, info@carbonstealth.eu).\n\nInhalte und Moderation · Verboten sind illegale Inhalte, Identitätsmissbrauch, Phishing, bösartige Links und irreführende Informationen. Jeder kann ein Profil über den Link „Melden“ auf jedem öffentlichen Profil oder an info@carbonstealth.eu melden (Kontaktstelle nach Verordnung (EU) 2022/2065 — DSA). Wir bearbeiten Meldungen sorgfältig und ohne Willkür. Handeln wir gegen deine Inhalte, erhältst du eine Begründung und kannst bei uns Widerspruch einlegen; zudem kannst du dich an den Koordinator für digitale Dienste wenden. Profile werden nicht ohne Vorankündigung gesperrt, außer bei schweren Missbräuchen, die sofortiges gesetzliches Handeln erfordern. Wir zeigen deinen Besuchern niemals „BANNED“.\n\nPläne und Zahlungen · Bezahlpläne werden über Stripe abgerechnet; du kannst jederzeit kündigen, der Plan bleibt bis zum Ende des bezahlten Zeitraums aktiv. Der Founder-Plan ist eine Einmalzahlung und wird nie entzogen.\n\nShop · Linketto ist eine Plattform: Der Kaufvertrag kommt zwischen Käufer und Creator (Verkäufer) zustande. Auf Verkäufe fällt eine Provision nach dem Plan des Verkäufers an (8/4/0/0%) plus eine Zahlungsabwicklungsgebühr von 1,9% + 0,30 €. Digitale Inhalte werden sofort nach bestätigter Zahlung geliefert — deshalb gibst du beim Checkout deine ausdrückliche Zustimmung und bestätigst den Verlust des 14-tägigen Widerrufsrechts (Art. 16(m), Richtlinie 2011/83/EU). Ist der Verkäufer kein Unternehmer, gelten die EU-Verbraucherrechte für den Kauf nicht.\n\nHaftung · Du bist verantwortlich für die Inhalte, die du veröffentlichst, und die Produkte, die du verkaufst. Für Inhalte externer Seiten, zu denen Links führen, haften wir nicht.\n\nAnwendbares Recht · Bulgarisches Recht; zuständig sind bulgarische Gerichte, unbeschadet zwingender Verbraucherrechte in deinem Land.",
+    "cookiesTitle": "Cookie-Richtlinie",
+    "cookiesBody": "Linketto verwendet ein einziges Cookie — ein Sitzungscookie, httpOnly, unbedingt erforderlich für die Anmeldung in deinem Konto. Es verfolgt dein Verhalten nicht und wird niemals geteilt.\n\nBesucher öffentlicher Profile erhalten überhaupt keine Cookies. Unsere Analytik ist cookiefrei: Wir zählen Aufrufe und Klicks ohne IP-Adressen, ohne User-Agent und ohne jegliche persönliche Daten.\n\nDa wir keine Werbe-, Analyse- oder Tracking-Cookies verwenden, ist kein Einwilligungsbanner erforderlich (unbedingt erforderliche Cookies nach den ePrivacy-Regeln). Zahlungen werden auf den Seiten von Stripe verarbeitet, das eigene Cookies nach eigener Richtlinie setzt.\n\nFragen: info@carbonstealth.eu."
   },
   "footer": {
     "company": "Ein Produkt von Carbon Stealth VCC",
     "legalLine": "ID BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgarien",
     "privacy": "Datenschutz",
     "terms": "Bedingungen",
-    "contact": "info@carbonstealth.eu"
+    "contact": "info@carbonstealth.eu",
+    "cookies": "Cookies"
+  },
+  "seo": {
+    "metaTitle": "Linketto — mehrsprachiges Link in Bio: alle deine Links, in jeder Sprache",
+    "metaDescription": "Linketto ist die mehrsprachige Link-in-Bio-Seite: alle deine Links an einem Ort, in der Sprache jedes Besuchers. In der EU gehostet, Analytik ohne Cookies, Provisionen ab 0%. Ein Produkt von Carbon Stealth.",
+    "keywords": "Linketto, Carbon Stealth, share links, link in bio, Linktree Alternative, Bio-Link, Link-Seite, Creator-Seite, mehrsprachiges Profil, digitale Visitenkarte, digitale Produkte verkaufen, alle Links an einem Ort"
+  },
+  "report": {
+    "title": "Profil „{name}“ melden",
+    "intro": "Wenn dieses Profil illegale Inhalte hostet, sich für jemanden ausgibt oder Betrugslinks verbreitet, beschreibe das Problem — wir prüfen jede Meldung.",
+    "categoryLabel": "Kategorie",
+    "category_impersonation": "Identitätsmissbrauch",
+    "category_phishing": "Phishing / Betrug",
+    "category_illegal": "Illegale Inhalte",
+    "category_adult": "Nicht gekennzeichnete 18+-Inhalte",
+    "category_other": "Sonstiges",
+    "messageLabel": "Beschreibe das Problem",
+    "emailLabel": "E-Mail für Rückmeldung (optional)",
+    "legalNote": "Meldungen werden nach Verordnung (EU) 2022/2065 (DSA) bearbeitet. Deine E-Mail wird nur für die Antwort zu dieser Meldung genutzt.",
+    "send": "Meldung senden",
+    "sent": "Danke! Deine Meldung ist eingegangen und wird geprüft.",
+    "back": "Zurück zum Profil"
   }
 }
