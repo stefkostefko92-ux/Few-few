@@ -54,6 +54,7 @@ model Profile {
   defaultLocale String               @default("bg")
   theme         String               @default("aurora")
   accent        String? // hex цвят, валидиран в кода
+  style         Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
   published     Boolean              @default(true)
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt

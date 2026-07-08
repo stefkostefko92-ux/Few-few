@@ -8,6 +8,7 @@ import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
 import { parseBlockInput } from '@/lib/blocks';
+import { styleSchema } from '@/lib/style';
 import type { Prisma } from '@prisma/client';
 
 const THEMES = ['aurora', 'mono', 'dusk'] as const;
@@ -120,6 +121,47 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
   redirect(`/${uiLocale}/dashboard`);
 }
 
+// Стиловият енджин: всичко от секцията „Персонализация“ минава оттук.
+export async function updateStyleAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+
+  const field = (name: string) => {
+    const value = String(formData.get(name) ?? '').trim();
+    return value === '' ? undefined : value;
+  };
+  const parsed = styleSchema.safeParse({
+    bgStyle: field('bgStyle'),
+    bgColor1: field('bgColor1'),
+    bgColor2: field('bgColor2'),
+    bgImageUrl: field('bgImageUrl'),
+    textColor: field('textColor'),
+    font: field('font'),
+    buttonShape: field('buttonShape'),
+    buttonFill: field('buttonFill'),
+    buttonShadow: field('buttonShadow'),
+    layout: field('layout'),
+    align: field('align'),
+    avatarUrl: field('avatarUrl'),
+    avatarShape: field('avatarShape'),
+    hideBadge: formData.get('hideBadge') === 'on',
+  });
+  if (!parsed.success) {
+    redirect(`/${uiLocale}/dashboard?error=style`);
+  }
+  // Скриването на Linketto баджа е привилегия на платените планове.
+  if (parsed.data.hideBadge && planFor(user.plan).id === 'FREE') {
+    redirect(`/${uiLocale}/dashboard?error=limit`);
+  }
+  const { count } = await prisma.profile.updateMany({
+    where: { id: profileId, userId: user.id },
+    data: { style: parsed.data },
+  });
+  if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+  redirect(`/${uiLocale}/dashboard`);
+}
+
 export async function upsertProfileTranslationAction(
   formData: FormData,
 ): Promise<void> {
@@ -178,6 +220,7 @@ export async function addLinkAction(formData: FormData): Promise<void> {
     url: String(formData.get('url') ?? ''),
     extra1: String(formData.get('extra1') ?? ''),
     extra2: String(formData.get('extra2') ?? ''),
+    color: String(formData.get('color') ?? ''),
   });
   if (!input || !title) {
     redirect(`/${uiLocale}/dashboard?error=block`);

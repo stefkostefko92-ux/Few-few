@@ -44,6 +44,7 @@ CREATE TABLE "Profile" (
     "defaultLocale" TEXT NOT NULL DEFAULT 'bg',
     "theme" TEXT NOT NULL DEFAULT 'aurora',
     "accent" TEXT,
+    "style" JSONB,
     "published" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

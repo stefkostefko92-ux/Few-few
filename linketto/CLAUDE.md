@@ -74,6 +74,12 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 Насрочване: Link.showFrom/showUntil + isBlockVisible() — проверява се и при
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
+Стилов енджин: Profile.style (Json) + src/lib/style.ts (zod схема,
+DEFAULT_STYLE, прощаващ parseStyle — невалидно поле пада към подразбирането;
+backgroundCss/buttonCss/fontFamily/readableOn). Нова стилова опция = поле в
+styleSchema + контрола в дашборда — БЕЗ миграция. hideBadge е само за платени
+планове (пази се в updateStyleAction). Пер-блок цвят: meta.color.
+
 Магазин (Stripe Connect Express): User.stripeAccountId + stripeChargesEnabled
 (отключва се само от account.updated webhook-а). Product/ProductTranslation/
 Purchase; actions/shop.ts (onboarding + CRUD + публичното

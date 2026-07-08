@@ -34,6 +34,8 @@ export interface BlockMeta {
   email?: string;
   /** VCARD: организация. */
   org?: string;
+  /** Пер-блок акцентен цвят (hex) — приоритет над цвета на профила. */
+  color?: string;
 }
 
 const httpUrl = z
@@ -63,9 +65,24 @@ export function parseBlockInput(raw: {
   url: string;
   extra1: string;
   extra2: string;
+  color?: string;
 }): BlockInput | null {
   const kind = raw.kind as BlockKindId;
   if (!BLOCK_KINDS.includes(kind)) return null;
+  const base = parseBlockCore(raw, kind);
+  if (!base) return null;
+  // Пер-блок акцентен цвят — всяко копче може да е различно.
+  const color = (raw.color ?? '').trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    base.meta = { ...(base.meta ?? {}), color };
+  }
+  return base;
+}
+
+function parseBlockCore(
+  raw: { url: string; extra1: string; extra2: string },
+  kind: BlockKindId,
+): BlockInput | null {
 
   switch (kind) {
     case 'HEADER':

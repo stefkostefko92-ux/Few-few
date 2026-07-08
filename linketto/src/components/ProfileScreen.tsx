@@ -6,6 +6,15 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { bestLocale, dirFor, LOCALE_NAMES } from '@/i18n/locales';
 import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
+import {
+  backgroundCss,
+  buttonCss,
+  buttonShadowClass,
+  buttonShapeClass,
+  fontFamily,
+  parseStyle,
+  readableOn,
+} from '@/lib/style';
 import { submitContactAction } from '@/app/actions/contact';
 import { startProductPurchaseAction } from '@/app/actions/shop';
 
@@ -114,12 +123,34 @@ export async function ProfileScreen({
     })
     .catch(() => undefined);
 
-  const themeClass = THEME_CLASSES[profile.theme] ?? THEME_CLASSES.aurora;
+  // Стилов енджин — „персонализация до крайна степен“.
+  const styleCfg = parseStyle(profile.style);
+  const isTheme = styleCfg.bgStyle === 'theme';
+  const themeClass = isTheme
+    ? (THEME_CLASSES[profile.theme] ?? THEME_CLASSES.aurora)
+    : '';
+  const baseTextColor =
+    styleCfg.textColor ??
+    (isTheme
+      ? undefined
+      : styleCfg.bgStyle === 'image'
+        ? '#ffffff'
+        : readableOn(styleCfg.bgColor1));
   const accent = profile.accent ?? '#3b82c4';
-  const buttonStyle = {
-    borderColor: accent,
-    backgroundColor: `${accent}22`,
-  };
+  const accentFor = (meta: BlockMeta | null) => meta?.color ?? accent;
+  const shapeClass = buttonShapeClass(styleCfg);
+  const shadowClass = buttonShadowClass(styleCfg);
+  const boxShape =
+    styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-2xl';
+  const btnClass = `block border px-6 py-3 text-center font-medium transition hover:scale-[1.02] ${shapeClass} ${shadowClass}`;
+  const gridSpan = styleCfg.layout === 'grid' ? 'col-span-2' : '';
+  const buttonStyle = buttonCss(styleCfg, accent);
+  const avatarShapeClass =
+    styleCfg.avatarShape === 'circle'
+      ? 'rounded-full'
+      : styleCfg.avatarShape === 'rounded'
+        ? 'rounded-2xl'
+        : '';
 
   const titleFor = (link: LoadedProfile['links'][number]) =>
     (
@@ -135,8 +166,29 @@ export async function ProfileScreen({
       lang={viewLocale}
       dir={dirFor(viewLocale)}
       className={`flex min-h-screen flex-col items-center px-6 py-16 ${themeClass}`}
+      style={{
+        ...backgroundCss(styleCfg),
+        color: baseTextColor,
+        fontFamily: fontFamily(styleCfg),
+      }}
     >
-      <div className="w-full max-w-md text-center">
+      <div
+        className={`w-full max-w-md ${
+          styleCfg.align === 'start' ? 'text-start' : 'text-center'
+        }`}
+      >
+        {styleCfg.avatarUrl && (
+          // eslint-disable-next-line @next/next/no-img-element -- външен URL по избор на потребителя
+          <img
+            src={styleCfg.avatarUrl}
+            alt=""
+            width={96}
+            height={96}
+            className={`mb-4 h-24 w-24 object-cover ${avatarShapeClass} ${
+              styleCfg.align === 'start' ? '' : 'mx-auto'
+            }`}
+          />
+        )}
         <h1 className="text-2xl font-bold">{translation.displayName}</h1>
         {translation.bio && (
           <p className="mt-2 opacity-80">{translation.bio}</p>
@@ -160,7 +212,11 @@ export async function ProfileScreen({
           </nav>
         )}
 
-        <ul className="mt-8 space-y-3 text-start">
+        <ul
+          className={`mt-8 text-start ${
+            styleCfg.layout === 'grid' ? 'grid grid-cols-2 gap-3' : 'space-y-3'
+          }`}
+        >
           {profile.links.map((link) => {
             if (!isBlockVisible(link, new Date())) return null;
             const title = titleFor(link);
@@ -171,7 +227,7 @@ export async function ProfileScreen({
             switch (link.kind) {
               case 'HEADER':
                 return (
-                  <li key={link.id} className="pt-4 text-center">
+                  <li key={link.id} className={`pt-4 text-center ${gridSpan}`}>
                     <h2 className="text-sm font-semibold uppercase tracking-wide opacity-70">
                       {title}
                     </h2>
@@ -182,8 +238,8 @@ export async function ProfileScreen({
                   <li key={link.id}>
                     <a
                       href={link.url ?? '#'}
-                      className="block rounded-full border px-6 py-3 text-center font-medium transition hover:scale-[1.02]"
-                      style={buttonStyle}
+                      className={btnClass}
+                      style={buttonCss(styleCfg, accentFor(meta))}
                     >
                       ☎ {title}
                     </a>
@@ -193,10 +249,10 @@ export async function ProfileScreen({
                 const src = link.url ? videoEmbedSrc(link.url) : null;
                 if (!src) return null;
                 return (
-                  <li key={link.id}>
+                  <li key={link.id} className={gridSpan}>
                     <div
-                      className="overflow-hidden rounded-2xl border"
-                      style={{ borderColor: accent }}
+                      className={`overflow-hidden border ${boxShape}`}
+                      style={{ borderColor: accentFor(meta) }}
                     >
                       <iframe
                         src={src}
@@ -211,10 +267,10 @@ export async function ProfileScreen({
               }
               case 'MUSIC':
                 return (
-                  <li key={link.id}>
+                  <li key={link.id} className={gridSpan}>
                     <div
-                      className="rounded-2xl border px-6 py-3 text-center"
-                      style={buttonStyle}
+                      className={`border px-6 py-3 text-center ${boxShape} ${shadowClass}`}
+                      style={buttonCss(styleCfg, accentFor(meta))}
                     >
                       <p className="font-medium">♪ {title}</p>
                       <p className="mt-2 flex justify-center gap-3 text-sm">
@@ -240,10 +296,10 @@ export async function ProfileScreen({
                 );
               case 'FORM':
                 return (
-                  <li key={link.id}>
+                  <li key={link.id} className={gridSpan}>
                     <div
-                      className="rounded-2xl border px-6 py-4"
-                      style={buttonStyle}
+                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
+                      style={buttonCss(styleCfg, accentFor(meta))}
                     >
                       <p className="text-center font-medium">{title}</p>
                       {sent ? (
@@ -292,7 +348,7 @@ export async function ProfileScreen({
                           <button
                             type="submit"
                             className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
-                            style={{ borderColor: accent }}
+                            style={{ borderColor: accentFor(meta) }}
                           >
                             {t('formSend')}
                           </button>
@@ -307,8 +363,8 @@ export async function ProfileScreen({
                   <li key={link.id}>
                     <a
                       href={clickHref}
-                      className="block rounded-full border px-6 py-3 text-center font-medium transition hover:scale-[1.02]"
-                      style={buttonStyle}
+                      className={btnClass}
+                      style={buttonCss(styleCfg, accentFor(meta))}
                     >
                       {link.kind === 'MAP' && '📍 '}
                       {link.kind === 'APP' && '📲 '}
@@ -356,7 +412,7 @@ export async function ProfileScreen({
                         />
                         <button
                           type="submit"
-                          className="flex w-full items-center justify-between rounded-full border px-6 py-3 font-medium transition hover:scale-[1.02]"
+                          className={`flex w-full items-center justify-between border px-6 py-3 font-medium transition hover:scale-[1.02] ${shapeClass} ${shadowClass}`}
                           style={buttonStyle}
                         >
                           <span>{productTitle}</span>
@@ -372,11 +428,13 @@ export async function ProfileScreen({
             </section>
           )}
 
-        <p className="mt-12 text-center text-xs opacity-50">
-          <Link href="/" className="hover:underline">
-            Linketto
-          </Link>
-        </p>
+        {!styleCfg.hideBadge && (
+          <p className="mt-12 text-center text-xs opacity-50">
+            <Link href="/" className="hover:underline">
+              Linketto
+            </Link>
+          </p>
+        )}
       </div>
     </main>
   );

@@ -10,9 +10,11 @@ import {
   createProfileAction,
   deleteLinkAction,
   updateProfileAction,
+  updateStyleAction,
   upsertLinkTranslationAction,
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
+import { parseStyle } from '@/lib/style';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiTranslateAction } from '@/app/actions/ai';
 import {
@@ -153,7 +155,9 @@ export default async function DashboardPage({
                         ? t('errorAiKey')
                         : error === 'product'
                           ? t('errorProduct')
-                          : t('errorGeneric')}
+                          : error === 'style'
+                            ? t('errorStyle')
+                            : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -285,6 +289,211 @@ export default async function DashboardPage({
                   {t('save')}
                 </button>
               </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('styleSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('styleHint')}</p>
+              {(() => {
+                const styleCfg = parseStyle(profile.style);
+                const selectClass =
+                  'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2';
+                return (
+                  <form
+                    action={updateStyleAction}
+                    className="mt-4 grid gap-4 sm:grid-cols-3"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <label className="block text-sm font-medium">
+                      {t('styleBg')}
+                      <select
+                        name="bgStyle"
+                        defaultValue={styleCfg.bgStyle}
+                        className={selectClass}
+                      >
+                        {(['theme', 'solid', 'gradient', 'image'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleBg_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleBgColor1')}
+                      <input
+                        type="color"
+                        name="bgColor1"
+                        defaultValue={styleCfg.bgColor1}
+                        className="mt-1 h-10 w-full rounded-lg border border-slate-300"
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleBgColor2')}
+                      <input
+                        type="color"
+                        name="bgColor2"
+                        defaultValue={styleCfg.bgColor2}
+                        className="mt-1 h-10 w-full rounded-lg border border-slate-300"
+                      />
+                    </label>
+                    <label className="block text-sm font-medium sm:col-span-2">
+                      {t('styleBgImage')}
+                      <input
+                        type="url"
+                        name="bgImageUrl"
+                        defaultValue={styleCfg.bgImageUrl ?? ''}
+                        placeholder="https://…"
+                        className={selectClass}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleFont')}
+                      <select
+                        name="font"
+                        defaultValue={styleCfg.font}
+                        className={selectClass}
+                      >
+                        {(['sans', 'serif', 'mono', 'rounded'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleFont_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleButtonShape')}
+                      <select
+                        name="buttonShape"
+                        defaultValue={styleCfg.buttonShape}
+                        className={selectClass}
+                      >
+                        {(['pill', 'rounded', 'square'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleShape_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleButtonFill')}
+                      <select
+                        name="buttonFill"
+                        defaultValue={styleCfg.buttonFill}
+                        className={selectClass}
+                      >
+                        {(['soft', 'solid', 'outline'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleFill_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleButtonShadow')}
+                      <select
+                        name="buttonShadow"
+                        defaultValue={styleCfg.buttonShadow}
+                        className={selectClass}
+                      >
+                        {(['none', 'soft', 'hard'] as const).map((option) => (
+                          <option key={option} value={option}>
+                            {t(`styleShadow_${option}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleLayout')}
+                      <select
+                        name="layout"
+                        defaultValue={styleCfg.layout}
+                        className={selectClass}
+                      >
+                        {(['list', 'grid'] as const).map((option) => (
+                          <option key={option} value={option}>
+                            {t(`styleLayout_${option}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleAlign')}
+                      <select
+                        name="align"
+                        defaultValue={styleCfg.align}
+                        className={selectClass}
+                      >
+                        {(['center', 'start'] as const).map((option) => (
+                          <option key={option} value={option}>
+                            {t(`styleAlign_${option}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium sm:col-span-2">
+                      {t('styleAvatar')}
+                      <input
+                        type="url"
+                        name="avatarUrl"
+                        defaultValue={styleCfg.avatarUrl ?? ''}
+                        placeholder="https://…"
+                        className={selectClass}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleAvatarShape')}
+                      <select
+                        name="avatarShape"
+                        defaultValue={styleCfg.avatarShape}
+                        className={selectClass}
+                      >
+                        {(['circle', 'rounded', 'square'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleAvatarShape_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleTextColor')}
+                      <input
+                        type="text"
+                        name="textColor"
+                        defaultValue={styleCfg.textColor ?? ''}
+                        placeholder="#ffffff"
+                        pattern="#[0-9a-fA-F]{6}"
+                        className={selectClass}
+                      />
+                    </label>
+                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="hideBadge"
+                        defaultChecked={styleCfg.hideBadge}
+                        className="h-4 w-4"
+                      />
+                      {t('styleHideBadge')}
+                    </label>
+                    <button
+                      type="submit"
+                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-3 sm:justify-self-start"
+                    >
+                      {t('save')}
+                    </button>
+                  </form>
+                );
+              })()}
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -492,6 +701,16 @@ export default async function DashboardPage({
                     type="url"
                     name="extra2"
                     placeholder="https://…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('blockColorLabel')}
+                  <input
+                    type="text"
+                    name="color"
+                    placeholder="#3b82c4"
+                    pattern="#[0-9a-fA-F]{6}"
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
                 </label>
