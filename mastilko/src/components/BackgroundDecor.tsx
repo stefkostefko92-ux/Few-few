@@ -44,8 +44,9 @@ export default function BackgroundDecor({ decor, color }: Props) {
         }} />
       );
     case "gradient":
+      // color-mix вместо слепен alpha — работи при 3/6/8-цифров custom цвят.
       return (
-        <div style={{ ...base, background: `radial-gradient(circle at 50% 18%, ${color}44, transparent 60%)` }} />
+        <div style={{ ...base, background: `radial-gradient(circle at 50% 18%, color-mix(in srgb, ${color} 27%, transparent), transparent 60%)` }} />
       );
     case "corners":
       return (

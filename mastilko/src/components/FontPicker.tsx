@@ -43,6 +43,8 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
               <li>
                 <button
                   type="button"
+                  role="option"
+                  aria-selected={!value}
                   onClick={() => { onChange(""); setOpen(false); }}
                   className="w-full rounded-lg px-3 py-1.5 text-left text-sm hover:bg-tera-pale dark:hover:bg-white/10"
                 >
@@ -59,6 +61,8 @@ export default function FontPicker({ value, onChange, allowDefault, label }: Pro
                   <button
                     key={f.id}
                     type="button"
+                    role="option"
+                    aria-selected={value === f.id}
                     onClick={() => { onChange(f.id); setOpen(false); }}
                     className={`w-full rounded-lg px-3 py-1.5 text-left text-base hover:bg-tera-pale dark:hover:bg-white/10 ${value === f.id ? "bg-tera-pale dark:bg-white/10" : ""}`}
                     style={{ fontFamily: fontCss(f.id) }}
