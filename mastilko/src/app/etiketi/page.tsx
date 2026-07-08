@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import LabelStudio from "@/components/studios/LabelStudio";
+import { pageMeta, toolJsonLd } from "@/lib/seo";
+
+const TITLE = "Безплатни етикети за печат";
+const DESC =
+  "Създай етикети за буркани, кутии и продукти — избираш размер, цвят и текст, принтираш цял лист А4. Безплатно, на български, без регистрация.";
 
 export const metadata: Metadata = {
-  title: "Безплатни етикети за печат",
-  description:
-    "Създай етикети за буркани, кутии и продукти — избираш размер, цвят и текст, принтираш цял лист А4. Безплатно, на български, без регистрация.",
+  title: TITLE,
+  description: DESC,
   keywords: [
     "етикети за печат",
     "безплатни етикети",
@@ -16,7 +20,7 @@ export const metadata: Metadata = {
     "QR етикети",
   ],
   alternates: { canonical: "/etiketi" },
-  openGraph: { title: "Безплатни етикети за печат" },
+  ...pageMeta(TITLE, DESC),
 };
 
 export default function EtiketiPage() {
@@ -33,6 +37,14 @@ export default function EtiketiPage() {
         </p>
       </header>
       <LabelStudio />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            toolJsonLd({ name: "Етикети за печат", path: "/etiketi", description: DESC }),
+          ),
+        }}
+      />
     </div>
   );
 }

@@ -37,6 +37,8 @@ export const metadata: Metadata = {
     "визитки с QR код",
     "принтиране А4",
     "Мастилко",
+    "Carbon Stealth",
+    "Carbon Stealth VCC",
   ],
   alternates: { canonical: "/" },
   openGraph: {

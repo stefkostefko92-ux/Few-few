@@ -209,6 +209,7 @@ export default function HomePage() {
                   "визитки",
                   "автобиография CV",
                   "Europass",
+                  "мотивационно писмо",
                 ],
               },
               {
@@ -229,7 +230,7 @@ export default function HomePage() {
                 isAccessibleForFree: true,
                 offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
                 description:
-                  "Безплатно създаване на етикети за печат, визитки и автобиографии (CV, вкл. Europass) на български език, направо в браузъра.",
+                  "Безплатно създаване на етикети за печат, визитки, автобиографии (CV, вкл. Europass) и мотивационни писма на български език, направо в браузъра.",
                 publisher: { "@id": "https://carbonstealth.eu/#org" },
               },
               {

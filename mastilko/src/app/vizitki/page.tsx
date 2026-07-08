@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import CardStudio from "@/components/studios/CardStudio";
+import { pageMeta, toolJsonLd } from "@/lib/seo";
+
+const TITLE = "Безплатни визитки онлайн";
+const DESC =
+  "Направи си визитки 90 × 54 mm с топъл дизайн — шест шаблона, 10 на лист А4, готови за рязане. Безплатно, на български, без регистрация и без воден знак.";
 
 export const metadata: Metadata = {
-  title: "Безплатни визитки онлайн",
-  description:
-    "Направи си визитки 90 × 54 mm с топъл дизайн — шест шаблона, 10 на лист А4, готови за рязане. Безплатно, на български, без регистрация и без воден знак.",
+  title: TITLE,
+  description: DESC,
   keywords: [
     "визитки онлайн",
     "безплатни визитки",
@@ -16,7 +20,7 @@ export const metadata: Metadata = {
     "визитки 90x54",
   ],
   alternates: { canonical: "/vizitki" },
-  openGraph: { title: "Безплатни визитки онлайн" },
+  ...pageMeta(TITLE, DESC),
 };
 
 export default function VizitkiPage() {
@@ -33,6 +37,14 @@ export default function VizitkiPage() {
         </p>
       </header>
       <CardStudio />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            toolJsonLd({ name: "Визитки", path: "/vizitki", description: DESC }),
+          ),
+        }}
+      />
     </div>
   );
 }

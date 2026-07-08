@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import CvStudio from "@/components/studios/CvStudio";
+import { pageMeta, toolJsonLd } from "@/lib/seo";
+
+const TITLE = "Безплатна автобиография (CV) на български — вкл. Europass";
+const DESC =
+  "Създай чиста, професионална автобиография на български — модерен, класически или Europass шаблон (стандарт на ЕС). AI помага с описанията, запазваш като PDF. Безплатно.";
 
 export const metadata: Metadata = {
-  title: "Безплатна автобиография (CV) на български — вкл. Europass",
-  description:
-    "Създай чиста, професионална автобиография на български — модерен, класически или Europass шаблон (стандарт на ЕС). AI помага с описанията, запазваш като PDF. Безплатно.",
+  title: TITLE,
+  description: DESC,
   keywords: [
     "CV на български",
     "автобиография образец",
@@ -16,7 +20,44 @@ export const metadata: Metadata = {
     "автобиография PDF",
   ],
   alternates: { canonical: "/cv" },
-  openGraph: { title: "Безплатна автобиография (CV) на български — вкл. Europass" },
+  ...pageMeta(TITLE, DESC),
+};
+
+const FAQ = [
+  {
+    q: "Какво трябва да съдържа едно CV?",
+    a: "Добрата автобиография събира на един-два листа: лични и контактни данни, кратък професионален профил (2–3 изречения), трудов опит с периоди и постижения, образование, умения и езици. За кандидатстване в ЕС често се иска и Europass формат. Мастилко подрежда всичко това автоматично в чист шаблон — ти само попълваш полетата.",
+  },
+  {
+    q: "Каква е разликата между обикновено CV и Europass?",
+    a: "Europass е единният стандарт за автобиография на Европейския съюз — с фиксирана структура (лична информация, трудов стаж, образование, езици с ниво по Общата европейска езикова рамка, дигитални умения, категория на книжката). Обикновеното CV е по-свободно и по-кратко. Мастилко предлага и трите: модерен, класически и Europass шаблон — сменяш с едно кликване.",
+  },
+  {
+    q: "Как да запазя автобиографията си като PDF?",
+    a: "Натисни „Принтирай / запази PDF“, а в прозореца за печат избери „Запази като PDF“ (има го във всеки съвременен браузър), мащаб 100% и без полета. Получаваш точен А4 файл, готов за прикачване към имейл или качване в сайт за работа.",
+  },
+];
+
+// Per-tool граф + FAQPage за AI цитиране.
+const cvBase = toolJsonLd({
+  name: "Автобиография (CV)",
+  path: "/cv",
+  description: DESC,
+  category: "BusinessApplication",
+});
+const cvJsonLd = {
+  ...cvBase,
+  "@graph": [
+    ...cvBase["@graph"],
+    {
+      "@type": "FAQPage",
+      mainEntity: FAQ.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ],
 };
 
 export default function CvPage() {
@@ -35,6 +76,26 @@ export default function CvPage() {
         </p>
       </header>
       <CvStudio />
+
+      <section className="no-print mx-auto mt-16 max-w-3xl">
+        <h2 className="font-display text-2xl font-bold">Въпроси за автобиографията</h2>
+        <div className="mt-6 space-y-3">
+          {FAQ.map((f) => (
+            <details key={f.q} className="card-warm group p-5 open:shadow-lift">
+              <summary className="cursor-pointer list-none font-semibold marker:hidden">
+                <span className="mr-2 inline-block text-tera transition group-open:rotate-90">▸</span>
+                {f.q}
+              </summary>
+              <p className="mt-2 pl-6 text-ink-soft">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(cvJsonLd) }}
+      />
     </div>
   );
 }

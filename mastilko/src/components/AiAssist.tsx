@@ -15,6 +15,18 @@ interface Props {
   single?: boolean;
 }
 
+// Бележка за поверителност според режима. За CV/писмо потребителят по
+// природа описва СЕБЕ СИ (законно, със съгласие) — там не бива да го караме
+// да не пише за себе си, а да внимава с чужди лични данни (напр. името на
+// HR лицето при „Подобри текста“).
+const PRIVACY_NOTE: Record<AiMode, string> = {
+  label: "Не включвай лични данни (имена, телефони).",
+  card: "Не включвай лични данни (имена, телефони).",
+  "cv-summary": "Опиши себе си спокойно — това отива към Google. Само не добавяй имена и контакти на други хора.",
+  "cv-improve": "Преди да пратиш текста, махни името на човека, до когото пишеш, и чужди лични данни — те отиват към Google.",
+  letter: "Опиши себе си спокойно — това отива към Google. Само не добавяй имена и контакти на други хора.",
+};
+
 // Общ AI бутон: вика /api/ai (Gemini Flash), показва предложенията и
 // прозрачно казва, че въведеното се изпраща към Google.
 export default function AiAssist({ mode, input, label, onPick, single }: Props) {
@@ -60,8 +72,7 @@ export default function AiAssist({ mode, input, label, onPick, single }: Props) 
       </button>
       <p className="mt-1 text-xs text-ink-faint">
         Подсказките ползват Google Gemini — въведеният текст се изпраща към
-        Google само когато натиснеш бутона. Не включвай лични данни (имена,
-        телефони).
+        Google само когато натиснеш бутона. {PRIVACY_NOTE[mode]}
       </p>
       {error && (
         <p role="alert" className="mt-2 text-sm font-semibold text-tera-dark">
