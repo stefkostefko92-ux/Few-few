@@ -30,7 +30,21 @@
     "featureAiTitle": "Traduzione AI con un clic",
     "featureAiBody": "Scrivi nella tua lingua — Linketto traduce il tuo profilo in tutte le altre con un solo pulsante.",
     "featureQrTitle": "QR e «Salva contatto» gratis",
-    "featureQrBody": "Un codice QR nel tuo colore e un blocco vCard che salva il tuo contatto sul telefono con un tocco."
+    "featureQrBody": "Un codice QR nel tuo colore e un blocco vCard che salva il tuo contatto sul telefono con un tocco.",
+    "heroBadge": "Link in bio multilingue · Ospitato nell’UE",
+    "trustEu": "Ospitato nell'Unione Europea",
+    "trustGdpr": "GDPR di default",
+    "trustStripe": "Pagamenti sicuri tramite Stripe",
+    "trustCookies": "Nessun cookie per i tuoi visitatori",
+    "statsLangsLabel": "lingue dal primo giorno",
+    "statsBrandsLabel": "piattaforme con icone ufficiali",
+    "statsBlocksLabel": "tipi di blocchi per il tuo profilo",
+    "statsFeeLabel": "commissioni sui piani top",
+    "manifestoTitle": "La tua pagina è tua.",
+    "manifestoQuote": "Non mostreremo mai “BANNED” ai tuoi visitatori. Moderiamo in modo trasparente — con preavviso, una risposta umana e il diritto di ricorso. La reputazione che costruisci resta tua.",
+    "manifestoBy": "Una promessa del team Carbon Stealth",
+    "ctaTitle": "Parla al mondo intero da un solo link.",
+    "ctaButton": "Inizia gratis in 60 secondi"
   },
   "pricing": {
     "title": "Prezzi semplici e onesti",

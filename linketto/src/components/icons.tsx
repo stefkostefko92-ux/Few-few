@@ -101,3 +101,15 @@ export function DownloadIcon(props: IconProps) {
 export function ClockIcon(props: IconProps) {
   return base(props, '<circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />');
 }
+
+export function ServerIcon(props: IconProps) {
+  return base(props, '<rect width="20" height="8" x="2" y="2" rx="2" ry="2" /><rect width="20" height="8" x="2" y="14" rx="2" ry="2" /><line x1="6" x2="6.01" y1="6" y2="6" /><line x1="6" x2="6.01" y1="18" y2="18" />');
+}
+
+export function LockIcon(props: IconProps) {
+  return base(props, '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />');
+}
+
+export function CookieIcon(props: IconProps) {
+  return base(props, '<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" /><path d="M8.5 8.5v.01" /><path d="M16 15.5v.01" /><path d="M12 12v.01" /><path d="M11 17v.01" /><path d="M7 14v.01" />');
+}

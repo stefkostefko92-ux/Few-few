@@ -30,7 +30,21 @@
     "featureAiTitle": "One-click AI translation",
     "featureAiBody": "Write in your language — Linketto translates your profile into all the others with one button.",
     "featureQrTitle": "Free QR & \"Save contact\"",
-    "featureQrBody": "A QR code in your color and a vCard block that saves your contact to any phone with one tap."
+    "featureQrBody": "A QR code in your color and a vCard block that saves your contact to any phone with one tap.",
+    "heroBadge": "Multilingual link in bio · EU hosted",
+    "trustEu": "Hosted in the European Union",
+    "trustGdpr": "GDPR by default",
+    "trustStripe": "Secure payments via Stripe",
+    "trustCookies": "No cookies for your visitors",
+    "statsLangsLabel": "languages from day one",
+    "statsBrandsLabel": "platforms with official icons",
+    "statsBlocksLabel": "block types for your profile",
+    "statsFeeLabel": "commission on top plans",
+    "manifestoTitle": "Your page is yours.",
+    "manifestoQuote": "We will never show “BANNED” to your visitors. We moderate transparently — with notice, a human response and the right to appeal. The reputation you build stays yours.",
+    "manifestoBy": "A promise from the Carbon Stealth team",
+    "ctaTitle": "Speak to the whole world from one link.",
+    "ctaButton": "Start free in 60 seconds"
   },
   "pricing": {
     "title": "Simple, honest pricing",

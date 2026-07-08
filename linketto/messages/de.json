@@ -30,7 +30,21 @@
     "featureAiTitle": "KI-Übersetzung mit einem Klick",
     "featureAiBody": "Schreib in deiner Sprache — Linketto übersetzt dein Profil mit einem Button in alle anderen.",
     "featureQrTitle": "QR & „Kontakt speichern“ gratis",
-    "featureQrBody": "Ein QR-Code in deiner Farbe und ein vCard-Block, der deinen Kontakt mit einem Tipp im Telefon speichert."
+    "featureQrBody": "Ein QR-Code in deiner Farbe und ein vCard-Block, der deinen Kontakt mit einem Tipp im Telefon speichert.",
+    "heroBadge": "Mehrsprachiges Link in Bio · In der EU gehostet",
+    "trustEu": "Gehostet in der Europäischen Union",
+    "trustGdpr": "DSGVO als Standard",
+    "trustStripe": "Sichere Zahlungen über Stripe",
+    "trustCookies": "Keine Cookies für deine Besucher",
+    "statsLangsLabel": "Sprachen ab dem ersten Tag",
+    "statsBrandsLabel": "Plattformen mit offiziellen Icons",
+    "statsBlocksLabel": "Blocktypen für dein Profil",
+    "statsFeeLabel": "Provision in den Top-Plänen",
+    "manifestoTitle": "Deine Seite gehört dir.",
+    "manifestoQuote": "Wir zeigen deinen Besuchern niemals „BANNED“. Wir moderieren transparent — mit Vorankündigung, menschlicher Antwort und Widerspruchsrecht. Der Ruf, den du aufbaust, bleibt deiner.",
+    "manifestoBy": "Ein Versprechen des Carbon-Stealth-Teams",
+    "ctaTitle": "Sprich mit der ganzen Welt über einen Link.",
+    "ctaButton": "Starte kostenlos in 60 Sekunden"
   },
   "pricing": {
     "title": "Einfache, faire Preise",

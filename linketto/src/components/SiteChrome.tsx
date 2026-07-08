@@ -68,18 +68,32 @@ export async function SiteFooter({
   currentPath: string;
 }) {
   const t = await getTranslations({ locale, namespace: 'footer' });
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
   return (
-    <footer className="mt-16 border-t border-slate-200 px-6 py-8 text-sm text-slate-500">
-      <div className="mx-auto flex max-w-4xl flex-col gap-3">
-        <nav className="flex flex-wrap gap-2" aria-label="Language">
+    <footer className="bg-slate-950 px-6 py-14 text-sm text-slate-400">
+      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
+        <div>
+          <Image
+            src="/logo.png"
+            alt={tCommon('appName')}
+            width={158}
+            height={60}
+            className="h-11 w-auto brightness-0 invert opacity-90"
+          />
+          <p className="mt-4 max-w-xs leading-relaxed">{tCommon('tagline')}</p>
+        </div>
+        <nav
+          className="flex flex-col items-start gap-2.5"
+          aria-label="Language"
+        >
           {LOCALES.map((loc) => (
             <a
               key={loc}
               href={`/${loc}${currentPath}`}
               className={
                 loc === locale
-                  ? 'font-semibold text-linketto-700'
-                  : 'hover:underline'
+                  ? 'font-semibold text-white'
+                  : 'transition hover:text-white'
               }
               hrefLang={loc}
             >
@@ -87,20 +101,29 @@ export async function SiteFooter({
             </a>
           ))}
         </nav>
-        <p>
-          {t('company')} · {t('legalLine')}
-        </p>
-        <p className="flex gap-4">
-          <Link href={`/${locale}/privacy`} className="hover:underline">
+        <div className="flex flex-col items-start gap-2.5">
+          <Link
+            href={`/${locale}/privacy`}
+            className="transition hover:text-white"
+          >
             {t('privacy')}
           </Link>
-          <Link href={`/${locale}/terms`} className="hover:underline">
+          <Link
+            href={`/${locale}/terms`}
+            className="transition hover:text-white"
+          >
             {t('terms')}
           </Link>
-          <a href="mailto:info@carbonstealth.eu" className="hover:underline">
+          <a
+            href="mailto:info@carbonstealth.eu"
+            className="transition hover:text-white"
+          >
             {t('contact')}
           </a>
-        </p>
+        </div>
+      </div>
+      <div className="mx-auto mt-12 max-w-6xl border-t border-white/10 pt-6 text-xs text-slate-500">
+        {t('company')} · {t('legalLine')}
       </div>
     </footer>
   );
