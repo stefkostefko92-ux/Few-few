@@ -6,26 +6,32 @@ import { z } from 'zod';
 import type { CSSProperties } from 'react';
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
-const httpsUrl = z
+// Картинка: външен https URL или качен от нас файл (/media/...).
+const imageRef = z
   .string()
   .trim()
-  .url()
   .max(2000)
-  .refine((value) => value.startsWith('https://'));
+  .refine(
+    (value) =>
+      /^\/media\/[a-z0-9-]+\.webp$/.test(value) ||
+      (value.startsWith('https://') && z.string().url().safeParse(value).success),
+  );
 
 export const styleSchema = z.object({
   bgStyle: z.enum(['theme', 'solid', 'gradient', 'image']).default('theme'),
   bgColor1: hex.default('#1e1b4b'),
   bgColor2: hex.default('#020617'),
-  bgImageUrl: httpsUrl.optional(),
+  bgImageUrl: imageRef.optional(),
   textColor: hex.optional(),
+  // Затъмняване върху фонова снимка (0–0.8) — пази текста четим.
+  bgOverlay: z.coerce.number().min(0).max(0.8).default(0.35),
   font: z.enum(['sans', 'serif', 'mono', 'rounded']).default('sans'),
   buttonShape: z.enum(['pill', 'rounded', 'square']).default('pill'),
   buttonFill: z.enum(['soft', 'solid', 'outline']).default('soft'),
   buttonShadow: z.enum(['none', 'soft', 'hard']).default('none'),
   layout: z.enum(['list', 'grid']).default('list'),
   align: z.enum(['center', 'start']).default('center'),
-  avatarUrl: httpsUrl.optional(),
+  avatarUrl: imageRef.optional(),
   avatarShape: z.enum(['circle', 'rounded', 'square']).default('circle'),
   // Скриване на Linketto баджа — само платени планове (пази се в action-а).
   hideBadge: z.boolean().default(false),
@@ -51,11 +57,12 @@ export function parseStyle(raw: unknown): ProfileStyle {
   return DEFAULT_STYLE;
 }
 
+// Самостоятелно хоствани през next/font (виж src/app/fonts.ts).
 const FONT_STACKS: Record<ProfileStyle['font'], string> = {
-  sans: 'ui-sans-serif, system-ui, sans-serif',
-  serif: 'ui-serif, Georgia, "Times New Roman", serif',
-  mono: 'ui-monospace, "JetBrains Mono", Menlo, monospace',
-  rounded: 'ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, ui-sans-serif, sans-serif',
+  sans: 'var(--font-profile-sans), ui-sans-serif, system-ui, sans-serif',
+  serif: 'var(--font-profile-serif), ui-serif, Georgia, serif',
+  mono: 'var(--font-profile-mono), ui-monospace, Menlo, monospace',
+  rounded: 'var(--font-profile-rounded), ui-rounded, ui-sans-serif, sans-serif',
 };
 
 export function fontFamily(style: ProfileStyle): string {
@@ -76,7 +83,7 @@ export function backgroundCss(
     case 'image':
       return style.bgImageUrl
         ? {
-            backgroundImage: `url("${encodeURI(style.bgImageUrl)}")`,
+            backgroundImage: `linear-gradient(rgba(2,6,23,${style.bgOverlay}), rgba(2,6,23,${style.bgOverlay})), url("${encodeURI(style.bgImageUrl)}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }

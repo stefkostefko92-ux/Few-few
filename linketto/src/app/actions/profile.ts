@@ -8,7 +8,8 @@ import { isValidSlug, normalizeSlug } from '@/lib/slug';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
 import { parseBlockInput } from '@/lib/blocks';
-import { styleSchema } from '@/lib/style';
+import { parseStyle, styleSchema } from '@/lib/style';
+import { saveUploadedImage } from '@/lib/media';
 import type { Prisma } from '@prisma/client';
 
 const THEMES = ['aurora', 'mono', 'dusk'] as const;
@@ -145,6 +146,7 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
     align: field('align'),
     avatarUrl: field('avatarUrl'),
     avatarShape: field('avatarShape'),
+    bgOverlay: field('bgOverlay'),
     hideBadge: formData.get('hideBadge') === 'on',
   });
   if (!parsed.success) {
@@ -159,6 +161,37 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
     data: { style: parsed.data },
   });
   if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+  redirect(`/${uiLocale}/dashboard`);
+}
+
+// Качване на снимка (фон на профила или аватар) — sharp я преоразмерява,
+// маха EXIF и я записва като webp; пътят влиза в стила на профила.
+export async function uploadImageAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+  const kind = String(formData.get('kind') ?? '') as 'bg' | 'avatar';
+  const file = formData.get('file');
+  if ((kind !== 'bg' && kind !== 'avatar') || !(file instanceof File)) {
+    redirect(`/${uiLocale}/dashboard?error=upload`);
+  }
+  const profile = await prisma.profile.findFirst({
+    where: { id: profileId, userId: user.id },
+  });
+  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+
+  const mediaPath = await saveUploadedImage(file, kind);
+  if (!mediaPath) redirect(`/${uiLocale}/dashboard?error=upload`);
+
+  const style = parseStyle(profile.style);
+  const nextStyle =
+    kind === 'bg'
+      ? { ...style, bgImageUrl: mediaPath, bgStyle: 'image' as const }
+      : { ...style, avatarUrl: mediaPath };
+  await prisma.profile.update({
+    where: { id: profile.id },
+    data: { style: nextStyle },
+  });
   redirect(`/${uiLocale}/dashboard`);
 }
 

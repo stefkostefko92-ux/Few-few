@@ -70,7 +70,8 @@
       "f2": "Einmalige Zahlung",
       "f3": "Limitiertes Frühstarter-Angebot"
     },
-    "processingNote": "Auf Shop-Verkäufe fällt zusätzlich eine Zahlungsabwicklungsgebühr von 1,9 % + €0,30 an (deckt den Kartenanbieter)."
+    "processingNote": "Auf Shop-Verkäufe fällt zusätzlich eine Zahlungsabwicklungsgebühr von 1,9 % + €0,30 an (deckt den Kartenanbieter).",
+    "mostPopular": "Am beliebtesten"
   },
   "auth": {
     "loginTitle": "Bei Linketto anmelden",
@@ -209,7 +210,12 @@
     "styleTextColor": "Textfarbe (leer = automatisch)",
     "styleHideBadge": "„Linketto“-Badge ausblenden (Bezahlpläne)",
     "errorStyle": "Ungültige Stileinstellungen — prüfe Farben und URLs.",
-    "blockColorLabel": "Blockfarbe (optional)"
+    "blockColorLabel": "Blockfarbe (optional)",
+    "styleOverlay": "Abdunkelung des Hintergrundfotos",
+    "uploadBg": "Hintergrundfoto hochladen",
+    "uploadAvatar": "Avatar hochladen",
+    "uploadButton": "Hochladen",
+    "errorUpload": "Upload fehlgeschlagen — wir akzeptieren JPG/PNG/WebP bis 8 MB."
   },
   "profile": {
     "poweredBy": "Erstellt mit Linketto",

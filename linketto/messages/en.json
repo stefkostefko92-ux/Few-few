@@ -70,7 +70,8 @@
       "f2": "One-time payment",
       "f3": "Limited early offer"
     },
-    "processingNote": "Shop sales also carry a payment processing fee of 1.9% + €0.30 (covers the card processor)."
+    "processingNote": "Shop sales also carry a payment processing fee of 1.9% + €0.30 (covers the card processor).",
+    "mostPopular": "Most popular"
   },
   "auth": {
     "loginTitle": "Log in to Linketto",
@@ -209,7 +210,12 @@
     "styleTextColor": "Text color (empty = automatic)",
     "styleHideBadge": "Hide the \"Linketto\" badge (paid plans)",
     "errorStyle": "Invalid style settings — check the colors and URLs.",
-    "blockColorLabel": "Block color (optional)"
+    "blockColorLabel": "Block color (optional)",
+    "styleOverlay": "Background photo dimming",
+    "uploadBg": "Upload a background photo",
+    "uploadAvatar": "Upload an avatar",
+    "uploadButton": "Upload",
+    "errorUpload": "Upload failed — we accept JPG/PNG/WebP up to 8 MB."
   },
   "profile": {
     "poweredBy": "Made with Linketto",

@@ -142,7 +142,7 @@ export async function ProfileScreen({
   const shadowClass = buttonShadowClass(styleCfg);
   const boxShape =
     styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-2xl';
-  const btnClass = `block border px-6 py-3 text-center font-medium transition hover:scale-[1.02] ${shapeClass} ${shadowClass}`;
+  const btnClass = `block border px-6 py-3.5 text-center font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`;
   const gridSpan = styleCfg.layout === 'grid' ? 'col-span-2' : '';
   const buttonStyle = buttonCss(styleCfg, accent);
   const avatarShapeClass =
@@ -151,6 +151,14 @@ export async function ProfileScreen({
       : styleCfg.avatarShape === 'rounded'
         ? 'rounded-2xl'
         : '';
+  // Светъл фон → тъмно стъкло; тъмен фон → светло стъкло.
+  const isLightBg = isTheme
+    ? profile.theme === 'mono'
+    : styleCfg.bgStyle !== 'image' &&
+      readableOn(styleCfg.bgColor1) === '#111827';
+  const glassClass = isLightBg
+    ? 'border-black/10 bg-white/70'
+    : 'border-white/15 bg-white/10';
 
   const titleFor = (link: LoadedProfile['links'][number]) =>
     (
@@ -173,7 +181,9 @@ export async function ProfileScreen({
       }}
     >
       <div
-        className={`w-full max-w-md ${
+        className={`w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
+          styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-3xl'
+        } px-5 py-10 sm:px-10 ${
           styleCfg.align === 'start' ? 'text-start' : 'text-center'
         }`}
       >
@@ -184,14 +194,14 @@ export async function ProfileScreen({
             alt=""
             width={96}
             height={96}
-            className={`mb-4 h-24 w-24 object-cover ${avatarShapeClass} ${
+            className={`mb-5 h-24 w-24 object-cover shadow-xl ring-4 ring-white/25 ${avatarShapeClass} ${
               styleCfg.align === 'start' ? '' : 'mx-auto'
             }`}
           />
         )}
-        <h1 className="text-2xl font-bold">{translation.displayName}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{translation.displayName}</h1>
         {translation.bio && (
-          <p className="mt-2 opacity-80">{translation.bio}</p>
+          <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed opacity-75">{translation.bio}</p>
         )}
 
         {available.length > 1 && (
@@ -200,10 +210,10 @@ export async function ProfileScreen({
               <a
                 key={loc}
                 href={`/u/${slug}?hl=${loc}`}
-                className={`rounded-full px-3 py-1 text-xs ${
+                className={`rounded-full border px-3 py-1 text-xs transition ${
                   loc === viewLocale
-                    ? 'bg-white/20 font-semibold'
-                    : 'opacity-60 hover:opacity-100'
+                    ? `font-semibold ${isLightBg ? 'border-black/20 bg-black/10' : 'border-white/40 bg-white/15'}`
+                    : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
               >
                 {LOCALE_NAMES[loc as keyof typeof LOCALE_NAMES] ?? loc}
@@ -227,10 +237,14 @@ export async function ProfileScreen({
             switch (link.kind) {
               case 'HEADER':
                 return (
-                  <li key={link.id} className={`pt-4 text-center ${gridSpan}`}>
-                    <h2 className="text-sm font-semibold uppercase tracking-wide opacity-70">
-                      {title}
-                    </h2>
+                  <li key={link.id} className={`pt-4 ${gridSpan}`}>
+                    <div className="flex items-center gap-3">
+                      <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
+                      <h2 className="text-xs font-semibold uppercase tracking-[0.2em] opacity-70">
+                        {title}
+                      </h2>
+                      <span aria-hidden className="h-px flex-1 bg-current opacity-15" />
+                    </div>
                   </li>
                 );
               case 'PHONE':
@@ -412,7 +426,7 @@ export async function ProfileScreen({
                         />
                         <button
                           type="submit"
-                          className={`flex w-full items-center justify-between border px-6 py-3 font-medium transition hover:scale-[1.02] ${shapeClass} ${shadowClass}`}
+                          className={`flex w-full items-center justify-between border px-6 py-3.5 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
                           style={buttonStyle}
                         >
                           <span>{productTitle}</span>
@@ -429,9 +443,12 @@ export async function ProfileScreen({
           )}
 
         {!styleCfg.hideBadge && (
-          <p className="mt-12 text-center text-xs opacity-50">
-            <Link href="/" className="hover:underline">
-              Linketto
+          <p className="mt-12 text-center">
+            <Link
+              href="/"
+              className="inline-block rounded-full border border-current px-3 py-1 text-[11px] uppercase tracking-widest opacity-50 transition hover:opacity-90"
+            >
+              ✦ Linketto
             </Link>
           </p>
         )}

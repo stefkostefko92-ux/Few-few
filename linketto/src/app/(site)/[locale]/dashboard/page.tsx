@@ -11,6 +11,7 @@ import {
   deleteLinkAction,
   updateProfileAction,
   updateStyleAction,
+  uploadImageAction,
   upsertLinkTranslationAction,
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
@@ -157,7 +158,9 @@ export default async function DashboardPage({
                           ? t('errorProduct')
                           : error === 'style'
                             ? t('errorStyle')
-                            : t('errorGeneric')}
+                            : error === 'upload'
+                              ? t('errorUpload')
+                              : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -342,12 +345,28 @@ export default async function DashboardPage({
                     <label className="block text-sm font-medium sm:col-span-2">
                       {t('styleBgImage')}
                       <input
-                        type="url"
+                        type="text"
                         name="bgImageUrl"
                         defaultValue={styleCfg.bgImageUrl ?? ''}
                         placeholder="https://…"
                         className={selectClass}
                       />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleOverlay')}
+                      <select
+                        name="bgOverlay"
+                        defaultValue={String(styleCfg.bgOverlay)}
+                        className={selectClass}
+                      >
+                        {(['0', '0.2', '0.35', '0.5', '0.65'] as const).map(
+                          (value) => (
+                            <option key={value} value={value}>
+                              {Math.round(Number(value) * 100)}%
+                            </option>
+                          ),
+                        )}
+                      </select>
                     </label>
                     <label className="block text-sm font-medium">
                       {t('styleFont')}
@@ -442,7 +461,7 @@ export default async function DashboardPage({
                     <label className="block text-sm font-medium sm:col-span-2">
                       {t('styleAvatar')}
                       <input
-                        type="url"
+                        type="text"
                         name="avatarUrl"
                         defaultValue={styleCfg.avatarUrl ?? ''}
                         placeholder="https://…"
@@ -494,6 +513,50 @@ export default async function DashboardPage({
                   </form>
                 );
               })()}
+              <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
+                <form action={uploadImageAction} className="text-sm">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <input type="hidden" name="kind" value="bg" />
+                  <span className="font-medium">{t('uploadBg')}</span>
+                  <div className="mt-2 flex items-center gap-3">
+                    <input
+                      type="file"
+                      name="file"
+                      required
+                      accept="image/jpeg,image/png,image/webp"
+                      className="flex-1 text-xs text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-linketto-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-linketto-700 hover:file:bg-linketto-100"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('uploadButton')}
+                    </button>
+                  </div>
+                </form>
+                <form action={uploadImageAction} className="text-sm">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <input type="hidden" name="kind" value="avatar" />
+                  <span className="font-medium">{t('uploadAvatar')}</span>
+                  <div className="mt-2 flex items-center gap-3">
+                    <input
+                      type="file"
+                      name="file"
+                      required
+                      accept="image/jpeg,image/png,image/webp"
+                      className="flex-1 text-xs text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-linketto-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-linketto-700 hover:file:bg-linketto-100"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('uploadButton')}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">

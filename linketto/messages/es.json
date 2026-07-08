@@ -70,7 +70,8 @@
       "f2": "Pago único",
       "f3": "Oferta limitada para pioneros"
     },
-    "processingNote": "Las ventas de la tienda incluyen además una tarifa de procesamiento del pago: 1,9% + €0,30 (cubre al procesador de tarjetas)."
+    "processingNote": "Las ventas de la tienda incluyen además una tarifa de procesamiento del pago: 1,9% + €0,30 (cubre al procesador de tarjetas).",
+    "mostPopular": "Más popular"
   },
   "auth": {
     "loginTitle": "Inicia sesión en Linketto",
@@ -209,7 +210,12 @@
     "styleTextColor": "Color del texto (vacío = automático)",
     "styleHideBadge": "Ocultar la insignia «Linketto» (planes de pago)",
     "errorStyle": "Ajustes de estilo no válidos — revisa los colores y las URL.",
-    "blockColorLabel": "Color del bloque (opcional)"
+    "blockColorLabel": "Color del bloque (opcional)",
+    "styleOverlay": "Oscurecimiento de la foto de fondo",
+    "uploadBg": "Sube una foto de fondo",
+    "uploadAvatar": "Sube un avatar",
+    "uploadButton": "Subir",
+    "errorUpload": "La subida falló — aceptamos JPG/PNG/WebP de hasta 8 MB."
   },
   "profile": {
     "poweredBy": "Hecho con Linketto",

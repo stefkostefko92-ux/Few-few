@@ -76,6 +76,10 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 Насрочване: Link.showFrom/showUntil + isBlockVisible() — проверява се и при
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
+Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →
+DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
+Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).
+
 Стилов енджин: Profile.style (Json) + src/lib/style.ts (zod схема,
 DEFAULT_STYLE, прощаващ parseStyle — невалидно поле пада към подразбирането;
 backgroundCss/buttonCss/fontFamily/readableOn). Нова стилова опция = поле в

@@ -4,6 +4,9 @@ const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        ui: ['var(--font-ui)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
         linketto: {
           50: '#f2f7fb',

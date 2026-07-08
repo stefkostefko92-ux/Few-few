@@ -70,7 +70,8 @@
       "f2": "Paiement unique",
       "f3": "Offre limitée early adopter"
     },
-    "processingNote": "Les ventes de la boutique comportent aussi des frais de traitement du paiement : 1,9 % + 0,30 € (couvre l'opérateur de cartes)."
+    "processingNote": "Les ventes de la boutique comportent aussi des frais de traitement du paiement : 1,9 % + 0,30 € (couvre l'opérateur de cartes).",
+    "mostPopular": "Le plus populaire"
   },
   "auth": {
     "loginTitle": "Connexion à Linketto",
@@ -209,7 +210,12 @@
     "styleTextColor": "Couleur du texte (vide = automatique)",
     "styleHideBadge": "Masquer le badge « Linketto » (plans payants)",
     "errorStyle": "Paramètres de style non valides — vérifiez les couleurs et les URL.",
-    "blockColorLabel": "Couleur du bloc (facultatif)"
+    "blockColorLabel": "Couleur du bloc (facultatif)",
+    "styleOverlay": "Assombrissement de la photo de fond",
+    "uploadBg": "Téléverser une photo de fond",
+    "uploadAvatar": "Téléverser un avatar",
+    "uploadButton": "Téléverser",
+    "errorUpload": "Le téléversement a échoué — nous acceptons JPG/PNG/WebP jusqu’à 8 Mo."
   },
   "profile": {
     "poweredBy": "Créé avec Linketto",

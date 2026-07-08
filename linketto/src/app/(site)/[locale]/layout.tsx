@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { dirFor, isLocale } from '@/i18n/locales';
+import { fontVariables } from '@/app/fonts';
 import '../../globals.css';
 
 export async function generateMetadata({
@@ -29,8 +30,8 @@ export default async function LocaleLayout({
     notFound();
   }
   return (
-    <html lang={locale} dir={dirFor(locale)}>
-      <body className="min-h-screen bg-slate-50 text-slate-900">
+    <html lang={locale} dir={dirFor(locale)} className={fontVariables}>
+      <body className="min-h-screen bg-slate-50 font-ui text-slate-900">
         {children}
       </body>
     </html>

@@ -10,7 +10,8 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
   const tCommon = await getTranslations({ locale, namespace: 'common' });
   const user = await getSessionUser();
   return (
-    <header className="flex items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/75 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
       <Link href={`/${locale}`} className="flex items-center">
         <Image
           src="/logo.png"
@@ -47,13 +48,14 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             </Link>
             <Link
               href={`/${locale}/register`}
-              className="rounded-full bg-linketto-600 px-4 py-1.5 font-medium text-white hover:bg-linketto-700"
+              className="rounded-full bg-linketto-600 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-linketto-700"
             >
               {t('register')}
             </Link>
           </>
         )}
       </nav>
+      </div>
     </header>
   );
 }

@@ -70,7 +70,8 @@
       "f2": "Pagamento unico",
       "f3": "Offerta limitata early adopter"
     },
-    "processingNote": "Sulle vendite del negozio si applica anche una commissione di elaborazione del pagamento: 1,9% + €0,30 (copre il circuito di pagamento)."
+    "processingNote": "Sulle vendite del negozio si applica anche una commissione di elaborazione del pagamento: 1,9% + €0,30 (copre il circuito di pagamento).",
+    "mostPopular": "Più popolare"
   },
   "auth": {
     "loginTitle": "Accedi a Linketto",
@@ -209,7 +210,12 @@
     "styleTextColor": "Colore del testo (vuoto = automatico)",
     "styleHideBadge": "Nascondi il badge «Linketto» (piani a pagamento)",
     "errorStyle": "Impostazioni di stile non valide — controlla colori e URL.",
-    "blockColorLabel": "Colore del blocco (facoltativo)"
+    "blockColorLabel": "Colore del blocco (facoltativo)",
+    "styleOverlay": "Oscuramento della foto di sfondo",
+    "uploadBg": "Carica una foto di sfondo",
+    "uploadAvatar": "Carica un avatar",
+    "uploadButton": "Carica",
+    "errorUpload": "Caricamento non riuscito — accettiamo JPG/PNG/WebP fino a 8 MB."
   },
   "profile": {
     "poweredBy": "Creato con Linketto",

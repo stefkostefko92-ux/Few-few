@@ -1,4 +1,5 @@
 import '../globals.css';
+import { fontVariables } from '@/app/fonts';
 
 // Root layout за публичните профили (/u/...). Езикът на конкретния профил
 // се решава чак в страницата (профилен език + ?hl + Accept-Language),
@@ -9,7 +10,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body className="min-h-screen">{children}</body>
     </html>
   );
