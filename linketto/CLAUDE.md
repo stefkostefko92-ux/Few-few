@@ -4,8 +4,8 @@ Linketto е глобален конкурент на Linktree: една публ
 `/u/<slug>` с всичките линкове на създателя, която **говори езика на всеки
 посетител**. Диференциатори (валидирани от проучването в
 `research/link-in-bio/`): многоезичност навсякъде (лидерът е English-only),
-EU хостинг/GDPR, аналитика без бисквитки, намалени комисиони (5% Free, 0%
-платени — срещу 12/9% при Linktree), прозрачна модерация без публични
+EU хостинг/GDPR, аналитика без бисквитки, намалени комисиони (8% Free, 4% Pro,
+0% само Business/Founder — срещу 12/9% при Linktree), прозрачна модерация без публични
 „banned“ банери.
 
 _Stack: Next.js 15 (App Router) · React 19 · TypeScript strict · Prisma ·
@@ -60,7 +60,7 @@ src/app/actions/       Server actions (auth, profile, billing) — zod вход,
                        ownership проверки (where: { userId }), redirect с ?error=.
 src/app/api/stripe/webhook/  ЕДИНСТВЕНОТО място, което дава планове —
                        подписан webhook (constructEvent), не success_url.
-src/lib/plans.ts       Планове/комисиони: FREE 5% · PRO €4 0% · BUSINESS €9 0%
+src/lib/plans.ts       Планове/комисиони: FREE 8% · PRO €4 4% · BUSINESS €9 0%
                        · FOUNDER €49 еднократно 0%. Лимити (maxLocales,
                        analyticsDays) се четат само оттук.
 src/lib/auth.ts        Сесии: httpOnly cookie, sha256(token) в БД, bcrypt 12.

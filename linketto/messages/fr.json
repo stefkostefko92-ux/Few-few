@@ -18,7 +18,7 @@
     "featureLangTitle": "Multilingue de naissance",
     "featureLangBody": "Une page, plusieurs langues : le visiteur voit votre profil dans sa propre langue, automatiquement.",
     "featureFeeTitle": "Commissions réduites",
-    "featureFeeBody": "Seulement 5 % sur le plan gratuit et 0 % sur tous les plans payants — contre 12 % ailleurs.",
+    "featureFeeBody": "Seulement 8 % sur le plan gratuit, 4 % sur Pro et 0 % sur Business et Founder — contre 12 % et 9 % ailleurs.",
     "featureAnalyticsTitle": "Statistiques sans cookies",
     "featureAnalyticsBody": "Nous comptons les clics, pas les personnes. Aucune donnée personnelle, aucun bandeau de consentement.",
     "featureTrustTitle": "Des humains, pas des bannissements",
@@ -41,7 +41,7 @@
     "free": {
       "name": "Gratuit",
       "price": "€0",
-      "fee": "5 %",
+      "fee": "8 %",
       "f1": "Liens illimités",
       "f2": "2 versions linguistiques",
       "f3": "Statistiques sur 90 jours"
@@ -49,7 +49,7 @@
     "pro": {
       "name": "Pro",
       "price": "€4",
-      "fee": "0 %",
+      "fee": "4 %",
       "f1": "Toutes les langues",
       "f2": "Domaine personnalisé",
       "f3": "Historique complet des statistiques"

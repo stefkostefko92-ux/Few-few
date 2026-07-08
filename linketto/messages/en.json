@@ -18,7 +18,7 @@
     "featureLangTitle": "Multilingual by birth",
     "featureLangBody": "One page, many languages: visitors see your profile in their own language, automatically.",
     "featureFeeTitle": "Reduced commissions",
-    "featureFeeBody": "Just 5% on the free plan and 0% on all paid plans — versus 12% elsewhere.",
+    "featureFeeBody": "Just 8% on the free plan, 4% on Pro and 0% on Business and Founder — versus 12% and 9% elsewhere.",
     "featureAnalyticsTitle": "Cookieless analytics",
     "featureAnalyticsBody": "We count clicks, not people. No personal data and no consent banner.",
     "featureTrustTitle": "Humans, not bans",
@@ -41,7 +41,7 @@
     "free": {
       "name": "Free",
       "price": "€0",
-      "fee": "5%",
+      "fee": "8%",
       "f1": "Unlimited links",
       "f2": "2 language versions",
       "f3": "90-day analytics"
@@ -49,7 +49,7 @@
     "pro": {
       "name": "Pro",
       "price": "€4",
-      "fee": "0%",
+      "fee": "4%",
       "f1": "All languages",
       "f2": "Custom domain",
       "f3": "Full analytics history"

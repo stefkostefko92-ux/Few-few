@@ -18,7 +18,7 @@
     "featureLangTitle": "Multilingue dalla nascita",
     "featureLangBody": "Una pagina, tante lingue: il visitatore vede il tuo profilo nella propria lingua, automaticamente.",
     "featureFeeTitle": "Commissioni ridotte",
-    "featureFeeBody": "Solo il 5% sul piano gratuito e 0% su tutti i piani a pagamento — contro il 12% altrove.",
+    "featureFeeBody": "Solo l'8% sul piano gratuito, il 4% su Pro e lo 0% su Business e Founder — contro il 12% e il 9% altrove.",
     "featureAnalyticsTitle": "Analisi senza cookie",
     "featureAnalyticsBody": "Contiamo i clic, non le persone. Nessun dato personale e nessun banner di consenso.",
     "featureTrustTitle": "Persone, non ban",
@@ -41,7 +41,7 @@
     "free": {
       "name": "Gratuito",
       "price": "€0",
-      "fee": "5%",
+      "fee": "8%",
       "f1": "Link illimitati",
       "f2": "2 versioni linguistiche",
       "f3": "Analisi per 90 giorni"
@@ -49,7 +49,7 @@
     "pro": {
       "name": "Pro",
       "price": "€4",
-      "fee": "0%",
+      "fee": "4%",
       "f1": "Tutte le lingue",
       "f2": "Dominio personalizzato",
       "f3": "Cronologia completa delle analisi"

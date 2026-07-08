@@ -1,7 +1,7 @@
 // Планове и комисиони — търговското ядро на Linketto.
-// Комисионата е НАМАЛЕНА спрямо пазара: 5% на Free (срещу 12% при
-// Linktree) и 0% на всички платени планове (срещу 9% при Linktree
-// Starter/Pro). Печелим от абонамента, не от труда на създателя.
+// Комисионата е НАМАЛЕНА спрямо пазара, но не сме на загуба:
+// Free 8% (срещу 12% при Linktree), Pro 4% (срещу 9% при Linktree
+// Starter/Pro), а 0% имат само горните два плана — Business и Founder.
 
 export type PlanId = 'FREE' | 'PRO' | 'BUSINESS' | 'FOUNDER';
 
@@ -23,7 +23,7 @@ export interface PlanDef {
 export const PLANS: Record<PlanId, PlanDef> = {
   FREE: {
     id: 'FREE',
-    feePercent: 5,
+    feePercent: 8,
     priceCents: 0,
     oneTime: false,
     maxLocales: 2,
@@ -32,7 +32,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
   },
   PRO: {
     id: 'PRO',
-    feePercent: 0,
+    feePercent: 4,
     priceCents: 400,
     oneTime: false,
     maxLocales: null,

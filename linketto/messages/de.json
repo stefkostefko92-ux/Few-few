@@ -18,7 +18,7 @@
     "featureLangTitle": "Mehrsprachig von Geburt an",
     "featureLangBody": "Eine Seite, viele Sprachen: Besucher sehen dein Profil automatisch in ihrer eigenen Sprache.",
     "featureFeeTitle": "Reduzierte Provisionen",
-    "featureFeeBody": "Nur 5 % im Gratis-Plan und 0 % in allen Bezahlplänen — statt 12 % anderswo.",
+    "featureFeeBody": "Nur 8 % im Gratis-Plan, 4 % bei Pro und 0 % bei Business und Founder — statt 12 % und 9 % anderswo.",
     "featureAnalyticsTitle": "Analytik ohne Cookies",
     "featureAnalyticsBody": "Wir zählen Klicks, keine Menschen. Keine personenbezogenen Daten, kein Consent-Banner.",
     "featureTrustTitle": "Menschen statt Sperrungen",
@@ -41,7 +41,7 @@
     "free": {
       "name": "Gratis",
       "price": "€0",
-      "fee": "5 %",
+      "fee": "8 %",
       "f1": "Unbegrenzte Links",
       "f2": "2 Sprachversionen",
       "f3": "90 Tage Analytik"
@@ -49,7 +49,7 @@
     "pro": {
       "name": "Pro",
       "price": "€4",
-      "fee": "0 %",
+      "fee": "4 %",
       "f1": "Alle Sprachen",
       "f2": "Eigene Domain",
       "f3": "Vollständiger Analytik-Verlauf"
