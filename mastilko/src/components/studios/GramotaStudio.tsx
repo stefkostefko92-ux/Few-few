@@ -1,14 +1,14 @@
 "use client";
 
 import { z } from "zod";
-import { themeById } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface GramotaState {
+interface GramotaState extends StyleState {
   kind: string;
   recipient: string;
   reason: string;
@@ -39,7 +39,7 @@ const ProjectSchema = z
     place: z.string().max(60),
     date: z.string().max(60),
     signer: z.string().max(60),
-    themeId: z.string().max(20),
+    ...StyleSchemaShape,
   })
   .partial();
 
@@ -47,7 +47,7 @@ const KINDS = ["ГРАМОТА", "СЕРТИФИКАТ", "ДИПЛОМА", "БЛ
 
 export default function GramotaStudio() {
   const [s, setS] = useLocalState<GramotaState>("mastilko-gramota", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const set = (patch: Partial<GramotaState>) => setS({ ...s, ...patch });
 
   return (
@@ -83,10 +83,7 @@ export default function GramotaStudio() {
                 onChange={(e) => set({ [k]: e.target.value })} placeholder={ph} />
             </div>
           ))}
-          <div>
-            <span className="field-label">Цвят</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
         </div>
         <ProjectFile state={s} filename="mastilko-gramota"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
@@ -94,7 +91,7 @@ export default function GramotaStudio() {
 
       <div className="space-y-4">
         <PrintBar summary="Грамота на хоризонтален лист А4" />
-        <SheetPreview landscape>
+        <SheetPreview landscape style={fontVars(s)}>
           <div style={{
             position: "absolute", inset: 0, padding: "10mm",
             display: "flex", flexDirection: "column",
@@ -108,7 +105,7 @@ export default function GramotaStudio() {
                 height: "100%", border: `0.5mm solid ${theme.accent}`,
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "10mm 18mm",
-                color: "#2E2620", background: theme.bg,
+                color: theme.fg, background: theme.bg,
               }}>
                 <div style={{ fontSize: "5mm", letterSpacing: "0.3em", color: theme.accent, fontWeight: 700 }}>
                   {s.org || " "}
@@ -136,12 +133,12 @@ export default function GramotaStudio() {
                   marginTop: "auto", paddingTop: "12mm", fontSize: "3.6mm",
                 }}>
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ borderTop: "0.3mm solid #2E2620", paddingTop: "1.5mm", minWidth: "45mm" }}>
+                    <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
                       {s.place}{s.place && s.date ? ", " : ""}{s.date}
                     </div>
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ borderTop: "0.3mm solid #2E2620", paddingTop: "1.5mm", minWidth: "45mm" }}>
+                    <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>
                       {s.signer}
                     </div>
                   </div>

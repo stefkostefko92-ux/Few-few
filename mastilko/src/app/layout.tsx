@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, Playfair_Display } from "next/font/google";
+import { Manrope, Playfair_Display, Lora, Oswald, Caveat } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BannerZone from "@/components/BannerZone";
@@ -17,7 +17,12 @@ const display = Playfair_Display({
   display: "swap",
 });
 
-const SITE_URL = "https://mastilko.carbonstealth.eu";
+// Допълнителни шрифтове за персонализация (кирилица).
+const lora = Lora({ subsets: ["cyrillic", "latin"], variable: "--font-lora", display: "swap" });
+const oswald = Oswald({ subsets: ["cyrillic", "latin"], variable: "--font-oswald", display: "swap" });
+const caveat = Caveat({ subsets: ["cyrillic", "latin"], variable: "--font-caveat", display: "swap" });
+
+const SITE_URL = "https://mastilko-bg.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -64,7 +69,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="bg" className={`${sans.variable} ${display.variable}`}>
+    <html
+      lang="bg"
+      className={`${sans.variable} ${display.variable} ${lora.variable} ${oswald.variable} ${caveat.variable}`}
+    >
       <head>
         {/* Прилага тъмната тема преди рисуване, за да няма трепване. */}
         <script

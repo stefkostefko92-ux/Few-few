@@ -21,7 +21,7 @@ export default function PoveritelnostPage() {
         <div>
           <h2>Кой стои зад Мастилко</h2>
           <p className="mt-2">
-            Мастилко (mastilko.carbonstealth.eu) се поддържа от{" "}
+            Мастилко (mastilko-bg.com) се поддържа от{" "}
             <strong>Carbon Stealth VCC</strong> — вижте{" "}
             <a className="text-tera-dark underline" href="https://carbonstealth.eu" rel="noopener">
               carbonstealth.eu

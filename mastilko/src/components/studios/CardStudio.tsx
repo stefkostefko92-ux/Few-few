@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 import { CARD, cardGrid } from "@/lib/print";
-import { themeById, type WarmTheme } from "@/lib/themes";
+import { type WarmTheme } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import { vCard } from "@/lib/vcard";
 import AiAssist from "@/components/AiAssist";
@@ -11,9 +12,9 @@ import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface CardState {
+interface CardState extends StyleState {
   name: string;
   role: string;
   company: string;
@@ -58,7 +59,7 @@ const ProjectSchema = z
     email: z.string().max(60),
     website: z.string().max(60),
     slogan: z.string().max(60),
-    themeId: z.string().max(20),
+    ...StyleSchemaShape,
     layout: z.enum(["lenta", "klasik", "linia", "ramka", "gorna", "duo"]),
     cutLines: z.boolean(),
     qr: z.boolean(),
@@ -521,7 +522,7 @@ function CardFaceInner({
 
 export default function CardStudio() {
   const [s, setS] = useLocalState<CardState>("mastilko-cards", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const grid = cardGrid();
   const px: Unit = (v) => `${v * 3.4}px`;
   const mm: Unit = (v) => `${v}mm`;
@@ -573,10 +574,7 @@ export default function CardStudio() {
             </select>
           </div>
 
-          <div>
-            <span className="field-label">Цветова тема</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input
@@ -656,7 +654,7 @@ export default function CardStudio() {
         </div>
 
         <PrintBar summary={`${grid.total} визитки (90 × 54 mm) на лист А4`} />
-        <SheetPreview>
+        <SheetPreview style={fontVars(s)}>
           {Array.from({ length: grid.total }).map((_, i) => {
             const col = i % grid.cols;
             const row = Math.floor(i / grid.cols);
@@ -683,7 +681,7 @@ export default function CardStudio() {
         {s.back && (
           <>
             <PrintBar summary="Гръб на визитките — лист 2 (принтирай на гърба)" />
-            <SheetPreview>
+            <SheetPreview style={fontVars(s)}>
               {Array.from({ length: grid.total }).map((_, i) => {
                 const col = i % grid.cols;
                 const row = Math.floor(i / grid.cols);

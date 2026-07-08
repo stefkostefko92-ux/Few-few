@@ -1,15 +1,15 @@
 "use client";
 
 import { z } from "zod";
-import { themeById } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface PismoState {
+interface PismoState extends StyleState {
   name: string;
   phone: string;
   email: string;
@@ -37,7 +37,7 @@ const ProjectSchema = z
     recipient: z.string().max(100),
     strengths: z.string().max(600),
     body: z.string().max(4000),
-    themeId: z.string().max(20),
+    ...StyleSchemaShape,
   })
   .partial();
 
@@ -65,7 +65,7 @@ const INITIAL: PismoState = {
 
 export default function PismoStudio() {
   const [s, setS] = useLocalState<PismoState>("mastilko-pismo", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const set = (patch: Partial<PismoState>) => setS({ ...s, ...patch });
 
   const aiInput = [
@@ -108,10 +108,7 @@ export default function PismoStudio() {
               />
             </div>
           ))}
-          <div>
-            <span className="field-label">Акцентен цвят</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -176,7 +173,7 @@ export default function PismoStudio() {
       {/* Преглед + печат */}
       <div className="space-y-4">
         <PrintBar summary="Мотивационно писмо на лист А4" />
-        <SheetPreview fixedHeight={false}>
+        <SheetPreview fixedHeight={false} style={fontVars(s)}>
           <div
             style={{
               padding: "20mm 18mm",

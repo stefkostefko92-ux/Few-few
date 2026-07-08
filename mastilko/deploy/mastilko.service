@@ -3,7 +3,7 @@
 # Nginx (виж deploy/nginx-mastilko.conf). Тайните са в /opt/mastilko/.env (600).
 
 [Unit]
-Description=Мастилко — безплатни етикети, визитки и CV (mastilko.carbonstealth.eu)
+Description=Мастилко — безплатни етикети, визитки и CV (mastilko-bg.com)
 After=network.target
 
 [Service]

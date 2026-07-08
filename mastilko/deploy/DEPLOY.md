@@ -1,4 +1,4 @@
-# Деплой на Мастилко (mastilko.carbonstealth.eu)
+# Деплой на Мастилко (mastilko-bg.com)
 
 Мастилко се разгръща **автоматично** от `deploy/autodeploy.sh` в корена на
 репото — същият поток като останалите продукти: качваш GitHub ZIP в `/root`
@@ -23,13 +23,13 @@
 ## Еднократна настройка (преди първия деплой)
 
 ```bash
-# 1) DNS: A запис mastilko.carbonstealth.eu → IP на сървъра (в панела на DNS).
+# 1) DNS: A запис mastilko-bg.com → IP на сървъра (в панела на DNS).
 
 # 2) Nginx vhost + TLS
 cp /opt/few-few/current/mastilko/deploy/nginx-mastilko.conf /etc/nginx/sites-available/mastilko
 ln -sfn /etc/nginx/sites-available/mastilko /etc/nginx/sites-enabled/mastilko
 nginx -t && systemctl reload nginx
-certbot --nginx -d mastilko.carbonstealth.eu --redirect
+certbot --nginx -d mastilko-bg.com --redirect
 
 # 3) Тайните
 #    - GEMINI_API_KEY: по желание, само за AI подсказките.
@@ -49,7 +49,7 @@ sudo -u mastilko env MASTILKO_DATA_DIR=/opt/mastilko/data \
 systemctl restart mastilko
 ```
 
-Банерите се управляват на `https://mastilko.carbonstealth.eu/admin` (вход с
+Банерите се управляват на `https://mastilko-bg.com/admin` (вход с
 потребителя от стъпка 4). И банерите, и админите се пазят в
 `/opt/mastilko/data/` (`banners.json`, `admins.json`) — папката **оцелява при
 деплой** (не се трие), както `.env`.
@@ -62,7 +62,7 @@ systemctl restart mastilko
 ```bash
 systemctl status mastilko --no-pager
 curl -I http://127.0.0.1:3200/            # 200 локално
-curl -I https://mastilko.carbonstealth.eu # 200 през Nginx+TLS
+curl -I https://mastilko-bg.com # 200 през Nginx+TLS
 journalctl -u mastilko -n 50 --no-pager   # логове при проблем
 ```
 

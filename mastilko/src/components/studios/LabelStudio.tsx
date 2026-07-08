@@ -2,16 +2,16 @@
 
 import { z } from "zod";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
-import { themeById } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface LabelState {
+interface LabelState extends StyleState {
   presetId: string;
   themeId: string;
   /** "same" = всички етикети еднакви; "list" = по един етикет на ред. */
@@ -33,7 +33,7 @@ interface LabelState {
 const ProjectSchema = z
   .object({
     presetId: z.string().max(20),
-    themeId: z.string().max(20),
+    ...StyleSchemaShape,
     mode: z.enum(["same", "list"]),
     text1: z.string().max(60),
     text2: z.string().max(80),
@@ -81,7 +81,7 @@ function cellContent(s: LabelState, lines: string[], i: number): CellContent | n
 export default function LabelStudio() {
   const [s, setS] = useLocalState<LabelState>("mastilko-labels", INITIAL, (r) => ProjectSchema.parse(r));
   const preset = LABEL_PRESETS.find((p) => p.id === s.presetId) ?? LABEL_PRESETS[0]!;
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   // Правоъгълните се режат по общи линии (без междина); кръгли/овални — с 3 mm.
   const gap = preset.shape === "rect" ? 0 : 3;
   const grid = sheetGrid(preset.w, preset.h, preset.margin ?? 7, gap, gap);
@@ -126,10 +126,7 @@ export default function LabelStudio() {
             </select>
           </div>
 
-          <div>
-            <span className="field-label">Цветова тема</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
 
           <fieldset>
             <legend className="field-label">Съдържание</legend>
@@ -292,7 +289,7 @@ export default function LabelStudio() {
         <PrintBar
           summary={`${usedCells} етикета (${preset.name.toLowerCase()}) на лист А4`}
         />
-        <SheetPreview>
+        <SheetPreview style={fontVars(s)}>
           {Array.from({ length: grid.total }).map((_, i) => {
             const content = cellContent(s, listLines, i);
             if (!content) return null;

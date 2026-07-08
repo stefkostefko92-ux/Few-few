@@ -3,7 +3,7 @@
 // разгъваме тази база на всяка страница, за да не се губят og:image и др.
 import type { Metadata } from "next";
 
-export const SITE_URL = "https://mastilko.carbonstealth.eu";
+export const SITE_URL = "https://mastilko-bg.com";
 const OG_IMG = {
   url: "/og.png",
   width: 1200,

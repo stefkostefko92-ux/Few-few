@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE = "https://mastilko.carbonstealth.eu";
+const BASE = "https://mastilko-bg.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // lastmod = моментът на билда — при всеки деплой съдържанието е прегледано.

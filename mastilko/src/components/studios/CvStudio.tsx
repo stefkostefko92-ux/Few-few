@@ -1,13 +1,13 @@
 "use client";
 
 import { z } from "zod";
-import { themeById } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
 interface Job {
   id: number;
@@ -24,7 +24,7 @@ interface School {
   period: string;
 }
 
-interface CvState {
+interface CvState extends StyleState {
   name: string;
   title: string;
   phone: string;
@@ -79,7 +79,7 @@ const ProjectSchema = z
       .max(20),
     skills: z.string().max(500),
     languages: z.string().max(300),
-    themeId: z.string().max(20),
+    ...StyleSchemaShape,
     layout: z.enum(["klasik", "moderen", "europass"]),
     birthDate: z.string().max(120),
     nationality: z.string().max(120),
@@ -125,7 +125,7 @@ function splitList(s: string): string[] {
 
 export default function CvStudio() {
   const [s, setS] = useLocalState<CvState>("mastilko-cv", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const set = (patch: Partial<CvState>) => setS({ ...s, ...patch });
 
   const setJob = (id: number, patch: Partial<Job>) =>
@@ -383,12 +383,7 @@ export default function CvStudio() {
               <option value="europass">Europass (стандарт на ЕС)</option>
             </select>
           </div>
-          {s.layout !== "europass" && (
-            <div>
-              <span className="field-label">Акцентен цвят</span>
-              <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-            </div>
-          )}
+          {s.layout !== "europass" && <StyleControls value={s} onChange={set} />}
         </div>
 
         <div className="card-warm space-y-4 p-5">
@@ -430,7 +425,7 @@ export default function CvStudio() {
       {/* Преглед + печат */}
       <div className="space-y-4">
         <PrintBar summary="Автобиография на лист А4 (може и няколко страници)" />
-        <SheetPreview fixedHeight={false}>
+        <SheetPreview fixedHeight={false} style={fontVars(s)}>
           {s.layout === "europass" ? (
             <EuropassCv s={s} skills={skills} languages={languages} />
           ) : s.layout === "moderen" ? (

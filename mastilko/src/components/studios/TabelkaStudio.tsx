@@ -1,14 +1,14 @@
 "use client";
 
 import { z } from "zod";
-import { themeById } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface TabelkaState {
+interface TabelkaState extends StyleState {
   emoji: string;
   title: string;
   subtitle: string;
@@ -30,7 +30,7 @@ const ProjectSchema = z
     title: z.string().max(60),
     subtitle: z.string().max(120),
     landscape: z.boolean(),
-    themeId: z.string().max(20),
+    ...StyleSchemaShape,
   })
   .partial();
 
@@ -45,7 +45,7 @@ const PRESETS: Array<{ label: string; v: Partial<TabelkaState> }> = [
 
 export default function TabelkaStudio() {
   const [s, setS] = useLocalState<TabelkaState>("mastilko-tabelka", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const set = (patch: Partial<TabelkaState>) => setS({ ...s, ...patch });
 
   return (
@@ -84,10 +84,7 @@ export default function TabelkaStudio() {
               onChange={(e) => set({ landscape: e.target.checked })} className="h-4 w-4 accent-tera" />
             Хоризонтално (пейзаж)
           </label>
-          <div>
-            <span className="field-label">Цвят</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
         </div>
         <ProjectFile state={s} filename="mastilko-tabelka"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
@@ -95,7 +92,7 @@ export default function TabelkaStudio() {
 
       <div className="space-y-4">
         <PrintBar summary={`Табелка на ${s.landscape ? "хоризонтален" : "вертикален"} лист А4`} />
-        <SheetPreview landscape={s.landscape}>
+        <SheetPreview landscape={s.landscape} style={fontVars(s)}>
           <div style={{
             position: "absolute", inset: 0, background: theme.bg, color: theme.fg,
             display: "flex", flexDirection: "column", alignItems: "center",

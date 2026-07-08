@@ -10,6 +10,8 @@ interface Props {
   fixedHeight?: boolean;
   /** true → хоризонтален А4 (297 × 210) — за грамоти. */
   landscape?: boolean;
+  /** Допълнителен стил на самия лист (напр. шрифт от персонализацията). */
+  style?: React.CSSProperties;
 }
 
 // Показва истински А4 лист (в mm), смален с transform до широчината на
@@ -19,6 +21,7 @@ export default function SheetPreview({
   children,
   fixedHeight = true,
   landscape = false,
+  style,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -62,6 +65,7 @@ export default function SheetPreview({
             style={{
               width: `${wMm}mm`,
               ...(fixedHeight ? { height: `${hMm}mm` } : { minHeight: `${hMm}mm` }),
+              ...style,
             }}
           >
             {children}

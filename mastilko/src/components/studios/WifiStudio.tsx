@@ -2,16 +2,16 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { themeById } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface WifiState {
+interface WifiState extends StyleState {
   title: string;
   ssid: string;
   password: string;
@@ -41,8 +41,8 @@ const ProjectSchema = z
     auth: z.enum(["WPA", "WEP", "nopass"]),
     hidden: z.boolean(),
     note: z.string().max(120),
-    themeId: z.string().max(20),
     perSheet: z.number().int().min(1).max(12),
+    ...StyleSchemaShape,
   })
   .partial();
 
@@ -56,7 +56,7 @@ const SIZES: Record<number, { w: number; h: number; cols: number }> = {
 
 export default function WifiStudio() {
   const [s, setS] = useLocalState<WifiState>("mastilko-wifi", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const set = (patch: Partial<WifiState>) => setS({ ...s, ...patch });
 
   const size = SIZES[s.perSheet] ?? SIZES[6]!;
@@ -115,10 +115,7 @@ export default function WifiStudio() {
               {[2, 4, 6, 9].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </label>
-          <div>
-            <span className="field-label">Цветова тема</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
         </div>
 
         <p className="text-xs text-ink-faint">
@@ -131,7 +128,7 @@ export default function WifiStudio() {
 
       <div className="space-y-4">
         <PrintBar summary={`${total} WiFi стикера на лист А4`} />
-        <SheetPreview>
+        <SheetPreview style={fontVars(s)}>
           {Array.from({ length: total }).map((_, i) => {
             const col = i % size.cols;
             const row = Math.floor(i / size.cols);

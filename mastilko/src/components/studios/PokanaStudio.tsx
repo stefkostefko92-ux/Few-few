@@ -1,14 +1,15 @@
 "use client";
 
 import { z } from "zod";
-import { themeById, type WarmTheme } from "@/lib/themes";
+import { type WarmTheme } from "@/lib/themes";
+import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
-import ThemePicker from "@/components/ThemePicker";
+import StyleControls from "@/components/StyleControls";
 
-interface PokanaState {
+interface PokanaState extends StyleState {
   emoji: string;
   heading: string;
   who: string;
@@ -44,8 +45,8 @@ const ProjectSchema = z
     time: z.string().max(40),
     place: z.string().max(120),
     note: z.string().max(200),
-    themeId: z.string().max(20),
     copies: z.union([z.literal(1), z.literal(2)]),
+    ...StyleSchemaShape,
   })
   .partial();
 
@@ -80,7 +81,7 @@ function Card({ s, theme, u }: { s: PokanaState; theme: WarmTheme; u: (v: number
 
 export default function PokanaStudio() {
   const [s, setS] = useLocalState<PokanaState>("mastilko-pokana", INITIAL, (r) => ProjectSchema.parse(r));
-  const theme = themeById(s.themeId);
+  const theme = resolveTheme(s);
   const set = (patch: Partial<PokanaState>) => setS({ ...s, ...patch });
   const mm = (v: number) => `${v}mm`;
   const px = (v: number) => `${v * 3.1}px`;
@@ -124,10 +125,7 @@ export default function PokanaStudio() {
               <option value={1}>1</option>
             </select>
           </label>
-          <div>
-            <span className="field-label">Цвят</span>
-            <ThemePicker value={s.themeId} onChange={(id) => set({ themeId: id })} />
-          </div>
+          <StyleControls value={s} onChange={set} />
         </div>
         <ProjectFile state={s} filename="mastilko-pokana"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
@@ -143,7 +141,7 @@ export default function PokanaStudio() {
           </div>
         </div>
         <PrintBar summary={`${s.copies} покани на лист А4`} />
-        <SheetPreview>
+        <SheetPreview style={fontVars(s)}>
           {Array.from({ length: s.copies }).map((_, i) => (
             <div key={i} style={{ position: "absolute", left: "5mm", top: `${8 + i * 145}mm` }}>
               <Card s={s} theme={theme} u={mm} />
