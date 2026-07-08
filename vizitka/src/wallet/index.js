@@ -5,7 +5,7 @@ import { pushPassUpdate } from './apns.js';
 import { patchGoogleObject } from './google.js';
 
 export { appleEnabled, googleEnabled, appleApnsEnabled } from './shared.js';
-export { buildPkpass } from './apple.js';
+export { buildPkpass, getPkpass } from './apple.js';
 export { googleSaveUrl } from './google.js';
 export { passAuthToken } from './shared.js';
 
@@ -22,7 +22,7 @@ export function walletLinks(profile) {
 // При промяна на визитката: пушни Apple обновяване + PATCH-ни Google обекта.
 // Fire-and-forget — грешките не бива да чупят запазването на профила.
 export function notifyWalletUpdate(profile, base) {
-  if (appleEnabled()) pushPassUpdate(profile.slug).catch((e) => console.error('APNs:', e.message));
+  if (appleEnabled()) pushPassUpdate(profile.id).catch((e) => console.error('APNs:', e.message));
   if (googleEnabled())
     patchGoogleObject(profile, base).catch((e) => console.error('Google Wallet:', e.message));
 }

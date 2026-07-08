@@ -3,11 +3,12 @@
 // обновен пас). Токен-базирана автентикация за web service-а (без сесии).
 import { Router } from 'express';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import crypto from 'node:crypto';
 import db from '../db.js';
 import { baseUrl } from '../config.js';
 import {
-  buildPkpass,
+  getPkpass,
   googleSaveUrl,
   passAuthToken,
   appleEnabled,
@@ -16,6 +17,17 @@ import {
 
 const router = Router();
 const jsonBody = express.json({ limit: '4kb' });
+
+// Генерирането на .pkpass е скъпо (openssl spawn) → ограничаваме публичните
+// портфейл маршрути срещу претоварване. Устройствата на Apple викат /v1/* по-често,
+// но там няма скъпа операция освен /v1/passes (пак с кеш).
+const walletLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Твърде много заявки. Опитай отново по-късно.',
+});
 
 function findVisibleProfile(req, slug) {
   const profile = db.prepare('SELECT * FROM profiles WHERE slug = ?').get(slug);
@@ -27,12 +39,12 @@ function findVisibleProfile(req, slug) {
 // --- Публични действия --------------------------------------------------------
 
 // Сваляне на подписания .pkpass — iOS го отваря директно в Apple Wallet.
-router.get('/p/:slug/wallet/apple.pkpass', (req, res) => {
+router.get('/p/:slug/wallet/apple.pkpass', walletLimiter, (req, res) => {
   if (!appleEnabled()) return res.status(404).end();
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).end();
   try {
-    const buf = buildPkpass(profile, baseUrl(req));
+    const buf = getPkpass(profile, baseUrl(req));
     res.type('application/vnd.apple.pkpass');
     res.setHeader('Content-Disposition', `attachment; filename="${profile.slug}.pkpass"`);
     res.setHeader('Cache-Control', 'no-store');
@@ -44,7 +56,7 @@ router.get('/p/:slug/wallet/apple.pkpass', (req, res) => {
 });
 
 // „Запази в Google Wallet" — редирект към подписания save линк.
-router.get('/p/:slug/wallet/google', (req, res) => {
+router.get('/p/:slug/wallet/google', walletLimiter, (req, res) => {
   if (!googleEnabled()) return res.status(404).end();
   const profile = findVisibleProfile(req, req.params.slug);
   if (!profile) return res.status(404).end();
@@ -66,6 +78,7 @@ function authorizedFor(req, serial) {
 // Регистрация на устройство за обновявания.
 router.post('/v1/devices/:device/registrations/:passType/:serial', jsonBody, (req, res) => {
   if (!authorizedFor(req, req.params.serial)) return res.status(401).end();
+  if (!appleEnabled()) return res.status(404).end();
   const pushToken = req.body?.pushToken;
   if (!pushToken) return res.status(400).end();
   const existing = db
@@ -105,18 +118,21 @@ router.get('/v1/devices/:device/registrations/:passType', (req, res) => {
   });
 });
 
-// Сервиране на обновения пас (устройството дърпа след пуш).
+// Сервиране на обновения пас (устройството дърпа след пуш). Серийният номер е
+// стабилният profile.id (не слъгът), затова заявката е по id.
 router.get('/v1/passes/:passType/:serial', (req, res) => {
   if (!authorizedFor(req, req.params.serial)) return res.status(401).end();
   if (!appleEnabled()) return res.status(404).end();
-  const profile = db.prepare('SELECT * FROM profiles WHERE slug = ?').get(req.params.serial);
+  const profile = db.prepare('SELECT * FROM profiles WHERE id = ?').get(req.params.serial);
   if (!profile) return res.status(404).end();
+  // Скрита визитка спира да се обновява в портфейла (Apple маха паса при 404).
+  if (!profile.is_public) return res.status(404).end();
 
   const modified = new Date(`${profile.updated_at.replace(' ', 'T')}Z`);
   const since = req.get('if-modified-since');
   if (since && new Date(since) >= modified) return res.status(304).end();
   try {
-    const buf = buildPkpass(profile, baseUrl(req));
+    const buf = getPkpass(profile, baseUrl(req));
     res.type('application/vnd.apple.pkpass');
     res.setHeader('Last-Modified', modified.toUTCString());
     res.send(buf);

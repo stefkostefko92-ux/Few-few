@@ -24,7 +24,8 @@ function signRs256(header, payload, privateKey) {
   return `${data}.${sig}`;
 }
 
-const objectId = (slug) => `${googleIssuerId()}.${slug.replace(/[^\w.-]/g, '_')}`;
+// Стабилен id по profile.id — не се чупи при смяна на слъг.
+const objectId = (id) => `${googleIssuerId()}.${String(id).replace(/[^\w.-]/g, '_')}`;
 
 // Дефиниция на класа (създава се при първото запазване през JWT).
 function genericClass() {
@@ -49,7 +50,7 @@ function genericObject(profile, base) {
   for (const l of getLinks(profile.id)) uris.push({ uri: l.url, description: l.label });
 
   return {
-    id: objectId(profile.slug),
+    id: objectId(profile.id),
     classId: googleClassId(),
     state: 'ACTIVE',
     hexBackgroundColor: cardBgHex(profile),
@@ -118,7 +119,7 @@ async function getAccessToken() {
 export async function patchGoogleObject(profile, base) {
   if (!googleEnabled()) return;
   const token = await getAccessToken();
-  const id = objectId(profile.slug);
+  const id = objectId(profile.id);
   const res = await fetch(`${API_BASE}/genericObject/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },

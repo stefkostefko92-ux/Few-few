@@ -634,7 +634,7 @@ await test('портфейл (unit): Apple pass.json носи QR към живи
   };
   const pass = buildPassJson(profile, base);
   assert.equal(pass.passTypeIdentifier, 'pass.eu.carbonstealth.vizitka');
-  assert.equal(pass.serialNumber, 'ivan-testov');
+  assert.equal(pass.serialNumber, '999999'); // стабилен id, не слъг
   assert.equal(pass.barcodes[0].message, `${base}/p/ivan-testov`);
   assert.equal(pass.generic.primaryFields[0].value, 'Иван Тестов');
 });
@@ -658,7 +658,7 @@ await test('портфейл (unit): Google save URL е подписан JWT с 
   const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString());
   assert.equal(payload.typ, 'savetowallet');
   const obj = payload.payload.genericObjects[0];
-  assert.equal(obj.id, '3388000000000000000.ivan-testov');
+  assert.equal(obj.id, '3388000000000000000.999999'); // стабилен id, не слъг
   assert.equal(obj.barcode.value, `${base}/p/ivan-testov`);
 });
 

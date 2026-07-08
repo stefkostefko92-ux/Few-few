@@ -40,7 +40,7 @@ export function buildPassJson(profile, base) {
     passTypeIdentifier,
     teamIdentifier,
     organizationName: 'Vizitka',
-    serialNumber: profile.slug,
+    serialNumber: String(profile.id), // стабилен — не се чупи при смяна на слъг
     description: `Визитка на ${profile.display_name}`,
     logoText: profile.company || 'Vizitka',
     foregroundColor: 'rgb(255, 255, 255)',
@@ -72,7 +72,7 @@ export function buildPassJson(profile, base) {
   // Auto-update: закачаме web service само когато APNs е конфигуриран.
   if (appleApnsEnabled()) {
     pass.webServiceURL = base;
-    pass.authenticationToken = passAuthToken(profile.slug);
+    pass.authenticationToken = passAuthToken(profile.id);
   }
   return pass;
 }
@@ -152,4 +152,20 @@ export function buildPkpass(profile, base) {
     { name: 'manifest.json', data: manifestBuf },
     { name: 'signature', data: signature },
   ]);
+}
+
+// Кеширан вариант — ключ по (id, updated_at, base). Подписването е скъпо (openssl
+// spawn); кешът пази event loop-а при повтарящи се сваляния на непроменена визитка и
+// сам се невалидира при редакция (updated_at се сменя). Ограничен размер срещу растеж.
+const PKPASS_CACHE = new Map();
+const PKPASS_CACHE_MAX = 500;
+
+export function getPkpass(profile, base) {
+  const key = `${profile.id}:${profile.updated_at}:${base}`;
+  const hit = PKPASS_CACHE.get(key);
+  if (hit) return hit;
+  const buf = buildPkpass(profile, base);
+  if (PKPASS_CACHE.size >= PKPASS_CACHE_MAX) PKPASS_CACHE.delete(PKPASS_CACHE.keys().next().value);
+  PKPASS_CACHE.set(key, buf);
+  return buf;
 }
