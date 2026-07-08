@@ -6,6 +6,8 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { bestLocale, dirFor, LOCALE_NAMES } from '@/i18n/locales';
 import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
+import { brandFor, isSensitiveUrl } from '@/lib/brands';
+import { BrandIcon } from '@/components/brand-icons';
 import {
   backgroundCss,
   buttonCss,
@@ -242,6 +244,8 @@ export async function ProfileScreen({
             if (!title) return null;
             const meta = (link.meta ?? null) as BlockMeta | null;
             const clickHref = `/u/${slug}/l/${link.id}?hl=${viewLocale}`;
+            const brand = brandFor(link.url);
+            const sensitive = isSensitiveUrl(link.url);
 
             switch (link.kind) {
               case 'HEADER':
@@ -396,19 +400,23 @@ export async function ProfileScreen({
                       style={buttonCss(styleCfg, accentFor(meta))}
                     >
                       <span className="inline-flex items-center gap-2">
-                        {link.kind === 'MAP' && (
+                        {brand ? (
+                          <BrandIcon brand={brand} className="h-4 w-4 shrink-0" />
+                        ) : link.kind === 'MAP' ? (
                           <MapPinIcon className="h-4 w-4 shrink-0" />
-                        )}
-                        {link.kind === 'APP' && (
+                        ) : link.kind === 'APP' ? (
                           <SmartphoneIcon className="h-4 w-4 shrink-0" />
-                        )}
-                        {link.kind === 'TIP' && (
+                        ) : link.kind === 'TIP' ? (
                           <HeartIcon className="h-4 w-4 shrink-0" />
-                        )}
-                        {link.kind === 'VCARD' && (
+                        ) : link.kind === 'VCARD' ? (
                           <UserRoundPlusIcon className="h-4 w-4 shrink-0" />
-                        )}
+                        ) : null}
                         {title}
+                        {sensitive && (
+                          <span className="rounded border border-current px-1 text-[10px] font-bold leading-4 opacity-80">
+                            18+
+                          </span>
+                        )}
                       </span>
                     </a>
                   </li>

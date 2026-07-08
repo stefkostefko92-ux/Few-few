@@ -227,7 +227,11 @@
     "formSent": "Nachricht gesendet. Danke!",
     "formError": "Ungültige Daten — prüfe die Felder.",
     "shopTitle": "Shop",
-    "shopError": "Die Zahlung hat nicht geklappt — bitte versuche es erneut."
+    "shopError": "Die Zahlung hat nicht geklappt — bitte versuche es erneut.",
+    "adultTitle": "Inhalte für Erwachsene (18+)",
+    "adultBody": "Dieser Link führt zu einer Plattform mit Inhalten, die nur für Erwachsene bestimmt sind. Fahre nur fort, wenn du über 18 bist.",
+    "adultConfirm": "Weiter — ich bin über 18",
+    "adultBack": "Zurück zum Profil"
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",

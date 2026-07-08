@@ -227,7 +227,11 @@
     "formSent": "Message sent. Thank you!",
     "formError": "Invalid data — check the fields.",
     "shopTitle": "Shop",
-    "shopError": "The payment did not go through — please try again."
+    "shopError": "The payment did not go through — please try again.",
+    "adultTitle": "Adult content (18+)",
+    "adultBody": "This link leads to a platform with content intended for adults only. Continue only if you are over 18.",
+    "adultConfirm": "Continue — I am over 18",
+    "adultBack": "Back to profile"
   },
   "legal": {
     "privacyTitle": "Privacy Policy",

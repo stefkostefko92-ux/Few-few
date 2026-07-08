@@ -227,7 +227,11 @@
     "formSent": "Messaggio inviato. Grazie!",
     "formError": "Dati non validi — controlla i campi.",
     "shopTitle": "Negozio",
-    "shopError": "Il pagamento non è andato a buon fine — riprova."
+    "shopError": "Il pagamento non è andato a buon fine — riprova.",
+    "adultTitle": "Contenuto per adulti (18+)",
+    "adultBody": "Questo link porta a una piattaforma con contenuti destinati esclusivamente a maggiorenni. Prosegui solo se hai più di 18 anni.",
+    "adultConfirm": "Continua — ho più di 18 anni",
+    "adultBack": "Torna al profilo"
   },
   "legal": {
     "privacyTitle": "Informativa sulla privacy",

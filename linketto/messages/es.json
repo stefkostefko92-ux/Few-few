@@ -227,7 +227,11 @@
     "formSent": "¡Mensaje enviado. Gracias!",
     "formError": "Datos no válidos — revisa los campos.",
     "shopTitle": "Tienda",
-    "shopError": "El pago no se completó — inténtalo de nuevo."
+    "shopError": "El pago no se completó — inténtalo de nuevo.",
+    "adultTitle": "Contenido para adultos (18+)",
+    "adultBody": "Este enlace lleva a una plataforma con contenido destinado únicamente a adultos. Continúa solo si eres mayor de 18 años.",
+    "adultConfirm": "Continuar — soy mayor de 18",
+    "adultBack": "Volver al perfil"
   },
   "legal": {
     "privacyTitle": "Política de privacidad",

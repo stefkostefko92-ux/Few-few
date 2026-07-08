@@ -7,6 +7,8 @@ import {
   pickMusicTarget,
   type BlockMeta,
 } from '@/lib/blocks';
+import { isSensitiveUrl } from '@/lib/brands';
+import { isLocale } from '@/i18n/locales';
 
 // Клик по блок: записваме събитието (без бисквитки и лични данни)
 // и пренасочваме към целта. „Умните“ блокове избират целта тук:
@@ -91,8 +93,76 @@ export async function GET(
     return NextResponse.redirect(new URL(`/u/${slug}`, url.origin), 302);
   }
 
+  // Чувствително (18+) съдържание: преходна страница за потвърждение
+  // на възрастта, преди да пренасочим (както при Linktree).
+  if (isSensitiveUrl(target) && url.searchParams.get('adult') !== '1') {
+    return ageGateResponse(url, slug);
+  }
+
   await recordClick();
   return NextResponse.redirect(target, 302);
+}
+
+async function ageGateResponse(
+  url: URL,
+  slug: string,
+): Promise<NextResponse> {
+  const hl = url.searchParams.get('hl') ?? '';
+  const locale = isLocale(hl) ? hl : 'en';
+  const messages = (await import(`@/../messages/${locale}.json`)).default as {
+    profile: Record<string, string>;
+  };
+  const t = messages.profile;
+  const confirmUrl = new URL(url);
+  confirmUrl.searchParams.set('adult', '1');
+  const backHref = `/u/${esc(slug)}${isLocale(hl) ? `?hl=${hl}` : ''}`;
+  const html = `<!doctype html>
+<html lang="${locale}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>${esc(t.adultTitle)}</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(to bottom,#0f172a,#020617);color:#fff;
+    font-family:ui-sans-serif,system-ui,sans-serif;padding:24px}
+  .card{max-width:26rem;text-align:center;border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.08);backdrop-filter:blur(16px);border-radius:24px;padding:40px 32px}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;
+    border:2px solid #f87171;color:#f87171;border-radius:9999px;font-weight:800;font-size:18px;margin-bottom:16px}
+  h1{font-size:20px;margin:0 0 8px}
+  p{font-size:14px;line-height:1.6;opacity:.75;margin:0 0 24px}
+  a{display:block;border-radius:9999px;padding:12px 24px;font-size:14px;font-weight:600;
+    text-decoration:none;margin-top:10px}
+  .confirm{background:#fff;color:#0f172a}
+  .back{border:1px solid rgba(255,255,255,.3);color:#fff}
+</style>
+</head>
+<body>
+  <main class="card">
+    <span class="badge">18+</span>
+    <h1>${esc(t.adultTitle)}</h1>
+    <p>${esc(t.adultBody)}</p>
+    <a class="confirm" href="${esc(confirmUrl.pathname + confirmUrl.search)}" rel="nofollow">${esc(t.adultConfirm)}</a>
+    <a class="back" href="${backHref}">${esc(t.adultBack)}</a>
+  </main>
+</body>
+</html>`;
+  return new NextResponse(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+function esc(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function hostOf(referer: string | null): string | undefined {

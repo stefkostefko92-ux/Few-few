@@ -227,7 +227,11 @@
     "formSent": "Message envoyé. Merci !",
     "formError": "Données non valides — vérifiez les champs.",
     "shopTitle": "Boutique",
-    "shopError": "Le paiement n'a pas abouti — veuillez réessayer."
+    "shopError": "Le paiement n'a pas abouti — veuillez réessayer.",
+    "adultTitle": "Contenu pour adultes (18+)",
+    "adultBody": "Ce lien mène à une plateforme dont le contenu est réservé aux adultes. Ne continuez que si vous avez plus de 18 ans.",
+    "adultConfirm": "Continuer — j'ai plus de 18 ans",
+    "adultBack": "Retour au profil"
   },
   "legal": {
     "privacyTitle": "Politique de confidentialité",
