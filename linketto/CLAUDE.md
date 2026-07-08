@@ -86,7 +86,8 @@ styleSchema + контрола в дашборда — БЕЗ миграция. 
 (отключва се само от account.updated webhook-а). Product/ProductTranslation/
 Purchase; actions/shop.ts (onboarding + CRUD + публичното
 startProductPurchaseAction — сумата се чете САМО от базата). Checkout =
-destination charge с application_fee = commissionCents(цена, план).
+destination charge с application_fee = totalFeeCents(цена, план) =
+комисиона по плана + такса обработка 1.9%+€0.30.
 Доставка: /u/[slug]/delivery проверява сесията НА ЖИВО срещу Stripe
 (payment_status === 'paid') преди redirect към deliveryUrl. Purchase се
 записва идемпотентно само през подписания webhook.
