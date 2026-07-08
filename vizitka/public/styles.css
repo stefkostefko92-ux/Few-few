@@ -569,6 +569,24 @@ legend {
   height: 48px;
   width: auto;
 }
+/* „Скоро“ състояние — приглушени бейджове, без действие */
+.vcard-wallet.is-soon .wallet-badges {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+  pointer-events: none;
+}
+.soon-chip {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--brand);
+  border-radius: 999px;
+  vertical-align: middle;
+}
 .made-with {
   text-align: center;
 }

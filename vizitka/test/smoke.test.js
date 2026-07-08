@@ -589,14 +589,23 @@ await test('забравена парола: непознат имейл не и
 
 // ─── Портфейли (Apple Wallet / Google Wallet) ────────────────────────────────
 
-await test('портфейл: изключен без сертификати — маршрутите връщат 404', async () => {
+await test('портфейл: изключен без сертификати — 404 + „Скоро" тийзър', async () => {
   const apple = await request('/p/ivan-testov/wallet/apple.pkpass');
   const google = await request('/p/ivan-testov/wallet/google');
   assert.equal(apple.status, 404);
   assert.equal(google.status, 404);
-  // Бутоните не се показват на визитката, когато функцията е изключена.
-  const card = await request('/p/ivan-testov');
-  assert.doesNotMatch(await card.text(), /badge-apple-wallet|badge-google-wallet/);
+  // Функцията е изключена → показваме тийзър „Скоро", но БЕЗ активни линкове.
+  // Влизаме като собственика (визитката е скрита от по-ранен тест).
+  jar.clear();
+  await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'ivan@example.com', password: 'novaparola22' }),
+  });
+  const card = await (await request('/p/ivan-testov')).text();
+  assert.match(card, /Скоро/);
+  assert.match(card, /is-soon/);
+  assert.doesNotMatch(card, /href="[^"]*\/wallet\/(apple\.pkpass|google)"/);
 });
 
 await test('портфейл: Apple update web service иска токен (401 без него)', async () => {

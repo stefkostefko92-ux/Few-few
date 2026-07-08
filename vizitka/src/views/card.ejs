@@ -76,6 +76,15 @@
           <% } %>
         </div>
       </div>
+    <% } else if (wallet && wallet.comingSoon) { %>
+      <div class="vcard-wallet is-soon">
+        <p class="muted small">Носи визитката в телефона си <span class="soon-chip">Скоро</span></p>
+        <div class="wallet-badges" aria-hidden="true">
+          <img src="/badge-apple-wallet.svg" alt="" height="48">
+          <img src="/badge-google-wallet.svg" alt="" height="48">
+        </div>
+        <p class="muted small">Apple Wallet и Google Wallet — работим по тях.</p>
+      </div>
     <% } %>
   </article>
   <p class="made-with muted small">Направено с <a href="/">Vizitka</a> — винаги актуалната визитка.</p>

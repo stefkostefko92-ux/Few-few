@@ -10,12 +10,16 @@ export { googleSaveUrl } from './google.js';
 export { passAuthToken } from './shared.js';
 
 // Линкове за бутоните на публичната визитка (null → бутонът не се показва).
+// Когато нито един портфейл не е конфигуриран, показваме „Скоро" тийзър (неактивен).
 export function walletLinks(profile) {
   const publicPath = `/p/${profile.slug}/wallet`;
+  const apple = appleEnabled();
+  const google = googleEnabled();
   return {
-    apple: appleEnabled() ? `${publicPath}/apple.pkpass` : null,
-    google: googleEnabled() ? `${publicPath}/google` : null,
-    any: appleEnabled() || googleEnabled(),
+    apple: apple ? `${publicPath}/apple.pkpass` : null,
+    google: google ? `${publicPath}/google` : null,
+    any: apple || google,
+    comingSoon: !apple && !google, // функцията идва скоро — тийзър без действие
   };
 }
 
