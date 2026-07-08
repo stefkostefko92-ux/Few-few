@@ -1,46 +1,107 @@
 import type { Metadata } from "next";
 import {
   Manrope, Playfair_Display, Lora, Oswald, Caveat,
-  Montserrat, Nunito, Rubik, Comfortaa, PT_Serif, Merriweather,
+  Montserrat, Nunito, Nunito_Sans, Rubik, Comfortaa, PT_Serif, Merriweather,
   Prata, Yeseva_One, Russo_One, Pacifico, Marck_Script, JetBrains_Mono,
+  Roboto, Open_Sans, Fira_Sans, PT_Sans, Ubuntu, Raleway, Inter, Mulish,
+  Exo_2, Play, Golos_Text, Onest, Unbounded, Commissioner, Cuprum, Ruda,
+  Cormorant, Alegreya, Vollkorn, Bitter, Old_Standard_TT, Literata, Noto_Serif,
+  Spectral, Podkova, Philosopher, Marmelad, Rubik_Mono_One,
+  Stalinist_One, Tenor_Sans, Underdog, Seymour_One, Bad_Script, Pangolin, Neucha,
+  Lobster, Roboto_Mono, IBM_Plex_Mono, Source_Code_Pro, Anonymous_Pro,
+  PT_Mono, Ubuntu_Mono,
 } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BannerZone from "@/components/BannerZone";
 import "./globals.css";
 
-const sans = Manrope({
-  subsets: ["cyrillic", "latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
+// Всички шрифтове са с кирилица И латиница. Само основните два се preload-ват;
+// останалите се свалят само когато потребител ги избере (preload: false).
+// next/font иска ВСЕКИ зареждач да е присвоен на const в обхвата на модула
+// (обектен литерал, без spread) — затова изброяваме поединично.
 
-const display = Playfair_Display({
-  subsets: ["cyrillic", "latin"],
-  variable: "--font-display",
-  display: "swap",
-});
+const sans = Manrope({ subsets: ["cyrillic", "latin"], display: "swap", variable: "--font-sans" });
+const display = Playfair_Display({ subsets: ["cyrillic", "latin"], display: "swap", variable: "--font-display" });
 
-// Допълнителни шрифтове за персонализация (всички с кирилица).
-const lora = Lora({ subsets: ["cyrillic", "latin"], variable: "--font-lora", display: "swap", preload: false });
-const oswald = Oswald({ subsets: ["cyrillic", "latin"], variable: "--font-oswald", display: "swap", preload: false });
-const caveat = Caveat({ subsets: ["cyrillic", "latin"], variable: "--font-caveat", display: "swap", preload: false });
-const montserrat = Montserrat({ subsets: ["cyrillic", "latin"], variable: "--font-montserrat", display: "swap", preload: false });
-const nunito = Nunito({ subsets: ["cyrillic", "latin"], variable: "--font-nunito", display: "swap", preload: false });
-const rubik = Rubik({ subsets: ["cyrillic", "latin"], variable: "--font-rubik", display: "swap", preload: false });
-const comfortaa = Comfortaa({ subsets: ["cyrillic", "latin"], variable: "--font-comfortaa", display: "swap", preload: false });
-const ptSerif = PT_Serif({ subsets: ["cyrillic", "latin"], weight: ["400", "700"], variable: "--font-ptserif", display: "swap", preload: false });
-const merriweather = Merriweather({ subsets: ["cyrillic", "latin"], weight: ["400", "700"], variable: "--font-merriweather", display: "swap", preload: false });
-const prata = Prata({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-prata", display: "swap", preload: false });
-const yeseva = Yeseva_One({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-yeseva", display: "swap", preload: false });
-const russo = Russo_One({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-russo", display: "swap", preload: false });
-const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-pacifico", display: "swap", preload: false });
-const marck = Marck_Script({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-marck", display: "swap", preload: false });
-const jetbrains = JetBrains_Mono({ subsets: ["cyrillic", "latin"], variable: "--font-jetbrains", display: "swap", preload: false });
+// Безсерифни
+const montserrat = Montserrat({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-montserrat" });
+const roboto = Roboto({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-roboto" });
+const opensans = Open_Sans({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-opensans" });
+const inter = Inter({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-inter" });
+const raleway = Raleway({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-raleway" });
+const mulish = Mulish({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-mulish" });
+const nunito = Nunito({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-nunito" });
+const nunitosans = Nunito_Sans({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-nunitosans" });
+const rubik = Rubik({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-rubik" });
+const firasans = Fira_Sans({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-firasans" });
+const ptsans = PT_Sans({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-ptsans" });
+const ubuntu = Ubuntu({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-ubuntu" });
+const oswald = Oswald({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-oswald" });
+const comfortaa = Comfortaa({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-comfortaa" });
+const exo2 = Exo_2({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-exo2" });
+const play = Play({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-play" });
+const golos = Golos_Text({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-golos" });
+const onest = Onest({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-onest" });
+const unbounded = Unbounded({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-unbounded" });
+const commissioner = Commissioner({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-commissioner" });
+const cuprum = Cuprum({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-cuprum" });
+const ruda = Ruda({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-ruda" });
+
+// Серифни
+const lora = Lora({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-lora" });
+const ptserif = PT_Serif({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-ptserif" });
+const merriweather = Merriweather({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-merriweather" });
+const cormorant = Cormorant({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-cormorant" });
+const alegreya = Alegreya({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-alegreya" });
+const vollkorn = Vollkorn({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-vollkorn" });
+const bitter = Bitter({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-bitter" });
+const oldstandard = Old_Standard_TT({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-oldstandard" });
+const literata = Literata({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-literata" });
+const notoserif = Noto_Serif({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-notoserif" });
+const spectral = Spectral({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-spectral" });
+const podkova = Podkova({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-podkova" });
+
+// Ефектни
+const prata = Prata({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-prata" });
+const yeseva = Yeseva_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-yeseva" });
+const russo = Russo_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-russo" });
+const philosopher = Philosopher({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-philosopher" });
+const marmelad = Marmelad({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-marmelad" });
+const rubikmono = Rubik_Mono_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-rubikmono" });
+const stalinist = Stalinist_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-stalinist" });
+const tenor = Tenor_Sans({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-tenor" });
+const underdog = Underdog({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-underdog" });
+const seymour = Seymour_One({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-seymour" });
+
+// Ръкописни
+const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-pacifico" });
+const caveat = Caveat({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-caveat" });
+const marck = Marck_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-marck" });
+const badscript = Bad_Script({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-badscript" });
+const pangolin = Pangolin({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-pangolin" });
+const neucha = Neucha({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-neucha" });
+const lobster = Lobster({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-lobster" });
+
+// Равноширок
+const jetbrains = JetBrains_Mono({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-jetbrains" });
+const robotomono = Roboto_Mono({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-robotomono" });
+const ibmplex = IBM_Plex_Mono({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-ibmplex" });
+const sourcecode = Source_Code_Pro({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, variable: "--font-sourcecode" });
+const anonymous = Anonymous_Pro({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-anonymous" });
+const ptmono = PT_Mono({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: "400", variable: "--font-ptmono" });
+const ubuntumono = Ubuntu_Mono({ subsets: ["cyrillic", "latin"], display: "swap", preload: false, weight: ["400", "700"], variable: "--font-ubuntumono" });
 
 const FONT_VARS = [
-  sans, display, lora, oswald, caveat, montserrat, nunito, rubik, comfortaa,
-  ptSerif, merriweather, prata, yeseva, russo, pacifico, marck, jetbrains,
+  sans, display,
+  montserrat, roboto, opensans, inter, raleway, mulish, nunito, nunitosans, rubik,
+  firasans, ptsans, ubuntu, oswald, comfortaa, exo2, play, golos, onest, unbounded,
+  commissioner, cuprum, ruda,
+  lora, ptserif, merriweather, cormorant, alegreya, vollkorn, bitter, oldstandard,
+  literata, notoserif, spectral, podkova,
+  prata, yeseva, russo, philosopher, marmelad, rubikmono, stalinist, tenor, underdog, seymour,
+  pacifico, caveat, marck, badscript, pangolin, neucha, lobster,
+  jetbrains, robotomono, ibmplex, sourcecode, anonymous, ptmono, ubuntumono,
 ].map((f) => f.variable).join(" ");
 
 const SITE_URL = "https://mastilko-bg.com";
