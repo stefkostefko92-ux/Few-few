@@ -545,6 +545,30 @@ legend {
   border: 1px solid var(--line);
   border-radius: 10px;
 }
+.vcard-wallet {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+.wallet-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+.wallet-badges a {
+  display: inline-flex;
+  border-radius: 10px;
+  transition: transform 0.1s ease;
+}
+.wallet-badges a:hover {
+  transform: translateY(-1px);
+}
+.wallet-badges img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
 .made-with {
   text-align: center;
 }

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="196" height="48" viewBox="0 0 196 48" role="img" aria-label="Запази в Google Wallet">
+  <rect x="1" y="1" width="194" height="46" rx="9" fill="#000" stroke="#000"/>
+  <g transform="translate(15,12)">
+    <rect x="0" y="0" width="10" height="10" rx="2" fill="#4285F4"/>
+    <rect x="12" y="0" width="10" height="10" rx="2" fill="#EA4335"/>
+    <rect x="0" y="12" width="10" height="10" rx="2" fill="#FBBC04"/>
+    <rect x="12" y="12" width="10" height="10" rx="2" fill="#34A853"/>
+  </g>
+  <text x="48" y="20" fill="#d0d0d0" font-family="Roboto,Segoe UI,Helvetica,Arial,sans-serif" font-size="10">Запази в</text>
+  <text x="48" y="36" fill="#fff" font-family="Roboto,Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600">Google Wallet</text>
+</svg>

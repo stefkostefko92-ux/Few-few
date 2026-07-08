@@ -64,6 +64,9 @@ prev() { [[ -f "$ENV_FILE" ]] && sed -n "s/^$1=//p" "$ENV_FILE" | head -n1 || tr
 PRINT_API_SECRET="$(prev PRINT_API_SECRET)"; PRINT_API_SECRET="${PRINT_API_SECRET:-$(gen_hex 32)}"
 INDEXNOW_KEY="$(prev INDEXNOW_KEY)";         INDEXNOW_KEY="${INDEXNOW_KEY:-$(gen_hex 16)}"
 
+# Запази вече конфигурираните портфейл редове (коментирани или не) — идемпотентност.
+WALLET_LINES="$([[ -f "$ENV_FILE" ]] && grep -E '^#? *(APPLE_|GOOGLE_WALLET_)' "$ENV_FILE" || true)"
+
 # Домейн/админ (default = стойностите на проекта).
 ask DOMAIN      "Домейн" "$DOMAIN"
 ask ADMIN_EMAIL "Админ имейл (достъп до /admin)" "$ADMIN_EMAIL"
@@ -95,6 +98,21 @@ umask 077
     echo "SMTP_SECURE=false"
     echo "SMTP_USER=$SMTP_USER"
     echo "SMTP_PASS=$SMTP_PASS"
+  fi
+  # Портфейли (Apple/Google) — попълни при готовност (виж DEPLOY.md, секция 7).
+  if [[ -n "$WALLET_LINES" ]]; then
+    echo "$WALLET_LINES"
+  else
+    echo "# APPLE_TEAM_ID="
+    echo "# APPLE_PASS_TYPE_ID=pass.eu.carbonstealth.vizitka"
+    echo "# APPLE_PASS_CERT=/etc/vizitka/apple/signerCert.pem"
+    echo "# APPLE_PASS_KEY=/etc/vizitka/apple/signerKey.pem"
+    echo "# APPLE_PASS_KEY_PASSPHRASE="
+    echo "# APPLE_WWDR_CERT=/etc/vizitka/apple/wwdr.pem"
+    echo "# APPLE_APNS_KEY=/etc/vizitka/apple/AuthKey.p8"
+    echo "# APPLE_APNS_KEY_ID="
+    echo "# GOOGLE_WALLET_ISSUER_ID="
+    echo "# GOOGLE_WALLET_SA_KEY=/etc/vizitka/google/service-account.json"
   fi
 } > "$ENV_FILE"
 chmod 600 "$ENV_FILE"
