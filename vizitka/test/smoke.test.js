@@ -13,6 +13,7 @@ process.env.PRINT_API_SECRET = 'test-print-secret';
 process.env.INDEXNOW_KEY = 'testindexnowkey1234567890abcdef0';
 
 const { default: app } = await import('../src/app.js');
+const { outbox } = await import('../src/mailer.js');
 
 const server = app.listen(0);
 const port = server.address().port;
@@ -510,6 +511,80 @@ await test('началната показва максимум 2 банера', 
   const home = await (await request('/')).text();
   const shown = (home.match(/class="ad"/g) || []).length;
   assert.equal(shown, 2, `трябва да се показват точно 2 банера, а не ${shown}`);
+});
+
+await test('забравена парола: имейл → нулиране → вход с новата', async () => {
+  jar.clear();
+  await request('/register', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      name: 'Забравко',
+      email: 'forgot@example.com',
+      password: 'stara-parola1',
+      type: 'personal',
+    }),
+  });
+  jar.clear();
+  // Заявка за нулиране — генеричен отговор, писмо в dev outbox-а.
+  const before = outbox.length;
+  const res = await request('/forgot', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'forgot@example.com' }),
+  });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /изпратихме връзка/);
+  assert.equal(outbox.length, before + 1, 'трябва да има ново писмо');
+  const token = outbox[outbox.length - 1].text.match(/\/reset\?token=([a-f0-9]{64})/)[1];
+
+  // Страницата за нова парола се отваря с валиден токен.
+  const page = await request(`/reset?token=${token}`);
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /Нова парола/);
+
+  // Задаваме нова парола.
+  const set = await request('/reset', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ token, password: 'chisto-nova-9' }),
+  });
+  assert.equal(set.status, 200);
+
+  // Токенът е еднократен — повторно ползване се отхвърля.
+  const reuse = await request('/reset', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ token, password: 'oshte-edna-9' }),
+  });
+  assert.equal(reuse.status, 400);
+
+  // Старата парола не работи, новата — да.
+  const oldPw = await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'forgot@example.com', password: 'stara-parola1' }),
+  });
+  assert.equal(oldPw.status, 401);
+  const newPw = await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'forgot@example.com', password: 'chisto-nova-9' }),
+  });
+  assert.equal(newPw.status, 302);
+});
+
+await test('забравена парола: непознат имейл не издава нищо и не праща писмо', async () => {
+  jar.clear();
+  const before = outbox.length;
+  const res = await request('/forgot', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'nqma-takyv@example.com' }),
+  });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /изпратихме връзка/); // същият генеричен отговор
+  assert.equal(outbox.length, before, 'не трябва да се праща писмо за несъществуващ акаунт');
 });
 
 server.close();

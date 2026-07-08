@@ -21,7 +21,7 @@
   <meta property="og:image" content="<%= meta?.image || siteBase + '/og-default.png' %>">
   <meta property="og:locale" content="bg_BG">
   <meta name="twitter:card" content="summary_large_image">
-  <% if (/^\/(dashboard|login|register)/.test(currentPath)) { %>
+  <% if (/^\/(dashboard|login|register|forgot|reset)/.test(currentPath)) { %>
     <meta name="robots" content="noindex,nofollow">
   <% } else { %>
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">

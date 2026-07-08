@@ -69,7 +69,7 @@ app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 
 
 // Автентикираните страници не се кешират никъде.
 app.use((req, res, next) => {
-  if (/^\/(dashboard|login|register|logout|profile|admin)/.test(req.path))
+  if (/^\/(dashboard|login|register|logout|profile|admin|forgot|reset)/.test(req.path))
     res.setHeader('Cache-Control', 'no-store');
   next();
 });

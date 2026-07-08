@@ -1,6 +1,7 @@
-// Регистрация, вход и изход.
+// Регистрация, вход, изход и нулиране на паролата.
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import crypto from 'node:crypto';
 import db from '../db.js';
 import {
   hashPassword,
@@ -11,6 +12,11 @@ import {
 } from '../auth.js';
 import { csrfProtect } from '../csrf.js';
 import { uniqueSlug } from '../slug.js';
+import { sendPasswordReset } from '../mailer.js';
+import { baseUrl } from '../config.js';
+
+const RESET_TTL_MS = 60 * 60 * 1000; // токенът за нулиране важи 1 час
+const sha256 = (v) => crypto.createHash('sha256').update(v).digest('hex');
 
 const router = Router();
 
@@ -79,6 +85,83 @@ router.post('/login', authLimiter, (req, res) => {
   }
   createSession(res, user.id);
   res.redirect('/dashboard');
+});
+
+// ── Забравена парола ─────────────────────────────────────────────────────────
+router.get('/forgot', (req, res) => {
+  if (req.user) return res.redirect('/dashboard');
+  res.render('forgot', { title: 'Забравена парола', sent: false, error: null });
+});
+
+router.post('/forgot', authLimiter, async (req, res) => {
+  const email = String(req.body.email || '')
+    .trim()
+    .toLowerCase();
+  // Винаги отговаряме еднакво — без разкриване дали имейлът съществува.
+  const done = () => res.render('forgot', { title: 'Забравена парола', sent: true, error: null });
+  if (!EMAIL_RE.test(email)) return done();
+
+  const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  if (user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(user.id); // само 1 активен
+    db.prepare(
+      'INSERT INTO password_resets (user_id, token_hash, expires_at) VALUES (?, ?, ?)'
+    ).run(user.id, sha256(token), Date.now() + RESET_TTL_MS);
+    try {
+      await sendPasswordReset(email, `${baseUrl(req)}/reset?token=${token}`);
+    } catch (err) {
+      console.error('Изпращане на имейл за нулиране се провали:', err.message);
+    }
+  }
+  done();
+});
+
+// Намира валиден (неизползван, неизтекъл) reset запис по токен от URL.
+function findReset(token) {
+  if (!/^[a-f0-9]{64}$/.test(String(token || ''))) return null;
+  return db
+    .prepare('SELECT * FROM password_resets WHERE token_hash = ? AND used = 0 AND expires_at > ?')
+    .get(sha256(token), Date.now());
+}
+
+router.get('/reset', (req, res) => {
+  const reset = findReset(req.query.token);
+  if (!reset)
+    return res.status(400).render('reset', {
+      title: 'Нулиране на паролата',
+      token: null,
+      error: 'Връзката е невалидна или изтекла. Заяви ново нулиране.',
+    });
+  res.render('reset', { title: 'Нулиране на паролата', token: req.query.token, error: null });
+});
+
+router.post('/reset', authLimiter, (req, res) => {
+  const token = String(req.body.token || '');
+  const password = String(req.body.password || '');
+  const reset = findReset(token);
+  const fail = (error) =>
+    res.status(400).render('reset', { title: 'Нулиране на паролата', token, error });
+  if (!reset) return fail('Връзката е невалидна или изтекла. Заяви ново нулиране.');
+  if (password.length < 8 || password.length > 200)
+    return fail('Паролата трябва да е поне 8 знака.');
+
+  const tx = db.transaction(() => {
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(
+      hashPassword(password),
+      reset.user_id
+    );
+    db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(reset.id);
+    // Инвалидираме всички сесии на потребителя — новата парола е задължителна.
+    db.prepare('DELETE FROM sessions WHERE user_id = ?').run(reset.user_id);
+  });
+  tx();
+  res.render('login', {
+    title: 'Вход',
+    error: null,
+    values: {},
+    notice: 'Паролата е сменена. Влез с новата.',
+  });
 });
 
 // Смяна на парола от таблото (изисква текущата парола).
