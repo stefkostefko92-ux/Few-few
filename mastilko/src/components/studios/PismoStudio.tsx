@@ -108,7 +108,7 @@ export default function PismoStudio() {
               />
             </div>
           ))}
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} hideDecor />
         </div>
 
         <div className="card-warm space-y-3 p-5">

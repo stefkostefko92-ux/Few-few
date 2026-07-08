@@ -2,9 +2,10 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { wifiQr, type WifiAuth } from "@/lib/wifi";
 import { useLocalState } from "@/lib/use-local-state";
+import BackgroundDecor from "@/components/BackgroundDecor";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
@@ -139,11 +140,12 @@ export default function WifiStudio() {
                 position: "absolute", left: `${left}mm`, top: `${top}mm`,
                 width: `${size.w}mm`, height: `${size.h}mm`,
                 background: theme.bg, color: theme.fg, borderRadius: "3mm",
-                border: `0.3mm dashed rgba(120,110,100,0.5)`,
+                border: `0.3mm dashed rgba(120,110,100,0.5)`, overflow: "hidden",
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "4mm", gap: "2mm",
               }}>
-                <div style={{ fontWeight: 800, fontSize: "5mm", fontFamily: "var(--font-display)" }}>
+                <BackgroundDecor decor={s.decor} color={theme.accent} />
+                <div style={{ fontWeight: 800, fontSize: "5mm", fontFamily: elementFont(s, "title", "var(--font-display)"), position: "relative", zIndex: 1 }}>
                   📶 {s.title || "WiFi"}
                 </div>
                 {qrSrc && <QrImage src={qrSrc} style={{ width: `${Math.min(size.w, size.h) * 0.5}mm`, height: `${Math.min(size.w, size.h) * 0.5}mm`, background: "#fff", padding: "1.5mm", borderRadius: "1.5mm" }} />}

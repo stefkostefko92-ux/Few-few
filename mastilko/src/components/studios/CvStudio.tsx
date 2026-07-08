@@ -383,7 +383,7 @@ export default function CvStudio() {
               <option value="europass">Europass (стандарт на ЕС)</option>
             </select>
           </div>
-          {s.layout !== "europass" && <StyleControls value={s} onChange={set} />}
+          {s.layout !== "europass" && <StyleControls value={s} onChange={set} hideDecor />}
         </div>
 
         <div className="card-warm space-y-4 p-5">

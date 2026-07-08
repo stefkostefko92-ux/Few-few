@@ -1,8 +1,10 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import BackgroundDecor from "@/components/BackgroundDecor";
+import FontPicker from "@/components/FontPicker";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -66,6 +68,12 @@ export default function GramotaStudio() {
             <input id="recipient" className="field-input" maxLength={80} value={s.recipient}
               onChange={(e) => set({ recipient: e.target.value })} placeholder="Име Фамилия" />
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <FontPicker label="Шрифт: заглавие" value={s.fonts?.kind} allowDefault
+              onChange={(id) => set({ fonts: { ...s.fonts, kind: id } })} />
+            <FontPicker label="Шрифт: име" value={s.fonts?.recipient} allowDefault
+              onChange={(id) => set({ fonts: { ...s.fonts, recipient: id } })} />
+          </div>
           <div>
             <label htmlFor="reason" className="field-label">За какво</label>
             <textarea id="reason" className="field-input min-h-20" maxLength={400} value={s.reason}
@@ -105,32 +113,34 @@ export default function GramotaStudio() {
                 height: "100%", border: `0.5mm solid ${theme.accent}`,
                 display: "flex", flexDirection: "column", alignItems: "center",
                 justifyContent: "center", textAlign: "center", padding: "10mm 18mm",
-                color: theme.fg, background: theme.bg,
+                color: theme.fg, background: theme.bg, position: "relative", overflow: "hidden",
               }}>
-                <div style={{ fontSize: "5mm", letterSpacing: "0.3em", color: theme.accent, fontWeight: 700 }}>
+                <BackgroundDecor decor={s.decor} color={theme.accent} />
+                <div style={{ fontSize: "5mm", letterSpacing: "0.3em", color: theme.accent, fontWeight: 700, position: "relative", zIndex: 1 }}>
                   {s.org || " "}
                 </div>
                 <div style={{
-                  fontFamily: "var(--font-display)", fontWeight: 800,
+                  fontFamily: elementFont(s, "kind", "var(--font-display)"), fontWeight: 800,
                   fontSize: "16mm", letterSpacing: "0.05em", marginTop: "4mm",
-                  color: theme.accent,
+                  color: theme.accent, position: "relative", zIndex: 1,
                 }}>
                   {s.kind}
                 </div>
-                <div style={{ fontSize: "4mm", marginTop: "6mm" }}>връчва се на</div>
+                <div style={{ fontSize: "4mm", marginTop: "6mm", position: "relative", zIndex: 1 }}>връчва се на</div>
                 <div style={{
-                  fontFamily: "var(--font-display)", fontWeight: 800,
+                  fontFamily: elementFont(s, "recipient", "var(--font-display)"), fontWeight: 800,
                   fontSize: "11mm", margin: "3mm 0", borderBottom: `0.4mm solid ${theme.accent}`,
-                  paddingBottom: "2mm", minWidth: "60%",
+                  paddingBottom: "2mm", minWidth: "60%", position: "relative", zIndex: 1,
                 }}>
                   {s.recipient || "Име Фамилия"}
                 </div>
-                <div style={{ fontSize: "4.2mm", lineHeight: 1.5, maxWidth: "80%", marginTop: "3mm" }}>
+                <div style={{ fontSize: "4.2mm", lineHeight: 1.5, maxWidth: "80%", marginTop: "3mm", position: "relative", zIndex: 1 }}>
                   {s.reason}
                 </div>
                 <div style={{
                   display: "flex", justifyContent: "space-between", width: "100%",
                   marginTop: "auto", paddingTop: "12mm", fontSize: "3.6mm",
+                  position: "relative", zIndex: 1,
                 }}>
                   <div style={{ textAlign: "center" }}>
                     <div style={{ borderTop: `0.3mm solid ${theme.fg}`, paddingTop: "1.5mm", minWidth: "45mm" }}>

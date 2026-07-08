@@ -574,7 +574,7 @@ export default function CardStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} hideDecor />
 
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input

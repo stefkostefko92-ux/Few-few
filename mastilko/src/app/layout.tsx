@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { Manrope, Playfair_Display, Lora, Oswald, Caveat } from "next/font/google";
+import {
+  Manrope, Playfair_Display, Lora, Oswald, Caveat,
+  Montserrat, Nunito, Rubik, Comfortaa, PT_Serif, Merriweather,
+  Prata, Yeseva_One, Russo_One, Pacifico, Marck_Script, JetBrains_Mono,
+} from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BannerZone from "@/components/BannerZone";
@@ -17,10 +21,27 @@ const display = Playfair_Display({
   display: "swap",
 });
 
-// Допълнителни шрифтове за персонализация (кирилица).
+// Допълнителни шрифтове за персонализация (всички с кирилица).
 const lora = Lora({ subsets: ["cyrillic", "latin"], variable: "--font-lora", display: "swap" });
 const oswald = Oswald({ subsets: ["cyrillic", "latin"], variable: "--font-oswald", display: "swap" });
 const caveat = Caveat({ subsets: ["cyrillic", "latin"], variable: "--font-caveat", display: "swap" });
+const montserrat = Montserrat({ subsets: ["cyrillic", "latin"], variable: "--font-montserrat", display: "swap" });
+const nunito = Nunito({ subsets: ["cyrillic", "latin"], variable: "--font-nunito", display: "swap" });
+const rubik = Rubik({ subsets: ["cyrillic", "latin"], variable: "--font-rubik", display: "swap" });
+const comfortaa = Comfortaa({ subsets: ["cyrillic", "latin"], variable: "--font-comfortaa", display: "swap" });
+const ptSerif = PT_Serif({ subsets: ["cyrillic", "latin"], weight: ["400", "700"], variable: "--font-ptserif", display: "swap" });
+const merriweather = Merriweather({ subsets: ["cyrillic", "latin"], weight: ["400", "700"], variable: "--font-merriweather", display: "swap" });
+const prata = Prata({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-prata", display: "swap" });
+const yeseva = Yeseva_One({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-yeseva", display: "swap" });
+const russo = Russo_One({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-russo", display: "swap" });
+const pacifico = Pacifico({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-pacifico", display: "swap" });
+const marck = Marck_Script({ subsets: ["cyrillic", "latin"], weight: "400", variable: "--font-marck", display: "swap" });
+const jetbrains = JetBrains_Mono({ subsets: ["cyrillic", "latin"], variable: "--font-jetbrains", display: "swap" });
+
+const FONT_VARS = [
+  sans, display, lora, oswald, caveat, montserrat, nunito, rubik, comfortaa,
+  ptSerif, merriweather, prata, yeseva, russo, pacifico, marck, jetbrains,
+].map((f) => f.variable).join(" ");
 
 const SITE_URL = "https://mastilko-bg.com";
 
@@ -69,10 +90,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="bg"
-      className={`${sans.variable} ${display.variable} ${lora.variable} ${oswald.variable} ${caveat.variable}`}
-    >
+    <html lang="bg" className={FONT_VARS}>
       <head>
         {/* Прилага тъмната тема преди рисуване, за да няма трепване. */}
         <script

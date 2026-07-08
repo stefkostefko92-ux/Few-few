@@ -1,18 +1,21 @@
 "use client";
 
-import { FONTS, type StyleState } from "@/lib/style";
+import { DECORS, type StyleState } from "@/lib/style";
 import ThemePicker from "@/components/ThemePicker";
+import FontPicker from "@/components/FontPicker";
 
 interface Props {
   value: StyleState;
   onChange: (patch: Partial<StyleState>) => void;
-  /** Скрий избора на шрифт (напр. за етикети без много текст). */
+  /** Скрий избора на шрифт. */
   hideFont?: boolean;
+  /** Скрий украсата на фона (напр. за документи като CV). */
+  hideDecor?: boolean;
 }
 
-// Общ панел за персонализация: тема или свои цветове + шрифт. Ползва се от
-// всички редактори, за да е поведението еднакво навсякъде.
-export default function StyleControls({ value, onChange, hideFont }: Props) {
+// Общ панел за персонализация: тема или свои цветове + шрифт + украса на фона.
+// Ползва се от всички редактори, за да е поведението еднакво навсякъде.
+export default function StyleControls({ value, onChange, hideFont, hideDecor }: Props) {
   return (
     <div className="space-y-3">
       <div>
@@ -56,15 +59,22 @@ export default function StyleControls({ value, onChange, hideFont }: Props) {
 
       {!hideFont && (
         <div>
-          <label className="field-label" htmlFor="font-pick">Шрифт</label>
+          <span className="field-label">Основен шрифт</span>
+          <FontPicker value={value.font} onChange={(id) => onChange({ font: id })} allowDefault />
+        </div>
+      )}
+
+      {!hideDecor && (
+        <div>
+          <label className="field-label" htmlFor="decor-pick">Украса на фона</label>
           <select
-            id="font-pick"
+            id="decor-pick"
             className="field-input"
-            value={value.font || "toplo"}
-            onChange={(e) => onChange({ font: e.target.value })}
+            value={value.decor || "none"}
+            onChange={(e) => onChange({ decor: e.target.value })}
           >
-            {FONTS.map((f) => (
-              <option key={f.id} value={f.id}>{f.name}</option>
+            {DECORS.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
             ))}
           </select>
         </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
+import BackgroundDecor from "@/components/BackgroundDecor";
+import FontPicker from "@/components/FontPicker";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
@@ -73,11 +75,19 @@ export default function TabelkaStudio() {
             <label htmlFor="t-title" className="field-label">Голям текст</label>
             <input id="t-title" className="field-input" maxLength={60} value={s.title}
               onChange={(e) => set({ title: e.target.value })} />
+            <div className="mt-1">
+              <FontPicker value={s.fonts?.title} allowDefault
+                onChange={(id) => set({ fonts: { ...s.fonts, title: id } })} />
+            </div>
           </div>
           <div>
             <label htmlFor="t-sub" className="field-label">Малък текст (нов ред с Enter)</label>
             <textarea id="t-sub" className="field-input min-h-20" maxLength={120} value={s.subtitle}
               onChange={(e) => set({ subtitle: e.target.value })} />
+            <div className="mt-1">
+              <FontPicker value={s.fonts?.subtitle} allowDefault
+                onChange={(id) => set({ fonts: { ...s.fonts, subtitle: id } })} />
+            </div>
           </div>
           <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
             <input type="checkbox" checked={s.landscape}
@@ -97,21 +107,27 @@ export default function TabelkaStudio() {
             position: "absolute", inset: 0, background: theme.bg, color: theme.fg,
             display: "flex", flexDirection: "column", alignItems: "center",
             justifyContent: "center", textAlign: "center", padding: "20mm",
-            border: `4mm solid ${theme.accent}`,
+            border: `4mm solid ${theme.accent}`, overflow: "hidden",
           }}>
-            {s.emoji && <div style={{ fontSize: "60mm", lineHeight: 1 }}>{s.emoji}</div>}
-            <div style={{
-              fontFamily: "var(--font-display)", fontWeight: 800,
-              fontSize: s.title.length > 20 ? "18mm" : "26mm", lineHeight: 1.05,
-              marginTop: "8mm",
-            }}>
-              {s.title}
-            </div>
-            {s.subtitle && (
-              <div style={{ fontSize: "9mm", marginTop: "8mm", lineHeight: 1.3, whiteSpace: "pre-line" }}>
-                {s.subtitle}
+            <BackgroundDecor decor={s.decor} color={theme.accent} />
+            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              {s.emoji && <div style={{ fontSize: "60mm", lineHeight: 1 }}>{s.emoji}</div>}
+              <div style={{
+                fontFamily: elementFont(s, "title", "var(--font-display)"), fontWeight: 800,
+                fontSize: s.title.length > 20 ? "18mm" : "26mm", lineHeight: 1.05,
+                marginTop: "8mm",
+              }}>
+                {s.title}
               </div>
-            )}
+              {s.subtitle && (
+                <div style={{
+                  fontFamily: elementFont(s, "subtitle", "var(--font-sans)"),
+                  fontSize: "9mm", marginTop: "8mm", lineHeight: 1.3, whiteSpace: "pre-line",
+                }}>
+                  {s.subtitle}
+                </div>
+              )}
+            </div>
           </div>
         </SheetPreview>
       </div>

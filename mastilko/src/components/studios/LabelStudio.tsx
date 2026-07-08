@@ -126,7 +126,7 @@ export default function LabelStudio() {
             </select>
           </div>
 
-          <StyleControls value={s} onChange={set} />
+          <StyleControls value={s} onChange={set} hideDecor />
 
           <fieldset>
             <legend className="field-label">Съдържание</legend>
