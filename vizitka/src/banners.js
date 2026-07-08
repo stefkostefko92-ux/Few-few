@@ -4,8 +4,18 @@ import db from './db.js';
 // Началната показва максимум толкова банера (формат 960×120).
 export const HOME_BANNER_LIMIT = 2;
 
+// Банер по подразбиране — показва се, докато админът не добави свои. Използва
+// статичен файл (не /photo/) и линква директно (без брояч на клика).
+export const DEFAULT_BANNER = {
+  id: null,
+  src: '/ad-carbonstealth.png',
+  alt: 'Carbon Stealth — цифрови решения без граници: уеб разработка, ERP системи, SEO оптимизация',
+  link_url: 'https://carbonstealth.eu',
+};
+
 // Активните банери за дадено място, подредени, до `limit` броя. Записва импресия
-// само за реално показаните (не за скритите под лимита).
+// само за реално показаните. Ако няма конфигурирани — връща подразбиращия се,
+// повторен до `limit` (за момента една и съща реклама на двете места).
 export function activeBanners(placement = 'home', limit = HOME_BANNER_LIMIT) {
   const rows = db
     .prepare(
@@ -18,8 +28,14 @@ export function activeBanners(placement = 'home', limit = HOME_BANNER_LIMIT) {
   if (rows.length) {
     const ids = rows.map((b) => b.id).join(',');
     db.exec(`UPDATE banners SET impressions = impressions + 1 WHERE id IN (${ids})`);
+    return rows.map((b) => ({
+      id: b.id,
+      src: `/photo/${b.image}`,
+      alt: b.alt,
+      link_url: b.link_url,
+    }));
   }
-  return rows;
+  return Array.from({ length: limit }, () => DEFAULT_BANNER);
 }
 
 // Регистрира клик и връща валидна цел за пренасочване (или null).

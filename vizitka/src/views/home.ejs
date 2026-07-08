@@ -19,12 +19,16 @@
   <% for (const b of banners) { %>
     <div class="ad">
       <span class="ad-label">Реклама</span>
-      <% if (b.link_url) { %>
+      <% if (b.id && b.link_url) { %>
         <a href="/b/<%= b.id %>/click" target="_blank" rel="sponsored noopener nofollow">
-          <img src="/photo/<%= b.image %>" alt="<%= b.alt %>" loading="lazy">
+          <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy">
+        </a>
+      <% } else if (b.link_url) { %>
+        <a href="<%= b.link_url %>" target="_blank" rel="sponsored noopener nofollow">
+          <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy">
         </a>
       <% } else { %>
-        <img src="/photo/<%= b.image %>" alt="<%= b.alt %>" loading="lazy">
+        <img src="<%= b.src %>" alt="<%= b.alt %>" loading="lazy">
       <% } %>
     </div>
   <% } %>

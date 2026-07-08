@@ -344,7 +344,17 @@ await test('спрян банер не се показва', async () => {
   assert.equal(toggle.status, 302);
   jar.clear();
   const home = await (await request('/')).text();
-  assert.doesNotMatch(home, /class="ad"/);
+  // Конкретният банер вече не се вижда; на негово място — банерът по подразбиране.
+  assert.doesNotMatch(home, new RegExp(`/b/${bannerId}/click`));
+  assert.match(home, /ad-carbonstealth\.png/);
+});
+
+await test('банерът по подразбиране се показва на двете места', async () => {
+  jar.clear();
+  const home = await (await request('/')).text();
+  const shown = (home.match(/ad-carbonstealth\.png/g) || []).length;
+  assert.equal(shown, 2, `подразбиращият се банер трябва да е на 2 места, а не ${shown}`);
+  assert.match(home, /href="https:\/\/carbonstealth\.eu"/);
 });
 
 await test('началната показва максимум 2 банера', async () => {
