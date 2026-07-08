@@ -69,7 +69,8 @@
       "f1": "Pro pour toujours",
       "f2": "Paiement unique",
       "f3": "Offre limitée early adopter"
-    }
+    },
+    "processingNote": "Les ventes de la boutique comportent aussi des frais de traitement du paiement : 1,9 % + 0,30 € (couvre l'opérateur de cartes)."
   },
   "auth": {
     "loginTitle": "Connexion à Linketto",
@@ -155,7 +156,7 @@
     "qrSection": "Code QR",
     "qrHint": "Un QR gratuit vers votre profil, dans votre couleur — téléchargez-le en SVG pour carte de visite, autocollant ou vitrine.",
     "shopSection": "Boutique",
-    "feeNote": "Commission Linketto sur votre plan : {fee} % de chaque vente.",
+    "feeNote": "Commission Linketto sur votre plan : {fee} % + des frais de traitement du paiement de 1,9 % + 0,30 € par vente. Prix minimum du produit : 3 €.",
     "connectStripe": "Connecter un compte Stripe pour vendre",
     "stripePending": "L'inscription Stripe n'est pas terminée — reprenez là où vous vous êtes arrêté.",
     "stripeConnected": "Stripe est connecté — votre boutique est active.",
@@ -226,7 +227,7 @@
     "privacyTitle": "Politique de confidentialité",
     "privacyBody": "Linketto est un service de Carbon Stealth VCC (ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgarie, info@carbonstealth.eu). Nous ne traitons que les données nécessaires au service : votre e-mail et votre mot de passe (haché), ainsi que le contenu que vous choisissez de publier. Nos statistiques fonctionnent sans cookies et ne conservent aucune donnée personnelle des visiteurs — nous ne stockons pas les adresses IP. Les données sont hébergées dans l'Union européenne. Vous disposez des droits d'accès, de rectification, d'effacement et de portabilité prévus par le RGPD — écrivez-nous à info@carbonstealth.eu. (Brouillon — soumis à une revue juridique avant le lancement.)",
     "termsTitle": "Conditions d'utilisation",
-    "termsBody": "En utilisant Linketto, vous vous engagez à ne pas publier de contenu illégal, de liens malveillants ou d'informations trompeuses. En cas d'infraction, nous vous informons d'abord et vous disposez d'un droit de recours ; les profils ne sont pas suspendus sans préavis, sauf abus graves exigeant une action immédiate prévue par la loi. Les plans payants sont facturés via Stripe ; vous pouvez résilier à tout moment, le plan restant actif jusqu'à la fin de la période payée. Le service est fourni par Carbon Stealth VCC. (Brouillon — soumis à une revue juridique avant le lancement.)"
+    "termsBody": "En utilisant Linketto, vous vous engagez à ne pas publier de contenu illégal, de liens malveillants ou d'informations trompeuses. En cas d'infraction, nous vous informons d'abord et vous disposez d'un droit de recours ; les profils ne sont pas suspendus sans préavis, sauf abus graves exigeant une action immédiate prévue par la loi. Les plans payants sont facturés via Stripe ; vous pouvez résilier à tout moment, le plan restant actif jusqu'à la fin de la période payée. Le service est fourni par Carbon Stealth VCC. Les ventes via la boutique comportent des frais de traitement du paiement (1,9 % + 0,30 €), en plus de la commission du plan. (Brouillon — soumis à une revue juridique avant le lancement.)"
   },
   "footer": {
     "company": "Un produit Carbon Stealth VCC",

@@ -69,7 +69,8 @@
       "f1": "Pro forever",
       "f2": "One-time payment",
       "f3": "Limited early offer"
-    }
+    },
+    "processingNote": "Shop sales also carry a payment processing fee of 1.9% + €0.30 (covers the card processor)."
   },
   "auth": {
     "loginTitle": "Log in to Linketto",
@@ -155,7 +156,7 @@
     "qrSection": "QR code",
     "qrHint": "A free QR code for your profile, in your accent color — download it as SVG for a business card, sticker or shop window.",
     "shopSection": "Shop",
-    "feeNote": "Linketto commission on your plan: {fee}% of each sale.",
+    "feeNote": "Linketto commission on your plan: {fee}% + a payment processing fee of 1.9% + €0.30 per sale. Minimum product price: €3.",
     "connectStripe": "Connect a Stripe account for sales",
     "stripePending": "Stripe onboarding is unfinished — continue where you left off.",
     "stripeConnected": "Stripe is connected — your shop is live.",
@@ -226,7 +227,7 @@
     "privacyTitle": "Privacy Policy",
     "privacyBody": "Linketto is a service of Carbon Stealth VCC (company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu). We process only the data needed to run the service: your email and (hashed) password, and the content you choose to publish. Our analytics are cookieless and store no personal data about visitors — we do not keep IP addresses. Data is stored in the European Union. You have the right to access, rectify, erase and port your data under the GDPR — contact us at info@carbonstealth.eu. (Draft — subject to legal review before launch.)",
     "termsTitle": "Terms of Service",
-    "termsBody": "By using Linketto you agree not to publish illegal content, malicious links or misleading information. In case of a violation we notify you first and you have the right to appeal; profiles are not suspended without notice, except for severe abuse requiring immediate action under the law. Paid plans are billed via Stripe; you can cancel at any time and your plan stays active until the end of the paid period. The service is provided by Carbon Stealth VCC. (Draft — subject to legal review before launch.)"
+    "termsBody": "By using Linketto you agree not to publish illegal content, malicious links or misleading information. In case of a violation we notify you first and you have the right to appeal; profiles are not suspended without notice, except for severe abuse requiring immediate action under the law. Paid plans are billed via Stripe; you can cancel at any time and your plan stays active until the end of the paid period. The service is provided by Carbon Stealth VCC. Shop sales carry a payment processing fee (1.9% + €0.30) in addition to the plan commission. (Draft — subject to legal review before launch.)"
   },
   "footer": {
     "company": "A Carbon Stealth VCC product",

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { getStripe } from '@/lib/stripe';
 import { isLocale } from '@/i18n/locales';
-import { commissionCents, planFor } from '@/lib/plans';
+import { MIN_PRODUCT_PRICE_EUR, planFor, totalFeeCents } from '@/lib/plans';
 
 function baseUrl(): string {
   return process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
@@ -88,7 +88,8 @@ export async function startProductPurchaseAction(
     )?.title ??
     product.translations[0]?.title ??
     'Product';
-  const fee = commissionCents(product.priceCents, planFor(owner.plan).id);
+  // Комисиона по плана + такса за обработка (покрива Stripe таксите).
+  const fee = totalFeeCents(product.priceCents, planFor(owner.plan).id);
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -120,7 +121,7 @@ export async function startProductPurchaseAction(
 
 const productSchema = z.object({
   title: z.string().trim().min(1).max(100),
-  priceEur: z.coerce.number().min(0.5).max(10000),
+  priceEur: z.coerce.number().min(MIN_PRODUCT_PRICE_EUR).max(10000),
   deliveryUrl: z
     .string()
     .trim()

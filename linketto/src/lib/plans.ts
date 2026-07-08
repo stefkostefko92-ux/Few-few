@@ -68,3 +68,27 @@ export function commissionCents(amountCents: number, plan: PlanId): number {
   if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
   return Math.floor((amountCents * PLANS[plan].feePercent) / 100);
 }
+
+// Такса за обработка на плащането — носи я продавачът (индустриален
+// стандарт). Покрива таксата на Stripe за европейски карти (~1.5% + €0.25)
+// с малък буфер; така „0% комисиона“ на горните планове остава вярно за
+// НАШАТА комисиона, без да сме на загуба по Stripe таксите.
+export const PROCESSING_FEE = { percent: 1.9, fixedCents: 30 } as const;
+
+/** Минимална цена на продукт — под нея фиксираните такси изяждат всичко. */
+export const MIN_PRODUCT_PRICE_EUR = 3;
+
+/** Такса обработка в евроцентове, закръглена нагоре (в наша полза). */
+export function processingFeeCents(amountCents: number): number {
+  if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
+  return (
+    Math.ceil((amountCents * PROCESSING_FEE.percent) / 100) +
+    PROCESSING_FEE.fixedCents
+  );
+}
+
+/** Пълната application_fee за checkout: комисиона по плана + обработка. */
+export function totalFeeCents(amountCents: number, plan: PlanId): number {
+  if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
+  return commissionCents(amountCents, plan) + processingFeeCents(amountCents);
+}

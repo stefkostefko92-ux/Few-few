@@ -87,6 +87,9 @@ export default async function HomePage({
           <h2 id="pricing-title" className="text-center text-2xl font-bold">
             {tPricing('title')}
           </h2>
+          <p className="mt-2 text-center text-sm text-slate-500">
+            {tPricing('processingNote')}
+          </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {PLAN_ORDER.map((planKey) => {
               const def = PLANS[planKey.toUpperCase() as keyof typeof PLANS];

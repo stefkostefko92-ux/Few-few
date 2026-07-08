@@ -999,7 +999,7 @@ export default async function DashboardPage({
                       type="number"
                       name="priceEur"
                       required
-                      min="0.5"
+                      min="3"
                       step="0.01"
                       placeholder="9.99"
                       className="rounded-lg border border-slate-300 px-3 py-2"

@@ -69,7 +69,8 @@
       "f1": "Pro für immer",
       "f2": "Einmalige Zahlung",
       "f3": "Limitiertes Frühstarter-Angebot"
-    }
+    },
+    "processingNote": "Auf Shop-Verkäufe fällt zusätzlich eine Zahlungsabwicklungsgebühr von 1,9 % + €0,30 an (deckt den Kartenanbieter)."
   },
   "auth": {
     "loginTitle": "Bei Linketto anmelden",
@@ -155,7 +156,7 @@
     "qrSection": "QR-Code",
     "qrHint": "Ein kostenloser QR-Code zu deinem Profil in deiner Akzentfarbe — als SVG für Visitenkarte, Sticker oder Schaufenster.",
     "shopSection": "Shop",
-    "feeNote": "Linketto-Provision in deinem Plan: {fee} % pro Verkauf.",
+    "feeNote": "Linketto-Provision in deinem Plan: {fee} % + Zahlungsabwicklungsgebühr von 1,9 % + €0,30 pro Verkauf. Mindestpreis pro Produkt: €3.",
     "connectStripe": "Stripe-Konto für Verkäufe verbinden",
     "stripePending": "Das Stripe-Onboarding ist unvollständig — mach dort weiter, wo du aufgehört hast.",
     "stripeConnected": "Stripe ist verbunden — dein Shop ist aktiv.",
@@ -226,7 +227,7 @@
     "privacyTitle": "Datenschutzerklärung",
     "privacyBody": "Linketto ist ein Dienst der Carbon Stealth VCC (ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgarien, info@carbonstealth.eu). Wir verarbeiten nur die für den Dienst nötigen Daten: deine E-Mail und dein (gehashtes) Passwort sowie die Inhalte, die du selbst veröffentlichst. Unsere Analytik kommt ohne Cookies aus und speichert keine personenbezogenen Daten der Besucher — wir speichern keine IP-Adressen. Die Daten werden in der Europäischen Union gespeichert. Du hast nach DSGVO das Recht auf Auskunft, Berichtigung, Löschung und Übertragbarkeit — schreib uns an info@carbonstealth.eu. (Entwurf — vor dem Start rechtlich zu prüfen.)",
     "termsTitle": "Nutzungsbedingungen",
-    "termsBody": "Mit der Nutzung von Linketto verpflichtest du dich, keine illegalen Inhalte, schädlichen Links oder irreführenden Informationen zu veröffentlichen. Bei Verstößen benachrichtigen wir dich zuerst, und du hast ein Widerspruchsrecht; Profile werden nicht ohne Vorankündigung gesperrt, außer bei schwerem Missbrauch, der gesetzlich sofortiges Handeln erfordert. Bezahlpläne werden über Stripe abgerechnet; du kannst jederzeit kündigen, der Plan bleibt bis zum Ende des bezahlten Zeitraums aktiv. Der Dienst wird von Carbon Stealth VCC bereitgestellt. (Entwurf — vor dem Start rechtlich zu prüfen.)"
+    "termsBody": "Mit der Nutzung von Linketto verpflichtest du dich, keine illegalen Inhalte, schädlichen Links oder irreführenden Informationen zu veröffentlichen. Bei Verstößen benachrichtigen wir dich zuerst, und du hast ein Widerspruchsrecht; Profile werden nicht ohne Vorankündigung gesperrt, außer bei schwerem Missbrauch, der gesetzlich sofortiges Handeln erfordert. Bezahlpläne werden über Stripe abgerechnet; du kannst jederzeit kündigen, der Plan bleibt bis zum Ende des bezahlten Zeitraums aktiv. Der Dienst wird von Carbon Stealth VCC bereitgestellt. Auf Verkäufe über den Shop fällt zusätzlich zur Plan-Provision eine Zahlungsabwicklungsgebühr (1,9 % + €0,30) an. (Entwurf — vor dem Start rechtlich zu prüfen.)"
   },
   "footer": {
     "company": "Ein Produkt von Carbon Stealth VCC",

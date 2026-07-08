@@ -61,8 +61,10 @@ src/app/actions/       Server actions (auth, profile, billing) — zod вход,
 src/app/api/stripe/webhook/  ЕДИНСТВЕНОТО място, което дава планове —
                        подписан webhook (constructEvent), не success_url.
 src/lib/plans.ts       Планове/комисиони: FREE 8% · PRO €4 4% · BUSINESS €9 0%
-                       · FOUNDER €49 еднократно 0%. Лимити (maxLocales,
-                       analyticsDays) се четат само оттук.
+                       · FOUNDER €49 еднократно 0% + PROCESSING_FEE 1.9%+€0.30
+                       (носи я продавачът; покрива Stripe таксите — checkout
+                       ползва totalFeeCents). MIN_PRODUCT_PRICE_EUR=3. Лимити
+                       (maxLocales, analyticsDays) се четат само оттук.
 src/lib/auth.ts        Сесии: httpOnly cookie, sha256(token) в БД, bcrypt 12.
 src/lib/slug.ts        Транслитерация BG→latin, RESERVED_SLUGS, валидация.
 src/lib/ai.ts          „Преведи с AI“ (Gemini Flash, като mastilko): ключът е

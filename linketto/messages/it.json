@@ -69,7 +69,8 @@
       "f1": "Pro per sempre",
       "f2": "Pagamento unico",
       "f3": "Offerta limitata early adopter"
-    }
+    },
+    "processingNote": "Sulle vendite del negozio si applica anche una commissione di elaborazione del pagamento: 1,9% + €0,30 (copre il circuito di pagamento)."
   },
   "auth": {
     "loginTitle": "Accedi a Linketto",
@@ -155,7 +156,7 @@
     "qrSection": "Codice QR",
     "qrHint": "Un QR gratuito del tuo profilo, nel tuo colore — scaricalo in SVG per biglietti da visita, adesivi o vetrine.",
     "shopSection": "Negozio",
-    "feeNote": "Commissione Linketto sul tuo piano: {fee}% di ogni vendita.",
+    "feeNote": "Commissione Linketto sul tuo piano: {fee}% + commissione di elaborazione del pagamento di 1,9% + €0,30 per vendita. Prezzo minimo del prodotto: €3.",
     "connectStripe": "Collega un account Stripe per le vendite",
     "stripePending": "La registrazione Stripe non è completata — continua da dove eri rimasto.",
     "stripeConnected": "Stripe è collegato — il tuo negozio è attivo.",
@@ -226,7 +227,7 @@
     "privacyTitle": "Informativa sulla privacy",
     "privacyBody": "Linketto è un servizio di Carbon Stealth VCC (P. IVA/ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu). Trattiamo solo i dati necessari al servizio: la tua email e la password (in forma hash) e i contenuti che scegli di pubblicare. Le nostre analisi sono senza cookie e non conservano dati personali dei visitatori — non salviamo indirizzi IP. I dati sono conservati nell'Unione Europea. Hai diritto di accesso, rettifica, cancellazione e portabilità ai sensi del GDPR — scrivici a info@carbonstealth.eu. (Bozza — soggetta a revisione legale prima del lancio.)",
     "termsTitle": "Termini di servizio",
-    "termsBody": "Usando Linketto accetti di non pubblicare contenuti illegali, link dannosi o informazioni fuorvianti. In caso di violazione ti avvisiamo prima e hai diritto di ricorso; i profili non vengono sospesi senza preavviso, salvo abusi gravi che richiedono un'azione immediata per legge. I piani a pagamento sono fatturati tramite Stripe; puoi disdire in qualsiasi momento e il piano resta attivo fino alla fine del periodo pagato. Il servizio è fornito da Carbon Stealth VCC. (Bozza — soggetta a revisione legale prima del lancio.)"
+    "termsBody": "Usando Linketto accetti di non pubblicare contenuti illegali, link dannosi o informazioni fuorvianti. In caso di violazione ti avvisiamo prima e hai diritto di ricorso; i profili non vengono sospesi senza preavviso, salvo abusi gravi che richiedono un'azione immediata per legge. I piani a pagamento sono fatturati tramite Stripe; puoi disdire in qualsiasi momento e il piano resta attivo fino alla fine del periodo pagato. Il servizio è fornito da Carbon Stealth VCC. Le vendite tramite il negozio comportano una commissione di elaborazione del pagamento (1,9% + €0,30), oltre alla commissione del piano. (Bozza — soggetta a revisione legale prima del lancio.)"
   },
   "footer": {
     "company": "Un prodotto Carbon Stealth VCC",
