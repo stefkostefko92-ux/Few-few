@@ -90,7 +90,11 @@ ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флаг�
 actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFound на ВСИЧКИ
 публични маршрути + извън sitemap, без публичен банер), смяна на
 имейл/име/план, нова парола (bcrypt 12; старата не се вижда; всички сесии
-се прекратяват). LoginEvent = IP при вход/регистрация (logLoginIp в
+се прекратяват), принудителен изход, пълно изтриване на акаунт (каскадно,
+не и себе си), публикуване/сваляне, махане на домейн, resolve на DSA
+сигнали; горе — платформена статистика. Плащания: checkout-ът НЕ ограничава
+payment_method_types → Revolut Pay/PayPal се включват от Stripe Dashboard
+(без код); лични бакшиши: revolut.me/paypal.me имат бранд икони. LoginEvent = IP при вход/регистрация (logLoginIp в
 actions/auth.ts, 90 дни, декларирано в политиката; НЕ важи за посетители).
 
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →

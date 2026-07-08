@@ -73,6 +73,75 @@ export async function adminUpdateUserAction(
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
+/** Принудителен изход: всички активни сесии на потребителя се прекратяват. */
+export async function adminForceLogoutAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const userId = String(formData.get('userId') ?? '');
+  await prisma.session.deleteMany({ where: { userId } });
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** Пълно изтриване на акаунт (каскадно: профили, линкове, продукти,
+    покупки, съобщения, сесии, IP логове). Не можеш да изтриеш себе си. */
+export async function adminDeleteUserAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const admin = await requireAdmin(uiLocale);
+  const userId = String(formData.get('userId') ?? '');
+  if (formData.get('confirm') !== 'on' || userId === admin.id) {
+    redirect(`/${uiLocale}/admin?error=input`);
+  }
+  await prisma.user.delete({ where: { id: userId } }).catch(() => undefined);
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** Публикуване/сваляне на профил от админа. */
+export async function adminSetPublishedAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+  const publish = formData.get('publish') === '1';
+  await prisma.profile.updateMany({
+    where: { id: profileId },
+    data: { published: publish },
+  });
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** Маха собствения домейн на профил (при злоупотреба/изтекъл план). */
+export async function adminClearDomainAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+  await prisma.profile.updateMany({
+    where: { id: profileId },
+    data: { customDomain: null },
+  });
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** Маркира DSA сигнал като разгледан. */
+export async function adminResolveReportAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const reportId = String(formData.get('reportId') ?? '');
+  await prisma.report.updateMany({
+    where: { id: reportId },
+    data: { resolvedAt: new Date() },
+  });
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
 const passwordSchema = z.object({
   userId: z.string().min(1),
   password: z.string().min(8).max(200),

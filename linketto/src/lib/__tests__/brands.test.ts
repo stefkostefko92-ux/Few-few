@@ -12,6 +12,8 @@ test('brandFor разпознава платформите по домейн', (
   assert.equal(brandFor('https://www.threads.net/@maria'), 'threads');
   assert.equal(brandFor('https://discord.gg/abc'), 'discord');
   assert.equal(brandFor('https://onlyfans.com/maria'), 'onlyfans');
+  assert.equal(brandFor('https://revolut.me/maria'), 'revolut');
+  assert.equal(brandFor('https://paypal.me/maria'), 'paypal');
   assert.equal(brandFor('https://example.com/x'), null);
   assert.equal(brandFor(null), null);
 });

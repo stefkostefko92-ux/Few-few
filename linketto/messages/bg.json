@@ -335,6 +335,21 @@
     "unpublished": "скрит",
     "errorEmail": "Този имейл вече е зает.",
     "errorPassword": "Невалидна парола (мин. 8 знака).",
-    "errorInput": "Невалидни данни."
+    "errorInput": "Невалидни данни.",
+    "statsUsers": "потребители",
+    "statsProfiles": "профили",
+    "statsClicks": "събития (прегледи+кликове)",
+    "statsPurchases": "продажби",
+    "statsRevenue": "оборот на създателите",
+    "statsFees": "наши комисиони",
+    "reportsTitle": "DSA сигнали — отворени ({count})",
+    "reportsEmpty": "Няма отворени сигнали.",
+    "resolve": "Разгледан",
+    "forceLogout": "Изход отвсякъде ({count} сесии)",
+    "deleteUser": "Изтрий акаунта",
+    "deleteConfirm": "потвърждавам",
+    "publish": "Публикувай",
+    "unpublish": "Свали от ефир",
+    "clearDomain": "Махни домейна {domain}"
   }
 }

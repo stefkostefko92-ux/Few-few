@@ -31,6 +31,7 @@ const DOMAIN_BRANDS: Record<string, string> = {
   'buymeacoffee.com': 'buymeacoffee',
   'paypal.com': 'paypal',
   'paypal.me': 'paypal',
+  'revolut.me': 'revolut',
   'vimeo.com': 'vimeo',
   'soundcloud.com': 'soundcloud',
   'music.apple.com': 'applemusic',

@@ -335,6 +335,21 @@
     "unpublished": "hidden",
     "errorEmail": "This email is already taken.",
     "errorPassword": "Invalid password (min 8 chars).",
-    "errorInput": "Invalid input."
+    "errorInput": "Invalid input.",
+    "statsUsers": "users",
+    "statsProfiles": "profiles",
+    "statsClicks": "events (views+clicks)",
+    "statsPurchases": "sales",
+    "statsRevenue": "creator revenue",
+    "statsFees": "our fees",
+    "reportsTitle": "DSA reports — open ({count})",
+    "reportsEmpty": "No open reports.",
+    "resolve": "Resolved",
+    "forceLogout": "Log out everywhere ({count} sessions)",
+    "deleteUser": "Delete account",
+    "deleteConfirm": "I confirm",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "clearDomain": "Remove domain {domain}"
   }
 }
