@@ -7,6 +7,7 @@ import { join } from 'node:path';
 
 process.env.NODE_ENV = 'test';
 process.env.DATA_DIR = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-test-'));
+process.env.ADMIN_EMAILS = 'admin@example.com';
 
 const { default: app } = await import('../src/app.js');
 
@@ -272,6 +273,78 @@ await test('смяна на парола + вход с новата', async () =
     body: form({ email: 'ivan@example.com', password: 'novaparola22' }),
   });
   assert.equal(newPw.status, 302);
+});
+
+// 1x1 PNG (валиден образ за качване на банер).
+const PNG_1x1 = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'base64'
+);
+
+await test('нормален потребител няма достъп до /admin', async () => {
+  jar.clear();
+  await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'ivan@example.com', password: 'novaparola22' }),
+  });
+  const res = await request('/admin');
+  assert.equal(res.status, 403);
+});
+
+let bannerId = 0;
+await test('админ отваря панела и създава банер', async () => {
+  jar.clear();
+  await request('/register', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      name: 'Админ',
+      email: 'admin@example.com',
+      password: 'adminparola1',
+      type: 'personal',
+    }),
+  });
+  const panel = await request('/admin');
+  assert.equal(panel.status, 200, 'админът трябва да вижда панела');
+  const adminCsrf = (await panel.text()).match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+
+  const fd = new FormData();
+  fd.set('_csrf', adminCsrf);
+  fd.set('title', 'Тестова реклама');
+  fd.set('link_url', 'https://example.com/promo');
+  fd.set('alt', 'Промоция');
+  fd.set('image', new Blob([PNG_1x1], { type: 'image/png' }), 'ad.png');
+  const create = await request('/admin/banners', { method: 'POST', body: fd });
+  assert.equal(create.status, 302);
+
+  const list = await (await request('/admin')).text();
+  assert.match(list, /Тестова реклама/);
+  bannerId = Number(list.match(/\/admin\/banners\/(\d+)\/toggle/)?.[1]);
+  assert.ok(bannerId > 0, 'банерът трябва да има id');
+});
+
+await test('банерът се показва на началната и кликът пренасочва', async () => {
+  const home = await (await request('/')).text();
+  assert.match(home, /class="ad"/);
+  assert.match(home, new RegExp(`/b/${bannerId}/click`));
+  const click = await request(`/b/${bannerId}/click`, { headers: {} });
+  assert.equal(click.status, 302);
+  assert.equal(click.headers.get('location'), 'https://example.com/promo');
+});
+
+await test('спрян банер не се показва', async () => {
+  const panel = await (await request('/admin')).text();
+  const adminCsrf = panel.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  const toggle = await request(`/admin/banners/${bannerId}/toggle`, {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ _csrf: adminCsrf }),
+  });
+  assert.equal(toggle.status, 302);
+  jar.clear();
+  const home = await (await request('/')).text();
+  assert.doesNotMatch(home, /class="ad"/);
 });
 
 server.close();

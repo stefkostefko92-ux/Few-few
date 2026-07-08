@@ -14,6 +14,23 @@
   </p>
 </section>
 
+<% if (banners && banners.length) { %>
+<aside class="ads" aria-label="Реклама">
+  <% for (const b of banners) { %>
+    <div class="ad">
+      <span class="ad-label">Реклама</span>
+      <% if (b.link_url) { %>
+        <a href="/b/<%= b.id %>/click" target="_blank" rel="sponsored noopener nofollow">
+          <img src="/photo/<%= b.image %>" alt="<%= b.alt %>" loading="lazy">
+        </a>
+      <% } else { %>
+        <img src="/photo/<%= b.image %>" alt="<%= b.alt %>" loading="lazy">
+      <% } %>
+    </div>
+  <% } %>
+</aside>
+<% } %>
+
 <section class="features">
   <div class="feature">
     <h3>📱 Един QR — всичко за теб</h3>

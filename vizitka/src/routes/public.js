@@ -84,9 +84,9 @@ router.get('/p/:slug/vizitka.vcf', (req, res) => {
   res.send(buildVCard(profile, baseUrl(req), photo));
 });
 
-// Качените снимки — само валидирани имена от uploads директорията.
+// Качените изображения (снимки на профили + рекламни банери) — валидирани имена.
 router.get('/photo/:file', (req, res) => {
-  if (!/^[a-f0-9]{32}\.(jpg|png|webp)$/.test(req.params.file)) return res.status(404).end();
+  if (!/^[a-f0-9]{32}\.(jpg|png|webp|gif)$/.test(req.params.file)) return res.status(404).end();
   res.sendFile(join(UPLOADS_DIR, req.params.file), { maxAge: '1d' }, (err) => {
     if (err && !res.headersSent) res.status(404).end();
   });

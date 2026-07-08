@@ -1,0 +1,96 @@
+<%- include('partials/head') %>
+<section class="admin">
+  <h1>Рекламни банери</h1>
+  <p class="muted">Показват се на началната страница, по реда отдолу. Промените са мигновени.</p>
+  <% if (saved) { %><p class="alert alert-ok">Записано.</p><% } %>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+
+  <h2>Нов банер</h2>
+  <form method="post" action="/admin/banners" enctype="multipart/form-data" class="admin-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Име (вътрешно)
+      <input type="text" name="title" required maxlength="120" placeholder="напр. Промоция лято 2026">
+    </label>
+    <label>Картинка (JPG, PNG, WebP или GIF, до 3 MB)
+      <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" required>
+    </label>
+    <label>Линк при клик (по избор)
+      <input type="url" name="link_url" maxlength="500" placeholder="https://…">
+    </label>
+    <label>Alt текст (за достъпност)
+      <input type="text" name="alt" maxlength="200" placeholder="Кратко описание на рекламата">
+    </label>
+    <button type="submit" class="btn">Добави банер</button>
+  </form>
+
+  <h2>Съществуващи банери (<%= banners.length %>)</h2>
+  <% if (!banners.length) { %>
+    <p class="muted">Още няма банери. Добави първия отгоре.</p>
+  <% } %>
+  <ul class="admin-banners">
+    <% banners.forEach(function (b, i) { %>
+      <li class="admin-banner <%= b.is_active ? '' : 'inactive' %>">
+        <div class="admin-banner-top">
+          <img src="/photo/<%= b.image %>" alt="" class="admin-thumb">
+          <div class="admin-banner-info">
+            <strong><%= b.title %></strong>
+            <span class="badge <%= b.is_active ? 'badge-on' : 'badge-off' %>">
+              <%= b.is_active ? 'Активен' : 'Спрян' %>
+            </span>
+            <p class="muted small">
+              <% if (b.link_url) { %>→ <%= b.link_url %><br><% } %>
+              <%= b.impressions %> показвания · <%= b.clicks %> клика
+            </p>
+          </div>
+          <div class="admin-banner-order">
+            <form method="post" action="/admin/banners/<%= b.id %>/move" class="inline-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="dir" value="up">
+              <button type="submit" class="link-btn" <%= i === 0 ? 'disabled' : '' %> aria-label="Нагоре">▲</button>
+            </form>
+            <form method="post" action="/admin/banners/<%= b.id %>/move" class="inline-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="dir" value="down">
+              <button type="submit" class="link-btn" <%= i === banners.length - 1 ? 'disabled' : '' %> aria-label="Надолу">▼</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="admin-banner-actions">
+          <form method="post" action="/admin/banners/<%= b.id %>/toggle" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-small"><%= b.is_active ? 'Спри' : 'Пусни' %></button>
+          </form>
+          <details class="admin-edit">
+            <summary class="btn btn-small">Редактирай</summary>
+            <form method="post" action="/admin/banners/<%= b.id %>" enctype="multipart/form-data" class="admin-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <label>Име
+                <input type="text" name="title" maxlength="120" value="<%= b.title %>">
+              </label>
+              <label>Нова картинка (остави празно, за да запазиш текущата)
+                <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
+              </label>
+              <label>Линк при клик
+                <input type="url" name="link_url" maxlength="500" value="<%= b.link_url %>" placeholder="https://…">
+              </label>
+              <label>Alt текст
+                <input type="text" name="alt" maxlength="200" value="<%= b.alt %>">
+              </label>
+              <label class="check">
+                <input type="checkbox" name="is_active" value="1" <%= b.is_active ? 'checked' : '' %>>
+                Активен
+              </label>
+              <button type="submit" class="btn btn-small">Запази промените</button>
+            </form>
+          </details>
+          <form method="post" action="/admin/banners/<%= b.id %>/delete" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger" data-confirm="Да изтрия ли този банер?">Изтрий</button>
+          </form>
+        </div>
+      </li>
+    <% }); %>
+  </ul>
+</section>
+<%- include('partials/foot') %>

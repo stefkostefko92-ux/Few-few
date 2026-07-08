@@ -7,6 +7,24 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 дни
 export const SESSION_COOKIE = 'vz_sid';
 const prod = process.env.NODE_ENV === 'production';
 
+// Админите се задават през ADMIN_EMAILS (запетая-разделени) на сървъра — никой не
+// може да се самопровъзгласи. При старт маркираме съществуващите акаунти.
+const ADMIN_EMAILS = new Set(
+  (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+);
+
+export function seedAdmins() {
+  if (!ADMIN_EMAILS.size) return;
+  const mark = db.prepare('UPDATE users SET is_admin = 1 WHERE email = ?');
+  for (const email of ADMIN_EMAILS) mark.run(email);
+}
+
+export const isAdmin = (user) =>
+  Boolean(user) && (user.is_admin === 1 || ADMIN_EMAILS.has(user.email));
+
 export function hashPassword(password) {
   return bcrypt.hashSync(password, 12);
 }
@@ -54,12 +72,13 @@ export function attachUser(req, res, next) {
     .get(sha256(token), Date.now());
   if (!session) return next();
   const user = db
-    .prepare('SELECT id, email, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, is_admin, created_at FROM users WHERE id = ?')
     .get(session.user_id);
   if (user) {
     req.user = user;
     req.session = session;
     res.locals.user = user;
+    res.locals.isAdmin = isAdmin(user);
     res.locals.csrfToken = session.csrf_token;
   }
   next();
@@ -67,5 +86,11 @@ export function attachUser(req, res, next) {
 
 export function requireAuth(req, res, next) {
   if (!req.user) return res.redirect('/login');
+  next();
+}
+
+export function requireAdmin(req, res, next) {
+  if (!req.user) return res.redirect('/login');
+  if (!isAdmin(req.user)) return res.status(403).render('404', { title: 'Няма достъп' });
   next();
 }

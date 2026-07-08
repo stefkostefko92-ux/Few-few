@@ -7,12 +7,16 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import './db.js';
-import { attachUser } from './auth.js';
+import { attachUser, seedAdmins } from './auth.js';
 import { baseUrl } from './config.js';
 import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
+import { activeBanners, clickBanner } from './banners.js';
 import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
+import adminRoutes from './routes/admin.js';
+
+seedAdmins(); // маркира конфигурираните ADMIN_EMAILS акаунти като админ
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const prod = process.env.NODE_ENV === 'production';
@@ -64,7 +68,7 @@ app.use(express.static(join(__dirname, '..', 'public'), { maxAge: prod ? '7d' : 
 
 // Автентикираните страници не се кешират никъде.
 app.use((req, res, next) => {
-  if (/^\/(dashboard|login|register|logout|profile)/.test(req.path))
+  if (/^\/(dashboard|login|register|logout|profile|admin)/.test(req.path))
     res.setHeader('Cache-Control', 'no-store');
   next();
 });
@@ -82,8 +86,19 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) =>
-  res.render('home', { title: null, faq: FAQ, jsonLd: siteJsonLd(baseUrl(req)) })
+  res.render('home', {
+    title: null,
+    faq: FAQ,
+    jsonLd: siteJsonLd(baseUrl(req)),
+    banners: activeBanners('home'),
+  })
 );
+// Клик по рекламен банер — брои и пренасочва към целта.
+app.get('/b/:id/click', (req, res) => {
+  const target = clickBanner(Number(req.params.id));
+  if (!target) return res.status(404).render('404', { title: 'Няма такава реклама' });
+  res.redirect(302, target);
+});
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(baseUrl(req))));
 app.get('/sitemap.xml', (req, res) => res.type('application/xml').send(sitemapXml(baseUrl(req))));
 app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(req))));
@@ -91,6 +106,7 @@ app.get('/privacy', (req, res) => res.render('privacy', { title: 'Политик
 app.get('/terms', (req, res) => res.render('terms', { title: 'Общи условия' }));
 app.use(authRoutes);
 app.use(dashboardRoutes);
+app.use(adminRoutes);
 app.use(publicRoutes);
 
 app.use((req, res) => res.status(404).render('404', { title: 'Страницата не е намерена' }));

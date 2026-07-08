@@ -31,6 +31,9 @@
   <nav>
     <% if (user) { %>
       <a href="/dashboard" class="<%= currentPath === '/dashboard' ? 'active' : '' %>">Моята визитка</a>
+      <% if (isAdmin) { %>
+        <a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Админ</a>
+      <% } %>
       <form method="post" action="/logout" class="inline-form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button type="submit" class="link-btn">Изход</button>

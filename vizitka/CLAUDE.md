@@ -23,8 +23,8 @@ npm test                        # node test/smoke.test.js (full-flow smoke test)
 ```
 
 Node ≥20 required. Prod env: `NODE_ENV=production`, `PUBLIC_BASE_URL` (HTTPS —
-goes into the QR code and vCard), optional `DATA_DIR` (default `./data`). See
-`.env.example`.
+goes into the QR code and vCard), optional `DATA_DIR` (default `./data`),
+`ADMIN_EMAILS` (comma-separated — grants `/admin` access). See `.env.example`.
 
 ## Layout
 
@@ -32,8 +32,10 @@ goes into the QR code and vCard), optional `DATA_DIR` (default `./data`). See
 src/app.js           Express app (helmet CSP+nonce, HSTS, no-store за auth страници;
                      /robots.txt /sitemap.xml /privacy /terms) — export
 src/server.js        listen (PORT, default 3100)
-src/db.js            SQLite схема (users, sessions, profiles) + леки ALTER миграции
-src/auth.js          сесии (httpOnly cookie, sha256 токен в БД), bcrypt пароли
+src/db.js            SQLite схема (users, sessions, profiles, banners) + ALTER миграции
+src/auth.js          сесии (httpOnly cookie, sha256 токен в БД), bcrypt пароли;
+                     requireAdmin + seedAdmins (ADMIN_EMAILS)
+src/banners.js       рекламни банери: activeBanners (импресии), clickBanner, CRUD helpers
 src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
 src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
@@ -45,7 +47,8 @@ src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
 src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
 src/routes/public.js /p/:slug (брояч views), qr.png, vizitka.vcf, /photo/:file
-src/views/           EJS (home, register, login, dashboard, card, privacy, terms, 404)
+src/routes/admin.js  /admin (requireAdmin) — CRUD на банери (multer), toggle, move, delete
+src/views/           EJS (home, register, login, dashboard, card, admin, privacy, terms, 404)
 public/              styles.css (вкл. теми), app.js (CSP-safe клиентска логика)
 test/smoke.test.js   пълен поток: регистрация→редакция→тема→views→визитка→QR→vCard→
                      CSRF→правни/SEO→смяна на парола
@@ -74,6 +77,11 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   без предварително попълнен имейл — потребителят публикува съзнателно от таблото.
   Не връщай „публично по подразбиране“. DSA: „Подай сигнал“ на всяка визитка +
   notice-and-action процес в ОУ.
+- **Реклами:** банерите се показват само на началната страница (`placement='home'`),
+  НЕ върху потребителските визитки. First-party (без чужди тракери → без консент
+  банер); всеки носи етикет „Реклама“ и `rel="sponsored"`. Управляват се от `/admin`
+  (само `ADMIN_EMAILS`). Кликовете минават през `/b/:id/click` (брои + пренасочва,
+  само http/https цели). Банер картинките ползват същия `/photo/:file` сървър.
 - Roadmap (не е имплементирано): забравена парола (имейл), изтриване на акаунт от
   UI (сега — по заявка на privacy@), NFC, няколко визитки на акаунт, дневна
   разбивка на статистиката.

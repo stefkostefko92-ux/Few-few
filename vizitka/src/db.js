@@ -17,6 +17,7 @@ db.exec(`
     id INTEGER PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    is_admin INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -51,7 +52,23 @@ db.exec(`
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Рекламни банери, управлявани от админ панела (first-party, без чужди тракери).
+  CREATE TABLE IF NOT EXISTS banners (
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,               -- вътрешно име (не се показва)
+    image TEXT NOT NULL DEFAULT '',    -- име на файл в data/uploads
+    alt TEXT NOT NULL DEFAULT '',      -- alt текст за достъпност
+    link_url TEXT NOT NULL DEFAULT '',
+    placement TEXT NOT NULL DEFAULT 'home',
+    is_active INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    clicks INTEGER NOT NULL DEFAULT 0,
+    impressions INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+  CREATE INDEX IF NOT EXISTS idx_banners_active ON banners(placement, is_active, sort_order);
 `);
 
 // Леки миграции: добавяне на колони върху съществуваща база (idempotent).
@@ -65,6 +82,15 @@ if (!profileCols.has('theme'))
   db.exec("ALTER TABLE profiles ADD COLUMN theme TEXT NOT NULL DEFAULT 'blue'");
 if (!profileCols.has('views'))
   db.exec('ALTER TABLE profiles ADD COLUMN views INTEGER NOT NULL DEFAULT 0');
+
+const userCols = new Set(
+  db
+    .prepare('PRAGMA table_info(users)')
+    .all()
+    .map((c) => c.name)
+);
+if (!userCols.has('is_admin'))
+  db.exec('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0');
 
 // Периодично чистене на изтекли сесии.
 export function purgeExpiredSessions() {
