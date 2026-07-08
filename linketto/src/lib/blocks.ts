@@ -14,6 +14,7 @@ export const BLOCK_KINDS = [
   'APP',
   'FORM',
   'TIP',
+  'VCARD',
 ] as const;
 
 export type BlockKindId = (typeof BLOCK_KINDS)[number];
@@ -27,6 +28,12 @@ export interface BlockMeta {
   spotify?: string;
   /** MUSIC: Apple Music URL. */
   apple?: string;
+  /** VCARD: телефон. */
+  phone?: string;
+  /** VCARD: имейл. */
+  email?: string;
+  /** VCARD: организация. */
+  org?: string;
 }
 
 const httpUrl = z
@@ -102,6 +109,33 @@ export function parseBlockInput(raw: {
         },
       };
     }
+    case 'VCARD': {
+      const phoneParsed = raw.url.trim() ? phone.safeParse(raw.url) : null;
+      const emailParsed = raw.extra1.trim()
+        ? z.string().trim().email().max(200).safeParse(raw.extra1)
+        : null;
+      const org = raw.extra2.trim().slice(0, 100);
+      if (phoneParsed?.success !== true && emailParsed?.success !== true) {
+        return null;
+      }
+      if (
+        (phoneParsed && !phoneParsed.success) ||
+        (emailParsed && !emailParsed.success)
+      ) {
+        return null;
+      }
+      return {
+        kind,
+        url: null,
+        meta: {
+          phone: phoneParsed?.success
+            ? phoneParsed.data.replace(/[\s()-]/g, '')
+            : undefined,
+          email: emailParsed?.success ? emailParsed.data : undefined,
+          org: org || undefined,
+        },
+      };
+    }
     case 'MUSIC': {
       const spotify = raw.url.trim() ? httpUrl.safeParse(raw.url) : null;
       const apple = raw.extra1.trim() ? httpUrl.safeParse(raw.extra1) : null;
@@ -156,6 +190,40 @@ export function pickAppTarget(
   if (/iPhone|iPad|iPod/i.test(ua) && meta?.ios) return meta.ios;
   if (/Android/i.test(ua) && meta?.android) return meta.android;
   return fallback ?? meta?.ios ?? meta?.android ?? null;
+}
+
+/** vCard 3.0 — „Запази контакта“ с едно докосване (ноу-хау от vizitka). */
+export function buildVCard(fields: {
+  name: string;
+  phone?: string;
+  email?: string;
+  org?: string;
+  url?: string;
+}): string {
+  const esc = (value: string) =>
+    value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,');
+  const lines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${esc(fields.name)}`,
+    `N:${esc(fields.name)};;;;`,
+  ];
+  if (fields.org) lines.push(`ORG:${esc(fields.org)}`);
+  if (fields.phone) lines.push(`TEL;TYPE=CELL:${fields.phone}`);
+  if (fields.email) lines.push(`EMAIL;TYPE=INTERNET:${fields.email}`);
+  if (fields.url) lines.push(`URL:${fields.url}`);
+  lines.push('END:VCARD');
+  return lines.join('\r\n') + '\r\n';
+}
+
+/** Насрочване: видим ли е блокът в момента? */
+export function isBlockVisible(
+  block: { showFrom: Date | null; showUntil: Date | null },
+  now: Date,
+): boolean {
+  if (block.showFrom && block.showFrom > now) return false;
+  if (block.showUntil && block.showUntil < now) return false;
+  return true;
 }
 
 /** Цел за клик по музикален блок според избраната услуга. */

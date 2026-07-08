@@ -5,7 +5,7 @@ CREATE SCHEMA IF NOT EXISTS "public";
 CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO', 'BUSINESS', 'FOUNDER');
 
 -- CreateEnum
-CREATE TYPE "BlockKind" AS ENUM ('LINK', 'HEADER', 'PHONE', 'MAP', 'VIDEO', 'MUSIC', 'APP', 'FORM', 'TIP');
+CREATE TYPE "BlockKind" AS ENUM ('LINK', 'HEADER', 'PHONE', 'MAP', 'VIDEO', 'MUSIC', 'APP', 'FORM', 'TIP', 'VCARD');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -69,6 +69,8 @@ CREATE TABLE "Link" (
     "url" TEXT,
     "meta" JSONB,
     "active" BOOLEAN NOT NULL DEFAULT true,
+    "showFrom" TIMESTAMP(3),
+    "showUntil" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

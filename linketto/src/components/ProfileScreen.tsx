@@ -5,7 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { bestLocale, dirFor, LOCALE_NAMES } from '@/i18n/locales';
-import { videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
+import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
 import { submitContactAction } from '@/app/actions/contact';
 
 // Общото публично рендиране на профил — ползва се от /u/[slug]
@@ -151,6 +151,7 @@ export async function ProfileScreen({
 
         <ul className="mt-8 space-y-3 text-start">
           {profile.links.map((link) => {
+            if (!isBlockVisible(link, new Date())) return null;
             const title = titleFor(link);
             if (!title) return null;
             const meta = (link.meta ?? null) as BlockMeta | null;
@@ -289,7 +290,7 @@ export async function ProfileScreen({
                     </div>
                   </li>
                 );
-              // LINK, MAP, APP, TIP — бутон през click redirect-а
+              // LINK, MAP, APP, TIP, VCARD — бутон през click redirect-а
               default:
                 return (
                   <li key={link.id}>
@@ -301,6 +302,7 @@ export async function ProfileScreen({
                       {link.kind === 'MAP' && '📍 '}
                       {link.kind === 'APP' && '📲 '}
                       {link.kind === 'TIP' && '💖 '}
+                      {link.kind === 'VCARD' && '👤 '}
                       {title}
                     </a>
                   </li>

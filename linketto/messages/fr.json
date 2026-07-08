@@ -26,7 +26,11 @@
     "featureEuTitle": "Hébergé dans l'UE",
     "featureEuBody": "Vos données restent dans l'Union européenne. RGPD par défaut.",
     "featureDomainTitle": "Votre propre domaine",
-    "featureDomainBody": "Domaine personnalisé sur les plans payants — votre réputation ne dépend jamais des abus des autres."
+    "featureDomainBody": "Domaine personnalisé sur les plans payants — votre réputation ne dépend jamais des abus des autres.",
+    "featureAiTitle": "Traduction IA en un clic",
+    "featureAiBody": "Écrivez dans votre langue — Linketto traduit votre profil dans toutes les autres en un bouton.",
+    "featureQrTitle": "QR et « Enregistrer le contact » gratuits",
+    "featureQrBody": "Un code QR à votre couleur et un bloc vCard qui enregistre votre contact dans le téléphone en un geste."
   },
   "pricing": {
     "title": "Des prix simples et honnêtes",
@@ -137,7 +141,19 @@
     "customDomainLabel": "Domaine personnalisé",
     "customDomainHint": "Pointez un enregistrement CNAME/A vers Linketto et enregistrez le domaine ici (plans payants uniquement).",
     "errorDomain": "Domaine non valide ou déjà pris.",
-    "kind_TIP": "Pourboire / don"
+    "kind_TIP": "Pourboire / don",
+    "aiTranslateButton": "Traduire avec l'IA",
+    "aiTranslateHint": "Le bouton « Traduire avec l'IA » remplit automatiquement les langues manquantes (les versions manuelles ne sont jamais modifiées).",
+    "translatedOk": "Votre profil a été traduit automatiquement. Vérifiez et ajustez si nécessaire.",
+    "errorAi": "La traduction IA a échoué — réessayez dans un instant.",
+    "errorAiKey": "La traduction IA n'est pas configurée sur le serveur (GEMINI_API_KEY).",
+    "scheduleFromLabel": "Afficher à partir de (facultatif)",
+    "scheduleUntilLabel": "Afficher jusqu'à (facultatif)",
+    "scheduleHint": "Avec « Afficher à partir de/jusqu'à », le bloc apparaît et disparaît tout seul — parfait pour les promos et les événements.",
+    "scheduledBadge": "programmé",
+    "kind_VCARD": "Enregistrer le contact (vCard)",
+    "qrSection": "Code QR",
+    "qrHint": "Un QR gratuit vers votre profil, dans votre couleur — téléchargez-le en SVG pour carte de visite, autocollant ou vitrine."
   },
   "profile": {
     "poweredBy": "Créé avec Linketto",

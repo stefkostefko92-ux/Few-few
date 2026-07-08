@@ -85,6 +85,7 @@ enum BlockKind {
   APP
   FORM
   TIP
+  VCARD
 }
 
 model Link {
@@ -94,8 +95,10 @@ model Link {
   kind         BlockKind         @default(LINK)
   position     Int               @default(0)
   url          String? // основна цел; HEADER/FORM нямат, MUSIC/APP може само meta
-  meta         Json? // kind-специфични данни: {ios, android} / {spotify, apple}
+  meta         Json? // kind-специфични данни: {ios, android} / {spotify, apple} / {phone, email, org}
   active       Boolean           @default(true)
+  showFrom     DateTime? // насрочване: блокът се показва от…
+  showUntil    DateTime? // …до (null = без ограничение)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   translations LinkTranslation[]

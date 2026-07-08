@@ -26,7 +26,11 @@
     "featureEuTitle": "Alojado en la UE",
     "featureEuBody": "Tus datos se quedan en la Unión Europea. RGPD por defecto.",
     "featureDomainTitle": "Tu propio dominio",
-    "featureDomainBody": "Dominio personalizado en los planes de pago — tu reputación no depende de los abusos de otros."
+    "featureDomainBody": "Dominio personalizado en los planes de pago — tu reputación no depende de los abusos de otros.",
+    "featureAiTitle": "Traducción con IA en un clic",
+    "featureAiBody": "Escribe en tu idioma — Linketto traduce tu perfil a todos los demás con un solo botón.",
+    "featureQrTitle": "QR y «Guardar contacto» gratis",
+    "featureQrBody": "Un código QR en tu color y un bloque vCard que guarda tu contacto en el teléfono con un toque."
   },
   "pricing": {
     "title": "Precios simples y honestos",
@@ -137,7 +141,19 @@
     "customDomainLabel": "Dominio personalizado",
     "customDomainHint": "Apunta un registro CNAME/A a Linketto y guarda aquí el dominio (solo planes de pago).",
     "errorDomain": "Dominio no válido o ya ocupado.",
-    "kind_TIP": "Propina / donación"
+    "kind_TIP": "Propina / donación",
+    "aiTranslateButton": "Traducir con IA",
+    "aiTranslateHint": "El botón «Traducir con IA» rellena automáticamente los idiomas que faltan (las versiones manuales no se tocan).",
+    "translatedOk": "Tu perfil se tradujo automáticamente. Revísalo y ajústalo si hace falta.",
+    "errorAi": "La traducción con IA falló — inténtalo de nuevo en un momento.",
+    "errorAiKey": "La traducción con IA no está configurada en el servidor (GEMINI_API_KEY).",
+    "scheduleFromLabel": "Mostrar desde (opcional)",
+    "scheduleUntilLabel": "Mostrar hasta (opcional)",
+    "scheduleHint": "Con «Mostrar desde/hasta» el bloque aparece y se oculta solo — perfecto para promociones y eventos.",
+    "scheduledBadge": "programado",
+    "kind_VCARD": "Guardar contacto (vCard)",
+    "qrSection": "Código QR",
+    "qrHint": "Un QR gratuito de tu perfil, en tu color — descárgalo en SVG para tarjetas, pegatinas o escaparates."
   },
   "profile": {
     "poweredBy": "Hecho con Linketto",

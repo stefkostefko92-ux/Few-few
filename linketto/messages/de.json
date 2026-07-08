@@ -26,7 +26,11 @@
     "featureEuTitle": "Gehostet in der EU",
     "featureEuBody": "Deine Daten bleiben in der Europäischen Union. DSGVO als Standard.",
     "featureDomainTitle": "Deine eigene Domain",
-    "featureDomainBody": "Eigene Domain in den Bezahlplänen — dein Ruf hängt nie vom Missbrauch anderer ab."
+    "featureDomainBody": "Eigene Domain in den Bezahlplänen — dein Ruf hängt nie vom Missbrauch anderer ab.",
+    "featureAiTitle": "KI-Übersetzung mit einem Klick",
+    "featureAiBody": "Schreib in deiner Sprache — Linketto übersetzt dein Profil mit einem Button in alle anderen.",
+    "featureQrTitle": "QR & „Kontakt speichern“ gratis",
+    "featureQrBody": "Ein QR-Code in deiner Farbe und ein vCard-Block, der deinen Kontakt mit einem Tipp im Telefon speichert."
   },
   "pricing": {
     "title": "Einfache, faire Preise",
@@ -137,7 +141,19 @@
     "customDomainLabel": "Eigene Domain",
     "customDomainHint": "Richte einen CNAME/A-Eintrag auf Linketto und speichere die Domain hier (nur Bezahlpläne).",
     "errorDomain": "Ungültige oder bereits vergebene Domain.",
-    "kind_TIP": "Trinkgeld / Spende"
+    "kind_TIP": "Trinkgeld / Spende",
+    "aiTranslateButton": "Mit KI übersetzen",
+    "aiTranslateHint": "Der Button „Mit KI übersetzen“ füllt fehlende Sprachen automatisch aus (manuelle Versionen bleiben unberührt).",
+    "translatedOk": "Dein Profil wurde automatisch übersetzt. Prüfe es und passe es bei Bedarf an.",
+    "errorAi": "KI-Übersetzung fehlgeschlagen — versuche es gleich noch einmal.",
+    "errorAiKey": "KI-Übersetzung ist auf dem Server nicht konfiguriert (GEMINI_API_KEY).",
+    "scheduleFromLabel": "Anzeigen ab (optional)",
+    "scheduleUntilLabel": "Anzeigen bis (optional)",
+    "scheduleHint": "Mit „Anzeigen ab/bis“ erscheint und verschwindet der Block automatisch — perfekt für Aktionen und Events.",
+    "scheduledBadge": "geplant",
+    "kind_VCARD": "Kontakt speichern (vCard)",
+    "qrSection": "QR-Code",
+    "qrHint": "Ein kostenloser QR-Code zu deinem Profil in deiner Akzentfarbe — als SVG für Visitenkarte, Sticker oder Schaufenster."
   },
   "profile": {
     "poweredBy": "Erstellt mit Linketto",

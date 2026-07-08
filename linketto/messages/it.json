@@ -26,7 +26,11 @@
     "featureEuTitle": "Ospitato nell'UE",
     "featureEuBody": "I tuoi dati restano nell'Unione Europea. GDPR di default.",
     "featureDomainTitle": "Il tuo dominio",
-    "featureDomainBody": "Dominio personalizzato sui piani a pagamento — la tua reputazione non dipende dagli abusi altrui."
+    "featureDomainBody": "Dominio personalizzato sui piani a pagamento — la tua reputazione non dipende dagli abusi altrui.",
+    "featureAiTitle": "Traduzione AI con un clic",
+    "featureAiBody": "Scrivi nella tua lingua — Linketto traduce il tuo profilo in tutte le altre con un solo pulsante.",
+    "featureQrTitle": "QR e «Salva contatto» gratis",
+    "featureQrBody": "Un codice QR nel tuo colore e un blocco vCard che salva il tuo contatto sul telefono con un tocco."
   },
   "pricing": {
     "title": "Prezzi semplici e onesti",
@@ -137,7 +141,19 @@
     "customDomainLabel": "Dominio personalizzato",
     "customDomainHint": "Punta un record CNAME/A verso Linketto e salva qui il dominio (solo piani a pagamento).",
     "errorDomain": "Dominio non valido o già occupato.",
-    "kind_TIP": "Mancia / donazione"
+    "kind_TIP": "Mancia / donazione",
+    "aiTranslateButton": "Traduci con AI",
+    "aiTranslateHint": "Il pulsante «Traduci con AI» compila automaticamente le lingue mancanti (le versioni manuali non vengono toccate).",
+    "translatedOk": "Il profilo è stato tradotto automaticamente. Controlla e correggi se serve.",
+    "errorAi": "La traduzione AI non è riuscita — riprova tra poco.",
+    "errorAiKey": "La traduzione AI non è configurata sul server (GEMINI_API_KEY).",
+    "scheduleFromLabel": "Mostra dal (facoltativo)",
+    "scheduleUntilLabel": "Mostra fino al (facoltativo)",
+    "scheduleHint": "Con «Mostra dal/fino al» il blocco appare e scompare da solo — perfetto per promozioni ed eventi.",
+    "scheduledBadge": "programmato",
+    "kind_VCARD": "Salva contatto (vCard)",
+    "qrSection": "Codice QR",
+    "qrHint": "Un QR gratuito del tuo profilo, nel tuo colore — scaricalo in SVG per biglietti da visita, adesivi o vetrine."
   },
   "profile": {
     "poweredBy": "Creato con Linketto",

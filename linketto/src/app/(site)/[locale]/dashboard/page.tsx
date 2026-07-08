@@ -14,6 +14,7 @@ import {
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
 import { startCheckoutAction } from '@/app/actions/billing';
+import { aiTranslateAction } from '@/app/actions/ai';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,10 +25,10 @@ export default async function DashboardPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; translated?: string }>;
 }) {
   const { locale } = await params;
-  const { error } = await searchParams;
+  const { error, translated } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
@@ -113,7 +114,19 @@ export default async function DashboardPage({
                   ? t('errorBlock')
                   : error === 'domain'
                     ? t('errorDomain')
-                    : t('errorGeneric')}
+                    : error === 'ai'
+                      ? t('errorAi')
+                      : error === 'aikey'
+                        ? t('errorAiKey')
+                        : t('errorGeneric')}
+          </p>
+        )}
+        {translated && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('translatedOk')}
           </p>
         )}
 
@@ -232,9 +245,21 @@ export default async function DashboardPage({
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('translationsSection')}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-semibold">{t('translationsSection')}</h2>
+                <form action={aiTranslateAction}>
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                  >
+                    ✨ {t('aiTranslateButton')}
+                  </button>
+                </form>
+              </div>
               <p className="mt-1 text-sm text-slate-500">
-                {t('translationsHint')}
+                {t('translationsHint')} {t('aiTranslateHint')}
               </p>
               <div className="mt-4 space-y-4">
                 {LOCALES.map((loc) => {
@@ -296,6 +321,11 @@ export default async function DashboardPage({
                         <span className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">
                           {t(`kind_${link.kind}`)}
                         </span>
+                        {(link.showFrom || link.showUntil) && (
+                          <span className="mr-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                            ⏱ {t('scheduledBadge')}
+                          </span>
+                        )}
                         {link.url ?? ''}
                       </p>
                       <form action={deleteLinkAction}>
@@ -422,8 +452,24 @@ export default async function DashboardPage({
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
                 </label>
+                <label className="block text-sm font-medium">
+                  {t('scheduleFromLabel')}
+                  <input
+                    type="datetime-local"
+                    name="showFrom"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('scheduleUntilLabel')}
+                  <input
+                    type="datetime-local"
+                    name="showUntil"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
                 <p className="text-xs text-slate-500 sm:col-span-2">
-                  {t('addBlockHint')}
+                  {t('addBlockHint')} {t('scheduleHint')}
                 </p>
                 <button
                   type="submit"
@@ -432,6 +478,28 @@ export default async function DashboardPage({
                   {t('addLink')}
                 </button>
               </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('qrSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('qrHint')}</p>
+              <div className="mt-4 flex items-center gap-6">
+                {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
+                <img
+                  src={`/u/${profile.slug}/qr`}
+                  alt="QR"
+                  width={144}
+                  height={144}
+                  className="h-36 w-36 rounded-xl border border-slate-200 bg-white p-2"
+                />
+                <a
+                  href={`/u/${profile.slug}/qr`}
+                  download={`${profile.slug}-qr.svg`}
+                  className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  ⤓ SVG
+                </a>
+              </div>
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">

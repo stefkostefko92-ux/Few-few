@@ -7,7 +7,9 @@ import { PLANS } from '@/lib/plans';
 
 const FEATURES = [
   'Lang',
+  'Ai',
   'Fee',
+  'Qr',
   'Analytics',
   'Trust',
   'Eu',

@@ -194,12 +194,22 @@ export async function addLinkAction(formData: FormData): Promise<void> {
       url: input.url,
       meta: input.meta ? (input.meta as Prisma.InputJsonValue) : undefined,
       position: profile._count.links,
+      showFrom: parseDateInput(formData.get('showFrom')),
+      showUntil: parseDateInput(formData.get('showUntil')),
       translations: {
         create: { locale: profile.defaultLocale, title },
       },
     },
   });
   redirect(`/${uiLocale}/dashboard`);
+}
+
+// datetime-local → Date (или null при празно/невалидно)
+function parseDateInput(value: FormDataEntryValue | null): Date | null {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 export async function deleteLinkAction(formData: FormData): Promise<void> {

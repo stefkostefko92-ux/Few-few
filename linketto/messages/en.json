@@ -26,7 +26,11 @@
     "featureEuTitle": "Hosted in the EU",
     "featureEuBody": "Your data stays in the European Union. GDPR by default.",
     "featureDomainTitle": "Your own domain",
-    "featureDomainBody": "Custom domains on paid plans — your reputation never depends on someone else's abuse."
+    "featureDomainBody": "Custom domains on paid plans — your reputation never depends on someone else's abuse.",
+    "featureAiTitle": "One-click AI translation",
+    "featureAiBody": "Write in your language — Linketto translates your profile into all the others with one button.",
+    "featureQrTitle": "Free QR & \"Save contact\"",
+    "featureQrBody": "A QR code in your color and a vCard block that saves your contact to any phone with one tap."
   },
   "pricing": {
     "title": "Simple, honest pricing",
@@ -137,7 +141,19 @@
     "customDomainLabel": "Custom domain",
     "customDomainHint": "Point a CNAME/A record at Linketto and save the domain here (paid plans only).",
     "errorDomain": "Invalid or already taken domain.",
-    "kind_TIP": "Tip / donation"
+    "kind_TIP": "Tip / donation",
+    "aiTranslateButton": "Translate with AI",
+    "aiTranslateHint": "The \"Translate with AI\" button fills in the missing languages automatically (manual versions are never touched).",
+    "translatedOk": "Your profile was translated automatically. Review and adjust if needed.",
+    "errorAi": "AI translation failed — try again in a moment.",
+    "errorAiKey": "AI translation is not configured on the server (GEMINI_API_KEY).",
+    "scheduleFromLabel": "Show from (optional)",
+    "scheduleUntilLabel": "Show until (optional)",
+    "scheduleHint": "With \"Show from/until\" the block appears and hides automatically — perfect for promos and events.",
+    "scheduledBadge": "scheduled",
+    "kind_VCARD": "Save contact (vCard)",
+    "qrSection": "QR code",
+    "qrHint": "A free QR code for your profile, in your accent color — download it as SVG for a business card, sticker or shop window."
   },
   "profile": {
     "poweredBy": "Made with Linketto",

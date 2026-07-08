@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildVCard,
+  isBlockVisible,
   parseBlockInput,
   pickAppTarget,
   pickMusicTarget,
@@ -97,4 +99,45 @@ test('pickMusicTarget: избор по услуга', () => {
   assert.equal(pickMusicTarget('spotify', meta, null), 'https://s.example');
   assert.equal(pickMusicTarget('apple', meta, null), 'https://a.example');
   assert.equal(pickMusicTarget(null, meta, null), 'https://s.example');
+});
+
+test('parseBlockInput: VCARD иска телефон или имейл', () => {
+  assert.equal(
+    parseBlockInput({ kind: 'VCARD', url: '', extra1: '', extra2: '' }),
+    null,
+  );
+  const block = parseBlockInput({
+    kind: 'VCARD',
+    url: '+359 877 414 874',
+    extra1: 'info@carbonstealth.eu',
+    extra2: 'Carbon Stealth VCC',
+  });
+  assert.equal(block?.meta?.phone, '+359877414874');
+  assert.equal(block?.meta?.email, 'info@carbonstealth.eu');
+  assert.equal(block?.meta?.org, 'Carbon Stealth VCC');
+});
+
+test('buildVCard: коректен формат и екраниране', () => {
+  const card = buildVCard({
+    name: 'Мария; Петрова',
+    phone: '+359877414874',
+    email: 'maria@example.com',
+    org: 'ACME, Ltd',
+    url: 'https://linketto.carbonstealth.eu/u/maria',
+  });
+  assert.ok(card.startsWith('BEGIN:VCARD\r\nVERSION:3.0'));
+  assert.ok(card.includes('FN:Мария\\; Петрова'));
+  assert.ok(card.includes('ORG:ACME\\, Ltd'));
+  assert.ok(card.includes('TEL;TYPE=CELL:+359877414874'));
+  assert.ok(card.endsWith('END:VCARD\r\n'));
+});
+
+test('isBlockVisible: прозорец от/до', () => {
+  const now = new Date('2026-07-08T12:00:00Z');
+  const past = new Date('2026-07-01T00:00:00Z');
+  const future = new Date('2026-08-01T00:00:00Z');
+  assert.ok(isBlockVisible({ showFrom: null, showUntil: null }, now));
+  assert.ok(isBlockVisible({ showFrom: past, showUntil: future }, now));
+  assert.ok(!isBlockVisible({ showFrom: future, showUntil: null }, now));
+  assert.ok(!isBlockVisible({ showFrom: null, showUntil: past }, now));
 });

@@ -65,7 +65,14 @@ src/lib/plans.ts       Планове/комисиони: FREE 5% · PRO €4 0%
                        analyticsDays) се четат само оттук.
 src/lib/auth.ts        Сесии: httpOnly cookie, sha256(token) в БД, bcrypt 12.
 src/lib/slug.ts        Транслитерация BG→latin, RESERVED_SLUGS, валидация.
+src/lib/ai.ts          „Преведи с AI“ (Gemini Flash, като mastilko): ключът е
+                       само server-side (GEMINI_API_KEY); превежда липсващите
+                       езици, НИКОГА не презаписва ръчни версии (upsert с
+                       update:{}). Лимитът на плана важи и тук.
+src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цвят) — пакет qrcode.
 ```
+Насрочване: Link.showFrom/showUntil + isBlockVisible() — проверява се и при
+рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
 ## Правила на продукта
 
