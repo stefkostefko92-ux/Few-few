@@ -24,7 +24,9 @@ npm test                        # node test/smoke.test.js (full-flow smoke test)
 
 Node ≥20 required. Prod env: `NODE_ENV=production`, `PUBLIC_BASE_URL` (HTTPS —
 goes into the QR code and vCard), optional `DATA_DIR` (default `./data`),
-`ADMIN_EMAILS` (comma-separated — grants `/admin` access). See `.env.example`.
+`ADMIN_EMAILS` (comma-separated — grants `/admin` access), `MASTILKO_URL` (печатен
+партньор), `PRINT_API_SECRET` (**задължителна в продукция** — подписва печатния
+handoff токен). See `.env.example`.
 
 ## Layout
 
@@ -38,6 +40,7 @@ src/auth.js          сесии (httpOnly cookie, sha256 токен в БД), bc
 src/banners.js       рекламни банери: activeBanners (импресии), clickBanner, CRUD helpers
 src/personalize.js   персонализация: цвят (accent→нонсиран <style>), форма, шрифт
 src/links.js         собствени бутони: getLinks, replaceLinks, parseLinkFields (MAX_LINKS)
+src/print.js         печатен handoff към mastilko-bg.com: HMAC токен + buildPrintPayload
 src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
 src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
@@ -48,7 +51,7 @@ src/seo.js           COMPANY (импресум), robots (AI-ботове без 
 src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
 src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
-src/routes/public.js /p/:slug (брояч views), qr.png, vizitka.vcf, /photo/:file
+src/routes/public.js /p/:slug (views), qr.png, vizitka.vcf, /p/:slug/print, /api/print/:token, /photo/:file
 src/routes/admin.js  /admin (requireAdmin) — CRUD на банери (multer), toggle, move, delete
 src/views/           EJS (home, register, login, dashboard, card, admin, privacy, terms, 404)
 public/              styles.css (вкл. теми), app.js (CSP-safe клиентска логика)
@@ -84,6 +87,12 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   без предварително попълнен имейл — потребителят публикува съзнателно от таблото.
   Не връщай „публично по подразбиране“. DSA: „Подай сигнал“ на всяка визитка +
   notice-and-action процес в ОУ.
+- **Печатен handoff (mastilko-bg.com):** от таблото/визитката „Поръчай печатни визитки“
+  → `/p/:slug/print` рендира преглед + бутон към
+  `${MASTILKO_URL}/import?source=vizitka&token=<HMAC>`. Токенът е подписан с
+  `PRINT_API_SECRET`, важи 30 мин. Mastilko вика `GET /api/print/:token` (CORS към
+  `MASTILKO_URL`) и получава JSON с данните на визитката (`buildPrintPayload`). Токенът
+  оторизира → работи и за скрит профил (собственикът поръчва). Само публичните данни.
 - **Реклами:** банерите се показват само на началната страница (`placement='home'`),
   НЕ върху потребителските визитки. First-party (без чужди тракери → без консент
   банер); всеки носи етикет „Реклама“ и `rel="sponsored"`. Управляват се от `/admin`

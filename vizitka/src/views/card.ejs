@@ -55,6 +55,9 @@
     <div class="vcard-qr">
       <img src="/p/<%= profile.slug %>/qr.png" alt="QR код към тази визитка" width="140" height="140">
       <p class="muted small">Сподели визитката: дай този QR за сканиране.</p>
+      <% if (isOwner) { %>
+        <p><a class="link-btn" href="/p/<%= profile.slug %>/print">🖨️ Поръчай тази визитка на хартия</a></p>
+      <% } %>
     </div>
   </article>
   <p class="made-with muted small">Направено с <a href="/">Vizitka</a> — винаги актуалната визитка.</p>

@@ -8,6 +8,8 @@ import { join } from 'node:path';
 process.env.NODE_ENV = 'test';
 process.env.DATA_DIR = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-test-'));
 process.env.ADMIN_EMAILS = 'admin@example.com';
+process.env.MASTILKO_URL = 'https://mastilko-bg.com';
+process.env.PRINT_API_SECRET = 'test-print-secret';
 
 const { default: app } = await import('../src/app.js');
 
@@ -260,6 +262,37 @@ await test('връзка без http се отхвърля', async () => {
     }),
   });
   assert.equal(res.status, 400);
+});
+
+await test('печатната страница препраща към mastilko-bg.com', async () => {
+  const res = await request('/p/ivan-testov/print');
+  assert.equal(res.status, 200);
+  const html = await res.text();
+  assert.match(html, /mastilko-bg\.com/);
+  const handoff = html.match(
+    /https:\/\/mastilko-bg\.com\/import\?source=vizitka&amp;token=([^"]+)/
+  );
+  assert.ok(handoff, 'липсва handoff линк с токен');
+});
+
+await test('печатното API връща данните по валиден токен', async () => {
+  // Взимаме токена от печатната страница (както mastilko би го получил).
+  const html = await (await request('/p/ivan-testov/print')).text();
+  const token = decodeURIComponent(html.match(/import\?source=vizitka&amp;token=([^"]+)/)[1]);
+  const res = await request(`/api/print/${token}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('access-control-allow-origin'), 'https://mastilko-bg.com');
+  const data = await res.json();
+  assert.equal(data.source, 'vizitka');
+  assert.equal(data.slug, 'ivan-testov');
+  assert.equal(data.display_name, 'Иван Тестов');
+  assert.equal(data.phone, '+359 888 123 456');
+  assert.ok(data.qr_url.endsWith('/p/ivan-testov/qr.png'));
+});
+
+await test('печатното API отхвърля невалиден токен', async () => {
+  const res = await request('/api/print/невалиден.123.xxx');
+  assert.equal(res.status, 401);
 });
 
 await test('QR кодът е валиден PNG', async () => {

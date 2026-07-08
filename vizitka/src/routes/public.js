@@ -9,6 +9,7 @@ import { baseUrl } from '../config.js';
 import { cardJsonLd } from '../seo.js';
 import { accentCss } from '../personalize.js';
 import { getLinks } from '../links.js';
+import { MASTILKO_URL, mastilkoHandoffUrl, verifyToken, buildPrintPayload } from '../print.js';
 
 const router = Router();
 
@@ -70,6 +71,37 @@ router.get('/p/:slug/qr.png', async (req, res) => {
   res.type('png');
   res.setHeader('Content-Disposition', `inline; filename="vizitka-${profile.slug}-qr.png"`);
   res.send(png);
+});
+
+// Печатна страница — препраща към партньорския печатен сайт mastilko-bg.com.
+router.get('/p/:slug/print', (req, res) => {
+  const profile = findVisibleProfile(req, req.params.slug);
+  if (!profile) return res.status(404).render('404', { title: 'Няма такава визитка' });
+  res.render('print', {
+    title: `Печат на визитка — ${profile.display_name}`,
+    profile,
+    isOwner: profile.user_id === req.user?.id,
+    publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
+    mastilkoUrl: mastilkoHandoffUrl(profile.slug),
+    mastilkoBase: MASTILKO_URL,
+  });
+});
+
+// API за печатния партньор: връща структурираните данни на визитката по валиден токен.
+router.options('/api/print/:token', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', MASTILKO_URL);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.status(204).end();
+});
+
+router.get('/api/print/:token', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', MASTILKO_URL);
+  res.setHeader('Cache-Control', 'no-store');
+  const claim = verifyToken(req.params.token);
+  if (!claim) return res.status(401).json({ error: 'Невалиден или изтекъл токен.' });
+  const profile = db.prepare('SELECT * FROM profiles WHERE slug = ?').get(claim.slug);
+  if (!profile) return res.status(404).json({ error: 'Няма такава визитка.' });
+  res.json(buildPrintPayload(profile, baseUrl(req)));
 });
 
 router.get('/p/:slug/vizitka.vcf', (req, res) => {

@@ -1,0 +1,36 @@
+<%- include('partials/head') %>
+<section class="print-page">
+  <h1>Печатни визитки</h1>
+  <p class="lead-sm">
+    Поръчай визитката си на хартия. Данните ти се предават сигурно към нашия печатен
+    сайт <strong><%= mastilkoBase.replace(/^https?:\/\//, '') %></strong>, където избираш
+    хартия, дизайн и количество и завършваш поръчката.
+  </p>
+
+  <div class="print-card">
+    <div class="print-preview">
+      <img src="/p/<%= profile.slug %>/qr.png" alt="QR код на визитката" width="150" height="150">
+      <div>
+        <strong><%= profile.display_name %></strong>
+        <% if (profile.headline) { %><p class="muted"><%= profile.headline %></p><% } %>
+        <p class="muted small"><%= publicUrl.replace(/^https?:\/\//, '') %></p>
+      </div>
+    </div>
+
+    <a class="btn btn-big" href="<%= mastilkoUrl %>" rel="noopener">
+      Продължи към <%= mastilkoBase.replace(/^https?:\/\//, '') %> →
+    </a>
+    <p><a href="/p/<%= profile.slug %>">← Обратно към визитката</a></p>
+  </div>
+
+  <details class="print-data">
+    <summary>Какви данни се предават за печат</summary>
+    <p class="muted small">
+      За да подготви печатната визитка, <%= mastilkoBase.replace(/^https?:\/\//, '') %> получава
+      публичните данни от профила ти: име, длъжност, фирма, телефон, имейл, уебсайт, адрес,
+      описание, социални мрежи, собствените ти бутони, цветовете/шрифта и връзки към снимката
+      и QR кода. Предаването става през защитено API с еднократен токен, валиден 30 минути.
+    </p>
+  </details>
+</section>
+<%- include('partials/foot') %>
