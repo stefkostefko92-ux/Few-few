@@ -31,7 +31,7 @@ npm run dev             # http://localhost:3000
 
 Качествени гейтове: `npm run lint && npm run typecheck && npm test && npm run build`.
 
-## Статус (v0.2 — MVP + блокове)
+## Статус (v0.3 — лого, статистики, домейни)
 
 - [x] Многоезичен сайт (bg/en/it/es/de/fr) с next-intl + fallback към en
 - [x] Регистрация/вход (bcrypt, httpOnly сесии)
@@ -43,5 +43,11 @@ npm run dev             # http://localhost:3000
 - [x] Преводи на заглавията на блоковете по езици
 - [x] Кликове/прегледи без бисквитки (ClickEvent)
 - [x] Stripe Checkout + webhook (Pro/Business/Founder)
-- [ ] Статистики в дашборда (има данни, няма UI)
-- [ ] Собствени домейни, магазин/бакшиши, API, екипи (фаза 2–3)
+- [x] Официално лого (public/logo.png + favicon), прозрачен фон
+- [x] Статистики в дашборда: прегледи/кликове, по линк, по език, по държава
+      (прозорецът следва плана: Free 90 дни, платени — цялата история)
+- [x] Собствен домейн (платени планове): CNAME → middleware rewrite → /d/[domain]
+- [x] Блок „Бакшиш/дарение“ (външен платежен линк; Stripe Connect с комисиона — фаза 3)
+- [x] Начална Prisma миграция (`prisma/migrations/…_init`) — на сървъра:
+      `npm run prisma:migrate`
+- [ ] Магазин за дигитални продукти през Stripe Connect (фаза 3), API, екипи

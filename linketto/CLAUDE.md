@@ -41,7 +41,10 @@ src/i18n/locales.ts    ЕДИНСТВЕНОТО място за добавяне
 src/i18n/request.ts    next-intl: непълни преводи падат към en (deepMerge).
 messages/<loc>.json    UI низове. bg е ИЗТОЧНИКЪТ НА ИСТИНАТА (правило на
                        репото); преводите минават през агента Преводач.
-src/middleware.ts      Локализиран рутинг само за сайта; /u, /api са извън него.
+src/middleware.ts      Локализиран рутинг само за сайта; /u, /d, /api са извън
+                       него. Чужд Host (собствен домейн, платени планове) се
+                       пренаписва към /d/<host> → резолвира се по
+                       Profile.customDomain.
 src/app/(site)/[locale]/   Landing, login/register, dashboard, privacy/terms.
 src/app/(public)/u/[slug]/ Публичен профил: език = ?hl → Accept-Language →
                            defaultLocale; hreflang alternates в metadata.

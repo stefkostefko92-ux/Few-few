@@ -62,6 +62,9 @@ const settingsSchema = z.object({
   published: z.coerce.boolean(),
 });
 
+const DOMAIN_RE =
+  /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
+
 export async function updateProfileAction(formData: FormData): Promise<void> {
   const uiLocale = localeFrom(formData);
   const user = await requireUser(uiLocale);
@@ -75,16 +78,45 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
   if (!parsed.success) {
     redirect(`/${uiLocale}/dashboard?error=generic`);
   }
-  const { count } = await prisma.profile.updateMany({
-    where: { id: profileId, userId: user.id },
-    data: {
-      theme: parsed.data.theme,
-      accent: parsed.data.accent || null,
-      defaultLocale: parsed.data.defaultLocale,
-      published: parsed.data.published,
-    },
-  });
-  if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+
+  // Собствен домейн — само за платени планове.
+  const rawDomain = String(formData.get('customDomain') ?? '')
+    .trim()
+    .toLowerCase();
+  const customDomain = rawDomain === '' ? null : rawDomain;
+  if (customDomain) {
+    if (planFor(user.plan).id === 'FREE') {
+      redirect(`/${uiLocale}/dashboard?error=limit`);
+    }
+    if (!DOMAIN_RE.test(customDomain) || customDomain.length > 253) {
+      redirect(`/${uiLocale}/dashboard?error=domain`);
+    }
+  }
+
+  try {
+    const { count } = await prisma.profile.updateMany({
+      where: { id: profileId, userId: user.id },
+      data: {
+        theme: parsed.data.theme,
+        accent: parsed.data.accent || null,
+        defaultLocale: parsed.data.defaultLocale,
+        published: parsed.data.published,
+        customDomain,
+      },
+    });
+    if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+  } catch (error) {
+    // P2002 = зает домейн (unique)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2002'
+    ) {
+      redirect(`/${uiLocale}/dashboard?error=domain`);
+    }
+    throw error;
+  }
   redirect(`/${uiLocale}/dashboard`);
 }
 

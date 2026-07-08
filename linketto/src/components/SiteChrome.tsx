@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
@@ -10,8 +11,15 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
   const user = await getSessionUser();
   return (
     <header className="flex items-center justify-between px-6 py-4">
-      <Link href={`/${locale}`} className="text-xl font-bold text-linketto-700">
-        {tCommon('appName')}
+      <Link href={`/${locale}`} className="flex items-center">
+        <Image
+          src="/logo.png"
+          alt={tCommon('appName')}
+          width={132}
+          height={50}
+          priority
+          className="h-9 w-auto"
+        />
       </Link>
       <nav className="flex items-center gap-4 text-sm">
         {user ? (

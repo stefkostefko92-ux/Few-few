@@ -125,7 +125,19 @@
     "addBlockHint": "За заглавие и форма стига само заглавие. За приложение попълни App Store и/или Google Play. За музика — Spotify и/или Apple Music.",
     "messagesSection": "Съобщения от формата",
     "noMessages": "Още няма съобщения.",
-    "errorBlock": "Невалидни данни за блока — провери URL адресите."
+    "errorBlock": "Невалидни данни за блока — провери URL адресите.",
+    "statsSection": "Статистика",
+    "statsViews": "Прегледи",
+    "statsClicks": "Кликове",
+    "statsByLink": "По линк",
+    "statsByLocale": "По език",
+    "statsByCountry": "По държава",
+    "statsWindow": "Период: последните {days} дни",
+    "statsWindowAll": "Период: цялата история",
+    "customDomainLabel": "Собствен домейн",
+    "customDomainHint": "Насочи CNAME/A запис към Linketto и запиши домейна тук (само платени планове).",
+    "errorDomain": "Невалиден или зает домейн.",
+    "kind_TIP": "Бакшиш / дарение"
   },
   "profile": {
     "poweredBy": "Създадено с Linketto",

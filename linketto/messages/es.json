@@ -125,7 +125,19 @@
     "addBlockHint": "Para encabezado y formulario basta el título. Para una app, rellena App Store y/o Google Play. Para música — Spotify y/o Apple Music.",
     "messagesSection": "Mensajes del formulario",
     "noMessages": "Aún no hay mensajes.",
-    "errorBlock": "Datos del bloque no válidos — revisa las URL."
+    "errorBlock": "Datos del bloque no válidos — revisa las URL.",
+    "statsSection": "Estadísticas",
+    "statsViews": "Vistas",
+    "statsClicks": "Clics",
+    "statsByLink": "Por enlace",
+    "statsByLocale": "Por idioma",
+    "statsByCountry": "Por país",
+    "statsWindow": "Periodo: últimos {days} días",
+    "statsWindowAll": "Periodo: historial completo",
+    "customDomainLabel": "Dominio personalizado",
+    "customDomainHint": "Apunta un registro CNAME/A a Linketto y guarda aquí el dominio (solo planes de pago).",
+    "errorDomain": "Dominio no válido o ya ocupado.",
+    "kind_TIP": "Propina / donación"
   },
   "profile": {
     "poweredBy": "Hecho con Linketto",

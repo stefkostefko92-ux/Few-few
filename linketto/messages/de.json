@@ -125,7 +125,19 @@
     "addBlockHint": "Überschrift und Formular brauchen nur einen Titel. Für eine App App Store und/oder Google Play ausfüllen. Für Musik — Spotify und/oder Apple Music.",
     "messagesSection": "Formular-Nachrichten",
     "noMessages": "Noch keine Nachrichten.",
-    "errorBlock": "Ungültige Blockdaten — prüfe die URLs."
+    "errorBlock": "Ungültige Blockdaten — prüfe die URLs.",
+    "statsSection": "Statistiken",
+    "statsViews": "Aufrufe",
+    "statsClicks": "Klicks",
+    "statsByLink": "Nach Link",
+    "statsByLocale": "Nach Sprache",
+    "statsByCountry": "Nach Land",
+    "statsWindow": "Zeitraum: letzte {days} Tage",
+    "statsWindowAll": "Zeitraum: gesamter Verlauf",
+    "customDomainLabel": "Eigene Domain",
+    "customDomainHint": "Richte einen CNAME/A-Eintrag auf Linketto und speichere die Domain hier (nur Bezahlpläne).",
+    "errorDomain": "Ungültige oder bereits vergebene Domain.",
+    "kind_TIP": "Trinkgeld / Spende"
   },
   "profile": {
     "poweredBy": "Erstellt mit Linketto",

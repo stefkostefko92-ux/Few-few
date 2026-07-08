@@ -125,7 +125,19 @@
     "addBlockHint": "Per intestazione e modulo basta il titolo. Per un'app compila App Store e/o Google Play. Per la musica — Spotify e/o Apple Music.",
     "messagesSection": "Messaggi dal modulo",
     "noMessages": "Ancora nessun messaggio.",
-    "errorBlock": "Dati del blocco non validi — controlla gli URL."
+    "errorBlock": "Dati del blocco non validi — controlla gli URL.",
+    "statsSection": "Statistiche",
+    "statsViews": "Visualizzazioni",
+    "statsClicks": "Clic",
+    "statsByLink": "Per link",
+    "statsByLocale": "Per lingua",
+    "statsByCountry": "Per paese",
+    "statsWindow": "Periodo: ultimi {days} giorni",
+    "statsWindowAll": "Periodo: cronologia completa",
+    "customDomainLabel": "Dominio personalizzato",
+    "customDomainHint": "Punta un record CNAME/A verso Linketto e salva qui il dominio (solo piani a pagamento).",
+    "errorDomain": "Dominio non valido o già occupato.",
+    "kind_TIP": "Mancia / donazione"
   },
   "profile": {
     "poweredBy": "Creato con Linketto",

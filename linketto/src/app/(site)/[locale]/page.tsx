@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import type { Locale } from '@/i18n/locales';
@@ -29,6 +30,14 @@ export default async function HomePage({
       <SiteHeader locale={locale as Locale} />
       <main className="mx-auto max-w-4xl px-6">
         <section className="py-20 text-center">
+          <Image
+            src="/logo.png"
+            alt=""
+            width={330}
+            height={125}
+            priority
+            className="mx-auto mb-10 h-auto w-64 sm:w-80"
+          />
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
             {t('heroTitle')}
           </h1>

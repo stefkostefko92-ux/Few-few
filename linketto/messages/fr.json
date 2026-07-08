@@ -125,7 +125,19 @@
     "addBlockHint": "Titre de section et formulaire ne demandent qu'un titre. Pour une application, renseignez App Store et/ou Google Play. Pour la musique — Spotify et/ou Apple Music.",
     "messagesSection": "Messages du formulaire",
     "noMessages": "Pas encore de messages.",
-    "errorBlock": "Données de bloc non valides — vérifiez les URL."
+    "errorBlock": "Données de bloc non valides — vérifiez les URL.",
+    "statsSection": "Statistiques",
+    "statsViews": "Vues",
+    "statsClicks": "Clics",
+    "statsByLink": "Par lien",
+    "statsByLocale": "Par langue",
+    "statsByCountry": "Par pays",
+    "statsWindow": "Période : {days} derniers jours",
+    "statsWindowAll": "Période : historique complet",
+    "customDomainLabel": "Domaine personnalisé",
+    "customDomainHint": "Pointez un enregistrement CNAME/A vers Linketto et enregistrez le domaine ici (plans payants uniquement).",
+    "errorDomain": "Domaine non valide ou déjà pris.",
+    "kind_TIP": "Pourboire / don"
   },
   "profile": {
     "poweredBy": "Créé avec Linketto",

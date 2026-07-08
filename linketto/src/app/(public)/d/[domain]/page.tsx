@@ -6,27 +6,31 @@ import {
   ProfileScreen,
 } from '@/components/ProfileScreen';
 
+// Собствен домейн (платени планове): middleware пренаписва заявките към
+// чужди хостове до /d/<host>, а тук домейнът се резолвира до профил.
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ domain: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  return profileMetadata(await loadProfileBy({ slug }));
+  const { domain } = await params;
+  return profileMetadata(
+    await loadProfileBy({ customDomain: domain.toLowerCase() }),
+  );
 }
 
-export default async function PublicProfilePage({
+export default async function CustomDomainPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ domain: string }>;
   searchParams: Promise<{ hl?: string; sent?: string; formError?: string }>;
 }) {
-  const { slug } = await params;
+  const { domain } = await params;
   const { hl, sent, formError } = await searchParams;
-  const profile = await loadProfileBy({ slug });
+  const profile = await loadProfileBy({ customDomain: domain.toLowerCase() });
   if (!profile || !profile.published || profile.translations.length === 0) {
     notFound();
   }

@@ -125,7 +125,19 @@
     "addBlockHint": "Header and form only need a title. For an app, fill in App Store and/or Google Play. For music — Spotify and/or Apple Music.",
     "messagesSection": "Form messages",
     "noMessages": "No messages yet.",
-    "errorBlock": "Invalid block data — check the URLs."
+    "errorBlock": "Invalid block data — check the URLs.",
+    "statsSection": "Analytics",
+    "statsViews": "Views",
+    "statsClicks": "Clicks",
+    "statsByLink": "By link",
+    "statsByLocale": "By language",
+    "statsByCountry": "By country",
+    "statsWindow": "Window: last {days} days",
+    "statsWindowAll": "Window: full history",
+    "customDomainLabel": "Custom domain",
+    "customDomainHint": "Point a CNAME/A record at Linketto and save the domain here (paid plans only).",
+    "errorDomain": "Invalid or already taken domain.",
+    "kind_TIP": "Tip / donation"
   },
   "profile": {
     "poweredBy": "Made with Linketto",

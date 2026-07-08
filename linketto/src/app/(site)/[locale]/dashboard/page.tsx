@@ -51,6 +51,53 @@ export default async function DashboardPage({
       })
     : [];
 
+  // Статистика — прозорецът зависи от плана (Free: 90 дни).
+  const since = plan.analyticsDays
+    ? new Date(Date.now() - plan.analyticsDays * 24 * 60 * 60 * 1000)
+    : undefined;
+  const clickWhere = profile
+    ? { profileId: profile.id, ...(since ? { createdAt: { gte: since } } : {}) }
+    : null;
+  const [views, clicks, byLink, byLocale, byCountry] = clickWhere
+    ? await Promise.all([
+        prisma.clickEvent.count({ where: { ...clickWhere, linkId: null } }),
+        prisma.clickEvent.count({
+          where: { ...clickWhere, linkId: { not: null } },
+        }),
+        prisma.clickEvent.groupBy({
+          by: ['linkId'],
+          where: { ...clickWhere, linkId: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { linkId: 'desc' } },
+          take: 10,
+        }),
+        prisma.clickEvent.groupBy({
+          by: ['locale'],
+          where: { ...clickWhere, locale: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { locale: 'desc' } },
+          take: 6,
+        }),
+        prisma.clickEvent.groupBy({
+          by: ['country'],
+          where: { ...clickWhere, country: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { country: 'desc' } },
+          take: 6,
+        }),
+      ])
+    : [0, 0, [], [], []];
+  const linkTitle = (linkId: string | null) => {
+    const link = profile?.links.find((item) => item.id === linkId);
+    return (
+      link?.translations.find((tr) => tr.locale === profile?.defaultLocale)
+        ?.title ??
+      link?.translations[0]?.title ??
+      link?.url ??
+      '—'
+    );
+  };
+
   return (
     <>
       <SiteHeader locale={locale as Locale} />
@@ -64,7 +111,9 @@ export default async function DashboardPage({
                 ? t('errorLimit')
                 : error === 'block'
                   ? t('errorBlock')
-                  : t('errorGeneric')}
+                  : error === 'domain'
+                    ? t('errorDomain')
+                    : t('errorGeneric')}
           </p>
         )}
 
@@ -150,6 +199,19 @@ export default async function DashboardPage({
                     pattern="#[0-9a-fA-F]{6}"
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('customDomainLabel')}
+                  <input
+                    type="text"
+                    name="customDomain"
+                    defaultValue={profile.customDomain ?? ''}
+                    placeholder="links.example.com"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                    {t('customDomainHint')}
+                  </span>
                 </label>
                 <label className="flex items-end gap-2 text-sm font-medium">
                   <input
@@ -315,6 +377,7 @@ export default async function DashboardPage({
                         'MUSIC',
                         'APP',
                         'FORM',
+                        'TIP',
                       ] as const
                     ).map((kind) => (
                       <option key={kind} value={kind}>
@@ -369,6 +432,94 @@ export default async function DashboardPage({
                   {t('addLink')}
                 </button>
               </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('statsSection')}</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                {plan.analyticsDays
+                  ? t('statsWindow', { days: plan.analyticsDays })
+                  : t('statsWindowAll')}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="rounded-xl bg-slate-50 p-4 text-center">
+                  <p className="text-3xl font-extrabold text-linketto-700">
+                    {views}
+                  </p>
+                  <p className="text-sm text-slate-500">{t('statsViews')}</p>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-4 text-center">
+                  <p className="text-3xl font-extrabold text-linketto-700">
+                    {clicks}
+                  </p>
+                  <p className="text-sm text-slate-500">{t('statsClicks')}</p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-6 sm:grid-cols-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    {t('statsByLink')}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {byLink.map((row) => (
+                      <li
+                        key={row.linkId ?? '-'}
+                        className="flex justify-between gap-2"
+                      >
+                        <span className="truncate">{linkTitle(row.linkId)}</span>
+                        <span className="font-semibold">
+                          {row._count._all}
+                        </span>
+                      </li>
+                    ))}
+                    {byLink.length === 0 && (
+                      <li className="text-slate-400">—</li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    {t('statsByLocale')}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {byLocale.map((row) => (
+                      <li
+                        key={row.locale ?? '-'}
+                        className="flex justify-between gap-2"
+                      >
+                        <span className="uppercase">{row.locale}</span>
+                        <span className="font-semibold">
+                          {row._count._all}
+                        </span>
+                      </li>
+                    ))}
+                    {byLocale.length === 0 && (
+                      <li className="text-slate-400">—</li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    {t('statsByCountry')}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {byCountry.map((row) => (
+                      <li
+                        key={row.country ?? '-'}
+                        className="flex justify-between gap-2"
+                      >
+                        <span>{row.country}</span>
+                        <span className="font-semibold">
+                          {row._count._all}
+                        </span>
+                      </li>
+                    ))}
+                    {byCountry.length === 0 && (
+                      <li className="text-slate-400">—</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">

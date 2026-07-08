@@ -48,6 +48,7 @@ model Profile {
   userId        String
   user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   slug          String               @unique
+  customDomain  String?              @unique // собствен домейн (платени планове)
   defaultLocale String               @default("bg")
   theme         String               @default("aurora")
   accent        String? // hex цвят, валидиран в кода
@@ -83,6 +84,7 @@ enum BlockKind {
   MUSIC
   APP
   FORM
+  TIP
 }
 
 model Link {

@@ -13,6 +13,7 @@ export const BLOCK_KINDS = [
   'MUSIC',
   'APP',
   'FORM',
+  'TIP',
 ] as const;
 
 export type BlockKindId = (typeof BLOCK_KINDS)[number];
@@ -64,6 +65,7 @@ export function parseBlockInput(raw: {
     case 'FORM':
       return { kind, url: null, meta: null };
     case 'LINK':
+    case 'TIP':
     case 'VIDEO': {
       const parsed = httpUrl.safeParse(raw.url);
       if (!parsed.success) return null;
