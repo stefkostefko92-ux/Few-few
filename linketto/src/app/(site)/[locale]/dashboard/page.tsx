@@ -28,6 +28,7 @@ import {
   addProductAction,
   connectStripeAction,
   deleteProductAction,
+  updateProductAction,
   upsertProductTranslationAction,
 } from '@/app/actions/shop';
 
@@ -1014,6 +1015,7 @@ export default async function DashboardPage({
                             <span className="mr-2 font-semibold text-slate-700">
                               €{(product.priceCents / 100).toFixed(2)}
                             </span>
+                            {product.active ? '' : `(${t('productInactive')}) `}
                             {product.deliveryUrl}
                           </p>
                           <form action={deleteProductAction}>
@@ -1035,16 +1037,65 @@ export default async function DashboardPage({
                             </button>
                           </form>
                         </div>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {/* Редакция на цена, линк за доставка и активност */}
+                        <form
+                          action={updateProductAction}
+                          className="mt-3 grid items-end gap-2 sm:grid-cols-[8rem_1fr_auto_auto]"
+                        >
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input
+                            type="hidden"
+                            name="productId"
+                            value={product.id}
+                          />
+                          <label className="block text-xs font-medium text-slate-500">
+                            {t('productPrice')}
+                            <input
+                              type="number"
+                              name="priceEur"
+                              required
+                              min="3"
+                              step="0.01"
+                              defaultValue={(product.priceCents / 100).toFixed(2)}
+                              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                            />
+                          </label>
+                          <label className="block text-xs font-medium text-slate-500">
+                            {t('deliveryUrl')}
+                            <input
+                              type="url"
+                              name="deliveryUrl"
+                              required
+                              defaultValue={product.deliveryUrl}
+                              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                            />
+                          </label>
+                          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                            <input
+                              type="checkbox"
+                              name="active"
+                              defaultChecked={product.active}
+                              className="h-3.5 w-3.5"
+                            />
+                            {t('productActive')}
+                          </label>
+                          <button
+                            type="submit"
+                            className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                          >
+                            {t('save')}
+                          </button>
+                        </form>
+                        <div className="mt-3 space-y-2">
                           {profile.translations.map((translation) => {
-                            const productTitle = product.translations.find(
+                            const productTr = product.translations.find(
                               (item) => item.locale === translation.locale,
                             );
                             return (
                               <form
                                 key={translation.locale}
                                 action={upsertProductTranslationAction}
-                                className="flex items-center gap-2"
+                                className="flex items-start gap-2"
                               >
                                 <input
                                   type="hidden"
@@ -1061,19 +1112,28 @@ export default async function DashboardPage({
                                   name="locale"
                                   value={translation.locale}
                                 />
-                                <span className="w-8 text-xs font-semibold uppercase text-slate-400">
+                                <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-400">
                                   {translation.locale}
                                 </span>
-                                <input
-                                  type="text"
-                                  name="title"
-                                  defaultValue={productTitle?.title ?? ''}
-                                  placeholder={t('productTitle')}
-                                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                />
+                                <div className="flex-1 space-y-1">
+                                  <input
+                                    type="text"
+                                    name="title"
+                                    defaultValue={productTr?.title ?? ''}
+                                    placeholder={t('productTitle')}
+                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                  />
+                                  <textarea
+                                    name="description"
+                                    rows={2}
+                                    defaultValue={productTr?.description ?? ''}
+                                    placeholder={t('productDescription')}
+                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                  />
+                                </div>
                                 <button
                                   type="submit"
-                                  className="text-sm font-medium text-linketto-700 hover:underline"
+                                  className="mt-2 text-sm font-medium text-linketto-700 hover:underline"
                                 >
                                   {t('save')}
                                 </button>

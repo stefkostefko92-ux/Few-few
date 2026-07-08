@@ -247,7 +247,11 @@
     "styleEffect_stars": "Starry sky",
     "styleEffect_gradient": "Living gradient",
     "styleShowViews": "Show this month's visits badge on the profile",
-    "featuredLabel": "Spotlight this block (large glowing card)"
+    "featuredLabel": "Spotlight this block (large glowing card)",
+    "productDescription": "Description",
+    "productPrice": "Price (EUR)",
+    "productActive": "Active",
+    "productInactive": "hidden"
   },
   "profile": {
     "poweredBy": "Made with Linketto",

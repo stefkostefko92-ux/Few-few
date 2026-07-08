@@ -87,25 +87,30 @@ export async function startProductPurchaseAction(
     redirect(`${back}${hl ? '&' : '?'}shopError=1`);
   }
 
-  const title =
-    product.translations.find((t) => t.locale === hl)?.title ??
+  const localized =
+    product.translations.find((t) => t.locale === hl) ??
     product.translations.find(
       (t) => t.locale === product.profile.defaultLocale,
-    )?.title ??
-    product.translations[0]?.title ??
-    'Product';
+    ) ??
+    product.translations[0];
+  const title = localized?.title ?? 'Product';
+  const description = localized?.description?.trim() || undefined;
   // Комисиона по плана + такса за обработка (покрива Stripe таксите).
   const fee = totalFeeCents(product.priceCents, planFor(owner.plan).id);
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    // Платежните методи (карта, Revolut Pay, PayPal…) се управляват от
+    // Stripe Dashboard → Payment methods; включените там се появяват тук.
     line_items: [
       {
         quantity: 1,
         price_data: {
           currency: 'eur',
           unit_amount: product.priceCents,
-          product_data: { name: title },
+          product_data: description
+            ? { name: title, description }
+            : { name: title },
         },
       },
     ],
@@ -127,6 +132,16 @@ export async function startProductPurchaseAction(
 
 const productSchema = z.object({
   title: z.string().trim().min(1).max(100),
+  priceEur: z.coerce.number().min(MIN_PRODUCT_PRICE_EUR).max(10000),
+  deliveryUrl: z
+    .string()
+    .trim()
+    .url()
+    .max(2000)
+    .refine((value) => /^https?:\/\//.test(value)),
+});
+
+const editProductSchema = z.object({
   priceEur: z.coerce.number().min(MIN_PRODUCT_PRICE_EUR).max(10000),
   deliveryUrl: z
     .string()
@@ -168,6 +183,31 @@ export async function addProductAction(formData: FormData): Promise<void> {
   redirect(`/${uiLocale}/dashboard`);
 }
 
+// Редакция на цена, линк за доставка и активност (без изтриване/пресъздаване).
+export async function updateProductAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const productId = String(formData.get('productId') ?? '');
+  const parsed = editProductSchema.safeParse({
+    priceEur: formData.get('priceEur'),
+    deliveryUrl: formData.get('deliveryUrl'),
+  });
+  if (!parsed.success) {
+    redirect(`/${uiLocale}/dashboard?error=product`);
+  }
+  const { count } = await prisma.product.updateMany({
+    where: { id: productId, profile: { userId: user.id } },
+    data: {
+      priceCents: Math.round(parsed.data.priceEur * 100),
+      deliveryUrl: parsed.data.deliveryUrl,
+      active: formData.get('active') === 'on',
+    },
+  });
+  if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+  redirect(`/${uiLocale}/dashboard`);
+}
+
 export async function deleteProductAction(formData: FormData): Promise<void> {
   const uiLocale = localeFrom(formData);
   const user = await getSessionUser();
@@ -188,6 +228,8 @@ export async function upsertProductTranslationAction(
   const productId = String(formData.get('productId') ?? '');
   const locale = String(formData.get('locale') ?? '');
   const title = String(formData.get('title') ?? '').trim().slice(0, 100);
+  const description =
+    String(formData.get('description') ?? '').trim().slice(0, 500) || null;
   if (!isLocale(locale)) redirect(`/${uiLocale}/dashboard?error=generic`);
   const product = await prisma.product.findFirst({
     where: { id: productId, profile: { userId: user.id } },
@@ -204,8 +246,8 @@ export async function upsertProductTranslationAction(
   }
   await prisma.productTranslation.upsert({
     where: { productId_locale: { productId, locale } },
-    create: { productId, locale, title },
-    update: { title },
+    create: { productId, locale, title, description },
+    update: { title, description },
   });
   redirect(`/${uiLocale}/dashboard`);
 }

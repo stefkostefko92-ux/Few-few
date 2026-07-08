@@ -247,7 +247,11 @@
     "styleEffect_stars": "Звездно небе",
     "styleEffect_gradient": "Жив градиент",
     "styleShowViews": "Бадж с посещенията този месец на профила",
-    "featuredLabel": "Открой блока (spotlight — голяма карта със сияние)"
+    "featuredLabel": "Открой блока (spotlight — голяма карта със сияние)",
+    "productDescription": "Описание",
+    "productPrice": "Цена (EUR)",
+    "productActive": "Активен",
+    "productInactive": "скрит"
   },
   "profile": {
     "poweredBy": "Създадено с Linketto",

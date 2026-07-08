@@ -698,13 +698,13 @@ export async function ProfileScreen({
               </p>
               <ul className="mt-4 space-y-3">
                 {profile.products.map((product) => {
-                  const productTitle =
-                    product.translations.find((tr) => tr.locale === viewLocale)
-                      ?.title ??
+                  const productTr =
+                    product.translations.find((tr) => tr.locale === viewLocale) ??
                     product.translations.find(
                       (tr) => tr.locale === profile.defaultLocale,
-                    )?.title ??
-                    product.translations[0]?.title;
+                    ) ??
+                    product.translations[0];
+                  const productTitle = productTr?.title;
                   if (!productTitle) return null;
                   return (
                     <li key={product.id}>
@@ -718,11 +718,20 @@ export async function ProfileScreen({
                         />
                         <button
                           type="submit"
-                          className={`flex w-full items-center justify-between border px-6 py-3.5 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
+                          className={`flex w-full items-center justify-between gap-3 border px-6 py-3.5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`}
                           style={buttonStyle}
                         >
-                          <span>{productTitle}</span>
-                          <span className="font-bold">
+                          <span className="min-w-0">
+                            <span className="block font-semibold">
+                              {productTitle}
+                            </span>
+                            {productTr?.description && (
+                              <span className="mt-0.5 block text-xs font-normal opacity-75">
+                                {productTr.description}
+                              </span>
+                            )}
+                          </span>
+                          <span className="shrink-0 font-bold">
                             €{(product.priceCents / 100).toFixed(2)}
                           </span>
                         </button>

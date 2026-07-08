@@ -111,6 +111,7 @@ CREATE TABLE "ProductTranslation" (
     "productId" TEXT NOT NULL,
     "locale" TEXT NOT NULL,
     "title" TEXT NOT NULL,
+    "description" TEXT,
 
     CONSTRAINT "ProductTranslation_pkey" PRIMARY KEY ("id")
 );

@@ -149,8 +149,9 @@ model ProductTranslation {
   id        String  @id @default(cuid())
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  locale    String
-  title     String
+  locale      String
+  title       String
+  description String?
 
   @@unique([productId, locale])
 }
