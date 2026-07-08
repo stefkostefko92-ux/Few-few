@@ -47,13 +47,18 @@ npm run lint && npm run typecheck && npm test   # качествена порт�
 
 ## Структура
 
-- `src/app/{etiketi,vizitki,cv,pismo}/page.tsx` — сървърни обвивки с metadata;
-  редакторите са клиентски: `src/components/studios/*Studio.tsx`.
-- Общи парчета: `AiAssist` (AI бутон + предложения), `PrintBar`,
-  `SheetPreview`, `ThemePicker`, `useLocalState` (localStorage персистенция),
-  `ProjectFile` (свали/качи проект като JSON), `QrImage` (QR изцяло в
-  браузъра — пакет qrcode, НИКОГА външна услуга; vCard логика в
-  `src/lib/vcard.ts`, тествана).
+- 8 инструмента: `src/app/{etiketi,vizitki,cv,pismo,gramoti,pokani,tabelki,wifi}/`
+  — сървърни обвивки с metadata; редакторите са клиентски:
+  `src/components/studios/*Studio.tsx`.
+- Общи парчета: `AiAssist` (AI бутон + предложения; режим `translate-en` за
+  EN превод), `PrintBar`, `SheetPreview` (props `landscape` за грамоти/табелки
+  → инжектира `@page landscape`), `ThemePicker`, `ThemeToggle` (тъмна тема,
+  `.dark` клас, скрипт против трепване в layout), `useLocalState` (localStorage
+  + чете споделен линк `#p=…`), `ProjectFile` (свали/качи JSON + `ShareButton`),
+  `ImageUpload` (лого/снимка — смалява в браузъра до data URL, нищо навън),
+  `QrImage`+`useQrDataUrl` (QR изцяло в браузъра — пакет qrcode, НИКОГА външна
+  услуга). Тествана логика: `src/lib/{print,vcard,wifi}.ts`;
+  `src/lib/share.ts` (base64url кодиране на дизайн в URL).
 - Правни страници: `/poveritelnost`, `/usloviya` — при промяна в обработката
   на данни ги обнови (и мини Правния Разбирач).
 
