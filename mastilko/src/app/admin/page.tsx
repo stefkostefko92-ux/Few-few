@@ -9,6 +9,8 @@ interface Banner {
   text: string;
   cta: string;
   href: string;
+  image: string;
+  imageAlt: string;
   bg: string;
   fg: string;
   placement: "all" | "home";
@@ -23,6 +25,8 @@ function blank(): Banner {
     text: "",
     cta: "",
     href: "",
+    image: "",
+    imageAlt: "",
     bg: "#DE9A32",
     fg: "#3A2E28",
     placement: "all",
@@ -132,9 +136,19 @@ export default function AdminBanners() {
                   <input className="field-input" maxLength={40} value={b.cta} onChange={(e) => patch(b.id, { cta: e.target.value })} placeholder="напр. Виж повече" />
                 </label>
                 <label className="block">
-                  <span className="field-label">Бутон (линк)</span>
-                  <input className="field-input" maxLength={300} value={b.href} onChange={(e) => patch(b.id, { href: e.target.value })} placeholder="https://…" />
+                  <span className="field-label">Линк (към къде води)</span>
+                  <input className="field-input" maxLength={300} value={b.href} onChange={(e) => patch(b.id, { href: e.target.value })} placeholder="https://… или /gramoti" />
                 </label>
+                <label className="block sm:col-span-2">
+                  <span className="field-label">Изображение (по желание — пълноширок банер)</span>
+                  <input className="field-input" maxLength={300} value={b.image} onChange={(e) => patch(b.id, { image: e.target.value })} placeholder="/banners/име.png (качи файла в public/banners/)" />
+                </label>
+                {b.image && (
+                  <label className="block sm:col-span-2">
+                    <span className="field-label">Описание на изображението (за достъпност)</span>
+                    <input className="field-input" maxLength={120} value={b.imageAlt} onChange={(e) => patch(b.id, { imageAlt: e.target.value })} />
+                  </label>
+                )}
                 <label className="block">
                   <span className="field-label">Фон</span>
                   <input type="color" className="h-10 w-full rounded-xl border border-ink/15" value={b.bg} onChange={(e) => patch(b.id, { bg: e.target.value })} />

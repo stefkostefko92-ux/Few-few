@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Logo from "@/components/Logo";
+import BannerZone from "@/components/BannerZone";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -35,6 +36,20 @@ const TOOLS = [
     text: "Най-трудната част от кандидатстването — AI пише чернова по 2–3 неща за теб, ти я правиш своя.",
     accent: "bg-paper-deep text-ink-soft",
   },
+  {
+    href: "/gramoti",
+    emoji: "🏆",
+    title: "Грамоти и сертификати",
+    text: "За училища, клубове и фирми — красива грамота на хоризонтален А4 с рамка. Попълваш за кого и за какво.",
+    accent: "bg-med-pale text-med-dark",
+  },
+  {
+    href: "/wifi",
+    emoji: "📶",
+    title: "WiFi стикер с QR",
+    text: "Гостите сканират кода и телефонът се свързва сам, без парола. За кафенета, къщи за гости и офиси.",
+    accent: "bg-tera-pale text-tera-dark",
+  },
 ];
 
 const STEPS = [
@@ -65,6 +80,8 @@ const FAQ = [
 export default function HomePage() {
   return (
     <>
+      {/* Банери само за началната (в допълнение към лентата от layout) */}
+      <BannerZone placement="home" />
       {/* Херо */}
       <section className="relative overflow-hidden">
         <div
@@ -106,9 +123,10 @@ export default function HomePage() {
           <strong className="text-ink">Мастилко е безплатен онлайн инструмент на български</strong>{" "}
           за създаване на етикети за печат (11 стандартни размера, вкл. 70 × 36 mm,
           със списъци, номерация и QR код), визитки (90 × 54 mm, 10 на лист, с
-          vCard QR), автобиографии — вкл. Europass шаблон — и мотивационни писма.
-          Работи в браузъра, без регистрация; резултатът се принтира на А4 с точни
-          размери в милиметри или се запазва като PDF.
+          vCard QR), автобиографии (вкл. Europass), мотивационни писма, грамоти
+          и сертификати, както и WiFi стикери с QR код. Работи в браузъра, без
+          регистрация; резултатът се принтира на А4 с точни размери в милиметри
+          или се запазва като PDF.
         </p>
       </section>
 
@@ -210,6 +228,8 @@ export default function HomePage() {
                   "автобиография CV",
                   "Europass",
                   "мотивационно писмо",
+                  "грамоти и сертификати",
+                  "WiFi QR код",
                 ],
               },
               {

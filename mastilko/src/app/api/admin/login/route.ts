@@ -11,17 +11,29 @@ const BodySchema = z.object({
   pass: z.string().min(1).max(200),
 });
 
-// Прост in-memory rate limit срещу brute force (5 опита/мин/IP).
+// Rate limit срещу brute force: 5 опита/мин/IP + глобален предпазител
+// (X-Forwarded-For е клиентски контролиран, затова само per-IP не стига).
 const WINDOW_MS = 60_000;
+const PER_IP_MAX = 5;
+const GLOBAL_MAX = 60;
 const hits = new Map<string, number[]>();
+let globalHits: number[] = [];
+
 function limited(ip: string): boolean {
   const now = Date.now();
+  globalHits = globalHits.filter((t) => now - t < WINDOW_MS);
+  if (globalHits.length >= GLOBAL_MAX) return true;
   const list = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
   list.push(now);
+  globalHits.push(now);
   hits.set(ip, list);
   if (hits.size > 2000) hits.clear();
-  return list.length > 5;
+  return list.length > PER_IP_MAX;
 }
+
+// Валиден 60-символен bcrypt hash за постоянно време при непознат потребител
+// (малформиран hash би върнал compare веднага → timing oracle).
+const DUMMY_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
 
 export async function POST(req: NextRequest) {
   const ip =
@@ -43,9 +55,11 @@ export async function POST(req: NextRequest) {
   const table = await readAdmins();
   const hash = table[body.user];
   // Сравняваме винаги (dummy hash при непознат потребител) → еднакво време.
-  const dummy = "$2a$10$0000000000000000000000000000000000000000000000000000";
-  const ok = await bcrypt.compare(body.pass, hash ?? dummy);
-  if (!hash || !ok) {
+  const ok = await bcrypt.compare(
+    body.pass,
+    typeof hash === "string" ? hash : DUMMY_HASH,
+  );
+  if (typeof hash !== "string" || !ok) {
     return NextResponse.json(
       { error: "Грешно име или парола." },
       { status: 401 },

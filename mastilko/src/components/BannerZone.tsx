@@ -8,6 +8,8 @@ interface Banner {
   text: string;
   cta: string;
   href: string;
+  image: string;
+  imageAlt: string;
   bg: string;
   fg: string;
 }
@@ -51,27 +53,45 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
       {visible.map((b) => (
         <div
           key={b.id}
-          className="relative px-4 py-2.5 text-center text-sm"
+          className="relative text-center text-sm"
           style={{ background: b.bg, color: b.fg }}
         >
-          <span className="font-semibold">{b.title}</span>
-          {b.text && <span className="ml-2 opacity-90">{b.text}</span>}
-          {b.cta && b.href && (
+          {b.image ? (
+            // Пълноширок рекламен банер (изображение). Цялото е кликаемо.
             <a
-              href={b.href}
+              href={b.href || undefined}
               rel="noopener"
-              className="ml-3 inline-block rounded-full bg-white/25 px-3 py-0.5 font-semibold underline-offset-2 hover:underline"
-              style={{ color: b.fg }}
+              className="block"
+              aria-label={b.imageAlt || b.title || "Реклама"}
             >
-              {b.cta}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={b.image}
+                alt={b.imageAlt || ""}
+                className="mx-auto block h-auto w-full max-w-5xl"
+              />
             </a>
+          ) : (
+            <div className="px-8 py-2.5">
+              <span className="font-semibold">{b.title}</span>
+              {b.text && <span className="ml-2 opacity-90">{b.text}</span>}
+              {b.cta && b.href && (
+                <a
+                  href={b.href}
+                  rel="noopener"
+                  className="ml-3 inline-block rounded-full bg-white/25 px-3 py-0.5 font-semibold underline-offset-2 hover:underline"
+                  style={{ color: b.fg }}
+                >
+                  {b.cta}
+                </a>
+              )}
+            </div>
           )}
           <button
             type="button"
             aria-label="Скрий съобщението"
             onClick={() => dismiss(b.id)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2 text-lg leading-none opacity-70 hover:opacity-100"
-            style={{ color: b.fg }}
+            className="absolute right-2 top-2 rounded-full bg-black/30 px-2 text-lg leading-none text-white opacity-80 hover:opacity-100"
           >
             ×
           </button>

@@ -10,8 +10,8 @@ const MAX_AGE_S = 8 * 60 * 60; // 8 часа
 
 function secret(): Uint8Array {
   const s = process.env.SESSION_SECRET;
-  if (!s || s.length < 16) {
-    throw new Error("SESSION_SECRET липсва или е твърде къс (мин. 16 знака).");
+  if (!s || s.length < 32) {
+    throw new Error("SESSION_SECRET липсва или е твърде къс (мин. 32 знака).");
   }
   return new TextEncoder().encode(s);
 }
@@ -29,7 +29,9 @@ export async function createSession(user: string): Promise<string> {
 export async function verifySession(token: string | undefined): Promise<string | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secret());
+    const { payload } = await jwtVerify(token, secret(), {
+      algorithms: ["HS256"],
+    });
     return typeof payload.sub === "string" ? payload.sub : null;
   } catch {
     return null;

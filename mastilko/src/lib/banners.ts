@@ -7,14 +7,23 @@ import { z } from "zod";
 // живеят в MASTILKO_DATA_DIR (по подразбиране <cwd>/data), който на сървъра е
 // извън read-only корена и се пренася при деплой заедно с .env.
 
+// Линк: празно, вътрешен път, http(s) или mailto — НЕ javascript: (XSS).
+const linkOk = (v: string) =>
+  v === "" || /^(https?:\/\/|\/|mailto:)/i.test(v);
+// Цвят: само hex, за да няма url()/трекинг през style.
+const colorRe = /^#[0-9a-fA-F]{3,8}$/;
+
 export const BannerSchema = z.object({
   id: z.string(),
-  title: z.string().max(80),
-  text: z.string().max(200),
+  title: z.string().max(80).default(""),
+  text: z.string().max(200).default(""),
   cta: z.string().max(40).default(""),
-  href: z.string().max(300).default(""),
-  bg: z.string().max(20).default("#DE9A32"),
-  fg: z.string().max(20).default("#3A2E28"),
+  href: z.string().max(300).default("").refine(linkOk, "Невалиден линк"),
+  /** По желание: изображение (пълноширок банер). Вътрешен път или http(s). */
+  image: z.string().max(300).default("").refine(linkOk, "Невалиден адрес на изображение"),
+  imageAlt: z.string().max(120).default(""),
+  bg: z.string().max(20).default("#DE9A32").refine((v) => colorRe.test(v), "Невалиден цвят"),
+  fg: z.string().max(20).default("#3A2E28").refine((v) => colorRe.test(v), "Невалиден цвят"),
   /** Къде се показва: всички страници или само началната. */
   placement: z.enum(["all", "home"]).default("all"),
   active: z.boolean().default(true),
@@ -23,6 +32,25 @@ export const BannerSchema = z.object({
 export type Banner = z.infer<typeof BannerSchema>;
 
 const FileSchema = z.array(BannerSchema);
+
+// Банер по подразбиране (докато админът не запише свой) — реклама на Carbon
+// Stealth. Показва се веднага след деплой; сменя се/маха от /admin.
+const DEFAULT_BANNERS: Banner[] = [
+  {
+    id: "carbon-stealth",
+    title: "",
+    text: "",
+    cta: "",
+    href: "https://carbonstealth.eu",
+    image: "/banners/carbon-stealth.png",
+    imageAlt: "Carbon Stealth — уеб разработка, ERP системи, SEO оптимизация. Посетете carbonstealth.eu",
+    bg: "#0b0f14",
+    fg: "#ffffff",
+    placement: "all",
+    active: true,
+    order: 0,
+  },
+];
 
 function dataDir(): string {
   return process.env.MASTILKO_DATA_DIR || path.join(process.cwd(), "data");
@@ -35,23 +63,26 @@ export async function readBanners(): Promise<Banner[]> {
   try {
     const raw = await fs.readFile(bannersFile(), "utf8");
     const parsed = FileSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data.sort((a, b) => a.order - b.order) : [];
+    // Невалиден/повреден файл → падаме на подразбиране, не на празно.
+    if (!parsed.success) return DEFAULT_BANNERS;
+    return parsed.data.sort((a, b) => a.order - b.order);
   } catch {
-    // Липсващ файл / повреден JSON → няма банери (сайтът работи нормално).
-    return [];
+    // Липсващ файл (още не е пипан админът) → банерът по подразбиране.
+    return DEFAULT_BANNERS;
   }
 }
 
-/**
- * Активните банери за точно това разположение. „all“ = лентата под хедъра на
- * всяка страница; „home“ = само началната (в допълнение към „all“).
- */
+/** Само активните, за публично показване, точно за това разположение. */
 export async function activeBanners(placement: "all" | "home"): Promise<Banner[]> {
   const all = await readBanners();
   return all.filter((b) => b.active && b.placement === placement);
 }
 
 export async function writeBanners(list: Banner[]): Promise<void> {
-  await fs.mkdir(dataDir(), { recursive: true });
-  await fs.writeFile(bannersFile(), JSON.stringify(list, null, 2), "utf8");
+  const dir = dataDir();
+  await fs.mkdir(dir, { recursive: true });
+  // Атомичен запис: временен файл + rename, за да не се чете половин JSON.
+  const tmp = path.join(dir, `banners.${process.pid}.tmp`);
+  await fs.writeFile(tmp, JSON.stringify(list, null, 2), "utf8");
+  await fs.rename(tmp, bannersFile());
 }
