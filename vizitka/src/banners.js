@@ -1,15 +1,20 @@
 // Рекламни банери — заявки и броячи. First-party, без чужди тракери.
 import db from './db.js';
 
-// Активните банери за дадено място, подредени. Записва импресия за всеки показан.
-export function activeBanners(placement = 'home') {
+// Началната показва максимум толкова банера (формат 960×120).
+export const HOME_BANNER_LIMIT = 2;
+
+// Активните банери за дадено място, подредени, до `limit` броя. Записва импресия
+// само за реално показаните (не за скритите под лимита).
+export function activeBanners(placement = 'home', limit = HOME_BANNER_LIMIT) {
   const rows = db
     .prepare(
       `SELECT id, image, alt, link_url FROM banners
        WHERE placement = ? AND is_active = 1 AND image != ''
-       ORDER BY sort_order ASC, id ASC`
+       ORDER BY sort_order ASC, id ASC
+       LIMIT ?`
     )
-    .all(placement);
+    .all(placement, limit);
   if (rows.length) {
     const ids = rows.map((b) => b.id).join(',');
     db.exec(`UPDATE banners SET impressions = impressions + 1 WHERE id IN (${ids})`);

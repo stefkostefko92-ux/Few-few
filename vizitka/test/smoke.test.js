@@ -347,6 +347,30 @@ await test('спрян банер не се показва', async () => {
   assert.doesNotMatch(home, /class="ad"/);
 });
 
+await test('началната показва максимум 2 банера', async () => {
+  jar.clear();
+  await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'admin@example.com', password: 'adminparola1' }),
+  });
+  const adminCsrf =
+    (await (await request('/admin')).text()).match(/name="_csrf" value="([a-f0-9]+)"/)?.[1] || '';
+  // Създаваме общо 3 активни банера (един вече е спрян отгоре).
+  for (const n of [1, 2, 3]) {
+    const fd = new FormData();
+    fd.set('_csrf', adminCsrf);
+    fd.set('title', `Банер ${n}`);
+    fd.set('link_url', `https://example.com/${n}`);
+    fd.set('image', new Blob([PNG_1x1], { type: 'image/png' }), 'ad.png');
+    await request('/admin/banners', { method: 'POST', body: fd });
+  }
+  jar.clear();
+  const home = await (await request('/')).text();
+  const shown = (home.match(/class="ad"/g) || []).length;
+  assert.equal(shown, 2, `трябва да се показват точно 2 банера, а не ${shown}`);
+});
+
 server.close();
 fs.rmSync(process.env.DATA_DIR, { recursive: true, force: true });
 

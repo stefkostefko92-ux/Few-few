@@ -1,7 +1,10 @@
 <%- include('partials/head') %>
 <section class="admin">
   <h1>Рекламни банери</h1>
-  <p class="muted">Показват се на началната страница, по реда отдолу. Промените са мигновени.</p>
+  <p class="muted">
+    Показват се на началната страница — <strong>първите 2 активни</strong> по реда отдолу.
+    Формат <strong>960 × 120 px</strong>. Промените са мигновени.
+  </p>
   <% if (saved) { %><p class="alert alert-ok">Записано.</p><% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
 
@@ -11,7 +14,7 @@
     <label>Име (вътрешно)
       <input type="text" name="title" required maxlength="120" placeholder="напр. Промоция лято 2026">
     </label>
-    <label>Картинка (JPG, PNG, WebP или GIF, до 3 MB)
+    <label>Картинка — 960 × 120 px (JPG, PNG, WebP или GIF, до 3 MB)
       <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif" required>
     </label>
     <label>Линк при клик (по избор)
@@ -68,7 +71,7 @@
               <label>Име
                 <input type="text" name="title" maxlength="120" value="<%= b.title %>">
               </label>
-              <label>Нова картинка (остави празно, за да запазиш текущата)
+              <label>Нова картинка — 960 × 120 px (остави празно, за да запазиш текущата)
                 <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
               </label>
               <label>Линк при клик
