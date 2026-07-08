@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Logo from "@/components/Logo";
 import BannerZone from "@/components/BannerZone";
+import { PUBLISHER, POSTAL_ADDRESS, ID, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -232,9 +233,13 @@ export default function HomePage() {
             "@graph": [
               {
                 "@type": "Organization",
-                "@id": "https://carbonstealth.eu/#org",
-                name: "Carbon Stealth VCC",
-                url: "https://carbonstealth.eu",
+                "@id": ID.org,
+                name: PUBLISHER.legalName,
+                url: PUBLISHER.url,
+                email: PUBLISHER.email,
+                telephone: PUBLISHER.phone,
+                vatID: PUBLISHER.vat,
+                address: POSTAL_ADDRESS,
                 sameAs: ["https://github.com/stefkostefko92-ux"],
                 knowsAbout: [
                   "етикети за печат",
@@ -249,25 +254,80 @@ export default function HomePage() {
                 ],
               },
               {
+                // Локален бизнес: издателят Carbon Stealth в гр. Бобов дол.
+                // Обслужва цяла България (уеб разработка, ERP, SEO).
+                "@type": "ProfessionalService",
+                "@id": ID.localBusiness,
+                name: PUBLISHER.legalName,
+                url: PUBLISHER.url,
+                image: `${SITE_URL}/logo-full.png`,
+                email: PUBLISHER.email,
+                telephone: PUBLISHER.phone,
+                vatID: PUBLISHER.vat,
+                parentOrganization: { "@id": ID.org },
+                priceRange: "€€",
+                address: POSTAL_ADDRESS,
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: PUBLISHER.geo.lat,
+                  longitude: PUBLISHER.geo.lng,
+                },
+                areaServed: { "@type": "Country", name: "България" },
+                knowsLanguage: ["bg", "it", "en"],
+                openingHoursSpecification: [
+                  {
+                    "@type": "OpeningHoursSpecification",
+                    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    opens: "09:00",
+                    closes: "18:00",
+                  },
+                  {
+                    "@type": "OpeningHoursSpecification",
+                    dayOfWeek: "Saturday",
+                    opens: "10:00",
+                    closes: "14:00",
+                  },
+                ],
+                makesOffer: {
+                  "@type": "Offer",
+                  itemOffered: {
+                    "@type": "Service",
+                    name: "Уеб разработка, ERP системи и SEO",
+                  },
+                },
+              },
+              {
                 "@type": "WebSite",
-                "@id": "https://mastilko-bg.com/#site",
+                "@id": ID.site,
                 name: "Мастилко",
-                url: "https://mastilko-bg.com",
+                url: SITE_URL,
                 inLanguage: "bg",
-                publisher: { "@id": "https://carbonstealth.eu/#org" },
+                publisher: { "@id": ID.org },
               },
               {
                 "@type": "WebApplication",
+                "@id": `${SITE_URL}/#app`,
                 name: "Мастилко",
-                url: "https://mastilko-bg.com",
+                url: SITE_URL,
                 applicationCategory: "DesignApplication",
                 operatingSystem: "Web",
                 inLanguage: "bg",
                 isAccessibleForFree: true,
                 offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+                featureList: [
+                  "Етикети за печат",
+                  "Визитки",
+                  "Автобиография (CV, Europass)",
+                  "Мотивационно писмо",
+                  "Грамоти и сертификати",
+                  "Покани и картички",
+                  "Табелки и надписи",
+                  "WiFi стикер с QR",
+                ],
                 description:
-                  "Безплатно създаване на етикети за печат, визитки, автобиографии (CV, вкл. Europass) и мотивационни писма на български език, направо в браузъра.",
-                publisher: { "@id": "https://carbonstealth.eu/#org" },
+                  "Безплатно създаване на етикети за печат, визитки, автобиографии (CV, вкл. Europass), мотивационни писма, грамоти, покани, табелки и WiFi QR стикери на български език, направо в браузъра.",
+                isPartOf: { "@id": ID.site },
+                publisher: { "@id": ID.org },
               },
               {
                 "@type": "FAQPage",

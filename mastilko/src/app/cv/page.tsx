@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CvStudio from "@/components/studios/CvStudio";
+import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатна автобиография (CV) на български — вкл. Europass";
@@ -23,7 +24,16 @@ export const metadata: Metadata = {
   ...pageMeta(TITLE, DESC),
 };
 
-const FAQ = [
+const HOWTO = {
+  name: "Как да си направиш автобиография (CV)",
+  steps: [
+    "Избери шаблон — модерен, класически или Europass (стандарт на ЕС).",
+    "Попълни лични данни, професионален профил, трудов опит, образование, умения и езици; AI помага с описанията.",
+    "Натисни „Принтирай / запази PDF“ на мащаб 100% — готов файл за кандидатстване.",
+  ],
+};
+
+const FAQ: Faq[] = [
   {
     q: "Какво трябва да съдържа едно CV?",
     a: "Добрата автобиография събира на един-два листа: лични и контактни данни, кратък професионален профил (2–3 изречения), трудов опит с периоди и постижения, образование, умения и езици. За кандидатстване в ЕС често се иска и Europass формат. Мастилко подрежда всичко това автоматично в чист шаблон — ти само попълваш полетата.",
@@ -38,27 +48,14 @@ const FAQ = [
   },
 ];
 
-// Per-tool граф + FAQPage за AI цитиране.
-const cvBase = toolJsonLd({
+const cvJsonLd = toolJsonLd({
   name: "Автобиография (CV)",
   path: "/cv",
   description: DESC,
   category: "BusinessApplication",
+  howTo: HOWTO,
+  faq: FAQ,
 });
-const cvJsonLd = {
-  ...cvBase,
-  "@graph": [
-    ...cvBase["@graph"],
-    {
-      "@type": "FAQPage",
-      mainEntity: FAQ.map((f) => ({
-        "@type": "Question",
-        name: f.q,
-        acceptedAnswer: { "@type": "Answer", text: f.a },
-      })),
-    },
-  ],
-};
 
 export default function CvPage() {
   return (
@@ -76,22 +73,7 @@ export default function CvPage() {
         </p>
       </header>
       <CvStudio />
-
-      <section className="no-print mx-auto mt-16 max-w-3xl">
-        <h2 className="font-display text-2xl font-bold">Въпроси за автобиографията</h2>
-        <div className="mt-6 space-y-3">
-          {FAQ.map((f) => (
-            <details key={f.q} className="card-warm group p-5 open:shadow-lift">
-              <summary className="cursor-pointer list-none font-semibold marker:hidden">
-                <span className="mr-2 inline-block text-tera transition group-open:rotate-90">▸</span>
-                {f.q}
-              </summary>
-              <p className="mt-2 pl-6 text-ink-soft">{f.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
+      <ToolFaq items={FAQ} heading="Въпроси за автобиографията" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cvJsonLd) }}

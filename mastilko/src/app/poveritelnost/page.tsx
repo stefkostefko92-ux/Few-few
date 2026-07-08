@@ -21,13 +21,18 @@ export default function PoveritelnostPage() {
         <div>
           <h2>Кой стои зад Мастилко</h2>
           <p className="mt-2">
-            Мастилко (mastilko-bg.com) се поддържа от{" "}
-            <strong>Carbon Stealth VCC</strong> — вижте{" "}
-            <a className="text-tera-dark underline" href="https://carbonstealth.eu" rel="noopener">
-              carbonstealth.eu
-            </a>{" "}
-            за данни за контакт с администратора на лични данни. Сайтът се
-            хоства на сървъри в Европейския съюз.
+            Администратор на личните данни е{" "}
+            <strong>Carbon Stealth VCC</strong>, ЕИК 208725180, със седалище
+            ул. „Самуил“ № 3, гр. Бобов дол 2670, обл. Кюстендил, България.
+            Връзка по въпроси за поверителност:{" "}
+            <a className="text-tera-dark underline" href="mailto:privacy@carbonstealth.eu">
+              privacy@carbonstealth.eu
+            </a>
+            . Пълни данни на доставчика — в{" "}
+            <a className="text-tera-dark underline" href="/impresum">
+              импресума
+            </a>
+            . Сайтът се хоства на сървъри в Европейския съюз.
           </p>
         </div>
 
@@ -141,7 +146,11 @@ export default function PoveritelnostPage() {
             </a>
             ). Понеже не съхраняваме твое съдържание, повечето права се
             упражняват направо от твоя браузър — а за всичко останало ни пиши
-            през carbonstealth.eu.
+            на{" "}
+            <a className="text-tera-dark underline" href="mailto:privacy@carbonstealth.eu">
+              privacy@carbonstealth.eu
+            </a>
+            .
           </p>
         </div>
       </section>

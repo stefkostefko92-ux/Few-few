@@ -5,12 +5,12 @@ const BASE = "https://mastilko-bg.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   // lastmod = моментът на билда — при всеки деплой съдържанието е прегледано.
   const lastModified = new Date();
-  return ["", "/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/pokani", "/tabelki", "/wifi", "/poveritelnost", "/usloviya"].map(
-    (path) => ({
-      url: `${BASE}${path}`,
-      lastModified,
-      changeFrequency: "monthly",
-      priority: path === "" ? 1 : path.startsWith("/p") || path.startsWith("/u") ? 0.3 : 0.9,
-    }),
-  );
+  const tools = ["/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/pokani", "/tabelki", "/wifi"];
+  const legal = ["/impresum", "/poveritelnost", "/usloviya"];
+  return ["", ...tools, ...legal].map((path) => ({
+    url: `${BASE}${path}`,
+    lastModified,
+    changeFrequency: path === "" ? "weekly" : legal.includes(path) ? "yearly" : "monthly",
+    priority: path === "" ? 1 : legal.includes(path) ? 0.3 : 0.9,
+  }));
 }

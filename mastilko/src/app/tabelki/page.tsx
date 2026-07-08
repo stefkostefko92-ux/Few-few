@@ -1,10 +1,35 @@
 import type { Metadata } from "next";
 import TabelkaStudio from "@/components/studios/TabelkaStudio";
+import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни табелки и надписи за печат";
 const DESC =
   "Направи табелка за печат — „Отворено/Затворено“, работно време, „Пази се от кучето“, надпис за врата. Готови заготовки, избираш цвят, принтираш на А4. Безплатно.";
+
+const HOWTO = {
+  name: "Как да направиш табелка",
+  steps: [
+    "Избери готова заготовка („Отворено/Затворено“, работно време, „Пази се от кучето“…) или напиши свой текст.",
+    "Избери цвят и шрифт.",
+    "Принтирай на А4; за трайност ламинирай или сложи в прозрачен джоб.",
+  ],
+};
+
+const FAQ: Faq[] = [
+  {
+    q: "Какви табелки мога да направя?",
+    a: "„Отворено/Затворено“, работно време, „Пази се от кучето“, „Не пуши“, надпис за врата на офис или кабинет — както и всякакъв свой текст.",
+  },
+  {
+    q: "Как да е трайна табелката?",
+    a: "Принтирай на по-плътна хартия и ламинирай, или сложи в прозрачен джоб/файл — така издържа на допир и влага.",
+  },
+  {
+    q: "Мога ли свой текст, цвят и шрифт?",
+    a: "Да — всичко се редактира: текстът, цветовете и шрифтът (над 60 шрифта с кирилица).",
+  },
+];
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -33,11 +58,12 @@ export default function TabelkiPage() {
         </p>
       </header>
       <TabelkaStudio />
+      <ToolFaq items={FAQ} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
-            toolJsonLd({ name: "Табелки и надписи", path: "/tabelki", description: DESC }),
+            toolJsonLd({ name: "Табелки и надписи", path: "/tabelki", description: DESC, howTo: HOWTO, faq: FAQ }),
           ),
         }}
       />

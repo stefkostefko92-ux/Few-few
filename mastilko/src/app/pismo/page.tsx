@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PismoStudio from "@/components/studios/PismoStudio";
+import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатно мотивационно писмо на български";
@@ -21,7 +22,16 @@ export const metadata: Metadata = {
   ...pageMeta(TITLE, DESC),
 };
 
-const FAQ = [
+const HOWTO = {
+  name: "Как да напишеш мотивационно писмо",
+  steps: [
+    "Попълни за коя позиция и фирма кандидатстваш.",
+    "Кажи 2–3 свои силни страни; AI подрежда чернова на български.",
+    "Прегледай, редактирай и запази като PDF или принтирай.",
+  ],
+};
+
+const FAQ: Faq[] = [
   {
     q: "Как се пише мотивационно писмо?",
     a: "Доброто мотивационно писмо е кратко (до половин страница) и има три части: защо пишеш (за коя позиция кандидатстваш), защо си подходящ (2–3 конкретни силни страни, свързани с обявата) и покана за разговор. Пиши от първо лице, топло и конкретно, без клишета. В Мастилко описваш накратко себе си, а AI подрежда черновата — ти я правиш своя.",
@@ -36,26 +46,14 @@ const FAQ = [
   },
 ];
 
-const base = toolJsonLd({
+const pismoJsonLd = toolJsonLd({
   name: "Мотивационно писмо",
   path: "/pismo",
   description: DESC,
   category: "BusinessApplication",
+  howTo: HOWTO,
+  faq: FAQ,
 });
-const pismoJsonLd = {
-  ...base,
-  "@graph": [
-    ...base["@graph"],
-    {
-      "@type": "FAQPage",
-      mainEntity: FAQ.map((f) => ({
-        "@type": "Question",
-        name: f.q,
-        acceptedAnswer: { "@type": "Answer", text: f.a },
-      })),
-    },
-  ],
-};
 
 export default function PismoPage() {
   return (
@@ -72,22 +70,7 @@ export default function PismoPage() {
         </p>
       </header>
       <PismoStudio />
-
-      <section className="no-print mx-auto mt-16 max-w-3xl">
-        <h2 className="font-display text-2xl font-bold">Въпроси за мотивационното писмо</h2>
-        <div className="mt-6 space-y-3">
-          {FAQ.map((f) => (
-            <details key={f.q} className="card-warm group p-5 open:shadow-lift">
-              <summary className="cursor-pointer list-none font-semibold marker:hidden">
-                <span className="mr-2 inline-block text-tera transition group-open:rotate-90">▸</span>
-                {f.q}
-              </summary>
-              <p className="mt-2 pl-6 text-ink-soft">{f.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
+      <ToolFaq items={FAQ} heading="Въпроси за мотивационното писмо" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pismoJsonLd) }}

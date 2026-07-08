@@ -302,6 +302,9 @@ deploy_mastilko() {
     # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
     ls -1dt "${MASTILKO_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
     [ -f "$MASTILKO_DIR/.env" ] || warn "Няма $MASTILKO_DIR/.env — сайтът работи, но AI подсказките са изключени (виж mastilko/deploy/DEPLOY.md)."
+    # Известяваме Bing/Yandex през IndexNow за обновените URL-и (не чупи деплоя).
+    ( cd "$MASTILKO_DIR" && sudo -u mastilko node scripts/indexnow.mjs ) \
+      || warn "IndexNow пропуснат (виж лога по-горе)."
   else
     deploy_failed=1
     warn "mastilko health провал — връщам предишния код."

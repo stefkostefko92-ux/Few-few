@@ -1,10 +1,35 @@
 import type { Metadata } from "next";
 import PokanaStudio from "@/components/studios/PokanaStudio";
+import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни покани за печат";
 const DESC =
   "Направи покана за рожден ден, кръщене, сватба или юбилей — топъл шаблон, 2 на лист А4, готови за рязане. Безплатно, на български, без регистрация.";
+
+const HOWTO = {
+  name: "Как да направиш покана",
+  steps: [
+    "Избери повод (рожден ден, кръщене, сватба, юбилей) и топъл шаблон.",
+    "Попълни за кого е поканата, кога и къде.",
+    "Принтирай две покани на лист А4 на мащаб 100% и изрежи.",
+  ],
+};
+
+const FAQ: Faq[] = [
+  {
+    q: "Колко покани излизат на един лист?",
+    a: "Две покани на лист А4. Печатай няколко листа за повече гости и изрежи по линиите.",
+  },
+  {
+    q: "Има ли шаблон за детски рожден ден?",
+    a: "Да — има топли шаблони за детски рожден ден, кръщене, сватба и юбилей. Избираш повода и текстът се нагажда.",
+  },
+  {
+    q: "Как да ги отпечатам най-добре?",
+    a: "На мащаб 100% без полета; за по-плътни и красиви покани ползвай картон.",
+  },
+];
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -33,11 +58,12 @@ export default function PokaniPage() {
         </p>
       </header>
       <PokanaStudio />
+      <ToolFaq items={FAQ} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
-            toolJsonLd({ name: "Покани и картички", path: "/pokani", description: DESC }),
+            toolJsonLd({ name: "Покани и картички", path: "/pokani", description: DESC, howTo: HOWTO, faq: FAQ }),
           ),
         }}
       />

@@ -16,6 +16,8 @@
    `/etc/systemd/system/mastilko.service`), `daemon-reload`, `enable`.
 5. `systemctl restart mastilko` + health check на `http://127.0.0.1:3200/`.
    При провал: автоматичен rollback към предишния код и рестарт.
+6. При успех — известява **Bing/Yandex през IndexNow** (`scripts/indexnow.mjs`),
+   за да преиндексират обновените страници. Не чупи деплоя при мрежов проблем.
 
 Портът е **3200** (127.0.0.1, само зад Nginx). Без `.env` сайтът работи
 изцяло — само AI подсказките връщат любезно съобщение.
@@ -56,6 +58,24 @@ systemctl restart mastilko
 
 Ключ: https://aistudio.google.com/apikey (решение на собственика 2026-07:
 безплатен tier — виж бележката в `mastilko/.env.example`).
+
+## Търсачки: индексиране и видимост
+
+- **Sitemap:** `https://mastilko-bg.com/sitemap.xml` (автоматичен, всички
+  страници). **robots.txt** сочи към него.
+- **Bing (IndexNow):** ключът се сервира на
+  `https://mastilko-bg.com/a7165a3a38349feabee2f8ce359f4002.txt`
+  (`public/`-файл). autodeploy пингва IndexNow при всеки успешен деплой; можеш и
+  ръчно: `sudo -u mastilko node /opt/mastilko/scripts/indexnow.mjs`.
+  Еднократно регистрирай сайта в **Bing Webmaster Tools**
+  (bing.com/webmasters) и подай sitemap-а — IndexNow ускорява само
+  преоткриването.
+- **Google:** добави имота в **Google Search Console**
+  (search.google.com/search-console), потвърди собствеността (DNS TXT или
+  HTML), подай sitemap-а. Google не ползва IndexNow — разчита на sitemap +
+  обхождане.
+- **LLM/AI асистенти:** `https://mastilko-bg.com/llms.txt` описва сайта за
+  генеративни търсачки (AEO).
 
 ## Проверка
 

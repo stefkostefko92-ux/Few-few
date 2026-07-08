@@ -18,16 +18,21 @@ export default function Footer() {
             <li><Link className="hover:text-tera-dark" href="/vizitki">Визитки</Link></li>
             <li><Link className="hover:text-tera-dark" href="/cv">Автобиография (CV)</Link></li>
             <li><Link className="hover:text-tera-dark" href="/pismo">Мотивационно писмо</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/gramoti">Грамоти и сертификати</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/pokani">Покани и картички</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/tabelki">Табелки и надписи</Link></li>
+            <li><Link className="hover:text-tera-dark" href="/wifi">WiFi стикер с QR</Link></li>
           </ul>
         </nav>
         <nav aria-label="Правна информация" className="text-sm">
           <p className="mb-2 font-semibold text-ink">Информация</p>
           <ul className="space-y-1.5 text-ink-soft">
+            <li><Link className="hover:text-tera-dark" href="/impresum">Импресум и контакти</Link></li>
             <li><Link className="hover:text-tera-dark" href="/poveritelnost">Поверителност</Link></li>
             <li><Link className="hover:text-tera-dark" href="/usloviya">Условия за ползване</Link></li>
             <li>
               <a className="hover:text-tera-dark" href="https://carbonstealth.eu" rel="noopener">
-                Carbon Stealth VCC
+                Carbon Stealth VCC · Бобов дол
               </a>
             </li>
           </ul>
