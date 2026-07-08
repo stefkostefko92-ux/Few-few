@@ -2,24 +2,44 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import {
+  ChartColumnIcon,
+  CheckIcon,
+  ClapperboardIcon,
+  CoinsIcon,
+  GlobeIcon,
+  HandshakeIcon,
+  HeartIcon,
+  LanguagesIcon,
+  MicIcon,
+  QrCodeIcon,
+  ShieldCheckIcon,
+  ShoppingBagIcon,
+  SparklesIcon,
+} from '@/components/icons';
 import type { Locale } from '@/i18n/locales';
 import { PLANS } from '@/lib/plans';
 
 const FEATURES = [
-  ['Lang', '🌍'],
-  ['Ai', '✨'],
-  ['Fee', '💶'],
-  ['Qr', '📇'],
-  ['Analytics', '📊'],
-  ['Trust', '🤝'],
-  ['Eu', '🇪🇺'],
-  ['Domain', '🌐'],
+  ['Lang', LanguagesIcon],
+  ['Ai', SparklesIcon],
+  ['Fee', CoinsIcon],
+  ['Qr', QrCodeIcon],
+  ['Analytics', ChartColumnIcon],
+  ['Trust', HandshakeIcon],
+  ['Eu', ShieldCheckIcon],
+  ['Domain', GlobeIcon],
 ] as const;
 
 const PLAN_ORDER = ['free', 'pro', 'business', 'founder'] as const;
 
 // Чисто визуален телефонен mockup на профил — брандови имена, без превод.
-const MOCK_LINKS = ['🎬 YouTube', '🎧 Podcast', '🛍 Shop', '💖 Tip'];
+const MOCK_LINKS = [
+  ['YouTube', ClapperboardIcon],
+  ['Podcast', MicIcon],
+  ['Shop', ShoppingBagIcon],
+  ['Tip', HeartIcon],
+] as const;
 
 export default async function HomePage({
   params,
@@ -84,7 +104,7 @@ export default async function HomePage({
                   <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 text-2xl font-bold ring-4 ring-white/20">
                     A
                   </div>
-                  <p className="font-semibold">Anna ✦</p>
+                  <p className="font-semibold">Anna</p>
                   <div className="mt-2 flex justify-center gap-1.5 text-[9px]">
                     {['BG', 'EN', 'IT', 'ES'].map((lang, index) => (
                       <span
@@ -100,17 +120,18 @@ export default async function HomePage({
                     ))}
                   </div>
                   <div className="mt-5 space-y-2.5">
-                    {MOCK_LINKS.map((label) => (
+                    {MOCK_LINKS.map(([label, MockIcon]) => (
                       <div
                         key={label}
-                        className="rounded-full border border-sky-400/60 bg-sky-400/15 px-4 py-2.5 text-xs font-semibold"
+                        className="flex items-center justify-center gap-2 rounded-full border border-sky-400/60 bg-sky-400/15 px-4 py-2.5 text-xs font-semibold"
                       >
+                        <MockIcon className="h-3.5 w-3.5" />
                         {label}
                       </div>
                     ))}
                   </div>
                   <p className="mt-6 text-[8px] uppercase tracking-[0.25em] opacity-40">
-                    ✦ Linketto
+                    Linketto
                   </p>
                 </div>
               </div>
@@ -125,13 +146,13 @@ export default async function HomePage({
               {t('featuresTitle')}
             </h2>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {FEATURES.map(([key, icon]) => (
+              {FEATURES.map(([key, FeatureIcon]) => (
                 <div
                   key={key}
                   className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-linketto-50 text-xl">
-                    {icon}
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-linketto-50 text-linketto-700">
+                    <FeatureIcon className="h-5 w-5" />
                   </span>
                   <h3 className="mt-4 font-semibold text-slate-900">
                     {t(`feature${key}Title`)}
@@ -189,7 +210,7 @@ export default async function HomePage({
                     <ul className="mt-5 flex-1 space-y-2.5 text-sm text-slate-600">
                       {(['f1', 'f2', 'f3'] as const).map((feature) => (
                         <li key={feature} className="flex gap-2">
-                          <span className="text-linketto-600">✓</span>
+                          <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-linketto-600" />
                           {tPricing(`${planKey}.${feature}`)}
                         </li>
                       ))}

@@ -15,6 +15,15 @@ import {
   parseStyle,
   readableOn,
 } from '@/lib/style';
+import {
+  HeartIcon,
+  MapPinIcon,
+  MusicIcon,
+  PhoneIcon,
+  ShoppingBagIcon,
+  SmartphoneIcon,
+  UserRoundPlusIcon,
+} from '@/components/icons';
 import { submitContactAction } from '@/app/actions/contact';
 import { startProductPurchaseAction } from '@/app/actions/shop';
 
@@ -255,7 +264,10 @@ export async function ProfileScreen({
                       className={btnClass}
                       style={buttonCss(styleCfg, accentFor(meta))}
                     >
-                      ☎ {title}
+                      <span className="inline-flex items-center gap-2">
+                        <PhoneIcon className="h-4 w-4 shrink-0" />
+                        {title}
+                      </span>
                     </a>
                   </li>
                 );
@@ -286,7 +298,10 @@ export async function ProfileScreen({
                       className={`border px-6 py-3 text-center ${boxShape} ${shadowClass}`}
                       style={buttonCss(styleCfg, accentFor(meta))}
                     >
-                      <p className="font-medium">♪ {title}</p>
+                      <p className="inline-flex items-center gap-2 font-semibold">
+                        <MusicIcon className="h-4 w-4 shrink-0" />
+                        {title}
+                      </p>
                       <p className="mt-2 flex justify-center gap-3 text-sm">
                         {meta?.spotify && (
                           <a
@@ -380,11 +395,21 @@ export async function ProfileScreen({
                       className={btnClass}
                       style={buttonCss(styleCfg, accentFor(meta))}
                     >
-                      {link.kind === 'MAP' && '📍 '}
-                      {link.kind === 'APP' && '📲 '}
-                      {link.kind === 'TIP' && '💖 '}
-                      {link.kind === 'VCARD' && '👤 '}
-                      {title}
+                      <span className="inline-flex items-center gap-2">
+                        {link.kind === 'MAP' && (
+                          <MapPinIcon className="h-4 w-4 shrink-0" />
+                        )}
+                        {link.kind === 'APP' && (
+                          <SmartphoneIcon className="h-4 w-4 shrink-0" />
+                        )}
+                        {link.kind === 'TIP' && (
+                          <HeartIcon className="h-4 w-4 shrink-0" />
+                        )}
+                        {link.kind === 'VCARD' && (
+                          <UserRoundPlusIcon className="h-4 w-4 shrink-0" />
+                        )}
+                        {title}
+                      </span>
                     </a>
                   </li>
                 );
@@ -396,8 +421,9 @@ export async function ProfileScreen({
           profile.user.stripeChargesEnabled &&
           profile.products.length > 0 && (
             <section className="mt-10 text-start">
-              <h2 className="text-center text-sm font-semibold uppercase tracking-wide opacity-70">
-                🛒 {t('shopTitle')}
+              <h2 className="flex items-center justify-center gap-2 text-center text-sm font-semibold uppercase tracking-wide opacity-70">
+                <ShoppingBagIcon className="h-4 w-4" />
+                {t('shopTitle')}
               </h2>
               {shopError && (
                 <p className="mt-2 text-center text-sm text-red-300">
@@ -448,7 +474,7 @@ export async function ProfileScreen({
               href="/"
               className="inline-block rounded-full border border-current px-3 py-1 text-[11px] uppercase tracking-widest opacity-50 transition hover:opacity-90"
             >
-              ✦ Linketto
+              Linketto
             </Link>
           </p>
         )}

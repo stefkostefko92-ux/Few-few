@@ -16,6 +16,12 @@ import {
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
 import { parseStyle } from '@/lib/style';
+import {
+  CheckIcon,
+  ClockIcon,
+  DownloadIcon,
+  SparklesIcon,
+} from '@/components/icons';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiTranslateAction } from '@/app/actions/ai';
 import {
@@ -567,9 +573,10 @@ export default async function DashboardPage({
                   <input type="hidden" name="profileId" value={profile.id} />
                   <button
                     type="submit"
-                    className="rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                    className="inline-flex items-center gap-2 rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
                   >
-                    ✨ {t('aiTranslateButton')}
+                    <SparklesIcon className="h-4 w-4" />
+                    {t('aiTranslateButton')}
                   </button>
                 </form>
               </div>
@@ -637,8 +644,9 @@ export default async function DashboardPage({
                           {t(`kind_${link.kind}`)}
                         </span>
                         {(link.showFrom || link.showUntil) && (
-                          <span className="mr-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
-                            ⏱ {t('scheduledBadge')}
+                          <span className="mr-2 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                            <ClockIcon className="h-3 w-3" />
+                            {t('scheduledBadge')}
                           </span>
                         )}
                         {link.url ?? ''}
@@ -820,9 +828,10 @@ export default async function DashboardPage({
                 <a
                   href={`/u/${profile.slug}/qr`}
                   download={`${profile.slug}-qr.svg`}
-                  className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
                 >
-                  ⤓ SVG
+                  <DownloadIcon className="h-4 w-4" />
+                  SVG
                 </a>
               </div>
             </section>
@@ -961,8 +970,9 @@ export default async function DashboardPage({
                 </form>
               ) : (
                 <>
-                  <p className="mt-2 text-sm text-green-700">
-                    ✓ {t('stripeConnected')}
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-green-700">
+                    <CheckIcon className="h-4 w-4" />
+                    {t('stripeConnected')}
                   </p>
                   <div className="mt-4 space-y-4">
                     {products.map((product) => (
