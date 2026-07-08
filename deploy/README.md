@@ -26,6 +26,11 @@
   билд + вдигане + миграции, сийд само при първо пускане).
 - **medqr:** rsync в `/opt/medqr` (без `data/`, `.env`), `npm ci --omit=dev`,
   `systemctl restart medqr`; при провал — автоматичен rollback към предишния код.
+- **mastilko:** rsync в `/opt/mastilko` (без `.env`), `npm ci` + `npm run build`
+  (Next.js се билдва на сървъра) + `npm prune --omit=dev`, самоинсталиращ се
+  systemd unit (`mastilko/deploy/mastilko.service`, порт `127.0.0.1:3200`),
+  `systemctl restart mastilko`; при провал — автоматичен rollback. Еднократно:
+  Nginx vhost + TLS → `mastilko/deploy/DEPLOY.md`.
 - **SupremeDiscordBot** (Supreme Bot): пренася четирите `.env` файла (`SupremeDiscordBot/.env`,
   `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
@@ -38,7 +43,7 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot mastilko` | кои проекти да се разгръщат тук |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |
@@ -46,7 +51,8 @@
 
 ## Важно
 
-- **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env` и четирите
+- **Тайните не са в архива.** `zabobovdol/.env`, `/etc/medqr/medqr.env`,
+  `/opt/mastilko/.env` (GEMINI_API_KEY, по желание) и четирите
   `SupremeDiscordBot/*.env` (корен, `backend/`, `bot/`, `frontend/`) живеят на сървъра (права 600).
   Скриптът пренася съществуващите `.env` при всеки деплой.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
