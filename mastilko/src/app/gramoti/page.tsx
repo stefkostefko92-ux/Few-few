@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     "грамота за ученик",
   ],
   alternates: { canonical: "/gramoti" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/gramoti"),
 };
 
 export default function GramotiPage() {
@@ -52,9 +52,11 @@ export default function GramotiPage() {
       <header className="no-print mb-8">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">🏆 Грамоти и сертификати</h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          За училища, детски градини, спортни клубове, читалища и фирми:
-          попълни за кого е и за какво, избери цвят и принтирай красива грамота
-          на хоризонтален А4. Данните остават само в твоя браузър.
+          <strong className="text-ink">Мастилко „Грамоти“ е безплатен инструмент за грамоти и сертификати за печат на български</strong>{" "}
+          — красив хоризонтален А4 шаблон с рамка за училища, детски градини,
+          спортни клубове, читалища и фирми. Заглавието се сменя на грамота,
+          сертификат, диплома или благодарствено писмо. Попълни за кого е и за
+          какво, избери цвят и принтирай. Данните остават само в твоя браузър.
         </p>
       </header>
       <GramotaStudio />

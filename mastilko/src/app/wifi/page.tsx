@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     "QR парола за интернет",
   ],
   alternates: { canonical: "/wifi" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/wifi"),
 };
 
 export default function WifiPage() {
@@ -51,9 +51,10 @@ export default function WifiPage() {
       <header className="no-print mb-8">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">📶 WiFi стикер с QR</h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          За кафенета, къщи за гости и офиси: гостът сканира QR кода с камерата
-          и телефонът се свързва сам — без да диктуваш паролата. Кодът се
-          създава в твоя браузър, паролата не се изпраща никъде.
+          <strong className="text-ink">Мастилко „WiFi стикер“ е безплатен инструмент за WiFi QR стикер на български</strong>{" "}
+          — гостът сканира QR кода с камерата и телефонът се свързва сам, без да
+          диктуваш паролата. За кафенета, къщи за гости и офиси. Кодът се
+          създава изцяло в твоя браузър — паролата не се изпраща никъде.
         </p>
       </header>
       <WifiStudio />

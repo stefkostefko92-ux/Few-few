@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "мотивационно писмо шаблон",
   ],
   alternates: { canonical: "/pismo" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/pismo"),
 };
 
 const HOWTO = {

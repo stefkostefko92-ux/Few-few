@@ -232,39 +232,18 @@ export default function HomePage() {
             "@context": "https://schema.org",
             "@graph": [
               {
-                "@type": "Organization",
+                // Един възел за издателя: Organization + локален бизнес
+                // (ProfessionalService) в гр. Бобов дол, обслужва цяла България.
+                // Един @id, за да не се раздвоява същността пред търсачки/AI.
+                "@type": ["Organization", "ProfessionalService"],
                 "@id": ID.org,
-                name: PUBLISHER.legalName,
-                url: PUBLISHER.url,
-                email: PUBLISHER.email,
-                telephone: PUBLISHER.phone,
-                vatID: PUBLISHER.vat,
-                address: POSTAL_ADDRESS,
-                sameAs: ["https://github.com/stefkostefko92-ux"],
-                knowsAbout: [
-                  "етикети за печат",
-                  "визитки",
-                  "автобиография CV",
-                  "Europass",
-                  "мотивационно писмо",
-                  "грамоти и сертификати",
-                  "покани",
-                  "табелки и надписи",
-                  "WiFi QR код",
-                ],
-              },
-              {
-                // Локален бизнес: издателят Carbon Stealth в гр. Бобов дол.
-                // Обслужва цяла България (уеб разработка, ERP, SEO).
-                "@type": "ProfessionalService",
-                "@id": ID.localBusiness,
                 name: PUBLISHER.legalName,
                 url: PUBLISHER.url,
                 image: `${SITE_URL}/logo-full.png`,
                 email: PUBLISHER.email,
                 telephone: PUBLISHER.phone,
                 vatID: PUBLISHER.vat,
-                parentOrganization: { "@id": ID.org },
+                identifier: PUBLISHER.eik,
                 priceRange: "€€",
                 address: POSTAL_ADDRESS,
                 geo: {
@@ -290,11 +269,20 @@ export default function HomePage() {
                 ],
                 makesOffer: {
                   "@type": "Offer",
-                  itemOffered: {
-                    "@type": "Service",
-                    name: "Уеб разработка, ERP системи и SEO",
-                  },
+                  itemOffered: { "@type": "Service", name: "Уеб разработка, ERP системи и SEO" },
                 },
+                sameAs: ["https://github.com/stefkostefko92-ux"],
+                knowsAbout: [
+                  "етикети за печат",
+                  "визитки",
+                  "автобиография CV",
+                  "Europass",
+                  "мотивационно писмо",
+                  "грамоти и сертификати",
+                  "покани",
+                  "табелки и надписи",
+                  "WiFi QR код",
+                ],
               },
               {
                 "@type": "WebSite",

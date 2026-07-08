@@ -40,7 +40,6 @@ export const ADDRESS_ONE_LINE =
 /** @id котви за JSON-LD графа. */
 export const ID = {
   org: "https://carbonstealth.eu/#org",
-  localBusiness: "https://carbonstealth.eu/#localbusiness",
   site: `${SITE_URL}/#site`,
 } as const;
 

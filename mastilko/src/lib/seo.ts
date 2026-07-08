@@ -12,8 +12,11 @@ const OG_IMG = {
   alt: "Мастилко — дизайн и печат: визитки, етикети, CV",
 };
 
-/** OG/Twitter база за подстраница — подай title и description. */
-export function pageMeta(title: string, description: string): Partial<Metadata> {
+/**
+ * OG/Twitter база за подстраница — подай title, description и пътя. Next слива
+ * metadata ПЛИТКО, затова тук подаваме и `url`, иначе og:url от layout се губи.
+ */
+export function pageMeta(title: string, description: string, path?: string): Partial<Metadata> {
   return {
     openGraph: {
       type: "website",
@@ -21,9 +24,10 @@ export function pageMeta(title: string, description: string): Partial<Metadata> 
       siteName: "Мастилко",
       title,
       description,
+      ...(path ? { url: `${SITE_URL}${path}` } : {}),
       images: [OG_IMG],
     },
-    twitter: { card: "summary_large_image", title, images: ["/og.png"] },
+    twitter: { card: "summary_large_image", title, description, images: ["/og.png"] },
   };
 }
 

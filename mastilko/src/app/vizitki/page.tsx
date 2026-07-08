@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     "визитки 90x54",
   ],
   alternates: { canonical: "/vizitki" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/vizitki"),
 };
 
 export default function VizitkiPage() {
@@ -60,9 +60,11 @@ export default function VizitkiPage() {
           💼 Визитки
         </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          Стандартен размер 90 × 54 mm, шест шаблона и топли цветови теми.
-          Попълни данните си, виж визитката на живо и принтирай 10 наведнъж
-          на лист А4.
+          <strong className="text-ink">Мастилко „Визитки“ е безплатен инструмент за визитки за печат на български</strong>{" "}
+          — стандартен размер 90 × 54 mm, шест шаблона и топли цветови теми, 10
+          визитки на лист А4 с линии за рязане. По желание добавяш QR код с
+          контактите (vCard). Попълни данните си, виж визитката на живо и
+          принтирай — без регистрация и без воден знак.
         </p>
       </header>
       <CardStudio />

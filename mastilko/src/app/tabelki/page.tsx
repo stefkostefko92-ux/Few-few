@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     "надпис за печат",
   ],
   alternates: { canonical: "/tabelki" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/tabelki"),
 };
 
 export default function TabelkiPage() {
@@ -52,9 +52,10 @@ export default function TabelkiPage() {
       <header className="no-print mb-8">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">🪧 Табелки и надписи</h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          „Отворено/Затворено“, работно време, „Пази се от кучето“, надпис за
-          врата на офис или кабинет. Избери готова заготовка или напиши свой
-          текст, избери цвят и принтирай на А4.
+          <strong className="text-ink">Мастилко „Табелки“ е безплатен инструмент за табелки и надписи за печат на български</strong>{" "}
+          — готови заготовки „Отворено/Затворено“, работно време, „Пази се от
+          кучето“ и надпис за врата на офис или кабинет. Избери заготовка или
+          напиши свой текст, избери цвят и шрифт и принтирай на А4.
         </p>
       </header>
       <TabelkaStudio />

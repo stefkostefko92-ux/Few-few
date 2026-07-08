@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   ...pageMeta(
     "Импресум и контакти · Мастилко",
     "Издател Carbon Stealth VCC, гр. Бобов дол. Юридически данни и контакти.",
+    "/impresum",
   ),
 };
 
@@ -40,7 +41,7 @@ export default function ImpresumPage() {
             </div>
             <div className={row}>
               <span className={key}>ЕИК</span>
-              <span>{PUBLISHER.eik}</span>
+              <span>{PUBLISHER.eik} · Търговски регистър при Агенцията по вписванията</span>
             </div>
             <div className={row}>
               <span className={key}>ДДС №</span>

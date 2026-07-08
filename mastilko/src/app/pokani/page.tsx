@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     "покана образец",
   ],
   alternates: { canonical: "/pokani" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/pokani"),
 };
 
 export default function PokaniPage() {
@@ -52,9 +52,10 @@ export default function PokaniPage() {
       <header className="no-print mb-8">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">🎉 Покани и картички</h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
-          За рожден ден, кръщене, сватба или юбилей: избери повод, попълни кога
-          и къде и принтирай две покани на лист А4. Данните остават само в твоя
-          браузър.
+          <strong className="text-ink">Мастилко „Покани“ е безплатен инструмент за покани за печат на български</strong>{" "}
+          — топъл шаблон за рожден ден, кръщене, сватба или юбилей, две покани
+          на лист А4 с линии за рязане. Избери повод, попълни кога и къде и
+          принтирай. Данните остават само в твоя браузър.
         </p>
       </header>
       <PokanaStudio />

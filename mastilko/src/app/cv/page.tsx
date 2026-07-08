@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "автобиография PDF",
   ],
   alternates: { canonical: "/cv" },
-  ...pageMeta(TITLE, DESC),
+  ...pageMeta(TITLE, DESC, "/cv"),
 };
 
 const HOWTO = {
