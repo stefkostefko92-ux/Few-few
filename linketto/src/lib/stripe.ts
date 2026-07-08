@@ -9,7 +9,9 @@ export function getStripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return null;
   if (!client) {
-    client = new Stripe(key);
+    // Пинваме API версията — ъпгрейд на акаунта да не сменя мълчаливо
+    // формата на webhook обектите.
+    client = new Stripe(key, { apiVersion: '2025-02-24.acacia' });
   }
   return client;
 }

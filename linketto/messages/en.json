@@ -354,6 +354,14 @@
     "deleteConfirm": "I confirm",
     "publish": "Publish",
     "unpublish": "Unpublish",
-    "clearDomain": "Remove domain {domain}"
+    "clearDomain": "Remove domain {domain}",
+    "purchasesTitle": "Recent sales",
+    "purchasesEmpty": "No sales yet.",
+    "feeShort": "fee",
+    "refund": "Refund",
+    "refunded": "Refunded",
+    "disputed": "DISPUTE",
+    "notDelivered": "not delivered",
+    "errorRefund": "Refund failed."
   }
 }

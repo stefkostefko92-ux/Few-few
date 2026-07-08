@@ -122,9 +122,13 @@ CREATE TABLE "Purchase" (
     "productId" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
     "stripeSessionId" TEXT NOT NULL,
+    "stripePaymentIntentId" TEXT,
     "amountCents" INTEGER NOT NULL,
     "feeCents" INTEGER NOT NULL,
     "buyerEmail" TEXT,
+    "deliveredAt" TIMESTAMP(3),
+    "refundedAt" TIMESTAMP(3),
+    "disputedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Purchase_pkey" PRIMARY KEY ("id")
@@ -217,6 +221,9 @@ CREATE UNIQUE INDEX "ProductTranslation_productId_locale_key" ON "ProductTransla
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Purchase_stripeSessionId_key" ON "Purchase"("stripeSessionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Purchase_stripePaymentIntentId_key" ON "Purchase"("stripePaymentIntentId");
 
 -- CreateIndex
 CREATE INDEX "Purchase_profileId_createdAt_idx" ON "Purchase"("profileId", "createdAt");

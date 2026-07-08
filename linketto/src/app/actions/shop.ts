@@ -96,12 +96,18 @@ export async function startProductPurchaseAction(
   const title = localized?.title ?? 'Product';
   const description = localized?.description?.trim() || undefined;
   // Комисиона по плана + такса за обработка (покрива Stripe таксите).
-  const fee = totalFeeCents(product.priceCents, planFor(owner.plan).id);
+  // Инвариант: application_fee трябва да е < сумата (Stripe го изисква).
+  const fee = Math.min(
+    totalFeeCents(product.priceCents, planFor(owner.plan).id),
+    product.priceCents - 1,
+  );
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-    // Платежните методи (карта, Revolut Pay, PayPal…) се управляват от
-    // Stripe Dashboard → Payment methods; включените там се появяват тук.
+    // Платежните методи се управляват от Stripe Dashboard → Payment methods.
+    // ВАЖНО: при destination charges PayPal НЕ се поддържа (само separate
+    // charges) — за PayPal се ползва личен paypal.me линк (TIP блок).
+    // Карти и card wallets работят; Revolut Pay — да се потвърди на живо.
     line_items: [
       {
         quantity: 1,

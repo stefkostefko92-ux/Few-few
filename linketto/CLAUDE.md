@@ -93,8 +93,14 @@ actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFoun
 се прекратяват), принудителен изход, пълно изтриване на акаунт (каскадно,
 не и себе си), публикуване/сваляне, махане на домейн, resolve на DSA
 сигнали; горе — платформена статистика. Плащания: checkout-ът НЕ ограничава
-payment_method_types → Revolut Pay/PayPal се включват от Stripe Dashboard
-(без код); лични бакшиши: revolut.me/paypal.me имат бранд икони. LoginEvent = IP при вход/регистрация (logLoginIp в
+payment_method_types (карти/wallets навсякъде; за планове доп. методи от
+Stripe Dashboard). ВНИМАНИЕ: за магазина (destination charges) PayPal НЕ се
+поддържа от Stripe — само карти; Revolut Pay за проверка. PayPal/Revolut като
+лични бакшиши: revolut.me/paypal.me имат бранд икони (не минават през нас).
+Purchase.stripePaymentIntentId/deliveredAt/refundedAt/disputedAt; доставка по
+имейл от webhook-а (fulfilProduct, lib/email.ts Resend — no-op без ключ);
+webhook слуша и charge.refunded/dispute.created/account.application.deauthorized;
+refund с reverse_transfer в adminRefundPurchaseAction. LoginEvent = IP при вход/регистрация (logLoginIp в
 actions/auth.ts, 90 дни, декларирано в политиката; НЕ важи за посетители).
 
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →

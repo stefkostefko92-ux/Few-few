@@ -5,6 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
+import { getStripe } from '@/lib/stripe';
 import { isLocale } from '@/i18n/locales';
 import type { Plan } from '@prisma/client';
 
@@ -124,6 +125,38 @@ export async function adminClearDomainAction(
   await prisma.profile.updateMany({
     where: { id: profileId },
     data: { customDomain: null },
+  });
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
+/** Връщане на пари за покупка: refund с reverse на transfer-а към продавача
+    и връщане на нашата комисиона (при destination charges платформата иначе
+    носи загубата). Маркира Purchase.refundedAt (и през charge.refunded). */
+export async function adminRefundPurchaseAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const purchaseId = String(formData.get('purchaseId') ?? '');
+  const purchase = await prisma.purchase.findUnique({
+    where: { id: purchaseId },
+  });
+  const stripe = getStripe();
+  if (!purchase?.stripePaymentIntentId || !stripe) {
+    redirect(`/${uiLocale}/admin?error=refund`);
+  }
+  try {
+    await stripe.refunds.create({
+      payment_intent: purchase.stripePaymentIntentId,
+      reverse_transfer: true,
+      refund_application_fee: true,
+    });
+  } catch {
+    redirect(`/${uiLocale}/admin?error=refund`);
+  }
+  await prisma.purchase.update({
+    where: { id: purchaseId },
+    data: { refundedAt: new Date() },
   });
   redirect(`/${uiLocale}/admin?ok=1`);
 }

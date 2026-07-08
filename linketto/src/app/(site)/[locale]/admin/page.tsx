@@ -8,6 +8,7 @@ import {
   adminClearDomainAction,
   adminDeleteUserAction,
   adminForceLogoutAction,
+  adminRefundPurchaseAction,
   adminResolveReportAction,
   adminSetPasswordAction,
   adminSetPublishedAction,
@@ -56,6 +57,16 @@ export default async function AdminPage({
     }),
   ]);
 
+  const recentPurchases = await prisma.purchase.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 30,
+    include: {
+      product: {
+        include: { translations: true, profile: { select: { slug: true } } },
+      },
+    },
+  });
+
   const query = (q ?? '').trim().toLowerCase();
   const users = await prisma.user.findMany({
     where: query
@@ -103,7 +114,9 @@ export default async function AdminPage({
               ? t('errorEmail')
               : error === 'password'
                 ? t('errorPassword')
-                : t('errorInput')}
+                : error === 'refund'
+                  ? t('errorRefund')
+                  : t('errorInput')}
           </p>
         )}
 
@@ -178,6 +191,75 @@ export default async function AdminPage({
                   <p className="mt-2 text-slate-700">{report.message}</p>
                   {report.email && (
                     <p className="mt-1 text-xs text-slate-500">{report.email}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Последни продажби + връщане на пари */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <h2 className="font-semibold">{t('purchasesTitle')}</h2>
+          {recentPurchases.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-400">{t('purchasesEmpty')}</p>
+          ) : (
+            <ul className="mt-4 space-y-2 text-sm">
+              {recentPurchases.map((purchase) => (
+                <li
+                  key={purchase.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-2"
+                >
+                  <span className="min-w-0">
+                    <a
+                      href={`/u/${purchase.product.profile.slug}`}
+                      className="font-medium text-linketto-700 hover:underline"
+                    >
+                      /u/{purchase.product.profile.slug}
+                    </a>{' '}
+                    · {purchase.product.translations[0]?.title ?? '—'} ·{' '}
+                    <span className="font-semibold">
+                      €{(purchase.amountCents / 100).toFixed(2)}
+                    </span>{' '}
+                    <span className="text-xs text-slate-400">
+                      ({t('feeShort')} €{(purchase.feeCents / 100).toFixed(2)})
+                    </span>
+                    {purchase.buyerEmail ? (
+                      <span className="text-xs text-slate-400">
+                        {' '}
+                        · {purchase.buyerEmail}
+                      </span>
+                    ) : null}
+                    {purchase.disputedAt && (
+                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-700">
+                        {t('disputed')}
+                      </span>
+                    )}
+                    {!purchase.deliveredAt && !purchase.refundedAt && (
+                      <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                        {t('notDelivered')}
+                      </span>
+                    )}
+                  </span>
+                  {purchase.refundedAt ? (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                      {t('refunded')}
+                    </span>
+                  ) : (
+                    <form action={adminRefundPurchaseAction}>
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input
+                        type="hidden"
+                        name="purchaseId"
+                        value={purchase.id}
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-red-500 px-4 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                      >
+                        {t('refund')}
+                      </button>
+                    </form>
                   )}
                 </li>
               ))}

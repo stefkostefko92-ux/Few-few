@@ -29,7 +29,7 @@ export async function GET(
   }
 
   const product = await prisma.product.findFirst({
-    where: { id: productId, profile: { slug } },
+    where: { id: productId, profile: { slug, bannedAt: null } },
   });
   if (!product) {
     return NextResponse.redirect(new URL(`/u/${slug}`, url.origin), 302);

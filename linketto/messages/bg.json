@@ -354,6 +354,14 @@
     "deleteConfirm": "потвърждавам",
     "publish": "Публикувай",
     "unpublish": "Свали от ефир",
-    "clearDomain": "Махни домейна {domain}"
+    "clearDomain": "Махни домейна {domain}",
+    "purchasesTitle": "Последни продажби",
+    "purchasesEmpty": "Още няма продажби.",
+    "feeShort": "комисиона",
+    "refund": "Върни парите",
+    "refunded": "Върнато",
+    "disputed": "СПОР",
+    "notDelivered": "недоставено",
+    "errorRefund": "Връщането се провали."
   }
 }

@@ -163,9 +163,13 @@ model Purchase {
   product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   profileId       String
   stripeSessionId String   @unique
+  stripePaymentIntentId String?  @unique // за refund/dispute проследяване
   amountCents     Int
   feeCents        Int // нашата комисиона към момента на продажбата
   buyerEmail      String?
+  deliveredAt     DateTime? // кога е изпратен имейлът с доставката
+  refundedAt      DateTime?
+  disputedAt      DateTime?
   createdAt       DateTime @default(now())
 
   @@index([profileId, createdAt])
