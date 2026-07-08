@@ -1,0 +1,31 @@
+<%- include('partials/head') %>
+<section class="auth-card">
+  <h1>Създай визитка</h1>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/register">
+    <label>Име (лично или на фирмата)
+      <input type="text" name="name" required minlength="2" maxlength="100" value="<%= values.name || '' %>">
+    </label>
+    <label>Вид профил
+      <select name="type">
+        <option value="personal" <%= values.type === 'company' ? '' : 'selected' %>>Личен</option>
+        <option value="company" <%= values.type === 'company' ? 'selected' : '' %>>Фирмен</option>
+      </select>
+    </label>
+    <label>Имейл
+      <input type="email" name="email" required maxlength="254" autocomplete="email" value="<%= values.email || '' %>">
+    </label>
+    <label>Парола (мин. 8 знака)
+      <input type="password" name="password" required minlength="8" maxlength="200" autocomplete="new-password">
+    </label>
+    <p class="muted small">
+      С регистрацията приемаш <a href="/terms" target="_blank" rel="noopener">Общите условия</a> и
+      потвърждаваш, че си запознат с
+      <a href="/privacy" target="_blank" rel="noopener">Политиката за поверителност</a>.
+      Визитката ти тръгва <strong>скрита</strong> — публикуваш я сам от таблото, когато е готова.
+    </p>
+    <button type="submit" class="btn">Регистрирай ме</button>
+  </form>
+  <p class="muted">Имаш акаунт? <a href="/login">Влез тук</a>.</p>
+</section>
+<%- include('partials/foot') %>

@@ -1,0 +1,16 @@
+<%- include('partials/head') %>
+<section class="auth-card">
+  <h1>Вход</h1>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login">
+    <label>Имейл
+      <input type="email" name="email" required maxlength="254" autocomplete="email" value="<%= values.email || '' %>">
+    </label>
+    <label>Парола
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn">Влез</button>
+  </form>
+  <p class="muted">Нямаш акаунт? <a href="/register">Създай визитка</a>.</p>
+</section>
+<%- include('partials/foot') %>

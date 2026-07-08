@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка' %></title>
+  <%
+    const meta = typeof pageMeta !== 'undefined' && pageMeta ? pageMeta : null;
+    const pageTitle = title ? `${title} · Vizitka` : 'Vizitka — винаги актуалната ти визитка';
+    const pageDesc = meta?.description || 'Създай професионален профил (личен или фирмен), получи QR код и споделяй визитка, която винаги е актуална.';
+    const canonical = meta?.url || siteBase + (currentPath === '/' ? '/' : currentPath);
+  %>
+  <meta name="description" content="<%= pageDesc %>">
+  <meta name="keywords" content="<%= meta?.keywords || 'Vizitka, Carbon Stealth, дигитална визитка, QR визитка, електронна визитна картичка, QR код визитка, vCard, професионален профил, фирмена визитка, дигитална визитна картичка, България' %>">
+  <link rel="canonical" href="<%= canonical %>">
+  <meta property="og:site_name" content="Vizitka">
+  <meta property="og:type" content="<%= meta ? 'profile' : 'website' %>">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= pageDesc %>">
+  <meta property="og:url" content="<%= canonical %>">
+  <meta property="og:image" content="<%= meta?.image || siteBase + '/og-default.png' %>">
+  <meta property="og:locale" content="bg_BG">
+  <meta name="twitter:card" content="summary_large_image">
+  <% if (/^\/(dashboard|login|register)/.test(currentPath)) { %>
+    <meta name="robots" content="noindex,nofollow">
+  <% } else { %>
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <% } %>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Към съдържанието</a>
+<header class="nav">
+  <a class="brand" href="/"><img src="/logo.png" alt="Vizitka" class="brand-logo"></a>
+  <nav>
+    <% if (user) { %>
+      <a href="/dashboard" class="<%= currentPath === '/dashboard' ? 'active' : '' %>">Моята визитка</a>
+      <% if (isAdmin) { %>
+        <a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Админ</a>
+      <% } %>
+      <form method="post" action="/logout" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="link-btn">Изход</button>
+      </form>
+    <% } else { %>
+      <a href="/login" class="<%= currentPath === '/login' ? 'active' : '' %>">Вход</a>
+      <a href="/register" class="btn btn-small">Създай визитка</a>
+    <% } %>
+  </nav>
+</header>
+<main id="main">

@@ -1,0 +1,193 @@
+<%- include('partials/head') %>
+<section class="dash">
+  <h1>Моята визитка</h1>
+  <% if (saved) { %><p class="alert alert-ok">Записано. Визитката ти е обновена.</p><% } %>
+  <% if (passwordChanged) { %><p class="alert alert-ok">Паролата е сменена. Останалите ти сесии са прекратени.</p><% } %>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+
+  <div class="dash-grid">
+    <div class="dash-side">
+      <div class="qr-box">
+        <img src="/p/<%= profile.slug %>/qr.png" alt="QR код към визитката" width="220" height="220">
+        <p class="muted small">Този QR код не се променя — печатай го спокойно.</p>
+        <p><a class="btn btn-small" href="/p/<%= profile.slug %>/qr.png" download="vizitka-qr.png">Свали QR (PNG)</a></p>
+        <p><a class="btn btn-small" href="/p/<%= profile.slug %>/print">🖨️ Разпечатай визитки (Мастилко)</a></p>
+      </div>
+      <div class="link-box">
+        <label class="small" for="public-url">Публичен адрес</label>
+        <input type="text" readonly value="<%= publicUrl %>" id="public-url">
+        <button type="button" class="btn btn-small" data-copy="#public-url">Копирай линка</button>
+        <p><a href="/p/<%= profile.slug %>" target="_blank" rel="noopener">Виж визитката →</a></p>
+      </div>
+
+      <div class="stats-box">
+        <p class="stat-number"><%= profile.views %></p>
+        <p class="muted small">преглеждания на визитката<br>(сканирания и посещения, без твоите)</p>
+      </div>
+
+      <div class="photo-box">
+        <label class="small" for="photo-input">Снимка / лого</label>
+        <% if (profile.photo) { %>
+          <img class="avatar" src="/photo/<%= profile.photo %>" alt="Снимка на профила" width="120" height="120">
+        <% } else { %>
+          <div class="avatar avatar-empty" aria-hidden="true"><%= profile.display_name.slice(0, 1).toUpperCase() %></div>
+        <% } %>
+        <form method="post" action="/profile/photo" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="file" name="photo" id="photo-input" accept="image/jpeg,image/png,image/webp" required>
+          <button type="submit" class="btn btn-small">Качи снимка</button>
+          <p class="muted small">JPG, PNG или WebP, до 2 MB.</p>
+        </form>
+        <% if (profile.photo) { %>
+          <form method="post" action="/profile/photo/delete">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger">Премахни снимката</button>
+          </form>
+        <% } %>
+      </div>
+
+      <div class="photo-box">
+        <label class="small" for="cover-input">Корична снимка (фон зад името)</label>
+        <% if (profile.cover) { %>
+          <img class="cover-thumb" src="/photo/<%= profile.cover %>" alt="Корична снимка" width="200" height="70">
+        <% } %>
+        <form method="post" action="/profile/cover" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="file" name="cover" id="cover-input" accept="image/jpeg,image/png,image/webp" required>
+          <button type="submit" class="btn btn-small">Качи корица</button>
+          <p class="muted small">JPG, PNG или WebP, до 2 MB.</p>
+        </form>
+        <% if (profile.cover) { %>
+          <form method="post" action="/profile/cover/delete">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-btn danger">Премахни корицата</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <form method="post" action="/profile" class="dash-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <label>Вид профил
+        <select name="type">
+          <option value="personal" <%= profile.type === 'personal' ? 'selected' : '' %>>Личен</option>
+          <option value="company" <%= profile.type === 'company' ? 'selected' : '' %>>Фирмен</option>
+        </select>
+      </label>
+      <label>Име / фирма *
+        <input type="text" name="display_name" required minlength="2" maxlength="100" value="<%= profile.display_name %>">
+      </label>
+      <label>Длъжност / слоган
+        <input type="text" name="headline" maxlength="120" value="<%= profile.headline %>" placeholder="напр. Електротехник · Бобов дол">
+      </label>
+      <label>Фирма (за личен профил)
+        <input type="text" name="company" maxlength="100" value="<%= profile.company %>">
+      </label>
+      <label>Телефон
+        <input type="tel" name="phone" maxlength="30" value="<%= profile.phone %>" placeholder="+359 …">
+      </label>
+      <label>Имейл за контакт
+        <input type="email" name="contact_email" maxlength="254" value="<%= profile.contact_email %>">
+      </label>
+      <label>Уебсайт
+        <input type="url" name="website" maxlength="200" value="<%= profile.website %>" placeholder="https://…">
+      </label>
+      <label>Адрес
+        <input type="text" name="address" maxlength="200" value="<%= profile.address %>">
+      </label>
+      <label>Кратко описание
+        <textarea name="bio" maxlength="600" rows="4"><%= profile.bio %></textarea>
+      </label>
+
+      <fieldset>
+        <legend>Външен вид</legend>
+        <label>Цветова тема
+          <select name="theme">
+            <% for (const t of themes) { %>
+              <option value="<%= t.id %>" <%= profile.theme === t.id ? 'selected' : '' %>><%= t.label %></option>
+            <% } %>
+          </select>
+        </label>
+        <label>Собствен цвят (заменя темата)
+          <span class="accent-row">
+            <input type="color" name="accent" value="<%= profile.accent || '#2563eb' %>" <%= profile.accent ? '' : 'disabled' %> id="accent-input">
+            <label class="check accent-toggle">
+              <input type="checkbox" id="accent-on" <%= profile.accent ? 'checked' : '' %>>
+              Използвай собствен цвят
+            </label>
+          </span>
+        </label>
+        <label>Форма на снимката
+          <select name="avatar_shape">
+            <% for (const s of shapes) { %>
+              <option value="<%= s.id %>" <%= profile.avatar_shape === s.id ? 'selected' : '' %>><%= s.label %></option>
+            <% } %>
+          </select>
+        </label>
+        <label>Шрифт
+          <select name="font">
+            <% for (const f of fonts) { %>
+              <option value="<%= f.id %>" <%= profile.font === f.id ? 'selected' : '' %>><%= f.label %></option>
+            <% } %>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Социални мрежи (пълни линкове)</legend>
+        <label>Facebook <input type="url" name="facebook" maxlength="200" value="<%= profile.facebook %>"></label>
+        <label>Instagram <input type="url" name="instagram" maxlength="200" value="<%= profile.instagram %>"></label>
+        <label>LinkedIn <input type="url" name="linkedin" maxlength="200" value="<%= profile.linkedin %>"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Собствени бутони (до <%= maxLinks %>)</legend>
+        <p class="muted small">Добави каквито искаш връзки — WhatsApp, Viber, TikTok, YouTube, меню, магазин… Показват се като бутони на визитката.</p>
+        <div id="links-list">
+          <%
+            const rows = [];
+            for (const l of links) rows.push(l);
+            const spare = Math.min(maxLinks - rows.length, rows.length === 0 ? 2 : 3);
+            for (let i = 0; i < spare; i++) rows.push({ icon: '', label: '', url: '' });
+          %>
+          <% rows.forEach(function (l, i) { %>
+            <div class="link-row">
+              <input type="text" name="link_icon_<%= i %>" value="<%= l.icon %>" maxlength="8" placeholder="🔗" class="link-icon-in" aria-label="Икона">
+              <input type="text" name="link_label_<%= i %>" value="<%= l.label %>" maxlength="60" placeholder="Надпис (напр. WhatsApp)" aria-label="Надпис">
+              <input type="url" name="link_url_<%= i %>" value="<%= l.url %>" maxlength="300" placeholder="https://…" aria-label="Връзка">
+            </div>
+          <% }); %>
+        </div>
+        <button type="button" class="btn btn-small" id="add-link" data-max="<%= maxLinks %>">+ Още един бутон</button>
+      </fieldset>
+
+      <label>Публичен адрес (слъг)
+        <span class="slug-row"><span class="muted">/p/</span><input type="text" name="slug" required pattern="[a-z0-9][a-z0-9-]{1,38}[a-z0-9]" maxlength="40" value="<%= profile.slug %>"></span>
+        <span class="muted small">Внимание: смениш ли адреса, вече отпечатани QR кодове спират да работят.</span>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" name="is_public" value="1" <%= profile.is_public ? 'checked' : '' %>>
+        Визитката е публична (изключи за временно скриване)
+      </label>
+
+      <button type="submit" class="btn btn-big">Запази промените</button>
+    </form>
+  </div>
+
+  <details class="settings">
+    <summary>Настройки на акаунта — смяна на парола</summary>
+    <form method="post" action="/settings/password" class="dash-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Текуща парола
+        <input type="password" name="current_password" required autocomplete="current-password">
+      </label>
+      <label>Нова парола (мин. 8 знака)
+        <input type="password" name="new_password" required minlength="8" maxlength="200" autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn">Смени паролата</button>
+    </form>
+  </details>
+</section>
+<%- include('partials/foot') %>

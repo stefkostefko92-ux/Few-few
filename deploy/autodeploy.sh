@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot mastilko}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -31,6 +31,11 @@ KEEP_RELEASES="${KEEP_RELEASES:-5}"
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
 MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
+
+# vizitka (systemd модел, като medqr)
+VIZITKA_DIR="${VIZITKA_DIR:-/opt/vizitka}"
+VIZITKA_SERVICE="${VIZITKA_SERVICE:-vizitka}"
+VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:3100/}"
 
 # Nexus Dominion — Docker Compose; expose the server on 127.0.0.1:4000
 # behind nginx/Caddy. State (server/data + server/.env) lives outside
@@ -185,6 +190,50 @@ deploy_medqr() {
       chown -R medqr:medqr "$MEDQR_DIR"
     fi
     systemctl restart "$MEDQR_SERVICE"
+  fi
+}
+
+# ── 3b') vizitka — systemd (огледално на medqr) ───────────────────────────────
+deploy_vizitka() {
+  local d="$SRC/vizitka"
+  [ -d "$d" ] || { warn "Няма vizitka/ в архива — пропускам."; return; }
+  log "Разгръщам vizitka (systemd)…"
+  id vizitka >/dev/null 2>&1 || die "Липсва системен юзър vizitka (виж vizitka/deploy/DEPLOY.md)."
+  # Бекъп на текущия код (data/ остава непокътната — извън rsync).
+  [ -d "$VIZITKA_DIR" ] && cp -a "$VIZITKA_DIR" "${VIZITKA_DIR}.bak-$TS"
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  mkdir -p "$VIZITKA_DIR"
+  rsync -a --delete \
+    --exclude data/ --exclude node_modules/ --exclude .env \
+    "$d"/ "$VIZITKA_DIR"/
+  chown -R vizitka:vizitka "$VIZITKA_DIR"
+  ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev )
+  # Снимка на базата ПРЕДИ рестарт — миграциите се пускат при старт (db.js).
+  local db="$VIZITKA_DIR/data/vizitka.db"
+  local dbbak="${db}.pre-$TS"
+  if [ -f "$db" ]; then
+    sudo -u vizitka sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
+    log "Снимка на базата преди миграция: $dbbak"
+  fi
+  systemctl restart "$VIZITKA_SERVICE"
+  sleep 2
+  if health "$VIZITKA_HEALTH_URL" "vizitka"; then
+    rm -rf "${VIZITKA_DIR}.bak-$TS"
+    ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f
+  else
+    deploy_failed=1
+    warn "vizitka health провал — връщам предишния код и базата."
+    systemctl stop "$VIZITKA_SERVICE" || true
+    if [ -f "$dbbak" ]; then
+      cp -a "$dbbak" "$db"
+      rm -f "${db}-wal" "${db}-shm" # изчистваме WAL от неуспешния старт
+      chown vizitka:vizitka "$db"
+    fi
+    if [ -d "${VIZITKA_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude data/ "${VIZITKA_DIR}.bak-$TS"/ "$VIZITKA_DIR"/
+      chown -R vizitka:vizitka "$VIZITKA_DIR"
+    fi
+    systemctl restart "$VIZITKA_SERVICE"
   fi
 }
 
@@ -357,6 +406,7 @@ for p in $PROJECTS; do
   case "$p" in
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
+    vizitka)    deploy_vizitka ;;
     nexus)      deploy_nexus ;;
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
