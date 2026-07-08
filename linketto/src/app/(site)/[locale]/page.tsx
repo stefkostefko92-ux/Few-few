@@ -22,16 +22,17 @@ import {
 import type { Locale } from '@/i18n/locales';
 import { PLANS } from '@/lib/plans';
 
-// Всяка функция със собствен цвят — жив, но подреден ритъм.
+// Тъмни градиентни плочки с Phosphor Duotone икони; всяка функция има
+// собствен цвят на сиянието при hover.
 const FEATURES = [
-  ['Lang', LanguagesIcon, 'bg-sky-100 text-sky-700'],
-  ['Ai', SparklesIcon, 'bg-violet-100 text-violet-700'],
-  ['Fee', CoinsIcon, 'bg-amber-100 text-amber-700'],
-  ['Qr', QrCodeIcon, 'bg-emerald-100 text-emerald-700'],
-  ['Analytics', ChartColumnIcon, 'bg-indigo-100 text-indigo-700'],
-  ['Trust', HandshakeIcon, 'bg-rose-100 text-rose-700'],
-  ['Eu', ShieldCheckIcon, 'bg-teal-100 text-teal-700'],
-  ['Domain', GlobeIcon, 'bg-slate-200 text-slate-700'],
+  ['Lang', LanguagesIcon, 'group-hover:shadow-sky-500/50'],
+  ['Ai', SparklesIcon, 'group-hover:shadow-violet-500/50'],
+  ['Fee', CoinsIcon, 'group-hover:shadow-amber-500/50'],
+  ['Qr', QrCodeIcon, 'group-hover:shadow-emerald-500/50'],
+  ['Analytics', ChartColumnIcon, 'group-hover:shadow-indigo-500/50'],
+  ['Trust', HandshakeIcon, 'group-hover:shadow-rose-500/50'],
+  ['Eu', ShieldCheckIcon, 'group-hover:shadow-teal-500/50'],
+  ['Domain', GlobeIcon, 'group-hover:shadow-fuchsia-500/50'],
 ] as const;
 
 const PLAN_ORDER = ['free', 'pro', 'business', 'founder'] as const;
@@ -246,15 +247,15 @@ export default async function HomePage({
             {t('featuresTitle')}
           </h2>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(([key, FeatureIcon, chip]) => (
+            {FEATURES.map(([key, FeatureIcon, glow]) => (
               <div
                 key={key}
                 className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-linketto-500/40 hover:shadow-xl"
               >
                 <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl transition duration-300 group-hover:rotate-6 group-hover:scale-110 ${chip}`}
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white shadow-lg ring-1 ring-white/15 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-xl ${glow}`}
                 >
-                  <FeatureIcon className="h-5 w-5" />
+                  <FeatureIcon className="h-6 w-6" />
                 </span>
                 <h3 className="mt-4 font-semibold text-slate-900">
                   {t(`feature${key}Title`)}

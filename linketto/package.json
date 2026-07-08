@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@phosphor-icons/core": "^2.1.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.4",
@@ -55,7 +56,6 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.4",
     "eslint-config-next": "^15.5.19",
-    "lucide-static": "^1.23.0",
     "postcss": "^8.4.49",
     "prisma": "^6.2.1",
     "simple-icons": "^16.25.0",
