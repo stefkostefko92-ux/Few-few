@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import ShareButton from "@/components/ShareButton";
 
 interface Props {
   /** Текущото състояние на редактора (записва се като JSON файл). */
@@ -72,6 +73,9 @@ export default function ProjectFile({ state, onLoad, filename }: Props) {
             e.target.value = "";
           }}
         />
+      </div>
+      <div className="mt-2">
+        <ShareButton state={state} />
       </div>
       {msg && (
         <p aria-live="polite" className="mt-2 text-sm font-semibold text-ink-soft">

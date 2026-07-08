@@ -148,13 +148,22 @@ export default function PismoStudio() {
               placeholder="Пиши сам или започни от AI черновата и я направи своя…"
             />
           </div>
-          <AiAssist
-            mode="cv-improve"
-            input={s.body}
-            label="Подобри текста"
-            single
-            onPick={(text) => set({ body: text })}
-          />
+          <div className="flex flex-wrap gap-2">
+            <AiAssist
+              mode="cv-improve"
+              input={s.body}
+              label="Подобри текста"
+              single
+              onPick={(text) => set({ body: text })}
+            />
+            <AiAssist
+              mode="translate-en"
+              input={s.body}
+              label="Преведи на английски"
+              single
+              onPick={(text) => set({ body: text })}
+            />
+          </div>
         </div>
 
         <ProjectFile

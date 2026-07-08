@@ -1,6 +1,6 @@
 // Клиентски помощник за AI подсказките (говори само с нашия /api/ai).
 
-export type AiMode = "label" | "card" | "cv-summary" | "cv-improve" | "letter";
+export type AiMode = "label" | "card" | "cv-summary" | "cv-improve" | "letter" | "translate-en";
 
 export async function askAi(mode: AiMode, input: string): Promise<string> {
   const res = await fetch("/api/ai", {

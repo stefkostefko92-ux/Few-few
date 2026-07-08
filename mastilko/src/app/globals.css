@@ -5,12 +5,47 @@
 :root {
   color-scheme: light;
 }
+.dark {
+  color-scheme: dark;
+}
 
 body {
   @apply bg-paper text-ink font-sans antialiased;
   /* Фина „хартиена“ текстура от тънки точици. */
   background-image: radial-gradient(rgba(58, 46, 40, 0.045) 1px, transparent 1px);
   background-size: 22px 22px;
+}
+
+/* Тъмна тема — топло „нощно“ мастилено, но печатните листове остават бели. */
+.dark body {
+  @apply bg-[#241d19] text-paper;
+  background-image: radial-gradient(rgba(255, 250, 232, 0.05) 1px, transparent 1px);
+}
+.dark .card-warm {
+  @apply border-white/10 bg-white/5;
+}
+.dark .field-input {
+  @apply border-white/15 bg-white/5 text-paper placeholder:text-paper/40;
+}
+.dark .field-label,
+.dark .btn-secondary {
+  @apply text-paper/80;
+}
+.dark .btn-secondary {
+  @apply border-white/15 bg-white/5;
+}
+.dark .text-ink {
+  @apply text-paper;
+}
+.dark .text-ink-soft {
+  @apply text-paper/75;
+}
+.dark .text-ink-faint {
+  @apply text-paper/55;
+}
+.dark header,
+.dark footer {
+  @apply border-white/10;
 }
 
 ::selection {

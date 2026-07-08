@@ -7,7 +7,7 @@ import { z } from "zod";
 export const runtime = "nodejs";
 
 const BodySchema = z.object({
-  mode: z.enum(["label", "card", "cv-summary", "cv-improve", "letter"]),
+  mode: z.enum(["label", "card", "cv-summary", "cv-improve", "letter", "translate-en"]),
   input: z.string().trim().min(3).max(2000),
 });
 
@@ -64,6 +64,10 @@ const PROMPTS: Record<z.infer<typeof BodySchema>["mode"], (input: string) => str
     `думи) от първо лице по тази информация: „${input}“. Върни САМО основния ` +
     `текст — без обръщение („Уважаеми…“) и без подпис накрая. Тон: топъл, ` +
     `професионален и конкретен, без клишета и без измислени факти.`,
+  "translate-en": (input) =>
+    `Преведи следния текст на английски език, професионално и точно, като ` +
+    `запазиш смисъла и тона (подходящ за автобиография/мотивационно писмо). ` +
+    `Върни само превода, без обяснения: „${input}“`,
   "cv-improve": (input) =>
     `Подобри следния текст от автобиография (CV) на български език: „${input}“. ` +
     `Запази смисъла и фактите, направи го по-ясен, активен и професионален, ` +

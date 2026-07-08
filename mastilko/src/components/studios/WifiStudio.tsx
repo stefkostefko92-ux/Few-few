@@ -121,6 +121,10 @@ export default function WifiStudio() {
           </div>
         </div>
 
+        <p className="text-xs text-ink-faint">
+          💡 Съвет: разлепен стикер с паролата е достъпен за всеки, който вижда
+          листа — за заведения ползвай отделна гост-мрежа.
+        </p>
         <ProjectFile state={s} filename="mastilko-wifi"
           onLoad={(data) => setS({ ...INITIAL, ...ProjectSchema.parse(data) })} />
       </div>

@@ -5,7 +5,7 @@ const BASE = "https://mastilko.carbonstealth.eu";
 export default function sitemap(): MetadataRoute.Sitemap {
   // lastmod = моментът на билда — при всеки деплой съдържанието е прегледано.
   const lastModified = new Date();
-  return ["", "/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/wifi", "/poveritelnost", "/usloviya"].map(
+  return ["", "/etiketi", "/vizitki", "/cv", "/pismo", "/gramoti", "/pokani", "/tabelki", "/wifi", "/poveritelnost", "/usloviya"].map(
     (path) => ({
       url: `${BASE}${path}`,
       lastModified,

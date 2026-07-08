@@ -65,6 +65,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="bg" className={`${sans.variable} ${display.variable}`}>
+      <head>
+        {/* Прилага тъмната тема преди рисуване, за да няма трепване. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.getItem('mastilko-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="flex min-h-screen flex-col">
         <Header />
         <BannerZone placement="all" />

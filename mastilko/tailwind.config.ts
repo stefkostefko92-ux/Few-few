@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 // Топла „хартиена“ палитра: крем хартия, мастилено кафяво, теракота, мед.
 const config: Config = {
+  darkMode: "class",
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {

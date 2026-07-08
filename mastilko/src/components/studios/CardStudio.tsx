@@ -6,6 +6,7 @@ import { themeById, type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import { vCard } from "@/lib/vcard";
 import AiAssist from "@/components/AiAssist";
+import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
 import ProjectFile from "@/components/ProjectFile";
 import QrImage, { useQrDataUrl } from "@/components/QrImage";
@@ -25,6 +26,10 @@ interface CardState {
   cutLines: boolean;
   /** QR код с контактите (vCard) в долния десен ъгъл. */
   qr: boolean;
+  /** Лого (data URL) — показва се в акцентния панел. */
+  logo: string;
+  /** Гръб на визитката (втори лист за двустранен печат). */
+  back: boolean;
 }
 
 const INITIAL: CardState = {
@@ -39,6 +44,8 @@ const INITIAL: CardState = {
   layout: "lenta",
   cutLines: true,
   qr: false,
+  logo: "",
+  back: false,
 };
 
 // Валидация на качен проект-файл (виж бележката в LabelStudio).
@@ -55,6 +62,8 @@ const ProjectSchema = z
     layout: z.enum(["lenta", "klasik", "linia", "ramka", "gorna", "duo"]),
     cutLines: z.boolean(),
     qr: z.boolean(),
+    logo: z.string().max(500000),
+    back: z.boolean(),
   })
   .partial();
 
@@ -105,6 +114,44 @@ function CardFace({
   );
 }
 
+/** Гръб на визитката: акцентен фон с лого/инициал + слоган. */
+function CardBack({ s, theme, u }: { s: CardState; theme: WarmTheme; u: Unit }) {
+  const initials = s.name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  return (
+    <div
+      style={{
+        width: u(CARD.w),
+        height: u(CARD.h),
+        background: theme.accent,
+        color: theme.bg,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: u(2),
+        padding: u(6),
+        textAlign: "center",
+      }}
+    >
+      {s.logo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={s.logo} alt="" style={{ maxWidth: u(40), maxHeight: u(24), objectFit: "contain" }} />
+      ) : (
+        <div style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: u(14) }}>
+          {initials || "М"}
+        </div>
+      )}
+      {s.company && <div style={{ fontWeight: 700, fontSize: u(4) }}>{s.company}</div>}
+      {s.slogan && <div style={{ fontStyle: "italic", fontSize: u(3) }}>„{s.slogan}“</div>}
+    </div>
+  );
+}
+
 function CardFaceInner({
   s,
   theme,
@@ -149,7 +196,12 @@ function CardFaceInner({
             fontFamily: "var(--font-display)",
           }}
         >
-          {initials || "М"}
+          {s.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={s.logo} alt="" style={{ maxWidth: u(20), maxHeight: u(20), objectFit: "contain" }} />
+          ) : (
+            initials || "М"
+          )}
         </div>
         <div
           style={{
@@ -403,7 +455,12 @@ function CardFaceInner({
               fontFamily: "var(--font-display)",
             }}
           >
-            {initials || "М"}
+            {s.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={s.logo} alt="" style={{ maxWidth: u(18), maxHeight: u(18), objectFit: "contain" }} />
+            ) : (
+              initials || "М"
+            )}
           </div>
           {s.slogan && (
             <div
@@ -546,6 +603,24 @@ export default function CardStudio() {
               </span>
             </span>
           </label>
+
+          <ImageUpload value={s.logo} onChange={(v) => set({ logo: v })} label="Лого (по желание)" />
+
+          <label className="flex items-start gap-2 text-sm font-semibold text-ink-soft">
+            <input
+              type="checkbox"
+              checked={s.back}
+              onChange={(e) => set({ back: e.target.checked })}
+              className="mt-0.5 h-4 w-4 accent-tera"
+            />
+            <span>
+              Двустранни визитки (гръб)
+              <span className="block text-xs font-normal text-ink-faint">
+                Втори лист с лого и слоган. Принтираш го на гърба (обърни
+                листа и пусни страница 2).
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="card-warm space-y-3 p-5">
@@ -604,6 +679,26 @@ export default function CardStudio() {
             );
           })}
         </SheetPreview>
+
+        {s.back && (
+          <>
+            <PrintBar summary="Гръб на визитките — лист 2 (принтирай на гърба)" />
+            <SheetPreview>
+              {Array.from({ length: grid.total }).map((_, i) => {
+                const col = i % grid.cols;
+                const row = Math.floor(i / grid.cols);
+                // Огледално отляво, за да съвпадне при обръщане на листа.
+                const left = grid.offsetX + (grid.cols - 1 - col) * CARD.w;
+                const top = grid.offsetY + row * CARD.h;
+                return (
+                  <div key={i} style={{ position: "absolute", left: `${left}mm`, top: `${top}mm` }}>
+                    <CardBack s={s} theme={theme} u={mm} />
+                  </div>
+                );
+              })}
+            </SheetPreview>
+          </>
+        )}
 
         <ProjectFile
           state={s}

@@ -187,13 +187,22 @@ export default function CvStudio() {
             onChange={(e) => set({ summary: e.target.value })}
             placeholder="2–3 изречения кой си и какво търсиш…"
           />
-          <AiAssist
-            mode="cv-summary"
-            input={aiContext}
-            label="Напиши профила с AI"
-            single
-            onPick={(text) => set({ summary: text })}
-          />
+          <div className="flex flex-wrap gap-2">
+            <AiAssist
+              mode="cv-summary"
+              input={aiContext}
+              label="Напиши профила с AI"
+              single
+              onPick={(text) => set({ summary: text })}
+            />
+            <AiAssist
+              mode="translate-en"
+              input={s.summary}
+              label="Преведи профила на английски"
+              single
+              onPick={(text) => set({ summary: text })}
+            />
+          </div>
         </div>
 
         <div className="card-warm space-y-4 p-5">

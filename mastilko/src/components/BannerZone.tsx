@@ -58,16 +58,21 @@ export default function BannerZone({ placement }: { placement: "all" | "home" })
         >
           {b.image ? (
             // Пълноширок рекламен банер (изображение). Цялото е кликаемо.
+            // Видим етикет „Реклама“ (Дир. 2000/31 чл. 6 + ЗЗП). alt="" на
+            // img, за да не се обявява два пъти — описанието е на линка.
             <a
               href={b.href || undefined}
               rel="noopener"
-              className="block"
+              className="relative block"
               aria-label={b.imageAlt || b.title || "Реклама"}
             >
+              <span className="absolute left-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                Реклама
+              </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={b.image}
-                alt={b.imageAlt || ""}
+                alt=""
                 className="mx-auto block h-auto w-full max-w-5xl"
               />
             </a>

@@ -10,6 +10,9 @@ import { z } from "zod";
 // Линк: празно, вътрешен път, http(s) или mailto — НЕ javascript: (XSS).
 const linkOk = (v: string) =>
   v === "" || /^(https?:\/\/|\/|mailto:)/i.test(v);
+// Изображение: само ВЪТРЕШЕН път (/…) — външен URL би пратил IP на посетителя
+// към чужд домейн без съгласие (правен одит 2026-07). Външни → чак с consent.
+const internalImg = (v: string) => v === "" || /^\/[^/]/.test(v);
 // Цвят: само hex, за да няма url()/трекинг през style.
 const colorRe = /^#[0-9a-fA-F]{3,8}$/;
 
@@ -19,8 +22,8 @@ export const BannerSchema = z.object({
   text: z.string().max(200).default(""),
   cta: z.string().max(40).default(""),
   href: z.string().max(300).default("").refine(linkOk, "Невалиден линк"),
-  /** По желание: изображение (пълноширок банер). Вътрешен път или http(s). */
-  image: z.string().max(300).default("").refine(linkOk, "Невалиден адрес на изображение"),
+  /** По желание: изображение (пълноширок банер). Само вътрешен път (/…). */
+  image: z.string().max(300).default("").refine(internalImg, "Изображението трябва да е вътрешен път (/banners/…)"),
   imageAlt: z.string().max(120).default(""),
   bg: z.string().max(20).default("#DE9A32").refine((v) => colorRe.test(v), "Невалиден цвят"),
   fg: z.string().max(20).default("#3A2E28").refine((v) => colorRe.test(v), "Невалиден цвят"),
