@@ -51,6 +51,7 @@ export function deliveryEmailHtml(input: {
   <p><a href="${esc(input.deliveryUrl)}" style="display:inline-block;background:#3b82c4;color:#fff;padding:12px 20px;border-radius:9999px;text-decoration:none;font-weight:600">Отвори покупката</a></p>
   <p style="color:#64748b;font-size:13px">Ако бутонът не работи: ${esc(input.deliveryUrl)}</p>
   <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
-  <p style="color:#94a3b8;font-size:12px">Този имейл е разписка за покупката ти. Пази линка — води те директно до съдържанието.</p>
+  <p style="color:#94a3b8;font-size:12px">Този имейл е разписка за покупката ти на траен носител. Пази линка — води те директно до съдържанието.</p>
+  <p style="color:#94a3b8;font-size:12px">Потвърждаваме, че преди покупката изрично поиска съдържанието да ти бъде предоставено веднага и се съгласи, че така губиш 14-дневното право на отказ (чл. 57, т. 13 ЗЗП).</p>
 </div>`;
 }

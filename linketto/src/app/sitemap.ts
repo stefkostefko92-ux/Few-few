@@ -10,10 +10,12 @@ export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE_URL;
   // Една entry на страница, езиковите версии — като hreflang alternates.
-  const languagesFor = (path: string) =>
-    Object.fromEntries(
+  const languagesFor = (path: string) => ({
+    ...Object.fromEntries(
       LOCALES.map((locale) => [locale, `${base}/${locale}${path}`]),
-    );
+    ),
+    'x-default': `${base}/en${path}`,
+  });
   const staticPages: MetadataRoute.Sitemap = ['', '/privacy', '/terms', '/cookies'].map(
     (path) => ({
       url: `${base}/en${path}`,

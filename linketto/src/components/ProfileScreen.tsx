@@ -80,7 +80,11 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
         include: { translations: true },
       },
       user: {
-        select: { stripeAccountId: true, stripeChargesEnabled: true },
+        select: {
+          stripeAccountId: true,
+          stripeChargesEnabled: true,
+          isTrader: true,
+        },
       },
     },
   });
@@ -92,15 +96,21 @@ export type LoadedProfile = NonNullable<
 
 export function profileMetadata(
   profile: LoadedProfile | null,
+  hl?: string,
 ): Metadata {
   if (!profile || !profile.published || profile.bannedAt) {
     return { title: 'Linketto', robots: { index: false } };
   }
   const fallback = profile.translations[0];
+  // Езиковата версия, която реално се гледа — за самореферентен canonical.
+  const activeLocale = profile.translations.find((t) => t.locale === hl)
+    ? hl
+    : undefined;
   const main =
-    profile.translations.find((t) => t.locale === profile.defaultLocale) ??
+    profile.translations.find((t) => t.locale === (activeLocale ?? profile.defaultLocale)) ??
     fallback;
   const path = `/u/${profile.slug}`;
+  const canonical = activeLocale ? `${path}?hl=${activeLocale}` : path;
   const languages: Record<string, string> = {};
   for (const translation of profile.translations) {
     languages[translation.locale] = `${path}?hl=${translation.locale}`;
@@ -114,13 +124,13 @@ export function profileMetadata(
     title,
     description: main?.bio ?? undefined,
     ...(hasSensitive ? { robots: { index: false } } : {}),
-    alternates: { canonical: path, languages },
+    alternates: { canonical, languages },
     openGraph: {
       type: 'profile',
       siteName: 'Linketto',
       title: main?.displayName ?? profile.slug,
       description: main?.bio ?? undefined,
-      url: path,
+      url: canonical,
       ...(style.avatarUrl ? { images: [{ url: style.avatarUrl }] } : {}),
     },
     twitter: { card: 'summary' },
@@ -251,12 +261,52 @@ export async function ProfileScreen({
     inLanguage: viewLocale,
     mainEntity: {
       '@type': 'Person',
+      '@id': `${shareUrl}#person`,
       name: translation.displayName,
       description: translation.bio ?? undefined,
       url: shareUrl,
+      ...(styleCfg.avatarUrl ? { image: styleCfg.avatarUrl } : {}),
       ...(sameAs.length > 0 ? { sameAs } : {}),
     },
   };
+  // Магазин активен → структуриран списък с продуктите (GEO/AI цитиране).
+  const shopLive =
+    profile.user.stripeAccountId &&
+    profile.user.stripeChargesEnabled &&
+    profile.products.length > 0;
+  const productListJsonLd = shopLive
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: profile.products
+          .map((product, index) => {
+            const title =
+              product.translations.find((tr) => tr.locale === viewLocale)
+                ?.title ??
+              product.translations.find(
+                (tr) => tr.locale === profile.defaultLocale,
+              )?.title ??
+              product.translations[0]?.title;
+            if (!title) return null;
+            return {
+              '@type': 'ListItem',
+              position: index + 1,
+              item: {
+                '@type': 'Product',
+                name: title,
+                offers: {
+                  '@type': 'Offer',
+                  price: (product.priceCents / 100).toFixed(2),
+                  priceCurrency: 'EUR',
+                  availability: 'https://schema.org/InStock',
+                  url: shareUrl,
+                },
+              },
+            };
+          })
+          .filter(Boolean),
+      }
+    : null;
   // Стъпаловиден вход: всеки видим блок пристига с малко закъснение.
   let riseIndex = 0;
   const rise = () =>
@@ -275,7 +325,11 @@ export async function ProfileScreen({
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            productListJsonLd ? [personJsonLd, productListJsonLd] : personJsonLd,
+          ),
+        }}
       />
       {/* Жива сцена върху фона — по избор от стиловия енджин */}
       {styleCfg.bgEffect !== 'none' && (
@@ -692,9 +746,13 @@ export async function ProfileScreen({
                   {t('shopError')}
                 </p>
               )}
-              {/* Дир. 2011/83 чл. 6а: ролята на платформата е разкрита. */}
+              {/* Дир. 2011/83 чл. 6а: роля на платформата + статут на продавача. */}
               <p className="mt-2 text-center text-[11px] leading-snug opacity-55">
-                {t('shopSellerNote')}
+                {t('shopSellerNote')}{' '}
+                {profile.user.isTrader
+                  ? t('sellerTrader')
+                  : t('sellerPrivate')}
+                .
               </p>
               <ul className="mt-4 space-y-3">
                 {profile.products.map((product) => {

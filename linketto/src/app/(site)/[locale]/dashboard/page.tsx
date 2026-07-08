@@ -28,6 +28,8 @@ import {
   addProductAction,
   connectStripeAction,
   deleteProductAction,
+  sellerRefundAction,
+  setTraderStatusAction,
   updateProductAction,
   upsertProductTranslationAction,
 } from '@/app/actions/shop';
@@ -167,7 +169,9 @@ export default async function DashboardPage({
                             ? t('errorStyle')
                             : error === 'upload'
                               ? t('errorUpload')
-                              : t('errorGeneric')}
+                              : error === 'refund'
+                                ? t('errorRefund')
+                                : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -1004,6 +1008,25 @@ export default async function DashboardPage({
                     <CheckIcon className="h-4 w-4" />
                     {t('stripeConnected')}
                   </p>
+                  {/* Дир. 2011/83 чл. 6а: деклариран статут на продавача */}
+                  <form action={setTraderStatusAction} className="mt-3">
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <label className="flex items-start gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        name="isTrader"
+                        defaultChecked={user.isTrader}
+                        className="mt-0.5 h-4 w-4"
+                      />
+                      {t('traderLabel')}
+                    </label>
+                    <button
+                      type="submit"
+                      className="mt-2 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('save')}
+                    </button>
+                  </form>
                   <div className="mt-4 space-y-4">
                     {products.map((product) => (
                       <div
@@ -1196,16 +1219,42 @@ export default async function DashboardPage({
                         {recentPurchases.map((purchase) => (
                           <li
                             key={purchase.id}
-                            className="flex justify-between gap-2 text-slate-600"
+                            className="flex items-center justify-between gap-2 text-slate-600"
                           >
-                            <span className="truncate">
+                            <span className="min-w-0 truncate">
                               {purchase.product.translations[0]?.title ?? '—'}
                               {purchase.buyerEmail
                                 ? ` · ${purchase.buyerEmail}`
                                 : ''}
                             </span>
-                            <span className="font-semibold">
-                              €{(purchase.amountCents / 100).toFixed(2)}
+                            <span className="flex shrink-0 items-center gap-3">
+                              <span className="font-semibold">
+                                €{(purchase.amountCents / 100).toFixed(2)}
+                              </span>
+                              {purchase.refundedAt ? (
+                                <span className="text-xs text-slate-400">
+                                  {t('refunded')}
+                                </span>
+                              ) : (
+                                <form action={sellerRefundAction}>
+                                  <input
+                                    type="hidden"
+                                    name="uiLocale"
+                                    value={locale}
+                                  />
+                                  <input
+                                    type="hidden"
+                                    name="purchaseId"
+                                    value={purchase.id}
+                                  />
+                                  <button
+                                    type="submit"
+                                    className="text-xs font-medium text-red-600 hover:underline"
+                                  >
+                                    {t('sellerRefund')}
+                                  </button>
+                                </form>
+                              )}
                             </span>
                           </li>
                         ))}

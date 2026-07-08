@@ -28,6 +28,7 @@ model User {
   stripeCustomerId     String?   @unique
   stripeAccountId      String?   @unique // Stripe Connect (Express) акаунт за магазина
   stripeChargesEnabled Boolean   @default(false) // обновява се от account.updated webhook
+  isTrader             Boolean   @default(false) // Дир.2011/83 чл.6а: търговец (по декларация на продавача)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   sessions             Session[]

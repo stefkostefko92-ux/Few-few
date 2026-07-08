@@ -19,6 +19,24 @@ export const ORG = {
   },
 } as const;
 
+// og:locale иска language_TERRITORY, не само езиковия код.
+const OG_LOCALE: Record<Locale, string> = {
+  bg: 'bg_BG',
+  en: 'en_US',
+  it: 'it_IT',
+  es: 'es_ES',
+  de: 'de_DE',
+  fr: 'fr_FR',
+};
+
+// Единна social card (1200×630) — за силни споделяния и AI/SERP карти.
+export const OG_IMAGE = {
+  url: `${SITE_URL}/og.png`,
+  width: 1200,
+  height: 630,
+  alt: 'Linketto — link in bio на всеки език',
+} as const;
+
 /** canonical + hreflang alternates за локализирана страница на сайта. */
 export function localeAlternates(locale: Locale, path = '') {
   const languages: Record<string, string> = {};
@@ -49,13 +67,17 @@ export function pageMetadata(
       title: input.title,
       description: input.description,
       url: `${SITE_URL}/${locale}${path}`,
-      locale,
-      images: [{ url: `${SITE_URL}/logo.png` }],
+      locale: OG_LOCALE[locale],
+      alternateLocale: LOCALES.filter((l) => l !== locale).map(
+        (l) => OG_LOCALE[l],
+      ),
+      images: [OG_IMAGE],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: input.title,
       description: input.description,
+      images: [OG_IMAGE.url],
     },
   };
 }

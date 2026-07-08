@@ -18,6 +18,7 @@ CREATE TABLE "User" (
     "stripeCustomerId" TEXT,
     "stripeAccountId" TEXT,
     "stripeChargesEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "isTrader" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

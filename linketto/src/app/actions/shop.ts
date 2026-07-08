@@ -140,6 +140,64 @@ export async function startProductPurchaseAction(
   redirect(session.url ?? `${back}${hl ? '&' : '?'}shopError=1`);
 }
 
+// Продавачът декларира статута си (Дир. 2011/83 чл. 6а): търговец или
+// частно лице. Показва се до всеки продукт преди покупка.
+export async function setTraderStatusAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { isTrader: formData.get('isTrader') === 'on' },
+  });
+  redirect(`/${uiLocale}/dashboard`);
+}
+
+// Продавачът сам връща пари за своя продажба (merchant-of-record носи
+// законовата отговорност за съответствие — Дир. ЕС 2019/770).
+export async function sellerRefundAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const purchaseId = String(formData.get('purchaseId') ?? '');
+  const purchase = await prisma.purchase.findUnique({
+    where: { id: purchaseId },
+  });
+  // Скоуп: покупката трябва да е по профил на текущия потребител.
+  const owned = purchase
+    ? await prisma.profile.findFirst({
+        where: { id: purchase.profileId, userId: user.id },
+        select: { id: true },
+      })
+    : null;
+  const stripe = getStripe();
+  if (
+    !purchase ||
+    !owned ||
+    !purchase.stripePaymentIntentId ||
+    purchase.refundedAt ||
+    !stripe
+  ) {
+    redirect(`/${uiLocale}/dashboard?error=refund`);
+  }
+  try {
+    await stripe.refunds.create({
+      payment_intent: purchase.stripePaymentIntentId,
+      reverse_transfer: true,
+      refund_application_fee: true,
+    });
+  } catch {
+    redirect(`/${uiLocale}/dashboard?error=refund`);
+  }
+  await prisma.purchase.update({
+    where: { id: purchaseId },
+    data: { refundedAt: new Date() },
+  });
+  redirect(`/${uiLocale}/dashboard`);
+}
+
 const productSchema = z.object({
   title: z.string().trim().min(1).max(100),
   priceEur: z.coerce.number().min(MIN_PRODUCT_PRICE_EUR).max(10000),

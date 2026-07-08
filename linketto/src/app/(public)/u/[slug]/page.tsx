@@ -10,11 +10,14 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ hl?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  return profileMetadata(await loadProfileBy({ slug }));
+  const { hl } = await searchParams;
+  return profileMetadata(await loadProfileBy({ slug }), hl);
 }
 
 export default async function PublicProfilePage({
