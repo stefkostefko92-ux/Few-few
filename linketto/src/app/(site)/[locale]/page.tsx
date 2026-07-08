@@ -205,17 +205,21 @@ export default async function HomePage({
         </section>
 
         {/* ── MARQUEE: поздравите на света текат — под ъгъл ──────────── */}
-        <div
-          className="-mx-4 -rotate-1 scale-[1.02] overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5 shadow-sm"
-          aria-hidden
-        >
-          <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-semibold tracking-wide text-slate-500">
-            <span>{MARQUEE.repeat(3)}</span>
-            <span>{MARQUEE.repeat(3)}</span>
-          </div>
-          <div className="animate-marquee-reverse mt-2 flex w-max whitespace-nowrap text-xs font-medium tracking-wide text-slate-400">
-            <span>{PLATFORM_MARQUEE.repeat(4)}</span>
-            <span>{PLATFORM_MARQUEE.repeat(4)}</span>
+        {/* Обвивката клипва наклонената лента — без нея ротацията
+            разширява страницата и се появява хоризонтален скрол */}
+        <div className="overflow-x-clip">
+          <div
+            className="-mx-4 -rotate-1 scale-[1.02] overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5 shadow-sm"
+            aria-hidden
+          >
+            <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-semibold tracking-wide text-slate-500">
+              <span>{MARQUEE.repeat(3)}</span>
+              <span>{MARQUEE.repeat(3)}</span>
+            </div>
+            <div className="animate-marquee-reverse mt-2 flex w-max whitespace-nowrap text-xs font-medium tracking-wide text-slate-400">
+              <span>{PLATFORM_MARQUEE.repeat(4)}</span>
+              <span>{PLATFORM_MARQUEE.repeat(4)}</span>
+            </div>
           </div>
         </div>
 
