@@ -1,5 +1,13 @@
 // Умишлено .mjs, не .ts: next.config.ts изисква пакета typescript ПРИ СТАРТ,
 // а деплоят прунва dev зависимостите (npm prune --omit=dev) → сървисът гърми.
+
+// Произходът на Визитка — /import прави КЛИЕНТСКИ fetch натам и рендира снимката
+// (photo_url) като <img>. CSP-то трябва да го разреши, иначе браузърът блокира
+// внасянето. Държим го в синхрон с src/lib/vizitka-import.ts (същият env + fallback).
+const VIZITKA_ORIGIN = (
+  process.env.NEXT_PUBLIC_VIZITKA_URL || "https://vizitka-bg.com"
+).replace(/\/+$/, "");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
@@ -22,8 +30,8 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
-              "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
-              "font-src 'self'; connect-src 'self'; object-src 'none'; " +
+              `style-src 'self' 'unsafe-inline'; img-src 'self' data: ${VIZITKA_ORIGIN}; ` +
+              `font-src 'self'; connect-src 'self' ${VIZITKA_ORIGIN}; object-src 'none'; ` +
               "frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
           },
         ],
