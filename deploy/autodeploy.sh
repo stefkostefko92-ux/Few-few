@@ -279,7 +279,7 @@ deploy_mastilko() {
   [ -d "$MASTILKO_DIR" ] && cp -a "$MASTILKO_DIR" "${MASTILKO_DIR}.bak-$TS"
   mkdir -p "$MASTILKO_DIR"
   rsync -a --delete \
-    --exclude node_modules/ --exclude .next/ --exclude .env \
+    --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
     "$d"/ "$MASTILKO_DIR"/
   chown -R mastilko:mastilko "$MASTILKO_DIR"
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
@@ -287,8 +287,10 @@ deploy_mastilko() {
     && sudo -u mastilko npm ci \
     && sudo -u mastilko npm run build \
     && sudo -u mastilko npm prune --omit=dev )
-  # ReadWritePaths в unit-а изисква пътят да съществува при старт.
-  sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache"
+  # ReadWritePaths в unit-а изисква пътищата да съществуват при старт.
+  # data/ пази JSON-а на рекламните банери — НЕ се трие при деплой (rsync
+  # exclude), за да оцелее между версиите като .env.
+  sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache" "$MASTILKO_DIR/data"
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
   install -m 644 "$MASTILKO_DIR/deploy/mastilko.service" /etc/systemd/system/mastilko.service
   systemctl daemon-reload
@@ -305,7 +307,7 @@ deploy_mastilko() {
     warn "mastilko health провал — връщам предишния код."
     systemctl stop "$MASTILKO_SERVICE" || true
     if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude .env "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
+      rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
       chown -R mastilko:mastilko "$MASTILKO_DIR"
       systemctl restart "$MASTILKO_SERVICE"
     fi

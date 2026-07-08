@@ -83,7 +83,7 @@ export default function HomePage() {
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-soft">
             Мастилко е малкото българско ателие в браузъра ти: попълваш,
-            виждаш на живо, принтираш на А4. Без регистрация, без реклами,
+            виждаш на живо, принтираш на А4. Без регистрация, без проследяване,
             с безплатна AI помощ от Gemini.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

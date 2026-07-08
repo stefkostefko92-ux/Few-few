@@ -15,6 +15,7 @@ Environment=NODE_ENV=production
 Environment=PORT=3200
 Environment=HOSTNAME=127.0.0.1
 Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=MASTILKO_DATA_DIR=/opt/mastilko/data
 EnvironmentFile=-/opt/mastilko/.env
 ExecStart=/usr/bin/env node /opt/mastilko/node_modules/next/dist/bin/next start --port 3200 --hostname 127.0.0.1
 Restart=on-failure
@@ -27,7 +28,8 @@ PrivateDevices=true
 ProtectSystem=strict
 # '-' = толерирай липсващ път (systemd 255 иначе гърми с 226/NAMESPACE);
 # autodeploy така или иначе прави mkdir -p след всеки билд.
-ReadWritePaths=-/opt/mastilko/.next/cache
+# data/ пази JSON-а на рекламните банери (записва се от админ панела).
+ReadWritePaths=-/opt/mastilko/.next/cache -/opt/mastilko/data
 ProtectHome=true
 ProtectProc=invisible
 ProcSubset=pid

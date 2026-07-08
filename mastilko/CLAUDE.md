@@ -6,9 +6,11 @@
 
 ## Стек и команди
 
-Next.js 15 App Router · React 19 · TS strict · Tailwind · Zod. Path alias `@/*`.
-**Няма Prisma/база** — цялото потребителско съдържание живее в localStorage на
-клиента (умишлено, GDPR-минимализъм).
+Next.js 15 App Router · React 19 · TS strict · Tailwind · Zod · jose · bcryptjs.
+Path alias `@/*`. **Няма Prisma/база** — цялото ПОТРЕБИТЕЛСКО съдържание живее в
+localStorage на клиента (умишлено, GDPR-минимализъм). Единственото сървърно
+състояние е **рекламните банери**: проста JSON база в `MASTILKO_DATA_DIR`
+(`data/banners.json`), управлявана от админ панела — виж по-долу.
 
 ```bash
 npm run dev / build / start
@@ -54,3 +56,20 @@ npm run lint && npm run typecheck && npm test   # качествена порт�
   `src/lib/vcard.ts`, тествана).
 - Правни страници: `/poveritelnost`, `/usloviya` — при промяна в обработката
   на данни ги обнови (и мини Правния Разбирач).
+
+## Админ панел + рекламни банери
+
+- `/admin` (табло) и `/admin/vhod` (вход) — пази ги `src/middleware.ts`
+  (проверява подписана jose сесия). `SESSION_SECRET` в env (base64, безопасен);
+  админите в `data/admins.json` (НЕ в env — bcrypt „$“ чупи dotenv), пишат се с
+  `node scripts/hash-admin.mjs <user> <pass>`. **Само админът получава
+  бисквитка** (httpOnly сесия) — посетителите нямат.
+- Данни: `src/lib/banners.ts` (server-only) чете/пише `data/banners.json`.
+  API: `src/app/api/admin/banners` (защитено, PUT целия списък),
+  `/api/banners` (публично, само активните). Банерите се показват от
+  `src/components/BannerZone.tsx` (лента под хедъра; „home“ разположение и на
+  началната). **Собствени промоции — без чужди скриптове/проследяване.**
+  Решение на собственика (2026-07): собствени банери сега, място за външна
+  мрежа по-късно (тогава ще трябва банер за съгласие — не пускай преди това).
+- `data/` НЕ се трие при деплой (`autodeploy.sh` rsync exclude) и е в
+  `ReadWritePaths` на unit-а; на прод е `/opt/mastilko/data`.

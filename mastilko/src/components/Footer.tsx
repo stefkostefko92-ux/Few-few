@@ -35,7 +35,7 @@ export default function Footer() {
       </div>
       <div className="border-t border-ink/10 py-4 text-center text-xs text-ink-faint">
         © {new Date().getFullYear()} Carbon Stealth VCC · Направено с топлина в
-        България 🇧🇬 · Без бисквитки, без реклами, без сметка
+        България 🇧🇬 · Без проследяване, без чужди реклами, без сметка
       </div>
     </footer>
   );

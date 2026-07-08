@@ -31,14 +31,28 @@ ln -sfn /etc/nginx/sites-available/mastilko /etc/nginx/sites-enabled/mastilko
 nginx -t && systemctl reload nginx
 certbot --nginx -d mastilko.carbonstealth.eu --redirect
 
-# 3) Тайните (по желание — само за AI подсказките)
+# 3) Тайните
+#    - GEMINI_API_KEY: по желание, само за AI подсказките.
+#    - SESSION_SECRET: за подписване на админ сесията (base64, без „$“).
 cat > /opt/mastilko/.env <<'EOF'
 GEMINI_API_KEY=постави-ключа-тук
 GEMINI_MODEL=gemini-2.5-flash
+SESSION_SECRET=дълъг-случаен-низ-openssl-rand-base64-48
 EOF
 chmod 600 /opt/mastilko/.env && chown mastilko:mastilko /opt/mastilko/.env
+
+# 4) Създай админ за панела на банерите (bcrypt хеш → data/admins.json).
+#    Пусни от папката на приложението, като насочиш към data/ на сървъра:
+sudo -u mastilko env MASTILKO_DATA_DIR=/opt/mastilko/data \
+  node /opt/mastilko/scripts/hash-admin.mjs stefan МОЯТА-ПАРОЛА
+
 systemctl restart mastilko
 ```
+
+Банерите се управляват на `https://mastilko.carbonstealth.eu/admin` (вход с
+потребителя от стъпка 4). И банерите, и админите се пазят в
+`/opt/mastilko/data/` (`banners.json`, `admins.json`) — папката **оцелява при
+деплой** (не се трие), както `.env`.
 
 Ключ: https://aistudio.google.com/apikey (решение на собственика 2026-07:
 безплатен tier — виж бележката в `mastilko/.env.example`).
