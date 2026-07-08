@@ -26,7 +26,8 @@ Node ≥20 required. Prod env: `NODE_ENV=production`, `PUBLIC_BASE_URL` (HTTPS �
 goes into the QR code and vCard), optional `DATA_DIR` (default `./data`),
 `ADMIN_EMAILS` (comma-separated — grants `/admin` access), `MASTILKO_URL` (печатен
 партньор), `PRINT_API_SECRET` (**задължителна в продукция** — подписва печатния
-handoff токен). See `.env.example`.
+handoff токен), `INDEXNOW_KEY` (авто-подаване към Bing; сервира се на `/<key>.txt`).
+See `.env.example`.
 
 ## Layout
 
@@ -45,9 +46,12 @@ src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
 src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
 src/themes.js        цветови теми на визитката (CSS клас theme-<id>)
-src/seo.js           COMPANY (импресум), robots (AI-ботове без /p/), sitemap, llms.txt,
-                     FAQ, JSON-LD (сайт: WebSite+Organization+FAQPage; визитка:
-                     Person/Organization+BreadcrumbList)
+src/seo.js           COMPANY (импресум + structured address/geo Бобов дол), robots
+                     (AI-ботове без /p/; /api /b /print disallow), sitemap (lastmod),
+                     llms.txt, FAQ, JSON-LD (сайт: WebSite + Organization/LocalBusiness
+                     с geo+areaServed=BG + WebApplication offer:0 + FAQPage; визитка:
+                     Person/Organization + BreadcrumbList)
+src/indexnow.js      IndexNow — авто-подаване на публичните URL към Bing (INDEXNOW_KEY)
 src/config.js        baseUrl (PUBLIC_BASE_URL или от заявката)
 src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)

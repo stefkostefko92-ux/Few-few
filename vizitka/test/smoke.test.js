@@ -10,6 +10,7 @@ process.env.DATA_DIR = fs.mkdtempSync(join(os.tmpdir(), 'vizitka-test-'));
 process.env.ADMIN_EMAILS = 'admin@example.com';
 process.env.MASTILKO_URL = 'https://mastilko-bg.com';
 process.env.PRINT_API_SECRET = 'test-print-secret';
+process.env.INDEXNOW_KEY = 'testindexnowkey1234567890abcdef0';
 
 const { default: app } = await import('../src/app.js');
 
@@ -178,6 +179,29 @@ await test('правни страници, robots и sitemap отговарят'
   const llms = await request('/llms.txt');
   assert.equal(llms.status, 200);
   assert.match(await llms.text(), /Vizitka/);
+});
+
+await test('launch SEO: GEO схема, robots disallows, IndexNow ключ', async () => {
+  const home = await (await request('/')).text();
+  assert.match(home, /LocalBusiness/); // Organization+LocalBusiness за Бобов дол
+  assert.match(home, /Бобов дол/);
+  assert.match(home, /GeoCoordinates/);
+  assert.match(home, /WebApplication/);
+  assert.match(home, /max-image-preview:large/);
+  const robots = await (await request('/robots.txt')).text();
+  assert.match(robots, /Disallow: \/api\//);
+  assert.match(robots, /Disallow: \/p\/\*\/print/);
+  // IndexNow ключов файл се сервира
+  const key = await request('/testindexnowkey1234567890abcdef0.txt');
+  assert.equal(key.status, 200);
+  assert.equal((await key.text()).trim(), 'testindexnowkey1234567890abcdef0');
+});
+
+await test('launch правно: политиката разкрива mastilko и IndexNow', async () => {
+  const priv = await (await request('/privacy')).text();
+  assert.match(priv, /mastilko-bg\.com/);
+  assert.match(priv, /IndexNow/);
+  assert.match(priv, /коричен образ/);
 });
 
 await test('canonical и OG тагове присъстват', async () => {

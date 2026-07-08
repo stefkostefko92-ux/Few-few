@@ -11,6 +11,7 @@ import { attachUser, seedAdmins } from './auth.js';
 import { baseUrl } from './config.js';
 import { COMPANY, FAQ, robotsTxt, sitemapXml, llmsTxt, siteJsonLd } from './seo.js';
 import { activeBanners, clickBanner } from './banners.js';
+import { indexNowKey } from './indexnow.js';
 import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
@@ -102,6 +103,10 @@ app.get('/b/:id/click', (req, res) => {
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(baseUrl(req))));
 app.get('/sitemap.xml', (req, res) => res.type('application/xml').send(sitemapXml(baseUrl(req))));
 app.get('/llms.txt', (req, res) => res.type('text/plain').send(llmsTxt(baseUrl(req))));
+// IndexNow ключов файл — доказва собствеността пред търсачките (Bing и др.).
+if (indexNowKey()) {
+  app.get(`/${indexNowKey()}.txt`, (req, res) => res.type('text/plain').send(indexNowKey()));
+}
 app.get('/privacy', (req, res) => res.render('privacy', { title: 'Политика за поверителност' }));
 app.get('/terms', (req, res) => res.render('terms', { title: 'Общи условия' }));
 app.use(authRoutes);

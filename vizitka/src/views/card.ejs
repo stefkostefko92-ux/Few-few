@@ -56,7 +56,7 @@
       <img src="/p/<%= profile.slug %>/qr.png" alt="QR код към тази визитка" width="140" height="140">
       <p class="muted small">Сподели визитката: дай този QR за сканиране.</p>
       <% if (isOwner) { %>
-        <p><a class="link-btn" href="/p/<%= profile.slug %>/print">🖨️ Оформи и разпечатай (Мастилко)</a></p>
+        <p><a class="link-btn" href="/p/<%= profile.slug %>/print"><span aria-hidden="true">🖨️</span> Оформи и разпечатай (Мастилко)</a></p>
       <% } %>
     </div>
   </article>

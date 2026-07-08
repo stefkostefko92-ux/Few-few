@@ -18,10 +18,18 @@ cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
 PORT=3100
 PUBLIC_BASE_URL=https://vizitka-bg.com
+ADMIN_EMAILS=stefan.kostadinov16@gmail.com
+MASTILKO_URL=https://mastilko-bg.com
+PRINT_API_SECRET=<32-байтов hex; node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
+INDEXNOW_KEY=<32-знаков hex; node -e "console.log(require('crypto').randomBytes(16).toString('hex'))">
 EOF
 chmod 600 /etc/vizitka/vizitka.env
 chown vizitka:vizitka /etc/vizitka/vizitka.env
 ```
+
+> `PRINT_API_SECRET` е задължителна в продукция (подписва печатния handoff към mastilko).
+> `INDEXNOW_KEY` включва авто-подаването към Bing; сервира се на `/<key>.txt`. След пускане
+> подай sitemap-а веднъж в Google Search Console и Bing Webmaster Tools.
 
 ## 3. systemd + nginx + TLS
 

@@ -9,6 +9,13 @@ export const COMPANY = {
   uic: '208725180', // ЕИК
   vat: 'BG208725180', // ДДС №
   address: 'ул. „Самуил“ 3, 2670 Бобов дол, България',
+  // Структуриран адрес + координати за GEO/LocalBusiness (седалище Бобов дол).
+  streetAddress: 'ул. „Самуил“ 3',
+  addressLocality: 'Бобов дол',
+  addressRegion: 'област Кюстендил',
+  postalCode: '2670',
+  addressCountry: 'BG',
+  geo: { lat: 42.3675, lon: 23.0003 },
   manager: 'Стефан Костадинов',
   email: 'info@carbonstealth.eu',
   privacyEmail: 'privacy@carbonstealth.eu',
@@ -16,12 +23,28 @@ export const COMPANY = {
   phone: '+359 877 414 874',
 };
 
+// Структуриран пощенски адрес (schema.org PostalAddress) — за JSON-LD.
+const postalAddress = {
+  '@type': 'PostalAddress',
+  streetAddress: COMPANY.streetAddress,
+  addressLocality: COMPANY.addressLocality,
+  addressRegion: COMPANY.addressRegion,
+  postalCode: COMPANY.postalCode,
+  addressCountry: COMPANY.addressCountry,
+};
+
+// Дата на последна промяна на статичните страници (за sitemap lastmod).
+export const SITE_UPDATED = '2026-07-08';
+
 export function robotsTxt(base) {
   return [
     'User-agent: *',
     'Disallow: /dashboard',
     'Disallow: /login',
     'Disallow: /register',
+    'Disallow: /b/', // клик-редиректи на банери
+    'Disallow: /api/', // печатно API
+    'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
     'Allow: /',
     '',
     // AI-обучаващи ботове: търсещите/извличащите са добре дошли (видимост в AI
@@ -68,7 +91,11 @@ const xmlEsc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 // Статичните страници + публичните визитки (публикувани по избор на потребителя).
 // Google игнорира <priority>, затова не го генерираме.
 export function sitemapXml(base) {
-  const urls = [{ loc: `${base}/` }, { loc: `${base}/privacy` }, { loc: `${base}/terms` }];
+  const urls = [
+    { loc: `${base}/`, lastmod: SITE_UPDATED },
+    { loc: `${base}/privacy`, lastmod: SITE_UPDATED },
+    { loc: `${base}/terms`, lastmod: SITE_UPDATED },
+  ];
   const profiles = db
     .prepare('SELECT slug, updated_at FROM profiles WHERE is_public = 1 ORDER BY updated_at DESC')
     .all();
@@ -126,14 +153,50 @@ export function siteJsonLd(base) {
         publisher: { '@id': `${base}/#organization` },
       },
       {
-        '@type': 'Organization',
+        // Операторът като локален бизнес със седалище в Бобов дол, обслужващ
+        // цяла България — силен GEO сигнал за търсачки и AI.
+        '@type': ['Organization', 'LocalBusiness'],
         '@id': `${base}/#organization`,
         name: COMPANY.name,
         url: COMPANY.url,
         logo: `${base}/logo.png`,
+        image: `${base}/logo.png`,
         email: COMPANY.email,
-        address: COMPANY.address,
+        telephone: COMPANY.phone,
+        vatID: COMPANY.vat,
+        address: postalAddress,
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: COMPANY.geo.lat,
+          longitude: COMPANY.geo.lon,
+        },
+        areaServed: { '@type': 'Country', name: 'Bulgaria' },
+        contactPoint: {
+          '@type': 'ContactPoint',
+          telephone: COMPANY.phone,
+          email: COMPANY.email,
+          contactType: 'customer support',
+          areaServed: 'BG',
+          availableLanguage: ['Bulgarian'],
+        },
+        knowsAbout: ['дигитални визитки', 'QR кодове', 'vCard контакти', 'уеб приложения'],
         sameAs: [COMPANY.url],
+      },
+      {
+        // Самата услуга — безплатно уеб приложение, за да я разбират като продукт.
+        '@type': 'WebApplication',
+        '@id': `${base}/#app`,
+        name: 'Vizitka',
+        url: `${base}/`,
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        inLanguage: 'bg',
+        description:
+          'Безплатна дигитална визитка с постоянен QR код — професионален профил (личен или фирмен), който винаги е актуален.',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'BGN' },
+        areaServed: { '@type': 'Country', name: 'Bulgaria' },
+        provider: { '@id': `${base}/#organization` },
+        publisher: { '@id': `${base}/#organization` },
       },
       {
         '@type': 'FAQPage',

@@ -18,6 +18,7 @@ import {
   normalizeAccent,
 } from '../personalize.js';
 import { MAX_LINKS, getLinks, replaceLinks, parseLinkFields } from '../links.js';
+import { submitUrls } from '../indexnow.js';
 
 const router = Router();
 
@@ -140,6 +141,12 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
     user_id: req.user.id,
   });
   replaceLinks(profile.id, parsed.links);
+
+  // Уведоми търсачките (Bing и др.) за новата/променена публична визитка.
+  if (isPublic) {
+    const base = baseUrl(req);
+    submitUrls(base, [`${base}/p/${slug}`]);
+  }
 
   res.redirect('/dashboard?saved=1');
 });

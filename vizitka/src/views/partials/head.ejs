@@ -18,9 +18,14 @@
   <meta property="og:title" content="<%= pageTitle %>">
   <meta property="og:description" content="<%= pageDesc %>">
   <meta property="og:url" content="<%= canonical %>">
-  <meta property="og:image" content="<%= meta?.image || siteBase + '/logo.png' %>">
+  <meta property="og:image" content="<%= meta?.image || siteBase + '/og-default.png' %>">
+  <meta property="og:locale" content="bg_BG">
   <meta name="twitter:card" content="summary_large_image">
-  <% if (/^\/(dashboard|login|register)/.test(currentPath)) { %><meta name="robots" content="noindex"><% } %>
+  <% if (/^\/(dashboard|login|register)/.test(currentPath)) { %>
+    <meta name="robots" content="noindex,nofollow">
+  <% } else { %>
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <% } %>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
 </head>
