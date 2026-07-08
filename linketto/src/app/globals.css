@@ -103,14 +103,137 @@ body {
   color: transparent;
 }
 
-/* Никакъв спектакъл за хора, помолили за спокойствие */
-@media (prefers-reduced-motion: reduce) {
-  .animate-aurora,
-  .animate-aurora-slow,
-  .animate-float,
-  .animate-greet,
-  .animate-marquee,
-  .animate-rise {
-    animation: none;
+/* По изрично решение на собственика ефектите вървят и при
+   prefers-reduced-motion (бранд сайт, максимален спектакъл).
+   Желязно правило остава: НИЩО не мига/стробира (епилепсия). */
+
+
+/* ── Втора вълна ефекти: изскачащи, плуващи, зарибяващи ─────────────── */
+
+@keyframes shimmer-sweep {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes hue-drift {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(35deg);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(24px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Заглавие с преливащ светлинен блясък */
+.title-shimmer {
+  background: linear-gradient(
+    110deg,
+    #ffffff 25%,
+    #7dd3fc 42%,
+    #c4b5fd 52%,
+    #ffffff 68%
+  );
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-sweep 5.5s linear infinite;
+}
+
+/* Пулсиращо сияние зад телефона */
+.phone-glow {
+  animation: glow-pulse 5s ease-in-out infinite;
+}
+
+/* 3D наклон на телефона при hover */
+.phone-wrap {
+  perspective: 1200px;
+}
+.phone-tilt {
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+.phone-wrap:hover .phone-tilt {
+  transform: rotateY(-10deg) rotateX(5deg) scale(1.04);
+}
+
+/* Бавен дъх на цвета върху aurora петната */
+.animate-hue {
+  animation: hue-drift 22s ease-in-out infinite;
+}
+
+/* Светлинен лъч по бутоните */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+}
+.btn-shine:hover::after {
+  transform: translateX(130%);
+  transition: transform 0.7s ease;
+}
+
+/* Жив градиент на CTA вълната */
+.cta-live {
+  background-size: 200% 200%;
+  animation: shimmer-sweep 9s linear infinite;
+}
+
+/* Marquee в обратна посока (втора лента) */
+.animate-marquee-reverse {
+  animation: marquee-scroll 38s linear infinite reverse;
+}
+
+/* Изскачане при скрол (Chromium: scroll-driven; иначе — винаги видимо) */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: fade-rise 1s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+  .reveal-pop {
+    animation: pop-in 0.9s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 60%;
   }
 }

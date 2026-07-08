@@ -52,10 +52,15 @@ const GREETINGS = [
   ['Hola', 'bottom-24 -right-8', '6deg', '0.6s'],
   ['Bonjour', 'bottom-2 -left-8', '-5deg', '1.8s'],
   ['Hallo', '-top-2 right-16', '4deg', '3s'],
+  ['Olá', 'top-32 -left-16', '5deg', '3.6s'],
+  ['Merhaba', 'bottom-40 -right-14', '-5deg', '4.2s'],
 ] as const;
 
 const MARQUEE =
   'Здравей · Hello · Ciao · Hola · Hallo · Bonjour · Olá · Merhaba · Ahoj · Cześć · Γεια · Привіт · こんにちは · 안녕하세요 · مرحبا · ';
+
+const PLATFORM_MARQUEE =
+  'YouTube · Instagram · TikTok · X · Twitch · Kick · Discord · Spotify · Snapchat · Threads · Facebook · Telegram · ';
 
 export default async function HomePage({
   params,
@@ -86,19 +91,14 @@ export default async function HomePage({
       <main>
         {/* ── HERO: жива aurora върху дълбоко нощно небе ─────────────── */}
         <section className="grain relative overflow-hidden bg-slate-950 text-white">
-          <div
-            aria-hidden
-            className="animate-aurora pointer-events-none absolute -top-52 left-[-15%] h-[42rem] w-[42rem] rounded-full bg-linketto-600/40 blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="animate-aurora-slow pointer-events-none absolute -bottom-64 right-[-12%] h-[44rem] w-[44rem] rounded-full bg-violet-600/30 blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="animate-aurora pointer-events-none absolute left-1/3 top-1/4 h-[26rem] w-[26rem] rounded-full bg-fuchsia-500/20 blur-3xl"
-            style={{ animationDelay: '-9s' }}
-          />
+          <div aria-hidden className="animate-hue pointer-events-none absolute inset-0">
+            <div className="animate-aurora absolute -top-52 left-[-15%] h-[42rem] w-[42rem] rounded-full bg-linketto-600/40 blur-3xl" />
+            <div className="animate-aurora-slow absolute -bottom-64 right-[-12%] h-[44rem] w-[44rem] rounded-full bg-violet-600/30 blur-3xl" />
+            <div
+              className="animate-aurora absolute left-1/3 top-1/4 h-[26rem] w-[26rem] rounded-full bg-fuchsia-500/20 blur-3xl"
+              style={{ animationDelay: '-9s' }}
+            />
+          </div>
 
           <div className="relative mx-auto max-w-6xl px-6">
             <div className="grid items-center gap-16 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:py-28">
@@ -107,7 +107,7 @@ export default async function HomePage({
                   <LanguagesIcon className="h-3.5 w-3.5" />
                   {t('heroBadge')}
                 </p>
-                <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+                <h1 className="title-shimmer mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
                   {t('heroTitle')}
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300 lg:mx-0">
@@ -116,7 +116,7 @@ export default async function HomePage({
                 <div className="mt-9 flex flex-wrap justify-center gap-4 lg:justify-start">
                   <Link
                     href={`/${locale}/register`}
-                    className="rounded-full bg-white px-7 py-3.5 font-semibold text-slate-900 shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-400/30"
+                    className="btn-shine rounded-full bg-white px-7 py-3.5 font-semibold text-slate-900 shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-400/30"
                   >
                     {t('ctaPrimary')}
                   </Link>
@@ -130,7 +130,11 @@ export default async function HomePage({
               </div>
 
               {/* телефон + плаващи поздрави */}
-              <div className="relative mx-auto w-full max-w-[300px]">
+              <div className="phone-wrap relative mx-auto w-full max-w-[300px]">
+                <div
+                  aria-hidden
+                  className="phone-glow pointer-events-none absolute -inset-10 rounded-full bg-gradient-to-br from-sky-500/40 via-indigo-500/30 to-fuchsia-500/30 blur-3xl"
+                />
                 {GREETINGS.map(([word, position, tilt, delay]) => (
                   <span
                     key={word}
@@ -146,7 +150,8 @@ export default async function HomePage({
                     {word}
                   </span>
                 ))}
-                <div className="animate-float rounded-[2.8rem] border-[10px] border-slate-900 bg-slate-900 shadow-[0_40px_90px_-20px_rgba(56,132,222,0.45)]">
+                <div className="animate-float">
+                  <div className="phone-tilt rounded-[2.8rem] border-[10px] border-slate-900 bg-slate-900 shadow-[0_40px_90px_-20px_rgba(56,132,222,0.45)]">
                   <div className="rounded-[2.2rem] bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 px-5 pb-8 pt-7 text-center">
                     <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 text-2xl font-bold ring-4 ring-white/20">
                       A
@@ -181,6 +186,7 @@ export default async function HomePage({
                       Linketto
                     </p>
                   </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -209,13 +215,17 @@ export default async function HomePage({
             <span>{MARQUEE.repeat(3)}</span>
             <span>{MARQUEE.repeat(3)}</span>
           </div>
+          <div className="animate-marquee-reverse mt-2 flex w-max whitespace-nowrap text-xs font-medium tracking-wide text-slate-400">
+            <span>{PLATFORM_MARQUEE.repeat(4)}</span>
+            <span>{PLATFORM_MARQUEE.repeat(4)}</span>
+          </div>
         </div>
 
         {/* ── СТАТИСТИКИ ─────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 py-16">
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
             {STATS.map(([value, label]) => (
-              <div key={label} className="text-center">
+              <div key={label} className="reveal-pop text-center">
                 <p className="bg-gradient-to-r from-linketto-600 to-violet-600 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
                   {value}
                 </p>
@@ -239,10 +249,10 @@ export default async function HomePage({
             {FEATURES.map(([key, FeatureIcon, chip]) => (
               <div
                 key={key}
-                className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-linketto-500/40 hover:shadow-xl"
+                className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-linketto-500/40 hover:shadow-xl"
               >
                 <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl transition group-hover:scale-110 ${chip}`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl transition duration-300 group-hover:rotate-6 group-hover:scale-110 ${chip}`}
                 >
                   <FeatureIcon className="h-5 w-5" />
                 </span>
@@ -263,7 +273,7 @@ export default async function HomePage({
             aria-hidden
             className="animate-aurora-slow pointer-events-none absolute -right-40 top-1/2 h-[30rem] w-[30rem] -translate-y-1/2 rounded-full bg-linketto-600/30 blur-3xl"
           />
-          <div className="relative mx-auto max-w-3xl px-6 text-center">
+          <div className="reveal relative mx-auto max-w-3xl px-6 text-center">
             <HandshakeIcon className="mx-auto h-10 w-10 text-sky-300" />
             <h2 className="mt-6 text-2xl font-bold tracking-tight sm:text-3xl">
               {t('manifestoTitle')}
@@ -299,7 +309,7 @@ export default async function HomePage({
               return (
                 <div
                   key={planKey}
-                  className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-lg ${
+                  className={`reveal relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-lg ${
                     highlight
                       ? 'border-linketto-600 shadow-lg shadow-linketto-600/10 ring-2 ring-linketto-600'
                       : 'border-slate-200'
@@ -350,7 +360,7 @@ export default async function HomePage({
 
         {/* ── ФИНАЛНА CTA ВЪЛНА ─────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 pb-24">
-          <div className="grain relative overflow-hidden rounded-3xl bg-gradient-to-br from-linketto-600 via-indigo-600 to-violet-600 px-8 py-16 text-center text-white shadow-2xl shadow-linketto-600/30">
+          <div className="cta-live grain relative overflow-hidden rounded-3xl bg-gradient-to-br from-linketto-600 via-indigo-600 to-violet-600 px-8 py-16 text-center text-white shadow-2xl shadow-linketto-600/30">
             <div
               aria-hidden
               className="animate-aurora pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-white/15 blur-3xl"
@@ -360,7 +370,7 @@ export default async function HomePage({
             </h2>
             <Link
               href={`/${locale}/register`}
-              className="relative mt-8 inline-block rounded-full bg-white px-8 py-4 font-bold text-linketto-700 shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl"
+              className="btn-shine relative mt-8 inline-block rounded-full bg-white px-8 py-4 font-bold text-linketto-700 shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl"
             >
               {t('ctaButton')}
             </Link>
