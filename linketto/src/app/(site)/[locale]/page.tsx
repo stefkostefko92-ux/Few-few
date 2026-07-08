@@ -18,17 +18,18 @@ import {
 import type { Locale } from '@/i18n/locales';
 import { PLANS } from '@/lib/plans';
 
-// Авторските икони на бранда (public/icons, качени от собственика) в бели
-// кръгли плочки; всяка функция има собствен цвят на сиянието при hover.
+// Авторските икони на бранда (public/icons) в бели кръгли плочки с
+// пулсиращо сияние. Гридът е нарочно „счупен“ — всяка карта има свой
+// наклон и отместване, а иконата изскача наполовина извън картата.
 const FEATURES = [
-  ['Lang', '/icons/feature-megaphone.png'],
-  ['Ai', '/icons/feature-bookgear.png'],
-  ['Fee', '/icons/feature-money.png'],
-  ['Qr', '/icons/feature-network.png'],
-  ['Analytics', '/icons/feature-growth.png'],
-  ['Trust', '/icons/feature-hands.png'],
-  ['Eu', '/icons/feature-handshake.png'],
-  ['Domain', '/icons/feature-mask.png'],
+  ['Lang', '/icons/feature-megaphone.png', 'lg:-rotate-2 lg:-translate-y-1'],
+  ['Ai', '/icons/feature-bookgear.png', 'lg:rotate-1 lg:translate-y-9'],
+  ['Fee', '/icons/feature-money.png', 'lg:rotate-2 lg:-translate-y-5'],
+  ['Qr', '/icons/feature-network.png', 'lg:-rotate-1 lg:translate-y-6'],
+  ['Analytics', '/icons/feature-growth.png', 'lg:rotate-1 lg:translate-y-3'],
+  ['Trust', '/icons/feature-hands.png', 'lg:-rotate-2 lg:-translate-y-7'],
+  ['Eu', '/icons/feature-handshake.png', 'lg:rotate-2 lg:translate-y-8'],
+  ['Domain', '/icons/feature-mask.png', 'lg:-rotate-1 lg:-translate-y-3'],
 ] as const;
 
 const PLAN_ORDER = ['free', 'pro', 'business', 'founder'] as const;
@@ -203,9 +204,9 @@ export default async function HomePage({
           </div>
         </section>
 
-        {/* ── MARQUEE: поздравите на света текат ─────────────────────── */}
+        {/* ── MARQUEE: поздравите на света текат — под ъгъл ──────────── */}
         <div
-          className="overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5"
+          className="-mx-4 -rotate-1 scale-[1.02] overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5 shadow-sm"
           aria-hidden
         >
           <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-semibold tracking-wide text-slate-500">
@@ -221,8 +222,13 @@ export default async function HomePage({
         {/* ── СТАТИСТИКИ ─────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 py-16">
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            {STATS.map(([value, label]) => (
-              <div key={label} className="reveal-pop text-center">
+            {STATS.map(([value, label], index) => (
+              <div
+                key={label}
+                className={`reveal-pop text-center ${
+                  ['lg:-rotate-3', 'lg:translate-y-5 lg:rotate-2', 'lg:-translate-y-2 lg:rotate-1', 'lg:translate-y-7 lg:-rotate-2'][index]
+                }`}
+              >
                 <p className="bg-gradient-to-r from-linketto-600 to-violet-600 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
                   {value}
                 </p>
@@ -242,13 +248,18 @@ export default async function HomePage({
           >
             {t('featuresTitle')}
           </h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(([key, iconSrc]) => (
+          <div className="mt-20 grid gap-x-5 gap-y-14 pb-10 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURES.map(([key, iconSrc, twist], index) => (
               <div
                 key={key}
-                className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-linketto-500/40 hover:shadow-xl"
+                className={`reveal group relative rounded-2xl border border-slate-200 bg-white px-6 pb-6 pt-12 shadow-sm transition duration-300 hover:rotate-0 hover:border-linketto-500/40 hover:shadow-xl lg:hover:translate-y-0 ${twist}`}
               >
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_0_28px_rgba(56,189,248,0.55)] ring-1 ring-sky-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-[0_0_48px_rgba(56,189,248,0.85)]">
+                <span
+                  className={`icon-pulse absolute -top-8 flex h-16 w-16 items-center justify-center rounded-full bg-white ring-1 ring-sky-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 ${
+                    index % 2 === 0 ? 'left-6' : 'right-6'
+                  }`}
+                  style={{ animationDelay: `${index * 0.45}s` }}
+                >
                   <Image
                     src={iconSrc}
                     alt=""
@@ -257,7 +268,7 @@ export default async function HomePage({
                     className="h-11 w-11"
                   />
                 </span>
-                <h3 className="mt-4 font-semibold text-slate-900">
+                <h3 className="mt-2 font-semibold text-slate-900">
                   {t(`feature${key}Title`)}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-slate-600">

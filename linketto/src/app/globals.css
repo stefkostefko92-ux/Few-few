@@ -237,3 +237,18 @@ body {
     animation-range: entry 0% entry 60%;
   }
 }
+
+
+/* Пулсиращо сияние на кръглите икони (стъпаловидни закъснения в JSX) */
+@keyframes circle-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 55px rgba(56, 189, 248, 0.95);
+  }
+}
+.icon-pulse {
+  animation: circle-glow 3.6s ease-in-out infinite;
+}
