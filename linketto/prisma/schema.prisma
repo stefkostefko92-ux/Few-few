@@ -1,0 +1,144 @@
+// Linketto — многоезичен link-in-bio. PostgreSQL.
+// Многоезичността е в ядрото на схемата: всяко потребителско съдържание
+// (профил, линк) има таблица с преводи по locale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+  FOUNDER // еднократна доживотна оферта за ранни потребители
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String?
+  locale           String    @default("bg") // език на админа за този потребител
+  plan             Plan      @default(FREE)
+  stripeCustomerId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  sessions         Session[]
+  profiles         Profile[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique // sha256 на cookie токена — суровият токен не се пази
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Profile {
+  id            String               @id @default(cuid())
+  userId        String
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug          String               @unique
+  defaultLocale String               @default("bg")
+  theme         String               @default("aurora")
+  accent        String? // hex цвят, валидиран в кода
+  published     Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  translations  ProfileTranslation[]
+  links         Link[]
+  clicks        ClickEvent[]
+  messages      ContactMessage[]
+}
+
+model ProfileTranslation {
+  id          String  @id @default(cuid())
+  profileId   String
+  profile     Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locale      String
+  displayName String
+  bio         String?
+
+  @@unique([profileId, locale])
+}
+
+// Видове блокове (по модела на linkie.to): освен обикновени линкове —
+// заглавия, телефон, карта, видео/музикални embeds, „умни“ app линкове
+// (iOS/Android детекция) и контактна форма.
+enum BlockKind {
+  LINK
+  HEADER
+  PHONE
+  MAP
+  VIDEO
+  MUSIC
+  APP
+  FORM
+}
+
+model Link {
+  id           String            @id @default(cuid())
+  profileId    String
+  profile      Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  kind         BlockKind         @default(LINK)
+  position     Int               @default(0)
+  url          String? // основна цел; HEADER/FORM нямат, MUSIC/APP може само meta
+  meta         Json? // kind-специфични данни: {ios, android} / {spotify, apple}
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  translations LinkTranslation[]
+  clicks       ClickEvent[]
+
+  @@index([profileId, position])
+}
+
+// Съобщения от контактната форма (блок FORM) — публични, без акаунт.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name      String?
+  email     String?
+  message   String
+  locale    String?
+  createdAt DateTime @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+model LinkTranslation {
+  id     String @id @default(cuid())
+  linkId String
+  link   Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  locale String
+  title  String
+
+  @@unique([linkId, locale])
+}
+
+// Аналитика без бисквитки: никакви лични данни, никакъв IP.
+// Пазим само агрегируеми измерения.
+model ClickEvent {
+  id           String   @id @default(cuid())
+  profileId    String
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  linkId       String?
+  link         Link?    @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  locale       String? // на кой език е гледан профилът
+  referrerHost String? // само хостът, без пълния URL
+  country      String? // от CDN хедър, ако има (напр. CF-IPCountry)
+  createdAt    DateTime @default(now())
+
+  @@index([profileId, createdAt])
+  @@index([linkId, createdAt])
+}

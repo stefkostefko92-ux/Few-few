@@ -1,0 +1,153 @@
+{
+  "common": {
+    "appName": "Linketto",
+    "tagline": "All your links, strung together in one place — in every language."
+  },
+  "nav": {
+    "login": "Log in",
+    "register": "Sign up",
+    "dashboard": "Dashboard",
+    "logout": "Log out"
+  },
+  "home": {
+    "heroTitle": "One link in bio. Every language in the world.",
+    "heroSubtitle": "Linketto is the multilingual link-in-bio page: your profile speaks each visitor's language. Hosted in the EU, with reduced commissions and honest pricing.",
+    "ctaPrimary": "Create your Linketto for free",
+    "ctaSecondary": "See pricing",
+    "featuresTitle": "Why Linketto?",
+    "featureLangTitle": "Multilingual by birth",
+    "featureLangBody": "One page, many languages: visitors see your profile in their own language, automatically.",
+    "featureFeeTitle": "Reduced commissions",
+    "featureFeeBody": "Just 5% on the free plan and 0% on all paid plans — versus 12% elsewhere.",
+    "featureAnalyticsTitle": "Cookieless analytics",
+    "featureAnalyticsBody": "We count clicks, not people. No personal data and no consent banner.",
+    "featureTrustTitle": "Humans, not bans",
+    "featureTrustBody": "Transparent moderation with notice and the right to appeal. Never a shameful banner on your page.",
+    "featureEuTitle": "Hosted in the EU",
+    "featureEuBody": "Your data stays in the European Union. GDPR by default.",
+    "featureDomainTitle": "Your own domain",
+    "featureDomainBody": "Custom domains on paid plans — your reputation never depends on someone else's abuse."
+  },
+  "pricing": {
+    "title": "Simple, honest pricing",
+    "commission": "commission on sales",
+    "perMonth": "/mo",
+    "oneTime": "one-time",
+    "choose": "Choose",
+    "free": {
+      "name": "Free",
+      "price": "€0",
+      "fee": "5%",
+      "f1": "Unlimited links",
+      "f2": "2 language versions",
+      "f3": "90-day analytics"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "€4",
+      "fee": "0%",
+      "f1": "All languages",
+      "f2": "Custom domain",
+      "f3": "Full analytics history"
+    },
+    "business": {
+      "name": "Business",
+      "price": "€9",
+      "fee": "0%",
+      "f1": "Multiple profiles & team",
+      "f2": "API access",
+      "f3": "Priority support"
+    },
+    "founder": {
+      "name": "Founder",
+      "price": "€49",
+      "fee": "0%",
+      "f1": "Pro forever",
+      "f2": "One-time payment",
+      "f3": "Limited early offer"
+    }
+  },
+  "auth": {
+    "loginTitle": "Log in to Linketto",
+    "registerTitle": "Create your Linketto",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "submitLogin": "Log in",
+    "submitRegister": "Sign up",
+    "haveAccount": "Already have an account? Log in.",
+    "noAccount": "No account yet? Sign up.",
+    "errorInvalid": "Wrong email or password.",
+    "errorExists": "An account with this email already exists.",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
+  "dashboard": {
+    "title": "Your dashboard",
+    "profileSection": "Profile",
+    "slug": "Address",
+    "displayName": "Display name",
+    "bio": "Bio",
+    "defaultLocale": "Default language",
+    "theme": "Theme",
+    "accent": "Accent color",
+    "published": "Published",
+    "save": "Save",
+    "linksSection": "Links",
+    "addLink": "Add link",
+    "url": "URL",
+    "linkTitle": "Title",
+    "delete": "Delete",
+    "translationsSection": "Language versions",
+    "translationsHint": "Fill in your name and bio in every language you want your profile to speak.",
+    "viewPublic": "View public page",
+    "planSection": "Plan",
+    "currentPlan": "Current plan",
+    "upgradePro": "Upgrade to Pro",
+    "upgradeBusiness": "Upgrade to Business",
+    "buyFounder": "Get Founder forever",
+    "noProfile": "You don't have a profile yet — pick your address:",
+    "createProfile": "Create profile",
+    "errorSlugTaken": "This address is taken or invalid.",
+    "errorLimit": "You've reached the free plan limit. Upgrade to Pro for all languages.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "kindLabel": "Block type",
+    "kind_LINK": "Link",
+    "kind_HEADER": "Header",
+    "kind_PHONE": "Phone",
+    "kind_MAP": "Map / address",
+    "kind_VIDEO": "Video (YouTube/Vimeo)",
+    "kind_MUSIC": "Music (Spotify/Apple)",
+    "kind_APP": "App (iOS/Android)",
+    "kind_FORM": "Contact form",
+    "urlLabel": "URL / phone / address",
+    "extra1Label": "App Store / Spotify URL",
+    "extra2Label": "Google Play / Apple Music URL",
+    "addBlockHint": "Header and form only need a title. For an app, fill in App Store and/or Google Play. For music — Spotify and/or Apple Music.",
+    "messagesSection": "Form messages",
+    "noMessages": "No messages yet.",
+    "errorBlock": "Invalid block data — check the URLs."
+  },
+  "profile": {
+    "poweredBy": "Made with Linketto",
+    "notFound": "This profile does not exist.",
+    "formName": "Name",
+    "formEmail": "Email",
+    "formMessage": "Message",
+    "formSend": "Send",
+    "formSent": "Message sent. Thank you!",
+    "formError": "Invalid data — check the fields."
+  },
+  "legal": {
+    "privacyTitle": "Privacy Policy",
+    "privacyBody": "Linketto is a service of Carbon Stealth VCC (company ID BG208725180, ul. Samuil 3, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu). We process only the data needed to run the service: your email and (hashed) password, and the content you choose to publish. Our analytics are cookieless and store no personal data about visitors — we do not keep IP addresses. Data is stored in the European Union. You have the right to access, rectify, erase and port your data under the GDPR — contact us at info@carbonstealth.eu. (Draft — subject to legal review before launch.)",
+    "termsTitle": "Terms of Service",
+    "termsBody": "By using Linketto you agree not to publish illegal content, malicious links or misleading information. In case of a violation we notify you first and you have the right to appeal; profiles are not suspended without notice, except for severe abuse requiring immediate action under the law. Paid plans are billed via Stripe; you can cancel at any time and your plan stays active until the end of the paid period. The service is provided by Carbon Stealth VCC. (Draft — subject to legal review before launch.)"
+  },
+  "footer": {
+    "company": "A Carbon Stealth VCC product",
+    "legalLine": "Company ID BG208725180 · ul. Samuil 3, 2670 Bobov Dol, Bulgaria",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "info@carbonstealth.eu"
+  }
+}

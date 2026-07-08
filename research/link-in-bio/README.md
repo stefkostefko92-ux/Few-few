@@ -113,8 +113,8 @@ Linktree (linktr.ee) е лидерът на пазара „link in bio“ — �
 
 ## 7. Концепция за продукта
 
-**Име (решено):** **Millelink** — от италианското „mille“ (хиляда): хиляда
-езика, хиляда линка, една страница. Реализация: `millelink/`. **Позициониране:** „The multilingual link in bio. EU-hosted. 0%
+**Име (решено):** **Linketto** — италианското умалително на „link“
+(буквално „линкче“). Реализация: `linketto/`. **Позициониране:** „The multilingual link in bio. EU-hosted. 0%
 commission. Humans in support.“
 
 ### Отношение към `vizitka/`
