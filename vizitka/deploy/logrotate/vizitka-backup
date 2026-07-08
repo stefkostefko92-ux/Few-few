@@ -1,0 +1,12 @@
+# Ротация на лога от бекъп скрипта на Vizitka.
+# Инсталация: cp vizitka/deploy/logrotate/vizitka-backup /etc/logrotate.d/vizitka-backup
+# (Логовете на приложението се управляват от journald/systemd, а на nginx — от nginx.)
+/var/log/vizitka-backup.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 vizitka vizitka
+}

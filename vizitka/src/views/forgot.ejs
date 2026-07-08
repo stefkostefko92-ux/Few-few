@@ -1,0 +1,22 @@
+<%- include('partials/head') %>
+<section class="auth-card">
+  <h1>Забравена парола</h1>
+  <% if (sent) { %>
+    <p class="alert alert-ok">
+      Ако има акаунт с този имейл, изпратихме връзка за нулиране на паролата.
+      Провери пощата си (и папка „Спам“). Връзката важи 1 час.
+    </p>
+    <p class="muted"><a href="/login">← Обратно към входа</a></p>
+  <% } else { %>
+    <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+    <p class="muted">Въведи имейла на акаунта си и ще ти пратим връзка за нова парола.</p>
+    <form method="post" action="/forgot">
+      <label>Имейл
+        <input type="email" name="email" required maxlength="254" autocomplete="email">
+      </label>
+      <button type="submit" class="btn">Изпрати връзка за нулиране</button>
+    </form>
+    <p class="muted"><a href="/login">← Обратно към входа</a></p>
+  <% } %>
+</section>
+<%- include('partials/foot') %>
