@@ -123,6 +123,10 @@ export async function startProductPurchaseAction(
     payment_intent_data: {
       application_fee_amount: fee,
       transfer_data: { destination: owner.stripeAccountId },
+      // Създателят е merchant-of-record: работи за трансгранични продавачи
+      // (задължително при различен регион) и прехвърля ДДС/отказ отговорността
+      // върху продавача, не върху Linketto.
+      on_behalf_of: owner.stripeAccountId,
     },
     metadata: {
       productId: product.id,

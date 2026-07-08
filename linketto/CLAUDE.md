@@ -123,7 +123,9 @@ showViews = бадж „N посещения този месец“ (брои Cl
 Purchase; actions/shop.ts (onboarding + CRUD + публичното
 startProductPurchaseAction — сумата се чете САМО от базата). Checkout =
 destination charge с application_fee = totalFeeCents(цена, план) =
-комисиона по плана + такса обработка 1.9%+€0.30.
+комисиона по плана + такса обработка 1.9%+€0.30, + on_behalf_of =
+създателя (merchant-of-record: трансгранични продавачи + ДДС отговорността
+е на продавача). fee е capped на цена-1 (Stripe инвариант).
 Доставка: /u/[slug]/delivery проверява сесията НА ЖИВО срещу Stripe
 (payment_status === 'paid') преди redirect към deliveryUrl. Purchase се
 записва идемпотентно само през подписания webhook.
