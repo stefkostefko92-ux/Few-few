@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
     '/*/dashboard',
     '/*/login',
     '/*/register',
+    '/*/admin',
     '/u/*/l/', // click redirect-и — не са съдържание
     '/u/*/delivery',
     '/d/', // собствените домейни се индексират на своя host, не тук

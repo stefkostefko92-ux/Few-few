@@ -36,7 +36,12 @@ export default async function CustomDomainPage({
   const { domain } = await params;
   const { hl, sent, formError, shopError } = await searchParams;
   const profile = await loadProfileBy({ customDomain: domain.toLowerCase() });
-  if (!profile || !profile.published || profile.translations.length === 0) {
+  if (
+    !profile ||
+    !profile.published ||
+    profile.bannedAt ||
+    profile.translations.length === 0
+  ) {
     notFound();
   }
   return (

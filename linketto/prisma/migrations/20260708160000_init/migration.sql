@@ -25,6 +25,16 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "LoginEvent" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "ip" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "LoginEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "tokenHash" TEXT NOT NULL,
@@ -45,6 +55,7 @@ CREATE TABLE "Profile" (
     "theme" TEXT NOT NULL DEFAULT 'aurora',
     "accent" TEXT,
     "style" JSONB,
+    "bannedAt" TIMESTAMP(3),
     "published" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -177,6 +188,9 @@ CREATE UNIQUE INDEX "User_stripeCustomerId_key" ON "User"("stripeCustomerId");
 CREATE UNIQUE INDEX "User_stripeAccountId_key" ON "User"("stripeAccountId");
 
 -- CreateIndex
+CREATE INDEX "LoginEvent_userId_createdAt_idx" ON "LoginEvent"("userId", "createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Session_tokenHash_key" ON "Session"("tokenHash");
 
 -- CreateIndex
@@ -220,6 +234,9 @@ CREATE INDEX "ClickEvent_profileId_createdAt_idx" ON "ClickEvent"("profileId", "
 
 -- CreateIndex
 CREATE INDEX "ClickEvent_linkId_createdAt_idx" ON "ClickEvent"("linkId", "createdAt");
+
+-- AddForeignKey
+ALTER TABLE "LoginEvent" ADD CONSTRAINT "LoginEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

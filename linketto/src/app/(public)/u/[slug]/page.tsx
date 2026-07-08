@@ -32,7 +32,12 @@ export default async function PublicProfilePage({
   const { slug } = await params;
   const { hl, sent, formError, shopError } = await searchParams;
   const profile = await loadProfileBy({ slug });
-  if (!profile || !profile.published || profile.translations.length === 0) {
+  if (
+    !profile ||
+    !profile.published ||
+    profile.bannedAt ||
+    profile.translations.length === 0
+  ) {
     notFound();
   }
   return (

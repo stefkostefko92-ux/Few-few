@@ -9,6 +9,23 @@ import {
   verifyLogin,
 } from '@/lib/auth';
 import { isLocale } from '@/i18n/locales';
+import { requestIp } from '@/lib/admin';
+import { prisma } from '@/lib/db';
+
+// Сигурност на входа (декларирано в политиката): IP при успешен вход,
+// пази се 90 дни. Чисти се при всяко ново записване — без отделен cron.
+async function logLoginIp(userId: string): Promise<void> {
+  const ip = await requestIp();
+  if (!ip) return;
+  await prisma.loginEvent
+    .create({ data: { userId, ip: ip.slice(0, 64) } })
+    .catch(() => undefined);
+  await prisma.loginEvent
+    .deleteMany({
+      where: { createdAt: { lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) } },
+    })
+    .catch(() => undefined);
+}
 
 const credentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
@@ -39,6 +56,7 @@ export async function registerAction(formData: FormData): Promise<void> {
   if (!user) {
     redirect(`/${locale}/register?error=exists`);
   }
+  await logLoginIp(user.id);
   await createSession(user.id);
   redirect(`/${locale}/dashboard`);
 }
@@ -56,6 +74,7 @@ export async function loginAction(formData: FormData): Promise<void> {
   if (!user) {
     redirect(`/${locale}/login?error=invalid`);
   }
+  await logLoginIp(user.id);
   await createSession(user.id);
   redirect(`/${locale}/dashboard`);
 }

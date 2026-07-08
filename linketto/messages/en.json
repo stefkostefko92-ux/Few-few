@@ -278,7 +278,7 @@
   },
   "legal": {
     "privacyTitle": "Privacy Policy",
-    "privacyBody": "Controller: Carbon Stealth VCC, company ID BG208725180, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu.\n\nIn short: we collect only what the service needs; we never sell data; we use no advertising or tracking technologies; profile visitors receive no cookies; data stays in the EU and leaves it only to Stripe (payments) and — on your explicit action — to Google (AI translation).\n\nWhat we process and why · Account: email, hashed password, chosen language — to run the service (Art. 6(1)(b) GDPR, contract). Profile content: names, descriptions, links, images — published by you. Contact-form messages: name, email, text — delivered to the profile owner (Art. 6(1)(f), legitimate interest — communication you requested). Purchases: buyer email and amount — for delivery and accounting (Art. 6(1)(b) and legal obligation). Analytics: cookie-free, no IPs, no personal data — we only count views and clicks (Art. 6(1)(f)).\n\nRecipients and transfers · Stripe Payments Europe Ltd processes payments; transfers to Stripe Inc (USA) rely on the EU-US Data Privacy Framework and Standard Contractual Clauses. Google (Gemini API): only when you press \"Translate with AI\" yourself, we send the name and description you entered for translation (US transfer under DPF + SCC). An EU hosting provider. Nobody else. We never sell data or use it for advertising.\n\nRetention · Account: while it exists + 30 days. Contact-form messages: 12 months. Purchase records: 10 years (accounting law). Analytics events: up to 13 months.\n\nYour rights · Access, rectification, erasure, restriction (Art. 18), portability, objection (Art. 21) and withdrawal of consent at any time (Art. 7(3)) — write to info@carbonstealth.eu. You may lodge a complaint with the Bulgarian Commission for Personal Data Protection (CPDP, www.cpdp.bg) or your local supervisory authority. We do not use automated decision-making under Art. 22.\n\nCookies · We use one session httpOnly cookie, strictly necessary for signing in. Details in the Cookie policy.\n\nChanges · We will notify you at your account email about material changes.",
+    "privacyBody": "Controller: Carbon Stealth VCC, company ID BG208725180, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu.\n\nIn short: we collect only what the service needs; we never sell data; we use no advertising or tracking technologies; profile visitors receive no cookies; data stays in the EU and leaves it only to Stripe (payments) and — on your explicit action — to Google (AI translation).\n\nWhat we process and why · Account: email, hashed password, chosen language — to run the service (Art. 6(1)(b) GDPR, contract). Profile content: names, descriptions, links, images — published by you. Contact-form messages: name, email, text — delivered to the profile owner (Art. 6(1)(f), legitimate interest — communication you requested). Purchases: buyer email and amount — for delivery and accounting (Art. 6(1)(b) and legal obligation). Analytics: cookie-free, no IPs, no personal data — we only count views and clicks (Art. 6(1)(f)).\n\nSign-in security · When you sign in to your account we record the device's IP address and keep it for 90 days (Art. 6(1)(f), abuse protection). This never applies to profile visitors.\n\nRecipients and transfers · Stripe Payments Europe Ltd processes payments; transfers to Stripe Inc (USA) rely on the EU-US Data Privacy Framework and Standard Contractual Clauses. Google (Gemini API): only when you press \"Translate with AI\" yourself, we send the name and description you entered for translation (US transfer under DPF + SCC). An EU hosting provider. Nobody else. We never sell data or use it for advertising.\n\nRetention · Account: while it exists + 30 days. Contact-form messages: 12 months. Purchase records: 10 years (accounting law). Analytics events: up to 13 months.\n\nYour rights · Access, rectification, erasure, restriction (Art. 18), portability, objection (Art. 21) and withdrawal of consent at any time (Art. 7(3)) — write to info@carbonstealth.eu. You may lodge a complaint with the Bulgarian Commission for Personal Data Protection (CPDP, www.cpdp.bg) or your local supervisory authority. We do not use automated decision-making under Art. 22.\n\nCookies · We use one session httpOnly cookie, strictly necessary for signing in. Details in the Cookie policy.\n\nChanges · We will notify you at your account email about material changes.",
     "termsTitle": "Terms of Service",
     "termsBody": "Linketto is a service of Carbon Stealth VCC (ID BG208725180, 3 Samuil St, 2670 Bobov Dol, Bulgaria, info@carbonstealth.eu).\n\nContent and moderation · Illegal content, impersonation, phishing, malicious links and misleading information are prohibited. Anyone can report a profile via the \"Report\" link on every public profile or at info@carbonstealth.eu (point of contact under Regulation (EU) 2022/2065 — DSA). We handle reports diligently and without arbitrariness. If we act against your content, you receive a statement of reasons and may appeal to us; you may also complain to your Digital Services Coordinator. Profiles are not suspended without prior notice, except for grave abuse requiring immediate action by law. We never show \"BANNED\" to your visitors.\n\nPlans and payments · Paid plans are billed via Stripe; you can cancel at any time and the plan stays active until the end of the paid period. The Founder plan is a one-time payment and is never revoked.\n\nShop · Linketto is a platform: the purchase contract is concluded between the buyer and the creator (seller). Sales carry a commission according to the seller's plan (8/4/0/0%) plus a payment processing fee of 1.9% + €0.30. Digital content is delivered immediately after a confirmed payment — that is why at checkout you give express consent and acknowledge losing the 14-day right of withdrawal (Art. 16(m), Directive 2011/83/EU). If the seller is not a trader, EU consumer rights do not apply to the purchase.\n\nLiability · You are responsible for the content you publish and the products you sell. We are not liable for the content of external sites your links lead to.\n\nGoverning law · Bulgarian law; Bulgarian courts have jurisdiction, without prejudice to mandatory consumer rights in your country.",
     "cookiesTitle": "Cookie policy",
@@ -312,5 +312,29 @@
     "send": "Send report",
     "sent": "Thank you! Your report was received and will be reviewed.",
     "back": "Back to the profile"
+  },
+  "admin": {
+    "title": "Admin panel",
+    "search": "Search",
+    "searchPlaceholder": "Search by email, name or slug…",
+    "total": "{count} users",
+    "loginIps": "Sign-in IP addresses (last 5 · {count} total · kept 90 days)",
+    "editUser": "User data",
+    "email": "Email",
+    "name": "Name",
+    "plan": "Plan",
+    "save": "Save",
+    "saved": "Saved.",
+    "setPassword": "New password",
+    "newPassword": "New password (min 8 chars)",
+    "passwordHint": "The old password is never visible — only a hash is stored. Changing it terminates all active sessions.",
+    "setPasswordButton": "Set password",
+    "banProfile": "Ban /u/{slug}",
+    "unbanProfile": "Unban /u/{slug}",
+    "banned": "BANNED",
+    "unpublished": "hidden",
+    "errorEmail": "This email is already taken.",
+    "errorPassword": "Invalid password (min 8 chars).",
+    "errorInput": "Invalid input."
   }
 }

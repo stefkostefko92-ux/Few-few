@@ -85,6 +85,14 @@ actions/report.ts, категории в src/lib/report.ts); чл. 13 бележ
 блока; чекбокс waiver при покупка (валидира се в shop.ts); ContactMessage
 се чисти след 12 мес.; legal.* текстовете са пълни (одитирани 2026-07-08).
 
+Админ: /[locale]/admin (noindex, robots disallow) — само за имейли от env
+ADMIN_EMAILS (src/lib/admin.ts requireAdmin; НИКАКВИ админ флагове в БД).
+actions/admin.ts: бан/отбан (Profile.bannedAt — баннат = notFound на ВСИЧКИ
+публични маршрути + извън sitemap, без публичен банер), смяна на
+имейл/име/план, нова парола (bcrypt 12; старата не се вижда; всички сесии
+се прекратяват). LoginEvent = IP при вход/регистрация (logLoginIp в
+actions/auth.ts, 90 дни, декларирано в политиката; НЕ важи за посетители).
+
 Качени изображения: src/lib/media.ts (sharp → webp, маха EXIF, ≤8 MB) →
 DATA_DIR/uploads, сервирани от /media/[file] (стриктен allowlist на името).
 Шрифтове: src/app/fonts.ts (next/font, self-hosted — нула външни заявки).

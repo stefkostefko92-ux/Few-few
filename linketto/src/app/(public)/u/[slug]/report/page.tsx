@@ -23,7 +23,7 @@ export default async function ReportPage({
   const { slug } = await params;
   const { hl, sent } = await searchParams;
   const profile = await prisma.profile.findUnique({ where: { slug } });
-  if (!profile || !profile.published) notFound();
+  if (!profile || !profile.published || profile.bannedAt) notFound();
 
   const requestHeaders = await headers();
   const locale =

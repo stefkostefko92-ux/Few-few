@@ -25,7 +25,7 @@ export async function GET(
     where: {
       id: linkId,
       active: true,
-      profile: { slug, published: true },
+      profile: { slug, published: true, bannedAt: null },
     },
     include: { profile: { include: { translations: true } } },
   });

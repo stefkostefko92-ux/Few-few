@@ -11,9 +11,9 @@ export async function GET(
   const { slug } = await params;
   const profile = await prisma.profile.findUnique({
     where: { slug },
-    select: { published: true, accent: true },
+    select: { published: true, accent: true, bannedAt: true },
   });
-  if (!profile || !profile.published) {
+  if (!profile || !profile.published || profile.bannedAt) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
   }
   const base = process.env.PUBLIC_BASE_URL ?? new URL(request.url).origin;

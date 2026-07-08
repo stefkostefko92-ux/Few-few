@@ -69,7 +69,7 @@ export async function startProductPurchaseAction(
     where: {
       id: productId,
       active: true,
-      profile: { slug, published: true },
+      profile: { slug, published: true, bannedAt: null },
     },
     include: {
       translations: true,

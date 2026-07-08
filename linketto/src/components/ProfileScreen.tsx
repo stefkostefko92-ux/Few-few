@@ -93,7 +93,7 @@ export type LoadedProfile = NonNullable<
 export function profileMetadata(
   profile: LoadedProfile | null,
 ): Metadata {
-  if (!profile || !profile.published) {
+  if (!profile || !profile.published || profile.bannedAt) {
     return { title: 'Linketto', robots: { index: false } };
   }
   const fallback = profile.translations[0];

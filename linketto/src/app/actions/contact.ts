@@ -38,9 +38,9 @@ export async function submitContactAction(formData: FormData): Promise<void> {
   }
   const profile = await prisma.profile.findUnique({
     where: { slug },
-    select: { id: true, published: true },
+    select: { id: true, published: true, bannedAt: true },
   });
-  if (profile?.published) {
+  if (profile?.published && !profile.bannedAt) {
     await prisma.contactMessage.create({
       data: {
         profileId: profile.id,

@@ -32,6 +32,19 @@ model User {
   updatedAt            DateTime  @updatedAt
   sessions             Session[]
   profiles             Profile[]
+  loginEvents          LoginEvent[]
+}
+
+// Сигурност на входа: IP при успешен вход/регистрация (пази се 90 дни;
+// декларирано в политиката за поверителност). НЕ важи за посетители.
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model Session {
@@ -55,6 +68,7 @@ model Profile {
   theme         String               @default("aurora")
   accent        String? // hex цвят, валидиран в кода
   style         Json? // стилов енджин (src/lib/style.ts) — фон, шрифт, бутони, layout…
+  bannedAt      DateTime? // модерация: баннат = невидим публично (без публичен банер)
   published     Boolean              @default(true)
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
