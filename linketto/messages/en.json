@@ -153,7 +153,20 @@
     "scheduledBadge": "scheduled",
     "kind_VCARD": "Save contact (vCard)",
     "qrSection": "QR code",
-    "qrHint": "A free QR code for your profile, in your accent color — download it as SVG for a business card, sticker or shop window."
+    "qrHint": "A free QR code for your profile, in your accent color — download it as SVG for a business card, sticker or shop window.",
+    "shopSection": "Shop",
+    "feeNote": "Linketto commission on your plan: {fee}% of each sale.",
+    "connectStripe": "Connect a Stripe account for sales",
+    "stripePending": "Stripe onboarding is unfinished — continue where you left off.",
+    "stripeConnected": "Stripe is connected — your shop is live.",
+    "connectedOk": "Stripe account connected successfully.",
+    "addProduct": "Add product",
+    "productTitle": "Product name",
+    "deliveryUrl": "Delivery link (the buyer receives it)",
+    "errorProduct": "Invalid product data — check the price and the link.",
+    "purchasesSection": "Sales",
+    "revenue": "Revenue",
+    "noPurchases": "No sales yet."
   },
   "profile": {
     "poweredBy": "Made with Linketto",
@@ -163,7 +176,9 @@
     "formMessage": "Message",
     "formSend": "Send",
     "formSent": "Message sent. Thank you!",
-    "formError": "Invalid data — check the fields."
+    "formError": "Invalid data — check the fields.",
+    "shopTitle": "Shop",
+    "shopError": "The payment did not go through — please try again."
   },
   "legal": {
     "privacyTitle": "Privacy Policy",

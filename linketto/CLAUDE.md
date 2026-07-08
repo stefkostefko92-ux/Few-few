@@ -74,6 +74,15 @@ src/app/(public)/u/[slug]/qr/  Безплатен QR (SVG, акцентен цв
 Насрочване: Link.showFrom/showUntil + isBlockVisible() — проверява се и при
 рендиране, и при клик. VCARD блокът връща .vcf през click route-а.
 
+Магазин (Stripe Connect Express): User.stripeAccountId + stripeChargesEnabled
+(отключва се само от account.updated webhook-а). Product/ProductTranslation/
+Purchase; actions/shop.ts (onboarding + CRUD + публичното
+startProductPurchaseAction — сумата се чете САМО от базата). Checkout =
+destination charge с application_fee = commissionCents(цена, план).
+Доставка: /u/[slug]/delivery проверява сесията НА ЖИВО срещу Stripe
+(payment_status === 'paid') преди redirect към deliveryUrl. Purchase се
+записва идемпотентно само през подписания webhook.
+
 ## Правила на продукта
 
 - **Нов език** = ред в `LOCALES` + `messages/<loc>.json` (може частичен —

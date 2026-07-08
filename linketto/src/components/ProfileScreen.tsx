@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { bestLocale, dirFor, LOCALE_NAMES } from '@/i18n/locales';
 import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
 import { submitContactAction } from '@/app/actions/contact';
+import { startProductPurchaseAction } from '@/app/actions/shop';
 
 // Общото публично рендиране на профил — ползва се от /u/[slug]
 // и от собствените домейни (/d/[domain] през middleware rewrite).
@@ -27,6 +28,14 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
         where: { active: true },
         orderBy: { position: 'asc' },
         include: { translations: true },
+      },
+      products: {
+        where: { active: true },
+        orderBy: { position: 'asc' },
+        include: { translations: true },
+      },
+      user: {
+        select: { stripeAccountId: true, stripeChargesEnabled: true },
       },
     },
   });
@@ -61,11 +70,13 @@ export async function ProfileScreen({
   hl,
   sent,
   formError,
+  shopError,
 }: {
   profile: LoadedProfile;
   hl?: string;
   sent?: string;
   formError?: string;
+  shopError?: string;
 }) {
   const slug = profile.slug;
   const available = profile.translations.map((t) => t.locale);
@@ -310,6 +321,56 @@ export async function ProfileScreen({
             }
           })}
         </ul>
+
+        {profile.user.stripeAccountId &&
+          profile.user.stripeChargesEnabled &&
+          profile.products.length > 0 && (
+            <section className="mt-10 text-start">
+              <h2 className="text-center text-sm font-semibold uppercase tracking-wide opacity-70">
+                🛒 {t('shopTitle')}
+              </h2>
+              {shopError && (
+                <p className="mt-2 text-center text-sm text-red-300">
+                  {t('shopError')}
+                </p>
+              )}
+              <ul className="mt-4 space-y-3">
+                {profile.products.map((product) => {
+                  const productTitle =
+                    product.translations.find((tr) => tr.locale === viewLocale)
+                      ?.title ??
+                    product.translations.find(
+                      (tr) => tr.locale === profile.defaultLocale,
+                    )?.title ??
+                    product.translations[0]?.title;
+                  if (!productTitle) return null;
+                  return (
+                    <li key={product.id}>
+                      <form action={startProductPurchaseAction}>
+                        <input type="hidden" name="slug" value={slug} />
+                        <input type="hidden" name="hl" value={viewLocale} />
+                        <input
+                          type="hidden"
+                          name="productId"
+                          value={product.id}
+                        />
+                        <button
+                          type="submit"
+                          className="flex w-full items-center justify-between rounded-full border px-6 py-3 font-medium transition hover:scale-[1.02]"
+                          style={buttonStyle}
+                        >
+                          <span>{productTitle}</span>
+                          <span className="font-bold">
+                            €{(product.priceCents / 100).toFixed(2)}
+                          </span>
+                        </button>
+                      </form>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
 
         <p className="mt-12 text-center text-xs opacity-50">
           <Link href="/" className="hover:underline">

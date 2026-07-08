@@ -153,7 +153,20 @@
     "scheduledBadge": "programmato",
     "kind_VCARD": "Salva contatto (vCard)",
     "qrSection": "Codice QR",
-    "qrHint": "Un QR gratuito del tuo profilo, nel tuo colore — scaricalo in SVG per biglietti da visita, adesivi o vetrine."
+    "qrHint": "Un QR gratuito del tuo profilo, nel tuo colore — scaricalo in SVG per biglietti da visita, adesivi o vetrine.",
+    "shopSection": "Negozio",
+    "feeNote": "Commissione Linketto sul tuo piano: {fee}% di ogni vendita.",
+    "connectStripe": "Collega un account Stripe per le vendite",
+    "stripePending": "La registrazione Stripe non è completata — continua da dove eri rimasto.",
+    "stripeConnected": "Stripe è collegato — il tuo negozio è attivo.",
+    "connectedOk": "Account Stripe collegato con successo.",
+    "addProduct": "Aggiungi prodotto",
+    "productTitle": "Nome del prodotto",
+    "deliveryUrl": "Link di consegna (lo riceve chi acquista)",
+    "errorProduct": "Dati del prodotto non validi — controlla prezzo e link.",
+    "purchasesSection": "Vendite",
+    "revenue": "Ricavi",
+    "noPurchases": "Ancora nessuna vendita."
   },
   "profile": {
     "poweredBy": "Creato con Linketto",
@@ -163,7 +176,9 @@
     "formMessage": "Messaggio",
     "formSend": "Invia",
     "formSent": "Messaggio inviato. Grazie!",
-    "formError": "Dati non validi — controlla i campi."
+    "formError": "Dati non validi — controlla i campi.",
+    "shopTitle": "Negozio",
+    "shopError": "Il pagamento non è andato a buon fine — riprova."
   },
   "legal": {
     "privacyTitle": "Informativa sulla privacy",

@@ -19,17 +19,19 @@ enum Plan {
 }
 
 model User {
-  id               String    @id @default(cuid())
-  email            String    @unique
-  passwordHash     String
-  name             String?
-  locale           String    @default("bg") // език на админа за този потребител
-  plan             Plan      @default(FREE)
-  stripeCustomerId String?   @unique
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  sessions         Session[]
-  profiles         Profile[]
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String
+  name                 String?
+  locale               String    @default("bg") // език на админа за този потребител
+  plan                 Plan      @default(FREE)
+  stripeCustomerId     String?   @unique
+  stripeAccountId      String?   @unique // Stripe Connect (Express) акаунт за магазина
+  stripeChargesEnabled Boolean   @default(false) // обновява се от account.updated webhook
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  sessions             Session[]
+  profiles             Profile[]
 }
 
 model Session {
@@ -59,6 +61,7 @@ model Profile {
   links         Link[]
   clicks        ClickEvent[]
   messages      ContactMessage[]
+  products      Product[]
 }
 
 model ProfileTranslation {
@@ -105,6 +108,50 @@ model Link {
   clicks       ClickEvent[]
 
   @@index([profileId, position])
+}
+
+// Магазин: дигитални продукти (доставка = таен линк след платена поръчка).
+// Плащането е destination charge към Stripe Connect акаунта на създателя,
+// а комисионата на Linketto (по плана: 8/4/0/0%) е application_fee.
+model Product {
+  id           String               @id @default(cuid())
+  profileId    String
+  profile      Profile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  position     Int                  @default(0)
+  priceCents   Int // в евроцентове, EUR
+  deliveryUrl  String // какво получава купувачът след плащане
+  active       Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  translations ProductTranslation[]
+  purchases    Purchase[]
+
+  @@index([profileId, position])
+}
+
+model ProductTranslation {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locale    String
+  title     String
+
+  @@unique([productId, locale])
+}
+
+// Записва се само от подписания Stripe webhook (checkout.session.completed).
+model Purchase {
+  id              String   @id @default(cuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  profileId       String
+  stripeSessionId String   @unique
+  amountCents     Int
+  feeCents        Int // нашата комисиона към момента на продажбата
+  buyerEmail      String?
+  createdAt       DateTime @default(now())
+
+  @@index([profileId, createdAt])
 }
 
 // Съобщения от контактната форма (блок FORM) — публични, без акаунт.

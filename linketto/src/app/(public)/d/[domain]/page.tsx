@@ -26,15 +26,26 @@ export default async function CustomDomainPage({
   searchParams,
 }: {
   params: Promise<{ domain: string }>;
-  searchParams: Promise<{ hl?: string; sent?: string; formError?: string }>;
+  searchParams: Promise<{
+    hl?: string;
+    sent?: string;
+    formError?: string;
+    shopError?: string;
+  }>;
 }) {
   const { domain } = await params;
-  const { hl, sent, formError } = await searchParams;
+  const { hl, sent, formError, shopError } = await searchParams;
   const profile = await loadProfileBy({ customDomain: domain.toLowerCase() });
   if (!profile || !profile.published || profile.translations.length === 0) {
     notFound();
   }
   return (
-    <ProfileScreen profile={profile} hl={hl} sent={sent} formError={formError} />
+    <ProfileScreen
+      profile={profile}
+      hl={hl}
+      sent={sent}
+      formError={formError}
+      shopError={shopError}
+    />
   );
 }

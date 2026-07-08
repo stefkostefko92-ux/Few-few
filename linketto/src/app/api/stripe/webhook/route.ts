@@ -42,6 +42,36 @@ export async function POST(request: Request): Promise<NextResponse> {
           },
         });
       }
+      // Продажба на дигитален продукт (магазина): записваме покупката
+      // идемпотентно по stripeSessionId.
+      const productId = session.metadata?.productId;
+      const profileId = session.metadata?.profileId;
+      if (productId && profileId) {
+        await prisma.purchase
+          .upsert({
+            where: { stripeSessionId: session.id },
+            create: {
+              productId,
+              profileId,
+              stripeSessionId: session.id,
+              amountCents: session.amount_total ?? 0,
+              feeCents: Number(session.metadata?.feeCents ?? 0) || 0,
+              buyerEmail: session.customer_details?.email ?? null,
+            },
+            update: {},
+          })
+          .catch(() => undefined);
+      }
+      break;
+    }
+    case 'account.updated': {
+      // Connect onboarding: отключваме магазина чак когато Stripe
+      // потвърди, че акаунтът може да приема плащания.
+      const account = event.data.object;
+      await prisma.user.updateMany({
+        where: { stripeAccountId: account.id },
+        data: { stripeChargesEnabled: account.charges_enabled === true },
+      });
       break;
     }
     case 'customer.subscription.deleted': {

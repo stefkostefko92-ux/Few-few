@@ -15,6 +15,12 @@ import {
 } from '@/app/actions/profile';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiTranslateAction } from '@/app/actions/ai';
+import {
+  addProductAction,
+  connectStripeAction,
+  deleteProductAction,
+  upsertProductTranslationAction,
+} from '@/app/actions/shop';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,10 +31,14 @@ export default async function DashboardPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string; translated?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    translated?: string;
+    connected?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { error, translated } = await searchParams;
+  const { error, translated, connected } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
@@ -88,6 +98,29 @@ export default async function DashboardPage({
         }),
       ])
     : [0, 0, [], [], []];
+  const products = profile
+    ? await prisma.product.findMany({
+        where: { profileId: profile.id },
+        orderBy: { position: 'asc' },
+        include: { translations: true },
+      })
+    : [];
+  const purchaseTotals = profile
+    ? await prisma.purchase.aggregate({
+        where: { profileId: profile.id },
+        _count: { _all: true },
+        _sum: { amountCents: true },
+      })
+    : null;
+  const recentPurchases = profile
+    ? await prisma.purchase.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: { product: { include: { translations: true } } },
+      })
+    : [];
+
   const linkTitle = (linkId: string | null) => {
     const link = profile?.links.find((item) => item.id === linkId);
     return (
@@ -118,7 +151,9 @@ export default async function DashboardPage({
                       ? t('errorAi')
                       : error === 'aikey'
                         ? t('errorAiKey')
-                        : t('errorGeneric')}
+                        : error === 'product'
+                          ? t('errorProduct')
+                          : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -127,6 +162,14 @@ export default async function DashboardPage({
             className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
           >
             {t('translatedOk')}
+          </p>
+        )}
+        {connected && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('connectedOk')}
           </p>
         )}
 
@@ -611,6 +654,188 @@ export default async function DashboardPage({
                     </li>
                   ))}
                 </ul>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('shopSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('feeNote', { fee: plan.feePercent })}
+              </p>
+              {!user.stripeAccountId || !user.stripeChargesEnabled ? (
+                <form action={connectStripeAction} className="mt-4">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  {user.stripeAccountId && (
+                    <p className="mb-2 text-sm text-amber-600">
+                      {t('stripePending')}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                  >
+                    {t('connectStripe')}
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <p className="mt-2 text-sm text-green-700">
+                    ✓ {t('stripeConnected')}
+                  </p>
+                  <div className="mt-4 space-y-4">
+                    {products.map((product) => (
+                      <div
+                        key={product.id}
+                        className="rounded-xl border border-slate-100 p-4"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="truncate text-sm text-slate-500">
+                            <span className="mr-2 font-semibold text-slate-700">
+                              €{(product.priceCents / 100).toFixed(2)}
+                            </span>
+                            {product.deliveryUrl}
+                          </p>
+                          <form action={deleteProductAction}>
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input
+                              type="hidden"
+                              name="productId"
+                              value={product.id}
+                            />
+                            <button
+                              type="submit"
+                              className="text-sm text-red-600 hover:underline"
+                            >
+                              {t('delete')}
+                            </button>
+                          </form>
+                        </div>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {profile.translations.map((translation) => {
+                            const productTitle = product.translations.find(
+                              (item) => item.locale === translation.locale,
+                            );
+                            return (
+                              <form
+                                key={translation.locale}
+                                action={upsertProductTranslationAction}
+                                className="flex items-center gap-2"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="uiLocale"
+                                  value={locale}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="productId"
+                                  value={product.id}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="locale"
+                                  value={translation.locale}
+                                />
+                                <span className="w-8 text-xs font-semibold uppercase text-slate-400">
+                                  {translation.locale}
+                                </span>
+                                <input
+                                  type="text"
+                                  name="title"
+                                  defaultValue={productTitle?.title ?? ''}
+                                  placeholder={t('productTitle')}
+                                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                />
+                                <button
+                                  type="submit"
+                                  className="text-sm font-medium text-linketto-700 hover:underline"
+                                >
+                                  {t('save')}
+                                </button>
+                              </form>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <form
+                    action={addProductAction}
+                    className="mt-6 grid gap-3 sm:grid-cols-[1fr_8rem_1fr_auto]"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <input
+                      type="text"
+                      name="title"
+                      required
+                      placeholder={t('productTitle')}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                    <input
+                      type="number"
+                      name="priceEur"
+                      required
+                      min="0.5"
+                      step="0.01"
+                      placeholder="9.99"
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                    <input
+                      type="url"
+                      name="deliveryUrl"
+                      required
+                      placeholder={t('deliveryUrl')}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                    >
+                      {t('addProduct')}
+                    </button>
+                  </form>
+
+                  <h3 className="mt-8 text-sm font-semibold text-slate-600">
+                    {t('purchasesSection')}
+                  </h3>
+                  {purchaseTotals && purchaseTotals._count._all > 0 ? (
+                    <>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {purchaseTotals._count._all} · {t('revenue')}: €
+                        {((purchaseTotals._sum.amountCents ?? 0) / 100).toFixed(
+                          2,
+                        )}
+                      </p>
+                      <ul className="mt-3 space-y-1 text-sm">
+                        {recentPurchases.map((purchase) => (
+                          <li
+                            key={purchase.id}
+                            className="flex justify-between gap-2 text-slate-600"
+                          >
+                            <span className="truncate">
+                              {purchase.product.translations[0]?.title ?? '—'}
+                              {purchase.buyerEmail
+                                ? ` · ${purchase.buyerEmail}`
+                                : ''}
+                            </span>
+                            <span className="font-semibold">
+                              €{(purchase.amountCents / 100).toFixed(2)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm text-slate-400">
+                      {t('noPurchases')}
+                    </p>
+                  )}
+                </>
               )}
             </section>
 

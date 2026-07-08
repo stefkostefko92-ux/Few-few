@@ -22,15 +22,26 @@ export default async function PublicProfilePage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ hl?: string; sent?: string; formError?: string }>;
+  searchParams: Promise<{
+    hl?: string;
+    sent?: string;
+    formError?: string;
+    shopError?: string;
+  }>;
 }) {
   const { slug } = await params;
-  const { hl, sent, formError } = await searchParams;
+  const { hl, sent, formError, shopError } = await searchParams;
   const profile = await loadProfileBy({ slug });
   if (!profile || !profile.published || profile.translations.length === 0) {
     notFound();
   }
   return (
-    <ProfileScreen profile={profile} hl={hl} sent={sent} formError={formError} />
+    <ProfileScreen
+      profile={profile}
+      hl={hl}
+      sent={sent}
+      formError={formError}
+      shopError={shopError}
+    />
   );
 }

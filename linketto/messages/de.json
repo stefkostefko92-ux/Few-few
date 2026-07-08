@@ -153,7 +153,20 @@
     "scheduledBadge": "geplant",
     "kind_VCARD": "Kontakt speichern (vCard)",
     "qrSection": "QR-Code",
-    "qrHint": "Ein kostenloser QR-Code zu deinem Profil in deiner Akzentfarbe — als SVG für Visitenkarte, Sticker oder Schaufenster."
+    "qrHint": "Ein kostenloser QR-Code zu deinem Profil in deiner Akzentfarbe — als SVG für Visitenkarte, Sticker oder Schaufenster.",
+    "shopSection": "Shop",
+    "feeNote": "Linketto-Provision in deinem Plan: {fee} % pro Verkauf.",
+    "connectStripe": "Stripe-Konto für Verkäufe verbinden",
+    "stripePending": "Das Stripe-Onboarding ist unvollständig — mach dort weiter, wo du aufgehört hast.",
+    "stripeConnected": "Stripe ist verbunden — dein Shop ist aktiv.",
+    "connectedOk": "Stripe-Konto erfolgreich verbunden.",
+    "addProduct": "Produkt hinzufügen",
+    "productTitle": "Produktname",
+    "deliveryUrl": "Lieferlink (erhält der Käufer)",
+    "errorProduct": "Ungültige Produktdaten — prüfe Preis und Link.",
+    "purchasesSection": "Verkäufe",
+    "revenue": "Umsatz",
+    "noPurchases": "Noch keine Verkäufe."
   },
   "profile": {
     "poweredBy": "Erstellt mit Linketto",
@@ -163,7 +176,9 @@
     "formMessage": "Nachricht",
     "formSend": "Senden",
     "formSent": "Nachricht gesendet. Danke!",
-    "formError": "Ungültige Daten — prüfe die Felder."
+    "formError": "Ungültige Daten — prüfe die Felder.",
+    "shopTitle": "Shop",
+    "shopError": "Die Zahlung hat nicht geklappt — bitte versuche es erneut."
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",
