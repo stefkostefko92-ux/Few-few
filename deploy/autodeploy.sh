@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot mastilko}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -44,6 +44,12 @@ NEXUS_HEALTH_URL="${NEXUS_HEALTH_URL:-http://127.0.0.1:4000/api/health}"
 ZBD_HEALTH_URL_SET="${ZBD_HEALTH_URL:+1}"
 ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/}"
 FORCE_SEED="${FORCE_SEED:-0}"
+
+# mastilko (systemd модел, като medqr) — Next.js, билд на сървъра, порт 3200
+# зад Nginx. Тайните (.env с GEMINI_API_KEY, по желание) живеят на сървъра.
+MASTILKO_DIR="${MASTILKO_DIR:-/opt/mastilko}"
+MASTILKO_SERVICE="${MASTILKO_SERVICE:-mastilko}"
+MASTILKO_HEALTH_URL="${MASTILKO_HEALTH_URL:-http://127.0.0.1:3200/}"
 
 # supreme (Supreme Bot — Docker Compose модел) — frontend nginx е единственият
 # публикуван порт (127.0.0.1:8080), останалите services са вътрешни. backend
@@ -259,6 +265,58 @@ deploy_nexus() {
   fi
 }
 
+# ── 3д) mastilko — systemd + Next.js билд на сървъра ──────────────────────────
+deploy_mastilko() {
+  local d="$SRC/mastilko"
+  [ -d "$d" ] || { warn "Няма mastilko/ в архива — пропускам."; return; }
+  log "Разгръщам mastilko (systemd, Next.js)…"
+  command -v node >/dev/null || die "Липсва node — инсталирай Node.js ≥ 20."
+  command -v rsync >/dev/null || { apt-get update -y && apt-get install -y rsync; }
+  # Системен потребител — самосъздаващ се, идемпотентно.
+  id mastilko >/dev/null 2>&1 || useradd --system --create-home --home-dir "$MASTILKO_DIR" \
+    --shell /usr/sbin/nologin mastilko
+  # Бекъп на текущия код (.env остава — rsync exclude го пази и от --delete).
+  [ -d "$MASTILKO_DIR" ] && cp -a "$MASTILKO_DIR" "${MASTILKO_DIR}.bak-$TS"
+  mkdir -p "$MASTILKO_DIR"
+  rsync -a --delete \
+    --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
+    "$d"/ "$MASTILKO_DIR"/
+  chown -R mastilko:mastilko "$MASTILKO_DIR"
+  # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
+  ( cd "$MASTILKO_DIR" \
+    && sudo -u mastilko npm ci \
+    && sudo -u mastilko npm run build \
+    && sudo -u mastilko npm prune --omit=dev )
+  # ReadWritePaths в unit-а изисква пътищата да съществуват при старт.
+  # data/ пази JSON-а на рекламните банери — НЕ се трие при деплой (rsync
+  # exclude), за да оцелее между версиите като .env.
+  sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache" "$MASTILKO_DIR/data"
+  # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
+  install -m 644 "$MASTILKO_DIR/deploy/mastilko.service" /etc/systemd/system/mastilko.service
+  systemctl daemon-reload
+  systemctl enable "$MASTILKO_SERVICE" >/dev/null 2>&1 || true
+  systemctl restart "$MASTILKO_SERVICE"
+  sleep 2
+  if health "$MASTILKO_HEALTH_URL" "mastilko"; then
+    rm -rf "${MASTILKO_DIR}.bak-$TS"
+    # Чистим стари .bak-ове от предишни провалени опити (пазим последните 2).
+    ls -1dt "${MASTILKO_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf
+    [ -f "$MASTILKO_DIR/.env" ] || warn "Няма $MASTILKO_DIR/.env — сайтът работи, но AI подсказките са изключени (виж mastilko/deploy/DEPLOY.md)."
+    # Известяваме Bing/Yandex през IndexNow за обновените URL-и (не чупи деплоя).
+    ( cd "$MASTILKO_DIR" && sudo -u mastilko node scripts/indexnow.mjs ) \
+      || warn "IndexNow пропуснат (виж лога по-горе)."
+  else
+    deploy_failed=1
+    warn "mastilko health провал — връщам предишния код."
+    systemctl stop "$MASTILKO_SERVICE" || true
+    if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
+      rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
+      chown -R mastilko:mastilko "$MASTILKO_DIR"
+      systemctl restart "$MASTILKO_SERVICE"
+    fi
+  fi
+}
+
 # ── 3d) supreme — Supreme Bot, Docker Compose ─────────────────────────────────
 deploy_supreme() {
   local d="$SRC/SupremeDiscordBot"
@@ -300,6 +358,7 @@ for p in $PROJECTS; do
     zabobovdol) deploy_zabobovdol ;;
     medqr)      deploy_medqr ;;
     nexus)      deploy_nexus ;;
+    mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
     *)          warn "Непознат проект: $p" ;;
   esac

@@ -1,0 +1,29 @@
+name: Mastilko CI
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["mastilko/**", ".github/workflows/mastilko.yml"]
+  pull_request:
+    paths: ["mastilko/**", ".github/workflows/mastilko.yml"]
+
+jobs:
+  # ── Качествена порта ──────────────────────────────────────────────────────
+  quality:
+    name: Lint · typecheck · test · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mastilko
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mastilko/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
