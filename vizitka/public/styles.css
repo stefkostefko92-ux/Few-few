@@ -228,6 +228,54 @@ legend {
 .slug-row input {
   flex: 1;
 }
+.accent-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+.accent-row input[type='color'] {
+  width: 48px;
+  height: 38px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.accent-toggle {
+  margin: 0;
+  font-weight: 400;
+}
+/* Редове за собствени бутони */
+.link-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 1.4fr;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+.link-row input {
+  margin-top: 0;
+}
+.link-icon-in {
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .link-row {
+    grid-template-columns: 56px 1fr;
+  }
+  .link-row input[type='url'] {
+    grid-column: 1 / -1;
+  }
+}
+.cover-thumb {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+}
 
 .alert {
   border-radius: 10px;
@@ -338,6 +386,27 @@ legend {
   background: linear-gradient(135deg, var(--brand), #7c3aed);
   color: #fff;
   padding: 2rem 1.5rem 1.5rem;
+  position: relative;
+}
+/* Корична (заглавна) снимка зад името + тъмен слой за четимост */
+.vcard-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.vcard-top.has-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 0;
+}
+.vcard-top-inner {
+  position: relative;
+  z-index: 1;
 }
 /* Цветови теми на визитката (theme-<id> от src/themes.js) */
 .vcard-top.theme-blue {
@@ -373,6 +442,56 @@ legend {
   width: 140px;
   height: 140px;
   font-size: 3.6rem;
+}
+/* Форма на аватара */
+.avatar.shape-rounded {
+  border-radius: 22px;
+}
+.avatar.shape-square {
+  border-radius: 4px;
+}
+
+/* Собствени бутони/връзки на визитката (Linktree-стил) */
+.vcard-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem 1.5rem 0.2rem;
+}
+.link-btn-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink) !important;
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    transform 0.08s ease,
+    border-color 0.15s ease;
+}
+.link-btn-card:hover {
+  border-color: var(--brand);
+  transform: translateY(-1px);
+}
+.link-ico {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* Шрифт на визитката */
+.vcard.font-serif {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.vcard.font-rounded {
+  font-family: 'Segoe UI Rounded', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+}
+.vcard.font-mono {
+  font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace;
 }
 .vcard-actions {
   display: flex;

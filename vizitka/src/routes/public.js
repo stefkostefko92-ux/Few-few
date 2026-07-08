@@ -7,6 +7,8 @@ import db, { UPLOADS_DIR } from '../db.js';
 import { buildVCard } from '../vcard.js';
 import { baseUrl } from '../config.js';
 import { cardJsonLd } from '../seo.js';
+import { accentCss } from '../personalize.js';
+import { getLinks } from '../links.js';
 
 const router = Router();
 
@@ -33,6 +35,8 @@ router.get('/p/:slug', (req, res) => {
   res.render('card', {
     title: profile.display_name,
     profile,
+    links: getLinks(profile.id),
+    accentCss: accentCss(profile.accent),
     isOwner,
     publicUrl,
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,

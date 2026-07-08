@@ -188,6 +188,80 @@ await test('canonical и OG тагове присъстват', async () => {
   assert.match(card, /Подай сигнал/);
 });
 
+await test('персонализация: собствен цвят, форма, шрифт и бутони', async () => {
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      headline: 'Електротехник',
+      phone: '+359 888 123 456',
+      contact_email: 'ivan@example.com',
+      website: 'https://example.com',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      accent: '#ff8800',
+      avatar_shape: 'square',
+      font: 'serif',
+      link_icon_0: '💬',
+      link_label_0: 'WhatsApp',
+      link_url_0: 'https://wa.me/359888123456',
+      link_icon_1: '',
+      link_label_1: 'Меню',
+      link_url_1: 'https://example.com/menu',
+    }),
+  });
+  assert.equal(res.status, 302);
+  const card = await (await request('/p/ivan-testov')).text();
+  assert.match(card, /custom-accent/);
+  assert.match(card, /#ff8800/); // нонсиран стил с цвета
+  assert.match(card, /shape-square/);
+  assert.match(card, /font-serif/);
+  assert.match(card, /WhatsApp/);
+  assert.match(card, /wa\.me\/359888123456/);
+  assert.match(card, /Меню/);
+});
+
+await test('невалиден собствен цвят се игнорира (пада на темата)', async () => {
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      phone: '+359 888 123 456',
+      contact_email: 'ivan@example.com',
+      website: 'https://example.com',
+      slug: 'ivan-testov',
+      type: 'personal',
+      is_public: '1',
+      accent: 'не-е-цвят',
+      theme: 'ocean',
+    }),
+  });
+  assert.equal(res.status, 302);
+  const card = await (await request('/p/ivan-testov')).text();
+  assert.doesNotMatch(card, /custom-accent/);
+  assert.match(card, /theme-ocean/);
+});
+
+await test('връзка без http се отхвърля', async () => {
+  const res = await request('/profile', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      _csrf: csrf,
+      display_name: 'Иван Тестов',
+      slug: 'ivan-testov',
+      type: 'personal',
+      link_url_0: 'javascript:alert(1)',
+    }),
+  });
+  assert.equal(res.status, 400);
+});
+
 await test('QR кодът е валиден PNG', async () => {
   const res = await request('/p/ivan-testov/qr.png');
   assert.equal(res.status, 200);

@@ -10,6 +10,14 @@ import { csrfProtect } from '../csrf.js';
 import { isValidSlug } from '../slug.js';
 import { baseUrl } from '../config.js';
 import { THEMES, normalizeTheme } from '../themes.js';
+import {
+  AVATAR_SHAPES,
+  FONTS,
+  normalizeShape,
+  normalizeFont,
+  normalizeAccent,
+} from '../personalize.js';
+import { MAX_LINKS, getLinks, replaceLinks, parseLinkFields } from '../links.js';
 
 const router = Router();
 
@@ -29,17 +37,24 @@ function deletePhotoFile(filename) {
   if (fs.existsSync(path)) fs.unlinkSync(path);
 }
 
-router.get('/dashboard', requireAuth, (req, res) => {
-  const profile = getProfile(req.user.id);
+const renderDashboard = (req, res, profile, extra = {}) =>
   res.render('dashboard', {
     title: 'Моята визитка',
     profile,
+    links: getLinks(profile.id),
     themes: THEMES,
+    shapes: AVATAR_SHAPES,
+    fonts: FONTS,
+    maxLinks: MAX_LINKS,
     publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
     saved: req.query.saved === '1',
     passwordChanged: req.query.pw === '1',
     error: null,
+    ...extra,
   });
+
+router.get('/dashboard', requireAuth, (req, res) => {
+  renderDashboard(req, res, getProfile(req.user.id));
 });
 
 const TEXT_FIELDS = [
@@ -66,20 +81,31 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
   const type = req.body.type === 'company' ? 'company' : 'personal';
   const isPublic = req.body.is_public === '1' ? 1 : 0;
   const theme = normalizeTheme(req.body.theme);
+  const accent = normalizeAccent(req.body.accent);
+  const avatarShape = normalizeShape(req.body.avatar_shape);
+  const font = normalizeFont(req.body.font);
   const slug = String(req.body.slug || '')
     .trim()
     .toLowerCase();
+  const parsed = parseLinkFields(req.body);
 
   const fail = (error) =>
-    res.status(400).render('dashboard', {
-      title: 'Моята визитка',
-      profile: { ...profile, ...fields, type, is_public: isPublic, theme, slug },
-      themes: THEMES,
-      publicUrl: `${baseUrl(req)}/p/${profile.slug}`,
-      saved: false,
-      passwordChanged: false,
-      error,
-    });
+    renderDashboard(
+      req,
+      res.status(400),
+      {
+        ...profile,
+        ...fields,
+        type,
+        is_public: isPublic,
+        theme,
+        accent,
+        avatar_shape: avatarShape,
+        font,
+        slug,
+      },
+      { error }
+    );
 
   if (fields.display_name.length < 2) return fail('Името е задължително (поне 2 знака).');
   if (!isValidSlug(slug))
@@ -92,15 +118,28 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
     if (url && !/^https?:\/\//i.test(url))
       return fail('Линковете трябва да започват с http:// или https://.');
   }
+  if (parsed.error) return fail(parsed.error);
 
   db.prepare(
     `UPDATE profiles SET
        slug = @slug, type = @type, display_name = @display_name, headline = @headline,
        company = @company, phone = @phone, contact_email = @contact_email, website = @website,
        address = @address, bio = @bio, facebook = @facebook, instagram = @instagram,
-       linkedin = @linkedin, is_public = @is_public, theme = @theme, updated_at = datetime('now')
+       linkedin = @linkedin, is_public = @is_public, theme = @theme, accent = @accent,
+       avatar_shape = @avatar_shape, font = @font, updated_at = datetime('now')
      WHERE user_id = @user_id`
-  ).run({ ...fields, slug, type, is_public: isPublic, theme, user_id: req.user.id });
+  ).run({
+    ...fields,
+    slug,
+    type,
+    is_public: isPublic,
+    theme,
+    accent,
+    avatar_shape: avatarShape,
+    font,
+    user_id: req.user.id,
+  });
+  replaceLinks(profile.id, parsed.links);
 
   res.redirect('/dashboard?saved=1');
 });
@@ -122,6 +161,29 @@ router.post('/profile/photo/delete', requireAuth, csrfProtect, (req, res) => {
   const profile = getProfile(req.user.id);
   deletePhotoFile(profile.photo);
   db.prepare("UPDATE profiles SET photo = '', updated_at = datetime('now') WHERE user_id = ?").run(
+    req.user.id
+  );
+  res.redirect('/dashboard?saved=1');
+});
+
+// Корична (заглавна) снимка — фон зад името на визитката.
+router.post('/profile/cover', requireAuth, upload.single('cover'), csrfProtect, (req, res) => {
+  if (!req.file) return res.redirect('/dashboard');
+  const profile = getProfile(req.user.id);
+  const filename = `${crypto.randomBytes(16).toString('hex')}.${PHOTO_EXT[req.file.mimetype]}`;
+  fs.writeFileSync(join(UPLOADS_DIR, filename), req.file.buffer);
+  deletePhotoFile(profile.cover);
+  db.prepare("UPDATE profiles SET cover = ?, updated_at = datetime('now') WHERE user_id = ?").run(
+    filename,
+    req.user.id
+  );
+  res.redirect('/dashboard?saved=1');
+});
+
+router.post('/profile/cover/delete', requireAuth, csrfProtect, (req, res) => {
+  const profile = getProfile(req.user.id);
+  deletePhotoFile(profile.cover);
+  db.prepare("UPDATE profiles SET cover = '', updated_at = datetime('now') WHERE user_id = ?").run(
     req.user.id
   );
   res.redirect('/dashboard?saved=1');

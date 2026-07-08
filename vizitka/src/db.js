@@ -48,8 +48,22 @@ db.exec(`
     photo TEXT NOT NULL DEFAULT '',      -- име на файл в data/uploads
     is_public INTEGER NOT NULL DEFAULT 0, -- privacy-by-default (чл. 25(2) ОРЗД)
     theme TEXT NOT NULL DEFAULT 'blue',  -- цветова тема на визитката
+    accent TEXT NOT NULL DEFAULT '',     -- собствен цвят (hex) — заменя темата
+    avatar_shape TEXT NOT NULL DEFAULT 'circle', -- circle | rounded | square
+    font TEXT NOT NULL DEFAULT 'system', -- system | serif | rounded | mono
+    cover TEXT NOT NULL DEFAULT '',      -- корична снимка (файл в data/uploads)
     views INTEGER NOT NULL DEFAULT 0,    -- брой преглеждания (без собственика)
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- Собствени бутони/връзки на визитката (Linktree-стил).
+  CREATE TABLE IF NOT EXISTS links (
+    id INTEGER PRIMARY KEY,
+    profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    icon TEXT NOT NULL DEFAULT '',
+    label TEXT NOT NULL,
+    url TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0
   );
 
   -- Рекламни банери, управлявани от админ панела (first-party, без чужди тракери).
@@ -69,6 +83,7 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
   CREATE INDEX IF NOT EXISTS idx_banners_active ON banners(placement, is_active, sort_order);
+  CREATE INDEX IF NOT EXISTS idx_links_profile ON links(profile_id, sort_order);
 `);
 
 // Леки миграции: добавяне на колони върху съществуваща база (idempotent).
@@ -82,6 +97,15 @@ if (!profileCols.has('theme'))
   db.exec("ALTER TABLE profiles ADD COLUMN theme TEXT NOT NULL DEFAULT 'blue'");
 if (!profileCols.has('views'))
   db.exec('ALTER TABLE profiles ADD COLUMN views INTEGER NOT NULL DEFAULT 0');
+if (!profileCols.has('accent'))
+  db.exec("ALTER TABLE profiles ADD COLUMN accent TEXT NOT NULL DEFAULT ''");
+if (!profileCols.has('avatar_shape'))
+  db.exec("ALTER TABLE profiles ADD COLUMN avatar_shape TEXT NOT NULL DEFAULT 'circle'");
+if (!profileCols.has('font'))
+  db.exec("ALTER TABLE profiles ADD COLUMN font TEXT NOT NULL DEFAULT 'system'");
+if (!profileCols.has('cover'))
+  db.exec("ALTER TABLE profiles ADD COLUMN cover TEXT NOT NULL DEFAULT ''");
+// Таблицата `links` се създава в главната схема по-горе (CREATE TABLE IF NOT EXISTS).
 
 const userCols = new Set(
   db

@@ -1,25 +1,39 @@
 <%- include('partials/head') %>
 <% if (jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script><% } %>
+<% if (accentCss) { %><style nonce="<%= cspNonce %>"><%- accentCss %></style><% } %>
 <section class="card-page">
   <% if (isOwner && !profile.is_public) { %>
     <p class="alert alert-warn">Визитката е скрита — виждаш я само ти. Включи „публична“ от таблото.</p>
   <% } %>
-  <article class="vcard">
-    <div class="vcard-top theme-<%= profile.theme %>">
-      <% if (profile.photo) { %>
-        <img class="avatar avatar-big" src="/photo/<%= profile.photo %>" alt="Снимка на <%= profile.display_name %>" width="140" height="140">
-      <% } else { %>
-        <div class="avatar avatar-big avatar-empty" aria-hidden="true"><%= profile.display_name.slice(0, 1).toUpperCase() %></div>
-      <% } %>
-      <h1><%= profile.display_name %></h1>
-      <% if (profile.headline) { %><p class="headline"><%= profile.headline %></p><% } %>
-      <% if (profile.type === 'personal' && profile.company) { %><p class="muted"><%= profile.company %></p><% } %>
+  <article class="vcard font-<%= profile.font %>">
+    <div class="vcard-top <%= profile.accent ? 'custom-accent' : 'theme-' + profile.theme %> <%= profile.cover ? 'has-cover' : '' %>">
+      <% if (profile.cover) { %><img class="vcard-cover" src="/photo/<%= profile.cover %>" alt="" aria-hidden="true"><% } %>
+      <div class="vcard-top-inner">
+        <% if (profile.photo) { %>
+          <img class="avatar avatar-big shape-<%= profile.avatar_shape %>" src="/photo/<%= profile.photo %>" alt="Снимка на <%= profile.display_name %>" width="140" height="140">
+        <% } else { %>
+          <div class="avatar avatar-big avatar-empty shape-<%= profile.avatar_shape %>" aria-hidden="true"><%= profile.display_name.slice(0, 1).toUpperCase() %></div>
+        <% } %>
+        <h1><%= profile.display_name %></h1>
+        <% if (profile.headline) { %><p class="headline"><%= profile.headline %></p><% } %>
+        <% if (profile.type === 'personal' && profile.company) { %><p class="muted"><%= profile.company %></p><% } %>
+      </div>
     </div>
 
     <div class="vcard-actions">
       <a class="btn btn-big" href="/p/<%= profile.slug %>/vizitka.vcf"><span aria-hidden="true">💾</span> Запази контакта</a>
       <% if (profile.phone) { %><a class="btn" href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><span aria-hidden="true">📞</span> Обади се</a><% } %>
     </div>
+
+    <% if (links && links.length) { %>
+      <div class="vcard-links">
+        <% for (const l of links) { %>
+          <a class="link-btn-card" href="<%= l.url %>" rel="noopener nofollow" target="_blank">
+            <% if (l.icon) { %><span class="link-ico" aria-hidden="true"><%= l.icon %></span><% } %><%= l.label %>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
 
     <ul class="vcard-list">
       <% if (profile.phone) { %><li><span>Телефон</span><a href="tel:<%= profile.phone.replace(/\s+/g, '') %>"><%= profile.phone %></a></li><% } %>

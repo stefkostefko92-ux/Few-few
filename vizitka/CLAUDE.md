@@ -32,10 +32,12 @@ goes into the QR code and vCard), optional `DATA_DIR` (default `./data`),
 src/app.js           Express app (helmet CSP+nonce, HSTS, no-store за auth страници;
                      /robots.txt /sitemap.xml /privacy /terms) — export
 src/server.js        listen (PORT, default 3100)
-src/db.js            SQLite схема (users, sessions, profiles, banners) + ALTER миграции
+src/db.js            SQLite схема (users, sessions, profiles, banners, links) + ALTER миграции
 src/auth.js          сесии (httpOnly cookie, sha256 токен в БД), bcrypt пароли;
                      requireAdmin + seedAdmins (ADMIN_EMAILS)
 src/banners.js       рекламни банери: activeBanners (импресии), clickBanner, CRUD helpers
+src/personalize.js   персонализация: цвят (accent→нонсиран <style>), форма, шрифт
+src/links.js         собствени бутони: getLinks, replaceLinks, parseLinkFields (MAX_LINKS)
 src/csrf.js          CSRF (synchronizer token, timing-safe)
 src/slug.js          транслитерация BG→latin, валидация, резервирани думи, unique
 src/vcard.js         vCard 3.0 генератор (сгъване на редове, снимка base64)
@@ -62,8 +64,13 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
 ## Conventions (important)
 
 - **Plain JavaScript, ESM**; no TypeScript, no build step. `node:`-prefixed core modules.
-- **Никакви inline скриптове** — CSP е `script-src 'self'`; клиентска логика само в
-  `public/app.js`.
+- **Никакви inline скриптове** — CSP е `script-src 'self' 'nonce-…'`; клиентска логика
+  само в `public/app.js`. Собственият цвят на визитката е единственият динамичен стил
+  и идва през **нонсиран `<style>`** блок (`accentCss`), НЕ inline `style=""` (блокиран).
+- **Персонализация:** потребителят избира тема ИЛИ собствен цвят (accent), форма на
+  аватара, шрифт, корична снимка и до `MAX_LINKS` собствени бутона (връзки). Всички
+  връзки минават валидация за http(s); картинките (снимка/лого/корица) са в uploads
+  и се сервират през `/photo/:file`.
 - **CSRF токен на всички автентикирани POST форми**; сесийният токен се пази само
   като sha256 хеш в БД; пароли — bcrypt (cost 12).
 - **Снимките** отиват в `data/uploads/` с произволно hex име (jpeg/png/webp, ≤2 MB);

@@ -39,7 +39,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         imgSrc: ["'self'", 'data:'],
-        styleSrc: ["'self'"],
+        styleSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
         fontSrc: ["'self'"],
         scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
         objectSrc: ["'none'"],
