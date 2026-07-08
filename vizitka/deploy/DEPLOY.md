@@ -5,6 +5,23 @@
 
 Приложението слуша само на `127.0.0.1:3100`; TLS и публичният вход са през nginx.
 
+## 0. Бърз път — еднократен bootstrap (препоръчано)
+
+Скриптът `deploy/server-setup.sh` прави наведнъж стъпки 1–4 по-долу: системен
+потребител + директории, `vizitka.env` с **генерирани тайни** (`PRINT_API_SECRET`,
+`INDEXNOW_KEY`), systemd unit, nginx vhost, TLS през certbot и криптиран бекъп cron.
+Идемпотентен е — повторно пускане не презаписва вече генерираните тайни.
+
+```bash
+# от корена на разопакования архив, като root:
+sudo bash vizitka/deploy/server-setup.sh
+# пита за домейн/админ/SMTP (с default-и); за бекъпа задай публичен age ключ:
+#   sudo AGE_RECIPIENT=age1... bash vizitka/deploy/server-setup.sh
+```
+
+После качи кода: `sudo PROJECTS="vizitka" bash deploy/autodeploy.sh` (стъпка 5).
+Ръчните стъпки 1–6 остават като референция / за фина настройка.
+
 ## 1. Системен потребител и директории
 
 ```bash
