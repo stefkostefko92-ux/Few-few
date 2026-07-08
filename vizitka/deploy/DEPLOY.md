@@ -17,7 +17,7 @@ chown -R vizitka:vizitka /opt/vizitka
 cat > /etc/vizitka/vizitka.env <<'EOF'
 NODE_ENV=production
 PORT=3100
-PUBLIC_BASE_URL=https://vizitka.carbonstealth.eu
+PUBLIC_BASE_URL=https://vizitka-bg.com
 EOF
 chmod 600 /etc/vizitka/vizitka.env
 chown vizitka:vizitka /etc/vizitka/vizitka.env
@@ -31,7 +31,7 @@ systemctl daemon-reload && systemctl enable vizitka
 
 cp deploy/nginx/vizitka.conf /etc/nginx/sites-available/vizitka.conf
 ln -s ../sites-available/vizitka.conf /etc/nginx/sites-enabled/
-certbot certonly --nginx -d vizitka.carbonstealth.eu
+certbot certonly --nginx -d vizitka-bg.com
 nginx -t && systemctl reload nginx
 ```
 
