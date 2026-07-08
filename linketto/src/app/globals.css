@@ -269,3 +269,177 @@ body {
   animation: card-drift var(--dur, 7s) ease-in-out infinite;
   animation-delay: var(--delay, 0s);
 }
+
+
+/* ── Трета вълна: скролът е сцена ─────────────────────────────────────── */
+
+/* Светеща лента за прогреса на скрола (Chromium; другаде просто я няма) */
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 3px;
+    z-index: 60;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #d946ef);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+    animation: progress-grow linear both;
+    animation-timeline: scroll();
+  }
+}
+@keyframes progress-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Звезди в нощното небе на hero-то — бавно дишане, никога стробиране */
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+}
+.star {
+  position: absolute;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  box-shadow: 0 0 6px 1px rgba(125, 211, 252, 0.8);
+  animation: star-twinkle var(--dur, 5s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Комета — рядка, плавно се появява и гасне */
+@keyframes comet-fly {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.8;
+  }
+  22% {
+    transform: translate3d(46vw, 15vh, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(46vw, 15vh, 0);
+    opacity: 0;
+  }
+}
+.comet {
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(186, 230, 253, 0),
+    rgba(186, 230, 253, 0.9)
+  );
+  rotate: 18deg;
+  opacity: 0;
+  animation: comet-fly 13s ease-in-out 3s infinite;
+}
+
+/* Броячи, които скролът навива от 0 до целта (--stat-target от JSX).
+   Без поддръжка на scroll-driven animations се показва статичната цифра. */
+@property --stat-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes stat-count {
+  from {
+    --stat-n: 0;
+  }
+  to {
+    --stat-n: var(--stat-target, 0);
+  }
+}
+.stat-live {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  .stat-live {
+    display: inline-block;
+    counter-reset: stat calc(var(--stat-n));
+    animation: stat-count 1s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 20% cover 40%;
+  }
+  .stat-live::after {
+    content: counter(stat);
+  }
+  .stat-static {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* Жива въртяща се градиентна рамка (откроеният план в цените) */
+@property --spin {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes spin-angle {
+  to {
+    --spin: 360deg;
+  }
+}
+.border-live {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    conic-gradient(from var(--spin), #0ea5e9, #8b5cf6, #ec4899, #0ea5e9)
+      border-box;
+  animation: spin-angle 5s linear infinite;
+}
+
+/* Подчертаване, което се рисува само̀ при влизане в екрана */
+.h2-draw::after {
+  content: '';
+  display: block;
+  margin: 0.7rem auto 0;
+  height: 4px;
+  width: 110px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #0ea5e9, #a855f7);
+}
+@supports (animation-timeline: view()) {
+  .h2-draw::after {
+    animation: draw-in 0.8s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+}
+@keyframes draw-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Marquee лентата спира учтиво под мишката */
+.marquee-band:hover .animate-marquee,
+.marquee-band:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}

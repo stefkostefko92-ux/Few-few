@@ -54,6 +54,32 @@ const GREETINGS = [
   ['Merhaba', 'bottom-40 -right-14', '-5deg', '4.2s'],
 ] as const;
 
+// Звезди в нощното небе на hero-то: [top, left, размер px, ритъм, закъснение]
+const STARS = [
+  ['7%', '12%', 2, '4.2s', '0s'],
+  ['12%', '78%', 3, '5.5s', '1.1s'],
+  ['22%', '32%', 2, '6.2s', '2.3s'],
+  ['9%', '55%', 2, '4.8s', '0.7s'],
+  ['30%', '88%', 2, '5.1s', '1.8s'],
+  ['38%', '6%', 3, '6.8s', '0.4s'],
+  ['48%', '44%', 2, '4.4s', '2.9s'],
+  ['58%', '16%', 2, '5.9s', '1.4s'],
+  ['66%', '70%', 3, '4.6s', '3.4s'],
+  ['74%', '38%', 2, '6.4s', '0.9s'],
+  ['82%', '82%', 2, '5.3s', '2.1s'],
+  ['86%', '10%', 2, '4.9s', '3.8s'],
+  ['18%', '92%', 2, '6.1s', '2.6s'],
+  ['52%', '94%', 2, '5.7s', '0.2s'],
+] as const;
+
+// Поздрави-стикери около финалната CTA — езици извън hero комплекта.
+const CTA_PILLS = [
+  ['Привіт', '-top-5 left-10', '-5deg', '0s'],
+  ['こんにちは', '-top-4 right-16', '4deg', '1.5s'],
+  ['안녕하세요', '-bottom-5 left-24', '5deg', '0.8s'],
+  ['Γεια', '-bottom-4 right-10', '-4deg', '2.2s'],
+] as const;
+
 const MARQUEE =
   'Здравей · Hello · Ciao · Hola · Hallo · Bonjour · Olá · Merhaba · Ahoj · Cześć · Γεια · Привіт · こんにちは · 안녕하세요 · مرحبا · ';
 
@@ -76,15 +102,17 @@ export default async function HomePage({
     [CookieIcon, t('trustCookies')],
   ] as const;
 
+  // [цел на брояча, суфикс, етикет] — скролът навива цифрата от 0 до целта
   const STATS = [
-    ['6+', t('statsLangsLabel')],
-    ['29', t('statsBrandsLabel')],
-    ['10', t('statsBlocksLabel')],
-    ['0%', t('statsFeeLabel')],
+    ['6', '+', t('statsLangsLabel')],
+    ['29', '', t('statsBrandsLabel')],
+    ['10', '', t('statsBlocksLabel')],
+    ['0', '%', t('statsFeeLabel')],
   ] as const;
 
   return (
     <>
+      <div aria-hidden className="scroll-progress" />
       <SiteHeader locale={locale as Locale} />
       <main>
         {/* ── HERO: жива aurora върху дълбоко нощно небе ─────────────── */}
@@ -96,6 +124,27 @@ export default async function HomePage({
               className="animate-aurora absolute left-1/3 top-1/4 h-[26rem] w-[26rem] rounded-full bg-fuchsia-500/20 blur-3xl"
               style={{ animationDelay: '-9s' }}
             />
+          </div>
+
+          {/* звездно небе + комета */}
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            {STARS.map(([top, left, size, dur, delay]) => (
+              <span
+                key={`${top}-${left}`}
+                className="star"
+                style={
+                  {
+                    top,
+                    left,
+                    width: size,
+                    height: size,
+                    '--dur': dur,
+                    '--delay': delay,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+            <span className="comet" style={{ top: '16%', left: '5%' }} />
           </div>
 
           <div className="relative mx-auto max-w-6xl px-6">
@@ -209,7 +258,7 @@ export default async function HomePage({
             разширява страницата и се появява хоризонтален скрол */}
         <div className="overflow-x-clip">
           <div
-            className="-mx-4 -rotate-1 scale-[1.02] overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5 shadow-sm"
+            className="marquee-band -mx-4 -rotate-1 scale-[1.02] overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5 shadow-sm"
             aria-hidden
           >
             <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-semibold tracking-wide text-slate-500">
@@ -226,15 +275,20 @@ export default async function HomePage({
         {/* ── СТАТИСТИКИ ─────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 py-16">
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-            {STATS.map(([value, label], index) => (
+            {STATS.map(([value, suffix, label], index) => (
               <div
                 key={label}
                 className={`reveal-pop text-center ${
                   ['lg:-rotate-3', 'lg:translate-y-5 lg:rotate-2', 'lg:-translate-y-2 lg:rotate-1', 'lg:translate-y-7 lg:-rotate-2'][index]
                 }`}
               >
-                <p className="bg-gradient-to-r from-linketto-600 to-violet-600 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
-                  {value}
+                <p
+                  className="bg-gradient-to-r from-linketto-600 to-violet-600 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent"
+                  style={{ '--stat-target': value } as React.CSSProperties}
+                >
+                  <span aria-hidden className="stat-live" />
+                  <span className="stat-static">{value}</span>
+                  {suffix}
                 </p>
                 <p className="mt-2 text-sm font-medium text-slate-500">
                   {label}
@@ -248,7 +302,7 @@ export default async function HomePage({
         <section aria-labelledby="features" className="mx-auto max-w-6xl px-6">
           <h2
             id="features"
-            className="text-center text-3xl font-bold tracking-tight text-slate-900"
+            className="h2-draw text-center text-3xl font-bold tracking-tight text-slate-900"
           >
             {t('featuresTitle')}
           </h2>
@@ -294,6 +348,12 @@ export default async function HomePage({
             aria-hidden
             className="animate-aurora-slow pointer-events-none absolute -right-40 top-1/2 h-[30rem] w-[30rem] -translate-y-1/2 rounded-full bg-linketto-600/30 blur-3xl"
           />
+          <span
+            aria-hidden
+            className="animate-float pointer-events-none absolute -top-2 left-4 select-none font-serif text-[11rem] leading-none text-sky-400/10"
+          >
+            „
+          </span>
           <div className="reveal relative mx-auto max-w-3xl px-6 text-center">
             <HandshakeIcon className="mx-auto h-10 w-10 text-sky-300" />
             <h2 className="mt-6 text-2xl font-bold tracking-tight sm:text-3xl">
@@ -316,7 +376,7 @@ export default async function HomePage({
         >
           <h2
             id="pricing-title"
-            className="text-center text-3xl font-bold tracking-tight text-slate-900"
+            className="h2-draw text-center text-3xl font-bold tracking-tight text-slate-900"
           >
             {tPricing('title')}
           </h2>
@@ -332,7 +392,7 @@ export default async function HomePage({
                   key={planKey}
                   className={`reveal relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-lg ${
                     highlight
-                      ? 'border-linketto-600 shadow-lg shadow-linketto-600/10 ring-2 ring-linketto-600'
+                      ? 'border-live shadow-xl shadow-linketto-600/25'
                       : 'card-drift border-slate-200'
                   }`}
                   style={
@@ -390,6 +450,22 @@ export default async function HomePage({
 
         {/* ── ФИНАЛНА CTA ВЪЛНА ─────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 pb-24">
+          <div className="relative">
+            {CTA_PILLS.map(([word, position, tilt, delay]) => (
+              <span
+                key={word}
+                aria-hidden
+                className={`animate-greet absolute ${position} z-10 hidden rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-600 shadow-lg md:inline-block`}
+                style={
+                  {
+                    '--tilt': tilt,
+                    '--delay': delay,
+                  } as React.CSSProperties
+                }
+              >
+                {word}
+              </span>
+            ))}
           <div className="cta-live grain relative overflow-hidden rounded-3xl bg-gradient-to-br from-linketto-600 via-indigo-600 to-violet-600 px-8 py-16 text-center text-white shadow-2xl shadow-linketto-600/30">
             <div
               aria-hidden
@@ -404,6 +480,7 @@ export default async function HomePage({
             >
               {t('ctaButton')}
             </Link>
+          </div>
           </div>
         </section>
       </main>
