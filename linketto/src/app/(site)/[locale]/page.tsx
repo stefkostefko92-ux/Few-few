@@ -21,14 +21,14 @@ import { PLANS } from '@/lib/plans';
 // Авторските икони на бранда (public/icons, качени от собственика) в бели
 // кръгли плочки; всяка функция има собствен цвят на сиянието при hover.
 const FEATURES = [
-  ['Lang', '/icons/feature-megaphone.png', 'group-hover:shadow-sky-500/50'],
-  ['Ai', '/icons/feature-bookgear.png', 'group-hover:shadow-violet-500/50'],
-  ['Fee', '/icons/feature-money.png', 'group-hover:shadow-amber-500/50'],
-  ['Qr', '/icons/feature-network.png', 'group-hover:shadow-emerald-500/50'],
-  ['Analytics', '/icons/feature-growth.png', 'group-hover:shadow-indigo-500/50'],
-  ['Trust', '/icons/feature-hands.png', 'group-hover:shadow-rose-500/50'],
-  ['Eu', '/icons/feature-handshake.png', 'group-hover:shadow-teal-500/50'],
-  ['Domain', '/icons/feature-mask.png', 'group-hover:shadow-fuchsia-500/50'],
+  ['Lang', '/icons/feature-megaphone.png'],
+  ['Ai', '/icons/feature-bookgear.png'],
+  ['Fee', '/icons/feature-money.png'],
+  ['Qr', '/icons/feature-network.png'],
+  ['Analytics', '/icons/feature-growth.png'],
+  ['Trust', '/icons/feature-hands.png'],
+  ['Eu', '/icons/feature-handshake.png'],
+  ['Domain', '/icons/feature-mask.png'],
 ] as const;
 
 const PLAN_ORDER = ['free', 'pro', 'business', 'founder'] as const;
@@ -243,14 +243,12 @@ export default async function HomePage({
             {t('featuresTitle')}
           </h2>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(([key, iconSrc, glow]) => (
+            {FEATURES.map(([key, iconSrc]) => (
               <div
                 key={key}
                 className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-linketto-500/40 hover:shadow-xl"
               >
-                <span
-                  className={`flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-slate-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-xl ${glow}`}
-                >
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_0_28px_rgba(56,189,248,0.55)] ring-1 ring-sky-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-[0_0_48px_rgba(56,189,248,0.85)]">
                   <Image
                     src={iconSrc}
                     alt=""
