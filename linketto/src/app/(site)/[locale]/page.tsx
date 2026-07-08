@@ -1,38 +1,34 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import {
-  ChartColumnIcon,
   CheckIcon,
   ClapperboardIcon,
-  CoinsIcon,
   CookieIcon,
-  GlobeIcon,
   HandshakeIcon,
   HeartIcon,
   LanguagesIcon,
   LockIcon,
   MicIcon,
-  QrCodeIcon,
   ServerIcon,
   ShieldCheckIcon,
   ShoppingBagIcon,
-  SparklesIcon,
 } from '@/components/icons';
 import type { Locale } from '@/i18n/locales';
 import { PLANS } from '@/lib/plans';
 
-// Тъмни градиентни плочки с Phosphor Duotone икони; всяка функция има
-// собствен цвят на сиянието при hover.
+// Авторските икони на бранда (public/icons, качени от собственика) в бели
+// кръгли плочки; всяка функция има собствен цвят на сиянието при hover.
 const FEATURES = [
-  ['Lang', LanguagesIcon, 'group-hover:shadow-sky-500/50'],
-  ['Ai', SparklesIcon, 'group-hover:shadow-violet-500/50'],
-  ['Fee', CoinsIcon, 'group-hover:shadow-amber-500/50'],
-  ['Qr', QrCodeIcon, 'group-hover:shadow-emerald-500/50'],
-  ['Analytics', ChartColumnIcon, 'group-hover:shadow-indigo-500/50'],
-  ['Trust', HandshakeIcon, 'group-hover:shadow-rose-500/50'],
-  ['Eu', ShieldCheckIcon, 'group-hover:shadow-teal-500/50'],
-  ['Domain', GlobeIcon, 'group-hover:shadow-fuchsia-500/50'],
+  ['Lang', '/icons/feature-megaphone.png', 'group-hover:shadow-sky-500/50'],
+  ['Ai', '/icons/feature-bookgear.png', 'group-hover:shadow-violet-500/50'],
+  ['Fee', '/icons/feature-money.png', 'group-hover:shadow-amber-500/50'],
+  ['Qr', '/icons/feature-network.png', 'group-hover:shadow-emerald-500/50'],
+  ['Analytics', '/icons/feature-growth.png', 'group-hover:shadow-indigo-500/50'],
+  ['Trust', '/icons/feature-hands.png', 'group-hover:shadow-rose-500/50'],
+  ['Eu', '/icons/feature-handshake.png', 'group-hover:shadow-teal-500/50'],
+  ['Domain', '/icons/feature-mask.png', 'group-hover:shadow-fuchsia-500/50'],
 ] as const;
 
 const PLAN_ORDER = ['free', 'pro', 'business', 'founder'] as const;
@@ -247,15 +243,21 @@ export default async function HomePage({
             {t('featuresTitle')}
           </h2>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(([key, FeatureIcon, glow]) => (
+            {FEATURES.map(([key, iconSrc, glow]) => (
               <div
                 key={key}
                 className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:border-linketto-500/40 hover:shadow-xl"
               >
                 <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white shadow-lg ring-1 ring-white/15 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-xl ${glow}`}
+                  className={`flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-slate-200 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 group-hover:shadow-xl ${glow}`}
                 >
-                  <FeatureIcon className="h-6 w-6" />
+                  <Image
+                    src={iconSrc}
+                    alt=""
+                    width={44}
+                    height={44}
+                    className="h-11 w-11"
+                  />
                 </span>
                 <h3 className="mt-4 font-semibold text-slate-900">
                   {t(`feature${key}Title`)}
