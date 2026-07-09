@@ -28,6 +28,16 @@ export async function GET(
     return NextResponse.redirect(new URL(`/u/${slug}`, url.origin), 302);
   }
 
+  // Stripe не обръща payment_status след refund — проверяваме и нашия
+  // запис: върната/оспорена покупка вече няма достъп до тайния линк.
+  const purchase = await prisma.purchase.findUnique({
+    where: { stripeSessionId: sessionId },
+    select: { refundedAt: true, disputedAt: true },
+  });
+  if (purchase?.refundedAt || purchase?.disputedAt) {
+    return NextResponse.redirect(new URL(`/u/${slug}`, url.origin), 302);
+  }
+
   const product = await prisma.product.findFirst({
     where: { id: productId, profile: { slug, bannedAt: null } },
   });

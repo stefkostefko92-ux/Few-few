@@ -53,7 +53,10 @@ export async function requestPayoutAction(
   const method = String(formData.get('method') ?? '').trim().slice(0, 200);
   if (!method) redirect(`/${uiLocale}/dashboard?error=payout`);
 
-  // Четем баланса наново под транзакция, за да няма гонка/двойно теглене.
+  // Четем баланса наново под транзакция. Обикновеният прочит (READ
+  // COMMITTED) не пази от две едновременни заявки, затова нулираме с
+  // условен UPDATE върху точно прочетения баланс (CAS) — втората заявка
+  // не улучва (count 0) и не създава дублирано изплащане.
   await prisma
     .$transaction(async (tx) => {
       const fresh = await tx.user.findUnique({
@@ -64,12 +67,15 @@ export async function requestPayoutAction(
       if (!canWithdraw(balance)) {
         throw new Error('below-threshold');
       }
+      const reset = await tx.user.updateMany({
+        where: { id: user.id, referralCreditCents: balance },
+        data: { referralCreditCents: 0 },
+      });
+      if (reset.count !== 1) {
+        throw new Error('conflict');
+      }
       await tx.referralPayout.create({
         data: { userId: user.id, amountCents: balance, method },
-      });
-      await tx.user.update({
-        where: { id: user.id },
-        data: { referralCreditCents: 0 },
       });
     })
     .catch(() => {

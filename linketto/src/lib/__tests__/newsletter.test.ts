@@ -52,3 +52,24 @@ test('buildSubscribersCsv: заглавие + екраниране', () => {
     '"weird,""@x.co",,,2026-07-02T00:00:00.000Z',
   );
 });
+
+test('buildSubscribersCsv: неутрализира формула-водещи знаци (= + - @)', () => {
+  const csv = buildSubscribersCsv([
+    {
+      email: '=HYPERLINK("http://evil")@x.co',
+      locale: null,
+      confirmedAt: null,
+      createdAt: new Date('2026-07-02T00:00:00Z'),
+    },
+    {
+      email: '+summon@x.co',
+      locale: null,
+      confirmedAt: null,
+      createdAt: new Date('2026-07-02T00:00:00Z'),
+    },
+  ]);
+  const lines = csv.trim().split('\r\n');
+  // водещ апостроф пречи на Excel/Sheets да изпълнят клетката като формула
+  assert.ok(lines[1].startsWith(`"'=HYPERLINK(`));
+  assert.ok(lines[2].startsWith(`'+summon@x.co`));
+});

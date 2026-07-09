@@ -28,6 +28,13 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
     redirect(`/${uiLocale}/dashboard?error=generic`);
   }
 
+  // Сървърен гейт (UI-то също крие бутоните): нов checkout само от FREE —
+  // иначе втори активен абонамент върху същия customer (двойно таксуване).
+  // Смяната на план минава през Customer Portal, не през нов Checkout.
+  if (user.plan !== 'FREE') {
+    redirect(`/${uiLocale}/dashboard?error=plan`);
+  }
+
   // Founder е еднократен (без период); абонаментните планове ползват
   // избрания период → съответния Stripe Price ID от env.
   let priceEnv: string | null;
@@ -58,4 +65,26 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
     cancel_url: `${baseUrl()}/${uiLocale}/dashboard`,
   });
   redirect(session.url ?? `/${uiLocale}/dashboard?error=stripe`);
+}
+
+// Stripe Customer Portal: самостоятелно управление на абонамента (смяна на
+// план/период, начин на плащане, фактури, ОТМЯНА — изискване на Дир. 2011/83
+// за лесен отказ от авто-подновяване). Порталът се конфигурира еднократно в
+// Stripe Dashboard → Settings → Billing → Customer portal.
+export async function openBillingPortalAction(
+  formData: FormData,
+): Promise<void> {
+  const rawLocale = String(formData.get('uiLocale') ?? 'en');
+  const uiLocale = isLocale(rawLocale) ? rawLocale : 'en';
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const stripe = getStripe();
+  if (!stripe || !user.stripeCustomerId) {
+    redirect(`/${uiLocale}/dashboard?error=stripe`);
+  }
+  const session = await stripe.billingPortal.sessions.create({
+    customer: user.stripeCustomerId,
+    return_url: `${baseUrl()}/${uiLocale}/dashboard`,
+  });
+  redirect(session.url);
 }

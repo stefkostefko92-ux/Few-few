@@ -19,11 +19,15 @@ export function generateSubscriberToken(): string {
 }
 
 function csvCell(value: string): string {
+  // Formula injection: клетка, започваща с = + - @ (или tab/CR), се изпълнява
+  // като формула в Excel/Sheets — неутрализираме с водещ апостроф. Имейлът е
+  // недоверен вход (=HYPERLINK(...)@evil.com минава имейл валидацията).
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
   // RFC 4180: кавички при запетая/кавичка/нов ред; удвояваме вътрешните кавички.
-  if (/[",\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+  if (/[",\n\r]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
   }
-  return value;
+  return safe;
 }
 
 export interface SubscriberRow {

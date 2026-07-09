@@ -257,6 +257,19 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
     where: { id: purchaseId },
     data: { refundedAt: new Date() },
   });
+  // Върнати пари → отнемаме и еднократното право на достъп (курс).
+  if (purchase.buyerEmail) {
+    await prisma.entitlement
+      .updateMany({
+        where: {
+          productId: purchase.productId,
+          email: purchase.buyerEmail,
+          stripeSubscriptionId: null,
+        },
+        data: { active: false },
+      })
+      .catch(() => undefined);
+  }
   redirect(`/${uiLocale}/dashboard`);
 }
 

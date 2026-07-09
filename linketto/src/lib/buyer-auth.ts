@@ -15,13 +15,14 @@ function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
-/** Създава еднократен magic-link токен за имейл (валиден 30 мин). */
+/** Създава еднократен magic-link токен за имейл (валиден 30 мин).
+    В БД пазим само sha256 (както сесиите) — суровият токен е само в линка. */
 export async function createBuyerMagicToken(email: string): Promise<string> {
   const token = randomBytes(24).toString('hex');
   await prisma.buyerToken.create({
     data: {
       email,
-      token,
+      token: hashToken(token),
       expiresAt: new Date(Date.now() + MAGIC_TTL_MINUTES * 60 * 1000),
     },
   });
@@ -35,7 +36,9 @@ export async function createBuyerMagicToken(email: string): Promise<string> {
 export async function consumeBuyerMagicToken(
   token: string,
 ): Promise<string | null> {
-  const record = await prisma.buyerToken.findUnique({ where: { token } });
+  const record = await prisma.buyerToken.findUnique({
+    where: { token: hashToken(token) },
+  });
   if (!record || record.consumedAt || record.expiresAt < new Date()) {
     return null;
   }

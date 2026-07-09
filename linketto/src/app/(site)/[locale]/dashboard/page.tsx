@@ -40,7 +40,10 @@ import {
   SparklesIcon,
 } from '@/components/icons';
 import Link from 'next/link';
-import { startCheckoutAction } from '@/app/actions/billing';
+import {
+  openBillingPortalAction,
+  startCheckoutAction,
+} from '@/app/actions/billing';
 import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
 import { sendBroadcastAction } from '@/app/actions/newsletter';
 import { resolveBookingAction } from '@/app/actions/booking';
@@ -2216,6 +2219,20 @@ export default async function DashboardPage({
                     </button>
                   </form>
                 </div>
+              )}
+              {/* Активен абонамент → Customer Portal: смяна на план/период,
+                  начин на плащане, фактури и ОТМЯНА (лесен отказ от
+                  авто-подновяване). Founder е еднократен — няма какво да отменя. */}
+              {plan.id !== 'FREE' && !plan.oneTime && (
+                <form action={openBillingPortalAction} className="mt-4">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    {t('manageBilling')}
+                  </button>
+                </form>
               )}
             </section>
           </>

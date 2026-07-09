@@ -103,7 +103,8 @@ export default async function AnalyticsPage({
       GROUP BY 1 ORDER BY 1
     `,
     prisma.purchase.aggregate({
-      where: { profileId: profile.id },
+      // Върнати/оспорени покупки не са приход — извън продажбите/конверсията.
+      where: { profileId: profile.id, refundedAt: null, disputedAt: null },
       _count: { _all: true },
       _sum: { amountCents: true },
     }),

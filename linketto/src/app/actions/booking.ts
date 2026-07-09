@@ -24,6 +24,16 @@ export async function submitBookingAction(formData: FormData): Promise<void> {
   });
   if (!profile) redirect(`${back}${sep}bookError=1`);
 
+  // Срок на съхранение (чл. 13 ОРЗД): заявки по-стари от 12 месеца се
+  // чистят при всяко ново изпращане — без отделен cron (като ContactMessage).
+  await prisma.booking
+    .deleteMany({
+      where: {
+        createdAt: { lt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
+      },
+    })
+    .catch(() => undefined);
+
   await prisma.booking.create({
     data: {
       profileId: profile.id,

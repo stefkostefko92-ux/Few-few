@@ -69,6 +69,29 @@ async function grantEntitlement(
     .catch(() => undefined);
 }
 
+// Отнема еднократните (COURSE) права по покупките на даден PaymentIntent —
+// при refund/chargeback купувачът връща парите и губи достъпа. Членствата
+// (stripeSubscriptionId) се управляват от subscription.* събитията.
+async function revokeOneOffEntitlements(paymentIntentId: string): Promise<void> {
+  const purchases = await prisma.purchase.findMany({
+    where: { stripePaymentIntentId: paymentIntentId },
+    select: { productId: true, buyerEmail: true },
+  });
+  for (const purchase of purchases) {
+    if (!purchase.buyerEmail) continue;
+    await prisma.entitlement
+      .updateMany({
+        where: {
+          productId: purchase.productId,
+          email: purchase.buyerEmail,
+          stripeSubscriptionId: null,
+        },
+        data: { active: false },
+      })
+      .catch(() => undefined);
+  }
+}
+
 // Доставка на купеното по имейл — от webhook-а, независимо от success_url
 // redirect-а (затворен таб не бива да значи „платил без достъп“).
 // Идемпотентно: праща само ако още не е доставено.
@@ -241,6 +264,8 @@ export async function POST(request: Request): Promise<NextResponse> {
             data: { refundedAt: new Date() },
           })
           .catch(() => undefined);
+        // Върнати пари → връща се и достъпът до курса.
+        await revokeOneOffEntitlements(pi).catch(() => undefined);
       }
       break;
     }
@@ -259,6 +284,9 @@ export async function POST(request: Request): Promise<NextResponse> {
             data: { disputedAt: new Date() },
           })
           .catch(() => undefined);
+        // Chargeback → спираме достъпа веднага (при спечелен спор може да
+        // се възстанови ръчно; загубата иначе е за продавача/платформата).
+        await revokeOneOffEntitlements(pi).catch(() => undefined);
       }
       break;
     }
