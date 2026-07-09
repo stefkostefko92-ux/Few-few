@@ -7,6 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
 import { PrintButton } from "@/components/PrintButton";
+import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
 
@@ -106,6 +107,10 @@ export default async function RidePage({
             Уговаряйте се предварително и споделяйте плана с близък. Внимавайте при
             плащания на непознати.
           </p>
+          <ReportContent
+            subject={`${r.routeFrom} → ${r.routeTo}`}
+            path={`/spodeleno-patuvane/${r.slug}`}
+          />
         </aside>
       </div>
     </>

@@ -11,6 +11,22 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Уважаваме „по-малко движение“: спираме плавния скрол и съкращаваме всички
+   преходи/анимации за хора с вестибуларна чувствителност. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   /* Леко топъл, „хартиен“ фон вместо стандартно сиво — по-човешко усещане. */
   background-color: #faf8f3;
@@ -76,7 +92,7 @@ h4,
 
   /* Малък надпис над заглавие — „дизайнерски“ детайл. */
   .eyebrow {
-    @apply text-xs font-bold uppercase tracking-[0.14em] text-gold-600;
+    @apply text-xs font-bold uppercase tracking-[0.14em] text-gold-700;
     font-family: var(--font-sans);
   }
 
@@ -337,6 +353,13 @@ html.dark header .btn-secondary {
    текстът вече е светъл (от общите правила) и става четим. */
 html.dark .page-hero {
   background-image: linear-gradient(to bottom right, #1c2742, #0f172a 60%, #0f172a);
+}
+
+/* Минимални цели за докосване ПО ПОДРАЗБИРАНЕ (WCAG 2.5.5/2.5.8) — без да се
+   разчита потребителят сам да открие и включи „по-лесно докосване“. Важно за
+   възрастната аудитория с по-слаба моторика. */
+.a11y-btn {
+  min-height: 44px;
 }
 
 /* По-лесно докосване (достъпност) — по-големи бутони, връзки и полета за хора

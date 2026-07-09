@@ -134,7 +134,7 @@ export function AccessibilityBar() {
       onClick={() => chooseFont(level)}
       aria-pressed={font === level}
       className={
-        "a11y-btn rounded px-3 py-1.5 font-bold leading-none transition " +
+        "a11y-btn inline-flex min-w-[44px] items-center justify-center rounded px-3 py-1.5 font-bold leading-none transition " +
         cls +
         " " +
         (font === level

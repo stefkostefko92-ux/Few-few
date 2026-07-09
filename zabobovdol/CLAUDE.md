@@ -13,7 +13,7 @@ repo-root `CLAUDE.md`._
 ```bash
 npm install
 cp .env.example .env            # fill DATABASE_URL + secrets
-npx prisma db push              # create schema (dev); or npm run prisma:migrate
+npx prisma migrate dev          # apply/create versioned migrations (schema changes need a migration file)
 npm run db:seed:all             # seed content + admin user
 npm run dev                     # http://localhost:3000
 

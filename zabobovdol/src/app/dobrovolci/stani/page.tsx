@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { PageHero } from "@/components/ui";
 import { submitVolunteer, type VolunteerState } from "./actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: VolunteerState = { ok: false };
 
@@ -96,6 +97,8 @@ export default function BecomeVolunteerPage() {
             Данните ви за контакт не се показват публично — служат само на екипа,
             за да ви свърже с хора, които се нуждаят от помощ.
           </p>
+
+          <PrivacyNote />
 
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Изпращане…" : "Запишете ме"}

@@ -74,7 +74,7 @@ export async function submitHelpCause(
     action: "CREATE",
     entity: "HelpCause",
     entityId: created.id,
-    summary: `Нов зов за помощ: „${d.title}" (чака одобрение)`,
+    summary: `Нов зов за помощ: „${d.title}“ (чака одобрение)`,
   });
 
   return { ok: true };

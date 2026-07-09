@@ -37,6 +37,14 @@ const nextConfig = {
     const analytics = "https://plausible.io";
     const weather = "https://api.open-meteo.com";
 
+    // ЗАБЕЛЕЖКА (одит, сигурност): `'unsafe-inline'` за script-src е необходим,
+    // защото Next.js (App Router) вгражда инлайн bootstrap/hydration скриптове,
+    // а ние ползваме и инлайн JSON-LD + кратък скрипт за достъпност. Истинското
+    // втвърдяване е CSP с per-request `nonce` през middleware — отложено е
+    // съзнателно, защото изисква пълен nonce-pipeline и тест срещу живия Next
+    // сървър (грешка би счупила hydration в продукция). `img-src https:` е
+    // широк нарочно — потребителските снимки в галерията сочат произволни HTTPS
+    // адреси.
     const scriptSrc =
       process.env.NODE_ENV === "production"
         ? `script-src 'self' 'unsafe-inline' ${analytics}`

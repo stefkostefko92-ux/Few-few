@@ -9,7 +9,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChatWidget } from "@/components/ChatWidget";
-import { CookieConsent } from "@/components/CookieConsent";
 import { IntroSplash } from "@/components/IntroSplash";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
@@ -145,7 +144,6 @@ export default async function RootLayout({
         </main>
         <SiteFooter />
         <ChatWidget />
-        <CookieConsent />
         <IntroSplash />
         <ServiceWorkerRegister />
       </body>

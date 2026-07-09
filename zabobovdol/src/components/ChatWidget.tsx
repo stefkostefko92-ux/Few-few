@@ -17,9 +17,10 @@ const STORAGE_KEY = "zbd_chat_v2";
 const GREETING: Msg = {
   role: "bot",
   text:
-    "Здравейте! Аз съм дигиталният помощник на Бобов дол. Попитайте ме за " +
-    "телефон, услуга или как да свършите нещо онлайн — отговарям спокойно и " +
-    "стъпка по стъпка.",
+    "Здравейте! Аз съм автоматизиран помощник с изкуствен интелект — не съм " +
+    "човек. Попитайте ме за телефон, услуга или как да свършите нещо онлайн — " +
+    "отговарям спокойно и стъпка по стъпка. Винаги проверявайте важното от " +
+    "официален източник.",
 };
 
 const SUGGESTIONS = [
@@ -82,7 +83,11 @@ export function ChatWidget() {
   }, [messages]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Уважаваме „по-малко движение“ — без плавен скрол при reduced-motion.
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    endRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
   }, [messages, open, loading]);
 
   // Достъпност: при отваряне фокусираме полето за писане и позволяваме затваряне
@@ -240,7 +245,9 @@ export function ChatWidget() {
           <div className="flex items-center justify-between gap-2 bg-brand-700 px-4 py-3 text-white">
             <div>
               <div className="font-semibold">Дигитален помощник</div>
-              <div className="text-xs text-brand-100">Бобов дол · отговаря веднага</div>
+              <div className="text-xs text-brand-100">
+                Автоматизиран · с изкуствен интелект
+              </div>
             </div>
             <button
               type="button"
@@ -329,9 +336,9 @@ export function ChatWidget() {
               <Send className="h-5 w-5" aria-hidden />
             </button>
           </form>
-          <p className="px-2 pb-2 text-[11px] leading-snug text-slate-500">
-            Не пишете пароли или лични данни. Понякога отговорите се съставят от
-            външен AI.{" "}
+          <p className="px-2 pb-2 text-xs leading-snug text-slate-600">
+            Това е <strong>автоматизиран отговор от изкуствен интелект</strong>,
+            не от човек, и може да греши. Не пишете пароли или лични данни.{" "}
             <Link href="/poveritelnost" className="underline hover:text-brand-700">
               Поверителност
             </Link>

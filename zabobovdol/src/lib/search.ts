@@ -327,7 +327,8 @@ export async function search(query: string, limit = 12): Promise<SearchResult[]>
 
 // Записва запитване без резултат, за да виждаме какво търсят хората.
 export async function recordMiss(query: string): Promise<void> {
-  const q = query.trim().toLowerCase();
+  // Режем дължината — иначе бот с многокилобайтови заявки пълни базата.
+  const q = query.trim().toLowerCase().slice(0, 200);
   if (q.length < 2) return;
   try {
     const existing = await prisma.searchMiss.findFirst({ where: { query: q } });

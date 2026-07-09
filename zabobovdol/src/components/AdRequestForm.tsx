@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { submitAdRequest, type AdRequestState } from "@/app/reklama/actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: AdRequestState = { ok: false };
 
@@ -91,6 +92,8 @@ export function AdRequestForm({
         Посочете поне имейл или телефон. Ще се свържем с Вас, за да подготвим
         банера.
       </p>
+      <PrivacyNote />
+
       <button type="submit" className="btn-primary" disabled={pending}>
         {pending ? "Изпращане…" : "Изпратете заявка"}
       </button>

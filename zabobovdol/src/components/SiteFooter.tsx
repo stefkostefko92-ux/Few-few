@@ -49,7 +49,7 @@ export async function SiteFooter() {
             <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
               Раздели
             </h2>
             <ul className="mt-3 space-y-2 text-sm">
@@ -63,7 +63,7 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
               Информация
             </h2>
             <ul className="mt-3 space-y-2 text-sm">
@@ -77,7 +77,7 @@ export async function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
               Спешни телефони
             </h2>
             <ul className="mt-3 space-y-2 text-sm">
@@ -150,13 +150,18 @@ export async function SiteFooter() {
           <p className="text-slate-500">
             Изработка и поддръжка на сайта:{" "}
             <a
-              href="https://carbonstealth.eu"
+              href={SITE.company.website}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-slate-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-700"
             >
-              Carbon Stealth VCC
+              {SITE.company.tradeName}
             </a>
+            <br />
+            <span className="text-xs text-slate-400">
+              {SITE.company.legalName} · ЕИК {SITE.company.eik} · ДДС №{" "}
+              {SITE.company.vat}
+            </span>
           </p>
         </div>
       </div>

@@ -99,7 +99,7 @@ export async function submitListing(
       action: "CREATE",
       entity: "Listing",
       entityId: created.id,
-      summary: `Нова обява от посетител: „${data.title}" (чака одобрение)`,
+      summary: `Нова обява от посетител: „${data.title}“ (чака одобрение)`,
     });
 
     return { ok: true };

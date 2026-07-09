@@ -4,7 +4,7 @@
   "name": "За Бобов дол",
   "launcherName": "За Бобов дол",
   "display": "standalone",
-  "orientation": "default",
+  "orientation": "portrait",
   "themeColor": "#212f8a",
   "themeColorDark": "#0f172a",
   "navigationColor": "#212f8a",
@@ -15,7 +15,7 @@
   "enableNotifications": false,
   "startUrl": "/",
   "iconUrl": "https://zabobovdol.carbonstealth.eu/icon-512.png",
-  "maskableIconUrl": "https://zabobovdol.carbonstealth.eu/icon-512.png",
+  "maskableIconUrl": "https://zabobovdol.carbonstealth.eu/icon-512-maskable.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "./android.keystore",

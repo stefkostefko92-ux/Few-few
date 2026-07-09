@@ -46,7 +46,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-md px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100"
+                className="inline-flex min-h-[44px] items-center rounded-md px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100"
               >
                 {item.label}
               </Link>
@@ -92,7 +92,7 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-2.5 text-base font-semibold text-slate-900 hover:bg-slate-100"
+                  className="block rounded-md px-3 py-3 text-base font-semibold text-slate-900 hover:bg-slate-100"
                 >
                   {item.label}
                   {item.description && (

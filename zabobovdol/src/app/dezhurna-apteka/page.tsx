@@ -4,7 +4,7 @@ import { Cross, Phone, MapPin, Clock, Stethoscope } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState, Prose } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
-import { buildMetadata, itemListLd } from "@/lib/seo";
+import { buildMetadata, itemListLd, localBusinessLd, canonical } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { getDutyInfo } from "@/lib/settings";
 import { PrintButton } from "@/components/PrintButton";
@@ -73,6 +73,25 @@ export default async function DutyPharmacyPage() {
           data={itemListLd(
             health.map((s) => ({ name: s.name, path: `/uslugi/${s.slug}` })),
             "Аптеки и здравни услуги в Бобов дол",
+          )}
+        />
+      )}
+      {/* Всяка аптека като Pharmacy (LocalBusiness) — пряк локален AEO сигнал
+          за въпроси „коя аптека работи сега“. */}
+      {pharmacies.length > 0 && (
+        <JsonLd
+          data={pharmacies.map((s) =>
+            localBusinessLd({
+              schemaType: "Pharmacy",
+              name: s.name,
+              description: s.description || undefined,
+              address: s.address || undefined,
+              phone: s.phone || undefined,
+              url: canonical(`/uslugi/${s.slug}`),
+              hours: s.hours || undefined,
+              lat: s.lat,
+              lng: s.lng,
+            }),
           )}
         />
       )}

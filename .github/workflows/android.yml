@@ -17,6 +17,10 @@ on:
   push:
     tags: ["android-v*"]
 
+# Най-малки права за GITHUB_TOKEN — workflow-ът само чете кода и качва artifact.
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build TWA (.apk + .aab)
@@ -42,6 +46,34 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
+      # При release таг (android-v*) изискваме истински keystore — да не
+      # произведем „release" AAB с временния тестов ключ по невнимание.
+      - name: Провери keystore при release таг
+        if: startsWith(github.ref, 'refs/tags/android-v')
+        run: |
+          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "::error::Release таг без ANDROID_KEYSTORE_BASE64 — задайте стабилния keystore за Google Play."
+            exit 1
+          fi
+
+      # Заместваме пропуснатата от --skipPwaValidation проверка: уверяваме се, че
+      # живият manifest, иконите, service worker-ът и assetlinks се зареждат
+      # (иначе TWA-то ще покаже URL лента).
+      - name: Провери manifest, икони и assetlinks (installability)
+        run: |
+          set -e
+          for u in \
+            "https://zabobovdol.carbonstealth.eu/manifest.webmanifest" \
+            "https://zabobovdol.carbonstealth.eu/icon-192.png" \
+            "https://zabobovdol.carbonstealth.eu/icon-512.png" \
+            "https://zabobovdol.carbonstealth.eu/icon-512-maskable.png" \
+            "https://zabobovdol.carbonstealth.eu/sw.js" \
+            "https://zabobovdol.carbonstealth.eu/.well-known/assetlinks.json"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$u" || echo 000)
+            echo "$code  $u"
+            [ "$code" = "200" ] || { echo "::error::$u върна $code (нужно е 200 за installability)."; exit 1; }
+          done
+
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
@@ -53,10 +85,12 @@ jobs:
           EOF
 
       - name: Prepare signing keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+          if [ -n "$KEYSTORE_B64" ]; then
             echo "Използвам keystore от secrets (стабилен ключ за Google Play)."
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+            printf '%s' "$KEYSTORE_B64" | base64 -d > android.keystore
           else
             echo "::warning::Няма ANDROID_KEYSTORE_BASE64 — генерирам ВРЕМЕНЕН ключ (само за тестов .apk, не за Google Play)."
             keytool -genkeypair -v \

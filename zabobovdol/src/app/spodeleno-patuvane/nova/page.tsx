@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { PageHero } from "@/components/ui";
 import { submitRideshare, type RideState } from "./actions";
+import { PrivacyNote } from "@/components/PrivacyNote";
 
 const initial: RideState = { ok: false };
 
@@ -116,6 +117,8 @@ export default function NewRidePage() {
             Посочете поне телефон или имейл. За сигурност се уговаряйте предварително
             и не плащайте на непознати без яснота.
           </p>
+
+          <PrivacyNote />
 
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Изпращане…" : "Публикувай обявата"}
