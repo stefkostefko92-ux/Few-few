@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -62,6 +62,12 @@ MASTILKO_HEALTH_URL="${MASTILKO_HEALTH_URL:-http://127.0.0.1:3200/}"
 # на сървъра в SupremeDiscordBot/.env (корен, postgres), SupremeDiscordBot/backend/.env, SupremeDiscordBot/bot/.env
 # и SupremeDiscordBot/frontend/.env (build-time VITE_*); пренасят се при всеки деплой.
 SUPREME_HEALTH_URL="${SUPREME_HEALTH_URL:-http://127.0.0.1:8080/}"
+
+# eternaltouch (Eternal Touch — Docker Compose модел) — app:4300 + postgres:5437
+# слушат само на 127.0.0.1, зад Nginx. Тайните живеят в eternaltouch/.env на
+# сървъра (пренасят се при всеки деплой). Ако липсва .env при пръв деплой, генерираме
+# го с random secrets (SMTP_PASS остава CHANGE_ME — попълва се ръчно веднъж).
+ET_HEALTH_URL="${ET_HEALTH_URL:-http://127.0.0.1:4300/healthz}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -393,6 +399,52 @@ deploy_supreme() {
 }
 
 # ── Health check ──────────────────────────────────────────────────────────────
+# ── 3g) eternaltouch — Docker Compose ─────────────────────────────────────────
+deploy_eternaltouch() {
+  local d="$SRC/eternaltouch"
+  [ -d "$d" ] || { warn "Няма eternaltouch/ в архива — пропускам."; return; }
+  log "Разгръщам eternaltouch (Docker Compose)…"
+  # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
+  if [ -f "$CURRENT_LINK/eternaltouch/.env" ] && [ ! -f "$d/.env" ]; then
+    cp -a "$CURRENT_LINK/eternaltouch/.env" "$d/.env"; ok "Пренесох eternaltouch/.env"
+  fi
+  # Пръв деплой без .env: генерирай random secrets (app-ът иначе отказва да стартира).
+  # SMTP_PASS остава CHANGE_ME — имейлите тръгват след като го попълниш веднъж ръчно.
+  if [ ! -f "$d/.env" ]; then
+    warn "Няма eternaltouch/.env — генерирам с random secrets (SMTP_PASS=CHANGE_ME)."
+    local dbp jwt cks sks adp
+    dbp="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+    jwt="$(openssl rand -base64 48 | tr -d '\n')"
+    cks="$(openssl rand -base64 48 | tr -d '\n')"
+    sks="$(openssl rand -base64 48 | tr -d '\n')"
+    adp="$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9')"
+    cat > "$d/.env" <<EOF
+DB_PASSWORD=${dbp}
+JWT_SECRET=${jwt}
+COOKIE_SECRET=${cks}
+SESSION_SECRET=${sks}
+ADMIN_EMAIL=info@eternaltouch.it
+ADMIN_PASSWORD=${adp}
+SITE_URL=https://eternaltouch.it
+NODE_ENV=production
+PORT=4300
+SMTP_HOST=authsmtp.register.it
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=info@eternaltouch.it
+SMTP_PASS=CHANGE_ME
+SMTP_FROM=Eternal Touch <info@eternaltouch.it>
+NOTIFY_TO=info@eternaltouch.it
+EOF
+    chmod 600 "$d/.env"
+    warn "Записах eternaltouch/.env. Админ парола: ${adp} — запиши я в password manager СЕГА."
+    warn "Попълни SMTP_PASS в eternaltouch/.env, за да тръгнат имейлите."
+  fi
+  chmod 600 "$d/.env" 2>/dev/null || true
+  ( cd "$d" && bash deploy.sh )   # idempotent: docker up --build, seed (upsert), nginx, certbot
+  health "$ET_HEALTH_URL" "eternaltouch" || deploy_failed=1
+}
+
 health() {
   local url="$1" name="$2" i
   for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -410,6 +462,7 @@ for p in $PROJECTS; do
     nexus)      deploy_nexus ;;
     mastilko)   deploy_mastilko ;;
     SupremeDiscordBot)    deploy_supreme ;;
+    eternaltouch)         deploy_eternaltouch ;;
     *)          warn "Непознат проект: $p" ;;
   esac
 done

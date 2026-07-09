@@ -1,0 +1,161 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Продукти</h1>
+      <p class="admin-sub"><%= products.length %> бр. · <%= collections.length %> колекции</p>
+    </div>
+    <a href="/admin/products/new" class="btn-primary-admin">+ Нов продукт</a>
+  </header>
+
+  <% if (products.length === 0) { %>
+    <div class="empty-card">
+      <p class="muted">Няма продукти все още.</p>
+      <a href="/admin/products/new" class="btn-primary-admin">Създай първия</a>
+    </div>
+  <% } else { %>
+    <div class="card-grid">
+      <% products.forEach(function(p) { %>
+        <% let imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) {} %>
+        <% const mainImg = p.mainImage || imgs[0]; %>
+        <% const thumbImg = mainImg ? mainImg.replace('/uploads/products/', '/uploads/products/thumb-').replace('/uploads/seed/', '/uploads/seed/thumb-') : null; %>
+        <div class="admin-card <%= !p.isActive ? 'is-hidden' : '' %>" data-product-id="<%= p.id %>">
+          <% if (mainImg) { %>
+            <div class="admin-card-media">
+              <img src="<%= thumbImg %>" alt="" onerror="this.src='<%= mainImg %>'" loading="lazy">
+              <% if (!p.isActive) { %><span class="status-pill status-hidden">скрит</span><% } %>
+            </div>
+          <% } else { %>
+            <div class="admin-card-media placeholder">
+              <% if (!p.isActive) { %><span class="status-pill status-hidden">скрит</span><% } %>
+            </div>
+          <% } %>
+          <div class="admin-card-body">
+            <span class="tag-mini"><%= p.collection.nameBg || p.collection.nameIt %></span>
+            <h3><%= p.nameBg || p.nameIt %></h3>
+            <p class="muted small"><%= imgs.length %> снимк<%= imgs.length === 1 ? 'а' : 'и' %></p>
+
+            <div class="quick-toggles">
+              <label class="toggle-pill">
+                <input type="checkbox" data-toggle="active" <%= p.isActive ? 'checked' : '' %>>
+                <span>Видим</span>
+              </label>
+              <label class="toggle-pill toggle-featured">
+                <input type="checkbox" data-toggle="featured" <%= p.isFeatured ? 'checked' : '' %>>
+                <span>⭐ Препоръчан</span>
+              </label>
+            </div>
+
+            <div class="card-actions">
+              <a href="/admin/products/<%= p.id %>/edit" class="btn-sm">Редактирай</a>
+              <% if (p.isActive) { %>
+                <a href="/collections/<%= p.collection.slug %>/<%= p.slug %>" target="_blank" rel="noopener" class="btn-sm btn-ghost" title="Виж в сайта">↗</a>
+              <% } %>
+              <form action="/admin/products/<%= p.id %>/delete" method="POST" class="inline" data-confirm="Сигурен ли си? Изтриването е необратимо.">
+                <button type="submit" class="btn-sm btn-danger">Изтрий</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<style>
+  .admin-card.is-hidden { opacity: 0.65; }
+  .admin-card-media { position: relative; }
+  .status-pill {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+  }
+  .quick-toggles {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 0.6rem 0;
+  }
+  .toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3em 0.7em;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 999px;
+    background: #fafafa;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-pill:has(input:checked) {
+    background: #f5f0e6;
+    border-color: #C9A96E;
+    color: #6b5326;
+  }
+  .toggle-pill input {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+  .toggle-pill.is-saving { opacity: 0.5; pointer-events: none; }
+  .card-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+  form.inline { display: inline; margin: 0; }
+  .btn-ghost {
+    background: transparent;
+    border-color: rgba(0,0,0,0.12);
+    color: #555;
+  }
+  .btn-ghost:hover { background: rgba(0,0,0,0.04); }
+</style>
+
+<script>
+  // Quick AJAX toggles
+  document.querySelectorAll('[data-toggle]').forEach(input => {
+    input.addEventListener('change', async () => {
+      const card = input.closest('.admin-card');
+      const pill = input.closest('.toggle-pill');
+      const id = card.dataset.productId;
+      const kind = input.dataset.toggle; // 'active' or 'featured'
+      const endpoint = `/admin/products/${id}/toggle-${kind}`;
+      pill.classList.add('is-saving');
+      try {
+        const res = await fetch(endpoint, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          input.checked = !input.checked; // revert
+          alert('Грешка при запазване');
+        } else {
+          // Update card hidden state if active toggled
+          if (kind === 'active') {
+            card.classList.toggle('is-hidden', !data.isActive);
+          }
+        }
+      } catch (e) {
+        input.checked = !input.checked;
+        alert('Мрежова грешка: ' + e.message);
+      } finally {
+        pill.classList.remove('is-saving');
+      }
+    });
+  });
+
+  // Confirm dialogs
+  document.querySelectorAll('[data-confirm]').forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!confirm(form.dataset.confirm)) e.preventDefault();
+    });
+  });
+</script>

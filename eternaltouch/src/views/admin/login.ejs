@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="<%= req.lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Accedi — Eternal Touch Admin</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <!-- Self-hosted fonts (no Google requests). Inter (body) falls back to the
+       system UI font stack defined in admin.css. -->
+  <link rel="stylesheet" href="/fonts/fonts.css">
+</head>
+<body class="login-body">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="login-brand-name">Eternal Touch</span>
+        <span class="login-brand-sub">Admin Panel</span>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="flash flash-error"><%= error %></div>
+      <% } %>
+
+      <form action="/admin/login" method="POST" class="login-form">
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" required autofocus value="<%= typeof email !== 'undefined' ? email : '' %>">
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" required>
+        </label>
+        <button type="submit" class="btn-primary-admin">Accedi</button>
+      </form>
+
+      <p class="login-note">Pannello riservato ai gestori dell'atelier.</p>
+    </div>
+  </div>
+</body>
+</html>
