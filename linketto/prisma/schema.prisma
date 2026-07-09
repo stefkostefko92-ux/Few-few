@@ -249,6 +249,12 @@ model PollVote {
   @@index([linkId])
 }
 
+enum ProductType {
+  DIGITAL // еднократен дигитален продукт (таен линк) — досегашното
+  COURSE // курс със заключени уроци (еднократно плащане, доживотен достъп)
+  MEMBERSHIP // абонамент (recurring) — достъп до заключено съдържание докато е активен
+}
+
 // Магазин: дигитални продукти (доставка = таен линк след платена поръчка).
 // Плащането е destination charge към Stripe Connect акаунта на създателя,
 // а комисионата на Linketto (по плана: 8/4/0/0%) е application_fee.
@@ -258,14 +264,75 @@ model Product {
   profile      Profile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
   position     Int                  @default(0)
   priceCents   Int // в евроцентове, EUR
-  deliveryUrl  String // какво получава купувачът след плащане
+  type         ProductType          @default(DIGITAL)
+  interval     String? // MEMBERSHIP: 'month' | 'year'
+  deliveryUrl  String? // DIGITAL: таен линк (COURSE/MEMBERSHIP ползват уроци)
   active       Boolean              @default(true)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   translations ProductTranslation[]
   purchases    Purchase[]
+  lessons      Lesson[]
+  entitlements Entitlement[]
 
   @@index([profileId, position])
+}
+
+// Урок в курс/членство — заключено съдържание (текст + по желание видео).
+model Lesson {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  position  Int      @default(0)
+  title     String
+  body      String? // текст на урока (по желание)
+  videoUrl  String? // YouTube/Vimeo embed (по желание)
+  createdAt DateTime @default(now())
+
+  @@index([productId, position])
+}
+
+// Право на достъп на купувач до курс/членство. Еднократен курс = доживотно
+// активно; членство = активно докато Stripe абонаментът е активен.
+model Entitlement {
+  id                   String    @id @default(cuid())
+  productId            String
+  product              Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  profileId            String
+  email                String
+  active               Boolean   @default(true)
+  stripeSubscriptionId String?   @unique
+  expiresAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([productId, email])
+  @@index([email])
+  @@index([profileId])
+}
+
+// Magic-link токен за вход на купувача (passwordless, еднократен).
+model BuyerToken {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+}
+
+// Сесия на купувача (за достъп до заключено съдържание) — както User
+// сесията: суровият токен е в cookie, в БД пазим само sha256.
+model BuyerSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }
 
 model ProductTranslation {

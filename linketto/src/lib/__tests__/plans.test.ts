@@ -75,3 +75,12 @@ test('stripePriceEnvFor: правилно env име по план+период'
     'STRIPE_PRICE_BUSINESS_MONTHLY',
   );
 });
+
+test('membershipFeePercent = комисиона по плана + обработка', async () => {
+  const { membershipFeePercent, membershipInterval } = await import('../plans');
+  assert.equal(membershipFeePercent('PRO'), 5.9); // 4 + 1.9
+  assert.equal(membershipFeePercent('BUSINESS'), 1.9); // 0 + 1.9
+  assert.equal(membershipInterval('year'), 'year');
+  assert.equal(membershipInterval('month'), 'month');
+  assert.equal(membershipInterval(null), 'month');
+});

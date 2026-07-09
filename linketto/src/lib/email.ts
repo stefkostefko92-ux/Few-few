@@ -248,6 +248,68 @@ export function broadcastSubject(subject: string): string {
   return subject;
 }
 
+// ── Достъп на купувача (magic-link към курс/членство) ────────────────
+const ACCESS_STRINGS: Record<
+  string,
+  { subject: string; intro: (t: string) => string; button: string; ignore: string }
+> = {
+  bg: {
+    subject: 'Достъп до съдържанието',
+    intro: (t) => `Кликни, за да отвориш „${t}“:`,
+    button: 'Отвори съдържанието',
+    ignore: 'Ако не си поискал това, игнорирай имейла.',
+  },
+  en: {
+    subject: 'Access your content',
+    intro: (t) => `Click to open "${t}":`,
+    button: 'Open content',
+    ignore: "If you didn't request this, ignore this email.",
+  },
+  it: {
+    subject: 'Accedi al contenuto',
+    intro: (t) => `Clicca per aprire "${t}":`,
+    button: 'Apri il contenuto',
+    ignore: 'Se non hai richiesto questo, ignora questa email.',
+  },
+  es: {
+    subject: 'Accede a tu contenido',
+    intro: (t) => `Haz clic para abrir "${t}":`,
+    button: 'Abrir contenido',
+    ignore: 'Si no solicitaste esto, ignora este correo.',
+  },
+  de: {
+    subject: 'Zugang zu deinen Inhalten',
+    intro: (t) => `Klicke, um "${t}" zu öffnen:`,
+    button: 'Inhalt öffnen',
+    ignore: 'Falls du das nicht angefordert hast, ignoriere diese E-Mail.',
+  },
+  fr: {
+    subject: 'Accédez à votre contenu',
+    intro: (t) => `Cliquez pour ouvrir "${t}" :`,
+    button: 'Ouvrir le contenu',
+    ignore: "Si vous n'avez pas demandé cela, ignorez cet e-mail.",
+  },
+};
+
+export function buyerAccessSubject(locale?: string): string {
+  return (ACCESS_STRINGS[locale ?? 'bg'] ?? ACCESS_STRINGS.en).subject;
+}
+
+export function buyerAccessHtml(input: {
+  productTitle: string;
+  accessUrl: string;
+  locale?: string;
+}): string {
+  const s = ACCESS_STRINGS[input.locale ?? 'bg'] ?? ACCESS_STRINGS.en;
+  const url = esc(input.accessUrl);
+  return `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px">
+  <h1 style="font-size:20px">Linketto</h1>
+  <p>${s.intro(esc(input.productTitle))}</p>
+  <p><a href="${url}" style="display:inline-block;background:#3b82c4;color:#fff;padding:12px 20px;border-radius:9999px;text-decoration:none;font-weight:600">${s.button}</a></p>
+  <p style="color:#94a3b8;font-size:12px">${s.ignore}</p>
+</div>`;
+}
+
 /** Имейл на бюлетина към потвърден абонат, с локализиран линк за отписване. */
 export function broadcastHtml(input: {
   sellerName: string;

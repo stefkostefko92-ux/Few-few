@@ -31,7 +31,8 @@ export async function GET(
   const product = await prisma.product.findFirst({
     where: { id: productId, profile: { slug, bannedAt: null } },
   });
-  if (!product) {
+  // COURSE/MEMBERSHIP нямат deliveryUrl — достъпът е през /learn.
+  if (!product || !product.deliveryUrl) {
     return NextResponse.redirect(new URL(`/u/${slug}`, url.origin), 302);
   }
   return NextResponse.redirect(product.deliveryUrl, 302);

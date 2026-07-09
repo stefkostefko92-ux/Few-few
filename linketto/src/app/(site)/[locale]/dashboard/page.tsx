@@ -1641,8 +1641,7 @@ export default async function DashboardPage({
                             <input
                               type="url"
                               name="deliveryUrl"
-                              required
-                              defaultValue={product.deliveryUrl}
+                              defaultValue={product.deliveryUrl ?? ''}
                               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                             />
                           </label>

@@ -158,3 +158,14 @@ export function totalFeeCents(amountCents: number, plan: PlanId): number {
   if (!Number.isInteger(amountCents) || amountCents <= 0) return 0;
   return commissionCents(amountCents, plan) + processingFeeCents(amountCents);
 }
+
+// За абонаменти (членства) Stripe иска процент (application_fee_percent),
+// без фиксирана част — ползваме комисионата по плана + процента обработка.
+export function membershipFeePercent(plan: PlanId): number {
+  return Math.round((PLANS[plan].feePercent + PROCESSING_FEE.percent) * 100) / 100;
+}
+
+/** Валиден интервал за членство. */
+export function membershipInterval(value: string | null | undefined): 'month' | 'year' {
+  return value === 'year' ? 'year' : 'month';
+}

@@ -6,7 +6,13 @@ import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { getStripe } from '@/lib/stripe';
 import { isLocale } from '@/i18n/locales';
-import { MIN_PRODUCT_PRICE_EUR, planFor, totalFeeCents } from '@/lib/plans';
+import {
+  membershipFeePercent,
+  membershipInterval,
+  MIN_PRODUCT_PRICE_EUR,
+  planFor,
+  totalFeeCents,
+} from '@/lib/plans';
 import {
   COUPON_MAX_PERCENT,
   COUPON_MIN_PERCENT,
@@ -104,10 +110,11 @@ export async function startProductPurchaseAction(
   const description = localized?.description?.trim() || undefined;
 
   // Промо код (по избор): валидира се и сумата се ПРЕИЗЧИСЛЯВА на сървъра.
+  // Не важи за абонаменти (членства) — там цената е периодична.
   const couponInput = normalizeCouponCode(String(formData.get('coupon') ?? ''));
   let unitAmount = product.priceCents;
   let appliedCoupon: { id: string; code: string } | null = null;
-  if (couponInput) {
+  if (couponInput && product.type !== 'MEMBERSHIP') {
     const coupon = await prisma.coupon.findUnique({
       where: {
         profileId_code: { profileId: product.profileId, code: couponInput },
@@ -120,51 +127,77 @@ export async function startProductPurchaseAction(
     appliedCoupon = { id: coupon.id, code: coupon.code };
   }
 
-  // Комисиона по плана + такса за обработка (покрива Stripe таксите).
-  // Инвариант: application_fee трябва да е < сумата (Stripe го изисква).
-  const fee = Math.min(
-    totalFeeCents(unitAmount, planFor(owner.plan).id),
-    unitAmount - 1,
-  );
+  const planId = planFor(owner.plan).id;
+  const productName = { name: title, ...(description ? { description } : {}) };
+  const metadata = {
+    productId: product.id,
+    profileId: product.profileId,
+    type: product.type,
+    locale: isLocale(hl) ? hl : product.profile.defaultLocale,
+    couponId: appliedCoupon?.id ?? '',
+    couponCode: appliedCoupon?.code ?? '',
+  };
+  // COURSE/MEMBERSHIP → достъп до заключеното съдържание; DIGITAL → таен линк.
+  const successUrl =
+    product.type === 'DIGITAL'
+      ? `${baseUrl()}/u/${slug}/delivery?session_id={CHECKOUT_SESSION_ID}`
+      : `${baseUrl()}/u/${slug}/learn/${product.id}?session_id={CHECKOUT_SESSION_ID}`;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    // Платежните методи се управляват от Stripe Dashboard → Payment methods.
-    // ВАЖНО: при destination charges PayPal НЕ се поддържа (само separate
-    // charges) — за PayPal се ползва личен paypal.me линк (TIP блок).
-    // Карти и card wallets работят; Revolut Pay — да се потвърди на живо.
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: 'eur',
-          unit_amount: unitAmount,
-          product_data: description
-            ? { name: title, description }
-            : { name: title },
+  let session;
+  if (product.type === 'MEMBERSHIP') {
+    // Абонамент: recurring цена, комисионата е application_fee_percent.
+    session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: 'eur',
+            unit_amount: product.priceCents,
+            recurring: { interval: membershipInterval(product.interval) },
+            product_data: productName,
+          },
         },
+      ],
+      subscription_data: {
+        application_fee_percent: membershipFeePercent(planId),
+        transfer_data: { destination: owner.stripeAccountId },
+        on_behalf_of: owner.stripeAccountId,
       },
-    ],
-    payment_intent_data: {
-      application_fee_amount: fee,
-      transfer_data: { destination: owner.stripeAccountId },
-      // Създателят е merchant-of-record: работи за трансгранични продавачи
-      // (задължително при различен регион) и прехвърля ДДС/отказ отговорността
-      // върху продавача, не върху Linketto.
-      on_behalf_of: owner.stripeAccountId,
-    },
-    metadata: {
-      productId: product.id,
-      profileId: product.profileId,
-      feeCents: String(fee),
-      locale: isLocale(hl) ? hl : product.profile.defaultLocale,
-      couponId: appliedCoupon?.id ?? '',
-      couponCode: appliedCoupon?.code ?? '',
-    },
-    locale: 'auto',
-    success_url: `${baseUrl()}/u/${slug}/delivery?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl()}${back}`,
-  });
+      metadata: { ...metadata, feeCents: '' },
+      locale: 'auto',
+      success_url: successUrl,
+      cancel_url: `${baseUrl()}${back}`,
+    });
+  } else {
+    // Еднократно (DIGITAL или COURSE): destination charge.
+    // Инвариант: application_fee трябва да е < сумата (Stripe го изисква).
+    const fee = Math.min(totalFeeCents(unitAmount, planId), unitAmount - 1);
+    session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      // Платежните методи се управляват от Stripe Dashboard. ВНИМАНИЕ: при
+      // destination charges PayPal НЕ се поддържа — карти/wallets работят.
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: 'eur',
+            unit_amount: unitAmount,
+            product_data: productName,
+          },
+        },
+      ],
+      payment_intent_data: {
+        application_fee_amount: fee,
+        transfer_data: { destination: owner.stripeAccountId },
+        on_behalf_of: owner.stripeAccountId,
+      },
+      metadata: { ...metadata, feeCents: String(fee) },
+      locale: 'auto',
+      success_url: successUrl,
+      cancel_url: `${baseUrl()}${back}`,
+    });
+  }
   redirect(session.url ?? `${back}${hl ? '&' : '?'}shopError=1`);
 }
 

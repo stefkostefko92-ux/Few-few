@@ -43,6 +43,32 @@ async function rewardReferrer(
   ]);
 }
 
+// Дава/подновява право на достъп на купувача (курс/членство). Идемпотентно
+// по (productId, email). Членство → пази stripeSubscriptionId за отнемане.
+async function grantEntitlement(
+  productId: string,
+  profileId: string,
+  email: string,
+  subscriptionId: string | null,
+): Promise<void> {
+  await prisma.entitlement
+    .upsert({
+      where: { productId_email: { productId, email } },
+      create: {
+        productId,
+        profileId,
+        email,
+        active: true,
+        stripeSubscriptionId: subscriptionId,
+      },
+      update: {
+        active: true,
+        ...(subscriptionId ? { stripeSubscriptionId: subscriptionId } : {}),
+      },
+    })
+    .catch(() => undefined);
+}
+
 // Доставка на купеното по имейл — от webhook-а, независимо от success_url
 // redirect-а (затворен таб не бива да значи „платил без достъп“).
 // Идемпотентно: праща само ако още не е доставено.
@@ -55,7 +81,17 @@ async function fulfilProduct(purchaseId: string): Promise<void> {
       },
     },
   });
-  if (!purchase || purchase.deliveredAt || !purchase.buyerEmail) return;
+  // Само DIGITAL продукти получават имейл с таен линк; COURSE/MEMBERSHIP
+  // дават достъп през /learn (Entitlement), не през линк по имейл.
+  if (
+    !purchase ||
+    purchase.deliveredAt ||
+    !purchase.buyerEmail ||
+    !purchase.product.deliveryUrl
+  ) {
+    return;
+  }
+  const deliveryUrl = purchase.product.deliveryUrl;
   const locale = purchase.locale ?? undefined;
   // Заглавие на езика на купувача (fallback към първия наличен превод).
   const title =
@@ -73,7 +109,7 @@ async function fulfilProduct(purchaseId: string): Promise<void> {
     subject: deliverySubject(title, locale),
     html: deliveryEmailHtml({
       productTitle: title,
-      deliveryUrl: purchase.product.deliveryUrl,
+      deliveryUrl,
       amountCents: purchase.amountCents,
       locale,
       receiptUrl,
@@ -137,12 +173,19 @@ export async function POST(request: Request): Promise<NextResponse> {
           session.amount_total ?? 0,
         ).catch(() => undefined);
       }
-      // Продажба на дигитален продукт (магазина): записваме покупката
-      // идемпотентно по stripeSessionId.
+      // Продажба на дигитален продукт (магазина).
       const productId = session.metadata?.productId;
       const profileId = session.metadata?.profileId;
-      if (productId && profileId) {
-        // Дали покупката вече е записана (за да броим промо кода само веднъж).
+      const buyerEmail = session.customer_details?.email ?? null;
+      if (productId && profileId && session.mode === 'subscription') {
+        // Членство: право на достъп, докато Stripe абонаментът е активен.
+        const subId =
+          typeof session.subscription === 'string' ? session.subscription : null;
+        if (buyerEmail) {
+          await grantEntitlement(productId, profileId, buyerEmail, subId);
+        }
+      } else if (productId && profileId) {
+        // Еднократно (DIGITAL/COURSE): записваме покупката идемпотентно.
         const existing = await prisma.purchase.findUnique({
           where: { stripeSessionId: session.id },
           select: { id: true },
@@ -160,7 +203,7 @@ export async function POST(request: Request): Promise<NextResponse> {
                   : null,
               amountCents: session.amount_total ?? 0,
               feeCents: Number(session.metadata?.feeCents ?? 0) || 0,
-              buyerEmail: session.customer_details?.email ?? null,
+              buyerEmail,
               locale: session.metadata?.locale ?? null,
               couponCode: session.metadata?.couponCode || null,
             },
@@ -177,8 +220,11 @@ export async function POST(request: Request): Promise<NextResponse> {
             })
             .catch(() => undefined);
         }
-        // Доставяме купеното по имейл (идемпотентно) — истинският
-        // fulfilment, независим от success_url redirect-а.
+        // Курс → доживотно право на достъп до уроците.
+        if (session.metadata?.type === 'COURSE' && buyerEmail) {
+          await grantEntitlement(productId, profileId, buyerEmail, null);
+        }
+        // Доставяме купеното по имейл (идемпотентно) — само DIGITAL.
         if (purchase) await fulfilProduct(purchase.id);
       }
       break;
@@ -255,6 +301,13 @@ export async function POST(request: Request): Promise<NextResponse> {
         where: { stripeCustomerId: customerId, plan: { not: 'FOUNDER' } },
         data: { plan: 'FREE' },
       });
+      // Членство към създател (магазина): отнемаме достъпа по абонамента.
+      await prisma.entitlement
+        .updateMany({
+          where: { stripeSubscriptionId: subscription.id },
+          data: { active: false },
+        })
+        .catch(() => undefined);
       break;
     }
     default:
