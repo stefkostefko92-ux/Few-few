@@ -1,0 +1,23 @@
+{
+  "name": "@car-monitor/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./migrations/*": "./migrations/*",
+    "./seed.sql": "./seed.sql"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@car-monitor/api-contract": "workspace:*",
+    "@car-monitor/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  }
+}

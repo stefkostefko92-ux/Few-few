@@ -1,0 +1,14 @@
+name = "car-monitor"
+main = "workers/app.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "build/client"
+
+# D1 база, споделена с ETL worker-а (една база на среда).
+[[d1_databases]]
+binding = "DB"
+database_name = "car-monitor"
+database_id = "REPLACE_WITH_D1_ID"
+migrations_dir = "../../packages/db/migrations"

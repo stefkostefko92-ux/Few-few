@@ -1,0 +1,24 @@
+{
+  "name": "@car-monitor/etl",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8789",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "load": "node scripts/load-listings.mjs",
+    "import": "node scripts/import.mjs"
+  },
+  "dependencies": {
+    "@car-monitor/config": "workspace:*",
+    "@car-monitor/db": "workspace:*",
+    "@car-monitor/ingest": "workspace:*",
+    "@car-monitor/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "typescript": "^5.6.2",
+    "wrangler": "^4.40.0"
+  }
+}
