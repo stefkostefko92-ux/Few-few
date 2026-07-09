@@ -19,6 +19,7 @@ import {
 } from '../personalize.js';
 import { MAX_LINKS, getLinks, replaceLinks, parseLinkFields } from '../links.js';
 import { submitUrls } from '../indexnow.js';
+import { notifyWalletUpdate } from '../wallet/index.js';
 
 const router = Router();
 
@@ -147,6 +148,10 @@ router.post('/profile', requireAuth, csrfProtect, (req, res) => {
     const base = baseUrl(req);
     submitUrls(base, [`${base}/p/${slug}`]);
   }
+
+  // Обнови картите в портфейлите на онези, които вече са я запазили (auto-update).
+  const updated = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.user.id);
+  notifyWalletUpdate(updated, baseUrl(req));
 
   res.redirect('/dashboard?saved=1');
 });

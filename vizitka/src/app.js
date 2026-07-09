@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.js';
 import dashboardRoutes from './routes/dashboard.js';
 import publicRoutes from './routes/public.js';
 import adminRoutes from './routes/admin.js';
+import walletRoutes from './routes/wallet.js';
 
 seedAdmins(); // маркира конфигурираните ADMIN_EMAILS акаунти като админ
 
@@ -112,6 +113,7 @@ app.get('/terms', (req, res) => res.render('terms', { title: 'Общи усло�
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(adminRoutes);
+app.use(walletRoutes);
 app.use(publicRoutes);
 
 app.use((req, res) => res.status(404).render('404', { title: 'Страницата не е намерена' }));

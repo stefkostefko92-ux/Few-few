@@ -57,6 +57,10 @@ src/routes/auth.js   /register /login /logout /settings/password (+ rate limit)
 src/routes/dashboard.js  /dashboard, /profile (редакция+тема), /profile/photo (multer)
 src/routes/public.js /p/:slug (views), qr.png, vizitka.vcf, /p/:slug/print, /api/print/:token, /photo/:file
 src/routes/admin.js  /admin (requireAdmin) — CRUD на банери (multer), toggle, move, delete
+src/routes/wallet.js /p/:slug/wallet/apple.pkpass + /wallet/google + Apple update web service (/v1/…)
+src/wallet/          портфейли (без нови зависимости): apple.js (.pkpass билд+openssl подпис),
+                     google.js (save JWT + PATCH auto-update), apns.js (ES256 пуш), binary.js
+                     (ZIP/PNG/CRC32/SHA-1), shared.js (флагове/цветове/токен), index.js (фасада)
 src/views/           EJS (home, register, login, dashboard, card, admin, privacy, terms, 404)
 public/              styles.css (вкл. теми), app.js (CSP-safe клиентска логика)
 test/smoke.test.js   пълен поток: регистрация→редакция→тема→views→визитка→QR→vCard→
@@ -101,6 +105,21 @@ medqr — rsync без `data/`, npm ci, снимка на базата, health c
   попълни редактора. Токенът оторизира → работи и за скрит профил. Само публичните данни.
   (Домейнът в mastilko PR #73 е `mastilko.carbonstealth.eu`; тук е конфигуриран
   `mastilko-bg.com` по избор на собственика — сменя се през `MASTILKO_URL`.)
+- **Портфейли (Apple Wallet + Google Wallet):** визитката се добавя в телефонния
+  портфейл; картата носи QR към живия `/p/:slug`, затова е винаги актуална. **Без нови
+  npm зависимости** — `.pkpass` се подписва през системния `openssl` (PKCS#7 detached),
+  ZIP/PNG се пишат ръчно (`src/wallet/binary.js`); Google „save" е RS256 JWT, а
+  auto-update е Apple APNs пуш (ES256 през `node:http2`) + Google API PATCH — всичко с
+  `node:crypto`/`fetch`. **Feature-gated като IndexNow/печат:** активира се само когато
+  сертификатите/ключовете са зададени (файлове, права 600, извън репото — виж
+  `.env.example`/`DEPLOY.md §7`); иначе бутоните са скрити и маршрутите връщат 404.
+  Разкрий трансфера към Apple/Google в `privacy.ejs`, ако пипаш какво се праща. Apple
+  update web service e на `/v1/…` (токен `ApplePass`, HMAC върху **`profile.id`** — не slug,
+  за да не се чупи при преименуване); серийният номер/objectId също са `profile.id`.
+  Регистрациите на устройства са в `apple_pass_registrations`; скрита визитка → `/v1/passes`
+  връща 404 (спира обновяването). `.pkpass` се кешира по (id, updated_at) и публичните
+  портфейл маршрути са rate-limited (openssl spawn е скъп). Бутоните са локални SVG
+  (`public/badge-*-wallet.svg`) — сменяй само с официалните артове при нужда.
 - **Реклами:** банерите се показват само на началната страница (`placement='home'`),
   НЕ върху потребителските визитки. First-party (без чужди тракери → без консент
   банер); всеки носи етикет „Реклама“ и `rel="sponsored"`. Управляват се от `/admin`

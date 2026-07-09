@@ -331,6 +331,33 @@ legend {
   text-align: center;
   margin-bottom: 0.5rem;
 }
+.nfc-box input {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+.nfc-box h2 {
+  margin: 0 0 0.4rem;
+}
+.nfc-steps {
+  text-align: left;
+  margin: 0.7rem 0 0;
+  padding-left: 1.1rem;
+}
+.nfc-steps li {
+  margin-bottom: 0.25rem;
+}
+.nfc-verify {
+  margin-top: 0.7rem;
+}
+.nfc-verify summary {
+  cursor: pointer;
+}
+.nfc-verify img {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
 .dash-form {
   background: var(--card);
   border: 1px solid var(--line);
@@ -544,6 +571,48 @@ legend {
 .vcard-qr img {
   border: 1px solid var(--line);
   border-radius: 10px;
+}
+.vcard-wallet {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+.wallet-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+.wallet-badges a {
+  display: inline-flex;
+  border-radius: 10px;
+  transition: transform 0.1s ease;
+}
+.wallet-badges a:hover {
+  transform: translateY(-1px);
+}
+.wallet-badges img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+/* „Скоро“ състояние — приглушени бейджове, без действие */
+.vcard-wallet.is-soon .wallet-badges {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+  pointer-events: none;
+}
+.soon-chip {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--brand);
+  border-radius: 999px;
+  vertical-align: middle;
 }
 .made-with {
   text-align: center;

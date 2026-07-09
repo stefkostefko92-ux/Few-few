@@ -10,6 +10,7 @@ import { cardJsonLd } from '../seo.js';
 import { accentCss } from '../personalize.js';
 import { getLinks } from '../links.js';
 import { MASTILKO_URL, mastilkoHandoffUrl, verifyToken, buildPrintPayload } from '../print.js';
+import { walletLinks } from '../wallet/index.js';
 
 const router = Router();
 
@@ -40,6 +41,7 @@ router.get('/p/:slug', (req, res) => {
     accentCss: accentCss(profile.accent),
     isOwner,
     publicUrl,
+    wallet: walletLinks(profile),
     jsonLd: profile.is_public ? cardJsonLd(profile, publicUrl, baseUrl(req)) : null,
     pageMeta: {
       description: description || `Дигитална визитка на ${profile.display_name}`,
