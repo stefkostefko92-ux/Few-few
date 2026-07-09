@@ -37,8 +37,14 @@ export default function Settings(): React.ReactElement {
     setPwBusy(true);
     try {
       await api.post('/account/password', { current, next });
-      toast('Password updated.', 'success');
       setCurrent(''); setNext(''); setConfirmPw('');
+      // The server bumps token_version on a password change, which
+      // invalidates this session's JWT — every further request would 401.
+      // Sign out and send the user to the login screen instead of leaving
+      // them in a broken "looks logged in but everything fails" state.
+      toast('Password updated. Please sign in again.', 'success');
+      logout();
+      navigate('/login');
     } catch (ex: any) {
       toast(ex.message, 'error');
     } finally {

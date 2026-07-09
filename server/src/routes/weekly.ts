@@ -78,12 +78,21 @@ router.post('/claim', (req, res) => {
   if (row.claimed_at) { res.status(400).json({ error: 'Already claimed this week' }); return; }
   const goldGain = char.level * REWARD_GOLD_PER_LEVEL;
   const tx = db.transaction(() => {
-    db.prepare('UPDATE weekly_progress SET claimed_at=? WHERE character_id=? AND iso_week=?')
+    // CAS the claim flag as the first write so the reward is granted at
+    // most once, matching every other claim route (daily/bounties/…). The
+    // old un-gated UPDATE would double-pay the moment an await slipped in.
+    const claim = db.prepare('UPDATE weekly_progress SET claimed_at=? WHERE character_id=? AND iso_week=? AND (claimed_at IS NULL OR claimed_at=0)')
       .run(Date.now(), char.id, wk);
+    if (claim.changes !== 1) { const e: any = new Error('Already claimed this week'); e.clientSafe = true; e.status = 400; throw e; }
     db.prepare('UPDATE characters SET gold = gold + ?, gems = gems + ? WHERE id = ?')
       .run(goldGain, REWARD_GEMS, char.id);
   });
-  tx();
+  try {
+    tx();
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
+  }
   res.json({ ok: true, granted: { gold: goldGain, gems: REWARD_GEMS } });
 });
 

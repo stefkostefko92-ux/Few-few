@@ -5,27 +5,40 @@ import type { MailEntry } from '../lib/types';
 
 export default function Mail(): React.ReactElement {
   const refreshMail = useStore((s) => s.refreshMail);
+  const toast = useStore((s) => s.toast);
   const [mails, setMails] = useState<MailEntry[]>([]);
   const [selected, setSelected] = useState<MailEntry | null>(null);
 
   async function load() {
-    const r = await api.get('/mail');
-    setMails(r.mails);
-    await refreshMail();
+    try {
+      const r = await api.get('/mail');
+      setMails(r.mails);
+      await refreshMail();
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
   useEffect(() => { load(); }, []);
 
   async function open(m: MailEntry) {
     setSelected(m);
     if (!m.read_at) {
-      await api.post(`/mail/${m.id}/read`);
-      await load();
+      try {
+        await api.post(`/mail/${m.id}/read`);
+        await load();
+      } catch (e: any) {
+        toast(e.message, 'error');
+      }
     }
   }
   async function remove(m: MailEntry) {
-    await api.delete(`/mail/${m.id}`);
-    setSelected(null);
-    await load();
+    try {
+      await api.delete(`/mail/${m.id}`);
+      setSelected(null);
+      await load();
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   return (

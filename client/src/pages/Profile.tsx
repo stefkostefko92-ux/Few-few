@@ -149,7 +149,7 @@ export default function Profile(): React.ReactElement {
             </div>
             <div className="actions">
               <button className="btn" onClick={() => setRenameOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" disabled={newName.length < 3 || (char.gold < profile.rename_cost)} onClick={rename}>
+              <button className="btn btn-primary" disabled={!/^[a-zA-Z][a-zA-Z0-9_]{2,19}$/.test(newName) || (char.gold < profile.rename_cost)} onClick={rename}>
                 Confirm · {profile.rename_cost}g
               </button>
             </div>

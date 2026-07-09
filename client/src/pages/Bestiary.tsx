@@ -8,10 +8,15 @@ export default function Bestiary(): React.ReactElement {
   const [total, setTotal] = useState(0);
   const [discovered, setDiscovered] = useState(0);
   const [filter, setFilter] = useState<string>('all');
+  const [err, setErr] = useState('');
 
   useEffect(() => {
-    api.get('/bestiary').then((r) => { setList(r.bestiary); setTotal(r.total); setDiscovered(r.discovered); });
+    api.get('/bestiary')
+      .then((r) => { setList(r.bestiary); setTotal(r.total); setDiscovered(r.discovered); })
+      .catch((e: any) => setErr(e.message || 'Failed to load the bestiary'));
   }, []);
+
+  if (err) return <div className="muted">Couldn’t load the bestiary: {err}</div>;
 
   const regions = Array.from(new Set(list.map((m) => m.region)));
   const filtered = filter === 'all' ? list : list.filter((m) => m.region === filter);

@@ -70,8 +70,12 @@ export default function Shop(): React.ReactElement {
               <div style={{ marginTop: 10, fontSize: 13 }}>{itemSummary(it)}</div>
               <div className="flex between" style={{ marginTop: 12 }}>
                 <span className="gold">{it.buy_price} gold</span>
-                <button className="btn btn-primary btn-sm" disabled={!char || char.gold < it.buy_price} onClick={() => buy(it.id)}>
-                  Buy
+                <button
+                  className="btn btn-primary btn-sm"
+                  disabled={!char || char.gold < it.buy_price || char.level < it.level_req}
+                  onClick={() => buy(it.id)}
+                >
+                  {char && char.level < it.level_req ? `Requires Lv ${it.level_req}` : 'Buy'}
                 </button>
               </div>
             </div>

@@ -93,7 +93,8 @@ router.get('/me', (req, res) => {
     .all(g.guild.id);
   const wars = db
     .prepare(
-      `SELECT w.*, ag.name AS attacker_name, ag.tag AS attacker_tag, dg.name AS defender_name, dg.tag AS defender_tag
+      `SELECT w.*, ag.name AS attacker_name, ag.tag AS attacker_tag, ag.crest_color AS attacker_color,
+              dg.name AS defender_name, dg.tag AS defender_tag, dg.crest_color AS defender_color
        FROM guild_wars w
        JOIN guilds ag ON ag.id = w.attacker_guild_id
        JOIN guilds dg ON dg.id = w.defender_guild_id
@@ -442,7 +443,7 @@ router.post('/upgrade/track', (req, res) => {
   });
 });
 
-router.post('/upgrade/slots', (req, res) => {
+const upgradeSlots = (req: any, res: any): void => {
   // Legacy 1..5 member-slots upgrade — kept on its own track since
   // uncapped guild membership breaks balance.
   const char = getCharacter(req.auth!.uid);
@@ -498,10 +499,15 @@ router.post('/upgrade/slots', (req, res) => {
     meta: { guild_id: g.guild.id, new_level: next, slots, xp_spent: needXp, gems_spent: needGems },
   });
   res.json({ ok: true, level: next, member_slots: slots, gems_spent: needGems });
-});
+};
+router.post('/upgrade/slots', upgradeSlots);
 
-/* Back-compat: old single /upgrade endpoint becomes an alias for /upgrade/slots. */
-router.post('/upgrade', (req, res, next) => { (req.url as any) = '/upgrade/slots'; next(); });
+/* Back-compat: the old single /upgrade endpoint maps to the same handler.
+ * (Previously this rewrote req.url + called next(), but because
+ * /upgrade/slots is registered earlier in the stack, next() never
+ * re-matched it and every /upgrade POST fell through to a 404 — the
+ * client's "Expand roster" button was dead.) */
+router.post('/upgrade', upgradeSlots);
 
 /* ===== Chat ===== */
 
@@ -853,13 +859,14 @@ router.post('/vault/deposit', (req, res) => {
   if (!g) { res.status(400).json({ error: 'You are not in a guild' }); return; }
   const inv = db
     .prepare(
-      `SELECT inv.id, inv.character_id, inv.equipped, inv.soul_bound, inv.listed,
+      `SELECT inv.id, inv.character_id, inv.equipped, inv.soul_bound, inv.listed, inv.vaulted_guild_id,
               items.category, items.name
        FROM inventory inv JOIN items ON items.id = inv.item_id
        WHERE inv.id = ? AND inv.character_id = ?`,
     )
     .get(invId, char.id) as any;
   if (!inv) { res.status(404).json({ error: 'Item not in your bag' }); return; }
+  if (inv.vaulted_guild_id) { res.status(400).json({ error: 'Already in the guild vault' }); return; }
   if (inv.equipped) { res.status(400).json({ error: 'Unequip it first' }); return; }
   if (inv.listed) { res.status(400).json({ error: 'It is listed on the market' }); return; }
   if (inv.soul_bound) { res.status(400).json({ error: 'Soul-bound items cannot be donated' }); return; }
@@ -903,12 +910,21 @@ router.post('/vault/take', (req, res) => {
   if (row.guild_id !== g.guild.id) { res.status(403).json({ error: 'Not your guild\'s vault.' }); return; }
 
   const tx = db.transaction(() => {
-    // Transfer ownership to the taker and clear the vault flag.
-    db.prepare('UPDATE inventory SET character_id = ?, vaulted_guild_id = 0, equipped = 0, slot = \'\' WHERE id = ?')
-      .run(char.id, row.inventory_id);
+    // Transfer ownership to the taker and clear the vault flag. The CAS on
+    // vaulted_guild_id guarantees exactly one taker wins even if two vault
+    // rows ever pointed at the same item; `listed` is cleared so a taken
+    // item can never stay stuck in a market-listed state.
+    const moved = db.prepare('UPDATE inventory SET character_id = ?, vaulted_guild_id = 0, listed = 0, equipped = 0, slot = \'\' WHERE id = ? AND vaulted_guild_id = ?')
+      .run(char.id, row.inventory_id, row.guild_id);
+    if (moved.changes !== 1) { const e: any = new Error('Item already taken'); e.clientSafe = true; e.status = 409; throw e; }
     db.prepare('DELETE FROM guild_vault WHERE id = ?').run(row.id);
   });
-  tx();
+  try {
+    tx();
+  } catch (e: any) {
+    if (e?.clientSafe) { res.status(e.status || 400).json({ error: e.message }); return; }
+    throw e;
+  }
   res.json({ ok: true, item_name: row.item_name });
 });
 

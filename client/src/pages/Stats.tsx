@@ -3,11 +3,13 @@ import { api } from '../lib/api';
 
 export default function Stats(): React.ReactElement {
   const [data, setData] = useState<any>(null);
+  const [err, setErr] = useState('');
 
   useEffect(() => {
-    api.get('/stats').then(setData).catch(() => {});
+    api.get('/stats').then(setData).catch((e: any) => setErr(e.message || 'Failed to load stats'));
   }, []);
 
+  if (err) return <div className="muted">Couldn’t load your statistics: {err}</div>;
   if (!data) return <div className="muted">Loading…</div>;
 
   const c = data.character;

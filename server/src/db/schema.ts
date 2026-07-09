@@ -169,6 +169,7 @@ export function applySchema(db: Database.Database): void {
       created_at   INTEGER NOT NULL,
       FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE
     );
+    CREATE INDEX IF NOT EXISTS idx_mail_char ON mail(character_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS achievements (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,

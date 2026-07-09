@@ -251,22 +251,25 @@ router.post('/socket', (req, res) => {
     const result = db.transaction(() => {
       const gem = db
         .prepare(
-          `SELECT inv.id AS inv_id, inv.quantity, items.slug, items.name
+          `SELECT inv.id AS inv_id, inv.quantity, inv.vaulted_guild_id, items.slug, items.name
            FROM inventory inv JOIN items ON items.id = inv.item_id
            WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.gemInventoryId, char.id) as any;
       if (!gem) { const e: any = new Error('Gem not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      if (gem.vaulted_guild_id) { const e: any = new Error('Withdraw the gem from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
       const recipe = RECIPES.find((r) => r.gem_slug === gem.slug);
       if (!recipe) { const e: any = new Error('That item is not a gem.'); e.clientSafe = true; e.status = 400; throw e; }
       const weapon = db
         .prepare(
-          `SELECT inv.id AS inv_id, inv.equipped, items.id AS item_id, items.name, items.category
+          `SELECT inv.id AS inv_id, inv.equipped, inv.listed, inv.vaulted_guild_id, items.id AS item_id, items.name, items.category
            FROM inventory inv JOIN items ON items.id = inv.item_id
            WHERE inv.id = ? AND inv.character_id = ?`,
         )
         .get(parse.data.weaponInventoryId, char.id) as any;
       if (!weapon) { const e: any = new Error('Weapon not in your bag'); e.clientSafe = true; e.status = 404; throw e; }
+      if (weapon.vaulted_guild_id) { const e: any = new Error('Withdraw the weapon from the guild vault first'); e.clientSafe = true; e.status = 400; throw e; }
+      if (weapon.listed) { const e: any = new Error('Cancel the market listing first'); e.clientSafe = true; e.status = 400; throw e; }
       if (weapon.category !== 'weapon') { const e: any = new Error('Only weapons accept gems.'); e.clientSafe = true; e.status = 400; throw e; }
       const existing = db
         .prepare('SELECT enchant_count, bonuses_json FROM inventory_enchants WHERE inventory_id = ?')

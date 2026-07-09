@@ -102,12 +102,10 @@ export default function MythicPlus(): React.ReactElement {
               )}
               {!inProgress && (
                 <div className="mythic-tier-buttons">
-                  {[d.best_tier, d.best_tier + 1].map((t) => (
-                    t > 0 && (
-                      <button key={t} className="btn btn-sm" disabled={busy} onClick={() => enter(d.slug, t)}>
-                        Enter M+{t}
-                      </button>
-                    )
+                  {d.best_tier > 0 && [d.best_tier, d.best_tier + 1].map((t) => (
+                    <button key={t} className="btn btn-sm" disabled={busy} onClick={() => enter(d.slug, t)}>
+                      Enter M+{t}
+                    </button>
                   ))}
                   {d.best_tier === 0 && (
                     <button className="btn btn-sm btn-primary" disabled={busy} onClick={() => enter(d.slug, 1)}>

@@ -34,15 +34,19 @@ export default function Daily(): React.ReactElement {
   const [busy, setBusy] = useState(false);
 
   async function load() {
-    const [d, q, w] = await Promise.all([
-      api.get('/daily'),
-      api.get('/daily/quests'),
-      api.get('/wheel'),
-    ]);
-    setData(d);
-    setQuests(q.quests);
-    setResetAt(q.resetAt);
-    setWheelInfo(w);
+    try {
+      const [d, q, w] = await Promise.all([
+        api.get('/daily'),
+        api.get('/daily/quests'),
+        api.get('/wheel'),
+      ]);
+      setData(d);
+      setQuests(q.quests);
+      setResetAt(q.resetAt);
+      setWheelInfo(w);
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   useEffect(() => { load(); }, []);

@@ -3,8 +3,9 @@ import { api } from '../lib/api';
 
 export default function Leaderboard(): React.ReactElement {
   const [rows, setRows] = useState<any[]>([]);
+  const [err, setErr] = useState('');
   useEffect(() => {
-    api.get('/arena/leaderboard').then((r) => setRows(r.leaderboard)).catch(() => {});
+    api.get('/arena/leaderboard').then((r) => setRows(r.leaderboard)).catch((e: any) => setErr(e.message || 'Failed to load'));
   }, []);
 
   return (
@@ -45,7 +46,9 @@ export default function Leaderboard(): React.ReactElement {
             </tr>
           ))}
           {rows.length === 0 && (
-            <tr><td colSpan={7} className="muted" style={{ padding: 24, textAlign: 'center' }}>The hall waits to be filled.</td></tr>
+            <tr><td colSpan={7} className="muted" style={{ padding: 24, textAlign: 'center' }}>
+              {err ? `Couldn’t load the rankings: ${err}` : 'The hall waits to be filled.'}
+            </td></tr>
           )}
         </tbody>
       </table>

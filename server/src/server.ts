@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './bootEnv'; // must run before any guard reads NODE_ENV
 import path from 'path';
 import express from 'express';
 import cors from 'cors';

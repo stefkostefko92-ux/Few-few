@@ -18,9 +18,13 @@ export default function Wheel(): React.ReactElement {
   const wheelRef = useRef<HTMLDivElement>(null);
 
   async function load() {
-    const r = await api.get('/wheel');
-    setCanSpin(r.canSpin);
-    setSegments(r.segments);
+    try {
+      const r = await api.get('/wheel');
+      setCanSpin(r.canSpin);
+      setSegments(r.segments);
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
   useEffect(() => { load(); }, []);
 

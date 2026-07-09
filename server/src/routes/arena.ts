@@ -67,6 +67,13 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'Opponent not found' });
     return;
   }
+  // Enforce the same ±3 level bracket the /opponents list is filtered to,
+  // so a client can't hand-pick a far weaker (or a specific) target to
+  // farm easy wins or grief a chosen player's rating.
+  if (opp.level < char.level - 3 || opp.level > char.level + 3) {
+    res.status(400).json({ error: 'That opponent is outside your challenge bracket.' });
+    return;
+  }
   const hero = loadActor(char);
   hero.hp = char.hp;
   const foe = loadActor(opp);

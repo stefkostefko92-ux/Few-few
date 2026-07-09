@@ -12,12 +12,16 @@ export default function Achievements(): React.ReactElement {
   const [currentTitle, setCurrentTitle] = useState('');
 
   async function load() {
-    const r = await api.get('/achievements');
-    setList(r.achievements);
-    setEarned(r.earned);
-    setTotal(r.total);
-    setTitles(r.available_titles);
-    setCurrentTitle(r.current_title);
+    try {
+      const r = await api.get('/achievements');
+      setList(r.achievements);
+      setEarned(r.earned);
+      setTotal(r.total);
+      setTitles(r.available_titles);
+      setCurrentTitle(r.current_title);
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
   useEffect(() => { load(); }, []);
 

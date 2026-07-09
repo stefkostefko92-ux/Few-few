@@ -696,7 +696,7 @@ function UpgradeTab({ data, onChanged, onRefreshChar }: { data: GuildData; onCha
           onChange={(e) => setDonate(Number(e.target.value))}
           style={{ width: 140 }}
         />
-        <button className="btn btn-primary" disabled={!canAfford} onClick={doDonate}>
+        <button className="btn btn-primary" disabled={!canAfford || donate < 1} onClick={doDonate}>
           Donate {donate}{currency === 'gems' ? ' 💎' : 'g'}
         </button>
       </div>

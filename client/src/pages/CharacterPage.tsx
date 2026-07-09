@@ -212,8 +212,14 @@ export default function CharacterPage(): React.ReactElement {
 
 function cap(s: string) { return s[0].toUpperCase() + s.slice(1); }
 
+// Mirror the server curve exactly (server/src/game/upgrade.ts):
+// nextUpgradeCost(count) = max(5, floor(5 * (count+1)^1.5)). The old linear
+// 5*(count+1) under-quoted every "+5" — the button looked affordable and
+// then the server rejected it with "Not enough gold".
 function computeBatchCost(currentCount: number, n: number): number {
   let total = 0;
-  for (let i = 0; i < n; i++) total += 5 * (currentCount + i + 1);
+  for (let i = 0; i < n; i++) {
+    total += Math.max(5, Math.floor(5 * Math.pow(currentCount + i + 1, 1.5)));
+  }
   return total;
 }

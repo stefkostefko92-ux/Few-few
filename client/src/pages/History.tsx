@@ -118,7 +118,11 @@ function labelForKind(k: string): string {
   if (k === 'quest') return 'Quest';
   if (k === 'pvp') return 'Arena';
   if (k === 'pve') return 'PvE';
-  return k;
+  if (k === 'dungeon') return 'Dungeon';
+  if (k === 'hunt') return 'Hunt';
+  if (k === 'arena') return 'Arena';
+  // Fall back to a capitalised label instead of the raw slug.
+  return k ? k[0].toUpperCase() + k.slice(1) : k;
 }
 
 function relative(ts: number): string {
