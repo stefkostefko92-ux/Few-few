@@ -40,8 +40,10 @@ import {
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiTranslateAction } from '@/app/actions/ai';
 import {
+  addCouponAction,
   addProductAction,
   connectStripeAction,
+  deleteCouponAction,
   deleteProductAction,
   sellerRefundAction,
   setTraderStatusAction,
@@ -142,6 +144,12 @@ export default async function DashboardPage({
         include: { translations: true },
       })
     : [];
+  const coupons = profile
+    ? await prisma.coupon.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+      })
+    : [];
   const purchaseTotals = profile
     ? await prisma.purchase.aggregate({
         where: { profileId: profile.id },
@@ -219,7 +227,9 @@ export default async function DashboardPage({
                                 ? t('errorRefund')
                                 : error === 'payout'
                                   ? t('errorPayout')
-                                  : t('errorGeneric')}
+                                  : error === 'coupon'
+                                    ? t('errorCoupon')
+                                    : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -1340,6 +1350,108 @@ export default async function DashboardPage({
                       className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
                     >
                       {t('addProduct')}
+                    </button>
+                  </form>
+
+                  {/* Промо кодове */}
+                  <h3 className="mt-8 text-sm font-semibold text-slate-600">
+                    {t('couponsSection')}
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {t('couponsHint')}
+                  </p>
+                  {coupons.length > 0 && (
+                    <ul className="mt-3 space-y-1 text-sm">
+                      {coupons.map((coupon) => (
+                        <li
+                          key={coupon.id}
+                          className="flex items-center justify-between gap-2 text-slate-600"
+                        >
+                          <span className="min-w-0 truncate">
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-slate-700">
+                              {coupon.code}
+                            </span>{' '}
+                            −{coupon.percentOff}%
+                            {coupon.maxRedemptions
+                              ? ` · ${coupon.timesRedeemed}/${coupon.maxRedemptions}`
+                              : ` · ${coupon.timesRedeemed}×`}
+                            {coupon.expiresAt
+                              ? ` · ${t('couponUntil')} ${coupon.expiresAt.toISOString().slice(0, 10)}`
+                              : ''}
+                          </span>
+                          <form action={deleteCouponAction}>
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input
+                              type="hidden"
+                              name="couponId"
+                              value={coupon.id}
+                            />
+                            <button
+                              type="submit"
+                              className="text-xs font-medium text-red-600 hover:underline"
+                            >
+                              {t('delete')}
+                            </button>
+                          </form>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <form
+                    action={addCouponAction}
+                    className="mt-3 grid items-end gap-2 sm:grid-cols-[1fr_6rem_6rem_1fr_auto]"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponCode')}
+                      <input
+                        type="text"
+                        name="code"
+                        required
+                        placeholder="SUMMER"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm uppercase"
+                      />
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponPercent')}
+                      <input
+                        type="number"
+                        name="percentOff"
+                        required
+                        min="1"
+                        max="90"
+                        placeholder="20"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                      />
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponMax')}
+                      <input
+                        type="number"
+                        name="maxRedemptions"
+                        min="1"
+                        placeholder="∞"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                      />
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponExpires')}
+                      <input
+                        type="date"
+                        name="expiresAt"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('addCoupon')}
                     </button>
                   </form>
 

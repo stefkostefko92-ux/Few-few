@@ -143,12 +143,14 @@ export async function ProfileScreen({
   sent,
   formError,
   shopError,
+  couponError,
 }: {
   profile: LoadedProfile;
   hl?: string;
   sent?: string;
   formError?: string;
   shopError?: string;
+  couponError?: string;
 }) {
   const slug = profile.slug;
   const available = profile.translations.map((t) => t.locale);
@@ -751,6 +753,11 @@ export async function ProfileScreen({
                   {t('shopError')}
                 </p>
               )}
+              {couponError && (
+                <p className="mt-2 text-center text-sm text-red-300">
+                  {t('shopCouponError')}
+                </p>
+              )}
               {/* Дир. 2011/83 чл. 6а: роля на платформата + статут на продавача. */}
               <p className="mt-2 text-center text-[11px] leading-snug opacity-55">
                 {t('shopSellerNote')}{' '}
@@ -798,6 +805,14 @@ export async function ProfileScreen({
                             €{(product.priceCents / 100).toFixed(2)}
                           </span>
                         </button>
+                        {/* Промо код (по избор) — отстъпката се прилага на сървъра */}
+                        <input
+                          type="text"
+                          name="coupon"
+                          autoComplete="off"
+                          placeholder={t('shopCouponPlaceholder')}
+                          className="mt-1.5 w-full rounded-lg border border-current/20 bg-current/5 px-3 py-1.5 text-xs uppercase tracking-wide placeholder:normal-case placeholder:opacity-50"
+                        />
                         {/* ЗЗП чл. 57, т. 13 / Дир. 2011/83 чл. 16(м):
                             изрично съгласие за незабавна доставка =
                             загуба на 14-дневния отказ */}

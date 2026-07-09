@@ -113,6 +113,25 @@ model Profile {
   messages      ContactMessage[]
   reports       Report[]
   products      Product[]
+  coupons       Coupon[]
+}
+
+// Промо код за магазина: процентна отстъпка върху продукт. Дефинира се от
+// създателя; прилага се при checkout (сумата се преизчислява на сървъра).
+model Coupon {
+  id             String    @id @default(cuid())
+  profileId      String
+  profile        Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  code           String // нормализиран (главни букви), уникален в рамките на профила
+  percentOff     Int // 1..90
+  active         Boolean   @default(true)
+  maxRedemptions Int? // null = без лимит
+  timesRedeemed  Int       @default(0)
+  expiresAt      DateTime? // null = без срок
+  createdAt      DateTime  @default(now())
+
+  @@unique([profileId, code])
+  @@index([profileId])
 }
 
 model ProfileTranslation {
@@ -203,6 +222,7 @@ model Purchase {
   feeCents        Int // нашата комисиона към момента на продажбата
   buyerEmail      String?
   locale          String? // език на купувача — за имейла на неговия език
+  couponCode      String? // приложен промо код (ако е ползван)
   deliveredAt     DateTime? // кога е изпратен имейлът с доставката
   refundedAt      DateTime?
   disputedAt      DateTime?

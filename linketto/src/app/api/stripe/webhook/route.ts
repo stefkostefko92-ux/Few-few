@@ -132,6 +132,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       const productId = session.metadata?.productId;
       const profileId = session.metadata?.profileId;
       if (productId && profileId) {
+        // Дали покупката вече е записана (за да броим промо кода само веднъж).
+        const existing = await prisma.purchase.findUnique({
+          where: { stripeSessionId: session.id },
+          select: { id: true },
+        });
         const purchase = await prisma.purchase
           .upsert({
             where: { stripeSessionId: session.id },
@@ -147,10 +152,21 @@ export async function POST(request: Request): Promise<NextResponse> {
               feeCents: Number(session.metadata?.feeCents ?? 0) || 0,
               buyerEmail: session.customer_details?.email ?? null,
               locale: session.metadata?.locale ?? null,
+              couponCode: session.metadata?.couponCode || null,
             },
             update: {},
           })
           .catch(() => null);
+        // Промо код: увеличаваме броя ползвания веднъж — само при първи запис.
+        const couponId = session.metadata?.couponId;
+        if (!existing && purchase && couponId) {
+          await prisma.coupon
+            .update({
+              where: { id: couponId },
+              data: { timesRedeemed: { increment: 1 } },
+            })
+            .catch(() => undefined);
+        }
         // Доставяме купеното по имейл (идемпотентно) — истинският
         // fulfilment, независим от success_url redirect-а.
         if (purchase) await fulfilProduct(purchase.id);

@@ -30,10 +30,11 @@ export default async function PublicProfilePage({
     sent?: string;
     formError?: string;
     shopError?: string;
+    couponError?: string;
   }>;
 }) {
   const { slug } = await params;
-  const { hl, sent, formError, shopError } = await searchParams;
+  const { hl, sent, formError, shopError, couponError } = await searchParams;
   const profile = await loadProfileBy({ slug });
   if (
     !profile ||
@@ -50,6 +51,7 @@ export default async function PublicProfilePage({
       sent={sent}
       formError={formError}
       shopError={shopError}
+      couponError={couponError}
     />
   );
 }

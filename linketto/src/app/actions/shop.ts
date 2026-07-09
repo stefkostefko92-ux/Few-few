@@ -7,6 +7,13 @@ import { getSessionUser } from '@/lib/auth';
 import { getStripe } from '@/lib/stripe';
 import { isLocale } from '@/i18n/locales';
 import { MIN_PRODUCT_PRICE_EUR, planFor, totalFeeCents } from '@/lib/plans';
+import {
+  COUPON_MAX_PERCENT,
+  COUPON_MIN_PERCENT,
+  discountedPriceCents,
+  isCouponUsable,
+  normalizeCouponCode,
+} from '@/lib/coupon';
 
 function baseUrl(): string {
   return process.env.PUBLIC_BASE_URL ?? 'http://localhost:3000';
@@ -95,11 +102,29 @@ export async function startProductPurchaseAction(
     product.translations[0];
   const title = localized?.title ?? 'Product';
   const description = localized?.description?.trim() || undefined;
+
+  // Промо код (по избор): валидира се и сумата се ПРЕИЗЧИСЛЯВА на сървъра.
+  const couponInput = normalizeCouponCode(String(formData.get('coupon') ?? ''));
+  let unitAmount = product.priceCents;
+  let appliedCoupon: { id: string; code: string } | null = null;
+  if (couponInput) {
+    const coupon = await prisma.coupon.findUnique({
+      where: {
+        profileId_code: { profileId: product.profileId, code: couponInput },
+      },
+    });
+    if (!coupon || !isCouponUsable(coupon, new Date())) {
+      redirect(`${back}${hl ? '&' : '?'}couponError=1`);
+    }
+    unitAmount = discountedPriceCents(product.priceCents, coupon.percentOff);
+    appliedCoupon = { id: coupon.id, code: coupon.code };
+  }
+
   // Комисиона по плана + такса за обработка (покрива Stripe таксите).
   // Инвариант: application_fee трябва да е < сумата (Stripe го изисква).
   const fee = Math.min(
-    totalFeeCents(product.priceCents, planFor(owner.plan).id),
-    product.priceCents - 1,
+    totalFeeCents(unitAmount, planFor(owner.plan).id),
+    unitAmount - 1,
   );
 
   const session = await stripe.checkout.sessions.create({
@@ -113,7 +138,7 @@ export async function startProductPurchaseAction(
         quantity: 1,
         price_data: {
           currency: 'eur',
-          unit_amount: product.priceCents,
+          unit_amount: unitAmount,
           product_data: description
             ? { name: title, description }
             : { name: title },
@@ -133,6 +158,8 @@ export async function startProductPurchaseAction(
       profileId: product.profileId,
       feeCents: String(fee),
       locale: isLocale(hl) ? hl : product.profile.defaultLocale,
+      couponId: appliedCoupon?.id ?? '',
+      couponCode: appliedCoupon?.code ?? '',
     },
     locale: 'auto',
     success_url: `${baseUrl()}/u/${slug}/delivery?session_id={CHECKOUT_SESSION_ID}`,
@@ -317,6 +344,75 @@ export async function upsertProductTranslationAction(
     where: { productId_locale: { productId, locale } },
     create: { productId, locale, title, description },
     update: { title, description },
+  });
+  redirect(`/${uiLocale}/dashboard`);
+}
+
+// ── Промо кодове ──────────────────────────────────────────────────────
+const couponSchema = z.object({
+  code: z.string().trim().min(3).max(24),
+  percentOff: z.coerce
+    .number()
+    .int()
+    .min(COUPON_MIN_PERCENT)
+    .max(COUPON_MAX_PERCENT),
+  maxRedemptions: z.coerce.number().int().min(1).max(100000).optional(),
+  expiresAt: z.string().trim().optional(),
+});
+
+export async function addCouponAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const profileId = String(formData.get('profileId') ?? '');
+  const rawMax = String(formData.get('maxRedemptions') ?? '').trim();
+  const rawExpires = String(formData.get('expiresAt') ?? '').trim();
+  const parsed = couponSchema.safeParse({
+    code: formData.get('code'),
+    percentOff: formData.get('percentOff'),
+    maxRedemptions: rawMax || undefined,
+    expiresAt: rawExpires || undefined,
+  });
+  const code = parsed.success ? normalizeCouponCode(parsed.data.code) : '';
+  if (!parsed.success || code.length < 3) {
+    redirect(`/${uiLocale}/dashboard?error=coupon`);
+  }
+  // Собственост: профилът трябва да е на текущия потребител.
+  const profile = await prisma.profile.findFirst({
+    where: { id: profileId, userId: user.id },
+    select: { id: true },
+  });
+  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+  const expiresAt = parsed.data.expiresAt
+    ? new Date(parsed.data.expiresAt)
+    : null;
+  if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+    redirect(`/${uiLocale}/dashboard?error=coupon`);
+  }
+  try {
+    await prisma.coupon.create({
+      data: {
+        profileId,
+        code,
+        percentOff: parsed.data.percentOff,
+        maxRedemptions: parsed.data.maxRedemptions ?? null,
+        expiresAt,
+      },
+    });
+  } catch {
+    // Уникалност (profileId, code) — кодът вече съществува.
+    redirect(`/${uiLocale}/dashboard?error=coupon`);
+  }
+  redirect(`/${uiLocale}/dashboard`);
+}
+
+export async function deleteCouponAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const couponId = String(formData.get('couponId') ?? '');
+  await prisma.coupon.deleteMany({
+    where: { id: couponId, profile: { userId: user.id } },
   });
   redirect(`/${uiLocale}/dashboard`);
 }
