@@ -139,11 +139,23 @@ router.patch("/:serverId", requireServerAdmin, async (req, res, next) => {
     const server = await prisma.server.findUnique({ where: { id: req.params.serverId } });
     if (!server) return res.status(404).json({ error: "Server not found" });
 
-    // Premium-only guards — uses getServerTier() which honors active trial
-    const { isPremium } = await getServerTier(req.params.serverId);
-    const premiumFields = [customBotToken, customBotName, customBotAvatar, aiRepliesEnabled, roundRobinEnabled];
-    if (premiumFields.some((v) => v !== undefined) && !isPremium) {
-      return res.status(403).json({ error: "This feature requires Premium" });
+    // Tier guards — uses getServerTier() which honors active trial + agency.
+    // White-label (custom bot) needs the White-label/Agency tier; AI + round-robin
+    // need Premium or above.
+    const tier = await getServerTier(req.params.serverId);
+    const whiteLabelFields = [customBotToken, customBotName, customBotAvatar];
+    if (whiteLabelFields.some((v) => v !== undefined) && !tier.hasWhiteLabel) {
+      return res.status(403).json({
+        error: "White-label custom bot requires the White-label or Agency plan.",
+        code: "PREMIUM_REQUIRED", requiredPlan: "whitelabel", currentPlan: tier.plan,
+      });
+    }
+    const premiumFields = [aiRepliesEnabled, roundRobinEnabled];
+    if (premiumFields.some((v) => v !== undefined) && !tier.isPremium) {
+      return res.status(403).json({
+        error: "This feature requires Premium.",
+        code: "PREMIUM_REQUIRED", requiredPlan: "premium", currentPlan: tier.plan,
+      });
     }
 
     // The AI prompt is injected into the model's system prompt — cap its size

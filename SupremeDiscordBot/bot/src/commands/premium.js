@@ -1,6 +1,7 @@
 // bot/src/commands/premium.js
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
 import api from "../utils/api.js";
+import { sendPremiumRequired } from "../utils/premiumRequired.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -105,7 +106,11 @@ export default {
       try {
         const { data: server } = await api.get(`/bot/server/${interaction.guildId}`);
         if (!server.isPremium) {
-          return interaction.editReply("❌ Data export is a Premium feature. Upgrade at " + process.env.FRONTEND_URL);
+          // Native Discord monetization upsell — offer the in-app purchase
+          // button for the Premium SKU alongside the explanation. Falls back to
+          // a dashboard link if DISCORD_SKU_PREMIUM is not configured.
+          await interaction.editReply("❌ Data export is a Premium feature.");
+          return sendPremiumRequired(interaction, process.env.DISCORD_SKU_PREMIUM);
         }
 
         await interaction.editReply({

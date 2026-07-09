@@ -86,3 +86,21 @@ export async function isBlacklisted(userId) {
   const { data } = await api.get(`/bot/user/${userId}/blacklisted`);
   return data.blacklisted;
 }
+
+// Native Discord monetization — forward a gateway entitlement event to the
+// backend (mounted at /api/discord). `type` is "create" | "update" | "delete".
+// The x-bot-secret header is already set on the `api` instance, so only the bot
+// can grant/revoke Premium this way. Fields map from the discord.js Entitlement.
+export async function sendEntitlement(type, entitlement) {
+  const { data } = await api.post("/discord/entitlement", {
+    type,
+    entitlement: {
+      id: entitlement.id,
+      skuId: entitlement.skuId,
+      guildId: entitlement.guildId ?? null,
+      userId: entitlement.userId ?? null,
+      endsAt: entitlement.endsTimestamp ?? null,
+    },
+  });
+  return data;
+}

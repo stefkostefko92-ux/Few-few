@@ -72,6 +72,15 @@ model Server {
   ownerId               String
   isPremium             Boolean   @default(false)
   premiumSince          DateTime?
+  // ─── v3.0 Tiers ──────────────────────────────────────────────────────────
+  // Effective billing tier for THIS server's own subscription:
+  //   free | premium | whitelabel | agency5 | agency10
+  // For servers covered by an Agency plan, `plan` stays "free" and the effective
+  // tier is resolved from the linked Agency at runtime (see lib/premium.js).
+  // `isPremium` is kept in sync (true when plan != free) for backward-compat.
+  plan                  String    @default("free")
+  billingInterval       String? // "month" | "year" (own Stripe subscription)
+  planSource            String? // "stripe" | "discord" | "manual" | "trial"
   // v2.0 Trial system
   trialUsed             Boolean   @default(false) // Each server gets one 14-day trial
   trialStartedAt        DateTime?
@@ -86,10 +95,19 @@ model Server {
   // сваля isPremium=false ако past_due е по-старо от 14 дни (виж jobs/dunning.js).
   // Изчиства се при връщане към active/trialing.
   pastDueSince          DateTime?
-  // White-label custom bot token (premium only)
+  // White-label custom bot token (White-label / Agency tiers)
   customBotToken        String?
   customBotName         String?
   customBotAvatar       String?
+  // ─── v3.0 Discord native monetization (Premium Apps entitlements) ─────────
+  // When a server is upgraded via Discord's own subscription SKUs, we record
+  // the entitlement so ENTITLEMENT_DELETE can revoke access. SKU → plan mapping
+  // lives in lib/premium.js (skuToPlan). Mutually exclusive with a Stripe sub.
+  discordEntitlementId  String?   @unique
+  discordSkuId          String?
+  // ─── v3.0 Agency (multi-server) membership ───────────────────────────────
+  // Non-null when this server's tier is provided by an Agency seat.
+  agencyId              String?
   // Settings
   logChannelId          String?
   archiveChannelId      String?
@@ -121,8 +139,8 @@ model Server {
   eventLogChannelId  String?
   eventLogCategories String[] @default(["voice", "members", "moderation"])
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   members            ServerMember[]
@@ -133,8 +151,42 @@ model Server {
   verificationPanels VerificationPanel[]
   auditLogs          AuditLog[]
   paymentLogs        PaymentLog[]
+  agency             Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
+  @@index([agencyId])
   @@map("servers")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v3.0 — AGENCY (multi-server plan)
+// ─────────────────────────────────────────────────────────────────────────────
+// One subscription (Stripe or Discord) that grants the White-label tier to up
+// to `seatLimit` servers. The owner assigns/removes servers up to the seat cap.
+// Access is provisioned ONLY through a verified Stripe webhook / Discord
+// entitlement — never from a client redirect (see conventions in CLAUDE.md).
+model Agency {
+  id                   String    @id @default(cuid())
+  ownerUserId          String // Discord user id of the agency owner
+  plan                 String // "agency5" | "agency10"
+  seatLimit            Int // 5 or 10
+  billingInterval      String? // "month" | "year"
+  planSource           String    @default("stripe") // "stripe" | "discord" | "manual"
+  // Stripe
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripeStatus         String? // active, canceled, past_due, trialing
+  pastDueSince         DateTime?
+  // Discord native monetization
+  discordEntitlementId String?   @unique
+  discordSkuId         String?
+  active               Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  servers Server[]
+
+  @@index([ownerUserId])
+  @@map("agencies")
 }
 
 model ServerMember {
