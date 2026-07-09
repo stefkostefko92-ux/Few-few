@@ -5,7 +5,60 @@ import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
 import { isLocale, LOCALES } from '@/i18n/locales';
 import { planFor } from '@/lib/plans';
-import { aiConfigured, translateProfileContent } from '@/lib/ai';
+import { aiConfigured, generateBio, translateProfileContent } from '@/lib/ai';
+
+// AI генериране на био от ключови думи — на езика по подразбиране на
+// профила. Пише се само в основната версия по изричен клик; после
+// създателят може да го преведе с „Преведи с AI".
+export async function aiGenerateBioAction(formData: FormData): Promise<void> {
+  const raw = String(formData.get('uiLocale') ?? 'en');
+  const uiLocale = isLocale(raw) ? raw : 'en';
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  if (!aiConfigured()) redirect(`/${uiLocale}/dashboard?error=aikey`);
+
+  const profileId = String(formData.get('profileId') ?? '');
+  const keywords = String(formData.get('keywords') ?? '').trim();
+  if (!keywords) redirect(`/${uiLocale}/dashboard?error=ai`);
+  const profile = await prisma.profile.findFirst({
+    where: { id: profileId, userId: user.id },
+    select: { id: true, slug: true, defaultLocale: true },
+  });
+  if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
+
+  const base = await prisma.profileTranslation.findUnique({
+    where: {
+      profileId_locale: {
+        profileId: profile.id,
+        locale: profile.defaultLocale,
+      },
+    },
+  });
+  const name = base?.displayName ?? '';
+  const bio = await generateBio({
+    name,
+    keywords,
+    locale: profile.defaultLocale,
+  });
+  if (!bio) redirect(`/${uiLocale}/dashboard?error=ai`);
+
+  await prisma.profileTranslation.upsert({
+    where: {
+      profileId_locale: {
+        profileId: profile.id,
+        locale: profile.defaultLocale,
+      },
+    },
+    create: {
+      profileId: profile.id,
+      locale: profile.defaultLocale,
+      displayName: name || profile.slug,
+      bio,
+    },
+    update: { bio },
+  });
+  redirect(`/${uiLocale}/dashboard?generated=1`);
+}
 
 // „Преведи профила с един клик“ — флагманът на Linketto. Превежда името,
 // описанието и заглавията на блоковете на всички езици, които планът

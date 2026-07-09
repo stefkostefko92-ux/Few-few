@@ -1,4 +1,5 @@
 import 'server-only';
+import { cleanBio } from './ai-text';
 
 // AI превод на профила с един клик — Gemini Flash (същият подход като
 // mastilko): ключът е САМО server-side env, клиентът никога не говори с
@@ -23,6 +24,54 @@ export type TranslatedByLocale = Record<
 
 export function aiConfigured(): boolean {
   return Boolean(process.env.GEMINI_API_KEY);
+}
+
+const GEMINI_URL = (model: string) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+
+// AI генериране на кратко „био" за профила от името + ключови думи, на
+// езика по подразбиране на създателя. Пише се само по изрично действие;
+// не се презаписва нищо без клик от потребителя. Връща чист текст (без
+// кавички/маркдаун) до 280 знака или null при неуспех.
+export async function generateBio(input: {
+  name: string;
+  keywords: string;
+  locale: string;
+}): Promise<string | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  const keywords = input.keywords.trim().slice(0, 300);
+  if (!keywords) return null;
+  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const prompt =
+    `Write a short, warm, first-person "link in bio" biography in language "${input.locale}". ` +
+    `The person's name is "${input.name || 'the creator'}". ` +
+    `Base it on these notes/keywords: "${keywords}". ` +
+    `Rules: 1–2 sentences, max 260 characters, natural and human, no hashtags, ` +
+    `no emoji unless clearly fitting, no surrounding quotes, no markdown. ` +
+    `Return ONLY the bio text.`;
+
+  try {
+    const res = await fetch(GEMINI_URL(model), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 400 },
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    const text = extractText(data);
+    if (!text) return null;
+    return cleanBio(text);
+  } catch {
+    return null;
+  }
 }
 
 export async function translateProfileContent(

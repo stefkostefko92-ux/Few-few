@@ -40,7 +40,7 @@ import {
 } from '@/components/icons';
 import Link from 'next/link';
 import { startCheckoutAction } from '@/app/actions/billing';
-import { aiTranslateAction } from '@/app/actions/ai';
+import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
 import {
   addCouponAction,
   addProductAction,
@@ -65,12 +65,14 @@ export default async function DashboardPage({
   searchParams: Promise<{
     error?: string;
     translated?: string;
+    generated?: string;
     connected?: string;
     payout?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { error, translated, connected, payout } = await searchParams;
+  const { error, translated, generated, connected, payout } =
+    await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
@@ -240,6 +242,14 @@ export default async function DashboardPage({
             className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
           >
             {t('translatedOk')}
+          </p>
+        )}
+        {generated && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('generatedOk')}
           </p>
         )}
         {connected && (
@@ -681,6 +691,31 @@ export default async function DashboardPage({
               <p className="mt-1 text-sm text-slate-500">
                 {t('translationsHint')} {t('aiTranslateHint')}
               </p>
+              {/* AI генериране на био от ключови думи (на основния език) */}
+              <form
+                action={aiGenerateBioAction}
+                className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-linketto-100 bg-linketto-50/50 p-3"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <label className="flex-1 text-sm font-medium">
+                  {t('aiBioLabel')}
+                  <input
+                    type="text"
+                    name="keywords"
+                    required
+                    placeholder={t('aiBioPlaceholder')}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <SparklesIcon className="h-4 w-4" />
+                  {t('aiBioButton')}
+                </button>
+              </form>
               <div className="mt-4 space-y-4">
                 {LOCALES.map((loc) => {
                   const translation = profile.translations.find(
