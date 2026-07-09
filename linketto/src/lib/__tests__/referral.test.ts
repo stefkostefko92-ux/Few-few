@@ -4,13 +4,15 @@ import {
   generateReferralCode,
   referralLink,
   referralRewardCents,
+  REFERRAL_PERCENT,
 } from '../referral';
 
-test('наградата: 0 за Free, растяща за платените планове', () => {
-  assert.equal(referralRewardCents('FREE'), 0);
-  assert.equal(referralRewardCents('PRO'), 300);
-  assert.equal(referralRewardCents('BUSINESS'), 500);
-  assert.equal(referralRewardCents('FOUNDER'), 1000);
+test('бонусът е процент от платената сума', () => {
+  assert.equal(REFERRAL_PERCENT, 25);
+  assert.equal(referralRewardCents(0), 0);
+  assert.equal(referralRewardCents(400), 100); // 25% от €4
+  assert.equal(referralRewardCents(3840), 960); // 25% от годишен Pro €38.40
+  assert.equal(referralRewardCents(-5), 0);
 });
 
 test('реферален код: 8 hex знака, уникален', () => {

@@ -11,8 +11,11 @@ import { referralRewardCents } from '@/lib/referral';
 async function rewardReferrer(
   referredUserId: string,
   planId: PlanId,
+  paidCents: number,
 ): Promise<void> {
-  const rewardCents = referralRewardCents(planId);
+  // Бонусът е процент от реалната сума, платена от поканения (по-дълъг
+  // период → по-голямо плащане → по-голям бонус за реферера).
+  const rewardCents = referralRewardCents(paidCents);
   if (rewardCents <= 0) return;
   const user = await prisma.user.findUnique({
     where: { id: referredUserId },
@@ -118,7 +121,11 @@ export async function POST(request: Request): Promise<NextResponse> {
         });
         // Реферална награда: ако този потребител е поканен, реферерът
         // получава бонус — веднъж на поканен (unique referredUserId).
-        await rewardReferrer(userId, planId).catch(() => undefined);
+        await rewardReferrer(
+          userId,
+          planId,
+          session.amount_total ?? 0,
+        ).catch(() => undefined);
       }
       // Продажба на дигитален продукт (магазина): записваме покупката
       // идемпотентно по stripeSessionId.

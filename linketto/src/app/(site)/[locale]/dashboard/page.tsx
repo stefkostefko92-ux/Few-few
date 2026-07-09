@@ -4,7 +4,12 @@ import { SiteHeader } from '@/components/SiteChrome';
 import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { planFor } from '@/lib/plans';
+import {
+  BILLING_INTERVALS,
+  effectiveMonthlyCents,
+  intervalPriceCents,
+  planFor,
+} from '@/lib/plans';
 import {
   addLinkAction,
   createProfileAction,
@@ -1325,25 +1330,79 @@ export default async function DashboardPage({
                 {t('currentPlan')}: <strong>{plan.id}</strong>
               </p>
               {plan.id === 'FREE' && (
-                <div className="mt-4 flex flex-wrap gap-3">
+                <div className="mt-4 space-y-4">
+                  {/* Абонаментни планове с избор на период (с намаления) */}
                   {(
                     [
                       ['PRO', t('upgradePro')],
                       ['BUSINESS', t('upgradeBusiness')],
-                      ['FOUNDER', t('buyFounder')],
                     ] as const
                   ).map(([planId, label]) => (
-                    <form key={planId} action={startCheckoutAction}>
+                    <form
+                      key={planId}
+                      action={startCheckoutAction}
+                      className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 p-4"
+                    >
                       <input type="hidden" name="uiLocale" value={locale} />
                       <input type="hidden" name="plan" value={planId} />
+                      <span className="font-semibold text-slate-700">
+                        {label}
+                      </span>
+                      <label className="text-sm">
+                        <span className="mb-1 block text-xs text-slate-500">
+                          {t('billingPeriod')}
+                        </span>
+                        <select
+                          name="interval"
+                          defaultValue="monthly"
+                          className="rounded-lg border border-slate-300 px-3 py-2"
+                        >
+                          {BILLING_INTERVALS.map((interval) => {
+                            const price = intervalPriceCents(
+                              planId,
+                              interval.id,
+                            );
+                            const monthly = effectiveMonthlyCents(
+                              planId,
+                              interval.id,
+                            );
+                            return (
+                              <option key={interval.id} value={interval.id}>
+                                {t(`interval_${interval.id}`)} — €
+                                {(price / 100).toFixed(2)} (€
+                                {(monthly / 100).toFixed(2)}/
+                                {t('perMonthShort')}
+                                {interval.discountPercent > 0
+                                  ? `, −${interval.discountPercent}%`
+                                  : ''}
+                                )
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
                       <button
                         type="submit"
-                        className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                        className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
                       >
-                        {label}
+                        {t('choose')}
                       </button>
                     </form>
                   ))}
+                  {/* Founder — еднократно, без период */}
+                  <form
+                    action={startCheckoutAction}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-100 p-4"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="plan" value="FOUNDER" />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('buyFounder')}
+                    </button>
+                  </form>
                 </div>
               )}
             </section>

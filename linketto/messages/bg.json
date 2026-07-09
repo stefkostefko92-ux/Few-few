@@ -96,7 +96,9 @@
       "f3": "Ограничена ранна оферта"
     },
     "processingNote": "Върху продажбите в магазина се начислява и такса за обработка на плащането: 1,9 % + €0,30 (покрива картовия оператор).",
-    "mostPopular": "Най-популярен"
+    "mostPopular": "Най-популярен",
+    "annualOffer": "Спести {percent}% с годишен план",
+    "referralPercentNote": "Покани приятели и получавай {percent}% от всяко тяхно плащане."
   },
   "auth": {
     "loginTitle": "Вход в Linketto",
@@ -258,7 +260,7 @@
     "refunded": "Върнати",
     "errorRefund": "Връщането на пари не бе успешно.",
     "referralSection": "Покани приятел",
-    "referralReward": "Сподели линка си. Когато поканен от теб човек си купи платен план, получаваш бонус кредит (Про +€3, Бизнес +€5, Основател +€10).",
+    "referralReward": "Сподели линка си. Когато поканен от теб човек си купи платен план, получаваш 25% от плащането му като бонус кредит.",
     "referralHint": "Твоят личен реферален линк:",
     "referralCopy": "Копирай",
     "referralCopied": "Копирано!",
@@ -266,7 +268,14 @@
     "referralSignups": "регистрации",
     "referralSuccessful": "платили",
     "referralCredit": "бонус",
-    "referralActivate": "Създай реферален линк"
+    "referralActivate": "Създай реферален линк",
+    "billingPeriod": "Период на плащане",
+    "interval_monthly": "Месечно",
+    "interval_quarterly": "3 месеца",
+    "interval_semiannual": "6 месеца",
+    "interval_annual": "Годишно",
+    "perMonthShort": "мес",
+    "choose": "Избери"
   },
   "profile": {
     "poweredBy": "Създадено с Linketto",

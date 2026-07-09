@@ -18,7 +18,11 @@ import {
   ShoppingBagIcon,
 } from '@/components/icons';
 import type { Locale } from '@/i18n/locales';
-import { PLANS } from '@/lib/plans';
+import { BILLING_INTERVALS, PLANS } from '@/lib/plans';
+
+// Максималната отстъпка (годишен план) — за маркетинговия ред в цените.
+const ANNUAL_DISCOUNT =
+  BILLING_INTERVALS.find((i) => i.id === 'annual')?.discountPercent ?? 0;
 
 // Авторските икони на бранда (public/icons) в бели кръгли плочки с
 // пулсиращо сияние. Самите полета „плуват“: всяка карта има свой наклон
@@ -466,6 +470,11 @@ export default async function HomePage({
                   <p className="mt-1.5 text-sm font-medium text-linketto-600">
                     {tPricing(`${planKey}.fee`)} {tPricing('commission')}
                   </p>
+                  {!def.oneTime && def.priceCents > 0 && (
+                    <p className="mt-1 text-xs font-medium text-green-600">
+                      {tPricing('annualOffer', { percent: ANNUAL_DISCOUNT })}
+                    </p>
+                  )}
                   <ul className="mt-5 flex-1 space-y-2.5 text-sm text-slate-600">
                     {(['f1', 'f2', 'f3'] as const).map((feature) => (
                       <li key={feature} className="flex gap-2">

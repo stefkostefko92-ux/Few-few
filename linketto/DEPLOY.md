@@ -23,7 +23,8 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 | `PUBLIC_BASE_URL` | `https://linketto.carbonstealth.eu` | влиза в sitemap, canonical, Stripe redirect-и, имейли |
 | `STRIPE_SECRET_KEY` | Stripe Dashboard (live) | `sk_live_…` |
 | `STRIPE_WEBHOOK_SECRET` | Stripe → Webhooks (виж §3) | `whsec_…` |
-| `STRIPE_PRICE_PRO/BUSINESS/FOUNDER` | Stripe → Products → Prices | Price ID-та `price_…` |
+| `STRIPE_PRICE_PRO_*` / `STRIPE_PRICE_BUSINESS_*` | Stripe → Products → Prices | по един Price ID за всеки период: `_MONTHLY/_QUARTERLY/_SEMIANNUAL/_ANNUAL` (отстъпка 0/10/15/20%) |
+| `STRIPE_PRICE_FOUNDER` | Stripe → Products → Prices | еднократно плащане |
 | `RESEND_API_KEY` + `EMAIL_FROM` | resend.com | доставка на купеното по имейл; **подпиши DPA + EU регион** |
 | `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI"; за ЕС ползвай **платен tier + DPA** (иначе входът се ползва за обучение) |
 | `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin` |

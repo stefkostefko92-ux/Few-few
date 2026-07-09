@@ -118,6 +118,10 @@ showViews = бадж „N посещения този месец“ (брои Cl
 без бисквитки). Бранд сияние при hover: BRAND_COLORS в brand-icons.tsx.
 „Сподели“ = ShareButton.tsx (client; Web Share API, fallback QR + копиране).
 
+Периоди: plans.ts BILLING_INTERVALS (месец/3/6/12м, отстъпка 0/10/15/20%);
+intervalPriceCents/effectiveMonthlyCents/stripePriceEnvFor. billing.ts избира
+Price ID по план+период (Founder е еднократен). Реферал бонусът е процент
+(REFERRAL_PERCENT=25) от session.amount_total — по-дълъг период → по-голям бонус.
 Реферали: lib/referral.ts (referralRewardCents по план, generateReferralCode).
 User.referralCode/referredById/referralCreditCents + модел Referral (ledger,
 unique referredUserId). registerAction обвързва реферера от ?ref; webhook-ът

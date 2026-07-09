@@ -96,7 +96,9 @@
       "f3": "Limited early offer"
     },
     "processingNote": "Shop sales also carry a payment processing fee of 1.9% + €0.30 (covers the card processor).",
-    "mostPopular": "Most popular"
+    "mostPopular": "Most popular",
+    "annualOffer": "Save {percent}% with an annual plan",
+    "referralPercentNote": "Invite friends and earn {percent}% of every payment they make."
   },
   "auth": {
     "loginTitle": "Log in to Linketto",
@@ -258,7 +260,7 @@
     "refunded": "Refunded",
     "errorRefund": "The refund did not go through.",
     "referralSection": "Invite a friend",
-    "referralReward": "Share your link. When someone you invited buys a paid plan, you get bonus credit (Pro +€3, Business +€5, Founder +€10).",
+    "referralReward": "Share your link. When someone you invited buys a paid plan, you earn 25% of their payment as bonus credit.",
     "referralHint": "Your personal referral link:",
     "referralCopy": "Copy",
     "referralCopied": "Copied!",
@@ -266,7 +268,14 @@
     "referralSignups": "signups",
     "referralSuccessful": "upgraded",
     "referralCredit": "bonus",
-    "referralActivate": "Create referral link"
+    "referralActivate": "Create referral link",
+    "billingPeriod": "Billing period",
+    "interval_monthly": "Monthly",
+    "interval_quarterly": "3 months",
+    "interval_semiannual": "6 months",
+    "interval_annual": "Annual",
+    "perMonthShort": "mo",
+    "choose": "Choose"
   },
   "profile": {
     "poweredBy": "Made with Linketto",

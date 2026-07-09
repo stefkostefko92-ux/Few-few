@@ -3,7 +3,13 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth';
 import { getStripe } from '@/lib/stripe';
-import { PLANS, type PlanId } from '@/lib/plans';
+import {
+  BILLING_INTERVALS,
+  PLANS,
+  stripePriceEnvFor,
+  type BillingIntervalId,
+  type PlanId,
+} from '@/lib/plans';
 import { isLocale } from '@/i18n/locales';
 
 function baseUrl(): string {
@@ -18,10 +24,23 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
 
   const planId = String(formData.get('plan') ?? '') as PlanId;
   const plan = PLANS[planId];
-  if (!plan || !plan.stripePriceEnv) {
+  if (!plan) {
     redirect(`/${uiLocale}/dashboard?error=generic`);
   }
-  const priceId = process.env[plan.stripePriceEnv];
+
+  // Founder е еднократен (без период); абонаментните планове ползват
+  // избрания период → съответния Stripe Price ID от env.
+  let priceEnv: string | null;
+  if (plan.oneTime) {
+    priceEnv = plan.stripePriceEnv;
+  } else {
+    const rawInterval = String(formData.get('interval') ?? 'monthly');
+    const interval = BILLING_INTERVALS.find((i) => i.id === rawInterval)
+      ? (rawInterval as BillingIntervalId)
+      : 'monthly';
+    priceEnv = stripePriceEnvFor(planId, interval);
+  }
+  const priceId = priceEnv ? process.env[priceEnv] : undefined;
   const stripe = getStripe();
   if (!stripe || !priceId) {
     redirect(`/${uiLocale}/dashboard?error=stripe`);
