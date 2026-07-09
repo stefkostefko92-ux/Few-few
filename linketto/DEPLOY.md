@@ -64,7 +64,28 @@ Stripe Dashboard → Settings → Payment methods → включи методи�
 - Провери, че `application_fee` + `on_behalf_of` са позволени за твоя платформен
   акаунт (destination charges).
 
-## 6. Build & run
+## 6. Автоматичен избор на език по IP (CDN държавен хедър)
+
+Сайтът избира езика на посетителя по държава/регион от IP-то. Кодът чете
+хедъри, които **CDN/прокси-то отпред трябва да подава** — иначе тихо пада
+към `Accept-Language`, после към `en` (работи, но по-неточно):
+
+| Хедър | Източник | За какво |
+|-------|----------|----------|
+| `cf-ipcountry` | Cloudflare (вкл. в безплатния план) | държава → език |
+| `cf-region` | Cloudflare (IP Geolocation → добави `cf-region` в Transform Rules) | италиански регион → диалект nap/scn/lmo |
+| `x-vercel-ip-country` / `x-vercel-ip-country-region` | Vercel | алтернатива на горните |
+
+**Cloudflare (препоръчано, безплатно):** насочи домейна през Cloudflare →
+`cf-ipcountry` идва автоматично. За диалектите добави Managed/Transform
+правило, което сетва `cf-region` от `ip.src.region` (иначе само държавата
+работи; Италия → `it`, без nap/scn/lmo).
+
+Ръчният избор на посетителя (бутонът за език) пише cookie `NEXT_LOCALE` и
+винаги печели пред IP. Без CDN хедър сайтът пак работи — просто без
+геолокация.
+
+## 7. Build & run
 
 ```bash
 npm ci --omit=dev
@@ -74,7 +95,7 @@ npm start                # или зад reverse proxy (Nginx) + systemd
 
 Health probe: `GET /api/health` → `{"status":"ok","db":"up"}` (503 при паднала база).
 
-## 7. Приемен тест преди реални пари (Stripe **test mode**)
+## 8. Приемен тест преди реални пари (Stripe **test mode**)
 
 1. Регистрирай създател → създай профил + продукт (цена ≥ €3, delivery URL).
 2. Connect onboarding (test) → изчакай `account.updated` да отключи магазина.
@@ -89,7 +110,7 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up"}` (503 при па
 
 Чак след зелен приемен тест — превключи на live ключове.
 
-## 8. Преди публичен старт (не блокират деплоя, но задължителни)
+## 9. Преди публичен старт (не блокират деплоя, но задължителни)
 
 - **Правен преглед:** текстовете в `messages/*.json` (`legal.*`) са изрядни, но
   минават през жив юрист/DPO преди масов трафик.
