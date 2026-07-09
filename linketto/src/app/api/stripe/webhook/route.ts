@@ -49,7 +49,11 @@ async function rewardReferrer(
 async function fulfilProduct(purchaseId: string): Promise<void> {
   const purchase = await prisma.purchase.findUnique({
     where: { id: purchaseId },
-    include: { product: { include: { translations: true } } },
+    include: {
+      product: {
+        include: { translations: true, profile: { select: { slug: true } } },
+      },
+    },
   });
   if (!purchase || purchase.deliveredAt || !purchase.buyerEmail) return;
   const locale = purchase.locale ?? undefined;
@@ -59,6 +63,11 @@ async function fulfilProduct(purchaseId: string): Promise<void> {
       purchase.product.translations.find((t) => t.locale === locale)?.title) ||
     purchase.product.translations[0]?.title ||
     'Product';
+  // Линк към печатната разписка (ако имаме публичен адрес).
+  const base = process.env.PUBLIC_BASE_URL;
+  const receiptUrl = base
+    ? `${base}/u/${purchase.product.profile.slug}/receipt?session=${encodeURIComponent(purchase.stripeSessionId)}`
+    : undefined;
   const sent = await sendEmail({
     to: purchase.buyerEmail,
     subject: deliverySubject(title, locale),
@@ -67,6 +76,7 @@ async function fulfilProduct(purchaseId: string): Promise<void> {
       deliveryUrl: purchase.product.deliveryUrl,
       amountCents: purchase.amountCents,
       locale,
+      receiptUrl,
     }),
   });
   if (sent) {

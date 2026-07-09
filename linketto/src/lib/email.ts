@@ -47,6 +47,7 @@ interface EmailStrings {
   fallback: (url: string) => string;
   receipt: string;
   waiver: string;
+  viewReceipt: string;
 }
 
 const EMAIL_STRINGS: Record<string, EmailStrings> = {
@@ -60,6 +61,7 @@ const EMAIL_STRINGS: Record<string, EmailStrings> = {
       'Този имейл е разписка за покупката ти на траен носител. Пази линка — води те директно до съдържанието.',
     waiver:
       'Потвърждаваме, че преди покупката изрично поиска съдържанието да ти бъде предоставено веднага и се съгласи, че така губиш 14-дневното право на отказ.',
+    viewReceipt: 'Виж разписката',
   },
   en: {
     subjectPrefix: 'Purchase',
@@ -71,6 +73,7 @@ const EMAIL_STRINGS: Record<string, EmailStrings> = {
       'This email is your purchase receipt on a durable medium. Keep the link — it takes you straight to the content.',
     waiver:
       'We confirm that before the purchase you expressly requested immediate delivery of the content and agreed that you thereby lose the 14-day right of withdrawal.',
+    viewReceipt: 'View receipt',
   },
   it: {
     subjectPrefix: 'Acquisto',
@@ -82,6 +85,7 @@ const EMAIL_STRINGS: Record<string, EmailStrings> = {
       'Questa email è la ricevuta del tuo acquisto su un supporto durevole. Conserva il link — ti porta direttamente al contenuto.',
     waiver:
       "Confermiamo che prima dell'acquisto hai richiesto espressamente la consegna immediata del contenuto e hai accettato di perdere così il diritto di recesso di 14 giorni.",
+    viewReceipt: 'Vedi la ricevuta',
   },
   es: {
     subjectPrefix: 'Compra',
@@ -93,6 +97,7 @@ const EMAIL_STRINGS: Record<string, EmailStrings> = {
       'Este email es el recibo de tu compra en un soporte duradero. Guarda el enlace — te lleva directamente al contenido.',
     waiver:
       'Confirmamos que antes de la compra solicitaste expresamente la entrega inmediata del contenido y aceptaste perder así el derecho de desistimiento de 14 días.',
+    viewReceipt: 'Ver recibo',
   },
   de: {
     subjectPrefix: 'Kauf',
@@ -104,6 +109,7 @@ const EMAIL_STRINGS: Record<string, EmailStrings> = {
       'Diese E-Mail ist deine Kaufquittung auf einem dauerhaften Datenträger. Bewahre den Link auf — er führt dich direkt zum Inhalt.',
     waiver:
       'Wir bestätigen, dass du vor dem Kauf ausdrücklich die sofortige Bereitstellung des Inhalts verlangt und zugestimmt hast, dadurch dein 14-tägiges Widerrufsrecht zu verlieren.',
+    viewReceipt: 'Beleg ansehen',
   },
   fr: {
     subjectPrefix: 'Achat',
@@ -115,6 +121,7 @@ const EMAIL_STRINGS: Record<string, EmailStrings> = {
       "Cet e-mail est le reçu de votre achat sur un support durable. Conservez le lien — il vous mène directement au contenu.",
     waiver:
       "Nous confirmons qu'avant l'achat vous avez expressément demandé la livraison immédiate du contenu et accepté de perdre ainsi votre droit de rétractation de 14 jours.",
+    viewReceipt: 'Voir le reçu',
   },
 };
 
@@ -130,10 +137,14 @@ export function deliveryEmailHtml(input: {
   deliveryUrl: string;
   amountCents: number;
   locale?: string;
+  receiptUrl?: string;
 }): string {
   const s = EMAIL_STRINGS[input.locale ?? 'bg'] ?? EMAIL_STRINGS.en;
   const price = `€${(input.amountCents / 100).toFixed(2)}`;
   const url = esc(input.deliveryUrl);
+  const receiptLink = input.receiptUrl
+    ? `<p style="margin-top:8px"><a href="${esc(input.receiptUrl)}" style="color:#3b82c4;font-size:13px;font-weight:600">${s.viewReceipt} →</a></p>`
+    : '';
   return `<div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px">
   <h1 style="font-size:20px">Linketto</h1>
   <p>${s.thanks(esc(input.productTitle), price)}</p>
@@ -142,6 +153,7 @@ export function deliveryEmailHtml(input: {
   <p style="color:#64748b;font-size:13px">${s.fallback(url)}</p>
   <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
   <p style="color:#94a3b8;font-size:12px">${s.receipt}</p>
+  ${receiptLink}
   <p style="color:#94a3b8;font-size:12px">${s.waiver}</p>
 </div>`;
 }
