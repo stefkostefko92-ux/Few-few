@@ -1,0 +1,2243 @@
+import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { SiteHeader } from '@/components/SiteChrome';
+import { LOCALES, LOCALE_NAMES, type Locale } from '@/i18n/locales';
+import { getSessionUser } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import {
+  BILLING_INTERVALS,
+  effectiveMonthlyCents,
+  intervalPriceCents,
+  MEMBERSHIPS_ENABLED,
+  planFor,
+} from '@/lib/plans';
+import {
+  addLinkAction,
+  createProfileAction,
+  deleteLinkAction,
+  updateProfileAction,
+  updateStyleAction,
+  uploadImageAction,
+  upsertLinkTranslationAction,
+  upsertProfileTranslationAction,
+} from '@/app/actions/profile';
+import { parseStyle } from '@/lib/style';
+import { languageDemand } from '@/lib/language-gap';
+import { ReferralCard } from '@/components/ReferralCard';
+import {
+  ensureReferralCodeAction,
+  requestPayoutAction,
+} from '@/app/actions/referral';
+import {
+  canWithdraw,
+  REFERRAL_MIN_PAYOUT_CENTS,
+} from '@/lib/referral';
+import {
+  ChartColumnIcon,
+  CheckIcon,
+  ClockIcon,
+  DownloadIcon,
+  SparklesIcon,
+} from '@/components/icons';
+import Link from 'next/link';
+import {
+  openBillingPortalAction,
+  startCheckoutAction,
+} from '@/app/actions/billing';
+import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
+import { sendBroadcastAction } from '@/app/actions/newsletter';
+import { resolveBookingAction } from '@/app/actions/booking';
+import {
+  addShortLinkAction,
+  deleteShortLinkAction,
+} from '@/app/actions/shortlink';
+import {
+  addCouponAction,
+  addLessonAction,
+  addProductAction,
+  connectStripeAction,
+  deleteCouponAction,
+  deleteLessonAction,
+  deleteProductAction,
+  sellerRefundAction,
+  setTraderStatusAction,
+  updateProductAction,
+  upsertProductTranslationAction,
+} from '@/app/actions/shop';
+
+export const dynamic = 'force-dynamic';
+
+const THEMES = ['aurora', 'mono', 'dusk'] as const;
+
+export default async function DashboardPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{
+    error?: string;
+    translated?: string;
+    generated?: string;
+    connected?: string;
+    payout?: string;
+    broadcast?: string;
+    p?: string;
+  }>;
+}) {
+  const { locale } = await params;
+  const { error, translated, generated, connected, payout, broadcast, p } =
+    await searchParams;
+  const user = await getSessionUser();
+  if (!user) redirect(`/${locale}/login`);
+  const t = await getTranslations('dashboard');
+  const plan = planFor(user.plan);
+
+  // Няколко профила на акаунт (Business): списък за превключвателя + активен.
+  const profileList = await prisma.profile.findMany({
+    where: { userId: user.id },
+    select: { id: true, slug: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  const activeId =
+    p && profileList.some((item) => item.id === p) ? p : profileList[0]?.id;
+  const profile = activeId
+    ? await prisma.profile.findFirst({
+        where: { id: activeId, userId: user.id },
+        include: {
+          translations: { orderBy: { locale: 'asc' } },
+          links: {
+            orderBy: { position: 'asc' },
+            include: { translations: true },
+          },
+        },
+      })
+    : null;
+  const canAddProfile = profileList.length < plan.maxProfiles;
+  const messages = profile
+    ? await prisma.contactMessage.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      })
+    : [];
+  const bookings = profile
+    ? await prisma.booking.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      })
+    : [];
+  const shortLinks = profile
+    ? await prisma.shortLink.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+      })
+    : [];
+  const shortLinkBase = process.env.PUBLIC_BASE_URL ?? '';
+
+  // Статистика — прозорецът зависи от плана (Free: 90 дни).
+  const since = plan.analyticsDays
+    ? new Date(Date.now() - plan.analyticsDays * 24 * 60 * 60 * 1000)
+    : undefined;
+  const clickWhere = profile
+    ? { profileId: profile.id, ...(since ? { createdAt: { gte: since } } : {}) }
+    : null;
+  const [views, clicks, byLink, byLocale, byCountry, gapCountries] = clickWhere
+    ? await Promise.all([
+        prisma.clickEvent.count({ where: { ...clickWhere, linkId: null } }),
+        prisma.clickEvent.count({
+          where: { ...clickWhere, linkId: { not: null } },
+        }),
+        prisma.clickEvent.groupBy({
+          by: ['linkId'],
+          where: { ...clickWhere, linkId: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { linkId: 'desc' } },
+          take: 10,
+        }),
+        prisma.clickEvent.groupBy({
+          by: ['locale'],
+          where: { ...clickWhere, locale: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { locale: 'desc' } },
+          take: 6,
+        }),
+        prisma.clickEvent.groupBy({
+          by: ['country'],
+          where: { ...clickWhere, country: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { country: 'desc' } },
+          take: 6,
+        }),
+        // „Езикова дупка": разбивка по държави на посещенията (linkId null),
+        // без лимит на 6 — за да покрием реалното езиково търсене.
+        prisma.clickEvent.groupBy({
+          by: ['country'],
+          where: { ...clickWhere, linkId: null, country: { not: null } },
+          _count: { _all: true },
+          orderBy: { _count: { country: 'desc' } },
+          take: 40,
+        }),
+      ])
+    : [0, 0, [], [], [], []];
+  const products = profile
+    ? await prisma.product.findMany({
+        where: { profileId: profile.id },
+        orderBy: { position: 'asc' },
+        include: {
+          translations: true,
+          lessons: { orderBy: { position: 'asc' } },
+          _count: { select: { entitlements: { where: { active: true } } } },
+        },
+      })
+    : [];
+  const coupons = profile
+    ? await prisma.coupon.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+      })
+    : [];
+  const [subConfirmed, subPending] = profile
+    ? await Promise.all([
+        prisma.subscriber.count({
+          where: {
+            profileId: profile.id,
+            confirmedAt: { not: null },
+            unsubscribedAt: null,
+          },
+        }),
+        prisma.subscriber.count({
+          where: {
+            profileId: profile.id,
+            confirmedAt: null,
+            unsubscribedAt: null,
+          },
+        }),
+      ])
+    : [0, 0];
+  const purchaseTotals = profile
+    ? await prisma.purchase.aggregate({
+        where: { profileId: profile.id },
+        _count: { _all: true },
+        _sum: { amountCents: true },
+      })
+    : null;
+
+  // Реферална програма: брой поканени регистрации и успешни (платили) реферали.
+  const [referredSignups, successfulReferrals] = await Promise.all([
+    prisma.user.count({ where: { referredById: user.id } }),
+    prisma.referral.count({ where: { referrerId: user.id } }),
+  ]);
+  const referralBase = process.env.PUBLIC_BASE_URL ?? '';
+  const referralUrl = user.referralCode
+    ? `${referralBase}/${locale}/register?ref=${user.referralCode}`
+    : null;
+  const recentPurchases = profile
+    ? await prisma.purchase.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: { product: { include: { translations: true } } },
+      })
+    : [];
+
+  const linkTitle = (linkId: string | null) => {
+    const link = profile?.links.find((item) => item.id === linkId);
+    return (
+      link?.translations.find((tr) => tr.locale === profile?.defaultLocale)
+        ?.title ??
+      link?.translations[0]?.title ??
+      link?.url ??
+      '—'
+    );
+  };
+
+  // „Езикова дупка": кои езици говорят посетителите и кои още нямат превод.
+  const gap = profile
+    ? languageDemand(
+        gapCountries.map((row) => ({
+          country: row.country,
+          count: row._count._all,
+        })),
+        profile.translations.map((tr) => tr.locale),
+      )
+    : null;
+
+  return (
+    <>
+      <SiteHeader locale={locale as Locale} />
+      <main className="mx-auto max-w-3xl space-y-10 px-6 py-10">
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
+        {error && (
+          <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            {error === 'slug'
+              ? t('errorSlugTaken')
+              : error === 'limit'
+                ? t('errorLimit')
+                : error === 'block'
+                  ? t('errorBlock')
+                  : error === 'domain'
+                    ? t('errorDomain')
+                    : error === 'ai'
+                      ? t('errorAi')
+                      : error === 'aikey'
+                        ? t('errorAiKey')
+                        : error === 'product'
+                          ? t('errorProduct')
+                          : error === 'style'
+                            ? t('errorStyle')
+                            : error === 'upload'
+                              ? t('errorUpload')
+                              : error === 'refund'
+                                ? t('errorRefund')
+                                : error === 'payout'
+                                  ? t('errorPayout')
+                                  : error === 'coupon'
+                                    ? t('errorCoupon')
+                                    : error === 'broadcast'
+                                      ? t('errorBroadcast')
+                                      : error === 'shortlink'
+                                        ? t('errorShortlink')
+                                        : error === 'profiles'
+                                          ? t('errorProfiles')
+                                          : t('errorGeneric')}
+          </p>
+        )}
+        {translated && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('translatedOk')}
+          </p>
+        )}
+        {generated && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('generatedOk')}
+          </p>
+        )}
+        {connected && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('connectedOk')}
+          </p>
+        )}
+        {payout && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('referralPayoutRequested')}
+          </p>
+        )}
+        {broadcast && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('broadcastSent', { count: broadcast })}
+          </p>
+        )}
+
+        {/* Превключвател на профили + добавяне (няколко профила = Business) */}
+        {profileList.length > 0 && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-slate-600">
+                {t('profilesLabel')}:
+              </span>
+              {profileList.map((item) => (
+                <a
+                  key={item.id}
+                  href={`/${locale}/dashboard?p=${item.id}`}
+                  className={`rounded-full px-3 py-1 text-sm font-medium ${
+                    item.id === activeId
+                      ? 'bg-linketto-600 text-white'
+                      : 'border border-slate-300 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  /{item.slug}
+                </a>
+              ))}
+            </div>
+            {canAddProfile ? (
+              <form
+                action={createProfileAction}
+                className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input
+                  type="text"
+                  name="slug"
+                  required
+                  placeholder={t('newProfileSlug')}
+                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  {t('addProfile')}
+                </button>
+              </form>
+            ) : (
+              <p className="mt-2 text-xs text-slate-500">
+                {t('profilesUpsell', { max: plan.maxProfiles })}
+              </p>
+            )}
+          </section>
+        )}
+
+        {!profile ? (
+          <section className="rounded-2xl border border-slate-200 bg-white p-6">
+            <p className="font-medium">{t('noProfile')}</p>
+            <form action={createProfileAction} className="mt-4 flex gap-3">
+              <input type="hidden" name="uiLocale" value={locale} />
+              <input
+                type="text"
+                name="slug"
+                required
+                placeholder="maria"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
+              />
+              <input
+                type="text"
+                name="displayName"
+                placeholder={t('displayName')}
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
+              />
+              <button
+                type="submit"
+                className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+              >
+                {t('createProfile')}
+              </button>
+            </form>
+          </section>
+        ) : (
+          <>
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">{t('profileSection')}</h2>
+                <a
+                  href={`/u/${profile.slug}`}
+                  className="text-sm font-medium text-linketto-700 hover:underline"
+                >
+                  {t('viewPublic')} → /u/{profile.slug}
+                </a>
+              </div>
+              <form
+                action={updateProfileAction}
+                className="mt-4 grid gap-4 sm:grid-cols-2"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <label className="block text-sm font-medium">
+                  {t('theme')}
+                  <select
+                    name="theme"
+                    defaultValue={profile.theme}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  >
+                    {THEMES.map((theme) => (
+                      <option key={theme} value={theme}>
+                        {theme}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('defaultLocale')}
+                  <select
+                    name="defaultLocale"
+                    defaultValue={profile.defaultLocale}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  >
+                    {LOCALES.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {LOCALE_NAMES[loc]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('accent')}
+                  <input
+                    type="text"
+                    name="accent"
+                    defaultValue={profile.accent ?? ''}
+                    placeholder="#3b82c4"
+                    pattern="#[0-9a-fA-F]{6}"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('customDomainLabel')}
+                  <input
+                    type="text"
+                    name="customDomain"
+                    defaultValue={profile.customDomain ?? ''}
+                    placeholder="links.example.com"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                    {t('customDomainHint')}
+                  </span>
+                </label>
+                <label className="flex items-end gap-2 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    name="published"
+                    defaultChecked={profile.published}
+                    className="h-4 w-4"
+                  />
+                  {t('published')}
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
+                >
+                  {t('save')}
+                </button>
+              </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('styleSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('styleHint')}</p>
+              {(() => {
+                const styleCfg = parseStyle(profile.style);
+                const selectClass =
+                  'mt-1 w-full rounded-lg border border-slate-300 px-3 py-2';
+                return (
+                  <form
+                    action={updateStyleAction}
+                    className="mt-4 grid gap-4 sm:grid-cols-3"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <label className="block text-sm font-medium">
+                      {t('styleBg')}
+                      <select
+                        name="bgStyle"
+                        defaultValue={styleCfg.bgStyle}
+                        className={selectClass}
+                      >
+                        {(['theme', 'solid', 'gradient', 'image'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleBg_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleEffect')}
+                      <select
+                        name="bgEffect"
+                        defaultValue={styleCfg.bgEffect}
+                        className={selectClass}
+                      >
+                        {(['none', 'aurora', 'stars', 'gradient'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleEffect_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleBgColor1')}
+                      <input
+                        type="color"
+                        name="bgColor1"
+                        defaultValue={styleCfg.bgColor1}
+                        className="mt-1 h-10 w-full rounded-lg border border-slate-300"
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleBgColor2')}
+                      <input
+                        type="color"
+                        name="bgColor2"
+                        defaultValue={styleCfg.bgColor2}
+                        className="mt-1 h-10 w-full rounded-lg border border-slate-300"
+                      />
+                    </label>
+                    <label className="block text-sm font-medium sm:col-span-2">
+                      {t('styleBgImage')}
+                      <input
+                        type="text"
+                        name="bgImageUrl"
+                        defaultValue={styleCfg.bgImageUrl ?? ''}
+                        placeholder="https://…"
+                        className={selectClass}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleOverlay')}
+                      <select
+                        name="bgOverlay"
+                        defaultValue={String(styleCfg.bgOverlay)}
+                        className={selectClass}
+                      >
+                        {(['0', '0.2', '0.35', '0.5', '0.65'] as const).map(
+                          (value) => (
+                            <option key={value} value={value}>
+                              {Math.round(Number(value) * 100)}%
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleFont')}
+                      <select
+                        name="font"
+                        defaultValue={styleCfg.font}
+                        className={selectClass}
+                      >
+                        {(['sans', 'serif', 'mono', 'rounded'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleFont_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleButtonShape')}
+                      <select
+                        name="buttonShape"
+                        defaultValue={styleCfg.buttonShape}
+                        className={selectClass}
+                      >
+                        {(['pill', 'rounded', 'square'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleShape_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleButtonFill')}
+                      <select
+                        name="buttonFill"
+                        defaultValue={styleCfg.buttonFill}
+                        className={selectClass}
+                      >
+                        {(['soft', 'solid', 'outline'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleFill_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleButtonShadow')}
+                      <select
+                        name="buttonShadow"
+                        defaultValue={styleCfg.buttonShadow}
+                        className={selectClass}
+                      >
+                        {(['none', 'soft', 'hard'] as const).map((option) => (
+                          <option key={option} value={option}>
+                            {t(`styleShadow_${option}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleLayout')}
+                      <select
+                        name="layout"
+                        defaultValue={styleCfg.layout}
+                        className={selectClass}
+                      >
+                        {(['list', 'grid'] as const).map((option) => (
+                          <option key={option} value={option}>
+                            {t(`styleLayout_${option}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleAlign')}
+                      <select
+                        name="align"
+                        defaultValue={styleCfg.align}
+                        className={selectClass}
+                      >
+                        {(['center', 'start'] as const).map((option) => (
+                          <option key={option} value={option}>
+                            {t(`styleAlign_${option}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium sm:col-span-2">
+                      {t('styleAvatar')}
+                      <input
+                        type="text"
+                        name="avatarUrl"
+                        defaultValue={styleCfg.avatarUrl ?? ''}
+                        placeholder="https://…"
+                        className={selectClass}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleAvatarShape')}
+                      <select
+                        name="avatarShape"
+                        defaultValue={styleCfg.avatarShape}
+                        className={selectClass}
+                      >
+                        {(['circle', 'rounded', 'square'] as const).map(
+                          (option) => (
+                            <option key={option} value={option}>
+                              {t(`styleAvatarShape_${option}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium">
+                      {t('styleTextColor')}
+                      <input
+                        type="text"
+                        name="textColor"
+                        defaultValue={styleCfg.textColor ?? ''}
+                        placeholder="#ffffff"
+                        pattern="#[0-9a-fA-F]{6}"
+                        className={selectClass}
+                      />
+                    </label>
+                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="hideBadge"
+                        defaultChecked={styleCfg.hideBadge}
+                        className="h-4 w-4"
+                      />
+                      {t('styleHideBadge')}
+                    </label>
+                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="showViews"
+                        defaultChecked={styleCfg.showViews}
+                        className="h-4 w-4"
+                      />
+                      {t('styleShowViews')}
+                    </label>
+                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="mediaKit"
+                        defaultChecked={styleCfg.mediaKit}
+                        className="h-4 w-4"
+                      />
+                      {t('styleMediaKit')}
+                    </label>
+                    <button
+                      type="submit"
+                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-3 sm:justify-self-start"
+                    >
+                      {t('save')}
+                    </button>
+                  </form>
+                );
+              })()}
+              <div className="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
+                <form action={uploadImageAction} className="text-sm">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <input type="hidden" name="kind" value="bg" />
+                  <span className="font-medium">{t('uploadBg')}</span>
+                  <div className="mt-2 flex items-center gap-3">
+                    <input
+                      type="file"
+                      name="file"
+                      required
+                      accept="image/jpeg,image/png,image/webp"
+                      className="flex-1 text-xs text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-linketto-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-linketto-700 hover:file:bg-linketto-100"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('uploadButton')}
+                    </button>
+                  </div>
+                </form>
+                <form action={uploadImageAction} className="text-sm">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <input type="hidden" name="kind" value="avatar" />
+                  <span className="font-medium">{t('uploadAvatar')}</span>
+                  <div className="mt-2 flex items-center gap-3">
+                    <input
+                      type="file"
+                      name="file"
+                      required
+                      accept="image/jpeg,image/png,image/webp"
+                      className="flex-1 text-xs text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-linketto-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-linketto-700 hover:file:bg-linketto-100"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-1.5 font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('uploadButton')}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-semibold">{t('translationsSection')}</h2>
+                <form action={aiTranslateAction}>
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-2 rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    {t('aiTranslateButton')}
+                  </button>
+                </form>
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('translationsHint')} {t('aiTranslateHint')}
+              </p>
+              {/* AI генериране на био от ключови думи (на основния език) */}
+              <form
+                action={aiGenerateBioAction}
+                className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-linketto-100 bg-linketto-50/50 p-3"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <label className="flex-1 text-sm font-medium">
+                  {t('aiBioLabel')}
+                  <input
+                    type="text"
+                    name="keywords"
+                    required
+                    placeholder={t('aiBioPlaceholder')}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <SparklesIcon className="h-4 w-4" />
+                  {t('aiBioButton')}
+                </button>
+              </form>
+              <div className="mt-4 space-y-4">
+                {LOCALES.map((loc) => {
+                  const translation = profile.translations.find(
+                    (item) => item.locale === loc,
+                  );
+                  return (
+                    <form
+                      key={loc}
+                      action={upsertProfileTranslationAction}
+                      className="grid items-end gap-3 sm:grid-cols-[6rem_1fr_1fr_auto]"
+                    >
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="profileId" value={profile.id} />
+                      <input type="hidden" name="locale" value={loc} />
+                      <span className="text-sm font-semibold">
+                        {LOCALE_NAMES[loc]}
+                      </span>
+                      <label className="block text-sm">
+                        {t('displayName')}
+                        <input
+                          type="text"
+                          name="displayName"
+                          defaultValue={translation?.displayName ?? ''}
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                        />
+                      </label>
+                      <label className="block text-sm">
+                        {t('bio')}
+                        <input
+                          type="text"
+                          name="bio"
+                          defaultValue={translation?.bio ?? ''}
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                      >
+                        {t('save')}
+                      </button>
+                    </form>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('linksSection')}</h2>
+              <div className="mt-4 space-y-6">
+                {profile.links.map((link) => (
+                  <div
+                    key={link.id}
+                    className="rounded-xl border border-slate-100 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate text-sm text-slate-500">
+                        <span className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">
+                          {t(`kind_${link.kind}`)}
+                        </span>
+                        {(link.showFrom || link.showUntil) && (
+                          <span className="mr-2 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-700">
+                            <ClockIcon className="h-3 w-3" />
+                            {t('scheduledBadge')}
+                          </span>
+                        )}
+                        {link.url ?? ''}
+                      </p>
+                      <form action={deleteLinkAction}>
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input type="hidden" name="linkId" value={link.id} />
+                        <button
+                          type="submit"
+                          className="text-sm text-red-600 hover:underline"
+                        >
+                          {t('delete')}
+                        </button>
+                      </form>
+                    </div>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {profile.translations.map((translation) => {
+                        const linkTitle = link.translations.find(
+                          (item) => item.locale === translation.locale,
+                        );
+                        return (
+                          <form
+                            key={translation.locale}
+                            action={upsertLinkTranslationAction}
+                            className="flex items-center gap-2"
+                          >
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input type="hidden" name="linkId" value={link.id} />
+                            <input
+                              type="hidden"
+                              name="locale"
+                              value={translation.locale}
+                            />
+                            <span className="w-8 text-xs font-semibold uppercase text-slate-400">
+                              {translation.locale}
+                            </span>
+                            <input
+                              type="text"
+                              name="title"
+                              defaultValue={linkTitle?.title ?? ''}
+                              placeholder={t('linkTitle')}
+                              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                            />
+                            <button
+                              type="submit"
+                              className="text-sm font-medium text-linketto-700 hover:underline"
+                            >
+                              {t('save')}
+                            </button>
+                          </form>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <form
+                action={addLinkAction}
+                className="mt-6 grid gap-3 sm:grid-cols-2"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <label className="block text-sm font-medium">
+                  {t('kindLabel')}
+                  <select
+                    name="kind"
+                    defaultValue="LINK"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  >
+                    {(
+                      [
+                        'LINK',
+                        'HEADER',
+                        'PHONE',
+                        'MAP',
+                        'VIDEO',
+                        'MUSIC',
+                        'APP',
+                        'FORM',
+                        'TIP',
+                        'EMAIL',
+                        'POLL',
+                        'BOOKING',
+                      ] as const
+                    ).map((kind) => (
+                      <option key={kind} value={kind}>
+                        {t(`kind_${kind}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('linkTitle')}
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('urlLabel')}
+                  <input
+                    type="text"
+                    name="url"
+                    placeholder="https://…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('extra1Label')}
+                  <input
+                    type="url"
+                    name="extra1"
+                    placeholder="https://…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('extra2Label')}
+                  <input
+                    type="url"
+                    name="extra2"
+                    placeholder="https://…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('blockColorLabel')}
+                  <input
+                    type="text"
+                    name="color"
+                    placeholder="#3b82c4"
+                    pattern="#[0-9a-fA-F]{6}"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('scheduleFromLabel')}
+                  <input
+                    type="datetime-local"
+                    name="showFrom"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  {t('scheduleUntilLabel')}
+                  <input
+                    type="datetime-local"
+                    name="showUntil"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </label>
+                <label className="block text-sm font-medium sm:col-span-2">
+                  {t('pollOptionsLabel')}
+                  <textarea
+                    name="options"
+                    rows={3}
+                    placeholder={t('pollOptionsPlaceholder')}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                    {t('pollOptionsHint')}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
+                  <input type="checkbox" name="featured" className="h-4 w-4" />
+                  {t('featuredLabel')}
+                </label>
+                <p className="text-xs text-slate-500 sm:col-span-2">
+                  {t('addBlockHint')} {t('scheduleHint')}
+                </p>
+                <button
+                  type="submit"
+                  className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:justify-self-start"
+                >
+                  {t('addLink')}
+                </button>
+              </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('qrSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('qrHint')}</p>
+              <div className="mt-4 flex items-center gap-6">
+                {/* eslint-disable-next-line @next/next/no-img-element -- динамичен SVG route */}
+                <img
+                  src={`/u/${profile.slug}/qr`}
+                  alt="QR"
+                  width={144}
+                  height={144}
+                  className="h-36 w-36 rounded-xl border border-slate-200 bg-white p-2"
+                />
+                <a
+                  href={`/u/${profile.slug}/qr`}
+                  download={`${profile.slug}-qr.svg`}
+                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  SVG
+                </a>
+              </div>
+              {parseStyle(profile.style).mediaKit && (
+                <p className="mt-4 border-t border-slate-100 pt-4 text-sm">
+                  <a
+                    href={`/u/${profile.slug}/media-kit`}
+                    className="inline-flex items-center gap-2 font-semibold text-linketto-700 hover:underline"
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    {t('mediaKitLink')} → /u/{profile.slug}/media-kit
+                  </a>
+                </p>
+              )}
+            </section>
+
+            {/* Съкратени линкове с брояч на кликове */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('shortLinksSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('shortLinksHint')}
+              </p>
+              {shortLinks.length > 0 && (
+                <ul className="mt-4 space-y-1 text-sm">
+                  {shortLinks.map((link) => (
+                    <li
+                      key={link.id}
+                      className="flex items-center justify-between gap-2 text-slate-600"
+                    >
+                      <span className="min-w-0 truncate">
+                        <span className="font-mono font-semibold text-linketto-700">
+                          {shortLinkBase.replace(/^https?:\/\//, '')}/s/
+                          {link.code}
+                        </span>{' '}
+                        → {link.targetUrl}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-3">
+                        <span className="text-xs">
+                          {link.clicks} {t('shortLinkClicks')}
+                        </span>
+                        <form action={deleteShortLinkAction}>
+                          <input
+                            type="hidden"
+                            name="uiLocale"
+                            value={locale}
+                          />
+                          <input
+                            type="hidden"
+                            name="shortLinkId"
+                            value={link.id}
+                          />
+                          <button
+                            type="submit"
+                            className="text-xs font-medium text-red-600 hover:underline"
+                          >
+                            {t('delete')}
+                          </button>
+                        </form>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <form
+                action={addShortLinkAction}
+                className="mt-4 grid items-end gap-2 sm:grid-cols-[1fr_10rem_auto]"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <label className="block text-xs font-medium text-slate-500">
+                  {t('shortTarget')}
+                  <input
+                    type="url"
+                    name="targetUrl"
+                    required
+                    placeholder="https://…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                  />
+                </label>
+                <label className="block text-xs font-medium text-slate-500">
+                  {t('shortCode')}
+                  <input
+                    type="text"
+                    name="code"
+                    placeholder={t('shortCodeAuto')}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  {t('addShortLink')}
+                </button>
+              </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-semibold">{t('statsSection')}</h2>
+                <Link
+                  href={`/${locale}/dashboard/analytics?p=${profile.id}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <ChartColumnIcon className="h-4 w-4" />
+                  {t('analyticsLink')}
+                </Link>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                {plan.analyticsDays
+                  ? t('statsWindow', { days: plan.analyticsDays })
+                  : t('statsWindowAll')}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="rounded-xl bg-slate-50 p-4 text-center">
+                  <p className="text-3xl font-extrabold text-linketto-700">
+                    {views}
+                  </p>
+                  <p className="text-sm text-slate-500">{t('statsViews')}</p>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-4 text-center">
+                  <p className="text-3xl font-extrabold text-linketto-700">
+                    {clicks}
+                  </p>
+                  <p className="text-sm text-slate-500">{t('statsClicks')}</p>
+                </div>
+              </div>
+              <div className="mt-6 grid gap-6 sm:grid-cols-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    {t('statsByLink')}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {byLink.map((row) => (
+                      <li
+                        key={row.linkId ?? '-'}
+                        className="flex justify-between gap-2"
+                      >
+                        <span className="truncate">{linkTitle(row.linkId)}</span>
+                        <span className="font-semibold">
+                          {row._count._all}
+                        </span>
+                      </li>
+                    ))}
+                    {byLink.length === 0 && (
+                      <li className="text-slate-400">—</li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    {t('statsByLocale')}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {byLocale.map((row) => (
+                      <li
+                        key={row.locale ?? '-'}
+                        className="flex justify-between gap-2"
+                      >
+                        <span className="uppercase">{row.locale}</span>
+                        <span className="font-semibold">
+                          {row._count._all}
+                        </span>
+                      </li>
+                    ))}
+                    {byLocale.length === 0 && (
+                      <li className="text-slate-400">—</li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-600">
+                    {t('statsByCountry')}
+                  </h3>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {byCountry.map((row) => (
+                      <li
+                        key={row.country ?? '-'}
+                        className="flex justify-between gap-2"
+                      >
+                        <span>{row.country}</span>
+                        <span className="font-semibold">
+                          {row._count._all}
+                        </span>
+                      </li>
+                    ))}
+                    {byCountry.length === 0 && (
+                      <li className="text-slate-400">—</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* Езикова дупка — уникалната ни функция: аудиторията по език
+                срещу наличните преводи, с подкана за AI превод. */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="flex items-center gap-2">
+                <SparklesIcon className="h-5 w-5 text-linketto-600" />
+                <h2 className="font-semibold">{t('gapSection')}</h2>
+              </div>
+              <p className="mt-1 text-sm text-slate-500">{t('gapHint')}</p>
+              {!gap || gap.mappedVisitors === 0 ? (
+                <p className="mt-4 text-sm text-slate-400">{t('gapNoData')}</p>
+              ) : (
+                <>
+                  <ul className="mt-4 space-y-2">
+                    {gap.demand.map((row) => (
+                      <li
+                        key={row.locale}
+                        className="flex items-center gap-3 text-sm"
+                      >
+                        <span className="w-28 shrink-0 font-medium">
+                          {row.name}
+                        </span>
+                        <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                          <span
+                            className={`absolute inset-y-0 left-0 rounded-full ${
+                              row.hasTranslation
+                                ? 'bg-green-500'
+                                : 'bg-linketto-500'
+                            }`}
+                            style={{ width: `${row.percent}%` }}
+                          />
+                        </span>
+                        <span className="w-10 shrink-0 text-right font-semibold text-slate-600">
+                          {row.percent}%
+                        </span>
+                        {row.hasTranslation ? (
+                          <span className="inline-flex w-24 shrink-0 items-center gap-1 text-xs font-medium text-green-700">
+                            <CheckIcon className="h-3.5 w-3.5" />
+                            {t('gapHave')}
+                          </span>
+                        ) : (
+                          <span className="w-24 shrink-0 text-xs font-semibold text-linketto-700">
+                            {t('gapMissing')}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {gap.missing.length > 0 ? (
+                    <div className="mt-5 rounded-xl border border-linketto-200 bg-linketto-50/60 p-4">
+                      <p className="text-sm font-medium text-slate-700">
+                        {t('gapMissingIntro', {
+                          languages: gap.missing
+                            .slice(0, 3)
+                            .map((item) => item.name)
+                            .join(', '),
+                        })}
+                      </p>
+                      <form action={aiTranslateAction} className="mt-3">
+                        <input type="hidden" name="uiLocale" value={locale} />
+                        <input
+                          type="hidden"
+                          name="profileId"
+                          value={profile.id}
+                        />
+                        <button
+                          type="submit"
+                          className="inline-flex items-center gap-2 rounded-full bg-linketto-600 px-4 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                        >
+                          <SparklesIcon className="h-4 w-4" />
+                          {t('gapTranslateCta')}
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <p className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                      <CheckIcon className="h-4 w-4" />
+                      {t('gapAllCovered')}
+                    </p>
+                  )}
+                </>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('messagesSection')}</h2>
+              {messages.length === 0 ? (
+                <p className="mt-2 text-sm text-slate-500">{t('noMessages')}</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {messages.map((message) => (
+                    <li
+                      key={message.id}
+                      className="rounded-xl border border-slate-100 p-3 text-sm"
+                    >
+                      <p className="text-slate-700">{message.message}</p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {[message.name, message.email]
+                          .filter(Boolean)
+                          .join(' · ')}{' '}
+                        · {message.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {/* Заявки за час (BOOKING блок) */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('bookingsSection')}</h2>
+              {bookings.length === 0 ? (
+                <p className="mt-2 text-sm text-slate-500">{t('noBookings')}</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {bookings.map((booking) => (
+                    <li
+                      key={booking.id}
+                      className={`rounded-xl border p-3 text-sm ${
+                        booking.status === 'done'
+                          ? 'border-slate-100 opacity-60'
+                          : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-700">
+                            {[booking.name, booking.email]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </p>
+                          {booking.preferredAt && (
+                            <p className="text-xs text-linketto-700">
+                              {booking.preferredAt.replace('T', ' ')}
+                            </p>
+                          )}
+                          {booking.message && (
+                            <p className="mt-1 text-slate-600">
+                              {booking.message}
+                            </p>
+                          )}
+                        </div>
+                        {booking.status !== 'done' && (
+                          <form action={resolveBookingAction}>
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input
+                              type="hidden"
+                              name="bookingId"
+                              value={booking.id}
+                            />
+                            <button
+                              type="submit"
+                              className="shrink-0 text-xs font-medium text-green-700 hover:underline"
+                            >
+                              {t('bookingResolve')}
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {/* Аудитория — бюлетин (email capture), износ и разпращане */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('audienceSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('audienceHint')}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
+                  <p className="text-2xl font-extrabold text-linketto-700">
+                    {subConfirmed}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {t('audienceConfirmed')}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
+                  <p className="text-2xl font-extrabold text-slate-400">
+                    {subPending}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {t('audiencePending')}
+                  </p>
+                </div>
+                <a
+                  href={`/${locale}/dashboard/subscribers/export?p=${profile.id}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  {t('audienceExport')}
+                </a>
+              </div>
+              {/* Разпращане на бюлетин до потвърдените абонати */}
+              <form
+                action={sendBroadcastAction}
+                className="mt-5 space-y-2 border-t border-slate-100 pt-5"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <h3 className="text-sm font-semibold text-slate-600">
+                  {t('broadcastTitle')}
+                </h3>
+                <input
+                  type="text"
+                  name="subject"
+                  required
+                  maxLength={150}
+                  placeholder={t('broadcastSubject')}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+                <textarea
+                  name="body"
+                  required
+                  rows={5}
+                  maxLength={5000}
+                  placeholder={t('broadcastBody')}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-slate-500">{t('broadcastHint')}</p>
+                <button
+                  type="submit"
+                  disabled={subConfirmed === 0}
+                  className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700 disabled:opacity-40"
+                >
+                  {t('broadcastSend')}
+                </button>
+              </form>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('shopSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('feeNote', { fee: plan.feePercent })}
+              </p>
+              {!user.stripeAccountId || !user.stripeChargesEnabled ? (
+                <form action={connectStripeAction} className="mt-4">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  {user.stripeAccountId && (
+                    <p className="mb-2 text-sm text-amber-600">
+                      {t('stripePending')}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                  >
+                    {t('connectStripe')}
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-green-700">
+                    <CheckIcon className="h-4 w-4" />
+                    {t('stripeConnected')}
+                  </p>
+                  {/* Дир. 2011/83 чл. 6а: деклариран статут на продавача */}
+                  <form action={setTraderStatusAction} className="mt-3">
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <label className="flex items-start gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        name="isTrader"
+                        defaultChecked={user.isTrader}
+                        className="mt-0.5 h-4 w-4"
+                      />
+                      {t('traderLabel')}
+                    </label>
+                    <button
+                      type="submit"
+                      className="mt-2 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('save')}
+                    </button>
+                  </form>
+                  <div className="mt-4 space-y-4">
+                    {products.map((product) => (
+                      <div
+                        key={product.id}
+                        className="rounded-xl border border-slate-100 p-4"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="truncate text-sm text-slate-500">
+                            <span className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">
+                              {t(`productType_${product.type}`)}
+                            </span>
+                            <span className="mr-2 font-semibold text-slate-700">
+                              €{(product.priceCents / 100).toFixed(2)}
+                              {product.type === 'MEMBERSHIP'
+                                ? `/${t(product.interval === 'year' ? 'intervalYearShort' : 'intervalMonthShort')}`
+                                : ''}
+                            </span>
+                            {product.active ? '' : `(${t('productInactive')}) `}
+                            {product.type !== 'DIGITAL'
+                              ? `· ${product._count.entitlements} ${t('membersLabel')}`
+                              : (product.deliveryUrl ?? '')}
+                          </p>
+                          <form action={deleteProductAction}>
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input
+                              type="hidden"
+                              name="productId"
+                              value={product.id}
+                            />
+                            <button
+                              type="submit"
+                              className="text-sm text-red-600 hover:underline"
+                            >
+                              {t('delete')}
+                            </button>
+                          </form>
+                        </div>
+                        {/* Редакция на цена, линк за доставка и активност */}
+                        <form
+                          action={updateProductAction}
+                          className="mt-3 grid items-end gap-2 sm:grid-cols-[8rem_1fr_auto_auto]"
+                        >
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input
+                            type="hidden"
+                            name="productId"
+                            value={product.id}
+                          />
+                          <label className="block text-xs font-medium text-slate-500">
+                            {t('productPrice')}
+                            <input
+                              type="number"
+                              name="priceEur"
+                              required
+                              min="3"
+                              step="0.01"
+                              defaultValue={(product.priceCents / 100).toFixed(2)}
+                              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                            />
+                          </label>
+                          <label className="block text-xs font-medium text-slate-500">
+                            {t('deliveryUrl')}
+                            <input
+                              type="url"
+                              name="deliveryUrl"
+                              defaultValue={product.deliveryUrl ?? ''}
+                              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                            />
+                          </label>
+                          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                            <input
+                              type="checkbox"
+                              name="active"
+                              defaultChecked={product.active}
+                              className="h-3.5 w-3.5"
+                            />
+                            {t('productActive')}
+                          </label>
+                          <button
+                            type="submit"
+                            className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                          >
+                            {t('save')}
+                          </button>
+                        </form>
+                        <div className="mt-3 space-y-2">
+                          {profile.translations.map((translation) => {
+                            const productTr = product.translations.find(
+                              (item) => item.locale === translation.locale,
+                            );
+                            return (
+                              <form
+                                key={translation.locale}
+                                action={upsertProductTranslationAction}
+                                className="flex items-start gap-2"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="uiLocale"
+                                  value={locale}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="productId"
+                                  value={product.id}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="locale"
+                                  value={translation.locale}
+                                />
+                                <span className="mt-2 w-8 text-xs font-semibold uppercase text-slate-400">
+                                  {translation.locale}
+                                </span>
+                                <div className="flex-1 space-y-1">
+                                  <input
+                                    type="text"
+                                    name="title"
+                                    defaultValue={productTr?.title ?? ''}
+                                    placeholder={t('productTitle')}
+                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                  />
+                                  <textarea
+                                    name="description"
+                                    rows={2}
+                                    defaultValue={productTr?.description ?? ''}
+                                    placeholder={t('productDescription')}
+                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                                  />
+                                </div>
+                                <button
+                                  type="submit"
+                                  className="mt-2 text-sm font-medium text-linketto-700 hover:underline"
+                                >
+                                  {t('save')}
+                                </button>
+                              </form>
+                            );
+                          })}
+                        </div>
+                        {/* Уроци (за курсове/членства) + линк към заключената страница */}
+                        {product.type !== 'DIGITAL' && (
+                          <div className="mt-3 border-t border-slate-100 pt-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-semibold text-slate-600">
+                                {t('lessonsSection')}
+                              </h4>
+                              <a
+                                href={`/u/${profile.slug}/learn/${product.id}`}
+                                className="text-xs font-medium text-linketto-700 hover:underline"
+                              >
+                                {t('lessonsView')} →
+                              </a>
+                            </div>
+                            {product.lessons.length > 0 && (
+                              <ul className="mt-2 space-y-1 text-sm">
+                                {product.lessons.map((lesson, i) => (
+                                  <li
+                                    key={lesson.id}
+                                    className="flex items-center justify-between gap-2"
+                                  >
+                                    <span className="truncate">
+                                      {i + 1}. {lesson.title}
+                                    </span>
+                                    <form action={deleteLessonAction}>
+                                      <input
+                                        type="hidden"
+                                        name="uiLocale"
+                                        value={locale}
+                                      />
+                                      <input
+                                        type="hidden"
+                                        name="lessonId"
+                                        value={lesson.id}
+                                      />
+                                      <button
+                                        type="submit"
+                                        className="text-xs text-red-600 hover:underline"
+                                      >
+                                        {t('delete')}
+                                      </button>
+                                    </form>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            <form
+                              action={addLessonAction}
+                              className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+                            >
+                              <input
+                                type="hidden"
+                                name="uiLocale"
+                                value={locale}
+                              />
+                              <input
+                                type="hidden"
+                                name="productId"
+                                value={product.id}
+                              />
+                              <input
+                                type="text"
+                                name="title"
+                                required
+                                placeholder={t('lessonTitle')}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              />
+                              <input
+                                type="url"
+                                name="videoUrl"
+                                placeholder={t('lessonVideo')}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              />
+                              <button
+                                type="submit"
+                                className="rounded-full border border-linketto-600 px-3 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                              >
+                                {t('addLesson')}
+                              </button>
+                              <textarea
+                                name="body"
+                                rows={2}
+                                placeholder={t('lessonBody')}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:col-span-3"
+                              />
+                            </form>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <form
+                    action={addProductAction}
+                    className="mt-6 grid gap-3 sm:grid-cols-2"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <input
+                      type="text"
+                      name="title"
+                      required
+                      placeholder={t('productTitle')}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                    <input
+                      type="number"
+                      name="priceEur"
+                      required
+                      min="3"
+                      step="0.01"
+                      placeholder="9.99"
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                    />
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('productType')}
+                      <select
+                        name="type"
+                        defaultValue="DIGITAL"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      >
+                        {(
+                          [
+                            'DIGITAL',
+                            'COURSE',
+                            ...(MEMBERSHIPS_ENABLED
+                              ? (['MEMBERSHIP'] as const)
+                              : []),
+                          ] as const
+                        ).map((pt) => (
+                          <option key={pt} value={pt}>
+                            {t(`productType_${pt}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('productInterval')}
+                      <select
+                        name="interval"
+                        defaultValue="month"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      >
+                        <option value="month">{t('intervalMonth')}</option>
+                        <option value="year">{t('intervalYear')}</option>
+                      </select>
+                    </label>
+                    <input
+                      type="url"
+                      name="deliveryUrl"
+                      placeholder={t('deliveryUrlDigital')}
+                      className="rounded-lg border border-slate-300 px-3 py-2 sm:col-span-2"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
+                    >
+                      {t('addProduct')}
+                    </button>
+                  </form>
+
+                  {/* Промо кодове */}
+                  <h3 className="mt-8 text-sm font-semibold text-slate-600">
+                    {t('couponsSection')}
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {t('couponsHint')}
+                  </p>
+                  {coupons.length > 0 && (
+                    <ul className="mt-3 space-y-1 text-sm">
+                      {coupons.map((coupon) => (
+                        <li
+                          key={coupon.id}
+                          className="flex items-center justify-between gap-2 text-slate-600"
+                        >
+                          <span className="min-w-0 truncate">
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-slate-700">
+                              {coupon.code}
+                            </span>{' '}
+                            −{coupon.percentOff}%
+                            {coupon.maxRedemptions
+                              ? ` · ${coupon.timesRedeemed}/${coupon.maxRedemptions}`
+                              : ` · ${coupon.timesRedeemed}×`}
+                            {coupon.expiresAt
+                              ? ` · ${t('couponUntil')} ${coupon.expiresAt.toISOString().slice(0, 10)}`
+                              : ''}
+                          </span>
+                          <form action={deleteCouponAction}>
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input
+                              type="hidden"
+                              name="couponId"
+                              value={coupon.id}
+                            />
+                            <button
+                              type="submit"
+                              className="text-xs font-medium text-red-600 hover:underline"
+                            >
+                              {t('delete')}
+                            </button>
+                          </form>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <form
+                    action={addCouponAction}
+                    className="mt-3 grid items-end gap-2 sm:grid-cols-[1fr_6rem_6rem_1fr_auto]"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="profileId" value={profile.id} />
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponCode')}
+                      <input
+                        type="text"
+                        name="code"
+                        required
+                        placeholder="SUMMER"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm uppercase"
+                      />
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponPercent')}
+                      <input
+                        type="number"
+                        name="percentOff"
+                        required
+                        min="1"
+                        max="90"
+                        placeholder="20"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                      />
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponMax')}
+                      <input
+                        type="number"
+                        name="maxRedemptions"
+                        min="1"
+                        placeholder="∞"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                      />
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('couponExpires')}
+                      <input
+                        type="date"
+                        name="expiresAt"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('addCoupon')}
+                    </button>
+                  </form>
+
+                  <h3 className="mt-8 text-sm font-semibold text-slate-600">
+                    {t('purchasesSection')}
+                  </h3>
+                  {purchaseTotals && purchaseTotals._count._all > 0 ? (
+                    <>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {purchaseTotals._count._all} · {t('revenue')}: €
+                        {((purchaseTotals._sum.amountCents ?? 0) / 100).toFixed(
+                          2,
+                        )}
+                      </p>
+                      <ul className="mt-3 space-y-1 text-sm">
+                        {recentPurchases.map((purchase) => (
+                          <li
+                            key={purchase.id}
+                            className="flex items-center justify-between gap-2 text-slate-600"
+                          >
+                            <span className="min-w-0 truncate">
+                              {purchase.product.translations[0]?.title ?? '—'}
+                              {purchase.buyerEmail
+                                ? ` · ${purchase.buyerEmail}`
+                                : ''}
+                            </span>
+                            <span className="flex shrink-0 items-center gap-3">
+                              <span className="font-semibold">
+                                €{(purchase.amountCents / 100).toFixed(2)}
+                              </span>
+                              {purchase.refundedAt ? (
+                                <span className="text-xs text-slate-400">
+                                  {t('refunded')}
+                                </span>
+                              ) : (
+                                <form action={sellerRefundAction}>
+                                  <input
+                                    type="hidden"
+                                    name="uiLocale"
+                                    value={locale}
+                                  />
+                                  <input
+                                    type="hidden"
+                                    name="purchaseId"
+                                    value={purchase.id}
+                                  />
+                                  <button
+                                    type="submit"
+                                    className="text-xs font-medium text-red-600 hover:underline"
+                                  >
+                                    {t('sellerRefund')}
+                                  </button>
+                                </form>
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="mt-1 text-sm text-slate-400">
+                      {t('noPurchases')}
+                    </p>
+                  )}
+                </>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('referralSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('referralReward')}
+              </p>
+              {referralUrl ? (
+                <div className="mt-4">
+                  <ReferralCard
+                    url={referralUrl}
+                    stats={{
+                      signups: referredSignups,
+                      successful: successfulReferrals,
+                      credit: `€${(user.referralCreditCents / 100).toFixed(2)}`,
+                    }}
+                    payout={{
+                      progressPercent: Math.min(
+                        100,
+                        Math.round(
+                          (user.referralCreditCents /
+                            REFERRAL_MIN_PAYOUT_CENTS) *
+                            100,
+                        ),
+                      ),
+                      progressLabel: canWithdraw(user.referralCreditCents)
+                        ? t('referralPayoutReady')
+                        : t('referralPayoutProgress', {
+                            remaining: `€${((REFERRAL_MIN_PAYOUT_CENTS - user.referralCreditCents) / 100).toFixed(2)}`,
+                          }),
+                    }}
+                    labels={{
+                      hint: t('referralHint'),
+                      copy: t('referralCopy'),
+                      copied: t('referralCopied'),
+                      share: t('referralShare'),
+                      signups: t('referralSignups'),
+                      successful: t('referralSuccessful'),
+                      credit: t('referralCredit'),
+                    }}
+                  />
+                  {/* Теглене при достигнат праг */}
+                  {canWithdraw(user.referralCreditCents) && (
+                    <form
+                      action={requestPayoutAction}
+                      className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-green-200 bg-green-50/50 p-4"
+                    >
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <label className="flex-1 text-sm font-medium">
+                        {t('referralPayoutMethod')}
+                        <input
+                          type="text"
+                          name="method"
+                          required
+                          placeholder={t('referralPayoutMethodPlaceholder')}
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        className="rounded-full bg-green-600 px-5 py-2 font-semibold text-white hover:bg-green-700"
+                      >
+                        {t('referralWithdraw')}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              ) : (
+                <form action={ensureReferralCodeAction} className="mt-4">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                  >
+                    {t('referralActivate')}
+                  </button>
+                </form>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('planSection')}</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                {t('currentPlan')}: <strong>{plan.id}</strong>
+              </p>
+              {plan.id === 'FREE' && (
+                <div className="mt-4 space-y-4">
+                  {/* Абонаментни планове с избор на период (с намаления) */}
+                  {(
+                    [
+                      ['PRO', t('upgradePro')],
+                      ['BUSINESS', t('upgradeBusiness')],
+                    ] as const
+                  ).map(([planId, label]) => (
+                    <form
+                      key={planId}
+                      action={startCheckoutAction}
+                      className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-100 p-4"
+                    >
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <input type="hidden" name="plan" value={planId} />
+                      <span className="font-semibold text-slate-700">
+                        {label}
+                      </span>
+                      <label className="text-sm">
+                        <span className="mb-1 block text-xs text-slate-500">
+                          {t('billingPeriod')}
+                        </span>
+                        <select
+                          name="interval"
+                          defaultValue="monthly"
+                          className="rounded-lg border border-slate-300 px-3 py-2"
+                        >
+                          {BILLING_INTERVALS.map((interval) => {
+                            const price = intervalPriceCents(
+                              planId,
+                              interval.id,
+                            );
+                            const monthly = effectiveMonthlyCents(
+                              planId,
+                              interval.id,
+                            );
+                            return (
+                              <option key={interval.id} value={interval.id}>
+                                {t(`interval_${interval.id}`)} — €
+                                {(price / 100).toFixed(2)} (€
+                                {(monthly / 100).toFixed(2)}/
+                                {t('perMonthShort')}
+                                {interval.discountPercent > 0
+                                  ? `, −${interval.discountPercent}%`
+                                  : ''}
+                                )
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                      <button
+                        type="submit"
+                        className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                      >
+                        {t('choose')}
+                      </button>
+                    </form>
+                  ))}
+                  {/* Founder — еднократно, без период */}
+                  <form
+                    action={startCheckoutAction}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-100 p-4"
+                  >
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="plan" value="FOUNDER" />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                    >
+                      {t('buyFounder')}
+                    </button>
+                  </form>
+                </div>
+              )}
+              {/* Активен абонамент → Customer Portal: смяна на план/период,
+                  начин на плащане, фактури и ОТМЯНА (лесен отказ от
+                  авто-подновяване). Founder е еднократен — няма какво да отменя. */}
+              {plan.id !== 'FREE' && !plan.oneTime && (
+                <form action={openBillingPortalAction} className="mt-4">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    {t('manageBilling')}
+                  </button>
+                </form>
+              )}
+            </section>
+          </>
+        )}
+      </main>
+    </>
+  );
+}
