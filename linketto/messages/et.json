@@ -279,6 +279,8 @@
     "styleEffect_stars": "Tähistaevas",
     "styleEffect_gradient": "Elav gradient",
     "styleShowViews": "Näita profiilil selle kuu külastuste märki",
+    "styleMediaKit": "Avalda avalik meediakomplekt (publikustatistika brändikoostöödeks)",
+    "mediaKitLink": "Avalik meediakomplekt",
     "featuredLabel": "Tõsta plokk esile (suur helendav kaart)",
     "productDescription": "Kirjeldus",
     "productPrice": "Hind (EUR)",

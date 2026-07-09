@@ -279,6 +279,8 @@
     "styleEffect_stars": "Ciel étoilé",
     "styleEffect_gradient": "Dégradé vivant",
     "styleShowViews": "Afficher sur le profil le badge des visites de ce mois-ci",
+    "styleMediaKit": "Publiez un media kit public (statistiques d'audience pour les partenariats de marque)",
+    "mediaKitLink": "Media kit public",
     "featuredLabel": "Mettre ce bloc en avant (spotlight)",
     "productDescription": "Description",
     "productPrice": "Prix (EUR)",
