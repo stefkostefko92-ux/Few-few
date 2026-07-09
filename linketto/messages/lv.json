@@ -314,6 +314,7 @@
     "referralWithdraw": "Izņemt bonusu",
     "referralPayoutRequested": "Tavs izmaksas pieprasījums ir saņemts — mēs pārskaitīsim tavu bonusu. Skaitītājs ir atiestatīts.",
     "errorPayout": "Izņemšana neizdevās (nepieciešami vismaz €100 un izmaksas metode).",
+    "manageBilling": "Pārvaldīt abonementu",
     "aiBioLabel": "Ģenerēt bio ar MI",
     "aiBioPlaceholder": "piem., fotogrāfs, Milāna, kāzas un ceļojumi",
     "aiBioButton": "Ģenerēt bio",

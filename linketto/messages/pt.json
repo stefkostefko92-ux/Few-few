@@ -314,6 +314,7 @@
     "referralWithdraw": "Levantar bónus",
     "referralPayoutRequested": "O teu pedido de levantamento foi recebido — vamos transferir o teu bónus. O contador foi reposto.",
     "errorPayout": "O levantamento falhou (são necessários no mínimo €100 e um método de pagamento).",
+    "manageBilling": "Gerir subscrição",
     "aiBioLabel": "Gerar uma bio com IA",
     "aiBioPlaceholder": "ex. fotógrafo, Milão, casamentos e viagens",
     "aiBioButton": "Gerar bio",

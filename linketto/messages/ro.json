@@ -314,6 +314,7 @@
     "referralWithdraw": "Retrage bonusul",
     "referralPayoutRequested": "Cererea ta de retragere a fost primită — îți vom transfera bonusul. Contorul a fost resetat.",
     "errorPayout": "Retragerea nu a reușit (sunt necesari minimum €100 și o metodă de plată).",
+    "manageBilling": "Gestionează abonamentul",
     "aiBioLabel": "Generează o bio cu IA",
     "aiBioPlaceholder": "ex. fotograf, Milano, nunți și călătorii",
     "aiBioButton": "Generează bio",

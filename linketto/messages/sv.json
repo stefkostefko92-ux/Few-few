@@ -314,6 +314,7 @@
     "referralWithdraw": "Ta ut bonus",
     "referralPayoutRequested": "Din uttagsbegäran togs emot — vi överför din bonus. Räknaren har nollställts.",
     "errorPayout": "Uttaget misslyckades (minst 100 € och en utbetalningsmetod krävs).",
+    "manageBilling": "Hantera prenumeration",
     "aiBioLabel": "Skapa en bio med AI",
     "aiBioPlaceholder": "t.ex. fotograf, Milano, bröllop och resor",
     "aiBioButton": "Skapa bio",

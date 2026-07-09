@@ -314,6 +314,7 @@
     "referralWithdraw": "Nosta bonus",
     "referralPayoutRequested": "Nostopyyntösi vastaanotettiin — siirrämme bonuksesi. Laskuri on nollattu.",
     "errorPayout": "Nosto epäonnistui (vaaditaan vähintään 100 € ja maksutapa).",
+    "manageBilling": "Hallitse tilausta",
     "aiBioLabel": "Luo bio tekoälyllä",
     "aiBioPlaceholder": "esim. valokuvaaja, Milano, häät ja matkailu",
     "aiBioButton": "Luo bio",

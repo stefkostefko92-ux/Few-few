@@ -314,6 +314,7 @@
     "referralWithdraw": "Bónusz kifizetése",
     "referralPayoutRequested": "A kifizetési kérelmedet megkaptuk — átutaljuk a bónuszodat. A számláló lenullázódott.",
     "errorPayout": "A kifizetés nem sikerült (legalább 100 € és egy kifizetési mód szükséges).",
+    "manageBilling": "Előfizetés kezelése",
     "aiBioLabel": "Bio generálása MI-vel",
     "aiBioPlaceholder": "pl. fotós, Milánó, esküvők és utazás",
     "aiBioButton": "Bio generálása",

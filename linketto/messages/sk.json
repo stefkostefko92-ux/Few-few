@@ -314,6 +314,7 @@
     "referralWithdraw": "Vybrať bonus",
     "referralPayoutRequested": "Tvoja žiadosť o výber bola prijatá — bonus ti prevedieme. Počítadlo bolo vynulované.",
     "errorPayout": "Výber sa nepodaril (vyžaduje sa minimálne €100 a spôsob výplaty).",
+    "manageBilling": "Spravovať predplatné",
     "aiBioLabel": "Vytvoriť bio pomocou AI",
     "aiBioPlaceholder": "napr. fotograf, Miláno, svadby a cestovanie",
     "aiBioButton": "Vytvoriť bio",

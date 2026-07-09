@@ -314,6 +314,7 @@
     "referralWithdraw": "Hæv bonus",
     "referralPayoutRequested": "Din udbetalingsanmodning blev modtaget — vi overfører din bonus. Tælleren er nulstillet.",
     "errorPayout": "Udbetalingen mislykkedes (mindst 100 € og en udbetalingsmetode kræves).",
+    "manageBilling": "Administrer abonnement",
     "aiBioLabel": "Generér en bio med AI",
     "aiBioPlaceholder": "f.eks. fotograf, Milano, bryllupper og rejser",
     "aiBioButton": "Generér bio",

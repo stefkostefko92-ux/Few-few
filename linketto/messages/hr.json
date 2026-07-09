@@ -314,6 +314,7 @@
     "referralWithdraw": "Isplati bonus",
     "referralPayoutRequested": "Zahtjev za isplatu je zaprimljen — prebacit ćemo tvoj bonus. Brojač je resetiran.",
     "errorPayout": "Isplata nije uspjela (potrebno je najmanje €100 i način isplate).",
+    "manageBilling": "Upravljanje pretplatom",
     "aiBioLabel": "Generiraj bio s UI-jem",
     "aiBioPlaceholder": "npr. fotograf, Milano, vjenčanja i putovanja",
     "aiBioButton": "Generiraj bio",

@@ -314,6 +314,7 @@
     "referralWithdraw": "Dvigni bonus",
     "referralPayoutRequested": "Tvoja zahteva za dvig je bila sprejeta — bonus ti bomo nakazali. Števec je ponastavljen.",
     "errorPayout": "Dvig ni uspel (potrebnih je najmanj €100 in način izplačila).",
+    "manageBilling": "Upravljanje naročnine",
     "aiBioLabel": "Ustvari bio z UI",
     "aiBioPlaceholder": "npr. fotograf, Milano, poroke in potovanja",
     "aiBioButton": "Ustvari bio",

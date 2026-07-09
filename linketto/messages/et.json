@@ -314,6 +314,7 @@
     "referralWithdraw": "Võta boonus välja",
     "referralPayoutRequested": "Sinu väljamaksetaotlus võeti vastu — kanname sinu boonuse üle. Loendur on nullitud.",
     "errorPayout": "Väljamakse ebaõnnestus (nõutav on vähemalt €100 ja väljamaksemeetod).",
+    "manageBilling": "Halda tellimust",
     "aiBioLabel": "Loo bio tehisintellektiga",
     "aiBioPlaceholder": "nt fotograaf, Milano, pulmad ja reisimine",
     "aiBioButton": "Loo bio",

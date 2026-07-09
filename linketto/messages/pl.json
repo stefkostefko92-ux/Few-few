@@ -314,6 +314,7 @@
     "referralWithdraw": "Wypłać bonus",
     "referralPayoutRequested": "Twój wniosek o wypłatę został przyjęty — przelejemy Twój bonus. Licznik został wyzerowany.",
     "errorPayout": "Wypłata się nie powiodła (wymagane minimum €100 i metoda wypłaty).",
+    "manageBilling": "Zarządzaj subskrypcją",
     "aiBioLabel": "Wygeneruj bio z pomocą AI",
     "aiBioPlaceholder": "np. fotograf, Mediolan, śluby i podróże",
     "aiBioButton": "Wygeneruj bio",

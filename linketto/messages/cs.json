@@ -314,6 +314,7 @@
     "referralWithdraw": "Vybrat bonus",
     "referralPayoutRequested": "Tvá žádost o výběr byla přijata — bonus ti převedeme. Počítadlo bylo vynulováno.",
     "errorPayout": "Výběr se nezdařil (vyžaduje se minimálně €100 a způsob výplaty).",
+    "manageBilling": "Spravovat předplatné",
     "aiBioLabel": "Vytvořit bio pomocí AI",
     "aiBioPlaceholder": "např. fotograf, Milán, svatby a cestování",
     "aiBioButton": "Vytvořit bio",
