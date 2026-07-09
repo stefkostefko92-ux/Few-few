@@ -109,9 +109,23 @@ router.post("/entitlement", async (req, res, next) => {
     // Only provision servers that already exist (bot must have joined first).
     const server = await prisma.server.findUnique({
       where: { id: ent.guildId },
-      select: { id: true },
+      select: { id: true, plan: true, planSource: true, stripeSubscriptionId: true, discordEntitlementId: true },
     });
     if (!server) return res.json({ ok: true, ignored: "unknown server" });
+
+    // Mutual exclusivity (docs: Stripe and Discord are two separate paths). Never
+    // let a Discord grant overwrite a Stripe-provisioned server — otherwise a
+    // later ENTITLEMENT_DELETE would (via the planSource==="discord" guard)
+    // revoke a still-paying Stripe customer down to free.
+    if (server.planSource === "stripe" || server.stripeSubscriptionId) {
+      return res.json({ ok: true, ignored: "server already provisioned via Stripe" });
+    }
+
+    // Idempotent no-op: already granted this exact entitlement + plan (avoids
+    // duplicate audit rows on redelivered gateway events).
+    if (server.planSource === "discord" && server.discordEntitlementId === ent.id && server.plan === plan) {
+      return res.json({ ok: true, alreadyGranted: true });
+    }
 
     try {
       await prisma.server.update({

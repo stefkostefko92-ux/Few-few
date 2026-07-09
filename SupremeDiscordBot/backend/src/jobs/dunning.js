@@ -32,7 +32,7 @@ const GRACE_DAYS = Number(process.env.DUNNING_GRACE_DAYS ?? 14);
 export async function runDunningJob() {
   const startedAt = new Date();
   const cutoff = new Date(Date.now() - GRACE_DAYS * MS_PER_DAY);
-  const result = { downgraded: 0, errors: [] };
+  const result = { downgraded: 0, agenciesDeactivated: 0, errors: [] };
 
   console.log(
     `[dunning] 🕐 Старт ${startedAt.toISOString()} — праг ${GRACE_DAYS} дни (преди ${cutoff.toISOString()})`
@@ -83,6 +83,41 @@ export async function runDunningJob() {
     }
 
     console.log(`[dunning] ✅ Свалени от Premium: ${result.downgraded}`);
+
+    // Same safeguard for Agency plans: an agency stuck in past_due past the
+    // grace window is deactivated → all its member servers lose the tier via
+    // getServerTier (which gates on agency.active).
+    const stuckAgencies = await prisma.agency.findMany({
+      where: { active: true, stripeStatus: "past_due", pastDueSince: { not: null, lt: cutoff } },
+      select: { id: true, pastDueSince: true },
+      take: 500,
+    });
+    for (const agency of stuckAgencies) {
+      try {
+        await prisma.$transaction(async (tx) => {
+          await tx.agency.update({ where: { id: agency.id }, data: { active: false } });
+          await tx.auditLog.create({
+            data: {
+              actorId: null,
+              actorTag: "SYSTEM_DUNNING_JOB",
+              action: "AGENCY_DEACTIVATED_DUNNING",
+              targetId: agency.id,
+              metadata: {
+                reason: "past_due exceeded grace window",
+                graceDays: GRACE_DAYS,
+                pastDueSince: agency.pastDueSince?.toISOString() ?? null,
+                revokedAt: new Date().toISOString(),
+              },
+            },
+          });
+        });
+        result.agenciesDeactivated++;
+        console.log(`[dunning] ❌ Agency ${agency.id} → деактивиран (past_due >${GRACE_DAYS}д)`);
+      } catch (err) {
+        result.errors.push({ agencyId: agency.id, error: err.message });
+      }
+    }
+    console.log(`[dunning] ✅ Деактивирани агенции: ${result.agenciesDeactivated}`);
   } catch (err) {
     console.error(`[dunning] ❌ Job се провали:`, err.message);
     result.errors.push({ type: "dunning", error: err.message });

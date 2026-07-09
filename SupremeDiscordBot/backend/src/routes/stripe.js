@@ -23,7 +23,12 @@ function planFromSubscription(sub) {
   return planFromStripePrice(priceId);
 }
 function planFromInvoice(invoice) {
-  const priceId = invoice?.lines?.data?.find((l) => l?.price?.id)?.price?.id;
+  // API 2026-06-24.dahlia (Basil+) moved the price off invoice line items into
+  // `pricing.price_details.price`; keep the legacy `price.id` as a fallback.
+  const line = invoice?.lines?.data?.find(
+    (l) => l?.pricing?.price_details?.price || l?.price?.id
+  );
+  const priceId = line?.pricing?.price_details?.price || line?.price?.id;
   return planFromStripePrice(priceId);
 }
 
@@ -298,7 +303,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
               data: {
                 active: true,
                 stripeSubscriptionId: session.subscription || undefined,
-                stripeStatus: session.subscription ? "active" : "active",
+                stripeStatus: "active",
                 billingInterval: session.metadata.interval === "year" ? "year" : "month",
                 pastDueSince: null,
               },
@@ -554,6 +559,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
           const onA = ["active", "trialing"].includes(sub.status);
           const offA = ["unpaid", "incomplete_expired", "canceled", "paused"].includes(sub.status);
           const tierA = planFromSubscription(sub); // agency5 | agency10
+          const newSeatLimit = onA && tierA && PLANS[tierA.plan] ? PLANS[tierA.plan].maxServers : null;
           await runOnce(async (tx) => {
             await tx.agency.update({
               where: { id: agencyForSub.id },
@@ -562,12 +568,27 @@ router.post("/webhook", requireStripe, async (req, res) => {
                 stripeStatus: sub.status,
                 ...(onA && {
                   active: true, pastDueSince: null,
-                  ...(tierA && PLANS[tierA.plan] && { plan: tierA.plan, seatLimit: PLANS[tierA.plan].maxServers, billingInterval: tierA.interval }),
+                  ...(tierA && PLANS[tierA.plan] && { plan: tierA.plan, seatLimit: newSeatLimit, billingInterval: tierA.interval }),
                 }),
                 ...(offA && { active: false }),
                 ...(sub.status === "past_due" && !agencyForSub.pastDueSince && { pastDueSince: new Date() }),
               },
             });
+
+            // Downgrade (e.g. agency10 → agency5): release seats over the new
+            // limit so the customer can't keep provisioning more servers than
+            // they now pay for. Drop the most-recently-created members first.
+            if (newSeatLimit != null) {
+              const members = await tx.server.findMany({
+                where: { agencyId: agencyForSub.id },
+                orderBy: { createdAt: "desc" },
+                select: { id: true },
+              });
+              if (members.length > newSeatLimit) {
+                const drop = members.slice(0, members.length - newSeatLimit).map((s) => s.id);
+                await tx.server.updateMany({ where: { id: { in: drop } }, data: { agencyId: null } });
+              }
+            }
           });
           break;
         }

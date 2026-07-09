@@ -129,21 +129,37 @@ router.post("/portal", requireAuth, loadUser, requireStripe, async (req, res, ne
 router.post("/:agencyId/servers/:serverId", requireAuth, loadUser, requireServerAdmin, async (req, res, next) => {
   const { agencyId, serverId } = req.params;
   try {
-    const agency = await prisma.agency.findUnique({ where: { id: agencyId }, include: { servers: { select: { id: true } } } });
+    const agency = await prisma.agency.findUnique({
+      where: { id: agencyId },
+      select: { id: true, ownerUserId: true, active: true, seatLimit: true },
+    });
     if (!agency || agency.ownerUserId !== req.user.id) return res.status(404).json({ error: "Agency not found" });
     if (!agency.active) return res.status(403).json({ error: "Agency plan is not active." });
 
-    const server = await prisma.server.findUnique({ where: { id: serverId }, select: { id: true, agencyId: true } });
-    if (!server) return res.status(404).json({ error: "Server not found" });
-    if (server.agencyId === agencyId) return res.json({ ok: true, alreadyAssigned: true });
-    if (server.agencyId) return res.status(409).json({ error: "Server is already covered by another agency plan." });
-    if (agency.servers.length >= agency.seatLimit) {
-      return res.status(409).json({ error: `Seat limit reached (${agency.seatLimit}).`, code: "SEAT_LIMIT" });
-    }
+    // Atomic seat claim: an advisory lock keyed on the agency serializes
+    // concurrent assigns for the same agency, so the seat cap can't be exceeded
+    // by a race (double-click / reseller script). Mirrors the ticket open-limit
+    // lock in routes/bot.js. The count + update happen under the same lock.
+    const outcome = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"agency:" + agencyId}))`;
+      const target = await tx.server.findUnique({ where: { id: serverId }, select: { agencyId: true } });
+      if (!target) return { code: "NO_SERVER" };
+      if (target.agencyId === agencyId) return { code: "ALREADY" };
+      if (target.agencyId) return { code: "OTHER_AGENCY" };
+      const used = await tx.server.count({ where: { agencyId } });
+      if (used >= agency.seatLimit) return { code: "FULL" };
+      await tx.server.update({ where: { id: serverId }, data: { agencyId } });
+      await tx.auditLog.create({ data: { actorId: req.user.id, serverId, action: "AGENCY_SEAT_ADDED", targetId: agencyId } });
+      return { code: "OK", seatsUsed: used + 1 };
+    });
 
-    await prisma.server.update({ where: { id: serverId }, data: { agencyId } });
-    await prisma.auditLog.create({ data: { actorId: req.user.id, serverId, action: "AGENCY_SEAT_ADDED", targetId: agencyId } }).catch(() => {});
-    res.json({ ok: true, seatsUsed: agency.servers.length + 1, seatLimit: agency.seatLimit });
+    switch (outcome.code) {
+      case "NO_SERVER":    return res.status(404).json({ error: "Server not found" });
+      case "ALREADY":      return res.json({ ok: true, alreadyAssigned: true });
+      case "OTHER_AGENCY": return res.status(409).json({ error: "Server is already covered by another agency plan." });
+      case "FULL":         return res.status(409).json({ error: `Seat limit reached (${agency.seatLimit}).`, code: "SEAT_LIMIT" });
+      default:             return res.json({ ok: true, seatsUsed: outcome.seatsUsed, seatLimit: agency.seatLimit });
+    }
   } catch (err) { next(err); }
 });
 
