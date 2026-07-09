@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 
-// Админ вход: потребител + парола. Няколко админа се задават в env
-// MASTILKO_ADMINS = "user1:bcryptHash1;user2:bcryptHash2". Сесията е подписан
+// Админ вход: потребител + парола. Админите живеят в data/admins.json
+// (виж admin-store.ts; пишат се със scripts/hash-admin.mjs). Сесията е подписан
 // JWT (jose, HS256 със SESSION_SECRET), сложен в httpOnly бисквитка. Само
 // администраторът получава бисквитка — посетителите нямат нито една.
 
