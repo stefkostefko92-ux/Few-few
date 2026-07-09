@@ -127,6 +127,7 @@ CREATE TABLE "Purchase" (
     "amountCents" INTEGER NOT NULL,
     "feeCents" INTEGER NOT NULL,
     "buyerEmail" TEXT,
+    "locale" TEXT,
     "deliveredAt" TIMESTAMP(3),
     "refundedAt" TIMESTAMP(3),
     "disputedAt" TIMESTAMP(3),

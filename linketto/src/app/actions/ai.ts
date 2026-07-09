@@ -23,6 +23,7 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
     include: {
       translations: true,
       links: { include: { translations: true } },
+      products: { include: { translations: true } },
     },
   });
   if (!profile) redirect(`/${uiLocale}/dashboard?error=generic`);
@@ -55,8 +56,26 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
     }))
     .filter((link) => link.title);
 
+  const sourceProducts = profile.products
+    .map((product) => {
+      const base =
+        product.translations.find((t) => t.locale === profile.defaultLocale) ??
+        product.translations[0];
+      return {
+        id: product.id,
+        title: base?.title ?? '',
+        description: base?.description ?? null,
+      };
+    })
+    .filter((product) => product.title);
+
   const translated = await translateProfileContent(
-    { displayName: source.displayName, bio: source.bio, links: sourceLinks },
+    {
+      displayName: source.displayName,
+      bio: source.bio,
+      links: sourceLinks,
+      products: sourceProducts,
+    },
     profile.defaultLocale,
     targets,
   );
@@ -80,6 +99,23 @@ export async function aiTranslateAction(formData: FormData): Promise<void> {
       await prisma.linkTranslation.upsert({
         where: { linkId_locale: { linkId, locale } },
         create: { linkId, locale, title: title.slice(0, 100) },
+        update: {},
+      });
+    }
+    // Продукти — не презаписваме ръчните версии (update:{}).
+    for (const [productId, value] of Object.entries(entry.products ?? {})) {
+      const title = value?.title?.slice(0, 100);
+      if (!title || !profile.products.some((p) => p.id === productId)) {
+        continue;
+      }
+      await prisma.productTranslation.upsert({
+        where: { productId_locale: { productId, locale } },
+        create: {
+          productId,
+          locale,
+          title,
+          description: value.description?.slice(0, 500) ?? null,
+        },
         update: {},
       });
     }

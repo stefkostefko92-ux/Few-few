@@ -132,6 +132,7 @@ export async function startProductPurchaseAction(
       productId: product.id,
       profileId: product.profileId,
       feeCents: String(fee),
+      locale: isLocale(hl) ? hl : product.profile.defaultLocale,
     },
     locale: 'auto',
     success_url: `${baseUrl()}/u/${slug}/delivery?session_id={CHECKOUT_SESSION_ID}`,

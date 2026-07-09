@@ -796,12 +796,12 @@ export async function ProfileScreen({
                         {/* ЗЗП чл. 57, т. 13 / Дир. 2011/83 чл. 16(м):
                             изрично съгласие за незабавна доставка =
                             загуба на 14-дневния отказ */}
-                        <label className="mt-1.5 flex items-start gap-2 text-[11px] leading-snug opacity-70">
+                        <label className="mt-1.5 flex items-start gap-2 text-xs leading-snug opacity-80">
                           <input
                             type="checkbox"
                             name="waiver"
                             required
-                            className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                            className="mt-0.5 h-4 w-4 shrink-0"
                           />
                           {t('shopWaiver')}
                         </label>

@@ -168,6 +168,7 @@ model Purchase {
   amountCents     Int
   feeCents        Int // нашата комисиона към момента на продажбата
   buyerEmail      String?
+  locale          String? // език на купувача — за имейла на неговия език
   deliveredAt     DateTime? // кога е изпратен имейлът с доставката
   refundedAt      DateTime?
   disputedAt      DateTime?

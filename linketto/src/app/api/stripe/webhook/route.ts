@@ -3,7 +3,7 @@ import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
 import { PLANS, type PlanId } from '@/lib/plans';
-import { deliveryEmailHtml, sendEmail } from '@/lib/email';
+import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
 
 // Доставка на купеното по имейл — от webhook-а, независимо от success_url
 // redirect-а (затворен таб не бива да значи „платил без достъп“).
@@ -14,14 +14,21 @@ async function fulfilProduct(purchaseId: string): Promise<void> {
     include: { product: { include: { translations: true } } },
   });
   if (!purchase || purchase.deliveredAt || !purchase.buyerEmail) return;
-  const title = purchase.product.translations[0]?.title ?? 'Product';
+  const locale = purchase.locale ?? undefined;
+  // Заглавие на езика на купувача (fallback към първия наличен превод).
+  const title =
+    (locale &&
+      purchase.product.translations.find((t) => t.locale === locale)?.title) ||
+    purchase.product.translations[0]?.title ||
+    'Product';
   const sent = await sendEmail({
     to: purchase.buyerEmail,
-    subject: `Linketto — ${title}`,
+    subject: deliverySubject(title, locale),
     html: deliveryEmailHtml({
       productTitle: title,
       deliveryUrl: purchase.product.deliveryUrl,
       amountCents: purchase.amountCents,
+      locale,
     }),
   });
   if (sent) {
@@ -94,6 +101,7 @@ export async function POST(request: Request): Promise<NextResponse> {
               amountCents: session.amount_total ?? 0,
               feeCents: Number(session.metadata?.feeCents ?? 0) || 0,
               buyerEmail: session.customer_details?.email ?? null,
+              locale: session.metadata?.locale ?? null,
             },
             update: {},
           })

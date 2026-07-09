@@ -8,6 +8,7 @@ export interface TranslatableContent {
   displayName: string;
   bio: string | null;
   links: { id: string; title: string }[];
+  products?: { id: string; title: string; description: string | null }[];
 }
 
 export type TranslatedByLocale = Record<
@@ -16,6 +17,7 @@ export type TranslatedByLocale = Record<
     displayName: string;
     bio?: string;
     links: Record<string, string>; // link id → преведено заглавие
+    products?: Record<string, { title?: string; description?: string }>;
   }
 >;
 
@@ -33,11 +35,18 @@ export async function translateProfileContent(
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
+  const hasProducts = (source.products?.length ?? 0) > 0;
   const prompt =
     `You translate a creator's "link in bio" profile. Source language: ${fromLocale}. ` +
-    `Translate the display name, the bio and each link title into these languages: ${toLocales.join(', ')}. ` +
+    `Translate the display name, the bio, each link title` +
+    (hasProducts ? `, and each product's title and description` : '') +
+    ` into these languages: ${toLocales.join(', ')}. ` +
     `Keep proper names, brand names and emoji unchanged. Keep translations short and natural. ` +
-    `Return ONLY JSON of the shape {"<locale>": {"displayName": string, "bio": string, "links": {"<id>": string}}}.\n` +
+    `Return ONLY JSON of the shape {"<locale>": {"displayName": string, "bio": string, "links": {"<id>": string}` +
+    (hasProducts
+      ? `, "products": {"<id>": {"title": string, "description": string}}`
+      : '') +
+    `}}.\n` +
     `Source JSON:\n` +
     JSON.stringify({
       displayName: source.displayName,
@@ -45,6 +54,16 @@ export async function translateProfileContent(
       links: Object.fromEntries(
         source.links.map((link) => [link.id, link.title]),
       ),
+      ...(hasProducts
+        ? {
+            products: Object.fromEntries(
+              (source.products ?? []).map((product) => [
+                product.id,
+                { title: product.title, description: product.description ?? '' },
+              ]),
+            ),
+          }
+        : {}),
     });
 
   const res = await fetch(url, {
@@ -82,6 +101,10 @@ export async function translateProfileContent(
             : undefined,
         links:
           entry.links && typeof entry.links === 'object' ? entry.links : {},
+        products:
+          entry.products && typeof entry.products === 'object'
+            ? entry.products
+            : undefined,
       };
     }
     return Object.keys(result).length > 0 ? result : null;

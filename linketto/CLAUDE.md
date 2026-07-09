@@ -118,6 +118,11 @@ showViews = бадж „N посещения този месец“ (брои Cl
 без бисквитки). Бранд сияние при hover: BRAND_COLORS в brand-icons.tsx.
 „Сподели“ = ShareButton.tsx (client; Web Share API, fallback QR + копиране).
 
+Транзакционен имейл: src/lib/email.ts (Resend HTTP API; deliveryEmailHtml/
+deliverySubject са локализирани на 6-те езика по Purchase.locale — езикът
+на купувача). AI преводът (lib/ai.ts) покрива и продуктите (заглавие+
+описание). Health probe: /api/health. Deploy чеклист: DEPLOY.md.
+
 Магазин (Stripe Connect Express): User.stripeAccountId + stripeChargesEnabled
 (отключва се само от account.updated webhook-а). Product/ProductTranslation/
 Purchase; actions/shop.ts (onboarding + CRUD + публичното
