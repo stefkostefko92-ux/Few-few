@@ -145,6 +145,16 @@ const COUNTRY_LOCALE: Record<string, Locale> = {
   US: 'en',
 };
 
+// Държава (ISO код) → основен език, който поддържаме (или null, ако
+// държавата е езиково смесена/непозната). Публично — ползва се и от
+// „езиковата дупка" в аналитиката (кой език говорят посетителите).
+export function localeForCountry(
+  country: string | null | undefined,
+): Locale | null {
+  if (!country) return null;
+  return COUNTRY_LOCALE[country.toUpperCase()] ?? null;
+}
+
 /**
  * Езикът по геолокация: държава-език → Accept-Language → fallback.
  * `available` ограничава избора (напр. до преводите на профил).
