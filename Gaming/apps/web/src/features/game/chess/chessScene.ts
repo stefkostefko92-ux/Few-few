@@ -111,7 +111,7 @@ export class ChessScene {
 
   constructor(canvas: HTMLCanvasElement, width: number, orientation: Orientation) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    this.scene.background = new Color("#0e2117");
+    this.scene.background = new Color("#0d1024");
 
     const span = HALF + RAIL;
     // Tight framing: the board fills the canvas instead of floating in margin.

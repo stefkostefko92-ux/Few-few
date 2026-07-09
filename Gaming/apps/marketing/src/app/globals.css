@@ -26,19 +26,28 @@
 
 body {
   background-color: var(--charcoal-900);
-  background-image:
-    radial-gradient(120% 80% at 12% -10%, rgba(231, 200, 123, 0.08), transparent 60%),
-    radial-gradient(120% 80% at 100% 110%, rgba(154, 134, 224, 0.16), transparent 55%),
-    linear-gradient(180deg, rgba(7, 10, 24, 0.86), rgba(7, 10, 24, 0.93)),
-    url("/bg-cosmos.png");
-  background-size: auto, auto, auto, cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   color: var(--ink-100);
   font-family: "Manrope", system-ui, -apple-system, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
+}
+
+/* Fixed cosmic backdrop via pseudo-element — iOS Safari still mishandles
+   background-attachment: fixed on the body itself. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(120% 80% at 12% -10%, rgba(231, 200, 123, 0.08), transparent 60%),
+    radial-gradient(120% 80% at 100% 110%, rgba(154, 134, 224, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(7, 10, 24, 0.86), rgba(7, 10, 24, 0.93)),
+    url("/bg-cosmos.webp");
+  background-size: auto, auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 h1,
@@ -64,7 +73,7 @@ a:hover {
 }
 
 .panel {
-  background: rgba(18, 48, 38, 0.8);
+  background: rgba(20, 26, 56, 0.8);
   border: 1px solid rgba(217, 178, 95, 0.15);
   border-radius: var(--r-panel);
   padding: 1.5rem;
