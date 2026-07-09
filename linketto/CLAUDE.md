@@ -37,7 +37,11 @@ prisma/schema.prisma   Многоезичността е в схемата: Prof
                        *Translation таблици (@@unique([родител, locale])).
                        ClickEvent = аналитика без бисквитки (без IP, без PII).
 src/i18n/locales.ts    ЕДИНСТВЕНОТО място за добавяне на нов език (LOCALES,
-                       LOCALE_NAMES, RTL_LOCALES, bestLocale за Accept-Language).
+                       LOCALE_NAMES, OG_LOCALE, RTL_LOCALES, bestLocale). 27
+                       локала: 24 ЕС езика + диалекти nap/scn/lmo. Правните
+                       текстове (legal.*) са родни само за bg/en/it/es/de/fr;
+                       за останалите падат към en (deepMerge) до правен
+                       преглед. Диалектите nap/scn/lmo са best-effort.
 src/i18n/request.ts    next-intl: непълни преводи падат към en (deepMerge).
 messages/<loc>.json    UI низове. bg е ИЗТОЧНИКЪТ НА ИСТИНАТА (правило на
                        репото); преводите минават през агента Преводач.
