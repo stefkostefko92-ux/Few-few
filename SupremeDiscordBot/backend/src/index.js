@@ -31,6 +31,8 @@ import ticketsRouter from "./routes/tickets.js";
 import applicationsRouter from "./routes/applications.js";
 import adminRouter from "./routes/admin.js";
 import stripeRouter from "./routes/stripe.js";
+import agencyRouter from "./routes/agency.js";
+import discordEntitlementsRouter from "./routes/discordEntitlements.js";
 import botRouter from "./routes/bot.js";
 import exportRouter from "./routes/export.js";
 import verificationRouter from "./routes/verification.js";
@@ -173,6 +175,8 @@ app.use("/api/tickets", ticketsRouter);
 app.use("/api/applications", applicationsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/stripe", stripeRouter);
+app.use("/api/agency", agencyRouter);         // v3.0 Agency (multi-server) billing + seat management
+app.use("/api/discord", discordEntitlementsRouter); // v3.0 Native Discord monetization (entitlement events from the bot)
 app.use("/api/bot", botRouter); // Internal bot <-> API communication
 app.use("/api/export", exportRouter);
 app.use("/api/verification", verificationRouter);

@@ -13,6 +13,7 @@ process.env.PRINT_API_SECRET = 'test-print-secret';
 process.env.INDEXNOW_KEY = 'testindexnowkey1234567890abcdef0';
 
 const { default: app } = await import('../src/app.js');
+const { outbox } = await import('../src/mailer.js');
 
 const server = app.listen(0);
 const port = server.address().port;
@@ -510,6 +511,180 @@ await test('началната показва максимум 2 банера', 
   const home = await (await request('/')).text();
   const shown = (home.match(/class="ad"/g) || []).length;
   assert.equal(shown, 2, `трябва да се показват точно 2 банера, а не ${shown}`);
+});
+
+await test('забравена парола: имейл → нулиране → вход с новата', async () => {
+  jar.clear();
+  await request('/register', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({
+      name: 'Забравко',
+      email: 'forgot@example.com',
+      password: 'stara-parola1',
+      type: 'personal',
+    }),
+  });
+  jar.clear();
+  // Заявка за нулиране — генеричен отговор, писмо в dev outbox-а.
+  const before = outbox.length;
+  const res = await request('/forgot', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'forgot@example.com' }),
+  });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /изпратихме връзка/);
+  assert.equal(outbox.length, before + 1, 'трябва да има ново писмо');
+  const token = outbox[outbox.length - 1].text.match(/\/reset\?token=([a-f0-9]{64})/)[1];
+
+  // Страницата за нова парола се отваря с валиден токен.
+  const page = await request(`/reset?token=${token}`);
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /Нова парола/);
+
+  // Задаваме нова парола.
+  const set = await request('/reset', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ token, password: 'chisto-nova-9' }),
+  });
+  assert.equal(set.status, 200);
+
+  // Токенът е еднократен — повторно ползване се отхвърля.
+  const reuse = await request('/reset', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ token, password: 'oshte-edna-9' }),
+  });
+  assert.equal(reuse.status, 400);
+
+  // Старата парола не работи, новата — да.
+  const oldPw = await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'forgot@example.com', password: 'stara-parola1' }),
+  });
+  assert.equal(oldPw.status, 401);
+  const newPw = await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'forgot@example.com', password: 'chisto-nova-9' }),
+  });
+  assert.equal(newPw.status, 302);
+});
+
+await test('забравена парола: непознат имейл не издава нищо и не праща писмо', async () => {
+  jar.clear();
+  const before = outbox.length;
+  const res = await request('/forgot', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'nqma-takyv@example.com' }),
+  });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /изпратихме връзка/); // същият генеричен отговор
+  assert.equal(outbox.length, before, 'не трябва да се праща писмо за несъществуващ акаунт');
+});
+
+// ─── Портфейли (Apple Wallet / Google Wallet) ────────────────────────────────
+
+await test('портфейл: изключен без сертификати — 404 + „Скоро" тийзър', async () => {
+  const apple = await request('/p/ivan-testov/wallet/apple.pkpass');
+  const google = await request('/p/ivan-testov/wallet/google');
+  assert.equal(apple.status, 404);
+  assert.equal(google.status, 404);
+  // Функцията е изключена → показваме тийзър „Скоро", но БЕЗ активни линкове.
+  // Влизаме като собственика (визитката е скрита от по-ранен тест).
+  jar.clear();
+  await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'ivan@example.com', password: 'novaparola22' }),
+  });
+  const card = await (await request('/p/ivan-testov')).text();
+  assert.match(card, /Скоро/);
+  assert.match(card, /is-soon/);
+  assert.doesNotMatch(card, /href="[^"]*\/wallet\/(apple\.pkpass|google)"/);
+});
+
+await test('портфейл: Apple update web service иска токен (401 без него)', async () => {
+  const res = await request('/v1/passes/pass.eu.carbonstealth.vizitka/ivan-testov');
+  assert.equal(res.status, 401);
+  const reg = await request(
+    '/v1/devices/dev123/registrations/pass.eu.carbonstealth.vizitka/ivan-testov',
+    { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"pushToken":"x"}' }
+  );
+  assert.equal(reg.status, 401);
+});
+
+await test('портфейл (unit): ZIP и PNG енкодерите дават валидни контейнери', async () => {
+  const { zipStore, solidPng } = await import('../src/wallet/binary.js');
+  const png = solidPng(29, [79, 70, 229]);
+  assert.equal(png.subarray(1, 4).toString(), 'PNG', 'валиден PNG подпис');
+  const zip = zipStore([{ name: 'a.txt', data: Buffer.from('hi') }]);
+  assert.equal(zip.readUInt32LE(0), 0x04034b50, 'local file header');
+  assert.equal(zip.readUInt32LE(zip.length - 22), 0x06054b50, 'end of central directory');
+});
+
+await test('портфейл (unit): Apple pass.json носи QR към живия профил', async () => {
+  process.env.APPLE_TEAM_ID = 'TEAM123456';
+  process.env.APPLE_PASS_TYPE_ID = 'pass.eu.carbonstealth.vizitka';
+  const { buildPassJson } = await import('../src/wallet/apple.js');
+  const profile = {
+    slug: 'ivan-testov',
+    display_name: 'Иван Тестов',
+    headline: 'Инженер',
+    company: 'Карбон',
+    phone: '+359888',
+    theme: 'blue',
+    accent: '',
+    id: 999999,
+  };
+  const pass = buildPassJson(profile, base);
+  assert.equal(pass.passTypeIdentifier, 'pass.eu.carbonstealth.vizitka');
+  assert.equal(pass.serialNumber, '999999'); // стабилен id, не слъг
+  assert.equal(pass.barcodes[0].message, `${base}/p/ivan-testov`);
+  assert.equal(pass.generic.primaryFields[0].value, 'Иван Тестов');
+});
+
+await test('портфейл (unit): Google save URL е подписан JWT с обект към профила', async () => {
+  const crypto = await import('node:crypto');
+  const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
+  const saPath = join(process.env.DATA_DIR, 'sa.json');
+  fs.writeFileSync(
+    saPath,
+    JSON.stringify({ client_email: 'sa@test.iam.gserviceaccount.com', private_key: pem })
+  );
+  process.env.GOOGLE_WALLET_ISSUER_ID = '3388000000000000000';
+  process.env.GOOGLE_WALLET_SA_KEY = saPath;
+  const { googleSaveUrl } = await import('../src/wallet/google.js');
+  const profile = { slug: 'ivan-testov', display_name: 'Иван Тестов', theme: 'blue', id: 999999 };
+  const url = googleSaveUrl(profile, base);
+  assert.match(url, /^https:\/\/pay\.google\.com\/gp\/v\/save\//);
+  const jwt = url.split('/save/')[1];
+  const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString());
+  assert.equal(payload.typ, 'savetowallet');
+  const obj = payload.payload.genericObjects[0];
+  assert.equal(obj.id, '3388000000000000000.999999'); // стабилен id, не слъг
+  assert.equal(obj.barcode.value, `${base}/p/ivan-testov`);
+});
+
+await test('портфейл: с включен Google бутонът се показва и води към save линк', async () => {
+  // GOOGLE_WALLET_* са зададени в предходния тест → функцията вече е активна.
+  // Влизаме като собственика (визитката е скрита от по-ранен тест — собственикът я вижда).
+  jar.clear();
+  await request('/login', {
+    method: 'POST',
+    headers: FORM_HEADERS,
+    body: form({ email: 'ivan@example.com', password: 'novaparola22' }),
+  });
+  const card = await request('/p/ivan-testov');
+  assert.match(await card.text(), /badge-google-wallet/);
+  const res = await request('/p/ivan-testov/wallet/google');
+  assert.equal(res.status, 302);
+  assert.match(res.headers.get('location'), /^https:\/\/pay\.google\.com\/gp\/v\/save\//);
 });
 
 server.close();

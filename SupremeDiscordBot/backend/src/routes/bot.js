@@ -9,6 +9,7 @@ import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js"
 import { decrypt } from "../lib/crypto.js";
 import { pickNextAssignee } from "../services/roundRobin.js";
 import { generateAutoReply, aiRateLimitOk } from "../services/aiReply.js";
+import { getServerTier } from "../lib/premium.js";
 
 const router = Router();
 
@@ -82,12 +83,14 @@ router.get("/server/:serverId/token", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { customBotToken: true, isPremium: true, trialEndsAt: true },
+      select: { customBotToken: true },
     });
 
     if (!server) return res.status(404).json({ error: "Server not found" });
-    const isEffectivePremium = !!server.isPremium || (server.trialEndsAt && server.trialEndsAt > new Date());
-    if (!isEffectivePremium || !server.customBotToken) {
+    // White-label bot runs only while the server holds the White-label / Agency
+    // tier (getServerTier resolves own plan, active trial and agency seats).
+    const { hasWhiteLabel } = await getServerTier(req.params.serverId);
+    if (!hasWhiteLabel || !server.customBotToken) {
       return res.json({ token: null });
     }
 

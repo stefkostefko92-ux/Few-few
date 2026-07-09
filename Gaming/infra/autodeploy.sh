@@ -11,11 +11,14 @@
 #  Какво прави (идемпотентно — може да се пуска колкото пъти искаш):
 #   1. Синхронизира пресния сорс към стабилна папка $DEPLOY_DIR (по подр. /root/aso),
 #      като ПАЗИ .env и Docker обемите → базата и тайните оцеляват между качванията.
-#   2. Гарантира .env (генерира истински тайни при първо пускане; после ги пази).
-#   3. Сваля стария стек чисто (вкл. legacy `infra` проект), ребилдва и вдига.
-#   4. Изчаква и проверява здравето на всички услуги.
-#   5. При ПЪРВО пускане предлага nginx конфиг + сочи към certbot (после НЕ пипа
-#      nginx, за да не изтрие TLS блока, който certbot е добавил).
+#   2. Гарантира .env: при жива legacy база ОСИНОВЯВА стария .env (или абортира с
+#      инструкция — нови тайни биха заключили базата); генерира тайни само на чисто.
+#   3. БИЛДВА ПРЕДИ да сваля стария стек — провален билд оставя продукцията жива.
+#   4. Сваля стария стек (вкл. legacy `infra` проект) и МИГРИРА обемите му еднократно
+#      (копие; оригиналът остава като бекъп) → живата база се пренася, не се губи.
+#   5. Вдига новия стек и проверява здравето на 4-те услуги (api/web/marketing/realtime).
+#   6. При ПЪРВО пускане предлага nginx конфиг + сочи към certbot (после НЕ пипа
+#      nginx; провален nginx -t премахва новия конфиг, за да не остане счупен).
 #
 #  Всичко минава само на localhost; публичният вход е host nginx на 443.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -25,7 +28,7 @@ set -euo pipefail
 DEPLOY_DIR="${DEPLOY_DIR:-/root/aso}"
 PROJECT="${COMPOSE_PROJECT:-aso}"
 DOMAIN="${DOMAIN:-gaming.carbonstealth.eu}"
-OWNER_EMAIL="${BOOTSTRAP_OWNER_EMAIL:-stefan.kostadinov16@gmail.com}"
+OWNER_EMAIL="${BOOTSTRAP_OWNER_EMAIL:-admin@carbonstealth.eu}"
 COMPOSE_FILE="infra/docker-compose.yml"
 
 # ── малко цвят за четимост ───────────────────────────────────────────────────
@@ -49,12 +52,12 @@ mkdir -p "$DEPLOY_DIR"
 if [ "$(realpath "$SRC_DIR")" != "$(realpath "$DEPLOY_DIR")" ]; then
   if command -v rsync >/dev/null; then
     rsync -a --delete \
-      --exclude '.env' --exclude '.git' --exclude 'node_modules' \
+      --exclude '.env' --exclude '.env.*' --exclude '.git' --exclude 'node_modules' \
       --exclude 'dist' --exclude '.next' --exclude '.turbo' \
       "$SRC_DIR"/ "$DEPLOY_DIR"/
   else
     # fallback без rsync: изтрий всичко освен .env, после копирай
-    find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 ! -name '.env' -exec rm -rf {} +
+    find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 ! -name '.env' ! -name '.env.*' -exec rm -rf {} +
     cp -a "$SRC_DIR"/. "$DEPLOY_DIR"/
   fi
   ok "сорсът е обновен"
@@ -64,8 +67,22 @@ fi
 cd "$DEPLOY_DIR"
 
 # ── 2) гарантирай .env (истински тайни при първо пускане; после ги пази) ─────
+# Жива legacy база без .env тук? НИКОГА не генерирай тайни на сляпо — pg обемът
+# пази СТАРАТА парола и нови тайни биха заключили базата (и "изгубили" акаунтите).
+if [ ! -f .env ] && docker volume inspect infra_aso_pgdata >/dev/null 2>&1; then
+  step "Жива legacy база (infra_aso_pgdata) без .env — търся старите тайни"
+  for cand in "${LEGACY_ENV:-}" "$SRC_DIR/.env" /root/Few-few-main/Gaming/.env; do
+    if [ -n "$cand" ] && [ -f "$cand" ] && grep -q '^POSTGRES_PASSWORD=' "$cand"; then
+      cp "$cand" .env && chmod 600 .env
+      ok "приех стария .env от $cand (пази паролата, с която е инициализирана базата)"
+      break
+    fi
+  done
+  [ -f .env ] || die "Жива база без .env! Копирай стария: cp <стар-архив>/Gaming/.env $DEPLOY_DIR/.env (или LEGACY_ENV=/path/to/.env bash infra/autodeploy.sh). Нови тайни = изоставена база и изчезнали акаунти."
+fi
 if [ -f .env ]; then
   step ".env вече съществува — пазя тайните (базата остава)"
+  chmod 600 .env
   ok "запазен"
 else
   step "Няма .env — генерирам истински тайни"
@@ -90,30 +107,54 @@ ENV
   ok "нов .env с уникални тайни (пази го — от него зависи достъпът до базата)"
 fi
 
-# ── 3) свали стария стек чисто (вкл. legacy „infra“ проект) ──────────────────
+# ── 3) билд ПРЕДИ свалянето: ако новият код не се билдва, старият стек остава
+#      жив и работещ (rollback по подразбиране); успешният билд се кешира и
+#      прави следващото up мигновено.
+step "Билд (старият стек остава жив, докато билдът тече)"
+docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env build
+ok "билдът мина"
+
+# ── 4) свали стария стек чисто (вкл. legacy „infra“ проект) ──────────────────
 step "Свалям стария стек"
 docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env down --remove-orphans 2>/dev/null || true
 # legacy: по-ранни пускания ползваха проект „infra“ (по името на папката)
 if docker ps -a --format '{{.Names}}' | grep -q '^infra-'; then
   warn "намерен стар „infra“ стек — свалям и него, за да освободя портовете"
   docker compose -p infra -f "$COMPOSE_FILE" --env-file .env down --remove-orphans 2>/dev/null || \
-    docker rm -f $(docker ps -aq --filter 'name=^infra-') 2>/dev/null || true
+    docker rm -f $(docker ps -aq --filter 'label=com.docker.compose.project=infra') 2>/dev/null || true
 fi
 ok "портовете са свободни"
 
-# ── 4) билд + вдигане ────────────────────────────────────────────────────────
-step "Билд и старт (първият билд отнема няколко минути)"
+# ── 5) еднократна миграция на legacy обемите (живата база от проект „infra“) ─
+#     Copy-on-first-run: оригиналът остава непипнат като вграден бекъп.
+for v in aso_pgdata aso_redisdata; do
+  if docker volume inspect "infra_${v}" >/dev/null 2>&1 \
+     && ! docker volume inspect "${PROJECT}_${v}" >/dev/null 2>&1; then
+    step "Мигрирам обем infra_${v} → ${PROJECT}_${v} (оригиналът остава като бекъп)"
+    docker volume create "${PROJECT}_${v}" >/dev/null
+    docker run --rm -v "infra_${v}:/from:ro" -v "${PROJECT}_${v}:/to" alpine \
+      sh -c 'cd /from && cp -a . /to/'
+    ok "готово — изтрий infra_${v} ръчно ЧАК след потвърден здрав деплой"
+  fi
+done
+
+# ── 6) вдигане ───────────────────────────────────────────────────────────────
+step "Старт на новия стек"
 docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env up -d --build
 ok "контейнерите са пуснати"
 
-# ── 5) изчакай здравето ──────────────────────────────────────────────────────
+# ── 7) изчакай здравето ──────────────────────────────────────────────────────
 step "Проверявам здравето (api пуска и миграциите при старт)"
-API_PORT="$(grep -E '^API_HOST_PORT=' .env | cut -d= -f2)"; API_PORT="${API_PORT:-4500}"
-WEB_PORT="$(grep -E '^WEB_HOST_PORT=' .env | cut -d= -f2)"; WEB_PORT="${WEB_PORT:-4502}"
-MK_PORT="$(grep -E '^MK_HOST_PORT=' .env | cut -d= -f2)"; MK_PORT="${MK_PORT:-8090}"
+# ВАЖНО: '|| true' е вътре в substitution-а — под pipefail grep без съвпадение
+# иначе убива скрипта ТИХО точно тук (възпроизведен бъг).
+getport() { local v; v="$(grep -E "^$1=" .env | cut -d= -f2- || true)"; echo "${v:-$2}"; }
+API_PORT="$(getport API_HOST_PORT 4500)"
+WEB_PORT="$(getport WEB_HOST_PORT 4502)"
+MK_PORT="$(getport MK_HOST_PORT 8090)"
+RT_PORT="$(getport RT_HOST_PORT 4501)"
 
 wait_ok() { # url label
-  for _ in $(seq 1 30); do
+  for _ in $(seq 1 60); do
     code=$(curl -s -o /dev/null -w '%{http_code}' "$1" 2>/dev/null || echo 000)
     [ "$code" = "200" ] && { ok "$2 (200)"; return 0; }
     sleep 3
@@ -125,11 +166,13 @@ HEALTHY=0
 wait_ok "http://127.0.0.1:${API_PORT}/health" "api" "api" && HEALTHY=$((HEALTHY+1))
 wait_ok "http://127.0.0.1:${WEB_PORT}/app/"  "web (игри)" "web" && HEALTHY=$((HEALTHY+1))
 wait_ok "http://127.0.0.1:${MK_PORT}/"       "marketing" "marketing" && HEALTHY=$((HEALTHY+1))
+# realtime: Engine.IO handshake връща 200 при жива WebSocket услуга
+wait_ok "http://127.0.0.1:${RT_PORT}/socket.io/?EIO=4&transport=polling" "realtime" "realtime" && HEALTHY=$((HEALTHY+1))
 
 echo
 docker compose -p "$PROJECT" -f "$COMPOSE_FILE" --env-file .env ps
 
-# ── 6) nginx (само при първо пускане — не пипаме certbot-редактирания файл) ───
+# ── 8) nginx (само при първо пускане — не пипаме certbot-редактирания файл) ───
 NGINX_SITE="/etc/nginx/sites-available/${DOMAIN}"
 NGINX_LINK="/etc/nginx/sites-enabled/${DOMAIN}"
 echo
@@ -142,7 +185,8 @@ if command -v nginx >/dev/null; then
       systemctl reload nginx && ok "nginx конфигуриран и презареден"
       warn "Пусни еднократно TLS: certbot --nginx -d ${DOMAIN}"
     else
-      warn "nginx -t се провали — провери за дублиран upstream в sites-enabled/"
+      rm -f "$NGINX_LINK" "$NGINX_SITE"
+      warn "nginx -t се провали — премахнах новия конфиг (nginx остава как беше); чисти дублирани upstream aso_* в sites-enabled/ и пусни пак"
     fi
   else
     ok "nginx конфиг вече съществува — не го пипам (пази TLS блока на certbot)"
@@ -153,7 +197,7 @@ fi
 
 # ── край ─────────────────────────────────────────────────────────────────────
 echo
-if [ "$HEALTHY" -eq 3 ]; then
+if [ "$HEALTHY" -eq 4 ]; then
   c "1;32" "✔ Деплоят е готов — https://${DOMAIN} (игри: /app)"
 else
   c "1;33" "⚠ Стекът е вдигнат, но не всичко върна 200 — виж логовете по-горе."

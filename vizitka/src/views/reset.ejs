@@ -1,0 +1,17 @@
+<%- include('partials/head') %>
+<section class="auth-card">
+  <h1>Нова парола</h1>
+  <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
+  <% if (token) { %>
+    <form method="post" action="/reset">
+      <input type="hidden" name="token" value="<%= token %>">
+      <label>Нова парола (мин. 8 знака)
+        <input type="password" name="password" required minlength="8" maxlength="200" autocomplete="new-password">
+      </label>
+      <button type="submit" class="btn">Запази новата парола</button>
+    </form>
+  <% } else { %>
+    <p class="muted"><a href="/forgot">Заяви ново нулиране на паролата</a></p>
+  <% } %>
+</section>
+<%- include('partials/foot') %>

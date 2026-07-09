@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="182" height="48" viewBox="0 0 182 48" role="img" aria-label="Добави в Apple Wallet">
+  <rect x="1" y="1" width="180" height="46" rx="9" fill="#000" stroke="#000"/>
+  <g transform="translate(16,11)" fill="#fff">
+    <path d="M18.9 13.2c-.7.7-1.5.6-2.2.3-.8-.3-1.5-.3-2.3 0-1 .4-1.6.3-2.2-.3-3.5-3.6-3-9 .8-9.2 1 .05 1.7.5 2.2.55.85-.17 1.65-.66 2.55-.6 1.1.1 1.9.5 2.4 1.3-2.2 1.35-1.7 4.3.35 5.1-.4 1.05-.95 2.1-1.9 2.9l.05.24M13.9 4.4c-.1-1.6 1.2-2.9 2.65-3.05.2 1.85-1.65 3.2-2.65 3.05"/>
+  </g>
+  <text x="46" y="20" fill="#d0d0d0" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="10">Добави в</text>
+  <text x="46" y="36" fill="#fff" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600">Apple Wallet</text>
+</svg>

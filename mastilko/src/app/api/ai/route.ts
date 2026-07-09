@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { clientIp, pruneHits } from "@/lib/client-ip";
 
 // AI подсказки чрез безплатния Google Gemini Flash. Ключът живее САМО на
 // сървъра (GEMINI_API_KEY) — клиентът никога не говори директно с Google.
@@ -39,8 +40,9 @@ function rateLimited(ip: string): boolean {
   }
   list.push(now);
   hits.set(ip, list);
-  // Да не расте безкрайно при много различни IP-та.
-  if (hits.size > 5000) hits.clear();
+  // Да не расте безкрайно при много различни IP-та — чисти само изтеклите
+  // записи (clear() нулираше и живите броячи → прозорец без лимит).
+  if (hits.size > 5000) pruneHits(hits, WINDOW_MS, now);
   return false;
 }
 
@@ -83,8 +85,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = clientIp(req);
   if (rateLimited(ip) || globalLimited()) {
     return NextResponse.json(
       { error: "Прекалено много заявки — опитай пак след минута." },

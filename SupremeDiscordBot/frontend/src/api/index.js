@@ -101,12 +101,20 @@ export const getAuditLogs = (params) => api.get("/admin/audit-logs", { params })
 
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 // serverId е PATH параметър (минава през requireServerAdmin authz на backend-а).
-export const createCheckout = (serverId) =>
-  api.post(`/stripe/create-checkout/${serverId}`).then((r) => r.data);
+// v3.0 — body носи plan ("premium" | "whitelabel"), interval ("month" | "year")
+// и withdrawalConsent (чл. 16(м) — задължително преди checkout).
+export const createCheckout = (serverId, body = {}) =>
+  api.post(`/stripe/create-checkout/${serverId}`, body).then((r) => r.data);
 export const openPortal = (serverId) =>
   api.post(`/stripe/portal/${serverId}`).then((r) => r.data);
 export const getStripeStatus = (serverId) =>
   api.get(`/stripe/status/${serverId}`).then((r) => r.data);
+
+// v3.0 — Agency планове (до 5 / до 10 сървъра, един абонамент). Отделен
+// endpoint, добавян от друг workstream; тук само окабеляваме извикването.
+// plan: "agency5" | "agency10"; interval: "month" | "year".
+export const createAgencyCheckout = (body = {}) =>
+  api.post(`/agency/checkout`, body).then((r) => r.data);
 
 // ─── Export (Premium) ─────────────────────────────────────────────────────────
 // These return Blob URLs for direct download — use with an anchor tag.

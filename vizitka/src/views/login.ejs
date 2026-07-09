@@ -1,6 +1,7 @@
 <%- include('partials/head') %>
 <section class="auth-card">
   <h1>Вход</h1>
+  <% if (typeof notice !== 'undefined' && notice) { %><p class="alert alert-ok"><%= notice %></p><% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
   <form method="post" action="/login">
     <label>Имейл
@@ -11,6 +12,8 @@
     </label>
     <button type="submit" class="btn">Влез</button>
   </form>
-  <p class="muted">Нямаш акаунт? <a href="/register">Създай визитка</a>.</p>
+  <p class="muted">
+    <a href="/forgot">Забравена парола?</a> · Нямаш акаунт? <a href="/register">Създай визитка</a>.
+  </p>
 </section>
 <%- include('partials/foot') %>

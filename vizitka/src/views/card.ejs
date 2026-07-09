@@ -59,6 +59,33 @@
         <p><a class="link-btn" href="/p/<%= profile.slug %>/print"><span aria-hidden="true">🖨️</span> Оформи и разпечатай (Мастилко)</a></p>
       <% } %>
     </div>
+
+    <% if (wallet && wallet.any) { %>
+      <div class="vcard-wallet">
+        <p class="muted small">Носи тази визитка в телефона си:</p>
+        <div class="wallet-badges">
+          <% if (wallet.apple) { %>
+            <a href="<%= wallet.apple %>" aria-label="Добави в Apple Wallet">
+              <img src="/badge-apple-wallet.svg" alt="Добави в Apple Wallet" height="48">
+            </a>
+          <% } %>
+          <% if (wallet.google) { %>
+            <a href="<%= wallet.google %>" aria-label="Запази в Google Wallet">
+              <img src="/badge-google-wallet.svg" alt="Запази в Google Wallet" height="48">
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% } else if (isOwner && wallet && wallet.comingSoon) { %>
+      <div class="vcard-wallet is-soon">
+        <p class="muted small">Носи визитката в телефона си <span class="soon-chip">Скоро</span></p>
+        <div class="wallet-badges" aria-hidden="true">
+          <img src="/badge-apple-wallet.svg" alt="" height="48">
+          <img src="/badge-google-wallet.svg" alt="" height="48">
+        </div>
+        <p class="muted small">Apple Wallet и Google Wallet — работим по тях.</p>
+      </div>
+    <% } %>
   </article>
   <p class="made-with muted small">Направено с <a href="/">Vizitka</a> — винаги актуалната визитка.</p>
   <p class="report muted small">

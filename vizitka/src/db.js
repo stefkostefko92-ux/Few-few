@@ -29,6 +29,16 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Еднократни токени за нулиране на паролата (само sha256 хеш се пази).
+  CREATE TABLE IF NOT EXISTS password_resets (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL,       -- unix ms
+    used INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   CREATE TABLE IF NOT EXISTS profiles (
     id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
@@ -81,9 +91,21 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Регистрации на устройства за Apple Wallet auto-update (пуш при промяна).
+  CREATE TABLE IF NOT EXISTS apple_pass_registrations (
+    id INTEGER PRIMARY KEY,
+    device_library_id TEXT NOT NULL,   -- идентификатор на устройството от Apple
+    pass_type_id TEXT NOT NULL,
+    serial_number TEXT NOT NULL,       -- = profile.id (стабилен, не slug)
+    push_token TEXT NOT NULL,          -- APNs токен на устройството
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(device_library_id, serial_number)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
   CREATE INDEX IF NOT EXISTS idx_banners_active ON banners(placement, is_active, sort_order);
   CREATE INDEX IF NOT EXISTS idx_links_profile ON links(profile_id, sort_order);
+  CREATE INDEX IF NOT EXISTS idx_pass_reg_serial ON apple_pass_registrations(serial_number);
 `);
 
 // Леки миграции: добавяне на колони върху съществуваща база (idempotent).

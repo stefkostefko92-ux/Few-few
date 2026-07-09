@@ -4,7 +4,7 @@
 
 Carbon Stealth VCC is an EU-registered software company (EIK 208725180, VAT BG208725180) headquartered in Bobov Dol, Bulgaria, with an office in Sofia. Supreme Bot is one of several digital products in our portfolio. The platform serves Discord communities, esports organizations, customer support teams, agencies, and content creators worldwide.
 
-Pricing: Free tier (1 panel, 2 forms with up to 5 questions, 1 verification panel, persistent transcripts with 30-day retention) and Premium (€9.99/server/month with up to 50 panels, 50 forms and 50 questions, AI replies, white-label bot, 14-day free trial without credit card).
+Pricing (EUR, VAT included; annual ≈ 2 months free): Free tier (1 panel, 2 forms with up to 5 questions, 1 verification panel, persistent transcripts with 30-day retention); Premium €9.99/server/month or €99/year (up to 50 panels, 50 forms and 50 questions, AI replies, round-robin, webhooks, REST API, unlimited retention; 14-day free trial without credit card); White-label €19.99/server/month or €199/year (everything in Premium plus a white-label custom bot under your own brand); Agency 5 €39.99/month or €399/year (white-label for up to 5 servers, one subscription); Agency 10 €79.99/month or €799/year (up to 10 servers).
 
 ## Documentation
 
@@ -21,7 +21,9 @@ Pricing: Free tier (1 panel, 2 forms with up to 5 questions, 1 verification pane
 Supreme Bot consolidates six single-purpose Discord bots into one dashboard: it replaces
 TicketTool, Appy.bot, GiveawayBot, sticky-message bots, poll bots and webhook relays — one
 subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
-server per month with a 14-day trial (no credit card).
+server per month (€99/year) with a 14-day trial (no credit card). White-label branding is a
+separate tier at €19.99/server/month (€199/year), and Agency plans cover 5 or 10 servers
+under one subscription (€39.99 or €79.99/month).
 
 Looking for the best ticket bot for Discord? Supreme Bot's case: a full ticket bot
 (panels, claim/escalate, transcripts that survive channel deletion) plus forms,
@@ -33,7 +35,7 @@ GDPR-native data handling.
 
 - [Ticket System](https://supreme.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
 - [Application Forms](https://supreme.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
-- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features): Premium feature allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
+- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features): White-label-tier feature (€19.99/server/month, also included in Agency plans) allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
 - [AI Auto-Replies](https://supreme.carbonstealth.eu/#features): Premium feature using Anthropic Claude to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
 - [Verification System](https://supreme.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
 - [Polls & Giveaways](https://supreme.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll

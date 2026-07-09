@@ -29,9 +29,9 @@ export default function OgImage() {
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
-          backgroundColor: "#06150f",
+          backgroundColor: "#070a18",
           backgroundImage:
-            "radial-gradient(60% 55% at 50% 0%, rgba(217,178,95,0.20), transparent 60%), radial-gradient(90% 70% at 50% 120%, rgba(31,90,64,0.45), transparent 60%)",
+            "radial-gradient(60% 55% at 50% 0%, rgba(217,178,95,0.20), transparent 60%), radial-gradient(90% 70% at 50% 120%, rgba(154,134,224,0.35), transparent 60%)",
           color: "#f4ead6",
           fontFamily: "Manrope",
         }}
@@ -67,7 +67,7 @@ export default function OgImage() {
             background: "linear-gradient(90deg, transparent, #d9b25f, transparent)",
           }}
         />
-        <div style={{ fontSize: 30, color: "#9fb3a8", marginTop: 36 }}>
+        <div style={{ fontSize: 30, color: "#9aa0b8", marginTop: 36 }}>
           21 игри · 3 езика · безплатно в браузъра
         </div>
       </div>

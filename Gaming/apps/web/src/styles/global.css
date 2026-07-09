@@ -22,18 +22,26 @@
   }
   body {
     @apply bg-charcoal-900 font-body text-ink-100 antialiased;
-    /* Cosmic hero backdrop: the galaxy art, held behind a deep-indigo scrim so
-       content stays readable, with a warm gold + nebula-violet corner glow. */
+    min-height: 100vh;
+  }
+  /* Cosmic hero backdrop: the galaxy art, held behind a deep-indigo scrim so
+     content stays readable, with a warm gold + nebula-violet corner glow.
+     Painted on a fixed pseudo-element instead of background-attachment: fixed,
+     which iOS Safari still mishandles on the body. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image:
       radial-gradient(120% 80% at 12% -10%, rgba(231, 200, 123, 0.08), transparent 60%),
       radial-gradient(120% 80% at 100% 110%, rgba(154, 134, 224, 0.16), transparent 55%),
       linear-gradient(180deg, rgba(7, 10, 24, 0.86), rgba(7, 10, 24, 0.93)),
-      url("/bg-cosmos.png");
+      url("/bg-cosmos.webp");
     background-size: auto, auto, auto, cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    min-height: 100vh;
   }
   h1,
   h2,

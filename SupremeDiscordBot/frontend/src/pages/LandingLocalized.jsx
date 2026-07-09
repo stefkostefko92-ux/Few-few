@@ -4,10 +4,10 @@
 // own title/description/canonical/hreflang plus a translated FAQPage JSON-LD
 // (the visible FAQ below keeps content parity with the structured data, as
 // Google requires).
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
-  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
+  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe, Building2,
 } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
@@ -20,6 +20,10 @@ const FEATURE_ICONS = [Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, Cale
 
 export default function LandingLocalized({ locale }) {
   const t = LANDING_TRANSLATIONS[locale];
+
+  // Billing interval for the pricing section — a real keyboard-operable control
+  // (radiogroup below). Free is always €0; paid tiers switch price/per.
+  const [interval, setInterval] = useState("month");
 
   const handleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/login`;
@@ -209,21 +213,29 @@ export default function LandingLocalized({ locale }) {
         {/* PRICING */}
         <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-10">
               <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
                 {t.pricingHeading}
               </h2>
               <p className="text-cs-muted">{t.pricingSub}</p>
             </div>
+            {t.pricingToggle && (
+              <BillingToggle labels={t.pricingToggle} interval={interval} onChange={setInterval} />
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <TierCard icon={Zap} tier={t.tiers.free} onCta={handleLogin} />
-              <TierCard icon={Star} tier={t.tiers.premium} onCta={handleLogin} highlighted />
-              <TierCard
-                icon={Crown}
-                tier={t.tiers.enterprise}
-                ctaHref="mailto:discord@carbonstealth.eu?subject=Supreme Bot Enterprise Inquiry"
-              />
+              <TierCard icon={Zap} tier={t.tiers.free} interval={interval} onCta={handleLogin} />
+              <TierCard icon={Star} tier={t.tiers.premium} interval={interval} onCta={handleLogin} highlighted />
+              <TierCard icon={Crown} tier={t.tiers.whitelabel} interval={interval} onCta={handleLogin} />
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <TierCard icon={Building2} tier={t.tiers.agency5} interval={interval} onCta={handleLogin} compact />
+              <TierCard icon={Building2} tier={t.tiers.agency10} interval={interval} onCta={handleLogin} compact />
+            </div>
+            {/* Преддоговорна информация (чл. 6(1)(д),(о) Дир. 2011/83): ДДС в
+                цената + авто-подновяване — задължителна на ВСЕКИ език, не само EN. */}
+            {t.priceNote && (
+              <p className="text-center text-xs text-cs-dim font-mono mt-8">{t.priceNote}</p>
+            )}
           </div>
         </section>
 
@@ -278,31 +290,75 @@ export default function LandingLocalized({ locale }) {
   );
 }
 
-function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false }) {
+// Accessible monthly/annual switch — a radiogroup of two buttons (aria-checked),
+// fully keyboard-operable. The annual option carries a "2 months free" badge.
+// All motion is via a CSS transition that prefers-reduced-motion neutralizes.
+function BillingToggle({ labels, interval, onChange }) {
+  return (
+    <div className="flex flex-col items-center gap-2 mb-10">
+      <div
+        role="radiogroup"
+        aria-label={labels.monthly + " / " + labels.annual}
+        className="inline-flex items-center gap-1 p-1 rounded-full border border-cs-border bg-cs-surface/60"
+      >
+        {[["month", labels.monthly], ["year", labels.annual]].map(([value, label]) => {
+          const active = interval === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange(value)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cs-cyan ${
+                active ? "bg-cs-gold text-black" : "text-cs-muted hover:text-cs-text"
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      <span className="cs-badge-cyan text-[10px]">{labels.annualBadge}</span>
+    </div>
+  );
+}
+
+function TierCard({ icon: Icon, tier, interval = "month", onCta, ctaHref, highlighted = false, compact = false }) {
+  // Free has no yearly price; paid tiers switch on the interval toggle.
+  const yearly = interval === "year" && tier.priceYearly;
+  const price = yearly ? tier.priceYearly : tier.price;
+  const per = yearly ? tier.perYear : tier.per;
   const cardCls = highlighted
-    ? "cs-card flex flex-col border-2 border-amber-500/50 bg-amber-500/5 relative"
+    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative"
     : "cs-card flex flex-col";
   return (
     <div className={cardCls}>
       {highlighted && tier.badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-amber-500 text-black text-[10px] font-bold uppercase tracking-wider">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
           {tier.badge}
         </div>
       )}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <Icon className={`w-5 h-5 ${highlighted ? "text-amber-400 fill-current" : "text-cs-cyan"}`} />
+          <Icon className={`w-5 h-5 ${highlighted ? "text-cs-gold fill-current" : "text-cs-cyan"}`} />
           <h3 className="text-xl font-bold text-cs-text">{tier.name}</h3>
         </div>
+        {tier.seats && (
+          <div className="font-mono text-[10px] uppercase tracking-wider text-cs-cyan mb-1">{tier.seats}</div>
+        )}
         <p className="text-sm text-cs-muted">{tier.tagline}</p>
       </div>
-      <div className="mb-6">
-        <div className="font-display text-4xl font-black text-cs-text">{tier.price}</div>
-        <div className={`text-xs font-mono ${highlighted ? "text-amber-400" : "text-cs-dim"}`}>
-          {tier.trial || tier.per}
-        </div>
+      <div className="mb-6" aria-live="polite">
+        <div className="font-display text-4xl font-black text-cs-text">{price}</div>
+        <div className="text-xs text-cs-dim font-mono">{per}</div>
+        {tier.trial && (
+          <div className={`text-xs font-mono mt-1 ${highlighted ? "text-cs-gold" : "text-cs-dim"}`}>
+            {tier.trial}
+          </div>
+        )}
       </div>
-      <ul className="space-y-2 text-sm text-cs-text mb-8 flex-1">
+      <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
         {tier.bullets.map((b) => (
           <li key={b} className="flex items-start gap-2">
             <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
@@ -316,7 +372,7 @@ function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false }) {
         <button
           onClick={onCta}
           className={highlighted
-            ? "cs-btn-primary w-full bg-amber-500 hover:bg-amber-400 text-black border-amber-500"
+            ? "cs-btn-primary w-full bg-cs-gold hover:bg-cs-goldDim text-black border-cs-gold"
             : "cs-btn-secondary w-full"}
         >
           {tier.cta}

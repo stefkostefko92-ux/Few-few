@@ -45,6 +45,8 @@ export function robotsTxt(base) {
     'Disallow: /b/', // клик-редиректи на банери
     'Disallow: /api/', // печатно API
     'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
+    'Disallow: /p/*/wallet', // портфейл файлове (лични, не за индексиране)
+    'Disallow: /v1/', // Apple Wallet update web service
     'Allow: /',
     '',
     // AI-обучаващи ботове: търсещите/извличащите са добре дошли (видимост в AI
