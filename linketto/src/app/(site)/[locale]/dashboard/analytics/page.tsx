@@ -213,11 +213,11 @@ export default async function AnalyticsPage({
               >
                 <span
                   className="w-full rounded-t bg-linketto-500"
-                  style={{ height: `${(point.views / max) * 100}%` }}
+                  style={{ height: `${Math.round((point.views / max) * 150)}px` }}
                 />
                 <span
                   className="w-full rounded-t bg-linketto-200"
-                  style={{ height: `${(point.clicks / max) * 100}%` }}
+                  style={{ height: `${Math.round((point.clicks / max) * 150)}px` }}
                 />
               </div>
             ))}
