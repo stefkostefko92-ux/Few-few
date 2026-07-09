@@ -259,26 +259,17 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
   redirect(`/${uiLocale}/dashboard`);
 }
 
+const PRODUCT_TYPES = ['DIGITAL', 'COURSE', 'MEMBERSHIP'] as const;
+
 const productSchema = z.object({
   title: z.string().trim().min(1).max(100),
   priceEur: z.coerce.number().min(MIN_PRODUCT_PRICE_EUR).max(10000),
-  deliveryUrl: z
-    .string()
-    .trim()
-    .url()
-    .max(2000)
-    .refine((value) => /^https?:\/\//.test(value)),
+  type: z.enum(PRODUCT_TYPES).default('DIGITAL'),
+  interval: z.enum(['month', 'year']).optional(),
+  deliveryUrl: z.string().trim().max(2000).optional(),
 });
 
-const editProductSchema = z.object({
-  priceEur: z.coerce.number().min(MIN_PRODUCT_PRICE_EUR).max(10000),
-  deliveryUrl: z
-    .string()
-    .trim()
-    .url()
-    .max(2000)
-    .refine((value) => /^https?:\/\//.test(value)),
-});
+const httpUrl = (value: string) => /^https?:\/\/.+/.test(value);
 
 export async function addProductAction(formData: FormData): Promise<void> {
   const uiLocale = localeFrom(formData);
@@ -288,11 +279,22 @@ export async function addProductAction(formData: FormData): Promise<void> {
   const parsed = productSchema.safeParse({
     title: formData.get('title'),
     priceEur: formData.get('priceEur'),
-    deliveryUrl: formData.get('deliveryUrl'),
+    type: formData.get('type') ?? 'DIGITAL',
+    interval: formData.get('interval') || undefined,
+    deliveryUrl: formData.get('deliveryUrl') || undefined,
   });
   if (!parsed.success) {
     redirect(`/${uiLocale}/dashboard?error=product`);
   }
+  const type = parsed.data.type;
+  // DIGITAL иска валиден линк за доставка; COURSE/MEMBERSHIP ползват уроци.
+  let deliveryUrl: string | null = null;
+  if (type === 'DIGITAL') {
+    const du = (parsed.data.deliveryUrl ?? '').trim();
+    if (!httpUrl(du)) redirect(`/${uiLocale}/dashboard?error=product`);
+    deliveryUrl = du;
+  }
+  const interval = type === 'MEMBERSHIP' ? (parsed.data.interval ?? 'month') : null;
   const profile = await prisma.profile.findFirst({
     where: { id: profileId, userId: user.id },
     include: { _count: { select: { products: true } } },
@@ -302,7 +304,9 @@ export async function addProductAction(formData: FormData): Promise<void> {
     data: {
       profileId,
       priceCents: Math.round(parsed.data.priceEur * 100),
-      deliveryUrl: parsed.data.deliveryUrl,
+      type,
+      interval,
+      deliveryUrl,
       position: profile._count.products,
       translations: {
         create: { locale: profile.defaultLocale, title: parsed.data.title },
@@ -312,28 +316,87 @@ export async function addProductAction(formData: FormData): Promise<void> {
   redirect(`/${uiLocale}/dashboard`);
 }
 
-// Редакция на цена, линк за доставка и активност (без изтриване/пресъздаване).
+// Редакция на цена, линк за доставка и активност (типът не се мени след
+// създаване — за да не се обърква билингът).
 export async function updateProductAction(formData: FormData): Promise<void> {
   const uiLocale = localeFrom(formData);
   const user = await getSessionUser();
   if (!user) redirect(`/${uiLocale}/login`);
   const productId = String(formData.get('productId') ?? '');
-  const parsed = editProductSchema.safeParse({
-    priceEur: formData.get('priceEur'),
-    deliveryUrl: formData.get('deliveryUrl'),
-  });
-  if (!parsed.success) {
+  const priceEur = z.coerce
+    .number()
+    .min(MIN_PRODUCT_PRICE_EUR)
+    .max(10000)
+    .safeParse(formData.get('priceEur'));
+  if (!priceEur.success) {
     redirect(`/${uiLocale}/dashboard?error=product`);
   }
-  const { count } = await prisma.product.updateMany({
+  const product = await prisma.product.findFirst({
     where: { id: productId, profile: { userId: user.id } },
+    select: { id: true, type: true },
+  });
+  if (!product) redirect(`/${uiLocale}/dashboard?error=generic`);
+  // deliveryUrl важи само за DIGITAL.
+  let deliveryUrl: string | null | undefined = undefined;
+  if (product.type === 'DIGITAL') {
+    const du = String(formData.get('deliveryUrl') ?? '').trim();
+    if (!httpUrl(du)) redirect(`/${uiLocale}/dashboard?error=product`);
+    deliveryUrl = du;
+  }
+  await prisma.product.update({
+    where: { id: productId },
     data: {
-      priceCents: Math.round(parsed.data.priceEur * 100),
-      deliveryUrl: parsed.data.deliveryUrl,
+      priceCents: Math.round(priceEur.data * 100),
       active: formData.get('active') === 'on',
+      ...(deliveryUrl !== undefined ? { deliveryUrl } : {}),
     },
   });
-  if (count === 0) redirect(`/${uiLocale}/dashboard?error=generic`);
+  redirect(`/${uiLocale}/dashboard`);
+}
+
+// ── Уроци (за COURSE/MEMBERSHIP) ──────────────────────────────────────
+const lessonSchema = z.object({
+  title: z.string().trim().min(1).max(150),
+  body: z.string().trim().max(5000).optional(),
+  videoUrl: z.string().trim().max(2000).optional(),
+});
+
+export async function addLessonAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const productId = String(formData.get('productId') ?? '');
+  const parsed = lessonSchema.safeParse({
+    title: formData.get('title'),
+    body: formData.get('body') || undefined,
+    videoUrl: formData.get('videoUrl') || undefined,
+  });
+  if (!parsed.success) redirect(`/${uiLocale}/dashboard?error=product`);
+  const product = await prisma.product.findFirst({
+    where: { id: productId, profile: { userId: user.id } },
+    include: { _count: { select: { lessons: true } } },
+  });
+  if (!product) redirect(`/${uiLocale}/dashboard?error=generic`);
+  await prisma.lesson.create({
+    data: {
+      productId,
+      title: parsed.data.title,
+      body: parsed.data.body ?? null,
+      videoUrl: parsed.data.videoUrl ?? null,
+      position: product._count.lessons,
+    },
+  });
+  redirect(`/${uiLocale}/dashboard`);
+}
+
+export async function deleteLessonAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await getSessionUser();
+  if (!user) redirect(`/${uiLocale}/login`);
+  const lessonId = String(formData.get('lessonId') ?? '');
+  await prisma.lesson.deleteMany({
+    where: { id: lessonId, product: { profile: { userId: user.id } } },
+  });
   redirect(`/${uiLocale}/dashboard`);
 }
 

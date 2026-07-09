@@ -49,9 +49,11 @@ import {
 } from '@/app/actions/shortlink';
 import {
   addCouponAction,
+  addLessonAction,
   addProductAction,
   connectStripeAction,
   deleteCouponAction,
+  deleteLessonAction,
   deleteProductAction,
   sellerRefundAction,
   setTraderStatusAction,
@@ -179,7 +181,11 @@ export default async function DashboardPage({
     ? await prisma.product.findMany({
         where: { profileId: profile.id },
         orderBy: { position: 'asc' },
-        include: { translations: true },
+        include: {
+          translations: true,
+          lessons: { orderBy: { position: 'asc' } },
+          _count: { select: { entitlements: { where: { active: true } } } },
+        },
       })
     : [];
   const coupons = profile
@@ -1588,11 +1594,19 @@ export default async function DashboardPage({
                       >
                         <div className="flex items-center justify-between gap-3">
                           <p className="truncate text-sm text-slate-500">
+                            <span className="mr-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600">
+                              {t(`productType_${product.type}`)}
+                            </span>
                             <span className="mr-2 font-semibold text-slate-700">
                               €{(product.priceCents / 100).toFixed(2)}
+                              {product.type === 'MEMBERSHIP'
+                                ? `/${t(product.interval === 'year' ? 'intervalYearShort' : 'intervalMonthShort')}`
+                                : ''}
                             </span>
                             {product.active ? '' : `(${t('productInactive')}) `}
-                            {product.deliveryUrl}
+                            {product.type !== 'DIGITAL'
+                              ? `· ${product._count.entitlements} ${t('membersLabel')}`
+                              : (product.deliveryUrl ?? '')}
                           </p>
                           <form action={deleteProductAction}>
                             <input
@@ -1716,12 +1730,100 @@ export default async function DashboardPage({
                             );
                           })}
                         </div>
+                        {/* Уроци (за курсове/членства) + линк към заключената страница */}
+                        {product.type !== 'DIGITAL' && (
+                          <div className="mt-3 border-t border-slate-100 pt-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-semibold text-slate-600">
+                                {t('lessonsSection')}
+                              </h4>
+                              <a
+                                href={`/u/${profile.slug}/learn/${product.id}`}
+                                className="text-xs font-medium text-linketto-700 hover:underline"
+                              >
+                                {t('lessonsView')} →
+                              </a>
+                            </div>
+                            {product.lessons.length > 0 && (
+                              <ul className="mt-2 space-y-1 text-sm">
+                                {product.lessons.map((lesson, i) => (
+                                  <li
+                                    key={lesson.id}
+                                    className="flex items-center justify-between gap-2"
+                                  >
+                                    <span className="truncate">
+                                      {i + 1}. {lesson.title}
+                                    </span>
+                                    <form action={deleteLessonAction}>
+                                      <input
+                                        type="hidden"
+                                        name="uiLocale"
+                                        value={locale}
+                                      />
+                                      <input
+                                        type="hidden"
+                                        name="lessonId"
+                                        value={lesson.id}
+                                      />
+                                      <button
+                                        type="submit"
+                                        className="text-xs text-red-600 hover:underline"
+                                      >
+                                        {t('delete')}
+                                      </button>
+                                    </form>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                            <form
+                              action={addLessonAction}
+                              className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+                            >
+                              <input
+                                type="hidden"
+                                name="uiLocale"
+                                value={locale}
+                              />
+                              <input
+                                type="hidden"
+                                name="productId"
+                                value={product.id}
+                              />
+                              <input
+                                type="text"
+                                name="title"
+                                required
+                                placeholder={t('lessonTitle')}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              />
+                              <input
+                                type="url"
+                                name="videoUrl"
+                                placeholder={t('lessonVideo')}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                              />
+                              <button
+                                type="submit"
+                                className="rounded-full border border-linketto-600 px-3 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                              >
+                                {t('addLesson')}
+                              </button>
+                              <textarea
+                                name="body"
+                                rows={2}
+                                placeholder={t('lessonBody')}
+                                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:col-span-3"
+                              />
+                            </form>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                   <form
                     action={addProductAction}
-                    className="mt-6 grid gap-3 sm:grid-cols-[1fr_8rem_1fr_auto]"
+                    className="mt-6 grid gap-3 sm:grid-cols-2"
                   >
                     <input type="hidden" name="uiLocale" value={locale} />
                     <input type="hidden" name="profileId" value={profile.id} />
@@ -1741,16 +1843,42 @@ export default async function DashboardPage({
                       placeholder="9.99"
                       className="rounded-lg border border-slate-300 px-3 py-2"
                     />
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('productType')}
+                      <select
+                        name="type"
+                        defaultValue="DIGITAL"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      >
+                        {(['DIGITAL', 'COURSE', 'MEMBERSHIP'] as const).map(
+                          (pt) => (
+                            <option key={pt} value={pt}>
+                              {t(`productType_${pt}`)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-medium text-slate-500">
+                      {t('productInterval')}
+                      <select
+                        name="interval"
+                        defaultValue="month"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      >
+                        <option value="month">{t('intervalMonth')}</option>
+                        <option value="year">{t('intervalYear')}</option>
+                      </select>
+                    </label>
                     <input
                       type="url"
                       name="deliveryUrl"
-                      required
-                      placeholder={t('deliveryUrl')}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
+                      placeholder={t('deliveryUrlDigital')}
+                      className="rounded-lg border border-slate-300 px-3 py-2 sm:col-span-2"
                     />
                     <button
                       type="submit"
-                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                      className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-2 sm:justify-self-start"
                     >
                       {t('addProduct')}
                     </button>

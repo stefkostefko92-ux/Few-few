@@ -1078,16 +1078,30 @@ export async function ProfileScreen({
                           </span>
                           <span className="shrink-0 font-bold">
                             €{(product.priceCents / 100).toFixed(2)}
+                            {product.type === 'MEMBERSHIP'
+                              ? product.interval === 'year'
+                                ? t('shopPerYear')
+                                : t('shopPerMonth')
+                              : ''}
                           </span>
                         </button>
-                        {/* Промо код (по избор) — отстъпката се прилага на сървъра */}
-                        <input
-                          type="text"
-                          name="coupon"
-                          autoComplete="off"
-                          placeholder={t('shopCouponPlaceholder')}
-                          className="mt-1.5 w-full rounded-lg border border-current/20 bg-current/5 px-3 py-1.5 text-xs uppercase tracking-wide placeholder:normal-case placeholder:opacity-50"
-                        />
+                        {product.type !== 'DIGITAL' && (
+                          <span className="mt-1 block text-center text-[10px] font-semibold uppercase tracking-wide opacity-60">
+                            {product.type === 'MEMBERSHIP'
+                              ? t('shopMembership')
+                              : t('shopCourse')}
+                          </span>
+                        )}
+                        {/* Промо код — не важи за членства (периодична цена) */}
+                        {product.type !== 'MEMBERSHIP' && (
+                          <input
+                            type="text"
+                            name="coupon"
+                            autoComplete="off"
+                            placeholder={t('shopCouponPlaceholder')}
+                            className="mt-1.5 w-full rounded-lg border border-current/20 bg-current/5 px-3 py-1.5 text-xs uppercase tracking-wide placeholder:normal-case placeholder:opacity-50"
+                          />
+                        )}
                         {/* ЗЗП чл. 57, т. 13 / Дир. 2011/83 чл. 16(м):
                             изрично съгласие за незабавна доставка =
                             загуба на 14-дневния отказ */}
@@ -1100,6 +1114,14 @@ export async function ProfileScreen({
                           />
                           {t('shopWaiver')}
                         </label>
+                        {product.type !== 'DIGITAL' && (
+                          <Link
+                            href={`/u/${slug}/learn/${product.id}`}
+                            className="mt-1 block text-center text-[11px] underline opacity-70"
+                          >
+                            {t('shopAccess')}
+                          </Link>
+                        )}
                       </form>
                     </li>
                   );
