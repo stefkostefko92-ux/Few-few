@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ─── Landing pages (8 language versions, hreflang cluster) ─────────────
+       Every URL in the cluster lists ALL alternates incl. itself + x-default,
+       per Google's bidirectional hreflang requirement. -->
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+    <image:image>
+      <image:loc>https://supreme.carbonstealth.eu/og-image.png</image:loc>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/bg</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/de</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/es</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/fr</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/it</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/nl</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/pl</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://supreme.carbonstealth.eu/"/>
+    <xhtml:link rel="alternate" hreflang="bg" href="https://supreme.carbonstealth.eu/bg"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://supreme.carbonstealth.eu/de"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://supreme.carbonstealth.eu/es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://supreme.carbonstealth.eu/fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://supreme.carbonstealth.eu/it"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://supreme.carbonstealth.eu/nl"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://supreme.carbonstealth.eu/pl"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://supreme.carbonstealth.eu/"/>
+  </url>
+
+  <!-- ─── Public utility & legal pages (English) ──────────────────────────── -->
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/status</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>always</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/terms</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/privacy</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/cookies</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/eula</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://supreme.carbonstealth.eu/accessibility</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>

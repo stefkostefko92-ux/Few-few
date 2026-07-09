@@ -1,0 +1,10 @@
+Building facade textures used by the Магнат 3D board.
+
+Source: ambientCG (https://ambientcg.com)
+License: Creative Commons CC0 1.0 Universal (Public Domain).
+  https://creativecommons.org/publicdomain/zero/1.0/
+No attribution is legally required; credited here as good practice.
+
+Assets (downscaled to 512px, JPEG):
+  office_*  — "Facade019A"  (modern concrete/glass office)
+  glass_*   — "Facade012"   (glass skyscraper, lit windows; incl. Emission)

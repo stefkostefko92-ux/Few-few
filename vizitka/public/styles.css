@@ -1,0 +1,834 @@
+/* Vizitka — чист, мобилен-първо дизайн. */
+:root {
+  --ink: #111827;
+  --muted: #6b7280;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --brand: #2563eb;
+  --brand-dark: #1d4ed8;
+  --ok: #065f46;
+  --ok-bg: #d1fae5;
+  --err: #991b1b;
+  --err-bg: #fee2e2;
+  --warn: #92400e;
+  --warn-bg: #fef3c7;
+  --line: #e5e7eb;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.55;
+}
+a {
+  color: var(--brand);
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Навигация */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.nav nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.nav a {
+  text-decoration: none;
+  color: var(--ink);
+}
+.nav a.active {
+  color: var(--brand);
+  font-weight: 600;
+}
+.brand {
+  display: flex;
+  align-items: center;
+}
+.brand-logo {
+  height: 46px;
+  width: auto;
+  display: block;
+}
+
+/* Бутони */
+.btn {
+  display: inline-block;
+  background: var(--brand);
+  color: #fff !important;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--brand-dark);
+}
+.btn-big {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.05rem;
+}
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
+.link-btn {
+  background: none;
+  border: 0;
+  color: var(--brand);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+.link-btn.danger {
+  color: var(--err);
+}
+.inline-form {
+  display: inline;
+}
+
+/* Начало */
+.hero {
+  text-align: center;
+  padding: 2.5rem 1rem 2rem;
+}
+.hero-logo {
+  height: clamp(110px, 22vw, 170px);
+  width: auto;
+  margin-bottom: 0.5rem;
+}
+.hero h1 {
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+.lead {
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.feature {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+}
+.feature h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+.feature p {
+  margin: 0;
+  color: var(--muted);
+}
+.how {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+.how ol {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+.how li {
+  margin: 0.4rem 0;
+}
+
+/* Формуляри */
+.auth-card {
+  max-width: 420px;
+  margin: 2rem auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.6rem;
+}
+.auth-card.center {
+  text-align: center;
+}
+label {
+  display: block;
+  margin: 0.8rem 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='url'],
+select,
+textarea {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  background: #fff;
+}
+textarea {
+  resize: vertical;
+}
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 1rem 0;
+}
+legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0 0.4rem;
+}
+.check {
+  font-weight: 400;
+}
+.check input {
+  width: auto;
+  margin-right: 0.4rem;
+}
+.slug-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.slug-row input {
+  flex: 1;
+}
+.accent-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+.accent-row input[type='color'] {
+  width: 48px;
+  height: 38px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.accent-toggle {
+  margin: 0;
+  font-weight: 400;
+}
+/* Редове за собствени бутони */
+.link-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 1.4fr;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+.link-row input {
+  margin-top: 0;
+}
+.link-icon-in {
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .link-row {
+    grid-template-columns: 56px 1fr;
+  }
+  .link-row input[type='url'] {
+    grid-column: 1 / -1;
+  }
+}
+.cover-thumb {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+}
+
+.alert {
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  margin: 0.8rem 0;
+}
+.alert-ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.alert-error {
+  background: var(--err-bg);
+  color: var(--err);
+}
+.alert-warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.85rem;
+}
+
+/* Табло */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.dash-side > div {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.qr-box img {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  max-width: 100%;
+  height: auto;
+}
+.link-box input {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.dash-form {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+}
+
+/* Аватар */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--card);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+.avatar-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  background: var(--brand);
+  color: #fff;
+  font-size: 3rem;
+  font-weight: 700;
+}
+.photo-box .avatar {
+  width: 120px;
+  height: 120px;
+}
+.photo-box form {
+  margin-top: 0.7rem;
+}
+.photo-box input[type='file'] {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Публична визитка */
+.card-page {
+  max-width: 480px;
+  margin: 1.5rem auto;
+}
+.vcard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-align: center;
+  padding-bottom: 1.5rem;
+}
+.vcard-top {
+  background: linear-gradient(135deg, var(--brand), #7c3aed);
+  color: #fff;
+  padding: 2rem 1.5rem 1.5rem;
+  position: relative;
+}
+/* Корична (заглавна) снимка зад името + тъмен слой за четимост */
+.vcard-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.vcard-top.has-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 0;
+}
+.vcard-top-inner {
+  position: relative;
+  z-index: 1;
+}
+/* Лека сянка пази белия текст четим и при светъл собствен цвят (accent). */
+.vcard-top h1,
+.vcard-top .headline {
+  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.28);
+}
+/* Цветови теми на визитката (theme-<id> от src/themes.js) */
+.vcard-top.theme-blue {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+.vcard-top.theme-emerald {
+  background: linear-gradient(135deg, #059669, #0d9488);
+}
+.vcard-top.theme-sunset {
+  background: linear-gradient(135deg, #ea580c, #db2777);
+}
+.vcard-top.theme-ocean {
+  background: linear-gradient(135deg, #0284c7, #0891b2);
+}
+.vcard-top.theme-graphite {
+  background: linear-gradient(135deg, #1f2937, #4b5563);
+}
+.vcard-top.theme-rose {
+  background: linear-gradient(135deg, #e11d48, #9d174d);
+}
+.vcard-top h1 {
+  margin: 0.8rem 0 0.2rem;
+  font-size: 1.6rem;
+}
+.vcard-top .headline {
+  margin: 0;
+  opacity: 0.92;
+}
+.vcard-top .muted {
+  color: rgba(255, 255, 255, 0.8);
+}
+.avatar-big {
+  width: 140px;
+  height: 140px;
+  font-size: 3.6rem;
+}
+/* Форма на аватара */
+.avatar.shape-rounded {
+  border-radius: 22px;
+}
+.avatar.shape-square {
+  border-radius: 4px;
+}
+
+/* Собствени бутони/връзки на визитката (Linktree-стил) */
+.vcard-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem 1.5rem 0.2rem;
+}
+.link-btn-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink) !important;
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    transform 0.08s ease,
+    border-color 0.15s ease;
+}
+.link-btn-card:hover {
+  border-color: var(--brand);
+  transform: translateY(-1px);
+}
+.link-ico {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* Шрифт на визитката */
+.vcard.font-serif {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.vcard.font-rounded {
+  font-family: 'Segoe UI Rounded', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+}
+.vcard.font-mono {
+  font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace;
+}
+.vcard-actions {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 1.2rem 1rem 0.4rem;
+}
+.vcard-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0 1.5rem;
+  text-align: left;
+}
+.vcard-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.vcard-list li > span:first-child {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.vcard-list a,
+.vcard-list li > span + span {
+  word-break: break-word;
+  text-align: right;
+}
+.bio {
+  padding: 0 1.5rem;
+  text-align: left;
+  white-space: pre-line;
+}
+.socials {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.vcard-qr {
+  margin-top: 1.5rem;
+}
+.vcard-qr img {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.made-with {
+  text-align: center;
+}
+
+/* Skip-link (достъпност): видим само на фокус */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 8px 0;
+  z-index: 10;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* FAQ на началната */
+.faq {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+.faq h2 {
+  margin-top: 0;
+}
+.faq-item {
+  border-bottom: 1px solid var(--line);
+  padding: 0.4rem 0;
+}
+.faq-item:last-child {
+  border-bottom: 0;
+}
+.faq-item summary {
+  cursor: pointer;
+  list-style-position: outside;
+}
+.faq-item summary h3 {
+  display: inline;
+  font-size: 1rem;
+  margin: 0;
+}
+.faq-item p {
+  color: var(--muted);
+  margin: 0.5rem 0 0.6rem;
+}
+
+/* Сигнал за злоупотреба на визитката */
+.report {
+  text-align: center;
+  margin-top: 0.3rem;
+}
+
+/* Рекламни банери (начална страница) — фиксиран формат 960×120 */
+.ads {
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+.ad {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 960 / 120; /* стандартна лента 8:1 */
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.ad a,
+.ad img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ad img {
+  object-fit: cover; /* всяка картинка запълва лентата еднакво */
+}
+.ad-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(17, 24, 39, 0.6);
+  color: #fff;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* Админ панел */
+.admin {
+  max-width: 780px;
+  margin: 0 auto;
+}
+.admin h2 {
+  margin-top: 1.8rem;
+  font-size: 1.15rem;
+}
+.admin-form {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.admin-banners {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.admin-banner {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+.admin-banner.inactive {
+  opacity: 0.6;
+}
+.admin-banner-top {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.admin-thumb {
+  width: 120px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.admin-banner-info {
+  flex: 1;
+  min-width: 0;
+}
+.admin-banner-info p {
+  margin: 0.3rem 0 0;
+  word-break: break-word;
+}
+.admin-banner-order {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.admin-banner-order .link-btn {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.admin-banner-order .link-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 1px 8px;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+.badge-on {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.badge-off {
+  background: var(--err-bg);
+  color: var(--err);
+}
+.admin-banner-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.8rem;
+}
+.admin-edit summary {
+  display: inline-block;
+  list-style: none;
+}
+.admin-edit summary::-webkit-details-marker {
+  display: none;
+}
+.admin-edit[open] summary {
+  margin-bottom: 0.6rem;
+}
+
+/* Статистика в таблото */
+.stat-number {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin: 0.2rem 0 0;
+  color: var(--brand);
+}
+.stats-box .muted {
+  margin-top: 0.2rem;
+}
+
+/* Настройки на акаунта */
+.settings {
+  margin-top: 2rem;
+}
+.settings summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+.settings .dash-form {
+  max-width: 420px;
+  margin-top: 0.8rem;
+}
+
+/* Печатна страница */
+.print-page {
+  max-width: 560px;
+  margin: 1.5rem auto;
+  text-align: center;
+}
+.lead-sm {
+  color: var(--muted);
+  max-width: 460px;
+  margin: 0 auto 1.5rem;
+}
+.print-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+.print-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.print-preview img {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.print-preview p {
+  margin: 0.2rem 0 0;
+}
+.print-data {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+.print-data summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Правни страници */
+.legal {
+  max-width: 720px;
+  margin: 1.5rem auto;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+}
+.legal h2 {
+  font-size: 1.15rem;
+  margin: 1.4rem 0 0.4rem;
+}
+.legal li {
+  margin: 0.3rem 0;
+}
+
+.footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 2rem 1rem;
+}

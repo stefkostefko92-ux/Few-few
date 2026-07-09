@@ -1,0 +1,89 @@
+@import "./tokens.css";
+
+/* Self-hosted fonts (woff2, swap) — validated for BG Cyrillic (§3.3, §15). */
+@import "@fontsource/playfair-display/cyrillic-400.css";
+@import "@fontsource/playfair-display/cyrillic-700.css";
+@import "@fontsource/playfair-display/latin-400.css";
+@import "@fontsource/playfair-display/latin-700.css";
+@import "@fontsource/manrope/cyrillic-400.css";
+@import "@fontsource/manrope/cyrillic-500.css";
+@import "@fontsource/manrope/cyrillic-700.css";
+@import "@fontsource/manrope/latin-400.css";
+@import "@fontsource/manrope/latin-500.css";
+@import "@fontsource/manrope/latin-700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-charcoal-900 font-body text-ink-100 antialiased;
+    /* Cosmic hero backdrop: the galaxy art, held behind a deep-indigo scrim so
+       content stays readable, with a warm gold + nebula-violet corner glow. */
+    background-image:
+      radial-gradient(120% 80% at 12% -10%, rgba(231, 200, 123, 0.08), transparent 60%),
+      radial-gradient(120% 80% at 100% 110%, rgba(154, 134, 224, 0.16), transparent 55%),
+      linear-gradient(180deg, rgba(7, 10, 24, 0.86), rgba(7, 10, 24, 0.93)),
+      url("/bg-cosmos.png");
+    background-size: auto, auto, auto, cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  /* tabular numbers for chips/timers (§3.3) */
+  .tnum {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    /* clamp infinite loops (grain/flicker) — 0.001ms × infinite still churns paint */
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Quick horizontal shake for invalid input (e.g. an impossible chess move). */
+@keyframes aso-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-9px) rotate(-0.6deg); }
+  30% { transform: translateX(8px) rotate(0.6deg); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+}
+.aso-shake { animation: aso-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+/* In-app "reduced motion" toggle (settings store sets the attribute). Mirrors
+   the OS media query above so the preference works without an OS change. */
+:root[data-reduced-motion="true"] *,
+:root[data-reduced-motion="true"] *::before,
+:root[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Native form controls: keep font ≥16px so iOS Safari doesn't auto-zoom the
+   viewport when they receive focus (lobby room selects, inputs). */
+select,
+input,
+textarea {
+  font-size: max(16px, 1rem);
+}

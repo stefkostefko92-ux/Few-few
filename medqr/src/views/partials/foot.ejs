@@ -1,0 +1,19 @@
+  </main>
+  <footer class="site-footer">
+    <nav class="foot-links">
+      <a href="/about"><%= lang === 'en' ? 'About' : 'За нас' %></a>
+      <a href="/contact"><%= lang === 'en' ? 'Contact' : 'Контакти' %></a>
+      <a href="/privacy"><%= t('foot.privacy') %></a>
+      <a href="/cookies"><%= t('foot.cookies') %></a>
+      <a href="/terms"><%= t('foot.terms') %></a>
+      <a href="/accessibility"><%= lang === 'en' ? 'Accessibility' : 'Достъпност' %></a>
+    </nav>
+    <p class="foot-disclaimer"><%= t('foot.disclaimer') %></p>
+    <p class="foot-credit">
+      <a href="/about"><%= company.name %></a> · <%= company.legalForm %> ·
+      <%= lang === 'en' ? 'UIC' : 'ЕИК' %> <%= company.uic %> ·
+      <a href="<%= company.url %>" rel="noopener noreferrer" target="_blank"><%= company.url %></a>
+    </p>
+  </footer>
+</body>
+</html>

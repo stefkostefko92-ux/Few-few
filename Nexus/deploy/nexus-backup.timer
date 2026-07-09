@@ -1,0 +1,12 @@
+[Unit]
+# Дневен тригер за nexus-backup.service (03:30 локално; Persistent=true
+# наваксва пропуснат прозорец след рестарт на сървъра).
+Description=Daily Nexus Dominion SQLite backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

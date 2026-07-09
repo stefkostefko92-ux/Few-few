@@ -1,0 +1,29 @@
+# АСО — worker (BullMQ maintenance jobs) image. Multi-stage, non-root (S17).
+FROM node:22-slim AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable
+WORKDIR /app
+
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/config/package.json packages/config/
+COPY packages/shared/package.json packages/shared/
+COPY packages/db/package.json packages/db/
+COPY apps/worker/package.json apps/worker/
+RUN pnpm install --frozen-lockfile
+
+FROM deps AS build
+COPY . .
+RUN pnpm --filter @aso/db generate \
+  && pnpm --filter @aso/shared build \
+  && pnpm --filter @aso/db build \
+  && pnpm --filter @aso/worker build
+
+FROM base AS runner
+ENV NODE_ENV=production
+COPY --from=build /app /app
+WORKDIR /app/apps/worker
+USER node
+
+CMD ["node", "dist/index.js"]

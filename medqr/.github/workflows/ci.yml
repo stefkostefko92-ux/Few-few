@@ -1,0 +1,59 @@
+name: CI
+
+# Статичен анализ (CodeQL): включете „Default setup" от
+# Settings → Code security → CodeQL analysis.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Проверка за уязвими зависимости (production)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Генериране на SBOM (CycloneDX)
+        run: npx --yes @cyclonedx/cyclonedx-npm --omit dev --output-file sbom.json
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+          if-no-files-found: ignore

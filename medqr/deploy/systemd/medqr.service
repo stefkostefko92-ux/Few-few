@@ -1,0 +1,47 @@
+[Unit]
+Description=MedQR — спешен медицински профил
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=medqr
+Group=medqr
+WorkingDirectory=/opt/medqr
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=3
+
+# Конфигурация и тайни (с права 600, собственост medqr:medqr).
+EnvironmentFile=/etc/medqr/medqr.env
+
+# --- Sandboxing / hardening ---
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+# Единствено data/ е записваем (SQLite + WAL).
+ReadWritePaths=/opt/medqr/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,385 @@
+// АСО — PostgreSQL schema (concept section 10).
+// Migrations: `prisma migrate deploy` at boot (idempotent). Never `db push` on
+// prod, never DELETE/UPDATE without WHERE. Index on every FK + hot lookup field.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  // Nullable: OAuth-only accounts (Google/Facebook) have no local password.
+  passwordHash  String? // argon2id
+  emailVerified Boolean   @default(false) // email confirmation flow
+  displayName   String
+  role          Role      @default(PLAYER) // 7-level hierarchy
+  locale        String    @default("bg") // bg|it|en
+  chips         BigInt    @default(1000) // virtual, NOT cashable
+  gems          Int       @default(0) // premium currency (Stripe)
+  xp            Int       @default(0)
+  level         Int       @default(1)
+  vipTier       VipTier   @default(NONE)
+  vipUntil      DateTime?
+  stripeCustomerId String? @unique // reuse one Stripe customer per user (no dupes)
+  banned        Boolean   @default(false) // blocked at login by staff (§14)
+  banReason     String? // why staff banned the account; required when banning
+  banUntil      DateTime? // temp-ban expiry; null = permanent. Expired bans are lifted lazily
+  termsAcceptedAt DateTime? // consent to ToS + 18+ at registration (GDPR)
+  deletedAt     DateTime? // GDPR erasure: anonymized + login disabled
+  createdAt     DateTime  @default(now())
+  lastSeenAt    DateTime  @default(now())
+
+  ratings    RatingPerGame[]
+  inventory  InventoryItem[]
+  matches    MatchPlayer[]
+  purchases  Purchase[]
+  subscription Subscription?
+  quests     Quest[]
+  authTokens AuthToken[]
+  oauth      OAuthAccount[]
+  achievements    Achievement[]
+  friendsSent     Friendship[]   @relation("FriendRequester")
+  friendsReceived Friendship[]   @relation("FriendAddressee")
+  notifications   Notification[]
+
+  @@index([level])
+  @@index([vipTier])
+}
+
+// Social graph (§ retention). A row is created by the requester; on accept it
+// flips to ACCEPTED. A declined request is deleted. Direction is preserved so
+// pending requests can be shown to the right side.
+model Friendship {
+  id          String       @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  requester   User         @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User         @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+}
+
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+}
+
+// One-time achievement unlocks (§12). Awarded from cumulative play; the key
+// maps to ACHIEVEMENT_DEFS in shared.
+model Achievement {
+  id         String   @id @default(cuid())
+  userId     String
+  key        String
+  unlockedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+// In-app notifications (friend requests/accepts, system). `data` is a JSON blob.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // friend_request | friend_accepted | system
+  data      String // JSON
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+// Single-use, hashed tokens for email verification and password reset
+// (§14). We store only a SHA-256 of the raw token; the raw value lives only
+// in the emailed link. Rows are consumed (usedAt) and expire.
+model AuthToken {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AuthTokenType
+  tokenHash String        @unique // sha256(rawToken)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+enum AuthTokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+// Links a federated identity (Google/Facebook) to a local user. A user can
+// have at most one account per provider; a provider account maps to one user.
+model OAuthAccount {
+  id                String        @id @default(cuid())
+  userId            String
+  provider          OAuthProvider
+  providerAccountId String // the "sub" / id from the provider
+  createdAt         DateTime      @default(now())
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+enum OAuthProvider {
+  GOOGLE
+  FACEBOOK
+}
+
+model RatingPerGame {
+  id     String  @id @default(cuid())
+  userId String
+  game   GameKey
+  mmr    Int     @default(1200)
+  games  Int     @default(0)
+  wins   Int     @default(0)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, game])
+  @@index([game, mmr])
+}
+
+model Match {
+  id        String    @id @default(cuid())
+  game      GameKey
+  mode      String
+  seed      String // commit-reveal server seed (S13.2)
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  players   MatchPlayer[]
+
+  @@index([game, startedAt])
+  @@index([startedAt])
+}
+
+model MatchPlayer {
+  id         String  @id @default(cuid())
+  matchId    String
+  userId     String
+  seat       Int
+  result     String? // win|loss|draw
+  mmrDelta   Int     @default(0)
+  chipsDelta BigInt  @default(0)
+  match      Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId]) // one result row per player per match (idempotency)
+  @@index([userId])
+  @@index([matchId])
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  kind       ProductKind
+  sku        String      @unique
+  priceCents Int
+  gems       Int?
+  cosmeticId String?
+  active     Boolean     @default(true)
+  purchases  Purchase[]
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  stripeId  String   @unique
+  status    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([productId])
+  @@index([status]) // admin revenue aggregate filters on completed
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  stripeSubId      String   @unique
+  tier             VipTier
+  status           String
+  currentPeriodEnd DateTime
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InventoryItem {
+  id         String  @id @default(cuid())
+  userId     String
+  cosmeticId String
+  equipped   Boolean @default(false)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cosmeticId])
+  @@index([userId])
+}
+
+model Quest {
+  id          String    @id @default(cuid())
+  userId      String
+  key         String
+  progress    Int       @default(0)
+  target      Int
+  period      String
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key, period]) // one row per quest per period (idempotency)
+  @@index([userId, period])
+}
+
+model Season {
+  id       String   @id @default(cuid())
+  index    Int      @unique
+  startsAt DateTime
+  endsAt   DateTime
+  active   Boolean
+}
+
+// Admin action audit trail (§14). Every staff mutation is recorded with the
+// actor, action key, optional target user, and a JSON detail blob.
+model AdminAudit {
+  id        String   @id @default(cuid())
+  actorId   String
+  actorName String
+  action    String // e.g. "grant_chips", "set_role", "ban"
+  targetId  String?
+  detail    String // JSON blob
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([targetId])
+  @@index([actorId])
+}
+
+// Stripe webhook idempotency (S11.3): dedupe by event.id.
+model ProcessedEvent {
+  id          String   @id // Stripe event.id
+  type        String
+  processedAt DateTime @default(now())
+}
+
+// Anti-cheat collusion signals (§13.5). The worker writes flags for human
+// review — never automatic bans. A flag pairs two accounts with the evidence
+// (e.g. unusually skewed head-to-head outcomes) for a moderator to triage.
+model CollusionFlag {
+  id        String   @id @default(cuid())
+  game      GameKey
+  userAId   String
+  userBId   String
+  reason    String // heuristic key, e.g. "skewed_h2h"
+  score     Float // severity 0..1
+  details   String // JSON blob of supporting stats
+  status    FlagStatus @default(OPEN)
+  createdAt DateTime @default(now())
+  reviewedAt DateTime?
+
+  @@index([status, game])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+enum FlagStatus {
+  OPEN
+  REVIEWING
+  DISMISSED
+  CONFIRMED
+}
+
+// Player-submitted chat reports (moderation queue, §14). Rows are written by
+// the realtime layer (the client report hook lands separately) and triaged in
+// the admin panel. Plain string ids (no FK) like CollusionFlag so reports
+// survive account erasure.
+model ChatReport {
+  id         String       @id @default(cuid())
+  matchId    String
+  fromUserId String
+  targetSeat Int? // seat of the offending player, when known
+  text       String // reporter's note / offending message excerpt
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+
+  @@index([status, createdAt])
+  @@index([matchId])
+  @@index([fromUserId])
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum Role {
+  GUEST
+  PLAYER
+  VIP_PLAYER
+  MODERATOR
+  SUPPORT
+  ADMIN
+  OWNER
+}
+
+enum VipTier {
+  NONE
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum ProductKind {
+  GEMS
+  COSMETIC
+  VIP_SUB
+  CHIP_PACK
+}
+
+enum GameKey {
+  BELOTE
+  SANTASE
+  SVARA
+  WAR
+  GOFISH
+  KENT
+  CHESS
+  BACKGAMMON
+  DRAUGHTS
+  LUDO
+  RUMMY
+  DOMINO
+  BRIDGE
+  BATTLESHIP
+  DICE
+  BINGO
+  WORDS
+  EIGHTBALL
+  NINEBALL
+  SNOOKER
+  MAGNAT
+}
+
+/// Key-value app settings, editable from the admin panel (e.g. the Discord
+/// webhook config). `value` holds JSON; the app layer parses/validates it.
+model Setting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}

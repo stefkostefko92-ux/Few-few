@@ -1,0 +1,51 @@
+/* Readable long-form legal/content pages. */
+.legal {
+  max-width: 760px;
+  padding: 3rem 1.25rem 4rem;
+}
+.legal h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  color: var(--brass-300);
+}
+.legal-updated {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  margin-top: 0.4rem;
+  margin-bottom: 2rem;
+}
+.legal h2 {
+  font-size: 1.3rem;
+  color: var(--ink-100);
+  margin-top: 2.25rem;
+  margin-bottom: 0.6rem;
+}
+.legal p,
+.legal li {
+  color: var(--ink-300);
+  line-height: 1.7;
+}
+.legal ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.legal a {
+  color: var(--brass-300);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.legal code {
+  background: rgba(217, 178, 95, 0.1);
+  border: 1px solid rgba(217, 178, 95, 0.2);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 0.9em;
+}
+.legal-foot {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(217, 178, 95, 0.15);
+  font-size: 0.95rem;
+}

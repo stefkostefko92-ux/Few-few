@@ -1,0 +1,21 @@
+{
+  "name": "treydar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Трейдъра — spot трейдинг бот за Binance с риск-мениджмънт като първо правило. НЕ гарантира печалба; НЕ е инвестиционен съвет.",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node index.js",
+    "dry": "TRADING_LIVE=false node index.js",
+    "backtest": "node src/backtest.js",
+    "portfolio": "node src/portfolio-backtest.js",
+    "review": "node src/review.js",
+    "test": "node --test test/*.test.js",
+    "lint": "node ../tools/trading/trader-lint.mjs src && node ../tools/trading/backtest-check.mjs src"
+  },
+  "dependencies": {
+    "ccxt": "^4.4.0"
+  }
+}

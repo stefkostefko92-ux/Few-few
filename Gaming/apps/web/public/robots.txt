@@ -1,0 +1,4 @@
+# АСО play app (authenticated SPA). The public marketing site (root domain)
+# owns SEO and serves its own sitemap; the app itself is gated behind login.
+User-agent: *
+Disallow:

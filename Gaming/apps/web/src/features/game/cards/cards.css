@@ -1,0 +1,366 @@
+/* Premium playing-card styling (§3.4). Cards are tactile: warm ivory stock,
+   crisp vector pips, soft double shadow, brass-engraved backs. */
+
+.aso-card {
+  position: relative;
+  display: inline-block;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--r-card, 10px);
+  cursor: default;
+  /* GPU-friendly transform stack so GSAP/hover stay 60fps. */
+  transform: translateZ(0);
+  transition:
+    transform var(--dur-fast, 140ms) var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15)),
+    box-shadow var(--dur-fast, 140ms) ease;
+  box-shadow:
+    0 6px 14px -6px rgba(0, 0, 0, 0.6),
+    0 2px 3px rgba(0, 0, 0, 0.4);
+  /* Deal-in: cards rise, settle and un-rotate as they enter a hand/trick.
+     Direct-sibling cards stagger for a "dealt" cascade (see nth-child below).
+     `backwards` (not `both`) so the finished animation releases `transform`
+     back to the base rule — otherwise it would override hover/selected lift. */
+  animation: aso-card-deal 0.34s var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15)) backwards;
+}
+@keyframes aso-card-deal {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.9) rotate(-4deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+/* Flight clones and trick-centre cards manage their own motion (GSAP flyIn /
+   collect) — the global mount pop would double-animate them. */
+.aso-flight-layer .aso-card,
+.aso-trick-card .aso-card {
+  animation: none;
+}
+.aso-card:nth-child(2) { animation-delay: 0.035s; }
+.aso-card:nth-child(3) { animation-delay: 0.07s; }
+.aso-card:nth-child(4) { animation-delay: 0.105s; }
+.aso-card:nth-child(5) { animation-delay: 0.14s; }
+.aso-card:nth-child(6) { animation-delay: 0.175s; }
+.aso-card:nth-child(7) { animation-delay: 0.21s; }
+.aso-card:nth-child(8) { animation-delay: 0.245s; }
+.aso-card:nth-child(9) { animation-delay: 0.28s; }
+.aso-card:nth-child(n + 10) { animation-delay: 0.315s; }
+button.aso-card {
+  cursor: pointer;
+}
+button.aso-card:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 18px 30px -10px rgba(0, 0, 0, 0.7),
+    0 4px 8px rgba(0, 0, 0, 0.45);
+}
+.aso-card[data-dimmed="true"] {
+  filter: brightness(0.7) saturate(0.8);
+}
+.aso-card--selected {
+  transform: translateY(-16px);
+}
+.aso-card--selected::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--r-card, 10px) + 3px);
+  box-shadow: 0 0 0 2px var(--brass-300), 0 0 18px var(--brass-glow);
+  pointer-events: none;
+}
+
+.aso-card__face,
+.aso-card__back {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* ---- Face ---- */
+.aso-card__face {
+  /* warm ivory + top-left sheen, with a milled-brass inner frame — matches the
+     hero card treatment so in-game cards look just as premium. */
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 42%),
+    radial-gradient(130% 100% at 28% 0%, #fffdf7 0%, #f3ead4 60%, #e6d8bb 100%);
+  border: 1px solid rgba(120, 92, 38, 0.38);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.7),
+    inset 0 0 0 3.5px rgba(217, 178, 95, 0.5);
+}
+/* gloss sweep, painted under the pips/corners (::before) so colours stay vivid */
+.aso-card__face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.42) 50%, transparent 60%);
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+.aso-card__corner {
+  position: absolute;
+  display: flex;
+  font-size: 14px;
+}
+/* Scale the index with the card so it never crowds the central figure. */
+.aso-card[data-size="sm"] .aso-card__corner {
+  font-size: 10px;
+}
+.aso-card[data-size="lg"] .aso-card__corner {
+  font-size: 18px;
+}
+.aso-card__corner--tl {
+  top: 5px;
+  left: 5px;
+}
+.aso-card__corner--br {
+  right: 5px;
+  bottom: 5px;
+  transform: rotate(180deg);
+}
+
+.aso-card__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.aso-card__pips {
+  position: absolute;
+  /* Tall, narrow pip field: the wider vertical span keeps the rows of dense
+     cards (7–10) evenly spaced so the suit glyphs never overlap, while the
+     side inset keeps the outer columns clear of the corner indices. */
+  inset: 15% 18%;
+}
+.aso-card__pip {
+  position: absolute;
+}
+
+/* Court cards — brass ar-deco frame + monogram. */
+.aso-card__court {
+  position: absolute;
+  /* clear the corner indices top/bottom so the J/Q/K frame never overlaps them */
+  inset: 25% 20%;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  align-content: center;
+}
+.aso-card__court-frame {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--brass-400);
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(217, 178, 95, 0.12) 0,
+      rgba(217, 178, 95, 0.12) 2px,
+      transparent 2px,
+      transparent 7px
+    );
+  box-shadow: inset 0 0 0 3px rgba(255, 253, 246, 0.7), inset 0 0 0 4px var(--brass-300);
+}
+.aso-card__court-mono {
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-weight: 700;
+  line-height: 1;
+  z-index: 1;
+}
+
+/* ---- Back ---- */
+/* --cb-a / --cb-b are set inline by PlayingCard when a CARDBACK cosmetic is
+   equipped; they fall back to the default felt gradient otherwise. */
+.aso-card__back {
+  background:
+    linear-gradient(135deg, var(--cb-a, var(--felt-700)) 0%, var(--cb-b, var(--felt-900)) 100%);
+  border: 1px solid rgba(217, 178, 95, 0.35);
+}
+.aso-card__back::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 6px;
+  border: 1px solid rgba(217, 178, 95, 0.5);
+  background-image:
+    repeating-linear-gradient(45deg, rgba(217, 178, 95, 0.16) 0 4px, transparent 4px 9px),
+    repeating-linear-gradient(-45deg, rgba(217, 178, 95, 0.1) 0 4px, transparent 4px 9px);
+}
+.aso-card__back::after {
+  content: "A";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--brass-300);
+  opacity: 0.85;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aso-card,
+  button.aso-card:hover {
+    transition: none;
+  }
+  .aso-card {
+    animation: none;
+  }
+}
+
+/* Brass announce banner — the signature trump-call moment (§4.1). */
+.aso-announce {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  padding: 6px 22px;
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--charcoal-900);
+  background: linear-gradient(to bottom, var(--brass-100), var(--brass-400));
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  animation: announce-in 420ms cubic-bezier(0.2, 0.9, 0.25, 1.15);
+}
+.aso-announce::before,
+.aso-announce::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--brass-400);
+  transform: translateY(-50%) rotate(45deg);
+}
+.aso-announce::before { left: -7px; }
+.aso-announce::after { right: -7px; }
+@keyframes announce-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.9); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Suit bid button. */
+.aso-bid {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 1.6rem;
+  background: linear-gradient(to bottom, #fffdf6, #ece3cf);
+  border: 1px solid rgba(217, 178, 95, 0.5);
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
+}
+.aso-bid:hover:not(:disabled) { transform: translateY(-3px); }
+.aso-bid:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aso-announce { animation: none; }
+}
+
+/* Stacked announce banners over the table (trick/declaration/contra FX). */
+.aso-fx-layer {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+/* Board / non-felt games: float near the top of the viewport. */
+.aso-fx-layer--fixed {
+  position: fixed;
+  top: 78px;
+  z-index: 55;
+}
+.aso-fx-layer .aso-announce {
+  position: static;
+  transform: none;
+}
+.aso-announce[data-tone="win"] {
+  background: linear-gradient(to bottom, #d8f5d0, #6fbf73);
+  color: #0c2410;
+}
+.aso-announce[data-tone="win"]::before,
+.aso-announce[data-tone="win"]::after { background: #6fbf73; }
+.aso-announce[data-tone="loss"] {
+  background: linear-gradient(to bottom, #f6d4d2, #c0241f);
+  color: #fff;
+}
+.aso-announce[data-tone="loss"]::before,
+.aso-announce[data-tone="loss"]::after { background: #c0241f; }
+
+/* Bridge auction bid buttons (compact grid). */
+.aso-bridge-bid {
+  padding: 6px 0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: linear-gradient(to bottom, #fffdf6, #ece3cf);
+  border: 1px solid rgba(217, 178, 95, 0.4);
+  cursor: pointer;
+  transition: transform var(--dur-fast, 140ms) var(--ease-snap);
+}
+.aso-bridge-bid:hover:not(:disabled) { transform: translateY(-2px); }
+.aso-bridge-bid:disabled { opacity: 0.25; cursor: not-allowed; }
+
+/* Trump indicator — pinned top-left of the table: a small card showing the
+   trump suit, with a label above it (Белот §4.1). */
+.aso-trump {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  animation: announce-in 420ms cubic-bezier(0.2, 0.9, 0.25, 1.15) backwards;
+}
+.aso-trump__label {
+  font-family: var(--font-display, serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--brass-300);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.aso-trump__card {
+  width: 44px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: radial-gradient(120% 90% at 30% 0%, #fffdf6, #ece3cf);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 6px 14px -6px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 0 0 1.5px var(--brass-400);
+}
+
+/* No-Trump face for the trump indicator (Bridge NT contracts). */
+.aso-trump__nt {
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--charcoal-900);
+  letter-spacing: 0.02em;
+}

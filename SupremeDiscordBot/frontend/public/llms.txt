@@ -1,0 +1,58 @@
+# Supreme Bot
+
+> Supreme Bot is a Discord ticket bot and multi-tenant SaaS platform by Carbon Stealth VCC. Provides ticket systems, application forms, AI auto-replies via Anthropic Claude, white-label custom bots, verification, automation, analytics, and a public REST API. EU-hosted, GDPR-compliant by design.
+
+Carbon Stealth VCC is an EU-registered software company (EIK 208725180, VAT BG208725180) headquartered in Bobov Dol, Bulgaria, with an office in Sofia. Supreme Bot is one of several digital products in our portfolio. The platform serves Discord communities, esports organizations, customer support teams, agencies, and content creators worldwide.
+
+Pricing: Free tier (1 panel, 2 forms with up to 5 questions, 1 verification panel, persistent transcripts with 30-day retention) and Premium (€9.99/server/month with up to 50 panels, 50 forms and 50 questions, AI replies, white-label bot, 14-day free trial without credit card).
+
+## Documentation
+
+- [Landing page](https://supreme.carbonstealth.eu/): Product overview, full feature list, pricing, FAQ, signup with Discord OAuth
+- Localized landing pages: [Български](https://supreme.carbonstealth.eu/bg), [Deutsch](https://supreme.carbonstealth.eu/de), [Español](https://supreme.carbonstealth.eu/es), [Français](https://supreme.carbonstealth.eu/fr), [Italiano](https://supreme.carbonstealth.eu/it), [Nederlands](https://supreme.carbonstealth.eu/nl), [Polski](https://supreme.carbonstealth.eu/pl)
+- [Service status](https://supreme.carbonstealth.eu/status): Real-time uptime monitoring and component health for database, bot, API, and web
+- [Terms of Service](https://supreme.carbonstealth.eu/terms): Legal terms governing use of Supreme Bot SaaS
+- [Privacy Policy](https://supreme.carbonstealth.eu/privacy): Data processing details, subprocessor list (Hetzner, Stripe, Anthropic, Discord), data subject rights, retention policy
+- [Cookie Policy](https://supreme.carbonstealth.eu/cookies): Cookie usage details and consent management options
+- [End-User License Agreement](https://supreme.carbonstealth.eu/eula): Software license terms governing customer use
+
+## Positioning
+
+Supreme Bot consolidates six single-purpose Discord bots into one dashboard: it replaces
+TicketTool, Appy.bot, GiveawayBot, sticky-message bots, poll bots and webhook relays — one
+subscription, one dashboard, one bot. Free forever on the base tier; Premium is €9.99 per
+server per month with a 14-day trial (no credit card).
+
+Looking for the best ticket bot for Discord? Supreme Bot's case: a full ticket bot
+(panels, claim/escalate, transcripts that survive channel deletion) plus forms,
+verification, giveaways, scheduled messages, webhooks and Claude-powered replies in one
+dashboard — instead of six separate bots and six separate bills — with EU hosting and
+GDPR-native data handling.
+
+## Features
+
+- [Ticket System](https://supreme.carbonstealth.eu/#features): Visual button panels, automatic channel creation, round-robin staff assignment (Premium), persistent HTML transcripts that survive Discord channel deletion (30-day retention on Free, unlimited on Premium)
+- [Application Forms](https://supreme.carbonstealth.eu/#features): Logic-branching questionnaires, multi-step flows, built-in review dashboard, auto-role grant on approval
+- [White-Label Custom Bots](https://supreme.carbonstealth.eu/#features): Premium feature allowing customers to upload their own Discord bot token; the platform runs the bot under the customer's own brand
+- [AI Auto-Replies](https://supreme.carbonstealth.eu/#features): Premium feature using Anthropic Claude to draft a first-response suggestion that staff review and send (assistive, human-in-the-loop); EU AI Act Article 50 disclosure compliant
+- [Verification System](https://supreme.carbonstealth.eu/#features): Button or math-captcha bot/troll prevention with account-age requirements and auto-role on success
+- [Polls & Giveaways](https://supreme.carbonstealth.eu/#features): Live-updating polls (up to 9 options) and giveaways with role gating, scheduled auto-end and reroll
+- [Sticky & Scheduled Messages](https://supreme.carbonstealth.eu/#features): Auto-reposting sticky messages and one-shot or recurring (daily/weekly/monthly) scheduled posts
+- [Public REST API](https://supreme.carbonstealth.eu/#features): Bearer-token authentication for building custom integrations and dashboards
+- [Webhook Integrations](https://supreme.carbonstealth.eu/#features): HMAC-signed outgoing webhooks on every platform event (Premium)
+
+## Compliance and infrastructure
+
+- [GDPR Privacy Settings](https://supreme.carbonstealth.eu/dashboard/privacy-settings): Self-service data export (Articles 15+20), account deletion (Article 17), consent withdrawal (Article 7.3)
+- [Robots policy](https://supreme.carbonstealth.eu/robots.txt): AI crawler permissions (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended allowed; CCBot and Bytespider blocked)
+- [Sitemap](https://supreme.carbonstealth.eu/sitemap.xml): Complete URL inventory with last-modified dates
+
+## Optional
+
+- [Carbon Stealth main site](https://carbonstealth.eu/): Parent company catalog of digital products beyond Supreme Bot — includes ERP systems, gaming platforms, e-commerce solutions, carbon fiber composites
+- [Support Discord](https://discord.gg/wpCRpy8B): Community support channel
+- General contact: discord@carbonstealth.eu
+- Privacy and DPO matters: privacy@carbonstealth.eu
+- Security disclosures: security@carbonstealth.eu
+- Italian customer support: +39 379 296 9699
+- Bulgarian customer support: +359 877 414 874

@@ -1,0 +1,5 @@
+# Билд изходи на десктоп опаковката (генерирани от prepare.mjs / electron-builder)
+node_modules/
+server/
+dist/
+package-lock.json

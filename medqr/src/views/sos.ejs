@@ -1,0 +1,47 @@
+<%- include('partials/head', { title: t('sos.title') + ' — MedQR', user }) %>
+
+<div class="sos" id="sos"
+     data-contact-phone="<%= profile.emergency_contact_phone || '' %>"
+     data-name="<%= profile.full_name %>">
+  <div class="sos-flash" id="sos-flash" aria-hidden="true"></div>
+
+  <h1 class="sos-title"><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %> <%= t('sos.title') %></h1>
+
+  <!-- Това се показва на минувач/случаен човек -->
+  <div class="sos-bystander">
+    <p class="sos-big">
+      <%= t('sos.i_am') %> <strong><%= name(profile.full_name) %></strong>.<br>
+      <%= t('sos.bystander') %>
+    </p>
+    <a class="btn sos-call" href="tel:112">
+      <%- include('partials/icon', { name: 'phone' }) %> <%= t('sos.call112') %>
+    </a>
+
+    <dl class="sos-info">
+      <% if (profile.blood_type) { %><dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type %></dd><% } %>
+      <% const sosAllergy = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
+      <% if (sosAllergy) { %><dt><%= t('emerg.allergies') %></dt><dd><%= sosAllergy %></dd><% } %>
+      <% const sosCond = [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · '); %>
+      <% if (sosCond) { %><dt><%= t('emerg.conditions') %></dt><dd><%= sosCond %></dd><% } %>
+      <% if (profile.current_medications) { %><dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications %></dd><% } %>
+    </dl>
+    <p class="sos-loc" id="sos-loc"></p>
+  </div>
+
+  <div class="sos-actions">
+    <button type="button" class="btn sos-alarm" data-sos-alarm aria-pressed="false">
+      <%- include('partials/icon', { name: 'volume' }) %> <%= t('sos.alarm') %>
+    </button>
+    <% if (profile.emergency_contact_phone || profile.emergency_contact_email) { %>
+      <button type="button" class="btn sos-people" data-sos-people>
+        <%- include('partials/icon', { name: 'phone' }) %> <%= t('sos.people') %>
+      </button>
+    <% } %>
+    <p class="muted small" id="sos-status" role="status"></p>
+  </div>
+
+  <p class="muted small sos-note"><%= t('sos.note') %></p>
+  <p><a class="btn btn-ghost btn-small" href="/dashboard"><%= t('sos.back') %></a></p>
+</div>
+
+<%- include('partials/foot') %>

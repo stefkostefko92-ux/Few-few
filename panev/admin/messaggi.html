@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messaggi | Panev Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="shortcut icon" href="../favicon.ico">
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <aside id="admin-sidebar"></aside>
+  <div class="admin-main">
+    <div id="admin-topbar"></div>
+    <div class="admin-content">
+
+      <div class="admin-toolbar">
+        <div class="toolbar-left">
+          <input type="text" id="msg-search" placeholder="Cerca messaggi…" class="admin-search" oninput="renderMessages()">
+          <select id="msg-filter" class="admin-select" onchange="renderMessages()">
+            <option value="">Tutti</option>
+            <option value="unread">Non letti</option>
+            <option value="read">Letti</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:.8rem">
+          <button class="btn-admin btn-outline-admin" onclick="markAllRead()">✓ Segna tutti letti</button>
+          <button class="btn-admin btn-outline-admin" onclick="exportMessages()">⬇ Esporta CSV</button>
+        </div>
+      </div>
+
+      <div id="msg-stats-row" class="prod-stats-row" style="margin-top:1.5rem"></div>
+
+      <div class="admin-card" style="margin-top:1.5rem">
+        <div id="messages-wrap"><div class="empty-placeholder">Caricamento…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Message detail modal -->
+<div id="msg-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeMsgModal()">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-head">
+      <h3 id="msg-modal-title">Messaggio</h3>
+      <button class="modal-close" onclick="closeMsgModal()">✕</button>
+    </div>
+    <div class="modal-body" id="msg-modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn-admin btn-outline-admin" onclick="closeMsgModal()">Chiudi</button>
+      <a id="msg-reply-btn" class="btn-admin btn-primary-admin" href="#" target="_blank" rel="noopener">Rispondi via Email</a>
+    </div>
+  </div>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+let messagesCache = [];
+let messageStats = {};
+
+async function initPageContent() {
+  renderAdminTopbar('Messaggi di Contatto');
+  await loadMessages();
+}
+
+async function loadMessages() {
+  try {
+    const data = await AdminMessages.list();
+    messagesCache = data.messages || [];
+    messageStats  = data.stats || {};
+    renderMessages();
+  } catch (err) {
+    adminToast('Errore caricamento: ' + err.message, 'error');
+  }
+}
+
+function renderMessages() {
+  const search = document.getElementById('msg-search').value.toLowerCase();
+  const filter = document.getElementById('msg-filter').value;
+  let msgs = messagesCache.slice();
+
+  if (search) msgs = msgs.filter(m =>
+    (m.nome||'').toLowerCase().includes(search) ||
+    (m.email||'').toLowerCase().includes(search) ||
+    (m.messaggio||'').toLowerCase().includes(search) ||
+    (m.servizio||'').toLowerCase().includes(search)
+  );
+  if (filter === 'unread') msgs = msgs.filter(m => !m.letto);
+  if (filter === 'read')   msgs = msgs.filter(m => m.letto);
+
+  document.getElementById('msg-stats-row').innerHTML = `
+    <div class="prod-stat"><span class="ps-num">${messagesCache.length}</span><span class="ps-lbl">Totale</span></div>
+    <div class="prod-stat"><span class="ps-num" style="color:#f39c12">${Number(messageStats.unreadCount)||0}</span><span class="ps-lbl">Non letti</span></div>
+    <div class="prod-stat"><span class="ps-num" style="color:#2ed573">${messagesCache.filter(m=>m.letto).length}</span><span class="ps-lbl">Letti</span></div>`;
+
+  const wrap = document.getElementById('messages-wrap');
+  if (msgs.length === 0) {
+    wrap.innerHTML = `<div class="empty-placeholder" style="padding:3rem">Nessun messaggio trovato</div>`;
+    return;
+  }
+
+  wrap.innerHTML = msgs.map(m => `
+    <div class="msg-row ${m.letto ? 'read' : 'unread'}" data-id="${escAttr(m.id)}">
+      <div class="msg-avatar">${escHtml((m.nome||'?').charAt(0).toUpperCase())}</div>
+      <div class="msg-body">
+        <div class="msg-meta">
+          <span class="msg-name">${escHtml(m.nome || '—')} ${!m.letto ? '<span class="unread-badge">NUOVO</span>' : ''}</span>
+          <span class="msg-date">${fmtDate(m.data)}</span>
+        </div>
+        <div class="msg-servizio">${escHtml(m.servizio || m.source || '—')} · ${escHtml(m.email || '')}</div>
+        <div class="msg-preview">${escHtml((m.messaggio||'').slice(0, 140))}${(m.messaggio||'').length > 140 ? '…' : ''}</div>
+      </div>
+      <div class="msg-actions">
+        <button class="action-btn" data-open="${escAttr(m.id)}" title="Leggi">🔍</button>
+        <button class="action-btn" data-read="${escAttr(m.id)}" title="Segna letto">✓</button>
+        <button class="action-btn delete-btn" data-del="${escAttr(m.id)}" title="Elimina">🗑️</button>
+      </div>
+    </div>`).join('');
+
+  wrap.querySelectorAll('.msg-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.msg-actions')) return;
+      openMsgModal(row.dataset.id);
+    });
+  });
+  wrap.querySelectorAll('[data-open]').forEach(b =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); openMsgModal(b.dataset.open); }));
+  wrap.querySelectorAll('[data-read]').forEach(b =>
+    b.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await AdminMessages.markRead(b.dataset.read);
+        await loadMessages();
+        renderAdminLayout();
+      } catch (err) { adminToast('Errore: ' + err.message, 'error'); }
+    }));
+  wrap.querySelectorAll('[data-del]').forEach(b =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); deleteMsg(b.dataset.del); }));
+}
+
+async function openMsgModal(id) {
+  const m = messagesCache.find(x => x.id === id);
+  if (!m) return;
+
+  // Mark read on server
+  try { await AdminMessages.markRead(id); } catch {}
+  const cacheItem = messagesCache.find(x => x.id === id);
+  if (cacheItem) cacheItem.letto = true;
+  renderMessages();
+  renderAdminLayout();
+
+  document.getElementById('msg-modal-title').textContent = `Da: ${m.nome || '—'}`;
+
+  const replyBtn = document.getElementById('msg-reply-btn');
+  const subj = m.servizio || m.oggetto || 'Richiesta';
+  if (m.email) {
+    replyBtn.href = `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent('Re: ' + subj)}&body=${encodeURIComponent('Gentile ' + (m.nome || 'Cliente') + ',\n\n')}`;
+    replyBtn.style.display = '';
+  } else {
+    replyBtn.style.display = 'none';
+  }
+
+  document.getElementById('msg-modal-body').innerHTML = `
+    <div class="detail-row"><span>Nome</span><strong>${escHtml(m.nome||'—')}</strong></div>
+    <div class="detail-row"><span>Email</span>${m.email ? '<a href="mailto:'+escAttr(m.email)+'" style="color:var(--admin-gold)">'+escHtml(m.email)+'</a>' : '—'}</div>
+    ${m.tel ? '<div class="detail-row"><span>Telefono</span><a href="tel:'+escAttr(m.tel)+'" style="color:var(--admin-gold)">'+escHtml(m.tel)+'</a></div>' : ''}
+    ${m.citta ? '<div class="detail-row"><span>Città</span><strong>'+escHtml(m.citta)+'</strong></div>' : ''}
+    ${m.azienda ? '<div class="detail-row"><span>Azienda</span><strong>'+escHtml(m.azienda)+'</strong></div>' : ''}
+    ${m.servizio ? '<div class="detail-row"><span>Servizio</span><span class="badge badge-info">'+escHtml(m.servizio)+'</span></div>' : ''}
+    ${m.oggetto && m.oggetto !== m.servizio ? '<div class="detail-row"><span>Oggetto</span><strong>'+escHtml(m.oggetto)+'</strong></div>' : ''}
+    ${m.source ? '<div class="detail-row"><span>Origine</span><span class="badge badge-default">'+escHtml(m.source)+'</span></div>' : ''}
+    <div class="detail-row"><span>Data</span><strong>${fmtDate(m.data)}</strong></div>
+    <div style="margin-top:1.5rem">
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--admin-text-muted);margin-bottom:.6rem">Messaggio</div>
+      <div style="background:var(--admin-bg);border:1px solid var(--admin-border);border-radius:8px;padding:1.2rem;font-size:.92rem;line-height:1.7;white-space:pre-wrap">${escHtml(m.messaggio||'—')}</div>
+    </div>`;
+  document.getElementById('msg-modal').style.display = 'flex';
+}
+
+function closeMsgModal() {
+  document.getElementById('msg-modal').style.display = 'none';
+}
+
+function deleteMsg(id) {
+  adminConfirm('Eliminare questo messaggio?', async () => {
+    try {
+      await AdminMessages.remove(id);
+      adminToast('Messaggio eliminato');
+      await loadMessages();
+      renderAdminLayout();
+    } catch (err) {
+      adminToast('Errore: ' + err.message, 'error');
+    }
+  });
+}
+
+async function markAllRead() {
+  try {
+    await AdminMessages.markAllRead();
+    adminToast('Tutti i messaggi segnati come letti');
+    await loadMessages();
+    renderAdminLayout();
+  } catch (err) {
+    adminToast('Errore: ' + err.message, 'error');
+  }
+}
+
+function exportMessages() {
+  if (!messagesCache.length) { adminToast('Nessun messaggio da esportare', 'error'); return; }
+  const rows = [['Nome','Email','Telefono','Citta','Azienda','Servizio','Messaggio','Data','Source']];
+  messagesCache.forEach(m => rows.push([
+    m.nome, m.email, m.tel, m.citta, m.azienda, m.servizio, m.messaggio, fmtDate(m.data), m.source
+  ]));
+  // Neutralise CSV/formula injection: a leading = + - @ (tab/CR) is treated as a
+  // formula by Excel/Sheets, so prefix such cells with a single quote.
+  const csvCell = c => { let s = (c == null ? '' : c).toString(); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return `"${s.replace(/"/g,'""')}"`; };
+  const csv = rows.map(r => r.map(csvCell).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `messaggi_panev_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  adminToast('CSV esportato');
+}
+</script>
+
+<style>
+.msg-row { display:flex; align-items:flex-start; gap:1rem; padding:1.2rem 1.5rem; border-bottom:1px solid var(--admin-border); cursor:pointer; transition:background .2s; }
+.msg-row:last-child { border-bottom:none; }
+.msg-row:hover { background:var(--admin-bg); }
+.msg-row.unread { border-left:3px solid var(--admin-gold); }
+.msg-row.read { border-left:3px solid transparent; }
+.msg-avatar { width:40px; height:40px; border-radius:50%; background:var(--admin-gold); color:#0a0a0a; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.95rem; flex-shrink:0; }
+.msg-body { flex:1; min-width:0; }
+.msg-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:.25rem; }
+.msg-name { font-weight:600; font-size:.92rem; display:flex; align-items:center; gap:.5rem; }
+.msg-date { font-size:.75rem; color:var(--admin-text-muted); flex-shrink:0; }
+.msg-servizio { font-size:.78rem; color:var(--admin-gold); margin-bottom:.3rem; }
+.msg-preview { font-size:.82rem; color:var(--admin-text-muted); line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.msg-actions { display:flex; gap:.4rem; align-items:flex-start; flex-shrink:0; }
+.unread-badge { background:var(--admin-gold); color:#0a0a0a; font-size:.65rem; font-weight:700; padding:.1rem .35rem; border-radius:3px; letter-spacing:.05em; }
+.admin-toolbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.toolbar-left { display:flex; gap:.8rem; align-items:center; flex-wrap:wrap; }
+.admin-search { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:6px; padding:.6rem 1rem; color:var(--admin-text); font-family:inherit; font-size:.88rem; min-width:220px; }
+.admin-search:focus { outline:none; border-color:var(--admin-gold); }
+.admin-select { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:6px; padding:.6rem .9rem; color:var(--admin-text); font-family:inherit; font-size:.88rem; }
+.action-btns, .msg-actions { display:flex; gap:.4rem; }
+.action-btn { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:5px; padding:.3rem .5rem; cursor:pointer; font-size:.85rem; }
+.action-btn:hover { border-color:var(--admin-gold); }
+.prod-stats-row { display:flex; gap:1rem; flex-wrap:wrap; }
+.prod-stat { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:8px; padding:.8rem 1.5rem; display:flex; flex-direction:column; align-items:center; gap:.2rem; }
+.ps-num { font-size:1.4rem; font-weight:700; color:var(--admin-gold); }
+.ps-lbl { font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--admin-text-muted); }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; z-index:1000; padding:1rem; }
+.modal-box { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; width:100%; max-height:90vh; overflow-y:auto; }
+.modal-head { display:flex; justify-content:space-between; align-items:center; padding:1.5rem 2rem; border-bottom:1px solid var(--admin-border); }
+.modal-close { background:none; border:none; color:var(--admin-text-muted); font-size:1.1rem; cursor:pointer; }
+.modal-body { padding:2rem; }
+.modal-foot { padding:1.2rem 2rem; border-top:1px solid var(--admin-border); display:flex; justify-content:flex-end; gap:.8rem; }
+.detail-row { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--admin-border); font-size:.88rem; gap:1rem; }
+.detail-row:last-child { border-bottom:none; }
+.detail-row > span:first-child { color:var(--admin-text-muted); flex-shrink:0; }
+.empty-placeholder { text-align:center; padding:2rem; color:var(--admin-text-muted); font-size:.9rem; }
+</style>
+</body>
+</html>

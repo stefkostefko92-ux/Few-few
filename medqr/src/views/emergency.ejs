@@ -1,0 +1,181 @@
+<%- include('partials/head', { title: t('emerg.banner'), user: null }) %>
+
+<div class="emergency">
+  <p class="emergency-banner"><%- include('partials/icon', { name: 'alert' }) %> <%= t('emerg.banner') %></p>
+  <h1 class="big-name"><%= name(profile.full_name) %></h1>
+
+  <%
+    const hearing = profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми';
+    const noSpeak = profile.can_speak === 'Не мога да говоря' || profile.can_speak === 'Говоря ограничено';
+    const usesSign = profile.sign_language && profile.sign_language !== 'Не ползвам жестов език';
+    const commNeeded = hearing || noSpeak || usesSign;
+  %>
+  <% if (commNeeded) { %>
+    <div class="alert-comm" role="alert">
+      <%- include('partials/icon', { name: 'ear', cls: 'icon-lg' }) %>
+      <span>
+        <strong><%= t('emerg.comm_warn') %></strong>
+        <% if (hearing) { %> <%= t('emerg.hearing') %>: <%= clin(profile.hearing_status) %>.<% } %>
+        <% if (profile.can_speak) { %> <%= t('emerg.speech') %>: <%= clin(profile.can_speak) %>.<% } %>
+        <% if (usesSign) { %> <%= t('emerg.sign') %>: <%= clin(profile.sign_language) %>.<% } %>
+        <% if (profile.communication_pref) { %> <%= t('emerg.prefers') %>: <strong><%= name(profile.communication_pref) %></strong>.<% } %>
+      </span>
+    </div>
+
+    <% if (profile.interpreter_contact) { %>
+      <div class="interp-box">
+        <%- include('partials/icon', { name: 'hand' }) %>
+        <span><%= t('emerg.interpreter') %>: <strong><%= profile.interpreter_contact %></strong></span>
+      </div>
+    <% } %>
+
+    <button type="button" class="btn btn-comm" data-comm-open>
+      <%- include('partials/icon', { name: 'message' }) %> <%= t('emerg.open_comm') %>
+    </button>
+
+    <!-- Резерва без JavaScript: винаги има готови изречения за показване. -->
+    <details class="comm-aid">
+      <summary><%- include('partials/icon', { name: 'message' }) %> <%= t('emerg.ready_phrases') %></summary>
+      <div class="phrases">
+        <p><%= t('p.here_to_help') %></p>
+        <p><%= t('p.where_hurts') %></p>
+        <p><%= t('p.meds_allergies') %></p>
+        <p><%= t('p.call_relative_q') %></p>
+        <p><%= t('p.ambulance') %></p>
+      </div>
+    </details>
+
+    <!-- Интерактивен помощник за двупосочно общуване (показва се с бутона горе). -->
+    <div class="comm-overlay" id="comm-overlay" hidden role="dialog" aria-modal="true" aria-label="<%= t('comm.title') %>">
+      <div class="comm-head">
+        <strong><%- include('partials/icon', { name: 'message' }) %> <%= t('comm.title') %></strong>
+        <button type="button" class="comm-x" data-comm-close aria-label="<%= t('comm.close') %>">
+          <%- include('partials/icon', { name: 'close' }) %>
+        </button>
+      </div>
+
+      <div class="comm-stage" id="comm-stage" aria-live="polite" data-default="<%= t('comm.stage_default') %>">
+        <%= t('comm.stage_default') %>
+      </div>
+
+      <div class="comm-body">
+        <section class="comm-sec">
+          <h2><%- include('partials/icon', { name: 'keyboard' }) %> <%= t('comm.write_h') %></h2>
+          <textarea id="comm-type" rows="2" placeholder="<%= t('comm.write_ph') %>"></textarea>
+          <div class="comm-row">
+            <button type="button" class="btn btn-say" data-say><%- include('partials/icon', { name: 'volume' }) %> <%= t('comm.read_aloud') %></button>
+            <button type="button" class="btn btn-ghost" data-show><%= t('comm.show_big') %></button>
+            <button type="button" class="btn btn-ghost" data-clear><%= t('comm.clear') %></button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h2><%= t('comm.patient_h') %></h2>
+          <div class="comm-cards">
+            <button type="button" class="cc cc-yes" data-phrase="<%= t('p.yes') %>"><%= t('p.yes') %></button>
+            <button type="button" class="cc cc-no" data-phrase="<%= t('p.no') %>"><%= t('p.no') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.dont_understand') %>"><%= t('p.dont_understand') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.it_hurts') %>"><%= t('p.it_hurts') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.need_meds') %>"><%= t('p.need_meds_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.call_contact') %>"><%= t('p.call_contact_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.call_interpreter') %>"><%= t('p.call_interpreter_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.cant_hear') %>"><%= t('p.cant_hear_s') %></button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h2><%= t('comm.team_h') %></h2>
+          <div class="comm-cards">
+            <button type="button" class="cc" data-phrase="<%= t('p.here_to_help') %>"><%= t('p.here_to_help_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.where_hurts') %>"><%= t('p.where_hurts_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.meds_allergies') %>"><%= t('p.meds_allergies_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.call_relative_q') %>"><%= t('p.call_relative_q_s') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.ambulance') %>"><%= t('p.ambulance_s') %></button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h2><%= t('comm.body_h') %></h2>
+          <div class="bodymap">
+            <svg viewBox="0 0 200 380" role="group" aria-label="<%= t('comm.body_h') %>">
+              <rect class="bm-neck" x="90" y="62" width="20" height="22" rx="6"/>
+              <circle class="bm" cx="100" cy="38" r="30" data-phrase="<%= t('p.pain_head') %>" role="button" tabindex="0" aria-label="<%= t('bm.head') %>"/>
+              <rect class="bm" x="60" y="80" width="80" height="72" rx="18" data-phrase="<%= t('p.pain_chest') %>" role="button" tabindex="0" aria-label="<%= t('bm.chest') %>"/>
+              <rect class="bm" x="64" y="152" width="72" height="66" rx="16" data-phrase="<%= t('p.pain_abdomen') %>" role="button" tabindex="0" aria-label="<%= t('bm.abdomen') %>"/>
+              <rect class="bm" x="34" y="86" width="26" height="112" rx="13" data-phrase="<%= t('p.pain_arm') %>" role="button" tabindex="0" aria-label="<%= t('bm.arm_l') %>"/>
+              <rect class="bm" x="140" y="86" width="26" height="112" rx="13" data-phrase="<%= t('p.pain_arm') %>" role="button" tabindex="0" aria-label="<%= t('bm.arm_r') %>"/>
+              <rect class="bm" x="70" y="220" width="28" height="134" rx="14" data-phrase="<%= t('p.pain_leg') %>" role="button" tabindex="0" aria-label="<%= t('bm.leg_l') %>"/>
+              <rect class="bm" x="102" y="220" width="28" height="134" rx="14" data-phrase="<%= t('p.pain_leg') %>" role="button" tabindex="0" aria-label="<%= t('bm.leg_r') %>"/>
+            </svg>
+          </div>
+          <div class="comm-cards">
+            <button type="button" class="cc" data-phrase="<%= t('p.pain_back') %>"><%= t('p.region_back') %></button>
+            <button type="button" class="cc" data-phrase="<%= t('p.pain_all') %>"><%= t('p.region_all') %></button>
+          </div>
+        </section>
+
+        <section class="comm-sec">
+          <h2><%= t('comm.pain_h') %></h2>
+          <div class="pain-scale">
+            <% for (let n = 0; n <= 10; n++) { %>
+              <button type="button" class="ps ps-<%= n <= 3 ? 'low' : (n <= 6 ? 'mid' : 'high') %>" data-phrase="<%= t('pain.scale', { n }) %>"><%= n %></button>
+            <% } %>
+          </div>
+        </section>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="emergency-grid">
+    <div class="ebox blood">
+      <span class="elabel"><%= t('emerg.blood') %></span>
+      <span class="evalue"><%= profile.blood_type || t('emerg.blood_unknown') %></span>
+    </div>
+    <div class="ebox allergy">
+      <span class="elabel"><%= t('emerg.allergies') %></span>
+      <% const allergyAll = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
+      <span class="evalue"><%= allergyAll || t('emerg.allergies_none') %></span>
+    </div>
+  </div>
+
+  <dl class="emergency-list">
+    <% const condAll = [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · '); %>
+    <dt><%= t('emerg.conditions') %></dt><dd><%= condAll || '—' %></dd>
+    <dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications || '—' %></dd>
+    <% if (profile.additional_notes) { %>
+      <dt><%= t('emerg.notes') %></dt><dd><%= profile.additional_notes %></dd>
+    <% } %>
+    <% if (profile.date_of_birth) { %>
+      <dt><%= t('emerg.dob') %></dt><dd><%= profile.date_of_birth %></dd>
+    <% } %>
+    <% if (profile.preferred_language) { %>
+      <dt><%= t('emerg.language') %></dt><dd><%= name(profile.preferred_language) %></dd>
+    <% } %>
+  </dl>
+
+  <% if (profile.emergency_contact_phone || profile.emergency_contact_name) { %>
+    <div class="contact-box">
+      <span class="elabel"><%= t('emerg.contact') %></span>
+      <span class="evalue"><%= name(profile.emergency_contact_name) || '' %>
+        <% if (profile.emergency_contact_relation) { %>(<%= profile.emergency_contact_relation %>)<% } %>
+      </span>
+      <% if (profile.emergency_contact_phone) { %>
+        <a class="call-btn" href="tel:<%= profile.emergency_contact_phone %>"><%- include('partials/icon', { name: 'phone' }) %> <%= t('emerg.call') %>: <%= profile.emergency_contact_phone %></a>
+      <% } %>
+    </div>
+  <% } %>
+
+  <% if (typeof notifyActive !== 'undefined' && notifyActive) { %>
+    <div class="notify-box">
+      <p><%- include('partials/icon', { name: 'message' }) %> <%= t('emerg.notified') %></p>
+      <button type="button" class="btn btn-locate" data-locate>
+        <%- include('partials/icon', { name: 'phone' }) %> <%= t('emerg.share_location') %>
+      </button>
+      <p class="muted small" id="locate-status" role="status"></p>
+    </div>
+  <% } %>
+
+  <p class="muted small"><%= t('emerg.updated') %>: <%= profile.updated_at %>. <%= t('emerg.logged') %></p>
+</div>
+
+<%- include('partials/foot') %>

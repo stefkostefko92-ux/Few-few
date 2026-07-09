@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env.production
+*.tsbuildinfo
+next-env.d.ts
+# Сървърна база на банерите/админите (живее на сървъра, не в репото)
+data/

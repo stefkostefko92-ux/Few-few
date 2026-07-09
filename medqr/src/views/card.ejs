@@ -1,0 +1,29 @@
+<%- include('partials/head', { title: t('card.title') + ' — MedQR', user: null }) %>
+
+<section class="print-controls">
+  <button type="button" data-print class="btn"><%- include('partials/icon', { name: 'printer' }) %> <%= t('rc.print') %></button>
+  <a class="btn btn-ghost" href="/dashboard"><%= t('common.back') %></a>
+</section>
+
+<div class="wallet-card">
+  <div class="wc-left">
+    <p class="wc-title">
+      <span class="wc-cross" aria-hidden="true">+</span> СПЕШНА МЕДИЦИНСКА ИНФОРМАЦИЯ
+    </p>
+    <p class="wc-sub">EMERGENCY MEDICAL INFORMATION</p>
+    <p class="wc-name"><%= name(profile.full_name) %></p>
+    <p class="wc-line"><strong>Кръвна група / Blood:</strong> <%= profile.blood_type || '—' %></p>
+    <% const cardAllergies = [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · '); %>
+    <p class="wc-line"><strong>Алергии / Allergies:</strong> <%= cardAllergies || '—' %></p>
+    <% if (profile.hearing_status && profile.hearing_status !== 'Без слухови проблеми') { %>
+      <p class="wc-line"><%- include('partials/icon', { name: 'ear' }) %> <%= clin(profile.hearing_status) %></p>
+    <% } %>
+    <p class="wc-hint">Сканирайте за пълна информация · Scan for full details</p>
+  </div>
+  <div class="wc-right">
+    <img src="<%= dataUrl %>" alt="<%= t('card.qr_alt') %>" class="wc-qr" />
+    <p class="wc-scan">СКАНИРАЙ · SCAN</p>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

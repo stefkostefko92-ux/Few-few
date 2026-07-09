@@ -1,0 +1,522 @@
+/* ─── Landing page: cinematic "premium nocturnal tabletop" ─────────────────
+   Self-contained (no Tailwind); pairs with globals.css tokens. */
+
+/* HERO — spotlit stage with a felt floor and drifting brass motes. */
+.lp-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 7rem 1.25rem 5rem;
+  text-align: center;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(255, 240, 205, 0.12), transparent 60%),
+    radial-gradient(90% 70% at 50% 120%, rgba(31, 90, 64, 0.35), transparent 60%),
+    linear-gradient(180deg, #05201600 0%, #0a1d15 60%, #060807 100%);
+}
+/* overhead light shaft */
+.lp-hero::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  width: 52%;
+  height: 70%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(255, 244, 214, 0.14), transparent 72%);
+  clip-path: polygon(40% 0, 60% 0, 86% 100%, 14% 100%);
+  filter: blur(20px);
+  z-index: -1;
+  pointer-events: none;
+}
+/* felt vignette floor */
+.lp-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(70% 60% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.lp-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--brass-300);
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  border-radius: 999px;
+  padding: 6px 16px;
+  margin-bottom: 1.75rem;
+  background: rgba(11, 14, 13, 0.4);
+}
+.lp-title {
+  font-size: clamp(3rem, 9vw, 6rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, var(--brass-100), var(--brass-400));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 6px 40px rgba(217, 178, 95, 0.25);
+}
+.lp-sub {
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  color: var(--ink-100);
+  margin-top: 1rem;
+  font-family: var(--font-display, serif);
+}
+.lp-lead {
+  max-width: 600px;
+  margin: 1.25rem auto 2.25rem;
+  color: var(--ink-300);
+  font-size: 1.05rem;
+}
+.lp-cta-row {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.cta-lg {
+  font-size: 1.1rem;
+  padding: 0.95rem 2rem;
+  box-shadow: 0 10px 30px -8px rgba(217, 178, 95, 0.5);
+}
+.cta-ghost {
+  display: inline-block;
+  padding: 0.95rem 2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(217, 178, 95, 0.35);
+  color: var(--ink-100);
+  font-weight: 600;
+}
+.cta-ghost:hover {
+  color: var(--brass-100);
+  border-color: var(--brass-300);
+}
+
+/* floating brass motes */
+.lp-mote {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brass-300);
+  box-shadow: 0 0 8px var(--brass-300);
+  opacity: 0.5;
+  animation: lp-float 9s ease-in-out infinite;
+  z-index: -1;
+}
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0); opacity: 0.2; }
+  50% { transform: translateY(-26px); opacity: 0.6; }
+}
+
+/* hero card fan motif */
+.lp-fan {
+  margin: 3rem auto 0;
+  display: flex;
+  justify-content: center;
+  perspective: 900px;
+  max-width: 100%;
+}
+/* shrink the fan on very small phones so it never causes horizontal scroll */
+@media (max-width: 400px) {
+  .lp-fan-card {
+    width: 62px;
+    height: 88px;
+    margin-left: -22px;
+  }
+}
+.lp-fan-card {
+  position: relative;
+  width: 84px;
+  height: 118px;
+  margin-left: -28px;
+  border-radius: 11px;
+  /* warm ivory face with a soft top-left sheen */
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 42%),
+    radial-gradient(130% 100% at 28% 0%, #fffdf7, #f3ead4 62%, #e6d8bb);
+  /* milled-brass rim + lift */
+  box-shadow:
+    0 0 0 1px rgba(120, 92, 38, 0.5),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.65),
+    inset 0 0 0 3px rgba(217, 178, 95, 0.55),
+    0 16px 30px -10px rgba(0, 0, 0, 0.75);
+  font-family: var(--font-display, serif);
+  transform-origin: bottom center;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.3s ease;
+  overflow: hidden;
+}
+/* glossy highlight sweep across the face (under the pips) */
+.lp-fan-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.4) 50%, transparent 62%);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.lp-fan-card:first-child { margin-left: 0; }
+.lp-fan-card.red { color: var(--suit-red); }
+.lp-fan-card.black { color: var(--suit-black); }
+
+.lp-fan-idx {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.8;
+  font-weight: 800;
+}
+.lp-fan-idx b { font-size: 1rem; }
+.lp-fan-idx i { font-size: 0.82rem; font-style: normal; margin-top: 1px; }
+.lp-fan-idx--tl { top: 7px; left: 8px; }
+.lp-fan-idx--br { bottom: 7px; right: 8px; transform: rotate(180deg); }
+.lp-fan-pip {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+}
+.lp-fan-card.red { color: #c0241f; }
+.lp-fan-card.black { color: #1b1b22; }
+
+/* STATS band */
+.lp-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 2.5rem 1.25rem;
+  border-top: 1px solid rgba(217, 178, 95, 0.1);
+  border-bottom: 1px solid rgba(217, 178, 95, 0.1);
+  background: rgba(11, 14, 13, 0.4);
+}
+.lp-stat {
+  text-align: center;
+}
+.lp-stat-num {
+  font-family: var(--font-display, serif);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--brass-300);
+}
+.lp-stat-label {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+/* SECTION heads */
+.lp-section {
+  padding: 4.5rem 1.25rem;
+}
+.lp-section--alt {
+  background: rgba(11, 14, 13, 0.35);
+  border-top: 1px solid rgba(217, 178, 95, 0.08);
+  border-bottom: 1px solid rgba(217, 178, 95, 0.08);
+}
+.lp-section h2 {
+  text-align: center;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  margin-bottom: 0.5rem;
+}
+.lp-section .lp-section-sub {
+  text-align: center;
+  color: var(--ink-muted);
+  max-width: 540px;
+  margin: 0 auto 2.5rem;
+}
+
+/* FEATURES grid */
+.lp-features {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.lp-feature {
+  padding: 1.75rem;
+  border-radius: var(--r-panel);
+  background: rgba(18, 48, 38, 0.55);
+  border: 1px solid rgba(217, 178, 95, 0.14);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.lp-feature:hover {
+  transform: translateY(-4px);
+  border-color: rgba(217, 178, 95, 0.4);
+}
+.lp-feature-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.75rem;
+}
+.lp-feature h3 {
+  font-size: 1.2rem;
+  color: var(--ink-100);
+}
+.lp-feature p {
+  color: var(--ink-300);
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* STEPS */
+.lp-steps {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  max-width: 980px;
+  margin: 0 auto;
+}
+.lp-step {
+  text-align: center;
+  padding: 1.5rem;
+}
+.lp-step-num {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  color: var(--charcoal-900);
+  background: linear-gradient(135deg, var(--brass-300), var(--brass-400));
+}
+
+/* GAMES showcase */
+.lp-games {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.lp-game {
+  display: block;
+  padding: 1.4rem;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(24, 64, 47, 0.6), rgba(12, 31, 23, 0.7));
+  border: 1px solid rgba(217, 178, 95, 0.14);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.lp-game:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.7);
+  border-color: rgba(217, 178, 95, 0.4);
+}
+.lp-game-glyph {
+  font-size: 1.6rem;
+  color: var(--brass-300);
+}
+.lp-game h3 {
+  font-size: 1.15rem;
+  color: var(--ink-100);
+  margin-top: 0.4rem;
+}
+.lp-game .muted {
+  font-size: 0.8rem;
+}
+.lp-games-more {
+  margin-top: 2.25rem;
+  text-align: center;
+}
+
+/* FAQ accordion (AEO) */
+.lp-faq {
+  max-width: 760px;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.75rem;
+}
+.lp-faq-item {
+  border-radius: 14px;
+  border: 1px solid rgba(217, 178, 95, 0.14);
+  background: rgba(18, 48, 38, 0.45);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.lp-faq-item[open] {
+  border-color: rgba(217, 178, 95, 0.4);
+}
+.lp-faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 1.1rem 1.35rem;
+  font-weight: 600;
+  color: var(--ink-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.lp-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.lp-faq-item summary::after {
+  content: "+";
+  color: var(--brass-300);
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.lp-faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+.lp-faq-item p {
+  padding: 0 1.35rem 1.2rem;
+  color: var(--ink-300);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* trust / closing CTA */
+.lp-final {
+  text-align: center;
+  padding: 5rem 1.25rem;
+  background: radial-gradient(60% 80% at 50% 0%, rgba(217, 178, 95, 0.08), transparent 60%);
+}
+.lp-final h2 {
+  font-size: clamp(2rem, 6vw, 3.2rem);
+}
+.lp-trust {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1.5rem auto 2.25rem;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+.lp-trust span::before {
+  content: "✓ ";
+  color: var(--win);
+}
+
+/* ─── Entrance + scroll-reveal animations ──────────────────────────────────
+   Hero elements animate in on load with a stagger. Sections/cards reveal on
+   scroll via a scroll-timeline — guarded by @supports so browsers without it
+   (and reduced-motion users) simply show the content, never hide it. */
+
+@keyframes lp-rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lp-eyebrow,
+.lp-title,
+.lp-sub,
+.lp-lead,
+.lp-cta-row,
+.lp-fan {
+  animation: lp-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.lp-title { animation-delay: 0.06s; }
+.lp-sub { animation-delay: 0.14s; }
+.lp-lead { animation-delay: 0.22s; }
+.lp-cta-row { animation-delay: 0.3s; }
+.lp-fan { animation-delay: 0.4s; }
+
+/* richer hover micro-interactions */
+.lp-feature,
+.lp-game {
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.lp-feature:hover { transform: translateY(-6px) scale(1.015); }
+.lp-game:hover { transform: translateY(-6px) scale(1.02); }
+.lp-fan-card:hover { transform: translateY(-12px) rotate(0deg) scale(1.06) !important; z-index: 2; }
+.cta-lg { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.cta-lg:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -8px rgba(217, 178, 95, 0.6); }
+
+/* scroll-reveal for the lower sections (progressive enhancement only) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-stats,
+    .lp-section h2,
+    .lp-section .lp-section-sub,
+    .lp-feature,
+    .lp-step,
+    .lp-game,
+    .lp-faq-item,
+    .lp-final h2,
+    .lp-trust {
+      animation: lp-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 26%;
+    }
+  }
+}
+
+/* ─── Cinematic hero ambiance ──────────────────────────────────────────────
+   A slowly drifting golden aurora behind the hero, a moving sheen across the
+   wordmark, a swaying light shaft and glowing brass motes. */
+.lp-hero {
+  background:
+    radial-gradient(40% 36% at 22% 18%, rgba(217, 178, 95, 0.16), transparent 70%),
+    radial-gradient(46% 40% at 80% 24%, rgba(56, 142, 96, 0.18), transparent 70%),
+    radial-gradient(60% 50% at 50% 0%, rgba(255, 240, 205, 0.12), transparent 60%),
+    radial-gradient(90% 70% at 50% 120%, rgba(31, 90, 64, 0.35), transparent 60%),
+    linear-gradient(180deg, #05201600 0%, #0a1d15 60%, #060807 100%);
+  background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%, 100% 100%;
+  animation: lp-aurora 22s ease-in-out infinite alternate;
+}
+@keyframes lp-aurora {
+  0% { background-position: 0% 0%, 100% 0%, 0 0, 0 0, 0 0; }
+  100% { background-position: 60% 40%, 30% 60%, 0 0, 0 0, 0 0; }
+}
+.lp-hero::before {
+  animation: lp-shaft 11s ease-in-out infinite alternate;
+  transform-origin: 50% 0;
+}
+@keyframes lp-shaft {
+  0% { transform: translateX(-50%) rotate(-2.5deg); opacity: 0.85; }
+  100% { transform: translateX(-50%) rotate(2.5deg); opacity: 1; }
+}
+
+/* golden sheen travelling across the wordmark */
+.lp-title {
+  background: linear-gradient(
+    110deg,
+    var(--brass-300) 0%,
+    var(--brass-100) 18%,
+    #fff7e2 30%,
+    var(--brass-100) 42%,
+    var(--brass-400) 70%,
+    var(--brass-300) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    lp-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.06s both,
+    lp-sheen 7s ease-in-out 0.8s infinite;
+}
+@keyframes lp-sheen {
+  0%, 100% { background-position: 0% 0; }
+  50% { background-position: 100% 0; }
+}
+
+/* glowier, livelier motes */
+.lp-mote {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 12px 2px var(--brass-300);
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-mote { animation: none; }
+  .lp-hero, .lp-hero::before { animation: none; }
+  .lp-eyebrow, .lp-title, .lp-sub, .lp-lead, .lp-cta-row, .lp-fan { animation: none; }
+}

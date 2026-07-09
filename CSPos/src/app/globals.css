@@ -1,0 +1,346 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── „Касата“ — течно стъкло (liquid glass) дизайн система ───────────────────
+   Стъкло, което ПРЕЧУПВА живия цветен фон зад него (SVG displacement),
+   лови светлина по ръбовете (градиентен rim), има спекуларен блясък следящ
+   курсора и мека дълбочина. Светла тема; ink скалата е семантична (950=фон … 100=текст). */
+
+:root {
+  --font-sans: "Inter", "Segoe UI", "Roboto", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "Consolas", monospace;
+
+  /* стъклен материал */
+  --glass-fill: rgba(255, 255, 255, 0.42);
+  --glass-fill-strong: rgba(255, 255, 255, 0.66);
+  --glass-blur: 18px;
+  --glass-refract: url(#liquid-glass);
+  --spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* многослойни сенки за дълбочина + вътрешна светлина */
+  --glass-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.25),
+    0 1px 2px rgba(23, 32, 58, 0.06),
+    0 14px 40px -18px rgba(23, 32, 58, 0.28);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-ink-950 text-ink-100 antialiased;
+  font-feature-settings: "tnum" 1; /* табулярни цифри — сумите се подравняват */
+  letter-spacing: -0.011em;
+}
+
+/* ─── Жив фон: наситени, бавно движещи се цветни полета (за рефракция) ─────── */
+.app-bg {
+  position: relative;
+  background: linear-gradient(180deg, #eef1f8 0%, #e6ebf4 100%);
+  isolation: isolate;
+}
+.app-bg::before {
+  content: "";
+  position: fixed;
+  inset: -20% -10% -10% -10%;
+  z-index: -1;
+  background:
+    radial-gradient(46% 40% at 80% 8%, rgba(252, 176, 73, 0.42), transparent 62%),
+    radial-gradient(40% 42% at 12% 22%, rgba(56, 132, 248, 0.30), transparent 60%),
+    radial-gradient(44% 46% at 62% 92%, rgba(139, 92, 246, 0.26), transparent 60%),
+    radial-gradient(36% 38% at 96% 66%, rgba(244, 63, 94, 0.22), transparent 60%),
+    radial-gradient(38% 40% at 30% 78%, rgba(45, 212, 152, 0.20), transparent 62%);
+  filter: saturate(1.15);
+  animation: bg-drift 26s ease-in-out infinite alternate;
+}
+@keyframes bg-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-2.5%, 1.5%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(2%, -2%, 0) scale(1.04);
+  }
+}
+
+/* скролбари — дискретни */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 32, 58, 0.16);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 32, 58, 0.28);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Touch монитор / kiosk ───────────────────────────────────────────────
+   Касата се ползва на тъч монитор цял ден. Махаме 300 ms забавяне и
+   double-tap zoom, спираме pull-to-refresh/bounce и селектирането на UI
+   хрома при влачене; съдържанието за четене (полета, бонове) остава селектируемо. */
+html {
+  overscroll-behavior: none;
+}
+button,
+.btn,
+.btn-primary,
+.btn-ghost,
+.btn-danger,
+.btn-success,
+.chip,
+.card,
+a,
+label,
+select,
+[role="button"] {
+  touch-action: manipulation;
+}
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input,
+textarea,
+pre,
+[contenteditable="true"],
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+@layer components {
+  /* ── Стъклен панел (едра повърхност → с рефракция) ── */
+  .card {
+    position: relative;
+    background: var(--glass-fill);
+    border-radius: 1.5rem;
+    box-shadow: var(--glass-shadow);
+    /* Ред: blur омекотява → url() пречупва → saturate съживява */
+    backdrop-filter: blur(var(--glass-blur)) var(--glass-refract) saturate(1.7);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); /* Safari: без url() */
+  }
+  /* Плътен fallback, ако backdrop-filter липсва (Firefox/стар WebView) — четимост */
+  @supports not (backdrop-filter: blur(4px)) {
+    .card {
+      background: rgba(255, 255, 255, 0.86);
+    }
+  }
+  /* градиентен светлинен ръб (rim light) — светло горе-ляво, фин тъмен долу-дясно */
+  .card::before,
+  .glass-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.28) 34%,
+      rgba(255, 255, 255, 0) 55%,
+      rgba(90, 110, 150, 0.28) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .glass-strong {
+    background: var(--glass-fill-strong);
+  }
+
+  /* ── Спекуларен блясък, следящ курсора (opt-in: .glass-lift) ── */
+  .glass-lift {
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform 0.35s var(--spring),
+      box-shadow 0.35s var(--spring),
+      background 0.25s ease;
+  }
+  .glass-lift::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      240px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0) 60%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .glass-lift:hover::after {
+    opacity: 1;
+  }
+  .glass-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  /* ── Поле за въвеждане ── */
+  .input {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.9),
+      0 1px 2px rgba(23, 32, 58, 0.05);
+    @apply rounded-2xl px-4 py-2.5 text-ink-100 backdrop-blur-xl
+      placeholder:text-ink-500 outline-none transition-all duration-200
+      focus:border-brand-500/40 focus:ring-4 focus:ring-brand-500/20
+      focus:bg-white/[0.8];
+  }
+  select.input {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%235c6b85' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+  select.input option {
+    background: #ffffff;
+    color: #17203a;
+  }
+
+  /* ── Бутони ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-semibold
+      select-none disabled:opacity-35 disabled:pointer-events-none;
+    transition:
+      transform 0.28s var(--spring),
+      filter 0.2s ease,
+      box-shadow 0.28s var(--spring);
+  }
+  .btn:active {
+    transform: scale(0.96);
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #ffd873 0%, #f5a623 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 2px rgba(180, 110, 10, 0.3),
+      0 10px 26px -10px rgba(217, 142, 11, 0.6);
+    @apply btn text-[#231a05] px-4 py-2.5 hover:brightness-[1.05];
+  }
+  /* стъклен вторичен бутон */
+  .btn-ghost {
+    position: relative;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.9),
+      0 2px 8px -3px rgba(23, 32, 58, 0.14);
+    @apply btn text-ink-200 px-4 py-2.5 backdrop-blur-xl hover:bg-white/[0.7];
+  }
+  .btn-ghost::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(90, 110, 150, 0.22));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .btn-danger {
+    background: linear-gradient(180deg, #f96b84, #dc2650);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 10px 24px -10px rgba(225, 29, 72, 0.5);
+    @apply btn text-white px-4 py-2.5 hover:brightness-105;
+  }
+  .btn-success {
+    background: linear-gradient(180deg, #3ad99a, #0a9e64);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 10px 24px -10px rgba(16, 185, 129, 0.5);
+    @apply btn text-white px-4 py-2.5 hover:brightness-105;
+  }
+
+  /* ── Стъклено pill-чипче ── */
+  .chip {
+    position: relative;
+    background: rgba(255, 255, 255, 0.42);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.85),
+      0 2px 8px -4px rgba(23, 32, 58, 0.14);
+    @apply btn rounded-full px-4 py-2 text-sm text-ink-300 backdrop-blur-xl
+      hover:bg-white/[0.7] hover:text-ink-100;
+  }
+  .chip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(90, 110, 150, 0.2));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .chip-active {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.78));
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 1),
+      0 8px 20px -8px rgba(23, 32, 58, 0.32);
+    @apply text-ink-100;
+  }
+
+  /* градиентно число — акцент за най-важните суми (тотал, KPI) */
+  .gradient-num {
+    background: linear-gradient(115deg, #f5a623 0%, #e0620a 55%, #d64550 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-bg::before {
+    animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Kill-switch за слаб POS хардуер (≤4 ядра) ───────────────────────────────
+   Рефракцията през url() е per-pixel скъпа — сваляме я, оставяме чисто frosted
+   стъкло (rim/сенки/sheen пак работят). Спираме и движението на фона. */
+.lite-glass .card {
+  backdrop-filter: blur(10px) saturate(1.5);
+  -webkit-backdrop-filter: blur(10px) saturate(1.5);
+}
+.lite-glass .app-bg::before {
+  animation: none;
+}

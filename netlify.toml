@@ -1,0 +1,37 @@
+# Netlify публикува САМО таблото на агентите (agents-dashboard/) — статични файлове,
+# за да виждаш обучението им на живо. Двата продукта (zabobovdol/medqr) се деплойват
+# през VPS флоу, не през Netlify.
+#
+# `ignore` решава дали да се билдва: връща exit 0 → Netlify ОТМЕНЯ билда; non-zero → билдва.
+# `git diff --quiet` дава 0 при липса на промени, 1 при промени — затова билдваме само когато
+# taблото (или този конфиг) се е променил, напр. при всяка нова научена поука. Това пази от
+# излишен деплой при несвързани промени. Док: https://docs.netlify.com/build/configure-builds/ignore-builds/
+[build]
+  publish = "agents-dashboard"
+  # Регенерира docs.js от живите CLAUDE.md файлове преди публикуване → таблото никога
+  # не показва остаряло CLAUDE.md (само node: builtins, без npm install).
+  command = "node tools/docs/collect-claude-md.mjs"
+  # Билдвай при промяна на таблото, конфига ИЛИ който и да е CLAUDE.md (за да се опресни docs.js).
+  ignore = "git diff --quiet HEAD^ HEAD -- agents-dashboard/ netlify.toml CLAUDE.md ':(glob)**/CLAUDE.md'"
+
+# Таблото е „живо" (обновява се при всяко научаване) → не кешираме index.html и agents.json,
+# за да вижда браузърът веднага новите версии/дейност (иначе показва стара кеширана версия).
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/agents.json"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/docs.js"
+  [headers.values]
+    Cache-Control = "no-cache, max-age=0, must-revalidate"

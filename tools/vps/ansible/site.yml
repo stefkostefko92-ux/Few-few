@@ -1,0 +1,43 @@
+# site.yml — декларативна основа на VPS-а (VPS-аджията v2.0, скелет за разширяване).
+# Прави хоста rebuildable, вместо „snowflake". Пускане:
+#   ansible-playbook -i 'SERVER,' -u root tools/vps/ansible/site.yml
+# (За един сървър Ansible > Terraform; cloud-init само за първи boot.)
+- hosts: all
+  become: true
+  vars:
+    deploy_user: deploy
+    ssh_pubkey: "{{ lookup('env','SSH_PUBKEY') }}"   # подай през env, не в репото
+  tasks:
+    - name: Базови пакети
+      apt: { name: [ufw, fail2ban, unattended-upgrades, restic, curl, unzip], update_cache: true, state: present }
+
+    - name: Потребител без root + SSH ключ
+      user: { name: "{{ deploy_user }}", groups: sudo, shell: /bin/bash }
+    - name: Authorized key
+      authorized_key: { user: "{{ deploy_user }}", key: "{{ ssh_pubkey }}" }
+      when: ssh_pubkey | length > 0
+
+    - name: SSH хардънинг
+      copy:
+        dest: /etc/ssh/sshd_config.d/10-hardening.conf
+        content: |
+          PasswordAuthentication no
+          PermitRootLogin prohibit-password
+          KbdInteractiveAuthentication no
+      notify: restart ssh
+
+    - name: UFW — само SSH + HTTP(S)
+      ufw: { rule: allow, port: "{{ item }}", proto: tcp }
+      loop: ["22", "80", "443"]
+    - name: UFW deny incoming by default + enable
+      ufw: { state: enabled, policy: deny, direction: incoming }
+
+    - name: Docker (официален conv. script)
+      shell: "command -v docker || curl -fsSL https://get.docker.com | sh"
+      args: { creates: /usr/bin/docker }
+
+    # Разширения (виж README): Caddy/Nginx, systemd за medqr, TLS, sops decrypt,
+    # restic cron + backup-verify, Beszel/Uptime Kuma, CrowdSec.
+  handlers:
+    - name: restart ssh
+      service: { name: ssh, state: restarted }

@@ -1,0 +1,56 @@
+name: Deploy
+
+# Manual trigger (the "Run workflow" button). Builds all service images and
+# pushes them to GHCR; the VPS's Watchtower then pulls & restarts automatically.
+# Run this from whichever branch/tag you want live (selectable in the UI).
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Extra image tag to publish (besides 'latest')"
+        required: false
+        default: ""
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      matrix:
+        service: [api, realtime, worker, web, marketing]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lowercase owner
+        id: owner
+        run: echo "name=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push ${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.${{ matrix.service }}
+          push: true
+          tags: |
+            ghcr.io/${{ steps.owner.outputs.name }}/aso-${{ matrix.service }}:latest
+            ghcr.io/${{ steps.owner.outputs.name }}/aso-${{ matrix.service }}:${{ github.sha }}
+            ${{ inputs.tag != '' && format('ghcr.io/{0}/aso-{1}:{2}', steps.owner.outputs.name, matrix.service, inputs.tag) || '' }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}

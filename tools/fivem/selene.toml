@@ -1,0 +1,9 @@
+# selene config за FiveM/CfxLua (Геймъра v2.0).
+# Базира се на lua51/lua53 std + FiveM глобалите от fivem.yml.
+std = "lua53+fivem"
+
+[rules]
+# CfxLua ползва глобали свободно — омекоти някои строги правила.
+global_usage = "allow"
+multiple_statements = "allow"
+incorrect_standard_library_use = "warn"

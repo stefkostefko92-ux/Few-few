@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#14130F"/>
+  <path d="M8 40 C20 26 34 24 44 30 C36 33 28 36 22 42 C16 47 12 46 8 40 Z" fill="#A6CE39"/>
+  <path d="M24 46 C36 32 50 31 58 35 C50 39 42 41 36 47 C30 52 28 52 24 46 Z" fill="#D72638"/>
+  <text x="32" y="30" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="26" fill="#FBF8F1" text-anchor="middle">Qb</text>
+</svg>

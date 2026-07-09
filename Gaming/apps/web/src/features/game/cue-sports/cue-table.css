@@ -1,0 +1,116 @@
+/* Premium cue table — same material language as the card felt + board frame:
+   polished walnut rail with a milled brass inner rim, deep cloth, soft vignette.
+   The cloth colour itself is painted in the SVG (cosmetic-driven). */
+
+.aso-cue {
+  position: relative;
+  width: min(94vw, 1120px);
+  border-radius: 26px;
+  padding: 18px;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(255, 226, 170, 0.22) 0%, transparent 8%),
+    repeating-linear-gradient(
+      94deg,
+      rgba(0, 0, 0, 0.18) 0 2px,
+      rgba(255, 220, 160, 0.05) 2px 5px,
+      transparent 5px 12px
+    ),
+    radial-gradient(120% 140% at 50% -20%, #5a3d22 0%, #3a2616 40%, var(--wood-800, #2a1b0f) 70%, #150c06 100%);
+  box-shadow:
+    0 34px 80px -22px rgba(0, 0, 0, 0.8),
+    0 4px 0 rgba(0, 0, 0, 0.5),
+    inset 0 2px 1px rgba(255, 226, 170, 0.3),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Milled brass inner rim around the cloth. */
+.aso-cue__rim {
+  position: relative;
+  border-radius: 16px;
+  padding: 6px;
+  background: linear-gradient(160deg, #f4e3b6, #d9b25f 30%, #8a6a35 55%, #e7c87b 78%, #b8923f);
+  box-shadow:
+    0 0 26px rgba(217, 178, 95, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.aso-cue__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  border-radius: 11px;
+  touch-action: none; /* we handle aiming pointers ourselves */
+  cursor: crosshair;
+}
+
+/* WebGL canvas table (hybrid renderer) — rails are drawn inside the canvas. */
+.aso-cue__gl {
+  border-radius: 11px;
+  overflow: hidden;
+  line-height: 0;
+}
+.aso-cue__gl canvas {
+  touch-action: none;
+}
+
+.aso-cue__svg[data-locked="true"] {
+  cursor: default;
+}
+
+/* Ball dropping into a pocket — shrink + fade at the pocket centre. */
+.aso-cue__sink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: aso-sink 0.34s ease-in forwards;
+}
+@keyframes aso-sink {
+  from {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  to {
+    transform: scale(0.05);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aso-cue__sink {
+    animation-duration: 0.01s;
+  }
+}
+
+.aso-cue__hint {
+  margin-top: 0.75rem;
+  text-align: center;
+  color: var(--ink-300);
+  font-size: 0.9rem;
+}
+
+/* Power meter. */
+.aso-cue__power {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.aso-cue__power input {
+  flex: 1;
+  accent-color: var(--brass-300);
+}
+
+/* Inline keyboard hint (e.g. the Space shoot shortcut). */
+.aso-kbd {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1.4;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  vertical-align: middle;
+}

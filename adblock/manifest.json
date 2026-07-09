@@ -1,0 +1,116 @@
+{
+  "manifest_version": 3,
+  "name": "The Best ads block",
+  "version": "3.7.1",
+  "description": "Block ads everywhere, YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls. Free, fast and private.",
+  "author": "Carbon Stealth",
+  "homepage_url": "https://carbonstealth.eu",
+  "minimum_chrome_version": "102",
+  "default_locale": "en",
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "tabs",
+    "contextMenus",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "The Best ads block",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["cookies.js"],
+      "css": ["cookies.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["antiadblock.js"],
+      "css": ["antiadblock.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["picker.js"],
+      "css": ["picker.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "*://*.facebook.com/*",
+        "*://*.instagram.com/*"
+      ],
+      "js": ["meta.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": ["youtube_loader.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"],
+      "js": ["youtube_skip.js"],
+      "css": ["youtube.css"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["youtube_main.js"],
+      "matches": ["*://*.youtube.com/*", "*://*.youtube-nocookie.com/*"]
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ad_rules",
+        "enabled": true,
+        "path": "rules/ad_rules.json"
+      },
+      {
+        "id": "youtube_rules",
+        "enabled": true,
+        "path": "rules/youtube_rules.json"
+      }
+    ]
+  }
+}

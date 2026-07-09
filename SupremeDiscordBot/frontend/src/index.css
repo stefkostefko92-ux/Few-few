@@ -1,0 +1,523 @@
+/* Self-hosted fonts (@fontsource) — no runtime Google Fonts request.
+   Keeps EU users off third-party servers (GDPR; LG München 3 O 17493/20)
+   and removes a render-blocking cross-origin fetch from the critical path. */
+@import "@fontsource/inter-tight/300.css";
+@import "@fontsource/inter-tight/400.css";
+@import "@fontsource/inter-tight/500.css";
+@import "@fontsource/inter-tight/600.css";
+@import "@fontsource/inter-tight/700.css";
+@import "@fontsource/inter-tight/800.css";
+@import "@fontsource/inter-tight/900.css";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html { background: #06070e; }
+  html, body, #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+  body {
+    @apply text-cs-text font-sans;
+    background: transparent;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+
+  /* ─── Cosmic site background ───────────────────────────────────────────────
+     The brand nebula, fixed behind ALL content, dimmed by a dark scrim so text
+     stays readable. Public pages (landing, status, 404) render on transparent
+     roots so this shows through; the dashboard keeps an opaque bg over it. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(180deg, rgba(7, 8, 16, 0.70) 0%, rgba(7, 8, 16, 0.82) 55%, rgba(7, 8, 16, 0.92) 100%),
+      url("/bg-cosmos.jpg") center center / cover no-repeat;
+    pointer-events: none;
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display tracking-tight-3;
+    font-weight: 700;
+  }
+  h1 { @apply text-4xl lg:text-5xl font-extrabold tracking-tight-4; }
+  h2 { @apply text-2xl lg:text-3xl font-bold; }
+  h3 { @apply text-xl font-bold; }
+
+  a { color: inherit; }
+
+  ::-webkit-scrollbar       { @apply w-1.5 h-1.5; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a36; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #33b1ff; }
+
+  ::selection { background: #33b1ff; color: #000; }
+
+  /* Focus ring matches cyan accent */
+  :focus-visible {
+    outline: 2px solid #33b1ff;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* WCAG 1.4.1 — links embedded in prose must be distinguishable without
+     relying on colour, so always underline them (standalone nav links in
+     flex/grid containers are unaffected). */
+  p a, li a, td a {
+    text-decoration: underline;
+  }
+}
+
+@layer components {
+  /* ─── Cards / surfaces ─── */
+  .cs-card {
+    @apply bg-cs-surface border border-cs-border rounded-xl p-6
+           transition-colors duration-200;
+  }
+  .cs-card:hover { @apply border-cs-borderHi; }
+
+  .cs-panel {
+    @apply bg-cs-panel border border-cs-border rounded-xl;
+  }
+
+  /* ─── Buttons ─── */
+  .cs-btn {
+    @apply inline-flex items-center justify-center gap-2
+           px-5 py-3 font-semibold text-sm
+           tracking-[0.04em] uppercase
+           transition-all duration-200
+           cursor-pointer select-none
+           rounded-xl
+           border
+           focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-cs-cyan
+           focus-visible:ring-offset-2 focus-visible:ring-offset-cs-black;
+  }
+
+  .cs-btn-primary {
+    @apply cs-btn bg-cs-cyan text-black border-cs-cyan
+           hover:bg-white hover:border-white
+           active:scale-[0.98]
+           shadow-cs-cyan-sm hover:shadow-cs-cyan;
+  }
+
+  .cs-btn-secondary {
+    @apply cs-btn bg-transparent text-cs-text border-cs-border
+           hover:border-cs-cyan hover:text-cs-cyan;
+  }
+
+  .cs-btn-ghost {
+    @apply cs-btn bg-transparent text-cs-muted border-transparent
+           hover:text-cs-cyan hover:bg-cs-cyanGlow;
+  }
+
+  .cs-btn-danger {
+    @apply cs-btn bg-transparent text-danger border-danger/40
+           hover:bg-danger hover:text-white hover:border-danger;
+  }
+
+  .cs-btn-sm { @apply px-3 py-1.5 text-xs; }
+
+  /* ─── Inputs ─── */
+  .cs-input {
+    @apply w-full bg-cs-bg border border-cs-border px-4 py-2.5
+           text-cs-text placeholder-cs-dim
+           font-sans text-sm
+           focus:outline-none focus:border-cs-cyan focus:shadow-cs-cyan-sm
+           transition-colors rounded-xl;
+  }
+  .cs-input-sm { @apply px-3 py-1.5 text-xs; }
+  .cs-select { @apply cs-input appearance-none cursor-pointer pr-10; }
+  .cs-textarea { @apply cs-input font-mono text-xs leading-relaxed resize-y; }
+
+  /* ─── Badges ─── */
+  .cs-badge {
+    @apply inline-flex items-center gap-1
+           text-[10px] font-mono font-bold uppercase tracking-[0.1em]
+           px-2 py-0.5 border rounded-xl;
+  }
+  .cs-badge-cyan    { @apply cs-badge bg-cs-cyanGlow text-cs-cyan   border-cs-cyan/40; }
+  .cs-badge-premium { @apply cs-badge bg-premium/10  text-premium   border-premium/40; }
+  .cs-badge-manual  { @apply cs-badge bg-manual/10   text-manual    border-manual/40; }
+  .cs-badge-success { @apply cs-badge bg-success/10  text-success   border-success/40; }
+  .cs-badge-danger  { @apply cs-badge bg-danger/10   text-danger    border-danger/40; }
+  .cs-badge-muted   { @apply cs-badge bg-cs-panel    text-cs-muted  border-cs-border; }
+
+  /* ─── Labels / microcopy ─── */
+  .cs-label {
+    @apply block text-[10px] font-mono font-bold uppercase tracking-[0.15em]
+           text-cs-muted mb-2;
+  }
+
+  .cs-kbd {
+    @apply inline-block px-1.5 py-0.5 text-[10px] font-mono
+           bg-cs-panel border border-cs-border text-cs-muted rounded-sm;
+  }
+
+  /* ─── Nav (sidebar) ─── */
+  .cs-nav-link {
+    @apply flex items-center gap-3 px-3 py-2.5
+           text-sm font-medium
+           text-cs-muted
+           border-l-2 border-transparent
+           transition-colors duration-150
+           hover:text-cs-text hover:bg-cs-surface hover:border-cs-border;
+  }
+  .cs-nav-link-active {
+    @apply text-cs-cyan bg-cs-surface border-cs-cyan;
+  }
+
+  /* ─── Page header ─── */
+  .cs-heading {
+    @apply relative inline-block pb-3 mb-6;
+  }
+  .cs-heading::after {
+    content: "";
+    @apply absolute bottom-0 left-0 w-16 h-[2px] bg-cs-cyan;
+  }
+
+  .cs-eyebrow {
+    @apply inline-block font-mono text-[11px] font-bold uppercase
+           tracking-[0.25em] text-cs-cyan mb-3;
+  }
+
+  /* ─── Data table ─── */
+  .cs-table {
+    @apply w-full border-collapse text-sm;
+  }
+  .cs-table thead th {
+    @apply text-left px-4 py-3 border-b border-cs-border
+           font-mono text-[10px] font-bold uppercase tracking-[0.15em]
+           text-cs-muted bg-cs-bg;
+  }
+  .cs-table tbody td {
+    @apply px-4 py-3 border-b border-cs-border/50;
+  }
+  .cs-table tbody tr { @apply transition-colors; }
+  .cs-table tbody tr:hover { @apply bg-cs-panel/50; }
+
+  /* ─── Stat tile ─── */
+  .cs-stat {
+    @apply cs-card relative;
+  }
+  .cs-stat-label {
+    @apply font-mono text-[10px] font-bold uppercase tracking-[0.2em]
+           text-cs-muted mb-2;
+  }
+  .cs-stat-value {
+    @apply text-4xl font-display font-extrabold tracking-tight-4 text-cs-text;
+  }
+  .cs-stat-delta-up   { @apply text-success text-xs font-mono; }
+  .cs-stat-delta-down { @apply text-danger  text-xs font-mono; }
+
+  /* ─── Modal / overlay ─── */
+  .cs-overlay {
+    @apply fixed inset-0 bg-black/85 backdrop-blur-sm z-50
+           flex items-center justify-center p-4
+           animate-fade-in;
+  }
+  .cs-modal {
+    @apply cs-card w-full max-w-md shadow-cs-lift;
+  }
+  .cs-modal-lg { @apply max-w-2xl; }
+
+  /* ─── Utility text ─── */
+  .cs-text-cyan   { color: #33b1ff; }
+  .cs-text-muted  { @apply text-cs-muted; }
+  .cs-text-dim    { @apply text-cs-dim; }
+  .cs-mono        { @apply font-mono; }
+
+  /* ─── Legacy aliases (for pages not yet updated) ─── */
+  .card            { @apply cs-card; }
+  .card-glow       { @apply cs-card; }
+  .btn-primary     { @apply cs-btn-primary; }
+  .btn-secondary   { @apply cs-btn-secondary; }
+  .btn-ghost       { @apply cs-btn-ghost; }
+  .btn-danger      { @apply cs-btn-danger; }
+  .btn-success     { @apply cs-btn cs-btn-secondary; }
+  .input           { @apply cs-input; }
+  .input-sm        { @apply cs-input-sm; }
+  .label           { @apply cs-label; }
+  .badge           { @apply cs-badge; }
+  .badge-premium   { @apply cs-badge-premium; }
+  .badge-base      { @apply cs-badge-muted; }
+  .badge-manual    { @apply cs-badge-manual; }
+  .badge-success   { @apply cs-badge-success; }
+  .badge-danger    { @apply cs-badge-danger; }
+  .nav-link        { @apply cs-nav-link; }
+  .nav-link-active { @apply cs-nav-link cs-nav-link-active; }
+  .nav-link-inactive { @apply cs-nav-link; }
+  .heading-stealth { @apply cs-heading font-display font-bold text-white; }
+  .text-gradient-stealth { @apply text-cs-cyan; }
+  .stat-tile       { @apply cs-stat; }
+  .stat-tile-label { @apply cs-stat-label; }
+  .stat-tile-value { @apply cs-stat-value; }
+  .glass           { @apply cs-panel; }
+}
+
+@layer utilities {
+  .scanline-bg::before {
+    content: "";
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(180deg, transparent 0%, rgba(51, 177, 255, 0.015) 50%, transparent 100%);
+    background-size: 100% 4px;
+    mix-blend-mode: overlay;
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(42, 42, 54, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42, 42, 54, 0.4) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+  .text-balance { text-wrap: balance; }
+  .text-pretty  { text-wrap: pretty; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Supreme Bot logo animations                                                 */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes supreme-rotate-cw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes supreme-rotate-ccw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+@keyframes supreme-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(1.5); }
+}
+
+@keyframes supreme-bolt-flicker {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  45%      { opacity: 0.75; filter: brightness(1.3); }
+  50%      { opacity: 1; filter: brightness(2); }
+  55%      { opacity: 0.75; filter: brightness(1.3); }
+}
+
+@keyframes supreme-crown-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(240, 194, 76, 0.75)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(51, 177, 255, 0.9)); }
+}
+
+.supreme-logo-animated .supreme-ring-outer {
+  transform-origin: 32px 32px;
+  animation: supreme-rotate-cw 12s linear infinite;
+}
+.supreme-logo-animated .supreme-ring-inner {
+  transform-origin: 32px 32px;
+  animation: supreme-rotate-ccw 8s linear infinite;
+}
+.supreme-logo-animated .supreme-bolt {
+  animation: supreme-bolt-flicker 2.5s ease-in-out infinite;
+  transform-origin: 32px 38px;
+}
+.supreme-logo-animated .supreme-crown {
+  animation: supreme-crown-glow 3s ease-in-out infinite;
+}
+.supreme-logo-animated .supreme-dot-pulse {
+  animation: supreme-pulse 2s ease-in-out infinite;
+}
+
+/* Supreme wordmark — gold→royal-blue, echoing the brand banner (gold text,
+   blue energy). "SUPREME" is molten gold; "BOT" is bright silver-white. */
+.supreme-wordmark-supreme {
+  background: linear-gradient(96deg, #f7d878 0%, #f0c24c 42%, #e0a93a 68%, #33b1ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 22px rgba(240, 194, 76, 0.45);
+  letter-spacing: -0.02em;
+}
+.supreme-wordmark-bot {
+  color: #f4f4f0;
+  margin-left: 0.25em;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 18px rgba(51, 177, 255, 0.35);
+}
+
+/* Honor prefers-reduced-motion — neutralize all motion app-wide (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Global responsive fixes — applies to ALL pages without touching each JSX   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* 1. Page container padding — scale down on mobile */
+@media (max-width: 640px) {
+  main .p-8 { padding: 1rem !important; }
+  main .p-6 { padding: 0.875rem !important; }
+  main .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  main .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+
+  /* Grid single-column fallback when grid-cols-* hasn't specified mobile */
+  main .grid.grid-cols-2,
+  main .grid.grid-cols-3,
+  main .grid.grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Flex rows become columns when they would overflow */
+  main .flex.items-center.justify-between.mb-8,
+  main .flex.items-center.justify-between.mb-6,
+  main .flex.items-center.justify-between {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Tables — always horizontal scroll on narrow viewports */
+  main table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Cards full-width on mobile */
+  main .cs-card { padding: 1rem !important; }
+
+  /* Hide sidebar close button until drawer open — handled by Layout */
+  /* Ensure hamburger doesn't overlap content */
+  main { padding-top: 3.5rem !important; }
+
+  /* Typography — scale down headings */
+  main h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
+  main h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+  main h3 { font-size: 1rem !important; line-height: 1.5rem !important; }
+
+  /* Buttons — allow wrap on tight spaces */
+  main .cs-btn {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Input + select full width */
+  main input.cs-input,
+  main select.cs-select,
+  main textarea.cs-textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Footer — stack links vertically when tight */
+  footer .flex.items-center.gap-5 { flex-wrap: wrap; justify-content: center; gap: 0.75rem !important; }
+}
+
+/* 2. Tablet range (641-1024px) — relax tight grids + narrow containers */
+@media (min-width: 641px) and (max-width: 1024px) {
+  main .grid.grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  main .max-w-6xl,
+  main .max-w-5xl,
+  main .max-w-\[1600px\] {
+    max-width: 100% !important;
+  }
+  main .p-8 { padding: 1.5rem !important; }
+}
+
+/* 3. Prevent body horizontal scroll on any viewport */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* 4. Form labels always readable on mobile */
+@media (max-width: 640px) {
+  main .label { font-size: 0.75rem !important; }
+  main .font-mono { font-size: 0.7rem !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Landing hero — decorative backdrop + "6 → 1" convergence motif             */
+/*                                                                             */
+/* Serious enterprise SaaS: refined, restrained, GPU-cheap. Everything here is */
+/* aria-hidden decoration behind the content. The animated states are wrapped  */
+/* in `prefers-reduced-motion: no-preference`, so the DEFAULT (reduced-motion)  */
+/* state is a fully-static, intentional poster — belt-and-suspenders with the  */
+/* app-wide reduced-motion neutralizer above. No effect flashes >3×/s          */
+/* (WCAG 2.3.1): every animation is ≥2.4s, opacity/transform/box-shadow only.  */
+/* The hero H1 (the LCP element) is never targeted here — it paints instantly. */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.hero-aurora {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 50% at 20% 25%, rgba(51, 177, 255, 0.16), transparent 70%),
+    radial-gradient(35% 45% at 82% 18%, rgba(139, 92, 246, 0.12), transparent 70%),
+    radial-gradient(45% 55% at 65% 88%, rgba(240, 194, 76, 0.10), transparent 70%);
+  filter: blur(18px);
+  will-change: transform;
+}
+
+.hero-grid-mask {
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(120% 78% at 50% 0%, #000 28%, transparent 74%);
+          mask-image: radial-gradient(120% 78% at 50% 0%, #000 28%, transparent 74%);
+}
+
+/* Funnel connectors — dashed cyan "signals". Static by default (intentional
+   dashed lines); the flow animation is added only when motion is welcome. */
+.hero-funnel path {
+  fill: none;
+  stroke: rgba(51, 177, 255, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 3 7;
+}
+.hero-core-dot {
+  fill: #33b1ff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-aurora {
+    animation: hero-aurora-drift 26s ease-in-out infinite alternate;
+  }
+  .hero-funnel path.hero-flow {
+    animation: hero-flow-dash 2.6s linear infinite;
+  }
+  .hero-converge-core {
+    animation: hero-core-glow 4s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-aurora-drift {
+  0%   { transform: translate3d(-2%, -1%, 0) scale(1); }
+  100% { transform: translate3d(2%, 2%, 0) scale(1.08); }
+}
+
+@keyframes hero-flow-dash {
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes hero-core-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(51, 177, 255, 0.35), 0 0 26px rgba(51, 177, 255, 0.12); }
+  50%      { box-shadow: 0 0 0 1px rgba(51, 177, 255, 0.65), 0 0 42px rgba(51, 177, 255, 0.28); }
+}

@@ -1,0 +1,115 @@
+// bot/src/events/voiceStateUpdate.js
+// Server Event Logging — category "voice". Diff-ва oldState/newState и логва
+// точните гласови действия. Изисква GatewayIntentBits.GuildVoiceStates.
+//
+// Закача се И на главния, И на всеки white-label клиент (loadEventModules чете
+// само /events/). Клиентът се взима от newState.client.
+//
+// Rate-limit внимание: audit log се пипа САМО при server_mute/server_deaf
+// (best-effort актьор), НЕ при self_* или join/leave — гласовете шумят силно.
+
+import { logServerEvent, fetchAuditActor, AuditLogEvent } from "../utils/serverEventLog.js";
+
+function tagOf(user) {
+  if (!user) return null;
+  return user.discriminator && user.discriminator !== "0"
+    ? `${user.username}#${user.discriminator}`
+    : user.username;
+}
+
+export default {
+  name: "voiceStateUpdate",
+  once: false,
+  async execute(oldState, newState) {
+    try {
+      const guild = newState.guild || oldState.guild;
+      if (!guild?.id) return;
+
+      const client = newState.client;
+      const member = newState.member || oldState.member;
+      const targetId = member?.id || newState.id || oldState.id;
+      const targetTag = tagOf(member?.user);
+      if (!targetId) return;
+
+      // Базов payload за всяко действие (targetId + self-actor по подразбиране).
+      const base = { category: "voice", targetId, targetTag };
+      const emit = (extra) => logServerEvent(client, guild, { ...base, ...extra });
+
+      // ─── 1. Канал: join / leave / move ──────────────────────────────────────
+      const oldCh = oldState.channelId;
+      const newCh = newState.channelId;
+      if (oldCh !== newCh) {
+        if (!oldCh && newCh) {
+          await emit({ action: "voice_join", actorId: targetId, channelId: newCh });
+        } else if (oldCh && !newCh) {
+          await emit({ action: "voice_leave", actorId: targetId, channelId: oldCh });
+        } else {
+          await emit({ action: "voice_move", actorId: targetId, metadata: { fromChannelId: oldCh, toChannelId: newCh } });
+        }
+      }
+
+      // ─── 2. Server mute (best-effort актьор от audit log) ───────────────────
+      if (oldState.serverMute !== newState.serverMute) {
+        const action = newState.serverMute ? "voice_server_mute" : "voice_server_unmute";
+        const actor = await fetchAuditActor(guild, AuditLogEvent.MemberUpdate, targetId);
+        await emit({
+          action,
+          channelId: newCh || oldCh || null,
+          actorId: actor?.executorId || null,
+          actorTag: actor?.executorTag || null,
+        });
+      }
+
+      // ─── 3. Server deaf (best-effort актьор от audit log) ────────────────────
+      if (oldState.serverDeaf !== newState.serverDeaf) {
+        const action = newState.serverDeaf ? "voice_server_deaf" : "voice_server_undeaf";
+        const actor = await fetchAuditActor(guild, AuditLogEvent.MemberUpdate, targetId);
+        await emit({
+          action,
+          channelId: newCh || oldCh || null,
+          actorId: actor?.executorId || null,
+          actorTag: actor?.executorTag || null,
+        });
+      }
+
+      // ─── 4. Self mute (actor === target, без audit log) ─────────────────────
+      if (oldState.selfMute !== newState.selfMute) {
+        await emit({
+          action: newState.selfMute ? "voice_self_mute" : "voice_self_unmute",
+          actorId: targetId,
+          channelId: newCh || oldCh || null,
+        });
+      }
+
+      // ─── 5. Self deaf ───────────────────────────────────────────────────────
+      if (oldState.selfDeaf !== newState.selfDeaf) {
+        await emit({
+          action: newState.selfDeaf ? "voice_self_deaf" : "voice_self_undeaf",
+          actorId: targetId,
+          channelId: newCh || oldCh || null,
+        });
+      }
+
+      // ─── 6. Streaming (Go Live) ─────────────────────────────────────────────
+      if (oldState.streaming !== newState.streaming) {
+        await emit({
+          action: newState.streaming ? "voice_stream_start" : "voice_stream_stop",
+          actorId: targetId,
+          channelId: newCh || oldCh || null,
+        });
+      }
+
+      // ─── 7. Camera (self video) ─────────────────────────────────────────────
+      if (oldState.selfVideo !== newState.selfVideo) {
+        await emit({
+          action: newState.selfVideo ? "voice_video_on" : "voice_video_off",
+          actorId: targetId,
+          channelId: newCh || oldCh || null,
+        });
+      }
+    } catch (err) {
+      // Fail-safe: гласовите събития не бива да чупят процеса.
+      console.warn(`[voiceStateUpdate] error: ${err?.message}`);
+    }
+  },
+};

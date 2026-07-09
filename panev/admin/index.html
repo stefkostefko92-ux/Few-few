@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Panev Admin</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="shortcut icon" href="../favicon.ico">
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <aside id="admin-sidebar"></aside>
+
+  <div class="admin-main">
+    <div id="admin-topbar"></div>
+
+    <div class="admin-content">
+
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-body"><div class="stat-label">Caricamento…</div></div></div>
+      </div>
+
+      <!-- Two column: recent orders + recent messages -->
+      <div class="dash-two-col">
+
+        <div class="admin-card">
+          <div class="admin-card-head">
+            <h3>Ultimi Ordini</h3>
+            <a href="ordini.html" class="card-head-link">Vedi tutti →</a>
+          </div>
+          <div id="dash-orders"><div class="empty-placeholder">Caricamento…</div></div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-head">
+            <h3>Ultimi Messaggi</h3>
+            <a href="messaggi.html" class="card-head-link">Vedi tutti →</a>
+          </div>
+          <div id="dash-messages"><div class="empty-placeholder">Caricamento…</div></div>
+        </div>
+      </div>
+
+      <!-- Product overview -->
+      <div class="admin-card" style="margin-top:2rem">
+        <div class="admin-card-head">
+          <h3>Prodotti in Evidenza</h3>
+          <a href="prodotti.html" class="card-head-link">Gestisci →</a>
+        </div>
+        <div id="dash-products"><div class="empty-placeholder">Caricamento…</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+async function initPageContent() {
+  renderAdminTopbar('Dashboard');
+
+  let products = [], ordersData = { orders: [], stats: {} }, msgsData = { messages: [], stats: {} };
+  try {
+    [products, ordersData, msgsData] = await Promise.all([
+      AdminProducts.list(),
+      AdminOrders.list(),
+      AdminMessages.list(),
+    ]);
+  } catch (err) {
+    adminToast('Errore di caricamento: ' + err.message, 'error');
+  }
+
+  const orders = ordersData.orders || [];
+  const messages = msgsData.messages || [];
+  const newOrders    = Number(ordersData.stats?.newCount) || 0;
+  const unreadMsgs   = Number(msgsData.stats?.unreadCount) || 0;
+  const totalRevenue = Number(ordersData.stats?.revenue)  || 0;
+
+  // Stats cards
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(201,168,76,.12);color:var(--admin-gold)">📦</div>
+      <div class="stat-body">
+        <div class="stat-val">${products.length}</div>
+        <div class="stat-label">Prodotti</div>
+        <div class="stat-sub">${products.filter(p=>p.available).length} disponibili</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(46,213,115,.12);color:#2ed573">🛒</div>
+      <div class="stat-body">
+        <div class="stat-val">${orders.length}</div>
+        <div class="stat-label">Ordini</div>
+        <div class="stat-sub">${newOrders > 0 ? '<span style="color:#f39c12">'+newOrders+' nuovi</span>' : 'Nessun nuovo'}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(52,152,219,.12);color:#3498db">✉️</div>
+      <div class="stat-body">
+        <div class="stat-val">${messages.length}</div>
+        <div class="stat-label">Messaggi</div>
+        <div class="stat-sub">${unreadMsgs > 0 ? '<span style="color:#f39c12">'+unreadMsgs+' non letti</span>' : 'Tutti letti'}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(231,76,60,.12);color:#e74c3c">💶</div>
+      <div class="stat-body">
+        <div class="stat-val">€${totalRevenue.toLocaleString('it-IT', {minimumFractionDigits:0, maximumFractionDigits:0})}</div>
+        <div class="stat-label">Valore Ordini</div>
+        <div class="stat-sub">IVA inclusa</div>
+      </div>
+    </div>`;
+
+  // Recent orders
+  const recentOrders = orders.slice(0, 5);
+  document.getElementById('dash-orders').innerHTML = recentOrders.length ? `
+    <table class="admin-table">
+      <thead><tr><th>ID</th><th>Cliente</th><th>Totale</th><th>Stato</th><th>Data</th></tr></thead>
+      <tbody>
+        ${recentOrders.map(o => `
+          <tr onclick="location.href='ordini.html'" style="cursor:pointer">
+            <td><code style="font-size:.78rem">${escHtml(o.id)}</code></td>
+            <td>${escHtml(o.cliente || '—')}</td>
+            <td style="color:var(--admin-gold);font-weight:600">€${(Number(o.totale)||0).toFixed(2)}</td>
+            <td>${statoBadge(o.stato)}</td>
+            <td style="color:var(--admin-text-muted);font-size:.82rem">${fmtDate(o.data)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>` : `<div class="empty-placeholder">Nessun ordine ancora</div>`;
+
+  // Recent messages
+  const recentMsgs = messages.slice(0, 5);
+  document.getElementById('dash-messages').innerHTML = recentMsgs.length ? recentMsgs.map(m => `
+    <div class="dash-msg-row ${m.letto ? '' : 'unread'}" onclick="location.href='messaggi.html'" style="cursor:pointer">
+      <div class="dash-msg-avatar">${escHtml((m.nome||'?').charAt(0).toUpperCase())}</div>
+      <div class="dash-msg-body">
+        <div class="dash-msg-name">${escHtml(m.nome || '—')} ${!m.letto ? '<span class="new-dot"></span>' : ''}</div>
+        <div class="dash-msg-preview">${escHtml(m.servizio || 'Contatto')} — ${escHtml((m.messaggio||'').slice(0,60))}…</div>
+      </div>
+      <div class="dash-msg-date">${fmtDate(m.data)}</div>
+    </div>`).join('') : `<div class="empty-placeholder">Nessun messaggio ancora</div>`;
+
+  // Featured products
+  const featuredProds = products.filter(p => p.featured).slice(0, 4);
+  document.getElementById('dash-products').innerHTML = `
+    <div class="dash-products-grid">
+      ${featuredProds.map(p => `
+        <div class="dash-prod-card">
+          <div class="dash-prod-icon">${p.image ? '<img src="../'+escAttr(p.image)+'" alt="'+escAttr(p.name)+'" style="width:100%;height:100%;object-fit:cover;border-radius:6px">' : escHtml(p.icon || '📦')}</div>
+          <div class="dash-prod-name">${escHtml(p.name)}</div>
+          <div class="dash-prod-price" style="color:var(--admin-gold)">€${Number(p.price||0).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+          <div class="dash-prod-status">${p.available ? '<span style="color:#2ed573">● Disponibile</span>' : '<span style="color:#e74c3c">● Non disp.</span>'}</div>
+        </div>`).join('')}
+      ${featuredProds.length === 0 ? '<div class="empty-placeholder">Nessun prodotto in evidenza</div>' : ''}
+    </div>`;
+}
+
+function statoBadge(stato) {
+  const map = {
+    'Nuovo': 'badge-warning', 'Confermato': 'badge-info',
+    'In lavorazione': 'badge-info', 'Spedito': 'badge-success',
+    'Completato': 'badge-success', 'Annullato': 'badge-danger'
+  };
+  return `<span class="badge ${map[stato] || 'badge-default'}">${escHtml(stato || '—')}</span>`;
+}
+</script>
+
+<style>
+.dash-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+@media(max-width:900px){ .dash-two-col { grid-template-columns: 1fr; } }
+.dash-msg-row { display: flex; align-items: center; gap: 1rem; padding: .8rem 0; border-bottom: 1px solid var(--admin-border); }
+.dash-msg-row:last-child { border-bottom: none; }
+.dash-msg-row.unread .dash-msg-name { font-weight: 700; }
+.dash-msg-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--admin-gold); color: #0a0a0a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; flex-shrink: 0; }
+.dash-msg-body { flex: 1; min-width: 0; }
+.dash-msg-name { font-size: .88rem; font-weight: 500; display: flex; align-items: center; gap: .4rem; }
+.dash-msg-preview { font-size: .78rem; color: var(--admin-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-msg-date { font-size: .72rem; color: var(--admin-text-muted); flex-shrink: 0; }
+.new-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--admin-gold); display: inline-block; }
+.dash-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; padding: .5rem 0; }
+.dash-prod-card { background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 8px; padding: 1rem; text-align: center; }
+.dash-prod-icon { width: 48px; height: 48px; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto .7rem; }
+.dash-prod-name { font-size: .82rem; font-weight: 600; margin-bottom: .3rem; line-height: 1.3; }
+.dash-prod-price { font-size: .9rem; font-weight: 700; margin-bottom: .25rem; }
+.dash-prod-status { font-size: .72rem; }
+.empty-placeholder { text-align: center; padding: 2rem; color: var(--admin-text-muted); font-size: .9rem; }
+</style>
+</body>
+</html>

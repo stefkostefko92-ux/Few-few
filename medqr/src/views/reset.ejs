@@ -1,0 +1,18 @@
+<%- include('partials/head', { title: t('auth.reset_title') + ' — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1><%= t('auth.reset_title') %></h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/reset/<%= token %>" class="stack">
+    <%- include('partials/csrf') %>
+    <label><%= t('auth.new_password') %>
+      <input type="password" name="password" required minlength="10" autocomplete="new-password" autofocus>
+    </label>
+    <label><%= t('auth.repeat_password') %>
+      <input type="password" name="confirm" required minlength="10" autocomplete="new-password">
+    </label>
+    <button type="submit" class="btn"><%= t('auth.save_password') %></button>
+  </form>
+</section>
+
+<%- include('partials/foot') %>

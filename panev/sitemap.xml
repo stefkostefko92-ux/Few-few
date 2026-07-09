@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <url>
+    <loc>https://www.panevascensori.it/</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://www.panevascensori.it/en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/"/>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/og-home.jpg</image:loc>
+      <image:title>Panev Ascensori — Staffe Brevettate per Ascensori</image:title>
+      <image:caption>Staffe brevettate Made in Italy per ascensori e montacarichi — UIBM N. 202023000002112</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/en</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://www.panevascensori.it/en"/>
+    <xhtml:link rel="alternate" hreflang="en-GB"     href="https://www.panevascensori.it/en"/>
+    <xhtml:link rel="alternate" hreflang="en-US"     href="https://www.panevascensori.it/en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/"/>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/faq</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/faq"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/faq"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/faq"/>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/og-home.jpg</image:loc>
+      <image:title>FAQ Panev Ascensori — 22 risposte su staffe e servizi</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/brevetto</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/brevetto"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/brevetto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/brevetto"/>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/og-brevetto.jpg</image:loc>
+      <image:title>Brevetto UIBM N. 202023000002112 — Staffa per Ascensori</image:title>
+      <image:caption>Brevetto per Modello di Utilità concesso il 7 gennaio 2025 da UIBM</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/prodotti</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/prodotti"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/prodotti"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/prodotti"/>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/og-prodotti.jpg</image:loc>
+      <image:title>Prodotti Panev — 27 codici di staffe per ascensori</image:title>
+      <image:caption>Gamma completa di staffe Tipo A, Tipo B e ambidestre per porte di piano</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/catalogo</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/catalogo"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/catalogo"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/catalogo"/>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/og-catalogo.jpg</image:loc>
+      <image:title>Catalogo Tecnico Panev Ascensori — Staffe per ascensori PDF</image:title>
+      <image:caption>Catalogo completo con dimensioni, spessori e codici delle 27 staffe Panev</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/img/catalogo-staffe.pdf</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/servizi</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/servizi"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/servizi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/servizi"/>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/og-servizi.jpg</image:loc>
+      <image:title>Servizi Panev — Installazione, manutenzione e modernizzazione ascensori</image:title>
+      <image:caption>Installazione chiavi in mano, manutenzione programmata, pronto intervento 24/7</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/chi-siamo</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/chi-siamo"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/chi-siamo"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/chi-siamo"/>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/contatti</loc>
+    <xhtml:link rel="alternate" hreflang="it"        href="https://www.panevascensori.it/contatti"/>
+    <xhtml:link rel="alternate" hreflang="it-IT"     href="https://www.panevascensori.it/contatti"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.panevascensori.it/contatti"/>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/privacy</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/cookie</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://www.panevascensori.it/termini</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+
+  <!-- Per-product technical pages (auto-generated from catalog) -->
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/A6517.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-A65-170.png</image:loc>
+      <image:title>Staffa Porta A 65.170.7 — COD. A 65 170 7</image:title>
+      <image:caption>Staffa porte superiore. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/B65320.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-B65-320.png</image:loc>
+      <image:title>Staffa Porta B 65.320 — COD. B 65 320</image:title>
+      <image:caption>Staffa porte inferiore. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/B65220.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-B65-220.png</image:loc>
+      <image:title>Staffa Porta B 65.220 — COD. B 65 220</image:title>
+      <image:caption>Staffa porte inferiore ridotta. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/A4517.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-A45-170.png</image:loc>
+      <image:title>Staffa Porta A 45.170.7 — COD. A 45 170 7</image:title>
+      <image:caption>Staffa porte superiore. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/B45320.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-B45-320.png</image:loc>
+      <image:title>Staffa Porta B 45.320 — COD. B 45 320</image:title>
+      <image:caption>Staffa porte inferiore. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/B45220.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-B45-220.png</image:loc>
+      <image:title>Staffa Porta B 45.220 — COD. B 45 220</image:title>
+      <image:caption>Staffa porte inferiore ridotta. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/A37157.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-A37-150.png</image:loc>
+      <image:title>Staffa Porta A 37.150.7 — COD. A 37 150 7</image:title>
+      <image:caption>Staffa porte superiore. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/B37320.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-B37-320.png</image:loc>
+      <image:title>Staffa Porta B 37.320 — COD. B 37 320</image:title>
+      <image:caption>Staffa porte inferiore. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/B37220.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-B37-220.png</image:loc>
+      <image:title>Staffa Porta B 37.220 — COD. B 37 220</image:title>
+      <image:caption>Staffa porte inferiore ridotta. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/A37172.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-A37170-2.png</image:loc>
+      <image:title>Staffa Porta A 37.170.2 — COD. A 37170 2</image:title>
+      <image:caption>Staffa porte superiore. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SU220160.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SU220-160.png</image:loc>
+      <image:title>Supporto Staffa Guide SU 220.160 — COD. SU 220 160</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SU220180.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SU220-180.png</image:loc>
+      <image:title>Supporto Staffa Guide SU 220.180 — COD. SU 220 180</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SU220200.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SU220-200.png</image:loc>
+      <image:title>Supporto Staffa Guide SU 220.200 — COD. SU 220 200</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SD150160.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SD150-160.png</image:loc>
+      <image:title>Supporto Staffa Guide SD 150.160 — COD. SD 150 160</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SD150180.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SD150-180.png</image:loc>
+      <image:title>Supporto Staffa Guide SD 150.180 — COD. SD 150 180</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SD150200.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SD150-200.png</image:loc>
+      <image:title>Supporto Staffa Guide SD 150.200 — COD. SD 150 200</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SD220160.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SD220-160.png</image:loc>
+      <image:title>Supporto Staffa Guide SD 220.160 — COD. SD 220 160</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SD220180.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SD220-180.png</image:loc>
+      <image:title>Supporto Staffa Guide SD 220.180 — COD. SD 220 180</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SD220200.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SD220-200.png</image:loc>
+      <image:title>Supporto Staffa Guide SD 220.200 — COD. SD 220 200</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.5mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SC80200.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SC80-200.png</image:loc>
+      <image:title>Supporto Staffa Guide SC 80.200 — COD. SC 80 200</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SC80220.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SC80-220.png</image:loc>
+      <image:title>Supporto Staffa Guide SC 80.220 — COD. SC 80 220</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SC90200.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SC90-200.png</image:loc>
+      <image:title>Supporto Staffa Guide SC 90.200 — COD. SC 90 200</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SC90220.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SC90-220.png</image:loc>
+      <image:title>Supporto Staffa Guide SC 90.220 — COD. SC 90 220</image:title>
+      <image:caption>Supporto staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SG80150.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SG80-150.png</image:loc>
+      <image:title>Staffa Guide SG 80.150 — COD. SG 80 150</image:title>
+      <image:caption>Staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SG80170.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SG80-170.png</image:loc>
+      <image:title>Staffa Guide SG 80.170 — COD. SG 80 170</image:title>
+      <image:caption>Staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SG80190.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SG80-190.png</image:loc>
+      <image:title>Staffa Guide SG 80.190 — COD. SG 80 190</image:title>
+      <image:caption>Staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.panevascensori.it/prodotti/SG80220.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://www.panevascensori.it/img/staffa-SG80-220.png</image:loc>
+      <image:title>Staffa Guide SG 80.220 — COD. SG 80 220</image:title>
+      <image:caption>Staffa guide. Ferro sp.4mm.</image:caption>
+      <image:geo_location>Vittuone, Milano, Italia</image:geo_location>
+    </image:image>
+  </url>
+
+</urlset>

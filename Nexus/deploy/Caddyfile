@@ -1,0 +1,25 @@
+# DOMAIN is read from .env (see .env.example). Caddy obtains and renews
+# the Let's Encrypt certificate automatically. The :nexus.example.com
+# fallback is only there so the file parses; Let's Encrypt will refuse
+# to issue against it.
+{$DOMAIN:nexus.example.com} {
+  encode zstd gzip
+
+  # Security headers
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    -Server
+  }
+
+  # Reverse proxy everything to the app
+  reverse_proxy nexus-dominion:4000 {
+    transport http {
+      keepalive 30s
+    }
+  }
+
+  # Optional: hard rate limiting on auth endpoints handled inside the app.
+}

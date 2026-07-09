@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 420" fill="none">
+<defs>
+  <marker id="arrow" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+    <path d="M0,0 L0,4 L4,2 z" fill="#cc0000"/>
+  </marker>
+</defs>
+<!-- background -->
+<rect width="480" height="420" fill="#fafafa"/>
+<rect x="6" y="6" width="468" height="408" fill="none" stroke="#b0b8c0" stroke-width="0.8"/>
+<polygon points="220.0,180.0 249.27,196.9 249.27,363.3 220.0,346.4" fill="#909aa5" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="220.0,180.0 249.27,196.9 247.02,198.2 217.75,181.3" fill="#c8d0d8" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="249.27,196.9 247.02,198.2 247.02,364.6 249.27,363.3" fill="#6e7880" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="232.61,187.28 236.21,189.36 236.21,220.56 232.61,218.48" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="232.61,213.28 236.21,215.36 236.21,246.56 232.61,244.48" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="232.61,239.28 236.21,241.36 236.21,272.56 232.61,270.48" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="232.61,270.48 236.21,272.56 236.21,303.76 232.61,301.68" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="232.61,304.28 236.21,306.36 236.21,337.56 232.61,335.48" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<ellipse cx="234.41" cy="194.56" rx="3.5" ry="2.8" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.7" transform="rotate(5,234.41,194.56)"/>
+<path d="M216.41,263.92 A20,20 0 0,1 252.41,263.92" fill="none" stroke="#cc0000" stroke-width="0.8"/>
+<text x="234.41" y="256.92" font-family="'Courier New',monospace" font-size="9" fill="#cc0000" text-anchor="middle">8°</text>
+<line x1="234.41" y1="277.92" x2="219.41" y2="261.92" stroke="#cc0000" stroke-width="0.7"/>
+<line x1="234.41" y1="277.92" x2="249.41" y2="261.92" stroke="#cc0000" stroke-width="0.7"/>
+<line x1="233.3" y1="196.9" x2="233.3" y2="363.3" stroke="#cc0000" stroke-width="0.7" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<line x1="249.3" y1="196.9" x2="233.3" y2="196.9" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<line x1="249.3" y1="363.3" x2="233.3" y2="363.3" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<text x="233.3" y="283.1" font-family="'Courier New',monospace" font-size="8" fill="#cc0000" text-anchor="middle" transform="rotate(90.0,233.3,280.1)">320mm</text>
+<line x1="226.0" y1="169.6" x2="255.3" y2="186.5" stroke="#cc0000" stroke-width="0.7" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<line x1="220.0" y1="180.0" x2="226.0" y2="169.6" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<line x1="249.3" y1="196.9" x2="255.3" y2="186.5" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<text x="240.6" y="181.1" font-family="'Courier New',monospace" font-size="8" fill="#cc0000" text-anchor="middle" transform="rotate(30.0,240.6,178.1)">65mm</text>
+
+  <rect x="14" y="366" width="186" height="5" fill="#cc2222" stroke="none"/>
+  <rect x="200" y="366" width="80" height="5" fill="#dddddd" stroke="none"/>
+  <rect x="280" y="366" width="80" height="5" fill="#228833" stroke="none"/>
+  <text x="218" y="377" font-family="'Courier New',monospace" font-size="7" fill="#444" text-anchor="middle" letter-spacing="2">M A D E  I N  I T A L Y</text>
+<text x="466" y="376" font-family="'Courier New',monospace" font-size="8" fill="#1a1a1a" text-anchor="end" font-weight="normal">STAFFA FISSAGGIO PORTA DI PIANO</text>
+<text x="466" y="387" font-family="'Courier New',monospace" font-size="8" fill="#1a1a1a" text-anchor="end" font-weight="normal">SPESSORE  5mm</text>
+<text x="466" y="398" font-family="'Courier New',monospace" font-size="8" fill="#1a1a1a" text-anchor="end" font-weight="normal">PREZZO---</text>
+<text x="16" y="376" font-family="'Courier New',monospace" font-size="9" fill="#1a1a1a" text-anchor="start" font-weight="bold">COD.- B 65 320</text>
+<rect x="16" y="14" width="200" height="16" rx="2" fill="none" stroke="#888" stroke-width="0.6"/>
+<text x="116" y="25" font-family="'Courier New',monospace" font-size="7.5" fill="#444" text-anchor="middle" font-weight="normal">Brevetto N. 202023000002112 — UIBM 2025</text>
+<text x="257.27" y="208.9" font-family="'Courier New',monospace" font-size="9" fill="#cc0000" text-anchor="start" font-weight="bold">DX</text>
+<text x="212.0" y="192.0" font-family="'Courier New',monospace" font-size="9" fill="#cc0000" text-anchor="end" font-weight="bold">SX</text>
+</svg>

@@ -1,0 +1,60 @@
+{
+  "name": "mastilko",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Мастилко — безплатно създаване на етикети, визитки и CV, готови за печат. Топъл дизайн, AI помощ с Gemini Flash, без регистрация.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "homepage": "https://mastilko-bg.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "mastilko"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "labels",
+    "business-cards",
+    "cv",
+    "print",
+    "bulgaria",
+    "free",
+    "nextjs",
+    "gemini"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/lib/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.3",
+    "next": "^15.1.4",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.19",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+<section class="print-page">
+  <h1>Разпечатай визитката си</h1>
+  <p class="lead-sm">
+    Оформи и разпечатай визитката си <strong>безплатно</strong> в
+    <strong><%= mastilkoBase.replace(/^https?:\/\//, '') %></strong> — нашето ателие в браузъра.
+    Данните ти се пренасят автоматично (за да не ги въвеждаш пак); там избираш шаблон
+    (90 × 54 mm, 10 на лист с линии за рязане) и си печаташ сам от вкъщи.
+  </p>
+
+  <div class="print-card">
+    <div class="print-preview">
+      <img src="/p/<%= profile.slug %>/qr.png" alt="QR код на визитката" width="150" height="150">
+      <div>
+        <strong><%= profile.display_name %></strong>
+        <% if (profile.headline) { %><p class="muted"><%= profile.headline %></p><% } %>
+        <p class="muted small"><%= publicUrl.replace(/^https?:\/\//, '') %></p>
+      </div>
+    </div>
+
+    <a class="btn btn-big" href="<%= mastilkoUrl %>" rel="noopener">
+      Оформи за печат в <%= mastilkoBase.replace(/^https?:\/\//, '') %> →
+    </a>
+    <p><a href="/p/<%= profile.slug %>">← Обратно към визитката</a></p>
+  </div>
+
+  <details class="print-data">
+    <summary>Какви данни се пренасят</summary>
+    <p class="muted small">
+      За да попълни визитката вместо теб, <%= mastilkoBase.replace(/^https?:\/\//, '') %> получава
+      публичните данни от профила ти: име, длъжност, фирма, телефон, имейл, уебсайт, адрес,
+      описание, социални мрежи, собствените ти бутони, цветовете/шрифта и връзки към снимката
+      и QR кода. Пренасянето става през защитено API с еднократен токен, валиден 30 минути.
+      Оттам нататък оформяш и печаташ визитката сам — Мастилко не изисква регистрация.
+    </p>
+  </details>
+</section>
+<%- include('partials/foot') %>

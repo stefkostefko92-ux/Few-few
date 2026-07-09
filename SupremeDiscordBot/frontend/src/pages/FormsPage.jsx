@@ -1,0 +1,519 @@
+// frontend/src/pages/FormsPage.jsx
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2, GitBranch, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { getForms, createForm, updateForm, deleteForm } from "../api";
+import { usePremium } from "../hooks/usePremium";
+import { PremiumBadge } from "../components/PremiumBadge";
+import Modal from "../components/Modal";
+import ConfirmDialog from "../components/ConfirmDialog";
+
+const QUESTION_TYPES = [
+  { value: "SHORT_TEXT", label: "Short Text" },
+  { value: "PARAGRAPH", label: "Paragraph" },
+  { value: "SELECT", label: "Single Choice" },
+  { value: "MULTI_SELECT", label: "Multi Choice" },
+  { value: "NUMBER", label: "Number" },
+];
+
+const defaultQuestion = () => ({
+  label: "",
+  placeholder: "",
+  type: "SHORT_TEXT",
+  required: true,
+  minLength: "",
+  maxLength: "",
+  choices: [],
+  branches: {},
+  _choicesText: "",
+});
+
+function formToState(f) {
+  return {
+    name: f.name,
+    description: f.description || "",
+    isApplication: f.isApplication,
+    reviewChannelId: f.reviewChannelId || "",
+    transcriptChannelId: f.transcriptChannelId || "",
+    // Appy.bot-style fields
+    acceptRoleIds:  (f.acceptRoleIds || []).join(","),
+    denyRoleIds:    (f.denyRoleIds || []).join(","),
+    removeRoleIds:  (f.removeRoleIds || []).join(","),
+    managerRoleIds: (f.managerRoleIds || []).join(","),
+    pingRoleIds:    (f.pingRoleIds || []).join(","),
+    acceptMessage:  f.acceptMessage || "",
+    denyMessage:    f.denyMessage || "",
+    cooldownSeconds: f.cooldownSeconds || 0,
+    maxSubmissions:  f.maxSubmissions || "",
+    closed:          !!f.closedAt,
+    questions: f.questions.map((q) => ({
+      label: q.label,
+      placeholder: q.placeholder || "",
+      type: q.type,
+      required: q.required,
+      minLength: q.minLength || "",
+      maxLength: q.maxLength || "",
+      choices: q.choices || [],
+      branches: q.branches || {},
+      validationRegex: q.validationRegex || "",
+      validationMessage: q.validationMessage || "",
+      _choicesText: (q.choices || []).join("\n"),
+    })),
+  };
+}
+
+const defaultForm = () => ({
+  name: "",
+  description: "",
+  isApplication: false,
+  reviewChannelId: "",
+  transcriptChannelId: "",
+  acceptRoleIds:  "",
+  denyRoleIds:    "",
+  removeRoleIds:  "",
+  managerRoleIds: "",
+  pingRoleIds:    "",
+  acceptMessage:  "",
+  denyMessage:    "",
+  cooldownSeconds: 0,
+  maxSubmissions:  "",
+  closed:          false,
+  questions: [defaultQuestion()],
+});
+
+export default function FormsPage() {
+  const { serverId } = useParams();
+  const qc = useQueryClient();
+  const { isPremium } = usePremium();
+  const [editing, setEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null); // formId being edited
+  const [form, setForm] = useState(defaultForm());
+  const [expandedQ, setExpandedQ] = useState(0);
+  const [confirmState, setConfirmState] = useState(null);
+  const [actionError, setActionError] = useState(null);
+
+  const { data: forms = [], isLoading } = useQuery({
+    queryKey: ["forms", serverId],
+    queryFn: () => getForms(serverId),
+  });
+
+  const createMut = useMutation({
+    mutationFn: (data) => createForm(serverId, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["forms", serverId] }); setEditing(false); setEditingId(null); },
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ formId, data }) => updateForm(serverId, formId, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["forms", serverId] }); setEditing(false); setEditingId(null); },
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: ({ formId, force }) => deleteForm(serverId, formId, force),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["forms", serverId] }),
+  });
+
+  // Step 2 of cascade delete: form has applications, confirm force-delete.
+  const askCascadeDelete = (form, count) => {
+    setConfirmState({
+      title: "Form has submissions",
+      message:
+        `This form has ${count} application submission${count === 1 ? "" : "s"}.\n\n` +
+        `Deleting will remove the form AND all ${count} submissions.\n` +
+        `Cancel to keep everything.`,
+      confirmLabel: "Delete everything",
+      onConfirm: async () => {
+        setActionError(null);
+        try {
+          await deleteMut.mutateAsync({ formId: form.id, force: true });
+          setConfirmState(null);
+        } catch (e) {
+          setConfirmState(null);
+          setActionError(`Delete failed: ${e?.response?.data?.error || e.message}`);
+        }
+      },
+    });
+  };
+
+  // Step 1: confirm delete; on FORM_HAS_APPLICATIONS, escalate to cascade confirm.
+  const handleDelete = (form) => {
+    setActionError(null);
+    setConfirmState({
+      title: "Delete form",
+      message: `Delete form "${form.name}"?`,
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteMut.mutateAsync({ formId: form.id, force: false });
+          setConfirmState(null);
+        } catch (err) {
+          const data = err?.response?.data;
+          if (data?.code === "FORM_HAS_APPLICATIONS") {
+            askCascadeDelete(form, data.applicationCount);
+          } else {
+            setConfirmState(null);
+            setActionError(`Delete failed: ${data?.error || err.message}`);
+          }
+        }
+      },
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const csvToArray = (s) => (s || "").split(",").map(x => x.trim()).filter(Boolean);
+    const payload = {
+      ...form,
+      acceptRoleIds:  csvToArray(form.acceptRoleIds),
+      denyRoleIds:    csvToArray(form.denyRoleIds),
+      removeRoleIds:  csvToArray(form.removeRoleIds),
+      managerRoleIds: csvToArray(form.managerRoleIds),
+      pingRoleIds:    csvToArray(form.pingRoleIds),
+      acceptMessage:  form.acceptMessage || null,
+      denyMessage:    form.denyMessage || null,
+      cooldownSeconds: Number(form.cooldownSeconds) || 0,
+      maxSubmissions:  form.maxSubmissions ? Number(form.maxSubmissions) : null,
+      closed:          !!form.closed,
+      questions: form.questions.map(({ _choicesText, choices: _c, ...q }) => ({
+        ...q,
+        minLength: q.minLength ? Number(q.minLength) : undefined,
+        maxLength: q.maxLength ? Number(q.maxLength) : undefined,
+        choices: _choicesText ? _choicesText.split("\n").map((c) => c.trim()).filter(Boolean) : [],
+        branches: q.branches || {},
+        validationRegex:   q.validationRegex   || null,
+        validationMessage: q.validationMessage || null,
+      })),
+    };
+    if (editingId) {
+      updateMut.mutate({ formId: editingId, data: payload });
+    } else {
+      createMut.mutate(payload);
+    }
+  };
+
+  const addQuestion = () => {
+    setForm((f) => ({ ...f, questions: [...f.questions, defaultQuestion()] }));
+    setExpandedQ(form.questions.length);
+  };
+
+  const removeQuestion = (i) => {
+    setForm((f) => ({ ...f, questions: f.questions.filter((_, idx) => idx !== i) }));
+  };
+
+  const updateQuestion = (i, key, val) => {
+    setForm((f) => ({
+      ...f,
+      questions: f.questions.map((q, idx) => idx === i ? { ...q, [key]: val } : q),
+    }));
+  };
+
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-cs-text">Forms</h1>
+          <p className="text-cs-muted text-sm mt-1">Build logic-branching questionnaires for tickets and applications</p>
+        </div>
+        <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="cs-btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> New Form
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="cs-card h-20 animate-pulse bg-cs-panel" />)}</div>
+      ) : forms.length === 0 ? (
+        <div className="cs-card text-center py-12">
+          <p className="text-cs-muted mb-4">No forms yet</p>
+          <button onClick={() => setEditing(true)} className="cs-btn-primary">Create First Form</button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {forms.map((f) => (
+            <div key={f.id} className="cs-card">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-cs-text">{f.name}</h3>
+                    <span className={f.isApplication ? "cs-badge-premium" : "cs-badge-muted"}>
+                      {f.isApplication ? "Application" : "Ticket Form"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-cs-muted mt-0.5">{f.questions.length} questions</p>
+                  {f.description && <p className="text-xs text-cs-muted mt-1">{f.description}</p>}
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    aria-label="Edit form"
+                    title="Edit form"
+                    className="text-cs-muted hover:text-white transition-colors p-1"
+                    onClick={() => { setEditingId(f.id); setForm(formToState(f)); setEditing(true); }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    aria-label="Delete form"
+                    title="Delete form"
+                    className="text-danger hover:text-red-300 transition-colors p-1 flex-shrink-0"
+                    onClick={() => handleDelete(f)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Questions preview */}
+              <div className="mt-3 flex flex-wrap gap-1">
+                {f.questions.map((q, i) => (
+                  <span key={q.id} className="bg-cs-bg text-cs-text text-xs px-2 py-0.5 rounded">
+                    {i + 1}. {q.label.slice(0, 30)}{q.label.length > 30 ? "..." : ""}
+                    {Object.keys(q.branches || {}).length > 0 && (
+                      <GitBranch className="w-3 h-3 inline ml-1 text-cs-cyan" />
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {deleteMut.isError && (
+        <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50">
+          ❌ {deleteMut.error?.response?.data?.error || "Failed to delete form"}
+        </div>
+      )}
+
+      {/* Create Form Modal */}
+      <Modal
+        open={editing}
+        onClose={() => { setEditing(false); setEditingId(null); }}
+        title={editingId ? "Edit form" : "New form"}
+        maxWidth="max-w-3xl"
+      >
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Basic info */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="cs-label">Form Name *</span>
+                    <input className="cs-input" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Staff Application" />
+                  </label>
+                  <label className="block">
+                    <span className="cs-label">Type</span>
+                    <select className="cs-input" value={String(form.isApplication)} onChange={(e) => setForm((f) => ({ ...f, isApplication: e.target.value === "true" }))}>
+                      <option value="false">Ticket Form</option>
+                      <option value="true">Application Form</option>
+                    </select>
+                  </label>
+                </div>
+                <label className="block">
+                  <span className="cs-label">Description</span>
+                  <input className="cs-input" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Short description" />
+                </label>
+                {form.isApplication && (
+                  <label className="block">
+                    <span className="cs-label">Review Channel ID</span>
+                    <input className="cs-input" value={form.reviewChannelId} onChange={(e) => setForm((f) => ({ ...f, reviewChannelId: e.target.value }))} placeholder="Discord channel ID for review embeds" />
+                  </label>
+                )}
+
+                <label className="block">
+                  <span className="cs-label">Transcript Channel ID</span>
+                  <input className="cs-input" value={form.transcriptChannelId} onChange={(e) => setForm((f) => ({ ...f, transcriptChannelId: e.target.value }))} placeholder="Where to post application transcripts on approve/deny (optional)" />
+                  <p className="text-xs text-cs-dim mt-1">Leave empty to disable. Post is triggered on approve/deny.</p>
+                </label>
+
+                {/* ─── Appy.bot-style fields (application forms only) ─── */}
+                {form.isApplication && (
+                  <details className="cs-card !p-4 !bg-cs-panel">
+                    <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.2em] text-cs-cyan select-none flex items-center gap-2">
+                      → Advanced: Roles, Messages, Cooldowns
+                      {!isPremium && <PremiumBadge small />}
+                    </summary>
+                    <div className="pt-4 space-y-3">
+                      {!isPremium && (
+                        <div className="cs-card !p-3 !bg-amber-500/5 border-amber-500/30 text-xs text-amber-300">
+                          <strong>Premium required</strong> — these advanced features (auto-role on accept/deny, custom DM messages, cooldowns) need a Premium subscription.
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="block">
+                          <span className="cs-label">Accept → add role IDs (comma-separated)</span>
+                          <input className="cs-input font-mono text-xs" value={form.acceptRoleIds} onChange={(e) => setForm((f) => ({ ...f, acceptRoleIds: e.target.value }))} placeholder="123456789, 987654321" />
+                        </label>
+                        <label className="block">
+                          <span className="cs-label">Accept → remove role IDs</span>
+                          <input className="cs-input font-mono text-xs" value={form.removeRoleIds} onChange={(e) => setForm((f) => ({ ...f, removeRoleIds: e.target.value }))} placeholder="Pending, Applicant..." />
+                        </label>
+                      </div>
+                      <label className="block">
+                        <span className="cs-label">Deny → add role IDs</span>
+                        <input className="cs-input font-mono text-xs" value={form.denyRoleIds} onChange={(e) => setForm((f) => ({ ...f, denyRoleIds: e.target.value }))} placeholder="e.g. Verified-No role" />
+                      </label>
+                      <label className="block">
+                        <span className="cs-label">Application Managers (role IDs, can review alongside admins)</span>
+                        <input className="cs-input font-mono text-xs" value={form.managerRoleIds} onChange={(e) => setForm((f) => ({ ...f, managerRoleIds: e.target.value }))} placeholder="Recruiter, HR" />
+                      </label>
+                      <label className="block">
+                        <span className="cs-label">Ping these roles on new submission</span>
+                        <input className="cs-input font-mono text-xs" value={form.pingRoleIds} onChange={(e) => setForm((f) => ({ ...f, pingRoleIds: e.target.value }))} placeholder="Staff, Recruiter" />
+                      </label>
+                      <label className="block">
+                        <span className="cs-label">Accept DM message (markdown; {"{user}"}, {"{note}"})</span>
+                        <textarea className="cs-textarea" rows={3} value={form.acceptMessage} onChange={(e) => setForm((f) => ({ ...f, acceptMessage: e.target.value }))} placeholder="✅ Welcome to the team, {user}! Check out #rules next." />
+                      </label>
+                      <label className="block">
+                        <span className="cs-label">Deny DM message</span>
+                        <textarea className="cs-textarea" rows={3} value={form.denyMessage} onChange={(e) => setForm((f) => ({ ...f, denyMessage: e.target.value }))} placeholder="Sorry, {user}. You may re-apply in 7 days." />
+                      </label>
+                      <div className="grid grid-cols-3 gap-3">
+                        <label className="block">
+                          <span className="cs-label">Cooldown (seconds)</span>
+                          <input className="cs-input" type="number" min="0" value={form.cooldownSeconds} onChange={(e) => setForm((f) => ({ ...f, cooldownSeconds: e.target.value }))} placeholder="0 = none" />
+                        </label>
+                        <label className="block">
+                          <span className="cs-label">Max submissions per user</span>
+                          <input className="cs-input" type="number" min="0" value={form.maxSubmissions} onChange={(e) => setForm((f) => ({ ...f, maxSubmissions: e.target.value }))} placeholder="Leave empty = unlimited" />
+                        </label>
+                        <label className="flex items-center gap-2 mt-6">
+                          <input type="checkbox" checked={form.closed} onChange={(e) => setForm((f) => ({ ...f, closed: e.target.checked }))} className="accent-cs-cyan" />
+                          <span className="text-sm text-cs-muted">Applications closed</span>
+                        </label>
+                      </div>
+                    </div>
+                  </details>
+                )}
+              </div>
+
+              {/* Questions */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-cs-text">Questions ({form.questions.length})</h3>
+                  <button type="button" onClick={addQuestion} className="text-cs-cyan hover:text-cs-cyan text-sm transition-colors flex items-center gap-1">
+                    <Plus className="w-3 h-3" /> Add Question
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {form.questions.map((q, i) => (
+                    <div key={i} className="bg-cs-bg rounded-lg border border-white/5">
+                      {/* Question header */}
+                      <div className="flex items-center justify-between p-3">
+                        <button
+                          type="button"
+                          aria-expanded={expandedQ === i}
+                          onClick={() => setExpandedQ(expandedQ === i ? null : i)}
+                          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                        >
+                          <span className="w-6 h-6 rounded bg-cs-cyan/20 text-cs-cyan text-xs flex items-center justify-center font-bold">{i + 1}</span>
+                          <span className="text-sm text-cs-text">{q.label || "Untitled Question"}</span>
+                          <span className="text-xs text-cs-muted">{q.type}</span>
+                          {Object.keys(q.branches || {}).length > 0 && (
+                            <GitBranch className="w-3 h-3 text-cs-cyan" />
+                          )}
+                        </button>
+                        <div className="flex items-center gap-2">
+                          {form.questions.length > 1 && (
+                            <button type="button" aria-label={`Remove question ${i + 1}`} title="Remove question" onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-danger hover:text-red-300 transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                          {expandedQ === i ? <ChevronUp className="w-4 h-4 text-cs-muted" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-cs-muted" aria-hidden="true" />}
+                        </div>
+                      </div>
+
+                      {expandedQ === i && (
+                        <div className="px-3 pb-3 border-t border-white/5 pt-3 space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <label className="block">
+                              <span className="cs-label text-xs">Question Label *</span>
+                              <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder="What is your age?" />
+                            </label>
+                            <label className="block">
+                              <span className="cs-label text-xs">Type</span>
+                              <select className="cs-input py-1.5 text-sm" value={q.type} onChange={(e) => updateQuestion(i, "type", e.target.value)}>
+                                {QUESTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                              </select>
+                            </label>
+                          </div>
+
+                          <label className="block">
+                            <span className="cs-label text-xs">Placeholder</span>
+                            <input className="cs-input py-1.5 text-sm" value={q.placeholder} onChange={(e) => updateQuestion(i, "placeholder", e.target.value)} placeholder="Optional hint text" />
+                          </label>
+
+                          <div className="flex items-center gap-3">
+                            <label className="flex items-center gap-2 text-sm text-cs-text cursor-pointer">
+                              <input type="checkbox" className="rounded" checked={q.required} onChange={(e) => updateQuestion(i, "required", e.target.checked)} />
+                              Required
+                            </label>
+                            <label className="block flex-1">
+                              <span className="cs-label text-xs">Min Length</span>
+                              <input type="number" className="cs-input py-1 text-sm" value={q.minLength} onChange={(e) => updateQuestion(i, "minLength", e.target.value)} placeholder="0" />
+                            </label>
+                            <label className="block flex-1">
+                              <span className="cs-label text-xs">Max Length</span>
+                              <input type="number" className="cs-input py-1 text-sm" value={q.maxLength} onChange={(e) => updateQuestion(i, "maxLength", e.target.value)} placeholder="1000" />
+                            </label>
+                          </div>
+
+                          {(q.type === "SELECT" || q.type === "MULTI_SELECT") && (
+                            <label className="block">
+                              <span className="cs-label text-xs flex items-center gap-1">
+                                <GitBranch className="w-3 h-3 text-cs-cyan" /> Choices (one per line — supports logic branching)
+                              </span>
+                              <textarea className="cs-input text-sm" rows={4} value={q._choicesText} onChange={(e) => updateQuestion(i, "_choicesText", e.target.value)} placeholder={"Yes\nNo\nMaybe"} />
+                              <p className="text-xs text-cs-muted mt-1">Add choices above. Logic branching (jump to a different question based on choice) can be configured after form creation.</p>
+                            </label>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => { setEditing(false); setEditingId(null); }} className="cs-btn-ghost">Cancel</button>
+                <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
+                  {(createMut.isPending || updateMut.isPending) ? "Saving…" : editingId ? "Save Changes" : "Create Form"}
+                </button>
+              </div>
+
+              {(createMut.isError || updateMut.isError) && (
+                <p className="text-danger text-sm" role="alert">{(createMut.error || updateMut.error)?.response?.data?.error || "Operation failed"}</p>
+              )}
+            </form>
+      </Modal>
+
+      {actionError && (
+        <div
+          role="alert"
+          className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50 flex items-center gap-3"
+        >
+          <span>❌ {actionError}</span>
+          <button
+            type="button"
+            aria-label="Dismiss error"
+            title="Dismiss"
+            onClick={() => setActionError(null)}
+            className="text-red-300 hover:text-red-200"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!confirmState}
+        title={confirmState?.title}
+        message={confirmState?.message}
+        destructive
+        confirmLabel={confirmState?.confirmLabel || "Delete"}
+        loading={deleteMut.isPending}
+        onConfirm={() => { confirmState?.onConfirm(); }}
+        onCancel={() => setConfirmState(null)}
+      />
+    </div>
+  );
+}

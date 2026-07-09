@@ -1,0 +1,200 @@
+<%- include('partials/head', { title: t('nav.profile') + ' — MedQR', user }) %>
+
+<h1><%= t('dash.title') %></h1>
+<% if (saved) { %><p class="success" role="status"><%= t('dash.saved') %></p><% } %>
+<% if (!account.email_verified) { %>
+  <div class="warn-banner" role="alert">
+    <%- include('partials/icon', { name: 'alert' }) %> <%= t('dash.unverified') %>
+    <form method="post" action="/verify-email/resend" class="inline">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="link-btn-dark"><%= t('dash.resend') %></button>
+    </form>
+  </div>
+<% } %>
+
+<a class="sos-launch" href="/sos">
+  <span class="sos-launch-icon"><%- include('partials/icon', { name: 'alert', cls: 'icon-lg' }) %></span>
+  <span class="sos-launch-text">
+    <strong><%= t('sos.title') %> (SOS)</strong>
+    <span class="muted small"><%= t('dash.sos_sub') %></span>
+  </span>
+</a>
+
+<div class="grid-2">
+  <section class="card">
+    <h2><%= name(profile.full_name) %></h2>
+    <dl class="profile-view">
+      <dt><%= t('emerg.blood') %></dt><dd><%= profile.blood_type || '—' %></dd>
+      <dt><%= t('dash.allergies') %></dt><dd><%= [allergyLabels(profile.allergy_keys).join(', '), profile.allergies].filter(Boolean).join(' · ') || '—' %></dd>
+      <dt><%= t('emerg.conditions') %></dt><dd><%= [conditionLabels(profile.condition_keys).join(', '), profile.chronic_conditions].filter(Boolean).join(' · ') || '—' %></dd>
+      <dt><%= t('emerg.meds') %></dt><dd><%= profile.current_medications || '—' %></dd>
+      <dt><%= t('dash.hearing') %></dt><dd><%= clin(profile.hearing_status) || '—' %></dd>
+      <dt><%= t('dash.communication') %></dt><dd><%= profile.communication_pref || '—' %></dd>
+      <dt><%= t('emerg.contact') %></dt>
+      <dd>
+        <%= name(profile.emergency_contact_name) || '—' %>
+        <% if (profile.emergency_contact_phone) { %>
+          · <a href="tel:<%= profile.emergency_contact_phone %>"><%= profile.emergency_contact_phone %></a>
+        <% } %>
+      </dd>
+    </dl>
+    <a class="btn" href="/profile/edit"><%- include('partials/icon', { name: 'edit' }) %> <%= t('dash.edit_data') %></a>
+  </section>
+
+  <section class="card center">
+    <h2><%= t('dash.qr_title') %></h2>
+    <div class="qr-frame">
+      <img
+        class="qr-label"
+        id="qr-preview"
+        src="/label.svg?size=medium"
+        alt="<%= t('emerg.banner') %>"
+      />
+    </div>
+    <p class="muted small"><%= t('dash.qr_note') %></p>
+
+    <fieldset class="qr-sizes" id="qr-sizes">
+      <legend><%= t('dash.size') %></legend>
+      <% Object.entries(qrSizes).forEach(([key, s], i) => { %>
+        <button
+          type="button"
+          class="size-btn<%= key === 'medium' ? ' is-active' : '' %>"
+          data-qr-size="<%= key %>"
+        >
+          <%= t('size.' + key) %>
+        </button>
+      <% }) %>
+    </fieldset>
+
+    <div class="cta-row">
+      <a class="btn btn-small" id="dl-label" href="/label.svg?size=medium" download="medqr-label.svg">
+        <%- include('partials/icon', { name: 'download' }) %> <%= t('dash.dl_label') %>
+      </a>
+      <a class="btn btn-small btn-ghost" id="dl-qr" href="/qr.png?size=medium" download="medqr-qr.png">
+        <%- include('partials/icon', { name: 'download' }) %> <%= t('dash.dl_qr') %>
+      </a>
+      <a class="btn btn-small btn-ghost" href="/card" target="_blank">
+        <%- include('partials/icon', { name: 'card' }) %> <%= t('dash.wallet_card') %>
+      </a>
+    </div>
+    <p class="muted small"><%= t('dash.profile_url') %> <br /><code id="emergency-url"><%= emergencyUrl %></code></p>
+  </section>
+</div>
+
+<section class="card">
+  <h2><%- include('partials/icon', { name: 'nfc' }) %> <%= t('dash.nfc_title') %></h2>
+  <p class="muted small"><%= t('dash.nfc_desc') %></p>
+  <div class="cta-row" style="justify-content:flex-start">
+    <button type="button" class="btn btn-small" id="nfc-write" hidden>
+      <%- include('partials/icon', { name: 'nfc' }) %> <%= t('dash.nfc_write') %>
+    </button>
+    <button type="button" class="btn btn-small btn-ghost" id="copy-url" data-copy="#emergency-url">
+      <%- include('partials/icon', { name: 'copy' }) %> <%= t('dash.copy_url') %>
+    </button>
+  </div>
+  <p class="muted small" id="nfc-status" role="status"></p>
+  <p class="muted small" id="nfc-hint"><%= t('dash.nfc_hint') %></p>
+</section>
+
+<section class="card">
+  <h2><%= t('dash.security') %></h2>
+
+  <form method="post" action="/profile/pin" class="inline-form">
+    <%- include('partials/csrf') %>
+    <label><%= t('dash.pin_label') %>
+      <input type="text" name="pin" inputmode="numeric" pattern="\d{6,8}" minlength="6" maxlength="8" placeholder="123456">
+    </label>
+    <button type="submit" class="btn-small btn"><%= t('dash.pin_save') %></button>
+    <span class="muted small"><%= t('dash.pin_empty') %></span>
+  </form>
+
+  <p class="security-row">
+    <strong><%= t('dash.twofa') %></strong>
+    <% if (account.totp_enabled) { %>
+      <span class="badge badge-ok"><%= t('dash.on') %></span>
+      <span class="muted small">· <%= t('dash.recovery_codes') %> <%= recoveryCount %></span>
+    <% } else { %>
+      <span class="badge"><%= t('dash.off') %></span>
+    <% } %>
+    <a class="btn-small btn btn-ghost" href="/profile/2fa"><%- include('partials/icon', { name: 'shield-check' }) %> <%= t('dash.setup_2fa') %></a>
+  </p>
+
+  <p class="security-row">
+    <strong><%= t('dash.passkeys') %></strong>
+    <span class="muted small"><%= t('dash.passkeys_sub') %></span>
+    <a class="btn-small btn btn-ghost" href="/profile/passkeys"><%- include('partials/icon', { name: 'shield-check' }) %> <%= t('dash.manage') %></a>
+  </p>
+
+  <p class="security-row" id="biometric-row" hidden>
+    <strong><%= t('dash.biometric') %></strong>
+    <span class="muted small"><%= t('dash.biometric_sub') %></span>
+    <label class="checkbox"><input type="checkbox" id="biometric-toggle"> <%= t('dash.enable') %></label>
+  </p>
+
+  <form method="post" action="/profile/rotate-token" class="inline-form"
+        data-confirm="<%= t('dash.rotate_confirm') %>">
+    <%- include('partials/csrf') %>
+    <button type="submit" class="btn-small btn-danger"><%- include('partials/icon', { name: 'refresh' }) %> <%= t('dash.rotate') %></button>
+  </form>
+</section>
+
+<section class="card">
+  <h2><%= t('dash.gdpr') %></h2>
+  <p class="muted small"><%= t('dash.consent_at') %> <%= account.consent_at || '—' %></p>
+  <div class="cta-row">
+    <a class="btn btn-small btn-ghost" href="/profile/export.json"><%- include('partials/icon', { name: 'download' }) %> <%= t('dash.export') %></a>
+    <a class="btn btn-small btn-danger" href="/profile/delete"><%- include('partials/icon', { name: 'trash' }) %> <%= t('dash.delete_me') %></a>
+  </div>
+</section>
+
+<section class="card">
+  <h2><%= t('dash.devices') %></h2>
+  <div class="table-wrap">
+    <table class="log">
+      <thead><tr><th><%= t('dash.device') %></th><th><%= t('dash.ip') %></th><th><%= t('dash.last_seen') %></th></tr></thead>
+      <tbody>
+        <% sessions.forEach(s => { %>
+          <tr>
+            <td class="small">
+              <%= s.user_agent || '—' %>
+              <% if (s.current) { %><span class="badge badge-ok"><%= t('dash.current') %></span><% } %>
+            </td>
+            <td><%= s.ip || '—' %></td>
+            <td><%= s.last_seen %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (sessions.length > 1) { %>
+    <form method="post" action="/profile/sessions/revoke-others" class="inline-form"
+          data-confirm="<%= t('dash.revoke_confirm') %>">
+      <%- include('partials/csrf') %>
+      <button type="submit" class="btn-small btn-danger"><%= t('dash.revoke_others') %></button>
+    </form>
+  <% } %>
+</section>
+
+<section class="card">
+  <h2><%= t('dash.access_log') %></h2>
+  <% if (recentAccess.length === 0) { %>
+    <p class="muted"><%= t('dash.no_access') %></p>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="log">
+        <thead><tr><th><%= t('dash.when') %></th><th><%= t('dash.ip') %></th><th><%= t('dash.device') %></th></tr></thead>
+        <tbody>
+          <% recentAccess.forEach(a => { %>
+            <tr>
+              <td><%= a.accessed_at %></td>
+              <td><%= a.ip || '—' %></td>
+              <td class="small"><%= a.user_agent || '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<%- include('partials/foot') %>

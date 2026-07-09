@@ -1,0 +1,299 @@
+/* МАГНАТ — 3D board + side HUD. */
+.mag-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+.mag-board {
+  /* Дъската е звездата: взима почти цялата широчина, HUD-ът е отстрани. */
+  position: relative; /* anchors the card modal overlay */
+  flex: 1 1 760px;
+  max-width: 1100px;
+  min-width: 300px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(120% 100% at 50% 0%, #1a4030, #0b2418);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Късмет/Каса card modal (auto-dismisses) ────────────────────────────── */
+.mag-card-pop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  background: rgba(6, 14, 10, 0.35);
+}
+.mag-card {
+  max-width: min(340px, 84%);
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(217, 178, 95, 0.55);
+  background: linear-gradient(165deg, #14342a, #0b241a);
+  box-shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  animation: mag-card-in 0.28s ease-out;
+}
+.mag-card-kicker {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brass-300);
+  margin-bottom: 6px;
+}
+.mag-card-text {
+  font-size: 1.02rem;
+  color: var(--ink-100);
+}
+@keyframes mag-card-in {
+  from {
+    transform: translateY(10px) scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mag-card {
+    animation: none;
+  }
+}
+
+/* ── status pills (live auction, parking pot) ───────────────────────────── */
+.mag-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-100);
+  background: rgba(18, 48, 38, 0.7);
+  border: 1px solid rgba(217, 178, 95, 0.3);
+}
+.mag-pill--auction {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.14);
+}
+
+/* held "get out of jail" cards badge in the player list */
+.mag-key {
+  font-size: 0.8rem;
+  flex: 0 0 auto;
+}
+.mag-nogl {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--ink-200);
+  font-size: 0.95rem;
+}
+.mag-side {
+  flex: 0 1 320px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mag-players {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mag-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(18, 48, 38, 0.5);
+  border: 1px solid transparent;
+}
+.mag-player.is-turn {
+  border-color: var(--brass-300);
+  background: rgba(217, 178, 95, 0.12);
+}
+.mag-player.is-out {
+  opacity: 0.45;
+}
+.mag-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.mag-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--ink-100);
+}
+.mag-cash {
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-300);
+  font-weight: 600;
+}
+
+.mag-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mag-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mag-hint {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+.mag-dice {
+  color: var(--ink-200);
+  font-size: 0.95rem;
+}
+
+.mag-props {
+  background: rgba(11, 14, 13, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.mag-props h4 {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.mag-prop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 0.85rem;
+}
+.mag-prop-band {
+  width: 8px;
+  height: 18px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.mag-prop-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-200);
+}
+.mag-prop-acts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.mag-prop-acts button {
+  border: 1px solid rgba(217, 178, 95, 0.35);
+  background: transparent;
+  color: var(--brass-300);
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.mag-prop-acts button:hover {
+  background: rgba(217, 178, 95, 0.15);
+}
+
+.mag-log {
+  background: rgba(11, 14, 13, 0.4);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+.mag-log p {
+  padding: 1px 0;
+}
+
+/* ── auctions & trades ──────────────────────────────────────────────────── */
+.mag-auction,
+.mag-trade-resp,
+.mag-trade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 178, 95, 0.25);
+  background: rgba(11, 14, 13, 0.5);
+}
+.mag-bidrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.mag-bidrow input[type="number"] {
+  width: 100px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  background: var(--felt-900);
+  color: var(--ink-100);
+}
+.mag-bidquick {
+  display: inline-flex;
+  gap: 4px;
+}
+.mag-bidquick button {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--felt-700);
+  color: var(--ink-200, #cdbfa3);
+  border: 1px solid rgba(217, 178, 95, 0.25);
+  cursor: pointer;
+}
+.mag-trade-line {
+  font-size: 0.85rem;
+  color: var(--ink-300);
+}
+.mag-trade-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.mag-trade-h {
+  font-weight: 700;
+  color: var(--brass-300);
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+.mag-trade-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--ink-200, #cdbfa3);
+  padding: 1px 0;
+}
+.mag-trade select,
+.mag-trade-cols input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(217, 178, 95, 0.3);
+  background: var(--felt-900);
+  color: var(--ink-100);
+}

@@ -1,0 +1,170 @@
+/* Casino chip visuals for betting games (§4.3). Virtual chips only. */
+.chipstack {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+}
+.chipstack--sm {
+  width: 24px;
+  height: 24px;
+}
+.chip {
+  position: absolute;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background-image: repeating-conic-gradient(rgba(255, 255, 255, 0.35) 0 12deg, transparent 12deg 30deg);
+  background-blend-mode: overlay;
+}
+.chipstack--sm .chip {
+  width: 24px;
+  height: 24px;
+}
+.chip::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 255, 255, 0.6);
+}
+.chipstack--sm .chip::after {
+  inset: 4px;
+}
+.chip--brass {
+  background-color: var(--brass-400);
+}
+.chip--red {
+  background-color: var(--suit-red);
+}
+.chip--felt {
+  background-color: var(--felt-700);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(217, 178, 95, 0.4);
+}
+
+.pot {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(11, 14, 13, 0.7);
+  border: 1px solid var(--brass-400);
+  box-shadow: 0 0 22px var(--brass-glow);
+}
+.pot__amount {
+  font-family: var(--font-display, serif);
+  font-weight: 700;
+  color: var(--brass-100);
+}
+.pot__amount--bump {
+  display: inline-block;
+  animation: pot-bump 220ms var(--ease-snap, cubic-bezier(0.2, 0.9, 0.25, 1.15));
+}
+@keyframes pot-bump {
+  35% {
+    transform: scale(1.12);
+  }
+}
+.chip {
+  animation: chip-drop 180ms ease-out backwards;
+}
+@keyframes chip-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Betting-game regulatory notice (§11.4). */
+.betting-notice {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+/* ── Свара маса ──────────────────────────────────────────────────────────
+   Индивидуални слотове за до 5 опонента: всеки получава свои проценти по
+   масата (инлайн left/top), вместо да дели трите фиксирани data-pos места —
+   при 5–6 играчи седалките вече не се застъпват. */
+.svara-seat-slot {
+  position: absolute;
+  z-index: 3;
+  transform: translateX(-50%);
+}
+.svara-seat-slot .aso-seat {
+  position: static;
+  transform: none;
+}
+
+/* Карти + залог на едно място, едно под друго. */
+.svara-seat-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 300ms ease;
+}
+
+/* Текущият залог на играча за тази ръка (мини чип + сума). */
+.svara-bet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: rgba(11, 14, 13, 0.65);
+  border: 1px solid rgba(217, 178, 95, 0.35);
+  color: var(--brass-100);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.svara-bet .chipstack,
+.svara-chips .chipstack {
+  width: 16px;
+  height: 16px;
+}
+.svara-bet .chip,
+.svara-chips .chip {
+  width: 14px;
+  height: 14px;
+}
+.svara-bet .chip::after,
+.svara-chips .chip::after {
+  inset: 3px;
+}
+
+/* Чиповете на играча в плочката със името. */
+.svara-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--brass-100);
+}
+
+/* Пот + номер на ръката + свара индикатор в центъра. */
+.svara-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.svara-hand-no {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+.svara-callout {
+  font-family: var(--font-display, serif);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--brass-100);
+  text-shadow: 0 0 18px var(--brass-glow);
+}
+.svara-waiting {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}

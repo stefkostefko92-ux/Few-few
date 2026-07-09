@@ -1,0 +1,8 @@
+# Supreme Bot — Security Policy (RFC 9116)
+# Responsible disclosure contact for security researchers.
+
+Contact: mailto:security@carbonstealth.eu
+Expires: 2027-06-23T00:00:00.000Z
+Preferred-Languages: en, bg, de
+Canonical: https://supreme.carbonstealth.eu/.well-known/security.txt
+Policy: https://supreme.carbonstealth.eu/terms

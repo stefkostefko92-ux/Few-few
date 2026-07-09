@@ -1,0 +1,185 @@
+@import "./_design.css";
+
+/* =================================================================
+   Additions for the multilingual app (language switcher, banners)
+   that build on the original design system in _design.css.
+   ================================================================= */
+
+/* Bulgarian tricolour bar at the very top of the page (white·green·red) */
+.topflag {
+  height: 6px;
+  background: linear-gradient(to bottom,
+    #ffffff 0 33.34%,
+    #00966e 33.34% 66.67%,
+    #d62612 66.67% 100%);
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.08);
+  position: relative; z-index: 101;
+}
+
+/* Skip link — hidden until focused (keyboard accessibility) */
+.skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; }
+.skip-link:focus { left: 12px; top: 12px; }
+
+/* Lock background scroll while the mobile drawer is open */
+body.menu-open { overflow: hidden; }
+
+/* National flag colours differ from the brand palette on purpose. */
+
+/* Scroll progress bar (sits under the tricolour) */
+.scrollprogress { position: sticky; top: 0; height: 3px; z-index: 100; background: transparent; pointer-events: none; }
+.scrollprogress i { display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--lime-500), var(--green-700), var(--red-600)); transition: width .12s linear; }
+@media (prefers-reduced-motion: reduce) { .scrollprogress { display: none; } }
+
+/* Gentle micro-animations (disabled when reduced motion is requested) */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes qb-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes qb-hue { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(2%, -2%, 0) scale(1.06); } }
+  .rose-ornament .rose-photo { animation: qb-float 5.5s var(--ease) infinite; }
+  .hero__bg { animation: qb-hue 18s ease-in-out infinite; }
+  /* sheen sweep on filled buttons */
+  .btn--primary, .btn--accent, .btn--light { position: relative; overflow: hidden; }
+  .btn--primary::after, .btn--accent::after, .btn--light::after {
+    content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+    transform: skewX(-18deg); transition: left .6s var(--ease);
+  }
+  .btn--primary:hover::after, .btn--accent:hover::after, .btn--light:hover::after { left: 130%; }
+  /* card icon subtle pop on hover */
+  .card:hover .card__icon { transform: translateY(-3px) rotate(-3deg); }
+  .card__icon { transition: transform .3s var(--ease); }
+}
+
+/* Bulgarian rose ornament — national symbol, used as a section flourish */
+.rose-ornament { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 0 auto 1.4rem; }
+.rose-ornament::before, .rose-ornament::after {
+  content: ""; width: clamp(40px, 12vw, 90px); height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--lime-500), var(--red-600));
+}
+.rose-ornament::after { background: linear-gradient(90deg, var(--red-600), var(--lime-500), transparent); }
+.rose-ornament img { width: 44px; height: 44px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.18)); }
+.rose-ornament .rose-photo {
+  width: 76px; height: 76px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  border: 3px solid rgba(255,255,255,.85); box-shadow: 0 10px 26px -10px rgba(0,0,0,.5);
+}
+.rose-ornament .rose-photo img { width: 100%; height: 100%; object-fit: cover; filter: none; }
+.cta-band .rose-ornament::before, .cta-band .rose-ornament::after { background: linear-gradient(90deg, transparent, rgba(255,255,255,.55)); }
+.cta-band .rose-ornament::after { background: linear-gradient(90deg, rgba(255,255,255,.55), transparent); }
+
+/* Footer logo: render the real, full-colour logo exactly like the header,
+   on a light chip so it reads identically against the dark footer. */
+.footer__brand img {
+  filter: none; opacity: 1;
+  background: #fff; padding: .55rem .8rem; border-radius: 14px;
+  box-shadow: 0 6px 18px -8px rgba(0,0,0,.5);
+}
+
+/* Language switcher */
+.langsw { position: relative; }
+.langsw__btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .5rem .75rem; border-radius: 999px; border: 1.5px solid var(--line);
+  background: var(--white); font-weight: 600; font-size: .9rem; color: var(--ink);
+  transition: border-color .2s, transform .2s;
+}
+.langsw__btn:hover { border-color: var(--ink); transform: translateY(-1px); }
+.langsw__btn .chev { width: 14px; height: 14px; transition: transform .25s var(--ease); }
+.langsw[data-open="true"] .chev { transform: rotate(180deg); }
+.langsw__menu {
+  position: absolute; right: 0; top: calc(100% + .5rem); min-width: 180px;
+  background: var(--white); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: var(--shadow); padding: .4rem; z-index: 120;
+  opacity: 0; visibility: hidden; transform: translateY(-6px); transition: all .2s var(--ease);
+}
+.langsw[data-open="true"] .langsw__menu { opacity: 1; visibility: visible; transform: none; }
+.langsw__item {
+  display: flex; align-items: center; gap: .6rem; width: 100%;
+  padding: .6rem .7rem; border-radius: 10px; font-size: .95rem; font-weight: 500;
+  color: var(--ink-soft); background: transparent; text-align: left; transition: background-color .15s;
+}
+.langsw__item:hover { background: var(--paper-2); color: var(--ink); }
+.langsw__item.is-active { color: var(--green-700); font-weight: 700; }
+.langsw__item .flag { font-size: 1.15rem; line-height: 1; }
+.langsw__item .tick { margin-left: auto; width: 16px; height: 16px; color: var(--green-700); }
+
+/* keep desktop CTA + switcher inline; in the mobile drawer they stack */
+.nav__actions { gap: .5rem; }
+@media (max-width: 760px) {
+  .nav__actions .langsw { display: none; }
+  .nav__menu .langsw { display: block; margin-top: 1rem; }
+  .nav__menu .langsw__btn { width: 100%; justify-content: space-between; }
+  .nav__menu .langsw__menu { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; padding: .3rem 0 0; }
+}
+.nav__menu .langsw { display: none; }
+
+/* Empty-state for a section with no content yet */
+.empty-note { color: var(--muted); font-style: italic; }
+
+/* Branded 404 */
+.notfound { min-height: 100vh; display: grid; place-items: center; padding: 2rem 1.2rem;
+  background: radial-gradient(800px 480px at 85% -10%, rgba(166,206,57,.18), transparent 60%),
+              radial-gradient(640px 420px at -5% 110%, rgba(215,38,56,.12), transparent 55%), var(--paper);
+  border-top: 6px solid; border-image: linear-gradient(90deg, #fff 33.3%, #00966e 33.3% 66.6%, #d62612 66.6%) 1; }
+.notfound__card { text-align: center; max-width: 540px; }
+.notfound__card img { height: 84px; width: auto; margin: 0 auto 1rem; }
+.notfound__code { font-family: var(--font-display); font-weight: 600; font-size: clamp(4rem, 16vw, 8rem); line-height: 1; color: var(--green-700);
+  background: linear-gradient(120deg, var(--green-700), var(--lime-500), var(--red-600)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.notfound__lead { font-size: 1.25rem; color: var(--ink); margin-top: .6rem; }
+.notfound__sub { color: var(--muted); margin-top: .6rem; font-size: .95rem; }
+.notfound__actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; margin-top: 1.8rem; }
+
+/* Footer photo credit line */
+.footer__credit-photo { margin-top: 1rem; font-size: .76rem; color: rgba(251,248,241,.45); }
+.footer__credit-photo a { color: rgba(251,248,241,.7); text-decoration: underline; }
+.footer__credit-photo a:hover { color: var(--lime-400); }
+
+/* Cookie banner */
+.cookiebar {
+  position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%);
+  width: min(880px, calc(100% - 2rem)); z-index: 150;
+  display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
+  background: var(--ink); color: rgba(251,248,241,.85);
+  border: 1px solid rgba(255,255,255,.12); border-radius: 16px;
+  padding: 1rem 1.3rem; box-shadow: var(--shadow-lg);
+}
+.cookiebar p { margin: 0; font-size: .9rem; flex: 1; min-width: 240px; color: rgba(251,248,241,.82); }
+.cookiebar a { color: var(--lime-400); text-decoration: underline; }
+.cookiebar__actions { display: flex; gap: .5rem; flex-shrink: 0; }
+.cookiebar .btn { flex-shrink: 0; }
+.cookiebar .btn--ghost { background: transparent; color: rgba(251,248,241,.85); border-color: rgba(255,255,255,.25); }
+.cookiebar .btn--ghost:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.4); }
+
+/* Legal pages (privacy / cookie / terms) */
+.legal { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+.legal__head { max-width: 760px; margin: 0 auto 2.5rem; }
+.legal__head .eyebrow { margin-bottom: .6rem; }
+.legal__head h1 { font-size: clamp(2rem, 4.5vw, 3rem); }
+.legal__head .updated { color: var(--muted); font-size: .9rem; margin-top: .8rem; }
+.legal__body { max-width: 760px; margin: 0 auto; }
+.legal__body section { margin-bottom: 2rem; }
+.legal__body h2 { font-size: 1.3rem; margin-bottom: .7rem; }
+.legal__body p { margin-bottom: .8rem; color: var(--ink-soft); }
+.legal__body ul.legal-list { display: grid; gap: .5rem; margin: .4rem 0 1rem; padding-left: 1.1rem; list-style: disc; }
+.legal__body ul.legal-list li { color: var(--ink-soft); }
+.legal__body a { color: var(--green-700); text-decoration: underline; }
+.legal__back { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1rem; font-weight: 600; color: var(--green-700); }
+
+/* FAQ (visible Q&A — AEO) */
+.faq { max-width: 820px; margin-inline: auto; display: grid; gap: .8rem; }
+.faq__item {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: 14px; padding: 0 1.3rem; box-shadow: var(--shadow-sm);
+  transition: border-color .2s ease;
+}
+.faq__item[open] { border-color: var(--green-700); }
+.faq__item summary {
+  cursor: pointer; list-style: none; padding: 1.1rem 0;
+  font-family: var(--font-display, inherit); font-weight: 600; font-size: 1.05rem;
+  color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.faq__item summary::-webkit-details-marker { display: none; }
+.faq__item summary::after {
+  content: "+"; font-size: 1.5rem; line-height: 1; color: var(--green-700); flex-shrink: 0;
+  transition: transform .2s ease;
+}
+.faq__item[open] summary::after { content: "−"; }
+.faq__item p { margin: 0; padding: 0 0 1.2rem; color: var(--ink-soft); line-height: 1.6; }

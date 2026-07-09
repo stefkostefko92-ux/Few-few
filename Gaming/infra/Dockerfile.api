@@ -1,0 +1,44 @@
+# АСО — api image. Multi-stage, non-root, HEALTHCHECK (S17).
+# glibc base (node:22-slim) so argon2 prebuilt binaries resolve cleanly.
+
+# ---- base ----
+FROM node:22-slim AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable
+WORKDIR /app
+
+# ---- deps (cached on lockfile) ----
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/config/package.json packages/config/
+COPY packages/shared/package.json packages/shared/
+COPY packages/db/package.json packages/db/
+COPY apps/api/package.json apps/api/
+RUN pnpm install --frozen-lockfile
+
+# ---- build ----
+FROM deps AS build
+COPY . .
+RUN pnpm --filter @aso/db generate \
+  && pnpm --filter @aso/shared build \
+  && pnpm --filter @aso/db build \
+  && pnpm --filter @aso/api build
+
+# ---- runner ----
+FROM base AS runner
+ENV NODE_ENV=production
+COPY --from=build /app /app
+WORKDIR /app/apps/api
+
+# Drop privileges.
+USER node
+
+EXPOSE 4500
+# Readiness (DB+Redis) so the container only reports healthy when it can serve;
+# `depends_on: service_healthy` and LB rotation then reflect real readiness.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://localhost:'+(process.env.API_PORT||4500)+'/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+# Run pending migrations (idempotent) then start the server.
+CMD ["sh", "-c", "cd /app && pnpm --filter @aso/db migrate:deploy && cd /app/apps/api && node dist/index.js"]

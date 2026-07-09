@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  pin       String
+  ruolo     String   @default("VIEWER")
+  createdAt DateTime @default(now())
+}
+
+model Part {
+  id          String   @id @default(cuid())
+  codice      String
+  marchio     String
+  tipo        String   @default("")
+  tipoValue   String   @default("")
+  riferimento String
+  quantita    Int      @default(0)
+  prezzo      Float    @default(0)
+  note        String?  @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderId     String      @unique
+  data        DateTime    @default(now())
+  operatore   String
+  clientName  String      @default("")
+  clientPhone String      @default("")
+  note        String?     @default("")
+  totale      Float       @default(0)
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  orderId     String
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  partId      String
+  codice      String
+  marchio     String
+  tipo        String @default("")
+  tipoValue   String @default("")
+  riferimento String
+  qty         Int
+  prezzo      Float
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  userId      String
+  userName    String
+  userRole    String
+  action      String
+  description String
+  details     String   @default("")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  userId      String
+  userName    String
+  userRole    String
+  action      String
+  description String
+  details     String   @default("")
+  read        Boolean  @default(false)
+}
+
+model Settings {
+  id                  String  @id @default("singleton")
+  notifyEmail         String  @default("")
+  emailEnabled        Boolean @default(false)
+  notifyOnPartChange  Boolean @default(true)
+  notifyOnOrder       Boolean @default(true)
+  notifyOnUserChange  Boolean @default(true)
+  lowStockEnabled     Boolean @default(true)
+  lowStockThreshold   Int     @default(10)
+}
+
+model Role {
+  id              String  @id
+  label           String
+  canEdit         Boolean @default(false)
+  canDelete       Boolean @default(false)
+  canCreate       Boolean @default(false)
+  canOrder        Boolean @default(false)
+  canSeePrice     Boolean @default(false)
+  canManageUsers  Boolean @default(false)
+  canAudit        Boolean @default(false)
+  canSettings     Boolean @default(false)
+  isBuiltin       Boolean @default(false)
+}

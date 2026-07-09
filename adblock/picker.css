@@ -1,0 +1,36 @@
+/* Element picker overlay */
+
+#tbab-picker-box {
+  position: fixed;
+  z-index: 2147483646;
+  background: rgba(0, 229, 255, 0.22);
+  border: 2px solid #00e5ff;
+  border-radius: 3px;
+  pointer-events: none;
+  transition: all 0.05s ease;
+  box-shadow: 0 0 0 100000px rgba(0, 0, 0, 0.15);
+}
+
+#tbab-picker-tip {
+  position: fixed;
+  z-index: 2147483647;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0c0d10;
+  color: #fff;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 10px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+#tbab-picker-tip b {
+  color: #00e5ff;
+}
+
+html.tbab-picking,
+html.tbab-picking * {
+  cursor: crosshair !important;
+}

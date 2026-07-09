@@ -1,0 +1,74 @@
+# Marketing pages (`/`, `/login`, `/register`, `/terms`, `/privacy`) are
+# public; the authed app (`/app/*`) and admin (`/admin/*`) are explicitly
+# disallowed for every crawler. Search robots, answer-engine robots and
+# AI-training robots are split below so we can opt in to citations while
+# opting out of training corpora.
+
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+# ── Search-engine bots ───────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+# ── Answer-engine / live-search bots ────────────────────────────────────────
+# These crawl on user query, return citations with links — we WANT them on
+# marketing pages so the game shows up in Perplexity / SearchGPT / Brave AI.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Bingbot-AI
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+# ── Training-corpus bots ────────────────────────────────────────────────────
+# We allow them to index the public marketing pages too. If you want to opt
+# out of LLM training entirely, swap each `Allow: /` for `Disallow: /`.
+User-agent: GPTBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+User-agent: CCBot
+Allow: /
+Disallow: /app/
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://nexus.carbonstealth.eu/sitemap.xml

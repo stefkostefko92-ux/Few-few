@@ -1,0 +1,19 @@
+[Unit]
+# Nexus Dominion — дневен hot backup на SQLite базата.
+# Пуска се от nexus-backup.timer; инсталира се автоматично от
+# deploy/autodeploy.sh (repo root). Бекъпът върви ВЪТРЕ в контейнера
+# (sqlite3 .backup е консистентен при WAL писачи); с bind mount
+# /opt/nexus/state/data:/app/data файловете се появяват на хоста в
+# /opt/nexus/state/data/backups/. Задържане: последните 14.
+Description=Nexus Dominion SQLite backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/nexus/source
+ExecStart=/bin/sh -c '\
+  mkdir -p /opt/nexus/state/data/backups && \
+  /usr/bin/docker compose exec -T nexus-dominion sh /app/deploy/backup.sh \
+    "/app/data/backups/nexus-dominion-$$(date +%%Y%%m%%d-%%H%%M%%S).db" && \
+  ls -1t /opt/nexus/state/data/backups/nexus-dominion-*.db 2>/dev/null | tail -n +15 | xargs -r rm -f'

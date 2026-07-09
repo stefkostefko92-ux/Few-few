@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" fill="none">
+<defs>
+  <marker id="arrow" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+    <path d="M0,0 L0,4 L4,2 z" fill="#cc0000"/>
+  </marker>
+</defs>
+<!-- background -->
+<rect width="560" height="400" fill="#fafafa"/>
+<rect x="6" y="6" width="548" height="388" fill="none" stroke="#b0b8c0" stroke-width="0.8"/>
+<polygon points="260.0,197.5 285.98,212.5 190.72,267.5 164.74,252.5" fill="#c8d0d8" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="260.0,200.0 285.98,215.0 285.98,212.5 260.0,197.5" fill="#909aa5" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="285.98,215.0 190.72,270.0 190.72,267.5 285.98,212.5" fill="#6e7880" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="263.9,207.25 269.09,210.25 256.1,217.75 250.91,214.75" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="235.75,223.5 240.95,226.5 227.96,234.0 222.76,231.0" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="203.28,242.25 208.47,245.25 195.48,252.75 190.28,249.75" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="166.9,251.25 192.88,266.25 192.88,186.25 166.9,171.25" fill="#909aa5" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="166.9,171.25 192.88,186.25 190.72,187.5 164.74,172.5" fill="#c8d0d8" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="192.88,266.25 190.72,187.5 192.88,186.25 192.88,266.25" fill="#6e7880" stroke="#1a1a1a" stroke-width="0.9" opacity="1.0" />
+<polygon points="177.51,239.88 182.27,242.62 182.27,257.62 177.51,254.88" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="177.51,219.88 182.27,222.62 182.27,237.62 177.51,234.88" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="177.51,199.88 182.27,202.62 182.27,217.62 177.51,214.88" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<polygon points="177.51,182.38 182.27,185.12 182.27,200.12 177.51,197.38" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.6" opacity="1.0" />
+<ellipse cx="260.0" cy="212.5" rx="3.5" ry="2" fill="#3a4550" stroke="#1a1a1a" stroke-width="0.7" transform="rotate(-15,260.0,212.5)"/>
+<line x1="256.5" y1="195.5" x2="161.3" y2="250.5" stroke="#cc0000" stroke-width="1" stroke-dasharray="5,3" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="190.90500000000003" y="226.0" font-family="'Courier New',monospace" font-size="7.5" fill="#cc0000" text-anchor="end" font-weight="normal">RANGE DI ESTENSIONE</text>
+<text x="190.90500000000003" y="237.0" font-family="'Courier New',monospace" font-size="8" fill="#cc0000" text-anchor="end" font-weight="bold">45 ÷ 155 mm</text>
+<line x1="278.5" y1="199.5" x2="183.2" y2="254.5" stroke="#cc0000" stroke-width="0.7" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<line x1="286.0" y1="212.5" x2="278.5" y2="199.5" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<line x1="190.7" y1="267.5" x2="183.2" y2="254.5" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<text x="230.8" y="230.0" font-family="'Courier New',monospace" font-size="8" fill="#cc0000" text-anchor="middle" transform="rotate(-30.0,230.8,227.0)">220mm</text>
+<line x1="206.9" y1="266.2" x2="206.9" y2="186.2" stroke="#cc0000" stroke-width="0.7" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<line x1="192.9" y1="266.2" x2="206.9" y2="266.2" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<line x1="192.9" y1="186.2" x2="206.9" y2="186.2" stroke="#cc0000" stroke-width="0.5" stroke-dasharray="2,2"/>
+<text x="206.9" y="229.2" font-family="'Courier New',monospace" font-size="8" fill="#cc0000" text-anchor="middle" transform="rotate(-90.0,206.9,226.2)">160mm</text>
+
+  <rect x="14" y="346" width="226" height="5" fill="#cc2222" stroke="none"/>
+  <rect x="240" y="346" width="80" height="5" fill="#dddddd" stroke="none"/>
+  <rect x="320" y="346" width="80" height="5" fill="#228833" stroke="none"/>
+  <text x="245" y="357" font-family="'Courier New',monospace" font-size="7" fill="#444" text-anchor="middle" letter-spacing="2">M A D E  I N  I T A L Y</text>
+<text x="546" y="356" font-family="'Courier New',monospace" font-size="8" fill="#1a1a1a" text-anchor="end" font-weight="normal">SUPPORTO STAFFA GUIDE</text>
+<text x="546" y="367" font-family="'Courier New',monospace" font-size="8" fill="#1a1a1a" text-anchor="end" font-weight="normal">SPESSORE  5mm</text>
+<text x="546" y="378" font-family="'Courier New',monospace" font-size="8" fill="#1a1a1a" text-anchor="end" font-weight="normal">PREZZO---</text>
+<text x="16" y="356" font-family="'Courier New',monospace" font-size="9" fill="#1a1a1a" text-anchor="start" font-weight="bold">COD.- SU 220 160</text>
+</svg>

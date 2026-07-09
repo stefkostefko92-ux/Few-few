@@ -1,0 +1,33 @@
+/* Neutralise anti-adblock overlays (toggled via the tbab-aab class). */
+
+html.tbab-aab [class*="adblock"],
+html.tbab-aab [id*="adblock"],
+html.tbab-aab [class*="ad-block"],
+html.tbab-aab [id*="ad-block"],
+html.tbab-aab [class*="adBlock"],
+html.tbab-aab [class*="anti-adblock"],
+html.tbab-aab [class*="adblocker"],
+html.tbab-aab [id*="adblocker"],
+html.tbab-aab .adblock-notice,
+html.tbab-aab .adblock-overlay,
+html.tbab-aab .adblock-modal,
+html.tbab-aab #adblock-modal,
+html.tbab-aab .ab-overlay,
+html.tbab-aab .blocker-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html.tbab-aab,
+html.tbab-aab body {
+  overflow: auto !important;
+  filter: none !important;
+  position: static !important;
+  height: auto !important;
+}
+
+html.tbab-aab body > * {
+  filter: none !important;
+}

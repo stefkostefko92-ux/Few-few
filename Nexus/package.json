@@ -1,0 +1,20 @@
+{
+  "name": "nexus-dominion",
+  "private": true,
+  "version": "0.1.1",
+  "description": "Nexus Dominion — a high-quality browser MMORPG inspired by the classic Nexus Dominion.",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n SERVER,CLIENT -c blue,magenta \"npm:dev --workspace server\" \"npm:dev --workspace client\"",
+    "build": "npm run build --workspace server && npm run build --workspace client",
+    "start": "node server/dist/server.js",
+    "seed": "npm run seed --workspace server",
+    "lint": "echo \"(no global lint configured)\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

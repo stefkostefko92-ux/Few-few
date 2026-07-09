@@ -1,0 +1,4 @@
+Contact: mailto:security@carbonstealth.eu
+Expires: 2027-06-23T00:00:00.000Z
+Preferred-Languages: bg, en
+Canonical: https://minyor.carbonstealth.eu/.well-known/security.txt

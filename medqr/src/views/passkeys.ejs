@@ -1,0 +1,39 @@
+<%- include('partials/head', { title: t('pk.title') + ' — MedQR', user }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> <%= t('pk.title') %></h1>
+  <p><%= t('pk.intro') %></p>
+
+  <p class="error" role="alert" data-webauthn-error hidden></p>
+
+  <% if (credentials.length === 0) { %>
+    <p class="muted"><%= t('pk.none') %></p>
+  <% } else { %>
+    <ul class="passkey-list">
+      <% credentials.forEach(c => { %>
+        <li>
+          <span><%= c.label || t('pk.default_label') %> <span class="muted small">· <%= c.created_at %></span></span>
+          <form method="post" action="/profile/passkeys/<%= c.id %>/delete" class="inline"
+                data-confirm="<%= t('pk.remove_confirm') %>">
+            <%- include('partials/csrf') %>
+            <button type="submit" class="link-btn-dark"><%= t('pk.remove') %></button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form data-webauthn="register" class="stack">
+    <label><%= t('pk.device_name') %>
+      <input type="text" name="label" placeholder="<%= t('pk.device_ph') %>" maxlength="40">
+    </label>
+    <button type="submit" class="btn"><%= t('pk.add') %></button>
+  </form>
+
+  <p><a href="/dashboard"><%= t('nav.back_profile') %></a></p>
+</section>
+
+<script src="/vendor/simplewebauthn-browser.umd.min.js" defer></script>
+<script src="/webauthn.js" defer></script>
+
+<%- include('partials/foot') %>

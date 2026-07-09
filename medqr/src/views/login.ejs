@@ -1,0 +1,34 @@
+<%- include('partials/head', { title: t('auth.login_title') + ' — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1><%= t('auth.login_title') %></h1>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login" class="stack">
+    <%- include('partials/csrf') %>
+    <label><%= t('auth.email') %>
+      <input type="email" name="email" value="<%= email %>" required autocomplete="email">
+    </label>
+    <label><%= t('auth.password') %>
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="remember" checked>
+      <span><%= t('auth.remember') %></span>
+    </label>
+    <button type="submit" class="btn"><%= t('auth.login_title') %></button>
+  </form>
+
+  <p class="or-sep"><%= t('auth.or') %></p>
+  <p class="error" role="alert" data-webauthn-error hidden></p>
+  <button type="button" class="btn btn-ghost btn-block" data-webauthn="login">
+    <%- include('partials/icon', { name: 'shield-check' }) %> <%= t('auth.passkey_login') %>
+  </button>
+
+  <p><a href="/forgot"><%= t('auth.forgot_q') %></a></p>
+  <p><%= t('auth.no_account') %> <a href="/register"><%= t('auth.register_link') %></a></p>
+</section>
+
+<script src="/vendor/simplewebauthn-browser.umd.min.js" defer></script>
+<script src="/webauthn.js" defer></script>
+
+<%- include('partials/foot') %>

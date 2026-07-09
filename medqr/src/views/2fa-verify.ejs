@@ -1,0 +1,17 @@
+<%- include('partials/head', { title: t('tfa.verify_title') + ' — MedQR', user: null }) %>
+
+<section class="form-wrap">
+  <h1><%- include('partials/icon', { name: 'shield-check', cls: 'icon-lg' }) %> <%= t('tfa.verify_title') %></h1>
+  <p><%= t('tfa.verify_intro') %></p>
+  <% if (error) { %><p class="error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/2fa" class="stack">
+    <%- include('partials/csrf') %>
+    <label><%= t('tfa.code') %>
+      <input type="text" name="code" inputmode="numeric" pattern="\d{6}" autocomplete="one-time-code" required autofocus>
+    </label>
+    <button type="submit" class="btn"><%= t('tfa.confirm') %></button>
+  </form>
+  <p><a href="/login"><%= t('auth.back_login') %></a></p>
+</section>
+
+<%- include('partials/foot') %>
