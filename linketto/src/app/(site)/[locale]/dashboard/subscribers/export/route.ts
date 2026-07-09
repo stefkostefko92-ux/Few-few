@@ -5,13 +5,16 @@ import { buildSubscribersCsv } from '@/lib/newsletter';
 
 // Износ на аудиторията в CSV — аудиторията е на създателя, не заключена в
 // нас. Само за собственика (сесия); само потвърдените, неотписани абонати.
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: Request): Promise<NextResponse> {
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
+  // Следва ?p (активния профил), с проверка за собственост.
+  const p = new URL(request.url).searchParams.get('p');
   const profile = await prisma.profile.findFirst({
-    where: { userId: user.id },
+    where: { userId: user.id, ...(p ? { id: p } : {}) },
+    orderBy: { createdAt: 'asc' },
     select: { id: true, slug: true },
   });
   if (!profile) {

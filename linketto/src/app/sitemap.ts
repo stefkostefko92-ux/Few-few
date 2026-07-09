@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { LOCALES } from '@/i18n/locales';
+import { DIALECT_LOCALES, HREFLANG_LOCALES } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { isSensitiveUrl } from '@/lib/brands';
 import { SITE_URL } from '@/lib/seo';
@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Една entry на страница, езиковите версии — като hreflang alternates.
   const languagesFor = (path: string) => ({
     ...Object.fromEntries(
-      LOCALES.map((locale) => [locale, `${base}/${locale}${path}`]),
+      HREFLANG_LOCALES.map((locale) => [locale, `${base}/${locale}${path}`]),
     ),
     'x-default': `${base}/en${path}`,
   });
@@ -47,12 +47,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${base}/u/${profile.slug}`,
         lastModified: profile.updatedAt,
         alternates: {
-          languages: Object.fromEntries(
-            profile.translations.map((t) => [
-              t.locale,
-              `${base}/u/${profile.slug}?hl=${t.locale}`,
-            ]),
-          ),
+          languages: {
+            ...Object.fromEntries(
+              profile.translations
+                // Диалектите не са валидни hreflang кодове — извън набора.
+                .filter((t) => !DIALECT_LOCALES.includes(t.locale))
+                .map((t) => [
+                  t.locale,
+                  `${base}/u/${profile.slug}?hl=${t.locale}`,
+                ]),
+            ),
+            'x-default': `${base}/u/${profile.slug}`,
+          },
         },
       })),
   ];

@@ -5,6 +5,11 @@
 
 export type PlanId = 'FREE' | 'PRO' | 'BUSINESS' | 'FOUNDER';
 
+// Членствата (recurring абонаменти) са изградени, но изчакват правния пакет
+// (авто-подновяване/отказ по Дир. 2011/83 + Billing Portal + waiver по тип +
+// webhook на живо). До тогава са скрити при създаване. Пускане = този флаг true.
+export const MEMBERSHIPS_ENABLED = false;
+
 export interface PlanDef {
   id: PlanId;
   /** Комисиона върху продажби, в проценти. */

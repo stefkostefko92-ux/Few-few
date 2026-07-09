@@ -8,6 +8,7 @@ import {
   BILLING_INTERVALS,
   effectiveMonthlyCents,
   intervalPriceCents,
+  MEMBERSHIPS_ENABLED,
   planFor,
 } from '@/lib/plans';
 import {
@@ -1214,7 +1215,7 @@ export default async function DashboardPage({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-semibold">{t('statsSection')}</h2>
                 <Link
-                  href={`/${locale}/dashboard/analytics`}
+                  href={`/${locale}/dashboard/analytics?p=${profile.id}`}
                   className="inline-flex items-center gap-1.5 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
                 >
                   <ChartColumnIcon className="h-4 w-4" />
@@ -1497,7 +1498,7 @@ export default async function DashboardPage({
                   </p>
                 </div>
                 <a
-                  href={`/${locale}/dashboard/subscribers/export`}
+                  href={`/${locale}/dashboard/subscribers/export?p=${profile.id}`}
                   className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
                 >
                   <DownloadIcon className="h-4 w-4" />
@@ -1850,13 +1851,19 @@ export default async function DashboardPage({
                         defaultValue="DIGITAL"
                         className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                       >
-                        {(['DIGITAL', 'COURSE', 'MEMBERSHIP'] as const).map(
-                          (pt) => (
-                            <option key={pt} value={pt}>
-                              {t(`productType_${pt}`)}
-                            </option>
-                          ),
-                        )}
+                        {(
+                          [
+                            'DIGITAL',
+                            'COURSE',
+                            ...(MEMBERSHIPS_ENABLED
+                              ? (['MEMBERSHIP'] as const)
+                              : []),
+                          ] as const
+                        ).map((pt) => (
+                          <option key={pt} value={pt}>
+                            {t(`productType_${pt}`)}
+                          </option>
+                        ))}
                       </select>
                     </label>
                     <label className="block text-xs font-medium text-slate-500">

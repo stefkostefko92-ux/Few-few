@@ -9,6 +9,7 @@ import { isLocale } from '@/i18n/locales';
 import {
   membershipFeePercent,
   membershipInterval,
+  MEMBERSHIPS_ENABLED,
   MIN_PRODUCT_PRICE_EUR,
   planFor,
   totalFeeCents,
@@ -287,6 +288,10 @@ export async function addProductAction(formData: FormData): Promise<void> {
     redirect(`/${uiLocale}/dashboard?error=product`);
   }
   const type = parsed.data.type;
+  // Членствата са зад флаг до правния пакет — не се създават още.
+  if (type === 'MEMBERSHIP' && !MEMBERSHIPS_ENABLED) {
+    redirect(`/${uiLocale}/dashboard?error=product`);
+  }
   // DIGITAL иска валиден линк за доставка; COURSE/MEMBERSHIP ползват уроци.
   let deliveryUrl: string | null = null;
   if (type === 'DIGITAL') {

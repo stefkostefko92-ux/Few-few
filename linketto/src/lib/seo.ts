@@ -2,7 +2,12 @@
 // и JSON-LD структури. Единственият източник на истина за SEO метаданните.
 
 import type { Metadata } from 'next';
-import { LOCALES, OG_LOCALE, type Locale } from '@/i18n/locales';
+import {
+  HREFLANG_LOCALES,
+  LOCALES,
+  OG_LOCALE,
+  type Locale,
+} from '@/i18n/locales';
 
 export const SITE_URL =
   process.env.PUBLIC_BASE_URL ?? 'https://linketto.carbonstealth.eu';
@@ -30,7 +35,8 @@ export const OG_IMAGE = {
 /** canonical + hreflang alternates за локализирана страница на сайта. */
 export function localeAlternates(locale: Locale, path = '') {
   const languages: Record<string, string> = {};
-  for (const loc of LOCALES) {
+  // Само валидни за hreflang локали (без диалектите nap/scn/lmo).
+  for (const loc of HREFLANG_LOCALES) {
     languages[loc] = `${SITE_URL}/${loc}${path}`;
   }
   languages['x-default'] = `${SITE_URL}/en${path}`;

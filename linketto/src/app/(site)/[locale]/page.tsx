@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { CursorGlow } from '@/components/CursorGlow';
 import { faqJsonLd, pageMetadata, siteJsonLd } from '@/lib/seo';
 import {
   CheckIcon,
@@ -159,11 +160,13 @@ export default async function HomePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div aria-hidden className="scroll-progress" />
+      <CursorGlow />
       <SiteHeader locale={locale as Locale} />
       <main>
         {/* ── HERO: жива aurora върху дълбоко нощно небе ─────────────── */}
         <section className="grain relative overflow-hidden bg-slate-950 text-white">
           <div aria-hidden className="animate-hue pointer-events-none absolute inset-0">
+            <div className="aurora-conic absolute left-1/2 top-1/2 h-[64rem] w-[64rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70" />
             <div className="animate-aurora absolute -top-52 left-[-15%] h-[42rem] w-[42rem] rounded-full bg-linketto-600/40 blur-3xl" />
             <div className="animate-aurora-slow absolute -bottom-64 right-[-12%] h-[44rem] w-[44rem] rounded-full bg-violet-600/30 blur-3xl" />
             <div
@@ -200,7 +203,7 @@ export default async function HomePage({
                   <LanguagesIcon className="h-3.5 w-3.5" />
                   {t('heroBadge')}
                 </p>
-                <h1 className="title-shimmer mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+                <h1 className="title-shimmer mt-6 text-balance text-4xl font-extrabold leading-[1.05] tracking-tight drop-shadow-[0_2px_30px_rgba(125,211,252,0.22)] sm:text-5xl lg:text-7xl">
                   {t('heroTitle')}
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300 lg:mx-0">

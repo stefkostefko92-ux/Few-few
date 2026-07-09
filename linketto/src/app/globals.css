@@ -103,9 +103,10 @@ body {
   color: transparent;
 }
 
-/* По изрично решение на собственика ефектите вървят и при
-   prefers-reduced-motion (бранд сайт, максимален спектакъл).
-   Желязно правило остава: НИЩО не мига/стробира (епилепсия). */
+/* Пълен спектакъл за ВСИЧКИ (изрично решение на собственика) — не
+   приглушаваме заради prefers-reduced-motion. Единствените нередуцируеми
+   граници са безопасностни, не естетически: НИЩО не мига/стробира
+   (епилепсия) и без хоризонтален overflow / чупене на четимостта. */
 
 
 /* ── Втора вълна ефекти: изскачащи, плуващи, зарибяващи ─────────────── */
@@ -542,4 +543,104 @@ body {
   background: linear-gradient(120deg, var(--g1), var(--g2), var(--g1));
   background-size: 300% 300%;
   animation: pf-gradient-move 14s ease-in-out infinite;
+}
+
+
+/* ── Четвърта вълна: тежката артилерия (пълен спектакъл за всички) ─────── */
+
+/* Бавно въртящ се конусен вихър — дълбочина зад hero-то и профил-картата.
+   Едно платно, само transform → композира се на GPU, никакво стробиране. */
+@keyframes conic-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.aurora-conic {
+  background: conic-gradient(
+    from 0deg,
+    rgba(14, 165, 233, 0.22),
+    rgba(139, 92, 246, 0.2),
+    rgba(217, 70, 239, 0.18),
+    rgba(56, 189, 248, 0.16),
+    rgba(14, 165, 233, 0.22)
+  );
+  filter: blur(64px);
+  animation: conic-spin 42s linear infinite;
+  will-change: transform;
+}
+
+/* Прожекторът следва курсора из целия сайт. mix-blend: screen → свети
+   само върху тъмните секции, невидим е върху белите (нула контраст-щета).
+   Плавно движение (rAF в CursorGlow.tsx), никакви резки проблясъци. */
+.cursor-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.6s ease;
+  background: radial-gradient(
+    30rem 30rem at var(--mx, 50%) var(--my, -12%),
+    rgba(125, 211, 252, 0.24),
+    rgba(168, 85, 247, 0.12) 42%,
+    transparent 72%
+  );
+}
+.cursor-glow.is-live {
+  opacity: 1;
+}
+
+/* Жив ореол зад публичната профил-карта — конусен цвят в акцента, който
+   свети през стъклото. isolation:isolate държи ореола локален (не тече
+   зад фона на main → без изтичане/overflow). */
+.pf-card-aura {
+  isolation: isolate;
+}
+.pf-card-aura::before {
+  content: '';
+  position: absolute;
+  inset: -1.4rem;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--aura, #38bdf8) 60%, transparent),
+    transparent 30%,
+    color-mix(in srgb, var(--aura, #38bdf8) 45%, transparent) 55%,
+    transparent 80%,
+    color-mix(in srgb, var(--aura, #38bdf8) 60%, transparent)
+  );
+  filter: blur(38px);
+  opacity: 0.55;
+  animation: conic-spin 34s linear infinite;
+  pointer-events: none;
+}
+
+/* Светлинен лъч, който минава по бутоните на профила при hover. Текстът
+   стои над лъча (span z-index:1) → нула щета за четимостта/контраста. */
+.pf-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.pf-sheen > span {
+  position: relative;
+  z-index: 1;
+}
+.pf-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.32) 50%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+}
+.pf-sheen:hover::after {
+  transform: translateX(130%);
+  transition: transform 0.8s ease;
 }

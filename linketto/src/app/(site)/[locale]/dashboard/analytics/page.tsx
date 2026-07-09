@@ -24,16 +24,21 @@ const CHART_DAYS = 30;
 
 export default async function AnalyticsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ p?: string }>;
 }) {
   const { locale } = await params;
+  const { p } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
 
+  // Активният профил следва ?p (както дашбордът) — за акаунти с няколко профила.
   const profile = await prisma.profile.findFirst({
-    where: { userId: user.id },
+    where: { userId: user.id, ...(p ? { id: p } : {}) },
+    orderBy: { createdAt: 'asc' },
     include: { translations: { select: { locale: true } }, links: true },
   });
   if (!profile) redirect(`/${locale}/dashboard`);

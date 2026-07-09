@@ -210,14 +210,12 @@ export async function POST(request: Request): Promise<NextResponse> {
             update: {},
           })
           .catch(() => null);
-        // Промо код: увеличаваме броя ползвания веднъж — само при първи запис.
+        // Промо код: увеличаваме броя ползвания веднъж (само при първи запис),
+        // атомарно и само ако е под лимита (пази брояча от преразходване).
         const couponId = session.metadata?.couponId;
         if (!existing && purchase && couponId) {
-          await prisma.coupon
-            .update({
-              where: { id: couponId },
-              data: { timesRedeemed: { increment: 1 } },
-            })
+          await prisma
+            .$executeRaw`UPDATE "Coupon" SET "timesRedeemed" = "timesRedeemed" + 1 WHERE "id" = ${couponId} AND ("maxRedemptions" IS NULL OR "timesRedeemed" < "maxRedemptions")`
             .catch(() => undefined);
         }
         // Курс → доживотно право на достъп до уроците.
@@ -288,6 +286,26 @@ export async function POST(request: Request): Promise<NextResponse> {
         where: { stripeAccountId: account.id },
         data: { stripeChargesEnabled: account.charges_enabled === true },
       });
+      break;
+    }
+    case 'customer.subscription.updated': {
+      // Членство (магазина): синхронизираме достъпа със статуса на абонамента.
+      // Покрива ВСИЧКИ изходи на dunning (past_due/unpaid/paused/canceled),
+      // независимо от Dashboard настройката — затваря тихия теч на достъп.
+      const sub = event.data.object;
+      const active = sub.status === 'active' || sub.status === 'trialing';
+      const periodEnd = (sub as { current_period_end?: number })
+        .current_period_end;
+      await prisma.entitlement
+        .updateMany({
+          where: { stripeSubscriptionId: sub.id },
+          data: {
+            active,
+            expiresAt:
+              active && periodEnd ? new Date(periodEnd * 1000) : undefined,
+          },
+        })
+        .catch(() => undefined);
       break;
     }
     case 'customer.subscription.deleted': {

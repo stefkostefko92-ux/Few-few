@@ -4,7 +4,12 @@ import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
-import { dirFor, localeFromGeo, LOCALE_NAMES } from '@/i18n/locales';
+import {
+  DIALECT_LOCALES,
+  dirFor,
+  localeFromGeo,
+  LOCALE_NAMES,
+} from '@/i18n/locales';
 import {
   isBlockVisible,
   pollPercentages,
@@ -121,6 +126,8 @@ export function profileMetadata(
   const canonical = activeLocale ? `${path}?hl=${activeLocale}` : path;
   const languages: Record<string, string> = {};
   for (const translation of profile.translations) {
+    // Диалектите nap/scn/lmo не са валидни hreflang кодове — извън набора.
+    if (DIALECT_LOCALES.includes(translation.locale)) continue;
     languages[translation.locale] = `${path}?hl=${translation.locale}`;
   }
   languages['x-default'] = path;
@@ -232,7 +239,7 @@ export async function ProfileScreen({
   const shadowClass = buttonShadowClass(styleCfg);
   const boxShape =
     styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-2xl';
-  const btnClass = `block border px-6 py-3.5 text-center font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`;
+  const btnClass = `pf-sheen block border px-6 py-3.5 text-center font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl ${shapeClass} ${shadowClass}`;
   const gridSpan = styleCfg.layout === 'grid' ? 'col-span-2' : '';
   const buttonStyle = buttonCss(styleCfg, accent);
   const avatarShapeClass =
@@ -436,11 +443,12 @@ export async function ProfileScreen({
         </div>
       )}
       <div
-        className={`relative w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
+        className={`pf-card-aura relative w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
           styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-3xl'
         } px-5 py-10 sm:px-10 ${
           styleCfg.align === 'start' ? 'text-start' : 'text-center'
         }`}
+        style={{ '--aura': accent } as React.CSSProperties}
       >
         <ShareButton
           url={shareUrl}
@@ -973,7 +981,7 @@ export async function ProfileScreen({
                     >
                       <a
                         href={clickHref}
-                        className={`pf-spot block border px-6 py-6 text-center text-lg font-bold transition-all duration-200 hover:-translate-y-1 ${shapeClass}`}
+                        className={`pf-spot pf-sheen block border px-6 py-6 text-center text-lg font-bold transition-all duration-200 hover:-translate-y-1 ${shapeClass}`}
                         style={
                           {
                             ...buttonCss(styleCfg, accentFor(meta)),

@@ -7,9 +7,17 @@ export async function GET(request: Request): Promise<NextResponse> {
   const url = new URL(request.url);
   const token = url.searchParams.get('token') ?? '';
   const nextParam = url.searchParams.get('next') ?? '/';
-  // Само вътрешни относителни пътища (без //, без схема) — срещу open redirect.
-  const next =
-    nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
+  // Само СЪЩИЯ произход — сравняваме резолвнатия origin (backslash/︙ трикове
+  // като „/\evil.com" се нормализират от URL и се хващат тук). Срещу open redirect.
+  let next = '/';
+  try {
+    const resolved = new URL(nextParam, url.origin);
+    if (resolved.origin === url.origin) {
+      next = resolved.pathname + resolved.search + resolved.hash;
+    }
+  } catch {
+    next = '/';
+  }
 
   const email = token ? await consumeBuyerMagicToken(token) : null;
   const dest = email ? next : '/';

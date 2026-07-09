@@ -41,6 +41,14 @@ export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'en';
 
+// Диалектите nap/scn/lmo са само ISO 639-3 — Google hreflang ги отхвърля
+// (иска 639-1). Затова ги изключваме от hreflang наборите; остават само в
+// езиковия превключвател на UI.
+export const DIALECT_LOCALES: readonly string[] = ['nap', 'scn', 'lmo'];
+export const HREFLANG_LOCALES: readonly Locale[] = LOCALES.filter(
+  (loc) => !DIALECT_LOCALES.includes(loc),
+);
+
 // Езици отдясно-наляво — когато добавим ar/he/fa, само се изброяват тук;
 // <html dir> се сменя автоматично. (Нито един от текущите не е RTL.)
 export const RTL_LOCALES: readonly string[] = ['ar', 'he', 'fa'];

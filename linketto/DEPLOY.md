@@ -3,6 +3,35 @@
 Чеклист за първо пускане (Фаза 0). Тайните живеят **само на сървъра**
 (mode 600), никога в репото или в deploy архива.
 
+## 0. Предпускови гейтове (одит 2026-07-09 — 5 агента)
+
+**Пускаме DIGITAL + COURSE. Членствата (MEMBERSHIP) са изключени** зад флаг
+`MEMBERSHIPS_ENABLED=false` (`src/lib/plans.ts`) до правния пакет — не се
+създават. Кодът им е готов и проверен на живо; пускат се при `true`.
+
+**Затворено в кода:** webhook `customer.subscription.updated` (отнема достъп
+при спряло плащане), атомарен брояч на промо кодове, поправен open-redirect в
+`/buyer/verify`, детайлната аналитика/CSV износ уважават избрания профил,
+hreflang без диалектите, robots за `/buyer` `/s` `/unsubscribe`, поправена
+cookie/privacy политика (две строго необходими бисквитки + бюлетин/купувачи +
+обхват Resend), поправено счупено ДДС изречение в разписката.
+
+**БЛОКЕРИ за собственика/юриста преди „live":**
+1. **Env:** `RESEND_API_KEY` + `EMAIL_FROM` (без тях курсовете са недоставими)
+   и `STRIPE_*` live ключове; Stripe webhook с новите събития (§3).
+2. **Правно:** политиката за поверителност/бисквитки е обновена родно на
+   **bg/en**; трябва **native it/es/de/fr** + преглед от юрист/DPO преди
+   масов трафик (роля администратор↔обработващ за бюлетина по чл. 28; ДДС
+   deemed-supplier по чл. 9а Регл. 282/2011 — потвърди с данъчен).
+3. **Stripe test mode:** мини приемния тест (§8) с реален курс — magic-link
+   имейлът трябва да пристигне и да отключи `/learn`.
+
+**За членствата (когато `MEMBERSHIPS_ENABLED=true`):** добави преддоговорна
+информация за авто-подновяване/период/отказ (Дир. 2011/83 чл. 6), buyer път
+за отмяна (Stripe Billing Portal), разделен waiver по тип продукт — всичко с
+правен преглед. Дребни (след старт): idempotency ключове на checkout/refunds,
+rate-limit на публичните форми, хеширане на magic-токена.
+
 ## 1. База данни (PostgreSQL, ЕС регион)
 
 ```bash
@@ -25,7 +54,7 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 | `STRIPE_WEBHOOK_SECRET` | Stripe → Webhooks (виж §3) | `whsec_…` |
 | `STRIPE_PRICE_PRO_*` / `STRIPE_PRICE_BUSINESS_*` | Stripe → Products → Prices | по един Price ID за всеки период: `_MONTHLY/_QUARTERLY/_SEMIANNUAL/_ANNUAL` (отстъпка 0/10/15/20%) |
 | `STRIPE_PRICE_FOUNDER` | Stripe → Products → Prices | еднократно плащане |
-| `RESEND_API_KEY` + `EMAIL_FROM` | resend.com | доставка на купеното по имейл; **подпиши DPA + EU регион** |
+| `RESEND_API_KEY` + `EMAIL_FROM` | resend.com | **ЗАДЪЛЖИТЕЛНИ** — без тях курсовете (достъп през magic-link имейл) са НЕДОСТАВИМИ и разписките/доставките не тръгват; **подпиши DPA + EU регион** |
 | `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI"; за ЕС ползвай **платен tier + DPA** (иначе входът се ползва за обучение) |
 | `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin` |
 
@@ -39,10 +68,12 @@ Stripe Dashboard → Developers → Webhooks → Add endpoint:
   - `checkout.session.async_payment_succeeded`
   - `account.updated`
   - `account.application.deauthorized`
+  - `customer.subscription.updated` (отнема достъп до членство при спряло плащане — всички dunning изходи)
   - `customer.subscription.deleted`
   - `charge.refunded`
   - `charge.dispute.created`
 - Копирай `Signing secret` → `STRIPE_WEBHOOK_SECRET`.
+- Stripe Billing → Settings: dunning да завършва с **cancel** на абонамента (за да дойде `subscription.deleted`).
 
 ## 4. Платежни методи
 
