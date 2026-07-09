@@ -15,6 +15,7 @@ export const BLOCK_KINDS = [
   'FORM',
   'TIP',
   'VCARD',
+  'EMAIL',
 ] as const;
 
 export type BlockKindId = (typeof BLOCK_KINDS)[number];
@@ -93,6 +94,7 @@ function parseBlockCore(
   switch (kind) {
     case 'HEADER':
     case 'FORM':
+    case 'EMAIL':
       return { kind, url: null, meta: null };
     case 'LINK':
     case 'TIP':

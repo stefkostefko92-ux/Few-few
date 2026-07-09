@@ -41,6 +41,7 @@ import {
 import Link from 'next/link';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
+import { sendBroadcastAction } from '@/app/actions/newsletter';
 import {
   addCouponAction,
   addProductAction,
@@ -68,10 +69,11 @@ export default async function DashboardPage({
     generated?: string;
     connected?: string;
     payout?: string;
+    broadcast?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { error, translated, generated, connected, payout } =
+  const { error, translated, generated, connected, payout, broadcast } =
     await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
@@ -154,6 +156,24 @@ export default async function DashboardPage({
         orderBy: { createdAt: 'desc' },
       })
     : [];
+  const [subConfirmed, subPending] = profile
+    ? await Promise.all([
+        prisma.subscriber.count({
+          where: {
+            profileId: profile.id,
+            confirmedAt: { not: null },
+            unsubscribedAt: null,
+          },
+        }),
+        prisma.subscriber.count({
+          where: {
+            profileId: profile.id,
+            confirmedAt: null,
+            unsubscribedAt: null,
+          },
+        }),
+      ])
+    : [0, 0];
   const purchaseTotals = profile
     ? await prisma.purchase.aggregate({
         where: { profileId: profile.id },
@@ -233,7 +253,9 @@ export default async function DashboardPage({
                                   ? t('errorPayout')
                                   : error === 'coupon'
                                     ? t('errorCoupon')
-                                    : t('errorGeneric')}
+                                    : error === 'broadcast'
+                                      ? t('errorBroadcast')
+                                      : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -266,6 +288,14 @@ export default async function DashboardPage({
             className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
           >
             {t('referralPayoutRequested')}
+          </p>
+        )}
+        {broadcast && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('broadcastSent', { count: broadcast })}
           </p>
         )}
 
@@ -864,6 +894,7 @@ export default async function DashboardPage({
                         'APP',
                         'FORM',
                         'TIP',
+                        'EMAIL',
                       ] as const
                     ).map((kind) => (
                       <option key={kind} value={kind}>
@@ -1175,6 +1206,72 @@ export default async function DashboardPage({
                   ))}
                 </ul>
               )}
+            </section>
+
+            {/* Аудитория — бюлетин (email capture), износ и разпращане */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('audienceSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">{t('audienceHint')}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
+                  <p className="text-2xl font-extrabold text-linketto-700">
+                    {subConfirmed}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {t('audienceConfirmed')}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-5 py-3 text-center">
+                  <p className="text-2xl font-extrabold text-slate-400">
+                    {subPending}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {t('audiencePending')}
+                  </p>
+                </div>
+                <a
+                  href={`/${locale}/dashboard/subscribers/export`}
+                  className="inline-flex items-center gap-2 rounded-full border border-linketto-600 px-4 py-2 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  {t('audienceExport')}
+                </a>
+              </div>
+              {/* Разпращане на бюлетин до потвърдените абонати */}
+              <form
+                action={sendBroadcastAction}
+                className="mt-5 space-y-2 border-t border-slate-100 pt-5"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <h3 className="text-sm font-semibold text-slate-600">
+                  {t('broadcastTitle')}
+                </h3>
+                <input
+                  type="text"
+                  name="subject"
+                  required
+                  maxLength={150}
+                  placeholder={t('broadcastSubject')}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+                <textarea
+                  name="body"
+                  required
+                  rows={5}
+                  maxLength={5000}
+                  placeholder={t('broadcastBody')}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-slate-500">{t('broadcastHint')}</p>
+                <button
+                  type="submit"
+                  disabled={subConfirmed === 0}
+                  className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700 disabled:opacity-40"
+                >
+                  {t('broadcastSend')}
+                </button>
+              </form>
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">

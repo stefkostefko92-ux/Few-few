@@ -29,6 +29,7 @@ import {
 } from '@/components/icons';
 import { submitContactAction } from '@/app/actions/contact';
 import { startProductPurchaseAction } from '@/app/actions/shop';
+import { subscribeAction } from '@/app/actions/newsletter';
 
 // Общото публично рендиране на профил — ползва се от /u/[slug]
 // и от собствените домейни (/d/[domain] през middleware rewrite).
@@ -144,6 +145,9 @@ export async function ProfileScreen({
   formError,
   shopError,
   couponError,
+  subscribed,
+  subError,
+  unsub,
 }: {
   profile: LoadedProfile;
   hl?: string;
@@ -151,6 +155,9 @@ export async function ProfileScreen({
   formError?: string;
   shopError?: string;
   couponError?: string;
+  subscribed?: string;
+  subError?: string;
+  unsub?: string;
 }) {
   const slug = profile.slug;
   const available = profile.translations.map((t) => t.locale);
@@ -430,6 +437,14 @@ export async function ProfileScreen({
         {translation.bio && (
           <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed opacity-75">{translation.bio}</p>
         )}
+        {unsub && (
+          <p
+            role="status"
+            className="mx-auto mt-3 max-w-sm rounded-lg border border-current/20 bg-current/5 px-3 py-2 text-xs opacity-80"
+          >
+            {t('unsubDone')}
+          </p>
+        )}
 
         {(available.length > 1 || monthViews !== null) && (
           <div
@@ -659,6 +674,76 @@ export async function ProfileScreen({
                             style={{ borderColor: accentFor(meta) }}
                           >
                             {t('formSend')}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </li>
+                );
+              case 'EMAIL':
+                return (
+                  <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
+                    <div
+                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
+                      style={buttonCss(styleCfg, accentFor(meta))}
+                    >
+                      <p className="text-center font-medium">{title}</p>
+                      {subscribed ? (
+                        <p className="mt-3 text-center text-sm opacity-80">
+                          {subscribed === 'confirmed'
+                            ? t('subConfirmed')
+                            : t('subCheck')}
+                        </p>
+                      ) : (
+                        <form
+                          action={subscribeAction}
+                          className="mt-3 space-y-2 text-sm"
+                        >
+                          <input type="hidden" name="slug" value={slug} />
+                          <input type="hidden" name="hl" value={viewLocale} />
+                          <input
+                            type="text"
+                            name="company"
+                            tabIndex={-1}
+                            autoComplete="off"
+                            className="hidden"
+                            aria-hidden="true"
+                          />
+                          <input
+                            type="email"
+                            name="email"
+                            required
+                            placeholder={t('formEmail')}
+                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                          />
+                          {subError && (
+                            <p className="text-xs text-red-300">
+                              {t('subError')}
+                            </p>
+                          )}
+                          <label className="flex items-start gap-2 text-[11px] leading-snug opacity-70">
+                            <input
+                              type="checkbox"
+                              name="consent"
+                              required
+                              className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                            />
+                            <span>
+                              {t('subConsent')}{' '}
+                              <a
+                                href={`/${viewLocale}/privacy`}
+                                className="underline"
+                              >
+                                {t('formPrivacyLink')}
+                              </a>
+                            </span>
+                          </label>
+                          <button
+                            type="submit"
+                            className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
+                            style={{ borderColor: accentFor(meta) }}
+                          >
+                            {t('subButton')}
                           </button>
                         </form>
                       )}

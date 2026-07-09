@@ -31,10 +31,22 @@ export default async function PublicProfilePage({
     formError?: string;
     shopError?: string;
     couponError?: string;
+    subscribed?: string;
+    subError?: string;
+    unsub?: string;
   }>;
 }) {
   const { slug } = await params;
-  const { hl, sent, formError, shopError, couponError } = await searchParams;
+  const {
+    hl,
+    sent,
+    formError,
+    shopError,
+    couponError,
+    subscribed,
+    subError,
+    unsub,
+  } = await searchParams;
   const profile = await loadProfileBy({ slug });
   if (
     !profile ||
@@ -52,6 +64,9 @@ export default async function PublicProfilePage({
       formError={formError}
       shopError={shopError}
       couponError={couponError}
+      subscribed={subscribed}
+      subError={subError}
+      unsub={unsub}
     />
   );
 }

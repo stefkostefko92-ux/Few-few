@@ -114,6 +114,25 @@ model Profile {
   reports       Report[]
   products      Product[]
   coupons       Coupon[]
+  subscribers   Subscriber[]
+}
+
+// Абонат за бюлетина на създателя (email capture). GDPR: двойно съгласие
+// (confirmedAt) + лесен отпис (unsubscribedAt) + токен за двете действия.
+// Аудиторията принадлежи на създателя (износ в CSV), не заключена в нас.
+model Subscriber {
+  id             String    @id @default(cuid())
+  profileId      String
+  profile        Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  email          String
+  locale         String? // език на записалия се — за бюлетин на неговия език
+  token          String    @unique // за потвърждение и отписване (неотгатваем)
+  confirmedAt    DateTime? // двойно съгласие: null = непотвърден
+  unsubscribedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@unique([profileId, email])
+  @@index([profileId, createdAt])
 }
 
 // Промо код за магазина: процентна отстъпка върху продукт. Дефинира се от
@@ -159,6 +178,7 @@ enum BlockKind {
   FORM
   TIP
   VCARD
+  EMAIL // блок за записване в бюлетина (email capture, GDPR double opt-in)
 }
 
 model Link {
