@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
-import { bestLocale, dirFor, LOCALE_NAMES } from '@/i18n/locales';
+import { dirFor, localeFromGeo, LOCALE_NAMES } from '@/i18n/locales';
 import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
 import { brandFor, isSensitiveUrl } from '@/lib/brands';
 import { BrandIcon, BRAND_COLORS } from '@/components/brand-icons';
@@ -155,15 +155,20 @@ export async function ProfileScreen({
   const requestHeaders = await headers();
   let viewLocale: string;
   if (hl && available.includes(hl)) {
+    // Явният избор (?hl) винаги печели.
     viewLocale = hl;
   } else {
-    viewLocale = bestLocale(
-      requestHeaders.get('accept-language'),
+    // Иначе автоматично по IP геолокация (държава/регион) в рамките на
+    // езиците, които създателят е превел; после Accept-Language.
+    viewLocale = localeFromGeo({
+      country: requestHeaders.get('cf-ipcountry'),
+      region: requestHeaders.get('cf-region'),
+      acceptLanguage: requestHeaders.get('accept-language'),
       available,
-      available.includes(profile.defaultLocale)
+      fallback: available.includes(profile.defaultLocale)
         ? profile.defaultLocale
         : available[0],
-    );
+    });
   }
 
   const translation =
