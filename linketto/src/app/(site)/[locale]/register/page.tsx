@@ -9,10 +9,10 @@ export default async function RegisterPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; ref?: string }>;
 }) {
   const { locale } = await params;
-  const { error } = await searchParams;
+  const { error, ref } = await searchParams;
   const t = await getTranslations('auth');
 
   return (
@@ -25,8 +25,14 @@ export default async function RegisterPage({
             {error === 'exists' ? t('errorExists') : t('errorGeneric')}
           </p>
         )}
+        {ref && (
+          <p className="mt-4 rounded-lg bg-linketto-50 p-3 text-sm text-linketto-700">
+            {t('referredBanner')}
+          </p>
+        )}
         <form action={registerAction} className="mt-6 space-y-4">
           <input type="hidden" name="locale" value={locale} />
+          {ref && <input type="hidden" name="ref" value={ref} />}
           <label className="block text-sm font-medium">
             {t('name')}
             <input

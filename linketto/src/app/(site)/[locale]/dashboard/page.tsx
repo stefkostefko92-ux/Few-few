@@ -16,6 +16,8 @@ import {
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
 import { parseStyle } from '@/lib/style';
+import { ReferralCard } from '@/components/ReferralCard';
+import { ensureReferralCodeAction } from '@/app/actions/referral';
 import {
   CheckIcon,
   ClockIcon,
@@ -123,6 +125,16 @@ export default async function DashboardPage({
         _count: { _all: true },
         _sum: { amountCents: true },
       })
+    : null;
+
+  // Реферална програма: брой поканени регистрации и успешни (платили) реферали.
+  const [referredSignups, successfulReferrals] = await Promise.all([
+    prisma.user.count({ where: { referredById: user.id } }),
+    prisma.referral.count({ where: { referrerId: user.id } }),
+  ]);
+  const referralBase = process.env.PUBLIC_BASE_URL ?? '';
+  const referralUrl = user.referralCode
+    ? `${referralBase}/${locale}/register?ref=${user.referralCode}`
     : null;
   const recentPurchases = profile
     ? await prisma.purchase.findMany({
@@ -1266,6 +1278,44 @@ export default async function DashboardPage({
                     </p>
                   )}
                 </>
+              )}
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('referralSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('referralReward')}
+              </p>
+              {referralUrl ? (
+                <div className="mt-4">
+                  <ReferralCard
+                    url={referralUrl}
+                    stats={{
+                      signups: referredSignups,
+                      successful: successfulReferrals,
+                      credit: `€${(user.referralCreditCents / 100).toFixed(2)}`,
+                    }}
+                    labels={{
+                      hint: t('referralHint'),
+                      copy: t('referralCopy'),
+                      copied: t('referralCopied'),
+                      share: t('referralShare'),
+                      signups: t('referralSignups'),
+                      successful: t('referralSuccessful'),
+                      credit: t('referralCredit'),
+                    }}
+                  />
+                </div>
+              ) : (
+                <form action={ensureReferralCodeAction} className="mt-4">
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
+                  >
+                    {t('referralActivate')}
+                  </button>
+                </form>
               )}
             </section>
 

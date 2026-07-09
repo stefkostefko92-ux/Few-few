@@ -299,6 +299,9 @@ export default async function AdminPage({
                     {user.name ?? '—'} · {user.plan} ·{' '}
                     {user.createdAt.toISOString().slice(0, 10)}
                     {user.stripeAccountId ? ' · Stripe Connect' : ''}
+                    {user.referralCreditCents > 0
+                      ? ` · ${t('referralCredit')}: €${(user.referralCreditCents / 100).toFixed(2)}`
+                      : ''}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">

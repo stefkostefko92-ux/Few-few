@@ -118,6 +118,13 @@ showViews = бадж „N посещения този месец“ (брои Cl
 без бисквитки). Бранд сияние при hover: BRAND_COLORS в brand-icons.tsx.
 „Сподели“ = ShareButton.tsx (client; Web Share API, fallback QR + копиране).
 
+Реферали: lib/referral.ts (referralRewardCents по план, generateReferralCode).
+User.referralCode/referredById/referralCreditCents + модел Referral (ledger,
+unique referredUserId). registerAction обвързва реферера от ?ref; webhook-ът
+начислява бонуса при платен план (rewardReferrer, идемпотентно). Дашборд:
+ReferralCard + ensureReferralCodeAction за стари профили. Кредитът се вижда
+и в админ панела (за изплащане).
+
 Транзакционен имейл: src/lib/email.ts (Resend HTTP API; deliveryEmailHtml/
 deliverySubject са локализирани на 6-те езика по Purchase.locale — езикът
 на купувача). AI преводът (lib/ai.ts) покрива и продуктите (заглавие+

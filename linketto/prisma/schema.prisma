@@ -29,11 +29,15 @@ model User {
   stripeAccountId      String?   @unique // Stripe Connect (Express) акаунт за магазина
   stripeChargesEnabled Boolean   @default(false) // обновява се от account.updated webhook
   isTrader             Boolean   @default(false) // Дир.2011/83 чл.6а: търговец (по декларация на продавача)
+  referralCode         String?   @unique // личен реферален код (за поканите)
+  referredById         String?   // кой е поканил този потребител
+  referralCreditCents  Int       @default(0) // натрупан бонус от рефералите
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   sessions             Session[]
   profiles             Profile[]
   loginEvents          LoginEvent[]
+  referralsMade        Referral[]   @relation("ReferralsMade")
 }
 
 // Сигурност на входа: IP при успешен вход/регистрация (пази се 90 дни;
@@ -46,6 +50,20 @@ model LoginEvent {
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+// Реферална програма: един ред при УСПЕШЕН реферал (поканеният си купи
+// платен план). Уникален по referredUserId → един бонус на поканен.
+model Referral {
+  id             String   @id @default(cuid())
+  referrerId     String
+  referrer       User     @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUserId String   @unique
+  plan           Plan
+  rewardCents    Int
+  createdAt      DateTime @default(now())
+
+  @@index([referrerId, createdAt])
 }
 
 model Session {

@@ -11,6 +11,7 @@ import {
 import { isLocale } from '@/i18n/locales';
 import { requestIp } from '@/lib/admin';
 import { prisma } from '@/lib/db';
+import { generateReferralCode } from '@/lib/referral';
 
 // Сигурност на входа (декларирано в политиката): IP при успешен вход,
 // пази се 90 дни. Чисти се при всяко ново записване — без отделен cron.
@@ -56,6 +57,25 @@ export async function registerAction(formData: FormData): Promise<void> {
   if (!user) {
     redirect(`/${locale}/register?error=exists`);
   }
+
+  // Реферал: ако идва през нечий линк (?ref=CODE), запомняме поканилия.
+  const refCode = String(formData.get('ref') ?? '').trim().slice(0, 32);
+  const referrer = refCode
+    ? await prisma.user.findUnique({
+        where: { referralCode: refCode },
+        select: { id: true },
+      })
+    : null;
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      referralCode: generateReferralCode(),
+      // никой не може да покани сам себе си
+      referredById:
+        referrer && referrer.id !== user.id ? referrer.id : undefined,
+    },
+  });
+
   await logLoginIp(user.id);
   await createSession(user.id);
   redirect(`/${locale}/dashboard`);

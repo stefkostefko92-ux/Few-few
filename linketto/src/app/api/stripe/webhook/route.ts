@@ -4,6 +4,41 @@ import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
 import { PLANS, type PlanId } from '@/lib/plans';
 import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
+import { referralRewardCents } from '@/lib/referral';
+
+// Начислява бонус на реферера, когато поканеният си купи платен план.
+// Идемпотентно: Referral е уникален по referredUserId (един бонус на поканен).
+async function rewardReferrer(
+  referredUserId: string,
+  planId: PlanId,
+): Promise<void> {
+  const rewardCents = referralRewardCents(planId);
+  if (rewardCents <= 0) return;
+  const user = await prisma.user.findUnique({
+    where: { id: referredUserId },
+    select: { referredById: true },
+  });
+  if (!user?.referredById) return;
+  const existing = await prisma.referral.findUnique({
+    where: { referredUserId },
+    select: { id: true },
+  });
+  if (existing) return; // вече наградено
+  await prisma.$transaction([
+    prisma.referral.create({
+      data: {
+        referrerId: user.referredById,
+        referredUserId,
+        plan: planId,
+        rewardCents,
+      },
+    }),
+    prisma.user.update({
+      where: { id: user.referredById },
+      data: { referralCreditCents: { increment: rewardCents } },
+    }),
+  ]);
+}
 
 // Доставка на купеното по имейл — от webhook-а, независимо от success_url
 // redirect-а (затворен таб не бива да значи „платил без достъп“).
@@ -81,6 +116,9 @@ export async function POST(request: Request): Promise<NextResponse> {
                 : undefined,
           },
         });
+        // Реферална награда: ако този потребител е поканен, реферерът
+        // получава бонус — веднъж на поканен (unique referredUserId).
+        await rewardReferrer(userId, planId).catch(() => undefined);
       }
       // Продажба на дигитален продукт (магазина): записваме покупката
       // идемпотентно по stripeSessionId.

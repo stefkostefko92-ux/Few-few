@@ -19,6 +19,9 @@ CREATE TABLE "User" (
     "stripeAccountId" TEXT,
     "stripeChargesEnabled" BOOLEAN NOT NULL DEFAULT false,
     "isTrader" BOOLEAN NOT NULL DEFAULT false,
+    "referralCode" TEXT,
+    "referredById" TEXT,
+    "referralCreditCents" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -33,6 +36,18 @@ CREATE TABLE "LoginEvent" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "LoginEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Referral" (
+    "id" TEXT NOT NULL,
+    "referrerId" TEXT NOT NULL,
+    "referredUserId" TEXT NOT NULL,
+    "plan" "Plan" NOT NULL,
+    "rewardCents" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Referral_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -195,7 +210,16 @@ CREATE UNIQUE INDEX "User_stripeCustomerId_key" ON "User"("stripeCustomerId");
 CREATE UNIQUE INDEX "User_stripeAccountId_key" ON "User"("stripeAccountId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_referralCode_key" ON "User"("referralCode");
+
+-- CreateIndex
 CREATE INDEX "LoginEvent_userId_createdAt_idx" ON "LoginEvent"("userId", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Referral_referredUserId_key" ON "Referral"("referredUserId");
+
+-- CreateIndex
+CREATE INDEX "Referral_referrerId_createdAt_idx" ON "Referral"("referrerId", "createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_tokenHash_key" ON "Session"("tokenHash");
@@ -247,6 +271,9 @@ CREATE INDEX "ClickEvent_linkId_createdAt_idx" ON "ClickEvent"("linkId", "create
 
 -- AddForeignKey
 ALTER TABLE "LoginEvent" ADD CONSTRAINT "LoginEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Referral" ADD CONSTRAINT "Referral_referrerId_fkey" FOREIGN KEY ("referrerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
