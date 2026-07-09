@@ -36,6 +36,11 @@ export async function createProfileAction(formData: FormData): Promise<void> {
   if (!isValidSlug(slug)) {
     redirect(`/${uiLocale}/dashboard?error=slug`);
   }
+  // Лимит на профили по плана (няколко профила = Business).
+  const owned = await prisma.profile.count({ where: { userId: user.id } });
+  if (owned >= planFor(user.plan).maxProfiles) {
+    redirect(`/${uiLocale}/dashboard?error=profiles`);
+  }
   const existing = await prisma.profile.findUnique({ where: { slug } });
   if (existing) {
     redirect(`/${uiLocale}/dashboard?error=slug`);

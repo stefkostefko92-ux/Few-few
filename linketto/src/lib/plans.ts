@@ -14,6 +14,8 @@ export interface PlanDef {
   oneTime: boolean;
   /** Максимален брой езикови версии на профил (null = без лимит). */
   maxLocales: number | null;
+  /** Максимален брой профили на акаунт (екипи/марки — Business). */
+  maxProfiles: number;
   /** Дни история на аналитиката (null = без лимит). */
   analyticsDays: number | null;
   /** env променлива със Stripe Price ID. */
@@ -27,6 +29,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     priceCents: 0,
     oneTime: false,
     maxLocales: 2,
+    maxProfiles: 1,
     analyticsDays: 90,
     stripePriceEnv: null,
   },
@@ -36,6 +39,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     priceCents: 400,
     oneTime: false,
     maxLocales: null,
+    maxProfiles: 1,
     analyticsDays: null,
     stripePriceEnv: 'STRIPE_PRICE_PRO',
   },
@@ -45,6 +49,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     priceCents: 900,
     oneTime: false,
     maxLocales: null,
+    maxProfiles: 5,
     analyticsDays: null,
     stripePriceEnv: 'STRIPE_PRICE_BUSINESS',
   },
@@ -54,6 +59,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     priceCents: 4900,
     oneTime: true,
     maxLocales: null,
+    maxProfiles: 5,
     analyticsDays: null,
     stripePriceEnv: 'STRIPE_PRICE_FOUNDER',
   },

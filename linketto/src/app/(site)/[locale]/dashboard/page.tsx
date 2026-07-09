@@ -75,26 +75,38 @@ export default async function DashboardPage({
     connected?: string;
     payout?: string;
     broadcast?: string;
+    p?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { error, translated, generated, connected, payout, broadcast } =
+  const { error, translated, generated, connected, payout, broadcast, p } =
     await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
-
-  const profile = await prisma.profile.findFirst({
-    where: { userId: user.id },
-    include: {
-      translations: { orderBy: { locale: 'asc' } },
-      links: {
-        orderBy: { position: 'asc' },
-        include: { translations: true },
-      },
-    },
-  });
   const plan = planFor(user.plan);
+
+  // Няколко профила на акаунт (Business): списък за превключвателя + активен.
+  const profileList = await prisma.profile.findMany({
+    where: { userId: user.id },
+    select: { id: true, slug: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  const activeId =
+    p && profileList.some((item) => item.id === p) ? p : profileList[0]?.id;
+  const profile = activeId
+    ? await prisma.profile.findFirst({
+        where: { id: activeId, userId: user.id },
+        include: {
+          translations: { orderBy: { locale: 'asc' } },
+          links: {
+            orderBy: { position: 'asc' },
+            include: { translations: true },
+          },
+        },
+      })
+    : null;
+  const canAddProfile = profileList.length < plan.maxProfiles;
   const messages = profile
     ? await prisma.contactMessage.findMany({
         where: { profileId: profile.id },
@@ -277,7 +289,9 @@ export default async function DashboardPage({
                                       ? t('errorBroadcast')
                                       : error === 'shortlink'
                                         ? t('errorShortlink')
-                                        : t('errorGeneric')}
+                                        : error === 'profiles'
+                                          ? t('errorProfiles')
+                                          : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -319,6 +333,55 @@ export default async function DashboardPage({
           >
             {t('broadcastSent', { count: broadcast })}
           </p>
+        )}
+
+        {/* Превключвател на профили + добавяне (няколко профила = Business) */}
+        {profileList.length > 0 && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-slate-600">
+                {t('profilesLabel')}:
+              </span>
+              {profileList.map((item) => (
+                <a
+                  key={item.id}
+                  href={`/${locale}/dashboard?p=${item.id}`}
+                  className={`rounded-full px-3 py-1 text-sm font-medium ${
+                    item.id === activeId
+                      ? 'bg-linketto-600 text-white'
+                      : 'border border-slate-300 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  /{item.slug}
+                </a>
+              ))}
+            </div>
+            {canAddProfile ? (
+              <form
+                action={createProfileAction}
+                className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input
+                  type="text"
+                  name="slug"
+                  required
+                  placeholder={t('newProfileSlug')}
+                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  {t('addProfile')}
+                </button>
+              </form>
+            ) : (
+              <p className="mt-2 text-xs text-slate-500">
+                {t('profilesUpsell', { max: plan.maxProfiles })}
+              </p>
+            )}
+          </section>
         )}
 
         {!profile ? (
