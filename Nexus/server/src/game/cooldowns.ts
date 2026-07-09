@@ -3,10 +3,11 @@
  *
  * Every "action" (hunt / tower / dungeon / quest / arena) sets a random
  * per-player cooldown from a PER-ACTION range (COOLDOWN_RANGES_MS —
- * стъпаловидна стълбица 3–8 … 15–25 мин). The randomness means two
+ * стъпаловидна стълбица 3–6 … 7–10 мин). The randomness means two
  * characters who do the same thing won't be ready at the same moment;
  * the ladder means the player's five lanes interleave so there is
- * always a lane about to open — never a dead 20-minute window.
+ * always a lane about to open. По изискване на собственика ГОРНИЯТ
+ * таван на всяка дейност е 10 минути — нито един диапазон не го надхвърля.
  *
  * Mounts (item.sub_type='mount') own a dedicated mechanical property
  * `cooldown_reduction_pct` (it is NOT a stat bonus — it lives on its own
@@ -19,20 +20,19 @@ import { getDb } from '../db';
 
 export type ActionKind = 'hunt' | 'camp' | 'tower' | 'dungeon' | 'quest' | 'arena';
 
-// Баланс (пълен одит): вместо еднакъв random 1–20 мин за всичко — СТЪЛБИЦА
-// от диапазони по дейност. Целта е принципът „играчът ВИНАГИ има какво да
-// прави": пет застъпени писти, така че докато една чака, друга тъкмо се
-// отваря. Hunt е късата „филър" писта; dungeon е дългата (той е и
-// най-щедрият loop — виж gold_bonus кривата в seed/dungeons.ts). Общата
-// пропускливост остава ~30 действия/час (както преди: ~28/ч), но
-// разпределена без мъртви прозорци — при произволен момент очакваното
-// време до СЛЕДВАЩАТА готова дейност е ~1–3 мин, не до 20.
+// Баланс: СТЪЛБИЦА от диапазони по дейност. Принципът „играчът ВИНАГИ има
+// какво да прави" — пет застъпени писти, така че докато една чака, друга
+// тъкмо се отваря. Hunt е късата „филър" писта; dungeon е дългата (той е и
+// най-щедрият loop — виж gold_bonus кривата в seed/dungeons.ts). Стълбицата
+// е свита така, че ГОРНИЯТ таван е точно 10 минути (изискване на
+// собственика): всеки max ≤ 10 мин, а редът hunt<arena<quest<tower<dungeon
+// се запазва, за да няма мъртви прозорци.
 export const COOLDOWN_RANGES_MS: Record<ActionKind, [number, number]> = {
-  hunt:    [3 * 60_000, 8 * 60_000],
-  arena:   [6 * 60_000, 12 * 60_000],
-  quest:   [8 * 60_000, 15 * 60_000],
-  tower:   [10 * 60_000, 18 * 60_000],
-  dungeon: [15 * 60_000, 25 * 60_000],
+  hunt:    [3 * 60_000, 6 * 60_000],
+  arena:   [4 * 60_000, 7 * 60_000],
+  quest:   [5 * 60_000, 8 * 60_000],
+  tower:   [6 * 60_000, 9 * 60_000],
+  dungeon: [7 * 60_000, 10 * 60_000],
   camp:    [60_000, 60_000], // не се ползва — camp има собствен таймер
 };
 // Audit (balance landmine #5): cap mount cooldown reduction at 50%, not

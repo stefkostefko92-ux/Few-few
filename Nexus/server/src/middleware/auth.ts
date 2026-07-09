@@ -78,8 +78,15 @@ export function authRequired(req: Request, res: Response, next: NextFunction): v
       const row = getDb()
         .prepare('SELECT token_version FROM users WHERE id = ?')
         .get(decoded.uid) as { token_version?: number } | undefined;
-      const currentTv = row?.token_version ?? 0;
-      if ((decoded.tv ?? 0) !== currentTv) {
+      // A missing row means the user was deleted (a successful query just
+      // returns undefined) — reject rather than defaulting token_version to
+      // 0, which let a deleted user's still-valid JWT keep authenticating
+      // (also defeats GDPR erasure).
+      if (!row) {
+        res.status(401).json({ error: 'Session expired' });
+        return;
+      }
+      if ((decoded.tv ?? 0) !== (row.token_version ?? 0)) {
         res.status(401).json({ error: 'Session expired' });
         return;
       }

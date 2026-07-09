@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp, regenerateEnergy } from '../game/progression';
+import { applyXp } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';
@@ -40,7 +40,6 @@ router.post('/start', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
-  regenerateEnergy(char);
 
   const quest = db.prepare('SELECT * FROM quests WHERE slug = ?').get(parse.data.questSlug) as Quest | undefined;
   if (!quest) {

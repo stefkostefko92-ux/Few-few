@@ -67,6 +67,13 @@ router.post('/challenge', (req, res) => {
     res.status(404).json({ error: 'Opponent not found' });
     return;
   }
+  // Enforce the same ±3 level bracket the /opponents list is filtered to,
+  // so a client can't hand-pick a far weaker/AFK target to farm easy wins
+  // and drops, or grief a chosen player's rating, on every cooldown.
+  if ((opp as any).is_npc === 0 && (opp.level < char.level - 3 || opp.level > char.level + 3)) {
+    res.status(400).json({ error: 'That opponent is outside your challenge bracket.' });
+    return;
+  }
   // Arena is a duel of equals — both fighters enter at full HP. Previously
   // the hero entered with current HP (possibly fresh off a hunt at 11%)
   // while the opponent always entered at hp_max, handing the defender a

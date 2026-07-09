@@ -129,9 +129,11 @@ router.post('/login', async (req, res) => {
   const user = db
     .prepare('SELECT id, username, email, password_hash, is_admin, token_version FROM users WHERE username = ? OR email = ?')
     .get(username, username) as { id: number; username: string; email: string; password_hash: string; is_admin: number; token_version: number } | undefined;
-  // Audit #5: always run a bcrypt to flatten the timing difference
-  // between unknown-user and bad-password branches.
-  const dummyHash = '$2a$10$0123456789012345678901u4qHYAxvqlH/2DH9MlYrFkH4q/Tj0aae';
+  // Audit #5: always run a bcrypt to flatten the timing difference between
+  // unknown-user and bad-password branches. The cost MUST match the real
+  // hashes (bcrypt.hash(..., 12)) — a cheaper cost-10 dummy ran ~4x faster
+  // and re-opened the user-enumeration timing oracle this is meant to close.
+  const dummyHash = '$2b$12$0123456789012345678901u4qHYAxvqlH/2DH9MlYrFkH4q/Tj0aae';
   if (!user) {
     await bcrypt.compare(password, dummyHash).catch(() => false);
     logFromRequest(req, { category: 'auth', action: 'login_failed', level: 'warn', message: `Unknown identifier ${hashIdentifier(username)}` });

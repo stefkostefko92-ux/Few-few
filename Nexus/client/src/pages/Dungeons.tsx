@@ -38,9 +38,13 @@ export default function Dungeons(): React.ReactElement {
   const [busy, setBusy] = useState(false);
 
   async function load() {
-    const r = await api.get('/dungeon');
-    setDungeons(r.dungeons);
-    setActive(r.active);
+    try {
+      const r = await api.get('/dungeon');
+      setDungeons(r.dungeons);
+      setActive(r.active);
+    } catch (e: any) {
+      toast(e.message, 'error');
+    }
   }
 
   useEffect(() => { load(); }, []);

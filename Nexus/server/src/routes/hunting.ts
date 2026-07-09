@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { regenerateEnergy, applyXp, paceXpForKill } from '../game/progression';
+import { applyXp, paceXpForKill } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent } from '../game/events';

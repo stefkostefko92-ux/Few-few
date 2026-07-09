@@ -450,13 +450,13 @@
     "trainer": "Addestratore",
     "elo": "{{n}} ELO",
     "winsLosses": "{{w}}V / {{l}}S",
-    "challenge": "Sfida (5 EN)",
+    "challenge": "Sfida",
     "noOpponents": "Nessun avversario degno nei paraggi. Diventa più forte.",
     "vsTitle": "{{hero}}  VS  {{foe}}"
   },
   "hunting": {
     "title": "Terre di caccia",
-    "subtitle": "Scontri ripetibili — nemico casuale. Ogni caccia imposta un cooldown casuale di 1-20 min (ridotto dalle cavalcature).",
+    "subtitle": "Scontri ripetibili — nemico casuale. Ogni caccia imposta un cooldown casuale di 3-6 min (ridotto dalle cavalcature).",
     "wildEncounter": "Incontro selvaggio — {{name}}",
     "victoryText": "Nemico abbattuto. La caccia continua.",
     "defeatText": "Indietreggi barcollando, pieno di lividi.",
@@ -1461,63 +1461,67 @@
     "regions": {
       "whispering_woods": {
         "name": "Boschi Sussurranti",
-        "lore": "Un bosco verde vicino alla Conca delle Querce."
+        "lore": "Un bosco verde presso Cava di Quercia — la prima strada di ogni eroe."
       },
       "mistmoor_hills": {
-        "name": "Colline Nebbiose",
-        "lore": "Altopiani avvolti nella nebbia, battuti dagli orchi."
+        "name": "Colline di Mistmoor",
+        "lore": "Altopiani avvolti dalla nebbia dove gli orchi cavalcano i valichi."
       },
       "crystal_caverns": {
         "name": "Caverne di Cristallo",
-        "lore": "Gallerie scintillanti sotto le montagne."
+        "lore": "Un labirinto di minerale scintillante sotto le montagne."
       },
       "ashen_wastes": {
-        "name": "Lande Cineree",
-        "lore": "Pianure arse percorse dai drachi."
+        "name": "Distese di Cenere",
+        "lore": "Pianure bruciate dove vagano gli spettri e volteggiano i draghi."
       },
       "shadowfell": {
-        "name": "Coltre Oscura",
+        "name": "Il Reame d’Ombra",
         "lore": "Il dominio del Signore delle Ombre. Porta tutto."
       },
       "emberreach": {
-        "name": "Terre di Brace",
-        "lore": "Canyon fumanti dove nidifica la stirpe dei draghi."
+        "name": "Emberreach",
+        "lore": "Canyon fumanti dove nidificano i draghi."
       },
-      "frostspire": {
-        "name": "Guglia di Gelo",
-        "lore": "Vette glaciali sotto un cielo di aurora perpetua."
+      "hammerhand_pass": {
+        "name": "Passo di Hammerhand",
+        "lore": "Una strada montana scavata dai nani a guardia delle carovane."
       },
-      "drowned_coast": {
-        "name": "Costa Sommersa",
-        "lore": "Città sommerse lungo una costa infestata."
+      "conclave_aedric": {
+        "name": "Conclave di Aedric",
+        "lore": "Una città chiusa di maghi e dei loro apprendisti inquieti."
+      },
+      "saltmarsh": {
+        "name": "Saltmarsh",
+        "lore": "Città sommerse lungo una costa salmastra e infestata."
+      },
+      "frostvale": {
+        "name": "Frostvale",
+        "lore": "Valli glaciali sotto un cielo di aurora perpetua."
+      },
+      "black_spire": {
+        "name": "Guglia Nera",
+        "lore": "Una torre-fortezza vulcanica governata da un re caduto."
       },
       "stormpeaks": {
-        "name": "Picchi della Tempesta",
-        "lore": "Cime flagellate dai fulmini, dominate dai giganti delle tempeste."
+        "name": "Le Vette Tempestose",
+        "lore": "Cime dilaniate dai fulmini, dominate dai giganti delle tempeste."
       },
-      "blighted_expanse": {
-        "name": "Distesa Corrotta",
-        "lore": "Una brughiera avvizzita dove camminano i morti."
-      },
-      "obsidian_dominion": {
-        "name": "Dominio d'Ossidiana",
-        "lore": "Una fortezza-stato vulcanica governata da un re decaduto."
-      },
-      "astral_rift": {
-        "name": "Squarcio Astrale",
-        "lore": "Uno strappo nella realtà dove le stelle sanguinano nel cielo."
-      },
-      "voidmaw": {
-        "name": "Fauci del Vuoto",
+      "voidshade_hollow": {
+        "name": "Voidshade Hollow",
         "lore": "Un abisso senza fondo che divora la propria gravità."
       },
-      "dragon_roost": {
-        "name": "Nido del Drago",
-        "lore": "Il trono montano del re dei draghi."
+      "mooncradle": {
+        "name": "Mooncradle",
+        "lore": "Uno squarcio nella realtà dove le stelle sanguinano nel cielo."
+      },
+      "worldspine": {
+        "name": "La Spina del Mondo",
+        "lore": "Il trono montano del re-viverna, spina del mondo conosciuto."
       },
       "eternal_throne": {
-        "name": "Trono Eterno",
-        "lore": "Dove attende l'Ultimo Sovrano."
+        "name": "Il Trono Eterno",
+        "lore": "Dove l’Ultimo Sovrano attende alla fine di tutte le strade."
       }
     }
   },
