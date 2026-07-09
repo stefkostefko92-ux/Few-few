@@ -57,7 +57,7 @@ export async function runDunningJob() {
             where: { id: server.id },
             // Сваляме достъпа, но запазваме stripeStatus="past_due" и
             // pastDueSince — за одит и за да не се „активира" пак случайно.
-            data: { isPremium: false },
+            data: { isPremium: false, plan: "free", billingInterval: null },
           });
           await tx.auditLog.create({
             data: {

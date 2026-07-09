@@ -3,6 +3,29 @@ import { Router } from "express";
 import Stripe from "stripe";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
+import { stripePriceId, planFromStripePrice, PLANS } from "../lib/premium.js";
+
+// Single-server tiers sold via the per-server checkout. Agency (multi-server)
+// plans are sold through /api/agency (routes/agency.js).
+const SERVER_PLANS = ["premium", "whitelabel"];
+
+// Agency subscription lookup (mirrors findServerForSubscription).
+async function findAgencyForSub(sub) {
+  const byId = await prisma.agency.findFirst({ where: { stripeSubscriptionId: sub.id } });
+  if (byId) return byId;
+  const agencyId = sub.metadata?.agencyId;
+  return agencyId ? prisma.agency.findUnique({ where: { id: agencyId } }) : null;
+}
+
+// Resolve { plan, interval } for a Stripe subscription/invoice from its price.
+function planFromSubscription(sub) {
+  const priceId = sub?.items?.data?.[0]?.price?.id;
+  return planFromStripePrice(priceId);
+}
+function planFromInvoice(invoice) {
+  const priceId = invoice?.lines?.data?.find((l) => l?.price?.id)?.price?.id;
+  return planFromStripePrice(priceId);
+}
 
 const router = Router();
 
@@ -76,6 +99,15 @@ router.post(
   const { withdrawalConsent } = req.body;
   if (!serverId) return res.status(400).json({ error: "serverId required" });
 
+  // Tier + billing interval (default: Premium monthly). Agency plans are not
+  // sold here — they are account-level (routes/agency.js).
+  const plan = SERVER_PLANS.includes(req.body?.plan) ? req.body.plan : "premium";
+  const interval = req.body?.interval === "year" ? "year" : "month";
+  const priceId = stripePriceId(plan, interval);
+  if (!priceId) {
+    return res.status(503).json({ error: `The ${plan}/${interval} plan is not configured on this server.` });
+  }
+
   // F7 — Право на отказ за дигитална услуга (чл. 16(м) Дир. 2011/83/ЕС; ЗЗП).
   // Достъпът се активира незабавно, затова изискваме ИЗРИЧНО предварително
   // съгласие от потребителя, че губи 14-дневното право на отказ за този период.
@@ -142,11 +174,11 @@ router.post(
         customer: customerId,
         payment_method_types: ["card"],
         mode: "subscription",
-        line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+        line_items: [{ price: priceId, quantity: 1 }],
         subscription_data: {
           // M1 — без trial_period_days, ако trialUsed===true (вече е ползван).
           ...(grantStripeTrial && { trial_period_days: trialDays }),
-          metadata: { serverId },
+          metadata: { serverId, plan, interval },
         },
         // M3 — Stripe Tax: автоматично изчислява ДДС по местоназначение и
         // събира tax ID (reverse charge за B2B в ЕС). Изисква активни Tax
@@ -158,7 +190,7 @@ router.post(
         customer_update: { address: "auto", name: "auto" },
         success_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?upgraded=true`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard/${serverId}?canceled=true`,
-        metadata: { serverId },
+        metadata: { serverId, plan, interval },
       },
       // L1 — Idempotency-Key със стабилен ключ за кратък прозорец: при ретрай на
       // същия POST (timeout/мрежа) Stripe връща СЪЩАТА сесия вместо да създаде
@@ -166,7 +198,7 @@ router.post(
       // Ключираме по serverId + UTC дата, така че опит за нов checkout на
       // следващия ден (напр. след изтекла сесия) пак минава.
       {
-        idempotencyKey: `checkout-${serverId}-${new Date()
+        idempotencyKey: `checkout-${serverId}-${plan}-${interval}-${new Date()
           .toISOString()
           .slice(0, 10)}`,
       }
@@ -256,6 +288,26 @@ router.post("/webhook", requireStripe, async (req, res) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
+
+        // Agency (multi-server) checkout → activate the Agency, not a server.
+        if (session.metadata?.kind === "agency" && session.metadata?.agencyId) {
+          const agencyId = session.metadata.agencyId;
+          const did = await runOnce(async (tx) => {
+            await tx.agency.update({
+              where: { id: agencyId },
+              data: {
+                active: true,
+                stripeSubscriptionId: session.subscription || undefined,
+                stripeStatus: session.subscription ? "active" : "active",
+                billingInterval: session.metadata.interval === "year" ? "year" : "month",
+                pastDueSince: null,
+              },
+            });
+          });
+          if (did) console.log(`✅ Agency ${agencyId} activated`);
+          break;
+        }
+
         const serverId = session.metadata?.serverId;
         if (!serverId) break;
 
@@ -277,11 +329,20 @@ router.post("/webhook", requireStripe, async (req, res) => {
           ? "trialing"  // will be updated by subscription.updated event
           : "active";
 
+        // Tier from checkout metadata (set at session creation). Fallback keeps
+        // legacy single-price sessions working (→ whitelabel, matching the old
+        // €9.99 bundle that included white-label).
+        const plan = SERVER_PLANS.includes(session.metadata?.plan) ? session.metadata.plan : "whitelabel";
+        const interval = session.metadata?.interval === "year" ? "year" : "month";
+
         const did = await runOnce(async (tx) => {
           await tx.server.update({
             where: { id: serverId },
             data: {
               isPremium: true,
+              plan,
+              billingInterval: interval,
+              planSource: "stripe",
               premiumSince: new Date(),
               stripeSubscriptionId: session.subscription,
               stripeStatus: initialStatus,
@@ -314,6 +375,16 @@ router.post("/webhook", requireStripe, async (req, res) => {
       case "invoice.paid": {
         const invoice = event.data.object;
         const customer = invoice.customer;
+
+        // Agency invoice → keep the agency active (recurring payment).
+        const agency = await prisma.agency.findFirst({ where: { stripeCustomerId: String(customer) } });
+        if (agency) {
+          await runOnce(async (tx) => {
+            await tx.agency.update({ where: { id: agency.id }, data: { active: true, stripeStatus: "active", pastDueSince: null } });
+          });
+          break;
+        }
+
         const server = await prisma.server.findFirst({
           where: { stripeCustomerId: String(customer) },
         });
@@ -322,6 +393,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // Целият ефект (payment log + affiliate комисионна) е в ЕДНА транзакция,
         // ключирана по event.id. Така ретрай на invoice.paid НЕ дублира нито
         // payment log-а, нито 20% комисионната за афилиейта.
+        // Reflect the paid tier (a portal plan-change lands here as an invoice).
+        const paidTier = planFromInvoice(invoice);
+
         await runOnce(async (tx) => {
           // B2 — успешно плащане ПРОВИЗИРА достъп: платил клиент не бива да
           // зависи само от checkout.session.completed (може да се загуби или
@@ -335,6 +409,8 @@ router.post("/webhook", requireStripe, async (req, res) => {
               isPremium: true,
               // premiumSince само при първо активиране (пазим оригиналната дата).
               ...(server.premiumSince ? {} : { premiumSince: new Date() }),
+              // Sync the tier if the invoice's price maps to a known plan.
+              ...(paidTier && { plan: paidTier.plan, billingInterval: paidTier.interval, planSource: "stripe" }),
               pastDueSince: null,
             },
           });
@@ -389,6 +465,19 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object;
+
+        // Agency dunning: mark past_due (grace); unpaid/canceled later deactivates.
+        const agency = await prisma.agency.findFirst({ where: { stripeCustomerId: String(invoice.customer) } });
+        if (agency) {
+          await runOnce(async (tx) => {
+            await tx.agency.update({
+              where: { id: agency.id },
+              data: { stripeStatus: "past_due", ...(agency.pastDueSince ? {} : { pastDueSince: new Date() }) },
+            });
+          });
+          break;
+        }
+
         const server = await prisma.server.findFirst({
           where: { stripeCustomerId: String(invoice.customer) },
         });
@@ -422,6 +511,18 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
       case "customer.subscription.deleted": {
         const sub = event.data.object;
+
+        // Agency subscription ended → deactivate; member servers immediately
+        // lose the tier via getServerTier (agency.active=false).
+        const agency = await findAgencyForSub(sub);
+        if (agency) {
+          const did = await runOnce(async (tx) => {
+            await tx.agency.update({ where: { id: agency.id }, data: { active: false, stripeStatus: "canceled", stripeSubscriptionId: null, pastDueSince: null } });
+          });
+          if (did) console.log(`❌ Agency ${agency.id} subscription canceled`);
+          break;
+        }
+
         // B4 — lookup с fallback по sub.metadata.serverId (out-of-order).
         const server = await findServerForSubscription(sub);
         if (!server) break;
@@ -431,6 +532,8 @@ router.post("/webhook", requireStripe, async (req, res) => {
             where: { id: server.id },
             data: {
               isPremium: false,
+              plan: "free",
+              billingInterval: null,
               stripeStatus: "canceled",
               stripeSubscriptionId: null,
               pastDueSince: null, // C3 — приключен абонамент, маркерът отпада.
@@ -444,6 +547,31 @@ router.post("/webhook", requireStripe, async (req, res) => {
 
       case "customer.subscription.updated": {
         const sub = event.data.object;
+
+        // Agency subscription status change (active/past_due/unpaid/canceled).
+        const agencyForSub = await findAgencyForSub(sub);
+        if (agencyForSub) {
+          const onA = ["active", "trialing"].includes(sub.status);
+          const offA = ["unpaid", "incomplete_expired", "canceled", "paused"].includes(sub.status);
+          const tierA = planFromSubscription(sub); // agency5 | agency10
+          await runOnce(async (tx) => {
+            await tx.agency.update({
+              where: { id: agencyForSub.id },
+              data: {
+                ...(agencyForSub.stripeSubscriptionId ? {} : { stripeSubscriptionId: sub.id }),
+                stripeStatus: sub.status,
+                ...(onA && {
+                  active: true, pastDueSince: null,
+                  ...(tierA && PLANS[tierA.plan] && { plan: tierA.plan, seatLimit: PLANS[tierA.plan].maxServers, billingInterval: tierA.interval }),
+                }),
+                ...(offA && { active: false }),
+                ...(sub.status === "past_due" && !agencyForSub.pastDueSince && { pastDueSince: new Date() }),
+              },
+            });
+          });
+          break;
+        }
+
         // B4 — lookup с fallback по sub.metadata.serverId (out-of-order).
         const server = await findServerForSubscription(sub);
         if (!server) break;
@@ -471,6 +599,9 @@ router.post("/webhook", requireStripe, async (req, res) => {
         // unpaid/canceled при определени dunning настройки).
 
         const wasTrialing = server.stripeStatus === "trialing";
+        // Reflect the current tier from the subscription's price (covers portal
+        // upgrades/downgrades between Premium and White-label).
+        const subTier = planFromSubscription(sub);
 
         await runOnce(async (tx) => {
           await tx.server.update({
@@ -485,8 +616,10 @@ router.post("/webhook", requireStripe, async (req, res) => {
                 isPremium: true,
                 premiumSince: new Date(),
               }),
+              // Keep the tier in sync whenever access is on and the price maps.
+              ...(premiumOn && subTier && { plan: subTier.plan, billingInterval: subTier.interval, planSource: "stripe" }),
               // Отнемане на достъп при изчерпани ретраи / изтекъл incomplete.
-              ...(premiumOff && { isPremium: false }),
+              ...(premiumOff && { isPremium: false, plan: "free", billingInterval: null }),
               // C3 — past_due: засичаме началото (само при първи преход).
               ...(sub.status === "past_due" && !server.pastDueSince && {
                 pastDueSince: new Date(),
@@ -519,7 +652,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
           : null;
         if (!server) break;
         await runOnce(async (tx) => {
-          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, stripeStatus: "disputed" } });
+          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "disputed" } });
           await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_DISPUTE", targetId: server.id, metadata: { disputeId: dispute.id } } });
         });
         console.log(`⚠️ Server ${server.id} Premium revoked — chargeback/dispute`);
@@ -537,7 +670,7 @@ router.post("/webhook", requireStripe, async (req, res) => {
           : null;
         if (!server) break;
         await runOnce(async (tx) => {
-          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, stripeStatus: "refunded" } });
+          await tx.server.update({ where: { id: server.id }, data: { isPremium: false, plan: "free", billingInterval: null, stripeStatus: "refunded" } });
           await tx.auditLog.create({ data: { actorTag: "STRIPE", serverId: server.id, action: "PREMIUM_REVOKED_REFUND", targetId: server.id, metadata: { chargeId: charge.id } } });
         });
         console.log(`↩️ Server ${server.id} Premium revoked — full refund`);
@@ -558,7 +691,7 @@ router.get("/status/:serverId", requireAuth, loadUser, requireServerAdmin, requi
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { isPremium: true, premiumSince: true, stripeStatus: true, stripeSubscriptionId: true },
+      select: { isPremium: true, plan: true, billingInterval: true, premiumSince: true, stripeStatus: true, stripeSubscriptionId: true },
     });
 
     if (!server) return res.status(404).json({ error: "Server not found" });
