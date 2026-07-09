@@ -32,11 +32,13 @@ import {
   REFERRAL_MIN_PAYOUT_CENTS,
 } from '@/lib/referral';
 import {
+  ChartColumnIcon,
   CheckIcon,
   ClockIcon,
   DownloadIcon,
   SparklesIcon,
 } from '@/components/icons';
+import Link from 'next/link';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiTranslateAction } from '@/app/actions/ai';
 import {
@@ -937,7 +939,16 @@ export default async function DashboardPage({
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">
-              <h2 className="font-semibold">{t('statsSection')}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-semibold">{t('statsSection')}</h2>
+                <Link
+                  href={`/${locale}/dashboard/analytics`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  <ChartColumnIcon className="h-4 w-4" />
+                  {t('analyticsLink')}
+                </Link>
+              </div>
               <p className="mt-1 text-xs text-slate-500">
                 {plan.analyticsDays
                   ? t('statsWindow', { days: plan.analyticsDays })
