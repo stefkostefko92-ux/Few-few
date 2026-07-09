@@ -27,7 +27,7 @@ stays on your device.
 - **Element picker**, click any element to hide it permanently on that site.
 - **Per-site allowlist**, allow ads on sites you want to support.
 - **Curated built-in filters**, a maintained rule set bundled with the
-  extension; no remote code or network fetches.
+  extension, plus an optional daily data-only filter update. No remote code.
 - **Live stats**, ads blocked, data saved and time saved.
 - **Carbon Stealth theme**, matte carbon dark theme with a light option.
 
@@ -87,13 +87,16 @@ python3 tools/generate_icons.py   # regenerate icons/
   and multiplies by realistic per-type sizes, a blocked request is never
   downloaded, so its true byte size can't be measured (uBlock/AdGuard estimate
   the same way).
-- All blocking rules ship inside the extension as static `declarativeNetRequest`
-  rulesets, there are no remote fetches and no remotely hosted code.
+- Blocking rules ship inside the extension. Additionally, a small `filters.json`
+  is fetched daily (data only: block domains + CSS selectors), so the extension
+  keeps working as sites change without a Web Store re-review. No code is ever
+  fetched or executed remotely. See `server/README.md`.
 
 ## Privacy & license
 
-No data ever leaves your device, see [PRIVACY.md](PRIVACY.md). Released under
-the [MIT License](LICENSE).
+We collect nothing about you; no browsing data ever leaves your device. The
+only network request is the daily data-only filter update (see
+[PRIVACY.md](PRIVACY.md)). Released under the [MIT License](LICENSE).
 
 Made by [Carbon Stealth](https://carbonstealth.eu). Donations (optional):
 <https://revolut.me/vycanismajoris>.

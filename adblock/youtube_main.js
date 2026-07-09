@@ -5,6 +5,26 @@
 (function () {
   "use strict";
 
+  // Extra top-level ad-field names may arrive from the live update as inert
+  // JSON placed in the page by the loader. Read them once (data only).
+  // Never let a config field delete real playback data.
+  const PROTECTED = new Set([
+    "videoDetails", "streamingData", "playerConfig", "playabilityStatus",
+    "captions", "storyboards", "microformat", "trackingParams", "responseContext",
+  ]);
+  let extraFields = [];
+  try {
+    const el = document.getElementById("tbab-yt-cfg");
+    if (el) {
+      const cfg = JSON.parse(el.textContent || "{}");
+      if (Array.isArray(cfg.adFields)) {
+        extraFields = cfg.adFields.filter(
+          (f) => typeof f === "string" && /^[a-zA-Z]+$/.test(f) && !PROTECTED.has(f)
+        );
+      }
+    }
+  } catch {}
+
   function stripAds(obj) {
     if (!obj || typeof obj !== "object") return obj;
 
@@ -13,6 +33,7 @@
     if ("adSlots" in obj) obj.adSlots = [];
     if ("adBreakHeartbeatParams" in obj) delete obj.adBreakHeartbeatParams;
     if (obj.playerConfig?.adConfig) delete obj.playerConfig.adConfig;
+    for (const f of extraFields) if (f in obj) delete obj[f];
 
     if (obj.playerResponse) stripAds(obj.playerResponse);
     if (obj.player?.playerResponse) stripAds(obj.player.playerResponse);

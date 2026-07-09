@@ -6,7 +6,13 @@ const FILTER_COUNT = 248; // bundled static rules (ad_rules + youtube_rules)
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
-const LEGACY_LIST_BASE = 100000; // old imported-filter rules, cleaned up on load
+const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
+
+// Live filter updates: DATA only (domains + CSS selectors), never code.
+// Update this JSON on the server and every install refreshes itself, no
+// Web Store re-review needed. MV3 forbids remote CODE, not remote data.
+const CONFIG_URL = "https://carbonstealth.eu/adblock/filters.json";
+const LIVE_RULE_MAX = 3000;
 
 // never block these from a user filter, even by mistake
 const NEVER_BLOCK = [
@@ -47,6 +53,9 @@ const DEFAULTS = {
   theme: "carbon",
   sync: false,
   pausedUntil: 0,
+  autoUpdate: true,
+  liveConfig: null,
+  liveUpdated: 0,
 };
 
 // Settings mirrored to chrome.storage.sync when cross-device sync is on.
@@ -62,12 +71,17 @@ chrome.runtime.onInstalled.addListener(async () => {
   await applyState();
   await syncAllowRules();
   await syncUserRules();
-  await dropLegacyRules();
   createMenus();
+  chrome.alarms.create("config-update", { periodInMinutes: 720 }); // every 12h
+  fetchLiveConfig();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
-  const { sync, pausedUntil } = await chrome.storage.local.get(["sync", "pausedUntil"]);
+  const { sync, pausedUntil, liveConfig } = await chrome.storage.local.get([
+    "sync",
+    "pausedUntil",
+    "liveConfig",
+  ]);
   if (sync) await pullFromSync();
   // Restore or expire a pending pause.
   if (pausedUntil && pausedUntil > Date.now()) {
@@ -78,8 +92,9 @@ chrome.runtime.onStartup.addListener(async () => {
   await applyState();
   await syncAllowRules();
   await syncUserRules();
-  await dropLegacyRules();
+  await syncLiveRules(liveConfig?.blockDomains || []); // re-apply + clear stale
   createMenus();
+  chrome.alarms.create("config-update", { periodInMinutes: 720 });
 });
 
 // right-click entry that fires the element picker
@@ -165,6 +180,7 @@ async function resumeNow() {
 
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
+  if (a.name === "config-update") fetchLiveConfig();
 });
 
 chrome.contextMenus?.onClicked.addListener((info, tab) => {
@@ -196,16 +212,89 @@ async function applyState() {
   chrome.action.setBadgeBackgroundColor({ color: on ? "#00838f" : "#5a5a5a" });
 }
 
-// Remove any leftover dynamic rules from the old runtime filter import. These
-// used to persist even when protection was toggled off and could break sites.
-async function dropLegacyRules() {
+// ---- Live filter update (remote DATA, never code) ----
+const strArr = (x, cap) =>
+  Array.isArray(x)
+    ? x.filter((s) => typeof s === "string" && s.length < 400).slice(0, cap)
+    : [];
+
+// Selectors too broad to ever be a legitimate ad rule; rejecting them stops a
+// compromised/mistyped config from hiding whole pages.
+const UNSAFE_SELECTORS = new Set([
+  "*", "html", "body", ":root", "head", "div", "span", "a", "img",
+  "main", "section", "article", "video", "iframe",
+]);
+const safeSelector = (s) => {
+  s = s.trim();
+  return s.length >= 3 && !UNSAFE_SELECTORS.has(s.toLowerCase());
+};
+const selArr = (x, cap) => strArr(x, cap).filter(safeSelector);
+
+// Player-response fields the config must never be able to delete (would break
+// playback), so ad-field pruning can only touch genuine ad fields.
+const PROTECTED_YT_FIELDS = new Set([
+  "videoDetails", "streamingData", "playerConfig", "playabilityStatus",
+  "captions", "storyboards", "microformat", "trackingParams", "responseContext",
+]);
+
+// Reduce the fetched JSON to a strict, known shape. Everything is treated as
+// inert data (domain strings, CSS selectors); nothing is ever executed.
+function sanitizeConfig(cfg) {
+  const yt = cfg && typeof cfg.youtube === "object" ? cfg.youtube : {};
+  return {
+    version: Number.isFinite(cfg?.version) ? cfg.version : 0,
+    blockDomains: strArr(cfg?.blockDomains, LIVE_RULE_MAX)
+      .map((d) => d.toLowerCase().replace(/^\|\|/, "").replace(/[\^/].*$/, ""))
+      .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d) && !isProtected(d)),
+    cosmetic: selArr(cfg?.cosmetic, 2000),
+    youtube: {
+      hide: selArr(yt.hide, 300),
+      skip: selArr(yt.skip, 100),
+      enforcement: selArr(yt.enforcement, 50),
+      adFields: strArr(yt.adFields, 50).filter(
+        (f) => /^[a-zA-Z]+$/.test(f) && !PROTECTED_YT_FIELDS.has(f)
+      ),
+    },
+  };
+}
+
+async function syncLiveRules(domains = []) {
+  const existing = await chrome.declarativeNetRequest.getDynamicRules();
+  const removeRuleIds = existing.filter((r) => r.id >= LIVE_RULE_BASE).map((r) => r.id);
+  const addRules = domains.slice(0, LIVE_RULE_MAX).map((d, i) => ({
+    id: LIVE_RULE_BASE + i,
+    priority: 1,
+    action: { type: "block" },
+    condition: {
+      urlFilter: "||" + d + "^",
+      resourceTypes: [
+        "script", "image", "sub_frame", "xmlhttprequest",
+        "media", "ping", "font", "stylesheet", "object",
+      ],
+    },
+  }));
   try {
-    const rules = await chrome.declarativeNetRequest.getDynamicRules();
-    const ids = rules.filter((r) => r.id >= LEGACY_LIST_BASE).map((r) => r.id);
-    if (ids.length) {
-      await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: ids });
-    }
-  } catch (e) {}
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
+  } catch (e) {
+    console.warn("live rules failed", e);
+  }
+}
+
+async function fetchLiveConfig(force) {
+  const { autoUpdate } = await chrome.storage.local.get("autoUpdate");
+  if (!force && autoUpdate === false) return { ok: false, reason: "off" };
+  let raw;
+  try {
+    const res = await fetch(CONFIG_URL, { cache: "no-cache" });
+    if (!res.ok) return { ok: false, reason: "http " + res.status };
+    raw = await res.json();
+  } catch (e) {
+    return { ok: false, reason: "network" };
+  }
+  const cfg = sanitizeConfig(raw);
+  await chrome.storage.local.set({ liveConfig: cfg, liveUpdated: Date.now() });
+  await syncLiveRules(cfg.blockDomains);
+  return { ok: true, version: cfg.version, domains: cfg.blockDomains.length };
 }
 
 // Rebuild the allowlist rules (one allowAllRequests rule per whitelisted host).
@@ -213,7 +302,7 @@ async function syncAllowRules() {
   const { allowlist = [] } = await chrome.storage.local.get("allowlist");
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeRuleIds = existing
-    .filter((r) => r.id >= ALLOW_RULE_BASE && r.id < LEGACY_LIST_BASE)
+    .filter((r) => r.id >= ALLOW_RULE_BASE && r.id < LIVE_RULE_BASE)
     .map((r) => r.id);
 
   const addRules = allowlist.map((domain, i) => ({
@@ -411,7 +500,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -420,6 +509,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             allowed = await isAllowlisted(host);
           }
           const blockedTotal = data.blockedTotal || 0;
+          const live = data.liveConfig || null;
           sendResponse({
             enabled: data.enabled !== false,
             blockedTotal,
@@ -427,15 +517,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             allowlist: data.allowlist || [],
             features: data.features || DEFAULTS.features,
             theme: data.theme || "carbon",
-            filterCount: FILTER_COUNT,
+            filterCount: FILTER_COUNT + (live?.blockDomains?.length || 0),
             smartBlocked: data.smartBlocked || 0,
             sync: !!data.sync,
             pausedUntil: data.pausedUntil || 0,
+            autoUpdate: data.autoUpdate !== false,
+            liveVersion: live?.version || 0,
+            liveUpdated: data.liveUpdated || 0,
             host,
             allowed,
           });
         }
       );
+      return true;
+
+    case "updateFilters":
+      fetchLiveConfig(true).then((r) => sendResponse(r));
+      return true;
+
+    case "setAutoUpdate":
+      chrome.storage.local.set({ autoUpdate: !!msg.on }, () => sendResponse({ ok: true }));
       return true;
 
     case "setAllow":

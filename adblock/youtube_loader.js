@@ -15,6 +15,19 @@
   } catch {}
   if (bypass) return;
 
+  // Hand extra ad-field names from the live update to youtube_main as inert
+  // JSON (data, not code) via a <script type="application/json"> element.
+  function passConfig(adFields) {
+    if (!Array.isArray(adFields) || !adFields.length) return;
+    try {
+      const tag = document.createElement("script");
+      tag.type = "application/json";
+      tag.id = "tbab-yt-cfg";
+      tag.textContent = JSON.stringify({ adFields: adFields.slice(0, 50) });
+      (document.head || document.documentElement).appendChild(tag);
+    } catch {}
+  }
+
   function inject() {
     const s = document.createElement("script");
     s.src = chrome.runtime.getURL("youtube_main.js");
@@ -22,10 +35,13 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
-  chrome.storage?.local.get(["enabled", "features", "allowlist"], (data) => {
+  chrome.storage?.local.get(["enabled", "features", "allowlist", "liveConfig"], (data) => {
     const on = data.enabled !== false;
     const ytOn = (data.features || {}).youtube !== false;
     const allowed = (data.allowlist || []).some(hostMatches);
-    if (on && ytOn && !allowed) inject();
+    if (on && ytOn && !allowed) {
+      passConfig(data.liveConfig && data.liveConfig.youtube && data.liveConfig.youtube.adFields);
+      inject();
+    }
   });
 })();

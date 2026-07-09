@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "updated": "2026-07-04",
+  "blockDomains": [],
+  "cosmetic": [],
+  "youtube": {
+    "hide": [],
+    "skip": [],
+    "enforcement": [],
+    "adFields": []
+  }
+}

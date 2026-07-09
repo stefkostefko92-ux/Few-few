@@ -25,14 +25,21 @@ removing the extension.
 
 ## Network requests we make
 
-The extension makes no network requests of its own. Its blocking rules ship
-inside the extension and run entirely on your device.
+One, and only for filter updates. About once a day the extension downloads a
+small filter file (`filters.json`) from carbonstealth.eu so blocking stays
+current as ad networks and sites change. This request contains **no information
+about you** — no identifiers, no browsing data, nothing. It is a plain GET of a
+public file, and the file is treated purely as data (block rules and CSS
+selectors); no downloaded code is ever executed. You can turn auto-update off in
+the settings; the extension still works with its bundled rules.
 
 ## Permissions
 
 - `declarativeNetRequest`, block ad/tracker network requests via rules.
 - `storage`, save your settings locally.
 - `tabs`, show the per-tab blocked count and the current site in the popup.
+- `alarms`, schedule the daily filter update and the temporary-pause timer.
+- `contextMenus`, the right-click "Block an element here" entry.
 - host access (`<all_urls>`), apply blocking and cosmetic filtering on the
   pages you visit. Page content is processed locally and never sent anywhere.
 

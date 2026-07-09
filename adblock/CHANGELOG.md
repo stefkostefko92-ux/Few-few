@@ -1,5 +1,29 @@
 # Changelog
 
+## 3.8.1
+
+- Review fixes (Хромаджията + Кодаджията):
+  - Drop the generic `.ytp-error` from YouTube enforcement detection; it fired
+    on any unavailable/errored video and wrongly disabled ad removal for the
+    tab. Renamed dialogs are handled via the updatable enforcement list.
+  - Validate live-config selectors (reject page-wide ones like `*`/`body`) and
+    protect core player fields from ad-field pruning, so a compromised update
+    can't break sites or playback.
+  - Correct the docs/invariants that still said "no network requests".
+
+## 3.8.0
+
+- Live filter updates (data only, no code): the extension fetches a small
+  `filters.json` from carbonstealth.eu daily and applies it as extra block
+  domains and CSS selectors. This means new ad networks and YouTube DOM changes
+  can be fixed server-side without a Web Store re-review. Toggle + "Update now"
+  in settings; disclosed in the privacy policy. Sanitised strictly (strings
+  only, core domains never blockable, nothing executed).
+- YouTube enforcement/black-screen detection is now driven by an updatable
+  selector list (plus the player error state), so when YouTube renames the
+  "ad blocker detected" dialog we can restore the reload-and-play fallback via
+  the live update instead of a new release.
+
 ## 3.7.1
 
 - Anti-adblock: only reset the page's scroll/position after an actual wall is

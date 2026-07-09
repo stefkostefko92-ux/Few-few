@@ -38,6 +38,8 @@ function load() {
     $("featYoutube").checked = res.features.youtube !== false;
     $("featSmart").checked = res.features.smart !== false;
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString();
+    $("autoUpdate").checked = res.autoUpdate !== false;
+    renderUpdateStatus(res.liveVersion || 0, res.liveUpdated || 0);
     renderAllowlist(res.allowlist || []);
   });
 
@@ -46,6 +48,11 @@ function load() {
     $("userFilters").value = data.userFilters || "";
     renderSmartLog(data.smartLog || []);
   });
+}
+
+function renderUpdateStatus(version, updated) {
+  if (!updated) return;
+  $("updateStatus").textContent = `Filter set v${version}, updated ${ago(updated)}. Data only, nothing about you is sent.`;
 }
 
 function ago(ts) {
@@ -169,6 +176,24 @@ $("featAab").addEventListener("change", saveFeatures);
 $("featMeta").addEventListener("change", saveFeatures);
 $("featYoutube").addEventListener("change", saveFeatures);
 $("featSmart").addEventListener("change", saveFeatures);
+
+$("autoUpdate").addEventListener("change", () =>
+  chrome.runtime.sendMessage({ type: "setAutoUpdate", on: $("autoUpdate").checked })
+);
+
+$("updateNow").addEventListener("click", () => {
+  const hint = $("updateHint");
+  hint.textContent = "Updating…";
+  chrome.runtime.sendMessage({ type: "updateFilters" }, (r) => {
+    if (r && r.ok) {
+      hint.textContent = `Updated (v${r.version}, ${r.domains} extra rules)`;
+      load();
+    } else {
+      hint.textContent = "Update failed (" + ((r && r.reason) || "no response") + ")";
+    }
+    setTimeout(() => (hint.textContent = ""), 4000);
+  });
+});
 
 $("allowAdd").addEventListener("click", () => {
   const domain = normalizeDomain($("allowInput").value);

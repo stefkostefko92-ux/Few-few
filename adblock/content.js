@@ -193,13 +193,14 @@
     }
   }
 
-  // Cosmetic selectors come from the picker (customHidden) and the user's
-  // "My filters" cosmetic lines (`##selector` or `domain##selector`).
+  // Cosmetic selectors come from the picker (customHidden), the user's
+  // "My filters" cosmetic lines, and the live filter update (liveConfig).
   let pickerMap = {};
   let userText = "";
+  let liveCosmetic = [];
 
   function rebuildSelectors() {
-    customSelectors = [];
+    customSelectors = liveCosmetic.slice();
     for (const [domain, sels] of Object.entries(pickerMap || {})) {
       if (hostMatches(domain)) customSelectors = customSelectors.concat(sels);
     }
@@ -214,13 +215,14 @@
   }
 
   chrome.storage?.local.get(
-    ["enabled", "allowlist", "customHidden", "userFilters", "features"],
+    ["enabled", "allowlist", "customHidden", "userFilters", "features", "liveConfig"],
     (data) => {
       enabled = data.enabled !== false;
       smartEnabled = (data.features || {}).smart !== false;
       const allowed = (data.allowlist || []).some(hostMatches);
       pickerMap = data.customHidden || {};
       userText = data.userFilters || "";
+      liveCosmetic = (data.liveConfig && data.liveConfig.cosmetic) || [];
       rebuildSelectors();
       if (enabled && !allowed) start();
     }
@@ -238,9 +240,11 @@
       smartEnabled = (changes.features.newValue || {}).smart !== false;
       if (enabled && smartEnabled) smartScan();
     }
-    if (changes.customHidden || changes.userFilters) {
+    if (changes.customHidden || changes.userFilters || changes.liveConfig) {
       if (changes.customHidden) pickerMap = changes.customHidden.newValue || {};
       if (changes.userFilters) userText = changes.userFilters.newValue || "";
+      if (changes.liveConfig)
+        liveCosmetic = (changes.liveConfig.newValue && changes.liveConfig.newValue.cosmetic) || [];
       rebuildSelectors();
       if (enabled) hide();
     }
