@@ -74,6 +74,47 @@ A5_M=${AGENCY5%|*};        A5_Y=${AGENCY5#*|}
 A10_M=${AGENCY10%|*};      A10_Y=${AGENCY10#*|}
 echo "  ✓ Тарифите са готови (цените са с включен ДДС)."
 
+# ─── 1б. Customer Portal конфигурация (plan switch Premium↔White-label) ──────
+# Без изрична конфигурация порталът по подразбиране позволява само отказ/карта —
+# смяна на план е ИЗКЛЮЧЕНА, т.е. съществуващ абонат няма път за upgrade.
+# Създаваме конфигурация със subscription_update за 4-те продукта и я подаваме
+# от backend-а (STRIPE_PORTAL_CONFIGURATION_ID) при създаване на portal сесия.
+PORTAL_MARKER="supreme_v3_portal"
+PORTAL_ID=$(curl -sS "${AUTH[@]}" "$API/billing_portal/configurations?limit=100" \
+  | grep -B2 "\"marker\": *\"$PORTAL_MARKER\"" | grep -o '"id": *"bpc_[^"]*"' | head -1 | sed 's/.*"\(bpc_[^"]*\)"/\1/')
+if [ -z "$PORTAL_ID" ]; then
+  echo "→ Създавам Customer Portal конфигурация (plan switch)..."
+  PREM_PROD=$(product_of_price "$PREM_M"); WL_PROD=$(product_of_price "$WL_M")
+  A5_PROD=$(product_of_price "$A5_M");     A10_PROD=$(product_of_price "$A10_M")
+  PORTAL_ID=$(curl -sS "${AUTH[@]}" "$API/billing_portal/configurations" \
+    -d "business_profile[headline]=Supreme Bot — manage your subscription" \
+    -d "features[invoice_history][enabled]=true" \
+    -d "features[payment_method_update][enabled]=true" \
+    -d "features[subscription_cancel][enabled]=true" \
+    -d "features[subscription_cancel][mode]=at_period_end" \
+    -d "features[subscription_update][enabled]=true" \
+    -d "features[subscription_update][default_allowed_updates][]=price" \
+    -d "features[subscription_update][proration_behavior]=create_prorations" \
+    -d "features[subscription_update][products][0][product]=$PREM_PROD" \
+    -d "features[subscription_update][products][0][prices][]=$PREM_M" \
+    -d "features[subscription_update][products][0][prices][]=$PREM_Y" \
+    -d "features[subscription_update][products][1][product]=$WL_PROD" \
+    -d "features[subscription_update][products][1][prices][]=$WL_M" \
+    -d "features[subscription_update][products][1][prices][]=$WL_Y" \
+    -d "features[subscription_update][products][2][product]=$A5_PROD" \
+    -d "features[subscription_update][products][2][prices][]=$A5_M" \
+    -d "features[subscription_update][products][2][prices][]=$A5_Y" \
+    -d "features[subscription_update][products][3][product]=$A10_PROD" \
+    -d "features[subscription_update][products][3][prices][]=$A10_M" \
+    -d "features[subscription_update][products][3][prices][]=$A10_Y" \
+    -d "metadata[marker]=$PORTAL_MARKER" \
+    | jq_id bpc)
+  [ -n "$PORTAL_ID" ] && echo "  ✓ Portal конфигурация: $PORTAL_ID" \
+    || echo "  ⚠ Portal конфигурацията не се създаде — smяната на план ще иска ръчна настройка (Dashboard → Settings → Billing → Customer portal)."
+else
+  echo "  ✓ Portal конфигурацията вече съществува: $PORTAL_ID"
+fi
+
 # ─── 2. Webhook endpoint (7-те събития, които backend-ът обработва) ──────────
 WH_URL="${DOMAIN}/api/stripe/webhook"
 EXISTING_WH=$(curl -sS "${AUTH[@]}" "$API/webhook_endpoints?limit=100" | grep -c "\"url\": *\"$WH_URL\"" || true)
@@ -120,6 +161,7 @@ echo "  STRIPE_PRICE_AGENCY5_MONTH=${A5_M}"
 echo "  STRIPE_PRICE_AGENCY5_YEAR=${A5_Y}"
 echo "  STRIPE_PRICE_AGENCY10_MONTH=${A10_M}"
 echo "  STRIPE_PRICE_AGENCY10_YEAR=${A10_Y}"
+echo "  STRIPE_PORTAL_CONFIGURATION_ID=${PORTAL_ID:-<виж Dashboard>}"
 echo ""
 echo "Ръчно остава само: Dashboard → Settings → Tax → потвърди origin address"
 echo "(ul. Samuil 3, 2670 Bobov dol, BG), и при >€10k/год. трансгранични B2C — OSS."

@@ -85,15 +85,19 @@ export default function TermsPage() {
         <p><strong>5.1 Free Tier.</strong> The Service is available without charge subject to the
         feature limitations described on the Pricing page. No credit card is required for the Free Tier.</p>
 
-        <p><strong>5.2 Premium Subscription.</strong> Premium features are available via a recurring
-        monthly subscription. By subscribing, you:</p>
+        <p><strong>5.2 Paid Subscriptions.</strong> Paid features are available via recurring
+        subscriptions in the following tiers (prices in EUR, VAT included where applicable):
+        Premium (€9.99/server/month or €99/year), White-label (€19.99/server/month or €199/year),
+        Agency 5 (€39.99/month or €399/year, up to 5 servers) and Agency 10 (€79.99/month or
+        €799/year, up to 10 servers). Billing is monthly or annual, as selected at checkout.
+        By subscribing, you:</p>
         <ul>
-          <li>Authorise us and our payment processor (Stripe, Inc.) to charge your designated payment method on a recurring monthly basis;</li>
+          <li>Authorise us and our payment processor (Stripe, Inc.) to charge your designated payment method on a recurring basis for the selected billing period; purchases made through Discord's Premium App checkout are processed by Discord Inc. as merchant of record;</li>
           <li>Acknowledge that billing will continue until you cancel;</li>
           <li>Accept that prices may change with at least 30 days' prior notice.</li>
         </ul>
 
-        <p><strong>5.3 Free Trial.</strong> New Premium subscriptions may include a 14-day free
+        <p><strong>5.3 Free Trial.</strong> New Premium and White-label subscriptions may include a 14-day free
         trial. You will not be charged during the trial period. If you cancel before the trial
         ends, you will not be charged. If you do not cancel, your subscription will automatically
         convert to a paid subscription at the end of the trial period and your payment method
@@ -128,8 +132,9 @@ export default function TermsPage() {
         </p>
         <p>
           <strong>Right of withdrawal (EU/EEA consumers).</strong> If you are a consumer in the
-          EU/EEA you have a 14-day right of withdrawal for the Premium subscription under Directive
-          2011/83/EU. Because Premium is a digital <em>service</em> (not one-off digital content),
+          EU/EEA you have a 14-day right of withdrawal for any paid subscription (Premium,
+          White-label, or Agency) under Directive 2011/83/EU. Because each paid tier is a digital{" "}
+          <em>service</em> (not one-off digital content),
           Article 16(a) applies: the right is lost only once the service has been{" "}
           <strong>fully performed</strong>, and only if, before it begins, you (i) gave your{" "}
           <strong>express prior consent</strong> to start immediately and (ii) acknowledged that

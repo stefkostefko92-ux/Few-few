@@ -18,7 +18,14 @@ Supreme Bot се продава на **тарифи (tiers)**, обезпече�
 - Цените са в **EUR, с включен ДДС** (`tax_behavior=inclusive`); Stripe Tax
   начислява 20% BG ДДС по местоназначение.
 - **Годишно = ~2 месеца безплатно.**
-- **14-дневен пробен период** (без карта) дава **Premium** tier (не white-label).
+- **Пробни периоди (уточнение):** локалният 14-дневен trial (без карта) дава
+  **Premium** tier. Отделно Stripe checkout-ът дава 14-дневен Stripe trial за
+  **избрания план** (Premium ИЛИ White-label), ако сървърът не е ползвал trial
+  (`trialUsed`). Agency планове нямат trial.
+- **Отчетност:** плащанията по Agency абонаменти НЕ влизат в `PaymentLog`
+  (моделът е per-server) и не носят афилиейт комисионна — agency приходите се
+  четат директно от Stripe Dashboard/Sigma. Съзнателно решение; ако потрябва
+  вътрешна отчетност, добави отделен `AgencyPaymentLog`.
 - Само `integrations.whiteLabel` изисква White-label/Agency; всяка друга премиум
   функция изисква Premium или по-горе (виж `PREMIUM_FEATURES` в `lib/premium.js`).
 

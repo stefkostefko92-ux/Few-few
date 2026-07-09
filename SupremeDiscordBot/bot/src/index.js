@@ -658,6 +658,12 @@ client.once(Events.ClientReady, async () => {
   // After main client is ready, boot white-label clients for Premium servers
   // (Events.ClientReady — forward-compatible за discord.js v15).
   await bootAllCustomClients(client);
+
+  // Native monetization: reconcile the FULL active entitlement list against the
+  // backend. Discord never redelivers entitlement gateway events, so this sweep
+  // is what catches grants/expiries missed while the bot was offline.
+  const { runEntitlementReconcile } = await import("./utils/entitlementReconcile.js");
+  await runEntitlementReconcile(client);
 });
 
 // Graceful shutdown — destroy white-label sessions and the main client so

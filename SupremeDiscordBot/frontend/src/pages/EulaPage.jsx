@@ -41,7 +41,7 @@ export default function EulaPage() {
           <li><strong className="text-cs-text">"Premium Features"</strong> means features accessible only to Licensees with an active Premium subscription, as described in Section 7.</li>
           <li><strong className="text-cs-text">"Subscription Term"</strong> means the period during which you have an active, paid Premium subscription.</li>
           <li><strong className="text-cs-text">"Free Tier"</strong> means the no-cost access to the Service subject to the limitations described in Section 6.</li>
-          <li><strong className="text-cs-text">"White-label Bot"</strong> means the Premium feature permitting a Licensee to operate the bot under a custom Discord application token, name, and avatar.</li>
+          <li><strong className="text-cs-text">"White-label Bot"</strong> means the White-label-tier (or Agency-tier) feature permitting a Licensee to operate the bot under a custom Discord application token, name, and avatar.</li>
           <li><strong className="text-cs-text">"API"</strong> means the application programming interface exposed by the backend service at port 3000.</li>
           <li><strong className="text-cs-text">"Effective Date"</strong> means the date on which you first authenticate via Discord OAuth2 or begin using the Service, whichever is earlier.</li>
         </ul>
@@ -201,32 +201,47 @@ export default function EulaPage() {
         </p>
       </S>
 
-      <S title="7. Premium Subscription — Rights and Restrictions">
+      <S title="7. Paid Subscriptions — Rights and Restrictions">
         <p>
-          <strong className="text-cs-text">7.1 Premium Features.</strong>{" "}
-          An active Premium subscription unlocks the following features, in addition to all Free
-          Tier features with the applicable limits removed:
+          <strong className="text-cs-text">7.1 Paid Tiers.</strong>{" "}
+          The Service offers the following paid tiers (prices in EUR, VAT included where
+          applicable; annual billing available at approximately two months' discount):
         </p>
         <ul>
-          <li>Unlimited panels, forms, and questions;</li>
-          <li>HTML ticket transcripts retained indefinitely (no 30-day deletion);</li>
-          <li>PDF export of individual ticket transcripts (via pdfkit);</li>
-          <li>CSV export of all tickets and applications;</li>
-          <li>AI auto-replies on new tickets (requires platform Anthropic API key configuration);</li>
-          <li>Round-Robin automatic ticket assignment across a configured Discord role;</li>
-          <li>White-label bot (custom token, name, avatar — subject to Section 8).</li>
+          <li>
+            <strong className="text-cs-text">Premium</strong> (€9.99/server/month or €99/year) —
+            in addition to all Free Tier features with the applicable limits removed: up to 50
+            panels, forms, and questions per form; HTML ticket transcripts retained indefinitely
+            (no 30-day deletion); PDF export of individual ticket transcripts; CSV export of all
+            tickets and applications; AI auto-replies on new tickets; Round-Robin automatic
+            ticket assignment; webhook integrations and the public REST API.
+          </li>
+          <li>
+            <strong className="text-cs-text">White-label</strong> (€19.99/server/month or
+            €199/year) — everything in Premium plus the White-label Bot (custom token, name,
+            avatar — subject to Section 8).
+          </li>
+          <li>
+            <strong className="text-cs-text">Agency 5 / Agency 10</strong> (€39.99/month or
+            €399/year for up to 5 servers; €79.99/month or €799/year for up to 10 servers) —
+            one subscription granting the White-label tier to the covered servers, assigned and
+            removed by the subscription owner up to the seat limit.
+          </li>
         </ul>
         <p>
           <strong className="text-cs-text">7.2 Subscription Term and Renewal.</strong>{" "}
-          Premium subscriptions are billed monthly per Discord server. Subscriptions auto-renew
-          at the end of each billing period unless cancelled. The Licensor uses Stripe, Inc. as
-          its payment processor.
+          Premium and White-label subscriptions are billed per Discord server; Agency
+          subscriptions are billed per account and cover multiple servers. Billing is monthly or
+          annual, as selected at checkout. Subscriptions auto-renew at the end of each billing
+          period unless cancelled. The Licensor uses Stripe, Inc. as its payment processor;
+          subscriptions may alternatively be purchased through Discord's own Premium App checkout,
+          in which case Discord Inc. acts as merchant of record for that purchase.
         </p>
         <p>
           <strong className="text-cs-text">7.3 Free Trial.</strong>{" "}
           New Premium subscriptions may begin with a 14-day free trial period. During the trial,
           all Premium Features are accessible. No charge is made during the trial. If the trial
-          is not cancelled before it ends, a monthly charge commences automatically.
+          is not cancelled before it ends, the charge for the selected billing period (monthly or annual) commences automatically.
         </p>
         <p>
           <strong className="text-cs-text">7.4 Price Changes.</strong>{" "}
@@ -256,7 +271,7 @@ export default function EulaPage() {
 
       <S title="8. White-Label Bot — Special Terms">
         <p>
-          The White-label Bot feature permits Premium Licensees to operate the Service's bot
+          The White-label Bot feature permits Licensees on the White-label or Agency tier to operate the Service's bot
           functionality under a custom Discord application. The following special terms apply:
         </p>
         <p>
@@ -282,7 +297,7 @@ export default function EulaPage() {
         </p>
         <p>
           <strong className="text-cs-text">8.4 Termination.</strong>{" "}
-          Upon termination of your Premium subscription, the White-label Bot will be automatically
+          Upon termination of your White-label or Agency subscription, the White-label Bot will be automatically
           shut down. The Licensor will destroy any stored copy of your bot token within 30 days.
         </p>
         <p>

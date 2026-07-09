@@ -67,6 +67,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Просто. На сървър.",
     pricingSub: "Плащате само за това, което ползвате. Надградете по всяко време.",
     pricingToggle: { monthly: "Месечно", annual: "Годишно", annualBadge: "2 месеца безплатно" },
+    priceNote: "Всички цени са в евро с включен ДДС · на сървър, освен ако не е посочено друго · Абонаментът се подновява автоматично до отказ.",
     tiers: {
       free: { name: "Безплатен", price: "0 €", per: "/ месец, завинаги", tagline: "Пуснете истински поток за тикети и кандидатури още днес. 0 €, завинаги.", bullets: ["1 тикет панел", "2 форми (по 5 въпроса)", "1 верификационен панел", "Неограничени анкети и раздавания", "Постоянни архиви (30 дни съхранение)"], cta: "Започнете безплатно" },
       premium: { name: "Premium", badge: "Препоръчан", trial: "14 дни безплатно, без карта", price: "9,99 €", per: "/месец", priceYearly: "99 €", perYear: "/година", tagline: "За сървъри, където поддръжката е работа, не занимание между другото.", bullets: ["50 панела · 50 форми · 50 въпроса", "Математическа captcha + изискване за възраст", "Поемане · ескалация · round-robin", "Закачени + планирани + повтарящи се съобщения", "Раздавания, анкети и анализи", "AI отговори (Claude)", "Webhooks (HMAC) + публичен REST API", "Неограничено съхранение на архиви"], cta: "Започнете 14-дневния пробен период" },
@@ -142,6 +143,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Einfach. Pro Server.",
     pricingSub: "Zahle nur, was du brauchst. Jederzeit upgraden.",
     pricingToggle: { monthly: "Monatlich", annual: "Jährlich", annualBadge: "2 Monate gratis" },
+    priceNote: "Alle Preise in EUR inkl. MwSt. · pro Server, sofern nicht anders angegeben · Das Abonnement verlängert sich automatisch bis zur Kündigung.",
     tiers: {
       free: { name: "Free", price: "0 €", per: "/ Monat, für immer", tagline: "Bring heute einen echten Ticket- und Bewerbungs-Flow live. 0 €, für immer.", bullets: ["1 Ticket-Panel", "2 Formulare (je 5 Fragen)", "1 Verifizierungs-Panel", "Unbegrenzte Umfragen & Gewinnspiele", "Dauerhafte Transkripte (30 Tage Aufbewahrung)"], cta: "Kostenlos starten" },
       premium: { name: "Premium", badge: "Empfohlen", trial: "14 Tage gratis, ohne Karte", price: "9,99 €", per: "/Monat", priceYearly: "99 €", perYear: "/Jahr", tagline: "Für Server, auf denen Support ein Job ist, keine Nebensache.", bullets: ["50 Panels · 50 Formulare · 50 Fragen", "Mathe-Captcha + Kontoalter-Prüfung", "Claim · Eskalation · Round-Robin", "Sticky- + geplante + wiederkehrende Nachrichten", "Gewinnspiele, Umfragen & Analytics", "KI-Antworten (Claude)", "Webhooks (HMAC) + öffentliche REST-API", "Unbegrenzte Transkript-Aufbewahrung"], cta: "14-Tage-Test starten" },
@@ -217,6 +219,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Simple. Por servidor.",
     pricingSub: "Paga solo por lo que necesitas. Mejora cuando quieras.",
     pricingToggle: { monthly: "Mensual", annual: "Anual", annualBadge: "2 meses gratis" },
+    priceNote: "Todos los precios en EUR con IVA incluido · por servidor, salvo indicación contraria · La suscripción se renueva automáticamente hasta su cancelación.",
     tiers: {
       free: { name: "Gratis", price: "0 €", per: "/ mes, para siempre", tagline: "Pon en marcha hoy un flujo real de tickets y solicitudes. 0 €, para siempre.", bullets: ["1 panel de tickets", "2 formularios (5 preguntas cada uno)", "1 panel de verificación", "Encuestas y sorteos ilimitados", "Transcripciones persistentes (retención de 30 días)"], cta: "Empieza gratis" },
       premium: { name: "Premium", badge: "Recomendado", trial: "14 días gratis, sin tarjeta", price: "9,99 €", per: "/mes", priceYearly: "99 €", perYear: "/año", tagline: "Para servidores donde el soporte es un trabajo, no una tarea secundaria.", bullets: ["50 paneles · 50 formularios · 50 preguntas", "Captcha matemático + antigüedad de cuenta", "Reclamar · escalar · round-robin", "Mensajes fijados + programados + recurrentes", "Sorteos, encuestas y analíticas", "Respuestas IA (Claude)", "Webhooks (HMAC) + API REST pública", "Retención ilimitada de transcripciones"], cta: "Iniciar prueba de 14 días" },
@@ -292,6 +295,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Simple. Par serveur.",
     pricingSub: "Ne payez que ce dont vous avez besoin. Évoluez à tout moment.",
     pricingToggle: { monthly: "Mensuel", annual: "Annuel", annualBadge: "2 mois offerts" },
+    priceNote: "Tous les prix en EUR, TVA incluse · par serveur, sauf indication contraire · L'abonnement se renouvelle automatiquement jusqu'à résiliation.",
     tiers: {
       free: { name: "Gratuit", price: "0 €", per: "/ mois, pour toujours", tagline: "Lancez dès aujourd'hui un vrai flux de tickets et de candidatures. 0 €, pour toujours.", bullets: ["1 panneau de tickets", "2 formulaires (5 questions chacun)", "1 panneau de vérification", "Sondages et concours illimités", "Transcriptions persistantes (conservées 30 jours)"], cta: "Commencer gratuitement" },
       premium: { name: "Premium", badge: "Recommandé", trial: "14 jours gratuits, sans carte", price: "9,99 €", per: "/mois", priceYearly: "99 €", perYear: "/an", tagline: "Pour les serveurs où le support est un métier, pas une tâche secondaire.", bullets: ["50 panneaux · 50 formulaires · 50 questions", "Captcha mathématique + ancienneté de compte", "Prise en charge · escalade · round-robin", "Messages épinglés + programmés + récurrents", "Concours, sondages et analytics", "Réponses IA (Claude)", "Webhooks (HMAC) + API REST publique", "Transcriptions conservées sans limite"], cta: "Démarrer l'essai de 14 jours" },
@@ -367,6 +371,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Semplice. Per server.",
     pricingSub: "Paghi solo ciò che ti serve. Fai l'upgrade quando vuoi.",
     pricingToggle: { monthly: "Mensile", annual: "Annuale", annualBadge: "2 mesi gratis" },
+    priceNote: "Tutti i prezzi in EUR, IVA inclusa · per server, salvo diversa indicazione · L'abbonamento si rinnova automaticamente fino alla disdetta.",
     tiers: {
       free: { name: "Gratuito", price: "0 €", per: "/ mese, per sempre", tagline: "Attiva oggi stesso un vero flusso di ticket e candidature. 0 €, per sempre.", bullets: ["1 pannello ticket", "2 moduli (5 domande ciascuno)", "1 pannello di verifica", "Sondaggi e giveaway illimitati", "Trascrizioni persistenti (conservate 30 giorni)"], cta: "Inizia gratis" },
       premium: { name: "Premium", badge: "Consigliato", trial: "14 giorni gratis, senza carta", price: "9,99 €", per: "/mese", priceYearly: "99 €", perYear: "/anno", tagline: "Per i server dove il supporto è un lavoro, non un'attività secondaria.", bullets: ["50 pannelli · 50 moduli · 50 domande", "Captcha matematico + età account", "Presa in carico · escalation · round-robin", "Messaggi fissati + programmati + ricorrenti", "Giveaway, sondaggi e analytics", "Risposte IA (Claude)", "Webhook (HMAC) + API REST pubblica", "Trascrizioni conservate senza limiti"], cta: "Inizia la prova di 14 giorni" },
@@ -442,6 +447,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Simpel. Per server.",
     pricingSub: "Betaal alleen voor wat je nodig hebt. Upgrade wanneer je wilt.",
     pricingToggle: { monthly: "Maandelijks", annual: "Jaarlijks", annualBadge: "2 maanden gratis" },
+    priceNote: "Alle prijzen in EUR incl. btw · per server, tenzij anders vermeld · Het abonnement wordt automatisch verlengd tot opzegging.",
     tiers: {
       free: { name: "Gratis", price: "€0", per: "/ maand, voor altijd", tagline: "Zet vandaag een echte ticket- en sollicitatieflow live. €0, voor altijd.", bullets: ["1 ticketpanel", "2 formulieren (elk 5 vragen)", "1 verificatiepanel", "Onbeperkte polls & giveaways", "Blijvende transcripties (30 dagen bewaring)"], cta: "Gratis starten" },
       premium: { name: "Premium", badge: "Aanbevolen", trial: "14 dagen gratis, zonder kaart", price: "€9,99", per: "/maand", priceYearly: "€99", perYear: "/jaar", tagline: "Voor servers waar support een baan is, geen bijzaak.", bullets: ["50 panels · 50 formulieren · 50 vragen", "Wiskunde-captcha + accountleeftijd", "Claimen · escaleren · round-robin", "Sticky- + geplande + terugkerende berichten", "Giveaways, polls & analytics", "AI-antwoorden (Claude)", "Webhooks (HMAC) + publieke REST-API", "Onbeperkte transcript-bewaring"], cta: "Start 14-daagse proef" },
@@ -517,6 +523,7 @@ export const LANDING_TRANSLATIONS = {
     pricingHeading: "Prosto. Za serwer.",
     pricingSub: "Płacisz tylko za to, czego potrzebujesz. Ulepsz w dowolnym momencie.",
     pricingToggle: { monthly: "Miesięcznie", annual: "Rocznie", annualBadge: "2 miesiące gratis" },
+    priceNote: "Wszystkie ceny w EUR z VAT · za serwer, chyba że wskazano inaczej · Subskrypcja odnawia się automatycznie do momentu anulowania.",
     tiers: {
       free: { name: "Darmowy", price: "0 €", per: "/ miesiąc, na zawsze", tagline: "Uruchom prawdziwy proces ticketów i rekrutacji już dziś. 0 €, na zawsze.", bullets: ["1 panel ticketów", "2 formularze (po 5 pytań)", "1 panel weryfikacji", "Nielimitowane ankiety i konkursy", "Trwałe transkrypcje (przechowywanie 30 dni)"], cta: "Zacznij za darmo" },
       premium: { name: "Premium", badge: "Polecany", trial: "14 dni gratis, bez karty", price: "9,99 €", per: "/mies.", priceYearly: "99 €", perYear: "/rok", tagline: "Dla serwerów, gdzie wsparcie to praca, nie zajęcie na boku.", bullets: ["50 paneli · 50 formularzy · 50 pytań", "Captcha matematyczna + wiek konta", "Przejmowanie · eskalacja · round-robin", "Przypięte + zaplanowane + cykliczne wiadomości", "Konkursy, ankiety i analityka", "Odpowiedzi AI (Claude)", "Webhooks (HMAC) + publiczne API REST", "Nielimitowane przechowywanie transkrypcji"], cta: "Rozpocznij 14-dniowy okres próbny" },

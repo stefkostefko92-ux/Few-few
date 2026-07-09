@@ -467,7 +467,7 @@ export default function Login() {
             </div>
 
             <p className="text-center text-xs text-cs-dim font-mono mt-8">
-              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · 99.9% uptime · EU hosting · GDPR · Cancel anytime
+              All prices VAT-inclusive · per server / month unless noted · Annual = ~2 months free · Renews automatically until cancelled · 99.9% uptime · EU hosting · GDPR · Cancel anytime
             </p>
           </div>
         </section>

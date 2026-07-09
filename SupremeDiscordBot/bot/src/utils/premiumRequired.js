@@ -23,30 +23,33 @@ import {
  * @param {string} [content] Optional short line above the button.
  */
 export async function sendPremiumRequired(interaction, skuId, content) {
-  if (!skuId) {
-    // No SKU configured (monetization not enabled) → graceful text fallback so
-    // the interaction never fails silently.
-    const body = {
+  // A Premium button's sku_id must belong to the SAME Discord application as
+  // the bot. White-label clients are separate applications and don't own the
+  // main bot's SKUs — Discord rejects the button (400). Fall back to text there.
+  const isWhiteLabelClient = interaction.client.isWhiteLabel === true;
+
+  const send = (body) => {
+    if (interaction.replied) return interaction.followUp(body);
+    // Deferred but not yet replied → editReply resolves the pending "thinking…"
+    // placeholder instead of leaving it hanging next to a follow-up.
+    if (interaction.deferred) return interaction.editReply(body);
+    return interaction.reply({ ...body, flags: MessageFlags.Ephemeral });
+  };
+
+  if (!skuId || isWhiteLabelClient) {
+    // No SKU configured (monetization not enabled) or a white-label client →
+    // graceful text fallback so the interaction never fails silently.
+    return send({
       content: content || "⭐ This feature requires Premium. Upgrade at " + (process.env.FRONTEND_URL || "the dashboard") + ".",
-      flags: MessageFlags.Ephemeral,
-    };
-    return interaction.deferred || interaction.replied
-      ? interaction.followUp(body)
-      : interaction.reply(body);
+    });
   }
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setStyle(ButtonStyle.Premium).setSKUId(skuId),
   );
 
-  const body = {
+  return send({
     content: content || "⭐ This is a Premium feature — upgrade to unlock it:",
     components: [row],
-    flags: MessageFlags.Ephemeral,
-  };
-
-  // If we already deferred/replied, a Premium button must go out as a follow-up.
-  return interaction.deferred || interaction.replied
-    ? interaction.followUp(body)
-    : interaction.reply(body);
+  });
 }
