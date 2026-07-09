@@ -2,7 +2,7 @@
 // и JSON-LD структури. Единственият източник на истина за SEO метаданните.
 
 import type { Metadata } from 'next';
-import { LOCALES, type Locale } from '@/i18n/locales';
+import { LOCALES, OG_LOCALE, type Locale } from '@/i18n/locales';
 
 export const SITE_URL =
   process.env.PUBLIC_BASE_URL ?? 'https://linketto.carbonstealth.eu';
@@ -18,16 +18,6 @@ export const ORG = {
     addressCountry: 'BG',
   },
 } as const;
-
-// og:locale иска language_TERRITORY, не само езиковия код.
-const OG_LOCALE: Record<Locale, string> = {
-  bg: 'bg_BG',
-  en: 'en_US',
-  it: 'it_IT',
-  es: 'es_ES',
-  de: 'de_DE',
-  fr: 'fr_FR',
-};
 
 // Единна social card (1200×630) — за силни споделяния и AI/SERP карти.
 export const OG_IMAGE = {
