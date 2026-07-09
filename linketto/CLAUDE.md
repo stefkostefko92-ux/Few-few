@@ -145,8 +145,28 @@ ReferralCard + ensureReferralCodeAction за стари профили. Кред
 
 Транзакционен имейл: src/lib/email.ts (Resend HTTP API; deliveryEmailHtml/
 deliverySubject са локализирани на 6-те езика по Purchase.locale — езикът
-на купувача). AI преводът (lib/ai.ts) покрива и продуктите (заглавие+
-описание). Health probe: /api/health. Deploy чеклист: DEPLOY.md.
+на купувача; линква и към печатната разписка). AI преводът (lib/ai.ts)
+покрива и продуктите (заглавие+описание). Health probe: /api/health.
+Deploy чеклист: DEPLOY.md.
+
+Разписка: src/lib/receipt.ts (родни низове bg/en/it/es/de/fr + fallback en)
++ /u/[slug]/receipt (noindex; чете Purchase по stripeSessionId; продавач/
+платформа/купувач/№/продукт/промо код/сума/статут; печат→PDF през браузъра,
+PrintButton.tsx). Продавачът е merchant-of-record → това е потвърждение за
+покупка, НЕ данъчна фактура (ДДС е негова отговорност).
+
+Промо кодове: src/lib/coupon.ts (normalizeCouponCode, isCouponUsable,
+discountedPriceCents — никога под минималния заряд на Stripe). Модел Coupon
+(@@unique([profileId, code]), maxRedemptions/timesRedeemed/expiresAt).
+Отстъпката се ПРЕИЗЧИСЛЯВА на сървъра в startProductPurchaseAction;
+webhook-ът брои ползването веднъж. CRUD: actions/shop.ts (по userId).
+
+Аналитика: dashboard/analytics/page.tsx (детайлен таб — $queryRaw дневна
+поредица + groupBy разбивки; src/lib/analytics.ts: fillDailySeries/ctr/
+seriesMax/conversionRate). „Езикова дупка" (src/lib/language-gap.ts:
+languageDemand, localeForCountry в locales.ts) кръстосва държавите на
+посетителите с наличните преводи → подкана за AI превод на липсващите. И
+двете четат само ClickEvent (без бисквитки).
 
 Магазин (Stripe Connect Express): User.stripeAccountId + stripeChargesEnabled
 (отключва се само от account.updated webhook-а). Product/ProductTranslation/
