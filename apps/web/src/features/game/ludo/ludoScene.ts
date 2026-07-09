@@ -83,7 +83,7 @@ export class LudoScene {
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    this.scene.background = new Color("#0e2117");
+    this.scene.background = new Color("#0d1024");
     this.pawnGeo = pawnGeometry();
 
     const span = H + 1.3;

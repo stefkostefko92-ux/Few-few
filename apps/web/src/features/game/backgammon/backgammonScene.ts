@@ -96,7 +96,7 @@ export class BackgammonScene {
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    this.scene.background = new Color("#0e2117");
+    this.scene.background = new Color("#0d1024");
 
     const W = 2 * HALF + BARW + 2 * RAIL;
     this.depth = 2 * PLEN + 2 * RAIL + 1.2;

@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: repeat(11, 1fr);
   aspect-ratio: 1;
-  background: radial-gradient(120% 120% at 50% 30%, #16402e, var(--felt-900));
+  background: radial-gradient(120% 120% at 50% 30%, #16402e, #0c2c1f);
 }
 .ludo-cell {
   position: relative;

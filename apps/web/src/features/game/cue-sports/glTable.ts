@@ -186,7 +186,7 @@ export class GLTable {
 
   private constructor(cssWidth: number) {
     this.fh = cssWidth / (TABLE.w + 2 * RAIL);
-    this.scene.background = new Color("#0a1410");
+    this.scene.background = new Color("#0a0d1f");
 
     this.camera = new PerspectiveCamera(34, (TABLE.w + 2 * RAIL) / (TABLE.h + 2 * RAIL), 0.05, 60);
     // Closer + lower than before (drama: balls occupy real pixels, the phenolic

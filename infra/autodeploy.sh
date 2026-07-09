@@ -28,7 +28,7 @@ set -euo pipefail
 DEPLOY_DIR="${DEPLOY_DIR:-/root/aso}"
 PROJECT="${COMPOSE_PROJECT:-aso}"
 DOMAIN="${DOMAIN:-gaming.carbonstealth.eu}"
-OWNER_EMAIL="${BOOTSTRAP_OWNER_EMAIL:-stefan.kostadinov16@gmail.com}"
+OWNER_EMAIL="${BOOTSTRAP_OWNER_EMAIL:-admin@carbonstealth.eu}"
 COMPOSE_FILE="infra/docker-compose.yml"
 
 # ── малко цвят за четимост ───────────────────────────────────────────────────

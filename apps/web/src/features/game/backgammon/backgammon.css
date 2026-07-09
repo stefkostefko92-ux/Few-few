@@ -6,7 +6,7 @@
   gap: 0;
   width: min(92vw, 80vh, 920px);
   height: min(58vw, 420px);
-  background: radial-gradient(120% 120% at 50% 50%, #1a4030, var(--felt-900));
+  background: radial-gradient(120% 120% at 50% 50%, #1a4030, #0c2c1f);
 }
 .bg-quad {
   display: grid;

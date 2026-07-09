@@ -147,7 +147,7 @@
   padding: 32px 28px;
   text-align: center;
   border-radius: var(--r-panel);
-  background: linear-gradient(180deg, rgba(24, 48, 38, 0.96), rgba(11, 14, 13, 0.97));
+  background: linear-gradient(180deg, rgba(20, 26, 56, 0.96), rgba(7, 10, 24, 0.97));
   border: 1px solid rgba(217, 178, 95, 0.4);
   box-shadow:
     0 40px 90px -20px rgba(0, 0, 0, 0.85),
