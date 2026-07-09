@@ -8,7 +8,7 @@
 //  • Статични ресурси (икони, manifest): „кеш първо“.
 //  • POST/API и всичко извън GET: само мрежа (не се кешира).
 
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = `zbd-${VERSION}`;
 
 // Опитваме да предзаредим ключовите страници; ако някоя липсва, не проваляме
@@ -56,6 +56,10 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin")) {
     return;
   }
+  // RSC заявките на App Router (?_rsc=…) са динамични данни при навигация в
+  // клиента — кеширането им би „замразило“ force-dynamic страници (напр.
+  // дежурната аптека) и би сочило стари чънкове след деплой.
+  if (url.searchParams.has("_rsc")) return;
 
   // Навигации: мрежа първо, резерв от кеша (или началната страница).
   if (req.mode === "navigate") {

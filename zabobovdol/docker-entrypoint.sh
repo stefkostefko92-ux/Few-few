@@ -24,10 +24,21 @@ echo "→ Прилагане на миграциите…"
 #    маркираме baseline-а 0_init като приложен и пускаме deploy отново.
 # Така деструктивна промяна вече минава през преглеждан SQL файл, а не през
 # мълчалив 'db push' при старт.
-if ! npx prisma migrate deploy; then
-  echo "  …заварена база без история на миграциите — маркирам baseline 0_init."
+# ВАЖНО: resolve се пуска САМО при P3005 („schema is not empty“ = заварена
+# база без история). При всякакъв друг провал (мрежа, P3009, OOM) resolve би
+# вписал 0_init като „приложен“ БЕЗ да е изпълнен SQL-ът — и приложението би
+# тръгнало трайно без таблици.
+if ! OUT=$(npx prisma migrate deploy 2>&1); then
+  echo "$OUT"
+  if ! echo "$OUT" | grep -q "P3005"; then
+    echo "✖ migrate deploy се провали с неочаквана грешка — спирам (без resolve)."
+    exit 1
+  fi
+  echo "  …заварена база без история на миграциите (P3005) — маркирам baseline 0_init."
   npx prisma migrate resolve --applied 0_init
   npx prisma migrate deploy
+else
+  echo "$OUT"
 fi
 
 echo "✔ Схемата е приложена. Стартиране на приложението."
