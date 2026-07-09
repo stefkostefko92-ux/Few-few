@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { ADMIN_COOKIE, COOKIE_MAX_AGE, createSession } from "@/lib/admin-auth";
 import { readAdmins } from "@/lib/admin-store";
+import { clientIp, pruneHits } from "@/lib/client-ip";
 
 export const runtime = "nodejs";
 
@@ -11,8 +12,8 @@ const BodySchema = z.object({
   pass: z.string().min(1).max(200),
 });
 
-// Rate limit срещу brute force: 5 опита/мин/IP + глобален предпазител
-// (X-Forwarded-For е клиентски контролиран, затова само per-IP не стига).
+// Rate limit срещу brute force: 5 опита/мин/IP (доверен IP — виж client-ip.ts)
+// + глобален предпазител като втора линия.
 const WINDOW_MS = 60_000;
 const PER_IP_MAX = 5;
 const GLOBAL_MAX = 60;
@@ -27,7 +28,7 @@ function limited(ip: string): boolean {
   list.push(now);
   globalHits.push(now);
   hits.set(ip, list);
-  if (hits.size > 2000) hits.clear();
+  if (hits.size > 2000) pruneHits(hits, WINDOW_MS, now);
   return list.length > PER_IP_MAX;
 }
 
@@ -36,8 +37,7 @@ function limited(ip: string): boolean {
 const DUMMY_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
 
 export async function POST(req: NextRequest) {
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = clientIp(req);
   if (limited(ip)) {
     return NextResponse.json(
       { error: "Прекалено много опити — изчакай минута." },
