@@ -38,6 +38,7 @@ model User {
   profiles             Profile[]
   loginEvents          LoginEvent[]
   referralsMade        Referral[]   @relation("ReferralsMade")
+  payouts              ReferralPayout[] @relation("Payouts")
 }
 
 // Сигурност на входа: IP при успешен вход/регистрация (пази се 90 дни;
@@ -64,6 +65,21 @@ model Referral {
   createdAt      DateTime @default(now())
 
   @@index([referrerId, createdAt])
+}
+
+// Заявка за изплащане на натрупания реферал бонус (мин. €100). При заявка
+// балансът се снапшотва тук и User.referralCreditCents се нулира.
+model ReferralPayout {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("Payouts", fields: [userId], references: [id], onDelete: Cascade)
+  amountCents Int
+  method      String // IBAN / PayPal / Revolut — свободен текст от потребителя
+  status      String    @default("pending") // pending | paid
+  requestedAt DateTime  @default(now())
+  paidAt      DateTime?
+
+  @@index([status, requestedAt])
 }
 
 model Session {

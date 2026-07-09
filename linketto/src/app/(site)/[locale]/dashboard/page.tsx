@@ -22,7 +22,14 @@ import {
 } from '@/app/actions/profile';
 import { parseStyle } from '@/lib/style';
 import { ReferralCard } from '@/components/ReferralCard';
-import { ensureReferralCodeAction } from '@/app/actions/referral';
+import {
+  ensureReferralCodeAction,
+  requestPayoutAction,
+} from '@/app/actions/referral';
+import {
+  canWithdraw,
+  REFERRAL_MIN_PAYOUT_CENTS,
+} from '@/lib/referral';
 import {
   CheckIcon,
   ClockIcon,
@@ -54,10 +61,11 @@ export default async function DashboardPage({
     error?: string;
     translated?: string;
     connected?: string;
+    payout?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { error, translated, connected } = await searchParams;
+  const { error, translated, connected, payout } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   const t = await getTranslations('dashboard');
@@ -188,7 +196,9 @@ export default async function DashboardPage({
                               ? t('errorUpload')
                               : error === 'refund'
                                 ? t('errorRefund')
-                                : t('errorGeneric')}
+                                : error === 'payout'
+                                  ? t('errorPayout')
+                                  : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -205,6 +215,14 @@ export default async function DashboardPage({
             className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
           >
             {t('connectedOk')}
+          </p>
+        )}
+        {payout && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('referralPayoutRequested')}
           </p>
         )}
 
@@ -1300,6 +1318,21 @@ export default async function DashboardPage({
                       successful: successfulReferrals,
                       credit: `€${(user.referralCreditCents / 100).toFixed(2)}`,
                     }}
+                    payout={{
+                      progressPercent: Math.min(
+                        100,
+                        Math.round(
+                          (user.referralCreditCents /
+                            REFERRAL_MIN_PAYOUT_CENTS) *
+                            100,
+                        ),
+                      ),
+                      progressLabel: canWithdraw(user.referralCreditCents)
+                        ? t('referralPayoutReady')
+                        : t('referralPayoutProgress', {
+                            remaining: `€${((REFERRAL_MIN_PAYOUT_CENTS - user.referralCreditCents) / 100).toFixed(2)}`,
+                          }),
+                    }}
                     labels={{
                       hint: t('referralHint'),
                       copy: t('referralCopy'),
@@ -1310,6 +1343,31 @@ export default async function DashboardPage({
                       credit: t('referralCredit'),
                     }}
                   />
+                  {/* Теглене при достигнат праг */}
+                  {canWithdraw(user.referralCreditCents) && (
+                    <form
+                      action={requestPayoutAction}
+                      className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-green-200 bg-green-50/50 p-4"
+                    >
+                      <input type="hidden" name="uiLocale" value={locale} />
+                      <label className="flex-1 text-sm font-medium">
+                        {t('referralPayoutMethod')}
+                        <input
+                          type="text"
+                          name="method"
+                          required
+                          placeholder={t('referralPayoutMethodPlaceholder')}
+                          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        className="rounded-full bg-green-600 px-5 py-2 font-semibold text-white hover:bg-green-700"
+                      >
+                        {t('referralWithdraw')}
+                      </button>
+                    </form>
+                  )}
                 </div>
               ) : (
                 <form action={ensureReferralCodeAction} className="mt-4">

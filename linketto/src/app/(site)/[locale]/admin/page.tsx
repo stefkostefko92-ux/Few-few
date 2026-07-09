@@ -8,6 +8,7 @@ import {
   adminClearDomainAction,
   adminDeleteUserAction,
   adminForceLogoutAction,
+  adminMarkPayoutPaidAction,
   adminRefundPurchaseAction,
   adminResolveReportAction,
   adminSetPasswordAction,
@@ -56,6 +57,13 @@ export default async function AdminPage({
       include: { profile: { select: { slug: true } } },
     }),
   ]);
+
+  const pendingPayouts = await prisma.referralPayout.findMany({
+    where: { status: 'pending' },
+    orderBy: { requestedAt: 'asc' },
+    take: 50,
+    include: { user: { select: { email: true } } },
+  });
 
   const recentPurchases = await prisma.purchase.findMany({
     orderBy: { createdAt: 'desc' },
@@ -261,6 +269,46 @@ export default async function AdminPage({
                       </button>
                     </form>
                   )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Чакащи изплащания на реферал бонуси */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <h2 className="font-semibold">
+            {t('payoutsTitle', { count: pendingPayouts.length })}
+          </h2>
+          {pendingPayouts.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-400">{t('payoutsEmpty')}</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {pendingPayouts.map((p) => (
+                <li
+                  key={p.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50/50 p-4 text-sm"
+                >
+                  <span>
+                    <span className="font-semibold text-green-700">
+                      €{(p.amountCents / 100).toFixed(2)}
+                    </span>{' '}
+                    · {p.user.email} ·{' '}
+                    <span className="font-mono text-xs">{p.method}</span>{' '}
+                    <span className="text-xs text-slate-400">
+                      {p.requestedAt.toISOString().slice(0, 10)}
+                    </span>
+                  </span>
+                  <form action={adminMarkPayoutPaidAction}>
+                    <input type="hidden" name="uiLocale" value={locale} />
+                    <input type="hidden" name="payoutId" value={p.id} />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-green-600 px-4 py-1 text-xs font-semibold text-green-700 hover:bg-green-50"
+                    >
+                      {t('payoutMarkPaid')}
+                    </button>
+                  </form>
                 </li>
               ))}
             </ul>

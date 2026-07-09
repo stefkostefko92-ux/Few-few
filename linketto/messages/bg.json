@@ -260,7 +260,7 @@
     "refunded": "Върнати",
     "errorRefund": "Връщането на пари не бе успешно.",
     "referralSection": "Покани приятел",
-    "referralReward": "Сподели линка си. Когато поканен от теб човек си купи платен план, получаваш 25% от плащането му като бонус кредит.",
+    "referralReward": "Сподели линка си. Когато поканен от теб човек си купи платен план, получаваш 15% от плащането му като бонус. При натрупани €100 можеш да ги изтеглиш.",
     "referralHint": "Твоят личен реферален линк:",
     "referralCopy": "Копирай",
     "referralCopied": "Копирано!",
@@ -275,7 +275,14 @@
     "interval_semiannual": "6 месеца",
     "interval_annual": "Годишно",
     "perMonthShort": "мес",
-    "choose": "Избери"
+    "choose": "Избери",
+    "referralPayoutReady": "Достигна прага — можеш да изтеглиш бонуса си!",
+    "referralPayoutProgress": "Още {remaining} до прага за теглене (€100).",
+    "referralPayoutMethod": "IBAN / PayPal / Revolut за изплащане",
+    "referralPayoutMethodPlaceholder": "напр. BG80 BNBG... или paypal.me/…",
+    "referralWithdraw": "Изтегли бонуса",
+    "referralPayoutRequested": "Заявката за теглене е приета — ще преведем бонуса ти. Броячът е нулиран.",
+    "errorPayout": "Тегленето не бе успешно (нужни са минимум €100 и начин за изплащане)."
   },
   "profile": {
     "poweredBy": "Създадено с Linketto",
@@ -389,6 +396,9 @@
     "disputed": "СПОР",
     "notDelivered": "недоставено",
     "errorRefund": "Връщането се провали.",
-    "referralCredit": "реферал бонус"
+    "referralCredit": "реферал бонус",
+    "payoutsTitle": "Заявки за изплащане — чакащи ({count})",
+    "payoutsEmpty": "Няма чакащи заявки.",
+    "payoutMarkPaid": "Маркирай като платено"
   }
 }

@@ -51,6 +51,19 @@ CREATE TABLE "Referral" (
 );
 
 -- CreateTable
+CREATE TABLE "ReferralPayout" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "amountCents" INTEGER NOT NULL,
+    "method" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "requestedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "paidAt" TIMESTAMP(3),
+
+    CONSTRAINT "ReferralPayout_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "tokenHash" TEXT NOT NULL,
@@ -222,6 +235,9 @@ CREATE UNIQUE INDEX "Referral_referredUserId_key" ON "Referral"("referredUserId"
 CREATE INDEX "Referral_referrerId_createdAt_idx" ON "Referral"("referrerId", "createdAt");
 
 -- CreateIndex
+CREATE INDEX "ReferralPayout_status_requestedAt_idx" ON "ReferralPayout"("status", "requestedAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Session_tokenHash_key" ON "Session"("tokenHash");
 
 -- CreateIndex
@@ -274,6 +290,9 @@ ALTER TABLE "LoginEvent" ADD CONSTRAINT "LoginEvent_userId_fkey" FOREIGN KEY ("u
 
 -- AddForeignKey
 ALTER TABLE "Referral" ADD CONSTRAINT "Referral_referrerId_fkey" FOREIGN KEY ("referrerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ReferralPayout" ADD CONSTRAINT "ReferralPayout_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -6,10 +6,12 @@ import { useState } from 'react';
 export function ReferralCard({
   url,
   stats,
+  payout,
   labels,
 }: {
   url: string;
   stats: { signups: number; successful: number; credit: string };
+  payout: { progressPercent: number; progressLabel: string };
   labels: {
     hint: string;
     copy: string;
@@ -88,6 +90,16 @@ export function ReferralCard({
           </p>
           <p className="text-xs text-slate-500">{labels.credit}</p>
         </div>
+      </div>
+      {/* Прогрес към прага за теглене */}
+      <div className="mt-4">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div
+            className="h-full rounded-full bg-green-500 transition-all"
+            style={{ width: `${payout.progressPercent}%` }}
+          />
+        </div>
+        <p className="mt-1.5 text-xs text-slate-500">{payout.progressLabel}</p>
       </div>
     </div>
   );

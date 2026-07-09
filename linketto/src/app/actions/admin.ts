@@ -161,6 +161,20 @@ export async function adminRefundPurchaseAction(
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
+/** Маркира заявка за изплащане на реферал бонус като платена. */
+export async function adminMarkPayoutPaidAction(
+  formData: FormData,
+): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  await requireAdmin(uiLocale);
+  const payoutId = String(formData.get('payoutId') ?? '');
+  await prisma.referralPayout.updateMany({
+    where: { id: payoutId, status: 'pending' },
+    data: { status: 'paid', paidAt: new Date() },
+  });
+  redirect(`/${uiLocale}/admin?ok=1`);
+}
+
 /** Маркира DSA сигнал като разгледан. */
 export async function adminResolveReportAction(
   formData: FormData,

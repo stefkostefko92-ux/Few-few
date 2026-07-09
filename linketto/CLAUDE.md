@@ -121,7 +121,10 @@ showViews = бадж „N посещения този месец“ (брои Cl
 Периоди: plans.ts BILLING_INTERVALS (месец/3/6/12м, отстъпка 0/10/15/20%);
 intervalPriceCents/effectiveMonthlyCents/stripePriceEnvFor. billing.ts избира
 Price ID по план+период (Founder е еднократен). Реферал бонусът е процент
-(REFERRAL_PERCENT=25) от session.amount_total — по-дълъг период → по-голям бонус.
+(REFERRAL_PERCENT=15) от session.amount_total — по-дълъг период → по-голям бонус.
+Теглене: REFERRAL_MIN_PAYOUT_CENTS=10000 (€100); requestPayoutAction снапшотва
+баланса в ReferralPayout и нулира referralCreditCents (транзакция, под праг = грешка);
+админът маркира платено (adminMarkPayoutPaidAction).
 Реферали: lib/referral.ts (referralRewardCents по план, generateReferralCode).
 User.referralCode/referredById/referralCreditCents + модел Referral (ledger,
 unique referredUserId). registerAction обвързва реферера от ?ref; webhook-ът

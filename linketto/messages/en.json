@@ -260,7 +260,7 @@
     "refunded": "Refunded",
     "errorRefund": "The refund did not go through.",
     "referralSection": "Invite a friend",
-    "referralReward": "Share your link. When someone you invited buys a paid plan, you earn 25% of their payment as bonus credit.",
+    "referralReward": "Share your link. When someone you invited buys a paid plan, you earn 15% of their payment as bonus. Once you reach €100 you can withdraw it.",
     "referralHint": "Your personal referral link:",
     "referralCopy": "Copy",
     "referralCopied": "Copied!",
@@ -275,7 +275,14 @@
     "interval_semiannual": "6 months",
     "interval_annual": "Annual",
     "perMonthShort": "mo",
-    "choose": "Choose"
+    "choose": "Choose",
+    "referralPayoutReady": "You reached the threshold — you can withdraw your bonus!",
+    "referralPayoutProgress": "{remaining} more to the withdrawal threshold (€100).",
+    "referralPayoutMethod": "IBAN / PayPal / Revolut for payout",
+    "referralPayoutMethodPlaceholder": "e.g. BG80 BNBG... or paypal.me/…",
+    "referralWithdraw": "Withdraw bonus",
+    "referralPayoutRequested": "Your withdrawal request was received — we will transfer your bonus. The counter has been reset.",
+    "errorPayout": "Withdrawal failed (minimum €100 and a payout method are required)."
   },
   "profile": {
     "poweredBy": "Made with Linketto",
@@ -389,6 +396,9 @@
     "disputed": "DISPUTE",
     "notDelivered": "not delivered",
     "errorRefund": "Refund failed.",
-    "referralCredit": "referral bonus"
+    "referralCredit": "referral bonus",
+    "payoutsTitle": "Payout requests — pending ({count})",
+    "payoutsEmpty": "No pending requests.",
+    "payoutMarkPaid": "Mark as paid"
   }
 }
