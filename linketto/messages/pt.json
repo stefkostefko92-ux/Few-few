@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "ex.: PT50 0002... ou paypal.me/…",
     "referralWithdraw": "Levantar bónus",
     "referralPayoutRequested": "O teu pedido de levantamento foi recebido — vamos transferir o teu bónus. O contador foi reposto.",
-    "errorPayout": "O levantamento falhou (são necessários no mínimo €100 e um método de pagamento)."
+    "errorPayout": "O levantamento falhou (são necessários no mínimo €100 e um método de pagamento).",
+    "aiBioLabel": "Gerar uma bio com IA",
+    "aiBioPlaceholder": "ex. fotógrafo, Milão, casamentos e viagens",
+    "aiBioButton": "Gerar bio",
+    "generatedOk": "Bio gerada no seu idioma principal. Revise-a e depois traduza com IA.",
+    "kind_EMAIL": "Inscrição na newsletter",
+    "audienceSection": "Público (newsletter)",
+    "audienceHint": "E-mails recolhidos através do bloco de inscrição na newsletter. Duplo opt-in (GDPR); a lista é sua — exporte-a quando quiser.",
+    "audienceConfirmed": "Confirmado",
+    "audiencePending": "Pendente",
+    "audienceExport": "Exportar CSV",
+    "broadcastTitle": "Enviar uma newsletter",
+    "broadcastSubject": "Assunto",
+    "broadcastBody": "Escreva a sua mensagem…",
+    "broadcastHint": "Enviada aos seus subscritores confirmados, cada um com um link de cancelamento com um clique.",
+    "broadcastSend": "Enviar aos subscritores",
+    "broadcastSent": "Newsletter enviada a {count} subscritores.",
+    "errorBroadcast": "Não foi possível enviar — adicione um assunto e uma mensagem."
   },
   "profile": {
     "poweredBy": "Feito com o Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Esse código promocional é inválido ou expirou.",
     "shopSellerNote": "O contrato de compra é entre ti e o criador; o Linketto é a plataforma.",
     "sellerTrader": "O vendedor é um profissional",
-    "sellerPrivate": "O vendedor é um particular"
+    "sellerPrivate": "O vendedor é um particular",
+    "subButton": "Subscrever",
+    "subConsent": "Concordo em receber e-mails e aceito a",
+    "subCheck": "Quase lá — verifique a sua caixa de entrada para confirmar a subscrição.",
+    "subConfirmed": "Está subscrito. Obrigado!",
+    "subError": "Introduza um e-mail válido e marque a caixa de consentimento.",
+    "unsubDone": "A sua subscrição foi cancelada. Não receberá mais e-mails."
   },
   "footer": {
     "company": "Um produto da Carbon Stealth VCC",

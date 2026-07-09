@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "m.sh. BG80 BNBG... nó paypal.me/…",
     "referralWithdraw": "Tarraing amach an bónas",
     "referralPayoutRequested": "Fuarthas d'iarratas tarraingthe amach — aistreoimid do bhónas. Athshocraíodh an cuntar.",
-    "errorPayout": "Theip ar an tarraingt amach (teastaíonn €100 ar a laghad agus modh íocaíochta amach)."
+    "errorPayout": "Theip ar an tarraingt amach (teastaíonn €100 ar a laghad agus modh íocaíochta amach).",
+    "aiBioLabel": "Cruthaigh bio le IS",
+    "aiBioPlaceholder": "m.sh. grianghrafadóir, Milano, bainiseacha & taisteal",
+    "aiBioButton": "Cruthaigh bio",
+    "generatedOk": "Bio cruthaithe i do phríomhtheanga. Déan é a athbhreithniú, ansin aistrigh le IS.",
+    "kind_EMAIL": "Clárú don nuachtlitir",
+    "audienceSection": "Lucht féachana (nuachtlitir)",
+    "audienceHint": "Ríomhphoist a bailíodh tríd an mbloc cláraithe don nuachtlitir. Rogha dhúbailte (GDPR); is leatsa an liosta — easpórtáil é am ar bith.",
+    "audienceConfirmed": "Deimhnithe",
+    "audiencePending": "Ar feitheamh",
+    "audienceExport": "Easpórtáil CSV",
+    "broadcastTitle": "Seol nuachtlitir",
+    "broadcastSubject": "Ábhar",
+    "broadcastBody": "Scríobh do theachtaireacht…",
+    "broadcastHint": "Seolta chuig do shíntiúsóirí deimhnithe, gach ceann le nasc díliostála aon-chlic.",
+    "broadcastSend": "Seol chuig síntiúsóirí",
+    "broadcastSent": "Nuachtlitir seolta chuig {count} síntiúsóir.",
+    "errorBroadcast": "Níorbh fhéidir a sheoladh — cuir ábhar agus teachtaireacht leis."
   },
   "profile": {
     "poweredBy": "Déanta le Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Tá an cód promóisin sin neamhbhailí nó imithe as feidhm.",
     "shopSellerNote": "Tá an conradh ceannaigh idir tú féin agus an cruthaitheoir; is é Linketto an t-ardán.",
     "sellerTrader": "Is trádálaí é an díoltóir",
-    "sellerPrivate": "Is duine príobháideach é an díoltóir"
+    "sellerPrivate": "Is duine príobháideach é an díoltóir",
+    "subButton": "Liostáil",
+    "subConsent": "Aontaím ríomhphoist a fháil agus glacaim leis an",
+    "subCheck": "Beagnach déanta — seiceáil do bhosca isteach chun do shíntiús a dheimhniú.",
+    "subConfirmed": "Tá tú liostáilte. Go raibh maith agat!",
+    "subError": "Cuir isteach ríomhphost bailí agus ticeáil an bosca toilithe.",
+    "unsubDone": "Tá tú díliostáilte. Ní bhfaighidh tú ríomhphoist a thuilleadh."
   },
   "footer": {
     "company": "Táirge de chuid Carbon Stealth VCC",

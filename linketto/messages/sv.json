@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "t.ex. BG80 BNBG... eller paypal.me/…",
     "referralWithdraw": "Ta ut bonus",
     "referralPayoutRequested": "Din uttagsbegäran togs emot — vi överför din bonus. Räknaren har nollställts.",
-    "errorPayout": "Uttaget misslyckades (minst 100 € och en utbetalningsmetod krävs)."
+    "errorPayout": "Uttaget misslyckades (minst 100 € och en utbetalningsmetod krävs).",
+    "aiBioLabel": "Skapa en bio med AI",
+    "aiBioPlaceholder": "t.ex. fotograf, Milano, bröllop och resor",
+    "aiBioButton": "Skapa bio",
+    "generatedOk": "Bio skapad på ditt huvudspråk. Granska den och översätt den sedan med AI.",
+    "kind_EMAIL": "Nyhetsbrevsprenumeration",
+    "audienceSection": "Publik (nyhetsbrev)",
+    "audienceHint": "E-postadresser som samlats in via nyhetsbrevsblocket. Dubbel opt-in (GDPR); listan är din — exportera den när du vill.",
+    "audienceConfirmed": "Bekräftad",
+    "audiencePending": "Väntar",
+    "audienceExport": "Exportera CSV",
+    "broadcastTitle": "Skicka ett nyhetsbrev",
+    "broadcastSubject": "Ämne",
+    "broadcastBody": "Skriv ditt meddelande…",
+    "broadcastHint": "Skickas till dina bekräftade prenumeranter, var och en med en avprenumerationslänk med ett klick.",
+    "broadcastSend": "Skicka till prenumeranter",
+    "broadcastSent": "Nyhetsbrev skickat till {count} prenumeranter.",
+    "errorBroadcast": "Kunde inte skicka — lägg till ett ämne och ett meddelande."
   },
   "profile": {
     "poweredBy": "Skapad med Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Den kampanjkoden är ogiltig eller har upphört.",
     "shopSellerNote": "Köpeavtalet är mellan dig och skaparen; Linketto är plattformen.",
     "sellerTrader": "Säljaren är näringsidkare",
-    "sellerPrivate": "Säljaren är en privatperson"
+    "sellerPrivate": "Säljaren är en privatperson",
+    "subButton": "Prenumerera",
+    "subConsent": "Jag godkänner att ta emot e-post och accepterar",
+    "subCheck": "Nästan klart — kolla din inkorg för att bekräfta prenumerationen.",
+    "subConfirmed": "Du prenumererar nu. Tack!",
+    "subError": "Ange en giltig e-postadress och kryssa i samtyckesrutan.",
+    "unsubDone": "Du har avslutat prenumerationen. Du får inga fler e-postmeddelanden."
   },
   "footer": {
     "company": "En produkt från Carbon Stealth VCC",

@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "eż. BG80 BNBG... jew paypal.me/…",
     "referralWithdraw": "Iġbed il-bonus",
     "referralPayoutRequested": "It-talba tal-ġbir tiegħek ġiet irċevuta — se nittrasferixxu l-bonus tiegħek. Il-kontatur ġie rrisettjat.",
-    "errorPayout": "Il-ġbir ma rnexxiex (jinħtieġu minimu ta' €100 u metodu ta' ħlas)."
+    "errorPayout": "Il-ġbir ma rnexxiex (jinħtieġu minimu ta' €100 u metodu ta' ħlas).",
+    "aiBioLabel": "Iġġenera bijo bl-IA",
+    "aiBioPlaceholder": "eż. fotografu, Milan, tiġijiet u vjaġġar",
+    "aiBioButton": "Iġġenera bijo",
+    "generatedOk": "Bijo ġġenerata bil-lingwa prinċipali tiegħek. Irrevediha, imbagħad ittraduċiha bl-IA.",
+    "kind_EMAIL": "Reġistrazzjoni għan-newsletter",
+    "audienceSection": "Udjenza (newsletter)",
+    "audienceHint": "Emails miġbura permezz tal-blokk ta' reġistrazzjoni għan-newsletter. Opt-in doppju (GDPR); il-lista hija tiegħek — esportaha meta trid.",
+    "audienceConfirmed": "Ikkonfermat",
+    "audiencePending": "Pendenti",
+    "audienceExport": "Esporta CSV",
+    "broadcastTitle": "Ibgħat newsletter",
+    "broadcastSubject": "Suġġett",
+    "broadcastBody": "Ikteb il-messaġġ tiegħek…",
+    "broadcastHint": "Mibgħut lill-abbonati kkonfermati tiegħek, kull wieħed b'link ta' tneħħija b'klikk wieħed.",
+    "broadcastSend": "Ibgħat lill-abbonati",
+    "broadcastSent": "Newsletter mibgħut lil {count} abbonati.",
+    "errorBroadcast": "Ma setax jintbagħat — żid suġġett u messaġġ."
   },
   "profile": {
     "poweredBy": "Magħmul bi Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Dak il-kodiċi promozzjonali huwa invalidu jew skada.",
     "shopSellerNote": "Il-kuntratt tax-xiri huwa bejnek u l-kreatur; Linketto huwa l-pjattaforma.",
     "sellerTrader": "Il-bejjiegħ huwa kummerċjant",
-    "sellerPrivate": "Il-bejjiegħ huwa individwu privat"
+    "sellerPrivate": "Il-bejjiegħ huwa individwu privat",
+    "subButton": "Abbona",
+    "subConsent": "Naqbel li nirċievi emails u naċċetta l-",
+    "subCheck": "Kważi lestja — iċċekkja l-inbox tiegħek biex tikkonferma l-abbonament.",
+    "subConfirmed": "Int abbonat. Grazzi!",
+    "subError": "Daħħal email valida u immarka l-kaxxa tal-kunsens.",
+    "unsubDone": "Int ġejt diżabbonat. Mhux se tirċievi aktar emails."
   },
   "footer": {
     "company": "Prodott ta' Carbon Stealth VCC",

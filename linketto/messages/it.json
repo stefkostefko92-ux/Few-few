@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "es. BG80 BNBG... o paypal.me/…",
     "referralWithdraw": "Preleva il bonus",
     "referralPayoutRequested": "La tua richiesta di prelievo è stata ricevuta — trasferiremo il tuo bonus. Il contatore è stato azzerato.",
-    "errorPayout": "Prelievo non riuscito (servono almeno €100 e un metodo di pagamento)."
+    "errorPayout": "Prelievo non riuscito (servono almeno €100 e un metodo di pagamento).",
+    "aiBioLabel": "Genera una bio con l'IA",
+    "aiBioPlaceholder": "es. fotografo, Milano, matrimoni e viaggi",
+    "aiBioButton": "Genera bio",
+    "generatedOk": "Bio generata nella tua lingua principale. Controllala, poi traducila con l'IA.",
+    "kind_EMAIL": "Iscrizione alla newsletter",
+    "audienceSection": "Pubblico (newsletter)",
+    "audienceHint": "Email raccolte tramite il blocco di iscrizione alla newsletter. Doppio opt-in (GDPR); la lista è tua — esportala quando vuoi.",
+    "audienceConfirmed": "Confermato",
+    "audiencePending": "In attesa",
+    "audienceExport": "Esporta CSV",
+    "broadcastTitle": "Invia una newsletter",
+    "broadcastSubject": "Oggetto",
+    "broadcastBody": "Scrivi il tuo messaggio…",
+    "broadcastHint": "Inviata ai tuoi iscritti confermati, ciascuno con un link di disiscrizione con un clic.",
+    "broadcastSend": "Invia agli iscritti",
+    "broadcastSent": "Newsletter inviata a {count} iscritti.",
+    "errorBroadcast": "Impossibile inviare — aggiungi un oggetto e un messaggio."
   },
   "profile": {
     "poweredBy": "Creato con Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Questo codice promozionale non è valido o è scaduto.",
     "shopSellerNote": "Il contratto di acquisto è tra te e il creator; Linketto è la piattaforma.",
     "sellerTrader": "Il venditore è un professionista",
-    "sellerPrivate": "Il venditore è un privato"
+    "sellerPrivate": "Il venditore è un privato",
+    "subButton": "Iscriviti",
+    "subConsent": "Accetto di ricevere email e accetto la",
+    "subCheck": "Ci siamo quasi — controlla la tua casella per confermare l'iscrizione.",
+    "subConfirmed": "Iscrizione completata. Grazie!",
+    "subError": "Inserisci un'email valida e spunta la casella del consenso.",
+    "unsubDone": "Sei stato disiscritto. Non riceverai più email."
   },
   "legal": {
     "privacyTitle": "Informativa sulla privacy",

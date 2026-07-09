@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "ex.: RO49 AAAA... sau paypal.me/…",
     "referralWithdraw": "Retrage bonusul",
     "referralPayoutRequested": "Cererea ta de retragere a fost primită — îți vom transfera bonusul. Contorul a fost resetat.",
-    "errorPayout": "Retragerea nu a reușit (sunt necesari minimum €100 și o metodă de plată)."
+    "errorPayout": "Retragerea nu a reușit (sunt necesari minimum €100 și o metodă de plată).",
+    "aiBioLabel": "Generează o bio cu IA",
+    "aiBioPlaceholder": "ex. fotograf, Milano, nunți și călătorii",
+    "aiBioButton": "Generează bio",
+    "generatedOk": "Bio generată în limba ta principală. Verific-o, apoi tradu-o cu IA.",
+    "kind_EMAIL": "Înscriere la newsletter",
+    "audienceSection": "Public (newsletter)",
+    "audienceHint": "E-mailuri colectate prin blocul de înscriere la newsletter. Dublu opt-in (GDPR); lista îți aparține — export-o oricând.",
+    "audienceConfirmed": "Confirmat",
+    "audiencePending": "În așteptare",
+    "audienceExport": "Exportă CSV",
+    "broadcastTitle": "Trimite un newsletter",
+    "broadcastSubject": "Subiect",
+    "broadcastBody": "Scrie mesajul tău…",
+    "broadcastHint": "Trimis abonaților tăi confirmați, fiecare cu un link de dezabonare printr-un singur clic.",
+    "broadcastSend": "Trimite abonaților",
+    "broadcastSent": "Newsletter trimis către {count} abonați.",
+    "errorBroadcast": "Nu s-a putut trimite — adaugă un subiect și un mesaj."
   },
   "profile": {
     "poweredBy": "Creat cu Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Acest cod promoțional este invalid sau a expirat.",
     "shopSellerNote": "Contractul de cumpărare este între tine și creator; Linketto este platforma.",
     "sellerTrader": "Vânzătorul este comerciant",
-    "sellerPrivate": "Vânzătorul este persoană fizică"
+    "sellerPrivate": "Vânzătorul este persoană fizică",
+    "subButton": "Abonează-te",
+    "subConsent": "Sunt de acord să primesc e-mailuri și accept",
+    "subCheck": "Aproape gata — verifică-ți inboxul pentru a confirma abonarea.",
+    "subConfirmed": "Ești abonat. Mulțumim!",
+    "subError": "Introdu un e-mail valid și bifează caseta de consimțământ.",
+    "unsubDone": "Te-ai dezabonat. Nu vei mai primi e-mailuri."
   },
   "footer": {
     "company": "Un produs Carbon Stealth VCC",

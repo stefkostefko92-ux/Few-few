@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "p. ej. BG80 BNBG... o paypal.me/…",
     "referralWithdraw": "Retirar bono",
     "referralPayoutRequested": "Recibimos tu solicitud de retiro — transferiremos tu bono. El contador se ha reiniciado.",
-    "errorPayout": "El retiro falló (se necesitan al menos €100 y un método de pago)."
+    "errorPayout": "El retiro falló (se necesitan al menos €100 y un método de pago).",
+    "aiBioLabel": "Genera una bio con IA",
+    "aiBioPlaceholder": "p. ej. fotógrafo, Milán, bodas y viajes",
+    "aiBioButton": "Generar bio",
+    "generatedOk": "Bio generada en tu idioma principal. Revísala y luego tradúcela con IA.",
+    "kind_EMAIL": "Suscripción al boletín",
+    "audienceSection": "Audiencia (boletín)",
+    "audienceHint": "Correos recopilados mediante el bloque de suscripción al boletín. Doble opt-in (GDPR); la lista es tuya — expórtala cuando quieras.",
+    "audienceConfirmed": "Confirmado",
+    "audiencePending": "Pendiente",
+    "audienceExport": "Exportar CSV",
+    "broadcastTitle": "Enviar un boletín",
+    "broadcastSubject": "Asunto",
+    "broadcastBody": "Escribe tu mensaje…",
+    "broadcastHint": "Enviado a tus suscriptores confirmados, cada uno con un enlace de baja con un clic.",
+    "broadcastSend": "Enviar a los suscriptores",
+    "broadcastSent": "Boletín enviado a {count} suscriptores.",
+    "errorBroadcast": "No se pudo enviar — añade un asunto y un mensaje."
   },
   "profile": {
     "poweredBy": "Hecho con Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Ese código promocional no es válido o ha caducado.",
     "shopSellerNote": "El contrato de compra es entre tú y el creador; Linketto es la plataforma.",
     "sellerTrader": "El vendedor es comerciante",
-    "sellerPrivate": "El vendedor es un particular"
+    "sellerPrivate": "El vendedor es un particular",
+    "subButton": "Suscribirse",
+    "subConsent": "Acepto recibir correos y acepto la",
+    "subCheck": "Ya casi está — revisa tu bandeja de entrada para confirmar la suscripción.",
+    "subConfirmed": "Estás suscrito. ¡Gracias!",
+    "subError": "Introduce un correo válido y marca la casilla de consentimiento.",
+    "unsubDone": "Te has dado de baja. No recibirás más correos."
   },
   "legal": {
     "privacyTitle": "Política de privacidad",

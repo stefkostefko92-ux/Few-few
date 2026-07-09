@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "es. BG80 BNBG… o paypal.me/…",
     "referralWithdraw": "Ritira el bonus",
     "referralPayoutRequested": "La tua domanda de ritir l'è stada ricevuda — te mandom el bonus. El cont l'è staa miss a zero.",
-    "errorPayout": "Ritir falliaa (ghe voeuren almen €100 e on metod de pagament)."
+    "errorPayout": "Ritir falliaa (ghe voeuren almen €100 e on metod de pagament).",
+    "aiBioLabel": "Génera ona bio cont l'IA",
+    "aiBioPlaceholder": "es. fotografo, Milan, matrimoni e viagg",
+    "aiBioButton": "Génera bio",
+    "generatedOk": "Bio generada in la toa lengua principal. Controllala, poeu traducela cont l'IA.",
+    "kind_EMAIL": "Iscrizion a la newsletter",
+    "audienceSection": "Pubblich (newsletter)",
+    "audienceHint": "Email cattaa su cont el bloch d'iscrizion a la newsletter. Doppi opt-in (GDPR); la lista l'è la toa — espórtela quand te voeuret.",
+    "audienceConfirmed": "Confermaa",
+    "audiencePending": "In attesa",
+    "audienceExport": "Esporta CSV",
+    "broadcastTitle": "Manda ona newsletter",
+    "broadcastSubject": "Ogget",
+    "broadcastBody": "Scriv el to messagg…",
+    "broadcastHint": "Mandada ai to iscritt confermaa, ognun cont on link per desiscrivess cont on click.",
+    "broadcastSend": "Manda ai iscritt",
+    "broadcastSent": "Newsletter mandada a {count} iscritt.",
+    "errorBroadcast": "Se pò minga mandà — giont on ogget e on messagg."
   },
   "profile": {
     "poweredBy": "Faa con Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Sto codes promozional chì l'è minga valid o l'è scaduu.",
     "shopSellerNote": "El contratt de acquist l'è tra ti e el creator; Linketto l'è la piattaforma.",
     "sellerTrader": "El venditor l'è on professionista",
-    "sellerPrivate": "El venditor l'è on privaa"
+    "sellerPrivate": "El venditor l'è on privaa",
+    "subButton": "Iscrivet",
+    "subConsent": "Sont d'accord a ricev email e accetti la",
+    "subCheck": "Quasi finii — controlla la toa casella per confermà l'iscrizion.",
+    "subConfirmed": "Te seet iscritt. Grazie!",
+    "subError": "Met ona email valida e segna la casella del consens.",
+    "unsubDone": "Te seet desiscritt. Te riceveret pù email."
   },
   "footer": {
     "company": "On prodott Carbon Stealth VCC",

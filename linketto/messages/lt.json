@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "pvz., BG80 BNBG... arba paypal.me/…",
     "referralWithdraw": "Atsiimti premiją",
     "referralPayoutRequested": "Tavo išmokos prašymas gautas — pervesime tavo premiją. Skaitiklis atstatytas.",
-    "errorPayout": "Atsiėmimas nepavyko (reikia bent €100 ir išmokos būdo)."
+    "errorPayout": "Atsiėmimas nepavyko (reikia bent €100 ir išmokos būdo).",
+    "aiBioLabel": "Sukurti bio su DI",
+    "aiBioPlaceholder": "pvz., fotografas, Milanas, vestuvės ir kelionės",
+    "aiBioButton": "Sukurti bio",
+    "generatedOk": "Bio sukurta jūsų pagrindine kalba. Peržiūrėkite ją ir tada išverskite su DI.",
+    "kind_EMAIL": "Naujienlaiškio prenumerata",
+    "audienceSection": "Auditorija (naujienlaiškis)",
+    "audienceHint": "El. laiškai, surinkti per naujienlaiškio prenumeratos bloką. Dvigubas patvirtinimas (GDPR); sąrašas yra jūsų — eksportuokite jį bet kada.",
+    "audienceConfirmed": "Patvirtinta",
+    "audiencePending": "Laukiama",
+    "audienceExport": "Eksportuoti CSV",
+    "broadcastTitle": "Siųsti naujienlaiškį",
+    "broadcastSubject": "Tema",
+    "broadcastBody": "Parašykite savo žinutę…",
+    "broadcastHint": "Siunčiama jūsų patvirtintiems prenumeratoriams, kiekvienam su atsisakymo nuoroda vienu paspaudimu.",
+    "broadcastSend": "Siųsti prenumeratoriams",
+    "broadcastSent": "Naujienlaiškis išsiųstas {count} prenumeratorių.",
+    "errorBroadcast": "Nepavyko išsiųsti — pridėkite temą ir žinutę."
   },
   "profile": {
     "poweredBy": "Sukurta su Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Šis nuolaidos kodas negalioja arba baigėsi.",
     "shopSellerNote": "Pirkimo sutartis sudaroma tarp tavęs ir kūrėjo; Linketto yra platforma.",
     "sellerTrader": "Pardavėjas yra prekiautojas",
-    "sellerPrivate": "Pardavėjas yra privatus asmuo"
+    "sellerPrivate": "Pardavėjas yra privatus asmuo",
+    "subButton": "Prenumeruoti",
+    "subConsent": "Sutinku gauti el. laiškus ir priimu",
+    "subCheck": "Beveik baigta — patikrinkite savo pašto dėžutę, kad patvirtintumėte prenumeratą.",
+    "subConfirmed": "Jūs užsiprenumeravote. Ačiū!",
+    "subError": "Įveskite galiojantį el. paštą ir pažymėkite sutikimo langelį.",
+    "unsubDone": "Prenumerata atšaukta. Daugiau el. laiškų negausite."
   },
   "footer": {
     "company": "Carbon Stealth VCC produktas",

@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "bijv. NL91 ABNA... of paypal.me/…",
     "referralWithdraw": "Bonus opnemen",
     "referralPayoutRequested": "Je opnameverzoek is ontvangen — we maken je bonus over. De teller is gereset.",
-    "errorPayout": "Opname mislukt (minimaal €100 en een uitbetaalmethode zijn vereist)."
+    "errorPayout": "Opname mislukt (minimaal €100 en een uitbetaalmethode zijn vereist).",
+    "aiBioLabel": "Genereer een bio met AI",
+    "aiBioPlaceholder": "bijv. fotograaf, Milaan, bruiloften & reizen",
+    "aiBioButton": "Bio genereren",
+    "generatedOk": "Bio gegenereerd in je hoofdtaal. Controleer hem en vertaal hem daarna met AI.",
+    "kind_EMAIL": "Nieuwsbrief-aanmelding",
+    "audienceSection": "Publiek (nieuwsbrief)",
+    "audienceHint": "E-mails verzameld via het aanmeldblok voor de nieuwsbrief. Dubbele opt-in (GDPR); de lijst is van jou — exporteer hem wanneer je wilt.",
+    "audienceConfirmed": "Bevestigd",
+    "audiencePending": "In behandeling",
+    "audienceExport": "CSV exporteren",
+    "broadcastTitle": "Een nieuwsbrief versturen",
+    "broadcastSubject": "Onderwerp",
+    "broadcastBody": "Schrijf je bericht…",
+    "broadcastHint": "Verzonden naar je bevestigde abonnees, elk met een afmeldlink met één klik.",
+    "broadcastSend": "Naar abonnees versturen",
+    "broadcastSent": "Nieuwsbrief verzonden naar {count} abonnees.",
+    "errorBroadcast": "Verzenden mislukt — voeg een onderwerp en een bericht toe."
   },
   "profile": {
     "poweredBy": "Gemaakt met Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Deze promocode is ongeldig of verlopen.",
     "shopSellerNote": "Het koopcontract is tussen jou en de maker; Linketto is het platform.",
     "sellerTrader": "De verkoper is een handelaar",
-    "sellerPrivate": "De verkoper is een particulier"
+    "sellerPrivate": "De verkoper is een particulier",
+    "subButton": "Abonneren",
+    "subConsent": "Ik ga akkoord met het ontvangen van e-mails en accepteer de",
+    "subCheck": "Bijna klaar — controleer je inbox om je abonnement te bevestigen.",
+    "subConfirmed": "Je bent geabonneerd. Bedankt!",
+    "subError": "Voer een geldig e-mailadres in en vink het toestemmingsvakje aan.",
+    "unsubDone": "Je bent afgemeld. Je ontvangt geen e-mails meer."
   },
   "footer": {
     "company": "Een product van Carbon Stealth VCC",

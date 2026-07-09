@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "piem., BG80 BNBG... vai paypal.me/…",
     "referralWithdraw": "Izņemt bonusu",
     "referralPayoutRequested": "Tavs izmaksas pieprasījums ir saņemts — mēs pārskaitīsim tavu bonusu. Skaitītājs ir atiestatīts.",
-    "errorPayout": "Izņemšana neizdevās (nepieciešami vismaz €100 un izmaksas metode)."
+    "errorPayout": "Izņemšana neizdevās (nepieciešami vismaz €100 un izmaksas metode).",
+    "aiBioLabel": "Ģenerēt bio ar MI",
+    "aiBioPlaceholder": "piem., fotogrāfs, Milāna, kāzas un ceļojumi",
+    "aiBioButton": "Ģenerēt bio",
+    "generatedOk": "Bio ģenerēts jūsu galvenajā valodā. Pārbaudiet to un pēc tam tulkojiet ar MI.",
+    "kind_EMAIL": "Pierakstīšanās jaunumiem",
+    "audienceSection": "Auditorija (jaunumi)",
+    "audienceHint": "E-pasta adreses, kas apkopotas ar jaunumu pierakstīšanās bloku. Dubultā piekrišana (GDPR); saraksts ir jūsu — eksportējiet to jebkurā laikā.",
+    "audienceConfirmed": "Apstiprināts",
+    "audiencePending": "Gaida",
+    "audienceExport": "Eksportēt CSV",
+    "broadcastTitle": "Sūtīt jaunumus",
+    "broadcastSubject": "Temats",
+    "broadcastBody": "Uzrakstiet savu ziņojumu…",
+    "broadcastHint": "Nosūtīts jūsu apstiprinātajiem abonentiem, katram ar atrakstīšanās saiti vienā klikšķī.",
+    "broadcastSend": "Sūtīt abonentiem",
+    "broadcastSent": "Jaunumi nosūtīti {count} abonentiem.",
+    "errorBroadcast": "Neizdevās nosūtīt — pievienojiet tematu un ziņojumu."
   },
   "profile": {
     "poweredBy": "Izveidots ar Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Šis akcijas kods ir nederīgs vai beidzies.",
     "shopSellerNote": "Pirkuma līgums ir starp tevi un radītāju; Linketto ir platforma.",
     "sellerTrader": "Pārdevējs ir tirgotājs",
-    "sellerPrivate": "Pārdevējs ir privātpersona"
+    "sellerPrivate": "Pārdevējs ir privātpersona",
+    "subButton": "Abonēt",
+    "subConsent": "Piekrītu saņemt e-pastus un pieņemu",
+    "subCheck": "Gandrīz gatavs — pārbaudiet savu iesūtni, lai apstiprinātu abonementu.",
+    "subConfirmed": "Jūs esat abonējis. Paldies!",
+    "subError": "Ievadiet derīgu e-pasta adresi un atzīmējiet piekrišanas rūtiņu.",
+    "unsubDone": "Jūsu abonements ir atcelts. Jūs vairs nesaņemsiet e-pastus."
   },
   "footer": {
     "company": "Carbon Stealth VCC produkts",

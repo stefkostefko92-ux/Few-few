@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "pl. HU42 1177... vagy paypal.me/…",
     "referralWithdraw": "Bónusz kifizetése",
     "referralPayoutRequested": "A kifizetési kérelmedet megkaptuk — átutaljuk a bónuszodat. A számláló lenullázódott.",
-    "errorPayout": "A kifizetés nem sikerült (legalább 100 € és egy kifizetési mód szükséges)."
+    "errorPayout": "A kifizetés nem sikerült (legalább 100 € és egy kifizetési mód szükséges).",
+    "aiBioLabel": "Bio generálása MI-vel",
+    "aiBioPlaceholder": "pl. fotós, Milánó, esküvők és utazás",
+    "aiBioButton": "Bio generálása",
+    "generatedOk": "A bio elkészült a fő nyelveden. Nézd át, majd fordítsd le MI-vel.",
+    "kind_EMAIL": "Feliratkozás a hírlevélre",
+    "audienceSection": "Közönség (hírlevél)",
+    "audienceHint": "A hírlevél feliratkozási blokkján keresztül gyűjtött e-mailek. Kettős megerősítés (GDPR); a lista a tiéd — exportáld bármikor.",
+    "audienceConfirmed": "Megerősítve",
+    "audiencePending": "Függőben",
+    "audienceExport": "CSV exportálása",
+    "broadcastTitle": "Hírlevél küldése",
+    "broadcastSubject": "Tárgy",
+    "broadcastBody": "Írd meg az üzeneted…",
+    "broadcastHint": "Elküldve a megerősített feliratkozóidnak, mindegyik egykattintásos leiratkozási linkkel.",
+    "broadcastSend": "Küldés a feliratkozóknak",
+    "broadcastSent": "Hírlevél elküldve {count} feliratkozónak.",
+    "errorBroadcast": "Nem sikerült elküldeni — adj meg tárgyat és üzenetet."
   },
   "profile": {
     "poweredBy": "Linkettóval készült",
@@ -342,7 +359,13 @@
     "shopCouponError": "Ez a promóciós kód érvénytelen vagy lejárt.",
     "shopSellerNote": "A vásárlási szerződés közted és az alkotó között jön létre; a Linketto a platform.",
     "sellerTrader": "Az eladó kereskedő",
-    "sellerPrivate": "Az eladó magánszemély"
+    "sellerPrivate": "Az eladó magánszemély",
+    "subButton": "Feliratkozás",
+    "subConsent": "Hozzájárulok az e-mailek fogadásához, és elfogadom a",
+    "subCheck": "Majdnem kész — nézd meg a postafiókod a feliratkozás megerősítéséhez.",
+    "subConfirmed": "Feliratkoztál. Köszönjük!",
+    "subError": "Adj meg egy érvényes e-mail-címet, és jelöld be a hozzájárulási négyzetet.",
+    "unsubDone": "Leiratkoztál. Nem kapsz több e-mailt."
   },
   "footer": {
     "company": "A Carbon Stealth VCC terméke",

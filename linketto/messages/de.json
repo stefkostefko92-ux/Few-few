@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "z. B. BG80 BNBG... oder paypal.me/…",
     "referralWithdraw": "Bonus auszahlen",
     "referralPayoutRequested": "Deine Auszahlungsanfrage ist eingegangen — wir überweisen deinen Bonus. Der Zähler wurde zurückgesetzt.",
-    "errorPayout": "Auszahlung fehlgeschlagen (mindestens €100 und eine Auszahlungsmethode erforderlich)."
+    "errorPayout": "Auszahlung fehlgeschlagen (mindestens €100 und eine Auszahlungsmethode erforderlich).",
+    "aiBioLabel": "Bio mit KI erstellen",
+    "aiBioPlaceholder": "z. B. Fotograf, Mailand, Hochzeiten & Reisen",
+    "aiBioButton": "Bio erstellen",
+    "generatedOk": "Bio in deiner Hauptsprache erstellt. Prüfe sie und übersetze sie dann mit KI.",
+    "kind_EMAIL": "Newsletter-Anmeldung",
+    "audienceSection": "Publikum (Newsletter)",
+    "audienceHint": "E-Mails, die über den Newsletter-Anmeldeblock gesammelt wurden. Double-Opt-in (GDPR); die Liste gehört dir — exportiere sie jederzeit.",
+    "audienceConfirmed": "Bestätigt",
+    "audiencePending": "Ausstehend",
+    "audienceExport": "CSV exportieren",
+    "broadcastTitle": "Newsletter senden",
+    "broadcastSubject": "Betreff",
+    "broadcastBody": "Schreibe deine Nachricht…",
+    "broadcastHint": "Wird an deine bestätigten Abonnenten gesendet, jeweils mit einem Ein-Klick-Abmeldelink.",
+    "broadcastSend": "An Abonnenten senden",
+    "broadcastSent": "Newsletter an {count} Abonnenten gesendet.",
+    "errorBroadcast": "Senden fehlgeschlagen — füge einen Betreff und eine Nachricht hinzu."
   },
   "profile": {
     "poweredBy": "Erstellt mit Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Dieser Promo-Code ist ungültig oder abgelaufen.",
     "shopSellerNote": "Der Kaufvertrag besteht zwischen dir und dem Creator; Linketto ist die Plattform.",
     "sellerTrader": "Der Verkäufer ist Unternehmer",
-    "sellerPrivate": "Der Verkäufer ist Privatperson"
+    "sellerPrivate": "Der Verkäufer ist Privatperson",
+    "subButton": "Abonnieren",
+    "subConsent": "Ich willige ein, E-Mails zu erhalten, und akzeptiere die",
+    "subCheck": "Fast geschafft — prüfe dein Postfach, um dein Abo zu bestätigen.",
+    "subConfirmed": "Du bist angemeldet. Danke!",
+    "subError": "Bitte gib eine gültige E-Mail ein und setze das Häkchen zur Einwilligung.",
+    "unsubDone": "Du wurdest abgemeldet. Du erhältst keine E-Mails mehr."
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",

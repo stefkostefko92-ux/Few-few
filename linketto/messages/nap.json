@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "es. BG80 BNBG… o paypal.me/…",
     "referralWithdraw": "Ritira 'o bonus",
     "referralPayoutRequested": "'A richiesta 'e ritiro toja è stata ricevuta — te mannammo 'o bonus. 'O cunto è stato azzerato.",
-    "errorPayout": "Ritiro fallito (ce vonno almeno €100 e nu metodo 'e pagamento)."
+    "errorPayout": "Ritiro fallito (ce vonno almeno €100 e nu metodo 'e pagamento).",
+    "aiBioLabel": "Génera na bio cu ll'IA",
+    "aiBioPlaceholder": "es. fotografo, Milano, matrimonie e viagge",
+    "aiBioButton": "Génera bio",
+    "generatedOk": "Bio generata int'â lengua toia principale. Contrullala, po' traducela cu ll'IA.",
+    "kind_EMAIL": "Iscrizzione â newsletter",
+    "audienceSection": "Pubblico (newsletter)",
+    "audienceHint": "Email accugliute cu 'o blocco d'iscrizzione â newsletter. Doppio opt-in (GDPR); 'a lista è 'a toia — espórtala quanno vuó.",
+    "audienceConfirmed": "Cunfermato",
+    "audiencePending": "'N attesa",
+    "audienceExport": "Esporta CSV",
+    "broadcastTitle": "Manna na newsletter",
+    "broadcastSubject": "Oggetto",
+    "broadcastBody": "Scrive 'o messaggio tuoio…",
+    "broadcastHint": "Mannata a ll'iscritte cunfermate, ognuno cu nu link pe se cancellà cu nu clic.",
+    "broadcastSend": "Manna a ll'iscritte",
+    "broadcastSent": "Newsletter mannata a {count} iscritte.",
+    "errorBroadcast": "Nun se pò mannà — aggiunge n'oggetto e nu messaggio."
   },
   "profile": {
     "poweredBy": "Fatto cu Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Stu codece promozionale nun vale o è scaduto.",
     "shopSellerNote": "'O cuntratto 'e accatto è fra te e 'o creator; Linketto è 'a piattaforma.",
     "sellerTrader": "'O venditore è nu professionista",
-    "sellerPrivate": "'O venditore è nu privato"
+    "sellerPrivate": "'O venditore è nu privato",
+    "subButton": "Iscrívete",
+    "subConsent": "Songo d'accordo a ricevere email e accetto 'a",
+    "subCheck": "Quase fatto — controlla 'a casella toia pe cunfermà ll'iscrizzione.",
+    "subConfirmed": "Te si' iscritto. Grazie!",
+    "subError": "Mette na email valida e segna 'a casella d'o cunsenso.",
+    "unsubDone": "Te si' cancellato. Nun ricive cchiù email."
   },
   "footer": {
     "company": "Nu prudotto Carbon Stealth VCC",

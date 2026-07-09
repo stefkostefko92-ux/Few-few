@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "f.eks. BG80 BNBG... eller paypal.me/…",
     "referralWithdraw": "Hæv bonus",
     "referralPayoutRequested": "Din udbetalingsanmodning blev modtaget — vi overfører din bonus. Tælleren er nulstillet.",
-    "errorPayout": "Udbetalingen mislykkedes (mindst 100 € og en udbetalingsmetode kræves)."
+    "errorPayout": "Udbetalingen mislykkedes (mindst 100 € og en udbetalingsmetode kræves).",
+    "aiBioLabel": "Generér en bio med AI",
+    "aiBioPlaceholder": "f.eks. fotograf, Milano, bryllupper og rejser",
+    "aiBioButton": "Generér bio",
+    "generatedOk": "Bio genereret på dit hovedsprog. Gennemgå den, og oversæt den derefter med AI.",
+    "kind_EMAIL": "Tilmelding til nyhedsbrev",
+    "audienceSection": "Publikum (nyhedsbrev)",
+    "audienceHint": "E-mails indsamlet via nyhedsbrevets tilmeldingsblok. Dobbelt opt-in (GDPR); listen er din — eksportér den når som helst.",
+    "audienceConfirmed": "Bekræftet",
+    "audiencePending": "Afventer",
+    "audienceExport": "Eksportér CSV",
+    "broadcastTitle": "Send et nyhedsbrev",
+    "broadcastSubject": "Emne",
+    "broadcastBody": "Skriv din besked…",
+    "broadcastHint": "Sendes til dine bekræftede abonnenter, hver med et afmeldingslink med ét klik.",
+    "broadcastSend": "Send til abonnenter",
+    "broadcastSent": "Nyhedsbrev sendt til {count} abonnenter.",
+    "errorBroadcast": "Kunne ikke sende — tilføj et emne og en besked."
   },
   "profile": {
     "poweredBy": "Lavet med Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Den rabatkode er ugyldig eller udløbet.",
     "shopSellerNote": "Købsaftalen er mellem dig og skaberen; Linketto er platformen.",
     "sellerTrader": "Sælgeren er erhvervsdrivende",
-    "sellerPrivate": "Sælgeren er en privatperson"
+    "sellerPrivate": "Sælgeren er en privatperson",
+    "subButton": "Abonnér",
+    "subConsent": "Jeg accepterer at modtage e-mails og accepterer",
+    "subCheck": "Næsten færdig — tjek din indbakke for at bekræfte dit abonnement.",
+    "subConfirmed": "Du er tilmeldt. Tak!",
+    "subError": "Indtast en gyldig e-mail, og sæt kryds i samtykkefeltet.",
+    "unsubDone": "Du er afmeldt. Du modtager ikke flere e-mails."
   },
   "footer": {
     "company": "Et produkt fra Carbon Stealth VCC",

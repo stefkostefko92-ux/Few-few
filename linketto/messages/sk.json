@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "napr. BG80 BNBG... alebo paypal.me/…",
     "referralWithdraw": "Vybrať bonus",
     "referralPayoutRequested": "Tvoja žiadosť o výber bola prijatá — bonus ti prevedieme. Počítadlo bolo vynulované.",
-    "errorPayout": "Výber sa nepodaril (vyžaduje sa minimálne €100 a spôsob výplaty)."
+    "errorPayout": "Výber sa nepodaril (vyžaduje sa minimálne €100 a spôsob výplaty).",
+    "aiBioLabel": "Vytvoriť bio pomocou AI",
+    "aiBioPlaceholder": "napr. fotograf, Miláno, svadby a cestovanie",
+    "aiBioButton": "Vytvoriť bio",
+    "generatedOk": "Bio vytvorené vo vašom hlavnom jazyku. Skontrolujte ho a potom preložte pomocou AI.",
+    "kind_EMAIL": "Prihlásenie na newsletter",
+    "audienceSection": "Publikum (newsletter)",
+    "audienceHint": "E-maily zhromaždené prostredníctvom bloku prihlásenia na newsletter. Dvojité potvrdenie (GDPR); zoznam je váš — exportujte ho kedykoľvek.",
+    "audienceConfirmed": "Potvrdené",
+    "audiencePending": "Čaká",
+    "audienceExport": "Exportovať CSV",
+    "broadcastTitle": "Odoslať newsletter",
+    "broadcastSubject": "Predmet",
+    "broadcastBody": "Napíšte svoju správu…",
+    "broadcastHint": "Odoslané vašim potvrdeným odberateľom, každý s odhlasovacím odkazom na jedno kliknutie.",
+    "broadcastSend": "Odoslať odberateľom",
+    "broadcastSent": "Newsletter odoslaný {count} odberateľom.",
+    "errorBroadcast": "Nedá sa odoslať — pridajte predmet a správu."
   },
   "profile": {
     "poweredBy": "Vytvorené s Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Tento promo kód je neplatný alebo vypršal.",
     "shopSellerNote": "Kúpna zmluva je medzi tebou a tvorcom; Linketto je platforma.",
     "sellerTrader": "Predajca je obchodník",
-    "sellerPrivate": "Predajca je súkromná osoba"
+    "sellerPrivate": "Predajca je súkromná osoba",
+    "subButton": "Odoberať",
+    "subConsent": "Súhlasím so zasielaním e-mailov a prijímam",
+    "subCheck": "Takmer hotovo — skontrolujte svoju schránku a potvrďte odber.",
+    "subConfirmed": "Odber je aktívny. Ďakujeme!",
+    "subError": "Zadajte platný e-mail a začiarknite pole súhlasu.",
+    "unsubDone": "Odber bol zrušený. Už nebudete dostávať žiadne e-maily."
   },
   "footer": {
     "company": "Produkt Carbon Stealth VCC",

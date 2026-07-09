@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "nt BG80 BNBG... või paypal.me/…",
     "referralWithdraw": "Võta boonus välja",
     "referralPayoutRequested": "Sinu väljamaksetaotlus võeti vastu — kanname sinu boonuse üle. Loendur on nullitud.",
-    "errorPayout": "Väljamakse ebaõnnestus (nõutav on vähemalt €100 ja väljamaksemeetod)."
+    "errorPayout": "Väljamakse ebaõnnestus (nõutav on vähemalt €100 ja väljamaksemeetod).",
+    "aiBioLabel": "Loo bio tehisintellektiga",
+    "aiBioPlaceholder": "nt fotograaf, Milano, pulmad ja reisimine",
+    "aiBioButton": "Loo bio",
+    "generatedOk": "Bio loodud sinu põhikeeles. Vaata see üle ja seejärel tõlgi tehisintellektiga.",
+    "kind_EMAIL": "Uudiskirja tellimine",
+    "audienceSection": "Publik (uudiskiri)",
+    "audienceHint": "Uudiskirja tellimisploki kaudu kogutud e-kirjad. Topeltkinnitus (GDPR); nimekiri kuulub sulle — ekspordi see igal ajal.",
+    "audienceConfirmed": "Kinnitatud",
+    "audiencePending": "Ootel",
+    "audienceExport": "Ekspordi CSV",
+    "broadcastTitle": "Saada uudiskiri",
+    "broadcastSubject": "Teema",
+    "broadcastBody": "Kirjuta oma sõnum…",
+    "broadcastHint": "Saadetakse sinu kinnitatud tellijatele, igaühel ühe klikiga tellimuse tühistamise link.",
+    "broadcastSend": "Saada tellijatele",
+    "broadcastSent": "Uudiskiri saadetud {count} tellijale.",
+    "errorBroadcast": "Saatmine ebaõnnestus — lisa teema ja sõnum."
   },
   "profile": {
     "poweredBy": "Loodud Linkettoga",
@@ -342,7 +359,13 @@
     "shopCouponError": "See sooduskood on kehtetu või aegunud.",
     "shopSellerNote": "Ostuleping sõlmitakse sinu ja looja vahel; Linketto on platvorm.",
     "sellerTrader": "Müüja on kaupleja",
-    "sellerPrivate": "Müüja on eraisik"
+    "sellerPrivate": "Müüja on eraisik",
+    "subButton": "Telli",
+    "subConsent": "Nõustun e-kirjade saamisega ja aktsepteerin",
+    "subCheck": "Peaaegu valmis — kontrolli oma postkasti, et tellimust kinnitada.",
+    "subConfirmed": "Oled tellinud. Aitäh!",
+    "subError": "Sisesta kehtiv e-posti aadress ja märgi nõusoleku ruut.",
+    "unsubDone": "Tellimus on tühistatud. Sa ei saa enam e-kirju."
   },
   "footer": {
     "company": "Carbon Stealth VCC toode",

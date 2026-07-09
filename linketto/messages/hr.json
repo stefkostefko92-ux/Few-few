@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "npr. HR12 2340... ili paypal.me/…",
     "referralWithdraw": "Isplati bonus",
     "referralPayoutRequested": "Zahtjev za isplatu je zaprimljen — prebacit ćemo tvoj bonus. Brojač je resetiran.",
-    "errorPayout": "Isplata nije uspjela (potrebno je najmanje €100 i način isplate)."
+    "errorPayout": "Isplata nije uspjela (potrebno je najmanje €100 i način isplate).",
+    "aiBioLabel": "Generiraj bio s UI-jem",
+    "aiBioPlaceholder": "npr. fotograf, Milano, vjenčanja i putovanja",
+    "aiBioButton": "Generiraj bio",
+    "generatedOk": "Bio generiran na vašem glavnom jeziku. Pregledajte ga, zatim prevedite s UI-jem.",
+    "kind_EMAIL": "Prijava na newsletter",
+    "audienceSection": "Publika (newsletter)",
+    "audienceHint": "E-adrese prikupljene putem bloka za prijavu na newsletter. Dvostruka privola (GDPR); popis je vaš — izvezite ga kad god želite.",
+    "audienceConfirmed": "Potvrđeno",
+    "audiencePending": "Na čekanju",
+    "audienceExport": "Izvezi CSV",
+    "broadcastTitle": "Pošalji newsletter",
+    "broadcastSubject": "Predmet",
+    "broadcastBody": "Napišite svoju poruku…",
+    "broadcastHint": "Šalje se vašim potvrđenim pretplatnicima, svaki s poveznicom za odjavu jednim klikom.",
+    "broadcastSend": "Pošalji pretplatnicima",
+    "broadcastSent": "Newsletter poslan {count} pretplatnika.",
+    "errorBroadcast": "Slanje nije uspjelo — dodajte predmet i poruku."
   },
   "profile": {
     "poweredBy": "Napravljeno s Linkettom",
@@ -342,7 +359,13 @@
     "shopCouponError": "Taj promo kod je nevažeći ili je istekao.",
     "shopSellerNote": "Ugovor o kupnji je između tebe i autora; Linketto je platforma.",
     "sellerTrader": "Prodavatelj je trgovac",
-    "sellerPrivate": "Prodavatelj je privatna osoba"
+    "sellerPrivate": "Prodavatelj je privatna osoba",
+    "subButton": "Pretplati se",
+    "subConsent": "Pristajem primati e-poštu i prihvaćam",
+    "subCheck": "Gotovo je skoro — provjerite svoj sandučić da potvrdite pretplatu.",
+    "subConfirmed": "Pretplaćeni ste. Hvala!",
+    "subError": "Unesite valjanu e-adresu i označite okvir privole.",
+    "unsubDone": "Odjavljeni ste. Više nećete primati e-poštu."
   },
   "footer": {
     "company": "Proizvod tvrtke Carbon Stealth VCC",

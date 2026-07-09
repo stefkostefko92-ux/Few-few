@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "np. BG80 BNBG... lub paypal.me/…",
     "referralWithdraw": "Wypłać bonus",
     "referralPayoutRequested": "Twój wniosek o wypłatę został przyjęty — przelejemy Twój bonus. Licznik został wyzerowany.",
-    "errorPayout": "Wypłata się nie powiodła (wymagane minimum €100 i metoda wypłaty)."
+    "errorPayout": "Wypłata się nie powiodła (wymagane minimum €100 i metoda wypłaty).",
+    "aiBioLabel": "Wygeneruj bio z pomocą AI",
+    "aiBioPlaceholder": "np. fotograf, Mediolan, śluby i podróże",
+    "aiBioButton": "Wygeneruj bio",
+    "generatedOk": "Bio wygenerowane w Twoim głównym języku. Sprawdź je, a następnie przetłumacz z AI.",
+    "kind_EMAIL": "Zapis do newslettera",
+    "audienceSection": "Odbiorcy (newsletter)",
+    "audienceHint": "Adresy e-mail zebrane przez blok zapisu do newslettera. Podwójna zgoda (GDPR); lista należy do Ciebie — eksportuj ją, kiedy chcesz.",
+    "audienceConfirmed": "Potwierdzony",
+    "audiencePending": "Oczekujący",
+    "audienceExport": "Eksportuj CSV",
+    "broadcastTitle": "Wyślij newsletter",
+    "broadcastSubject": "Temat",
+    "broadcastBody": "Napisz swoją wiadomość…",
+    "broadcastHint": "Wysyłany do potwierdzonych subskrybentów, każdy z linkiem do wypisania jednym kliknięciem.",
+    "broadcastSend": "Wyślij do subskrybentów",
+    "broadcastSent": "Newsletter wysłany do {count} subskrybentów.",
+    "errorBroadcast": "Nie udało się wysłać — dodaj temat i wiadomość."
   },
   "profile": {
     "poweredBy": "Stworzone z Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Ten kod promocyjny jest nieprawidłowy lub wygasł.",
     "shopSellerNote": "Umowa sprzedaży jest między Tobą a twórcą; Linketto jest platformą.",
     "sellerTrader": "Sprzedawca jest przedsiębiorcą",
-    "sellerPrivate": "Sprzedawca jest osobą prywatną"
+    "sellerPrivate": "Sprzedawca jest osobą prywatną",
+    "subButton": "Subskrybuj",
+    "subConsent": "Zgadzam się na otrzymywanie e-maili i akceptuję",
+    "subCheck": "Już prawie — sprawdź skrzynkę, aby potwierdzić subskrypcję.",
+    "subConfirmed": "Subskrypcja aktywna. Dziękujemy!",
+    "subError": "Podaj prawidłowy adres e-mail i zaznacz pole zgody.",
+    "unsubDone": "Subskrypcja została anulowana. Nie będziesz już otrzymywać e-maili."
   },
   "footer": {
     "company": "Produkt Carbon Stealth VCC",

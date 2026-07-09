@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "esim. BG80 BNBG... tai paypal.me/…",
     "referralWithdraw": "Nosta bonus",
     "referralPayoutRequested": "Nostopyyntösi vastaanotettiin — siirrämme bonuksesi. Laskuri on nollattu.",
-    "errorPayout": "Nosto epäonnistui (vaaditaan vähintään 100 € ja maksutapa)."
+    "errorPayout": "Nosto epäonnistui (vaaditaan vähintään 100 € ja maksutapa).",
+    "aiBioLabel": "Luo bio tekoälyllä",
+    "aiBioPlaceholder": "esim. valokuvaaja, Milano, häät ja matkailu",
+    "aiBioButton": "Luo bio",
+    "generatedOk": "Bio luotu pääkielelläsi. Tarkista se ja käännä sitten tekoälyllä.",
+    "kind_EMAIL": "Uutiskirjeen tilaus",
+    "audienceSection": "Yleisö (uutiskirje)",
+    "audienceHint": "Uutiskirjeen tilauslohkon kautta kerätyt sähköpostit. Kaksinkertainen vahvistus (GDPR); lista on sinun — vie se milloin tahansa.",
+    "audienceConfirmed": "Vahvistettu",
+    "audiencePending": "Odottaa",
+    "audienceExport": "Vie CSV",
+    "broadcastTitle": "Lähetä uutiskirje",
+    "broadcastSubject": "Aihe",
+    "broadcastBody": "Kirjoita viestisi…",
+    "broadcastHint": "Lähetetään vahvistetuille tilaajillesi, kullakin yhden klikkauksen peruutuslinkki.",
+    "broadcastSend": "Lähetä tilaajille",
+    "broadcastSent": "Uutiskirje lähetetty {count} tilaajalle.",
+    "errorBroadcast": "Lähetys epäonnistui — lisää aihe ja viesti."
   },
   "profile": {
     "poweredBy": "Tehty Linkettolla",
@@ -342,7 +359,13 @@
     "shopCouponError": "Tämä alennuskoodi on virheellinen tai vanhentunut.",
     "shopSellerNote": "Ostosopimus on sinun ja tekijän välinen; Linketto on alusta.",
     "sellerTrader": "Myyjä on elinkeinonharjoittaja",
-    "sellerPrivate": "Myyjä on yksityishenkilö"
+    "sellerPrivate": "Myyjä on yksityishenkilö",
+    "subButton": "Tilaa",
+    "subConsent": "Hyväksyn sähköpostien vastaanottamisen ja hyväksyn",
+    "subCheck": "Melkein valmista — tarkista sähköpostisi vahvistaaksesi tilauksen.",
+    "subConfirmed": "Tilaus vahvistettu. Kiitos!",
+    "subError": "Anna kelvollinen sähköpostiosoite ja rastita suostumusruutu.",
+    "unsubDone": "Tilauksesi on peruutettu. Et saa enää sähköposteja."
   },
   "footer": {
     "company": "Carbon Stealth VCC -tuote",

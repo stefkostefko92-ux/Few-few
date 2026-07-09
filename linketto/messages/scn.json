@@ -311,7 +311,24 @@
     "referralPayoutMethodPlaceholder": "es. BG80 BNBG… o paypal.me/…",
     "referralWithdraw": "Ritira lu bonus",
     "referralPayoutRequested": "La tò richiesta di ritiru fu ricivuta — ti mannamu lu bonus. Lu cuntu fu azzeratu.",
-    "errorPayout": "Ritiru falliutu (ci vonnu almenu €100 e un mètudu di pagamentu)."
+    "errorPayout": "Ritiru falliutu (ci vonnu almenu €100 e un mètudu di pagamentu).",
+    "aiBioLabel": "Genera na bio cu l'IA",
+    "aiBioPlaceholder": "es. fotografu, Milanu, matrimonii e viaggi",
+    "aiBioButton": "Genera bio",
+    "generatedOk": "Bio generata nta lingua toi principali. Cuntrollala, poi traducila cu l'IA.",
+    "kind_EMAIL": "Iscrizzioni a la newsletter",
+    "audienceSection": "Pubblicu (newsletter)",
+    "audienceHint": "Email arricugghiuti cu lu bloccu d'iscrizzioni a la newsletter. Doppiu opt-in (GDPR); la lista è la toi — espórtala quannu voi.",
+    "audienceConfirmed": "Cunfirmatu",
+    "audiencePending": "'N attisa",
+    "audienceExport": "Esporta CSV",
+    "broadcastTitle": "Manna na newsletter",
+    "broadcastSubject": "Oggettu",
+    "broadcastBody": "Scrivi lu missaggiu toi…",
+    "broadcastHint": "Mannata a li iscritti cunfirmati, ognunu cu nu link pi scancillarisi cu nu clic.",
+    "broadcastSend": "Manna a li iscritti",
+    "broadcastSent": "Newsletter mannata a {count} iscritti.",
+    "errorBroadcast": "Nun si pò mannari — junci n'oggettu e nu missaggiu."
   },
   "profile": {
     "poweredBy": "Fattu cu Linketto",
@@ -342,7 +359,13 @@
     "shopCouponError": "Stu codici prumuzziunali non vali o è scadutu.",
     "shopSellerNote": "Lu cuntrattu d'accattu è tra tia e lu creator; Linketto è la piattaforma.",
     "sellerTrader": "Lu vinnituri è un prufissiunista",
-    "sellerPrivate": "Lu vinnituri è un privatu"
+    "sellerPrivate": "Lu vinnituri è un privatu",
+    "subButton": "Iscrìviti",
+    "subConsent": "Sugnu d'accordu a ricìviri email e accettu la",
+    "subCheck": "Quasi fattu — cuntrolla la casella toi pi cunfirmari l'iscrizzioni.",
+    "subConfirmed": "Ti scrivisti. Grazii!",
+    "subError": "Metti na email valida e signa la casella dû cunsensu.",
+    "unsubDone": "Ti scancillasti. Nun ricivi cchiù email."
   },
   "footer": {
     "company": "Un prudottu Carbon Stealth VCC",
