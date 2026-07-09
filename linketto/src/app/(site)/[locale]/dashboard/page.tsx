@@ -904,6 +904,8 @@ export default async function DashboardPage({
                         'FORM',
                         'TIP',
                         'EMAIL',
+                        'POLL',
+                        'BOOKING',
                       ] as const
                     ).map((kind) => (
                       <option key={kind} value={kind}>
@@ -973,6 +975,18 @@ export default async function DashboardPage({
                     name="showUntil"
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
                   />
+                </label>
+                <label className="block text-sm font-medium sm:col-span-2">
+                  {t('pollOptionsLabel')}
+                  <textarea
+                    name="options"
+                    rows={3}
+                    placeholder={t('pollOptionsPlaceholder')}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                  <span className="mt-1 block text-xs font-normal text-slate-500">
+                    {t('pollOptionsHint')}
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 text-sm font-medium sm:col-span-2">
                   <input type="checkbox" name="featured" className="h-4 w-4" />

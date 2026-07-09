@@ -258,6 +258,7 @@ export async function addLinkAction(formData: FormData): Promise<void> {
     extra2: String(formData.get('extra2') ?? ''),
     color: String(formData.get('color') ?? ''),
     featured: formData.get('featured') === 'on',
+    options: String(formData.get('options') ?? ''),
   });
   if (!input || !title) {
     redirect(`/${uiLocale}/dashboard?error=block`);

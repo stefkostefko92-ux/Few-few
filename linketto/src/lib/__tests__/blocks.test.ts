@@ -4,10 +4,40 @@ import {
   buildVCard,
   isBlockVisible,
   parseBlockInput,
+  parsePollOptions,
   pickAppTarget,
   pickMusicTarget,
+  pollPercentages,
   videoEmbedSrc,
 } from '../blocks';
+
+test('parsePollOptions: 2–6 уникални опции', () => {
+  assert.deepEqual(parsePollOptions('Да\nНе'), ['Да', 'Не']);
+  assert.equal(parsePollOptions('само една'), null);
+  assert.deepEqual(parsePollOptions('a\na\nb'), ['a', 'b']); // маха дубликати
+  assert.equal(parsePollOptions('1;2;3;4;5;6;7')?.length, 6); // таван 6
+});
+
+test('parseBlockInput: POLL иска опции', () => {
+  assert.equal(
+    parseBlockInput({ kind: 'POLL', url: '', extra1: '', extra2: '' }),
+    null,
+  );
+  const poll = parseBlockInput({
+    kind: 'POLL',
+    url: '',
+    extra1: '',
+    extra2: '',
+    options: 'Синьо\nЗелено',
+  });
+  assert.deepEqual(poll, { kind: 'POLL', url: null, meta: { options: ['Синьо', 'Зелено'] } });
+});
+
+test('pollPercentages: закръглени дялове', () => {
+  assert.deepEqual(pollPercentages([1, 1]), [50, 50]);
+  assert.deepEqual(pollPercentages([0, 0]), [0, 0]);
+  assert.deepEqual(pollPercentages([3, 1]), [75, 25]);
+});
 
 test('parseBlockInput: LINK изисква валиден http(s) URL', () => {
   assert.equal(

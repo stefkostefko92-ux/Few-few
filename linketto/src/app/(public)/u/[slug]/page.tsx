@@ -34,6 +34,7 @@ export default async function PublicProfilePage({
     subscribed?: string;
     subError?: string;
     unsub?: string;
+    voted?: string;
   }>;
 }) {
   const { slug } = await params;
@@ -46,6 +47,7 @@ export default async function PublicProfilePage({
     subscribed,
     subError,
     unsub,
+    voted,
   } = await searchParams;
   const profile = await loadProfileBy({ slug });
   if (
@@ -67,6 +69,7 @@ export default async function PublicProfilePage({
       subscribed={subscribed}
       subError={subError}
       unsub={unsub}
+      voted={voted}
     />
   );
 }

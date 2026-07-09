@@ -5,7 +5,12 @@ import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { dirFor, localeFromGeo, LOCALE_NAMES } from '@/i18n/locales';
-import { isBlockVisible, videoEmbedSrc, type BlockMeta } from '@/lib/blocks';
+import {
+  isBlockVisible,
+  pollPercentages,
+  videoEmbedSrc,
+  type BlockMeta,
+} from '@/lib/blocks';
 import { brandFor, isSensitiveUrl } from '@/lib/brands';
 import { BrandIcon, BRAND_COLORS } from '@/components/brand-icons';
 import { ShareButton } from '@/components/ShareButton';
@@ -30,6 +35,7 @@ import {
 import { submitContactAction } from '@/app/actions/contact';
 import { startProductPurchaseAction } from '@/app/actions/shop';
 import { subscribeAction } from '@/app/actions/newsletter';
+import { votePollAction } from '@/app/actions/poll';
 
 // Общото публично рендиране на профил — ползва се от /u/[slug]
 // и от собствените домейни (/d/[domain] през middleware rewrite).
@@ -148,6 +154,7 @@ export async function ProfileScreen({
   subscribed,
   subError,
   unsub,
+  voted,
 }: {
   profile: LoadedProfile;
   hl?: string;
@@ -158,6 +165,7 @@ export async function ProfileScreen({
   subscribed?: string;
   subError?: string;
   unsub?: string;
+  voted?: string;
 }) {
   const slug = profile.slug;
   const available = profile.translations.map((t) => t.locale);
@@ -260,6 +268,31 @@ export async function ProfileScreen({
       },
     });
   }
+  // Гласове по анкета: агрегат по опция (без бисквитки/PII).
+  const pollLinkIds = profile.links
+    .filter((link) => link.kind === 'POLL')
+    .map((link) => link.id);
+  const pollCounts = new Map<string, number[]>();
+  if (pollLinkIds.length > 0) {
+    const rows = await prisma.pollVote.groupBy({
+      by: ['linkId', 'optionIndex'],
+      where: { linkId: { in: pollLinkIds } },
+      _count: { _all: true },
+    });
+    for (const link of profile.links) {
+      if (link.kind !== 'POLL') continue;
+      const options = Array.isArray((link.meta as BlockMeta | null)?.options)
+        ? ((link.meta as BlockMeta).options as string[])
+        : [];
+      const counts = options.map(
+        (_, i) =>
+          rows.find((r) => r.linkId === link.id && r.optionIndex === i)?._count
+            ._all ?? 0,
+      );
+      pollCounts.set(link.id, counts);
+    }
+  }
+
   const greeting = GREETING_BY_LOCALE[viewLocale] ?? GREETING_BY_LOCALE.en;
   const shareUrl = `${process.env.PUBLIC_BASE_URL ?? ''}/u/${slug}`;
 
@@ -750,6 +783,81 @@ export async function ProfileScreen({
                     </div>
                   </li>
                 );
+              case 'POLL': {
+                const options = Array.isArray(meta?.options)
+                  ? (meta.options as string[])
+                  : [];
+                const counts = pollCounts.get(link.id) ?? options.map(() => 0);
+                const total = counts.reduce((sum, n) => sum + n, 0);
+                const pct = pollPercentages(counts);
+                const showResults = voted === link.id || total > 0;
+                return (
+                  <li
+                    key={link.id}
+                    id={`poll-${link.id}`}
+                    className={`pf-rise ${gridSpan}`}
+                    style={rise()}
+                  >
+                    <div
+                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
+                      style={buttonCss(styleCfg, accentFor(meta))}
+                    >
+                      <p className="text-center font-medium">{title}</p>
+                      <div className="mt-3 space-y-2">
+                        {options.map((option, i) => (
+                          <form
+                            key={i}
+                            action={votePollAction}
+                            className="relative"
+                          >
+                            <input type="hidden" name="slug" value={slug} />
+                            <input
+                              type="hidden"
+                              name="hl"
+                              value={viewLocale}
+                            />
+                            <input
+                              type="hidden"
+                              name="linkId"
+                              value={link.id}
+                            />
+                            <input
+                              type="hidden"
+                              name="optionIndex"
+                              value={i}
+                            />
+                            <button
+                              type="submit"
+                              className="relative w-full overflow-hidden rounded-lg border border-current/30 px-3 py-2 text-left text-sm transition hover:border-current"
+                            >
+                              {showResults && (
+                                <span
+                                  className="absolute inset-y-0 left-0 bg-current/15"
+                                  style={{ width: `${pct[i]}%` }}
+                                  aria-hidden="true"
+                                />
+                              )}
+                              <span className="relative flex justify-between gap-2">
+                                <span>{option}</span>
+                                {showResults && (
+                                  <span className="font-semibold">
+                                    {pct[i]}%
+                                  </span>
+                                )}
+                              </span>
+                            </button>
+                          </form>
+                        ))}
+                      </div>
+                      {showResults && (
+                        <p className="mt-2 text-center text-[11px] opacity-60">
+                          {t('pollVotes', { count: total })}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                );
+              }
               // LINK, MAP, APP, TIP, VCARD — бутон през click redirect-а
               default: {
                 const featured = meta?.featured === true;

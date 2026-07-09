@@ -16,6 +16,8 @@ export const BLOCK_KINDS = [
   'TIP',
   'VCARD',
   'EMAIL',
+  'POLL',
+  'BOOKING',
 ] as const;
 
 export type BlockKindId = (typeof BLOCK_KINDS)[number];
@@ -39,6 +41,22 @@ export interface BlockMeta {
   color?: string;
   /** Spotlight: блокът се рендира открояващо (голяма карта със сияние). */
   featured?: boolean;
+  /** POLL: опциите за гласуване (2–6). */
+  options?: string[];
+}
+
+export const POLL_MIN_OPTIONS = 2;
+export const POLL_MAX_OPTIONS = 6;
+
+/** Парсва опциите на анкета от многоредов/разделен текст (2–6, ≤80 знака). */
+export function parsePollOptions(raw: string): string[] | null {
+  const options = raw
+    .split(/[\n;]+/)
+    .map((line) => line.trim().slice(0, 80))
+    .filter(Boolean);
+  const unique = [...new Set(options)];
+  if (unique.length < POLL_MIN_OPTIONS) return null;
+  return unique.slice(0, POLL_MAX_OPTIONS);
 }
 
 const httpUrl = z
@@ -70,9 +88,20 @@ export function parseBlockInput(raw: {
   extra2: string;
   color?: string;
   featured?: boolean;
+  options?: string;
 }): BlockInput | null {
   const kind = raw.kind as BlockKindId;
   if (!BLOCK_KINDS.includes(kind)) return null;
+  // POLL: опциите идват от отделно поле, не от url/extra.
+  if (kind === 'POLL') {
+    const options = parsePollOptions(raw.options ?? '');
+    if (!options) return null;
+    const base: BlockInput = { kind, url: null, meta: { options } };
+    const color = (raw.color ?? '').trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(color)) base.meta = { ...base.meta, color };
+    if (raw.featured) base.meta = { ...base.meta, featured: true };
+    return base;
+  }
   const base = parseBlockCore(raw, kind);
   if (!base) return null;
   // Пер-блок акцентен цвят — всяко копче може да е различно.
@@ -95,6 +124,7 @@ function parseBlockCore(
     case 'HEADER':
     case 'FORM':
     case 'EMAIL':
+    case 'BOOKING':
       return { kind, url: null, meta: null };
     case 'LINK':
     case 'TIP':
@@ -175,7 +205,17 @@ function parseBlockCore(
         },
       };
     }
+    default:
+      // POLL се обработва преди parseBlockCore; други непокрити → невалидно.
+      return null;
   }
+}
+
+/** Проценти по опция за анкета от броя гласове (закръглено, сума ~100). */
+export function pollPercentages(counts: readonly number[]): number[] {
+  const total = counts.reduce((sum, n) => sum + Math.max(0, n), 0);
+  if (total <= 0) return counts.map(() => 0);
+  return counts.map((n) => Math.round((Math.max(0, n) / total) * 100));
 }
 
 /** iframe src за видео блок: YouTube (през nocookie домейна) и Vimeo. */
