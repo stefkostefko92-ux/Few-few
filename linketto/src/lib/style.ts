@@ -39,6 +39,9 @@ export const styleSchema = z.object({
   hideBadge: z.boolean().default(false),
   // Бадж „N посещения този месец“ — социално доказателство без бисквитки.
   showViews: z.boolean().default(false),
+  // Публичен медиа кит (/u/<slug>/media-kit) — за оферти към брандове.
+  // Показва аудиторията по език/държава (нашето уникално предимство).
+  mediaKit: z.boolean().default(false),
 });
 
 export type ProfileStyle = z.infer<typeof styleSchema>;

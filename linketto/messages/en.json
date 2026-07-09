@@ -296,6 +296,8 @@
     "styleEffect_stars": "Starry sky",
     "styleEffect_gradient": "Living gradient",
     "styleShowViews": "Show this month's visits badge on the profile",
+    "styleMediaKit": "Publish a public media kit (audience stats for brand deals)",
+    "mediaKitLink": "Public media kit",
     "featuredLabel": "Spotlight this block (large glowing card)",
     "productDescription": "Description",
     "productPrice": "Price (EUR)",

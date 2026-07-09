@@ -648,6 +648,15 @@ export default async function DashboardPage({
                       />
                       {t('styleShowViews')}
                     </label>
+                    <label className="flex items-end gap-2 text-sm font-medium sm:col-span-2">
+                      <input
+                        type="checkbox"
+                        name="mediaKit"
+                        defaultChecked={styleCfg.mediaKit}
+                        className="h-4 w-4"
+                      />
+                      {t('styleMediaKit')}
+                    </label>
                     <button
                       type="submit"
                       className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700 sm:col-span-3 sm:justify-self-start"
@@ -1002,6 +1011,17 @@ export default async function DashboardPage({
                   SVG
                 </a>
               </div>
+              {parseStyle(profile.style).mediaKit && (
+                <p className="mt-4 border-t border-slate-100 pt-4 text-sm">
+                  <a
+                    href={`/u/${profile.slug}/media-kit`}
+                    className="inline-flex items-center gap-2 font-semibold text-linketto-700 hover:underline"
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    {t('mediaKitLink')} → /u/{profile.slug}/media-kit
+                  </a>
+                </p>
+              )}
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">

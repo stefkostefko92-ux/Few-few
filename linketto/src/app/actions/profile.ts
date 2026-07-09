@@ -150,6 +150,7 @@ export async function updateStyleAction(formData: FormData): Promise<void> {
     bgOverlay: field('bgOverlay'),
     hideBadge: formData.get('hideBadge') === 'on',
     showViews: formData.get('showViews') === 'on',
+    mediaKit: formData.get('mediaKit') === 'on',
   });
   if (!parsed.success) {
     redirect(`/${uiLocale}/dashboard?error=style`);
