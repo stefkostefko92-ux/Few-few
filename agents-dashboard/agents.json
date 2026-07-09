@@ -2528,9 +2528,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: panev: изтекъл priceValidUntil 2025-12-31 остана в prodotti.html ItemList (реда ~97-123… (+2 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-09",
+          "event": "v10.4 — учене",
+          "detail": "Научи: Supreme Bot prerender landingSnapshot() (scripts/prerender.mjs:110-113 tier()) рендира … (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-09",
+          "type": "learning",
+          "summary": "Научи: „Supreme Bot prerender landingSnapshot() (scripts/prerender.mjs:110-113 tier()) рендира …\" (+2 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
