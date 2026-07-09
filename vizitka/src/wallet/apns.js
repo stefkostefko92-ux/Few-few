@@ -32,7 +32,8 @@ function providerToken() {
 
 const b64url = (s) => Buffer.from(s).toString('base64url');
 
-// Пуска обновяване към всички устройства, регистрирали дадената визитка (serial=slug).
+// Пуска обновяване към всички устройства, регистрирали дадената визитка
+// (serial = profile.id — стабилен, не slug).
 export async function pushPassUpdate(serial) {
   if (!appleApnsEnabled()) return;
   const rows = db
@@ -58,8 +59,10 @@ export async function pushPassUpdate(serial) {
             'apns-priority': '5',
           });
           req.setEncoding('utf8');
+          req.setTimeout(5000, () => req.close()); // не увисвай, ако APNs не отговори
           req.on('response', () => {});
           req.on('error', () => resolve());
+          req.on('close', () => resolve());
           req.on('end', () => resolve());
           req.end('{}');
         })

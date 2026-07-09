@@ -96,7 +96,7 @@ db.exec(`
     id INTEGER PRIMARY KEY,
     device_library_id TEXT NOT NULL,   -- идентификатор на устройството от Apple
     pass_type_id TEXT NOT NULL,
-    serial_number TEXT NOT NULL,       -- = slug на визитката
+    serial_number TEXT NOT NULL,       -- = profile.id (стабилен, не slug)
     push_token TEXT NOT NULL,          -- APNs токен на устройството
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE(device_library_id, serial_number)

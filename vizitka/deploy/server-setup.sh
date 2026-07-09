@@ -35,14 +35,21 @@ ask() { # ask VAR "Подкана" "default"
   read -rp "$__p${__d:+ [$__d]}: " __in </dev/tty || true
   printf -v "$__v" '%s' "${__in:-$__d}"
 }
+asksecret() { # asksecret VAR "Подкана" "default" — тих вход, без показване на default
+  local __v=$1 __p=$2 __d=${3:-} __in
+  read -rsp "$__p${__d:+ (Enter = запази текущата)}: " __in </dev/tty || true
+  echo >/dev/tty
+  printf -v "$__v" '%s' "${__in:-$__d}"
+}
 
 # ── 0. Пакети ────────────────────────────────────────────────────────────────
-say "Проверявам пакети (nginx, certbot, sqlite3, age)"
+say "Проверявам пакети (nginx, certbot, sqlite3, age, openssl)"
 need_pkg=()
 command -v nginx   >/dev/null || need_pkg+=(nginx)
 command -v certbot >/dev/null || need_pkg+=(certbot python3-certbot-nginx)
 command -v sqlite3 >/dev/null || need_pkg+=(sqlite3)
 command -v age     >/dev/null || need_pkg+=(age)
+command -v openssl >/dev/null || need_pkg+=(openssl)   # нужен за .pkpass подписа по време на изпълнение
 command -v node    >/dev/null || echo "  ! Node.js не е намерен — инсталирай Node ≥20 преди autodeploy."
 if ((${#need_pkg[@]})); then
   apt-get update -qq
@@ -78,7 +85,7 @@ SMTP_USER="$(prev SMTP_USER)"; SMTP_PASS="$(prev SMTP_PASS)"
 MAIL_FROM="$(prev MAIL_FROM)"; MAIL_FROM="${MAIL_FROM:-Vizitka <no-reply@$DOMAIN>}"
 if [[ -n "$SMTP_HOST" ]]; then
   ask SMTP_USER "SMTP потребител" "$SMTP_USER"
-  ask SMTP_PASS "SMTP парола"     "$SMTP_PASS"
+  asksecret SMTP_PASS "SMTP парола" "$SMTP_PASS"
   ask MAIL_FROM "Подател (From)"  "$MAIL_FROM"
 fi
 
@@ -128,16 +135,38 @@ systemctl enable vizitka >/dev/null
 say "nginx vhost + TLS (certbot)"
 # Ако домейнът е различен от vizitka-bg.com, подмени server_name.
 sed "s/vizitka-bg\.com/$DOMAIN/g" "$HERE/nginx/vizitka.conf" > /etc/nginx/sites-available/vizitka.conf
-ln -sf ../sites-available/vizitka.conf /etc/nginx/sites-enabled/vizitka.conf
+
 if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
-  # Първо издаване: --nginx сам вдига временен HTTP блок; ако още няма сертификат,
-  # certbot ще редактира конфигурацията при успех.
-  certbot certonly --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" || {
+  # Chicken-and-egg: пълният vhost сочи още несъществуващ сертификат и чупи `nginx -t`
+  # (значи и `certbot --nginx`). Затова първо вдигаме временен HTTP-only блок само за
+  # ACME проверката, вземаме сертификата през webroot, после активираме пълния 443 vhost.
+  mkdir -p /var/www/html
+  cat > /etc/nginx/sites-available/vizitka-acme.conf <<NG
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN;
+    root /var/www/html;
+    location /.well-known/acme-challenge/ { allow all; }
+}
+NG
+  rm -f /etc/nginx/sites-enabled/vizitka.conf
+  ln -sf ../sites-available/vizitka-acme.conf /etc/nginx/sites-enabled/vizitka-acme.conf
+  nginx -t && systemctl reload nginx
+  certbot certonly --webroot -w /var/www/html -d "$DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" || {
     echo "  ! certbot се провали (провери, че DNS за $DOMAIN сочи този сървър)."
-    echo "    Пусни ръчно после: certbot certonly --nginx -d $DOMAIN"
+    echo "    Оправи DNS и пусни пак този скрипт."
   }
+  rm -f /etc/nginx/sites-enabled/vizitka-acme.conf
 fi
-nginx -t && systemctl reload nginx
+
+# Активирай пълния vhost (443) само когато вече има сертификат — иначе nginx няма да стартира.
+if [[ -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
+  ln -sf ../sites-available/vizitka.conf /etc/nginx/sites-enabled/vizitka.conf
+  nginx -t && systemctl reload nginx
+else
+  echo "  ! Няма сертификат за $DOMAIN — пълният HTTPS vhost НЕ е активиран. Пусни пак след DNS."
+fi
 
 # ── 5. Криптиран бекъп (age) + logrotate ─────────────────────────────────────
 say "Криптиран бекъп cron"
@@ -147,17 +176,20 @@ if [[ -z "$AGE_RECIPIENT" ]]; then
   ask GEN "  Да генерирам ли age двойка тук? Частният ключ ще се покаже ВЕДНЪЖ — запази го извън сървъра (y/N)" "N"
   if [[ "${GEN,,}" == y ]]; then
     KEYFILE="$(mktemp)"
-    age-keygen -o "$KEYFILE" 2>/tmp/age-pub.txt
-    AGE_RECIPIENT="$(sed -n 's/^# public key: //p' /tmp/age-pub.txt)"
+    age-keygen -o "$KEYFILE" >/dev/null 2>&1
+    # -y извежда recipient-а надеждно от самия ключ (не разчита на stderr формата).
+    AGE_RECIPIENT="$(age-keygen -y "$KEYFILE")"
     echo "  ┌─ ЧАСТЕН age КЛЮЧ (копирай СЕГА, няма да се покаже пак) ─────────"
     sed 's/^/  │ /' "$KEYFILE"
     echo "  └────────────────────────────────────────────────────────────────"
     echo "  Публичен (recipient): $AGE_RECIPIENT"
     shred -u "$KEYFILE" 2>/dev/null || rm -f "$KEYFILE"
-    rm -f /tmp/age-pub.txt
   fi
 fi
 if [[ -n "$AGE_RECIPIENT" ]]; then
+  # backup.sh върви като $APP_USER през cron → целевата директория трябва да е негова
+  # (/var/backups е root:root 755, иначе mkdir в скрипта фейлва под set -e).
+  install -d -o "$APP_USER" -g "$APP_USER" -m 700 /var/backups/vizitka
   install -o "$APP_USER" -g "$APP_USER" -m 640 /dev/null /var/log/vizitka-backup.log
   cp "$HERE/logrotate/vizitka-backup" /etc/logrotate.d/vizitka-backup
   CRON="25 3 * * * $APP_USER AGE_RECIPIENT=$AGE_RECIPIENT $APP_HOME/deploy/backup.sh >> /var/log/vizitka-backup.log 2>&1"

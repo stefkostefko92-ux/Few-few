@@ -80,7 +80,8 @@ router.post('/v1/devices/:device/registrations/:passType/:serial', jsonBody, (re
   if (!authorizedFor(req, req.params.serial)) return res.status(401).end();
   if (!appleEnabled()) return res.status(404).end();
   const pushToken = req.body?.pushToken;
-  if (!pushToken) return res.status(400).end();
+  // APNs токенът е hex/base-подобен низ; валидираме формата, преди да го пазим/ползваме в път.
+  if (!pushToken || !/^[A-Za-z0-9]{32,200}$/.test(pushToken)) return res.status(400).end();
   const existing = db
     .prepare(
       'SELECT id FROM apple_pass_registrations WHERE device_library_id = ? AND serial_number = ?'
@@ -120,7 +121,7 @@ router.get('/v1/devices/:device/registrations/:passType', (req, res) => {
 
 // Сервиране на обновения пас (устройството дърпа след пуш). Серийният номер е
 // стабилният profile.id (не слъгът), затова заявката е по id.
-router.get('/v1/passes/:passType/:serial', (req, res) => {
+router.get('/v1/passes/:passType/:serial', walletLimiter, (req, res) => {
   if (!authorizedFor(req, req.params.serial)) return res.status(401).end();
   if (!appleEnabled()) return res.status(404).end();
   const profile = db.prepare('SELECT * FROM profiles WHERE id = ?').get(req.params.serial);

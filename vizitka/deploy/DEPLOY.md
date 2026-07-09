@@ -22,6 +22,11 @@ sudo bash vizitka/deploy/server-setup.sh
 После качи кода: `sudo PROJECTS="vizitka" bash deploy/autodeploy.sh` (стъпка 5).
 Ръчните стъпки 1–6 остават като референция / за фина настройка.
 
+> Скриптът пренаписва целия `vizitka.env` при всяко пускане, но **запазва** вече
+> генерираните тайни (`PRINT_API_SECRET`, `INDEXNOW_KEY`), SMTP блока и портфейл
+> редовете. Ако си добавил **ръчно друг** ключ в env-а, добави го отново след re-run
+> (или го дръж в отделен systemd drop-in), за да не се загуби.
+
 ## 1. Системен потребител и директории
 
 ```bash
@@ -148,10 +153,12 @@ health check на `http://127.0.0.1:3100/` с автоматичен rollback п
 2. Извади PEM-ите и свали **WWDR** междинния сертификат:
    ```bash
    mkdir -p /etc/vizitka/apple && chmod 700 /etc/vizitka/apple
-   # от изтегления pass.p12:
-   openssl pkcs12 -in pass.p12 -clcerts -nokeys -out /etc/vizitka/apple/signerCert.pem
-   openssl pkcs12 -in pass.p12 -nocerts -out /etc/vizitka/apple/signerKey.pem   # задай парола → APPLE_PASS_KEY_PASSPHRASE
-   # WWDR (Apple Worldwide Developer Relations):
+   # от изтегления pass.p12 (флагът -legacy е нужен на Ubuntu 24.04 / OpenSSL 3.x за
+   # .p12, експортиран от macOS Keychain — иначе „unsupported"):
+   openssl pkcs12 -legacy -in pass.p12 -clcerts -nokeys -out /etc/vizitka/apple/signerCert.pem
+   openssl pkcs12 -legacy -in pass.p12 -nocerts -out /etc/vizitka/apple/signerKey.pem   # задай парола → APPLE_PASS_KEY_PASSPHRASE
+   # WWDR (Apple Worldwide Developer Relations) — трябва да съответства на издателя на
+   # твоя Pass сертификат (при несъответствие пасът е невалиден мълчаливо):
    curl -s https://www.apple.com/certificateauthority/AppleWWDRCAG4.cer | openssl x509 -inform DER -out /etc/vizitka/apple/wwdr.pem
    chown -R vizitka:vizitka /etc/vizitka/apple && chmod 600 /etc/vizitka/apple/*
    ```
