@@ -108,7 +108,9 @@ function landingSnapshot(t) {
     (f) => `<div><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`
   ).join("");
   const tier = (x) =>
-    `<div><h3>${esc(x.name)} — ${esc(x.price)}</h3><ul>${
+    `<div><h3>${esc(x.name)} — ${esc(x.price)}${esc(x.per || "")}${
+      x.priceYearly ? ` (${esc(x.priceYearly)}${esc(x.perYear || "")})` : ""
+    }</h3><ul>${
       x.bullets.map((b) => `<li>${esc(b)}</li>`).join("")
     }</ul></div>`;
   // Free-vs-Premium comparison as a real <table> so non-JS AEO crawlers can quote it.
@@ -125,7 +127,9 @@ function landingSnapshot(t) {
     <section><h2>${esc(t.euHeading)}</h2><ul>${eu}</ul></section>
     ${compare}
     <section><h2>${esc(t.faqHeading)}</h2>${faq}</section>
-    <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${tier(t.tiers.agency5)}${tier(t.tiers.agency10)}</section>
+    <section><h2>${esc(t.pricingHeading)}</h2>${tier(t.tiers.free)}${tier(t.tiers.premium)}${tier(t.tiers.whitelabel)}${tier(t.tiers.agency5)}${tier(t.tiers.agency10)}${
+      t.priceNote ? `<p>${esc(t.priceNote)}</p>` : ""
+    }</section>
   </div>`;
 }
 
@@ -200,13 +204,14 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
     ["AI auto-replies", "Optional first response powered by Anthropic Claude, with an EU AI Act Art. 50 disclosure."],
     ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
-    ["White-label bot", "Premium servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
+    ["White-label bot", "White-label & Agency servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
   ];
   const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
   const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
     + `<div><h3>Premium — €9.99 / server / month (or €99 / year)</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies (Claude) and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
     + `<div><h3>White-label — €19.99 / month (or €199 / year)</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
-    + `<div><h3>Agency — €39.99 / month (Agency 5) or €79.99 / month (Agency 10)</h3><ul><li>White-label for up to 5 or 10 servers, one subscription</li><li>Annual: €399 / year (5) or €799 / year (10)</li><li>Reseller-friendly</li></ul></div>`;
+    + `<div><h3>Agency — €39.99 / month (Agency 5) or €79.99 / month (Agency 10)</h3><ul><li>White-label for up to 5 or 10 servers, one subscription</li><li>Annual: €399 / year (5) or €799 / year (10)</li><li>Reseller-friendly</li></ul></div>`
+    + `<p>All prices in EUR, VAT included where applicable · per server unless noted · subscriptions renew automatically until cancelled.</p>`;
   // Free-vs-Premium comparison — the most AI-citable, answer-first content.
   // Rendered as a real <table> so non-JS AEO crawlers (ClaudeBot/GPTBot/Perplexity)
   // can quote it; the SPA replaces it on mount. Mirrors the visible CompareRow table.

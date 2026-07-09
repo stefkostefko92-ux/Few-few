@@ -80,8 +80,14 @@ echo "  ✓ Тарифите са готови (цените са с включ�
 # Създаваме конфигурация със subscription_update за 4-те продукта и я подаваме
 # от backend-а (STRIPE_PORTAL_CONFIGURATION_ID) при създаване на portal сесия.
 PORTAL_MARKER="supreme_v3_portal"
+# id-то е в НАЧАЛОТО на всеки config обект, metadata.marker — в КРАЯ (много
+# редове по-долу), затова grep -B2 не ги сдвоява. Сплескваме JSON-а и взимаме
+# ПОСЛЕДНОТО bpc_ id преди първата поява на marker-а — това е обектът, който
+# го съдържа (всеки config носи точно едно bpc_ id, в началото си).
 PORTAL_ID=$(curl -sS "${AUTH[@]}" "$API/billing_portal/configurations?limit=100" \
-  | grep -B2 "\"marker\": *\"$PORTAL_MARKER\"" | grep -o '"id": *"bpc_[^"]*"' | head -1 | sed 's/.*"\(bpc_[^"]*\)"/\1/')
+  | tr -d '\n' \
+  | grep -o ".*\"marker\": *\"$PORTAL_MARKER\"" \
+  | grep -o '"id": *"bpc_[^"]*"' | tail -1 | sed 's/.*"\(bpc_[^"]*\)"/\1/')
 if [ -z "$PORTAL_ID" ]; then
   echo "→ Създавам Customer Portal конфигурация (plan switch)..."
   PREM_PROD=$(product_of_price "$PREM_M"); WL_PROD=$(product_of_price "$WL_M")

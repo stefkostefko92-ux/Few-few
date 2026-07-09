@@ -41,7 +41,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Какво става, когато 14-дневният период изтече — ще бъда ли таксуван?", a: "Не. Пробният период не изисква кредитна карта, така че няма какво да се таксува и няма какво да се отказва. Ако не се абонирате, сървърът се връща към безплатния план, когато изтекат 14-те дни — вашите панели, форми и архиви остават. Абонирайте се, когато сте готови." },
       { q: "Къде се съхраняват данните ми?", a: "Всички данни се съхраняват в ЕС. GDPR съвместимост по дизайн — без трансфери извън Съюза. Токените на персонализирани ботове са криптирани с AES-256-GCM." },
-      { q: "Мога ли да използвам собствен Discord бот?", a: "Да — Premium абонатите могат да качат собствен бот токен за white-label изживяване с ваше име и аватар." },
+      { q: "Мога ли да използвам собствен Discord бот?", a: "Да — с White-label плана (19,99 €/месец или 199 €/година; включен и в Agency плановете) качвате собствен бот токен за white-label изживяване с ваше име и аватар." },
       { q: "Какво става, ако се откажа?", a: "Няма обвързване. Откажете се по всяко време от таблото — сървърът се връща към безплатния план, а данните ви остават достъпни." },
       { q: "Поддържате ли няколко сървъра?", a: "Да — свържете неограничен брой Discord сървъри от един акаунт. Всеки сървър има независими настройки и абонамент." },
       { q: "Как получавам поддръжка?", a: "Присъединете се към нашия Discord сървър — директна поддръжка от екипа, който е създал Supreme Bot." },
@@ -117,7 +117,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Was passiert, wenn die 14-tägige Testphase endet — werde ich belastet?", a: "Nein. Die Testphase benötigt keine Kreditkarte, also gibt es nichts zu belasten und nichts zu kündigen. Wenn du kein Abo abschließt, wechselt der Server nach Ablauf der 14 Tage zurück in den Free-Tarif — deine Panels, Formulare und Transkripte bleiben erhalten. Abonniere, wann immer du bereit bist." },
       { q: "Wo werden meine Daten gespeichert?", a: "Alle Daten liegen in der EU. DSGVO-konform by Design — keine Übertragungen außerhalb der Union. Bot-Tokens werden mit AES-256-GCM verschlüsselt." },
-      { q: "Kann ich meinen eigenen Discord-Bot verwenden?", a: "Ja — Premium-Abonnenten können einen eigenen Bot-Token hochladen: White-Label mit deinem Namen und Avatar." },
+      { q: "Kann ich meinen eigenen Discord-Bot verwenden?", a: "Ja — mit dem White-label-Tarif (19,99 €/Monat oder 199 €/Jahr; auch in den Agency-Plänen enthalten) lädst du deinen eigenen Bot-Token hoch: White-Label mit deinem Namen und Avatar." },
       { q: "Was passiert bei einer Kündigung?", a: "Kein Lock-in. Jederzeit im Dashboard kündbar — der Server wechselt in den Free-Tarif, alle Daten bleiben zugänglich." },
       { q: "Werden mehrere Server unterstützt?", a: "Ja — verbinde beliebig viele Discord-Server mit einem Konto. Jeder Server hat eigene Einstellungen und Abrechnung." },
       { q: "Wie erhalte ich Support?", a: "Tritt unserem Discord-Server bei — direkter Support vom Team, das Supreme Bot entwickelt hat." },
@@ -193,7 +193,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "¿Qué pasa cuando terminan los 14 días de prueba? ¿Se me cobrará?", a: "No. La prueba no necesita tarjeta de crédito, así que no hay nada que cobrar ni nada que cancelar. Si no te suscribes, el servidor vuelve al plan gratuito cuando terminan los 14 días — tus paneles, formularios y transcripciones se mantienen. Suscríbete cuando quieras." },
       { q: "¿Dónde se almacenan mis datos?", a: "Todos los datos se almacenan en la UE. Cumplimiento RGPD por diseño — sin transferencias fuera de la Unión. Los tokens de bots se cifran con AES-256-GCM." },
-      { q: "¿Puedo usar mi propio bot de Discord?", a: "Sí — los suscriptores Premium pueden subir su propio token de bot para una experiencia white-label con su nombre y avatar." },
+      { q: "¿Puedo usar mi propio bot de Discord?", a: "Sí — con el plan White-label (19,99 €/mes o 199 €/año; también incluido en los planes Agency) puedes subir tu propio token de bot para una experiencia white-label con tu nombre y avatar." },
       { q: "¿Qué pasa si cancelo?", a: "Sin permanencia. Cancela cuando quieras desde el panel — el servidor vuelve al plan gratuito y tus datos siguen accesibles." },
       { q: "¿Se admiten varios servidores?", a: "Sí — conecta servidores de Discord ilimitados desde una sola cuenta. Cada servidor tiene configuración y facturación independientes." },
       { q: "¿Cómo obtengo soporte?", a: "Únete a nuestro servidor de Discord — soporte directo del equipo que creó Supreme Bot." },
@@ -269,7 +269,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Que se passe-t-il à la fin des 14 jours d'essai — serai-je facturé ?", a: "Non. L'essai ne nécessite aucune carte bancaire : il n'y a donc rien à facturer et rien à annuler. Si vous ne vous abonnez pas, le serveur revient au plan gratuit à la fin des 14 jours — vos panneaux, formulaires et transcriptions sont conservés. Abonnez-vous quand vous êtes prêt." },
       { q: "Où mes données sont-elles stockées ?", a: "Toutes les données sont stockées dans l'UE. Conformité RGPD by design — aucun transfert hors Union. Les tokens de bots sont chiffrés en AES-256-GCM." },
-      { q: "Puis-je utiliser mon propre bot Discord ?", a: "Oui — les abonnés Premium peuvent téléverser leur propre token de bot pour une expérience white-label avec leur nom et avatar." },
+      { q: "Puis-je utiliser mon propre bot Discord ?", a: "Oui — avec l'offre White-label (19,99 €/mois ou 199 €/an ; incluse aussi dans les offres Agency), vous téléversez votre propre token de bot pour une expérience white-label avec votre nom et avatar." },
       { q: "Que se passe-t-il si j'annule ?", a: "Aucun engagement. Annulez à tout moment depuis le tableau de bord — le serveur repasse au plan gratuit et vos données restent accessibles." },
       { q: "Plusieurs serveurs sont-ils pris en charge ?", a: "Oui — connectez un nombre illimité de serveurs Discord depuis un seul compte. Chaque serveur a ses propres réglages et sa propre facturation." },
       { q: "Comment obtenir de l'aide ?", a: "Rejoignez notre serveur Discord — support direct par l'équipe qui a créé Supreme Bot." },
@@ -345,7 +345,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Cosa succede quando finiscono i 14 giorni di prova — mi verrà addebitato qualcosa?", a: "No. La prova non richiede alcuna carta di credito, quindi non c'è nulla da addebitare e nulla da annullare. Se non ti abboni, al termine dei 14 giorni il server torna al piano gratuito — i tuoi pannelli, moduli e trascrizioni restano. Abbonati quando sei pronto." },
       { q: "Dove vengono archiviati i miei dati?", a: "Tutti i dati sono archiviati nell'UE. Conformità GDPR by design — nessun trasferimento fuori dall'Unione. I token dei bot sono cifrati con AES-256-GCM." },
-      { q: "Posso usare il mio bot Discord?", a: "Sì — gli abbonati Premium possono caricare il proprio token per un'esperienza white-label con il proprio nome e avatar." },
+      { q: "Posso usare il mio bot Discord?", a: "Sì — con il piano White-label (19,99 €/mese o 199 €/anno; incluso anche nei piani Agency) puoi caricare il tuo token per un'esperienza white-label con il tuo nome e avatar." },
       { q: "Cosa succede se annullo?", a: "Nessun vincolo. Annulla in qualsiasi momento dalla dashboard — il server torna al piano gratuito e i tuoi dati restano accessibili." },
       { q: "Sono supportati più server?", a: "Sì — collega server Discord illimitati da un unico account. Ogni server ha impostazioni e fatturazione indipendenti." },
       { q: "Come ottengo supporto?", a: "Unisciti al nostro server Discord — supporto diretto dal team che ha creato Supreme Bot." },
@@ -421,7 +421,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Wat gebeurt er als de proefperiode van 14 dagen afloopt — word ik dan iets in rekening gebracht?", a: "Nee. De proefperiode vereist geen creditcard, dus er valt niets in rekening te brengen en niets op te zeggen. Als je geen abonnement neemt, valt de server na 14 dagen automatisch terug op het gratis abonnement — je panels, formulieren en transcripties blijven behouden. Neem een abonnement wanneer je er klaar voor bent." },
       { q: "Waar worden mijn gegevens opgeslagen?", a: "Alle gegevens staan in de EU. AVG-conform by design — geen doorgifte buiten de Unie. Bot-tokens worden versleuteld met AES-256-GCM." },
-      { q: "Kan ik mijn eigen Discord-bot gebruiken?", a: "Ja — Premium-abonnees kunnen hun eigen bot-token uploaden voor een white-label-ervaring met eigen naam en avatar." },
+      { q: "Kan ik mijn eigen Discord-bot gebruiken?", a: "Ja — met het White-label-abonnement (€ 19,99/maand of € 199/jaar; ook inbegrepen in de Agency-abonnementen) upload je je eigen bot-token voor een white-label-ervaring met eigen naam en avatar." },
       { q: "Wat gebeurt er als ik opzeg?", a: "Geen lock-in. Zeg op elk moment op via het dashboard — de server valt terug op het gratis abonnement en je data blijft toegankelijk." },
       { q: "Worden meerdere servers ondersteund?", a: "Ja — koppel onbeperkt Discord-servers vanuit één account. Elke server heeft eigen instellingen en facturering." },
       { q: "Hoe krijg ik support?", a: "Word lid van onze Discord-server — directe support van het team dat Supreme Bot heeft gebouwd." },
@@ -497,7 +497,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Co się dzieje, gdy kończy się 14-dniowy okres próbny — czy zostanę obciążony?", a: "Nie. Okres próbny nie wymaga karty kredytowej, więc nie ma czego naliczać ani co anulować. Jeśli nie wykupisz subskrypcji, po 14 dniach serwer wraca do planu darmowego — Twoje panele, formularze i transkrypcje pozostają. Subskrybuj, kiedy będziesz gotowy." },
       { q: "Gdzie przechowywane są moje dane?", a: "Wszystkie dane są przechowywane w UE. Zgodność z RODO by design — bez transferów poza Unię. Tokeny botów są szyfrowane AES-256-GCM." },
-      { q: "Czy mogę używać własnego bota Discord?", a: "Tak — subskrybenci Premium mogą wgrać własny token bota i korzystać z white-label z własną nazwą i awatarem." },
+      { q: "Czy mogę używać własnego bota Discord?", a: "Tak — w planie White-label (19,99 €/mies. lub 199 €/rok; dostępny też w planach Agency) możesz wgrać własny token bota i korzystać z white-label z własną nazwą i awatarem." },
       { q: "Co się stanie, jeśli anuluję?", a: "Bez zobowiązań. Anuluj w dowolnym momencie z panelu — serwer wraca do planu darmowego, a Twoje dane pozostają dostępne." },
       { q: "Czy obsługiwanych jest wiele serwerów?", a: "Tak — podłącz nieograniczoną liczbę serwerów Discord z jednego konta. Każdy serwer ma niezależne ustawienia i rozliczenia." },
       { q: "Jak uzyskać pomoc?", a: "Dołącz do naszego serwera Discord — bezpośrednie wsparcie od zespołu, który stworzył Supreme Bot." },

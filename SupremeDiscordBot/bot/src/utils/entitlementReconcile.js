@@ -34,7 +34,12 @@ export async function runEntitlementReconcile(client) {
       if (!batch.size) break;
       all.push(...batch.values());
       if (batch.size < PAGE_SIZE) break;
-      after = batch.lastKey();
+      // Cursor = MAX snowflake от страницата, не lastKey(): List Entitlements
+      // е недокументиран за ред (общността докладва reversed при `after`), а
+      // lastKey() при обърнат ред връща най-малкото id → цикълът не мърда и
+      // тихо пропуска entitlements → reconcile би ги revoke-нал погрешно.
+      // Max-ът гарантира forward progress независимо от реда на отговора.
+      after = [...batch.keys()].reduce((m, id) => (BigInt(id) > BigInt(m) ? id : m));
     }
 
     const result = await reconcileEntitlements(all);
