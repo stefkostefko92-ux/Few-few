@@ -110,10 +110,11 @@ export function isLocale(value: string): value is Locale {
   return (LOCALES as readonly string[]).includes(value);
 }
 
-// ── Автоматичен избор на език по геолокация (държава/регион от IP) ─────
+// ── Автоматичен избор на език по геолокация (държава от IP) ───────────
 // Държава → основен език, който поддържаме. Езиково смесените държави
 // (Белгия, Швейцария, Люксембург) нарочно ги няма — там пада към
-// Accept-Language, който е по-точен.
+// Accept-Language, който е по-точен. Диалектите (nap/scn/lmo) НЕ се
+// избират автоматично — остават само за ръчен избор на потребителя.
 const COUNTRY_LOCALE: Record<string, Locale> = {
   BG: 'bg',
   HR: 'hr',
@@ -144,27 +145,13 @@ const COUNTRY_LOCALE: Record<string, Locale> = {
   US: 'en',
 };
 
-// Италиански регион → диалект (когато CDN подава регион). Само IT.
-function regionDialect(
-  country?: string | null,
-  region?: string | null,
-): Locale | null {
-  if (!country || country.toUpperCase() !== 'IT' || !region) return null;
-  const r = region.toLowerCase();
-  if (r.includes('campania') || r.includes('napoli') || r.includes('naples'))
-    return 'nap';
-  if (r.includes('sicil')) return 'scn';
-  if (r.includes('lombard')) return 'lmo';
-  return null;
-}
-
 /**
- * Езикът по геолокация: регион-диалект → държава-език → Accept-Language →
- * fallback. `available` ограничава избора (напр. до преводите на профил).
+ * Езикът по геолокация: държава-език → Accept-Language → fallback.
+ * `available` ограничава избора (напр. до преводите на профил).
+ * Диалектите (nap/scn/lmo) нарочно НЕ се избират автоматично — само ръчно.
  */
 export function localeFromGeo(opts: {
   country?: string | null;
-  region?: string | null;
   acceptLanguage?: string | null;
   available?: readonly string[];
   fallback: string;
@@ -173,12 +160,10 @@ export function localeFromGeo(opts: {
   const ok = (loc: string | null | undefined): string | null =>
     loc && (available as readonly string[]).includes(loc) ? loc : null;
 
-  const dialect = regionDialect(opts.country, opts.region);
   const byCountry = opts.country
     ? COUNTRY_LOCALE[opts.country.toUpperCase()]
     : null;
   return (
-    ok(dialect) ??
     ok(byCountry) ??
     bestLocale(opts.acceptLanguage ?? null, available, opts.fallback)
   );

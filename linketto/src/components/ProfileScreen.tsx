@@ -158,11 +158,11 @@ export async function ProfileScreen({
     // Явният избор (?hl) винаги печели.
     viewLocale = hl;
   } else {
-    // Иначе автоматично по IP геолокация (държава/регион) в рамките на
-    // езиците, които създателят е превел; после Accept-Language.
+    // Иначе автоматично по IP геолокация (държава) в рамките на езиците,
+    // които създателят е превел; после Accept-Language. Диалектите не се
+    // избират автоматично.
     viewLocale = localeFromGeo({
       country: requestHeaders.get('cf-ipcountry'),
-      region: requestHeaders.get('cf-region'),
       acceptLanguage: requestHeaders.get('accept-language'),
       available,
       fallback: available.includes(profile.defaultLocale)

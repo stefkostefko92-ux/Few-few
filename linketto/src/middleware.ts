@@ -34,9 +34,6 @@ export default function middleware(request: NextRequest): NextResponse {
             country:
               request.headers.get('cf-ipcountry') ??
               request.headers.get('x-vercel-ip-country'),
-            region:
-              request.headers.get('cf-region') ??
-              request.headers.get('x-vercel-ip-country-region'),
             acceptLanguage: request.headers.get('accept-language'),
             fallback: DEFAULT_LOCALE,
           });

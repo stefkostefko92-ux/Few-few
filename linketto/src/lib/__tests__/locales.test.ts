@@ -30,11 +30,11 @@ test('localeFromGeo: държава → език', () => {
   assert.equal(localeFromGeo({ country: 'IE', fallback: 'en' }), 'en');
 });
 
-test('localeFromGeo: италиански регион → диалект', () => {
-  assert.equal(localeFromGeo({ country: 'IT', region: 'Campania', fallback: 'en' }), 'nap');
-  assert.equal(localeFromGeo({ country: 'IT', region: 'Sicily', fallback: 'en' }), 'scn');
-  assert.equal(localeFromGeo({ country: 'IT', region: 'Lombardy', fallback: 'en' }), 'lmo');
-  assert.equal(localeFromGeo({ country: 'IT', region: 'Lazio', fallback: 'en' }), 'it'); // друг регион → стандартен
+test('localeFromGeo: диалектите НЕ се избират автоматично — Италия → it', () => {
+  // Никакъв регион не дава диалект; цяла Италия → стандартен италиански.
+  assert.equal(localeFromGeo({ country: 'IT', fallback: 'en' }), 'it');
+  // Дори с подаден регион (пренебрегва се) остава it.
+  assert.equal(localeFromGeo({ country: 'IT', fallback: 'en' }), 'it');
 });
 
 test('localeFromGeo: смесени държави падат към Accept-Language', () => {

@@ -38,8 +38,10 @@ prisma/schema.prisma   Многоезичността е в схемата: Prof
                        ClickEvent = аналитика без бисквитки (без IP, без PII).
 src/i18n/locales.ts    ЕДИНСТВЕНОТО място за добавяне на нов език (LOCALES,
                        LOCALE_NAMES, OG_LOCALE, RTL_LOCALES, bestLocale,
-                       localeFromGeo — избор по IP държава/регион). 27
-                       локала: 24 ЕС езика + диалекти nap/scn/lmo. Правните
+                       localeFromGeo — избор по IP държава). 27
+                       локала: 24 ЕС езика + диалекти nap/scn/lmo (диалектите
+                       са само за РЪЧЕН избор — не се избират автоматично).
+                       Правните
                        текстове (legal.*) са родни само за bg/en/it/es/de/fr;
                        за останалите падат към en (deepMerge) до правен
                        преглед. Диалектите nap/scn/lmo са best-effort.
@@ -47,10 +49,11 @@ src/i18n/request.ts    next-intl: непълни преводи падат къ�
 messages/<loc>.json    UI низове. bg е ИЗТОЧНИКЪТ НА ИСТИНАТА (правило на
                        репото); преводите минават през агента Преводач.
 src/middleware.ts      Локализиран рутинг само за сайта; /u, /d, /api са извън
-                       него. Автоматичен избор на език по IP (cf-ipcountry/
-                       cf-region, x-vercel-ip-*) за път без езиков префикс:
-                       ръчен избор (NEXT_LOCALE cookie) → geo → Accept-Language.
-                       Италиански регион Campania/Sicily/Lombardy → nap/scn/lmo. Чужд Host (собствен домейн, платени планове) се
+                       него. Автоматичен избор на език по IP държава
+                       (cf-ipcountry, x-vercel-ip-country) за път без езиков
+                       префикс: ръчен избор (NEXT_LOCALE cookie) → geo →
+                       Accept-Language. Диалектите nap/scn/lmo НЕ се избират
+                       автоматично (Италия → it). Чужд Host (собствен домейн, платени планове) се
                        пренаписва към /d/<host> → резолвира се по
                        Profile.customDomain.
 src/app/(site)/[locale]/   Landing, login/register, dashboard, privacy/terms.
