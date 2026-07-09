@@ -35,6 +35,8 @@ export default async function PublicProfilePage({
     subError?: string;
     unsub?: string;
     voted?: string;
+    booked?: string;
+    bookError?: string;
   }>;
 }) {
   const { slug } = await params;
@@ -48,6 +50,8 @@ export default async function PublicProfilePage({
     subError,
     unsub,
     voted,
+    booked,
+    bookError,
   } = await searchParams;
   const profile = await loadProfileBy({ slug });
   if (
@@ -70,6 +74,8 @@ export default async function PublicProfilePage({
       subError={subError}
       unsub={unsub}
       voted={voted}
+      booked={booked}
+      bookError={bookError}
     />
   );
 }

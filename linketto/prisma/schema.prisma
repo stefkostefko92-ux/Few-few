@@ -115,6 +115,25 @@ model Profile {
   products      Product[]
   coupons       Coupon[]
   subscribers   Subscriber[]
+  bookings      Booking[]
+}
+
+// Заявка за час/среща от BOOKING блок — публично действие (honeypot), чете
+// се в дашборда. Няма плащане тук (само заявка); календарът/потвърждението
+// са грижа на създателя.
+model Booking {
+  id          String   @id @default(cuid())
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String?
+  email       String
+  preferredAt String? // предпочитан момент (свободен текст/ISO от формата)
+  message     String?
+  locale      String?
+  status      String   @default("new") // new | done
+  createdAt   DateTime @default(now())
+
+  @@index([profileId, createdAt])
 }
 
 // Абонат за бюлетина на създателя (email capture). GDPR: двойно съгласие

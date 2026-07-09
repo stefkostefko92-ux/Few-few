@@ -36,6 +36,7 @@ import { submitContactAction } from '@/app/actions/contact';
 import { startProductPurchaseAction } from '@/app/actions/shop';
 import { subscribeAction } from '@/app/actions/newsletter';
 import { votePollAction } from '@/app/actions/poll';
+import { submitBookingAction } from '@/app/actions/booking';
 
 // Общото публично рендиране на профил — ползва се от /u/[slug]
 // и от собствените домейни (/d/[domain] през middleware rewrite).
@@ -155,6 +156,8 @@ export async function ProfileScreen({
   subError,
   unsub,
   voted,
+  booked,
+  bookError,
 }: {
   profile: LoadedProfile;
   hl?: string;
@@ -166,6 +169,8 @@ export async function ProfileScreen({
   subError?: string;
   unsub?: string;
   voted?: string;
+  booked?: string;
+  bookError?: string;
 }) {
   const slug = profile.slug;
   const available = profile.translations.map((t) => t.locale);
@@ -858,6 +863,83 @@ export async function ProfileScreen({
                   </li>
                 );
               }
+              case 'BOOKING':
+                return (
+                  <li key={link.id} className={`pf-rise ${gridSpan}`} style={rise()}>
+                    <div
+                      className={`border px-6 py-4 ${boxShape} ${shadowClass}`}
+                      style={buttonCss(styleCfg, accentFor(meta))}
+                    >
+                      <p className="text-center font-medium">{title}</p>
+                      {booked ? (
+                        <p className="mt-3 text-center text-sm opacity-80">
+                          {t('bookingSent')}
+                        </p>
+                      ) : (
+                        <form
+                          action={submitBookingAction}
+                          className="mt-3 space-y-2 text-sm"
+                        >
+                          <input type="hidden" name="slug" value={slug} />
+                          <input type="hidden" name="hl" value={viewLocale} />
+                          <input
+                            type="text"
+                            name="company"
+                            tabIndex={-1}
+                            autoComplete="off"
+                            className="hidden"
+                            aria-hidden="true"
+                          />
+                          <input
+                            type="text"
+                            name="name"
+                            placeholder={t('formName')}
+                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                          />
+                          <input
+                            type="email"
+                            name="email"
+                            required
+                            placeholder={t('formEmail')}
+                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                          />
+                          <input
+                            type="datetime-local"
+                            name="preferredAt"
+                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2"
+                          />
+                          <textarea
+                            name="message"
+                            rows={2}
+                            placeholder={t('bookingMessage')}
+                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                          />
+                          {bookError && (
+                            <p className="text-xs text-red-300">
+                              {t('subError')}
+                            </p>
+                          )}
+                          <p className="text-[11px] leading-snug opacity-60">
+                            {t('formConsent')}{' '}
+                            <a
+                              href={`/${viewLocale}/privacy`}
+                              className="underline"
+                            >
+                              {t('formPrivacyLink')}
+                            </a>
+                          </p>
+                          <button
+                            type="submit"
+                            className="w-full rounded-full border px-4 py-2 font-semibold transition hover:scale-[1.01]"
+                            style={{ borderColor: accentFor(meta) }}
+                          >
+                            {t('bookingSend')}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </li>
+                );
               // LINK, MAP, APP, TIP, VCARD — бутон през click redirect-а
               default: {
                 const featured = meta?.featured === true;

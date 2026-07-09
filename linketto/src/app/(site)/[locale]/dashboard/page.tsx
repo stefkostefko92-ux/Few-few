@@ -42,6 +42,7 @@ import Link from 'next/link';
 import { startCheckoutAction } from '@/app/actions/billing';
 import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
 import { sendBroadcastAction } from '@/app/actions/newsletter';
+import { resolveBookingAction } from '@/app/actions/booking';
 import {
   addCouponAction,
   addProductAction,
@@ -92,6 +93,13 @@ export default async function DashboardPage({
   const plan = planFor(user.plan);
   const messages = profile
     ? await prisma.contactMessage.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      })
+    : [];
+  const bookings = profile
+    ? await prisma.booking.findMany({
         where: { profileId: profile.id },
         orderBy: { createdAt: 'desc' },
         take: 20,
@@ -1236,6 +1244,67 @@ export default async function DashboardPage({
                           .join(' · ')}{' '}
                         · {message.createdAt.toISOString().slice(0, 16).replace('T', ' ')}
                       </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {/* Заявки за час (BOOKING блок) */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('bookingsSection')}</h2>
+              {bookings.length === 0 ? (
+                <p className="mt-2 text-sm text-slate-500">{t('noBookings')}</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {bookings.map((booking) => (
+                    <li
+                      key={booking.id}
+                      className={`rounded-xl border p-3 text-sm ${
+                        booking.status === 'done'
+                          ? 'border-slate-100 opacity-60'
+                          : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-700">
+                            {[booking.name, booking.email]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </p>
+                          {booking.preferredAt && (
+                            <p className="text-xs text-linketto-700">
+                              {booking.preferredAt.replace('T', ' ')}
+                            </p>
+                          )}
+                          {booking.message && (
+                            <p className="mt-1 text-slate-600">
+                              {booking.message}
+                            </p>
+                          )}
+                        </div>
+                        {booking.status !== 'done' && (
+                          <form action={resolveBookingAction}>
+                            <input
+                              type="hidden"
+                              name="uiLocale"
+                              value={locale}
+                            />
+                            <input
+                              type="hidden"
+                              name="bookingId"
+                              value={booking.id}
+                            />
+                            <button
+                              type="submit"
+                              className="shrink-0 text-xs font-medium text-green-700 hover:underline"
+                            >
+                              {t('bookingResolve')}
+                            </button>
+                          </form>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
