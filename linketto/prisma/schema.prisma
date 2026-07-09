@@ -116,6 +116,21 @@ model Profile {
   coupons       Coupon[]
   subscribers   Subscriber[]
   bookings      Booking[]
+  shortLinks    ShortLink[]
+}
+
+// Съкратен линк с брояч на кликове (/s/<code>). Броячът е агрегат без
+// бисквитки/PII. Кодът е уникален глобално (собствено /s пространство).
+model ShortLink {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  code      String   @unique
+  targetUrl String
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([profileId, createdAt])
 }
 
 // Заявка за час/среща от BOOKING блок — публично действие (honeypot), чете

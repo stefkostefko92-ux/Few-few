@@ -44,6 +44,10 @@ import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
 import { sendBroadcastAction } from '@/app/actions/newsletter';
 import { resolveBookingAction } from '@/app/actions/booking';
 import {
+  addShortLinkAction,
+  deleteShortLinkAction,
+} from '@/app/actions/shortlink';
+import {
   addCouponAction,
   addProductAction,
   connectStripeAction,
@@ -105,6 +109,14 @@ export default async function DashboardPage({
         take: 20,
       })
     : [];
+  const shortLinks = profile
+    ? await prisma.shortLink.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+      })
+    : [];
+  const shortLinkBase = process.env.PUBLIC_BASE_URL ?? '';
 
   // Статистика — прозорецът зависи от плана (Free: 90 дни).
   const since = plan.analyticsDays
@@ -263,7 +275,9 @@ export default async function DashboardPage({
                                     ? t('errorCoupon')
                                     : error === 'broadcast'
                                       ? t('errorBroadcast')
-                                      : t('errorGeneric')}
+                                      : error === 'shortlink'
+                                        ? t('errorShortlink')
+                                        : t('errorGeneric')}
           </p>
         )}
         {translated && (
@@ -1044,6 +1058,87 @@ export default async function DashboardPage({
                   </a>
                 </p>
               )}
+            </section>
+
+            {/* Съкратени линкове с брояч на кликове */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-semibold">{t('shortLinksSection')}</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {t('shortLinksHint')}
+              </p>
+              {shortLinks.length > 0 && (
+                <ul className="mt-4 space-y-1 text-sm">
+                  {shortLinks.map((link) => (
+                    <li
+                      key={link.id}
+                      className="flex items-center justify-between gap-2 text-slate-600"
+                    >
+                      <span className="min-w-0 truncate">
+                        <span className="font-mono font-semibold text-linketto-700">
+                          {shortLinkBase.replace(/^https?:\/\//, '')}/s/
+                          {link.code}
+                        </span>{' '}
+                        → {link.targetUrl}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-3">
+                        <span className="text-xs">
+                          {link.clicks} {t('shortLinkClicks')}
+                        </span>
+                        <form action={deleteShortLinkAction}>
+                          <input
+                            type="hidden"
+                            name="uiLocale"
+                            value={locale}
+                          />
+                          <input
+                            type="hidden"
+                            name="shortLinkId"
+                            value={link.id}
+                          />
+                          <button
+                            type="submit"
+                            className="text-xs font-medium text-red-600 hover:underline"
+                          >
+                            {t('delete')}
+                          </button>
+                        </form>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <form
+                action={addShortLinkAction}
+                className="mt-4 grid items-end gap-2 sm:grid-cols-[1fr_10rem_auto]"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <input type="hidden" name="profileId" value={profile.id} />
+                <label className="block text-xs font-medium text-slate-500">
+                  {t('shortTarget')}
+                  <input
+                    type="url"
+                    name="targetUrl"
+                    required
+                    placeholder="https://…"
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                  />
+                </label>
+                <label className="block text-xs font-medium text-slate-500">
+                  {t('shortCode')}
+                  <input
+                    type="text"
+                    name="code"
+                    placeholder={t('shortCodeAuto')}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-full border border-linketto-600 px-4 py-1.5 text-sm font-semibold text-linketto-700 hover:bg-linketto-50"
+                >
+                  {t('addShortLink')}
+                </button>
+              </form>
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6">
