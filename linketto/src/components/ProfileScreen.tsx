@@ -375,7 +375,7 @@ export async function ProfileScreen({
     <main
       lang={viewLocale}
       dir={dirFor(viewLocale)}
-      className={`relative flex min-h-screen flex-col items-center px-6 py-16 ${themeClass}`}
+      className={`relative flex min-h-screen flex-col items-center overflow-x-clip px-6 py-16 ${themeClass}`}
       style={{
         ...backgroundCss(styleCfg),
         color: baseTextColor,
