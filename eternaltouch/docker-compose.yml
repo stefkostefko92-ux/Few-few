@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: eternaltouch-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: eternaltouch
+      POSTGRES_USER: eternaltouch
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - eternaltouch_db:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5437:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eternaltouch -d eternaltouch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Hardening — cap blast radius / DoS surface
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    pids_limit: 200
+    networks:
+      - eternaltouch-net
+
+  app:
+    build: .
+    container_name: eternaltouch-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # env_file pulls in SMTP_* (SMTP_HOST/PORT/SECURE/USER/PASS/FROM/NOTIFY_TO)
+    # and any other keys from .env. Without this the contact-form notification
+    # emails silently never send (getTransporter() returns null), even though
+    # the message is still saved to the DB.
+    env_file:
+      - .env
+    # Explicit values below win over env_file and document what the app needs.
+    environment:
+      NODE_ENV: production
+      PORT: 4300
+      DATABASE_URL: postgresql://eternaltouch:${DB_PASSWORD}@postgres:5432/eternaltouch
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SITE_URL: ${SITE_URL}
+    # Bind-mount the uploads directory directly from the project so seed
+    # images stay visible AND admin uploads persist on host.
+    volumes:
+      - ./src/public/uploads:/app/src/public/uploads
+    ports:
+      - "127.0.0.1:4300:4300"
+    # Hardening — the app needs no Linux capabilities and never escalates privs.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    pids_limit: 200
+    networks:
+      - eternaltouch-net
+
+volumes:
+  eternaltouch_db:
+
+networks:
+  eternaltouch-net:
+    driver: bridge

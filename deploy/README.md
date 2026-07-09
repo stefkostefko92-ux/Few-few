@@ -35,6 +35,11 @@
   `backend/.env`, `bot/.env`, `frontend/.env`), после `SupremeDiscordBot/deploy.sh` (Docker Compose
   билд + вдигане; миграциите се пускат от backend entrypoint-а; регистрира slash командите).
   Health на публичния frontend порт `127.0.0.1:8080`; останалите services са вътрешни.
+- **eternaltouch** (Eternal Touch): пренася `eternaltouch/.env` (или го генерира с random
+  secrets при пръв деплой — `SMTP_PASS` остава `CHANGE_ME` за ръчно попълване веднъж),
+  после `eternaltouch/deploy.sh` (Docker Compose билд + вдигане; схемата се пуска от
+  `docker-startup.sh`; идемпотентен seed; Nginx + certbot с auto-reload hook). Health на
+  `127.0.0.1:4300/healthz`; app + postgres слушат само на localhost зад Nginx.
 - Health check на всеки сервис; маркира `current` release; пази последните 5 за връщане назад.
 
 ## Конфигурация
@@ -43,7 +48,7 @@
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot mastilko` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch` | кои проекти да се разгръщат тук |
 | `ARCHIVE` | (най-новият в `/root`) | конкретен архив |
 | `FORCE_SEED` | `0` | принудителен сийд на zabobovdol |
 | `MEDQR_DIR` | `/opt/medqr` | път на medqr |

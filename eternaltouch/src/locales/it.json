@@ -1,0 +1,160 @@
+{
+  "404": {
+    "eyebrow": "Pagina mancante",
+    "title": "Questa pagina non esiste.",
+    "body": "Il link che hai seguito potrebbe essere obsoleto, oppure la pagina è stata spostata.",
+    "home": "Torna alla home"
+  },
+  "500": {
+    "eyebrow": "Errore",
+    "title": "Qualcosa è andato storto.",
+    "body": "Stiamo già lavorando per risolverlo. Ti preghiamo di riprovare tra poco."
+  },
+  "meta": {
+    "siteName": "Eternal Touch",
+    "tagline": "Atelier di decorazioni in gesso, fatte a mano in Bulgaria",
+    "description": "Eternal Touch — atelier in Bulgaria (Bobov Dol) che realizza a mano decorazioni in gesso, bomboniere e creazioni su misura. Tre artigiane, due paesi, un'unica mano.",
+    "keywords": "atelier gesso Bulgaria, decorazioni gesso fatte a mano, bomboniere artigianali Bulgaria, bomboniere battesimo, bomboniere matrimonio, regali nascita, sculture gesso, creazioni su misura, Bobov Dol",
+    "ogImage": "/images/og-image.jpg"
+  },
+  "nav": {
+    "home": "Home",
+    "collections": "Collezioni",
+    "about": "Atelier",
+    "process": "Processo",
+    "gallery": "Galleria",
+    "contact": "Contatti",
+    "decorations": "Decorazioni",
+    "favors": "Bomboniere",
+    "custom": "Su misura",
+    "faq": "FAQ"
+  },
+  "hero": {
+    "scrollDown": "Scorri",
+    "discover": "Scopri l'atelier",
+    "writeToUs": "Scrivici"
+  },
+  "common": {
+    "discoverMore": "Scopri di più",
+    "discover": "Scopri",
+    "viewAll": "Vedi tutto",
+    "back": "Indietro",
+    "next": "Avanti",
+    "previous": "Precedente",
+    "close": "Chiudi",
+    "language": "Lingua",
+    "loading": "Caricamento",
+    "send": "Invia",
+    "sending": "Invio in corso",
+    "sent": "Grazie. Ti rispondiamo entro 24 ore.",
+    "error": "Qualcosa è andato storto. Riprova tra poco.",
+    "contactUs": "Contattaci",
+    "requestQuote": "Richiedi un preventivo",
+    "bespoke": "Su misura",
+    "backToCollection": "Torna alla collezione",
+    "skipToContent": "Vai al contenuto"
+  },
+  "collections": {
+    "eyebrow": "Le nostre collezioni",
+    "title": "Tre direzioni, un'unica mano.",
+    "subtitle": "Ogni collezione è un piccolo mondo a sé. Tutte sono fatte con la stessa cura.",
+    "empty": "Nuovi pezzi in arrivo. Nel frattempo, scrivici per una creazione su misura.",
+    "ctaTitle": "Hai un'idea diversa?",
+    "ctaBody": "Lavoriamo a quattro mani con te — dalla prima idea fino al pezzo finito. Forme, colori, dettagli: tutto concordato insieme."
+  },
+  "products": {
+    "materials": "Materiali",
+    "dimensions": "Dimensioni",
+    "handmadeNote": "Ogni pezzo è realizzato a mano: piccole variazioni di colore e forma sono parte del nostro modo di lavorare.",
+    "related": "Continua a sfogliare",
+    "relatedTitle": "Altri pezzi della stessa collezione"
+  },
+  "gallery": {
+    "eyebrow": "Galleria",
+    "title": "Dall'atelier.",
+    "subtitle": "Una piccola selezione di pezzi realizzati negli ultimi mesi."
+  },
+  "contact": {
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefono",
+    "subject": "Oggetto",
+    "message": "Messaggio",
+    "namePlaceholder": "Come ti chiami",
+    "emailPlaceholder": "Dove possiamo risponderti",
+    "phonePlaceholder": "Opzionale",
+    "subjectPlaceholder": "Di cosa parliamo",
+    "messagePlaceholder": "Raccontaci la tua idea — ti rispondiamo entro 24 ore",
+    "submit": "Invia messaggio",
+    "phoneIt": "Italia",
+    "phoneBg": "Bulgaria",
+    "ourAddress": "Atelier · Bulgaria",
+    "addressDetail": "ул. Самуил 3, 2670 Бобов дол, България",
+    "writeUs": "Scrivici",
+    "callUs": "Chiamaci",
+    "privacyConsent": "Ho letto e accetto l'",
+    "privacyConsentLink": "Informativa sulla Privacy",
+    "privacyConsentEnd": " e che i miei dati siano usati solo per ricevere una risposta.",
+    "privacyRequired": "Per scriverci devi accettare l'informativa privacy.",
+    "replyNote": "Ti rispondiamo entro 24 ore — in bulgaro, italiano o inglese."
+  },
+  "footer": {
+    "tagline": "Decorazioni in gesso, fatte a mano in Bulgaria — spedite anche in Italia",
+    "navigation": "Navigazione",
+    "contact": "Contatti",
+    "follow": "Seguici",
+    "rights": "Tutti i diritti riservati.",
+    "by": "Un progetto Carbon Stealth VCC",
+    "privacy": "Privacy",
+    "cookies": "Cookie",
+    "legal": "Documenti legali",
+    "manageCookies": "Gestisci cookie"
+  },
+  "cookies": {
+    "banner": {
+      "title": "La tua privacy, il nostro impegno.",
+      "body": "Utilizziamo cookie tecnici necessari al funzionamento del sito. Con il tuo consenso, possiamo utilizzare anche cookie analitici e di marketing per migliorare la tua esperienza.",
+      "learnMore": "Scopri di più",
+      "acceptAll": "Accetta tutti",
+      "rejectAll": "Rifiuta",
+      "customize": "Personalizza",
+      "savePreferences": "Salva preferenze",
+      "back": "Indietro"
+    },
+    "cat": {
+      "alwaysActive": "Sempre attivo",
+      "necessary": {
+        "title": "Cookie necessari",
+        "desc": "Indispensabili per il funzionamento del sito (sessione, lingua scelta, preferenze di consenso). Non richiedono consenso."
+      },
+      "analytics": {
+        "title": "Cookie analitici",
+        "desc": "Ci aiutano a capire come gli utenti interagiscono con il sito, in forma anonima e aggregata. Attualmente non installati."
+      },
+      "marketing": {
+        "title": "Cookie di marketing",
+        "desc": "Utilizzati per mostrare pubblicità pertinenti agli interessi dell'utente. Attualmente non installati."
+      }
+    }
+  },
+  "legal": {
+    "lastUpdated": "Ultimo aggiornamento",
+    "updateDate": "1 maggio 2026",
+    "privacy": {
+      "eyebrow": "Privacy",
+      "title": "Informativa sulla Privacy"
+    },
+    "cookies": {
+      "eyebrow": "Cookie",
+      "title": "Cookie Policy"
+    },
+    "terms": {
+      "eyebrow": "Condizioni",
+      "title": "Termini e Condizioni"
+    },
+    "imprint": {
+      "eyebrow": "Note legali",
+      "title": "Note legali"
+    }
+  }
+}

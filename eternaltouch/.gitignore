@@ -1,0 +1,17 @@
+node_modules
+.env
+.env.local
+*.log
+npm-debug.log*
+.DS_Store
+.idea
+.vscode
+dist
+build
+coverage
+src/public/uploads/*
+!src/public/uploads/.gitkeep
+prisma/migrations/.cache
+CREDENTIALS.txt
+.env.production
+*.env.local

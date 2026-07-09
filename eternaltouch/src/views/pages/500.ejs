@@ -1,0 +1,22 @@
+<%
+// Bulletproof: works even if t() / locals are missing (when error happens early)
+const safeT = (key, fallback) => {
+  try { return (typeof t === 'function') ? (t(key) || fallback) : fallback; }
+  catch (e) { return fallback; }
+};
+const tEyebrow = safeT('500.eyebrow', 'Errore');
+const tTitle   = safeT('500.title',   'Qualcosa è andato storto.');
+const tBody    = safeT('500.body',    'Stiamo già lavorando per risolverlo. Ti preghiamo di riprovare tra poco.');
+const tHome    = safeT('404.home',    'Torna alla home');
+%>
+<section class="error-page">
+  <div class="container text-center">
+    <p class="eyebrow"><%= tEyebrow %></p>
+    <h1 class="display-1">500</h1>
+    <p class="tagline-italic"><%= tTitle %></p>
+    <p class="lead"><%= tBody %></p>
+    <div class="error-cta">
+      <a href="/" class="btn btn-primary"><%= tHome %></a>
+    </div>
+  </div>
+</section>

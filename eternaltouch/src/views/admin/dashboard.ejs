@@ -1,0 +1,57 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="admin-sub">Panoramica dell'atelier</p>
+    </div>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Collezioni</span>
+      <span class="stat-value"><%= stats.collectionsCount %></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Prodotti</span>
+      <span class="stat-value"><%= stats.productsCount %></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Galleria</span>
+      <span class="stat-value"><%= stats.galleryCount %></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Messaggi</span>
+      <span class="stat-value"><%= stats.messagesCount %></span>
+      <% if (stats.unreadCount > 0) { %><span class="stat-pill"><%= stats.unreadCount %> non letti</span><% } %>
+    </div>
+  </div>
+
+  <section class="admin-section">
+    <h2>Ultimi messaggi</h2>
+    <% if (recentMessages && recentMessages.length > 0) { %>
+      <div class="msg-list">
+        <% recentMessages.forEach(function(m) { %>
+          <a href="/admin/messages/<%= m.id %>" class="msg-row <%= m.isRead ? '' : 'unread' %>">
+            <div class="msg-row-main">
+              <strong><%= m.name %></strong>
+              <span class="msg-email"><%= m.email %></span>
+            </div>
+            <div class="msg-row-snippet"><%= m.subject || (m.message || '').slice(0, 80) %></div>
+            <time><%= new Date(m.createdAt).toLocaleString('it-IT') %></time>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <p class="muted">Nessun messaggio ancora.</p>
+    <% } %>
+  </section>
+
+  <section class="admin-section">
+    <h2>Azioni rapide</h2>
+    <div class="quick-actions">
+      <a href="/admin/products/new" class="qa-card">+ Nuovo prodotto</a>
+      <a href="/admin/gallery" class="qa-card">+ Aggiungi alla galleria</a>
+      <a href="/admin/content" class="qa-card">Modifica contenuti sito</a>
+    </div>
+  </section>
+</div>

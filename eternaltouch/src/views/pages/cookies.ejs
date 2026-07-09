@@ -1,0 +1,173 @@
+<% const lang = req.lang; %>
+<section class="legal-page">
+  <span class="eyebrow"><%= t('legal.cookies.eyebrow') %></span>
+  <h1><%= t('legal.cookies.title') %></h1>
+  <p class="legal-updated"><%= t('legal.lastUpdated') %>: <%= t('legal.updateDate') %></p>
+
+  <% if (lang === 'it') { %>
+
+  <p>La presente Cookie Policy descrive i tipi di cookie utilizzati sul sito <a href="https://eternaltouch.it">eternaltouch.it</a>, le finalità e le modalità per gestirne il consenso, in conformità con il Regolamento (UE) 2016/679 (GDPR), la Direttiva 2002/58/CE ("ePrivacy") e le linee guida del Garante per la protezione dei dati personali (Provvedimento 10 giugno 2021).</p>
+
+  <h2>1. Cosa sono i cookie</h2>
+  <p>I cookie sono piccoli file di testo che i siti visitati inviano al terminale dell'utente, dove vengono memorizzati per essere ritrasmessi agli stessi siti alla visita successiva. Possono essere installati dal sito stesso (cookie di prima parte) o da siti diversi (cookie di terze parti).</p>
+
+  <h2>2. Categorie di cookie utilizzati</h2>
+
+  <h3>2.1 Cookie tecnici (necessari) — sempre attivi</h3>
+  <p>Sono indispensabili per il funzionamento del sito e non richiedono il consenso dell'utente, ai sensi dell'art. 122 del Codice Privacy italiano.</p>
+  <table>
+    <thead><tr><th>Cookie</th><th>Finalità</th><th>Durata</th><th>Tipo</th></tr></thead>
+    <tbody>
+      <tr><td><code>lang</code></td><td>Memorizza la lingua scelta dall'utente</td><td>1 anno</td><td>Prima parte</td></tr>
+      <tr><td><code>et_consent</code></td><td>Memorizza le preferenze di consenso ai cookie</td><td>1 anno</td><td>Prima parte</td></tr>
+      <tr><td><code>adminToken</code></td><td>Sessione di autenticazione (solo per amministratori)</td><td>7 giorni</td><td>Prima parte</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 Cookie analitici — soggetti al consenso</h3>
+  <p>Attualmente <strong>non sono installati cookie analitici di terze parti</strong>. Qualora venissero attivati in futuro (ad es. Google Analytics, Plausible, Matomo), saranno preventivamente comunicati e l'installazione avverrà solo previo consenso esplicito.</p>
+
+  <h3>2.3 Cookie di marketing — soggetti al consenso</h3>
+  <p>Attualmente <strong>non sono installati cookie di marketing o di profilazione</strong>. Qualora venissero attivati in futuro (ad es. Meta Pixel, Google Ads), saranno preventivamente comunicati e l'installazione avverrà solo previo consenso esplicito.</p>
+
+  <h3>2.4 Font tipografici — self-hosted</h3>
+  <p>I font tipografici sono ospitati direttamente sul nostro server (self-hosting). Il sito <strong>non</strong> effettua richieste a Google Fonts né ad altri server di terze parti per il caricamento dei font: nessun cookie di terze parti viene installato e nessun indirizzo IP viene trasmesso a fornitori esterni per questo scopo.</p>
+
+  <h2>3. Gestione del consenso</h2>
+  <p>Al primo accesso al sito viene mostrato un banner informativo che consente all'utente di:</p>
+  <ul>
+    <li><strong>Accettare tutti</strong> i cookie;</li>
+    <li><strong>Rifiutare</strong> tutti i cookie non necessari;</li>
+    <li><strong>Personalizzare</strong> le proprie scelte attivando o disattivando ciascuna categoria di cookie non necessari.</li>
+  </ul>
+  <p>Il consenso prestato è memorizzato per un anno e può essere modificato o revocato in qualsiasi momento utilizzando il pulsante seguente:</p>
+  <p><button type="button" class="reopen-cookies" data-reopen-cookies>Gestisci preferenze cookie</button></p>
+
+  <h2>4. Disabilitazione dei cookie tramite browser</h2>
+  <p>L'utente può inoltre gestire le proprie preferenze direttamente dal browser:</p>
+  <ul>
+    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Google Chrome</a></li>
+    <li><a href="https://support.mozilla.org/kb/Attivare%20e%20disattivare%20i%20cookie" target="_blank" rel="noopener">Mozilla Firefox</a></li>
+    <li><a href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/" target="_blank" rel="noopener">Safari</a></li>
+    <li><a href="https://support.microsoft.com/help/4027947" target="_blank" rel="noopener">Microsoft Edge</a></li>
+  </ul>
+  <p>La disabilitazione dei cookie tecnici può comportare il malfunzionamento di alcune sezioni del sito.</p>
+
+  <h2>5. Aggiornamenti</h2>
+  <p>La presente Cookie Policy può essere aggiornata in qualunque momento, in particolare in caso di introduzione di nuovi cookie. La versione aggiornata sarà sempre disponibile su questa pagina.</p>
+
+  <h2>6. Contatti</h2>
+  <p>Per qualsiasi domanda riguardante l'utilizzo dei cookie, scrivere a <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>.</p>
+
+  <% } else if (lang === 'bg') { %>
+
+  <p>Настоящата Политика за бисквитки описва видовете бисквитки, използвани на сайта <a href="https://eternaltouch.it">eternaltouch.it</a>, целите и начините за управление на съгласието, в съответствие с Регламент (ЕС) 2016/679 (ОРЗД/GDPR), Директива 2002/58/ЕО ("ePrivacy") и насоките на Комисията за защита на личните данни (КЗЛД).</p>
+
+  <h2>1. Какво са бисквитките</h2>
+  <p>Бисквитките (cookies) са малки текстови файлове, които посетените сайтове изпращат на устройството на потребителя, където се съхраняват, за да бъдат препредадени на същите сайтове при следващо посещение. Могат да бъдат инсталирани от самия сайт (бисквитки на първа страна) или от различни сайтове (бисквитки на трети страни).</p>
+
+  <h2>2. Категории използвани бисквитки</h2>
+
+  <h3>2.1 Технически бисквитки (необходими) — винаги активни</h3>
+  <p>Те са необходими за работата на сайта и не изискват съгласие на потребителя, съгласно изключението на ePrivacy директивата.</p>
+  <table>
+    <thead><tr><th>Бисквитка</th><th>Цел</th><th>Срок</th><th>Тип</th></tr></thead>
+    <tbody>
+      <tr><td><code>lang</code></td><td>Запазва избрания от потребителя език</td><td>1 година</td><td>Първа страна</td></tr>
+      <tr><td><code>et_consent</code></td><td>Запазва предпочитанията за съгласие за бисквитки</td><td>1 година</td><td>Първа страна</td></tr>
+      <tr><td><code>adminToken</code></td><td>Сесия за удостоверяване (само за администратори)</td><td>7 дни</td><td>Първа страна</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 Аналитични бисквитки — изискват съгласие</h3>
+  <p>В момента <strong>не са инсталирани аналитични бисквитки на трети страни</strong>. В случай, че бъдат активирани в бъдеще (напр. Google Analytics, Plausible, Matomo), потребителите ще бъдат предварително уведомени и инсталацията ще се извърши само след изрично съгласие.</p>
+
+  <h3>2.3 Маркетингови бисквитки — изискват съгласие</h3>
+  <p>В момента <strong>не са инсталирани маркетингови или профилиращи бисквитки</strong>. В случай, че бъдат активирани в бъдеще (напр. Meta Pixel, Google Ads), потребителите ще бъдат предварително уведомени и инсталацията ще се извърши само след изрично съгласие.</p>
+
+  <h3>2.4 Типографски шрифтове — self-hosted</h3>
+  <p>Типографските шрифтове се хостват директно на нашия сървър (self-hosting). Сайтът <strong>не</strong> прави заявки към Google Fonts или други сървъри на трети страни за зареждане на шрифтовете: не се инсталират бисквитки на трети страни и не се прехвърля IP адрес към външни доставчици за тази цел.</p>
+
+  <h2>3. Управление на съгласието</h2>
+  <p>При първо посещение на сайта се показва информационен банер, който позволява на потребителя да:</p>
+  <ul>
+    <li><strong>Приеме всички</strong> бисквитки;</li>
+    <li><strong>Откаже</strong> всички ненеобходими бисквитки;</li>
+    <li><strong>Персонализира</strong> избора си, активирайки или деактивирайки всяка категория ненеобходими бисквитки.</li>
+  </ul>
+  <p>Даденото съгласие се запазва за една година и може да бъде променено или оттеглено по всяко време чрез следния бутон:</p>
+  <p><button type="button" class="reopen-cookies" data-reopen-cookies>Управление на бисквитките</button></p>
+
+  <h2>4. Деактивиране на бисквитки чрез браузъра</h2>
+  <p>Потребителят може също така да управлява предпочитанията си директно от браузъра:</p>
+  <ul>
+    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Google Chrome</a></li>
+    <li><a href="https://support.mozilla.org/kb/blokirane-na-biskvitki" target="_blank" rel="noopener">Mozilla Firefox</a></li>
+    <li><a href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/" target="_blank" rel="noopener">Safari</a></li>
+    <li><a href="https://support.microsoft.com/help/4027947" target="_blank" rel="noopener">Microsoft Edge</a></li>
+  </ul>
+  <p>Деактивирането на техническите бисквитки може да доведе до неправилна работа на части от сайта.</p>
+
+  <h2>5. Актуализации</h2>
+  <p>Настоящата Политика за бисквитки може да бъде актуализирана по всяко време, особено при въвеждане на нови бисквитки. Актуализираната версия винаги ще е налична на тази страница.</p>
+
+  <h2>6. Контакти</h2>
+  <p>За всякакви въпроси относно използването на бисквитки, моля пишете на <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>.</p>
+
+  <% } else { %>
+
+  <p>This Cookie Policy describes the types of cookies used on the website <a href="https://eternaltouch.it">eternaltouch.it</a>, the purposes and how to manage consent, in compliance with Regulation (EU) 2016/679 (GDPR), Directive 2002/58/EC ("ePrivacy") and the guidelines of the relevant supervisory authorities.</p>
+
+  <h2>1. What cookies are</h2>
+  <p>Cookies are small text files that visited websites send to the user's terminal, where they are stored to be retransmitted to the same sites on subsequent visits. They can be installed by the site itself (first-party cookies) or by different sites (third-party cookies).</p>
+
+  <h2>2. Categories of cookies we use</h2>
+
+  <h3>2.1 Technical (necessary) cookies — always active</h3>
+  <p>These are essential for the site to function and do not require user consent under the ePrivacy exemption.</p>
+  <table>
+    <thead><tr><th>Cookie</th><th>Purpose</th><th>Duration</th><th>Type</th></tr></thead>
+    <tbody>
+      <tr><td><code>lang</code></td><td>Stores the user's chosen language</td><td>1 year</td><td>First-party</td></tr>
+      <tr><td><code>et_consent</code></td><td>Stores cookie consent preferences</td><td>1 year</td><td>First-party</td></tr>
+      <tr><td><code>adminToken</code></td><td>Authentication session (administrators only)</td><td>7 days</td><td>First-party</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 Analytics cookies — consent required</h3>
+  <p>Currently <strong>no third-party analytics cookies are installed</strong>. Should they be activated in future (e.g. Google Analytics, Plausible, Matomo), users will be notified in advance and installation will only take place after explicit consent.</p>
+
+  <h3>2.3 Marketing cookies — consent required</h3>
+  <p>Currently <strong>no marketing or profiling cookies are installed</strong>. Should they be activated in future (e.g. Meta Pixel, Google Ads), users will be notified in advance and installation will only take place after explicit consent.</p>
+
+  <h3>2.4 Typographic fonts — self-hosted</h3>
+  <p>Typographic fonts are hosted directly on our own server (self-hosting). The site does <strong>not</strong> request Google Fonts or any other third-party server to load fonts: no third-party cookies are installed and no IP address is transmitted to external providers for this purpose.</p>
+
+  <h2>3. Consent management</h2>
+  <p>On first access to the site, an informational banner is displayed allowing the user to:</p>
+  <ul>
+    <li><strong>Accept all</strong> cookies;</li>
+    <li><strong>Reject</strong> all non-necessary cookies;</li>
+    <li><strong>Customise</strong> their choices by enabling or disabling each category of non-necessary cookies.</li>
+  </ul>
+  <p>The consent given is stored for one year and can be modified or withdrawn at any time using the following button:</p>
+  <p><button type="button" class="reopen-cookies" data-reopen-cookies>Manage cookie preferences</button></p>
+
+  <h2>4. Disabling cookies via your browser</h2>
+  <p>The user can also manage preferences directly from their browser:</p>
+  <ul>
+    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Google Chrome</a></li>
+    <li><a href="https://support.mozilla.org/kb/clear-cookies-and-site-data-firefox" target="_blank" rel="noopener">Mozilla Firefox</a></li>
+    <li><a href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/" target="_blank" rel="noopener">Safari</a></li>
+    <li><a href="https://support.microsoft.com/help/4027947" target="_blank" rel="noopener">Microsoft Edge</a></li>
+  </ul>
+  <p>Disabling technical cookies may impair some sections of the site.</p>
+
+  <h2>5. Updates</h2>
+  <p>This Cookie Policy may be updated at any time, in particular if new cookies are introduced. The updated version will always be available on this page.</p>
+
+  <h2>6. Contact</h2>
+  <p>For any questions regarding the use of cookies, please write to <a href="mailto:info@eternaltouch.it">info@eternaltouch.it</a>.</p>
+
+  <% } %>
+</section>

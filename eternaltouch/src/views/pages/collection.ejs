@@ -1,0 +1,57 @@
+<section class="collection-hero" data-reveal>
+  <div class="container">
+    <p class="eyebrow"><%= req.t('collections.eyebrow') %></p>
+    <h1 class="display-1"><%= req.localized(collection, 'name') %></h1>
+    <% if (req.localized(collection, 'tagline')) { %>
+      <p class="tagline-italic"><%= req.localized(collection, 'tagline') %></p>
+    <% } %>
+    <% if (req.localized(collection, 'description')) { %>
+      <div class="collection-description">
+        <p><%= req.localized(collection, 'description') %></p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<section class="section-deep">
+  <div class="container">
+    <% if (products && products.length > 0) { %>
+      <div class="products-grid">
+        <% products.forEach(function(product, i) { %>
+          <a href="<%= langPrefix %>/collections/<%= collection.slug %>/<%= product.slug %>" class="product-card" data-reveal style="animation-delay: <%= i * 60 %>ms">
+            <div class="product-card-media">
+              <% const images = product.images || []; %>
+              <% if (images.length > 0) { %>
+                <img src="<%= images[0].thumb || images[0].url %>" alt="<%= req.localized(product, 'name') %>" loading="lazy" />
+              <% } else { %>
+                <div class="placeholder-media"></div>
+              <% } %>
+            </div>
+            <div class="product-card-body">
+              <span class="product-number">N° <%= String(i + 1).padStart(2, '0') %></span>
+              <h3 class="product-card-title"><%= req.localized(product, 'name') %></h3>
+              <% if (req.localized(product, 'shortDesc')) { %>
+                <p class="product-card-desc"><%= req.localized(product, 'shortDesc') %></p>
+              <% } %>
+              <span class="product-card-link"><%= req.t('common.discover') %> <span class="arrow">→</span></span>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <p class="tagline-italic"><%= req.t('collections.empty') %></p>
+        <a href="<%= langPrefix %>/#contact" class="btn btn-primary"><%= req.t('common.contactUs') %></a>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<section class="section-narrow cta-band">
+  <div class="container text-center">
+    <p class="eyebrow"><%= req.t('common.bespoke') %></p>
+    <h2 class="display-2"><%= req.t('collections.ctaTitle') %></h2>
+    <p class="lead"><%= req.t('collections.ctaBody') %></p>
+    <a href="<%= langPrefix %>/#contact" class="btn btn-primary"><%= req.t('common.requestQuote') %></a>
+  </div>
+</section>

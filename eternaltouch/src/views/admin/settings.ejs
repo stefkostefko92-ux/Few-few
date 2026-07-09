@@ -1,0 +1,31 @@
+<div class="admin-page">
+  <header class="admin-page-header">
+    <div>
+      <h1>Impostazioni</h1>
+      <p class="admin-sub">Account amministratore</p>
+    </div>
+  </header>
+
+  <form action="/admin/settings/password" method="POST" class="admin-form">
+    <div class="form-card">
+      <h3>Cambia password</h3>
+      <label><span>Password attuale</span><input type="password" name="currentPassword" required></label>
+      <label><span>Nuova password</span><input type="password" name="newPassword" required minlength="8"></label>
+      <label><span>Conferma nuova password</span><input type="password" name="confirmPassword" required minlength="8"></label>
+      <button type="submit" class="btn-primary-admin">Aggiorna password</button>
+    </div>
+  </form>
+
+  <div class="form-card">
+    <h3>Account</h3>
+    <p><strong>Email:</strong> <%= user.email %></p>
+    <p><strong>Ruolo:</strong> <%= user.role || 'admin' %></p>
+    <p class="muted small">Ultimo accesso: <%= user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('it-IT') : 'mai' %></p>
+  </div>
+
+  <div class="form-card">
+    <h3>Sistema</h3>
+    <p class="muted small">Eternal Touch — Carbon Stealth VCC</p>
+    <p class="muted small">Versione 1.0.0</p>
+  </div>
+</div>
