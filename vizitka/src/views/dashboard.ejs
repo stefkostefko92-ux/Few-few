@@ -20,6 +20,25 @@
         <p><a href="/p/<%= profile.slug %>" target="_blank" rel="noopener">Виж визитката →</a></p>
       </div>
 
+      <div class="nfc-box">
+        <h2 class="small">NFC карта</h2>
+        <p class="muted small">Запиши този адрес в NFC чип (NTAG213/215) — допреш ли картата до
+          телефон, отваря визитката. Адресът е същият като публичния и не се променя.</p>
+        <label class="small" for="nfc-url">Адрес за запис в чипа</label>
+        <input type="text" readonly value="<%= publicUrl %>" id="nfc-url">
+        <button type="button" class="btn btn-small" data-copy="#nfc-url">Копирай за NFC</button>
+        <ol class="nfc-steps muted small">
+          <li>Инсталирай „NFC Tools“ (безплатно, Android/iPhone).</li>
+          <li>Write → Add a record → <strong>URL</strong> → постави адреса → Write.</li>
+          <li>Допри празната карта; по желание „Lock“, за да е само за четене.</li>
+        </ol>
+        <details class="nfc-verify">
+          <summary class="small">Провери с QR</summary>
+          <img src="/p/<%= profile.slug %>/qr.png" alt="QR за проверка" width="140" height="140">
+          <p class="muted small">Сканирай — трябва да отвори същата визитка.</p>
+        </details>
+      </div>
+
       <div class="stats-box">
         <p class="stat-number"><%= profile.views %></p>
         <p class="muted small">преглеждания на визитката<br>(сканирания и посещения, без твоите)</p>

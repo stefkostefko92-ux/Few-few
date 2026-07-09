@@ -331,6 +331,33 @@ legend {
   text-align: center;
   margin-bottom: 0.5rem;
 }
+.nfc-box input {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+.nfc-box h2 {
+  margin: 0 0 0.4rem;
+}
+.nfc-steps {
+  text-align: left;
+  margin: 0.7rem 0 0;
+  padding-left: 1.1rem;
+}
+.nfc-steps li {
+  margin-bottom: 0.25rem;
+}
+.nfc-verify {
+  margin-top: 0.7rem;
+}
+.nfc-verify summary {
+  cursor: pointer;
+}
+.nfc-verify img {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
 .dash-form {
   background: var(--card);
   border: 1px solid var(--line);
