@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getSessionUser } from '@/lib/auth';
-import { getStripe } from '@/lib/stripe';
+import { getStripe, stripeTaxEnabled } from '@/lib/stripe';
 import { isLocale } from '@/i18n/locales';
 import {
   membershipFeePercent,
@@ -12,7 +12,6 @@ import {
   MEMBERSHIPS_ENABLED,
   MIN_PRODUCT_PRICE_EUR,
   planFor,
-  totalFeeCents,
 } from '@/lib/plans';
 import {
   COUPON_MAX_PERCENT,
@@ -171,33 +170,40 @@ export async function startProductPurchaseAction(
       cancel_url: `${baseUrl()}${back}`,
     });
   } else {
-    // Еднократно (DIGITAL или COURSE): destination charge.
-    // Инвариант: application_fee трябва да е < сумата (Stripe го изисква).
-    const fee = Math.min(totalFeeCents(unitAmount, planId), unitAmount - 1);
-    session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      // Платежните методи се управляват от Stripe Dashboard. ВНИМАНИЕ: при
-      // destination charges PayPal НЕ се поддържа — карти/wallets работят.
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: 'eur',
-            unit_amount: unitAmount,
-            product_data: productName,
+    // Еднократно (DIGITAL или COURSE): separate charges & transfers.
+    // Плащането остава на ПЛАТФОРМАТА (без transfer_data/on_behalf_of) —
+    // ние сме доставчик по презумпция за ДДС (чл. 9а Регл. 282/2011,
+    // виж TAX.md) и ДДС частта не бива да заминава към продавача.
+    // Преводът на неговия дял (нето − комисиона) се създава от webhook-а,
+    // когато Stripe Tax вече е сметнал ДДС по държавата на купувача.
+    // Цената е КРАЙНА (tax-inclusive) — купувачът плаща точно показаното.
+    // try/catch: при включен Stripe Tax без данъчни регистрации в
+    // Dashboard-а заявката се проваля → грациозен shopError, не 500.
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: 'eur',
+              unit_amount: unitAmount,
+              ...(stripeTaxEnabled() ? { tax_behavior: 'inclusive' } : {}),
+              product_data: productName,
+            },
           },
-        },
-      ],
-      payment_intent_data: {
-        application_fee_amount: fee,
-        transfer_data: { destination: owner.stripeAccountId },
-        on_behalf_of: owner.stripeAccountId,
-      },
-      metadata: { ...metadata, feeCents: String(fee) },
-      locale: 'auto',
-      success_url: successUrl,
-      cancel_url: `${baseUrl()}${back}`,
-    });
+        ],
+        ...(stripeTaxEnabled() ? { automatic_tax: { enabled: true } } : {}),
+        // planId е снапшот за webhook-а — комисионата се смята върху нетото
+        // там, по плана на продавача към момента на продажбата.
+        metadata: { ...metadata, plan: planId },
+        locale: 'auto',
+        success_url: successUrl,
+        cancel_url: `${baseUrl()}${back}`,
+      });
+    } catch {
+      redirect(`${back}${hl ? '&' : '?'}shopError=1`);
+    }
   }
   redirect(session.url ?? `${back}${hl ? '&' : '?'}shopError=1`);
 }
@@ -245,11 +251,26 @@ export async function sellerRefundAction(formData: FormData): Promise<void> {
     redirect(`/${uiLocale}/dashboard?error=refund`);
   }
   try {
-    await stripe.refunds.create({
-      payment_intent: purchase.stripePaymentIntentId,
-      reverse_transfer: true,
-      refund_application_fee: true,
-    });
+    if (purchase.chargedOn === 'platform') {
+      // Separate charges & transfers (TAX.md): прибираме дела на продавача,
+      // АКО е преведен (при провален превод няма какво да се връща;
+      // повторен reversal се проваля тихо), после връщаме на купувача.
+      if (purchase.stripeTransferId) {
+        await stripe.transfers
+          .createReversal(purchase.stripeTransferId)
+          .catch(() => undefined);
+      }
+      await stripe.refunds.create({
+        payment_intent: purchase.stripePaymentIntentId,
+      });
+    } else {
+      // Заварени покупки от destination-charge модела.
+      await stripe.refunds.create({
+        payment_intent: purchase.stripePaymentIntentId,
+        reverse_transfer: true,
+        refund_application_fee: true,
+      });
+    }
   } catch {
     redirect(`/${uiLocale}/dashboard?error=refund`);
   }

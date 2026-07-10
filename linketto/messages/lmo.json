@@ -98,7 +98,8 @@
     "processingNote": "Sui vendit del negozi se aplica anca ona commission de elaborazion del pagament: 1,9% + €0,30 (la copre el circuit de pagament).",
     "mostPopular": "Pussee popolar",
     "annualOffer": "Risparmia el {percent}% con on pian annual",
-    "referralPercentNote": "Invida i amis e guadagna el {percent}% de ogni pagament che fann."
+    "referralPercentNote": "Invida i amis e guadagna el {percent}% de ogni pagament che fann.",
+    "vatNote": "I prezzi hinn definitiv — IVA compresa indoe l'è dovuda."
   },
   "auth": {
     "loginTitle": "Entra in Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "El contratt de acquist l'è tra ti e el creator; Linketto l'è la piattaforma.",
     "sellerTrader": "El venditor l'è on professionista",
     "sellerPrivate": "El venditor l'è on privaa",
+    "shopVatIncluded": "I prezzi hinn definitiv — IVA compresa indoe l'è dovuda.",
     "subButton": "Iscrivet",
     "subConsent": "Sont d'accord a ricev email e accetti la",
     "subCheck": "Quasi finii — controlla la toa casella per confermà l'iscrizion.",

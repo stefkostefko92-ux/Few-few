@@ -98,7 +98,8 @@
     "processingNote": "Za prodajo v trgovini se zaračuna tudi provizija za obdelavo plačila: 1,9 % + €0,30 (pokriva kartičnega operaterja).",
     "mostPopular": "Najbolj priljubljen",
     "annualOffer": "Prihrani {percent} % z letnim paketom",
-    "referralPercentNote": "Povabi prijatelje in zasluži {percent} % od vsakega njihovega plačila."
+    "referralPercentNote": "Povabi prijatelje in zasluži {percent} % od vsakega njihovega plačila.",
+    "vatNote": "Cene so končne — vključno z DDV, kadar je ta dolgovan."
   },
   "auth": {
     "loginTitle": "Prijava v Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Prodajna pogodba je med tabo in ustvarjalcem; Linketto je platforma.",
     "sellerTrader": "Prodajalec je trgovec",
     "sellerPrivate": "Prodajalec je zasebna oseba",
+    "shopVatIncluded": "Cene so končne — vključno z DDV, kadar je ta dolgovan.",
     "subButton": "Naroči se",
     "subConsent": "Strinjam se s prejemanjem e-pošte in sprejemam",
     "subCheck": "Skoraj končano — preverite svoj nabiralnik in potrdite naročnino.",

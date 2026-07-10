@@ -98,7 +98,8 @@
     "processingNote": "Ncopp'ê vennete d'o negozio se mette pure na commissione 'e elaborazione d'o pagamento: 1,9% + €0,30 (copre 'o circuito 'e pagamento).",
     "mostPopular": "Cchiù populare",
     "annualOffer": "Sparagne 'o {percent}% cu nu piano annuale",
-    "referralPercentNote": "Mmita ll'amice e guaragne 'o {percent}% 'e ogne pagamento ca fanno."
+    "referralPercentNote": "Mmita ll'amice e guaragne 'o {percent}% 'e ogne pagamento ca fanno.",
+    "vatNote": "'E prezze so' definitive — IVA cumpresa addó è duvuta."
   },
   "auth": {
     "loginTitle": "Trase a Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "'O cuntratto 'e accatto è fra te e 'o creator; Linketto è 'a piattaforma.",
     "sellerTrader": "'O venditore è nu professionista",
     "sellerPrivate": "'O venditore è nu privato",
+    "shopVatIncluded": "'E prezze so' definitive — IVA cumpresa addó è duvuta.",
     "subButton": "Iscrívete",
     "subConsent": "Songo d'accordo a ricevere email e accetto 'a",
     "subCheck": "Quase fatto — controlla 'a casella toia pe cunfermà ll'iscrizzione.",

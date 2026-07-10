@@ -15,3 +15,11 @@ export function getStripe(): Stripe | null {
   }
   return client;
 }
+
+// Stripe Tax (automatic_tax) — включва се чак след като Stripe Tax е
+// активиран в Dashboard-а И данъчните регистрации (OSS/BG) са въведени там;
+// иначе checkout заявките се провалят. Без флага магазинът работи, но с
+// ДДС = 0 (същите пътища на парите). Виж TAX.md и DEPLOY.md §0.
+export function stripeTaxEnabled(): boolean {
+  return process.env.STRIPE_TAX_ENABLED === '1';
+}
