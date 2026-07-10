@@ -124,7 +124,7 @@ export default function HomePage() {
           className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-tera-pale blur-3xl"
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 text-center sm:pt-20">
-          <Logo priority className="mx-auto h-36 w-36 drop-shadow-lg sm:h-44 sm:w-44" />
+          <Logo priority className="mx-auto h-36 w-36 sm:h-44 sm:w-44" />
           <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
             Етикети, визитки и CV —{" "}
             <span className="text-tera">топло и безплатно</span>
