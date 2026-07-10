@@ -79,6 +79,7 @@ CADDY_SITES_DIR="${CADDY_SITES_DIR:-/etc/caddy/sites}"
 CADDY_MAIN="${CADDY_MAIN:-/etc/caddy/Caddyfile}"
 CADDY_SERVICE="${CADDY_SERVICE:-caddy}"
 ADBLOCK_HEALTH_URL="${ADBLOCK_HEALTH_URL:-https://adblock.carbonstealth.eu/filters.json}"
+ADBLOCK_SIGNING_KEY="${ADBLOCK_SIGNING_KEY:-/etc/caddy/adblock-signing.key}"
 # ╚══════════════════════════════════════════════════════════════════════════════
 
 log()  { printf '\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -477,6 +478,22 @@ deploy_adblock() {
   # (файловете и без това са world-readable — Caddy ги чете).
   if id caddy >/dev/null 2>&1; then chown -R caddy:caddy "$ADBLOCK_WWW"; fi
   ok "adblock файлове → $ADBLOCK_WWW"
+
+  # 1а) Ed25519 подпис на filters.json (разширението го проверява при ъпдейт).
+  # Ключът живее САМО на сървъра (виж adblock/server/README.md); без ключ —
+  # без подпис, разширението приема ъпдейта както досега.
+  if [ -f "$ADBLOCK_SIGNING_KEY" ]; then
+    if openssl pkeyutl -sign -inkey "$ADBLOCK_SIGNING_KEY" -rawin \
+        -in "$ADBLOCK_WWW/filters.json" 2>/dev/null | base64 -w0 > "$ADBLOCK_WWW/filters.json.sig" \
+        && [ -s "$ADBLOCK_WWW/filters.json.sig" ]; then
+      chmod 644 "$ADBLOCK_WWW/filters.json.sig"
+      if id caddy >/dev/null 2>&1; then chown caddy:caddy "$ADBLOCK_WWW/filters.json.sig"; fi
+      ok "adblock: filters.json подписан (filters.json.sig)"
+    else
+      rm -f "$ADBLOCK_WWW/filters.json.sig"
+      warn "adblock: подписването провали — премахнах .sig, ъпдейтите вървят неподписани."
+    fi
+  fi
 
   # 2) Caddy сайт-блок. Ако Caddy липсва, оставяме файловете на място и предупреждаваме
   # (не чупим деплоя на другите проекти).

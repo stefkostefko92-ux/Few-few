@@ -35,9 +35,16 @@ on every change so you can tell installs are current.
     "enforcement": [                       // selectors that mean "adblock detected,
       "ytd-enforcement-message-view-model" // playback refused" -> triggers the
     ],                                     // reload-and-play fallback
-    "adFields": [ "adSlotsMetadata" ]      // extra ad fields to strip from the
-  }                                        // player response
-}
+    "adFields": [ "adSlotsMetadata" ],     // extra ad fields to strip from the
+                                           // player response
+    "adRenderers": [ "newAdRenderer" ],    // extra ad renderer keys pruned from
+                                           // browse/search/next (feed ads)
+    "requestFlags": [                      // extra dot-paths set to true in the
+      "playbackContext.contentPlaybackContext.someNewFlag"
+    ],                                     // player REQUEST body
+    "disableRequestFlags": false           // emergency stop: true disables ALL
+  }                                        // request flags (incl. the built-in
+}                                          // isInlinePlaybackNoAd) server-side
 ```
 
 Everything is capped and validated by the extension (`sanitizeConfig` in
@@ -51,3 +58,30 @@ removal (usually a flagged, signed-in account). The extension already reloads
 once with ad removal off so the clip plays. If YouTube **renames** the
 enforcement dialog so we stop detecting it, add the new element name to
 `youtube.enforcement` here and every install starts detecting it again.
+
+## Signing (Ed25519)
+
+The extension also fetches `filters.json.sig` and, when a public key is
+configured in `background.js` (`SIG_PUBKEY_B64`), verifies the signature before
+applying an update. A bad signature is rejected and the last good config stays.
+While no key is configured the update works unsigned, exactly as before.
+
+One-time key setup (the private key lives ONLY on the server, never in git):
+
+```bash
+openssl genpkey -algorithm ed25519 -out /etc/caddy/adblock-signing.key
+chmod 600 /etc/caddy/adblock-signing.key
+# raw 32-byte public key, base64 — paste into SIG_PUBKEY_B64 in background.js
+openssl pkey -in /etc/caddy/adblock-signing.key -pubout -outform DER | tail -c 32 | base64
+```
+
+Sign after every edit of filters.json (the deploy script does this
+automatically when the key file exists):
+
+```bash
+openssl pkeyutl -sign -inkey /etc/caddy/adblock-signing.key -rawin \
+  -in /var/www/adblock/filters.json | base64 -w0 > /var/www/adblock/filters.json.sig
+```
+
+Once the key is set and a release ships with `SIG_PUBKEY_B64` filled in, flip
+`SIG_REQUIRED = true` in the next release to make signatures mandatory.
