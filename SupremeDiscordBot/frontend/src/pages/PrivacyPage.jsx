@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       <div className="bg-cs-cyan/10 border border-cs-cyan/20 rounded-lg p-4 mb-8 text-sm text-cs-text">
         <strong className="text-cs-text">Summary:</strong> We collect only the data necessary to run the
         Service. We do not sell your data. We do not serve ads. We use Discord, Stripe, and optionally
-        Anthropic to provide our features. You can request deletion of your data at any time.
+        Google to provide our features. You can request deletion of your data at any time.
       </div>
 
       <S title="1. Data Controller">
@@ -209,11 +209,11 @@ export default function PrivacyPage() {
                 <Td>Within EEA; PCI DSS Level 1</Td>
               </Tr>
               <Tr>
-                <Td>Anthropic PBC</Td>
+                <Td>Google LLC (Gemini API)</Td>
                 <Td>AI auto-reply (Premium, optional)</Td>
                 <Td>Ticket message content (first message only, on opt-in)</Td>
                 <Td>USA</Td>
-                <Td>SCC; Anthropic DPA; no training on API data</Td>
+                <Td>SCC; Google API Terms. Note: on the free Gemini API tier Google may use submitted content to improve its services — do not include sensitive data in tickets where AI replies are enabled</Td>
               </Tr>
               <Tr>
                 <Td>Sentry (Functional Software, Inc.)</Td>
@@ -228,7 +228,7 @@ export default function PrivacyPage() {
         <p className="mt-3">
           <strong>AI Auto-Reply notice.</strong> When the AI auto-reply feature is enabled by a
           Premium server administrator, message content from newly created tickets is sent to
-          Anthropic's Claude API. This feature is <em>disabled by default</em> and must be
+          Google's Gemini API. This feature is <em>disabled by default</em> and must be
           explicitly enabled by the server administrator. Server members are informed via
           a prominent disclosure in every AI-generated message per EU AI Act Article 50.
         </p>
@@ -236,7 +236,7 @@ export default function PrivacyPage() {
 
       <S title="6. International Transfers">
         <p>
-          Some of our sub-processors (Discord, Anthropic, Sentry) are located in the
+          Some of our sub-processors (Discord, Google, Sentry) are located in the
           United States. Transfers of personal data to these processors are governed by Standard
           Contractual Clauses (SCCs) approved by the European Commission under Article 46(2)(c)
           GDPR, supplemented by technical and organisational measures assessed in our Transfer
@@ -373,7 +373,7 @@ export default function PrivacyPage() {
           not engage in profiling for advertising or marketing purposes.
         </p>
         <p>
-          The AI auto-reply feature uses Anthropic's Claude models to generate suggested responses to
+          The AI auto-reply feature uses Google's Gemini models to generate suggested responses to
           tickets. These suggestions are informational only and are not used to make automated
           decisions about individuals.
         </p>

@@ -20,7 +20,7 @@ const PREMIUM_FEATURES = [
   "Claim · escalate · round-robin assignment",
   "Sticky + scheduled + recurring messages",
   "Giveaways, polls & advanced analytics",
-  "AI auto-replies (Claude) — human in the loop",
+  "AI auto-replies — human in the loop",
   "Webhooks (HMAC) + public REST API",
   "Unlimited transcript retention + CSV/PDF export",
 ];

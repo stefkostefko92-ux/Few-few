@@ -310,10 +310,10 @@ export default function EulaPage() {
 
       <S title="9. AI Auto-Reply Feature — Special Terms">
         <p>
-          <strong className="text-cs-text">9.1 Anthropic Processing.</strong>{" "}
+          <strong className="text-cs-text">9.1 AI Provider Processing.</strong>{" "}
           When the AI auto-reply feature is enabled, newly submitted ticket messages are sent to
-          Anthropic PBC ("Anthropic") for processing via their API. By enabling this feature, you
-          acknowledge and consent to this data transfer. Anthropic processes data subject to their
+          Google LLC ("Google", Gemini API) for processing via their API. By enabling this feature, you
+          acknowledge and consent to this data transfer. Google processes data subject to their
           API Data Usage Policies and a Standard Contractual Clause arrangement.
         </p>
         <p>
@@ -333,7 +333,7 @@ export default function EulaPage() {
         <p>
           <strong className="text-cs-text">9.4 Disable at Any Time.</strong>{" "}
           You may disable AI auto-replies at any time from the Settings page. Disabling the feature
-          immediately prevents future ticket messages from being sent to Anthropic.
+          immediately prevents future ticket messages from being sent to Google.
         </p>
       </S>
 
@@ -398,8 +398,8 @@ export default function EulaPage() {
             The Licensor does not store payment card data. Stripe is PCI DSS Level 1 certified.
           </li>
           <li>
-            <strong className="text-cs-text">Anthropic, L.L.C.</strong> — AI auto-reply generation
-            (Premium, opt-in only). Subject to Anthropic's Usage Policies and API Terms.
+            <strong className="text-cs-text">Google LLC</strong> — AI auto-reply generation
+            (Premium, opt-in only). Subject to Google's Gemini API Additional Terms; on the free API tier Google may use submitted content to improve its services.
           </li>
           <li>
             <strong className="text-cs-text">Sentry (Functional Software, Inc.)</strong> — Error
@@ -671,7 +671,7 @@ export default function EulaPage() {
         <p className="mt-4 text-xs text-cs-muted">
           This EULA was last reviewed by the Licensor's legal team on 27 June 2026.
           It covers the {COMPANY} platform as deployed with Node.js, React, Discord.js v14,
-          PostgreSQL, Redis, Stripe, and Anthropic integrations.
+          PostgreSQL, Redis, Stripe, and Google Gemini integrations.
         </p>
       </S>
     </LegalPage>

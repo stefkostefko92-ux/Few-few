@@ -202,13 +202,13 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Verification & anti-bot", "One-click button or math captcha, account-age requirements and brute-force protection."],
     ["Polls & giveaways", "Live polls (up to 9 options) and giveaways with role requirements, scheduled end and re-roll."],
     ["Automation", "Sticky messages and one-off or recurring (daily/weekly/monthly) scheduled messages."],
-    ["AI auto-replies", "Optional first response powered by Anthropic Claude, with an EU AI Act Art. 50 disclosure."],
+    ["AI auto-replies", "Optional AI-drafted first response, with an EU AI Act Art. 50 disclosure."],
     ["Webhooks & API", "HMAC-signed webhook events and a public REST API with scoped bearer keys."],
     ["White-label bot", "White-label & Agency servers run their own branded bot with a custom token, encrypted with AES-256-GCM."],
   ];
   const featuresHtml = EN_FEATURES.map(([t, d]) => `<li><h3>${esc(t)}</h3><p>${esc(d)}</p></li>`).join("");
   const pricingHtml = `<div><h3>Free — €0</h3><ul><li>1 ticket panel</li><li>2 application forms (up to 5 questions each)</li><li>1 verification panel</li><li>Persistent transcripts (30-day retention)</li></ul></div>`
-    + `<div><h3>Premium — €9.99 / server / month (or €99 / year)</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies (Claude) and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
+    + `<div><h3>Premium — €9.99 / server / month (or €99 / year)</h3><ul><li>Up to 50 panels, 50 forms, 50 questions each</li><li>AI auto-replies and round-robin assignment</li><li>Webhooks (HMAC), public REST API, advanced analytics, unlimited retention</li><li>14-day free trial, no credit card</li></ul></div>`
     + `<div><h3>White-label — €19.99 / month (or €199 / year)</h3><ul><li>Everything in Premium</li><li>White-label custom bot — upload your own Discord token</li><li>Runs under your own brand (name & avatar)</li></ul></div>`
     + `<div><h3>Agency — €39.99 / month (Agency 5) or €79.99 / month (Agency 10)</h3><ul><li>White-label for up to 5 or 10 servers, one subscription</li><li>Annual: €399 / year (5) or €799 / year (10)</li><li>Reseller-friendly</li></ul></div>`
     + `<p>All prices in EUR, VAT included where applicable · per server unless noted · subscriptions renew automatically until cancelled.</p>`;
@@ -221,7 +221,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     ["Form logic", "—", "Conditional branching + regex validation"],
     ["Verification", "Button", "Button + math captcha + account-age gates"],
     ["Ticket workflow", "Basic", "Claim · escalate · rename · round-robin"],
-    ["AI auto-replies", "—", "Claude-powered (assistive, human-in-the-loop)"],
+    ["AI auto-replies", "—", "AI-powered (assistive, human-in-the-loop)"],
     ["White-label bot", "—", "Separate tier (White-label)"],
     ["Webhooks", "—", "20 HMAC-signed integrations"],
     ["Transcript retention", "30 days", "Unlimited"],
@@ -230,11 +230,11 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   const compareHtml = `<table><thead><tr><th>Capability</th><th>Free</th><th>Premium</th></tr></thead><tbody>${
     compareRows.map(([c, f, p]) => `<tr><td>${esc(c)}</td><td>${esc(f)}</td><td>${esc(p)}</td></tr>`).join("")
   }</tbody></table>`;
-  const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€9.99 per server per month or €99 per year, with a 14-day free trial and no credit card) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks Claude-powered AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€19.99/month or €199/year) adds a custom bot that runs under your own brand, and Agency 5 / Agency 10 (€39.99 / €79.99 per month) cover up to 5 or 10 servers under one white-label subscription. Billing is per server, so a small community can stay on Free while your main server runs Premium; cancel anytime and nothing is deleted.";
+  const upsellPassage = "Free gets you running; Premium gets you scaling. The Free tier gives one ticket panel, two application forms and 30-day transcript retention — enough to run real support today at no cost. Premium (€9.99 per server per month or €99 per year, with a 14-day free trial and no credit card) raises the limits to 50 panels, 50 forms and 50 questions each, and unlocks AI auto-replies, round-robin assignment, conditional form logic, 20 webhook integrations, a public REST API, advanced analytics and unlimited transcript retention. The White-label tier (€19.99/month or €199/year) adds a custom bot that runs under your own brand, and Agency 5 / Agency 10 (€39.99 / €79.99 per month) cover up to 5 or 10 servers under one white-label subscription. Billing is per server, so a small community can stay on Free while your main server runs Premium; cancel anytime and nothing is deleted.";
   const rootSnapshot = `<div class="prerender-content" style="max-width:72rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif">
     <p>One bot replaces six. Built in the EU.</p>
     <h1>Supreme Bot — Discord Ticket Bot &amp; SaaS Platform</h1>
-    <p>Six bots. Six bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and Claude-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
+    <p>Six bots. Six bills. One dashboard. Tickets, applications, verification, giveaways, scheduled messages, webhooks and AI-powered replies for Discord communities that outgrew a folder full of single-purpose bots. Multi-tenant Discord bot management by Carbon Stealth VCC — EU-hosted (Germany), GDPR-native.</p>
     <section><h2>Free vs Premium</h2><p>${upsellPassage}</p>${compareHtml}</section>
     <section><h2>Everything, integrated</h2><ul>${featuresHtml}</ul></section>
     <section><h2>Simple pricing, per server</h2>${pricingHtml}</section>

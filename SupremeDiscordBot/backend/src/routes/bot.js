@@ -8,7 +8,7 @@ import { generateHtmlTranscript } from "../utils/archive.js";
 import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js";
 import { decrypt } from "../lib/crypto.js";
 import { pickNextAssignee } from "../services/roundRobin.js";
-import { generateAutoReply, aiRateLimitOk } from "../services/aiReply.js";
+import { generateAutoReply, aiRateLimitOk, AI_MODEL_NAME } from "../services/aiReply.js";
 import { getServerTier } from "../lib/premium.js";
 
 const router = Router();
@@ -310,7 +310,7 @@ router.post("/ticket/create", async (req, res, next) => {
         }).then((reply) => {
           if (reply) {
             import("../services/botNotifier.js").then(({ notifyBot }) => {
-              notifyBot("AI_REPLY", { channelId, content: reply, ticketId: ticket.id });
+              notifyBot("AI_REPLY", { channelId, content: reply, ticketId: ticket.id, model: AI_MODEL_NAME });
             });
           }
         }).catch(() => {});

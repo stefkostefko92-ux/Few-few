@@ -26,7 +26,6 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.104.1",
     "@prisma/client": "^5.10.0",
     "@sentry/node": "^10.62.0",
     "axios": "^1.6.7",

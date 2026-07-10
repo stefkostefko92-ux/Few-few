@@ -41,7 +41,7 @@ Three categories:
 - Session token compromise
 - API key leakage
 - Breach affecting 100-1000 subjects
-- Third-party sub-processor incident (Stripe, Discord, Hetzner, Anthropic)
+- Third-party sub-processor incident (Stripe, Discord, Hetzner, Google)
 
 ### Tier 3 — Medium (document, assess case-by-case)
 - Temporary DB unavailability (<4 hours)
