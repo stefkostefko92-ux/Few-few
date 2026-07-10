@@ -401,9 +401,20 @@
           "date": "2026-07-06",
           "event": "v10.1 — учене",
           "detail": "Научи: European Accessibility Act (Дир. 2019/882) е в сила от 28.06.2025 — задължителна достъп… (+13 още)"
+        },
+        {
+          "version": "10.4.0",
+          "date": "2026-07-10",
+          "event": "v10.4 — учене",
+          "detail": "Научи: Nexus Dominion (Express+better-sqlite3) funnel-ва всяко действие през logger.ts:logEven… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „Nexus Dominion (Express+better-sqlite3) funnel-ва всяко действие през logger.ts:logEven…\" (+2 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
