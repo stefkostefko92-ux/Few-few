@@ -10,7 +10,7 @@ Carbon Stealth; няма общ код с другите продукти.
 ## Структура
 
 ```
-manifest.json           MV3 конфигурация (v4.0.0)
+manifest.json           MV3 конфигурация (v4.0.1)
 background.js           service worker — рулсети, allowlist, статистики, съобщения
 theme.js                прилага Carbon Stealth / светла тема
 content.js / .css       козметика (вкл. процедурни селектори) + Smart Detection
