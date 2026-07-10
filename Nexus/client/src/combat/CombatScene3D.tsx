@@ -1040,6 +1040,13 @@ function makeContactShadowTexture(): THREE.CanvasTexture {
  *  look that makes a low-poly character read as alive and three-
  *  dimensional. Cheap; runs in the existing standard shader. */
 function addFresnelRim(mat: THREE.MeshStandardMaterial, color: THREE.Color, power = 2.6, strength = 0.5): void {
+  // The injected vertex code reads `objectNormal` + `normalMatrix`, which only
+  // exist in lit (standard/physical) shaders. Some imported GLB rigs ship
+  // unlit MeshBasicMaterial slots (e.g. a baked "Wizard_Texture"); injecting
+  // the rim there produced "objectNormal: undeclared identifier" → the shader
+  // failed to compile and that mesh vanished. Skip any material without
+  // normals so the rig still renders (just without the rim glow).
+  if (!(mat as any).isMeshStandardMaterial && !(mat as any).isMeshPhysicalMaterial) return;
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uRimColor = { value: color };
     shader.uniforms.uRimPower = { value: power };
