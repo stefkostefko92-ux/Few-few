@@ -98,7 +98,8 @@
     "processingNote": "Sulle vendite del negozio si applica anche una commissione di elaborazione del pagamento: 1,9% + €0,30 (copre il circuito di pagamento).",
     "mostPopular": "Più popolare",
     "annualOffer": "Risparmia il {percent}% con un piano annuale",
-    "referralPercentNote": "Invita i tuoi amici e guadagna il {percent}% di ogni loro pagamento."
+    "referralPercentNote": "Invita i tuoi amici e guadagna il {percent}% di ogni loro pagamento.",
+    "vatNote": "I prezzi sono finali — IVA inclusa ove dovuta."
   },
   "auth": {
     "loginTitle": "Accedi a Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Il contratto di acquisto è tra te e il creator; Linketto è la piattaforma.",
     "sellerTrader": "Il venditore è un professionista",
     "sellerPrivate": "Il venditore è un privato",
+    "shopVatIncluded": "I prezzi sono finali — IVA inclusa ove dovuta.",
     "subButton": "Iscriviti",
     "subConsent": "Accetto di ricevere email e accetto la",
     "subCheck": "Ci siamo quasi — controlla la tua casella per confermare l'iscrizione.",

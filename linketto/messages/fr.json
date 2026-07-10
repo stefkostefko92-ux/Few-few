@@ -98,7 +98,8 @@
     "processingNote": "Les ventes de la boutique comportent aussi des frais de traitement du paiement : 1,9 % + 0,30 € (couvre l'opérateur de cartes).",
     "mostPopular": "Le plus populaire",
     "annualOffer": "Économise {percent}% avec un plan annuel",
-    "referralPercentNote": "Invite tes amis et gagne {percent}% de chacun de leurs paiements."
+    "referralPercentNote": "Invite tes amis et gagne {percent}% de chacun de leurs paiements.",
+    "vatNote": "Les prix sont définitifs — TVA comprise le cas échéant."
   },
   "auth": {
     "loginTitle": "Connexion à Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Le contrat d'achat est conclu entre vous et le créateur ; Linketto est la plateforme.",
     "sellerTrader": "Le vendeur est un professionnel",
     "sellerPrivate": "Le vendeur est un particulier",
+    "shopVatIncluded": "Les prix sont définitifs — TVA comprise le cas échéant.",
     "subButton": "S'abonner",
     "subConsent": "J'accepte de recevoir des e-mails et j'accepte la",
     "subCheck": "Presque terminé — vérifiez votre boîte de réception pour confirmer votre abonnement.",

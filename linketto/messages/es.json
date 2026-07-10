@@ -98,7 +98,8 @@
     "processingNote": "Las ventas de la tienda incluyen además una tarifa de procesamiento del pago: 1,9% + €0,30 (cubre al procesador de tarjetas).",
     "mostPopular": "Más popular",
     "annualOffer": "Ahorra un {percent}% con un plan anual",
-    "referralPercentNote": "Invita a tus amigos y gana un {percent}% de cada pago que hagan."
+    "referralPercentNote": "Invita a tus amigos y gana un {percent}% de cada pago que hagan.",
+    "vatNote": "Los precios son finales: IVA incluido cuando corresponda."
   },
   "auth": {
     "loginTitle": "Inicia sesión en Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "El contrato de compra es entre tú y el creador; Linketto es la plataforma.",
     "sellerTrader": "El vendedor es comerciante",
     "sellerPrivate": "El vendedor es un particular",
+    "shopVatIncluded": "Los precios son finales: IVA incluido cuando corresponda.",
     "subButton": "Suscribirse",
     "subConsent": "Acepto recibir correos y acepto la",
     "subCheck": "Ya casi está — revisa tu bandeja de entrada para confirmar la suscripción.",

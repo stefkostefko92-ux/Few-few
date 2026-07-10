@@ -98,7 +98,8 @@
     "processingNote": "Auf Shop-Verkäufe fällt zusätzlich eine Zahlungsabwicklungsgebühr von 1,9 % + €0,30 an (deckt den Kartenanbieter).",
     "mostPopular": "Am beliebtesten",
     "annualOffer": "Spare {percent}% mit einem Jahresplan",
-    "referralPercentNote": "Lade Freunde ein und verdiene {percent}% jeder ihrer Zahlungen."
+    "referralPercentNote": "Lade Freunde ein und verdiene {percent}% jeder ihrer Zahlungen.",
+    "vatNote": "Die Preise sind Endpreise — inklusive Umsatzsteuer, soweit sie anfällt."
   },
   "auth": {
     "loginTitle": "Bei Linketto anmelden",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Der Kaufvertrag besteht zwischen dir und dem Creator; Linketto ist die Plattform.",
     "sellerTrader": "Der Verkäufer ist Unternehmer",
     "sellerPrivate": "Der Verkäufer ist Privatperson",
+    "shopVatIncluded": "Die Preise sind Endpreise — inklusive Umsatzsteuer, soweit sie anfällt.",
     "subButton": "Abonnieren",
     "subConsent": "Ich willige ein, E-Mails zu erhalten, und akzeptiere die",
     "subCheck": "Fast geschafft — prüfe dein Postfach, um dein Abo zu bestätigen.",
