@@ -45,9 +45,15 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "css": ["content.css", "cosmetic_generic.css"],
+      "css": ["content.css"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "css": ["cosmetic_generic.css"],
+      "run_at": "document_start",
+      "all_frames": false
     },
     {
       "matches": ["<all_urls>"],

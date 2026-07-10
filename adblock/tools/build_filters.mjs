@@ -187,6 +187,9 @@ function convertList(text, key) {
     if (!o.allow && blocks >= cap) { skipped++; continue; }
     let uf = o.pattern.replace(/^\*+/, "").replace(/\*+$/, "");
     if (o.pattern.endsWith("|")) uf += "|";
+    // DNR сравнява case-insensitive спрямо lowercase URL и суровия pattern —
+    // pattern с главна буква тихо не match-ва. Свеждаме до lowercase.
+    if (!o.matchCase) uf = uf.toLowerCase();
     if (uf.length < 3) { skipped++; continue; }
     const c = conditionFor(o);
     c.urlFilter = uf;

@@ -19,7 +19,10 @@
   let unhideSelectors = [];
 
   const host = location.hostname.replace(/^www\./, "");
-  const baseHost = host.split(".").slice(-2).join(".");
+  // Multi-part публични суфикси (co.uk, com.au, ...) — иначе isThirdParty би
+  // третирал всички *.co.uk като first-party.
+  const MULTI_TLD = /\.(co|com|net|org|gov|ac|edu)\.[a-z]{2}$/;
+  const baseHost = host.split(".").slice(MULTI_TLD.test(host) ? -3 : -2).join(".");
   const hostMatches = (d) => host === d || host.endsWith("." + d);
 
   // Gate for the bundled generic cosmetic CSS. Set optimistically at
@@ -447,11 +450,16 @@
   chrome.storage?.onChanged.addListener((changes) => {
     if (changes.enabled) {
       enabled = changes.enabled.newValue !== false;
-      gate(enabled);
-      if (enabled) {
-        start();
-        hide();
-      }
+      // Пре-проверяваме allowlist-а: включване на защитата не бива да пусне
+      // генеричната козметика на allowlist-нат сайт.
+      chrome.storage.local.get("allowlist", (d) => {
+        const allowed = ((d && d.allowlist) || []).some(hostMatches);
+        gate(enabled && !allowed);
+        if (enabled && !allowed) {
+          start();
+          hide();
+        }
+      });
     }
     if (changes.features) {
       smartEnabled = (changes.features.newValue || {}).smart !== false;
