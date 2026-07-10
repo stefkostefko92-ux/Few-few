@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import type { ProductView, VipPerks, VipTier } from "@aso/shared";
+import { formatDualPrice, type ProductView, type VipPerks, type VipTier } from "@aso/shared";
 import { Badge, Button, Panel } from "../../ui";
 import { ApiError, api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
@@ -9,7 +9,8 @@ import { useAuthStore } from "../../lib/store";
 type VipPerksMap = Record<VipTier, VipPerks>;
 
 const KIND_ORDER: ProductView["kind"][] = ["VIP_SUB", "GEMS", "CHIP_PACK", "COSMETIC"];
-const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+// Двойно обозначаване €/лв. по Закона за въвеждане на еврото (преходен период).
+const eur = formatDualPrice;
 
 /** Human-readable, distinguishing perks for a VIP tier. */
 function perkLines(p: VipPerks, t: (k: string, o?: Record<string, unknown>) => string): string[] {

@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type { ProductView } from "@aso/shared";
+import { formatDualPrice, type ProductView } from "@aso/shared";
 import { Badge, Button, Modal } from "../../ui";
 import { ApiError, api } from "../../lib/api";
 import { useStoreModal } from "../../lib/store";
-
-const eur = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 
 /**
  * Quick-buy store surfaced anywhere in the app (incl. mid-match via the wallet
@@ -163,7 +161,7 @@ function Section({
               onClick={() => onBuy(p.sku)}
               className="shrink-0"
             >
-              {enabled ? eur(p.priceCents) : t("shop.soon")}
+              {enabled ? formatDualPrice(p.priceCents) : t("shop.soon")}
             </Button>
           </li>
         ))}
