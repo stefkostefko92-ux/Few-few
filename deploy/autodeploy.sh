@@ -495,10 +495,41 @@ deploy_adblock() {
     fi
   fi
 
-  # 2) Caddy сайт-блок. Ако Caddy липсва, оставяме файловете на място и предупреждаваме
-  # (не чупим деплоя на другите проекти).
+  # 2) Уеб сървър. Предпочитаме Caddy (авто-TLS); на сървъри с Nginx (моделът на
+  # останалите продукти тук) инсталираме Nginx vhost + certbot. Без нито един —
+  # файловете остават на място с предупреждение (не чупим другите проекти).
+  if ! command -v caddy >/dev/null && command -v nginx >/dev/null; then
+    local nsite="/etc/nginx/sites-available/adblock.conf"
+    [ -f "$nsite" ] && cp -a "$nsite" "${nsite}.bak-$TS"
+    install -m 644 "$d/nginx.conf" "$nsite"
+    ln -sf "$nsite" /etc/nginx/sites-enabled/adblock.conf
+    if nginx -t >/dev/null 2>&1; then
+      systemctl reload nginx 2>/dev/null || nginx -s reload
+      rm -f "${nsite}.bak-$TS"
+      ok "adblock: Nginx vhost инсталиран и презареден ($ADBLOCK_DOMAIN)."
+      # TLS през certbot (акаунтът вече съществува от другите продукти).
+      if [ ! -d "/etc/letsencrypt/live/$ADBLOCK_DOMAIN" ] && command -v certbot >/dev/null; then
+        if certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect >/dev/null 2>&1; then
+          ok "adblock: TLS сертификат издаден (certbot)."
+        else
+          warn "adblock: certbot не издаде сертификат (DNS още не сочи насам?). Пусни ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
+        fi
+      fi
+    else
+      deploy_failed=1
+      warn "adblock: nginx -t провал — връщам стария vhost, НЕ презареждам."
+      if [ -f "${nsite}.bak-$TS" ]; then mv -f "${nsite}.bak-$TS" "$nsite"; else rm -f "$nsite" /etc/nginx/sites-enabled/adblock.conf; fi
+      return
+    fi
+    if curl -fsS -o /dev/null --max-time 5 "$ADBLOCK_HEALTH_URL"; then
+      ok "adblock е жив ($ADBLOCK_HEALTH_URL)"
+    else
+      warn "adblock: публичният health още не минава ($ADBLOCK_HEALTH_URL) — провери DNS A запис към този VPS."
+    fi
+    return
+  fi
   if ! command -v caddy >/dev/null; then
-    warn "adblock: липсва caddy — файловете са в $ADBLOCK_WWW, но сайт-блокът не е инсталиран (инсталирай Caddy 2.9+)."
+    warn "adblock: няма нито caddy, нито nginx — файловете са в $ADBLOCK_WWW, но сайтът не е публикуван."
     return
   fi
   mkdir -p "$CADDY_SITES_DIR"
