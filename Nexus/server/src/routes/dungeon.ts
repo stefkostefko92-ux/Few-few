@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { authRequired } from '../middleware/auth';
-import { applyXp } from '../game/progression';
+import { applyXp, paceXpForKill } from '../game/progression';
 import { deriveStats, buildHeroActor } from '../game/stats';
 import { simulateCombat } from '../game/combat';
 import { applyCombatEvent, evaluateAchievements } from '../game/events';
@@ -25,6 +25,9 @@ router.get('/', (req, res) => {
     return;
   }
   const active = db.prepare('SELECT * FROM dungeon_run WHERE character_id = ?').get(ch.id) as any;
+  const cdRows = db.prepare('SELECT slug, next_available_at FROM dungeon_cooldowns WHERE character_id = ?').all(ch.id) as { slug: string; next_available_at: number }[];
+  const cdBySlug = Object.fromEntries(cdRows.map((r) => [r.slug, r.next_available_at]));
+  const now = Date.now();
   res.json({
     dungeons: DUNGEONS.map((d) => ({
       slug: d.slug,
@@ -34,6 +37,8 @@ router.get('/', (req, res) => {
       stages: d.stages.length,
       xp_bonus: d.xp_bonus,
       gold_bonus: d.gold_bonus,
+      cooldown_hours: d.cooldown_hours,
+      cooldown_until: (cdBySlug[d.slug] || 0) > now ? cdBySlug[d.slug] : 0,
       intro: d.intro,
       unlocked: ch.level >= d.level_req,
     })),
@@ -68,6 +73,18 @@ router.post('/enter', (req, res) => {
   }
   try { assertReady(char.id, 'dungeon'); }
   catch (e: any) { res.status(429).json({ error: e.message, cooldown_ms: e.cooldownMs, action: 'dungeon' }); return; }
+  // Per-dungeon daily lock (dungeon.cooldown_hours). Without this the big
+  // completion bonus re-ran every 7-10 min and printed XP/gold; each
+  // specific dungeon is now gated to roughly once per its cooldown_hours.
+  const dcRow = db.prepare('SELECT next_available_at FROM dungeon_cooldowns WHERE character_id = ? AND slug = ?')
+    .get(char.id, dungeon.slug) as { next_available_at: number } | undefined;
+  if (dcRow && dcRow.next_available_at > Date.now()) {
+    const remaining = dcRow.next_available_at - Date.now();
+    const hrs = Math.floor(remaining / 3_600_000);
+    const mins = Math.ceil((remaining % 3_600_000) / 60_000);
+    res.status(429).json({ error: `${dungeon.name} is on cooldown — ${hrs > 0 ? `${hrs}h ` : ''}${mins}m remaining.`, cooldown_ms: remaining, action: 'dungeon' });
+    return;
+  }
   if (char.hp < Math.floor(char.hp_max * 0.5)) {
     res.status(400).json({ error: 'Enter the dungeon at half health or more.' });
     return;
@@ -127,7 +144,10 @@ router.post('/advance', (req, res) => {
   // Update dungeon run with surviving HP
   const newHp = result.winner === 'hero' ? Math.max(1, result.hero.hp) : 0;
   if (result.winner === 'hero') {
-    const stageXp = Math.floor(monster.xp_reward * 1.5);
+    // Pace-clamp per-stage XP the same way hunting does, so a dungeon stage
+    // can't hand out a monster's raw (act-1-inflated) xp_reward. The big
+    // once-per-lock completion bonus is where the dungeon payoff lives.
+    const stageXp = Math.min(Math.round(paceXpForKill(monster.level) * 1.8), Math.floor(monster.xp_reward * 1.5));
     const stageGold = Math.floor((monster.gold_min + monster.gold_max) / 2);
     const newStage = run.stage + 1;
     const items = JSON.parse(run.items_json || '[]') as string[];
@@ -243,6 +263,12 @@ router.post('/claim', (req, res) => {
           db.prepare("INSERT INTO inventory (character_id, item_id, quantity, equipped, slot) VALUES (?, ?, 1, 0, '')").run(char.id, item.id);
         }
       }
+      // Arm this dungeon's per-dungeon cooldown (its own cooldown_hours).
+      const lockUntil = Date.now() + dungeon.cooldown_hours * 3_600_000;
+      db.prepare(
+        `INSERT INTO dungeon_cooldowns (character_id, slug, next_available_at) VALUES (?, ?, ?)
+         ON CONFLICT(character_id, slug) DO UPDATE SET next_available_at = excluded.next_available_at`,
+      ).run(ch.id, dungeon.slug, lockUntil);
       return { xp, gold, items, clearText: dungeon.clear_text, lvlRes };
     }).immediate();
     const unlocked = evaluateAchievements(db, ch.id);
