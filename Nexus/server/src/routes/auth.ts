@@ -109,7 +109,11 @@ router.post('/register', async (req, res) => {
     .run(username, email, hash, dateOfBirth, country, now, now);
   const uid = info.lastInsertRowid as number;
   const token = signToken({ uid, username }, 0);
-  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email, country, age } });
+  // Do NOT put the raw email in meta: logEvent mirrors meta to stdout and
+  // fans it out to any configured webhook (incl. non-EU ones like Discord),
+  // which would be an undeclared PII transfer. A one-way hash keeps the
+  // event useful for support without leaking the address.
+  logFromRequest(req, { category: 'auth', action: 'register', user_id: uid, message: `New user ${username}`, meta: { email_hash: hashIdentifier(email), country, age } });
   res.status(201).json({ token, user: { id: uid, username, email, is_admin: 0 } });
 });
 

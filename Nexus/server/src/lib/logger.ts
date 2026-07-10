@@ -241,6 +241,22 @@ export function logEvent(event: LogEvent): number {
   return inserted;
 }
 
+/**
+ * Retention: delete event_log rows older than `maxAgeMs` (default 90 days),
+ * matching the window stated in the privacy policy. Without this the table
+ * kept IP + hashed identifiers indefinitely, contradicting the declared
+ * retention. Called on boot and daily from server.ts.
+ */
+export function pruneEventLog(maxAgeMs: number = 90 * 24 * 60 * 60 * 1000): number {
+  try {
+    const cutoff = Date.now() - maxAgeMs;
+    const r = getDb().prepare('DELETE FROM event_log WHERE ts < ?').run(cutoff);
+    return r.changes as number;
+  } catch {
+    return 0;
+  }
+}
+
 /* Convenience helper that pulls IP/country/route from a Request. */
 import type { Request } from 'express';
 export function logFromRequest(req: Request, event: LogEvent): number {

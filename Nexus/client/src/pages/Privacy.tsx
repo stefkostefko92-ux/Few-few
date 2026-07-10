@@ -82,7 +82,7 @@ export default function Privacy(): React.ReactElement {
 
         <h2>7. Cookies and tracking</h2>
         <p>
-          We use one essential session token (HTTP-only cookie) for authentication. Analytics is opt-in and disabled by default; the cookie banner exposes per-category controls (Necessary / Preferences / Analytics / Marketing). You can withdraw consent any time via the "Cookie settings" link in the footer.
+          We use one essential session token (a JWT held in your browser's localStorage, not a third-party cookie) for authentication. Analytics is opt-in and disabled by default; the cookie banner exposes per-category controls (Necessary / Preferences / Analytics / Marketing). You can withdraw consent any time via the "Cookie settings" link in the footer.
         </p>
 
         <h2>8. Children</h2>

@@ -134,7 +134,7 @@
     "step2Body": "Gli oggetti caduti in combattimento finiscono nel tuo zaino. Clicca su un pezzo di equipaggiamento per indossarlo — passa il cursore per confrontare le statistiche con ciò che porti ora.",
     "step2Cta": "Apri l'inventario",
     "step3Title": "Esplora il Reame",
-    "step3Body": "Ti aspettano quindici regioni, dai Whispering Woods all'Eternal Throne al Lv 350. Ogni regione fa cadere equipaggiamento del proprio tier.",
+    "step3Body": "Ti aspettano sedici regioni, dai Whispering Woods all'Eternal Throne al Lv 350. Ogni regione fa cadere equipaggiamento del proprio tier.",
     "step3Cta": "Vedi la mappa",
     "step4Title": "Affilati alla Forgia",
     "step4Body": "Quando hai qualche pezzo, versa oro nella Forgia per incantarlo — probabilità migliori ai tier bassi.",
@@ -291,7 +291,7 @@
     "playFree": "Gioca gratis",
     "heroEyebrow": "Un MMORPG da browser · Free to Play · Senza download",
     "heroTagline": "Un reame con una lunga memoria.",
-    "heroSubtitle": "Quattro classi. Quindici regioni da conquistare. Dieci tier di equipaggiamento, un'arena ELO, una casa d'aste in tempo reale e una Torre delle Prove la cui classifica si aggiorna mentre dormi. Gratuito, da browser, senza installazione. La registrazione richiede trenta secondi.",
+    "heroSubtitle": "Quattro classi. Sedici regioni da conquistare. Dieci tier di equipaggiamento, un'arena ELO, una casa d'aste in tempo reale e una Torre delle Prove la cui classifica si aggiorna mentre dormi. Gratuito, da browser, senza installazione. La registrazione richiede trenta secondi.",
     "heroCtaPlay": "Impugna la spada",
     "heroCtaHow": "Guarda come si gioca",
     "footageBy": "Riprese di {{author}}",
@@ -319,7 +319,7 @@
     "featHuntingTitle": "Una caccia che riempie il Bestiario",
     "featHuntingBody": "Scegli una regione, scegli una finestra. Ogni uccisione tira un drop al 22% e conta in un colpo solo per taglia, pass battaglia e prova settimanale.",
     "featArenaTitle": "Arena ELO, una vera ladder",
-    "featArenaBody": "Duelli con matchmaking contro quindici allenatori NPC e ogni giocatore nella tua fascia di punteggio. K=32, quindi una striscia si nota in fretta.",
+    "featArenaBody": "Duelli con matchmaking contro sedici allenatori NPC e ogni giocatore nella tua fascia di punteggio. K=32, quindi una striscia si nota in fretta.",
     "featDailyTitle": "Un tributo giornaliero che premia l'abitudine",
     "featDailyBody": "Ciclo di striscia di sette giorni con traguardi in gemme al giorno quattordici e trenta. Salti un giorno e la striscia si azzera; niente ti viene rivenduto.",
     "featWheelTitle": "Un giro al giorno, nessuno shop",
@@ -505,29 +505,7 @@
     "requiresLv": "Richiede Lv {{n}}",
     "tooTired": "Troppo stanco",
     "embark": "Parti",
-    "empty": "Nessuna missione qui al momento.",
-    "regions": {
-      "whisperingWoods": {
-        "name": "Boschi Sussurranti",
-        "lore": "Querce coperte di muschio, creature guizzanti, la strada da Oaken Hollow."
-      },
-      "mistmoorHills": {
-        "name": "Colline Nebbiose",
-        "lore": "Erica e nebbia. Gli orchi cavalcano i passi alti."
-      },
-      "crystalCaverns": {
-        "name": "Caverne di Cristallo",
-        "lore": "Un labirinto di minerale scintillante e pietra antica."
-      },
-      "ashenWastes": {
-        "name": "Lande Cineree",
-        "lore": "Pianure bruciate dove vagano i revenant e i draghi volteggiano in alto."
-      },
-      "shadowfell": {
-        "name": "La Coltre Oscura",
-        "lore": "Il dominio del Signore delle Ombre. L'ultima prova del regno."
-      }
-    }
+    "empty": "Nessuna missione qui al momento."
   },
   "questRun": {
     "roadUnwinds": "La strada si srotola davanti a te…",
@@ -541,11 +519,11 @@
     "vsTitle": "{{hero}}  vs  {{foe}}"
   },
   "realmBoss": {
-    "loading": "Caricamento del boss del regno…",
+    "loading": "Caricamento del boss del reame…",
     "killingBlowToast": "COLPO MORTALE! {{dmg}} danni — drop unico assegnato.",
     "struckToast": "Hai inflitto {{dmg}} danni.",
     "settlementToast": "Liquidazione riscossa: +{{gold}}g · +{{gems}} gemme · +{{xp}} XP",
-    "pageTitle": "Boss del Regno · {{name}}",
+    "pageTitle": "Boss del Reame · {{name}}",
     "week": "Settimana {{week}}",
     "slain": "Ucciso questa settimana",
     "resetsIn": "Si azzera tra {{time}}",
@@ -736,7 +714,7 @@
     "floorShort": "P{{n}}"
   },
   "trialCache": {
-    "title": "Cassa delle Prove",
+    "title": "Forziere delle prove",
     "subtitle": "Valuta guadagnata solo nella Torre delle Prove. Spendi i gettoni in equipaggiamento reliquia, elisir mitici o una Protezione dell'Incudine — una garanzia monouso della Forgia contro la rottura.",
     "acquired": "Acquisito: {{name}}",
     "tokens": "⬢ {{n}} gettoni",
@@ -925,7 +903,7 @@
   },
   "recipes": {
     "title": "Bacheca delle ricette della Forgia",
-    "subtitle": "Combina i <strong>Trofei dei Mostri</strong> (dalla Bacheca delle taglie) con un <strong>Elisir Mitico</strong> (buff attivo dalla Cassa della Prova) all'incudine per distillare gemme incastonabili. Le gemme potenziano le armi in modo permanente.",
+    "subtitle": "Combina i <strong>Trofei dei Mostri</strong> (dalla Bacheca delle taglie) con un <strong>Elisir Mitico</strong> (buff attivo dalla Forziere delle prove) all'incudine per distillare gemme incastonabili. Le gemme potenziano le armi in modo permanente.",
     "brewGems": "Distilla gemme",
     "loading": "Caricamento…",
     "trophies": "Trofei {{owned}}/{{required}}",
@@ -1160,7 +1138,7 @@
   },
   "dashboard": {
     "portraitAlt": "Ritratto di {{className}}",
-    "heroOfTheRealm": "Eroe del Regno",
+    "heroOfTheRealm": "Eroe del Reame",
     "critTag": "{{pct}}% crit",
     "dodgeTag": "{{pct}}% schivata",
     "pDmg": "DAN-F",
@@ -1455,7 +1433,7 @@
   },
   "world": {
     "title": "Mappa di Nexus",
-    "subtitle": "Dalla Conca delle Querce al Trono Eterno — quindici regni tracciati su una reliquia dell'ultimo cartografo.",
+    "subtitle": "Dalla Conca delle Querce al Trono Eterno — sedici regni tracciati su una reliquia dell'ultimo cartografo.",
     "enter": "Entra",
     "requiresLv": "Richiede liv. {{level}}",
     "regions": {
