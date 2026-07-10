@@ -657,10 +657,11 @@
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
 <script src="/vendor/leaflet/leaflet.js"></script>
 <script>
-(function() {
+function initPanevMap() {
   if (typeof L === 'undefined') return;
   const mapEl = document.getElementById('panev-map');
   if (!mapEl) return;
+  mapEl.innerHTML = ''; // remove the click-to-load placeholder
 
   const PANEV_LAT = 45.4593;
   const PANEV_LNG = 8.9612;
@@ -699,6 +700,21 @@
   // Enable scroll zoom only when clicked (prevents accidental scroll)
   map.on('click', () => map.scrollWheelZoom.enable());
   map.on('mouseout', () => map.scrollWheelZoom.disable());
+}
+
+// Click-to-load: do NOT fetch OpenStreetMap tiles (which transmits the visitor's
+// IP to OpenStreetMap Foundation) until the user explicitly loads the map — GDPR
+// data-minimisation (art. 5(1)(c)).
+(function() {
+  const mapEl = document.getElementById('panev-map');
+  if (!mapEl) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.setAttribute('style', 'width:100%;height:100%;border:1px dashed var(--border,#dcdfe4);background:var(--bone-2,#f4f1ea);color:var(--text-secondary,#4a4e58);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;padding:1.5rem;font:inherit;text-align:center');
+  btn.innerHTML = '<span style="font-size:1.05rem;font-weight:600;color:var(--panev-blue,#162861)">🗺️ Carica la mappa</span>' +
+    '<small style="max-width:340px;font-size:.78rem;line-height:1.5">La mappa utilizza OpenStreetMap. Cliccando, il tuo indirizzo IP verrà comunicato a OpenStreetMap Foundation (Regno Unito) per il caricamento delle tile.</small>';
+  btn.addEventListener('click', initPanevMap);
+  mapEl.appendChild(btn);
 })();
 </script>
 

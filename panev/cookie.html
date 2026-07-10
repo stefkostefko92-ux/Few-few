@@ -124,7 +124,6 @@
   }
 }
   </script>
-  <link rel="alternate" hreflang="it" href="https://www.panevascensori.it/cookie">
   <link rel="alternate" hreflang="it-IT" href="https://www.panevascensori.it/cookie">
   <meta property="og:locale" content="it_IT">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
@@ -315,13 +314,6 @@
                   <td>Misurazione dell'audience: pagine viste, durata sessione, fonte di traffico, dispositivo. IP anonimizzato. Nessun dato inviato a Google Ads.</td>
                   <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy</a></td>
                 </tr>
-                <tr>
-                  <td><strong>pa_analytics_session</strong><br><small>(analitica interna)</small></td>
-                  <td><code>pa_sess</code></td>
-                  <td>30 minuti</td>
-                  <td>Contatore di sessioni anonime per statistiche interne sul sito</td>
-                  <td>Prima parte</td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -329,7 +321,7 @@
           <ul>
             <li>Anonimizzazione dell'indirizzo IP (<code>anonymize_ip: true</code>)</li>
             <li>Disabilitazione della condivisione dati con Google per finalità pubblicitarie</li>
-            <li>Data retention impostata a 14 mesi (minimo consentito)</li>
+            <li>Data retention impostata a 14 mesi (massimo consentito da GA4)</li>
             <li>Nessun remarketing o demographic reporting abilitato</li>
           </ul>
         </section>
@@ -356,7 +348,6 @@
                 <tr><td><code>__stripe_sid</code></td><td>Tecnico/Pagamento</td><td>No (necessario)</td><td>30 minuti</td><td>Stripe, Inc.</td></tr>
                 <tr><td><code>_ga</code></td><td>Analitico</td><td>Sì</td><td>13 mesi</td><td>Google Ireland Ltd.</td></tr>
                 <tr><td><code>_ga_*</code></td><td>Analitico</td><td>Sì</td><td>13 mesi</td><td>Google Ireland Ltd.</td></tr>
-                <tr><td><code>pa_sess</code></td><td>Analitico</td><td>Sì</td><td>30 minuti</td><td>No</td></tr>
               </tbody>
             </table>
           </div>

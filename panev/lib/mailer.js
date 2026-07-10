@@ -87,6 +87,7 @@ function buildAdminHtml({ nome, email, tel, azienda, citta, servizio, messaggio,
     const totStr = Number(totale || 0).toFixed(2).replace('.', ',');
     itemsHtml = `
       <h3 style="color:#162861;margin:28px 0 12px;font-family:Georgia,serif;font-weight:500;font-size:15px;letter-spacing:-0.01em">Articoli richiesti (${items.length})</h3>
+      <p style="margin:0 0 10px;font-size:12px;color:#8a6e30;background:#fdf6e3;border:1px solid #ecd9a0;border-radius:4px;padding:8px 12px">⚠ Prezzi/quantità indicativi trasmessi dal carrello del cliente — verificare a listino prima di confermare.</p>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;border:1px solid #e1e5eb">
         <thead><tr style="background:#162861;color:#fff">
           <th style="padding:10px 12px;text-align:left;font-size:12px;letter-spacing:0.08em;text-transform:uppercase">Prodotto</th>
@@ -200,9 +201,11 @@ async function sendContactEmails(data) {
   }
 
   const isQuote = data.source === 'carrello' || data.source === 'quote' || (data.items && data.items.length);
+  // Strip line breaks from any value that lands in the Subject header (defense-in-depth).
+  const hdr = (v) => String(v || '').replace(/[\r\n]+/g, ' ').trim();
   const adminSubject = isQuote
-    ? `🛒 Nuova Richiesta Preventivo · ${data.nome}`
-    : `✉ Nuovo contatto dal sito · ${data.servizio || 'Richiesta generica'}`;
+    ? `🛒 Nuova Richiesta Preventivo · ${hdr(data.nome)}`
+    : `✉ Nuovo contatto dal sito · ${hdr(data.servizio) || 'Richiesta generica'}`;
   const userSubject = isQuote
     ? 'Abbiamo ricevuto la tua richiesta di preventivo — Panev Ascensori'
     : 'Grazie per averci contattato — Panev Ascensori';

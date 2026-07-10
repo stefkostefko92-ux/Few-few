@@ -132,7 +132,7 @@ const ALLOWED_ORIGINS = [
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-    cb(new Error('CORS: origine non consentita'));
+    cb(null, false); // reject without throwing (avoids a 500; request just gets no CORS header)
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'stripe-signature'],
@@ -157,6 +157,15 @@ app.use(express.json({ limit: '100kb' }));
 
 // Hide sensitive files — MUST be BEFORE express.static to block before it serves
 app.use((req, res, next) => {
+  // Reject path traversal FIRST: the blocklist below matches the un-normalised
+  // req.path, but express.static normalises '../', so /img/../server.js would
+  // otherwise bypass every prefix-anchored rule and disclose the source.
+  let decodedPath;
+  try { decodedPath = decodeURIComponent(req.path); }
+  catch { return res.status(400).send('Bad request'); }
+  if (decodedPath.includes('..') || decodedPath.includes('\0')) {
+    return res.status(404).send('Not found');
+  }
   // Case-insensitive: on case-insensitive filesystems /Data/panev.DB etc. would
   // otherwise bypass the blocklist and disclose the SQLite DB (hashes + PII).
   const blocked = [/^\/data\b/i, /^\/scripts\b/i, /^\/lib\b/i, /^\/node_modules\b/i,
@@ -635,7 +644,10 @@ function renderProductPage(p) {
 // Create Stripe checkout session
 app.post('/api/create-checkout-session', checkoutLimiter, async (req, res) => {
   try {
-    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
+    // Explicit kill-switch: online payment is OFF unless PAYMENTS_ENABLED=true,
+    // even if a Stripe key is present. The live flow is quote-first (/api/contact).
+    if (process.env.PAYMENTS_ENABLED !== 'true' ||
+        !process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
       return res.status(503).json({ error: 'Pagamento momentaneamente non disponibile' });
     }
 
