@@ -1,0 +1,830 @@
+[
+ {
+  "id": 1,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_source"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_source=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 2,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_medium"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_medium=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 3,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_campaign"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_campaign=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 4,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_term"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_term=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 5,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_content"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_content=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 6,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_id"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_id=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 7,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_name"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_name=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 8,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_cid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_cid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 9,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_reader"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_reader=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 10,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_viz_id"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_viz_id=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 11,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_pubreferrer"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_pubreferrer=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 12,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "utm_swu"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "utm_swu=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 13,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "gclid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "gclid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 14,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "gclsrc"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "gclsrc=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 15,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "dclid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "dclid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 16,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "gbraid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "gbraid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 17,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "wbraid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "wbraid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 18,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "msclkid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "msclkid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 19,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "fbclid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "fbclid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 20,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "igshid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "igshid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 21,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "igsh"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "igsh=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 22,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "mc_cid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "mc_cid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 23,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "mc_eid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "mc_eid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 24,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "yclid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "yclid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 25,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "twclid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "twclid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 26,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "ttclid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "ttclid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 27,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "li_fat_id"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "li_fat_id=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 28,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "s_cid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "s_cid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 29,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "vero_conv"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "vero_conv=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 30,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "vero_id"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "vero_id=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 31,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "_openstat"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "_openstat=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 32,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "oly_anon_id"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "oly_anon_id=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 33,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "oly_enc_id"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "oly_enc_id=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 34,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "wickedid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "wickedid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 35,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "rb_clickid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "rb_clickid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ },
+ {
+  "id": 36,
+  "priority": 1,
+  "action": {
+   "type": "redirect",
+   "redirect": {
+    "transform": {
+     "queryTransform": {
+      "removeParams": [
+       "scid"
+      ]
+     }
+    }
+   }
+  },
+  "condition": {
+   "urlFilter": "scid=",
+   "resourceTypes": [
+    "main_frame",
+    "sub_frame"
+   ]
+  }
+ }
+]
