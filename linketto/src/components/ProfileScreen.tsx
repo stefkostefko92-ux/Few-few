@@ -1041,13 +1041,14 @@ export async function ProfileScreen({
                   {t('shopCouponError')}
                 </p>
               )}
-              {/* Дир. 2011/83 чл. 6а: роля на платформата + статут на продавача. */}
+              {/* Дир. 2011/83 чл. 6а: роля на платформата + статут на продавача.
+                  ЗЗП/Omnibus: цените са крайни (с вкл. ДДС — Stripe Tax, TAX.md). */}
               <p className="mt-2 text-center text-[11px] leading-snug opacity-55">
                 {t('shopSellerNote')}{' '}
                 {profile.user.isTrader
                   ? t('sellerTrader')
                   : t('sellerPrivate')}
-                .
+                . {t('shopVatIncluded')}
               </p>
               <ul className="mt-4 space-y-3">
                 {profile.products.map((product) => {

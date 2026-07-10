@@ -146,11 +146,24 @@ export async function adminRefundPurchaseAction(
     redirect(`/${uiLocale}/admin?error=refund`);
   }
   try {
-    await stripe.refunds.create({
-      payment_intent: purchase.stripePaymentIntentId,
-      reverse_transfer: true,
-      refund_application_fee: true,
-    });
+    if (purchase.stripeTransferId) {
+      // Separate charges & transfers (TAX.md): плащането е при нас →
+      // първо прибираме дела на продавача (reversal; повторен опит върху
+      // вече върнат превод се проваля тихо), после връщаме на купувача.
+      await stripe.transfers
+        .createReversal(purchase.stripeTransferId)
+        .catch(() => undefined);
+      await stripe.refunds.create({
+        payment_intent: purchase.stripePaymentIntentId,
+      });
+    } else {
+      // Заварени покупки от destination-charge модела.
+      await stripe.refunds.create({
+        payment_intent: purchase.stripePaymentIntentId,
+        reverse_transfer: true,
+        refund_application_fee: true,
+      });
+    }
   } catch {
     redirect(`/${uiLocale}/admin?error=refund`);
   }

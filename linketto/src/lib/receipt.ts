@@ -3,9 +3,11 @@
 // Правно-чувствителните текстове са родни само за 6-те езика (bg е
 // източникът); липсващ език пада към en — НИКОГА не се машинно превеждат.
 //
-// Роля на Linketto: платформа. Продавачът е merchant-of-record (Stripe
-// Connect, on_behalf_of) — ДДС и фактурирането са негова отговорност; тук
-// издаваме потвърждение за покупка на траен носител, не данъчна фактура.
+// Роля на Linketto (TAX.md): договорът е между купувача и създателя, но
+// за целите на ДДС платформата е доставчик по презумпция (чл. 9а Регл.
+// 282/2011) — начислява и отчита ДДС по държавата на купувача. Това е и
+// „документ за регистриране на продажбата" (Н-18, непрекъсната номерация)
+// на траен носител — НЕ данъчна фактура.
 
 export interface ReceiptStrings {
   title: string;
@@ -16,6 +18,8 @@ export interface ReceiptStrings {
   orderId: string;
   item: string;
   amount: string;
+  vat: string;
+  net: string;
   discount: string;
   vatNote: string;
   traderYes: string;
@@ -36,9 +40,11 @@ const STRINGS: Record<string, ReceiptStrings> = {
     orderId: 'Номер на поръчка',
     item: 'Продукт',
     amount: 'Платена сума',
+    vat: 'ДДС',
+    net: 'Нето (без ДДС)',
     discount: 'Приложен промо код',
     vatNote:
-      'Продавачът е доставчикът по документацията. Linketto е платформа-посредник; продавачът предоставя съдържанието и носи отговорността за ДДС и данъчна фактура, ако такава се дължи.',
+      'Договорът за покупка се сключва между теб и създателя (продавача). За целите на ДДС Linketto (Carbon Stealth VCC) действа като доставчик по чл. 9а от Регламент за изпълнение (ЕС) 282/2011 и начислява и отчита дължимия ДДС по държавата на купувача. Показаната сума е крайната платена цена с включен ДДС, когато такъв се дължи. Този документ е потвърждение за покупка, не данъчна фактура.',
     traderYes: 'Продавачът е декларирал статут: търговец.',
     traderNo: 'Продавачът е декларирал статут: частно лице (непрофесионален продавач).',
     print: 'Принтирай / Запази като PDF',
@@ -55,9 +61,11 @@ const STRINGS: Record<string, ReceiptStrings> = {
     orderId: 'Order number',
     item: 'Product',
     amount: 'Amount paid',
+    vat: 'VAT',
+    net: 'Net (excl. VAT)',
     discount: 'Promo code applied',
     vatNote:
-      'The seller is the supplier of record. Linketto is an intermediary platform; the seller provides the content and is responsible for VAT and any tax invoice due.',
+      "The purchase contract is concluded between you and the creator (seller). For VAT purposes Linketto (Carbon Stealth VCC) acts as the deemed supplier under Article 9a of Implementing Regulation (EU) 282/2011 and charges and accounts for the VAT due based on the buyer's country. The amount shown is the final price paid, VAT included where due. This document is a purchase confirmation, not a tax invoice.",
     traderYes: 'The seller has declared their status: trader.',
     traderNo: 'The seller has declared their status: private individual (non-professional seller).',
     print: 'Print / Save as PDF',
@@ -74,6 +82,8 @@ const STRINGS: Record<string, ReceiptStrings> = {
     orderId: 'Numero ordine',
     item: 'Prodotto',
     amount: 'Importo pagato',
+    vat: 'IVA',
+    net: 'Netto (IVA esclusa)',
     discount: 'Codice promozionale applicato',
     vatNote:
       "Il venditore è il fornitore di riferimento. Linketto è una piattaforma intermediaria; il venditore fornisce il contenuto ed è responsabile dell'IVA e dell'eventuale fattura fiscale dovuta.",
@@ -93,6 +103,8 @@ const STRINGS: Record<string, ReceiptStrings> = {
     orderId: 'Número de pedido',
     item: 'Producto',
     amount: 'Importe pagado',
+    vat: 'IVA',
+    net: 'Neto (sin IVA)',
     discount: 'Código promocional aplicado',
     vatNote:
       'El vendedor es el proveedor responsable. Linketto es una plataforma intermediaria; el vendedor proporciona el contenido y es responsable del IVA y de cualquier factura fiscal que corresponda.',
@@ -112,6 +124,8 @@ const STRINGS: Record<string, ReceiptStrings> = {
     orderId: 'Bestellnummer',
     item: 'Produkt',
     amount: 'Gezahlter Betrag',
+    vat: 'USt.',
+    net: 'Netto (ohne USt.)',
     discount: 'Angewendeter Gutscheincode',
     vatNote:
       'Der Verkäufer ist der leistende Anbieter. Linketto ist eine vermittelnde Plattform; der Verkäufer stellt den Inhalt bereit und ist für die Umsatzsteuer und eine etwaige Steuerrechnung verantwortlich.',
@@ -131,6 +145,8 @@ const STRINGS: Record<string, ReceiptStrings> = {
     orderId: 'Numéro de commande',
     item: 'Produit',
     amount: 'Montant payé',
+    vat: 'TVA',
+    net: 'Net (hors TVA)',
     discount: 'Code promo appliqué',
     vatNote:
       "Le vendeur est le fournisseur responsable. Linketto est une plateforme intermédiaire ; le vendeur fournit le contenu et est responsable de la TVA et de toute facture fiscale due.",

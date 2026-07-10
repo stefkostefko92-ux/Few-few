@@ -98,16 +98,38 @@ DAC7 отчитане също **не** се задейства (виж по-д�
 4. Документиране на комисионата към продавачите (B2B).
 5. Правна форма на дружеството / коя ГДД.
 
-## Кодови промени при Опция А (изброени, НЕ направени)
+## Кодови промени при Опция А — НАПРАВЕНИ (2026-07-10)
 
-- `shop.ts` checkout: `automatic_tax: { enabled: true }` (liability =
-  платформата), цените стават tax-inclusive.
-- `schema.prisma` Purchase: `buyerCountry`, `vatRate`, `vatAmountCents`,
-  `netAmountCents` (+ webhook ги пълни от `customer_details` / Stripe Tax).
-- `receipt.ts` (6 езика): платформата е доставчик по документа + ДДС ред.
-- Витрина/планове: „с вкл. ДДС" етикет във всички локали; ДДС номер поле
-  + VIES.
-- `plans.ts`: MEMBERSHIPS остават изключени до данъчния слой (recurring
-  ESS = същият deemed-supplier товар).
-- Общи условия: клауза „без живи/персонализирани услуги" (пази DAC7
-  освобождаването) + „данъците върху дохода са отговорност на продавача".
+Имплементирано и проверено (виж и DEPLOY.md §0/§4/§5):
+
+- **Магазинът мина на separate charges & transfers:** плащането се създава
+  на платформения акаунт (без `transfer_data`/`on_behalf_of`) — ДДС частта
+  остава при нас; webhook-ът смята нето = бруто − ДДС (Stripe Tax) и праща
+  дела на продавача (`нето − комисиона`) с `transfers.create` +
+  `source_transaction` (наличността следва сетълмента). Комисионата вече се
+  смята върху НЕТОТО. Refund = reversal на превода + refund на плащането
+  (webhook-ът прави reversal и при пълен refund от Stripe Dashboard);
+  заварените destination-charge покупки пазят стария път (branch по
+  `stripeTransferId`).
+- `shop.ts` checkout: `automatic_tax` + `tax_behavior: 'inclusive'` зад
+  `STRIPE_TAX_ENABLED=1` (`src/lib/stripe.ts stripeTaxEnabled()`); без
+  флага магазинът работи с ДДС = 0 по същите пътища.
+- `billing.ts` (планове): `automatic_tax` + `tax_id_collection` (VIES →
+  B2B reverse charge автоматично) + `billing_address_collection`.
+- `Purchase`: `vatAmountCents`, `netAmountCents`, `buyerCountry`,
+  `stripeTransferId`, `receiptNumber` (SERIAL — непрекъсната номерация по
+  Н-18); миграция `20260710120000_tax_layer`.
+- Разписката: № на документ, нето/ДДС редове (с държавата), vatNote
+  обърнат — платформата е ДДС доставчик по чл. 9а (потвърждение за
+  покупка, не данъчна фактура).
+- Витрина + pricing: „Цените са крайни — с включен ДДС, когато такъв се
+  дължи." (`profile.shopVatIncluded`, `pricing.vatNote`, 27 локала).
+- Общи условия: ДДС ролята по чл. 9а; „доходите са твои — данъците са твоя
+  отговорност"; „само предварително създадено цифрово съдържание — без
+  живи/персонализирани услуги" (пази DAC7 освобождаването).
+- MEMBERSHIPS остават изключени (`plans.ts`) — recurring ESS чака своя
+  данъчен слой (destination charges там са непроменени).
+
+**Остават НЕкодови стъпки (гейт в DEPLOY.md §0):** данъчен консултант
+(чл. 9а/97а/OSS/Н-18 е-магазин/комисионен документ/правна форма),
+регистрации в НАП, Stripe Dashboard Tax setup, tax-inclusive Price ID-та.

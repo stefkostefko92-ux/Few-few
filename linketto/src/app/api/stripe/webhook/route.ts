@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
-import { PLANS, type PlanId } from '@/lib/plans';
+import { PLANS, totalFeeCents, type PlanId } from '@/lib/plans';
 import { deliveryEmailHtml, deliverySubject, sendEmail } from '@/lib/email';
 import { referralRewardCents } from '@/lib/referral';
 
@@ -89,6 +89,65 @@ async function revokeOneOffEntitlements(paymentIntentId: string): Promise<void> 
         data: { active: false },
       })
       .catch(() => undefined);
+  }
+}
+
+// Превежда дела на продавача (нето − комисиона) при separate charges &
+// transfers — плащането е при платформата (ДДС-то остава при нас, TAX.md),
+// а продавачът получава своя дял. source_transaction връзва наличността
+// на превода към сетълмента на плащането. Идемпотентно по stripeSessionId;
+// при провал stripeTransferId остава null → покрива се ръчно от админа.
+async function payoutSeller(
+  purchaseId: string,
+  session: Stripe.Checkout.Session,
+  amountCents: number,
+): Promise<void> {
+  const stripe = getStripe();
+  if (!stripe || amountCents <= 0) return;
+  const purchase = await prisma.purchase.findUnique({
+    where: { id: purchaseId },
+    include: {
+      product: {
+        include: {
+          profile: {
+            include: { user: { select: { stripeAccountId: true } } },
+          },
+        },
+      },
+    },
+  });
+  const accountId = purchase?.product.profile.user.stripeAccountId;
+  if (!purchase || !accountId || purchase.stripeTransferId) return;
+  const pi =
+    typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : session.payment_intent?.id;
+  if (!pi) return;
+  try {
+    const intent = await stripe.paymentIntents.retrieve(pi);
+    const chargeId =
+      typeof intent.latest_charge === 'string'
+        ? intent.latest_charge
+        : (intent.latest_charge?.id ?? null);
+    if (!chargeId) return;
+    const transfer = await stripe.transfers.create(
+      {
+        amount: amountCents,
+        currency: 'eur',
+        destination: accountId,
+        source_transaction: chargeId,
+      },
+      { idempotencyKey: `transfer-${purchase.stripeSessionId}` },
+    );
+    await prisma.purchase
+      .update({
+        where: { id: purchaseId },
+        data: { stripeTransferId: transfer.id },
+      })
+      .catch(() => undefined);
+  } catch {
+    // Преводът не мина (рядко: изтрит/ограничен акаунт) — покупката стои
+    // без stripeTransferId и се разрешава ръчно; купувачът НЕ е засегнат.
   }
 }
 
@@ -209,6 +268,18 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
       } else if (productId && profileId) {
         // Еднократно (DIGITAL/COURSE): записваме покупката идемпотентно.
+        // ДДС слой (TAX.md): Stripe Tax е сметнал ДДС по държавата на
+        // купувача (0 без данъчния слой); комисионата се смята върху
+        // НЕТОТО — ДДС частта е задължение на платформата, не приход.
+        const amountTotal = session.amount_total ?? 0;
+        const vatCents = session.total_details?.amount_tax ?? 0;
+        const netCents = Math.max(amountTotal - vatCents, 0);
+        const metaPlan = (session.metadata?.plan ?? '') as PlanId;
+        const feePlan: PlanId = PLANS[metaPlan] ? metaPlan : 'FREE';
+        const feeCents = Math.max(
+          Math.min(totalFeeCents(netCents, feePlan), netCents - 1),
+          0,
+        );
         const existing = await prisma.purchase.findUnique({
           where: { stripeSessionId: session.id },
           select: { id: true },
@@ -224,8 +295,11 @@ export async function POST(request: Request): Promise<NextResponse> {
                 typeof session.payment_intent === 'string'
                   ? session.payment_intent
                   : null,
-              amountCents: session.amount_total ?? 0,
-              feeCents: Number(session.metadata?.feeCents ?? 0) || 0,
+              amountCents: amountTotal,
+              feeCents,
+              vatAmountCents: vatCents,
+              netAmountCents: netCents,
+              buyerCountry: session.customer_details?.address?.country ?? null,
               buyerEmail,
               locale: session.metadata?.locale ?? null,
               couponCode: session.metadata?.couponCode || null,
@@ -233,6 +307,10 @@ export async function POST(request: Request): Promise<NextResponse> {
             update: {},
           })
           .catch(() => null);
+        // Делът на продавача (нето − комисиона) — веднъж, при първия запис.
+        if (!existing && purchase) {
+          await payoutSeller(purchase.id, session, netCents - feeCents);
+        }
         // Промо код: увеличаваме броя ползвания веднъж (само при първи запис),
         // атомарно и само ако е под лимита (пази брояча от преразходване).
         const couponId = session.metadata?.couponId;
@@ -266,6 +344,25 @@ export async function POST(request: Request): Promise<NextResponse> {
           .catch(() => undefined);
         // Върнати пари → връща се и достъпът до курса.
         await revokeOneOffEntitlements(pi).catch(() => undefined);
+        // Separate charges & transfers: при ПЪЛЕН refund (вкл. от Stripe
+        // Dashboard) връщаме и дела на продавача (пълен reversal —
+        // идемпотентен: повторният опит върху върнат превод се проваля тихо).
+        if (charge.amount_refunded === charge.amount) {
+          const refundedPurchases = await prisma.purchase.findMany({
+            where: { stripePaymentIntentId: pi },
+            select: { id: true, stripeTransferId: true },
+          });
+          for (const p of refundedPurchases) {
+            if (!p.stripeTransferId) continue;
+            await stripe.transfers
+              .createReversal(
+                p.stripeTransferId,
+                {},
+                { idempotencyKey: `reversal-${p.id}` },
+              )
+              .catch(() => undefined);
+          }
+        }
       }
       break;
     }

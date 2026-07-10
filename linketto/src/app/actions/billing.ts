@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth';
-import { getStripe } from '@/lib/stripe';
+import { getStripe, stripeTaxEnabled } from '@/lib/stripe';
 import {
   BILLING_INTERVALS,
   PLANS,
@@ -58,6 +58,25 @@ export async function startCheckoutAction(formData: FormData): Promise<void> {
     line_items: [{ price: priceId, quantity: 1 }],
     customer: user.stripeCustomerId ?? undefined,
     customer_email: user.stripeCustomerId ? undefined : user.email,
+    // ДДС (TAX.md): плановете са наша електронна услуга. Stripe Tax смята
+    // ДДС по държавата на клиента (OSS); tax_id_collection взима и валидира
+    // (VIES) ДДС номер → B2B reverse charge автоматично. Env Price ID-тата
+    // трябва да са tax-inclusive (DEPLOY.md §2а).
+    ...(stripeTaxEnabled()
+      ? {
+          automatic_tax: { enabled: true },
+          tax_id_collection: { enabled: true },
+          billing_address_collection: 'required' as const,
+          ...(user.stripeCustomerId
+            ? {
+                customer_update: {
+                  address: 'auto' as const,
+                  name: 'auto' as const,
+                },
+              }
+            : {}),
+        }
+      : {}),
     // Планът се дава само през проверения webhook, не през redirect-а.
     metadata: { userId: user.id, plan: plan.id },
     locale: 'auto',

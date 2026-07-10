@@ -151,9 +151,10 @@ Deploy чеклист: DEPLOY.md.
 
 Разписка: src/lib/receipt.ts (родни низове bg/en/it/es/de/fr + fallback en)
 + /u/[slug]/receipt (noindex; чете Purchase по stripeSessionId; продавач/
-платформа/купувач/№/продукт/промо код/сума/статут; печат→PDF през браузъра,
-PrintButton.tsx). Продавачът е merchant-of-record → това е потвърждение за
-покупка, НЕ данъчна фактура (ДДС е негова отговорност).
+платформа/купувач/№ receiptNumber (Н-18)/продукт/промо код/нето/ДДС/сума;
+печат→PDF, PrintButton.tsx). За ДДС платформата е доставчик по чл. 9а
+(TAX.md) → потвърждение за покупка + документ за продажба, НЕ данъчна
+фактура.
 
 Промо кодове: src/lib/coupon.ts (normalizeCouponCode, isCouponUsable,
 discountedPriceCents — никога под минималния заряд на Stripe). Модел Coupon
@@ -171,11 +172,15 @@ languageDemand, localeForCountry в locales.ts) кръстосва държав�
 Магазин (Stripe Connect Express): User.stripeAccountId + stripeChargesEnabled
 (отключва се само от account.updated webhook-а). Product/ProductTranslation/
 Purchase; actions/shop.ts (onboarding + CRUD + публичното
-startProductPurchaseAction — сумата се чете САМО от базата). Checkout =
-destination charge с application_fee = totalFeeCents(цена, план) =
-комисиона по плана + такса обработка 1.9%+€0.30, + on_behalf_of =
-създателя (merchant-of-record: трансгранични продавачи + ДДС отговорността
-е на продавача). fee е capped на цена-1 (Stripe инвариант).
+startProductPurchaseAction — сумата се чете САМО от базата). ДАНЪЦИ (TAX.md):
+платформата е ДДС доставчик по презумпция (чл. 9а Регл. 282/2011) →
+Checkout = SEPARATE charges & transfers: плащането е на платформата
+(automatic_tax + tax-inclusive зад STRIPE_TAX_ENABLED), webhook-ът смята
+нето = бруто − ДДС и праща на продавача нето − totalFeeCents(нето, план)
+чрез transfers.create + source_transaction (Purchase.stripeTransferId;
+vatAmountCents/netAmountCents/buyerCountry/receiptNumber за OSS/Н-18).
+Refund = reversal + refund (заварени destination покупки: branch по
+stripeTransferId). fee е capped на нето-1 (Stripe инвариант).
 Доставка: /u/[slug]/delivery проверява сесията НА ЖИВО срещу Stripe
 (payment_status === 'paid') преди redirect към deliveryUrl. Purchase се
 записва идемпотентно само през подписания webhook.

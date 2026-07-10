@@ -99,10 +99,24 @@ export default async function ReceiptPage({
           <Row label={s.buyer} value={purchase.buyerEmail} />
         )}
         <Row label={s.date} value={receiptDate(purchase.createdAt)} />
-        <Row label={s.orderId} value={purchase.id} />
+        {/* Непрекъсната номерация на документа за продажба (Н-18) */}
+        <Row label={s.orderId} value={`№ ${purchase.receiptNumber}`} />
         <Row label={s.item} value={productTitle} />
         {purchase.couponCode && (
           <Row label={s.discount} value={purchase.couponCode} />
+        )}
+        {/* ДДС ред (deemed supplier, TAX.md) — само когато ДДС е начислен */}
+        {purchase.vatAmountCents > 0 && purchase.netAmountCents != null && (
+          <>
+            <Row
+              label={s.net}
+              value={`€${(purchase.netAmountCents / 100).toFixed(2)}`}
+            />
+            <Row
+              label={`${s.vat}${purchase.buyerCountry ? ` (${purchase.buyerCountry})` : ''}`}
+              value={`€${(purchase.vatAmountCents / 100).toFixed(2)}`}
+            />
+          </>
         )}
         <Row label={s.amount} value={price} />
       </div>

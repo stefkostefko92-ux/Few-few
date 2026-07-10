@@ -354,8 +354,15 @@ model Purchase {
   profileId       String
   stripeSessionId String   @unique
   stripePaymentIntentId String?  @unique // за refund/dispute проследяване
-  amountCents     Int
+  amountCents     Int // брутна платена сума (с вкл. ДДС, когато се дължи)
   feeCents        Int // нашата комисиона към момента на продажбата
+  // ДДС слой (deemed supplier по чл. 9а Регл. 282/2011 — виж TAX.md):
+  // платформата дължи ДДС по държавата на купувача; пазим OSS записите.
+  vatAmountCents  Int      @default(0) // ДДС от Stripe Tax (0 без данъчен слой)
+  netAmountCents  Int? // amountCents - vatAmountCents (базата за комисионата)
+  buyerCountry    String? // държава на купувача (billing адрес от Stripe)
+  stripeTransferId String? // преводът към продавача (separate charges & transfers)
+  receiptNumber   Int      @default(autoincrement()) @unique // непрекъсната номерация (Н-18)
   buyerEmail      String?
   locale          String? // език на купувача — за имейла на неговия език
   couponCode      String? // приложен промо код (ако е ползван)
