@@ -26,7 +26,7 @@ export default function Header() {
           <Logo className="h-9 w-9" />
           <span>
             Мастилко
-            <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10">
+            <span className="ml-2 hidden rounded-full bg-med-pale px-2 py-0.5 text-xs font-semibold text-ink-soft sm:inline dark:bg-white/10 vivid:bg-[#5bb4e8]/15 vivid:text-[#8fd0f5]">
               безплатно
             </span>
           </span>
