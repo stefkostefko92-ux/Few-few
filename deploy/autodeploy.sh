@@ -507,12 +507,17 @@ deploy_adblock() {
       systemctl reload nginx 2>/dev/null || nginx -s reload
       rm -f "${nsite}.bak-$TS"
       ok "adblock: Nginx vhost инсталиран и презареден ($ADBLOCK_DOMAIN)."
-      # TLS през certbot (акаунтът вече съществува от другите продукти).
-      if [ ! -d "/etc/letsencrypt/live/$ADBLOCK_DOMAIN" ] && command -v certbot >/dev/null; then
-        if certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect >/dev/null 2>&1; then
-          ok "adblock: TLS сертификат издаден (certbot)."
+      # TLS през certbot. Пускаме го при ВСЕКИ деплой (идемпотентно): нашият
+      # vhost темплейт е само HTTP, а всеки деплой го презаписва — затова
+      # трябва отново да инжектираме SSL блока. При съществуващ валиден
+      # сертификат certbot само преинсталира конфига и НЕ иска нов
+      # (--keep-until-expiring), значи не удря rate limits.
+      if command -v certbot >/dev/null; then
+        if certbot --nginx -d "$ADBLOCK_DOMAIN" -n --agree-tos --redirect --keep-until-expiring >/dev/null 2>&1; then
+          ok "adblock: TLS активен (certbot преинсталира SSL конфига)."
+          systemctl reload nginx 2>/dev/null || nginx -s reload
         else
-          warn "adblock: certbot не издаде сертификат (DNS още не сочи насам?). Пусни ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
+          warn "adblock: certbot не успя (DNS още не сочи насам?). Пусни ръчно: certbot --nginx -d $ADBLOCK_DOMAIN"
         fi
       fi
     else
