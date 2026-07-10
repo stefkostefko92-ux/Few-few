@@ -52,6 +52,7 @@ const TOOLS: Array<{
   {
     href: "/gramoti",
     emoji: "🏆",
+    icon: "/icons/gramoti.png",
     title: "Грамоти и сертификати",
     text: "За училища, клубове и фирми — красива грамота на хоризонтален А4 с рамка. Попълваш за кого и за какво.",
     accent: "bg-med-pale text-med-dark",
@@ -59,6 +60,7 @@ const TOOLS: Array<{
   {
     href: "/wifi",
     emoji: "📶",
+    icon: "/icons/wifi.png",
     title: "WiFi стикер с QR",
     text: "Гостите сканират кода и телефонът се свързва сам, без парола. За кафенета, къщи за гости и офиси.",
     accent: "bg-tera-pale text-tera-dark",
@@ -74,6 +76,7 @@ const TOOLS: Array<{
   {
     href: "/tabelki",
     emoji: "🪧",
+    icon: "/icons/tabelki.png",
     title: "Табелки и надписи",
     text: "„Отворено/Затворено“, работно време, надпис за врата. Готови заготовки, избираш цвят, принтираш на А4.",
     accent: "bg-paper-deep text-ink-soft",
@@ -171,8 +174,9 @@ export default function HomePage() {
                 <Image
                   src={t.icon}
                   alt=""
-                  width={72}
-                  height={72}
+                  width={88}
+                  height={88}
+                  unoptimized
                   className="h-16 w-16 object-contain drop-shadow-sm transition group-hover:scale-105"
                   aria-hidden
                 />

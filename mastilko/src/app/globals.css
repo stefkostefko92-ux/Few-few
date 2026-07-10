@@ -185,24 +185,101 @@ body {
   inset: 0;
   background: radial-gradient(ellipse 80% 70% at 50% 42%, transparent 40%, rgba(8, 18, 30, 0.55) 100%);
 }
-/* Плаващи мастилени капки със gooey SVG филтър (мотивът на маскота). */
-.viv-goo {
+/* Контейнер за капките. БЕЗ gooey филтър — стъклените капки искат остри блясъци,
+   а goo-прагът убива highlight-ите и формата. */
+.viv-drops {
   position: absolute;
   inset: 0;
-  filter: url(#viv-goo-f);
 }
+/* Стъклена мастилена КАПКА (teardrop): заоблено тяло + изтеглен връх, който сочи
+   НАДОЛУ (по посока на движението). Капе отгоре надолу с лек хоризонтален sway.
+   Форма: границите на border-radius правят долния ръб по-остър от горния. */
 .viv-drop {
   position: absolute;
   top: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #6fc3f0, #3a86b9 70%);
-  will-change: transform;
+  overflow: hidden; /* клипва блясъците вътре в силуета на капката */
+  border-radius: 52% 48% 48% 52% / 62% 62% 40% 40%;
+  /* Полупрозрачно синьо „мастило" — стъклен градиент: блик горе, дълбочина долу. */
+  background:
+    radial-gradient(58% 42% at 40% 24%, rgba(255, 255, 255, 0.6), rgba(111, 195, 240, 0.28) 44%, transparent 66%),
+    radial-gradient(130% 120% at 50% 80%, rgba(23, 69, 106, 0.62), rgba(58, 134, 185, 0.5) 52%, rgba(91, 180, 232, 0.42));
+  box-shadow:
+    0 4px 10px rgba(8, 18, 30, 0.45),
+    inset 0 1px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -3px 7px rgba(23, 69, 106, 0.5);
+  backdrop-filter: blur(1.5px) brightness(1.04);
+  -webkit-backdrop-filter: blur(1.5px) brightness(1.04);
+  will-change: transform, opacity;
+  opacity: 0;
   /* Всичко с !important — за да надделее над prefers-reduced-motion reset (`*`).
-     Скоростта идва от inline променлива `--viv-dur`, за да пазим разнообразие. */
-  animation-name: viv-rise !important;
+     Скоростта идва от inline променлива `--viv-dur`, за да пазим разнообразие.
+     Timing = linear → времевата фракция съвпада с позицията → splash-ът е в синхрон. */
+  animation-name: viv-fall !important;
   animation-timing-function: linear !important;
   animation-iteration-count: infinite !important;
-  animation-duration: var(--viv-dur, 32s) !important;
+  animation-duration: var(--viv-dur, 30s) !important;
+}
+/* Специуларен блик (стъкло) горе-вляво — статичен, без мигане. */
+.viv-drop::before {
+  content: "";
+  position: absolute;
+  top: 12%;
+  left: 22%;
+  width: 32%;
+  height: 24%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0) 70%);
+}
+/* Вътрешно сияние / пречупване по-надолу в тялото — статично. */
+.viv-drop::after {
+  content: "";
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  width: 46%;
+  height: 30%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(111, 195, 240, 0.68), rgba(111, 195, 240, 0) 72%);
+}
+/* Сплаш при „падане" — статичен контейнер закотвен долу; вълничката (::before) и
+   пръсналата капчица (::after) анимират НЕЗАВИСИМО (без компаундиране на transform).
+   `--viv-delay` е inherited custom property → достига псевдо-елементите (inline
+   animation-delay НЕ стига до тях). */
+.viv-splash {
+  position: absolute;
+  bottom: 2.5vh;
+  width: var(--viv-sw, 60px);
+  height: calc(var(--viv-sw, 60px) * 0.5);
+  transform: translateX(-50%);
+}
+.viv-splash::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(111, 195, 240, 0.5);
+  background: radial-gradient(closest-side, rgba(91, 180, 232, 0.16), transparent);
+  transform-origin: center bottom;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: viv-splash var(--viv-dur, 30s) ease-out var(--viv-delay, 0s) infinite !important;
+}
+.viv-splash::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  width: 20%;
+  height: 42%;
+  border-radius: 50% 50% 50% 50% / 40% 40% 62% 62%;
+  background: linear-gradient(#6fc3f0, #3a86b9);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: viv-splash-jet var(--viv-dur, 30s) ease-out var(--viv-delay, 0s) infinite !important;
 }
 /* Фин статичен шум/grain (без анимация → нулев риск от мигане). */
 .viv-grain {
@@ -235,12 +312,58 @@ body {
     transform: translate3d(5%, 4%, 0) scale(1.15) rotate(0deg);
   }
 }
-@keyframes viv-rise {
-  from {
-    transform: translate3d(0, 112vh, 0);
+/* Капва отгоре (-25vh) до под екрана (118vh) с лек хоризонтален sway и фина
+   „течна" деформация (scaleY). Плавно fade-in горе / fade-out при достигане на
+   пода (~85%), където капката се разтваря в сплаша. Само transform/opacity. */
+@keyframes viv-fall {
+  0% {
+    transform: translate3d(0, -25vh, 0) scaleY(0.92);
+    opacity: 0;
   }
-  to {
-    transform: translate3d(var(--viv-sway, 0), -28vh, 0);
+  8% {
+    opacity: 0.92;
+  }
+  50% {
+    transform: translate3d(var(--viv-sway, 0), 46vh, 0) scaleY(1.12);
+  }
+  82% {
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(0, 118vh, 0) scaleY(0.9);
+    opacity: 0;
+  }
+}
+/* Вълничка/ripple от пода — мек растеж, без рязък проблясък (opacity ≤ 0.5). */
+@keyframes viv-splash {
+  0%,
+  80% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  85% {
+    transform: scale(0.55);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+/* Пръсната капчица „изхвърча" нагоре при удара и пада обратно. */
+@keyframes viv-splash-jet {
+  0%,
+  82% {
+    transform: translate(-50%, 30%) scale(0.4);
+    opacity: 0;
+  }
+  86% {
+    transform: translate(-50%, -70%) scale(0.85);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, 20%) scale(0.25);
+    opacity: 0;
   }
 }
 

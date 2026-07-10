@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import GramotaStudio from "@/components/studios/GramotaStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
@@ -50,7 +51,10 @@ export default function GramotiPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="no-print mb-8">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">🏆 Грамоти и сертификати</h1>
+        <h1 className="font-display flex items-center gap-3 text-3xl font-bold sm:text-4xl">
+          <Image src="/icons/gramoti.png" alt="" width={56} height={56} unoptimized className="h-12 w-12 object-contain sm:h-14 sm:w-14" aria-hidden />
+          Грамоти и сертификати
+        </h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           <strong className="text-ink">Мастилко „Грамоти“ е безплатен инструмент за грамоти и сертификати за печат на български</strong>{" "}
           — красив хоризонтален А4 шаблон с рамка за училища, детски градини,
