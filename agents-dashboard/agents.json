@@ -3305,9 +3305,20 @@
           "date": "2026-07-06",
           "event": "v10.4 — учене",
           "detail": "Научи: CLDR 48 plural категории се различават: bg=one/other, en=one/other, но it=one/MANY/othe… (+6 още)"
+        },
+        {
+          "version": "10.5.0",
+          "date": "2026-07-10",
+          "event": "v10.5 — учене",
+          "detail": "Научи: carbonstealth site (Vite SPA, react-router) е data-driven от data/content.{it,en,bg}.js… (+3 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „carbonstealth site (Vite SPA, react-router) е data-driven от data/content.{it,en,bg}.js…\" (+3 още)"
+        },
         {
           "date": "2026-07-06",
           "type": "learning",
