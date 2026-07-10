@@ -407,9 +407,20 @@
           "date": "2026-07-10",
           "event": "v10.4 — учене",
           "detail": "Научи: Nexus Dominion (Express+better-sqlite3) funnel-ва всяко действие през logger.ts:logEven… (+2 още)"
+        },
+        {
+          "version": "10.5.0",
+          "date": "2026-07-10",
+          "event": "v10.5 — учене",
+          "detail": "Научи: Nexus Dominion premium валута 'gems' е строго еднопосочна — купува се със Stripe (mode:… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „Nexus Dominion premium валута 'gems' е строго еднопосочна — купува се със Stripe (mode:…\" (+2 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
