@@ -1,8 +1,19 @@
 <%- include('partials/head') %>
 <section class="auth-card">
   <h1>Създай визитка</h1>
+  <% if (typeof fromMastilko !== 'undefined' && fromMastilko) { %>
+    <p class="alert alert-ok">Пренесохме данните от Мастилко — довърши регистрацията и визитката
+      ти е готова за редакция. Тръгва <strong>скрита</strong>, докато я публикуваш.</p>
+  <% } %>
   <% if (error) { %><p class="alert alert-error" role="alert"><%= error %></p><% } %>
   <form method="post" action="/register">
+    <% if (typeof fromMastilko !== 'undefined' && fromMastilko) { %>
+      <input type="hidden" name="from" value="mastilko">
+      <input type="hidden" name="role" value="<%= prefill.role %>">
+      <input type="hidden" name="company" value="<%= prefill.company %>">
+      <input type="hidden" name="phone" value="<%= prefill.phone %>">
+      <input type="hidden" name="website" value="<%= prefill.website %>">
+    <% } %>
     <label>Име (лично или на фирмата)
       <input type="text" name="name" required minlength="2" maxlength="100" value="<%= values.name || '' %>">
     </label>

@@ -6,6 +6,7 @@ import { type WarmTheme } from "@/lib/themes";
 import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import { vCard } from "@/lib/vcard";
+import { vizitkaRegisterUrl } from "@/lib/vizitka-import";
 import AiAssist from "@/components/AiAssist";
 import ImageUpload from "@/components/ImageUpload";
 import PrintBar from "@/components/PrintBar";
@@ -639,6 +640,23 @@ export default function CardStudio() {
             label="Предложи слоган с AI"
             onPick={(text) => set({ slogan: text })}
           />
+        </div>
+
+        <div className="card-warm space-y-3 p-5">
+          <p className="text-sm font-semibold text-ink">Искаш ли и дигитална версия?</p>
+          <p className="text-xs text-ink-faint">
+            „Визитка“ превръща тази картичка в жив онлайн профил с постоянен QR код —
+            сменяш данните веднъж, а отпечатаното остава актуално. Пренасяме името,
+            длъжността, фирмата, телефона и сайта.
+          </p>
+          <a
+            href={vizitkaRegisterUrl(s)}
+            target="_blank"
+            rel="noopener"
+            className="btn-secondary inline-flex w-fit"
+          >
+            Направи я жива визитка →
+          </a>
         </div>
       </div>
 
