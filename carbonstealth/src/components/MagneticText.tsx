@@ -1,6 +1,6 @@
 // Magnetic Text Repulsion: буквите се отблъскват физически от курсора.
 // Плюс Proximity Variable Weight — теглото на буквата расте при близост (Inter Tight 100–900).
-import { useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { pointer } from '@/lib/pointer';
 
 interface Props {
@@ -53,22 +53,29 @@ export default function MagneticText({
     return () => cancelAnimationFrame(raf);
   }, [radius, push, text]);
 
+  // Буквите се групират по думи (nowrap), за да не се чупи редът посред дума —
+  // пренасянето става само на интервалите между word-span-овете.
   return (
     <span ref={wrap} className={className} style={style} aria-label={text}>
-      {text.split('').map((ch, i) => (
-        <span
-          key={i}
-          data-l
-          aria-hidden
-          style={{
-            display: 'inline-block',
-            whiteSpace: 'pre',
-            transition: 'font-weight .15s ease',
-            willChange: 'transform',
-          }}
-        >
-          {ch}
-        </span>
+      {text.split(' ').map((word, wi, words) => (
+        <Fragment key={wi}>
+          <span aria-hidden style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
+            {word.split('').map((ch, i) => (
+              <span
+                key={i}
+                data-l
+                style={{
+                  display: 'inline-block',
+                  transition: 'font-weight .15s ease',
+                  willChange: 'transform',
+                }}
+              >
+                {ch}
+              </span>
+            ))}
+          </span>
+          {wi < words.length - 1 ? ' ' : null}
+        </Fragment>
       ))}
     </span>
   );
