@@ -6626,6 +6626,11 @@
       ],
       "activity": [
         {
+          "date": "2026-07-10",
+          "type": "quarantine",
+          "summary": "Хипотеза → карантина: „linketto данъчен слой (separate charges & transfers): payoutSeller се вика само if(!exi…\" (+3)"
+        },
+        {
           "date": "2026-07-06",
           "type": "learning",
           "summary": "Научи: „SCA exemptions точни прагове (Stripe): Low-value <30 EUR (25 GBP), кумулативно 100 EUR …\" (+7 още)"
