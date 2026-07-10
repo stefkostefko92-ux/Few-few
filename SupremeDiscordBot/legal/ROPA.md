@@ -12,7 +12,7 @@
 
 ## Entity Information
 
-- **Legal name:** Carbon Stealth VCC (Veggie Company Company)
+- **Legal name:** Carbon Stealth VCC <!-- ТОЧНАТА правна форма: потвърди с юриста (въпрос №11 от досието) -->
 - **Registration:** EIK 208725180, VAT BG208725180, Bulgaria
 - **Representative:** Stefan Lyubomirov Kostadinov (Managing Director)
 - **Data Protection Officer:** Not yet appointed (threshold Article 37 not yet met; volunteer designation planned)
@@ -63,10 +63,10 @@
 |---|---|
 | **Purpose** | Process Premium subscriptions and issue invoices |
 | **Legal basis** | Article 6(1)(b) — Contract; Article 6(1)(c) — Legal obligation (tax records) |
-| **Data categories** | Stripe customer ID, subscription ID, payment status, invoice metadata |
+| **Data categories** | Stripe customer ID, subscription ID, payment status, invoice metadata; Discord entitlement ID, SKU ID and purchase status (native Discord purchases) |
 | **Data subjects** | Paying customers |
-| **Recipients** | Stripe (payment processor); Bulgarian tax authorities (annual VAT declarations) |
-| **3rd country transfers** | None (Stripe EU subsidiary processes EU customers) |
+| **Recipients** | Stripe (payment processor); Discord Inc. (merchant of record for native App purchases); Bulgarian tax authorities (annual VAT declarations) |
+| **3rd country transfers** | Discord Inc. (USA) — SCC; Stripe EU subsidiary processes EU customers |
 | **Retention period** | 7 years (Bulgarian tax law retention requirement) |
 | **Security measures** | Stripe PCI-DSS compliance; no raw card data stored on Supreme Bot systems |
 

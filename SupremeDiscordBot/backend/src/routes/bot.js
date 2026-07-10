@@ -296,9 +296,11 @@ router.post("/ticket/create", async (req, res, next) => {
     if (channelId) {
       const server = await prisma.server.findUnique({
         where: { id: serverId },
-        select: { isPremium: true, trialEndsAt: true, aiRepliesEnabled: true, aiRepliesPrompt: true, name: true },
+        select: { aiRepliesEnabled: true, aiRepliesPrompt: true, name: true },
       });
-      const isEffectivePremium = !!server?.isPremium || (server?.trialEndsAt && server.trialEndsAt > new Date());
+      // getServerTier покрива собствен план + trial + agency seat — суровият
+      // isPremium изпускаше agency-покрити сървъри (платена функция не работи).
+      const { isPremium: isEffectivePremium } = await getServerTier(serverId);
       if (isEffectivePremium && server?.aiRepliesEnabled && aiRateLimitOk(serverId)) {
         generateAutoReply({
           userMessage: firstMessage || "",
@@ -858,10 +860,18 @@ router.patch("/application/:id", async (req, res, next) => {
 
 router.get("/servers/with-custom-tokens", async (req, res, next) => {
   try {
+    // White-label ботове бутват само сървъри, чийто ефективен tier носи
+    // white-label: собствен whitelabel/agency план, активен agency seat, или
+    // legacy grandfather (isPremium без plan → whitelabel fallback). Trial дава
+    // само Premium → не бутва бранд бот (/token така или иначе би върнал null).
     const servers = await prisma.server.findMany({
       where: {
         customBotToken: { not: null },
-        OR: [{ isPremium: true }, { trialEndsAt: { gt: new Date() } }],
+        OR: [
+          { plan: { in: ["whitelabel", "agency5", "agency10"] } },
+          { agency: { is: { active: true } } },
+          { AND: [{ isPremium: true }, { plan: "free" }] },
+        ],
       },
       select: { id: true, name: true },
     });

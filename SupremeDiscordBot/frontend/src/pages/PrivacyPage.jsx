@@ -195,6 +195,13 @@ export default function PrivacyPage() {
                 <Td>SCC (Standard Contractual Clauses)</Td>
               </Tr>
               <Tr>
+                <Td>Discord, Inc. (merchant of record)</Td>
+                <Td>Payment processing for purchases made through Discord's Premium App checkout</Td>
+                <Td>Discord user ID, entitlement and SKU identifiers, purchase status</Td>
+                <Td>USA</Td>
+                <Td>SCC (Standard Contractual Clauses); Discord acts as merchant of record</Td>
+              </Tr>
+              <Tr>
                 <Td>Stripe Payments Europe, Ltd.</Td>
                 <Td>Payment processing</Td>
                 <Td>Email (if provided), billing amounts, subscription metadata</Td>
@@ -405,7 +412,7 @@ export default function PrivacyPage() {
         </p>
       </S>
 
-      <S title="14. Contact and Data Protection Officer">
+      <S title="14. Contact — Data Protection Matters">
         <p>
           For any questions about this Privacy Policy, to exercise your rights, or to contact
           our Data Protection contact:

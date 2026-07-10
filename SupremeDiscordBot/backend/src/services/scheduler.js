@@ -7,6 +7,7 @@ import cron from "node-cron";
 import { prisma } from "../lib/prisma.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { pushPollUpdate } from "../lib/pollUpdate.js";
+import { effectivePremiumWhere, effectiveFreeWhere } from "../lib/premium.js";
 
 // ─── Job 1: Archive cleanup ───────────────────────────────────────────────────
 // Runs daily at 03:00 UTC.
@@ -75,10 +76,19 @@ cron.schedule("0 4 * * 0", async () => {
   try {
     // Set archiveRetentionDays = 30 for any non-premium server that has null retention
     // (null means "forever" which is a Premium perk)
-    const result = await prisma.server.updateMany({
-      where: { isPremium: false, archiveRetentionDays: null },
-      data: { archiveRetentionDays: 30 },
+    // „Ефективно free" — agency-покрити/trial сървъри пазят unlimited retention.
+    // updateMany не поддържа relation филтри → findMany + updateMany по id.
+    const downgraded = await prisma.server.findMany({
+      where: { ...effectiveFreeWhere(), archiveRetentionDays: null },
+      select: { id: true },
+      take: 1000,
     });
+    const result = downgraded.length
+      ? await prisma.server.updateMany({
+          where: { id: { in: downgraded.map((s) => s.id) } },
+          data: { archiveRetentionDays: 30 },
+        })
+      : { count: 0 };
     if (result.count > 0) {
       console.log(`[Scheduler] Enforced 30-day retention on ${result.count} downgraded servers`);
     }
@@ -97,7 +107,7 @@ cron.schedule("*/30 * * * *", async () => {
     const panels = await prisma.panel.findMany({
       where: {
         inactivityCloseHours: { not: null, gt: 0 },
-        server: { isPremium: true },  // Premium-gated feature
+        server: effectivePremiumWhere(), // Premium-gated — вкл. agency/trial покритие
       },
       select: { id: true, inactivityCloseHours: true, logChannelId: true, counterPadding: true },
     });

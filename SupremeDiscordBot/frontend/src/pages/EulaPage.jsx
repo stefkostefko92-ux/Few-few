@@ -369,7 +369,7 @@ export default function EulaPage() {
         <p>
           <strong className="text-cs-text">10.4 Breach Notification.</strong>{" "}
           In the event of a personal data breach affecting End User data for which you are the
-          controller, the Licensor will notify you within 72 hours of becoming aware, as required
+          controller, the Licensor will notify you within 48 hours of becoming aware, as required
           by GDPR Article 33.
         </p>
         <p>
@@ -581,7 +581,10 @@ export default function EulaPage() {
         </p>
         <p>
           <strong className="text-cs-text">18.3 Jurisdiction.</strong>{" "}
-          If informal resolution fails, disputes shall be subject to the exclusive jurisdiction
+          If informal resolution fails — and subject, for EU/EEA consumers, to your right to
+          sue and be sued in the courts of your country of habitual residence (Regulation (EU)
+          1215/2012) and to the mandatory consumer protections of that country — disputes shall
+          be subject to the jurisdiction
           of the courts of {COUNTRY}. Nothing in this section prevents either party from seeking
           emergency injunctive relief from any competent court.
         </p>

@@ -109,6 +109,9 @@ router.post("/checkout", requireAuth, loadUser, requireStripe, async (req, res, 
         automatic_tax: { enabled: true },
         tax_id_collection: { enabled: true },
         customer_update: { address: "auto", name: "auto" },
+        // ЕС доказателство за местоположение (2 непротиворечиви елемента за
+        // дигитални услуги) + пълен billing адрес на фактурата (чл. 114 ЗДДС).
+        billing_address_collection: "required",
         success_url: `${process.env.FRONTEND_URL}/dashboard?agency=active`,
         cancel_url: `${process.env.FRONTEND_URL}/dashboard?agency=canceled`,
         metadata: { agencyId: agency.id, plan, interval, kind: "agency" },
