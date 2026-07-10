@@ -11,9 +11,14 @@ import MagneticButton from '@/components/MagneticButton';
 import ScrambleText from '@/components/ScrambleText';
 import GhostHeading from '@/components/GhostHeading';
 import ContactForm from '@/components/ContactForm';
+import LiquidHeading from '@/components/effects/LiquidHeading';
+import GenerativeCanvas from '@/components/effects/GenerativeCanvas';
 
 // Тежката WebGL сцена се зарежда lazy — не бави първоначалния paint/LCP.
 const HeroCanvas = lazy(() => import('@/components/effects/HeroCanvas'));
+// Canvas ефектите се зареждат lazy — не тежат на initial bundle/LCP.
+const PrintForge = lazy(() => import('@/components/effects/PrintForge'));
+const LivingMonument = lazy(() => import('@/components/effects/LivingMonument'));
 
 export default function Home(): React.JSX.Element {
   const { content, lang, site } = useContent();
@@ -274,8 +279,15 @@ export default function Home(): React.JSX.Element {
   function Portfolio(): React.JSX.Element {
     const ref = useReveal<HTMLDivElement>({ stagger: 50 });
     return (
-      <section id="work" className="cs-section" ref={ref} style={{ background: 'var(--bg-1)' }}>
-        <div className="cs-container">
+      <section
+        id="work"
+        className="cs-section"
+        ref={ref}
+        style={{ background: 'var(--bg-1)', position: 'relative', overflow: 'hidden' }}
+      >
+        {/* WF-007 Generative Canvas Painting — трайно платно от курсора във фона на секцията */}
+        <GenerativeCanvas />
+        <div className="cs-container" style={{ position: 'relative', zIndex: 1 }}>
           <div className="cs-tag cs-reveal">{ui.work_tag}</div>
           <GhostHeading text={ui.work_title} className="cs-section-title cs-reveal">
             {ui.work_title}
@@ -356,10 +368,17 @@ export default function Home(): React.JSX.Element {
       <section id="lab" className="cs-section" ref={ref} style={{ background: 'var(--bg-1)' }}>
         <div className="cs-container" style={{ maxWidth: 820 }}>
           <div className="cs-tag cs-reveal">{ui.lab_tag}</div>
-          <h2 className="cs-section-title cs-reveal">{ui.lab_title}</h2>
+          {/* WF-004 SVG Liquid Distortion — течен feTurbulence филтър върху заглавието */}
+          <LiquidHeading text={ui.lab_title} className="cs-section-title cs-reveal" />
           <p className="cs-reveal" style={{ color: 'var(--text)', lineHeight: 2, margin: '20px 0 24px' }}>
             {ui.lab_desc}
           </p>
+          {/* WF-001 Live Print Forge — canvas 2D 3D-принтер: слой по слой + reverse scan */}
+          <div className="cs-reveal" style={{ margin: '8px 0 28px' }}>
+            <Suspense fallback={null}>
+              <PrintForge />
+            </Suspense>
+          </div>
           <ul className="cs-reveal" style={{ listStyle: 'none', display: 'grid', gap: 12, marginBottom: 28 }}>
             {[ui.lab_b1, ui.lab_b2, ui.lab_b3].map((b) => (
               <li key={b} style={{ paddingLeft: 20, position: 'relative', color: 'var(--text-2)' }}>
@@ -368,6 +387,15 @@ export default function Home(): React.JSX.Element {
               </li>
             ))}
           </ul>
+          {/* WF-011 Living Monument — вечен кристал, растящ от поведението на посетителите */}
+          <div className="cs-reveal" style={{ margin: '8px 0 28px' }}>
+            <div className="cs-hud" style={{ marginBottom: 10, color: 'var(--cyan)' }}>
+              // LIVING MONUMENT · SHA-256 ENTROPY + PHYLLOTAXIS
+            </div>
+            <Suspense fallback={null}>
+              <LivingMonument />
+            </Suspense>
+          </div>
           <MagneticButton
             as="button"
             onClick={() => scrollToId('contact')}
