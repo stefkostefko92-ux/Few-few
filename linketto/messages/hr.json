@@ -98,7 +98,8 @@
     "processingNote": "Na prodaje u trgovini obračunava se i naknada za obradu plaćanja: 1,9 % + €0,30 (pokriva kartičnog operatera).",
     "mostPopular": "Najpopularniji",
     "annualOffer": "Uštedi {percent} % uz godišnji plan",
-    "referralPercentNote": "Pozovi prijatelje i zaradi {percent} % od svake njihove uplate."
+    "referralPercentNote": "Pozovi prijatelje i zaradi {percent} % od svake njihove uplate.",
+    "vatNote": "Cijene su konačne — PDV je uključen gdje se primjenjuje."
   },
   "auth": {
     "loginTitle": "Prijava u Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Ugovor o kupnji je između tebe i autora; Linketto je platforma.",
     "sellerTrader": "Prodavatelj je trgovac",
     "sellerPrivate": "Prodavatelj je privatna osoba",
+    "shopVatIncluded": "Cijene su konačne — PDV je uključen gdje se primjenjuje.",
     "subButton": "Pretplati se",
     "subConsent": "Pristajem primati e-poštu i prihvaćam",
     "subCheck": "Gotovo je skoro — provjerite svoj sandučić da potvrdite pretplatu.",

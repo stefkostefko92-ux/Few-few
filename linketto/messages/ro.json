@@ -98,7 +98,8 @@
     "processingNote": "Vânzările din magazin includ și un comision de procesare a plății de 1,9% + €0,30 (acoperă procesatorul de card).",
     "mostPopular": "Cel mai popular",
     "annualOffer": "Economisește {percent}% cu un plan anual",
-    "referralPercentNote": "Invită prieteni și câștigă {percent}% din fiecare plată pe care o fac."
+    "referralPercentNote": "Invită prieteni și câștigă {percent}% din fiecare plată pe care o fac.",
+    "vatNote": "Prețurile sunt finale — cu TVA inclusă unde se aplică."
   },
   "auth": {
     "loginTitle": "Autentificare în Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Contractul de cumpărare este între tine și creator; Linketto este platforma.",
     "sellerTrader": "Vânzătorul este comerciant",
     "sellerPrivate": "Vânzătorul este persoană fizică",
+    "shopVatIncluded": "Prețurile sunt finale — cu TVA inclusă unde se aplică.",
     "subButton": "Abonează-te",
     "subConsent": "Sunt de acord să primesc e-mailuri și accept",
     "subCheck": "Aproape gata — verifică-ți inboxul pentru a confirma abonarea.",

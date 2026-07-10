@@ -98,7 +98,8 @@
     "processingNote": "Op verkopen in de shop worden ook verwerkingskosten van 1,9% + €0,30 gerekend (dekt de kaartverwerker).",
     "mostPopular": "Meest populair",
     "annualOffer": "Bespaar {percent}% met een jaarabonnement",
-    "referralPercentNote": "Nodig vrienden uit en verdien {percent}% van elke betaling die ze doen."
+    "referralPercentNote": "Nodig vrienden uit en verdien {percent}% van elke betaling die ze doen.",
+    "vatNote": "De prijzen zijn definitief — inclusief btw waar van toepassing."
   },
   "auth": {
     "loginTitle": "Inloggen bij Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Het koopcontract is tussen jou en de maker; Linketto is het platform.",
     "sellerTrader": "De verkoper is een handelaar",
     "sellerPrivate": "De verkoper is een particulier",
+    "shopVatIncluded": "De prijzen zijn definitief — inclusief btw waar van toepassing.",
     "subButton": "Abonneren",
     "subConsent": "Ik ga akkoord met het ontvangen van e-mails en accepteer de",
     "subCheck": "Bijna klaar — controleer je inbox om je abonnement te bevestigen.",

@@ -98,7 +98,8 @@
     "processingNote": "Poe müügile lisandub ka maksetöötlustasu 1,9% + €0,30 (katab kaardimakse töötleja).",
     "mostPopular": "Kõige populaarsem",
     "annualOffer": "Säästa {percent}% aastapaketiga",
-    "referralPercentNote": "Kutsu sõpru ja teeni {percent}% igast nende maksest."
+    "referralPercentNote": "Kutsu sõpru ja teeni {percent}% igast nende maksest.",
+    "vatNote": "Hinnad on lõplikud — sisaldavad käibemaksu, kui see kuulub tasumisele."
   },
   "auth": {
     "loginTitle": "Logi Linkettosse sisse",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Ostuleping sõlmitakse sinu ja looja vahel; Linketto on platvorm.",
     "sellerTrader": "Müüja on kaupleja",
     "sellerPrivate": "Müüja on eraisik",
+    "shopVatIncluded": "Hinnad on lõplikud — sisaldavad käibemaksu, kui see kuulub tasumisele.",
     "subButton": "Telli",
     "subConsent": "Nõustun e-kirjade saamisega ja aktsepteerin",
     "subCheck": "Peaaegu valmis — kontrolli oma postkasti, et tellimust kinnitada.",

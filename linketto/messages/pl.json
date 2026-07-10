@@ -98,7 +98,8 @@
     "processingNote": "Od sprzedaży w sklepie pobierana jest też opłata za obsługę płatności: 1,9% + €0,30 (pokrywa operatora kart).",
     "mostPopular": "Najpopularniejszy",
     "annualOffer": "Oszczędź {percent}% z planem rocznym",
-    "referralPercentNote": "Zaproś znajomych i zarabiaj {percent}% z każdej ich płatności."
+    "referralPercentNote": "Zaproś znajomych i zarabiaj {percent}% z każdej ich płatności.",
+    "vatNote": "Ceny są ostateczne — z VAT, gdy jest należny."
   },
   "auth": {
     "loginTitle": "Zaloguj się do Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Umowa sprzedaży jest między Tobą a twórcą; Linketto jest platformą.",
     "sellerTrader": "Sprzedawca jest przedsiębiorcą",
     "sellerPrivate": "Sprzedawca jest osobą prywatną",
+    "shopVatIncluded": "Ceny są ostateczne — z VAT, gdy jest należny.",
     "subButton": "Subskrybuj",
     "subConsent": "Zgadzam się na otrzymywanie e-maili i akceptuję",
     "subCheck": "Już prawie — sprawdź skrzynkę, aby potwierdzić subskrypcję.",

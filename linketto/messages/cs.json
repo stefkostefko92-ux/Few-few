@@ -98,7 +98,8 @@
     "processingNote": "Z prodejů v obchodě se účtuje také poplatek za zpracování platby: 1,9 % + €0,30 (pokrývá kartového operátora).",
     "mostPopular": "Nejoblíbenější",
     "annualOffer": "Ušetři {percent} % s ročním plánem",
-    "referralPercentNote": "Pozvi přátele a vydělávej {percent} % z každé jejich platby."
+    "referralPercentNote": "Pozvi přátele a vydělávej {percent} % z každé jejich platby.",
+    "vatNote": "Ceny jsou konečné — včetně DPH, je-li splatná."
   },
   "auth": {
     "loginTitle": "Přihlaš se do Linketto",
@@ -363,6 +364,7 @@
     "shopSellerNote": "Kupní smlouva je mezi tebou a tvůrcem; Linketto je platforma.",
     "sellerTrader": "Prodejce je obchodník",
     "sellerPrivate": "Prodejce je soukromá osoba",
+    "shopVatIncluded": "Ceny jsou konečné — včetně DPH, je-li splatná.",
     "subButton": "Odebírat",
     "subConsent": "Souhlasím se zasíláním e-mailů a přijímám",
     "subCheck": "Skoro hotovo — zkontrolujte svou schránku a potvrďte odběr.",
