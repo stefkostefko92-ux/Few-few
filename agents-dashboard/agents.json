@@ -2584,9 +2584,20 @@
           "date": "2026-07-10",
           "event": "v10.5 — учене",
           "detail": "Научи: Panev (panev/): robots.txt дефинира явни UA-групи (Bingbot, Applebot, Slurp, ChatGPT-Us… (+3 още)"
+        },
+        {
+          "version": "10.6.0",
+          "date": "2026-07-10",
+          "event": "v10.6 — учене",
+          "detail": "Научи: Carbon Stealth нов сайт е client-only SPA (Vite+React): целият SEO (title/desc/canonica… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „Carbon Stealth нов сайт е client-only SPA (Vite+React): целият SEO (title/desc/canonica…\" (+2 още)"
+        },
         {
           "date": "2026-07-10",
           "type": "learning",
