@@ -440,49 +440,89 @@
   size(); addEventListener("resize",size);
 
   // procedural lightning via midpoint displacement
+  // segment = [x1,y1,x2,y2,main] (main=1 главен канал, 0 разклонение)
   function makeBolt(x1,y1,x2,y2,disp){
-    var segs=[[x1,y1,x2,y2]];
-    for(var i=0;i<6;i++){
+    var segs=[[x1,y1,x2,y2,1]];
+    for(var i=0;i<7;i++){
       var next=[];
       for(var s=0;s<segs.length;s++){
         var a=segs[s], mx=(a[0]+a[2])/2, my=(a[1]+a[3])/2;
         var nx=-(a[3]-a[1]), ny=(a[2]-a[0]); var len=Math.hypot(nx,ny)||1;
         var off=(Math.random()-0.5)*disp; mx+=nx/len*off; my+=ny/len*off;
-        next.push([a[0],a[1],mx,my]); next.push([mx,my,a[2],a[3]]);
-        if(disp>26 && Math.random()<0.35){
-          var fx=mx+(a[2]-a[0])*0.35+(Math.random()-.5)*disp;
-          var fy=my+(a[3]-a[1])*0.35+(Math.random()-.5)*disp;
-          next.push([mx,my,fx,fy]);
+        next.push([a[0],a[1],mx,my,a[4]]); next.push([mx,my,a[2],a[3],a[4]]);
+        // дълги разклонения само от главния канал
+        if(a[4] && disp>16 && Math.random()<0.55){
+          var ang=Math.atan2(a[3]-a[1],a[2]-a[0])+(Math.random()-0.5)*1.5;
+          var fl=disp*(1.6+Math.random()*2.4);
+          next.push([mx,my,mx+Math.cos(ang)*fl,my+Math.sin(ang)*fl,0]);
         }
       }
-      segs=next; disp*=0.55;
+      segs=next; disp*=0.56;
     }
     return segs;
   }
-  function drawBolt(segs,alpha){
-    ctx.save(); ctx.globalCompositeOperation="lighter";
-    ctx.shadowBlur=24*dpr; ctx.shadowColor="rgba(0,229,255,"+alpha+")";
-    ctx.strokeStyle="rgba(150,245,255,"+alpha+")"; ctx.lineWidth=2.2*dpr; ctx.lineCap="round";
+  function strokePath(segs,wMain,wFork){
     ctx.beginPath();
-    for(var i=0;i<segs.length;i++){ ctx.moveTo(segs[i][0],segs[i][1]); ctx.lineTo(segs[i][2],segs[i][3]); }
-    ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,"+(alpha*0.9)+")"; ctx.lineWidth=1*dpr; ctx.stroke();
+    for(var i=0;i<segs.length;i++){ var s=segs[i]; if(s[4]){ ctx.moveTo(s[0],s[1]); ctx.lineTo(s[2],s[3]); } }
+    ctx.lineWidth=wMain; ctx.stroke();
+    ctx.beginPath();
+    for(var i=0;i<segs.length;i++){ var s=segs[i]; if(!s[4]){ ctx.moveTo(s[0],s[1]); ctx.lineTo(s[2],s[3]); } }
+    ctx.lineWidth=wFork; ctx.stroke();
+  }
+  function drawBolt(segs,alpha){
+    var A=alpha*(0.72+Math.random()*0.28); // трептене
+    ctx.save(); ctx.globalCompositeOperation="lighter"; ctx.lineCap="round"; ctx.lineJoin="round";
+    // 1) широко cyan сияние
+    ctx.shadowBlur=42*dpr; ctx.shadowColor="rgba(0,229,255,"+A+")";
+    ctx.strokeStyle="rgba(0,190,255,"+(A*0.45)+")"; strokePath(segs,8*dpr,4.5*dpr);
+    // 2) средно сияние
+    ctx.shadowBlur=18*dpr; ctx.shadowColor="rgba(0,229,255,"+A+")";
+    ctx.strokeStyle="rgba(130,238,255,"+(A*0.8)+")"; strokePath(segs,3.4*dpr,1.9*dpr);
+    // 3) бяло нажежено ядро
+    ctx.shadowBlur=7*dpr; ctx.shadowColor="rgba(220,250,255,"+A+")";
+    ctx.strokeStyle="rgba(255,255,255,"+A+")"; strokePath(segs,1.5*dpr,0.8*dpr);
     ctx.restore();
   }
 
-  var bolts=[];
+  var bolts=[], glows=[], sparks=[];
+  function impact(x,y,power){
+    glows.push({x:x,y:y,r:14*dpr,a:1});
+    var n=Math.floor(12+power*22);
+    for(var i=0;i<n;i++){
+      var ang=Math.random()*Math.PI*2, sp=(2+Math.random()*8)*power*dpr;
+      sparks.push({x:x,y:y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp-2*dpr,a:1});
+    }
+  }
   function strike(power){
-    var x=W*(0.32+Math.random()*0.4);
-    bolts.push({segs:makeBolt(x,-20,W*(0.35+Math.random()*0.35),H*0.42,60*power),a:1});
-    flash.style.transition="none"; flash.style.opacity=String(0.55*power);
-    requestAnimationFrame(function(){ flash.style.transition="opacity .35s ease"; flash.style.opacity="0"; });
-    document.body.style.transform="translate("+((Math.random()-.5)*8*power)+"px,"+((Math.random()-.5)*6*power)+"px)";
-    setTimeout(function(){ document.body.style.transform=""; },70);
+    var tx=W*(0.42+(Math.random()-0.5)*0.22), ty=H*(0.30+Math.random()*0.15);
+    var n=1+(power>0.6?Math.floor(Math.random()*2)+1:0); // до 3 едновременни разклонени канала
+    for(var k=0;k<n;k++){
+      var sx=W*(0.18+Math.random()*0.64);
+      bolts.push({segs:makeBolt(sx,-20,tx+(Math.random()-0.5)*90*dpr,ty,60*power),a:1});
+    }
+    impact(tx,ty,power);
+    flash.style.transition="none"; flash.style.opacity=String(Math.min(0.9,0.45*power+0.18));
+    requestAnimationFrame(function(){ flash.style.transition="opacity .42s ease"; flash.style.opacity="0"; });
+    var mag=11*power;
+    document.body.style.transform="translate("+((Math.random()-0.5)*mag)+"px,"+((Math.random()-0.5)*mag*0.7)+"px)";
+    setTimeout(function(){ document.body.style.transform=""; },80);
     thunder(power);
   }
   function loop(){
     ctx.clearRect(0,0,W,H);
-    for(var i=bolts.length-1;i>=0;i--){ var b=bolts[i]; drawBolt(b.segs,b.a); b.a-=0.045; if(b.a<=0) bolts.splice(i,1); }
+    for(var i=bolts.length-1;i>=0;i--){ var b=bolts[i]; drawBolt(b.segs,b.a); b.a-=(0.028+Math.random()*0.022); if(b.a<=0) bolts.splice(i,1); }
+    ctx.save(); ctx.globalCompositeOperation="lighter";
+    for(var i=glows.length-1;i>=0;i--){ var g=glows[i], R=g.r*(1+(1-g.a)*3.2);
+      var rad=ctx.createRadialGradient(g.x,g.y,0,g.x,g.y,R);
+      rad.addColorStop(0,"rgba(190,248,255,"+(g.a*0.85)+")");
+      rad.addColorStop(0.4,"rgba(0,229,255,"+(g.a*0.35)+")");
+      rad.addColorStop(1,"rgba(0,229,255,0)");
+      ctx.fillStyle=rad; ctx.beginPath(); ctx.arc(g.x,g.y,R,0,6.29); ctx.fill();
+      g.a-=0.045; if(g.a<=0) glows.splice(i,1); }
+    for(var i=sparks.length-1;i>=0;i--){ var s=sparks[i];
+      ctx.fillStyle="rgba(210,250,255,"+s.a+")"; ctx.fillRect(s.x,s.y,2.2*dpr,2.2*dpr);
+      s.x+=s.vx; s.y+=s.vy; s.vy+=0.26*dpr; s.a-=0.028; if(s.a<=0) sparks.splice(i,1); }
+    ctx.restore();
     requestAnimationFrame(loop);
   }
   loop();
@@ -515,13 +555,16 @@
 
   // intro storm — ~2s
   try{ ctxReady(); if(ac&&ac.state==="suspended") ac.resume(); }catch(e){}
-  setTimeout(function(){ strike(1); },160);
-  setTimeout(function(){ strike(0.7); },560);
-  setTimeout(function(){ document.body.classList.add("lit"); strike(1); },1050);
-  setTimeout(function(){ strike(0.6); },1500);
-  setTimeout(function(){ reveal(); },1200);
-  // ambient far-off flickers after the intro
-  setInterval(function(){ if(Math.random()<0.5) strike(0.28); },9000);
+  setTimeout(function(){ strike(0.9); },130);
+  setTimeout(function(){ strike(0.55); },420);
+  setTimeout(function(){ strike(0.7); },700);
+  setTimeout(function(){ document.body.classList.add("lit"); strike(1); },950);
+  setTimeout(function(){ strike(0.75); },1200);
+  setTimeout(function(){ strike(1); },1700);   // финален двоен удар
+  setTimeout(function(){ strike(0.85); },1820);
+  setTimeout(function(){ reveal(); },1100);
+  // ambient dramatic strikes after the intro
+  setInterval(function(){ if(Math.random()<0.6) strike(0.3+Math.random()*0.45); },6500);
 })();
 </script>
 </body>
