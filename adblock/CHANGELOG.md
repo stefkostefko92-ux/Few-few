@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.1
+
+- Filter updates are now cryptographically verified: the Ed25519 public key is
+  embedded and every filters.json download must match its signature when one
+  is served. A bad signature is rejected and the last good configuration
+  stays. (The signing key lives only on our server.)
+
 ## 4.0.0
 
 Biggest release yet: full EasyList coverage, a smarter YouTube pipeline and

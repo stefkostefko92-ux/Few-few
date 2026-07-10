@@ -32,7 +32,7 @@ const LIVE_RULE_MAX = 3000;
 // добра конфигурация. Докато собственикът не качи ключ (.sig липсва, 404),
 // ъпдейтите се приемат както досега; после SIG_REQUIRED става true в релийз.
 const SIG_URL = CONFIG_URL + ".sig";
-const SIG_PUBKEY_B64 = ""; // base64 на 32-байтов raw Ed25519 публичен ключ
+const SIG_PUBKEY_B64 = "dHNcuMuLraQ8w1sse7rk6Dnzzh5wzbLc4/KofD5QWMQ="; // raw Ed25519 публичен ключ
 const SIG_REQUIRED = false;
 
 async function verifySignature(bytes, sigB64) {
