@@ -1,0 +1,173 @@
+{
+  "_meta": {
+    "source": "SPA бъндъл /assets/index-B1S7a37X.js (беautified анализ) + inline CSS на prerender страниците + manifest.webmanifest (жив сайт carbonstealth.eu, 2026-07-10)",
+    "note": "Сайтът няма CSS файл — всички стилове са inline React style обекти + няколко <style> инжекции от бъндъла. Константи в бъндъла: b = '#00e5ff', T = '0,229,255' (RGB тройка за rgba шаблони)."
+  },
+  "colors": {
+    "primary": {
+      "cyan": {
+        "hex": "#00e5ff",
+        "rgb": "0,229,255",
+        "usage": "Основен акцент: тагове, CTA бордюри, линкове, ::selection фон, theme-color, лого glow, курсор SVG, скенер линии, particle мрежи, hero частици"
+      }
+    },
+    "semantic": {
+      "success": { "hex": "#00ff88", "usage": "[OK] редове в boot секвенцията, INVIATO!/SENT! потвърждение на формата, зелени статуси в админ монитора; бордюр rgba(0,255,136,.3)" },
+      "danger": { "hex": "#ff3366", "usage": "Velocity метър >70, scroll метър >60, грешки/високи стойности в админ монитора; rgba(255,51,102,.2/.3/.4/.5)" },
+      "warning": { "hex": "#ffaa00", "usage": "Само в админ монитора (CS MONITOR): средни latency/disk/SSL статуси, MEDIUM приоритет, Bot/Crawler цвят" },
+      "purple": { "hex": "#aa88ff", "usage": "Само в админ монитора: NGINX версия, PROCESSES" }
+    },
+    "neutrals": {
+      "offWhite": { "hex": "#f5f5f0", "usage": "Основен цвят на заглавия (Inter Tight 900) и главен текст; rgba(245,245,240,α) е универсалният бордюр/фон шаблон" },
+      "textPrimary": { "hex": "#ccc", "usage": "Основен body текст, нав линкове, футър линкове" },
+      "textSecondary": { "hex": "#ddd", "usage": "Стат етикети, lab булети, футър описание, HUD текст" },
+      "placeholder": { "hex": "#999", "usage": "input::placeholder, GDPR бележка, tags на статичните страници" },
+      "muted": { "hex": "#666", "usage": ".ft футър текст на статичните страници" },
+      "faint": { "hex": "#555", "usage": "Monument 'forging' състояние, най-слаб текст" },
+      "credit": { "hex": "#444", "usage": "'CREATED AND DESIGNED BY...' ред в дъното на футъра" },
+      "meterTrack": { "hex": "#111", "usage": "Фон (писта) на velocity/scroll/progress барове" },
+      "white": { "hex": "#fff", "usage": "Canvas текст 'CS' за 3D частиците, noscript definition текст" },
+      "black": { "hex": "#000", "usage": "Фон на цялото тяло, ::selection текст, CTA текст върху cyan" }
+    },
+    "backgrounds": {
+      "body": "#000",
+      "manifestBackground": { "hex": "#0a0a0c", "usage": "manifest.webmanifest background_color" },
+      "adminPanel": { "hex": "#060608", "usage": "Фон на CS MONITOR админ панела (само там)" },
+      "navBar": "rgba(0,0,0,.85) + backdropFilter blur(8px)",
+      "cookieBanner": "rgba(0,0,0,.97) + backdropFilter blur(8px)",
+      "mobileMenu": "rgba(0,0,0,.97) + backdropFilter blur(12px)",
+      "staticPagesNav": "rgba(0,0,0,.9) + backdrop-filter blur(8px)"
+    },
+    "noscriptChips": {
+      "chipBg": "#12121a",
+      "chipBorder": "#2a2a36",
+      "listDivider": "#1a1a22",
+      "chipText": "#aaa",
+      "usage": "Само в noscript/AEO съдържанието на servizi страниците (tech стек чипове)"
+    },
+    "rgbaVariants": {
+      "cyan (rgba(0,229,255,α) / rgba(T,α))": {
+        ".01": "products карта фон", ".015": "диагонална решетка фон", ".02": "lab канвас фон", ".03": "boot grid, клик глич", ".04": "monument radial фон", ".06": "диагонални разделители, sitemap glow, wireframe", ".08": "definition-box фон, WF year бадж", ".1": "cookie accept фон, HowTo бордюр", ".12": "WF карта бордюр, phosphor trail", ".15": "lab/monument бордюр, boot скенер", ".2": "hamburger/close бордюр, cookie banner top бордюр, .price бордюр", ".25": "лого glow", ".3": "лого drop-shadow", ".35": "lab слоеве stroke", ".4": "cookie accept бордюр, particle точки", ".45": "circuit интро линии", ".5": "monument център", ".55": "lab scan stroke", ".7": "monument HUD, курсор ринг, lab HUD текст", ".8": "курсор pointer ринг", ".9": "курсор точка, lab лазер", ".95": "circuit глави"
+      },
+      "offWhite (rgba(245,245,240,α))": {
+        ".02": "най-слаб бордюр (credit ред)", ".03": "input фон", ".04": "секции фон", ".06": "карти/футър бордюри, faq-item бордюр", ".08": "нав бордюр, стат редове, faq/portfolio бордюри", ".1": "input бордюр", ".15": "lab основа линия", ".2": "cookie reject бордюр", ".25": "lab директриса", ".35": "lab HUD подтекст", ".9": "monument твоя шард glow"
+      },
+      "special": {
+        "rgba(255,0,200,0.08)": "Магента chromatic aberration при клик-глич (scanline ефект)",
+        "rgba(0,255,136,.3)": "Бордюр на 'ИЗПРАТЕНО' потвърждението",
+        "rgba(255,170,0,.1)": "Админ панел warning фон",
+        "rgba(0,0,0,0.04)": "Trail затихване (phosphor)",
+        "rgba(0,0,0,0.05)": "Matrix rain затихване",
+        "rgba(0,0,0,0.8)": "textShadow на products заглавия",
+        "rgba(0,0,0,0.5)": "textShadow на FAQ въпроси, футър фон rgba(0,0,0,.5)"
+      }
+    }
+  },
+  "typography": {
+    "fonts": {
+      "display": {
+        "family": "Inter Tight, sans-serif",
+        "weightsLoaded": [100, 200, 300, 400, 500, 600, 700, 800, 900],
+        "weightsUsed": [400, 700, 800, 900],
+        "variableWeightInteraction": "100–900 динамично според близост на курсора (Proximity Variable Weight ефект, стъпка 100, диапазон 400–900)",
+        "source": "Google Fonts, preload + display=swap"
+      },
+      "mono": {
+        "family": "Space Mono, monospace",
+        "weights": [400, 700],
+        "usage": "Body шрифт на целия SPA и статичните страници, HUD елементи, boot секвенция, форми"
+      }
+    },
+    "baseBody": { "fontSize": "12px (SPA) / 13px (статични страници)", "lineHeight": "2 (статични) / 1.7–1.9 (SPA)", "letterSpacing": ".02em", "color": "#ccc/#f5f5f0", "background": "#000" },
+    "headingScale": {
+      "heroTitle": "clamp(2rem,5vw,4rem) · 900 · line-height .95 · letter-spacing -.04em · uppercase",
+      "sectionTitle": "clamp(2rem,5vw,4rem) / clamp(1.5rem,4vw,3rem) · 700–900 · letter-spacing -.03em · uppercase",
+      "contactTitle": "clamp(2rem,6vw,5rem) · line-height .9 · letter-spacing -.04em · цвят #00e5ff",
+      "bootCounter": "clamp(5rem,15vw,12rem) · 900 · line-height .85 · letter-spacing -.05em",
+      "staticH1": "2.5rem · 900 · letter-spacing -.03em · line-height 1.1 · #f5f5f0",
+      "staticH2": "1.2rem · 700 · uppercase · letter-spacing .05em · #00e5ff"
+    },
+    "trackingScale": {
+      "negative": ["-.05em", "-.04em", "-.03em", "-.02em", "-.01em"],
+      "positive": [".02em", ".05em", ".1em", ".15em", ".2em", ".25em", ".3em", ".4em", ".5em"],
+      "usage": "Отрицателен tracking за големи Inter Tight заглавия; голям положителен (.15–.5em) за малки моно тагове/етикети (uppercase, 7–10px)"
+    },
+    "microText": "Йерархия от 7px/8px/9px/10px/11px моно текст с голям letter-spacing — отличителен HUD/терминален похват"
+  },
+  "borders": {
+    "style": "1px solid плътни линии, БЕЗ border-radius в SPA (остри ъгли навсякъде)",
+    "patterns": [
+      "1px solid rgba(245,245,240,.06/.08/.1) — неутрални разделители и карти",
+      "1px solid rgba(0,229,255,.12/.15/.2/.4) — акцентни рамки (lab, WF карти, cookie бутон)",
+      "1px solid #00e5ff — CTA бутони (плътен)",
+      "corner brackets: 20x20px ъглови скоби с borderTop/borderRight на boot екрана"
+    ],
+    "radiusExceptions": "Статичните/noscript страници ползват 4–16px радиуси и 16px чипове (само там)"
+  },
+  "breakpoints": {
+    "phone": "max-width: 767px — hamburger меню, единични колони, скрити декорации,440px touch таргети",
+    "tablet": "768px–1024px — свити нав линкове, 2-колонен футър",
+    "desktop": "> 1024px — пълен layout",
+    "touch": "@media(pointer:coarse) — min 44x44px таргети, 16px inputs (без iOS zoom)",
+    "safeArea": "@supports(padding: env(safe-area-inset-top)) — нав/футър padding за notch телефони"
+  },
+  "layout": {
+    "sectionPadding": "80–120px 20px (SPA), 60px 16px (телефон)",
+    "containerMax": "900px (статични страници .w), 700px (контакт форма), 1100px (WF grid)",
+    "grids": ["repeat(auto-fit,minmax(220px,1fr)) — WF карти", "1fr 1fr — products, форма", "1.5fr 1fr 1fr 1fr — футър", "60px 1fr auto — portfolio редове"],
+    "diagonalDividers": "height:80px linear-gradient(10deg/170deg, #000 49.5%, rgba(0,229,255,.06) 49.5% 50.5%, #000 50.5%) — тънка диагонална линия между секции"
+  },
+  "cursor": {
+    "default": "SVG data-URI кръг (20x20, ринг rgba(0,229,255,0.7) + точка 0.9), hotspot 10 10",
+    "interactive": "по-голям SVG кръг (24x24, ринг 0.8 + точка r=2), hotspot 12 12",
+    "fallbackStyle": "cursor: crosshair на интерактивните елементи"
+  },
+  "animations": {
+    "cssKeyframes": {
+      "blink": "50%{opacity:.3} — премигваща cyan точка в нав/boot",
+      "blinkCursor": "50%{opacity:0} — терминален курсор",
+      "scanH": "translateX(-100%→100%) — хоризонтален скен",
+      "scanBoot": "top:-2px→100% 2s linear infinite — скен линия на boot екрана",
+      "tickerMove": "translateX(0→-50%) — безкраен CARBON·STEALTH·VCC тикер",
+      "float": "translateY(0→-10px→0) — плаващи елементи",
+      "diagScan": "translateY(-200%→200%) rotate(45deg) 6s — диагонална скен линия през целия сайт"
+    },
+    "jsEffects": [
+      { "name": "BIOS Boot Sequence", "desc": "Пълноекранен хардуерен boot: реален скан на CPU/GPU/RAM/battery/network през Navigator API, ред по ред терминален лог, 3D icosahedron + частици (Three.js), прогрес 0–100%, разпад/експлозия при завършване (4.6s)" },
+      { "name": "Circuit Intro", "desc": "28 цифрови 'писти' тръгват от центъра с 90° завои (canvas, 2.2s, fade)" },
+      { "name": "Typewriter/Scramble (I)", "desc": "Hover декодиране на текст през charset 'ABC...!@#$%&<>{}|', 22ms стъпка" },
+      { "name": "Scroll Decode (D)", "desc": "Текстът се декодира от глич символи '!@#$%^&*<>{}[]|/\\01' според scroll позицията" },
+      { "name": "Magnetic Text Repulsion (C)", "desc": "Буквите се отблъскват физически от курсора (тригонометрия по разстояние)" },
+      { "name": "Proximity Variable Weight (z)", "desc": "Font-weight 400–900 на дума според разстояние до курсора (variable font)" },
+      { "name": "Ghost/Echo Heading (w)", "desc": "6 наслагващи се копия на заглавие с offset -3n/+2n px и намаляваща opacity (cyan следа)" },
+      { "name": "8K Particle Text (B)", "desc": "До 8000 GLSL частици се събират от сфера в текст 'CS'; отблъскване от курсора; icosahedron + 2 torus орбити + 12 лъча + 2000 звезди; custom vertex/fragment шейдъри, AdditiveBlending (lazy Three.js chunk)" },
+      { "name": "Particle Network (x)", "desc": "40 частици със свързващи линии <100px и връзка към курсора <180px (за about секцията)" },
+      { "name": "Matrix Rain (L)", "desc": "Падащи '01アイウ{}[]<>CS|@#' колони, 10px monospace, opacity .5, фиксиран фон" },
+      { "name": "Generative Canvas Painting (k)", "desc": "Курсорът рисува перманентни линии+пръски по цялата страница (canvas без изчистване, до 5000px височина)" },
+      { "name": "Phosphor Cursor Trail (N)", "desc": "CRT фосфорна следа: radial gradient точки със затихване rgba(0,0,0,0.04) fill" },
+      { "name": "Click Ripple (j)", "desc": "Двоен разширяващ се кръг от всяка клик точка (8+4px/frame, .985 opacity decay)" },
+      { "name": "Click Glitch Scanline (M)", "desc": "При клик: 150ms хоризонтална cyan линия + изместен банд + chromatic aberration (cyan/magenta inset сенки)" },
+      { "name": "SVG Liquid Distortion (P)", "desc": "feTurbulence (fractalNoise, 3 октави, seed 42) + feDisplacementMap scale 2, анимиран baseFrequency — 'течен' hero филтър #liquid-distort" },
+      { "name": "ASCII Generative (A)", "desc": "20x70 ASCII полe ' .:-=+*#%@' от синус/косинус вълни в реално време, 8px Space Mono, cyan 0.12" },
+      { "name": "Live Print Forge (F)", "desc": "Симулиран 3D принтер: 34 слоя x 0.20мм профил, движеща се глава, после reverse-engineering скен режим ('> SCANNING GEOMETRY...' → '> MESH RECONSTRUCTED'), цикъл" },
+      { "name": "Living Monument (G)", "desc": "Перманентен кристал (phyllotaxis спирала, златен ъгъл): всеки посетител добавя шард от SHA-256(поведение: мишка, скрол, екран, timezone) през /api/monument.php; твоят шард пулсира в бяло" },
+      { "name": "Velocity Meter (O)", "desc": "Фиксиран HUD долу вдясно: скорост на мишката 0–100, бар става #ff3366 над 70" },
+      { "name": "Scroll Velocity Bar (R)", "desc": "Фиксиран вертикален бар вляво: скорост на скрола, #ff3366 над 60" },
+      { "name": "Hero 3D (B main)", "desc": "Boot: icosahedron 1.8 r3 wireframe + вътрешен 1.2 + 2 torus ринга + 500 орбитални частици, дишане и spike експлозия" },
+      { "name": "FPS Counter", "desc": "Живо измерване на FPS в нав бара (requestAnimationFrame прозорец 1s)" },
+      { "name": "Battery/Network HUD", "desc": "Battery API % + CHG и Connection effectiveType в нав бара" }
+    ],
+    "transitions": ["cubic-bezier(0.16,1,0.3,1) — boot fade/scale 0.8s", "width 0.1s / background 0.3s — метри", "font-weight 0.15s — variable type", "color .4s — boot брояч", "all .3s — hamburger"],
+    "audio": "Web Audio Synthesizer + Speech Synthesis Core присъстват в boot лога като подсистеми"
+  },
+  "iconography": {
+    "favicon": "favicon.svg (343 bytes) + favicon.ico + apple-touch-icon.png 180x180",
+    "logo": "logo.png — ВНИМАНИЕ: реално JPEG (JFIF), 1373x585; в нав 28px, футър 40px височина, с cyan drop-shadow glow",
+    "socialIcons": "Текстови квадрати 32x32 с бордюр: 'WA' (WhatsApp), 'EM' (Email), 'LI' (LinkedIn) — без икон шрифт"
+  },
+  "designLanguage": {
+    "summary": "Терминален/HUD брутализъм: черен фон, моно микро-текст с огромен tracking, остри 1px рамки без радиуси, cyan акцент, генеративни canvas/WebGL ефекти навсякъде, '// ' префикси на секционните тагове, номерирани списъци (01/02/03), координати и телеметрия като декорация.",
+    "sectionTagPattern": "'// ИМЕ' — 9px, letter-spacing .5em, cyan",
+    "numberedPattern": "001/002/003 за портфолио, 01–13 за услуги, WF-001..WF-011 за световни първенства"
+  }
+}
