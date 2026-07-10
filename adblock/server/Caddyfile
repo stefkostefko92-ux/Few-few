@@ -1,0 +1,23 @@
+# adblock.carbonstealth.eu — static host for The Best Ads Block.
+# Serves the live filter file, the privacy policy and a small landing page.
+# Caddy gets a TLS cert automatically. Drop this block into the server's Caddyfile
+# (or `import` it) and point the DNS A/AAAA record for the subdomain at the VPS.
+
+adblock.carbonstealth.eu {
+	root * /var/www/adblock
+	encode zstd gzip
+
+	# Filter file: JSON, short cache so updates propagate within ~an hour.
+	@filters path /filters.json
+	header @filters {
+		Content-Type application/json
+		Cache-Control "public, max-age=3600"
+		Access-Control-Allow-Origin "*"
+	}
+
+	# Pretty URL for the privacy policy (Web Store Privacy Policy URL).
+	@privacy path /privacy
+	rewrite @privacy /privacy.html
+
+	file_server
+}

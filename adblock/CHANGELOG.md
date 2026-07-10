@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.8.2
+
+- Move the live filter update to a dedicated subdomain
+  (adblock.carbonstealth.eu), served as a plain static site separate from the
+  main SPA. It now hosts everything the extension needs externally:
+  filters.json, the privacy policy (/privacy) and a landing page. Ready-to-deploy
+  files + Caddy config in server/ (excluded from the extension package).
+
 ## 3.8.1
 
 - Review fixes (Хромаджията + Кодаджията):

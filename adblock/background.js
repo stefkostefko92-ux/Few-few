@@ -11,7 +11,7 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 // Live filter updates: DATA only (domains + CSS selectors), never code.
 // Update this JSON on the server and every install refreshes itself, no
 // Web Store re-review needed. MV3 forbids remote CODE, not remote data.
-const CONFIG_URL = "https://carbonstealth.eu/adblock/filters.json";
+const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
 const LIVE_RULE_MAX = 3000;
 
 // never block these from a user filter, even by mistake

@@ -31,7 +31,11 @@ required.
 
 ## Privacy
 Single purpose: block advertisements and trackers on the pages you visit.
-The extension collects no personal data. See PRIVACY.md.
+The extension collects no personal data. The only network request is a daily
+data-only filter update from adblock.carbonstealth.eu (no user data sent, no
+code executed).
+
+Privacy Policy URL: https://adblock.carbonstealth.eu/privacy
 
 ## Permission justifications
 - declarativeNetRequest: block ad and tracker requests using filter rules.

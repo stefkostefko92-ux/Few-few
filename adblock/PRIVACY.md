@@ -26,7 +26,7 @@ removing the extension.
 ## Network requests we make
 
 One, and only for filter updates. About once a day the extension downloads a
-small filter file (`filters.json`) from carbonstealth.eu so blocking stays
+small filter file (`filters.json`) from adblock.carbonstealth.eu so blocking stays
 current as ad networks and sites change. This request contains **no information
 about you** — no identifiers, no browsing data, nothing. It is a plain GET of a
 public file, and the file is treated purely as data (block rules and CSS

@@ -1,7 +1,7 @@
 # Live filter updates
 
 The extension fetches `filters.json` from
-`https://carbonstealth.eu/adblock/filters.json` every 12 hours (and on install).
+`https://adblock.carbonstealth.eu/filters.json` every 12 hours (and on install).
 This lets you fix things — new ad networks, or YouTube renaming its DOM — without
 a Chrome Web Store re-review.
 
@@ -12,7 +12,7 @@ not — the same model uBlock/AdGuard use for filter lists).
 
 ## Hosting
 
-Serve this file at `https://carbonstealth.eu/adblock/filters.json` with
+Serve this file at `https://adblock.carbonstealth.eu/filters.json` with
 `Content-Type: application/json` and permissive CORS is not needed (the fetch
 comes from the extension service worker, which has host access). Bump `version`
 on every change so you can tell installs are current.

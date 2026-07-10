@@ -13,7 +13,7 @@ out="dist/the-best-ads-block-$ver.zip"
 rm -f "$out"
 
 zip -r "$out" . \
-  -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' \
+  -x '.git/*' 'dist/*' 'tools/*' 'docs/*' 'store/*' 'server/*' \
      '*.md' 'package.json' '.gitignore' '*/.DS_Store' '.DS_Store' \
   >/dev/null
 
