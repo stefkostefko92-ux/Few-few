@@ -8397,9 +8397,20 @@
           "date": "2026-07-09",
           "event": "v10.7 — учене",
           "detail": "Научи: iOS Safari има само PARTIAL support за background-attachment:fixed през ВСИЧКИ версии 1… (+3 още)"
+        },
+        {
+          "version": "10.8.0",
+          "date": "2026-07-10",
+          "event": "v10.8 — учене",
+          "detail": "Научи: Vite 6 + tsc -b: vite.config.ts използва node:url/import.meta.url и се компилира от tsc…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-07-10",
+          "type": "learning",
+          "summary": "Научи: „Vite 6 + tsc -b: vite.config.ts използва node:url/import.meta.url и се компилира от tsc…\" · 2 в карантина"
+        },
         {
           "date": "2026-07-09",
           "type": "learning",
